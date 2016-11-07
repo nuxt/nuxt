@@ -73,9 +73,9 @@ export default {
         Vue.nextTick(() => {
           setTimeout(() => {
             this.percent = 0
-          }, 100)
+          }, 200)
         })
-      }, 800)
+      }, 500)
       return this
     },
     fail () {
@@ -96,7 +96,7 @@ export default {
   right: 0px;
   height: 2px;
   width: 0%;
-  transition: width 0.2s, opacity 0.6s;
+  transition: width 0.2s, opacity 0.4s;
   opacity: 1;
   background-color: #efc14e;
   z-index: 999999;
