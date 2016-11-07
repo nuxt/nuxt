@@ -49,3 +49,23 @@ You're ready to use `this.$store` inside your `.vue` files :)
   <button @click="$store.commit('increment')">{{ $store.state.counter }}</button>
 </template>
 ```
+
+## fetch(context)
+
+> Used to fill the store before rendering the page
+
+The `fetch` method, *if set*, is called every time before loading the component (*only if attached to a route*). It can be called from the server-side or before navigating to the corresponding route.
+
+The `fetch` method receives the context as the first argument, you can use it to fetch some data and fill the store. To make the fetch method asynchronous, **return a Promise**, nuxt.js will wait for the promise to be resolved before rendering the Component.
+
+For example:
+```js
+export default {
+  fetch ({ store, params }) {
+    return axios.get('http://my-url')
+    .then((res) => {
+      store.commit('setUser', res.data)
+    })
+  }
+}
+```

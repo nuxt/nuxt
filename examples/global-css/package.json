@@ -2,7 +2,11 @@
   "name": "global-css",
   "description": "",
   "dependencies": {
-    "nuxt": "latest"
+    "bulma": "^0.2.3",
+    "hover.css": "^2.0.2",
+    "node-sass": "^3.11.2",
+    "nuxt": "latest",
+    "sass-loader": "^4.0.2"
   },
   "scripts": {
     "start": "nuxt"

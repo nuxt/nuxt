@@ -38,3 +38,7 @@ export default {
   }
 }
 </script>
+
+<% css.forEach(function (c) { %>
+<style src="<%= (typeof c === 'string' ? c : c.src) %>" lang="<%= (c.lang ? c.lang : 'css') %>"></style>
+<% }) %>

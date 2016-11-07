@@ -1,19 +1,7 @@
 <template>
-  <p>Hello {{ name }}!</p>
+  <div class="content">
+    <h1 class="title">Custom CSS!</h1>
+    <p><router-link to="/about" class="button is-medium is-primary hvr-float-shadow">I am a button</router-link></p>
+    <p><router-link to="/about">About page</router-link></p>
+  </div>
 </template>
-
-<script>
-export default {
-  data () {
-    return { name: 'world' }
-  }
-}
-</script>
-
-<style>
-p {
-  font-size: 20px;
-  text-align: center;
-  padding: 100px;
-}
-</style>

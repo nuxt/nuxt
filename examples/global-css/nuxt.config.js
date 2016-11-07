@@ -1,4 +1,9 @@
+const { resolve } = require('path')
+
 module.exports = {
-  // Nuxt.js configuration file
-  // Please look at https://nuxtjs.org/docs/config-file
+  css: [
+    'hover.css/css/hover-min.css',
+    { src: 'bulma', lang: 'sass' },
+    resolve(__dirname, 'css/main.css')
+  ]
 }
