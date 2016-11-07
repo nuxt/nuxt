@@ -1,4 +1,4 @@
-## WIP: NOT WORKING right now!
+## WIP: UNSTABLE right now
 
 # nuxt.js
 >A minimalistic framework for server-rendered Vue applications (completely inspired from [Next.js](https://github.com/zeit/next.js))
