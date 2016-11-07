@@ -111,5 +111,5 @@ If you want to launch one example to see it live:
 ```bash
 cd node_modules/nuxt/
 bin/nuxt examples/hello-world
-# Go to http:/localhost:3000
+# Go to http://localhost:3000
 ```
