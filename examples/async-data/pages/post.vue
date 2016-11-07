@@ -11,13 +11,9 @@ const axios = require('axios')
 
 export default {
   data ({ req }) {
-    return new Promise((resolve, reject) => {
-      axios.get('https://jsonplaceholder.typicode.com/posts/1')
-      .then((res) => {
-        resolve({
-          post: res.data
-        })
-      })
+    return axios.get('https://jsonplaceholder.typicode.com/posts/1')
+    .then((res) => {
+      return { post: res.data }
     })
   }
 }
