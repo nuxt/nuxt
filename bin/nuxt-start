@@ -1,7 +1,9 @@
 #!/usr/bin/env node --harmony_proxies
 
 const http = require('http')
+const co = require('co')
 const fs = require('fs')
+const pify = require('pify')
 const serveStatic = require('serve-static')
 const Nuxt = require('../')
 const { resolve } = require('path')
@@ -30,19 +32,27 @@ class Server {
 
   constructor (nuxt) {
     this.server = http.createServer(this.handle.bind(this))
-    this.staticServer = serveStatic('static', { fallthrough: false })
+    this.serveStatic = pify(serveStatic(resolve(rootDir, 'static')))
     this.nuxt = nuxt
     return this
   }
 
   handle (req, res) {
     const method = req.method.toUpperCase()
+    const self = this
 
     if (method !== 'GET' && method !== 'HEAD') {
       return this.nuxt.render(req, res)
     }
-    this._staticHandler(req, res)
-    .catch((e) => {
+    co(function * () {
+      if (req.url.includes('/static/')) {
+        const url = req.url
+        req.url = req.url.replace('/static/', '/')
+        yield self.serveStatic(req, res)
+        req.url = url
+      }
+    })
+    .then(() => {
       // File not found
       this.nuxt.render(req, res)
     })
@@ -56,15 +66,4 @@ class Server {
     })
   }
 
-  _staticHandler (req, res) {
-    return new Promise((resolve, reject) => {
-      this.staticServer(req, res, (error) => {
-        if (!error) {
-          return resolve()
-        }
-        error.message = `Route ${error.message} while resolving ${req.url}`
-        reject(error)
-      })
-    })
-  }
 }

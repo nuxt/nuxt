@@ -58,8 +58,7 @@ const baseConfig = `module.exports = {
 }
 `
 
-const basePage = `
-<template>
+const basePage = `<template>
   <p>Hello {{ name }}!</p>
 </template>
 
