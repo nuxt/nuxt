@@ -1,0 +1,10 @@
+{
+  "name": "global-css",
+  "description": "",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "start": "nuxt"
+  }
+}

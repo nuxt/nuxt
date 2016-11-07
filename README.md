@@ -67,7 +67,6 @@ const options = {
   store: true // use vuex and require('./store')
   vendor: ['axios', 'public/plugin.js'], // Add vendors in vendor-bundle.js
   loading: false or { color: "blue", error: "red" } or 'components/loader'
-  getContent: function (req, res) { return { lol: true } }
 }
 
 // Launch nuxt build with given options
