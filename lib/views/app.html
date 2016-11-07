@@ -1,0 +1,19 @@
+<% const {
+  title,
+  htmlAttrs,
+  bodyAttrs,
+  meta
+} = context.meta.inject()
+%><!DOCTYPE html data-vue-meta-server-rendered>
+<html>
+  <head>
+    ${title.toString()}
+    <% if (isProd) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
+  </head>
+  <body>
+    <%= APP %>
+    <script type="text/javascript" defer>window.__NUXT__=<%= serialize(context.nuxt) %></script>
+    <script src="<%= files.vendor %>" defer></script>
+    <script src="<%= files.app %>" defer></script>
+  </body>
+</html>

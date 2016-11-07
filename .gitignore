@@ -1,6 +1,3 @@
-# build output
-dist
-
 # dependencies
 yarn.lock
 node_modules

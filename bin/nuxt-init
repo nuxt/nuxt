@@ -1,0 +1,81 @@
+#!/usr/bin/env node --harmony_proxies
+
+const co = require('co')
+const mkdirp = require('mkdirp-then')
+const pify = require('pify')
+const { resolve, join, basename } = require('path')
+const { existsSync, writeFile } = require('fs')
+
+const rootDir = resolve(process.argv.slice(2)[0] || '.')
+
+if (basename(rootDir) === 'pages') {
+  console.warn('Your root directory is named "pages". This looks suspicious. You probably want to go one directory up.')
+  process.exit(0)
+}
+
+co(function * () {
+  yield new Promise((resolve) => setTimeout(resolve, 0)) // avoid undefined variables basePackage, etc.
+  if (!existsSync(rootDir)) {
+    yield mkdirp(rootDir)
+  }
+  if (!existsSync(join(rootDir, 'package.json'))) {
+    yield pify(writeFile)(join(rootDir, 'package.json'), basePackage.replace(/my-app/g, basename(rootDir)))
+  }
+  if (!existsSync(join(rootDir, 'nuxt.config.js'))) {
+    yield pify(writeFile)(join(rootDir, 'nuxt.config.js'), baseConfig)
+  }
+  if (!existsSync(join(rootDir, 'static'))) {
+    yield mkdirp(join(rootDir, 'static'))
+  }
+  if (!existsSync(join(rootDir, 'pages'))) {
+    yield mkdirp(join(rootDir, 'pages'))
+    yield pify(writeFile)(join(rootDir, 'pages', 'index.vue'), basePage)
+  }
+})
+.then(() => {
+  console.log('Nuxt project [' + basename(rootDir) + '] created')
+})
+.catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
+
+const basePackage = `{
+  "name": "my-app",
+  "description": "",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "start": "nuxt"
+  }
+}
+`
+
+const baseConfig = `module.exports = {
+  // Nuxt.js configuration file
+  // Please look at https://nuxtjs.org/docs/config-file
+}
+`
+
+const basePage = `
+<template>
+  <p>Hello {{ name }}!</p>
+</template>
+
+<script>
+export default {
+  data () {
+    return { name: 'world' }
+  }
+}
+</script>
+
+<style>
+p {
+  font-size: 20px;
+  text-align: center;
+  padding: 100px;
+}
+</style>
+`

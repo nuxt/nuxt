@@ -1,0 +1,11 @@
+{
+  "name": "ava-tests",
+  "scripts": {
+    "start": "../../bin/nuxt .",
+    "test": "ava"
+  },
+  "devDependencies": {
+    "ava": "^0.16.0",
+    "jsdom": "^9.8.3"
+  }
+}

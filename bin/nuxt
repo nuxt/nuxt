@@ -1,0 +1,29 @@
+#!/usr/bin/env node --harmony_proxies
+
+const { join } = require('path')
+const { spawn } = require('cross-spawn')
+
+const defaultCommand = 'start'
+const commands = new Set([
+  defaultCommand,
+  'init'
+])
+
+let cmd = process.argv[2]
+let args
+
+if (commands.has(cmd)) {
+  args = process.argv.slice(3)
+} else {
+  cmd = defaultCommand
+  args = process.argv.slice(2)
+}
+
+const bin = join(__dirname, 'nuxt-' + cmd)
+
+const proc = spawn(bin, args, { stdio: 'inherit', customFds: [0, 1, 2] })
+proc.on('close', (code) => process.exit(code))
+proc.on('error', (err) => {
+  console.error(err)
+  process.exit(1)
+})

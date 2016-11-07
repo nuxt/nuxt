@@ -47,5 +47,6 @@ So far, we get:
 - Hot code reloading
 - Server rendering and indexing of `./pages`
 - Static file serving. `./static/` is mapped to `/static/`
+- Config file nuxt.config.js
 
 To see how simple this is, check out the [sample app - nuxtgram](https://github.com/atinux/nuxtgram)

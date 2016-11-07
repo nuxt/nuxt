@@ -1,0 +1,70 @@
+#!/usr/bin/env node --harmony_proxies
+
+const http = require('http')
+const fs = require('fs')
+const serveStatic = require('serve-static')
+const Nuxt = require('../')
+const { resolve } = require('path')
+
+const rootDir = resolve(process.argv.slice(2)[0] || '.')
+const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+let options = {}
+if (fs.existsSync(nuxtConfigFile)) {
+  options = require(nuxtConfigFile)
+}
+if (typeof options.rootDir !== 'string') {
+  options.rootDir = rootDir
+}
+
+new Nuxt(options)
+.then((nuxt) => {
+  new Server(nuxt)
+  .listen(process.env.PORT, process.env.HOST)
+})
+.catch((err) => {
+  console.error(err)
+  process.exit()
+})
+
+class Server {
+
+  constructor (nuxt) {
+    this.server = http.createServer(this.handle.bind(this))
+    this.staticServer = serveStatic('static', { fallthrough: false })
+    this.nuxt = nuxt
+    return this
+  }
+
+  handle (req, res) {
+    const method = req.method.toUpperCase()
+
+    if (method !== 'GET' && method !== 'HEAD') {
+      return this.nuxt.render(req, res)
+    }
+    this._staticHandler(req, res)
+    .catch((e) => {
+      // File not found
+      this.nuxt.render(req, res)
+    })
+  }
+
+  listen (port, host) {
+    host = host || 'localhost'
+    port = port || 3000
+    this.server.listen(port, host, () => {
+      console.log('Ready on http://%s:%s', host, port)
+    })
+  }
+
+  _staticHandler (req, res) {
+    return new Promise((resolve, reject) => {
+      this.staticServer(req, res, (error) => {
+        if (!error) {
+          return resolve()
+        }
+        error.message = `Route ${error.message} while resolving ${req.url}`
+        reject(error)
+      })
+    })
+  }
+}
