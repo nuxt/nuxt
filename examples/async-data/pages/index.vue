@@ -20,10 +20,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 p {
   font-size: 20px;
   text-align: center;
   padding: 100px;
+  padding-bottom: 0;
 }
 </style>
