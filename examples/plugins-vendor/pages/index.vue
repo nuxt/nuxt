@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <p><button @click="showLoginError">Notif me!</button></p>
     <p>Home - <router-link to="/about">About</router-link></p>
   </div>
@@ -26,3 +26,11 @@ export default {
   }
 }
 </script>
+
+<style>
+.container {
+  text-align: center;
+  padding-top: 100px;
+  font-family: sans-serif;
+}
+</style>
