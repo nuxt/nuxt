@@ -2,8 +2,10 @@
   "name": "shared-code",
   "description": "",
   "dependencies": {
+    "axios": "^0.15.2",
+    "mini-toastr": "^0.3.10",
     "nuxt": "latest",
-    "vee-validate": "next"
+    "vue-notifications": "^0.7.0"
   },
   "scripts": {
     "start": "nuxt"

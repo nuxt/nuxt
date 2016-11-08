@@ -20,14 +20,14 @@ module.exports = {
 
 > Nuxt.js allows you to define js plugins to be ran before instantiating the root vue.js application
 
-I want to use [vee-validate](https://github.com/logaretm/vee-validate) to validate the data in my inputs, I need to setup the plugin before launching the app.
+I want to use [vue-notifications](https://github.com/se-panfilov/vue-notifications) to validate the data in my inputs, I need to setup the plugin before launching the app.
 
-File `plugins/vee-validate.js`:
+File `plugins/vue-notifications.js`:
 ```js
 import Vue from 'vue'
-import VeeValidate from 'vee-validate'
+import VueNotifications from 'vue-notifications'
 
-Vue.use(VeeValidate)
+Vue.use(VueNotifications)
 ```
 
 Then, I add my file inside the `plugins` key of `nuxt.config.js`:
@@ -35,24 +35,24 @@ Then, I add my file inside the `plugins` key of `nuxt.config.js`:
 const { join } = require('path')
 
 module.exports = {
-  vendor: ['vee-validate'],
-  plugins: [ join(__dirname, './plugins/vee-validate') ]
+  vendor: ['vue-notifications'],
+  plugins: [ join(__dirname, './plugins/vue-notifications') ]
 }
 ```
 
-I added `vee-validate` in the `vendor` key to make sure that it won't be included in any other build if I call `require('vee-validate')`` in a component.
+I added `vue-notifications` in the `vendor` key to make sure that it won't be included in any other build if I call `require('vue-notifications')` in a component.
 
 ### Only in browser build
 
-Some plugins might work only in the browser, for this, you can use the `process.BROWSER` variable to check if the bundle will be for the server or the client.
+Some plugins might work only in the browser, for this, you can use the `process.BROWSER` variable to check if the plugin will run from the server or from the client.
 
 Example:
 ```js
-if (process.BROWSER) {
-  import Vue from 'vue'
-  import VeeValidate from 'vee-validate'
+import Vue from 'vue'
+import VueNotifications from 'vue-notifications'
 
-  Vue.use(VeeValidate)
+if (process.BROWSER) {
+  Vue.use(VueNotifications)
 }
 ```
 

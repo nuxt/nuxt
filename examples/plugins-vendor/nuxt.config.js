@@ -1,6 +1,6 @@
 const { join } = require('path')
 
 module.exports = {
-  vendor: ['axios', 'vee-validate'],
-  plugins: [ join(__dirname, './plugins/vee-validate.js') ]
+  vendor: ['axios', 'mini-toastr', 'vue-notifications'],
+  plugins: [ join(__dirname, './plugins/vue-notifications.js') ]
 }
