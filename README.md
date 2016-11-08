@@ -62,11 +62,12 @@ For these reasons, Nuxt.js targets Node.js `4.0` or higher (you might want to la
 const Nuxt = require('nuxt')
 
 const options = {
-  routes: [], // merged with pages/*.vue routes
-  css: ['/dist/boostrap.css'] // added to global app (App.vue)
-  store: true // use vuex and require('./store')
-  vendor: ['axios', 'public/plugin.js'], // Add vendors in vendor-bundle.js
-  loading: false or { color: "blue", error: "red" } or 'components/loader'
+  routes: [], // see examples/custom-routes
+  css: ['/dist/boostrap.css'] // see examples/global-css
+  store: true // see examples/vuex-store
+  vendor: ['axios'], // see examples/plugins-vendor
+  plugins: ['public/plugin.js'], // see examples/plugins-vendor
+  loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-loader' // see examples/custom-loading
 }
 
 // Launch nuxt build with given options
