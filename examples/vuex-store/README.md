@@ -50,7 +50,7 @@ You're ready to use `this.$store` inside your `.vue` files :)
 </template>
 ```
 
-## fetch(context)
+## fetch (context)
 
 > Used to fill the store before rendering the page
 
@@ -69,3 +69,7 @@ export default {
   }
 }
 ```
+
+## Context
+
+To see the list of available keys in `context`, take a look at [this documentation](https://github.com/Atinux/nuxt.js/tree/master/examples/async-data#context).
