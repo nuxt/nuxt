@@ -1,0 +1,11 @@
+{
+  "name": "shared-code",
+  "description": "",
+  "dependencies": {
+    "nuxt": "latest",
+    "vee-validate": "next"
+  },
+  "scripts": {
+    "start": "nuxt"
+  }
+}
