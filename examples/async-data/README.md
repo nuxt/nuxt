@@ -1,6 +1,6 @@
 # Async data with Nuxt.js
 
-## data(context)
+## data (context)
 
 > Nuxt.js *supercharges* the `data` method from vue.js to let you handle async operation before setting the real component data.
 
