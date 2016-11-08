@@ -1,4 +1,4 @@
-#!/usr/bin/env node --harmony_proxies
+#!/usr/bin/env node
 
 const http = require('http')
 const co = require('co')
