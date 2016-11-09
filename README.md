@@ -1,7 +1,7 @@
 ## Under development, will be release soon :fire:
 
-# nuxt.js
->A minimalistic framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
+<img src="https://raw.githubusercontent.com/nuxt/nuxt.js/master/examples/hello-world/static/nuxt.png"/>
+> Nuxt.js is a minimalistic framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
 
 ## How to use
 
