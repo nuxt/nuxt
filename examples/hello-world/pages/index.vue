@@ -2,7 +2,7 @@
   <div class="container">
     <img src="/static/nuxt.png" />
     <h2>Hello World.</h2>
-    <p><router-link to='/about'>About</router-link></p>
+    <p><router-link to="/about">About</router-link></p>
   </div>
 </template>
 

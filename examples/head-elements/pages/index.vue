@@ -1,4 +1,9 @@
 <template>
+  <nuxt-head>
+    <title>I am the title of the page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </nuxt-head>
+
   <h1>This page has a title 🤔</h1>
 </template>
 
