@@ -72,4 +72,4 @@ export default {
 
 ## Context
 
-To see the list of available keys in `context`, take a look at [this documentation](https://github.com/Atinux/nuxt.js/tree/master/examples/async-data#context).
+To see the list of available keys in `context`, take a look at [this documentation](https://github.com/nuxt/nuxt.js/tree/master/examples/async-data#context).

@@ -1,14 +1,14 @@
 <template>
   <div id="app">
-    <% if (loading) { %><loading ref="loading"></loading><% } %>
+    <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
     <router-view v-if="!err"></router-view>
-    <error-page v-if="err" :error="err"></error-page>
+    <nuxt-error v-if="err" :error="err"></nuxt-error>
   </div>
 </template>
 
 <script>
-import ErrorPage from '<%= components.ErrorPage %>'
-<% if (loading) { %>import Loading from '<%= (typeof loading === "string" ? loading : "./components/Loading.vue") %>'<% } %>
+import NuxtError from '<%= components.ErrorPage %>'
+<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/Loading.vue") %>'<% } %>
 
 export default {
   data () {
@@ -34,7 +34,7 @@ export default {
     }
   },
   components: {
-    ErrorPage<%= (loading ? ',\n\t\tLoading' : '') %>
+    NuxtError<%= (loading ? ',\n\t\tNuxtLoading' : '') %>
   }
 }
 </script>
