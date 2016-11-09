@@ -1,18 +1,20 @@
 # Using external modules and plugings with Nuxt.js
 
-## Configuration: `vendor`
+## Configuration: `build.vendor`
 
 > Nuxt.js allows you to add modules inside the `vendor.bundle.js` file generated to reduce the size of the app bundle. It's really useful when using external modules (like `axios` for example)
 
-To add a module/file inside the vendor bundle, add the `vendor` key inside `nuxt.config.js`:
+To add a module/file inside the vendor bundle, add the `build.vendor` key inside `nuxt.config.js`:
 ```js
 const { join } = require('path')
 
 module.exports = {
-  vendor: [
-    'axios', // node module
-    join(__dirname, './js/my-library.js') // custom file
-  ]
+  build: {
+    vendor: [
+      'axios', // node module
+      join(__dirname, './js/my-library.js') // custom file
+    ]
+  }
 }
 ```
 
@@ -35,7 +37,9 @@ Then, I add my file inside the `plugins` key of `nuxt.config.js`:
 const { join } = require('path')
 
 module.exports = {
-  vendor: ['vue-notifications'],
+  build: {
+    vendor: ['vue-notifications']
+  },
   plugins: [ join(__dirname, './plugins/vue-notifications') ]
 }
 ```

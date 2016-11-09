@@ -65,9 +65,11 @@ const options = {
   routes: [], // see examples/custom-routes
   css: ['/dist/boostrap.css'] // see examples/global-css
   store: true // see examples/vuex-store
-  vendor: ['axios'], // see examples/plugins-vendor
   plugins: ['public/plugin.js'], // see examples/plugins-vendor
   loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-loader' // see examples/custom-loading
+  build: {
+    vendor: ['axios'] // see examples/plugins-vendor
+  }
 }
 
 // Launch nuxt build with given options
