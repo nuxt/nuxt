@@ -27,19 +27,20 @@ module.exports = {
 To see the demo working:
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Go to [http://localhost:8080](http://localhost:8080) and navigate inside the app.
+Go to [http://localhost:3000](http://localhost:3000) and navigate inside the app.
 
 ## Production
 
 In production, they will be minified and extracted in a file named `styles.css` and added in the `<head>` of the page.
 
-To launch the demo in production mode so you can see the ``<head>` populated with the `<link>` tag:
+To launch the demo in production mode so you can see the `<head>` populated with the `<link>` tag:
 
 ```bash
-NODE_ENV=production npm start
+npm run build
+npm start
 ```
 
-Go to [http://localhost:8080](http://localhost:8080) and check the source code.
+Go to [http://localhost:3000](http://localhost:3000) and check the source code.

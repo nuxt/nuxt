@@ -11,10 +11,10 @@ let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init nuxt.js', (t) => {
-  process.env.NODE_ENV = 'test'
   const Nuxt = require('../../../')
   const options = {
-    rootDir: resolve(__dirname, '..')
+    rootDir: resolve(__dirname, '..'),
+    dev: false
   }
   return new Nuxt(options)
   .then(function (_nuxt) {
@@ -65,9 +65,11 @@ test('Route / exits and render HTML', async t => {
 */
 test('Route / exits and render HTML', async t => {
   const window = await renderAndGetWindow('/')
-  t.is(window.document.querySelector('p').textContent, 'Hello world!')
-  t.is(window.document.querySelector('p').className, 'red-color')
-  t.true(window.document.querySelectorAll('style')[2].textContent.includes('.red-color {\n  color: red;\n}'))
+  const element = window.document.querySelector('.red-color')
+  t.not(element, null)
+  t.is(element.textContent, 'Hello world!')
+  t.is(element.className, 'red-color')
+  t.is(window.getComputedStyle(element).color, 'red')
 })
 
 // Close server and ask nuxt to stop listening to file changes

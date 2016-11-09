@@ -56,7 +56,7 @@ So far, we get:
 ## Using nuxt.js programmatically
 
 Nuxt is built on the top of ES2015, which makes the code more enjoyable and cleaner to read. It doesn't make use of any transpilers and depends upon Core V8 implemented features.
-For these reasons, Nuxt.js targets Node.js `4.0` or higher (you might want to launch node with the `--harmony-proxies` flag if you running `node <= 6.5.0` )
+For these reasons, nuxt.js targets Node.js `4.0` or higher (you might want to launch node with the `--harmony-proxies` flag if you running `node <= 6.5.0` )
 
 ```js
 const Nuxt = require('nuxt')
@@ -115,3 +115,30 @@ cd node_modules/nuxt/
 bin/nuxt examples/hello-world
 # Go to http://localhost:3000
 ```
+
+## Production deployment
+
+To deploy, instead of running next, you probably want to build ahead of time. Therefore, building and starting are separate commands:
+
+```bash
+nuxt build
+nuxt start
+```
+
+For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like follows is recommended:
+```json
+{
+  "name": "my-app",
+  "dependencies": {
+    "next": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
+```
+Then run `now` and enjoy!
+
+Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
