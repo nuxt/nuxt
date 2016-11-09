@@ -25,7 +25,7 @@ test(async t => {
 
 test(async t => {
   const html = await (render('/head'))
-  t.true(html.includes('<meta content="my meta" class="next-head"/>'))
+  t.true(html.includes('<meta content="my meta" class="nuxt-head"/>'))
   t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
 })
 

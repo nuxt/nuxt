@@ -2,7 +2,6 @@
 
 const fs = require('fs')
 const Nuxt = require('../')
-const Server = require('../lib/server')
 const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
@@ -15,13 +14,12 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 
-options.build = false // Disable building
-options.dev = false // Force production mode (no webpack middlewares called)
+options.dev = false // Create production build when calling `nuxt build`
 
+console.log('[nuxt] Building...')
 new Nuxt(options)
 .then((nuxt) => {
-  new Server(nuxt)
-  .listen(process.env.PORT, process.env.HOST)
+  console.log('[nuxt] Building done')
 })
 .catch((err) => {
   console.error(err)

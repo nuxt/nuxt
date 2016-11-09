@@ -3,10 +3,12 @@
 const { join } = require('path')
 const { spawn } = require('cross-spawn')
 
-const defaultCommand = 'start'
+const defaultCommand = 'dev'
 const commands = new Set([
   defaultCommand,
-  'init'
+  'init',
+  'build',
+  'start'
 ])
 
 let cmd = process.argv[2]

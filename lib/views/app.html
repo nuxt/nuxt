@@ -8,7 +8,7 @@
 <html>
   <head>
     ${title.toString()}
-    <% if (isProd) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
+    <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
   </head>
   <body>
     <%= APP %>
