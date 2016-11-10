@@ -66,7 +66,7 @@ const options = {
   css: ['/dist/boostrap.css'] // see examples/global-css
   store: true // see examples/vuex-store
   plugins: ['public/plugin.js'], // see examples/plugins-vendor
-  loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-loader' // see examples/custom-loading
+  loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-spinner' // see examples/custom-loading
   build: {
     vendor: ['axios'] // see examples/plugins-vendor
   }

@@ -8,7 +8,7 @@
 
 <script>
 import NuxtError from '<%= components.ErrorPage %>'
-<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/Loading.vue") %>'<% } %>
+<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 
 export default {
   data () {
