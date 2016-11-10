@@ -32,6 +32,7 @@
     "es6-promise": "^4.0.5",
     "extract-text-webpack-plugin": "2.0.0-beta.4",
     "file-loader": "^0.9.0",
+    "fs-extra": "^1.0.0",
     "glob-promise": "^1.0.6",
     "hash-sum": "^1.0.2",
     "lodash": "^4.16.6",
