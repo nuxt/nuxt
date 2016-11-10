@@ -25,5 +25,5 @@ new Nuxt(options)
 })
 .catch((err) => {
   console.error(err)
-  process.exit()
+  process.exit(1)
 })

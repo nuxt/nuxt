@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <img src="/static/nuxt.png" />
+    <img src="/nuxt.png" />
     <h2>Hello World.</h2>
     <p><router-link to="/about">About</router-link></p>
   </div>
