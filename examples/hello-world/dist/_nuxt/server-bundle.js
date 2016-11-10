@@ -78,14 +78,15 @@ module.exports = require("vue");
 "use strict";
 'use strict';
 
+// The Vue build version to load with the `import` command
+// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.router = exports.app = undefined;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _vue = __webpack_require__(0);
 
@@ -643,7 +644,7 @@ module.exports={render:function (){with(this) {
 }},staticRenderFns: [function (){with(this) {
   return _h('img', {
     attrs: {
-      "src": "/static/nuxt.png"
+      "src": "/nuxt.png"
     }
   })
 }},function (){with(this) {
@@ -679,15 +680,15 @@ module.exports={render:function (){with(this) {
     attrs: {
       "to": "/"
     }
-  }, ["Home"])])])
+  }, ["Back home"])])])
 }},staticRenderFns: [function (){with(this) {
   return _h('img', {
     attrs: {
-      "src": "/static/nuxt.png"
+      "src": "/nuxt-square.png"
     }
   })
 }},function (){with(this) {
-  return _h('h2', ["About"])
+  return _h('h2', ["Thank you for testing nuxt.js"])
 }}]}
 
 /***/ },
