@@ -7,3 +7,6 @@ npm-debug.log
 
 # other
 .nuxt
+
+# dist example generation
+examples/**/dist
