@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Show logs
+process.env.DEBUG = 'nuxt:*'
+
 const fs = require('fs')
 const Nuxt = require('../')
 const { resolve } = require('path')
