@@ -7,9 +7,11 @@
 Add your custom routes inside `nuxt.config.js`:
 ```js
 module.exports = {
-  routes: [
-    { path: '/users/:id', component: 'pages/user' }
-  ]
+  router: {
+    routes: [
+      { path: '/users/:id', component: 'pages/user' }
+    ]
+  }
 }
 ```
 

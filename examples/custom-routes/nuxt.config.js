@@ -1,5 +1,7 @@
 module.exports = {
-  routes: [
-    { name: 'user', path: '/users/:id', component: 'pages/_user' }
-  ]
+  router: {
+    routes: [
+      { name: 'user', path: '/users/:id', component: 'pages/_user' }
+    ]
+  }
 }
