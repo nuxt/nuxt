@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const Nuxt = require('../')
+const { resolve } = require('path')
+
+const rootDir = resolve(process.argv.slice(2)[0] || '.')
+const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+let options = {}
+if (fs.existsSync(nuxtConfigFile)) {
+  options = require(nuxtConfigFile)
+}
+if (typeof options.rootDir !== 'string') {
+  options.rootDir = rootDir
+}
+
+options.build = true // Enable building
+options.dev = false // Force production mode (no webpack middlewares called)
+
+console.log('[nuxt] Generating...')
+new Nuxt(options)
+.then((nuxt) => nuxt.generate())
+.then(() => {
+  console.log('[nuxt] Generate done')
+})
+.catch((err) => {
+  console.error(err)
+  process.exit()
+})
