@@ -10,11 +10,19 @@
     ${title.toString()}
     <% if (baseUrl) { %><base href="<%= baseUrl %>"><% } %>
     <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
+    <% if (redirected) { %>
+      <meta http-equiv="refresh" content="0; url=<%= redirected %>" />
+      <script type="text/javascript">
+        window.location.href = '<%= redirected %>'
+      </script>
+    <% } %>
   </head>
   <body>
+    <% if (!redirected) { %>
     <%= APP %>
     <script type="text/javascript" defer>window.__NUXT__=<%= serialize(context.nuxt) %></script>
     <script src="<%= files.vendor %>" defer></script>
     <script src="<%= files.app %>" defer></script>
+    <% } %>
   </body>
 </html>
