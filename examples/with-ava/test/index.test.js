@@ -82,5 +82,5 @@ test('Route / exits and render HTML', async t => {
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
-  nuxt.stop()
+  nuxt.close()
 })

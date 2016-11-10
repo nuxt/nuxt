@@ -1,7 +1,6 @@
-/*!
- * nuxt.js
- * MIT Licensed
- */
+/*
+** nuxt.js
+*/
 
 'use strict'
 
