@@ -17,7 +17,8 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 
-options.build = true // Enable building
+options._build = false // nuxt.generate() will call nuxt.build() itself
+options._renderer = false // let nuxt.generate() create the vue renderer
 options.dev = false // Force production mode (no webpack middlewares called)
 
 console.log('[nuxt] Generating...')

@@ -15,7 +15,7 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 
-options.build = false // Disable building
+options._build = false // Disable building
 options.dev = false // Force production mode (no webpack middlewares called)
 
 new Nuxt(options)
