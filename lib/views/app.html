@@ -8,6 +8,7 @@
 <html>
   <head>
     ${title.toString()}
+    <% if (baseUrl) { %><base href="<%= baseUrl %>"><% } %>
     <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
   </head>
   <body>
