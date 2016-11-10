@@ -1,5 +1,5 @@
 {
-  "name": "shared-code",
+  "name": "nuxt-plugins-vendor",
   "description": "",
   "dependencies": {
     "axios": "^0.15.2",
@@ -8,6 +8,8 @@
     "vue-notifications": "^0.7.0"
   },
   "scripts": {
-    "start": "nuxt"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
   }
 }

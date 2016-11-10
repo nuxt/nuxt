@@ -1,8 +1,6 @@
 {
-  "name": "nuxt-custom-routes",
-  "description": "",
+  "name": "nuxt-nested-components",
   "dependencies": {
-    "axios": "^0.15.2",
     "nuxt": "latest"
   },
   "scripts": {

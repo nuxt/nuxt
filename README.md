@@ -123,7 +123,7 @@ bin/nuxt examples/hello-world
 
 ## Production deployment
 
-To deploy, instead of running next, you probably want to build ahead of time. Therefore, building and starting are separate commands:
+To deploy, instead of running nuxt, you probably want to build ahead of time. Therefore, building and starting are separate commands:
 
 ```bash
 nuxt build
@@ -135,7 +135,7 @@ For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like f
 {
   "name": "my-app",
   "dependencies": {
-    "next": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

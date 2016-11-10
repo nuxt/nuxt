@@ -1,10 +1,12 @@
 {
-  "name": "custom-build",
+  "name": "nuxt-custom-build",
   "description": "",
   "dependencies": {
     "nuxt": "latest"
   },
   "scripts": {
-    "start": "nuxt"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
   }
 }

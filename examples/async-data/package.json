@@ -1,11 +1,13 @@
 {
-  "name": "async-data",
+  "name": "nuxt-async-data",
   "description": "",
   "dependencies": {
     "axios": "^0.15.2",
     "nuxt": "latest"
   },
   "scripts": {
-    "start": "nuxt"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
   }
 }

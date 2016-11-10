@@ -1,5 +1,5 @@
 {
-  "name": "ava-tests",
+  "name": "nuxt-with-ava",
   "scripts": {
     "start": "../../bin/nuxt .",
     "test": "ava"
