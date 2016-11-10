@@ -40,6 +40,13 @@ async function renderAndGetWindow (route) {
       },
       done (err, window) {
         if (err) return reject(err)
+        // If Nuxt could not be loaded (error from the server-side)
+        if (!window.__NUXT__) {
+          return reject({
+            message: 'Could not load the nuxt app',
+            body: window.document.getElementsByTagName('body')[0].innerHTML
+          })
+        }
         // Used by nuxt.js to say when the components are loaded and the app ready
         window.onNuxtReady = function () {
           resolve(window)
@@ -54,7 +61,7 @@ async function renderAndGetWindow (route) {
 */
 test('Route / exits and render HTML', async t => {
   let context = {}
-  const html = await nuxt.renderRoute('/', context)
+  const { html } = await nuxt.renderRoute('/', context)
   t.true(html.includes('<p class="red-color">Hello world!</p>'))
   t.is(context.nuxt.error, null)
   t.is(context.nuxt.data[0].name, 'world')
@@ -75,5 +82,5 @@ test('Route / exits and render HTML', async t => {
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
-  nuxt.stop()
+  nuxt.close()
 })

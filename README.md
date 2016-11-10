@@ -49,7 +49,7 @@ So far, we get:
 - Automatic transpilation and bundling (with webpack and babel)
 - Hot code reloading
 - Server rendering and indexing of `./pages`
-- Static file serving. `./static/` is mapped to `/static/`
+- Static file serving. `./static/` is mapped to `/`
 - Config file `nuxt.config.js`
 - Code splitting via webpack
 
@@ -97,8 +97,13 @@ This is mostly used for tests purpose but who knows!
 
 ```js
 nuxt.renderRoute('/about', context)
-.then(function (html) {
-  // HTML
+.then(function ({ html, error }) {
+  // You can check error to know if your app displayed the error page for this route
+  // Useful to set the correct status status code if an error appended:
+  if (error) {
+    return res.status(error.statusCode || 500).send(html)
+  }
+  res.send(html)
 })
 .catch(function (error) {
   // And error appended while rendering the route

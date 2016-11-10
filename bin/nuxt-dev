@@ -15,6 +15,8 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 
+options.dev = true // Add hot reloading and watching changes
+
 new Nuxt(options)
 .then((nuxt) => {
   new Server(nuxt)
@@ -22,5 +24,5 @@ new Nuxt(options)
 })
 .catch((err) => {
   console.error(err)
-  process.exit()
+  process.exit(1)
 })
