@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="__nuxt">
     <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
     <router-view v-if="!err"></router-view>
     <nuxt-error v-if="err" :error="err"></nuxt-error>
@@ -17,6 +17,9 @@ export default {
     }
   },
   <% if (loading) { %>
+  created () {
+    this.$loading = {} // for NUXT.serverRendered = false
+  },
   mounted () {
     this.$loading = this.$refs.loading
   },
