@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 const co = require('co')
-const mkdirp = require('mkdirp-then')
+const fs = require('fs-extra')
 const pify = require('pify')
 const { resolve, join, basename } = require('path')
 const { existsSync, writeFile } = require('fs')
+const mkdirp = pify(fs.mkdirp)
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
 

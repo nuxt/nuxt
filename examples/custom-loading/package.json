@@ -1,0 +1,10 @@
+{
+  "name": "custom-loading",
+  "description": "",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "start": "nuxt"
+  }
+}
