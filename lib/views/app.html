@@ -1,17 +1,18 @@
 <% const {
-  title,
-  htmlAttrs,
-  bodyAttrs,
-  meta
-} = context.meta.inject()
-%><!DOCTYPE html data-vue-meta-server-rendered>
-<html>
+  title, htmlAttrs, bodyAttrs, link, style, script, noscript, meta
+} = context.meta.inject() %><!DOCTYPE html>
+<html n-head-ssr ${htmlAttrs.text()}>
   <head>
-    ${title.toString()}
+    ${meta.text()}
+    ${title.text()}
+    ${link.text()}
+    ${style.text()}
+    ${script.text()}
+    ${noscript.text()}
     <base href="<%= baseUrl %>">
     <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
   </head>
-  <body>
+  <body ${bodyAttrs.text()}>
     <%= APP %>
     <script type="text/javascript" defer>window.__NUXT__=<%= serialize(context.nuxt) %></script>
     <script src="<%= files.vendor %>" defer></script>

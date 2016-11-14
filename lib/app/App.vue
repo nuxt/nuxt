@@ -38,7 +38,8 @@ export default {
   },
   components: {
     NuxtError<%= (loading ? ',\n\t\tNuxtLoading' : '') %>
-  }
+  },
+  head: <%= JSON.stringify(head) %>
 }
 </script>
 

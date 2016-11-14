@@ -1,20 +1,25 @@
 <template>
-  <nuxt-head>
-    <title>I am the title of the page</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </nuxt-head>
-
-  <h1>This page has a title 🤔</h1>
+  <div class="container">
+    <h1>Home page 🚀</h1>
+    <router-link to="/about">Go to /about</router-link>
+  </div>
 </template>
 
 <script>
 export default {
-  metaInfo: {
-    title: 'This page has a title 🤔',
+  head: {
+    title: 'Home page 🚀',
     meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+      { hid: 'description', name: 'description', content: 'Home page description' }
     ]
   }
 }
 </script>
+
+<style>
+.container {
+  text-align: center;
+  margin-top: 150px;
+  font-size: 20px;
+}
+</style>

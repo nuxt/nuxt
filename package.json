@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "0.3.8",
+  "version": "0.4.0",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "main": "index.js",
   "license": "MIT",
@@ -43,11 +43,11 @@
     "url-loader": "^0.5.7",
     "vue": "^2.0.5",
     "vue-loader": "^9.8.0",
-    "vue-meta": "^0.0.0",
+    "vue-meta": "^0.4.1",
     "vue-router": "^2.0.1",
     "vue-server-renderer": "^2.0.5",
     "vuex": "^2.0.0",
-    "webpack": "2.1.0-beta.25",
+    "webpack": "2.1.0-beta.26",
     "webpack-dev-middleware": "^1.8.4",
     "webpack-hot-middleware": "^2.13.1"
   },
@@ -57,7 +57,7 @@
     "eslint": "^3.8.1",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-html": "^1.5.5",
-    "eslint-plugin-promise": "^3.3.0",
+    "eslint-plugin-promise": "^3.3.2",
     "eslint-plugin-standard": "^2.0.1",
     "nodemon": "^1.11.0"
   }
