@@ -16,7 +16,7 @@ module.exports = {
 ```
 
 | key  | Optional? | definition |
-|------|------------|
+|------|------------|-----------|
 | `path` | **Required** | Route path, it can have dynamic mapping, look at [vue-router documentation](https://router.vuejs.org/en/essentials/dynamic-matching.html) about it. |
 | `component` | **Required** | Path to the `.vue` component, if relative, it has to be from the app folder. |
 | `name` | Optional | Route name, useful for linking to it with `<router-link>`, see [vue-router documentation](https://router.vuejs.org/en/essentials/named-routes.html) about it. |
