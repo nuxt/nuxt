@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import TwitterHead from '../components/twitter-head.vue'
+import TwitterHead from '~components/twitter-head.vue'
 
 export default {
   head: {

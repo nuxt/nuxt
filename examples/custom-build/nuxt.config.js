@@ -10,7 +10,7 @@ module.exports = {
     loaders: [
       {
         test: /\.(png|jpg|gif|svg)$/,
-        loader: 'url',
+        loader: 'url-loader',
         options: {
           limit: 100000, // 100KO
           name: 'img/[name].[ext]?[hash]'

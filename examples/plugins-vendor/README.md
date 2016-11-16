@@ -40,9 +40,11 @@ module.exports = {
   build: {
     vendor: ['vue-notifications']
   },
-  plugins: [ join(__dirname, './plugins/vue-notifications') ]
+  plugins: [ '~plugins/vue-notifications') ]
 }
 ```
+
+I use `~plugins` here because nuxt.js create an alias for the `plugins/` folder, it's equivalent to: `join(__dirname, './plugins/vue-notifications.js')`
 
 I added `vue-notifications` in the `vendor` key to make sure that it won't be included in any other build if I call `require('vue-notifications')` in a component.
 
