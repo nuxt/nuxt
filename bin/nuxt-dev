@@ -3,9 +3,12 @@
 // Show logs
 process.env.DEBUG = 'nuxt:*'
 
+const _ = require('lodash')
+const debug = require('debug')('nuxt:build')
 const fs = require('fs')
 const Nuxt = require('../')
 const Server = require('../lib/server')
+const chokidar = require('chokidar')
 const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
@@ -22,10 +25,38 @@ options.dev = true // Add hot reloading and watching changes
 
 new Nuxt(options)
 .then((nuxt) => {
-  new Server(nuxt)
+  const server = new Server(nuxt)
   .listen(process.env.PORT, process.env.HOST)
+  listenOnConfigChanges(nuxt, server)
 })
 .catch((err) => {
   console.error(err)
   process.exit(1)
 })
+
+function listenOnConfigChanges (nuxt, server) {
+  // Listen on nuxt.config.js changes
+  const build = _.debounce(() => {
+    debug('[nuxt.config.js] changed, rebuilding the app...')
+    delete require.cache[nuxtConfigFile]
+    let options = {}
+    if (fs.existsSync(nuxtConfigFile)) {
+      options = require(nuxtConfigFile)
+    }
+    options.rootDir = rootDir
+    nuxt.close()
+    .then(() => {
+      return new Nuxt(options)
+    })
+    .then((nuxt) => {
+      server.nuxt = nuxt
+    })
+    .catch((error) => {
+      console.error('Error while rebuild the app:', error)
+      process.exit(1)
+    })
+  }, 200)
+  const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+  chokidar.watch(nuxtConfigFile, { ignoreInitial: true })
+  .on('all', build)
+}
