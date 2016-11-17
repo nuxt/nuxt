@@ -30,6 +30,7 @@ test.before('Init nuxt.js', (t) => {
 
 // Function used to do dom checking via jsdom
 async function renderAndGetWindow (route) {
+  const virtualConsole = jsdom.createVirtualConsole().sendTo(console)
   return new Promise((resolve, reject) => {
     const url = 'http://localhost:4000' + route
     jsdom.env({
@@ -38,6 +39,7 @@ async function renderAndGetWindow (route) {
         FetchExternalResources: ['script', 'link'],
         ProcessExternalResources: ['script']
       },
+      virtualConsole,
       done (err, window) {
         if (err) return reject(err)
         // If Nuxt could not be loaded (error from the server-side)

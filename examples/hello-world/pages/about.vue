@@ -2,9 +2,20 @@
   <div class="container">
     <img src="~static/nuxt-black.png" />
     <h2>Thank you for testing nuxt.js</h2>
+    <p>Loaded from the {{ name }}</p>
     <p><router-link to="/">Back home</router-link></p>
   </div>
 </template>
+
+<script>
+export default {
+  data ({ req, error }) {
+    return {
+      name: req ? 'server' : 'client'
+    }
+  }
+}
+</script>
 
 <style scoped>
 .container {
