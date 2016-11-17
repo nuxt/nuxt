@@ -73,3 +73,19 @@ export default {
 ## Context
 
 To see the list of available keys in `context`, take a look at [this documentation](https://github.com/nuxt/nuxt.js/tree/master/examples/async-data#context).
+
+## Action `nuxtServerInit`
+
+If you define the action `nuxtServerInit` in your store, nuxt.js will call it with the context, it can be useful when having some data on the server you want to give to the client-side, for example, the authenticated user:
+```js
+// store/index.js
+actions: {
+  nuxtServerInit ({ commit }, { req }) {
+    if (req.authUser) {
+      commit('user', req.authUser)
+    }
+  }
+}
+```
+
+The context given to `nuxtServerInit` is the same as the `data` of `fetch` method except `context.redirect()` and `context.error()` are omitted.
