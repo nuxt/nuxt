@@ -63,7 +63,7 @@ const Nuxt = require('nuxt')
 
 const options = {
   routes: [], // see examples/custom-routes
-  css: ['/dist/boostrap.css'] // see examples/global-css
+  css: ['/dist/bootstrap.css'] // see examples/global-css
   store: true // see examples/vuex-store
   plugins: ['public/plugin.js'], // see examples/plugins-vendor
   loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-spinner' // see examples/custom-loading

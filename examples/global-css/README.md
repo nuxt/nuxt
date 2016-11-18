@@ -4,7 +4,7 @@
 
 ## Usage
 
-In `nuxt.config.js` file, add the CSS ressources:
+In `nuxt.config.js` file, add the CSS resources:
 
 ```js
 const { resolve } = require('path')
