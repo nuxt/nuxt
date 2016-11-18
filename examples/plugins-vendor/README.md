@@ -1,4 +1,4 @@
-# Using external modules and plugings with nuxt.js
+# Using external modules and plugins with nuxt.js
 
 ## Configuration: `build.vendor`
 

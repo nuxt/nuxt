@@ -13,7 +13,7 @@ if (process.BROWSER) {
 
   // Binding for methods .success(), .error() and etc. You can specify and map your own methods here.
   // Required to pipe our outout to UI library (mini-toastr in example here)
-  // All not-specifyed events (types) would be piped to output in console.
+  // All not-specified events (types) would be piped to output in console.
   const options = {
     success: toast,
     error: toast,
