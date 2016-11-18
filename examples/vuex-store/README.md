@@ -2,21 +2,13 @@
 
 > Using a store to manage the state is important to every big application, that's why nuxt.js implement Vuex in its core.
 
-## Activate the store option
+## Activating the store
 
-First, we need to tell nuxt.js to activate the store, for this, we add a `nuxt.config.js` file:
-
-```js
-module.exports = {
-  store: true
-}
-```
+Nuxt.js will try to `require('./store/index.js')`, if exists, it will import `Vuex`, add it to the vendors and add the `store` option to the root `Vue` instance.
 
 ## Create the store folder
 
-When the store option is activated, nuxt will import it via `require('./store')`
-
-After creating the `store/` folder, we can create our `store/index.js` file:
+Let's create a file `store/index.js`:
 
 ```js
 import Vue from 'vue'
@@ -38,11 +30,11 @@ const store = new Vuex.Store({
 export default store
 ```
 
-> You don't need to install vuex since it's shipped with nuxt.js
+> We don't need to install `Vuex` since it's shipped with nuxt.js
 
 ## Voilà !
 
-You're ready to use `this.$store` inside your `.vue` files :)
+We can now use `this.$store` inside our `.vue` files.
 
 ```html
 <template>
@@ -56,7 +48,7 @@ You're ready to use `this.$store` inside your `.vue` files :)
 
 The `fetch` method, *if set*, is called every time before loading the component (*only if attached to a route*). It can be called from the server-side or before navigating to the corresponding route.
 
-The `fetch` method receives the context as the first argument, you can use it to fetch some data and fill the store. To make the fetch method asynchronous, **return a Promise**, nuxt.js will wait for the promise to be resolved before rendering the Component.
+The `fetch` method receives the context as the first argument, we can use it to fetch some data and fill the store. To make the fetch method asynchronous, **return a Promise**, nuxt.js will wait for the promise to be resolved before rendering the Component.
 
 For example:
 ```js
@@ -76,7 +68,7 @@ To see the list of available keys in `context`, take a look at [this documentati
 
 ## Action `nuxtServerInit`
 
-If you define the action `nuxtServerInit` in your store, nuxt.js will call it with the context, it can be useful when having some data on the server you want to give to the client-side, for example, the authenticated user:
+If we define the action `nuxtServerInit` in our store, Nuxt.js will call it with the context. It can be useful when having some data on the server we want to give directly to the client-side, for example, the authenticated user:
 ```js
 // store/index.js
 actions: {
