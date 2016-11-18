@@ -3,7 +3,7 @@
 
 ## 🚧 Under development, will be release soon :fire:
 
-## 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40&t=5s)
+## 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 
 ## 📓 How to use
 
