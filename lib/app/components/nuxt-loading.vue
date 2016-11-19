@@ -52,7 +52,7 @@ export default {
       this.percent = this.percent + Math.floor(num)
       return this
     },
-    decrease () {
+    decrease (num) {
       this.percent = this.percent - Math.floor(num)
       return this
     },
@@ -80,8 +80,6 @@ export default {
     },
     fail () {
       this.canSuccess = false
-      this.percent = 100
-      this.hide()
       return this
     }
   }

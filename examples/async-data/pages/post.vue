@@ -11,10 +11,16 @@ const axios = require('axios')
 
 export default {
   data ({ req }) {
+    // We can return a Promise instead of calling the callback
     return axios.get('https://jsonplaceholder.typicode.com/posts/1')
     .then((res) => {
       return { post: res.data }
     })
+  },
+  head () {
+    return {
+      title: this.post.title
+    }
   }
 }
 </script>

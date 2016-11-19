@@ -29,8 +29,9 @@ export default {
       err = err || null
       this.err = err || null
       <% if (loading) { %>
-      if (this.err && this.$loading && this.$loading.fail) {
-        this.$loading.fail()
+      if (this.err && this.$loading) {
+        if (this.$loading.fail) this.$loading.fail()
+        if (this.$loading.finish) this.$loading.finish()
       }
       <% } %>
       return this.err
