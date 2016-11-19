@@ -1,8 +1,9 @@
 <template>
-  <a :href="href">Share on twitter</a>
+  <span v-if="false"></span>
 </template>
 
 <script>
+// https://cards-dev.twitter.com/validator
 export default {
   data: () => ({
     href: 'https://twitter.com/intent/tweet?url=' + encodeURIComponent('https://head-elements.now.sh/about')
