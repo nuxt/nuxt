@@ -13,7 +13,12 @@
 
 <script>
 export default {
-  props: ['error']
+  props: ['error'],
+  head () {
+    return {
+      title: this.error.message || 'An error occured'
+    }
+  }
 }
 </script>
 
@@ -53,7 +58,7 @@ export default {
   padding: 0px;
 }
 .error-link {
-  color: #42b983;
+  color: #00BCD4;
   font-weight: normal;
   text-decoration: none;
   font-size: 14px;
