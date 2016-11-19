@@ -1,3 +1,3 @@
 module.exports = {
-  loading: '~components/loading'
+  loading: 'components/loading.vue'
 }

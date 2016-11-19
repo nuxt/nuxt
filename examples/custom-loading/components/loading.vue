@@ -20,18 +20,17 @@ export default {
 }
 </script>
 
-<style lang="css">
+<style scoped>
 .loading-page {
-  width: 100%;
-  height: 100%;
-  background: white;
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
   text-align: center;
-}
-p {
-  margin-top: 200px;
+  padding-top: 200px;
   font-size: 30px;
+  font-family: sans-serif;
 }
 </style>
