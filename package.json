@@ -44,7 +44,7 @@
     "vue": "^2.0.7",
     "vue-loader": "^9.9.5",
     "vue-meta": "^0.4.4",
-    "vue-router": "^2.0.2",
+    "vue-router": "^2.0.3",
     "vue-server-renderer": "^2.0.7",
     "vuex": "^2.0.0",
     "webpack": "2.1.0-beta.26",
