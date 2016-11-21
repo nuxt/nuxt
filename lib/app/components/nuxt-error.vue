@@ -12,6 +12,7 @@
 
 <script>
 export default {
+  name: 'nuxt-error',
   props: ['error'],
   head () {
     return {

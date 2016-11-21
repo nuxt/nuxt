@@ -1,57 +1,49 @@
 <template>
   <div>
     <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
-    <transition>
-      <router-view v-if="!err"></router-view>
-      <nuxt-error v-if="err" :error="err"></nuxt-error>
+    <transition mode="out-in">
+      <router-view v-if="!nuxt.err"></router-view>
+      <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
     </transition>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import NuxtError from '<%= components.ErrorPage %>'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./nuxt-loading.vue") %>'<% } %>
 
 export default {
   name: 'nuxt',
-  data () {
-    return {
-      err: null
-    }
+  beforeCreate () {
+    Vue.util.defineReactive(this, 'nuxt', this.$root.$options._nuxt)
   },
-  <% if (loading) { %>
   created () {
-    if (this.$root.$nuxt) {
-      return console.error('Only one instance of Nuxt.js is possible, make sure to use <nuxt></nuxt> only once.')
-    }
-    // Add $nuxt in the root instance
-    this.$root.$nuxt = this
-    // add vm.$nuxt to child instances
+    // Add this.$nuxt in child instances
     Vue.prototype.$nuxt = this
+    // Add this.$root.$nuxt
+    this.$root.$nuxt = this
     // add to window so we can listen when ready
     if (typeof window !== 'undefined') {
       window.$nuxt = this
     }
-    // for NUXT.serverRendered = false
-    this.$loading = {}
   },
+  <% if (loading) { %>
   mounted () {
     this.$loading = this.$refs.loading
   },
-  <% } %>
+  watch: {
+    'nuxt.err': 'errorChanged'
+  },
   methods: {
-    error (err) {
-      err = err || null
-      this.err = err || null
-      <% if (loading) { %>
-      if (this.err && this.$loading) {
+    errorChanged () {
+      if (this.nuxt.err && this.$loading) {
         if (this.$loading.fail) this.$loading.fail()
         if (this.$loading.finish) this.$loading.finish()
       }
-      <% } %>
-      return this.err
     }
   },
+  <% } %>
   components: {
     NuxtError<%= (loading ? ',\n\t\tNuxtLoading' : '') %>
   }

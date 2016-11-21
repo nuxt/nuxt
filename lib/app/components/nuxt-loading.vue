@@ -8,9 +8,10 @@
 </template>
 
 <script>
-const Vue = require('vue')
+import Vue from 'vue'
 
 export default {
+  name: 'nuxt-loading',
   data () {
     return {
       percent: 0,
