@@ -1,0 +1,15 @@
+{
+  "name": "routes-transition",
+  "description": "",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "start": "../../bin/nuxt"
+  },
+  "config": {
+    "nuxt": {
+      "port": 4000
+    }
+  }
+}

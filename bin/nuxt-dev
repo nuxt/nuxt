@@ -26,7 +26,7 @@ options.dev = true // Add hot reloading and watching changes
 new Nuxt(options)
 .then((nuxt) => {
   const server = new Server(nuxt)
-  .listen(process.env.PORT, process.env.HOST)
+  .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
   listenOnConfigChanges(nuxt, server)
 })
 .catch((err) => {

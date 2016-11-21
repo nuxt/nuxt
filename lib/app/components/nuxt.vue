@@ -1,7 +1,7 @@
 <template>
   <div>
     <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
-    <transition mode="out-in">
+    <transition :name="nuxt.transition.name" :mode="nuxt.transition.mode">
       <router-view v-if="!nuxt.err"></router-view>
       <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
     </transition>
