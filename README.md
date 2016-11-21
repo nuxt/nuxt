@@ -5,6 +5,8 @@
 
 ## 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 
+## 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+
 ## 📓 How to use
 
 ```
