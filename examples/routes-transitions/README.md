@@ -4,7 +4,7 @@
 
 ## Usage
 
-🎬 [Demonstration video]()
+🎬 [Demonstration video](https://www.youtube.com/watch?v=RIXOzJWFfc8)
 
 The default transition name Nuxt.js uses is `page`.
 
