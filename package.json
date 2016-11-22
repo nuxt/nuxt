@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "main": "index.js",
   "license": "MIT",
@@ -9,8 +9,6 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "start": "DEBUG=nuxt:* bin/nuxt",
-    "dev": "DEBUG=nuxt:* nodemon bin/nuxt",
     "test": "npm run lint",
     "lint": "eslint --ext .js,.vue bin lib pages test index.js --ignore-pattern lib/app",
     "precommit": "npm run lint"
