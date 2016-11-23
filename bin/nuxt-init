@@ -55,7 +55,7 @@ const basePackage = `{
 
 const baseConfig = `module.exports = {
   // Nuxt.js configuration file
-  // Please look at https://nuxtjs.org/docs/config-file
+  // Please look at https://nuxtjs.org/guide/configuration
 }
 `
 

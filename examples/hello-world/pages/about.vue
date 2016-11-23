@@ -9,7 +9,7 @@
 
 <script>
 export default {
-  data ({ req, error }) {
+  data ({ req }) {
     return {
       name: req ? 'server' : 'client'
     }
