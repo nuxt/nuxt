@@ -51,12 +51,11 @@
     "webpack-hot-middleware": "^2.13.2"
   },
   "devDependencies": {
-    "babel-eslint": "^7.1.0",
-    "benchmark": "^2.1.2",
-    "eslint": "^3.8.1",
+    "babel-eslint": "^7.1.1",
+    "eslint": "^3.10.2",
     "eslint-config-standard": "^6.2.1",
-    "eslint-plugin-html": "^1.5.5",
-    "eslint-plugin-promise": "^3.3.2",
+    "eslint-plugin-html": "^1.7.0",
+    "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
     "nodemon": "^1.11.0"
   }
