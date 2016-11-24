@@ -50,17 +50,21 @@ I added `vue-notifications` in the `vendor` key to make sure that it won't be in
 
 ### Only in browser build
 
-Some plugins might work only in the browser, for this, you can use the `process.BROWSER` variable to check if the plugin will run from the server or from the client.
+Some plugins might work only in the browser, for this, you can use the `process.BROWSER_BUILD` variable to check if the plugin will run from the server or from the client.
 
 Example:
 ```js
 import Vue from 'vue'
 import VueNotifications from 'vue-notifications'
 
-if (process.BROWSER) {
+if (process.BROWSER_BUILD) {
   Vue.use(VueNotifications)
 }
 ```
+
+### Only in server build
+
+In case you need to require some libraries only for the server, you can use the `process.SERVER_BUILD` variable set to `true` when webpack is creating the `server.bundle.js` file.
 
 ## Demo
 

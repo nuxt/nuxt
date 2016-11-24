@@ -7,15 +7,13 @@
 
 <script>
 let miniToastr
-if (process.BROWSER) {
+if (process.BROWSER_BUILD) {
   miniToastr = require('mini-toastr')
 }
 
 export default {
   mounted () {
-    if (process.BROWSER) {
-      miniToastr.init()
-    }
+    miniToastr.init()
   },
   notifications: {
     showLoginError: {

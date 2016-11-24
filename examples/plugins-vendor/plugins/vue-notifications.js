@@ -2,7 +2,7 @@
 import Vue from 'vue'
 import VueNotifications from 'vue-notifications'
 
-if (process.BROWSER) {
+if (process.BROWSER_BUILD) {
   // Include mini-toaster (or any other UI-notification library
   const miniToastr = require('mini-toastr')
 
