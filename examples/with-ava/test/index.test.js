@@ -50,9 +50,9 @@ async function renderAndGetWindow (route) {
           })
         }
         // Used by nuxt.js to say when the components are loaded and the app ready
-        window.onNuxtReady = function () {
+        window.onNuxtReady(() => {
           resolve(window)
-        }
+        })
       }
     })
   })
