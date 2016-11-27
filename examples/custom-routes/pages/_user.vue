@@ -12,7 +12,7 @@ import axios from 'axios'
 
 export default {
   data ({ params, error }) {
-    return axios.get(`http://jsonplaceholder.typicode.com/users/${params.id}`)
+    return axios.get(`https://jsonplaceholder.typicode.com/users/${params.id}`)
     .then((res) => res.data)
     .catch(() => {
       error({ message: 'User not found', statusCode: 404 })
