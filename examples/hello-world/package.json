@@ -1,11 +1,9 @@
 {
-  "name": "nuxt-hello-world",
+  "name": "hello-nuxt",
   "dependencies": {
     "nuxt": "latest"
   },
   "scripts": {
-    "dev": "nuxt",
-    "build": "nuxt build",
-    "start": "nuxt start"
+    "dev": "nuxt"
   }
 }
