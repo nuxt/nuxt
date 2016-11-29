@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="http://i.imgur.com/c8A3Hbc.png"/></p>
+<p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
   <!--<a href="https://circleci.com/gh/vuejs/vue/tree/dev"><img src="https://img.shields.io/circleci/project/vuejs/vue/dev.svg" alt="Build Status"></a>
   <a href="https://codecov.io/github/vuejs/vue?branch=dev"><img src="https://img.shields.io/codecov/c/github/vuejs/vue/dev.svg" alt="Coverage Status"></a>-->
