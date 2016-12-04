@@ -27,6 +27,8 @@ export default {
     if (typeof window !== 'undefined') {
       window.$nuxt = this
     }
+    // Add $nuxt.error()
+    this.error = this.$root.error
   },
   <% if (loading) { %>
   mounted () {
