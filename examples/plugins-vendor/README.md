@@ -40,7 +40,7 @@ module.exports = {
   build: {
     vendor: ['vue-notifications']
   },
-  plugins: [ '~plugins/vue-notifications') ]
+  plugins: [ '~plugins/vue-notifications' ]
 }
 ```
 
