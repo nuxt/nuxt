@@ -11,7 +11,7 @@ module.exports = {
 }
 ```
 
-`cache` can be a Boolean of an Object, if an object, you can use theses keys:
+`cache` can be a Boolean or an Object, if an object, you can use theses keys:
 
 | key  | Optional? | Type | Default | definition |
 |------|------------|-----|---------|------------|

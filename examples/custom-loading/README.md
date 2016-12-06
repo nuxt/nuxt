@@ -41,7 +41,7 @@ You can create your own component that Nuxt.js will call instead of its default 
 Your custom component will be called by Nuxt.js, so make sure your component exposes some of theses methods:
 
 | Method | Required | Description |
-|--------|-------------|
+|--------|----------|-------------|
 | `start()` | Required | Called when a route changes, this is here where you should show your component. |
 | `finish()` | Required | Called when a route is loaded (and data fetched), this is here where you should hide your component. |
 | `fail()` | *Optional* | Called when a route could not be loaded (failed to fetch data for example). |
