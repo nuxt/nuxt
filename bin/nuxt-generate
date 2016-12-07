@@ -9,6 +9,7 @@ const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
 const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+
 let options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
@@ -16,14 +17,11 @@ if (fs.existsSync(nuxtConfigFile)) {
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-
-options._build = false // nuxt.generate() will call nuxt.build() itself
-options._renderer = false // let nuxt.generate() create the vue renderer
 options.dev = false // Force production mode (no webpack middlewares called)
 
 console.log('[nuxt] Generating...')
-new Nuxt(options)
-.then((nuxt) => nuxt.generate())
+const nuxt = new Nuxt(options)
+nuxt.generate()
 .then(() => {
   console.log('[nuxt] Generate done')
 })

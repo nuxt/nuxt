@@ -13,6 +13,7 @@ const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
 const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+
 let options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
@@ -20,11 +21,11 @@ if (fs.existsSync(nuxtConfigFile)) {
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-
 options.dev = true // Add hot reloading and watching changes
 
-new Nuxt(options)
-.then((nuxt) => {
+const nuxt = new Nuxt(options)
+nuxt.build()
+.then(() => {
   const server = new Server(nuxt)
   .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
   listenOnConfigChanges(nuxt, server)
@@ -46,7 +47,7 @@ function listenOnConfigChanges (nuxt, server) {
     options.rootDir = rootDir
     nuxt.close()
     .then(() => {
-      return new Nuxt(options)
+      return new Nuxt(options).build()
     })
     .then((nuxt) => {
       server.nuxt = nuxt

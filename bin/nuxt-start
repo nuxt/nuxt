@@ -7,6 +7,7 @@ const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
 const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+
 let options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
@@ -14,16 +15,12 @@ if (fs.existsSync(nuxtConfigFile)) {
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-
-options._build = false // Disable building
 options.dev = false // Force production mode (no webpack middlewares called)
 
-new Nuxt(options)
-.then((nuxt) => {
-  new Server(nuxt)
-  .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
-})
-.catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+const nuxt = new Nuxt(options)
+
+new Server(nuxt)
+.listen(
+  process.env.PORT || process.env.npm_package_config_nuxt_port,
+  process.env.HOST || process.env.npm_package_config_nuxt_host
+)
