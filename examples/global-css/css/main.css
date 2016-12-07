@@ -2,6 +2,11 @@ body {
   background: #eee;
   text-align: center;
   padding-top: 30px;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .content {
   margin-top: 100px;
