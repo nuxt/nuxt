@@ -9,6 +9,7 @@ const { resolve } = require('path')
 
 const rootDir = resolve(process.argv.slice(2)[0] || '.')
 const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+
 let options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
@@ -16,12 +17,12 @@ if (fs.existsSync(nuxtConfigFile)) {
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-
 options.dev = false // Create production build when calling `nuxt build`
 
 console.log('[nuxt] Building...')
-new Nuxt(options)
-.then((nuxt) => {
+const nuxt = new Nuxt(options)
+nuxt.build()
+.then(() => {
   console.log('[nuxt] Building done')
 })
 .catch((err) => {
