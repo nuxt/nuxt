@@ -10,53 +10,20 @@ let nuxt = null
 let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init nuxt.js', (t) => {
+test.before('Init Nuxt.js', (t) => {
   const Nuxt = require('../../../')
   const options = {
     rootDir: resolve(__dirname, '..'),
     dev: false
   }
-  return new Nuxt(options)
-  .then(function (_nuxt) {
-    nuxt = _nuxt
+  nuxt = new Nuxt(options)
+  return nuxt.build()
+  .then(function (lol) {
+    console.log(lol)
     server = createServer((req, res) => nuxt.render(req, res))
-    return new Promise((resolve, reject) => {
-      server.listen(4000, 'localhost', () => {
-        resolve()
-      })
-    })
+    server.listen(4000, 'localhost')
   })
 })
-
-// Function used to do dom checking via jsdom
-async function renderAndGetWindow (route) {
-  const virtualConsole = jsdom.createVirtualConsole().sendTo(console)
-  return new Promise((resolve, reject) => {
-    const url = 'http://localhost:4000' + route
-    jsdom.env({
-      url: url,
-      features: {
-        FetchExternalResources: ['script', 'link'],
-        ProcessExternalResources: ['script']
-      },
-      virtualConsole,
-      done (err, window) {
-        if (err) return reject(err)
-        // If Nuxt could not be loaded (error from the server-side)
-        if (!window.__NUXT__) {
-          return reject({
-            message: 'Could not load the nuxt app',
-            body: window.document.getElementsByTagName('body')[0].innerHTML
-          })
-        }
-        // Used by nuxt.js to say when the components are loaded and the app ready
-        window.onNuxtReady(() => {
-          resolve(window)
-        })
-      }
-    })
-  })
-}
 
 /*
 ** Example of testing only the html
@@ -73,7 +40,7 @@ test('Route / exits and render HTML', async t => {
 ** Example of testing via dom checking
 */
 test('Route / exits and render HTML', async t => {
-  const window = await renderAndGetWindow('/')
+  const window = await nuxt.renderAndGetWindow(jsdom, 'http://localhost:4000/')
   const element = window.document.querySelector('.red-color')
   t.not(element, null)
   t.is(element.textContent, 'Hello world!')
