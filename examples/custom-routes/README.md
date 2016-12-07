@@ -9,7 +9,7 @@ Add your custom routes inside `nuxt.config.js`:
 module.exports = {
   router: {
     routes: [
-      { path: '/users/:id', component: 'pages/user' }
+      { name: 'user', path: '/users/:id', component: 'pages/user' }
     ]
   }
 }
@@ -32,7 +32,7 @@ Let's say I have a component `pages/user.vue` and I don't want nuxt.js to create
 You can then change the component path in the `nuxt.config.js`:
 ```js
 // ...
-  { path: '/users/:id', component: 'pages/_user' }
+  { name: 'user', path: '/users/:id', component: 'pages/_user' }
 // ...
 ```
 
