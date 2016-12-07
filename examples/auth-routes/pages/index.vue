@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h1>Please login to see the secret content</h1>
-    <form v-if="!authUser" @submit.prevent="login">
+    <form v-if="!$store.state.authUser" @submit.prevent="login">
       <p class="error" v-if="formError">{{ formError }}</p>
       <p><i>To login, use <b>demo</b> as username and <b>demo</b> as password.</i></p>
       <p>Username: <input type="text" v-model="formUsername" name="username" /></p>
@@ -9,21 +9,19 @@
       <button type="submit">Login</button>
     </form>
     <div v-else>
-      Hello {{ authUser.username }}!
+      Hello {{ $store.state.authUser.username }}!
       <pre>I am the secret content, I am shown only when the use is connected.</pre>
+      <p><i>You can also refresh this page, you'll still be connected!</i></p>
+      <button @click="logout">Logout</button>
     </div>
+    <p><router-link to="/secret">Super secret page</router-link></p>
   </div>
 </template>
 
 <script>
-// Polyfill for window.fetch()
-require('whatwg-fetch')
-
 export default {
-  data ({ req }) {
-    console.log(req && req.session)
+  data () {
     return {
-      authUser: (req && req.session.authUser) || null,
       formError: null,
       formUsername: '',
       formPassword: ''
@@ -31,26 +29,21 @@ export default {
   },
   methods: {
     login () {
-      fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: this.formUsername,
-          password: this.formPassword
-        })
+      this.$store.dispatch('login', {
+        username: this.formUsername,
+        password: this.formPassword
       })
-      .then((res) => {
-        if (res.status === 401) {
-          this.formError = 'Bad credentials'
-        } else {
-          return res.json()
-        }
+      .then(() => {
+        this.formUsername = ''
+        this.formPassword = ''
+        this.formError = null
       })
-      .then((authUser) => {
-        this.authUser = authUser
+      .catch((e) => {
+        this.formError = e.message
       })
+    },
+    logout () {
+      this.$store.dispatch('logout')
     }
   }
 }

@@ -1,16 +1,17 @@
 const Nuxt = require('nuxt')
 const bodyParser = require('body-parser')
-const cookieSession = require('cookie-session')
+const session = require('express-session')
 const app = require('express')()
 
 // Body parser, to access req.body
 app.use(bodyParser.json())
 
-// Sessions with cookies to have req.session
-app.use(cookieSession({
-  name: 'nuxt-session',
-  keys: ['nuxt-key-1', 'nuxt-key-2'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+// Sessions to create req.session
+app.use(session({
+  secret: 'super-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 60000 }
 }))
 
 // POST /api/login to log in the user and add him to the req.session.authUser
@@ -22,25 +23,18 @@ app.post('/api/login', function (req, res) {
   res.status(401).json({ error: 'Bad credentials' })
 })
 
-app.use(function (req, res, next) {
-  req.session.views = (req.session.views || 0) + 1
-  next()
+// POST /api/logout to log out the user and remove it from the req.session
+app.post('/api/logout', function (req, res) {
+  delete req.session.authUser
+  res.json({ ok: true })
 })
 
-app.all('/', function (req, res) {
-  console.log(req.session)
-  res.send('Hello')
+// We instantiate Nuxt.js with the options
+new Nuxt({
+  dev: process.env.NODE_ENV !== 'production'
 })
-
-new Nuxt()
 .then((nuxt) => {
   app.use(nuxt.render)
-  // app.use(function (req, res) {
-  //   nuxt.render(req, res)
-  // })
-  // .then((stream) => {
-  //   stream.pipe(fs.createFile)
-  // })
   app.listen(3000)
   console.log('Server is listening on http://localhost:3000')
 })

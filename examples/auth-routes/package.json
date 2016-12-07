@@ -3,12 +3,14 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.15.2",
-    "cookie-session": "^2.0.0-alpha.2",
     "express": "^4.14.0",
+    "express-session": "^1.14.2",
     "nuxt": "latest",
     "whatwg-fetch": "^2.0.1"
   },
   "scripts": {
-    "start": "node server.js"
+    "dev": "node server.js",
+    "build": "nuxt build",
+    "start": "NODE_ENV=production node server.js"
   }
 }
