@@ -31,11 +31,10 @@ app.post('/api/logout', function (req, res) {
 
 // We instantiate Nuxt.js with the options
 const isProd = process.env.NODE_ENV === 'production'
-new Nuxt({
-  dev: !isProd,
-  _build: !isProd
-})
-.then((nuxt) => {
+const nuxt = new Nuxt({ dev: !isProd })
+// No build in production
+const promise = (isProd ? Promise.resolve() : nuxt.build())
+promise.then(() => {
   app.use(nuxt.render)
   app.listen(3000)
   console.log('Server is listening on http://localhost:3000')

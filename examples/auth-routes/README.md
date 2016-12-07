@@ -47,10 +47,11 @@ app.post('/api/logout', function (req, res) {
 })
 
 // We instantiate Nuxt.js with the options
-new Nuxt({
-  dev: process.env.NODE_ENV !== 'production'
-})
-.then((nuxt) => {
+const isProd = process.env.NODE_ENV === 'production'
+const nuxt = new Nuxt({ dev: !isProd })
+// No build in production
+const promise = (isProd ? Promise.resolve() : nuxt.build())
+promise.then(() => {
   app.use(nuxt.render)
   app.listen(3000)
   console.log('Server is listening on http://localhost:3000')
@@ -173,4 +174,29 @@ logout ({ commit }) {
 
 ## Pages components
 
-Then we can use the `$store.state.authUser` data to check if the user is connected in our application.
+Then we can use `$store.state.authUser` in our pages components to check if the user is connected in our application or not.
+
+### Redirect user if not connected
+
+Let's add a `/secret` route where only the connected user can see its content:
+```html
+<template>
+  <div>
+    <h1>Super secret page</h1>
+    <router-link to="/">Back to the home page</router-link>
+  </div>
+</template>
+
+<script>
+export default {
+  // we use fetch() because we do not need to set data to this component
+  fetch ({ store, redirect }) {
+    if (!store.state.authUser) {
+      return redirect('/')
+    }
+  }
+}
+</script>
+```
+
+We can see in the `fetch` method that we call `redirect('/')` when our user is not connected.
