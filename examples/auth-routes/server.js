@@ -30,8 +30,10 @@ app.post('/api/logout', function (req, res) {
 })
 
 // We instantiate Nuxt.js with the options
+const isProd = process.env.NODE_ENV === 'production'
 new Nuxt({
-  dev: process.env.NODE_ENV !== 'production'
+  dev: !isProd,
+  _build: !isProd
 })
 .then((nuxt) => {
   app.use(nuxt.render)
