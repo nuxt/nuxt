@@ -18,8 +18,7 @@ test.before('Init Nuxt.js', (t) => {
   }
   nuxt = new Nuxt(options)
   return nuxt.build()
-  .then(function (lol) {
-    console.log(lol)
+  .then(function () {
     server = createServer((req, res) => nuxt.render(req, res))
     server.listen(4000, 'localhost')
   })
