@@ -37,9 +37,9 @@ const promise = (isProd ? Promise.resolve() : nuxt.build())
 promise.then(() => {
   app.use(nuxt.render)
   app.listen(3000)
-  console.log('Server is listening on http://localhost:3000')
+  console.log('Server is listening on http://localhost:3000')  // eslint-disable-line no-console
 })
 .catch((error) => {
-  console.error(error)
+  console.error(error)  // eslint-disable-line no-console
   process.exit(1)
 })
