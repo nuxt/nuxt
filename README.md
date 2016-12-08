@@ -84,10 +84,14 @@ const options = {
 }
 
 // Launch nuxt build with given options
-// TODO: you can wrap below inside try/catch to catch any errors.
-let nuxt = new Nuxt(options).build();
-// You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
-
+let nuxt = new Nuxt(options)
+nuxt.build()
+.then(() => {
+  // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
+})
+.catch((e) => {
+  // An error appended during the build
+})
 ```
 
 
