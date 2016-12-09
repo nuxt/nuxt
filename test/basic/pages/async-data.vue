@@ -6,7 +6,7 @@
 export default {
   data () {
     return new Promise((resolve) => {
-      setTimeout(() => resolve({ name: 'Kobe Bryant' }), 10)
+      setTimeout(() => resolve({ name: 'Nuxt.js' }), 10)
     })
   }
 }

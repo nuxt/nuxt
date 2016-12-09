@@ -9,7 +9,7 @@ export default {
   data () {
     return { answer: null }
   },
-  beforeMount () {
+  created () {
     this.answer = 42
   }
 }
