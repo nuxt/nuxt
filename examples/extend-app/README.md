@@ -1,6 +1,6 @@
 # Extending the main app
 
-> Nuxt.js allows you to extend the main application by adding a `pages/_app.vue` file
+> Nuxt.js allows you to extend the main application by adding a `layouts/app.vue` file
 
 ## The default app
 
@@ -13,7 +13,7 @@ The default source code of the main app is:
 </template>
 ```
 
-## The `pages/_app.vue` file
+## The `layouts/app.vue` file
 
 ### 🎬 [Example video](https://www.youtube.com/watch?v=wBhia7uBxDA)
 
