@@ -1,18 +1,16 @@
-<% const {
-  title, htmlAttrs, bodyAttrs, link, style, script, noscript, meta
-} = context.meta.inject() %><!DOCTYPE html>
-<html n-head-ssr ${htmlAttrs.text()}>
+<% var m = context.meta.inject() %><!DOCTYPE html>
+<html n-head-ssr <%= m.htmlAttrs.text() %>>
   <head>
-    ${meta.text()}
-    ${title.text()}
-    ${link.text()}
-    ${style.text()}
-    ${script.text()}
-    ${noscript.text()}
+    <%= m.meta.text() %>
+    <%= m.title.text() %>
+    <%= m.link.text() %>
+    <%= m.style.text() %>
+    <%= m.script.text() %>
+    <%= m.noscript.text() %>
     <base href="<%= baseUrl %>">
     <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
   </head>
-  <body ${bodyAttrs.text()}>
+  <body <%= m.bodyAttrs.text() %>>
     <%= APP %>
     <script type="text/javascript" defer>window.__NUXT__=<%= serialize(context.nuxt) %></script>
     <script src="<%= files.vendor %>" defer></script>

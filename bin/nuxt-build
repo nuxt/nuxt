@@ -3,14 +3,14 @@
 // Show logs
 process.env.DEBUG = 'nuxt:*'
 
-const fs = require('fs')
-const Nuxt = require('../')
-const { resolve } = require('path')
+var fs = require('fs')
+var Nuxt = require('../')
+var resolve = require('path').resolve
 
-const rootDir = resolve(process.argv.slice(2)[0] || '.')
-const nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+var rootDir = resolve(process.argv.slice(2)[0] || '.')
+var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
 
-let options = {}
+var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
 }
@@ -20,7 +20,7 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false // Create production build when calling `nuxt build`
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
-const nuxt = new Nuxt(options)
+var nuxt = new Nuxt(options)
 nuxt.build()
 .then(() => {
   console.log('[nuxt] Building done') // eslint-disable-line no-console
