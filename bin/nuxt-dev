@@ -7,7 +7,6 @@ var _ = require('lodash')
 var debug = require('debug')('nuxt:build')
 var fs = require('fs')
 var Nuxt = require('../')
-var Server = require('../lib/server')
 var chokidar = require('chokidar')
 var resolve = require('path').resolve
 
@@ -26,7 +25,7 @@ options.dev = true // Add hot reloading and watching changes
 var nuxt = new Nuxt(options)
 nuxt.build()
 .then(() => {
-  var server = new Server(nuxt)
+  var server = new nuxt.Server(nuxt)
   .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
   listenOnConfigChanges(nuxt, server)
 })

@@ -2,7 +2,6 @@
 
 var fs = require('fs')
 var Nuxt = require('../')
-var Server = require('../lib/server')
 var resolve = require('path').resolve
 
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
@@ -19,7 +18,7 @@ options.dev = false // Force production mode (no webpack middlewares called)
 
 var nuxt = new Nuxt(options)
 
-new Server(nuxt)
+new nuxt.Server(nuxt)
 .listen(
   process.env.PORT || process.env.npm_package_config_nuxt_port,
   process.env.HOST || process.env.npm_package_config_nuxt_host
