@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - "7.2.x"
+  - "6.9.x"
+  - "5.12.x"
+  - "4.7.x"
+  - "0.12.x"
+  - "0.10.x"
+install:
+  - npm install
+  - npm run build
+script:
+  - npm test
+after_success:
+  - npm run coverage

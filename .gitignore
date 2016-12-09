@@ -8,5 +8,13 @@ npm-debug.log
 # other
 .nuxt
 
+# Dist folder
+dist
+
 # dist example generation
 examples/**/dist
+
+# Coverage support
+coverage
+*.lcov
+.nyc_output
