@@ -4,8 +4,6 @@ node_js:
   - "6.9"
   - "5.12"
   - "4.7"
-  - "0.12"
-  - "0.10"
 install:
   - npm install
   - npm run build
