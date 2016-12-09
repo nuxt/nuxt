@@ -1,6 +1,5 @@
 import test from 'ava'
 import jsdom from 'jsdom'
-import { createServer } from 'http'
 import { resolve } from 'path'
 const port = 4002
 const url = (route) => 'http://localhost:' + port + route
@@ -18,7 +17,7 @@ test.before('Init Nuxt.js', t => {
   nuxt = new Nuxt(options)
   return nuxt.build()
   .then(function () {
-    server = createServer((req, res) => nuxt.render(req, res))
+    server = new nuxt.Server(nuxt)
     server.listen(port, 'localhost')
   })
 })
