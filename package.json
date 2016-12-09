@@ -10,12 +10,16 @@
       "name": "Alexandre Chopin"
     }
   ],
-  "main": "index.js",
+  "main": "./dist/nuxt.js",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -31,15 +35,20 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "test": "npm run lint",
-    "lint": "eslint --ext .js,.vue bin lib pages test index.js --ignore-pattern lib/app",
-    "precommit": "npm run lint"
+    "test": "nyc ava test/",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "lint": "eslint --ext .js,.vue bin lib pages test --ignore-pattern lib/app",
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "precommit": "npm run lint",
+    "prepublish": "npm run build"
   },
   "dependencies": {
     "ansi-html": "^0.0.6",
     "autoprefixer": "^6.5.3",
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
+    "babel-polyfill": "^6.20.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-2": "^6.18.0",
     "chokidar": "^1.6.1",
@@ -73,12 +82,18 @@
     "webpack-hot-middleware": "^2.13.2"
   },
   "devDependencies": {
+    "ava": "^0.17.0",
     "babel-eslint": "^7.1.1",
+    "codecov": "^1.0.1",
+    "copy-webpack-plugin": "^4.0.1",
     "eslint": "^3.10.2",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-html": "^1.7.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
-    "nodemon": "^1.11.0"
+    "jsdom": "^9.8.3",
+    "json-loader": "^0.5.4",
+    "nyc": "^10.0.0",
+    "webpack-node-externals": "^1.5.4"
   }
 }

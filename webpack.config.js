@@ -1,0 +1,50 @@
+var nodeExternals = require('webpack-node-externals')
+var CopyWebpackPlugin = require('copy-webpack-plugin')
+var resolve = require('path').resolve
+var r = function (p) { return resolve(__dirname, p) }
+
+module.exports = {
+  target: 'node',
+  node: {
+    __dirname: false,
+    __filename: false
+  },
+  devtool: 'source-map',
+  entry: ['babel-polyfill', r('./lib/nuxt.js')],
+  output: {
+    path: r('./dist'),
+    filename: 'nuxt.js',
+    libraryTarget: 'commonjs2'
+  },
+  externals: [
+    nodeExternals({
+      whitelist: ['babel-polyfill']
+    })
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.json$/,
+        loader: 'json-loader'
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/,
+        query: {
+          presets: [
+            ['es2015', { modules: false }],
+            'stage-2'
+          ],
+          cacheDirectory: true
+        }
+      }
+    ]
+  },
+  plugins: [
+    new CopyWebpackPlugin([
+      { from: 'lib/app', to: 'app' },
+      { from: 'lib/views', to: 'views' }
+    ])
+  ]
+}
