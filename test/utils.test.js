@@ -1,5 +1,6 @@
 import test from 'ava'
 const utils = require('../lib/utils')
+const ansiHTML = require('ansi-html')
 
 test('encodeHtml', t => {
   const html = '<h1>Hello</h1>'
@@ -15,6 +16,10 @@ test('getContext', t => {
   t.is(ctx.res.b, 2)
 })
 
+test('setAnsiColors', t => {
+  utils.setAnsiColors(ansiHTML)
+})
+
 test('waitFor', function * (t) {
   let s = Date.now()
   yield utils.waitFor(100)
@@ -28,7 +33,7 @@ test('urlJoin', t => {
 test('promisifyRouteParams (array)', t => {
   const array = [1]
   const promise = utils.promisifyRouteParams(array)
-  t.true(promise instanceof Promise)
+  t.is(typeof promise, 'object')
   return promise
   .then((res) => {
     t.is(res, array)
@@ -41,7 +46,7 @@ test('promisifyRouteParams (fn => array)', t => {
     return array
   }
   const promise = utils.promisifyRouteParams(fn)
-  t.true(promise instanceof Promise)
+  t.is(typeof promise, 'object')
   return promise
   .then((res) => {
     t.is(res, array)
@@ -56,7 +61,7 @@ test('promisifyRouteParams (fn => promise)', t => {
     })
   }
   const promise = utils.promisifyRouteParams(fn)
-  t.true(promise instanceof Promise)
+  t.is(typeof promise, 'object')
   return promise
   .then((res) => {
     t.is(res, array)
@@ -68,7 +73,7 @@ test('promisifyRouteParams (fn(cb) with error)', t => {
     cb('Error here')
   }
   const promise = utils.promisifyRouteParams(fn)
-  t.true(promise instanceof Promise)
+  t.is(typeof promise, 'object')
   return promise
   .catch((e) => {
     t.is(e, 'Error here')
@@ -81,7 +86,7 @@ test('promisifyRouteParams (fn(cb) with result)', t => {
     cb(null, array)
   }
   const promise = utils.promisifyRouteParams(fn)
-  t.true(promise instanceof Promise)
+  t.is(typeof promise, 'object')
   return promise
   .then((res) => {
     t.is(res, array)
