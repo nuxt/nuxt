@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <h2>User</h2>
-    <h3>{{ name }}</h3>
-    <h4>@{{ username }}</h4>
-    <p>Email : {{ email }}</p>
+    <h3>{{ user.name }}</h3>
+    <h4>@{{ user.username }}</h4>
+    <p>Email : {{ user.email }}</p>
     <p><router-link to="/users">List of users</router-link></p>
   </div>
 </template>
@@ -14,10 +14,18 @@ import axios from 'axios'
 export default {
   data ({ params, error }) {
     return axios.get(`https://jsonplaceholder.typicode.com/users/${params.id}`)
-    .then((res) => res.data)
+    .then((res) => { return { user: res.data } })
     .catch(() => {
       error({ message: 'User not found', statusCode: 404 })
     })
+  },
+  watch: {
+    $route () {
+      return axios.get(`https://jsonplaceholder.typicode.com/users/${this.$route.params.id}`)
+      .then((res) => {
+        this.user = res.data
+      })
+    }
   }
 }
 </script>
@@ -27,6 +35,7 @@ export default {
 {
   text-align: center;
   overflow: hidden;
+  min-height: 440px;
 }
 /*.user {
   text-align: center;

@@ -26,6 +26,7 @@ export default {
 
 <style scoped>
 .users {
+  margin: 10px 0;
   float: left;
   list-style-type: none;
 }
@@ -39,6 +40,9 @@ export default {
   text-decoration: none;
 }
 .users li a:hover {
-  color: orange;
+  color: #41b883;
+}
+.router-link-active {
+  color: #41b883 !important;
 }
 </style>
