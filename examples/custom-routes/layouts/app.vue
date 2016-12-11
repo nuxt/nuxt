@@ -1,10 +1,14 @@
 <template>
   <nuxt-container>
     <nav class="Navbar clearfix">
-      <h1 class="Navbar__Title">Nuxt Custom Routes</h1>
+      <h1 class="Navbar__Title">
+        <router-link to="/" class="Navbar__Links__Item__Link">
+          Nuxt Custom Routes
+        </router-link>
+      </h1>
       <ul class="Navbar__Links">
         <li class="Navbar__Links__Item">
-          <router-link to="/" class="Navbar__Links__Item__Link">
+          <router-link to="/author" class="Navbar__Links__Item__Link">
             Basic route
           </router-link>
         </li>

@@ -1,5 +1,8 @@
 <template>
   <div class="container">
-    <h2>Home</h2>
+    <h1>Home</h1>
+    <h2>
+      Examples of custom routes
+    </h2>
   </div>
 </template>
