@@ -1,27 +1,19 @@
 module.exports = {
-  router: {
-    // routes: [
-    //   { name: 'post-slug', path: ':slug(\\d+)' }
-    // ],
-    routes: {
-      comments: {
-        _id: {
-          regexp: ':id(\\d+)',
-          generate: [1, 2, 3, 4] // Need to be finished on generate
-        }
-      },
-      three: {
-        _two: {
-          regexp: ':two(\\d+)',
-          one: {
-            _id: {
-              regexp: ':id(\\d+)'
-            }
-          }
-        }
-      }
-    }
-  },
+  // router: {
+  //   routes: {
+  //     users: {
+  //       _id: {
+  //         regexp: ':id(\\d+)',
+  //         alias: '/author/:authorid/post/:id'
+  //         // generate: [1, 2, 3, 4] // Need to be finished on generate
+  //       },
+  //       meta: {
+  //         title: 'users'
+  //       },
+  //       alias: '/author/:authorid/post'
+  //     }
+  //   }
+  // },
   build: {
     vendor: ['axios']
   }
