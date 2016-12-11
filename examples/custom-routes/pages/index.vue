@@ -2,23 +2,23 @@
   <div class="container">
     <h2>Users</h2>
     <ul class="users">
-      <li v-for="user in users">
+      <!-- <li v-for="user in users">
         <router-link :to="{ name: 'user', params: { id: user.id } }">{{ user.name }}</router-link>
-      </li>
+      </li> -->
     </ul>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+// import axios from 'axios'
 
 export default {
-  data () {
-    return axios.get('https://jsonplaceholder.typicode.com/users')
-    .then((res) => {
-      return { users: res.data }
-    })
-  }
+  // data () {
+  //   return axios.get('https://jsonplaceholder.typicode.com/users')
+  //   .then((res) => {
+  //     return { users: res.data }
+  //   })
+  // }
 }
 </script>
 
