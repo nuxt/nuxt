@@ -41,7 +41,11 @@ function listenOnConfigChanges (nuxt, server) {
     delete require.cache[nuxtConfigFile]
     var options = {}
     if (fs.existsSync(nuxtConfigFile)) {
-      options = require(nuxtConfigFile)
+      try {
+        options = require(nuxtConfigFile)
+      } catch (e) {
+        return console.error(e) // eslint-disable-line no-console
+      }
     }
     options.rootDir = rootDir
     nuxt.close()
@@ -52,7 +56,7 @@ function listenOnConfigChanges (nuxt, server) {
       server.nuxt = nuxt
     })
     .catch((error) => {
-      console.error('Error while rebuild the app:', error)
+      console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
       process.exit(1)
     })
   }, 200)
