@@ -63,6 +63,7 @@
     "fs-extra": "^1.0.0",
     "glob": "^7.1.1",
     "hash-sum": "^1.0.2",
+    "html-minifier": "^3.2.3",
     "lodash": "^4.17.2",
     "lru-cache": "^4.0.2",
     "memory-fs": "^0.4.1",
