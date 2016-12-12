@@ -18,14 +18,6 @@ export default {
     .catch(() => {
       error({ message: 'User not found', statusCode: 404 })
     })
-  },
-  watch: {
-    $route () {
-      return axios.get(`https://jsonplaceholder.typicode.com/users/${this.$route.params.id}`)
-      .then((res) => {
-        this.user = res.data
-      })
-    }
   }
 }
 </script>
