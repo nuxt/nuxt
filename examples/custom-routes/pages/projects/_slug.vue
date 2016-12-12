@@ -8,6 +8,14 @@
   </div>
 </template>
 
+<script>
+export default {
+  validate ({ params }) {
+    return /^[A-z]+$/.test(params.slug)
+  }
+}
+</script>
+
 <style scoped>
 p
 {
