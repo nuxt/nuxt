@@ -1,18 +1,18 @@
 module.exports = {
   router: {
     routes: {
-      author: {
-        alias: '/nuxt'
-      },
-      users: {
-        _id: {
-          regexp: ':id(\\d+)'
-          // generate: [1, 2, 3, 4] // Need to be finished on generate
-        }
-      },
-      posts: {
-        alias: '/articles'
-      }
+      // author: {
+      //   alias: '/nuxt'
+      // },
+      // users: {
+      //   _id: {
+      //     regexp: ':id(\\d+)'
+      //     // generate: [1, 2, 3, 4] // Need to be finished on generate
+      //   }
+      // },
+      // posts: {
+      //   alias: '/articles'
+      // }
     }
   },
   // generate: {
