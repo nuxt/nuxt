@@ -110,16 +110,16 @@ will automatically generate:
 router: {
   routes: [
     {
-			path: '/users',
-			component: 'pages/users',
-			children: [
-				{
-					path: ':id',
-					component: 'pages/users/_id',
-					name: 'users-id'
-				}
-			]
-		}
+      path: '/users',
+      component: 'pages/users',
+      children: [
+        {
+          path: ':id',
+          component: 'pages/users/_id',
+          name: 'users-id'
+        }
+      ]
+    }
   ]
 }
 ```
@@ -145,32 +145,32 @@ will automatically generate:
 router: {
   routes: [
     {
-			path: '/posts',
+      path: '/posts',
       component: 'pages/posts',
-			children: [
-				{
-					path: "",
-					component: 'pages/posts/index',
-					name: 'posts'
-				},
-				{
-					path: ':slug',
-					component: 'pages/posts/_slug',
-					children: [
-						{
-							path: 'comments',
-							component: 'pages/posts/_slug/comments',
-							name: 'posts-slug-comments'
-						},
-						{
-							path: ':name',
-							component: 'pages/posts/_slug/_name',
-							name: 'posts-slug-name'
-						}
-					]
-				}
-			]
-		}
+      children: [
+        {
+          path: "",
+          component: 'pages/posts/index',
+          name: 'posts'
+        },
+        {
+          path: ':slug',
+          component: 'pages/posts/_slug',
+          children: [
+            {
+              path: 'comments',
+              component: 'pages/posts/_slug/comments',
+              name: 'posts-slug-comments'
+            },
+            {
+              path: ':name',
+              component: 'pages/posts/_slug/_name',
+              name: 'posts-slug-name'
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
 ```
