@@ -47,7 +47,7 @@ export default {
   },
   <% } %>
   components: {
-    NuxtError<%= (loading ? ',\n\t\tNuxtLoading' : '') %>
+    NuxtError<%= (loading ? ',\n    NuxtLoading' : '') %>
   }
 }
 </script>
