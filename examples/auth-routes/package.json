@@ -3,6 +3,7 @@
   "description": "",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cross-env": "^3.1.3",
     "express": "^4.14.0",
     "express-session": "^1.14.2",
     "nuxt": "latest",
@@ -11,6 +12,6 @@
   "scripts": {
     "dev": "node server.js",
     "build": "nuxt build",
-    "start": "NODE_ENV=production node server.js"
+    "start": "cross-env NODE_ENV=production & node server.js"
   }
 }
