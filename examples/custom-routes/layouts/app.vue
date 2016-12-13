@@ -2,19 +2,17 @@
   <nuxt-container>
     <nav class="Navbar clearfix">
       <h1 class="Navbar__Title">
-        <router-link to="/" class="Navbar__Links__Item__Link">
-          Nuxt Custom Routes
-        </router-link>
+        Nuxt Custom Routes
       </h1>
       <ul class="Navbar__Links">
         <li class="Navbar__Links__Item">
-          <router-link to="/author" class="Navbar__Links__Item__Link">
+          <router-link to="/team" class="Navbar__Links__Item__Link">
             Basic route
           </router-link>
         </li>
         <li class="Navbar__Links__Item">
           <router-link to="/projects" class="Navbar__Links__Item__Link">
-            Dynamic route
+            Dynamic routes
           </router-link>
         </li>
         <li class="Navbar__Links__Item">
