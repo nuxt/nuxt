@@ -12,24 +12,22 @@ export default {
       type: Object,
       default: () => {
         return {
+          hooks: false,
           mode: 'out-in', // out-in ou in-out
           name: 'fade',
           type: '', // animation ou transition
-          enter: null, // isFunc = js, is String = css
-          enterActive: '',
+          enterClass: '',
+          enterActiveClass: '',
+          leaveClass: '',
+          leaveActiveClass: '',
           beforeEnter: null, // Func
+          enter: null,
           afterEnter: null,
           enterCancelled: null,
-          leave: null, // isFunc = js, is String = css
-          leaveActive: '',
-          beforeLeave: null, // Func
+          beforeLeave: null,
+          leave: null,
           afterLeave: null,
-          leaveCancelled: null,
-          appear: null, // isFunc = js, is String = css
-          appearClass: '',
-          appearActiveClass: '',
-          beforeAppear: null,
-          afterAppear: null
+          leaveCancelled: null
         }
       }
     }
