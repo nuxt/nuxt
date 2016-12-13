@@ -77,6 +77,7 @@ router: {
 ### Additional feature : validate (optional)
 
 Nuxt.js allows you to define a validator function inside your dynamic route component (In this example: `pages/projects/_slug.vue`).
+
 If validate function fails, Nuxt.js will automatically load the 404 error page.
 
 ```js
@@ -92,7 +93,7 @@ export default {
 ## Nested Routes (children)
 
 To define a nested route, you need to define a .vue file with the same name as the directory wich contain your children views.
-> Don't forget to put <router-view></router-view> inside your parent .vue file.
+> Don't forget to put `<router-view></router-view>` inside your parent .vue file.
 
 This file tree:
 
