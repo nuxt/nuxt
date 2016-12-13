@@ -133,7 +133,7 @@ This file tree:
 |-> /posts
     |-> /_slug
         |-> _name.vue
-        |-> _comments.vue
+        |-> comments.vue
     |-> _slug.vue
     |-> index.vue
 |-> posts.vue
