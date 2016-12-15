@@ -15,6 +15,7 @@
 import axios from 'axios'
 
 export default {
+  transition: 'bounce',
   data () {
     return axios.get('https://jsonplaceholder.typicode.com/users')
     .then((res) => {
@@ -45,4 +46,21 @@ export default {
 .router-link-active {
   color: #41b883 !important;
 }
+.bounce-enter-active {
+  animation: bounce-in .8s;
+}
+.bounce-leave-active {
+  animation: bounce-out .5s;
+}
+@keyframes bounce-in {
+  0% { transform: scale(0) }
+  50% { transform: scale(1.5) }
+  100% { transform: scale(1) }
+}
+@keyframes bounce-out {
+  0% { transform: scale(1) }
+  50% { transform: scale(1.5) }
+  100% { transform: scale(0) }
+}
+
 </style>

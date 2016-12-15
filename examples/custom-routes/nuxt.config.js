@@ -10,5 +10,6 @@ module.exports = {
       '/posts/:slug/:name': [{slug: 'foo', name: 'b'}, {slug: 'bar', name: 'a'}],
       '/projects/:slug': [{slug: 'toto'}, {slug: 'titi'}, {slug: 'tutu'}]
     }
-  }
+  },
+  transition: 'fade'
 }

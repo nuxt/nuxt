@@ -95,4 +95,11 @@ a, a:hover
   text-decoration: none;
   color: #41B883;
 }
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s;
+}
+.fade-enter, .fade-leave-active {
+  opacity: 0;
+}
 </style>
