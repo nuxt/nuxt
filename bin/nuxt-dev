@@ -5,6 +5,7 @@ process.env.DEBUG = 'nuxt:*'
 
 var _ = require('lodash')
 var debug = require('debug')('nuxt:build')
+debug.color = 2 // force green color
 var fs = require('fs')
 var Nuxt = require('../')
 var chokidar = require('chokidar')
