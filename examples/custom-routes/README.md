@@ -92,8 +92,8 @@ export default {
 
 ## Nested Routes (children)
 
-To define a nested route, you need to define a .vue file with the same name as the directory wich contain your children views.
-> Don't forget to put `<router-view></router-view>` inside your parent .vue file.
+To define a nested route, you need to define a .vue file with the same name as the directory which contain your children views.
+> Don't forget to put `<nuxt-child></nuxt-child>` inside your parent .vue file.
 
 This file tree:
 
