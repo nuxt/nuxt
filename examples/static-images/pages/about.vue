@@ -3,7 +3,7 @@
     <img src="~static/nuxt-black.png" />
     <h2>Thank you for testing nuxt.js</h2>
     <p>Loaded from the {{ name }}</p>
-    <p><router-link to="/">Back home</router-link></p>
+    <p><nuxt-link to="/">Back home</nuxt-link></p>
   </div>
 </template>
 

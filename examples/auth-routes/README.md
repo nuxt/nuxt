@@ -183,7 +183,7 @@ Let's add a `/secret` route where only the connected user can see its content:
 <template>
   <div>
     <h1>Super secret page</h1>
-    <router-link to="/">Back to the home page</router-link>
+    <nuxt-link to="/">Back to the home page</nuxt-link>
   </div>
 </template>
 

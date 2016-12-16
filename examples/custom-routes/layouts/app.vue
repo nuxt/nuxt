@@ -6,24 +6,24 @@
       </h1>
       <ul class="Navbar__Links">
         <li class="Navbar__Links__Item">
-          <router-link to="/team" class="Navbar__Links__Item__Link">
+          <nuxt-link to="/team" class="Navbar__Links__Item__Link">
             Basic route
-          </router-link>
+          </nuxt-link>
         </li>
         <li class="Navbar__Links__Item">
-          <router-link to="/projects" class="Navbar__Links__Item__Link">
+          <nuxt-link to="/projects" class="Navbar__Links__Item__Link">
             Dynamic routes
-          </router-link>
+          </nuxt-link>
         </li>
         <li class="Navbar__Links__Item">
-          <router-link to="/users" class="Navbar__Links__Item__Link">
+          <nuxt-link to="/users" class="Navbar__Links__Item__Link">
             Nested routes
-          </router-link>
+          </nuxt-link>
         </li>
         <li class="Navbar__Links__Item">
-          <router-link to="/posts" class="Navbar__Links__Item__Link">
+          <nuxt-link to="/posts" class="Navbar__Links__Item__Link">
             Dynamic nested routes
-          </router-link>
+          </nuxt-link>
         </li>
       </ul>
     </nav>
@@ -94,6 +94,10 @@ a, a:hover
   text-transform: uppercase;
   text-decoration: none;
   color: #41B883;
+}
+
+.nuxt-link-active {
+  color: #41B883 !important;
 }
 
 .fade-enter-active, .fade-leave-active {

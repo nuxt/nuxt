@@ -2,7 +2,7 @@
 <template>
   <div>
     <p>{{ post.title }}!</p>
-    <p><router-link to="/">Back home</router-link></p>
+    <p><nuxt-link to="/">Back home</nuxt-link></p>
   </div>
 </template>
 

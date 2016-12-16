@@ -4,7 +4,7 @@
     <h2>Users list</h2>
     <ul class="users">
       <li v-for="user in users">
-        <router-link :to="{ name: 'users-id', params: { id: user.id } }">{{ user.name }}</router-link>
+        <nuxt-link :to="{ name: 'users-id', params: { id: user.id } }">{{ user.name }}</nuxt-link>
       </li>
     </ul>
     <nuxt-child :key="$route.params.id"></nuxt-child>
@@ -42,8 +42,5 @@ export default {
 }
 .users li a:hover {
   color: #41b883;
-}
-.router-link-active {
-  color: #41b883 !important;
 }
 </style>

@@ -2,9 +2,9 @@
   <div class="container">
     <h2>Posts list</h2>
     <p>
-      <router-link to="/posts/welcome">
+      <nuxt-link to="/posts/welcome">
         Welcome post
-      </router-link>
+      </nuxt-link>
     </p>
   </div>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <img :src="thumbnailUrl" />
-    <p><router-link to="/">Home</router-link> - About</p>
+    <p><nuxt-link to="/">Home</nuxt-link> - About</p>
   </div>
 </template>
 

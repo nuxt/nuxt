@@ -1,7 +1,7 @@
 <template>
   <div>
     <p>Hi from {{ name }}</p>
-    <router-link to="/">Home page</router-link>
+    <nuxt-link to="/">Home page</nuxt-link>
   </div>
 </template>
 

@@ -4,7 +4,7 @@
     <h3>{{ user.name }}</h3>
     <h4>@{{ user.username }}</h4>
     <p>Email : {{ user.email }}</p>
-    <p><router-link to="/users">List of users</router-link></p>
+    <p><nuxt-link to="/users">List of users</nuxt-link></p>
   </div>
 </template>
 
