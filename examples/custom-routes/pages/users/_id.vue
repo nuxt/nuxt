@@ -12,6 +12,10 @@
 import axios from 'axios'
 
 export default {
+  transition (to, from) {
+    if (!from || !from.params.id || !to.params.id) return 'fade'
+    return +to.params.id > +from.params.id ? 'slide-left' : 'slide-right'
+  },
   data ({ params, error }) {
     return axios.get(`https://jsonplaceholder.typicode.com/users/${params.id}`)
     .then((res) => { return { user: res.data } })
@@ -28,10 +32,16 @@ export default {
   text-align: center;
   overflow: hidden;
   min-height: 440px;
+  transition: all .5s cubic-bezier(.55,0,.1,1);
 }
-/*.user {
-  text-align: center;
-  margin-top: 100px;
-  font-family: sans-serif;
-}*/
+.slide-left-enter,
+.slide-right-leave-active {
+  opacity: 0;
+  transform: translate(30px, 0);
+}
+.slide-left-leave-active,
+.slide-right-enter {
+  opacity: 0;
+  transform: translate(-30px, 0);
+}
 </style>

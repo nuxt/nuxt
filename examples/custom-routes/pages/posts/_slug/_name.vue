@@ -7,6 +7,41 @@
   </div>
 </template>
 
+<script>
+export default {
+  transition: {
+    name: 'bounce',
+    // css: true,
+    beforeEnter (el) {
+      console.log('Before enter');
+    },
+    enter (el) {
+      console.log('Enter')
+      // done()
+    },
+    afterEnter (el) {
+      console.log('After enter')
+    },
+    enterCancelled (el) {
+      console.log('Enter cancelled')
+    },
+    beforeLeave (el) {
+      console.log('Before leave')
+    },
+    leave (el) {
+      console.log('Leave')
+      // done()
+    },
+    afterLeave (el) {
+      console.log('After leave')
+    },
+    leaveCancelled (el) {
+      console.log('Leave cancelled')
+    }
+  }
+}
+</script>
+
 <style scoped>
 p
 {

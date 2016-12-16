@@ -11,5 +11,6 @@ module.exports = {
       '/projects/:slug': [{slug: 'toto'}, {slug: 'titi'}, {slug: 'tutu'}]
     }
   },
-  transition: 'fade'
+  transition: 'fade',
+  loading: false
 }
