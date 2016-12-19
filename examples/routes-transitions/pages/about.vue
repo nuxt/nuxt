@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h1>About page</h1>
-    <router-link to="/">Home page</router-link>
+    <nuxt-link to="/">Home page</nuxt-link>
   </div>
 </template>
 

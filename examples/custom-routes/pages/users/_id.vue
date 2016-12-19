@@ -3,7 +3,7 @@
     <h3>{{ name }}</h3>
     <h4>@{{ username }}</h4>
     <p>Email : {{ email }}</p>
-    <p><router-link to="/">List of users</router-link></p>
+    <p><nuxt-link to="/">List of users</nuxt-link></p>
   </div>
 </template>
 
@@ -11,8 +11,11 @@
 import axios from 'axios'
 
 export default {
+  validate ({ params }) {
+    return !isNaN(+params.id)
+  },
   data ({ params, error }) {
-    return axios.get(`https://jsonplaceholder.typicode.com/users/${params.id}`)
+    return axios.get(`https://jsonplaceholder.typicode.com/users/${+params.id}`)
     .then((res) => res.data)
     .catch(() => {
       error({ message: 'User not found', statusCode: 404 })

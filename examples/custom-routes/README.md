@@ -2,38 +2,177 @@
 
 > Nuxt.js is based on vue-router and allows you to defined custom routes :rocket:
 
-## Usage
+## Concept
 
-Add your custom routes inside `nuxt.config.js`:
+Nuxt.js detect and generate automatically the vue-router config according to your file tree of .vue files inside the `pages` directory.
+
+## Basic routes
+
+This file tree:
+
+```bash
+/pages
+|-> /team
+    |-> index.vue
+    |-> about.vue
+|-> index.vue
+```
+
+will automatically generate:
+
 ```js
-module.exports = {
-  router: {
-    routes: [
-      { name: 'user', path: '/users/:id', component: 'pages/user' }
-    ]
-  }
+router: {
+  routes: [
+    {
+      name: 'index',
+      path: '/',
+      component: 'pages/index'
+    },
+    {
+      name: 'team',
+      path: '/team',
+      component: 'pages/team/index'
+    },
+    {
+      name: 'team-about',
+      path: '/team/about',
+      component: 'pages/team/about'
+    }
+  ]
 }
 ```
 
-| key  | Optional? | definition |
-|------|------------|-----------|
-| `path` | **Required** | Route path, it can have dynamic mapping, look at [vue-router documentation](https://router.vuejs.org/en/essentials/dynamic-matching.html) about it. |
-| `component` | **Required** | Path to the `.vue` component, if relative, it has to be from the app folder. |
-| `name` | Optional | Route name, useful for linking to it with `<router-link>`, see [vue-router documentation](https://router.vuejs.org/en/essentials/named-routes.html) about it. |
-| `meta` | Optional | Let you add custom fields to get back inside your component (available in the context via `route.meta`  inside `data` and `fetch` methods). See [vue-router documentation](https://router.vuejs.org/en/advanced/meta.html) about it. |
-| `children` | Optional | *Not supported* |
+## Dynamic routes
 
-## Hidden pages
+To define a dynamic route with a param, you need to define a .vue file prefixed by an underscore.
 
->If you want don't want nuxt.js to generate a route for a specific page, you just have to **rename it with _ at the beginning**.
+This file tree:
 
-Let's say I have a component `pages/user.vue` and I don't want nuxt.js to create the `/user`. I can rename it to `pages/_user.vue` and voilà!
+```bash
+/pages
+|-> /projects
+    |-> index.vue
+    |-> _slug.vue
+```
 
-You can then change the component path in the `nuxt.config.js`:
+will automatically generate:
+
 ```js
-// ...
-  { name: 'user', path: '/users/:id', component: 'pages/_user' }
-// ...
+router: {
+  routes: [
+    {
+      name: 'projects',
+      path: '/projects',
+      component: 'pages/projects/index'
+    },
+    {
+      name: 'projects-slug',
+      path: '/projects/:slug',
+      component: 'pages/projects/_slug'
+    }
+  ]
+}
+```
+
+### Additional feature : validate (optional)
+
+Nuxt.js allows you to define a validator function inside your dynamic route component (In this example: `pages/projects/_slug.vue`).
+
+If validate function fails, Nuxt.js will automatically load the 404 error page.
+
+```js
+<script>
+export default {
+  validate ({ params }) {
+    return /^[A-z]+$/.test(params.slug)
+  }
+}
+</script>
+```
+
+## Nested Routes (children)
+
+To define a nested route, you need to define a .vue file with the same name as the directory which contain your children views.
+> Don't forget to put `<nuxt-child></nuxt-child>` inside your parent .vue file.
+
+This file tree:
+
+```bash
+/pages
+|-> /users
+    |-> _id.vue
+|-> users.vue
+```
+
+will automatically generate:
+
+```js
+router: {
+  routes: [
+    {
+      path: '/users',
+      component: 'pages/users',
+      children: [
+        {
+          path: ':id',
+          component: 'pages/users/_id',
+          name: 'users-id'
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Dynamic Nested Routes
+
+This file tree:
+
+```bash
+/pages
+|-> /posts
+    |-> /_slug
+        |-> _name.vue
+        |-> comments.vue
+    |-> _slug.vue
+    |-> index.vue
+|-> posts.vue
+```
+
+will automatically generate:
+
+```js
+router: {
+  routes: [
+    {
+      path: '/posts',
+      component: 'pages/posts',
+      children: [
+        {
+          path: "",
+          component: 'pages/posts/index',
+          name: 'posts'
+        },
+        {
+          path: ':slug',
+          component: 'pages/posts/_slug',
+          children: [
+            {
+              path: 'comments',
+              component: 'pages/posts/_slug/comments',
+              name: 'posts-slug-comments'
+            },
+            {
+              path: ':name',
+              component: 'pages/posts/_slug/_name',
+              name: 'posts-slug-name'
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ## Demo

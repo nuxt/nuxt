@@ -2,7 +2,7 @@
 <template>
   <div>
     <p>{{ userAgent }}</p>
-    <p><router-link to="/post">See a post (http request / Ajax)</router-link></p>
+    <p><nuxt-link to="/post">See a post (http request / Ajax)</nuxt-link></p>
   </div>
 </template>
 

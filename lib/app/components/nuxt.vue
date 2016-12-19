@@ -1,15 +1,14 @@
 <template>
   <div>
     <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
-    <transition :name="nuxt.transition.name" :mode="nuxt.transition.mode">
-      <router-view v-if="!nuxt.err"></router-view>
-      <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
-    </transition>
+    <nuxt-child v-if="!nuxt.err"></nuxt-child>
+    <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
+import NuxtChild from './nuxt-child'
 import NuxtError from '<%= components.ErrorPage %>'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./nuxt-loading.vue") %>'<% } %>
 
@@ -47,6 +46,7 @@ export default {
   },
   <% } %>
   components: {
+    NuxtChild,
     NuxtError<%= (loading ? ',\n    NuxtLoading' : '') %>
   }
 }

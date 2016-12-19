@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <p><button @click="showLoginError">Notif me!</button></p>
-    <p>Home - <router-link to="/about">About</router-link></p>
+    <p>Home - <nuxt-link to="/about">About</nuxt-link></p>
   </div>
 </template>
 

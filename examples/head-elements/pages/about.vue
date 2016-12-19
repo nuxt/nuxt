@@ -3,7 +3,7 @@
     <h1>About page</h1>
     <p>Click below to see the custom meta tags added with our custom component <code>twitter-head-card</code></p>
     <twitter-head-card></twitter-head-card>
-    <p><router-link to="/">Home page</router-link></p>
+    <p><nuxt-link to="/">Home page</nuxt-link></p>
   </div>
 </template>
 

@@ -3,7 +3,7 @@
     <h2>Users</h2>
     <ul class="users">
       <li v-for="user in users">
-        <router-link :to="{ name: 'user', params: { id: user.id } }">{{ user.name }}</router-link>
+        <nuxt-link :to="'/users/'+user.id">{{ user.name }}</nuxt-link>
       </li>
     </ul>
   </div>

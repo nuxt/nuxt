@@ -71,7 +71,7 @@ To define a custom transition for a specific route, simply add the `transition` 
 <template>
   <div class="container">
     <h1>About page</h1>
-    <router-link to="/">Home page</router-link>
+    <nuxt-link to="/">Home page</nuxt-link>
   </div>
 </template>
 

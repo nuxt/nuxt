@@ -2,7 +2,7 @@
   <div>
     <p>
       <button @click="$store.commit('increment')">{{ $store.state.counter }}</button><br>
-      <router-link to="/">Home</router-link>
+      <nuxt-link to="/">Home</nuxt-link>
     </p>
   </div>
 </template>

@@ -5,6 +5,7 @@ process.env.DEBUG = 'nuxt:*'
 
 var _ = require('lodash')
 var debug = require('debug')('nuxt:build')
+debug.color = 2 // force green color
 var fs = require('fs')
 var Nuxt = require('../')
 var chokidar = require('chokidar')
@@ -37,7 +38,7 @@ nuxt.build()
 function listenOnConfigChanges (nuxt, server) {
   // Listen on nuxt.config.js changes
   var build = _.debounce(() => {
-    debug('[nuxt.config.js] changed, rebuilding the app...')
+    debug('[nuxt.config.js] changed')
     delete require.cache[nuxtConfigFile]
     var options = {}
     if (fs.existsSync(nuxtConfigFile)) {
@@ -50,6 +51,8 @@ function listenOnConfigChanges (nuxt, server) {
     options.rootDir = rootDir
     nuxt.close()
     .then(() => {
+      nuxt.renderer = null
+      debug('Rebuilding the app...')
       return new Nuxt(options).build()
     })
     .then((nuxt) => {
