@@ -1,8 +1,46 @@
 <template>
   <div class="container">
-    <h1>Home</h1>
-    <h2>
-      Examples of custom routes
-    </h2>
+    <h2>Users</h2>
+    <ul class="users">
+      <li v-for="user in users">
+        <nuxt-link :to="'/users/'+user.id">{{ user.name }}</nuxt-link>
+      </li>
+    </ul>
   </div>
 </template>
+
+<script>
+import axios from 'axios'
+
+export default {
+  data () {
+    return axios.get('https://jsonplaceholder.typicode.com/users')
+    .then((res) => {
+      return { users: res.data }
+    })
+  }
+}
+</script>
+
+<style scoped>
+.container {
+  text-align: center;
+  margin-top: 100px;
+  font-family: sans-serif;
+}
+.users {
+  list-style-type: none;
+}
+.users li a {
+  display: inline-block;
+  width: 200px;
+  border: 1px #ddd solid;
+  padding: 10px;
+  text-align: left;
+  color: #222;
+  text-decoration: none;
+}
+.users li a:hover {
+  color: orange;
+}
+</style>

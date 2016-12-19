@@ -1,10 +1,9 @@
 <template>
-  <div class="container">
-    <h2>User</h2>
-    <h3>{{ user.name }}</h3>
-    <h4>@{{ user.username }}</h4>
-    <p>Email : {{ user.email }}</p>
-    <p><nuxt-link to="/users">List of users</nuxt-link></p>
+  <div class="user">
+    <h3>{{ name }}</h3>
+    <h4>@{{ username }}</h4>
+    <p>Email : {{ email }}</p>
+    <p><nuxt-link to="/">List of users</nuxt-link></p>
   </div>
 </template>
 
@@ -12,13 +11,12 @@
 import axios from 'axios'
 
 export default {
-  transition (to, from) {
-    if (!from || !from.params.id || !to.params.id) return 'fade'
-    return +to.params.id > +from.params.id ? 'slide-left' : 'slide-right'
+  validate ({ params }) {
+    return !isNaN(+params.id)
   },
   data ({ params, error }) {
-    return axios.get(`https://jsonplaceholder.typicode.com/users/${params.id}`)
-    .then((res) => { return { user: res.data } })
+    return axios.get(`https://jsonplaceholder.typicode.com/users/${+params.id}`)
+    .then((res) => res.data)
     .catch(() => {
       error({ message: 'User not found', statusCode: 404 })
     })
@@ -27,21 +25,9 @@ export default {
 </script>
 
 <style scoped>
-.container
-{
+.user {
   text-align: center;
-  overflow: hidden;
-  min-height: 440px;
-  transition: all .5s cubic-bezier(.55,0,.1,1);
-}
-.slide-left-enter,
-.slide-right-leave-active {
-  opacity: 0;
-  transform: translate(30px, 0);
-}
-.slide-left-leave-active,
-.slide-right-enter {
-  opacity: 0;
-  transform: translate(-30px, 0);
+  margin-top: 100px;
+  font-family: sans-serif;
 }
 </style>
