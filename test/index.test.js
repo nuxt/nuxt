@@ -39,7 +39,7 @@ test.serial('Fail when build not done and try to render', t => {
 test.serial('Fail to build when no pages/ directory but is in the parent', t => {
   const nuxt = new Nuxt({
     dev: false,
-    rootDir: resolve(__dirname, 'empty', 'pages')
+    rootDir: resolve(__dirname, 'fixtures', 'empty', 'pages')
   })
   return new Promise((resolve) => {
     var oldExit = process.exit
