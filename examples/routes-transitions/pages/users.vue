@@ -50,7 +50,8 @@ a.disabled {
 ul {
   margin: auto;
   padding: 0;
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   padding-top: 40px;
 }
 li {
