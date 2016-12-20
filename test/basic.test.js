@@ -57,6 +57,16 @@ test('/async-data', async t => {
   t.true(html.includes('<p>Nuxt.js</p>'))
 })
 
+test('/validate should display a 404', async t => {
+  const { html } = await nuxt.renderRoute('/validate')
+  t.true(html.includes('This page could not be found'))
+})
+
+test('/validate?valid=true', async t => {
+  const { html } = await nuxt.renderRoute('/validate?valid=true')
+  t.true(html.includes('<h1>I am valid</h1>'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()

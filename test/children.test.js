@@ -26,16 +26,33 @@ test('/parent', async t => {
   t.true(html.includes('<h1>I am the parent</h1>'))
 })
 
-test('/parent with _id.vue', async t => {
-  // const { html } = await nuxt.renderRoute('/parent')
-  // t.true(html.includes('<h1>I am the parent</h1>'))
-  // t.true(html.includes('<h2>I am the child</h2>'))
-})
-
 test('/parent/child', async t => {
   const { html } = await nuxt.renderRoute('/parent/child')
   t.true(html.includes('<h1>I am the parent</h1>'))
   t.true(html.includes('<h2>I am the child</h2>'))
+})
+
+test('/parent should call _id.vue', async t => {
+  const { html } = await nuxt.renderRoute('/parent')
+  t.true(html.includes('<h1>I am the parent</h1>'))
+  t.true(html.includes('<h2>Id=</h2>'))
+})
+
+test('/parent/1', async t => {
+  const { html } = await nuxt.renderRoute('/parent/1')
+  t.true(html.includes('<h1>I am the parent</h1>'))
+  t.true(html.includes('<h2>Id=1</h2>'))
+})
+
+test('/parent/validate-child should display 404', async t => {
+  const { html } = await nuxt.renderRoute('/parent/validate-child')
+  t.true(html.includes('This page could not be found'))
+})
+
+test('/parent/validate-child?key=12345', async t => {
+  const { html } = await nuxt.renderRoute('/parent/validate-child?key=12345')
+  t.true(html.includes('<h1>I am the parent</h1>'))
+  t.true(html.includes('<h2>Child valid</h2>'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
