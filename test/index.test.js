@@ -15,10 +15,10 @@ test('Nuxt.js Instance', t => {
   t.is(typeof nuxt.generate, 'function')
 })
 
-test('Fail when build not done and try to render', async t => {
+test.serial('Fail when build not done and try to render', t => {
   const nuxt = new Nuxt({
     dev: false,
-    rootDir: resolve(__dirname, 'empty')
+    rootDir: resolve(__dirname, 'fixtures/empty')
   })
   return new Promise((resolve) => {
     var oldExit = process.exit
@@ -36,40 +36,44 @@ test('Fail when build not done and try to render', async t => {
   })
 })
 
-test('Fail to build when no pages/ directory but is in the parent', async t => {
+test.serial('Fail to build when no pages/ directory but is in the parent', t => {
   const nuxt = new Nuxt({
     dev: false,
     rootDir: resolve(__dirname, 'empty', 'pages')
   })
-  var oldExit = process.exit
-  var oldCE = console.error // eslint-disable-line no-console
-  var _log = ''
-  console.error = (s) => { _log += s } // eslint-disable-line no-console
-  process.exit = (code) => {
-    process.exit = oldExit
-    console.error = oldCE // eslint-disable-line no-console
-    t.is(code, 1)
-    t.true(_log.includes('No `pages` directory found. Did you mean to run `nuxt` in the parent (`../`) directory?'))
-    resolve()
-  }
-  nuxt.build()
+  return new Promise((resolve) => {
+    var oldExit = process.exit
+    var oldCE = console.error // eslint-disable-line no-console
+    var _log = ''
+    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    process.exit = (code) => {
+      process.exit = oldExit
+      console.error = oldCE // eslint-disable-line no-console
+      t.is(code, 1)
+      t.true(_log.includes('No `pages` directory found. Did you mean to run `nuxt` in the parent (`../`) directory?'))
+      resolve()
+    }
+    nuxt.build()
+  })
 })
 
-test('Fail to build when no pages/ directory', async t => {
+test.serial('Fail to build when no pages/ directory', t => {
   const nuxt = new Nuxt({
     dev: false,
     rootDir: resolve(__dirname)
   })
-  var oldExit = process.exit
-  var oldCE = console.error // eslint-disable-line no-console
-  var _log = ''
-  console.error = (s) => { _log += s } // eslint-disable-line no-console
-  process.exit = (code) => {
-    process.exit = oldExit
-    console.error = oldCE // eslint-disable-line no-console
-    t.is(code, 1)
-    t.true(_log.includes('Couldn\'t find a `pages` directory. Please create one under the project root'))
-    resolve()
-  }
-  nuxt.build()
+  return new Promise((resolve) => {
+    var oldExit = process.exit
+    var oldCE = console.error // eslint-disable-line no-console
+    var _log = ''
+    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    process.exit = (code) => {
+      process.exit = oldExit
+      console.error = oldCE // eslint-disable-line no-console
+      t.is(code, 1)
+      t.true(_log.includes('Couldn\'t find a `pages` directory. Please create one under the project root'))
+      resolve()
+    }
+    nuxt.build()
+  })
 })

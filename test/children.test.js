@@ -7,18 +7,16 @@ let nuxt = null
 let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', t => {
+test.before('Init Nuxt.js', async t => {
   const Nuxt = require('../')
   const options = {
-    rootDir: resolve(__dirname, 'children'),
+    rootDir: resolve(__dirname, 'fixtures/children'),
     dev: false
   }
   nuxt = new Nuxt(options)
-  return nuxt.build()
-  .then(function () {
-    server = new nuxt.Server(nuxt)
-    server.listen(port, 'localhost')
-  })
+  await nuxt.build()
+  server = new nuxt.Server(nuxt)
+  server.listen(port, 'localhost')
 })
 
 test('/parent', async t => {

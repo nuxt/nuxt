@@ -37,7 +37,7 @@
   "scripts": {
     "test": "nyc ava test/",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "eslint --ext .js,.vue bin lib pages test --ignore-pattern lib/app",
+    "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern lib/app",
     "build": "webpack",
     "watch": "webpack --watch",
     "precommit": "npm run lint",
