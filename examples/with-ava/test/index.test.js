@@ -2,7 +2,6 @@
 ** Test with Ava can be written in ES6 \o/
 */
 import test from 'ava'
-import jsdom from 'jsdom'
 import { createServer } from 'http'
 import { resolve } from 'path'
 
@@ -39,7 +38,7 @@ test('Route / exits and render HTML', async t => {
 ** Example of testing via dom checking
 */
 test('Route / exits and render HTML', async t => {
-  const window = await nuxt.renderAndGetWindow(jsdom, 'http://localhost:4000/')
+  const window = await nuxt.renderAndGetWindow('http://localhost:4000/')
   const element = window.document.querySelector('.red-color')
   t.not(element, null)
   t.is(element.textContent, 'Hello world!')

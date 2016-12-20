@@ -1,5 +1,4 @@
 import test from 'ava'
-import jsdom from 'jsdom'
 import { resolve } from 'path'
 const port = 4002
 const url = (route) => 'http://localhost:' + port + route
@@ -31,7 +30,7 @@ test('/stateless', async t => {
 ** Example of testing via dom checking
 */
 test('/css', async t => {
-  const window = await nuxt.renderAndGetWindow(jsdom, url('/css'))
+  const window = await nuxt.renderAndGetWindow(url('/css'))
   const element = window.document.querySelector('.red')
   t.not(element, null)
   t.is(element.textContent, 'This is red')
@@ -45,7 +44,7 @@ test('/stateful', async t => {
 })
 
 test('/head', async t => {
-  const window = await nuxt.renderAndGetWindow(jsdom, url('/head'))
+  const window = await nuxt.renderAndGetWindow(url('/head'))
   const html = window.document.body.innerHTML
   const metas = window.document.getElementsByTagName('meta')
   t.is(window.document.title, 'My title')
