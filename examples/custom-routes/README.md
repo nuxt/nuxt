@@ -1,21 +1,21 @@
 # Defining custom routes with Nuxt.js
 
-> Nuxt.js is based on vue-router and allows you to defined custom routes :rocket:
+> Nuxt.js is based on `vue-router` and let you to defined custom routes easily :rocket:
 
 ## Concept
 
-Nuxt.js detect and generate automatically the vue-router config according to your file tree of .vue files inside the `pages` directory.
+Nuxt.js generates automatically the `vue-router` configuration according to your file tree of `.vue` files inside the `pages/` directory.
 
 ## Basic routes
 
 This file tree:
 
 ```bash
-/pages
-|-> /team
-    |-> index.vue
-    |-> about.vue
-|-> index.vue
+pages/
+--| team/
+-----| index.vue
+-----| about.vue
+--| index.vue
 ```
 
 will automatically generate:
@@ -26,17 +26,17 @@ router: {
     {
       name: 'index',
       path: '/',
-      component: 'pages/index'
+      component: 'pages/index.vue'
     },
     {
       name: 'team',
       path: '/team',
-      component: 'pages/team/index'
+      component: 'pages/team/index.vue'
     },
     {
       name: 'team-about',
       path: '/team/about',
-      component: 'pages/team/about'
+      component: 'pages/team/about.vue'
     }
   ]
 }
@@ -44,15 +44,15 @@ router: {
 
 ## Dynamic routes
 
-To define a dynamic route with a param, you need to define a .vue file prefixed by an underscore.
+To define a dynamic route with a param, you need to define a `.vue` file **prefixed by an underscore**.
 
 This file tree:
 
 ```bash
-/pages
-|-> /projects
-    |-> index.vue
-    |-> _slug.vue
+pages/
+--| users/
+-----| _id.vue
+-----| index.vue
 ```
 
 will automatically generate:
@@ -61,30 +61,30 @@ will automatically generate:
 router: {
   routes: [
     {
-      name: 'projects',
-      path: '/projects',
-      component: 'pages/projects/index'
+      name: 'users',
+      path: '/users',
+      component: 'pages/users/index.vue'
     },
     {
-      name: 'projects-slug',
-      path: '/projects/:slug',
-      component: 'pages/projects/_slug'
+      name: 'users-id',
+      path: '/users/:id',
+      component: 'pages/users/_id.vue'
     }
   ]
 }
 ```
 
-### Additional feature : validate (optional)
+### Additional feature: validate (optional)
 
-Nuxt.js allows you to define a validator function inside your dynamic route component (In this example: `pages/projects/_slug.vue`).
+Nuxt.js lets you define a validator function inside your dynamic route component (In this example: `pages/users/_id.vue`).
 
-If validate function fails, Nuxt.js will automatically load the 404 error page.
+If the validate method does not return `true`, Nuxt.js will automatically load the 404 error page.
 
 ```js
 <script>
 export default {
   validate ({ params }) {
-    return /^[A-z]+$/.test(params.slug)
+    return /^\d+$/.test(params.id)
   }
 }
 </script>
@@ -92,16 +92,16 @@ export default {
 
 ## Nested Routes (children)
 
-To define a nested route, you need to define a .vue file with the same name as the directory which contain your children views.
-> Don't forget to put `<nuxt-child></nuxt-child>` inside your parent .vue file.
+To define a nested route, you need to create a `.vue` file with the **same name as the directory** which contain your children views.
+> Don't forget to put `<nuxt-child></nuxt-child>` inside your parent `.vue` file.
 
 This file tree:
 
 ```bash
-/pages
-|-> /users
-    |-> _id.vue
-|-> users.vue
+pages/
+--| users/
+-----| _id.vue
+--| users.vue
 ```
 
 will automatically generate:
@@ -111,11 +111,11 @@ router: {
   routes: [
     {
       path: '/users',
-      component: 'pages/users',
+      component: 'pages/users.vue',
       children: [
         {
           path: ':id',
-          component: 'pages/users/_id',
+          component: 'pages/users/_id.vue',
           name: 'users-id'
         }
       ]
@@ -129,14 +129,14 @@ router: {
 This file tree:
 
 ```bash
-/pages
-|-> /posts
-    |-> /_slug
-        |-> _name.vue
-        |-> comments.vue
-    |-> _slug.vue
-    |-> index.vue
-|-> posts.vue
+pages/
+--| posts/
+-----| _slug/
+--------| _name.vue
+--------| comments.vue
+-----| _slug.vue
+-----| index.vue
+--| posts.vue
 ```
 
 will automatically generate:
@@ -146,25 +146,25 @@ router: {
   routes: [
     {
       path: '/posts',
-      component: 'pages/posts',
+      component: 'pages/posts.vue',
       children: [
         {
-          path: "",
-          component: 'pages/posts/index',
+          path '',
+          component: 'pages/posts/index.vue',
           name: 'posts'
         },
         {
           path: ':slug',
-          component: 'pages/posts/_slug',
+          component: 'pages/posts/_slug.vue',
           children: [
             {
               path: 'comments',
-              component: 'pages/posts/_slug/comments',
+              component: 'pages/posts/_slug/comments.vue',
               name: 'posts-slug-comments'
             },
             {
               path: ':name',
-              component: 'pages/posts/_slug/_name',
+              component: 'pages/posts/_slug/_name.vue',
               name: 'posts-slug-name'
             }
           ]
