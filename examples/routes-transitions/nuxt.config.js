@@ -1,5 +1,7 @@
 module.exports = {
-  css: [
-    'assets/main.css'
-  ]
+  build: {
+    vendor: ['axios']
+  },
+  css: ['assets/main.css'],
+  loading: false
 }

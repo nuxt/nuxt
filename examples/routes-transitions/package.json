@@ -2,14 +2,12 @@
   "name": "routes-transition",
   "description": "",
   "dependencies": {
+    "axios": "^0.15.3",
     "nuxt": "latest"
   },
   "scripts": {
-    "start": "../../bin/nuxt"
-  },
-  "config": {
-    "nuxt": {
-      "port": 4000
-    }
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
   }
 }
