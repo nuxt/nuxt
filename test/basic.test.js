@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-const port = 4002
+const port = 4000
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
@@ -65,6 +65,23 @@ test('/validate should display a 404', async t => {
 test('/validate?valid=true', async t => {
   const { html } = await nuxt.renderRoute('/validate?valid=true')
   t.true(html.includes('<h1>I am valid</h1>'))
+})
+
+test('/redirect', async t => {
+  const { html } = await nuxt.renderRoute('/redirect')
+  t.true(html.includes('<div id="__nuxt"></div>'))
+})
+
+test('/redirect -> check redirected source', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/redirect'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Index page</h1>'))
+})
+
+test('/error', async t => {
+  const { html, error } = await nuxt.renderRoute('/error')
+  t.true(html.includes('Error mouahahah'))
+  t.true(error.message.includes('Error mouahahah'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
