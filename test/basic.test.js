@@ -1,5 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
+import rp from 'request-promise-native'
 const port = 4000
 const url = (route) => 'http://localhost:' + port + route
 
@@ -66,8 +67,10 @@ test('/validate?valid=true', async t => {
 })
 
 test('/redirect', async t => {
-  const { html } = await nuxt.renderRoute('/redirect')
+  const { html, redirected } = await nuxt.renderRoute('/redirect')
   t.true(html.includes('<div id="__nuxt"></div>'))
+  t.true(redirected.path === '/')
+  t.true(redirected.status === 302)
 })
 
 test('/redirect -> check redirected source', async t => {
@@ -80,6 +83,32 @@ test('/error', async t => {
   const { html, error } = await nuxt.renderRoute('/error')
   t.true(html.includes('Error mouahahah'))
   t.true(error.message.includes('Error mouahahah'))
+  t.true(error.statusCode === 500)
+})
+
+test('/error status code', async t => {
+  try {
+    await rp(url('/error'))
+  } catch (err) {
+    t.true(err.statusCode === 500)
+    t.true(err.response.body.includes('Error mouahahah'))
+  }
+})
+
+test('/error2', async t => {
+  const { html, error } = await nuxt.renderRoute('/error2')
+  t.true(html.includes('Custom error'))
+  t.true(error.message.includes('Custom error'))
+  t.true(error.statusCode === undefined)
+})
+
+test('/error2 status code', async t => {
+  try {
+    await rp(url('/error2'))
+  } catch (err) {
+    t.true(err.statusCode === 500)
+    t.true(err.response.body.includes('Custom error'))
+  }
 })
 
 // Close server and ask nuxt to stop listening to file changes

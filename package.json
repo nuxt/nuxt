@@ -96,6 +96,8 @@
     "jsdom": "^9.8.3",
     "json-loader": "^0.5.4",
     "nyc": "^10.0.0",
+    "request": "^2.79.0",
+    "request-promise-native": "^1.0.3",
     "webpack-node-externals": "^1.5.4"
   }
 }
