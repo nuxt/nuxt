@@ -35,7 +35,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "test": "nyc ava test/",
+    "test": "nyc ava --serial test/",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern lib/app",
     "build": "webpack",
@@ -93,6 +93,7 @@
     "eslint-plugin-html": "^1.7.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
+    "finalhandler": "^0.5.1",
     "jsdom": "^9.8.3",
     "json-loader": "^0.5.4",
     "nyc": "^10.0.0",
