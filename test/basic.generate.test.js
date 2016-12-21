@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import http from 'http'
 import serveStatic from 'serve-static'
+import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
 const port = 4003
 const url = (route) => 'http://localhost:' + port + route
@@ -12,14 +13,16 @@ let server = null
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
   const Nuxt = require('../')
-  const options = {
-    rootDir: resolve(__dirname, 'fixtures/basic'),
-    dev: false
-  }
-  nuxt = new Nuxt(options)
+  const rootDir = resolve(__dirname, 'fixtures/basic')
+  let config = require(resolve(rootDir, 'nuxt.config.js'))
+  config.rootDir = rootDir
+  config.dev = false
+  nuxt = new Nuxt(config)
   await nuxt.generate()
   const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
-  server = http.createServer(serve)
+  server = http.createServer((req, res) => {
+    serve(req, res, finalhandler(req, res))
+  })
   server.listen(port)
 })
 
@@ -57,6 +60,30 @@ test('/async-data', async t => {
   const window = await nuxt.renderAndGetWindow(url('/async-data'))
   const html = window.document.body.innerHTML
   t.true(html.includes('<p>Nuxt.js</p>'))
+})
+
+test('/users/1', async t => {
+  const html = await rp(url('/users/1'))
+  t.true(html.includes('<h1>User: 1</h1>'))
+})
+
+test('/users/2', async t => {
+  const html = await rp(url('/users/2'))
+  t.true(html.includes('<h1>User: 2</h1>'))
+})
+
+test('/users/3', async t => {
+  const html = await rp(url('/users/3'))
+  t.true(html.includes('<h1>User: 3</h1>'))
+})
+
+test('/users/4 -> Not found', async t => {
+  try {
+    await rp(url('/users/4'))
+  } catch (error) {
+    t.true(error.statusCode === 404)
+    t.true(error.response.body.includes('Cannot GET /users/4'))
+  }
 })
 
 test('/validate should not be server-rendered', async t => {

@@ -30,8 +30,25 @@ test('/test/ (router base)', async t => {
   t.true(html.includes('<h1>I have custom configurations</h1>'))
 })
 
+test('/test/env', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/test/env'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('"bool": true'))
+  t.true(html.includes('"num": 23'))
+  t.true(html.includes('"string": "Nuxt.js"'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
   nuxt.close()
+})
+
+test.after('Should be able to start Nuxt with build done', t => {
+  const Nuxt = require('../')
+  const rootDir = resolve(__dirname, 'fixtures/with-config')
+  let config = require(resolve(rootDir, 'nuxt.config.js'))
+  config.rootDir = rootDir
+  config.dev = false
+  nuxt = new Nuxt(config)
 })

@@ -56,6 +56,11 @@ test('/async-data', async t => {
   t.true(html.includes('<p>Nuxt.js</p>'))
 })
 
+test('/users/1', async t => {
+  const { html } = await nuxt.renderRoute('/users/1')
+  t.true(html.includes('<h1>User: 1</h1>'))
+})
+
 test('/validate should display a 404', async t => {
   const { html } = await nuxt.renderRoute('/validate')
   t.true(html.includes('This page could not be found'))

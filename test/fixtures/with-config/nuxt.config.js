@@ -3,5 +3,11 @@ module.exports = {
     base: '/test/'
   },
   cache: true,
-  loading: '~components/loading'
+  plugins: ['~plugins/test.js'],
+  loading: '~components/loading',
+  env: {
+    bool: true,
+    num: 23,
+    string: 'Nuxt.js'
+  }
 }
