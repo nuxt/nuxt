@@ -25,7 +25,7 @@ export default {
   },
   data ({ query }) {
     const page = +query.page || 1
-    return axios.get('http://reqres.in/api/users?page=' + page)
+    return axios.get('https://reqres.in/api/users?page=' + page)
     .then((res) => {
       return {
         page: +res.data.page,
