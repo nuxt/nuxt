@@ -2,12 +2,15 @@
 <template>
   <div>
     <p>{{ post.title }}!</p>
+    <post post-id="1" />
+    <post post-id="2" />
     <p><nuxt-link to="/">Back home</nuxt-link></p>
   </div>
 </template>
 
 <script>
 const axios = require('axios')
+import Post from '~components/post'
 
 export default {
   data ({ req }) {
@@ -21,6 +24,9 @@ export default {
     return {
       title: this.post.title
     }
+  },
+  components: {
+    Post
   }
 }
 </script>
