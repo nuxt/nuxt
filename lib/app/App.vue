@@ -1,7 +1,7 @@
 <template>
-  <nuxt-container>
+  <div id="__nuxt">
     <component v-if="layout" :is="layout"></component>
-  </nuxt-container>
+  </div>
 </template>
 
 <script>
@@ -14,6 +14,7 @@ layoutsKeys.forEach(function (key, i) { %>
 }
 
 export default {
+  head: <%= JSON.stringify(head) %>,
   data: () => ({
     layout: null,
     layoutName: ''
@@ -46,3 +47,7 @@ export default {
   }
 }
 </script>
+
+<% css.forEach(function (c) { %>
+<style src="<%= (typeof c === 'string' ? c : c.src) %>" lang="<%= (c.lang ? c.lang : 'css') %>"></style>
+<% }) %>
