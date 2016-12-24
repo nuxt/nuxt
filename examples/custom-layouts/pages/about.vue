@@ -7,9 +7,10 @@
 
 <script>
 export default {
+  layout: 'dark',
   data ({ req }) {
     return {
-      name: req ? 'server' : 'client'
+      name: req ? 'server' : 'client2'
     }
   }
 }

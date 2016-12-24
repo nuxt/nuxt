@@ -1,8 +1,6 @@
 {
-  "name": "nuxt-custom-routes",
-  "description": "",
+  "name": "nuxt-custom-layouts",
   "dependencies": {
-    "axios": "^0.15.2",
     "nuxt": "latest"
   },
   "scripts": {
