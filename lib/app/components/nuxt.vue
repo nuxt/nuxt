@@ -22,6 +22,8 @@ export default {
     Vue.prototype.$nuxt = this
     // Add this.$root.$nuxt
     this.$root.$nuxt = this
+    // Bind $nuxt.setLayout(layout) to $root.setLayout
+    this.setLayout = this.$root.setLayout.bind(this.$root)
     // add to window so we can listen when ready
     if (typeof window !== 'undefined') {
       window.$nuxt = this
