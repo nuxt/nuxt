@@ -27,7 +27,15 @@ test('/', async t => {
 test('/test/ (router base)', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/'))
   const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Default layout</h1>'))
   t.true(html.includes('<h1>I have custom configurations</h1>'))
+})
+
+test('/test/about (custom layout)', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/test/about'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Custom layout</h1>'))
+  t.true(html.includes('<h1>About page</h1>'))
 })
 
 test('/test/env', async t => {
