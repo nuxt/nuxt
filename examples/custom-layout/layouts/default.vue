@@ -1,8 +1,8 @@
 <template>
-  <nuxt-container>
+  <div>
     <img src="logo.png"/>
     <nuxt/>
-  </nuxt-container>
+  </div>
 </template>
 
 <style scoped>
