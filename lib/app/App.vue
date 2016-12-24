@@ -14,12 +14,14 @@ layoutsKeys.forEach(function (key, i) { %>
 }
 
 export default {
-  data () {
-    return { layout: null }
-  },
+  data: () => ({
+    layout: null,
+    layoutName: ''
+  }),
   methods: {
     setLayout (layout) {
       if (!layout || !layouts['_' + layout]) layout = 'default'
+      this.layoutName = layout
       let _layout = '_' + layout
       if (typeof layouts[_layout] === 'function') {
         return this.loadLayout(_layout)
