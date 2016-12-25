@@ -4,6 +4,7 @@
 
 <script>
 export default {
+  layout: 'custom-env',
   data ({ env }) {
     return { env }
   }
