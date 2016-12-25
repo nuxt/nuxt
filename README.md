@@ -60,32 +60,20 @@ So far, we get:
 
 - Automatic transpilation and bundling (with webpack and babel)
 - Hot code reloading
-- Server rendering and indexing of `./pages`
+- Server rendering and indexing of `pages/`
 - Static file serving. `./static/` is mapped to `/`
-- Config file `nuxt.config.js`
+- Configurable with a `nuxt.config.js` file
+- Custom layouts with the `layouts/` directory
 - Code splitting via webpack
 
 ## Using nuxt.js programmatically
 
-Nuxt is built on the top of ES2015, which makes the code more enjoyable and cleaner to read. It doesn't make use of any transpilers and depends upon Core V8 implemented features.
-For these reasons, nuxt.js targets Node.js `4.0` or higher (you might want to launch node with the `--harmony-proxies` flag if you running `node <= 6.5.0` )
-
 ```js
 const Nuxt = require('nuxt')
 
-const options = {
-  routes: [], // see examples/custom-routes
-  css: ['/dist/bootstrap.css'] // see examples/global-css
-  store: true // see examples/vuex-store
-  plugins: ['public/plugin.js'], // see examples/plugins-vendor
-  loading: false or { color: 'blue', failedColor: 'red' } or 'components/my-spinner' // see examples/custom-loading
-  build: {
-    vendor: ['axios'] // see examples/plugins-vendor
-  }
-}
-
 // Launch nuxt build with given options
-let nuxt = new Nuxt(options)
+let config = require('./nuxt.config.js')
+let nuxt = new Nuxt(config)
 nuxt.build()
 .then(() => {
   // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
@@ -106,7 +94,7 @@ app.use(nuxt.render)
 
 ## Render a specific route
 
-This is mostly used for tests purpose but who knows!
+This is mostly used for `nuxt generate` and tests purposes but you might found another utility!
 
 ```js
 nuxt.renderRoute('/about', context)
@@ -125,14 +113,7 @@ nuxt.renderRoute('/about', context)
 
 ## Examples
 
-Please take a look at the examples/ folder.
-If you want to launch one example to see it live:
-
-```bash
-cd node_modules/nuxt/
-bin/nuxt examples/hello-world
-# Go to http://localhost:3000
-```
+Please take a look at the [examples/](https://github.com/nuxt/nuxt.js/tree/master/examples) directory.
 
 ## Production deployment
 
