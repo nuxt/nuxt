@@ -1,8 +1,11 @@
 <template>
   <div>
     <p>
-      <button @click="increment">{{ counter }}</button><br>
+      <button @click="increment">{{ counter }}</button>
+      <br>
       <nuxt-link to="/about">About</nuxt-link>
+      <br>
+      <nuxt-link to="/todos">Todos</nuxt-link>
     </p>
   </div>
 </template>
