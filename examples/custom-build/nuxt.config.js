@@ -16,6 +16,11 @@ module.exports = {
           name: 'img/[name].[ext]?[hash]'
         }
       }
-    ]
+    ],
+    extend (config, { dev }) {
+      if (dev) {
+        config.devtool = (dev ? 'eval-source-map' : false)
+      }
+    }
   }
 }
