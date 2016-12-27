@@ -6,10 +6,11 @@
 
 `data` is called every time before loading the component (*only if attached to a route*). It can be called from the server-side or before navigating to the corresponding route.
 
-The `data` method receives the context as the first argument, you can use it to fetch some data and return the component data. To make the data method asynchronous, Nuxt.js offers you 2 ways, choose the one you're the most familiar with:
+The `data` method receives the context as the first argument, you can use it to fetch some data and return the component data. To make the data method asynchronous, Nuxt.js offers you different ways, choose the one you're the most familiar with:
 
 1. returning a `Promise`, Nuxt.js will wait for the promise to be resolved before rendering the Component
-2. Define a second argument which is a callback method to be called like this: `callback(err, data)`
+2. Using the async/await ES7 feature
+3. Define a second argument which is a callback method to be called like this: `callback(err, data)`
 
 Example with returning a `Promise`:
 ```js
@@ -19,6 +20,16 @@ export default {
     .then((res) => {
       return { title: res.data.title }
     })
+  }
+}
+```
+
+Example with using `async/await`:
+```js
+export default {
+  async data ({ params }) {
+    let { data } = axios.get(`https://my-api/posts/${params.id}`)
+    return { title: data.title }
   }
 }
 ```
