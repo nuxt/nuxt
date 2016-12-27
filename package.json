@@ -57,7 +57,7 @@
     "co": "^4.6.0",
     "cross-spawn": "^5.0.1",
     "css-loader": "^0.26.1",
-    "debug": "^2.5.1",
+    "debug": "^2.5.2",
     "es6-object-assign": "^1.0.3",
     "es6-promise": "^4.0.5",
     "extract-text-webpack-plugin": "2.0.0-beta.4",
