@@ -9,7 +9,7 @@
 The `data` method receives the context as the first argument, you can use it to fetch some data and return the component data. To make the data method asynchronous, Nuxt.js offers you different ways, choose the one you're the most familiar with:
 
 1. returning a `Promise`, Nuxt.js will wait for the promise to be resolved before rendering the Component
-2. Using the ES7 `async` method with `await`
+2. Using the [async/await proposal](https://github.com/lukehoban/ecmascript-asyncawait)
 3. Define a second argument which is a callback method to be called like this: `callback(err, data)`
 
 Example with returning a `Promise`:
