@@ -10,7 +10,9 @@ module.exports = {
     num: 23,
     string: 'Nuxt.js'
   },
-  extend (config, options) {
-    config.devtool = 'eval-source-map'
+  build: {
+    extend (config, options) {
+      config.devtool = 'nosources-source-map'
+    }
   }
 }
