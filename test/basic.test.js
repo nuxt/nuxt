@@ -56,6 +56,16 @@ test('/async-data', async t => {
   t.true(html.includes('<p>Nuxt.js</p>'))
 })
 
+test('/await-async-data', async t => {
+  const { html } = await nuxt.renderRoute('/await-async-data')
+  t.true(html.includes('<p>Await Nuxt.js</p>'))
+})
+
+test('/callback-async-data', async t => {
+  const { html } = await nuxt.renderRoute('/callback-async-data')
+  t.true(html.includes('<p>Callback Nuxt.js</p>'))
+})
+
 test('/users/1', async t => {
   const { html } = await nuxt.renderRoute('/users/1')
   t.true(html.includes('<h1>User: 1</h1>'))
