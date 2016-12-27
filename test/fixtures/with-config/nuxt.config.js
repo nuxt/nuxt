@@ -9,5 +9,8 @@ module.exports = {
     bool: true,
     num: 23,
     string: 'Nuxt.js'
+  },
+  extend (config, options) {
+    config.devtool = 'eval-source-map'
   }
 }
