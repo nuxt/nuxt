@@ -28,7 +28,7 @@ Example with using `async/await`:
 ```js
 export default {
   async data ({ params }) {
-    let { data } = axios.get(`https://my-api/posts/${params.id}`)
+    let { data } = await axios.get(`https://my-api/posts/${params.id}`)
     return { title: data.title }
   }
 }
