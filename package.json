@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "0.9.3",
+  "version": "0.9.5",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
     {
@@ -48,14 +48,16 @@
     "autoprefixer": "^6.6.0",
     "babel-core": "^6.21.0",
     "babel-loader": "^6.2.10",
-    "babel-polyfill": "^6.20.0",
+    "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-2": "^6.18.0",
     "chokidar": "^1.6.1",
     "co": "^4.6.0",
     "cross-spawn": "^5.0.1",
     "css-loader": "^0.26.1",
-    "debug": "^2.5.1",
+    "debug": "^2.5.2",
     "es6-object-assign": "^1.0.3",
     "es6-promise": "^4.0.5",
     "extract-text-webpack-plugin": "2.0.0-beta.4",

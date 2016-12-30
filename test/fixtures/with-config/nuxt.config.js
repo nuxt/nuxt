@@ -9,5 +9,10 @@ module.exports = {
     bool: true,
     num: 23,
     string: 'Nuxt.js'
+  },
+  build: {
+    extend (config, options) {
+      config.devtool = 'nosources-source-map'
+    }
   }
 }

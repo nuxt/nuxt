@@ -1,48 +1,39 @@
-/*
-** Test with Ava can be written in ES6 \o/
-*/
 import test from 'ava'
-import { createServer } from 'http'
+import Nuxt from 'nuxt'
 import { resolve } from 'path'
 
+// We keep the nuxt and server instance
+// So we can close them at the end of the test
 let nuxt = null
 let server = null
 
-// Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', (t) => {
-  const Nuxt = require('../../../')
-  const options = {
-    rootDir: resolve(__dirname, '..'),
-    dev: false
-  }
-  nuxt = new Nuxt(options)
-  return nuxt.build()
-  .then(function () {
-    server = createServer((req, res) => nuxt.render(req, res))
-    server.listen(4000, 'localhost')
-  })
+// Init Nuxt.js and create a server listening on localhost:4000
+test.before('Init Nuxt.js', async t => {
+  const rootDir = resolve(__dirname, '..')
+  let config = {}
+  try { config = require(resolve(rootDir, 'nuxt.config.js')) } catch (e) {}
+  config.rootDir = rootDir // project folder
+  config.dev = false // production build
+  nuxt = new Nuxt(config)
+  await nuxt.build()
+  server = new nuxt.Server(nuxt)
+  server.listen(4000, 'localhost')
 })
 
-/*
-** Example of testing only the html
-*/
+// Example of testing only generated html
 test('Route / exits and render HTML', async t => {
   let context = {}
   const { html } = await nuxt.renderRoute('/', context)
-  t.true(html.includes('<p class="red-color">Hello world!</p>'))
-  t.is(context.nuxt.error, null)
-  t.is(context.nuxt.data[0].name, 'world')
+  t.true(html.includes('<h1 class="red">Hello world!</h1>'))
 })
 
-/*
-** Example of testing via dom checking
-*/
-test('Route / exits and render HTML', async t => {
+// Example of testing via dom checking
+test('Route / exits and render HTML with CSS applied', async t => {
   const window = await nuxt.renderAndGetWindow('http://localhost:4000/')
-  const element = window.document.querySelector('.red-color')
+  const element = window.document.querySelector('.red')
   t.not(element, null)
   t.is(element.textContent, 'Hello world!')
-  t.is(element.className, 'red-color')
+  t.is(element.className, 'red')
   t.is(window.getComputedStyle(element).color, 'red')
 })
 

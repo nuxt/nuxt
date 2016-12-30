@@ -10,16 +10,14 @@ module.exports = {
     __filename: false
   },
   devtool: 'source-map',
-  entry: ['babel-polyfill', r('./lib/nuxt.js')],
+  entry: r('./lib/nuxt.js'),
   output: {
     path: r('./dist'),
     filename: 'nuxt.js',
     libraryTarget: 'commonjs2'
   },
   externals: [
-    nodeExternals({
-      whitelist: ['babel-polyfill']
-    })
+    nodeExternals()
   ],
   module: {
     rules: [
@@ -32,6 +30,11 @@ module.exports = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
+          plugins: [
+            'transform-async-to-generator',
+            'array-includes',
+            'transform-runtime'
+          ],
           presets: [
             ['es2015', { modules: false }],
             'stage-2'

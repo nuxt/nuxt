@@ -1,8 +1,9 @@
 
 <template>
-  <div>
+  <div class="container">
+    <h1>User Agent</h1>
     <p>{{ userAgent }}</p>
-    <p><nuxt-link to="/post">See a post (http request / Ajax)</nuxt-link></p>
+    <p><nuxt-link to="/posts">Blog</nuxt-link></p>
   </div>
 </template>
 
@@ -20,10 +21,16 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  width: 70%;
+  margin: auto;
+  text-align: center;
+  padding-top: 100px;
+}
 p {
   font-size: 20px;
-  text-align: center;
-  padding: 100px;
-  padding-bottom: 0;
+}
+a {
+  color: #41B883;
 }
 </style>

@@ -1,11 +1,16 @@
 {
   "name": "nuxt-with-ava",
   "scripts": {
-    "start": "../../bin/nuxt .",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
     "test": "ava"
   },
   "devDependencies": {
     "ava": "^0.16.0",
     "jsdom": "^9.8.3"
+  },
+  "dependencies": {
+    "nuxt": "^0.9.5"
   }
 }

@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <p class="red-color">Hello {{ name }}!</p>
-  </div>
+  <h1 class="red">Hello {{ name }}!</h1>
 </template>
 
 <script>
@@ -13,7 +11,7 @@ export default {
 </script>
 
 <style>
-.red-color {
+.red {
   color: red;
 }
 </style>

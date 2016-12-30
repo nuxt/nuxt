@@ -41,6 +41,7 @@ test('/test/about (custom layout)', async t => {
 test('/test/env', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/env'))
   const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Custom env layout</h1>'))
   t.true(html.includes('"bool": true'))
   t.true(html.includes('"num": 23'))
   t.true(html.includes('"string": "Nuxt.js"'))
