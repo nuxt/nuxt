@@ -10,7 +10,7 @@ export default {
   layout: 'dark',
   data ({ req }) {
     return {
-      name: req ? 'server' : 'client2'
+      name: req ? 'server' : 'client'
     }
   }
 }

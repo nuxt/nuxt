@@ -1,12 +1,12 @@
 <template>
   <div>
     <h2>Todos</h2>
-    <input placeholder="What needs to be done?" @keyup.enter="addTodo">
     <ul>
       <li v-for="todo in todos">
-        <input type="checkbox" :checked="todo.done" @change="toggle({ todo })">
-        <label v-text="todo.text" @dblclick="editing = true"></label>
+        <input type="checkbox" :checked="todo.done" @change="toggle(todo)">
+        <span :class="{ done: todo.done }">{{ todo.text }}</span>
       </li>
+      <li><input placeholder="What needs to be done?" @keyup.enter="addTodo"></li>
     </ul>
     <nuxt-link to="/">Home</nuxt-link>
   </div>
@@ -35,7 +35,7 @@ export default {
 </script>
 
 <style>
-li {
-  list-style: none;
+.done {
+  text-decoration: line-through;
 }
 </style>
