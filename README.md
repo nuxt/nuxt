@@ -81,7 +81,7 @@ nuxt.build()
   // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 })
 .catch((e) => {
-  // An error appended during the build
+  // An error happened during the build
 })
 ```
 
