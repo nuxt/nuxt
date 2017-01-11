@@ -1,6 +1,6 @@
-# with-featherjs
+# with-feathers
 
-> Nuxt.js with FeatherJS
+> Nuxt.js with Feathers
 
 ## About
 
