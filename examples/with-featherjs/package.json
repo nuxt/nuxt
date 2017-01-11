@@ -1,8 +1,7 @@
 {
   "name": "with-featherjs",
   "description": "Nuxt.js with FeatherJS",
-  "version": "0.0.0",
-  "homepage": "",
+  "version": "1.0.0",
   "main": "src/",
   "keywords": [
     "feathers"
@@ -12,9 +11,6 @@
   "author": {},
   "contributors": [],
   "bugs": {},
-  "engines": {
-    "node": ">= 0.12.0"
-  },
   "scripts": {
     "test": "npm run jshint && npm run mocha",
     "jshint": "jshint src/. test/. --config",
@@ -36,7 +32,7 @@
     "feathers-rest": "^1.6.0",
     "feathers-socketio": "^1.4.2",
     "nedb": "^1.8.0",
-    "nuxt": "^0.9.5",
+    "nuxt": "latest",
     "passport": "^0.3.2",
     "winston": "^2.3.0"
   },
