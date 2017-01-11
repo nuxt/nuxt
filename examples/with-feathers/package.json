@@ -14,7 +14,7 @@
   "scripts": {
     "test": "npm run jshint && npm run mocha",
     "jshint": "jshint src/. test/. --config",
-    "dev": "DEBUG=nuxt:* node src/",
+    "dev": "DEBUG=nuxt:* nodemon --watch src/ --watch config/ src/index.js",
     "build": "nuxt build",
     "start": "NODE_ENV=production node src/",
     "mocha": "mocha test/ --recursive --timeout=30000"
@@ -39,6 +39,7 @@
   "devDependencies": {
     "jshint": "^2.9.4",
     "mocha": "^3.2.0",
+    "nodemon": "^1.11.0",
     "request": "^2.79.0"
   }
 }
