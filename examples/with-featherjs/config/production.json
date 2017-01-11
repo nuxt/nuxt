@@ -1,0 +1,11 @@
+{
+  "host": "with-featherjs-app.feathersjs.com",
+  "port": 80,
+  "nedb": "NEDB_BASE_PATH",
+  "auth": {
+    "token": {
+      "secret": "FEATHERS_AUTH_SECRET"
+    },
+    "local": {}
+  }
+}
