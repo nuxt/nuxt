@@ -1,6 +1,13 @@
 import test from 'ava'
-const utils = require('../lib/utils')
-const ansiHTML = require('ansi-html')
+import ansiHTML from 'ansi-html'
+
+let utils
+// Init nuxt.js and create server listening on localhost:4000
+test.before('Init Nuxt.js', async t => {
+  const Nuxt = require('../')
+  let nuxt = new Nuxt({ dev: false })
+  utils = nuxt.utils
+})
 
 test('encodeHtml', t => {
   const html = '<h1>Hello</h1>'
