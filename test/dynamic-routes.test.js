@@ -24,28 +24,41 @@ test('Check .nuxt/router.js', t => {
     .replace('routes: [', '[')
     .replace(/ _[0-9A-z]+,/g, ' "",')
     let routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
+    // pages/index.vue
+    t.is(routes[0].path, '/')
+    t.is(routes[0].name, 'index')
     // pages/test/index.vue
-    t.is(routes[0].path, '/test')
-    t.is(routes[0].name, 'test')
+    t.is(routes[1].path, '/test')
+    t.is(routes[1].name, 'test')
+    // pages/posts.vue
+    t.is(routes[2].path, '/posts')
+    t.is(routes[2].name, 'posts')
+    t.is(routes[2].children.length, 1)
+    // pages/posts/_id.vue
+    t.is(routes[2].children[0].path, ':id?')
+    t.is(routes[2].children[0].name, 'posts-id')
     // pages/parent.vue
-    t.is(routes[1].path, '/parent')
-    t.falsy(routes[1].name) // parent route has no name
+    t.is(routes[3].path, '/parent')
+    t.falsy(routes[3].name) // parent route has no name
     // pages/parent/*.vue
-    t.is(routes[1].children.length, 3) // parent has 3 children
-    t.deepEqual(routes[1].children.map((r) => r.path), ['', 'teub', 'child'])
-    t.deepEqual(routes[1].children.map((r) => r.name), ['parent', 'parent-teub', 'parent-child'])
+    t.is(routes[3].children.length, 3) // parent has 3 children
+    t.deepEqual(routes[3].children.map((r) => r.path), ['', 'teub', 'child'])
+    t.deepEqual(routes[3].children.map((r) => r.name), ['parent', 'parent-teub', 'parent-child'])
     // pages/test/users.vue
-    t.is(routes[2].path, '/test/users')
-    t.falsy(routes[2].name) // parent route has no name
+    t.is(routes[4].path, '/test/users')
+    t.falsy(routes[4].name) // parent route has no name
     // pages/test/users/*.vue
-    t.is(routes[2].children.length, 3) // parent has 3 children
-    t.deepEqual(routes[2].children.map((r) => r.path), ['', ':id', ':index/teub'])
-    t.deepEqual(routes[2].children.map((r) => r.name), ['test-users', 'test-users-id', 'test-users-index-teub'])
+    t.is(routes[4].children.length, 3) // parent has 3 children
+    t.deepEqual(routes[4].children.map((r) => r.path), ['', ':id', ':index/teub'])
+    t.deepEqual(routes[4].children.map((r) => r.name), ['test-users', 'test-users-id', 'test-users-index-teub'])
+    // pages/test/songs/_id.vue
+    t.is(routes[5].path, '/test/songs/:id?')
+    t.is(routes[5].name, 'test-songs-id')
     // pages/_slug.vue
-    t.is(routes[3].path, '/:slug?')
-    t.is(routes[3].name, 'slug')
+    t.is(routes[6].path, '/:slug')
+    t.is(routes[6].name, 'slug')
     // pages/_key/_id.vue
-    t.is(routes[4].path, '/:key?/:id?')
-    t.is(routes[4].name, 'key-id')
+    t.is(routes[7].path, '/:key/:id?')
+    t.is(routes[7].name, 'key-id')
   })
 })
