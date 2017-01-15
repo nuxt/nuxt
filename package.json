@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
     {
@@ -80,7 +80,7 @@
     "vue-server-renderer": "^2.1.8",
     "vue-template-compiler": "^2.1.8",
     "vuex": "^2.1.1",
-    "webpack": "^2.2.0-rc.4",
+    "webpack": "^2.2.0-rc.5",
     "webpack-dev-middleware": "^1.9.0",
     "webpack-hot-middleware": "^2.14.0"
   },
