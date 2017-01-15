@@ -6,8 +6,7 @@ module.exports = {
   },
   env: {
     browser: true,
-    node: true,
-    mocha: true
+    node: true
   },
   extends: 'standard',
   // required to lint *.vue files
