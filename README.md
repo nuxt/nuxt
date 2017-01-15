@@ -143,3 +143,7 @@ For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like f
 Then run `now` and enjoy!
 
 Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
+
+## Roadmap
+
+https://github.com/nuxt/nuxt.js/projects/1
