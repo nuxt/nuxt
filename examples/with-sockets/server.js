@@ -15,24 +15,22 @@ app.use(nuxt.render)
 if (config.dev) {
   nuxt.build()
   .catch((error) => {
-    console.error(error)  // eslint-disable-line no-console
+    console.error(error) // eslint-disable-line no-console
     process.exit(1)
   })
 }
 
 // Listen the server
 server.listen(port, '0.0.0.0')
-console.log('Server listening on localhost:' + port)
+console.log('Server listening on localhost:' + port) // eslint-disable-line no-console
 
 // Socket.io
 let messages = []
 io.on('connection', (socket) => {
-  console.log('New connection');
   socket.on('last-messages', function (fn) {
     fn(messages.slice(-50))
   });
   socket.on('send-message', function (message) {
-    console.log('Message received', message);
     messages.push(message)
     socket.broadcast.emit('new-message', message)
   })

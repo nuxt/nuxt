@@ -3,7 +3,7 @@
     <ul class="pages">
       <li class="chat page">
         <div class="chatArea">
-          <ul class="messages">
+          <ul class="messages" ref="messages">
             <li class="message" v-for="message in messages"><i :title="message.date">{{ message.date.split('T')[1].slice(0, -2) }}</i>: {{ message.text }}</li>
           </ul>
         </div>
@@ -25,10 +25,16 @@ export default {
       })
     })
   },
+  watch: {
+    'messages': 'scrollToBottom'
+  },
   beforeMount () {
     socket.on('new-message', (message) => {
       this.messages.push(message)
     })
+  },
+  mounted () {
+    this.scrollToBottom()
   },
   methods: {
     sendMessage () {
@@ -40,6 +46,11 @@ export default {
       this.messages.push(message)
       this.message = ''
       socket.emit('send-message', message)
+    },
+    scrollToBottom () {
+      this.$nextTick(() => {
+        this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
+      })
     }
   },
   head: {
