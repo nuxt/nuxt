@@ -27,5 +27,5 @@ nuxt.generate()
 })
 .catch((err) => {
   console.error(err) // eslint-disable-line no-console
-  process.exit()
+  process.exit(1)
 })
