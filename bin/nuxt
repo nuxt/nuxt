@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var join = require('path').join
-var spawn = require('cross-spawn').spawn
 
 var defaultCommand = 'dev'
 var commands = new Set([
@@ -13,20 +12,13 @@ var commands = new Set([
 ])
 
 var cmd = process.argv[2]
-var args
 
 if (commands.has(cmd)) {
-  args = process.argv.slice(3)
+  process.argv.splice(2,1)
 } else {
   cmd = defaultCommand
-  args = process.argv.slice(2)
 }
 
 var bin = join(__dirname, 'nuxt-' + cmd)
 
-var proc = spawn(bin, args, { stdio: 'inherit', customFds: [0, 1, 2] })
-proc.on('close', (code) => process.exit(code))
-proc.on('error', (err) => {
-  console.error(err) // eslint-disable-line no-console
-  process.exit(1)
-})
+require(bin);
