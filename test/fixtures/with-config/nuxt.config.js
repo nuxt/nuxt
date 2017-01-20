@@ -1,6 +1,15 @@
+const resolve = require('path').resolve
+
 module.exports = {
   router: {
-    base: '/test/'
+    base: '/test/',
+    extendRoutes (routes) {
+      routes.push({
+        name: 'about-bis',
+        path: '/about-bis',
+        component: resolve(__dirname, 'pages/about.vue')
+      })
+    }
   },
   cache: true,
   plugins: ['~plugins/test.js'],

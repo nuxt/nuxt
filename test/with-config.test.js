@@ -47,6 +47,13 @@ test('/test/env', async t => {
   t.true(html.includes('"string": "Nuxt.js"'))
 })
 
+test('/test/about-bis (added with extendRoutes)', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Custom layout</h1>'))
+  t.true(html.includes('<h1>About page</h1>'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
