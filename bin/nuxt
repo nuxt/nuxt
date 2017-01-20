@@ -14,11 +14,11 @@ var commands = new Set([
 var cmd = process.argv[2]
 
 if (commands.has(cmd)) {
-  process.argv.splice(2,1)
+  process.argv.splice(2, 1)
 } else {
   cmd = defaultCommand
 }
 
 var bin = join(__dirname, 'nuxt-' + cmd)
 
-require(bin);
+require(bin)
