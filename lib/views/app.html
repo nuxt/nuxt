@@ -7,7 +7,7 @@
     <%= m.style.text() %>
     <%= m.script.text() %>
     <%= m.noscript.text() %>
-    <base href="<%= baseUrl %>">
+    <% if (baseUrl !== '/') { %><base href="<%= baseUrl %>"><% } %>
     <% if (!dev) { %><link rel="stylesheet" href="<%= files.css %>"><% } %>
   </head>
   <body <%= m.bodyAttrs.text() %>>
