@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+process.env.NOTLISTEN = true
+const fs = require('fs')
+const worker = require('ddv-worker')
+const nuxtDev = require('./nuxt-dev')
+
+worker.server = nuxtDev.server
+
+var options = {}
+if (fs.existsSync(nuxtDev.nuxtConfigFile)) {
+  options = require(nuxtDev.nuxtConfigFile)
+}
+
+worker.DEBUG = true // Force production mode (no webpack middlewares called)
+
+worker.updateServerConf({
+  defaultListen: options.defaultListen,
+  listen: options.listen,
+  cpuLen: options.cpuLen
+}, (e) => {
+  if (e) {
+    console.error('service config update fail') // eslint-disable-line no-console
+    console.error(e) // eslint-disable-line no-console
+  } else {
+    console.log('service config update successful') // eslint-disable-line no-console
+  }
+})

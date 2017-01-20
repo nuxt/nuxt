@@ -10,13 +10,14 @@ var fs = require('fs')
 var Nuxt = require('../')
 var chokidar = require('chokidar')
 var resolve = require('path').resolve
-
+var server = module.exports.server = require('http').createServer()
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
 var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
+  module.exports.nuxtConfigFile = nuxtConfigFile
 }
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
@@ -26,16 +27,18 @@ options.dev = true // Add hot reloading and watching changes
 var nuxt = new Nuxt(options)
 nuxt.build()
 .then(() => {
-  var server = new nuxt.Server(nuxt)
-  .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
-  listenOnConfigChanges(nuxt, server)
+  var nuxtServer = new nuxt.Server(nuxt, server)
+  if (!process.env.NOTLISTEN) {
+    nuxtServer.listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
+  }
+  listenOnConfigChanges(nuxt, nuxtServer)
 })
 .catch((err) => {
   console.error(err) // eslint-disable-line no-console
   process.exit(1)
 })
 
-function listenOnConfigChanges (nuxt, server) {
+function listenOnConfigChanges (nuxt, nuxtServer) {
   // Listen on nuxt.config.js changes
   var build = _.debounce(() => {
     debug('[nuxt.config.js] changed')
@@ -56,7 +59,7 @@ function listenOnConfigChanges (nuxt, server) {
       return new Nuxt(options).build()
     })
     .then((nuxt) => {
-      server.nuxt = nuxt
+      nuxtServer.nuxt = nuxt
     })
     .catch((error) => {
       console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
