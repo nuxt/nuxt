@@ -4,8 +4,16 @@
 process.env.DEBUG = 'nuxt:*'
 
 var fs = require('fs')
+var without = require('lodash').without
 var Nuxt = require('../')
 var resolve = require('path').resolve
+
+// --analyze option
+var analyzeBuild = false
+if (process.argv.indexOf('--analyze') !== -1 || process.argv.indexOf('-a') !== -1) {
+  analyzeBuild = true
+  process.argv = without(process.argv, '--analyze', '-a')
+}
 
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
 var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
@@ -18,6 +26,9 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 options.dev = false // Create production build when calling `nuxt build`
+
+options.build = options.build || {}
+options.build.analyze = analyzeBuild
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
 var nuxt = new Nuxt(options)

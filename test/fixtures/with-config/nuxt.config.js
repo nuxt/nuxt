@@ -20,6 +20,10 @@ module.exports = {
     string: 'Nuxt.js'
   },
   build: {
+    analyze: {
+      analyzerMode: 'disabled',
+      generateStatsFile: true
+    },
     extend (config, options) {
       config.devtool = 'nosources-source-map'
     }
