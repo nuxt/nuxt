@@ -3,17 +3,18 @@
 var join = require('path').join
 
 var defaultCommand = 'dev'
-var commands = new Set([
-  defaultCommand,
-  'init',
-  'build',
-  'start',
-  'generate'
-])
+var commands = []
+try {
+  commands = require('fs').readdirSync(__dirname)
+} catch (e) {
+  commands = []
+}
+commands.push(defaultCommand, 'init')
+commands = new Set(commands)
 
 var cmd = process.argv[2]
 
-if (commands.has(cmd)) {
+if (commands.has('nuxt-' + cmd)) {
   process.argv.splice(2, 1)
 } else {
   cmd = defaultCommand
