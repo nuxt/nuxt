@@ -28,7 +28,9 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false // Create production build when calling `nuxt build`
 
 options.build = options.build || {}
-options.build.analyze = analyzeBuild
+if (analyzeBuild) {
+  options.build.analyze = analyzeBuild
+}
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
 var nuxt = new Nuxt(options)
