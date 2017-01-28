@@ -1,5 +1,3 @@
-const resolve = require('path').resolve
-
 module.exports = {
   router: {
     base: '/test/',
@@ -7,7 +5,7 @@ module.exports = {
       routes.push({
         name: 'about-bis',
         path: '/about-bis',
-        component: resolve(__dirname, 'pages/about.vue')
+        component: '~pages/about.vue'
       })
     }
   },
