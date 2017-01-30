@@ -1,6 +1,5 @@
 <template>
   <div>
-    <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
     <nuxt-child v-if="!nuxt.err"></nuxt-child>
     <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
   </div>
@@ -10,7 +9,6 @@
 import Vue from 'vue'
 import NuxtChild from './nuxt-child'
 import NuxtError from '<%= components.ErrorPage %>'
-<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./nuxt-loading.vue") %>'<% } %>
 
 export default {
   name: 'nuxt',
@@ -33,7 +31,9 @@ export default {
   },
   <% if (loading) { %>
   mounted () {
-    this.$loading = this.$refs.loading
+    if (this.$root.$loading && this.$root.$loading.start) {
+      this.$loading = this.$root.$loading
+    }
   },
   watch: {
     'nuxt.err': 'errorChanged'
@@ -49,7 +49,7 @@ export default {
   <% } %>
   components: {
     NuxtChild,
-    NuxtError<%= (loading ? ',\n    NuxtLoading' : '') %>
+    NuxtError
   }
 }
 </script>

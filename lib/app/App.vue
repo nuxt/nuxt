@@ -1,10 +1,13 @@
 <template>
   <div id="__nuxt">
+    <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
     <component v-if="layout" :is="layout"></component>
   </div>
 </template>
 
 <script>
+<% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
+
 let layouts = {
 <%
 var layoutsKeys = Object.keys(layouts);
@@ -19,6 +22,12 @@ export default {
     layout: null,
     layoutName: ''
   }),
+  <% if (loading) { %>
+  mounted () {
+    this.$loading = this.$refs.loading
+    this.$nuxt.$loading = this.$loading
+  },
+  <% } %>
   methods: {
     setLayout (layout) {
       if (!layout || !layouts['_' + layout]) layout = 'default'
@@ -44,6 +53,9 @@ export default {
         console.error(e)
       })
     }
+  },
+  components: {
+    <%= (loading ? 'NuxtLoading' : '') %>
   }
 }
 </script>
