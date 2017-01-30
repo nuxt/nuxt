@@ -43,7 +43,7 @@ test('/stateful', async t => {
 })
 
 test('/head', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: true })
+  const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
   const html = window.document.body.innerHTML
   const metas = window.document.getElementsByTagName('meta')
   t.is(window.document.title, 'My title')
