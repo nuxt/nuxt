@@ -69,6 +69,15 @@ So far, we get:
 - Custom layouts with the `layouts/` directory
 - Code splitting via webpack
 
+Learn more at [nuxtjs.org](https://nuxtjs.org).
+
+## Templates
+
+You can start by using one of our starter templates:
+- [starter](https://github.com/nuxt/starter): Basic Nuxt.js project template
+- [express](https://github.com/nuxt/express): Nuxt.js + Express
+- [adonuxt](https://github.com/nuxt/adonuxt): Nuxt.js + AdonisJS
+
 ## Using nuxt.js programmatically
 
 ```js
@@ -86,14 +95,17 @@ nuxt.build()
 })
 ```
 
+Learn more: https://nuxtjs.org/api/nuxt
 
 ## Using nuxt.js as a middleware
 
-You might want to use your own server with you configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middlewares since it will handle the rendering of your web application and won't call next()
+You might want to use your own server with you configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middlewares since it will handle the rendering of your web application and won't call next().
 
 ```js
 app.use(nuxt.render)
 ```
+
+Learn more: https://nuxtjs.org/api/nuxt-render
 
 ## Render a specific route
 
@@ -114,9 +126,11 @@ nuxt.renderRoute('/about', context)
 })
 ```
 
+Learn more: https://nuxtjs.org/api/nuxt-render-route
+
 ## Examples
 
-Please take a look at the [examples/](https://github.com/nuxt/nuxt.js/tree/master/examples) directory.
+Please take a look at https://nuxtjs.org/examples
 
 ## Production deployment
 
