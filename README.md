@@ -109,7 +109,7 @@ Learn more: https://nuxtjs.org/api/nuxt-render
 
 ## Render a specific route
 
-This is mostly used for `nuxt generate` and tests purposes but you might found another utility!
+This is mostly used for `nuxt generate` and test purposes but you might find another utility!
 
 ```js
 nuxt.renderRoute('/about', context)
