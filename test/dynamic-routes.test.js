@@ -14,7 +14,7 @@ test.before('Init Nuxt.js', async t => {
   await nuxt.build()
 })
 
-test('Check .nuxt/router.js', t => {
+test.only('Check .nuxt/router.js', t => {
   return readFile(resolve(__dirname, './fixtures/dynamic-routes/.nuxt/router.js'), 'utf-8')
   .then((routerFile) => {
     routerFile = routerFile.slice(
@@ -51,14 +51,26 @@ test('Check .nuxt/router.js', t => {
     t.is(routes[4].children.length, 3) // parent has 3 children
     t.deepEqual(routes[4].children.map((r) => r.path), ['', ':id', ':index/teub'])
     t.deepEqual(routes[4].children.map((r) => r.name), ['test-users', 'test-users-id', 'test-users-index-teub'])
+    // pages/test/songs/toto.vue
+    t.is(routes[5].path, '/test/songs/toto')
+    t.is(routes[5].name, 'test-songs-toto')
     // pages/test/songs/_id.vue
-    t.is(routes[5].path, '/test/songs/:id?')
-    t.is(routes[5].name, 'test-songs-id')
+    t.is(routes[6].path, '/test/songs/:id?')
+    t.is(routes[6].name, 'test-songs-id')
+    // pages/users/_id.vue
+    t.is(routes[7].path, '/users/:id?')
+    t.is(routes[7].name, 'users-id')
+    // pages/test/_.vue
+    t.is(routes[8].path, '/test/*')
+    t.is(routes[8].name, 'test-all')
     // pages/_slug.vue
-    t.is(routes[6].path, '/:slug')
-    t.is(routes[6].name, 'slug')
+    t.is(routes[9].path, '/:slug')
+    t.is(routes[9].name, 'slug')
     // pages/_key/_id.vue
-    t.is(routes[7].path, '/:key/:id?')
-    t.is(routes[7].name, 'key-id')
+    t.is(routes[10].path, '/:key/:id?')
+    t.is(routes[10].name, 'key-id')
+    // pages/_.vue
+    t.is(routes[11].path, '/*')
+    t.is(routes[11].name, 'all')
   })
 })
