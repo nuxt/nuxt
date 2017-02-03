@@ -8,11 +8,6 @@
 
 <script>
 export default {
-  // we use fetch() because we do not need to set data to this component
-  fetch ({ store, redirect }) {
-    if (!store.state.authUser) {
-      return redirect('/')
-    }
-  }
+  middleware: 'auth'
 }
 </script>

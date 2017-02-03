@@ -1,7 +1,9 @@
-const Nuxt = require('nuxt')
+const Nuxt = require('../../')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 const app = require('express')()
+const host = process.env.HOST || '127.0.0.1'
+const port = process.env.PORT || '3000'
 
 // Body parser, to access req.body
 app.use(bodyParser.json())
@@ -20,7 +22,7 @@ app.post('/api/login', function (req, res) {
     req.session.authUser = { username: 'demo' }
     return res.json({ username: 'demo' })
   }
-  res.status(401).json({ error: 'Bad credentials' })
+  res.status(401).json({ message: 'Bad credentials' })
 })
 
 // POST /api/logout to log out the user and remove it from the req.session
@@ -29,19 +31,23 @@ app.post('/api/logout', function (req, res) {
   res.json({ ok: true })
 })
 
-// We instantiate Nuxt.js with the options
-const isProd = process.env.NODE_ENV === 'production'
+// Import and Set Nuxt.js options
 let config = require('./nuxt.config.js')
-config.dev = !isProd
+config.dev = !(process.env.NODE_ENV === 'production')
+
+// Init Nuxt.js
 const nuxt = new Nuxt(config)
-// No build in production
-const promise = (isProd ? Promise.resolve() : nuxt.build())
-promise.then(() => {
-  app.use(nuxt.render)
-  app.listen(3000)
-  console.log('Server is listening on http://localhost:3000')  // eslint-disable-line no-console
-})
-.catch((error) => {
-  console.error(error)  // eslint-disable-line no-console
-  process.exit(1)
-})
+app.use(nuxt.render)
+
+// Build only in dev mode
+if (config.dev) {
+  nuxt.build()
+  .catch((error) => {
+    console.error(error) // eslint-disable-line no-console
+    process.exit(1)
+  })
+}
+
+// Listen the server
+app.listen(port, host)
+console.log('Server listening on ' + host + ':' + port) // eslint-disable-line no-console

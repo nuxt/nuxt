@@ -6,6 +6,5 @@ module.exports = {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', content: 'Auth Routes example' }
     ]
-  },
-  loading: { color: '#3B8070' }
+  }
 }

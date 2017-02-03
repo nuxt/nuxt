@@ -14,7 +14,7 @@ if (fs.existsSync(nuxtConfigFile)) {
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-options.dev = false // Force production mode (no webpack middlewares called)
+options.dev = false // Force production mode (no webpack middleware called)
 
 var nuxt = new Nuxt(options)
 
