@@ -14,7 +14,7 @@ test.before('Init Nuxt.js', async t => {
   await nuxt.build()
 })
 
-test.only('Check .nuxt/router.js', t => {
+test('Check .nuxt/router.js', t => {
   return readFile(resolve(__dirname, './fixtures/dynamic-routes/.nuxt/router.js'), 'utf-8')
   .then((routerFile) => {
     routerFile = routerFile.slice(
