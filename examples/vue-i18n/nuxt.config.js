@@ -1,6 +1,9 @@
 module.exports = {
-  build: {
-    vendor: ['vue-i18n']
+  router: {
+    middleware: 'i18n'
   },
-  plugins: ['~plugins/vue-i18n']
+  build: {
+    vendor: ['axios']
+  },
+  plugins: ['~plugins/i18n']
 }
