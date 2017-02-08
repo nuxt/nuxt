@@ -1,4 +1,5 @@
 var nodeExternals = require('webpack-node-externals')
+var ProgressBarPlugin = require('progress-bar-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var resolve = require('path').resolve
 var r = function (p) { return resolve(__dirname, p) }
@@ -48,6 +49,7 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: 'lib/app', to: 'app' },
       { from: 'lib/views', to: 'views' }
-    ])
+    ]),
+    new ProgressBarPlugin()
   ]
 }
