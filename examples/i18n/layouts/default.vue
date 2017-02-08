@@ -4,7 +4,7 @@
       <div class="container">
         <h1 class="Header__Title">Nuxt i18n</h1>
         <nav class="Header__Menu">
-          <nuxt-link class="Header__Link" :to="path('/')">
+          <nuxt-link class="Header__Link" :to="path('')">
             {{ $t('message.home') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" :to="path('/about')">
@@ -27,8 +27,7 @@
 export default {
   methods: {
     path (url) {
-      console.log(this.$route.params.lang + url)
-      return (this.$route.params.lang) ? this.$route.params.lang + url : url
+      return (this.$route.params.lang ? '/' + this.$route.params.lang + url : url)
     }
   }
 }
