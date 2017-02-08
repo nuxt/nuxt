@@ -18,8 +18,13 @@ options.dev = false // Force production mode (no webpack middleware called)
 
 var nuxt = new Nuxt(options)
 
-new nuxt.Server(nuxt)
-.listen(
-  process.env.PORT || process.env.npm_package_config_nuxt_port,
-  process.env.HOST || process.env.npm_package_config_nuxt_host
-)
+var nuxtServer = new nuxt.Server(nuxt)
+module.exports.server = nuxtServer.server
+module.exports.nuxtConfigFile = nuxtConfigFile
+
+if (!process.env.NOTLISTEN) {
+  nuxtServer.listen(
+    process.env.PORT || process.env.npm_package_config_nuxt_port,
+    process.env.HOST || process.env.npm_package_config_nuxt_host
+  )
+}

@@ -82,7 +82,8 @@
     "webpack": "^2.2.0",
     "webpack-bundle-analyzer": "^2.2.1",
     "webpack-dev-middleware": "^1.9.0",
-    "webpack-hot-middleware": "^2.15.0"
+    "webpack-hot-middleware": "^2.15.0",
+    "ddv-worker": "latest"
   },
   "devDependencies": {
     "ava": "^0.17.0",
