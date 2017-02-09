@@ -1,8 +1,6 @@
 <template>
-  <div>
-    <nuxt-child v-if="!nuxt.err"></nuxt-child>
-    <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
-  </div>
+  <nuxt-child v-if="!nuxt.err"></nuxt-child>
+  <nuxt-error v-else :error="nuxt.err"></nuxt-error>
 </template>
 
 <script>
