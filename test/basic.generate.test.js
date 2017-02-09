@@ -101,7 +101,7 @@ test('/validate -> should display a 404', async t => {
 test('/validate?valid=true', async t => {
   const window = await nuxt.renderAndGetWindow(url('/validate?valid=true'))
   const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>I am valid</h1>'))
+  t.true(html.includes('I am valid</h1>'))
 })
 
 test('/redirect should not be server-rendered', async t => {
