@@ -5,16 +5,16 @@
         <h1 class="Header__Title">Nuxt i18n</h1>
         <nav class="Header__Menu">
           <nuxt-link class="Header__Link" :to="path('/')">
-            {{ $t('message.home') }}
+            {{ $t('links.home') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" :to="path('/about')">
-            {{ $t('message.about') }}
+            {{ $t('links.about') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" v-if="$store.state.lang.lang === 'en'" to="/fr">
-            {{ $t('message.french') }}
+            {{ $t('links.french') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" v-else to="/">
-            {{ $t('message.english') }}
+            {{ $t('links.english') }}
           </nuxt-link>
         </nav>
       </div>
