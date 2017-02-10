@@ -67,6 +67,7 @@ So far, we get:
 - Static file serving. `./static/` is mapped to `/`
 - Configurable with a `nuxt.config.js` file
 - Custom layouts with the `layouts/` directory
+- Middleware
 - Code splitting via webpack
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
