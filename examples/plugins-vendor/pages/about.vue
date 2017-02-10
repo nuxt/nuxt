@@ -10,7 +10,7 @@ import axios from 'axios'
 
 export default {
   data () {
-    return axios.get('http://jsonplaceholder.typicode.com/photos/4').then(res => res.data)
+    return axios.get('https://jsonplaceholder.typicode.com/photos/4').then(res => res.data)
   }
 }
 </script>

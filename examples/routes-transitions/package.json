@@ -1,6 +1,5 @@
 {
-  "name": "routes-transition",
-  "description": "",
+  "name": "nuxt-routes-transitions",
   "dependencies": {
     "axios": "^0.15.3",
     "nuxt": "latest"

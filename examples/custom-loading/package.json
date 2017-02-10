@@ -1,10 +1,11 @@
 {
-  "name": "custom-loading",
-  "description": "",
+  "name": "nuxt-custom-loading",
   "dependencies": {
     "nuxt": "latest"
   },
   "scripts": {
-    "start": "nuxt"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
   }
 }

@@ -1,6 +1,5 @@
 {
   "name": "nuxt-global-css",
-  "description": "",
   "dependencies": {
     "bulma": "^0.2.3",
     "hover.css": "^2.0.2",

@@ -1,6 +1,5 @@
 {
-  "name": "nuxt-custom-routes",
-  "description": "",
+  "name": "nuxt-nested-routes",
   "dependencies": {
     "nuxt": "latest"
   },

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h1>About page</h1>
-    <p>Click below to see the custom meta tags added with our custom component <code>twitter-head-card</code></p>
+    <p>Check the source code to see the custom meta tags added with our custom component <code>twitter-head-card</code></p>
     <twitter-head-card></twitter-head-card>
     <p><nuxt-link to="/">Home page</nuxt-link></p>
   </div>
