@@ -1,6 +1,7 @@
 {
   "name": "i18n",
   "dependencies": {
+    "axios": "^0.15.3",
     "nuxt": "latest"
   },
   "scripts": {
