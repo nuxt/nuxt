@@ -4,16 +4,16 @@
       <div class="container">
         <h1 class="Header__Title">Nuxt i18n</h1>
         <nav class="Header__Menu">
-          <nuxt-link class="Header__Link" :to="path('/')">
+          <nuxt-link class="Header__Link" :to="path('/')" exact>
             {{ $t('links.home') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" :to="path('/about')">
             {{ $t('links.about') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" v-if="$store.state.lang.lang === 'en'" to="/fr">
+          <nuxt-link class="Header__Link" v-if="$store.state.lang.lang === 'en'" :to="`/fr` + $route.fullPath" active-class="none">
             {{ $t('links.french') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" v-else to="/">
+          <nuxt-link class="Header__Link" v-else :to="$route.fullPath.replace(/^\/[^\/]+/, '')" active-class="none">
             {{ $t('links.english') }}
           </nuxt-link>
         </nav>
@@ -93,5 +93,8 @@ html, body
 {
   color: #2e2f30;
   background-color: #fff;
+}
+.nuxt-link-active {
+  color: cyan;
 }
 </style>
