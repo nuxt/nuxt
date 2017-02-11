@@ -7,6 +7,8 @@
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
   <a href="https://gitter.im/nuxt/nuxt.js"><img src="https://img.shields.io/badge/GITTER-join%20chat-green.svg" alt="Gitter"></a>
+  <a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
+  
 </p>
 > Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
 
@@ -163,3 +165,9 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 ## Roadmap
 
 https://github.com/nuxt/nuxt.js/projects/1
+
+## Donate
+
+Feel free to make a donation if you want to support us.
+
+<a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
