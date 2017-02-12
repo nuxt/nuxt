@@ -13,12 +13,12 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
+import { mapMutations, mapGetters } from 'vuex'
 
 export default {
-  computed: {
-    todos () { return this.$store.state.todos.list }
-  },
+  computed: mapGetters({
+    todos: 'todos/todos'
+  }),
   methods: {
     addTodo (e) {
       var text = e.target.value

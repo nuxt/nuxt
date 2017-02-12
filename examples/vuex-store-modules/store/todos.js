@@ -14,3 +14,9 @@ export const mutations = {
     todo.done = !todo.done
   }
 }
+
+export const getters = {
+  todos (state) {
+    return state.list
+  }
+}
