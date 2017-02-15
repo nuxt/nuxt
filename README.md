@@ -168,6 +168,6 @@ https://github.com/nuxt/nuxt.js/projects/1
 
 ## Donate
 
-Feel free to make a donation if you want to support us.
+Feel free to make a donation to support us.
 
 <a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
