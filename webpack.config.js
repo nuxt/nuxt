@@ -31,7 +31,15 @@ module.exports = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
-          presets: ['vue-app'],
+          plugins: [
+            'transform-async-to-generator',
+            'array-includes',
+            'transform-runtime'
+          ],
+          presets: [
+            ['es2015', { modules: false }],
+            'stage-2'
+          ],
           cacheDirectory: true
         }
       }
