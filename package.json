@@ -46,6 +46,10 @@
     "precommit": "npm run lint",
     "prepublish": "npm run build"
   },
+  "engines": {
+    "node": ">=4.3.0 <5.0.0 || >=5.10",
+    "npm": ">=3.0.0"
+  },
   "dependencies": {
     "ansi-html": "^0.0.7",
     "autoprefixer": "^6.7.2",
