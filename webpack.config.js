@@ -51,5 +51,11 @@ module.exports = {
       { from: 'lib/views', to: 'views' }
     ]),
     new ProgressBarPlugin()
-  ]
+  ],
+  node: {
+      fs: `empty`,
+      tls: `empty`,
+      dns: 'mock',
+      net: 'mock'
+  }
 }
