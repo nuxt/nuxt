@@ -61,6 +61,12 @@ test('/await-async-data', async t => {
   t.true(html.includes('<p>Await Nuxt.js</p>'))
 })
 
+test('/data-with-async-data', async t => {
+  const { html } = await nuxt.renderRoute('/data-with-async-data')
+  t.true(html.includes('<p>Async Name</p>'))
+  t.true(html.includes('<p>Synchronous otherKey still here</p>'))
+})
+
 test('/callback-async-data', async t => {
   const { html } = await nuxt.renderRoute('/callback-async-data')
   t.true(html.includes('<p>Callback Nuxt.js</p>'))
