@@ -1,0 +1,20 @@
+{
+  "name": "nuxt-firebase",
+  "version": "1.0.0",
+  "description": "Nuxt.js with Firebase",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "keywords": [
+    "nuxt",
+    "firebase"
+  ],
+  "author": "Charlie Hield",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "nuxt": "^0.9.9"
+  }
+}
