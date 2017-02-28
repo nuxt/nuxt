@@ -14,7 +14,7 @@ export default {
   validate ({ params }) {
     return !isNaN(+params.id)
   },
-  data ({ params, error }) {
+  asyncData ({ params, error }) {
     return axios.get(`https://jsonplaceholder.typicode.com/users/${+params.id}`)
     .then((res) => res.data)
     .catch(() => {

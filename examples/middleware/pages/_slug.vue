@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  data ({ store, route, userAgent }) {
+  asyncData ({ store, route, userAgent }) {
     return {
       userAgent,
       slugs: [

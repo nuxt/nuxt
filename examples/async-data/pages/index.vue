@@ -9,7 +9,7 @@
 
 <script>
 export default {
-  data ({ req }, callback) {
+  asyncData ({ req }, callback) {
     setTimeout(function () {
       // callback(err, data)
       callback(null, {

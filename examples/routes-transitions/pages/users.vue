@@ -23,7 +23,7 @@ export default {
     if (!from) return 'slide-left'
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  data ({ query }) {
+  asyncData ({ query }) {
     const page = +query.page || 1
     return axios.get('https://reqres.in/api/users?page=' + page)
     .then((res) => {
