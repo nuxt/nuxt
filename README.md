@@ -79,6 +79,7 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 You can start by using one of our starter templates:
 - [starter](https://github.com/nuxt/starter): Basic Nuxt.js project template
 - [express](https://github.com/nuxt/express): Nuxt.js + Express
+- [koa](https://github.com/nuxt/koa): Nuxt.js + Koa
 - [adonuxt](https://github.com/nuxt/adonuxt): Nuxt.js + AdonisJS
 
 ## Using nuxt.js programmatically
