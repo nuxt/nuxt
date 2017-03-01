@@ -5,7 +5,7 @@
 <script>
 export default {
   middleware: 'user-agent',
-  data ({ userAgent }) {
+  asyncData ({ userAgent }) {
     return { userAgent }
   }
 }
