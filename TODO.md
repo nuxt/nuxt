@@ -17,3 +17,20 @@ Release:
 ## Deprecated
 - `process.BROWSER_BUILD` is deprecated in favour of `process.browser` (`BROWSER_BUILD` will be removed for the 1.0)
 - `process.SERVER_BUILD` is deprecated in favour of `process.server` (`SERVER_BUILD` will be removed for the 1.0)
+
+## Define `plugins` only for client-side
+
+Some Vue plugins might only work for client-side, you can now use an `Object` instead of a string to use a plugin only for client-side:
+
+`nuxt.config.js`
+```js
+module.exports = {
+  plugins: [
+    '~plugins/client-and-server.js',
+    {
+      src: '~plugins/only-client-side.js',
+      ssr: false // disable for server-side
+    }
+  ]
+}
+```

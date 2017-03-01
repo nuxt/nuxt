@@ -7,7 +7,7 @@
 
 <script>
 let miniToastr
-if (process.BROWSER_BUILD) {
+if (process.browser) {
   miniToastr = require('mini-toastr')
 }
 

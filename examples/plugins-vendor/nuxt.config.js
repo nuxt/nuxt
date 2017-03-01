@@ -3,6 +3,7 @@ module.exports = {
     vendor: ['axios', 'mini-toastr', 'vue-notifications']
   },
   plugins: [
-    '~plugins/vue-notifications.js'
+    // ssr: false to only include it on client-side
+    { src: '~plugins/vue-notifications.js', ssr: false }
   ]
 }
