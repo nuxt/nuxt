@@ -8,6 +8,7 @@ Tasks for `0.9.10`:
 - [ ] Fork preload-webpack-plugin and use it in package.json
 - [ ] Test + Coverage performance, cache, filenames
 - [ ] Manual tests on router.base & publicPath
+- [ ] asyncData, fetch, transition, validate, scrollToTop can be in mixins and extend (super)
 
 -> Not possible to have custom layout for a page, it should do the condition inside the layout itself (because of the middleware strategy)
 
