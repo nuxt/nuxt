@@ -3,7 +3,7 @@ yarn.lock
 node_modules
 
 # logs
-npm-debug.log
+*.log
 
 # other
 .nuxt
