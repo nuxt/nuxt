@@ -107,6 +107,7 @@
     "jsdom": "^9.10.0",
     "json-loader": "^0.5.4",
     "nyc": "^10.1.2",
+    "offline-plugin": "^4.6.1",
     "request": "^2.79.0",
     "request-promise-native": "^1.0.3",
     "webpack-node-externals": "^1.5.4"
