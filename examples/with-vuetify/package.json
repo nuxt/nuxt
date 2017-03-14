@@ -1,0 +1,12 @@
+{
+  "name": "with-vuetify",
+  "dependencies": {
+    "nuxt": "latest",
+    "vuetify": "^0.9.1"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
