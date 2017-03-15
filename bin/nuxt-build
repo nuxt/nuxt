@@ -15,13 +15,29 @@ if (process.argv.indexOf('--analyze') !== -1 || process.argv.indexOf('-a') !== -
   process.argv = without(process.argv, '--analyze', '-a')
 }
 
+var nuxtConfigFileName = 'nuxt.config.js'
+var indexOfConfig = false
+if (process.argv.indexOf('--config-file') !== -1) {
+  indexOfConfig = process.argv.indexOf('--config-file')
+} else if (process.argv.indexOf('-c') !== -1) {
+  indexOfConfig = process.argv.indexOf('-c')
+}
+
+if (indexOfConfig !== false) {
+  nuxtConfigFileName = process.argv.slice(indexOfConfig)[1]
+  process.argv = without(process.argv, '--config-file', '-c', nuxtConfigFileName)
+}
+
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+var nuxtConfigFilePath = resolve(rootDir, nuxtConfigFileName)
 
 var options = {}
-if (fs.existsSync(nuxtConfigFile)) {
-  options = require(nuxtConfigFile)
+if (fs.existsSync(nuxtConfigFilePath)) {
+  options = require(nuxtConfigFilePath)
+} else {
+  console.log(`Could not locate ${nuxtConfigFilePath}`) // eslint-disable-line no-console
 }
+
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
