@@ -16,6 +16,8 @@ if (process.argv.indexOf('--analyze') !== -1 || process.argv.indexOf('-a') !== -
 }
 
 var nuxtConfigFileName = 'nuxt.config.js'
+
+// --config-file option
 var indexOfConfig = false
 if (process.argv.indexOf('--config-file') !== -1) {
   indexOfConfig = process.argv.indexOf('--config-file')
@@ -28,6 +30,7 @@ if (indexOfConfig !== false) {
   process.argv = without(process.argv, '--config-file', '-c', nuxtConfigFileName)
 }
 
+// Root directory parameter
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
 var nuxtConfigFilePath = resolve(rootDir, nuxtConfigFileName)
 
