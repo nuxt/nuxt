@@ -13,6 +13,7 @@
   <body <%= m.bodyAttrs.text() %>>
     <%= APP %>
     <script type="text/javascript" defer>window.__NUXT__=<%= serialize(context.nuxt, { isJSON: true }) %></script>
+    <% if (files.manifest) { %><script src="<%= files.manifest %>" defer></script><% } %>
     <script src="<%= files.vendor %>" defer></script>
     <script src="<%= files.app %>" defer></script>
   </body>
