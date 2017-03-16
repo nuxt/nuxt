@@ -83,7 +83,7 @@
     "url-loader": "^0.5.7",
     "vue": "^2.2.1",
     "vue-loader": "^11.0.0",
-    "vue-meta": "^0.5.3",
+    "vue-meta": "^0.5.5",
     "vue-router": "^2.3.0",
     "vue-server-renderer": "^2.2.0",
     "vue-template-compiler": "^2.2.0",
