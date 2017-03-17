@@ -37,9 +37,9 @@ test('urlJoin', t => {
   t.is(utils.urlJoin('test', '/about'), 'test/about')
 })
 
-test('promisifyRouteParams (array)', t => {
+test('promisifyRoute (array)', t => {
   const array = [1]
-  const promise = utils.promisifyRouteParams(array)
+  const promise = utils.promisifyRoute(array)
   t.is(typeof promise, 'object')
   return promise
   .then((res) => {
@@ -47,12 +47,12 @@ test('promisifyRouteParams (array)', t => {
   })
 })
 
-test('promisifyRouteParams (fn => array)', t => {
+test('promisifyRoute (fn => array)', t => {
   const array = [1, 2]
   const fn = function () {
     return array
   }
-  const promise = utils.promisifyRouteParams(fn)
+  const promise = utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
   return promise
   .then((res) => {
@@ -60,14 +60,14 @@ test('promisifyRouteParams (fn => array)', t => {
   })
 })
 
-test('promisifyRouteParams (fn => promise)', t => {
+test('promisifyRoute (fn => promise)', t => {
   const array = [1, 2, 3]
   const fn = function () {
     return new Promise((resolve) => {
       resolve(array)
     })
   }
-  const promise = utils.promisifyRouteParams(fn)
+  const promise = utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
   return promise
   .then((res) => {
@@ -75,11 +75,11 @@ test('promisifyRouteParams (fn => promise)', t => {
   })
 })
 
-test('promisifyRouteParams (fn(cb) with error)', t => {
+test('promisifyRoute (fn(cb) with error)', t => {
   const fn = function (cb) {
     cb('Error here')
   }
-  const promise = utils.promisifyRouteParams(fn)
+  const promise = utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
   return promise
   .catch((e) => {
@@ -87,12 +87,12 @@ test('promisifyRouteParams (fn(cb) with error)', t => {
   })
 })
 
-test('promisifyRouteParams (fn(cb) with result)', t => {
+test('promisifyRoute (fn(cb) with result)', t => {
   const array = [1, 2, 3, 4]
   const fn = function (cb) {
     cb(null, array)
   }
-  const promise = utils.promisifyRouteParams(fn)
+  const promise = utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
   return promise
   .then((res) => {

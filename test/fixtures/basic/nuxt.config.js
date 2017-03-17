@@ -1,11 +1,9 @@
 module.exports = {
   generate: {
-    routeParams: {
-      '/users/:id?': [
-        { id: 1 },
-        { id: 2 },
-        { id: 3 }
-      ]
-    }
+    routes: [
+      '/users/1',
+      '/users/2',
+      '/users/3'
+    ]
   }
 }
