@@ -16,7 +16,12 @@
       </v-sidebar>
       <v-content>
         <v-container fluid>
-          <div class="title">Main Content</div>
+          <div class="title">
+            <h2>Main content</h2>
+            <v-btn primary>Primary button</v-btn>
+            <v-btn secondary>Secondary button</v-btn>
+            <v-btn success>Success button</v-btn>
+          </div>
         </v-container>
       </v-content>
     </main>
@@ -33,7 +38,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .title {
     padding-left: 20px;
   }
