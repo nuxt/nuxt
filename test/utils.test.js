@@ -77,13 +77,13 @@ test('promisifyRoute (fn => promise)', t => {
 
 test('promisifyRoute (fn(cb) with error)', t => {
   const fn = function (cb) {
-    cb('Error here')
+    cb(new Error('Error here'))
   }
   const promise = utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
   return promise
   .catch((e) => {
-    t.is(e, 'Error here')
+    t.is(e.message, 'Error here')
   })
 })
 

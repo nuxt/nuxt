@@ -9,7 +9,7 @@ test('Fail with routes() which throw an error', t => {
     generate: {
       routes: function () {
         return new Promise((resolve, reject) => {
-          reject('Not today!')
+          reject(new Error('Not today!'))
         })
       }
     }
@@ -29,7 +29,7 @@ test('Fail with routes() which throw an error', t => {
     }
     nuxt.generate()
     .catch((e) => {
-      t.true(e === 'Not today!')
+      t.true(e.message === 'Not today!')
     })
   })
 })
