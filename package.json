@@ -86,6 +86,7 @@
     "vue-meta": "^0.5.3",
     "vue-router": "^2.2.0",
     "vue-server-renderer": "^2.1.10",
+    "vue-ssr-html-stream": "^2.2.0",
     "vue-template-compiler": "^2.1.10",
     "vuex": "^2.1.2",
     "webpack": "^2.2.1",
