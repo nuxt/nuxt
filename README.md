@@ -10,6 +10,7 @@
   <a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
   
 </p>
+
 > Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
 
 ## 🚧 Under active development, 1.0 will be released soon :fire:
