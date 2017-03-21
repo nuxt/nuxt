@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  data () {
+  asyncData () {
     return { answer: null }
   },
   created () {
