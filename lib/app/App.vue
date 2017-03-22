@@ -12,7 +12,7 @@ let layouts = {
 <%
 var layoutsKeys = Object.keys(layouts);
 layoutsKeys.forEach(function (key, i) { %>
-  "_<%= key %>": process.browser ? () => System.import('<%= layouts[key] %>') : require('<%= layouts[key] %>')<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
+  "_<%= key %>": () => import('<%= layouts[key] %>')<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
 <% }) %>
 }
 
