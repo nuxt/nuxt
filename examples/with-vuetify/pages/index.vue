@@ -7,7 +7,7 @@
     <main>
       <v-sidebar left fixed drawer v-model="sidebar">
         <v-list>
-          <v-list-item v-for="i in 3">
+          <v-list-item v-for="i in 3" :key="i">
             <v-list-tile>
               <v-list-tile-title>Item {{ i }}</v-list-tile-title>
             </v-list-tile>
@@ -30,7 +30,7 @@
 
 <script>
   export default {
-    data() {
+    asyncData() {
       return {
         sidebar: false
       }
