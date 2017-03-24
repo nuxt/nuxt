@@ -31,7 +31,7 @@ test('/ (custom app.html)', async t => {
 
 test('/ (custom build.publicPath)', async t => {
   const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('src="/test/orion/vendor.bundle'))
+  t.true(html.includes('src="https://cdn.nuxtjs.org/vendor.bundle'))
 })
 
 test('/test/ (router base)', async t => {
