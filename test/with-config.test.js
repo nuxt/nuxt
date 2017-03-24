@@ -24,6 +24,16 @@ test('/', async t => {
   t.true(html.includes('<h1>I have custom configurations</h1>'))
 })
 
+test('/ (custom app.html)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('<p>Made by Nuxt.js team</p>'))
+})
+
+test('/ (custom build.publicPath)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('src="/test/orion/vendor.bundle'))
+})
+
 test('/test/ (router base)', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/'))
   const html = window.document.body.innerHTML

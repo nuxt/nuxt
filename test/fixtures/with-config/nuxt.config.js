@@ -10,7 +10,10 @@ module.exports = {
     }
   },
   cache: true,
-  plugins: ['~plugins/test.js'],
+  plugins: [
+    '~plugins/test.js',
+    { src: '~plugins/only-client.js', ssr: false }
+  ],
   loading: '~components/loading',
   env: {
     bool: true,
@@ -18,6 +21,7 @@ module.exports = {
     string: 'Nuxt.js'
   },
   build: {
+    publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
