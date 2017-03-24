@@ -13,7 +13,7 @@
 import axios from 'axios'
 
 export default {
-  data () {
+  asyncData () {
     return axios.get('https://jsonplaceholder.typicode.com/users')
     .then((res) => {
       return { users: res.data }

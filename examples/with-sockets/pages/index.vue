@@ -17,7 +17,7 @@
 import socket from '~plugins/socket.io.js'
 
 export default {
-  data (context, callback) {
+  asyncData (context, callback) {
     socket.emit('last-messages', function (messages) {
       callback(null, {
         messages,

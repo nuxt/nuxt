@@ -5,7 +5,7 @@
 <script>
 export default {
   layout: 'custom-env',
-  data ({ env }) {
+  asyncData ({ env }) {
     return { env }
   }
 }

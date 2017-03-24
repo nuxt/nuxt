@@ -12,7 +12,7 @@ let layouts = {
 <%
 var layoutsKeys = Object.keys(layouts);
 layoutsKeys.forEach(function (key, i) { %>
-  "_<%= key %>": process.BROWSER_BUILD ? () => System.import('<%= layouts[key] %>') : require('<%= layouts[key] %>')<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
+  "_<%= key %>": () => import('<%= layouts[key] %>')<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
 <% }) %>
 }
 
@@ -33,18 +33,19 @@ export default {
       if (!layout || !layouts['_' + layout]) layout = 'default'
       this.layoutName = layout
       let _layout = '_' + layout
-      if (typeof layouts[_layout] === 'function') {
-        return this.loadLayout(_layout)
-      }
       this.layout = layouts[_layout]
-      return Promise.resolve(this.layout)
+      return this.layout
     },
-    loadLayout (_layout) {
+    loadLayout (layout) {
+      if (!layout || !layouts['_' + layout]) layout = 'default'
+      let _layout = '_' + layout
+      if (typeof layouts[_layout] !== 'function') {
+        return Promise.resolve(layouts[_layout])
+      }
       return layouts[_layout]()
       .then((Component) => {
         layouts[_layout] = Component
-        this.layout = layouts[_layout]
-        return this.layout
+        return layouts[_layout]
       })
       .catch((e) => {
         if (this.$nuxt) {
