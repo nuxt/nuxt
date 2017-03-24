@@ -21,7 +21,7 @@ module.exports = {
     string: 'Nuxt.js'
   },
   build: {
-    publicPath: 'https://cdn.nuxtjs.org',
+    publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
