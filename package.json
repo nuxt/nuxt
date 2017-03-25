@@ -87,7 +87,7 @@
     "vue-ssr-webpack-plugin": "^1.0.2",
     "vue-template-compiler": "^2.2.5",
     "vuex": "^2.2.1",
-    "webpack": "^2.3.1",
+    "webpack": "^2.3.2",
     "webpack-bundle-analyzer": "^2.3.1",
     "webpack-dev-middleware": "^1.10.1",
     "webpack-hot-middleware": "^2.17.1"
