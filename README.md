@@ -120,7 +120,7 @@ This is mostly used for `nuxt generate` and test purposes but you might find ano
 nuxt.renderRoute('/about', context)
 .then(function ({ html, error }) {
   // You can check error to know if your app displayed the error page for this route
-  // Useful to set the correct status status code if an error appended:
+  // Useful to set the correct status code if an error appended:
   if (error) {
     return res.status(error.statusCode || 500).send(html)
   }
