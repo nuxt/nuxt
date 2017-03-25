@@ -20,6 +20,7 @@
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
 ## Getting started
 
