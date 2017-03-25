@@ -42,6 +42,11 @@ test('/stateful', async t => {
   t.true(html.includes('<div><p>The answer is 42</p></div>'))
 })
 
+test('/store', async t => {
+  const { html } = await nuxt.renderRoute('/store')
+  t.true(html.includes('<h1>Vuex Nested Modules</h1>'))
+})
+
 test('/head', async t => {
   const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
   const html = window.document.body.innerHTML
