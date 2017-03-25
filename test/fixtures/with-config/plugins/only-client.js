@@ -1,1 +1,1 @@
-console.log('Only called in client-side!')
+// Custom plugin (only included on client-side)
