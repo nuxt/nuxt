@@ -6,6 +6,6 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt"
+    "start": "nuxt start"
   }
 }
