@@ -72,6 +72,7 @@
     "lodash": "^4.17.4",
     "lru-cache": "^4.0.2",
     "memory-fs": "^0.4.1",
+    "offline-plugin": "^4.6.1",
     "pify": "^2.3.0",
     "post-compile-webpack-plugin": "^0.1.1",
     "preload-webpack-plugin": "^1.2.1",
