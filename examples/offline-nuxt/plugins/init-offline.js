@@ -1,4 +1,4 @@
-if (process.BROWSER_BUILD && process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
   require('offline-plugin/runtime').install()
   window.onNuxtReady((app) => {
     if ('serviceWorker' in navigator) {
