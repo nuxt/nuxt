@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  data ({ req, isServer }) {
+  asyncData ({ req, isServer }) {
     return {
       name: req ? 'server' : 'client'
     }

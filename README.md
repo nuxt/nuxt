@@ -10,15 +10,17 @@
   <a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
   
 </p>
+
 > Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
 
-## 🚧 Under active development, 1.0 will be released soon :fire:
+## 🚧 Under active development, [1.0](https://github.com/nuxt/nuxt.js/projects/1) will be released soon :fire:
 
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
 ## Getting started
 
@@ -119,7 +121,7 @@ This is mostly used for `nuxt generate` and test purposes but you might find ano
 nuxt.renderRoute('/about', context)
 .then(function ({ html, error }) {
   // You can check error to know if your app displayed the error page for this route
-  // Useful to set the correct status status code if an error appended:
+  // Useful to set the correct status code if an error appended:
   if (error) {
     return res.status(error.statusCode || 500).send(html)
   }

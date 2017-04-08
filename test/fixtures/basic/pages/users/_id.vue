@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  data ({ params }) {
+  asyncData ({ params }) {
     return { id: params.id }
   }
 }

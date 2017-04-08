@@ -1,3 +1,7 @@
+
+// Until babel-loader 7 is released
+process.noDeprecation = true
+
 var nodeExternals = require('webpack-node-externals')
 var ProgressBarPlugin = require('progress-bar-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')

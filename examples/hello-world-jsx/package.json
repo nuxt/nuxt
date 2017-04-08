@@ -1,0 +1,11 @@
+{
+  "name": "hello-nuxt-jsx",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

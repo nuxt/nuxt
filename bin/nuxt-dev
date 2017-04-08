@@ -63,6 +63,6 @@ function listenOnConfigChanges (nuxt, server) {
     })
   }, 200)
   var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
-  chokidar.watch(nuxtConfigFile, { ignoreInitial: true })
+  chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, { ignoreInitial: true }))
   .on('all', build)
 }

@@ -1,6 +1,6 @@
 # dependencies
-yarn.lock
 node_modules
+examples/**/*/yarn.lock
 
 # logs
 *.log

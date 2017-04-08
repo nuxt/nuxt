@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  data ({ env }) {
+  asyncData ({ env }) {
     return { users: env.users }
   }
 }
