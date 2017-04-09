@@ -82,6 +82,7 @@
     "serve-static": "^1.12.1",
     "url-loader": "^0.5.8",
     "vue": "^2.2.5",
+    "vue-i18n": "^6.0.0",
     "vue-loader": "^11.3.3",
     "vue-meta": "^0.5.5",
     "vue-router": "^2.3.0",
