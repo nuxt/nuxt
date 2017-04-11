@@ -56,11 +56,7 @@
     "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",
     "babel-preset-es2015": "^6.24.0",
-<<<<<<< HEAD
-    "babel-preset-vue-app": "^1.1.0",
-=======
     "babel-preset-vue-app": "^1.1.1",
->>>>>>> 29bc1a868369997d6b817fb885c18558c66f1c0d
     "chokidar": "^1.6.1",
     "co": "^4.6.0",
     "compression": "^1.6.2",
