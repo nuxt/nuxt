@@ -3,6 +3,7 @@
     <h3>{{ car.make }} {{ car.model }}</h3>
     <p>{{ formatCurrency(car.price) }}</p>
     <img :src="car.photoURL" :alt="`${car.model} photo`">
+    <p><nuxt-link to="/">Home page</nuxt-link></p>
   </div>
 </template>
 
