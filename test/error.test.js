@@ -28,11 +28,8 @@ test('/ should display an error', async t => {
 })
 
 test('/404 should display an error too', async t => {
-  try {
-    await nuxt.renderRoute('/404')
-  } catch (e) {
-    t.true(e.message.includes('not_defined is not defined'))
-  }
+  let { error } = await nuxt.renderRoute('/404')
+  t.true(error.message.includes('This page could not be found.'))
 })
 
 test('/ with renderAndGetWindow()', async t => {

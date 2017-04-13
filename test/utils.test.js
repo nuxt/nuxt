@@ -25,6 +25,7 @@ test('getContext', t => {
 
 test('setAnsiColors', t => {
   utils.setAnsiColors(ansiHTML)
+  t.pass()
 })
 
 test('waitFor', function * (t) {
