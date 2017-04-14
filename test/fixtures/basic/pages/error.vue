@@ -4,8 +4,11 @@
 
 <script>
 export default {
-  asyncData () {
-    throw new Error('Error mouahahah')
+  asyncData ({ req }) {
+    // Not for nuxt generate
+    if (req) {
+      throw new Error('Error mouahahah')
+    }
   }
 }
 </script>

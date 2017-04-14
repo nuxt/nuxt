@@ -116,12 +116,6 @@ test('/redirect -> check redirected source', async t => {
   t.true(html.includes('<h1>Index page</h1>'))
 })
 
-test('/error', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/error'))
-  const html = window.document.body.innerHTML
-  t.true(html.includes('Error mouahahah'))
-})
-
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server', t => {
   server.close()

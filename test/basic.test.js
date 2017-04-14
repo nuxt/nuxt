@@ -100,10 +100,11 @@ test('/redirect -> check redirected source', async t => {
 })
 
 test('/error', async t => {
-  const { html, error } = await nuxt.renderRoute('/error')
-  t.true(html.includes('Error mouahahah'))
-  t.true(error.message.includes('Error mouahahah'))
-  t.true(error.statusCode === 500)
+  try {
+    await nuxt.renderRoute('/error', { req: {}, res: {} })
+  } catch (err) {
+    t.true(err.message.includes('Error mouahahah'))
+  }
 })
 
 test('/error status code', async t => {
