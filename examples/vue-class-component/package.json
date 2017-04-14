@@ -1,0 +1,13 @@
+{
+  "name": "nuxt-class-component",
+  "dependencies": {
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "nuxt": "latest",
+    "vue-class-component": "^5.0.1"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
