@@ -1,12 +1,16 @@
 module.exports = {
-  loading: {
-    color: 'cyan'
+  build: {
+    vendor: ['vue-i18n']
   },
   router: {
     middleware: 'i18n'
   },
-  build: {
-    vendor: ['axios']
+  plugins: [
+    // Will inject the plugin in the $root app and also in the context as `i18n`
+    { src: '~plugins/i18n.js', injectAs: 'i18n' }
+  ],
+  generate: {
+    routes: ['/', '/about', '/fr', '/fr/about']
   },
-  plugins: ['~plugins/i18n']
+  loading: { color: 'cyan' },
 }

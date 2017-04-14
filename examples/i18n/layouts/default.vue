@@ -7,13 +7,13 @@
           <nuxt-link class="Header__Link" :to="path('/')" exact>
             {{ $t('links.home') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" :to="path('/about')">
+          <nuxt-link class="Header__Link" :to="path('/about')"  active-class="none">
             {{ $t('links.about') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" v-if="$store.state.lang.lang === 'en'" :to="`/fr` + $route.fullPath" active-class="none">
+          <nuxt-link class="Header__Link" v-if="$i18n.locale === 'en'" :to="`/fr` + $route.fullPath" active-class="none" exact>
             {{ $t('links.french') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" v-else :to="$route.fullPath.replace(/^\/[^\/]+/, '')" active-class="none">
+          <nuxt-link class="Header__Link" v-else :to="$route.fullPath.replace(/^\/[^\/]+/, '')" active-class="none" exact>
             {{ $t('links.english') }}
           </nuxt-link>
         </nav>
@@ -27,15 +27,19 @@
 export default {
   methods: {
     path (url) {
-      return (this.$store.state.lang.lang === 'en' ? url : '/' + this.$store.state.lang.lang + url)
+      return (this.$i18n.locale === 'en' ? url : '/' + this.$i18n.locale + url)
     }
   }
 }
 </script>
 
 <style>
-html, body
-{
+*, *:before, *:after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+html, body {
   background-color: #fff;
   color: #2e2f30;
   letter-spacing: 0.5px;
@@ -44,42 +48,30 @@ html, body
   height: 100vh;
   margin: 0;
 }
-*, *:before, *:after
-{
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-.container
-{
+.container {
   width: 75%;
   margin: 0 auto;
 }
-.container:after
-{
+.container:after {
   content: "";
   display: table;
   clear: both;
 }
-.Header
-{
+.Header {
   color: #fff;
   height: 80px;
   line-height: 80px;
   background-color: #2e2f30;
 }
-.Header__Title
-{
+.Header__Title {
   float: left;
   font-weight: 300;
   font-size: 30px;
 }
-.Header__Menu
-{
+.Header__Menu {
   float: right;
 }
-.Header__Link
-{
+.Header__Link {
   font-size: 16px;
   color: #fff;
   border: 1px solid #fff;
@@ -89,12 +81,19 @@ html, body
   border-radius: 5px;
   margin-left: 10px;
 }
-.Header__Link:hover
-{
+.Header__Link:hover {
   color: #2e2f30;
   background-color: #fff;
 }
 .nuxt-link-active {
   color: cyan;
+}
+.Content {
+  padding: 50px 0;
+  text-align: center;
+}
+.Content__Title {
+  font-weight: 300;
+  padding-bottom: 30px;
 }
 </style>

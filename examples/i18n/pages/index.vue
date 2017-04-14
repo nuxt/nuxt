@@ -1,13 +1,4 @@
-<template>
-  <home/>
-</template>
-
 <script>
-import Home from '~/partials/Home.vue'
-
-export default {
-  components: {
-    Home
-  }
-}
+import Index from '~pages/_lang/index'
+export default Index
 </script>

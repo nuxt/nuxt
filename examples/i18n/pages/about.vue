@@ -1,13 +1,4 @@
-<template>
-  <about/>
-</template>
-
 <script>
-import About from '~/partials/About.vue'
-
-export default {
-  components: {
-    About
-  }
-}
+import About from '~pages/_lang/about'
+export default About
 </script>

@@ -1,13 +1,16 @@
 <template>
-  <home/>
+  <div class="Content">
+    <div class="container">
+      <h1 class="Content__Title">{{ $t('home.title') }}</h1>
+      <p>{{ $t('home.introduction') }}</p>
+    </div>
+  </div>
 </template>
 
 <script>
-import Home from '~/partials/Home.vue'
-
 export default {
-  components: {
-    Home
+  head () {
+    return { title: this.$t('home.title') }
   }
 }
 </script>

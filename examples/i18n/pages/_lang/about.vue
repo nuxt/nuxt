@@ -1,13 +1,16 @@
 <template>
-  <about/>
+  <div class="Content">
+    <div class="container">
+      <h1 class="Content__Title">{{ $t('about.title') }}</h1>
+      <p>{{ $t('about.introduction') }}</p>
+    </div>
+  </div>
 </template>
 
 <script>
-import About from '~/partials/About.vue'
-
 export default {
-  components: {
-    About
+  head () {
+    return { title: this.$t('about.title') }
   }
 }
 </script>
