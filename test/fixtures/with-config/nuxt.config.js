@@ -10,8 +10,10 @@ module.exports = {
     }
   },
   cache: true,
+  offline: true,
   plugins: [
     '~plugins/test.js',
+    { src: '~plugins/offline.js', ssr: false },
     { src: '~plugins/only-client.js', ssr: false }
   ],
   loading: '~components/loading',
