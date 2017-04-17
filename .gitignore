@@ -18,3 +18,4 @@ examples/**/dist
 coverage
 *.lcov
 .nyc_output
+.vscode

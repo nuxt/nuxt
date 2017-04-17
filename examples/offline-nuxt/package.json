@@ -1,8 +1,11 @@
 {
   "name": "offline-config-nuxt",
   "scripts": {
-    "dev": "../../bin/nuxt",
-    "build": "../../bin/nuxt build",
-    "start": "../../bin/nuxt start"
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "nuxt": "latest"
   }
 }
