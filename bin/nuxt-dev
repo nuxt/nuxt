@@ -10,9 +10,25 @@ var fs = require('fs')
 var Nuxt = require('../')
 var chokidar = require('chokidar')
 var resolve = require('path').resolve
+var without = require('lodash').without
+
+var nuxtConfigFileName = 'nuxt.config.js'
+
+// --config-file option
+var indexOfConfig = false
+if (process.argv.indexOf('--config-file') !== -1) {
+  indexOfConfig = process.argv.indexOf('--config-file')
+} else if (process.argv.indexOf('-c') !== -1) {
+  indexOfConfig = process.argv.indexOf('-c')
+}
+
+if (indexOfConfig !== false) {
+  nuxtConfigFileName = process.argv.slice(indexOfConfig)[1]
+  process.argv = without(process.argv, '--config-file', '-c', nuxtConfigFileName)
+}
 
 var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+var nuxtConfigFile = resolve(rootDir, nuxtConfigFileName)
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
@@ -62,7 +78,7 @@ function listenOnConfigChanges (nuxt, server) {
       process.exit(1)
     })
   }, 200)
-  var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+  var nuxtConfigFile = resolve(rootDir, nuxtConfigFileName)
   chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, { ignoreInitial: true }))
   .on('all', build)
 }
