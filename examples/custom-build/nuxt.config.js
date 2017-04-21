@@ -1,9 +1,9 @@
 module.exports = {
   build: {
     filenames: {
-      css: 'app.css', // default: style.css
-      vendor: 'vendor.js', // default: vendor.bundle.js
-      app: 'app.js' // default: nuxt.bundle.js
+        manifest: 'manifest.[hash].js',   // default: manifest.[hash].js
+        vendor: 'vendor.[hash].js',       // default: vendor.bundle.[hash].js
+        app: 'app.[chunkhash].js'         // default: nuxt.bundle.[chunkhash].js
     },
     vendor: ['lodash'],
     // Loaders config (Webpack 2)
