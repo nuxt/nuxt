@@ -4,6 +4,7 @@ module.exports = {
       '/users/1',
       '/users/2',
       '/users/3'
-    ]
+    ],
+    wait : 1000
   }
 }
