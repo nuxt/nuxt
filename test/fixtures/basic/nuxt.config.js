@@ -5,6 +5,6 @@ module.exports = {
       '/users/2',
       '/users/3'
     ],
-    wait : 1000
+    interval: 200
   }
 }
