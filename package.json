@@ -87,7 +87,6 @@
     "vue-router": "^2.4.0",
     "vue-server-renderer": "^2.3.0",
     "vue-ssr-html-stream": "^2.2.0",
-    "vue-ssr-webpack-plugin": "^3.0.0",
     "vue-template-compiler": "^2.3.0",
     "vuex": "^2.3.0",
     "webpack": "^2.4.1",
