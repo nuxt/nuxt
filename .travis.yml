@@ -2,8 +2,6 @@ language: node_js
 node_js:
   - "7.2"
   - "6.9"
-  - "5.12"
-  - "4.7"
 before_install:
   - if [[ `npm -v` != 3* ]]; then npm i -g npm@3; fi
 install:
