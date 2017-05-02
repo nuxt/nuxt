@@ -117,6 +117,7 @@
     "nyc": "^10.2.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
-    "webpack-node-externals": "^1.5.4"
+    "webpack-node-externals": "^1.5.4",
+    "post-compile-webpack-plugin": "*"
   }
 }
