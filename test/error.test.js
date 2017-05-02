@@ -37,7 +37,7 @@ test('/ with renderAndGetWindow()', async t => {
     await nuxt.renderAndGetWindow(url('/'))
   } catch (e) {
     t.true(e.message.includes('Could not load the nuxt app'))
-    t.true(e.body.includes('not_defined is not defined'))
+    t.true(e.body.includes('render function or template not defined in component'))
   }
 })
 
