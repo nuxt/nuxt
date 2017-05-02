@@ -21,7 +21,7 @@ test('Check .nuxt/router.js', t => {
       .slice(routerFile.indexOf('routes: ['))
       .replace('routes: [', '[')
       .replace(/ _[0-9A-z]+,/g, ' "",')
-      .replace('})', '')
+    routerFile = routerFile.substr(routerFile.indexOf('['), routerFile.lastIndexOf(']') + 1)
     let routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
     // pages/index.vue
     t.is(routes[0].path, '/')
