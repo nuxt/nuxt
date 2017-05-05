@@ -38,7 +38,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "test": "nyc ava --verbose --serial test/",
+    "test": "npm run lint && nyc ava --verbose --serial test/",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern lib/app",
     "build": "webpack",
