@@ -18,7 +18,9 @@ test.before('Init Nuxt.js', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
-  await nuxt.generate()
+  try {
+    await nuxt.generate() // throw an error (of /validate route)
+  } catch (err) {}
   const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
   server = http.createServer((req, res) => {
     serve(req, res, finalhandler(req, res))
