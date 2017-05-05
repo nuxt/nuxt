@@ -17,12 +17,11 @@ test.before('Init Nuxt.js', async t => {
 test('Check .nuxt/router.js', t => {
   return readFile(resolve(__dirname, './fixtures/dynamic-routes/.nuxt/router.js'), 'utf-8')
   .then((routerFile) => {
-    routerFile = routerFile.slice(
-      routerFile.indexOf('routes: ['),
-      -3
-    )
-    .replace('routes: [', '[')
-    .replace(/ _[0-9A-z]+,/g, ' "",')
+    routerFile = routerFile
+      .slice(routerFile.indexOf('routes: ['))
+      .replace('routes: [', '[')
+      .replace(/ _[0-9A-z]+,/g, ' "",')
+    routerFile = routerFile.substr(routerFile.indexOf('['), routerFile.lastIndexOf(']') + 1)
     let routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
     // pages/index.vue
     t.is(routes[0].path, '/')
