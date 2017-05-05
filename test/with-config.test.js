@@ -24,6 +24,11 @@ test('/', async t => {
   t.true(html.includes('<h1>I have custom configurations</h1>'))
 })
 
+test('/ (global styles inlined)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('.global-css-selector'))
+})
+
 test('/ (custom app.html)', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<p>Made by Nuxt.js team</p>'))
