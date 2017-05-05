@@ -31,5 +31,8 @@ module.exports = {
     extend (config, options) {
       config.devtool = 'nosources-source-map'
     }
-  }
+  },
+  css: [
+    {src: '~/assets/app.css'}
+  ]
 }
