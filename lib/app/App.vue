@@ -7,6 +7,9 @@
 
 <script>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
+<% css.forEach(function (c) { %>
+import '<%= c.src || c %>'
+<% }) %>
 
 let layouts = {
 <%
@@ -61,6 +64,3 @@ export default {
 }
 </script>
 
-<% css.forEach(function (c) { %>
-<style src="<%= (typeof c === 'string' ? c : c.src) %>" lang="<%= (c.lang ? c.lang : 'css') %>"></style>
-<% }) %>
