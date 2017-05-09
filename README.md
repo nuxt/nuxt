@@ -7,7 +7,7 @@
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
   <a href="https://gitter.im/nuxt/nuxt.js"><img src="https://img.shields.io/badge/GITTER-join%20chat-green.svg" alt="Gitter"></a>
-  <a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
+  <a href="https://opencollective.com/nuxtjs"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
   
 </p>
 
@@ -173,4 +173,4 @@ https://github.com/nuxt/nuxt.js/projects/1
 
 Feel free to make a donation to support us.
 
-<a href="https://donorbox.org/nuxt"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
+<a href="https://opencollective.com/nuxtjs"><img src="https://img.shields.io/badge/Support%20us-donate-41B883.svg" alt="Support us"></a>
