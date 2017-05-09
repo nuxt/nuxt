@@ -12,7 +12,6 @@
 <script>
 export default {
   asyncData ({ store, route, userAgent }) {
-    console.log('Call async data', route.fullPath)
     return {
       userAgent,
       slugs: [
