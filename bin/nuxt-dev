@@ -39,15 +39,16 @@ if (typeof options.rootDir !== 'string') {
 }
 options.dev = true // Add hot reloading and watching changes
 
-var nuxt = new Nuxt(options)
-var server = new nuxt.Server(nuxt)
-.listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
-listenOnConfigChanges(nuxt, server)
+new Nuxt(options).then(nuxt => {
+  var server = new nuxt.Server(nuxt)
+    .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
+  listenOnConfigChanges(nuxt, server)
 
-nuxt.build()
-.catch((err) => {
-  console.error(err) // eslint-disable-line no-console
-  process.exit(1)
+  nuxt.build()
+    .catch((err) => {
+      console.error(err) // eslint-disable-line no-console
+      process.exit(1)
+    })
 })
 
 function listenOnConfigChanges (nuxt, server) {
