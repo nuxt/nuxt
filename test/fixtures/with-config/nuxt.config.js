@@ -23,6 +23,7 @@ module.exports = {
     string: 'Nuxt.js'
   },
   build: {
+    extractCSS: true,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
@@ -33,6 +34,6 @@ module.exports = {
     }
   },
   css: [
-    {src: '~/assets/app.css'}
+    { src: '~/assets/app.css' }
   ]
 }
