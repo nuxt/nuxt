@@ -1,8 +1,8 @@
 {
   "name": "with-vuetify",
   "dependencies": {
-    "nuxt": "0.10",
-    "vuetify": "0.9.4"
+    "nuxt": "^0.10.7",
+    "vuetify": "^0.11.1"
   },
   "scripts": {
     "dev": "nuxt",
