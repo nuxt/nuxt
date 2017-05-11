@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "predeploy": "yarn run generate",
+    "deploy": "surge --domain nuxt-with-vuetify-example.surge.sh dist"
   },
   "devDependencies": {
     "stylus": "^0.54.5",
