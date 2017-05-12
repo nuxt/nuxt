@@ -69,7 +69,7 @@ function listenOnConfigChanges (nuxt, server) {
     .then(() => {
       nuxt.renderer = null
       debug('Rebuilding the app...')
-      return new Nuxt(options).build()
+      return (new Nuxt(options)).then(nuxt => nuxt.build())
     })
     .then((nuxt) => {
       server.nuxt = nuxt
