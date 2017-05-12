@@ -44,7 +44,8 @@
     "build": "webpack",
     "watch": "webpack --watch",
     "precommit": "npm run lint",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "postinstall": "opencollective postinstall"
   },
   "engines": {
     "node": ">=4.3.0 <5.0.0 || >=5.10",
@@ -75,6 +76,7 @@
     "lru-cache": "^4.0.2",
     "memory-fs": "^0.4.1",
     "offline-plugin": "^4.7.0",
+    "opencollective": "^1.0.3",
     "pify": "^2.3.0",
     "post-compile-webpack-plugin": "^0.1.1",
     "preload-webpack-plugin": "^1.2.2",
@@ -119,5 +121,10 @@
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3",
     "webpack-node-externals": "^1.5.4"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/nuxtjs",
+    "logo": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }
