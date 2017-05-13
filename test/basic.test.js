@@ -45,7 +45,7 @@ test('/stateful', async t => {
 test('/store', async t => {
   const { html } = await nuxt.renderRoute('/store')
   t.true(html.includes('<h1>Vuex Nested Modules</h1>'))
-  t.true(html.includes('<p>0</p>'))
+  t.true(html.includes('<p>1</p>'))
 })
 
 test('/head', async t => {
