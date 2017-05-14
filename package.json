@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "ansi-html": "^0.0.7",
-    "autoprefixer": "^6.7.7",
+    "autoprefixer": "^7.0.1",
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
     "babel-preset-es2015": "^6.24.1",
