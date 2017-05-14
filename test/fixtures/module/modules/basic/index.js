@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = function basicModule (options) {
-  return new Promise((resolve,reject) => {
+  return new Promise((resolve, reject) => {
     // Add simple vendor
     this.addVendor('lodash')
 
