@@ -11,8 +11,7 @@ module.exports = {
   ],
   head: {
     link: [
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Roboto' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/icon?family=Material+Icons' }
+      { rel: 'preload', as: 'style', href: 'https://fonts.googleapis.com/css?family=Roboto' }
     ]
   }
 }
