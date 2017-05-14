@@ -8,5 +8,11 @@ module.exports = function middlewareModule (options) {
         res.end('It works!')
       }
     })
+    // Add plain middleware
+    this.addServerMiddleware((req, res, next) => {
+      next()
+    })
+    // Resolve
+    resolve()
   })
 }
