@@ -1,5 +1,6 @@
 module.exports = {
   modules: [
-    '~modules/basic'
+    '~modules/basic',
+    '~modules/middleware'
   ]
 }
