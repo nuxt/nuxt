@@ -6,7 +6,7 @@ module.exports = {
     middleware: 'apollo'
   },
   plugins: [
-    // Will inject the plugin in the $root app and also in the context as `i18n`
+    // Will inject the plugin in the $root app and also in the context as `apolloProvider`
     { src: '~plugins/apollo.js', injectAs: 'apolloProvider' }
   ]
 }
