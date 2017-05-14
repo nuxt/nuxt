@@ -14,7 +14,7 @@ test.before('Init Nuxt.js', async t => {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: false
   }
-  nuxt = new Nuxt(options)
+  nuxt = await new Nuxt(options)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')
@@ -45,6 +45,7 @@ test('/stateful', async t => {
 test('/store', async t => {
   const { html } = await nuxt.renderRoute('/store')
   t.true(html.includes('<h1>Vuex Nested Modules</h1>'))
+  t.true(html.includes('<p>1</p>'))
 })
 
 test('/head', async t => {

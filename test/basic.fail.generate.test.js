@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 
-test('Fail with routes() which throw an error', t => {
+test('Fail with routes() which throw an error', async t => {
   const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
@@ -14,7 +14,7 @@ test('Fail with routes() which throw an error', t => {
       }
     }
   }
-  const nuxt = new Nuxt(options)
+  const nuxt = await new Nuxt(options)
   return new Promise((resolve) => {
     var oldExit = process.exit
     var oldCE = console.error // eslint-disable-line no-console

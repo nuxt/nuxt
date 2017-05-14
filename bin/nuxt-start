@@ -16,10 +16,10 @@ if (typeof options.rootDir !== 'string') {
 }
 options.dev = false // Force production mode (no webpack middleware called)
 
-var nuxt = new Nuxt(options)
-
-new nuxt.Server(nuxt)
-.listen(
-  process.env.PORT || process.env.npm_package_config_nuxt_port,
-  process.env.HOST || process.env.npm_package_config_nuxt_host
-)
+new Nuxt(options).then(nuxt => {
+  new nuxt.Server(nuxt)
+    .listen(
+      process.env.PORT || process.env.npm_package_config_nuxt_port,
+      process.env.HOST || process.env.npm_package_config_nuxt_host
+    )
+})

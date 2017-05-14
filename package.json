@@ -61,6 +61,7 @@
     "chokidar": "^1.6.1",
     "co": "^4.6.0",
     "compression": "^1.6.2",
+    "connect": "^3.6.1",
     "css-loader": "^0.28.1",
     "debug": "^2.6.6",
     "extract-text-webpack-plugin": "^2.1.0",

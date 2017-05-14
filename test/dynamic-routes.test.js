@@ -7,7 +7,7 @@ const readFile = pify(fs.readFile)
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
   const Nuxt = require('../')
-  const nuxt = new Nuxt({
+  const nuxt = await new Nuxt({
     rootDir: resolve(__dirname, 'fixtures/dynamic-routes'),
     dev: false
   })

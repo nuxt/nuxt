@@ -13,7 +13,7 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = new Nuxt(config)
+  nuxt = await new Nuxt(config)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')
@@ -96,11 +96,11 @@ test.after('Closing server and nuxt.js', t => {
   nuxt.close()
 })
 
-test.after('Should be able to start Nuxt with build done', t => {
+test.after('Should be able to start Nuxt with build done', async t => {
   const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/with-config')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = new Nuxt(config)
+  nuxt = await new Nuxt(config)
 })

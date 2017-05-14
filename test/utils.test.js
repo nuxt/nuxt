@@ -5,7 +5,7 @@ let utils
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
   const Nuxt = require('../')
-  let nuxt = new Nuxt({ dev: false })
+  let nuxt = await new Nuxt({ dev: false })
   utils = nuxt.utils
 })
 
