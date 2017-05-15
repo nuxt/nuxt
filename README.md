@@ -3,7 +3,7 @@
   <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/Atinux/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/gwab06obc6srx9g4?svg=true" alt="Windows Build Status"></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dt/nuxt.svg" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
   <a href="https://gitter.im/nuxt/nuxt.js"><img src="https://img.shields.io/badge/GITTER-join%20chat-green.svg" alt="Gitter"></a>
