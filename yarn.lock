@@ -6167,9 +6167,9 @@ vue-loader@^12.0.4:
     vue-style-loader "^3.0.0"
     vue-template-es2015-compiler "^1.2.2"
 
-vue-meta@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-1.0.3.tgz#2500062229a0a6fdbc76ae121185009a096e4bd5"
+vue-meta@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-1.0.4.tgz#17608970aa02f6346829845eb8a05b2d5bf485c3"
   dependencies:
     deepmerge "^1.3.2"
     lodash.isplainobject "^4.0.6"
