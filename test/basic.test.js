@@ -1,6 +1,8 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
+import stdMocks from 'std-mocks'
+
 const port = 4000
 const url = (route) => 'http://localhost:' + port + route
 
@@ -128,9 +130,18 @@ test('/error2 status code', async t => {
   try {
     await rp(url('/error2'))
   } catch (err) {
-    t.true(err.statusCode === 500)
+    t.is(err.statusCode, 500)
     t.true(err.response.body.includes('Custom error'))
   }
+})
+
+test('/redirect2 status code', async t => {
+  stdMocks.use()
+  await rp(url('/redirect2')) // Should console.error
+  stdMocks.restore()
+  const output = stdMocks.flush()
+  t.true(output.stderr.length >= 1)
+  t.true(output.stderr[0].includes('Error: NOPE!'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
