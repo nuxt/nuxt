@@ -1584,12 +1584,12 @@ configstore@^3.0.0:
     write-file-atomic "^2.0.0"
     xdg-basedir "^3.0.0"
 
-connect@^3.6.1:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/connect/-/connect-3.6.1.tgz#b7760693a74f0454face1d9378edb3f885b43227"
+connect@^3.6.2:
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/connect/-/connect-3.6.2.tgz#694e8d20681bfe490282c8ab886be98f09f42fe7"
   dependencies:
-    debug "2.6.3"
-    finalhandler "1.0.1"
+    debug "2.6.7"
+    finalhandler "1.0.3"
     parseurl "~1.3.1"
     utils-merge "1.0.0"
 
@@ -1912,23 +1912,11 @@ debug@2.6.1:
   dependencies:
     ms "0.7.2"
 
-debug@2.6.3:
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.3.tgz#0f7eb8c30965ec08c72accfa0130c8b79984141d"
+debug@2.6.7, debug@^2.1.1, debug@^2.2.0, debug@^2.6.3, debug@^2.6.6:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.7.tgz#92bad1f6d05bbb6bba22cca88bcd0ec894c2861e"
   dependencies:
-    ms "0.7.2"
-
-debug@2.6.4:
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.4.tgz#7586a9b3c39741c0282ae33445c4e8ac74734fe0"
-  dependencies:
-    ms "0.7.3"
-
-debug@^2.1.1, debug@^2.2.0, debug@^2.6.3, debug@^2.6.6:
-  version "2.6.6"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.6.tgz#a9fa6fbe9ca43cf1e79f73b75c0189cbb7d6db5a"
-  dependencies:
-    ms "0.7.3"
+    ms "2.0.0"
 
 decamelize@^1.0.0, decamelize@^1.1.1, decamelize@^1.1.2:
   version "1.2.0"
@@ -2133,8 +2121,8 @@ ejs@^2.3.4, ejs@^2.5.6:
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.6.tgz#479636bfa3fe3b1debd52087f0acb204b4f19c88"
 
 electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.9:
-  version "1.3.10"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.10.tgz#63d62b785471f0d8dda85199d64579de8a449f08"
+  version "1.3.11"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.11.tgz#744761df1d67b492b322ce9aa0aba5393260eb61"
 
 elliptic@^6.0.0:
   version "6.4.0"
@@ -2619,23 +2607,11 @@ fill-range@^2.1.0:
     repeat-element "^1.1.2"
     repeat-string "^1.5.2"
 
-finalhandler@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/finalhandler/-/finalhandler-1.0.1.tgz#bcd15d1689c0e5ed729b6f7f541a6df984117db8"
+finalhandler@1.0.3, finalhandler@^1.0.2, finalhandler@~1.0.0:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/finalhandler/-/finalhandler-1.0.3.tgz#ef47e77950e999780e86022a560e3217e0d0cc89"
   dependencies:
-    debug "2.6.3"
-    encodeurl "~1.0.1"
-    escape-html "~1.0.3"
-    on-finished "~2.3.0"
-    parseurl "~1.3.1"
-    statuses "~1.3.1"
-    unpipe "~1.0.0"
-
-finalhandler@^1.0.2, finalhandler@~1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/finalhandler/-/finalhandler-1.0.2.tgz#d0e36f9dbc557f2de14423df6261889e9d60c93a"
-  dependencies:
-    debug "2.6.4"
+    debug "2.6.7"
     encodeurl "~1.0.1"
     escape-html "~1.0.3"
     on-finished "~2.3.0"
@@ -3705,8 +3681,8 @@ jsprim@^1.2.2:
     verror "1.3.6"
 
 kind-of@^3.0.2:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-3.2.0.tgz#b58abe4d5c044ad33726a8c1525b48cf891bff07"
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-3.2.2.tgz#31ea21a734bab9bbb0f32466d893aea51e4a3c64"
   dependencies:
     is-buffer "^1.1.5"
 
@@ -4070,7 +4046,7 @@ minimist@1.2.0, minimist@^1.1.3, minimist@^1.2.0:
   dependencies:
     minimist "0.0.8"
 
-ms@0.7.1:
+ms@0.7.1, ms@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.1.tgz#9cd13c03adbff25b65effde7ce864ee952017098"
 
@@ -4078,13 +4054,9 @@ ms@0.7.2:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.2.tgz#ae25cf2512b3885a1d95d7f037868d8431124765"
 
-ms@0.7.3, ms@^0.7.1:
-  version "0.7.3"
-  resolved "https://registry.yarnpkg.com/ms/-/ms-0.7.3.tgz#708155a5e44e33f5fd0fc53e81d0d40a91be1fff"
-
-ms@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ms/-/ms-1.0.0.tgz#59adcd22edc543f7b5381862d31387b1f4bc9473"
+ms@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
 
 multimatch@^2.1.0:
   version "2.1.0"
@@ -5480,11 +5452,11 @@ send@0.15.1:
     range-parser "~1.2.0"
     statuses "~1.3.1"
 
-send@0.15.2:
-  version "0.15.2"
-  resolved "https://registry.yarnpkg.com/send/-/send-0.15.2.tgz#f91fab4403bcf87e716f70ceb5db2f578bdc17d6"
+send@0.15.3:
+  version "0.15.3"
+  resolved "https://registry.yarnpkg.com/send/-/send-0.15.3.tgz#5013f9f99023df50d1bd9892c19e3defd1d53309"
   dependencies:
-    debug "2.6.4"
+    debug "2.6.7"
     depd "~1.1.0"
     destroy "~1.0.4"
     encodeurl "~1.0.1"
@@ -5493,7 +5465,7 @@ send@0.15.2:
     fresh "0.5.0"
     http-errors "~1.6.1"
     mime "1.3.4"
-    ms "1.0.0"
+    ms "2.0.0"
     on-finished "~2.3.0"
     range-parser "~1.2.0"
     statuses "~1.3.1"
@@ -5512,13 +5484,13 @@ serve-static@1.12.1:
     send "0.15.1"
 
 serve-static@^1.12.2:
-  version "1.12.2"
-  resolved "https://registry.yarnpkg.com/serve-static/-/serve-static-1.12.2.tgz#e546e2726081b81b4bcec8e90808ebcdd323afba"
+  version "1.12.3"
+  resolved "https://registry.yarnpkg.com/serve-static/-/serve-static-1.12.3.tgz#9f4ba19e2f3030c547f8af99107838ec38d5b1e2"
   dependencies:
     encodeurl "~1.0.1"
     escape-html "~1.0.3"
     parseurl "~1.3.1"
-    send "0.15.2"
+    send "0.15.3"
 
 set-blocking@^2.0.0, set-blocking@~2.0.0:
   version "2.0.0"
@@ -5974,8 +5946,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 uglify-js@3.0.x:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.0.6.tgz#17a673f64a78d8807fbda1b4c9ffce114c6febfd"
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.0.7.tgz#5cca9c14abae2dd60ceccdf7da3c672cc8069cec"
   dependencies:
     commander "~2.9.0"
     source-map "~0.5.1"
