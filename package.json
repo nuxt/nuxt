@@ -86,7 +86,7 @@
     "url-loader": "^0.5.8",
     "vue": "~2.3.2",
     "vue-loader": "^12.0.3",
-    "vue-meta": "^0.5.6",
+    "vue-meta": "^1.0.4",
     "vue-router": "^2.5.3",
     "vue-server-renderer": "~2.3.2",
     "vue-ssr-html-stream": "^2.2.0",
