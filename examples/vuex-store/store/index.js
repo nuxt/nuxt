@@ -1,14 +1,14 @@
 import Vuex from 'vuex'
 
-const store = new Vuex.Store({
-  state: {
-    counter: 0
-  },
-  mutations: {
-    increment (state) {
-      state.counter++
-    }
-  }
-})
+import mutations from './mutations'
 
-export default store
+const createStore = () => {
+  return new Vuex.Store({
+    state: {
+      counter: 0
+    },
+    mutations
+  })
+}
+
+export default createStore

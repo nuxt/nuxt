@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "module": "es2015",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "declaration": true,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "~": ["./"],
+      "~assets/*": ["./assets/*"],
+      "~components/*": ["./components/*"],
+      "~middleware/*": ["./middleware/*"],
+      "~pages/*": ["./pages/*"],
+      "~plugins/*": ["./plugins/*"],
+      "~static/*": ["./static/*"],
+      "~store": ["./.nuxt/store"],
+      "~router": ["./.nuxt/router"]
+    }
+  }
+}

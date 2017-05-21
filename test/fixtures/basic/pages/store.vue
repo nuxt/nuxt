@@ -1,5 +1,9 @@
 <template>
-  <h1>{{ baz }}</h1>
+  <div>
+    <h1>{{ baz }}</h1>
+    <br>
+    <p>{{ $store.state.counter }}</p>
+  </div>
 </template>
 
 <script>

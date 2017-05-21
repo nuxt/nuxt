@@ -19,3 +19,7 @@ coverage
 *.lcov
 .nyc_output
 .vscode
+
+# Intellij idea
+*.iml
+.idea

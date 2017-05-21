@@ -52,12 +52,13 @@ if (analyzeBuild) {
 }
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
-var nuxt = new Nuxt(options)
-nuxt.build()
-.then(() => {
-  console.log('[nuxt] Building done') // eslint-disable-line no-console
-})
-.catch((err) => {
-  console.error(err) // eslint-disable-line no-console
-  process.exit(1)
+new Nuxt(options).then(nuxt => {
+  nuxt.build()
+    .then(() => {
+      console.log('[nuxt] Building done') // eslint-disable-line no-console
+    })
+    .catch((err) => {
+      console.error(err) // eslint-disable-line no-console
+      process.exit(1)
+    })
 })
