@@ -149,7 +149,7 @@ test('ETag Header', async t => {
   // Validate etag
   t.regex(etag, /W\/".*"$/)
   // Verify functionality
-  const error = await t.throws(rp(url('/stateless'), { headers: {'If-None-Match': etag}}))
+  const error = await t.throws(rp(url('/stateless'), {headers: {'If-None-Match': etag}}))
   t.is(error.statusCode, 304)
 })
 
