@@ -22,5 +22,9 @@ module.exports = function basicModule (options, resolve) {
     // Do nothing!
   })
 
+  // Require same module twice
+  this.requireModule('~/modules/empty/index.js')
+  this.requireModule('~/modules/empty/index.js')
+
   resolve()
 }
