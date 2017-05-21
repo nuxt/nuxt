@@ -1,6 +1,8 @@
 module.exports = {
+  srcDir: __dirname,
   router: {
     base: '/test/',
+    middleware: 'noop',
     extendRoutes (routes) {
       routes.push({
         name: 'about-bis',
@@ -9,7 +11,7 @@ module.exports = {
       })
     }
   },
-  cache: true,
+  transition: 'test',
   offline: true,
   plugins: [
     '~plugins/test.js',

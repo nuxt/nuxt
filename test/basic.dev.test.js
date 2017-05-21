@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-const port = 4005
+const port = 4000
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
@@ -38,5 +38,5 @@ test('/_nuxt/test.hot-update.json should returns empty html', async t => {
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
-  nuxt.close()
+  nuxt.close(() => {})
 })

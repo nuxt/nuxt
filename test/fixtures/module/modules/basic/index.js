@@ -8,12 +8,12 @@ module.exports = function basicModule (options, resolve) {
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 
   // Extend build
-  this.extendBuild(({isClient, isServer}) => {
+  this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
   })
 
   // Extend build again
-  this.extendBuild(({isClient, isServer}) => {
+  this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
   })
 

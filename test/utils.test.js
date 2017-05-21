@@ -32,6 +32,7 @@ test('waitFor', async (t) => {
   let s = Date.now()
   await utils.waitFor(100)
   t.true(Date.now() - s >= 100)
+  await utils.waitFor()
 })
 
 test('urlJoin', t => {
