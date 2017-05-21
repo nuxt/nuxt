@@ -8,12 +8,12 @@ module.exports = function basicModule (options, resolve) {
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 
   // Extend build
-  this.extendBuild(({isClient, isServer}) => {
+  this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
   })
 
   // Extend build again
-  this.extendBuild(({isClient, isServer}) => {
+  this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
   })
 
@@ -21,6 +21,10 @@ module.exports = function basicModule (options, resolve) {
   this.extendRoutes((routes, resolve) => {
     // Do nothing!
   })
+
+  // Require same module twice
+  this.requireModule('~/modules/empty/index.js')
+  this.requireModule('~/modules/empty/index.js')
 
   resolve()
 }

@@ -1,7 +1,7 @@
-export const state = {
+export const state = () => ({
   locales: ['en', 'fr'],
   locale: 'en'
-}
+})
 
 export const mutations = {
   SET_LANG (state, locale) {
