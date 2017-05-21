@@ -4,7 +4,7 @@ import http from 'http'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-const port = 4001
+const port = 4002
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null

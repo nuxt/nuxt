@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-const port = 4003
+const port = 4004
 // const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null

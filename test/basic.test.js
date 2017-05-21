@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import rp from 'request-promise-native'
 import stdMocks from 'std-mocks'
 
-const port = 4002
+const port = 4003
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null

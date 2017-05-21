@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-const port = 4000
+const port = 4001
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
