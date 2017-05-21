@@ -144,6 +144,15 @@ test('/redirect2 status code', async t => {
   t.true(output.stderr[0].includes('Error: NOPE!'))
 })
 
+test('ETag Header', async t => {
+  const {headers: {etag}} = await rp(url('/stateless'), {resolveWithFullResponse: true})
+  // Validate etag
+  t.regex(etag, /W\/".*"$/)
+  // Verify functionality
+  const error = await t.throws(rp(url('/stateless'), { headers: {'If-None-Match': etag}}))
+  t.is(error.statusCode, 304)
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
