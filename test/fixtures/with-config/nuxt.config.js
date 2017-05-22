@@ -37,5 +37,10 @@ module.exports = {
   },
   css: [
     { src: '~/assets/app.css' }
-  ]
+  ],
+  render: {
+    static: {
+      maxAge: '1y'
+    }
+  }
 }
