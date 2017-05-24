@@ -6248,7 +6248,7 @@ webpack-hot-middleware@^2.18.0:
 
 webpack-node-externals@^1.6.0:
   version "1.6.0"
-  resolved "https://registry.yarnpkg.com/webpack-node-externals/-/webpack-node-externals-1.6.0.tgz#232c62ec6092b100635a3d29d83c1747128df9bd"
+  resolved "https://registry.npmjs.org/webpack-node-externals/-/webpack-node-externals-1.6.0.tgz#232c62ec6092b100635a3d29d83c1747128df9bd"
 
 webpack-sources@^0.1.0:
   version "0.1.5"
