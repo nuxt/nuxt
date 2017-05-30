@@ -74,9 +74,9 @@ test('/users/2', async t => {
   t.true(html.includes('<h1>User: 2</h1>'))
 })
 
-test('/users/3', async t => {
+test('/users/3 (payload given)', async t => {
   const html = await rp(url('/users/3'))
-  t.true(html.includes('<h1>User: 3</h1>'))
+  t.true(html.includes('<h1>User: 3000</h1>'))
 })
 
 test('/users/4 -> Not found', async t => {
