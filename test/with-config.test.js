@@ -78,7 +78,7 @@ test('/test/error', async t => {
 test('/test/user-agent', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
   const html = window.document.body.innerHTML
-  t.true(html.includes('<pre>Node.js'))
+  t.true(html.includes('<pre>Mozilla'))
 })
 
 test('/test/about-bis (added with extendRoutes)', async t => {
