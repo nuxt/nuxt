@@ -26,7 +26,7 @@ test('Vendor', async t => {
 })
 
 test('Plugin', async t => {
-  t.true(nuxt.options.plugins[0].src.startsWith('~/.nuxt/basic.reverse'), 'plugin added to config')
+  t.true(nuxt.options.plugins[0].src.includes('fixtures/module/.nuxt/basic.reverse.'), 'plugin added to config')
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })
