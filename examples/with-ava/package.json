@@ -4,13 +4,13 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "test": "ava"
+    "test": "ava --serial --verbose"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
-    "jsdom": "^9.8.3"
+    "ava": "^0.19.1",
+    "jsdom": "^11.0.0"
   },
   "dependencies": {
-    "nuxt": "^0.9.5"
+    "nuxt": "^1.0.0-alpha2"
   }
 }
