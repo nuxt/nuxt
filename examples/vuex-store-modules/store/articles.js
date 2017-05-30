@@ -1,10 +1,10 @@
-export const state = () => ({
+export const state = {
   list: [
     'Lorem ipsum',
     'dolor sit amet',
     'consetetur sadipscing elitr'
   ]
-})
+}
 
 export const mutations = {
   add (state, title) {

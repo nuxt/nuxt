@@ -3,9 +3,11 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-export const state = () => ({
-  counter: 1
-})
+export const state = () => {
+  return {
+    counter: 1
+  }
+}
 
 export const mutations = {
   increment (state) {

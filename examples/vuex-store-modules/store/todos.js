@@ -1,6 +1,6 @@
-export const state = () => ({
+export const state = {
   list: []
-})
+}
 
 export const mutations = {
   add (state, { text }) {
