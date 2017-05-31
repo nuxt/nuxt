@@ -14,7 +14,7 @@
     }
   ],
   "main": "./index.js",
-  "types": "./index.d.js",
+  "types": "./index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
