@@ -7,7 +7,7 @@
           <nuxt-link class="Header__Link" :to="path('/')" exact>
             {{ $t('links.home') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" :to="path('/about')"  active-class="none">
+          <nuxt-link class="Header__Link" :to="path('/about')" exact>
             {{ $t('links.about') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" v-if="$i18n.locale === 'en'" :to="`/fr` + $route.fullPath" active-class="none" exact>
