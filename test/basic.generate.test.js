@@ -17,7 +17,7 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = await new Nuxt(config)
+  nuxt = new Nuxt(config)
   try {
     await nuxt.generate() // throw an error (of /validate route)
   } catch (err) {}
