@@ -13,7 +13,7 @@ test.before('Init Nuxt.js', async t => {
     rootDir: resolve(__dirname, 'fixtures/error'),
     dev: false
   }
-  nuxt = await new Nuxt(options)
+  nuxt = new Nuxt(options)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')

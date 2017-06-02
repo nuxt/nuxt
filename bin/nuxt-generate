@@ -20,13 +20,12 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false // Force production mode (no webpack middleware called)
 
 console.log('[nuxt] Generating...') // eslint-disable-line no-console
-new Nuxt(options).then(nuxt => {
-  nuxt.generate()
-    .then(() => {
-      console.log('[nuxt] Generate done') // eslint-disable-line no-console
-    })
-    .catch((err) => {
-      console.error(err) // eslint-disable-line no-console
-      process.exit(1)
-    })
-})
+var nuxt = module.exports = new Nuxt(options)
+nuxt.generate()
+  .then(() => {
+    console.log('[nuxt] Generate done') // eslint-disable-line no-console
+  })
+  .catch((err) => {
+    console.error(err) // eslint-disable-line no-console
+    process.exit(1)
+  })
