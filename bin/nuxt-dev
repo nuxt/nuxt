@@ -46,12 +46,6 @@ var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
 
 listenOnConfigChanges(nuxt, server)
 
-nuxt.build()
-  .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
-    process.exit(1)
-  })
-
 function listenOnConfigChanges(nuxt, server) {
   // Listen on nuxt.config.js changes
   var build = _.debounce(() => {
