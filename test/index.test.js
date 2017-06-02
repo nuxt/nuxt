@@ -7,12 +7,14 @@ test('Nuxt.js Class', t => {
   t.is(typeof Nuxt, 'function')
 })
 
-test('Nuxt.js Instance', async t => {
+test.serial('Nuxt.js Instance', async t => {
+  process.env.NODE_ENV = 'production'
   const nuxt = new Nuxt()
   t.is(typeof nuxt, 'object')
-  t.is(nuxt.dev, true)
+  t.is(nuxt.dev, false)
   t.is(typeof nuxt.build, 'function')
   t.is(typeof nuxt.generate, 'function')
+  delete process.env.NODE_ENV
 })
 
 test.serial('Fail when build not done and try to render', async t => {
