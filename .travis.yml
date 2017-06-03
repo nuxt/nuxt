@@ -6,9 +6,9 @@ node_js:
 before_install:
   - if [[ `npm -v` != 3* ]]; then npm i -g npm@3; fi
 install:
-  - npm install
-  - npm run build
+  - yarn install
+  - yarn run build
 script:
-  - npm test
+  - yarn run test
 after_success:
-  - npm run coverage
+  - yarn run coverage
