@@ -14,7 +14,7 @@ test('Fail with routes() which throw an error', async t => {
       }
     }
   }
-  const nuxt = await new Nuxt(options)
+  const nuxt = new Nuxt(options)
   return new Promise((resolve) => {
     var oldExit = process.exit
     var oldCE = console.error // eslint-disable-line no-console

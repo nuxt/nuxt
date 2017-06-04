@@ -15,7 +15,7 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = await new Nuxt(config)
+  nuxt = new Nuxt(config)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')
@@ -78,7 +78,7 @@ test('/test/error', async t => {
 test('/test/user-agent', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
   const html = window.document.body.innerHTML
-  t.true(html.includes('<pre>Node.js'))
+  t.true(html.includes('<pre>Mozilla'))
 })
 
 test('/test/about-bis (added with extendRoutes)', async t => {
@@ -110,5 +110,5 @@ test.after('Should be able to start Nuxt with build done', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = await new Nuxt(config)
+  nuxt = new Nuxt(config)
 })

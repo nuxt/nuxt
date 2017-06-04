@@ -7,16 +7,18 @@ test('Nuxt.js Class', t => {
   t.is(typeof Nuxt, 'function')
 })
 
-test('Nuxt.js Instance', async t => {
-  const nuxt = await new Nuxt()
+test.serial('Nuxt.js Instance', async t => {
+  process.env.NODE_ENV = 'production'
+  const nuxt = new Nuxt()
   t.is(typeof nuxt, 'object')
-  t.is(nuxt.dev, true)
+  t.is(nuxt.dev, false)
   t.is(typeof nuxt.build, 'function')
   t.is(typeof nuxt.generate, 'function')
+  delete process.env.NODE_ENV
 })
 
 test.serial('Fail when build not done and try to render', async t => {
-  const nuxt = await new Nuxt({
+  const nuxt = new Nuxt({
     dev: false,
     rootDir: resolve(__dirname, 'fixtures/empty')
   })
@@ -37,7 +39,7 @@ test.serial('Fail when build not done and try to render', async t => {
 })
 
 test.serial('Fail to build when no pages/ directory but is in the parent', async t => {
-  const nuxt = await new Nuxt({
+  const nuxt = new Nuxt({
     dev: false,
     rootDir: resolve(__dirname, 'fixtures', 'empty', 'pages')
   })
@@ -58,7 +60,7 @@ test.serial('Fail to build when no pages/ directory but is in the parent', async
 })
 
 test.serial('Fail to build when no pages/ directory', async t => {
-  const nuxt = await new Nuxt({
+  const nuxt = new Nuxt({
     dev: false,
     rootDir: resolve(__dirname)
   })

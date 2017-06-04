@@ -13,7 +13,7 @@ test.before('Init Nuxt.js', async t => {
     rootDir: resolve(__dirname, 'fixtures/error'),
     dev: false
   }
-  nuxt = await new Nuxt(options)
+  nuxt = new Nuxt(options)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')
@@ -33,12 +33,8 @@ test('/404 should display an error too', async t => {
 })
 
 test('/ with renderAndGetWindow()', async t => {
-  try {
-    await nuxt.renderAndGetWindow(url('/'))
-  } catch (e) {
-    t.true(e.message.includes('Could not load the nuxt app'))
-    t.true(e.body.includes('render function or template not defined in component'))
-  }
+  const err = await t.throws(nuxt.renderAndGetWindow(url('/')))
+  t.is(err.response.statusCode, 500)
 })
 
 // Close server and ask nuxt to stop listening to file changes

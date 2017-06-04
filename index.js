@@ -1,10 +1,9 @@
-/*
-** Nuxt.js
-** Made by Chopin Brothers
-** @Atinux & @alexchopin
-*/
+/*!
+ * Nuxt.js
+ * (c) 2016-2017 Chopin Brothers
+ * Released under the MIT License.
+ */
 
-// Until babel-loader 7 is released
 process.noDeprecation = true
 
 var Nuxt = require('./dist/nuxt.js')

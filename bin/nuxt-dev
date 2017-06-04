@@ -39,19 +39,14 @@ if (typeof options.rootDir !== 'string') {
 }
 options.dev = true // Add hot reloading and watching changes
 
-new Nuxt(options).then(nuxt => {
-  var server = new nuxt.Server(nuxt)
-    .listen(process.env.PORT || process.env.npm_package_config_nuxt_port, process.env.HOST || process.env.npm_package_config_nuxt_host)
-  listenOnConfigChanges(nuxt, server)
+var nuxt = module.exports = new Nuxt(options)
+var port = process.env.PORT || process.env.npm_package_config_nuxt_port
+var host = process.env.HOST || process.env.npm_package_config_nuxt_host
+var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
 
-  nuxt.build()
-    .catch((err) => {
-      console.error(err) // eslint-disable-line no-console
-      process.exit(1)
-    })
-})
+listenOnConfigChanges(nuxt, server)
 
-function listenOnConfigChanges (nuxt, server) {
+function listenOnConfigChanges(nuxt, server) {
   // Listen on nuxt.config.js changes
   var build = _.debounce(() => {
     debug('[nuxt.config.js] changed')
@@ -66,20 +61,20 @@ function listenOnConfigChanges (nuxt, server) {
     }
     options.rootDir = rootDir
     nuxt.close()
-    .then(() => {
-      nuxt.renderer = null
-      debug('Rebuilding the app...')
-      return (new Nuxt(options)).then(nuxt => nuxt.build())
-    })
-    .then((nuxt) => {
-      server.nuxt = nuxt
-    })
-    .catch((error) => {
-      console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
-      process.exit(1)
-    })
+      .then(() => {
+        nuxt.renderer = null
+        debug('Rebuilding the app...')
+        return new Nuxt(options).build()
+      })
+      .then((nuxt) => {
+        server.nuxt = nuxt
+      })
+      .catch((error) => {
+        console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
+        process.exit(1)
+      })
   }, 200)
   var nuxtConfigFile = resolve(rootDir, nuxtConfigFileName)
-  chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, { ignoreInitial: true }))
-  .on('all', build)
+  chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, {ignoreInitial: true}))
+    .on('all', build)
 }

@@ -8,6 +8,8 @@ const url = (route) => 'http://localhost:' + port + route
 let nuxt = null
 let server = null
 
+const wp = p => /^win/.test(process.platform) ? p.replace(/[\\/]/g, '\\\\') : p
+
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
   const Nuxt = require('../')
@@ -15,7 +17,7 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = await new Nuxt(config)
+  nuxt = new Nuxt(config)
   await nuxt.build()
   server = new nuxt.Server(nuxt)
   server.listen(port, 'localhost')
@@ -26,7 +28,7 @@ test('Vendor', async t => {
 })
 
 test('Plugin', async t => {
-  t.true(nuxt.options.plugins[0].src.startsWith('~/.nuxt/basic.reverse'), 'plugin added to config')
+  t.true(nuxt.options.plugins[0].src.includes(wp('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })
