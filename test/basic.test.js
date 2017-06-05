@@ -135,13 +135,13 @@ test('/error2 status code', async t => {
   }
 })
 
-test('/redirect2 status code', async t => {
+test('/redirect2', async t => {
   stdMocks.use()
   await rp(url('/redirect2')) // Should console.error
   stdMocks.restore()
   const output = stdMocks.flush()
-  t.true(output.stderr.length >= 1)
-  t.true(output.stderr[0].includes('Error: NOPE!'))
+  // Don't display error since redirect returns a noopApp
+  t.true(output.stderr.length === 0)
 })
 
 test('ETag Header', async t => {
