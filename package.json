@@ -123,6 +123,7 @@
     "finalhandler": "^1.0.3",
     "jsdom": "^11.0.0",
     "json-loader": "^0.5.4",
+    "markdownit-loader": "^1.0.1",
     "nyc": "^10.3.2",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
