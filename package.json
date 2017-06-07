@@ -98,7 +98,7 @@
     "vue-ssr-html-stream": "^2.2.0",
     "vue-template-compiler": "~2.3.3",
     "vuex": "^2.3.1",
-    "webpack": "^2.6.1",
+    "webpack": "^3.0.0-rc.1",
     "webpack-bundle-analyzer": "^2.8.2",
     "webpack-dev-middleware": "^1.10.2",
     "webpack-hot-middleware": "^2.18.0",
