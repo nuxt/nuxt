@@ -170,13 +170,8 @@ const Nuxt = require('nuxt')
 // Launch nuxt build with given options
 let config = require('./nuxt.config.js')
 let nuxt = new Nuxt(config)
-nuxt.build()
-.then(() => {
-  // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
-})
-.catch((e) => {
-  // An error happened during the build
-})
+
+// You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
 
 Learn more: https://nuxtjs.org/api/nuxt
