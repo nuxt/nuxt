@@ -80,6 +80,7 @@
     "html-webpack-plugin": "^2.28.0",
     "lodash": "^4.17.4",
     "memory-fs": "^0.4.1",
+    "minimist": "^1.2.0",
     "offline-plugin": "^4.8.1",
     "opencollective": "^1.0.3",
     "pify": "^3.0.0",

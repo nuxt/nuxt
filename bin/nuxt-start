@@ -1,22 +1,69 @@
 #!/usr/bin/env node
 
 var fs = require('fs')
+var parseArgs = require('minimist')
 var Nuxt = require('../')
 var resolve = require('path').resolve
+var join = require('path').join
 
-var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+var argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    H: 'hostname',
+    p: 'port',
+    c: 'config-file'
+  },
+  boolean: ['h'],
+  string: ['H', 'c'],
+  default: {
+    c: 'nuxt.config.js'
+  }
+})
+
+if (argv.hostname === '') {
+  console.error(`> Provided hostname argument has no value`)
+  process.exit(1)
+}
+
+if (argv.help) {
+  console.log(`
+    Description
+      Starts the application in production mode.
+      The application should be compiled with \`nuxt build\` first.
+    Usage
+      $ nuxt start <dir> -p <port number> -H <hostname>
+    Options
+      --port, -p          A port number on which to start the application
+      --hostname, -H      Hostname on which to start the application
+      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h          Displays this message
+  `)
+  process.exit(0)
+}
+
+var rootDir = resolve(argv._[0] || '.')
+var nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
+} else if (argv['config-file'] !== 'nuxt.config.js') {
+  console.error(`> Could not load config file ${argv['config-file']}`)
+  process.exit(1)
 }
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 options.dev = false // Force production mode (no webpack middleware called)
 
+var buildDir = join(options.rootDir, (options.buildDir || '.nuxt'), 'dist', 'server-bundle.json')
+// Check if project is built for production
+if (!fs.existsSync(buildDir)) {
+  console.error('> No build files found, please run `nuxt build` before launching `nuxt start`') // eslint-disable-line no-console
+  process.exit(1)
+}
+
 var nuxt = module.exports = new Nuxt(options)
-var port = process.env.PORT || process.env.npm_package_config_nuxt_port
-var host = process.env.HOST || process.env.npm_package_config_nuxt_host
+var port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
+var host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
 var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
