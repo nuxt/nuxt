@@ -1,6 +1,7 @@
 import test from 'ava'
-import { resolve } from 'path'
+import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
+import Nuxt from '..'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route
@@ -8,11 +9,8 @@ const url = (route) => 'http://localhost:' + port + route
 let nuxt = null
 let server = null
 
-const wp = p => /^win/.test(process.platform) ? p.replace(/[\\/]/g, '\\\\') : p
-
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/module')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
@@ -28,7 +26,7 @@ test('Vendor', async t => {
 })
 
 test('Plugin', async t => {
-  t.true(nuxt.options.plugins[0].src.includes(wp('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
+  t.true(nuxt.options.plugins[0].src.includes(normalize('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })
