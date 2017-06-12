@@ -8,13 +8,11 @@ test('Nuxt.js Class', t => {
 })
 
 test.serial('Nuxt.js Instance', async t => {
-  process.env.NODE_ENV = 'production'
-  const nuxt = new Nuxt()
+  const nuxt = new Nuxt({ dev: false })
   t.is(typeof nuxt, 'object')
-  t.is(nuxt.dev, false)
+  t.is(nuxt.options.dev, false)
   t.is(typeof nuxt.build, 'function')
   t.is(typeof nuxt.generate, 'function')
-  delete process.env.NODE_ENV
 })
 
 test.serial('Fail when build not done and try to render', async t => {
@@ -23,10 +21,12 @@ test.serial('Fail when build not done and try to render', async t => {
     rootDir: resolve(__dirname, 'fixtures/empty')
   })
   return new Promise((resolve) => {
-    var oldExit = process.exit
-    var oldCE = console.error // eslint-disable-line no-console
-    var _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    let oldExit = process.exit
+    let oldCE = console.error // eslint-disable-line no-console
+    let _log = ''
+    console.error = (s) => {
+      _log += s
+    } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
@@ -40,14 +40,16 @@ test.serial('Fail when build not done and try to render', async t => {
 
 test.serial('Fail to build when no pages/ directory but is in the parent', async t => {
   const nuxt = new Nuxt({
-    dev: false,
+    dev: true,
     rootDir: resolve(__dirname, 'fixtures', 'empty', 'pages')
   })
   return new Promise((resolve) => {
-    var oldExit = process.exit
-    var oldCE = console.error // eslint-disable-line no-console
-    var _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    let oldExit = process.exit
+    let oldCE = console.error // eslint-disable-line no-console
+    let _log = ''
+    console.error = (s) => {
+      _log += s
+    } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
@@ -61,14 +63,16 @@ test.serial('Fail to build when no pages/ directory but is in the parent', async
 
 test.serial('Fail to build when no pages/ directory', async t => {
   const nuxt = new Nuxt({
-    dev: false,
+    dev: true,
     rootDir: resolve(__dirname)
   })
   return new Promise((resolve) => {
-    var oldExit = process.exit
-    var oldCE = console.error // eslint-disable-line no-console
-    var _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    let oldExit = process.exit
+    let oldCE = console.error // eslint-disable-line no-console
+    let _log = ''
+    console.error = (s) => {
+      _log += s
+    } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
