@@ -4,15 +4,44 @@
 process.env.DEBUG = 'nuxt:*'
 
 var fs = require('fs')
+var parseArgs = require('minimist')
 var Nuxt = require('../')
 var resolve = require('path').resolve
 
-var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+var argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    c: 'config-file'
+  },
+  boolean: ['h'],
+  string: ['c'],
+  default: {
+    c: 'nuxt.config.js'
+  }
+})
+
+if (argv.help) {
+  console.log(`
+    Description
+      Generate a static web application (server-rendered)
+    Usage
+      $ nuxt generate <dir>
+    Options
+      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h          Displays this message
+  `)
+  process.exit(0)
+}
+
+var rootDir = resolve(argv._[0] || '.')
+var nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
+} else if (argv['config-file'] !== 'nuxt.config.js') {
+  console.error(`> Could not load config file ${argv['config-file']}`)
+  process.exit(1)
 }
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
@@ -22,11 +51,11 @@ options.dev = false // Force production mode (no webpack middleware called)
 console.log('[nuxt] Generating...') // eslint-disable-line no-console
 var nuxt = module.exports = new Nuxt(options)
 nuxt.generate()
-  .then(() => {
-    console.log('[nuxt] Generate done') // eslint-disable-line no-console
-    process.exit(0)
-  })
-  .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
-    process.exit(1)
-  })
+.then(() => {
+  console.log('[nuxt] Generate done') // eslint-disable-line no-console
+  process.exit(0)
+})
+.catch((err) => {
+  console.error(err) // eslint-disable-line no-console
+  process.exit(1)
+})
