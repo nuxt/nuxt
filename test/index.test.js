@@ -30,9 +30,7 @@ test.serial('Fail to build when no pages/ directory but is in the parent', async
     let oldExit = process.exit
     let oldCE = console.error // eslint-disable-line no-console
     let _log = ''
-    console.error = (s) => {
-      _log += s
-    } // eslint-disable-line no-console
+    console.error = (s) => { _log += s } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
@@ -53,9 +51,7 @@ test.serial('Fail to build when no pages/ directory', async t => {
     let oldExit = process.exit
     let oldCE = console.error // eslint-disable-line no-console
     let _log = ''
-    console.error = (s) => {
-      _log += s
-    } // eslint-disable-line no-console
+    console.error = (s) => { _log += s } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
