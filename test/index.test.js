@@ -17,7 +17,7 @@ test.serial('Nuxt.js Instance', async t => {
   t.is(typeof nuxt.build, 'function')
   t.is(typeof nuxt.generate, 'function')
   t.is(typeof nuxt._init.then, 'function')
-  await nuxt.init()
+  await nuxt.build()
   t.is(nuxt.initialized, true)
 })
 
