@@ -111,4 +111,5 @@ test.after('Should be able to start Nuxt with build done', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
+  await nuxt.init()
 })
