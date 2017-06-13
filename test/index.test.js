@@ -8,32 +8,17 @@ test('Nuxt.js Class', t => {
 })
 
 test.serial('Nuxt.js Instance', async t => {
-  const nuxt = new Nuxt({ dev: false })
+  const nuxt = new Nuxt({
+    dev: false,
+    rootDir: resolve(__dirname, 'fixtures', 'empty')
+  })
   t.is(typeof nuxt, 'object')
   t.is(nuxt.options.dev, false)
   t.is(typeof nuxt.build, 'function')
   t.is(typeof nuxt.generate, 'function')
-})
-
-test.serial('Fail when build not done and try to render', async t => {
-  const nuxt = new Nuxt({
-    dev: false,
-    rootDir: resolve(__dirname, 'fixtures/empty')
-  })
-  return new Promise((resolve) => {
-    let oldExit = process.exit
-    let oldCE = console.error // eslint-disable-line no-console
-    let _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
-    process.exit = (code) => {
-      process.exit = oldExit
-      console.error = oldCE // eslint-disable-line no-console
-      t.is(code, 1)
-      t.true(_log.includes('No build files found, please run `nuxt build` before launching `nuxt start`'))
-      resolve()
-    }
-    nuxt.render()
-  })
+  t.is(typeof nuxt._init.then, 'function')
+  await nuxt.init()
+  t.is(nuxt.initialized, true)
 })
 
 test.serial('Fail to build when no pages/ directory but is in the parent', async t => {
@@ -45,7 +30,9 @@ test.serial('Fail to build when no pages/ directory but is in the parent', async
     let oldExit = process.exit
     let oldCE = console.error // eslint-disable-line no-console
     let _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    console.error = (s) => {
+      _log += s
+    } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
@@ -66,7 +53,9 @@ test.serial('Fail to build when no pages/ directory', async t => {
     let oldExit = process.exit
     let oldCE = console.error // eslint-disable-line no-console
     let _log = ''
-    console.error = (s) => { _log += s } // eslint-disable-line no-console
+    console.error = (s) => {
+      _log += s
+    } // eslint-disable-line no-console
     process.exit = (code) => {
       process.exit = oldExit
       console.error = oldCE // eslint-disable-line no-console
