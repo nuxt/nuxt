@@ -4,7 +4,6 @@ var fs = require('fs')
 var parseArgs = require('minimist')
 var Nuxt = require('../')
 var resolve = require('path').resolve
-var join = require('path').join
 
 var argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -56,14 +55,7 @@ if (typeof options.rootDir !== 'string') {
 }
 options.dev = false // Force production mode (no webpack middleware called)
 
-var buildDir = join(options.rootDir, (options.buildDir || '.nuxt'), 'dist', 'server-bundle.json')
-// Check if project is built for production
-if (!fs.existsSync(buildDir)) {
-  console.error('> No build files found, please run `nuxt build` before launching `nuxt start`') // eslint-disable-line no-console
-  process.exit(1)
-}
-
 var nuxt = module.exports = new Nuxt(options)
 var port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
 var host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
+module.exports = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
