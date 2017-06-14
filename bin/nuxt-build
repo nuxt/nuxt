@@ -51,6 +51,8 @@ if (typeof options.rootDir !== 'string') {
 }
 // Create production build when calling `nuxt build`
 options.dev = false
+options.runBuild = true // Force doing production build before init
+
 // Analyze option
 options.build = options.build || {}
 if (argv.analyze) {
@@ -59,7 +61,7 @@ if (argv.analyze) {
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
 var nuxt = module.exports = new Nuxt(options)
-nuxt.build()
+nuxt.init()
 .then(() => {
   console.log('[nuxt] Building done') // eslint-disable-line no-console
 })
