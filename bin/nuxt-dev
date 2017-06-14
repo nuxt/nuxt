@@ -64,10 +64,10 @@ if (typeof options.rootDir !== 'string') {
 // Force development mode: add hot reloading and watching changes
 options.dev = true
 
-var nuxt = module.exports = new Nuxt(options)
+var nuxt = new Nuxt(options)
 var port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
 var host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
+var server = new Nuxt.Server(nuxt).listen(port, host)
 
 listenOnConfigChanges(nuxt, server)
 
@@ -102,3 +102,5 @@ function listenOnConfigChanges(nuxt, server) {
   chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, { ignoreInitial: true }))
     .on('all', build)
 }
+
+module.exports = nuxt

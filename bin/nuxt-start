@@ -55,7 +55,9 @@ if (typeof options.rootDir !== 'string') {
 }
 options.dev = false // Force production mode (no webpack middleware called)
 
-var nuxt = module.exports = new Nuxt(options)
+var nuxt = new Nuxt(options)
 var port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
 var host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-module.exports = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
+new Nuxt.Server(nuxt).listen(port, host)
+
+module.exports = nuxt

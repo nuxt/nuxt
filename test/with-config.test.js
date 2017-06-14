@@ -17,7 +17,7 @@ test.before('Init Nuxt.js', async t => {
   config.dev = false
   nuxt = new Nuxt(config)
   await nuxt.build()
-  server = new nuxt.Server(nuxt)
+  server = new Nuxt.Server(nuxt)
   server.listen(port, 'localhost')
 })
 
