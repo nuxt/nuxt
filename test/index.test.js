@@ -14,9 +14,9 @@ test.serial('Nuxt.js Instance', async t => {
   t.is(typeof nuxt, 'object')
   t.is(nuxt.options.dev, true)
   t.is(typeof nuxt.generate, 'function')
-  t.is(typeof nuxt._init.then, 'function')
+  t.is(typeof nuxt._ready.then, 'function')
   await nuxt.ready()
-  t.is(nuxt.readyialized, true)
+  t.is(nuxt.initialized, true)
 })
 
 test.serial('Fail to build when no pages/ directory but is in the parent', t => {
