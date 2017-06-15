@@ -6,6 +6,6 @@ module.exports = function () {
     // Add /api endpoint
     this.addTemplate({
         fileName: 'router.js',
-        src: path.resolve(this.nuxt.srcDir, 'router.js')
+        src: path.resolve(this.options.srcDir, 'router.js')
     })
 }
