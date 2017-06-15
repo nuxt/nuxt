@@ -87,12 +87,10 @@ function listenOnConfigChanges(nuxt, server) {
     options.rootDir = rootDir
     nuxt.close()
       .then(() => {
-        nuxt.renderer = null
         debug('Rebuilding the app...')
-        return new Nuxt(options).build()
-      })
-      .then((nuxt) => {
+        var nuxt = new Nuxt(options)
         server.nuxt = nuxt
+        return nuxt.ready()
       })
       .catch((error) => {
         console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
