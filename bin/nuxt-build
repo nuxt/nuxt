@@ -61,7 +61,7 @@ if (argv.analyze) {
 
 console.log('[nuxt] Building...') // eslint-disable-line no-console
 var nuxt = module.exports = new Nuxt(options)
-nuxt.init()
+nuxt.ready()
 .then(() => {
   console.log('[nuxt] Building done') // eslint-disable-line no-console
 })

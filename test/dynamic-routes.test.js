@@ -12,7 +12,7 @@ test.before('Init Nuxt.js', async t => {
     dev: false,
     runBuild: true
   })
-  await nuxt.init()
+  await nuxt.ready()
 })
 
 test('Check .nuxt/router.js', t => {
