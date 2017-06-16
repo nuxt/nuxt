@@ -43,8 +43,8 @@
     "nuxt": "./bin/nuxt"
   },
   "nyc": {
-    "exclude": [
-      "index.js"
+    "include": [
+      "src/**"
     ]
   },
   "scripts": {
