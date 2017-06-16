@@ -46,8 +46,7 @@ class Server {
       if (src.indexOf('~') === 0 || src.indexOf('./') === 0) {
         src = path.join(this.nuxt.options.srcDir, src.substr(1))
       }
-      // eslint-disable-next-line no-eval
-      m = eval('require')(src)
+      m = require(src)
     }
     if (m instanceof Function) {
       this.app.use(m)

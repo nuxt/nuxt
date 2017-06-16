@@ -2,7 +2,7 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin'
 import { defaults, cloneDeep } from 'lodash'
 import { join, resolve } from 'path'
 import webpack from 'webpack'
-import { isUrl, urlJoin } from '../utils'
+import { isUrl, urlJoin } from 'utils'
 import vueLoaderConfig from './vue-loader.config'
 import { styleLoader, extractStyles } from './helpers'
 

@@ -4,7 +4,7 @@ import _ from 'lodash'
 import { resolve, join, dirname, sep } from 'path'
 import { minify } from 'html-minifier'
 import Tapable from 'tappable'
-import { isUrl, promisifyRoute, waitFor, flatRoutes } from './utils'
+import { isUrl, promisifyRoute, waitFor, flatRoutes } from 'utils'
 
 const debug = require('debug')('nuxt:generate')
 const copy = pify(fs.copy)

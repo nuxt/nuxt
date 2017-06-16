@@ -8,7 +8,9 @@ import serialize from 'serialize-javascript'
 import { join, resolve, basename, dirname } from 'path'
 import Tapable from 'tappable'
 import MFS from 'memory-fs'
-import { r, wp, createRoutes, parallel } from './utils'
+import webpackDevMiddleware from 'webpack-dev-middleware'
+import webpackHotMiddleware from 'webpack-hot-middleware'
+import { r, wp, createRoutes, parallel } from 'utils'
 import clientWebpackConfig from './webpack/client.config.js'
 import serverWebpackConfig from './webpack/server.config.js'
 
@@ -119,7 +121,9 @@ export default class Builder extends Tapable {
       'components/nuxt-loading.vue',
       'components/nuxt-child.js',
       'components/nuxt-link.js',
-      'components/nuxt.vue'
+      'components/nuxt.vue',
+      'views/app.template.html',
+      'views/error.html'
     ]
     const templateVars = {
       options: this.options,
@@ -199,7 +203,9 @@ export default class Builder extends Tapable {
       const customFileExists = fs.existsSync(customPath)
 
       return {
-        src: customFileExists ? customPath : r(__dirname, 'app', file),
+        src: customFileExists
+          ? customPath
+          : r(__dirname, '../app', file), // Relative to dist
         dst: file,
         custom: customFileExists
       }
@@ -325,7 +331,10 @@ export default class Builder extends Tapable {
 
     // Run after each compile
     this.compiler.plugin('done', stats => {
-      console.log(stats.toString(this.webpackStats)) // eslint-disable-line no-console
+      // Don't reload failed builds
+      if (stats.hasErrors() || stats.hasWarnings()) {
+        return
+      }
       // Reload renderer if available
       if (this.nuxt.renderer) {
         this.nuxt.renderer.loadResources(mfs)
@@ -336,7 +345,7 @@ export default class Builder extends Tapable {
     debug('Adding webpack middleware...')
 
     // Create webpack dev middleware
-    this.webpackDevMiddleware = pify(require('webpack-dev-middleware')(this.compiler.client, {
+    this.webpackDevMiddleware = pify(webpackDevMiddleware(this.compiler.client, {
       publicPath: this.options.build.publicPath,
       stats: this.webpackStats,
       noInfo: true,
@@ -344,7 +353,7 @@ export default class Builder extends Tapable {
       watchOptions: this.options.watchers.webpack
     }))
 
-    this.webpackHotMiddleware = pify(require('webpack-hot-middleware')(this.compiler.client, {
+    this.webpackHotMiddleware = pify(webpackHotMiddleware(this.compiler.client, {
       log: false,
       heartbeat: 2500
     }))

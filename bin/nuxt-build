@@ -3,11 +3,13 @@
 // Show logs
 process.env.DEBUG = 'nuxt:*'
 
-var fs = require('fs')
-var parseArgs = require('minimist')
-var without = require('lodash').without
-var Nuxt = require('../')
-var resolve = require('path').resolve
+const fs = require('fs')
+const parseArgs = require('minimist')
+const without = require('lodash').without
+const { Nuxt } = require('../')
+const resolve = require('path').resolve
+const debug = require('debug')('nuxt:build')
+debug.color = 2 // Force green color
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -36,8 +38,8 @@ if (argv.help) {
   process.exit(0)
 }
 
-var rootDir = resolve(argv._[0] || '.')
-var nuxtConfigFile = resolve(rootDir, argv['config-file'])
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
@@ -59,13 +61,13 @@ if (argv.analyze) {
   options.build.analyze = true
 }
 
-console.log('[nuxt] Building...') // eslint-disable-line no-console
-var nuxt = module.exports = new Nuxt(options)
+debug('Building...')
+const nuxt = module.exports = new Nuxt(options)
 nuxt.ready()
-.then(() => {
-  console.log('[nuxt] Building done') // eslint-disable-line no-console
-})
-.catch((err) => {
-  console.error(err) // eslint-disable-line no-console
-  process.exit(1)
-})
+  .then(() => {
+    debug('Building done')
+  })
+  .catch((err) => {
+    console.error(err) // eslint-disable-line no-console
+    process.exit(1)
+  })

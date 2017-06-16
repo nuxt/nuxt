@@ -3,7 +3,7 @@ import fs from 'fs'
 import { uniq } from 'lodash'
 import hash from 'hash-sum'
 import Tapable from 'tappable'
-import { chainFn, sequence } from './utils'
+import { chainFn, sequence } from 'utils'
 
 const debug = require('debug')('nuxt:module')
 
@@ -102,8 +102,7 @@ export default class ModuleContainer extends Tapable {
       if (module.indexOf('~') === 0 || module.indexOf('./') === 0) {
         module = path.join(this.options.srcDir, module.substr(1))
       }
-      // eslint-disable-next-line no-eval
-      module = eval('require')(module)
+      module = require(module)
     }
 
     // Validate module

@@ -1,10 +1,9 @@
 import Tapable from 'tappable'
 import chalk from 'chalk'
-import * as Utils from './utils'
+import ModuleContainer from './module'
 import Renderer from './renderer'
-import ModuleContainer from './module-container'
-import Server from './server'
-import defaults from './defaults'
+import Options from './options'
+import Core from './index'
 
 const defaultHost = process.env.HOST || process.env.npm_package_config_nuxt_host || 'localhost'
 const defaultPort = process.env.PORT || process.env.npm_package_config_nuxt_port || '3000'
@@ -13,14 +12,14 @@ export default class Nuxt extends Tapable {
   constructor (_options = {}) {
     super()
 
-    this.options = defaults(_options)
+    this.options = Options(_options)
 
     this.initialized = false
     this.errorHandler = this.errorHandler.bind(this)
 
     // Create instance of core components
-    this.moduleContainer = new Nuxt.ModuleContainer(this)
-    this.renderer = new Nuxt.Renderer(this)
+    this.moduleContainer = new ModuleContainer(this)
+    this.renderer = new Renderer(this)
 
     // Backward compatibility
     this.render = this.renderer.render.bind(this.renderer)
@@ -60,8 +59,7 @@ export default class Nuxt extends Tapable {
     if (this._builder) {
       return this._builder
     }
-    const Builder = require('./builder').default
-    this._builder = new Builder(this)
+    this._builder = new Core.Builder(this)
     return this._builder
   }
 
@@ -69,8 +67,7 @@ export default class Nuxt extends Tapable {
     if (this._generator) {
       return this._generator
     }
-    const Generator = require('./generator').default
-    this._generator = new Generator(this)
+    this._generator = new Core.Generator(this)
     return this._generator
   }
 
@@ -93,6 +90,7 @@ export default class Nuxt extends Tapable {
     process.exit(1)
   }
 
+  // Both Renderer & Server depend on this method
   serverReady ({ host = defaultHost, port = defaultPort } = {}) {
     let _host = host === '0.0.0.0' ? 'localhost' : host
 
@@ -113,13 +111,7 @@ export default class Nuxt extends Tapable {
     this.initialized = false
 
     if (typeof callback === 'function') {
-      callback()
+      await callback()
     }
   }
 }
-
-// Add core components to Nuxt class
-Nuxt.Utils = Utils
-Nuxt.Renderer = Renderer
-Nuxt.ModuleContainer = ModuleContainer
-Nuxt.Server = Server

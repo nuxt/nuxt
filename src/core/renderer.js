@@ -10,7 +10,7 @@ import _ from 'lodash'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import { createBundleRenderer } from 'vue-server-renderer'
-import { getContext, setAnsiColors, encodeHtml } from './utils'
+import { getContext, setAnsiColors, encodeHtml } from 'utils'
 
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // Force blue color
@@ -36,7 +36,7 @@ export default class Renderer extends Tapable {
       clientManifest: null,
       serverBundle: null,
       appTemplate: null,
-      errorTemplate: parseTemplate(fs.readFileSync(resolve(__dirname, 'views', 'error.html'), 'utf8'))
+      errorTemplate: '<pre>{{ stack }}</pre>' // Will be loaded on ready
     }
 
     // Initialize
@@ -68,6 +68,11 @@ export default class Renderer extends Tapable {
     // gzip middleware for production
     if (!this.options.dev && this.options.render.gzip) {
       this.gzipMiddleware = pify(compression(this.options.render.gzip))
+    }
+
+    const errorTemplatePath = resolve(this.options.buildDir, 'views/error.html')
+    if (fs.existsSync(errorTemplatePath)) {
+      this.resources.errorTemplate = parseTemplate(fs.readFileSync(errorTemplatePath, 'utf8'))
     }
 
     // Load resources from fs
@@ -140,7 +145,9 @@ export default class Renderer extends Tapable {
     // Promisify renderToString
     this.bundleRenderer.renderToString = pify(this.bundleRenderer.renderToString)
 
-    this.nuxt.serverReady()
+    if (!this.options.runBuild) {
+      this.nuxt.serverReady()
+    }
   }
 
   async render (req, res) {

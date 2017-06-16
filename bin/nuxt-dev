@@ -3,17 +3,17 @@
 // Show logs
 process.env.DEBUG = 'nuxt:*'
 
-var _ = require('lodash')
-var debug = require('debug')('nuxt:build')
+const _ = require('lodash')
+const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
-var fs = require('fs')
-var parseArgs = require('minimist')
-var Nuxt = require('../')
-var chokidar = require('chokidar')
-var resolve = require('path').resolve
-var without = require('lodash').without
+const fs = require('fs')
+const parseArgs = require('minimist')
+const { Nuxt,Server } = require('../')
+const chokidar = require('chokidar')
+const resolve = require('path').resolve
+const without = require('lodash').without
 
-var argv = parseArgs(process.argv.slice(2), {
+const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
     H: 'hostname',
@@ -48,8 +48,8 @@ if (argv.help) {
   process.exit(0)
 }
 
-var rootDir = resolve(argv._[0] || '.')
-var nuxtConfigFile = resolve(rootDir, argv['config-file'])
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
@@ -64,19 +64,19 @@ if (typeof options.rootDir !== 'string') {
 // Force development mode: add hot reloading and watching changes
 options.dev = true
 
-var nuxt = new Nuxt(options)
-var port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-var host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-var server = new Nuxt.Server(nuxt).listen(port, host)
+const nuxt = new Nuxt(options)
+const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
+const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+const server = new Server(nuxt).listen(port, host)
 
 listenOnConfigChanges(nuxt, server)
 
-function listenOnConfigChanges(nuxt, server) {
+function listenOnConfigChanges (nuxt, server) {
   // Listen on nuxt.config.js changes
-  var build = _.debounce(() => {
+  const build = _.debounce(() => {
     debug('[nuxt.config.js] changed')
     delete require.cache[nuxtConfigFile]
-    var options = {}
+    const options = {}
     if (fs.existsSync(nuxtConfigFile)) {
       try {
         options = require(nuxtConfigFile)
@@ -88,7 +88,7 @@ function listenOnConfigChanges(nuxt, server) {
     nuxt.close()
       .then(() => {
         debug('Rebuilding the app...')
-        var nuxt = new Nuxt(options)
+        const nuxt = new Nuxt(options)
         server.nuxt = nuxt
         return nuxt.ready()
       })

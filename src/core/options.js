@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import { join, resolve } from 'path'
 import { existsSync } from 'fs'
-import { isUrl } from './utils'
+import { isUrl } from 'utils'
 
-export default function defaults (_options) {
+export default function Options (_options) {
   // Clone options to prevent unwanted side-effects
   const options = Object.assign({}, _options)
 
@@ -30,7 +30,7 @@ export default function defaults (_options) {
   options.buildDir = join(options.rootDir, options.buildDir)
 
   // If app.html is defined, set the template path to the user template
-  options.appTemplatePath = resolve(__dirname, 'views/app.template.html')
+  options.appTemplatePath = resolve(options.buildDir, 'views/app.template.html')
   if (existsSync(join(options.srcDir, 'app.html'))) {
     options.appTemplatePath = join(options.srcDir, 'app.html')
   }
