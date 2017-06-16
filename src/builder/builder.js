@@ -37,16 +37,6 @@ export default class Builder extends Tapable {
     this.webpackDevMiddleware = null
     this.webpackHotMiddleware = null
 
-    // Add extra loaders only if they are not already provided
-    let extraDefaults = {}
-    if (this.options.build && !Array.isArray(this.options.build.loaders)) {
-      extraDefaults.loaders = defaultsLoaders
-    }
-    if (this.options.build && !Array.isArray(this.options.build.postcss)) {
-      extraDefaults.postcss = defaultsPostcss
-    }
-    _.defaultsDeep(this.options.build, extraDefaults)
-
     // Mute stats on dev
     this.webpackStats = this.options.dev ? false : {
       chunks: false,
@@ -405,31 +395,6 @@ export default class Builder extends Tapable {
     })
   }
 }
-
-const defaultsLoaders = [
-  {
-    test: /\.(png|jpe?g|gif|svg)$/,
-    loader: 'url-loader',
-    query: {
-      limit: 1000, // 1KO
-      name: 'img/[name].[hash:7].[ext]'
-    }
-  },
-  {
-    test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-    loader: 'url-loader',
-    query: {
-      limit: 1000, // 1 KO
-      name: 'fonts/[name].[hash:7].[ext]'
-    }
-  }
-]
-
-const defaultsPostcss = [
-  require('autoprefixer')({
-    browsers: ['last 3 versions']
-  })
-]
 
 const STATUS = {
   INITIAL: 1,

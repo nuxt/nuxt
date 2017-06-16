@@ -17,6 +17,14 @@ import { styleLoader, extractStyles } from './helpers'
 export default function webpackBaseConfig ({ isClient, isServer }) {
   const nodeModulesDir = join(__dirname, '..', 'node_modules')
 
+  if (!Array.isArray(this.options.build.postcss)) {
+    this.options.build.postcss = [
+      require('autoprefixer')({
+        browsers: ['last 3 versions']
+      })
+    ]
+  }
+
   const config = {
     devtool: this.options.dev ? 'cheap-module-source-map' : false,
     entry: {
