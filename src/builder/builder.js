@@ -292,7 +292,10 @@ export default class Builder extends Tapable {
     return parallel(this.compiler.compilers, compiler => new Promise((resolve, reject) => {
       let _resolved = false
       const handler = (err, stats) => {
-        if (_resolved) return
+        /* istanbul ignore if */
+        if (_resolved) {
+          return
+        }
         _resolved = true
         if (err) {
           return reject(err)

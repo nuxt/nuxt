@@ -42,6 +42,11 @@
   "bin": {
     "nuxt": "./bin/nuxt"
   },
+  "nyc": {
+    "exclude": [
+      "/index.js"
+    ]
+  },
   "scripts": {
     "test": "npm run lint && nyc ava --verbose --serial test/",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",

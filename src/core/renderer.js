@@ -235,6 +235,7 @@ export default class Renderer extends Tapable {
       res.end(html, 'utf8')
       return html
     } catch (err) {
+      /* istanbul ignore if  */
       if (context.redirected) {
         console.error(err) // eslint-disable-line no-console
         return err
@@ -306,6 +307,7 @@ export default class Renderer extends Tapable {
       try {
         jsdom = require('jsdom')
       } catch (e) {
+        // istanbul ignore next
         console.error('Fail when calling nuxt.renderAndGetWindow(url)') // eslint-disable-line no-console
         console.error('jsdom module is not installed') // eslint-disable-line no-console
         console.error('Please install jsdom with: npm install --save-dev jsdom') // eslint-disable-line no-console

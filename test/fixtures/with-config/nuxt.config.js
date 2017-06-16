@@ -39,6 +39,9 @@ module.exports = {
     { src: '~/assets/app.css' }
   ],
   render: {
+    http2: {
+      push: true
+    },
     static: {
       maxAge: '1y'
     }
