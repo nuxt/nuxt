@@ -1,7 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-
-const Nuxt = require('../')
+import { Nuxt } from '../index.js'
 
 test('Nuxt.js Class', t => {
   t.is(typeof Nuxt, 'function')

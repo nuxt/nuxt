@@ -1,6 +1,6 @@
 import test from 'ava'
 import ansiHTML from 'ansi-html'
-import { Utils } from '..'
+import { Utils } from '../index.js'
 
 test('encodeHtml', t => {
   const html = '<h1>Hello</h1>'

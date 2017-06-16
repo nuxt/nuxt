@@ -1,8 +1,8 @@
 import test from 'ava'
 import { resolve } from 'path'
+import { Nuxt } from '../index.js'
 
 test('Fail with routes() which throw an error', async t => {
-  const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: false,

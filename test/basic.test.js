@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import stdMocks from 'std-mocks'
+import { Nuxt, Server } from '../index.js'
 
 const port = 4003
 const url = (route) => 'http://localhost:' + port + route
@@ -11,7 +12,6 @@ let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: false,
@@ -19,7 +19,7 @@ test.before('Init Nuxt.js', async t => {
   }
   nuxt = new Nuxt(options)
   await nuxt.ready()
-  server = new Nuxt.Server(nuxt)
+  server = new Server(nuxt)
   server.listen(port, 'localhost')
 })
 

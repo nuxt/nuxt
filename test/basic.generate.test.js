@@ -4,6 +4,7 @@ import http from 'http'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
+import { Nuxt } from '../index.js'
 
 const port = 4002
 const url = (route) => 'http://localhost:' + port + route
@@ -13,7 +14,6 @@ let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/basic')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir

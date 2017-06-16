@@ -1,6 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
+import { Nuxt, Server } from '../index.js'
 
 const port = 4007
 const url = (route) => 'http://localhost:' + port + route
@@ -10,7 +11,6 @@ let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/with-config')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
@@ -18,7 +18,7 @@ test.before('Init Nuxt.js', async t => {
   config.runBuild = true
   nuxt = new Nuxt(config)
   await nuxt.ready()
-  server = new Nuxt.Server(nuxt)
+  server = new Server(nuxt)
   server.listen(port, 'localhost')
 })
 

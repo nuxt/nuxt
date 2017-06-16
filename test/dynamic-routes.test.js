@@ -2,11 +2,11 @@ import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
 import pify from 'pify'
+import { Nuxt } from '../index.js'
 
 const readFile = pify(fs.readFile)
 
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const nuxt = new Nuxt({
     rootDir: resolve(__dirname, 'fixtures/dynamic-routes'),
     dev: false,

@@ -1,6 +1,8 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
+import { Nuxt, Server } from '../index.js'
+
 const port = 4001
 const url = (route) => 'http://localhost:' + port + route
 
@@ -9,14 +11,13 @@ let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: true
   }
   nuxt = new Nuxt(options)
   await nuxt.ready()
-  server = new Nuxt.Server(nuxt)
+  server = new Server(nuxt)
   server.listen(port, 'localhost')
 })
 
@@ -38,5 +39,6 @@ test('/_nuxt/test.hot-update.json should returns empty html', async t => {
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   server.close()
-  nuxt.close(() => {})
+  nuxt.close(() => {
+  })
 })

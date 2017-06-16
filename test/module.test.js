@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
-import Nuxt from '..'
+import { Nuxt, Server } from '../index.js'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route
@@ -18,7 +18,7 @@ test.before('Init Nuxt.js', async t => {
   config.runBuild = true
   nuxt = new Nuxt(config)
   await nuxt.ready()
-  server = new Nuxt.Server(nuxt)
+  server = new Server(nuxt)
   server.listen(port, 'localhost')
 })
 
