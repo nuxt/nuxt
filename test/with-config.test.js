@@ -106,7 +106,6 @@ test.after('Closing server and nuxt.js', t => {
 })
 
 test.after('Should be able to start Nuxt with build done', async t => {
-  const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/with-config')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir

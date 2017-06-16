@@ -165,7 +165,7 @@ export default class Builder extends Tapable {
     if (!templateVars.layouts.default) {
       await mkdirp(r(this.options.buildDir, 'layouts'))
       templatesFiles.push('layouts/default.vue')
-      templateVars.layouts.default = r(__dirname, 'app', 'layouts', 'default.vue')
+      templateVars.layouts.default = r(this.options.nuxtAppDir, 'layouts', 'default.vue')
     }
 
     // -- Routes --
@@ -205,7 +205,7 @@ export default class Builder extends Tapable {
       return {
         src: customFileExists
           ? customPath
-          : r(__dirname, '../app', file), // Relative to dist
+          : r(this.options.nuxtAppDir, file),
         dst: file,
         custom: customFileExists
       }

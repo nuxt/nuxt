@@ -57,6 +57,7 @@ const defaultOptions = {
   dev: (process.env.NODE_ENV !== 'production'),
   runBuild: false,
   buildDir: '.nuxt',
+  nuxtAppDir: process.env.NUXT_APP_DIR || resolve(__dirname, '../app'), // relative to dist
   build: {
     analyze: false,
     extractCSS: false,
