@@ -55,7 +55,7 @@ function genConfig (opts) {
   const config = {
     entry: opts.entry,
     dest: opts.dest,
-    external: ['fs', 'path'].concat(dependencies, opts.external),
+    external: ['fs', 'path', 'http'].concat(dependencies, opts.external),
     format: opts.format || 'cjs',
     banner: opts.banner || banner,
     moduleName: opts.moduleName || 'Nuxt',
