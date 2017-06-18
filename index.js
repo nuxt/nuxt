@@ -14,8 +14,15 @@ process.noDeprecation = true
 
 // Require Core
 const Core = require('./dist/core.js')
+Object.assign(exports, Core.default || Core)
 
 // Require Builder
 const Builder = require('./dist/builder')
+Object.assign(exports, Builder.default || Builder)
+
+// Use special env flag to specify app dir without modify builder
+if (!process.env.NUXT_APP_DIR) {
+  process.env.NUXT_APP_DIR = path.resolve(__dirname, 'lib/app')
+}
 
 module.exports = Object.assign(Core, Builder)
