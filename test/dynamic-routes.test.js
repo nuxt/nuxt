@@ -2,7 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
 import pify from 'pify'
-import { Nuxt } from '../index.js'
+import { Nuxt, Builder } from '../index.js'
 
 const readFile = pify(fs.readFile)
 
@@ -12,7 +12,7 @@ test.before('Init Nuxt.js', async t => {
     dev: false,
     runBuild: true
   })
-  await nuxt.ready()
+  await new Builder(nuxt).build()
 })
 
 test('Check .nuxt/router.js', t => {

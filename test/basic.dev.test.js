@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt, Server } from '../index.js'
+import { Nuxt, Server, Builder } from '../index.js'
 
 const port = 4001
 const url = (route) => 'http://localhost:' + port + route
@@ -16,7 +16,7 @@ test.before('Init Nuxt.js', async t => {
     dev: true
   }
   nuxt = new Nuxt(options)
-  await nuxt.ready()
+  await new Builder(nuxt).build()
   server = new Server(nuxt)
   server.listen(port, 'localhost')
 })
@@ -37,8 +37,7 @@ test('/_nuxt/test.hot-update.json should returns empty html', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
+test.after('Closing server and nuxt.js', async t => {
   server.close()
-  nuxt.close(() => {
-  })
+  await nuxt.close(() => {})
 })

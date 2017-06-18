@@ -4,7 +4,7 @@ import http from 'http'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-import { Nuxt } from '../index.js'
+import { Nuxt, Builder, Generator } from '../index.js'
 
 const port = 4002
 const url = (route) => 'http://localhost:' + port + route
@@ -20,8 +20,10 @@ test.before('Init Nuxt.js', async t => {
   config.dev = false
   config.runBuild = true
   nuxt = new Nuxt(config)
+  const builder = new Builder(nuxt)
+  const generator = new Generator(nuxt, builder)
   try {
-    await nuxt.generate() // throw an error (of /validate route)
+    await generator.generate() // throw an error (of /validate route)
   } catch (err) {
   }
   const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))

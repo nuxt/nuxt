@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt } from '../index.js'
+import { Nuxt, Builder, Generator } from '../index.js'
 
 test('Fail with routes() which throw an error', async t => {
   const options = {
@@ -14,7 +14,9 @@ test('Fail with routes() which throw an error', async t => {
     }
   }
   const nuxt = new Nuxt(options)
-  return nuxt.generate()
+  const builder = new Builder(nuxt)
+  const generator = new Generator(nuxt, builder)
+  return generator.generate()
     .catch((e) => {
       t.true(e.message === 'Not today!')
     })
