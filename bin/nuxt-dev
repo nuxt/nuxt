@@ -8,7 +8,7 @@ const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt,Server } = require('../')
+const { Nuxt, Server } = require('../')
 const chokidar = require('chokidar')
 const resolve = require('path').resolve
 const without = require('lodash').without
@@ -76,7 +76,7 @@ function listenOnConfigChanges (nuxt, server) {
   const build = _.debounce(() => {
     debug('[nuxt.config.js] changed')
     delete require.cache[nuxtConfigFile]
-    const options = {}
+    let options = {}
     if (fs.existsSync(nuxtConfigFile)) {
       try {
         options = require(nuxtConfigFile)
