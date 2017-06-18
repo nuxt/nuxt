@@ -57,7 +57,7 @@ options.dev = false // Force production mode (no webpack middleware called)
 
 // Check if project is built for production
 const distDir = join(options.rootDir, options.buildDir || '.nuxt', 'dist' )
-if (!fs.existsSync(join(distDir,'server-bundle.json'))) {
+if (!fs.existsSync(join(distDir, 'server-bundle.json'))) {
   console.error('> No build files found, please run `nuxt build` before launching `nuxt start`') // eslint-disable-line no-console
   process.exit(1)
 }
