@@ -17,12 +17,8 @@ const Core = require('./dist/core.js')
 Object.assign(exports, Core.default || Core)
 
 // Require Builder
-const Builder = require('./dist/builder')
+// TODO: conditionally do this when builder available
+const Builder = require('./dist/builder.js')
 Object.assign(exports, Builder.default || Builder)
-
-// Use special env flag to specify app dir without modify builder
-if (!process.env.NUXT_APP_DIR) {
-  process.env.NUXT_APP_DIR = path.resolve(__dirname, 'lib/app')
-}
 
 module.exports = Object.assign(Core, Builder)
