@@ -4,7 +4,7 @@ const rollupBabel = require('rollup-plugin-babel')
 const rollupAlias = require('rollup-plugin-alias')
 const rollupCommonJS = require('rollup-plugin-commonjs')
 const rollupReplace = require('rollup-plugin-replace')
-const rollupResolve = require('rollup-plugin-node-resolve')
+const rollupNodeResolve = require('rollup-plugin-node-resolve')
 const packageJson = require('./package.json')
 
 const dependencies = Object.keys(packageJson.dependencies)
@@ -65,9 +65,9 @@ function genConfig (opts) {
         resolve: ['.js', '.json', '.jsx', '.ts']
       }, aliases, opts.alias)),
 
-      rollupCommonJS(),
+      rollupNodeResolve({ main: true, jsnext: true }),
 
-      rollupResolve({ jsnext: true }),
+      rollupCommonJS(),
 
       rollupBabel(Object.assign({
         exclude: 'node_modules/**',
