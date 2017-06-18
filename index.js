@@ -12,15 +12,15 @@ process.noDeprecation = true
 // https://github.com/evanw/node-source-map-support
 require('source-map-support').install();
 
+// Require Core
 const Core = require('./dist/core.js')
+Object.assign(exports, Core.default || Core)
+
+// Require Builder
+const Builder = require('./dist/builder')
+Object.assign(exports, Builder.default || Builder)
 
 // Use special env flag to specify app dir without modify builder
 if (!process.env.NUXT_APP_DIR) {
-  process.env.NUXT_APP_DIR = path.resolve(__dirname, 'app')
+  process.env.NUXT_APP_DIR = path.resolve(__dirname, 'lib/app')
 }
-
-// Polyfill Builder into Core
-const Builder = require('./dist/builder')
-Object.assign(Core, Builder)
-
-module.exports = Core.default ? Core.default : Core

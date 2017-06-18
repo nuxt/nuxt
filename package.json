@@ -42,19 +42,14 @@
   "bin": {
     "nuxt": "./bin/nuxt"
   },
-  "nyc": {
-    "include": [
-      "src/**"
-    ]
-  },
   "scripts": {
     "test": "npm run lint && nyc ava --verbose --serial test/",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern lib/app",
+    "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern app",
     "build": "npm run build:core && npm run build:builder",
-    "build:core": "rollup -c build/rollup.config.js --environment TARGET:core",
+    "build:core": "rollup -c rollup.config.js --environment TARGET:core",
     "watch": "npm run build:core -- -w",
-    "build:builder": "rollup -c build/rollup.config.js --environment TARGET:builder",
+    "build:builder": "rollup -c rollup.config.js --environment TARGET:builder",
     "watch:builder": "npm run build:builder -- -w",
     "precommit": "npm run lint",
     "prepublish": "npm run build",
