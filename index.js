@@ -10,6 +10,7 @@
 require('source-map-support').install();
 
 // Fix babel flag
+/* istanbul ignore else */
 process.noDeprecation = true
 
 // Require Core
@@ -17,6 +18,5 @@ const Core = require('./dist/core.js')
 Object.assign(exports, Core)
 
 // Require Builder
-// TODO: conditionally do this when builder available
 const Builder = require('./dist/builder.js')
 Object.assign(exports, Builder)
