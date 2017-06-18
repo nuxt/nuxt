@@ -44,9 +44,9 @@
   },
   "nyc": {
     "exclude": [
-      "index.js",
-      "node_mdoules/**/*.js",
-      "test/**/*.js"
+      "test/**",
+      "node_modules/**",
+      "index.js"
     ]
   },
   "scripts": {

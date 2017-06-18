@@ -4,7 +4,7 @@ const rollupBabel = require('rollup-plugin-babel')
 const rollupAlias = require('rollup-plugin-alias')
 const rollupCommonJS = require('rollup-plugin-commonjs')
 const rollupReplace = require('rollup-plugin-replace')
-const rollupResolve = require('rollup-plugin-node-resolve')
+const rollupNodeResolve = require('rollup-plugin-node-resolve')
 const packageJson = require('./package.json')
 
 const dependencies = Object.keys(packageJson.dependencies)
@@ -65,13 +65,8 @@ function genConfig (opts) {
         resolve: ['.js', '.json', '.jsx', '.ts']
       }, aliases, opts.alias)),
 
-      rollupCommonJS(),
-
-      rollupResolve({ jsnext: true }),
-
       rollupBabel(Object.assign({
         exclude: 'node_modules/**',
-        runtimeHelpers: true,
         plugins: [
           ['transform-runtime', { 'helpers': false, 'polyfill': false }],
           'transform-async-to-generator',
@@ -81,6 +76,10 @@ function genConfig (opts) {
           'babel-preset-es2015-rollup'
         ]
       }, opts.babel)),
+
+      rollupNodeResolve({ main: true, jsnext: true }),
+
+      rollupCommonJS(),
 
       rollupReplace({
         __VERSION__: version
