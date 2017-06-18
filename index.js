@@ -20,5 +20,3 @@ Object.assign(exports, Core.default || Core)
 // TODO: conditionally do this when builder available
 const Builder = require('./dist/builder.js')
 Object.assign(exports, Builder.default || Builder)
-
-module.exports = Object.assign(Core, Builder)
