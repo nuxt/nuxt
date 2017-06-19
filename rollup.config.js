@@ -65,6 +65,10 @@ function genConfig (opts) {
         resolve: ['.js', '.json', '.jsx', '.ts']
       }, aliases, opts.alias)),
 
+      rollupNodeResolve({ main: true, jsnext: true }),
+
+      rollupCommonJS(),
+
       rollupBabel(Object.assign({
         exclude: 'node_modules/**',
         plugins: [
@@ -74,12 +78,13 @@ function genConfig (opts) {
         ],
         presets: [
           'babel-preset-es2015-rollup'
-        ]
+        ],
+        "env": {
+          "test": {
+            "plugins": [ "istanbul" ]
+          }
+        }
       }, opts.babel)),
-
-      rollupNodeResolve({ main: true, jsnext: true }),
-
-      rollupCommonJS(),
 
       rollupReplace({
         __VERSION__: version

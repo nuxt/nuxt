@@ -44,12 +44,11 @@
   },
   "nyc": {
     "include": [
-      "lib/",
-      "dist/"
+      "lib"
     ]
   },
   "scripts": {
-    "test": "npm run lint && nyc ava --verbose --serial test/",
+    "test": "npm run lint && cross-env NODE_ENV=test npm run build && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern app",
     "build": "npm run build:core && npm run build:builder",
@@ -121,12 +120,14 @@
     "ava": "^0.19.1",
     "babel-eslint": "^7.2.3",
     "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015-rollup": "^3.0.0",
     "babel-preset-stage-2": "^6.24.1",
     "codecov": "^2.2.0",
     "copy-webpack-plugin": "^4.0.1",
+    "cross-env": "^5.0.1",
     "eslint": "^4.0.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-html": "^3.0.0",
