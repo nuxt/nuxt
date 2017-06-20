@@ -30,7 +30,7 @@ test.before('Init Nuxt.js', async t => {
   server = http.createServer((req, res) => {
     serve(req, res, finalhandler(req, res))
   })
-  await nuxt.listen(port)
+  server.listen(port)
 })
 
 test('/stateless', async t => {

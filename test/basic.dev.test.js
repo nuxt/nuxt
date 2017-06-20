@@ -7,7 +7,6 @@ const port = 4001
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -38,6 +37,5 @@ test('/_nuxt/test.hot-update.json should returns empty html', async t => {
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', async t => {
-  server.close()
-  await nuxt.close(() => {})
+  await nuxt.close()
 })

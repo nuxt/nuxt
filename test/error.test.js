@@ -6,7 +6,6 @@ const port = 4005
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -36,11 +35,11 @@ test('/404 should display an error too', async t => {
 
 test('/ with renderAndGetWindow()', async t => {
   const err = await t.throws(nuxt.renderAndGetWindow(url('/')))
-  t.is(err.response.statusCode, 500)
+  t.true(String(err).includes('Error: socket hang up'))
+  // t.is(err.response.statusCode, 500)
 })
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
-  server.close()
   nuxt.close()
 })

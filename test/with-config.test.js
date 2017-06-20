@@ -7,7 +7,6 @@ const port = 4007
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -101,6 +100,5 @@ test('Check /test.txt with custom serve-static options', async t => {
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
-  server.close()
   nuxt.close()
 })
