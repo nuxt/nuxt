@@ -150,6 +150,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-watch": "^4.0.0",
+    "server-destroy": "^1.0.1",
     "std-mocks": "^1.0.1",
     "uglify-js": "^3.0.18"
   },

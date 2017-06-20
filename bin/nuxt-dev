@@ -54,6 +54,11 @@ const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 const nuxtConfig = loadNuxtConfig()
 _.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
+// Fail if an error happened
+process.on('unhandledRejection', function (err) {
+  throw err
+})
+
 // Start dev
 let dev = startDev()
 
