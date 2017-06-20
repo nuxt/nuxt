@@ -38,6 +38,10 @@ const aliases = {
 // Builds
 // -----------------------------
 const builds = {
+  nuxt: {
+    entry: resolve(libDir, 'index.js'),
+    dest: resolve(distDir, 'nuxt.js')
+  },
   core: {
     entry: resolve(libDir, 'core/index.js'),
     dest: resolve(distDir, 'core.js')

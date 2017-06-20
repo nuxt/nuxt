@@ -48,14 +48,14 @@
     ]
   },
   "scripts": {
-    "test": "npm run lint && cross-env NODE_ENV=test npm run build && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
+    "test": "npm run lint && cross-env NODE_ENV=test npm run build:nuxt && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin lib pages test/*.js --ignore-pattern app",
-    "build": "rimraf dist/ && npm run build:core && npm run build:builder",
+    "build": "rimraf dist/ && npm run build:nuxt && npm run build:core && npm run build:builder",
+    "build:nuxt": "rollup -c rollup.config.js --environment TARGET:nuxt",
     "build:core": "rollup -c rollup.config.js --environment TARGET:core",
-    "watch": "npm run build:core -- -w",
     "build:builder": "rollup -c rollup.config.js --environment TARGET:builder",
-    "watch:builder": "npm run build:builder -- -w",
+    "watch": "npm run build:nuxt -- -w",
     "precommit": "npm run lint",
     "prepublish": "npm run build",
     "postinstall": "opencollective postinstall"
