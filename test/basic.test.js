@@ -145,12 +145,22 @@ test('/redirect2', async t => {
 })
 
 test('ETag Header', async t => {
-  const {headers: {etag}} = await rp(url('/stateless'), {resolveWithFullResponse: true})
+  const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
   // Validate etag
   t.regex(etag, /W\/".*"$/)
   // Verify functionality
-  const error = await t.throws(rp(url('/stateless'), {headers: {'If-None-Match': etag}}))
+  const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
   t.is(error.statusCode, 304)
+})
+
+test('/_nuxt/server-bundle.json should return 404', async t => {
+  const err = await t.throws(rp(url('/_nuxt/server-bundle.json'), { resolveWithFullResponse: true }))
+  t.is(err.statusCode, 404)
+})
+
+test('/_nuxt/ should return 404', async t => {
+  const err = await t.throws(rp(url('/_nuxt/'), { resolveWithFullResponse: true }))
+  t.is(err.statusCode, 404)
 })
 
 // Close server and ask nuxt to stop listening to file changes
