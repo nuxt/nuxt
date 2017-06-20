@@ -43,17 +43,21 @@ if (argv.help) {
 const rootDir = resolve(argv._[0] || '.')
 const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
-var options = {}
+let options = {}
+
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
 } else if (argv['config-file'] !== 'nuxt.config.js') {
   console.error(`> Could not load config file ${argv['config-file']}`)
   process.exit(1)
 }
+
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-options.dev = false // Force production mode (no webpack middleware called)
+
+// Force production mode (no webpack middleware called)
+options.dev = false
 
 // Check if project is built for production
 const distDir = join(options.rootDir, options.buildDir || '.nuxt', 'dist' )
@@ -65,6 +69,4 @@ if (!fs.existsSync(join(distDir, 'server-bundle.json'))) {
 const nuxt = new Nuxt(options)
 const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
 const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-new Server(nuxt).listen(port, host)
-
-module.exports = nuxt
+nuxt.listen(port, host)
