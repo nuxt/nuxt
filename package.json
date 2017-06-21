@@ -23,6 +23,7 @@
   "files": [
     "bin",
     "dist",
+    "lib",
     "index.d.ts",
     "index.js"
   ],
