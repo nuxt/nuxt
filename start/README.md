@@ -1,3 +1,3 @@
 # Nuxt-Start
 
-Runtime Only Build
+WIP - Serve Nuxt.js Application for production
