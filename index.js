@@ -7,7 +7,7 @@
 
 // Node Source Map Support
 // https://github.com/evanw/node-source-map-support
-require('source-map-support').install();
+require('source-map-support').install()
 
 // Fix babel flag
 /* istanbul ignore else */
