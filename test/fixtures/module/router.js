@@ -7,16 +7,16 @@ export function createRouter () {
   return new Router({
     mode: 'history',
     routes: [
-  		{
-			path: "/",
-			component: require('~/views/index.vue'),
-			name: "index"
-		},
-		{
-			path: "/about",
-			component: require('~/views/about.vue'),
-			name: "about"
-		}
+      {
+        path: '/',
+        component: require('~/views/index.vue'),
+        name: 'index'
+      },
+      {
+        path: '/about',
+        component: require('~/views/about.vue'),
+        name: 'about'
+      }
     ]
   })
 }

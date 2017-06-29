@@ -9,14 +9,14 @@ module.exports = function middlewareModule (options) {
       }
     })
     // Add local middleware js
-    this.addServerMiddleware('~/modules/middleware/log.js')
+    this.addServerMiddleware('@modules/middleware/log.js')
     // Add plain middleware
     this.addServerMiddleware((req, res, next) => {
       res.setHeader('x-nuxt', 'hello')
       next()
     })
     // Add file middleware
-    this.addServerMiddleware('~/modules/middleware/midd1')
+    this.addServerMiddleware('@modules/middleware/midd1')
     resolve()
   })
 }
