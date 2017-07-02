@@ -15,7 +15,7 @@
 
 </p>
 
-> Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
+> Nuxt.js is a Versatile Vue.js Framework
 
 ## 🚧 Under active development, [1.0](https://github.com/nuxt/nuxt.js/projects/1) will be released soon :fire:
 
