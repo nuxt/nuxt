@@ -1,0 +1,11 @@
+{
+  "name": "dynamic-component-nuxt",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt"
+  }
+}
