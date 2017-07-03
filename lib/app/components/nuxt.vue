@@ -1,6 +1,6 @@
 <template>
   <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
-  <nuxt-child v-else></nuxt-child>
+  <nuxt-child :key="routerViewKey" v-else></nuxt-child>
 </template>
 
 <script>
@@ -10,6 +10,7 @@ import NuxtError from '<%= components.ErrorPage ? ((components.ErrorPage.include
 
 export default {
   name: 'nuxt',
+  props: ['routerViewKey'],
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options._nuxt)
   },
