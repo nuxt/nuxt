@@ -26,14 +26,14 @@ test('/stateless', async t => {
   t.true(html.includes('<h1>My component!</h1>'))
 })
 
-test('/_nuxt/test.hot-update.json should returns empty html', async t => {
-  try {
-    await rp(url('/_nuxt/test.hot-update.json'))
-  } catch (err) {
-    t.is(err.statusCode, 404)
-    t.is(err.response.body, '')
-  }
-})
+// test('/_nuxt/test.hot-update.json should returns empty html', async t => {
+//   try {
+//     await rp(url('/_nuxt/test.hot-update.json'))
+//   } catch (err) {
+//     t.is(err.statusCode, 404)
+//     t.is(err.response.body, '')
+//   }
+// })
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', async t => {
