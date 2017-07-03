@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import rp from 'request-promise-native'
+// import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
 
 const port = 4001
