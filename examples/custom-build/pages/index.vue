@@ -7,6 +7,16 @@
   </div>
 </template>
 
+<script>
+import img from '@/assets/nuxt.png'
+
+export default {
+  mounted() {
+    console.log('Teub', img)
+  }
+}
+</script>
+
 <style>
 .container {
   font-size: 20px;
