@@ -15,7 +15,7 @@ let layouts = {
 <%
 var layoutsKeys = Object.keys(layouts);
 layoutsKeys.forEach(function (key, i) { %>
-  "_<%= key %>": () => import('<%= layouts[key] %>'  /* webpackChunkName: "layouts/<%= key %>" */)<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
+  "_<%= key %>": () => import('<%= layouts[key] %>'  /* webpackChunkName: "layouts/<%= key %>" */).then(m => m.default || m)<%= (i + 1) < layoutsKeys.length ? ',' : '' %>
 <% }) %>
 }
 
