@@ -9,12 +9,12 @@ export function createRouter () {
     routes: [
       {
         path: '/',
-        component: require('~/views/index.vue'),
+        component: require('~/views/index.vue').default,
         name: 'index'
       },
       {
         path: '/about',
-        component: require('~/views/about.vue'),
+        component: require('~/views/about.vue').default,
         name: 'about'
       }
     ]

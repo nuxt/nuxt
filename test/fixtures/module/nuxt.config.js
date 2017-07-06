@@ -1,9 +1,9 @@
 module.exports = {
   loading: true,
   modules: [
-    '~modules/basic', // Use ~ for deprication warning coverage
+    '~/modules/basic', // Use ~ for deprication warning coverage
     {
-      src: '@/modules/middleware',
+      src: '~/modules/middleware',
       options: {
         foo: 'bar'
       }
