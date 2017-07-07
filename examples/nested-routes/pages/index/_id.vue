@@ -15,7 +15,6 @@ export default {
     if (!user) {
       return error({ message: 'User not found', statusCode: 404 })
     }
-    console.log(user)
     return user
   }
 }
