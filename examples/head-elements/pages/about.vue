@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import TwitterHeadCard from '~components/twitter-head-card.vue'
+import TwitterHeadCard from '~/components/twitter-head-card.vue'
 
 export default {
   head: {
