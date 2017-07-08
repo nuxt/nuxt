@@ -14,15 +14,5 @@ module.exports = {
       { id: 5, name: 'Kevin Durant', number: 35 },
       { id: 6, name: 'Kyrie Irving', number: 2 }
     ]
-  },
-  generate: {
-    routes: [
-      '/1',
-      '/2',
-      '/3',
-      '/4',
-      '/5',
-      '/6'
-    ]
   }
 }
