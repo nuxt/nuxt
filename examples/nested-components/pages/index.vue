@@ -22,8 +22,8 @@
 </template>
 
 <script>
-import Post from '~components/post'
-import vP from '~components/paragraph'
+import Post from '~/components/post'
+import vP from '~/components/paragraph'
 const vHr = { render: (h) => h('hr', { class: 'hr' }) }
 
 export default {
