@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Show logs
-process.env.DEBUG = 'nuxt:*'
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
 const fs = require('fs')
 const parseArgs = require('minimist')

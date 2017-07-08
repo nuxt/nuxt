@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Show logs
-process.env.DEBUG = 'nuxt:*'
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
 const _ = require('lodash')
 const debug = require('debug')('nuxt:build')
