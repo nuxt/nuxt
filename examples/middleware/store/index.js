@@ -1,6 +1,6 @@
-export const state = {
+export const state = () => ({
   visits: []
-}
+})
 
 export const mutations = {
   ADD_VISIT (state, path) {
