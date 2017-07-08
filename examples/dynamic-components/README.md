@@ -1,3 +1,5 @@
-# Hello World with Nuxt.js
+# Dynamic Components with Nuxt.js
 
-https://nuxtjs.org/examples
+Demo: https://nuxt-chat.surge.sh
+
+Video: https://www.youtube.com/watch?v=HzDea5-PFaw
