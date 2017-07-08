@@ -23,7 +23,6 @@ export default {
     messages: []
   }),
   mounted () {
-    setTimeout(() => {
     // Listen to new messages
     streamMessages(async (message) => {
       // Make sure to wait for async chunk to be loaded before adding the message
@@ -31,7 +30,6 @@ export default {
       // Add the message to the list
       this.messages.push(message)
     })
-    }, 1000)
   },
   components
 }
