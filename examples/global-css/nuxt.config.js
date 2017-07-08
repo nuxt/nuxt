@@ -1,6 +1,5 @@
 module.exports = {
   head: {
-    titleTemplate: '%s - Nuxt.js',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -8,7 +7,7 @@ module.exports = {
     ]
   },
   css: [
-    'bulma/bulma.sass',
-    '~assets/main.css'
+    'bulma/css/bulma.css',
+    '~/css/main.css'
   ]
 }
