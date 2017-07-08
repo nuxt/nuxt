@@ -27,11 +27,9 @@ module.exports = {
       resave: false,
       saveUninitialized: false,
       cookie: { maxAge: 60000 }
-    })
-  ],
-  /*
-  ** Add our custom module
-  ** In this module we add /api/login & /api/logout routes
-  */
-  modules: ['~/api']
+    }),
+    // Api middleware
+    // We add /api/login & /api/logout routes
+    '~/api'
+  ]
 }
