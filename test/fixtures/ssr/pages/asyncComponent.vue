@@ -5,14 +5,11 @@
 </template>
 
 <script>
+const AsyncTest = () => import('@/components/test.vue').then((m) => m.default || m)
 
 export default {
-  async asyncData({ error }) {
-    try {
-      this.components.AsyncTest = await import(`@/components/test.vue`)
-    } catch (e) {
-      error({ statusCode: 404, message: 'Can not load test component' })
-    }
+  components:{
+    AsyncTest
   }
 }
 </script>
