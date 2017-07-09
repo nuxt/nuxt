@@ -1,11 +1,11 @@
 <template>
   <div>
     <h1>Nuxt Chat</h1>
-    <ul>
-      <li v-for="message in messages">
+    <transition-group name="list" tag="ul">
+      <li v-for="(message, index) in messages" :key="index">
         <component :is="message.component" :data="message.data"></component>
       </li>
-    </ul>
+    </transition-group>
   </div>
 </template>
 
@@ -58,5 +58,13 @@ ul li {
   background: white;
   border: 1px #ddd solid;
   overflow: hidden;
+  opacity: 1;
+}
+.list-enter-active, .list-leave-active {
+  transition: all 0.4s;
+}
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 </style>
