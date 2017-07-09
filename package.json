@@ -141,7 +141,6 @@
     "finalhandler": "^1.0.3",
     "jsdom": "^11.1.0",
     "json-loader": "^0.5.4",
-    "lerna": "2.0.0-rc.5",
     "nyc": "^11.0.3",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
