@@ -7,3 +7,5 @@ function $reverseStr (str) {
 }
 
 Vue.prototype.$reverseStr = $reverseStr
+
+export default undefined
