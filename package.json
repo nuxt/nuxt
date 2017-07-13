@@ -56,7 +56,7 @@
     "build:nuxt": "rollup -c build/rollup.config.js --environment TARGET:nuxt",
     "build:core": "rollup -c build/rollup.config.js --environment TARGET:core",
     "watch": "npm run build:nuxt -- -w",
-    "make-start": "./build/start.js",
+    "make-start": "node ./build/start.js",
     "precommit": "npm run lint",
     "prepublish": "npm run build && npm run make-start",
     "postpublish": "cd start && npm publish",
