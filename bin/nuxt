@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-// Node Source Map Support
-// https://github.com/evanw/node-source-map-support
-require('source-map-support').install()
-
 const join = require('path').join
 
 const defaultCommand = 'dev'
