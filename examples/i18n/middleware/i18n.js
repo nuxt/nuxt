@@ -1,5 +1,5 @@
 export default function ({ app, store, route, params, error, redirect, hotReload }) {
-  // Check if middleware called from hot-reloading, ignore
+  // If middleware is called from hot-reloading, ignore it
   if (hotReload) return
   // Get locale from params
   const locale = params.lang || 'en'

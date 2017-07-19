@@ -1,7 +1,8 @@
 module.exports = {
   loading: true,
   modules: [
-    '~modules/basic',
+    '~/modules/basic',
+    '~/modules/tapable',
     {
       src: '~/modules/middleware',
       options: {

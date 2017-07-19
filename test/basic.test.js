@@ -2,24 +2,24 @@ import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import stdMocks from 'std-mocks'
+import { Nuxt, Builder } from '../index.js'
 
 const port = 4003
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
-    dev: false
+    dev: false,
+    runBuild: true
   }
   nuxt = new Nuxt(options)
-  await nuxt.build()
-  server = new nuxt.Server(nuxt)
-  server.listen(port, 'localhost')
+  await new Builder(nuxt).build()
+
+  await nuxt.listen(port, 'localhost')
 })
 
 test('/stateless', async t => {
@@ -145,16 +145,25 @@ test('/redirect2', async t => {
 })
 
 test('ETag Header', async t => {
-  const {headers: {etag}} = await rp(url('/stateless'), {resolveWithFullResponse: true})
+  const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
   // Validate etag
   t.regex(etag, /W\/".*"$/)
   // Verify functionality
-  const error = await t.throws(rp(url('/stateless'), {headers: {'If-None-Match': etag}}))
+  const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
   t.is(error.statusCode, 304)
+})
+
+test('/_nuxt/server-bundle.json should return 404', async t => {
+  const err = await t.throws(rp(url('/_nuxt/server-bundle.json'), { resolveWithFullResponse: true }))
+  t.is(err.statusCode, 404)
+})
+
+test('/_nuxt/ should return 404', async t => {
+  const err = await t.throws(rp(url('/_nuxt/'), { resolveWithFullResponse: true }))
+  t.is(err.statusCode, 404)
 })
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
-  server.close()
   nuxt.close()
 })

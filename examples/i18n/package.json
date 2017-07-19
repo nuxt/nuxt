@@ -1,8 +1,8 @@
 {
   "name": "nuxt-i18n",
   "dependencies": {
-    "nuxt": "1.0.0-alpha.3",
-    "vue-i18n": "^7.0.0"
+    "nuxt": "latest",
+    "vue-i18n": "^7.0.5"
   },
   "scripts": {
     "dev": "nuxt",

@@ -1,4 +1,4 @@
-module.exports = function (options, next) {
+module.exports = function (options) {
   // Extend build
   this.extendBuild((config) => {
     // Add TypeScript loader
@@ -13,6 +13,4 @@ module.exports = function (options, next) {
       }
     }
   })
-
-  next()
 }

@@ -15,7 +15,7 @@
 
 </p>
 
-> Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
+> Nuxt.js is a Versatile Vue.js Framework
 
 ## 🚧 Under active development, [1.0](https://github.com/nuxt/nuxt.js/projects/1) will be released soon :fire:
 
@@ -98,6 +98,7 @@ Support us with a monthly donation and help us continue our activities. [[Become
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 👥 [Nuxt.js Community](https://github.com/nuxt-community)
 - 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
 ## Getting started
@@ -170,13 +171,8 @@ const Nuxt = require('nuxt')
 // Launch nuxt build with given options
 let config = require('./nuxt.config.js')
 let nuxt = new Nuxt(config)
-nuxt.build()
-.then(() => {
-  // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
-})
-.catch((e) => {
-  // An error happened during the build
-})
+
+// You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
 
 Learn more: https://nuxtjs.org/api/nuxt

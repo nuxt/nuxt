@@ -5,6 +5,9 @@
 </template>
 
 <style>
+body {
+  overflow: hidden;
+}
 .dark {
   position: absolute;
   top: 0;

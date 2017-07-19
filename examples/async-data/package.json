@@ -1,8 +1,7 @@
 {
   "name": "nuxt-async-data",
-  "description": "",
   "dependencies": {
-    "axios": "^0.15.2",
+    "axios": "latest",
     "nuxt": "latest"
   },
   "scripts": {

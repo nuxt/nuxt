@@ -1,26 +1,24 @@
 import test from 'ava'
-import { resolve } from 'path'
+import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
+import { Nuxt, Builder } from '../index.js'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
-
-const wp = p => /^win/.test(process.platform) ? p.replace(/[\\/]/g, '\\\\') : p
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const rootDir = resolve(__dirname, 'fixtures/module')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
+  config.runBuild = true
   nuxt = new Nuxt(config)
-  await nuxt.build()
-  server = new nuxt.Server(nuxt)
-  server.listen(port, 'localhost')
+  await new Builder(nuxt).build()
+
+  await nuxt.listen(port, 'localhost')
 })
 
 test('Vendor', async t => {
@@ -28,7 +26,8 @@ test('Vendor', async t => {
 })
 
 test('Plugin', async t => {
-  t.true(nuxt.options.plugins[0].src.includes(wp('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
+  t.true(normalize(nuxt.options.plugins[0].src)
+    .includes(normalize('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })
@@ -38,8 +37,13 @@ test('Middleware', async t => {
   t.is(response, 'It works!', '/api response is correct')
 })
 
+test('Tapable', async t => {
+  t.is(nuxt.__module_hook, 1)
+  t.is(nuxt.__renderer_hook, 2)
+  t.is(nuxt.__builder_hook, 3)
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
-  server.close()
   nuxt.close()
 })

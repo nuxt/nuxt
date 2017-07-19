@@ -1,16 +1,14 @@
 {
   "name": "with-vuetify",
   "dependencies": {
-    "nuxt": "^0.10.7",
-    "vuetify": "^0.11.1"
+    "nuxt": "latest",
+    "vuetify": "latest"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate",
-    "predeploy": "yarn run generate",
-    "deploy": "surge --domain nuxt-with-vuetify-example.surge.sh dist"
+    "generate": "nuxt generate"
   },
   "devDependencies": {
     "stylus": "^0.54.5",

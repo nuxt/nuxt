@@ -23,3 +23,6 @@ coverage
 # Intellij idea
 *.iml
 .idea
+
+# Macos
+.DS_Store

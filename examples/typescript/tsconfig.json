@@ -23,9 +23,7 @@
       "~middleware/*": ["./middleware/*"],
       "~pages/*": ["./pages/*"],
       "~plugins/*": ["./plugins/*"],
-      "~static/*": ["./static/*"],
-      "~store": ["./.nuxt/store"],
-      "~router": ["./.nuxt/router"]
+      "~static/*": ["./static/*"]
     }
   }
 }

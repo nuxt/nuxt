@@ -1,4 +1,3 @@
-
 module.exports = function middlewareModule (options) {
   return new Promise((resolve, reject) => {
     // Add /api endpoint

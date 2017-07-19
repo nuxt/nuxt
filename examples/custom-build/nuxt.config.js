@@ -7,21 +7,13 @@ module.exports = {
         app: 'app.[chunkhash].js'         // default: nuxt.bundle.[chunkhash].js
     },
     vendor: ['lodash'],
-    // Loaders config (Webpack 2)
-    loaders: [
-      {
-        test: /\.(png|jpg|gif|svg)$/,
-        loader: 'url-loader',
-        options: {
-          limit: 100000, // 100KO
-          name: 'img/[name].[ext]?[hash]'
-        }
-      }
-    ],
     extend (config, { dev }) {
       if (dev) {
         config.devtool = (dev ? 'eval-source-map' : false)
       }
+      const urlLoader = config.module.rules.find((loader) => loader.loader === 'url-loader')
+      // Increase limit to 100KO
+      urlLoader.query.limit = 100000
     }
   }
 }
