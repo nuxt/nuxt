@@ -37,6 +37,12 @@ test('Middleware', async t => {
   t.is(response, 'It works!', '/api response is correct')
 })
 
+test('Tapable', async t => {
+  t.is(nuxt.__module_hook, 1)
+  t.is(nuxt.__renderer_hook, 2)
+  t.is(nuxt.__builder_hook, 3)
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()

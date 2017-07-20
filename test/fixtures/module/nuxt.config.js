@@ -1,7 +1,8 @@
 module.exports = {
   loading: true,
   modules: [
-    '~/modules/basic', // Use ~ for deprication warning coverage
+    '~/modules/basic',
+    '~/modules/tapable',
     {
       src: '~/modules/middleware',
       options: {

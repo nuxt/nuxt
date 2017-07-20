@@ -5,7 +5,7 @@ const rollupAlias = require('rollup-plugin-alias')
 const rollupCommonJS = require('rollup-plugin-commonjs')
 const rollupReplace = require('rollup-plugin-replace')
 const rollupNodeResolve = require('rollup-plugin-node-resolve')
-const packageJson = require('./package.json')
+const packageJson = require('../package.json')
 
 const dependencies = Object.keys(packageJson.dependencies)
 const version = packageJson.version || process.env.VERSION
@@ -22,7 +22,7 @@ const banner =
 // -----------------------------
 // Aliases
 // -----------------------------
-const rootDir = resolve(__dirname)
+const rootDir = resolve(__dirname, '..')
 const libDir = resolve(rootDir, 'lib')
 const distDir = resolve(rootDir, 'dist')
 
@@ -31,7 +31,7 @@ const aliases = {
   builder: resolve(libDir, 'builder/index.js'),
   common: resolve(libDir, 'common/index.js'),
   utils: resolve(libDir, 'common/utils.js'),
-  app: resolve(libDir, 'app'),
+  app: resolve(libDir, 'app')
 }
 
 // -----------------------------
@@ -45,10 +45,6 @@ const builds = {
   core: {
     entry: resolve(libDir, 'core/index.js'),
     dest: resolve(distDir, 'core.js')
-  },
-  builder: {
-    entry: resolve(libDir, 'builder/index.js'),
-    dest: resolve(distDir, 'builder.js')
   }
 }
 
@@ -83,9 +79,9 @@ function genConfig (opts) {
         presets: [
           'babel-preset-es2015-rollup'
         ],
-        "env": {
-          "test": {
-            "plugins": [ "istanbul" ]
+        'env': {
+          'test': {
+            'plugins': [ 'istanbul' ]
           }
         }
       }, opts.babel)),
