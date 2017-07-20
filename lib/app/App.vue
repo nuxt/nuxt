@@ -54,7 +54,6 @@ export default {
         if (this.$nuxt) {
           return this.$nuxt.error({ statusCode: 500, message: e.message })
         }
-        console.error(e)
       })
     }
   },
