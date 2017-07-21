@@ -8,7 +8,7 @@
 <script>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% css.forEach(function (c) { %>
-import '<%= wp(c.src || c) %>'
+import '<%= relativeToBuild(resolvePath(c.src || c)) %>'
 <% }) %>
 
 let layouts = {
