@@ -14,8 +14,7 @@ let app
 test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
-    dev: false,
-    runBuild: true
+    dev: false
   }
 
   // Create nuxt instace

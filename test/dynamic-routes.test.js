@@ -9,8 +9,7 @@ const readFile = pify(fs.readFile)
 test.before('Init Nuxt.js', async t => {
   const nuxt = new Nuxt({
     rootDir: resolve(__dirname, 'fixtures/dynamic-routes'),
-    dev: false,
-    runBuild: true
+    dev: false
   })
   await new Builder(nuxt).build()
 })

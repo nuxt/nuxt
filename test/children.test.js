@@ -11,8 +11,7 @@ let nuxt = null
 test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/children'),
-    dev: false,
-    runBuild: true
+    dev: false
   }
   nuxt = new Nuxt(options)
   await new Builder(nuxt).build()
