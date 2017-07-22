@@ -61,7 +61,7 @@
     "serve-static": "^1.12.3",
     "compression": "^1.7.0",
     "fs-extra": "^4.0.0",
-    "vue-server-renderer": "~2.4.1",
+    "vue-server-renderer": "~2.4.2",
     "connect": "^3.6.2"
   },
   "collective": {
