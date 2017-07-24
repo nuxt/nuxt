@@ -162,6 +162,7 @@ You can start by using one of our starter templates:
 - [express](https://github.com/nuxt/express): Nuxt.js + Express
 - [koa](https://github.com/nuxt/koa): Nuxt.js + Koa
 - [adonuxt](https://github.com/nuxt/adonuxt): Nuxt.js + AdonisJS
+- [nuxtent](https://github.com/nuxt-community/nuxtent): Nuxt.js + Nuxtent for content heavy sites 
 
 ## Using nuxt.js programmatically
 
