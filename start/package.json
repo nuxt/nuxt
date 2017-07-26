@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-rc0",
   "description": "runtime-only build for nuxt",
   "contributors": [
     {
