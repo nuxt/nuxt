@@ -18,4 +18,6 @@ const apolloProvider = new VueApollo({
   defaultClient: apolloClient
 })
 
-export default apolloProvider
+export default ({ app, store }) => {
+  Object.assign(app, { apolloProvider })
+}
