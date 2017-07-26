@@ -6,7 +6,7 @@
     "vue-apollo": "^2.1.0-beta.2"
   },
   "scripts": {
-    "dev": "node server.js",
+    "dev": "nuxt",
     "build": "nuxt build",
     "start": "cross-env NODE_ENV=production node server.js"
   }
