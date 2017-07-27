@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "runtime-only build for nuxt",
   "contributors": [
     {
@@ -62,7 +62,8 @@
     "compression": "^1.7.0",
     "fs-extra": "^4.0.0",
     "vue-server-renderer": "~2.4.2",
-    "connect": "^3.6.2"
+    "connect": "^3.6.2",
+    "server-destroy": "^1.0.1"
   },
   "collective": {
     "type": "opencollective",
