@@ -101,6 +101,11 @@ test('/redirect -> check redirected source', async t => {
   t.true(html.includes('<h1>Index page</h1>'))
 })
 
+test.only('/special-state -> check window.__NUXT__.test = true', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/special-state'))
+  t.is(window.__NUXT__.test, true)
+})
+
 test('/error', async t => {
   try {
     await nuxt.renderRoute('/error', { req: {}, res: {} })
