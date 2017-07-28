@@ -158,10 +158,12 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 ## Templates
 
 You can start by using one of our starter templates:
-- [starter](https://github.com/nuxt/starter): Basic Nuxt.js project template
-- [express](https://github.com/nuxt/express): Nuxt.js + Express
-- [koa](https://github.com/nuxt/koa): Nuxt.js + Koa
-- [adonuxt](https://github.com/nuxt/adonuxt): Nuxt.js + AdonisJS
+- [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
+- [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
+- [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
+- [adonuxt](https://github.com/nuxt-community/adonuxt-template): Nuxt.js + AdonisJS
+- [micro](https://github.com/nuxt-community/micro-template): Nuxt.js + Micro
+- [nuxtent](https://github.com/nuxt-community/nuxtent-template): Nuxt.js + Nuxtent module for content heavy sites 
 
 ## Using nuxt.js programmatically
 
