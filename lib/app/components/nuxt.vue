@@ -50,7 +50,7 @@ export default {
     routerViewKey () {
       // If nuxtChildKey prop is given or current route has children
       if (typeof this.nuxtChildKey !== 'undefined' || this.$route.matched.length > 1) {
-        return this.nuxtChildKey || ''
+        return this.nuxtChildKey || this.$route.fullPath.split('/')[1]
       }
       return this.$route.fullPath.split('#')[0]
     }
