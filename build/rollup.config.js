@@ -44,7 +44,7 @@ const builds = {
   },
   core: {
     entry: resolve(libDir, 'core/index.js'),
-    dest: resolve(distDir, 'core.js')
+    dest: resolve(distDir, 'core.js'),
   }
 }
 
@@ -55,7 +55,7 @@ function genConfig (opts) {
   const config = {
     entry: opts.entry,
     dest: opts.dest,
-    external: ['fs', 'path', 'http'].concat(dependencies, opts.external),
+    external: ['fs', 'path', 'http', 'module', 'vue-server-renderer/server-plugin', 'vue-server-renderer/client-plugin'].concat(dependencies, opts.external),
     format: opts.format || 'cjs',
     banner: opts.banner || banner,
     moduleName: opts.moduleName || 'Nuxt',

@@ -14,7 +14,7 @@ module.exports = {
   transition: 'test',
   offline: true,
   plugins: [
-    '~/plugins/test.js', // Use ~ for deprication warning coverage
+    '~/plugins/test.js',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',

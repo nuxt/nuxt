@@ -14,7 +14,6 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  config.runBuild = true
   nuxt = new Nuxt(config)
   await new Builder(nuxt).build()
 

@@ -14,9 +14,12 @@ const packageJSON = readJSONSync(resolve(rootDir, 'package.json'))
 let requires = [
   'source-map-support'
 ]
+
 const excludes = [
   'path',
-  'fs'
+  'fs',
+  'http',
+  'module'
 ].concat(Object.keys(packageJSON.devDependencies))
 
 // Parse dist/core.js for all external dependencies

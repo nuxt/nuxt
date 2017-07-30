@@ -13,8 +13,7 @@ let nuxt = null
 test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
-    dev: false,
-    runBuild: true
+    dev: false
   }
   nuxt = new Nuxt(options)
   await new Builder(nuxt).build()
@@ -100,6 +99,11 @@ test('/redirect -> check redirected source', async t => {
   const window = await nuxt.renderAndGetWindow(url('/redirect'))
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>Index page</h1>'))
+})
+
+test('/special-state -> check window.__NUXT__.test = true', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/special-state'))
+  t.is(window.__NUXT__.test, true)
 })
 
 test('/error', async t => {

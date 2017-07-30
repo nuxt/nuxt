@@ -1,12 +1,8 @@
 module.exports = {
-  build: {
-    vendor: ['vue-apollo', 'apollo-client']
-  },
-  router: {
-    middleware: 'apollo'
-  },
-  plugins: [
-    // Will inject the plugin in the $root app and also in the context as `apolloProvider`
-    { src: '~plugins/apollo.js', injectAs: 'apolloProvider' }
-  ]
+  modules: ['@nuxtjs/apollo'],
+  apollo: {
+    clients: {
+      default: 'https://api.graph.cool/simple/v1/cj1dqiyvqqnmj0113yuqamkuu'
+    }
+  }
 }
