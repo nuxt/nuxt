@@ -168,11 +168,18 @@ You can start by using one of our starter templates:
 ## Using nuxt.js programmatically
 
 ```js
-const Nuxt = require('nuxt')
+const { Nuxt, Builder } = require('nuxt')
 
-// Launch nuxt build with given options
+// Import and set nuxt.js options
 let config = require('./nuxt.config.js')
+config.dev = !(process.env.NODE_ENV === 'production')
+
 let nuxt = new Nuxt(config)
+
+// Start build process (only in development)
+if (config.dev) {
+  new Builder(nuxt).build()
+}
 
 // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
