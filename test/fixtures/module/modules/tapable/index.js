@@ -2,7 +2,7 @@ module.exports = function () {
   let ctr = 1
 
   // Add hook for module
-  this.nuxt.plugin('module', moduleContainer => {
+  this.plugin('ready', moduleContainer => {
     this.nuxt.__module_hook = moduleContainer && ctr++
   })
 

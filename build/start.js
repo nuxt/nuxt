@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const now = Date.now()
+
 const { readFileSync, readJSONSync, writeFileSync, copySync, removeSync } = require('fs-extra')
 const { resolve, relative } = require('path')
 
@@ -38,7 +40,7 @@ requires = requires.filter(r => excludes.indexOf(r) === -1)
 let dependencies = {}
 requires.forEach(r => {
   if (!packageJSON.dependencies[r]) {
-    console.warn('cannot resolve dependency version for ' + r)
+    console.warn('Cannot resolve dependency version for ' + r)
     return
   }
   dependencies[r] = packageJSON.dependencies[r]
@@ -81,6 +83,7 @@ const extraFiles = [
   'bin/nuxt-build',
   'bin/nuxt-generate',
   'bin/nuxt-dev',
+  'bin/nuxt',
   'dist/nuxt.js',
   'dist/nuxt.js.map'
 ]
@@ -92,4 +95,9 @@ extraFiles.forEach(file => {
 const startIndexjs = resolve(startDir, 'index.js')
 writeFileSync(startIndexjs, String(readFileSync(startIndexjs)).replace('./dist/nuxt', './dist/core'))
 
-console.log('generated ' + packageJSON.name + '@' + packageJSON.version)
+// Patch bin/nuxt-start
+const binStart = resolve(startDir, 'bin/nuxt-start')
+writeFileSync(binStart, String(readFileSync(binStart)).replace(/nuxt start/g, 'nuxt-start'))
+
+const ms = Date.now() - now
+console.log(`Generated ${packageJSON.name}@${packageJSON.version} in ${ms}ms`)
