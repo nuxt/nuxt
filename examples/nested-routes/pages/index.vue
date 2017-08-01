@@ -9,7 +9,7 @@
       </ul>
     </div>
     <div class="right">
-      <nuxt-child/>
+      <nuxt-child :key="$route.params.id"/>
     </div>
   </div>
 </template>
@@ -23,6 +23,16 @@ export default {
 </script>
 
 <style scoped>
+.page-enter-active, .page-leave-active {
+  transition: opacity .4s, transform .4s;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  opacity: 1;
+}
+.page-enter, .page-leave-active {
+  opacity: 0.5;
+  transform: rotateY(100deg);
+}
 .container {
   width: 100%;
   margin: 0;

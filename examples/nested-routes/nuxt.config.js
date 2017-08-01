@@ -1,4 +1,5 @@
 module.exports = {
+  loading: false,
   head: {
     meta: [
       { charset: 'utf-8' },
