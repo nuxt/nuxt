@@ -7,7 +7,7 @@
 import Vue from 'vue'
 import NuxtChild from './nuxt-child'
 import NuxtError from '<%= components.ErrorPage ? ((components.ErrorPage.includes('~') || components.ErrorPage.includes('@')) ? components.ErrorPage : "../" + components.ErrorPage) : "./nuxt-error.vue" %>'
-import { compile } from '~/.nuxt/utils'
+import { compile } from '../utils'
 
 export default {
   name: 'nuxt',
