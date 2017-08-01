@@ -7,6 +7,7 @@
 import Vue from 'vue'
 import NuxtChild from './nuxt-child'
 import NuxtError from '<%= components.ErrorPage ? ((components.ErrorPage.includes('~') || components.ErrorPage.includes('@')) ? components.ErrorPage : "../" + components.ErrorPage) : "./nuxt-error.vue" %>'
+import { compile } from '../utils'
 
 export default {
   name: 'nuxt',
@@ -50,7 +51,7 @@ export default {
     routerViewKey () {
       // If nuxtChildKey prop is given or current route has children
       if (typeof this.nuxtChildKey !== 'undefined' || this.$route.matched.length > 1) {
-        return this.nuxtChildKey || ''
+        return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)
       }
       return this.$route.fullPath.split('#')[0]
     }
