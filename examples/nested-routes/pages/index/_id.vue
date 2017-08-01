@@ -16,6 +16,11 @@ export default {
       return error({ message: 'User not found', statusCode: 404 })
     }
     return user
+  },
+  head () {
+    return {
+      title: this.name
+    }
   }
 }
 </script>
