@@ -1,7 +1,7 @@
 {
   "name": "dynamic-components-nuxt",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "1.0.0-rc3"
   },
   "scripts": {
     "dev": "nuxt",
