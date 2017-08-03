@@ -10,7 +10,7 @@
 <script>
 export default {
   asyncData: ({ req }) => ({
-    userAgent: (req ? req.headers['user-agent'] : navigator.userAgent)
+    userAgent: (req ? req.headers['user-agent'] : (typeof navigator !== 'undefined' ? navigator.userAgent : 'No user agent (generated)'))
   })
 }
 </script>

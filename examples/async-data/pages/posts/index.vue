@@ -21,6 +21,9 @@ export default {
     .then((res) => {
       return { posts: res.data.slice(0, 5) }
     })
+  },
+  head: {
+    title: 'List of posts'
   }
 }
 </script>
