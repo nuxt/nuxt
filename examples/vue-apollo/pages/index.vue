@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import allCars from '~/queries/allCars'
+import allCars from '~/apollo/queries/allCars'
 
 export default {
   apollo: {
@@ -20,6 +20,9 @@ export default {
       prefetch: true,
       query: allCars
     }
+  },
+  head: {
+    title: 'Cars with Apollo'
   }
 }
 </script>

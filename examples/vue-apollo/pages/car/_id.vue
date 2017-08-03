@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import car from '~/queries/car'
+import car from '~/apollo/queries/car'
 
 export default {
   apollo: {
@@ -29,8 +29,12 @@ export default {
       })
       return formatter.format(num)
     }
+  },
+  head () {
+    return {
+      title: (this.Car ? `${this.Car.make} ${this.Car.model}` : 'Loading')
+    }
   }
-
 }
 </script>
 
