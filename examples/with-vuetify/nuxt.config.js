@@ -21,9 +21,9 @@ module.exports = {
   /*
   ** Load Vuetify into the app
   */
-  plugins: ['~plugins/vuetify'],
+  plugins: ['~/plugins/vuetify'],
   /*
   ** Load Vuetify CSS globally
   */
-  css: ['~assets/app.styl']
+  css: ['~/assets/app.styl']
 }
