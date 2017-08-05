@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "source-map-support": "^0.4.15",
+    "pretty-error": "^2.1.1",
     "lodash": "^4.17.4",
     "hash-sum": "^1.0.2",
     "tappable": "^1.1.0",

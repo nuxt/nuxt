@@ -97,6 +97,7 @@
     "minimist": "^1.2.0",
     "opencollective": "^1.0.3",
     "pify": "^3.0.0",
+    "pretty-error": "^2.1.1",
     "progress-bar-webpack-plugin": "^1.10.0",
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.12.3",

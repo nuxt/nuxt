@@ -14,7 +14,8 @@ const packageJSON = readJSONSync(resolve(rootDir, 'package.json'))
 
 // Required and Excluded packages for start
 let requires = [
-  'source-map-support'
+  'source-map-support',
+  'pretty-error'
 ]
 
 const excludes = [

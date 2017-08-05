@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const join = require('path').join
+require('../lib/common/errors')
 
 const defaultCommand = 'dev'
 const commands = new Set([
@@ -20,12 +21,5 @@ if (commands.has(cmd)) {
 }
 
 const bin = join(__dirname, 'nuxt-' + cmd)
-
-// Console error unhandled promises
-process.on('unhandledRejection', function (err) {
-  /* eslint-disable no-console */
-  console.error(err)
-  console.error('[nuxt] Unhandled promise rejection: ' + err)
-})
 
 require(bin)
