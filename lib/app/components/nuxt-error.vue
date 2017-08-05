@@ -44,7 +44,7 @@ export default {
 <style>
 .__nuxt-error-page {
   background: #edecea;
-  font-size: 1em;
+  font-size: 14px;
   word-spacing: 1px;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
@@ -56,8 +56,9 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  width: 100vw;
   height: 100vh;
+  margin: 0 auto;
+  max-width: 70%;
 }
 .__nuxt-error-page .error-box {
   box-shadow: 0px 0px 9px #d3d3d3;
