@@ -31,7 +31,7 @@ export default {
   props: ['error'],
   head () {
     return {
-      title: this.error ? ((this.error.statusCode || 500) + ' - ' + (this.error.message || 'Error')) : '500 - Error',
+      title: this.error ? ((this.error.statusCode || 500) + ' - ' + (this.error.message || 'Nuxt Server Error')) : '500 - Nuxt Server Error',
       link: [
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css', type: 'text/css', media: 'all' },
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.min.css', type: 'text/css', media: 'all' }
@@ -64,6 +64,7 @@ export default {
 .__nuxt-error-page .error-box {
   box-shadow: 0px 0px 9px #d3d3d3;
   padding: 10px;
+  text-align: left;
 }
 .__nuxt-error-page .poweredby {
   text-align: center;

@@ -35,7 +35,7 @@ test('/404 should display an error too', async t => {
 test('/ with renderAndGetWindow()', async t => {
   const err = await t.throws(nuxt.renderAndGetWindow(url('/')))
   t.is(err.response.statusCode, 500)
-  t.is(err.response.statusMessage, 'Nuxt Server Error')
+  t.is(err.response.statusMessage, 'NuxtServerError')
 })
 
 // Close server and ask nuxt to stop listening to file changes
