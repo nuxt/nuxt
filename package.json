@@ -67,6 +67,7 @@
     "npm": ">=3.0.0"
   },
   "dependencies": {
+    "@nuxtjs/youch": "3.0.1",
     "ansi-html": "^0.0.7",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.25.0",
@@ -100,6 +101,7 @@
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.12.3",
     "server-destroy": "^1.0.1",
+    "source-map": "^0.5.6",
     "source-map-support": "^0.4.15",
     "tappable": "^1.1.0",
     "url-loader": "^0.5.9",

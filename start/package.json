@@ -62,6 +62,8 @@
     "compression": "^1.7.0",
     "fs-extra": "^4.0.1",
     "vue-server-renderer": "~2.4.2",
+    "@nuxtjs/youch": "3.0.1",
+    "source-map": "^0.5.6",
     "connect": "^3.6.3",
     "server-destroy": "^1.0.1"
   },

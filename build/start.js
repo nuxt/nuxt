@@ -25,7 +25,7 @@ const excludes = [
 ].concat(Object.keys(packageJSON.devDependencies))
 
 // Parse dist/core.js for all external dependencies
-const requireRegex = /require\('([-\w]+)'\)/g
+const requireRegex = /require\('([-@/\w]+)'\)/g
 const rawCore = readFileSync(resolve(rootDir, 'dist/core.js'))
 let match = requireRegex.exec(rawCore)
 while (match) {
