@@ -70,10 +70,10 @@ export default {
   text-align: center;
   margin-top: 10%;
 }
-a {
-  color: #42b983;
+.__nuxt-error-page a {
+  color: #42b983 !important;
 }
-pre {
-  border-color: #42b983;
+.__nuxt-error-page pre {
+  border-color: #42b983 !important;
 }
 </style>
