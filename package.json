@@ -106,7 +106,7 @@
     "tappable": "^1.1.0",
     "url-loader": "^0.5.9",
     "vue": "~2.4.2",
-    "vue-loader": "^13.0.3",
+    "vue-loader": "^13.0.4",
     "vue-meta": "^1.0.5",
     "vue-router": "^2.7.0",
     "vue-server-renderer": "~2.4.2",
