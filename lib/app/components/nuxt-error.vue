@@ -16,7 +16,7 @@
         <div class="row">
           <div class="column">
             <div class="poweredby">
-              <small> Powered by <a href="https://nuxtjs.org">Nuxt.js</a> </small>
+              <small> Powered by <a href="https://nuxtjs.org" target="_blank" rel="noopener">Nuxt.js</a> </small>
             </div>
           </div>
         </div>
@@ -43,7 +43,7 @@ export default {
 
 <style>
 .__nuxt-error-page {
-  background: #edecea;
+  background: #F5F7FA;
   font-size: 14px;
   word-spacing: 1px;
   -ms-text-size-adjust: 100%;
@@ -67,5 +67,11 @@ export default {
 .__nuxt-error-page .poweredby {
   text-align: center;
   margin-top: 10%;
+}
+a {
+  color: #42b983;
+}
+pre {
+  border-color: #42b983;
 }
 </style>
