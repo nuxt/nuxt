@@ -25,6 +25,7 @@
   -webkit-text-size-adjust: 100%;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
+  text-align: center;
 }
 .__nuxt-error-page .container {
   display: flex;
@@ -59,7 +60,7 @@ pre {
             <div class="column">
                 <h1>{{ status }} </h1>
                 <h4> {{ name }} </h4>
-                <pre class="error-box"><code>{{ message }}</code></pre>
+                <%if(debug){%><pre class="error-box"><code>{{ message }}</code></pre><%}%>
             </div>
         </div>
 

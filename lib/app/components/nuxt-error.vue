@@ -5,8 +5,8 @@
         <div class="row">
           <div class="column">
             <h1>{{ error.statusCode }} </h1>
-            <h4> {{ $route.path }} </h4>
-            <pre class="error-box"><code>{{ error.message }}<%if(isDev){%><br>{{ error.stack }}<%}%></code></pre>
+            <h4> {{ error.message }} </h4>
+            <%if(debug){%><pre class="error-box"><code>URI: {{ $route.path }}<br>{{ error.stack }}</code></pre><%}%>
             <p v-if="error.statusCode === 404 || error.statusCode === 'Whoops!'">
               <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
             </p>
@@ -50,6 +50,7 @@ export default {
   -webkit-text-size-adjust: 100%;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
+  text-align: center;
 }
 .__nuxt-error-page .container {
   display: flex;
