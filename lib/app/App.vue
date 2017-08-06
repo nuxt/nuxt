@@ -42,7 +42,7 @@ export default {
     loadLayout (layout) {
       if (!layout || !layouts['_' + layout]) layout = 'default'
       let _layout = '_' + layout
-      if (typeof layouts[_layout] !== 'function') {
+      if (typeof layouts[_layout] !== 'function' || layouts[_layout].name === 'VueComponent') {
         return Promise.resolve(layouts[_layout])
       }
       return layouts[_layout]()
