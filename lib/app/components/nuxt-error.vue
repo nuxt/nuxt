@@ -6,7 +6,9 @@
           <div class="column">
             <h1>{{ statusCode }} </h1>
             <h4> {{ message }} </h4>
-            <%if(debug){%><pre class="error-box"><code>URI: {{ $route.path }}<br>{{ error.stack }}</code></pre><%}%>
+            <% if(debug) { %>
+              <pre class="error-box" v-if="mounted"><code>Route: {{ $route.fullPath }}<br>Query: {{ $route.query }}<br>Params: {{$route.params}}<br>{{ error.stack }}</code></pre>
+            <% } %>
             <p v-if="statusCode === 404">
               <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
             </p>
@@ -38,6 +40,16 @@ export default {
       ]
     }
   },
+  <% if(debug) { %>
+  data () {
+    return {
+      mounted: false
+    }
+  },
+  mounted () {
+    this.mounted = true
+  },
+  <% } %>
   computed: {
     statusCode () {
       return (this.error && this.error.statusCode) || 500
@@ -69,11 +81,13 @@ export default {
   margin: 0 auto;
   max-width: 70%;
 }
+<% if(debug) { %>
 .__nuxt-error-page .error-box {
   box-shadow: 0px 0px 9px #d3d3d3;
   padding: 10px;
   text-align: left;
 }
+<% } %>
 .__nuxt-error-page .poweredby {
   text-align: center;
   margin-top: 10%;
