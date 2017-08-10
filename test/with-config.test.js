@@ -69,8 +69,6 @@ test('/test/env', async t => {
 test('/test/error', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/error'))
   const html = window.document.body.innerHTML
-  t.is(window.__NUXT__.layout, 'custom')
-  t.true(html.includes('<h1>Custom layout</h1>'))
   t.true(html.includes('Error page'))
 })
 

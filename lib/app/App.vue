@@ -1,11 +1,12 @@
 <template>
   <div id="__nuxt">
     <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
-    <component v-if="layout" :is="layout"></component>
+    <component v-if="layout" :is="nuxt.err ? 'nuxt' : layout"></component>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% css.forEach(function (c) { %>
 import '<%= relativeToBuild(resolvePath(c.src || c)) %>'
@@ -31,6 +32,9 @@ export default {
     this.$nuxt.$loading = this.$loading
   },
   <% } %>
+  beforeCreate () {
+    Vue.util.defineReactive(this, 'nuxt', this.$root.$options._nuxt)
+  },
   methods: {
     setLayout (layout) {
       if (!layout || !layouts['_' + layout]) layout = 'default'
