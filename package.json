@@ -60,7 +60,7 @@
     "precommit": "npm run lint",
     "prepublish": "npm run build && npm run make-start",
     "postpublish": "cd start && npm publish",
-    "postinstall": "opencollective postinstall"
+    "postinstall": "opencollective postinstall || exit 0"
   },
   "engines": {
     "node": ">=4.3.0 <5.0.0 || >=5.10",
