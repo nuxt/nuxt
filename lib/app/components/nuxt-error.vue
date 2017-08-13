@@ -97,5 +97,9 @@ export default {
 }
 .__nuxt-error-page pre {
   border-color: #42b983 !important;
+  background-color: white;
+}
+.__nuxt-error-page pre code {
+  background-color: white;
 }
 </style>
