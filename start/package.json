@@ -38,7 +38,7 @@
     "vue isomorphic",
     "vue versatile"
   ],
-  "homepage": "https://github.com/nuxt/nuxt.js/blob/dev/start",
+  "homepage": "https://github.com/nuxt/nuxt.js#readme",
   "bin": {
     "nuxt": "./bin/nuxt"
   },
