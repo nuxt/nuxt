@@ -40,7 +40,7 @@
   ],
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
   "bin": {
-    "nuxt": "./bin/nuxt"
+    "nuxt-start": "./bin/nuxt-start"
   },
   "engines": {
     "node": ">=4.3.0 <5.0.0 || >=5.10",
