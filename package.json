@@ -62,8 +62,8 @@
     "postinstall": "opencollective postinstall || exit 0"
   },
   "engines": {
-    "node": ">=4.3.0 <5.0.0 || >=5.10",
-    "npm": ">=3.0.0"
+    "node": ">=6.11",
+    "npm": ">=3.10.0"
   },
   "dependencies": {
     "@nuxtjs/youch": "3.0.1",
