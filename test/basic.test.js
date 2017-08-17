@@ -26,11 +26,6 @@ test('/stateless', async t => {
   t.true(html.includes('<h1>My component!</h1>'))
 })
 
-test('/jsfile', async t => {
-  const { html } = await nuxt.renderRoute('/jsfile')
-  t.true(html.includes('<span>support js pages</span>'))
-})
-
 /*
 ** Example of testing via dom checking
 */
