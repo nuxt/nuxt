@@ -43,11 +43,11 @@
     "nuxt-start": "./bin/nuxt-start"
   },
   "engines": {
-    "node": ">=4.3.0 <5.0.0 || >=5.10",
-    "npm": ">=3.0.0"
+    "node": ">=6.11",
+    "npm": ">=3.10.0"
   },
   "dependencies": {
-    "source-map-support": "^0.4.15",
+    "source-map-support": "^0.4.16",
     "pretty-error": "^2.1.1",
     "lodash": "^4.17.4",
     "hash-sum": "^1.0.2",
