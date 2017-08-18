@@ -1,5 +1,16 @@
 module.exports = {
+  /*
+  ** Single Page Application mode
+  ** Means no SSR
+  */
   mode: 'spa',
+  /*
+  ** Add css for appear transition
+  */
+  css: ['~/assets/main.css'],
+  /*
+  ** Cutomize loading indicator
+  */
   loadingIndicator: {
     /*
     ** See https://github.com/nuxt/nuxt.js/tree/dev/lib/app/views/loading for available loading indicators
@@ -15,6 +26,6 @@ module.exports = {
     ** - background: 'white'
     */
     color: '#222',
-    background: '#eee'
+    background: 'white'
   }
 }
