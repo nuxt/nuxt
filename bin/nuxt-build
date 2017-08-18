@@ -80,7 +80,7 @@ if (options.mode !== 'spa') {
     })
 } else {
   // Disable minify to get exact results of nuxt start
-  nuxt.options.generate.minify = true
+  nuxt.options.generate.minify = false
   // Generate on spa mode
   new Generator(nuxt, builder).generate({ build: true }).then(() => {
     if (!nuxt.options.dev) {
