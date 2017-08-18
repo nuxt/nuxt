@@ -6,6 +6,8 @@ body, html, #__nuxt {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .spinner {
@@ -14,7 +16,7 @@ body, html, #__nuxt {
   height: 40px;
   position: relative;
   text-align: center;
-  
+
   -webkit-animation: sk-rotate 2.0s infinite linear;
   animation: sk-rotate 2.0s infinite linear;
 }
@@ -27,7 +29,7 @@ body, html, #__nuxt {
   top: 0;
   background-color: <%= options.color %>;
   border-radius: 100%;
-  
+
   -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
   animation: sk-bounce 2.0s infinite ease-in-out;
 }
@@ -48,10 +50,10 @@ body, html, #__nuxt {
 }
 
 @keyframes sk-bounce {
-  0%, 100% { 
+  0%, 100% {
     transform: scale(0.0);
     -webkit-transform: scale(0.0);
-  } 50% { 
+  } 50% {
     transform: scale(1.0);
     -webkit-transform: scale(1.0);
   }

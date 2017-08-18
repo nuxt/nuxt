@@ -6,6 +6,8 @@ body, html, #__nuxt {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .sk-cube-grid {
@@ -20,7 +22,7 @@ body, html, #__nuxt {
   background-color: <%= options.color %>;
   float: left;
   -webkit-animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
-          animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out; 
+          animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
 }
 .sk-cube-grid .sk-cube1 {
   -webkit-animation-delay: 0.2s;
@@ -56,7 +58,7 @@ body, html, #__nuxt {
             transform: scale3D(1, 1, 1);
   } 35% {
     -webkit-transform: scale3D(0, 0, 1);
-            transform: scale3D(0, 0, 1); 
+            transform: scale3D(0, 0, 1);
   }
 }
 
@@ -67,7 +69,7 @@ body, html, #__nuxt {
   } 35% {
     -webkit-transform: scale3D(0, 0, 1);
             transform: scale3D(0, 0, 1);
-  } 
+  }
 }
 </style>
 

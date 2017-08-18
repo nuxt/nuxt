@@ -6,6 +6,8 @@ body, html, #__nuxt {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .spinner {
@@ -14,7 +16,7 @@ body, html, #__nuxt {
   margin: 100px auto;
   background-color: <%= options.color %>;
 
-  border-radius: 100%;  
+  border-radius: 100%;
   -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
   animation: sk-scaleout 1.0s infinite ease-in-out;
 }
@@ -28,7 +30,7 @@ body, html, #__nuxt {
 }
 
 @keyframes sk-scaleout {
-  0% { 
+  0% {
     -webkit-transform: scale(0);
     transform: scale(0);
   } 100% {
