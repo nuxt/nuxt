@@ -66,13 +66,13 @@
     "npm": ">=3.10.0"
   },
   "dependencies": {
-    "@nuxtjs/youch": "3.0.1",
+    "@nuxtjs/youch": "3.0.2",
     "ansi-html": "^0.0.7",
     "autoprefixer": "^7.1.2",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.1",
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-vue-app": "^1.2.0",
+    "babel-preset-vue-app": "^1.2.1",
     "chalk": "^2.1.0",
     "chokidar": "^1.7.0",
     "clone": "^2.1.1",
