@@ -70,22 +70,23 @@ debug('Building...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 
-builder.build()
-  .then(() => {
-    debug('Building done')
-    if (options.mode === 'spa') {
-      // Disable minify to get exact results of nuxt start
-      nuxt.options.generate.minify = false
-      // Generate on SPA mode
-      return new Generator(nuxt, builder).generate({ build: false, minify: false }).then(() => {
-        if (!nuxt.options.dev) {
-          // eslint-disable-next-line no-console
-          console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
-        }
-      })
+if (options.mode !== 'spa') {
+  // Build for SSR app
+  builder.build()
+    .then(() => debug('Building done'))
+    .catch((err) => {
+      console.error(err) // eslint-disable-line no-console
+      process.exit(1)
+    })
+} else {
+  // Disable minify to get exact results of nuxt start
+  nuxt.options.generate.minify = true
+  // Generate on spa mode
+  new Generator(nuxt, builder).generate({ build: true }).then(() => {
+    if (!nuxt.options.dev) {
+      // eslint-disable-next-line no-console
+      console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
     }
   })
-  .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
-    process.exit(1)
-  })
+}
+
