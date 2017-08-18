@@ -33,11 +33,11 @@ if (argv.help) {
     Usage
       $ nuxt start <dir> -p <port number> -H <hostname>
     Options
-      --port, -p                        A port number on which to start the application
-      --hostname, -H                    Hostname on which to start the application
-      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
-      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                        Displays this message
+      --port, -p                          A port number on which to start the application
+      --hostname, -H                      Hostname on which to start the application
+      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
+      --config-file, -c                   Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                          Displays this message
   `)
   process.exit(0)
 }

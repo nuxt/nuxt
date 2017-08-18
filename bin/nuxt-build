@@ -31,10 +31,10 @@ if (argv.help) {
     Usage
       $ nuxt build <dir>
     Options
-      --analyze, -a                     Launch webpack-bundle-analyzer to optimize your bundles.
-      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
-      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                        Displays this message
+      --analyze, -a                       Launch webpack-bundle-analyzer to optimize your bundles.
+      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
+      --config-file, -c                  Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                         Displays this message
   `)
   process.exit(0)
 }
