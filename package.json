@@ -92,6 +92,7 @@
     "html-minifier": "^3.5.3",
     "html-webpack-plugin": "^2.30.1",
     "lodash": "^4.17.4",
+    "lru-cache": "^4.1.1",
     "memory-fs": "^0.4.1",
     "minimist": "^1.2.0",
     "opencollective": "^1.0.3",
