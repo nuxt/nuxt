@@ -30,9 +30,9 @@ if (argv.help) {
     Usage
       $ nuxt generate <dir>
     Options
-      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
-      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                        Displays this message
+      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
+      --config-file, -c                   Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                          Displays this message
   `)
   process.exit(0)
 }

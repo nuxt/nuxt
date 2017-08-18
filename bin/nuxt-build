@@ -31,10 +31,10 @@ if (argv.help) {
     Usage
       $ nuxt build <dir>
     Options
-      --analyze, -a                     Launch webpack-bundle-analyzer to optimize your bundles.
-      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
-      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                        Displays this message
+      --analyze, -a                       Launch webpack-bundle-analyzer to optimize your bundles.
+      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
+      --config-file, -c                  Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                         Displays this message
   `)
   process.exit(0)
 }
@@ -74,8 +74,10 @@ builder.build()
   .then(() => {
     debug('Building done')
     if (options.mode === 'spa') {
-      // Generate on spa mode
-      return new Generator(nuxt, builder).generate({ build: false }).then(() => {
+      // Disable minify to get exact results of nuxt start
+      nuxt.options.generate.minify = false
+      // Generate on SPA mode
+      return new Generator(nuxt, builder).generate({ build: false, minify: false }).then(() => {
         if (!nuxt.options.dev) {
           // eslint-disable-next-line no-console
           console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
