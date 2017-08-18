@@ -13,10 +13,11 @@ const resolve = require('path').resolve
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
-    c: 'config-file'
+    c: 'config-file',
+    m: 'mode'
   },
   boolean: ['h'],
-  string: ['c'],
+  string: ['c', 'm'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -29,8 +30,9 @@ if (argv.help) {
     Usage
       $ nuxt generate <dir>
     Options
-      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h          Displays this message
+      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
+      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                        Displays this message
   `)
   process.exit(0)
 }
@@ -49,6 +51,11 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 options.dev = false // Force production mode (no webpack middleware called)
+
+// Nuxt Mode
+if (argv['mode']) {
+  options.mode = argv['mode']
+}
 
 debug('Generating...')
 const nuxt = new Nuxt(options)

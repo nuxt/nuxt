@@ -10,10 +10,11 @@ const argv = parseArgs(process.argv.slice(2), {
     h: 'help',
     H: 'hostname',
     p: 'port',
-    c: 'config-file'
+    c: 'config-file',
+    m: 'mode'
   },
   boolean: ['h'],
-  string: ['H', 'c'],
+  string: ['H', 'c', 'm'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -32,10 +33,11 @@ if (argv.help) {
     Usage
       $ nuxt start <dir> -p <port number> -H <hostname>
     Options
-      --port, -p          A port number on which to start the application
-      --hostname, -H      Hostname on which to start the application
-      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h          Displays this message
+      --port, -p                        A port number on which to start the application
+      --hostname, -H                    Hostname on which to start the application
+      --mode, -m [spa|universal|static] Nuxt Mode (default: universal)
+      --config-file, -c                 Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h                        Displays this message
   `)
   process.exit(0)
 }
@@ -58,6 +60,11 @@ if (typeof options.rootDir !== 'string') {
 
 // Force production mode (no webpack middleware called)
 options.dev = false
+
+// Nuxt Mode
+if (argv['mode']) {
+  options.mode = argv['mode']
+}
 
 // Check if project is built for production
 const distDir = join(options.rootDir, options.buildDir || '.nuxt', 'dist')
