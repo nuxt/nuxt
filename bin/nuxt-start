@@ -66,14 +66,26 @@ if (argv['mode']) {
   options.mode = argv['mode']
 }
 
+const nuxt = new Nuxt(options)
+
 // Check if project is built for production
-const distDir = join(options.rootDir, options.buildDir || '.nuxt', 'dist')
+const distDir = resolve(nuxt.options.rootDir, nuxt.options.buildDir || '.nuxt', 'dist')
 if (!fs.existsSync(distDir)) {
   console.error('> No build files found, please run `nuxt build` before launching `nuxt start`') // eslint-disable-line no-console
   process.exit(1)
 }
 
-const nuxt = new Nuxt(options)
+// Check if SSR Bundle is required
+if (nuxt.options.render.ssr === true) {
+  const ssrBundlePath = resolve(distDir, 'server-bundle.json')
+  if (!fs.existsSync(ssrBundlePath)) {
+    // eslint-disable-next-line no-console
+    console.error('> No SSR build! Please start with `-m spa` flag or build using `nuxt build -m universal`')
+    process.exit(1)
+  }
+}
+
 const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
 const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+
 nuxt.listen(port, host)
