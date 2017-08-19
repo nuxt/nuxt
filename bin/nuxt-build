@@ -15,10 +15,11 @@ const argv = parseArgs(process.argv.slice(2), {
     h: 'help',
     c: 'config-file',
     a: 'analyze',
-    m: 'mode'
+    s: 'spa',
+    u: 'universal'
   },
-  boolean: ['h', 'a'],
-  string: ['c', 'm'],
+  boolean: ['h', 'a', 's', 'u'],
+  string: ['c'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -31,10 +32,11 @@ if (argv.help) {
     Usage
       $ nuxt build <dir>
     Options
-      --analyze, -a                       Launch webpack-bundle-analyzer to optimize your bundles.
-      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
-      --config-file, -c                  Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                         Displays this message
+      --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
+      --spa                Launch in SPA mode
+      --universal          Launch in Universal mode (default)
+      --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h           Displays this message
   `)
   process.exit(0)
 }
@@ -56,9 +58,7 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false
 
 // Nuxt Mode
-if (argv['mode']) {
-  options.mode = argv['mode']
-}
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
 // Analyze option
 options.build = options.build || {}
@@ -89,4 +89,3 @@ if (options.mode !== 'spa') {
     }
   })
 }
-
