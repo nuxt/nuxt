@@ -13,7 +13,7 @@
             <h5 v-else>
               Press <kbd>Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd>
               or <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>
-              To open developer tools
+              to open developer tools.
             </h5>
             <% } %>
           </div>
@@ -59,7 +59,7 @@ export default {
       return (this.error && this.error.statusCode) || 500
     },
     message () {
-      return this.error.toString() || 'Nuxt Server Error'
+      return this.error.message || 'Nuxt Server Error'
     }
   }
 }
