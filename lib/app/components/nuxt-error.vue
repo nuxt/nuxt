@@ -6,12 +6,16 @@
           <div class="column">
             <h1>{{ statusCode }} </h1>
             <h4> {{ message }} </h4>
-            <% if(debug) { %>
-              <pre class="error-box" v-if="mounted"><code>Route: {{ $route.fullPath }}<br>Query: {{ $route.query }}<br>Params: {{$route.params}}<br>{{ error.stack }}</code></pre>
-            <% } %>
             <p v-if="statusCode === 404">
               <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
             </p>
+            <% if(debug) { %>
+            <h5 v-else>
+              Press <kbd>Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd>
+              or <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>
+              To open developer tools
+            </h5>
+            <% } %>
           </div>
         </div>
 
@@ -55,7 +59,7 @@ export default {
       return (this.error && this.error.statusCode) || 500
     },
     message () {
-      return (this.error && this.error.message) || 'Nuxt Server Error'
+      return this.error.toString() || 'Nuxt Server Error'
     }
   }
 }
@@ -81,25 +85,11 @@ export default {
   margin: 0 auto;
   max-width: 70%;
 }
-<% if(debug) { %>
-.__nuxt-error-page .error-box {
-  box-shadow: 0px 0px 9px #d3d3d3;
-  padding: 10px;
-  text-align: left;
-}
-<% } %>
 .__nuxt-error-page .poweredby {
   text-align: center;
   margin-top: 10%;
 }
 .__nuxt-error-page a {
   color: #42b983 !important;
-}
-.__nuxt-error-page pre {
-  border-color: #42b983 !important;
-  background-color: white;
-}
-.__nuxt-error-page pre code {
-  background-color: white;
 }
 </style>
