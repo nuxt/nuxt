@@ -105,7 +105,6 @@
     "postcss-url": "^7.1.2",
     "pretty-error": "^2.1.1",
     "progress-bar-webpack-plugin": "^1.10.0",
-    "resolve-url-loader": "^2.1.0",
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.12.4",
     "server-destroy": "^1.0.1",
