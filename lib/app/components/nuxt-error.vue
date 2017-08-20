@@ -5,16 +5,14 @@
         <div class="row">
           <div class="column">
             <h1>{{ statusCode }} </h1>
-            <h4> {{ message }} </h4>
+            <h3> {{ message }} </h3>
             <p v-if="statusCode === 404">
               <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
             </p>
             <% if(debug) { %>
-            <h5 v-else>
-              Press <kbd>Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd>
-              or <kbd>Control</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>
-              to open developer tools.
-            </h5>
+            <small v-else>
+              Open developer tools to view stack trace
+            </small>
             <% } %>
           </div>
         </div>
