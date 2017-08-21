@@ -14,10 +14,11 @@ const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
     c: 'config-file',
-    m: 'mode'
+    s: 'spa',
+    u: 'universal'
   },
-  boolean: ['h'],
-  string: ['c', 'm'],
+  boolean: ['h', 's', 'u'],
+  string: ['c'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -30,9 +31,11 @@ if (argv.help) {
     Usage
       $ nuxt generate <dir>
     Options
-      --mode, -m [spa|universal|ssr-only] Nuxt Mode (default: universal)
-      --config-file, -c                   Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h                          Displays this message
+      --spa              Launch in SPA mode
+      --spa              Launch in SPA mode
+      --universal        Launch in Universal mode (default)
+      --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h         Displays this message
   `)
   process.exit(0)
 }
@@ -53,9 +56,7 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false // Force production mode (no webpack middleware called)
 
 // Nuxt Mode
-if (argv['mode']) {
-  options.mode = argv['mode']
-}
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
 debug('Generating...')
 const nuxt = new Nuxt(options)
