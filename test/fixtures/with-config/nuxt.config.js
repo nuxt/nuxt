@@ -4,11 +4,14 @@ module.exports = {
     base: '/test/',
     middleware: 'noop',
     extendRoutes (routes) {
-      routes.push({
-        name: 'about-bis',
-        path: '/about-bis',
-        component: '~/pages/about.vue'
-      })
+      return [
+        ...routes,
+        {
+          name: 'about-bis',
+          path: '/about-bis',
+          component: '~/pages/about.vue'
+        }
+      ]
     }
   },
   transition: 'test',
