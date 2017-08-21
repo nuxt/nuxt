@@ -34,7 +34,9 @@ module.exports = {
       generateStatsFile: true
     },
     extend (config, options) {
-      config.devtool = 'nosources-source-map'
+      return Object.assign({}, config, {
+        devtool: 'nosources-source-map'
+      })
     }
   },
   css: [
