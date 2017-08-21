@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "1.0.0-rc4",
+  "version": "1.0.0-rc5",
   "description": "runtime-only build for nuxt",
   "contributors": [
     {
@@ -66,6 +66,7 @@
     "@nuxtjs/youch": "3.0.2",
     "source-map": "^0.5.6",
     "connect": "^3.6.3",
+    "lru-cache": "^4.1.1",
     "server-destroy": "^1.0.1"
   },
   "collective": {
