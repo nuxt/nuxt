@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "1.0.0-rc5",
+  "version": "1.0.0-rc6",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
     {
