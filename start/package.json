@@ -66,6 +66,8 @@
     "@nuxtjs/youch": "3.0.2",
     "source-map": "^0.5.6",
     "connect": "^3.6.3",
+    "vue": "~2.4.2",
+    "vue-meta": "^1.1.0",
     "lru-cache": "^4.1.1",
     "server-destroy": "^1.0.1"
   },
