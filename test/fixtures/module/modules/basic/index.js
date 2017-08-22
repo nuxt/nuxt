@@ -20,6 +20,7 @@ module.exports = function basicModule (options, resolve) {
   // Extend routes
   this.extendRoutes((routes, resolve) => {
     // Do nothing!
+    return routes
   })
 
   // Require same module twice
