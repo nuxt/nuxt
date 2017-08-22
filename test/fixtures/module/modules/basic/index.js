@@ -15,6 +15,7 @@ module.exports = function basicModule (options, resolve) {
   // Extend build again
   this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
+    return config
   })
 
   // Extend routes
