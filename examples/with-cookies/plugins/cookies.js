@@ -1,19 +1,34 @@
-import cookie from 'cookie'
-
-export let cookies
+import Vue from 'vue'
+import Cookie from 'cookie'
+import JSCookie from 'js-cookie'
 
 // Called only on client-side
-export const refreshCookies = () => {
-  cookies = cookie.parse(document.cookie)
-  return cookies
+export const getCookies = (str) => {
+  return Cookie.parse(str || '')
 }
 
 /*
 ** Executed by ~/.nuxt/index.js with context given
 ** This method can be asynchronous
 */
-export default ({ isServer, req }) => {
-  // We update the cookies variable
-  // So we can read it into our page with: import { cookies } from '~/plugins/cookies.js'
-  cookies = cookie.parse(isServer ? req.headers.cookie : document.cookie)
+export default ({ isServer, req }, inject) => {
+  // Inject `cookies` key
+  // -> app.$cookies
+  // -> this.$cookies in vue components
+  // -> this.$cookies in store actions/mutations
+  inject('cookies', new Vue({
+    data: () => ({
+      cookies: getCookies(isServer ? req.headers.cookie : document.cookie)
+    }),
+    methods: {
+      set(...args) {
+        JSCookie.set(...args)
+        this.cookies = getCookies(document.cookie)
+      },
+      remove(...args) {
+        JSCookie.remove(...args)
+        this.cookies = getCookies(document.cookie)
+      }
+    }
+  }))
 }
