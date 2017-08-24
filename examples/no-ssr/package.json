@@ -1,0 +1,11 @@
+{
+  "name": "no-ssr-cmp-nuxt",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
