@@ -10,8 +10,8 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
-  async asyncData() {
-    const res = await axios.get('https://api.github.com/repos/nuxt/nuxt.js/stats/commit_activity')
+  async asyncData({ env }) {
+    const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/commit_activity?access_token=${env.githubToken}`)
     return {
       barChartData: {
         labels: res.data.map((stat) => moment(stat.week * 1000).format('GGGG[-W]WW')),
@@ -31,7 +31,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .bar-chart {
   position: fixed;
   left: 10%;

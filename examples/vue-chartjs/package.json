@@ -1,5 +1,5 @@
 {
-  "name": "hello-nuxt",
+  "name": "vue-chartjs-nuxt",
   "dependencies": {
     "axios": "^0.16.2",
     "chart.js": "^2.6.0",
