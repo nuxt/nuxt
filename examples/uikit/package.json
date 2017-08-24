@@ -1,7 +1,9 @@
 {
-  "name": "hello-nuxt",
+  "name": "uikit-nuxt",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "latest",
+    "uikit": "^3.0.0-beta.30",
+    "jquery": "^3.2.1"
   },
   "scripts": {
     "dev": "nuxt",

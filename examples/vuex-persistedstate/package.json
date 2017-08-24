@@ -1,7 +1,8 @@
 {
-  "name": "hello-nuxt",
+  "name": "nuxt-vuex-store",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "^1.0.0-rc6",
+    "vuex-persistedstate": "^2.0.0"
   },
   "scripts": {
     "dev": "nuxt",
