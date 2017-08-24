@@ -148,6 +148,17 @@ test('/redirect2', async t => {
   t.true(output.stderr.length === 0)
 })
 
+test('/no-ssr', async t => {
+  const { html } = await nuxt.renderRoute('/no-ssr')
+  t.true(html.includes('<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'))
+})
+
+test('/no-ssr (clien-side)', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/no-ssr'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('<h1>Displayed only on client-side</h1>'))
+})
+
 test('ETag Header', async t => {
   const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
   // Validate etag
