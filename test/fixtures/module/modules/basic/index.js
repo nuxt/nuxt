@@ -15,11 +15,13 @@ module.exports = function basicModule (options, resolve) {
   // Extend build again
   this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!
+    return config
   })
 
   // Extend routes
   this.extendRoutes((routes, resolve) => {
     // Do nothing!
+    return routes
   })
 
   // Require same module twice
