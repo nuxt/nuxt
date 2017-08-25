@@ -94,3 +94,52 @@ test('promisifyRoute (fn(cb) with result)', t => {
       t.is(res, array)
     })
 })
+
+test('chainFn (mutate, mutate)', t => {
+  // Pass more than one argument to test that they're actually taken into account
+  const firstFn = function (obj, count) {
+    obj.foo = count + 1
+  }
+  const secondFn = function (obj, count) {
+    obj.bar = count + 2
+  }
+  const chainedFn = Utils.chainFn(firstFn, secondFn)
+  const expectedResult = { foo: 11, bar: 12 }
+  t.deepEqual(chainedFn({}, 10), expectedResult)
+})
+
+test('chainFn (mutate, return)', t => {
+  const firstFn = function (obj, count) {
+    obj.foo = count + 1
+  }
+  const secondFn = function (obj, count) {
+    return Object.assign({}, obj, { bar: count + 2 })
+  }
+  const chainedFn = Utils.chainFn(firstFn, secondFn)
+  const expectedResult = { foo: 11, bar: 12 }
+  t.deepEqual(chainedFn({}, 10), expectedResult)
+})
+
+test('chainFn (return, mutate)', t => {
+  const firstFn = function (obj, count) {
+    return Object.assign({}, obj, { foo: count + 1 })
+  }
+  const secondFn = function (obj, count) {
+    obj.bar = count + 2
+  }
+  const chainedFn = Utils.chainFn(firstFn, secondFn)
+  const expectedResult = { foo: 11, bar: 12 }
+  t.deepEqual(chainedFn({}, 10), expectedResult)
+})
+
+test('chainFn (return, return)', t => {
+  const firstFn = function (obj, count) {
+    return Object.assign({}, obj, { foo: count + 1 })
+  }
+  const secondFn = function (obj, count) {
+    return Object.assign({}, obj, { bar: count + 2 })
+  }
+  const chainedFn = Utils.chainFn(firstFn, secondFn)
+  const expectedResult = { foo: 11, bar: 12 }
+  t.deepEqual(chainedFn({}, 10), expectedResult)
+})

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const join = require('path').join
-require('../lib/common/errors')
+require('../lib/common/cli/errors')
 
 const defaultCommand = 'dev'
 const commands = new Set([

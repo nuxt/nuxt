@@ -1,0 +1,15 @@
+{
+  "name": "vue-chartjs-nuxt",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "chart.js": "^2.6.0",
+    "moment": "^2.18.1",
+    "nuxt": "latest",
+    "vue-chartjs": "^2.8.2"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

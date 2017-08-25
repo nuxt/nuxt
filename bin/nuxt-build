@@ -5,7 +5,7 @@ process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder } = require('../')
+const { Nuxt, Builder, Generator } = require('../')
 const resolve = require('path').resolve
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // Force green color
@@ -14,9 +14,11 @@ const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
     c: 'config-file',
-    a: 'analyze'
+    a: 'analyze',
+    s: 'spa',
+    u: 'universal'
   },
-  boolean: ['h', 'a'],
+  boolean: ['h', 'a', 's', 'u'],
   string: ['c'],
   default: {
     c: 'nuxt.config.js'
@@ -30,9 +32,11 @@ if (argv.help) {
     Usage
       $ nuxt build <dir>
     Options
-      --analyze, -a       Launch webpack-bundle-analyzer to optimize your bundles.
-      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h          Displays this message
+      --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
+      --spa                Launch in SPA mode
+      --universal          Launch in Universal mode (default)
+      --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h           Displays this message
   `)
   process.exit(0)
 }
@@ -53,6 +57,9 @@ if (typeof options.rootDir !== 'string') {
 // Create production build when calling `nuxt build`
 options.dev = false
 
+// Nuxt Mode
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+
 // Analyze option
 options.build = options.build || {}
 if (argv.analyze) {
@@ -63,11 +70,22 @@ debug('Building...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 
-builder.build()
-  .then(() => {
-    debug('Building done')
+if (options.mode !== 'spa') {
+  // Build for SSR app
+  builder.build()
+    .then(() => debug('Building done'))
+    .catch((err) => {
+      console.error(err) // eslint-disable-line no-console
+      process.exit(1)
+    })
+} else {
+  // Disable minify to get exact results of nuxt start
+  nuxt.options.generate.minify = false
+  // Generate on spa mode
+  new Generator(nuxt, builder).generate({ build: true }).then(() => {
+    if (!nuxt.options.dev) {
+      // eslint-disable-next-line no-console
+      console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
+    }
   })
-  .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
-    process.exit(1)
-  })
+}

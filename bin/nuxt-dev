@@ -17,9 +17,11 @@ const argv = parseArgs(process.argv.slice(2), {
     h: 'help',
     H: 'hostname',
     p: 'port',
-    c: 'config-file'
+    c: 'config-file',
+    s: 'spa',
+    u: 'universal'
   },
-  boolean: ['h'],
+  boolean: ['h', 's', 'u'],
   string: ['H', 'c'],
   default: {
     c: 'nuxt.config.js'
@@ -41,6 +43,8 @@ if (argv.help) {
     Options
       --port, -p          A port number on which to start the application
       --hostname, -H      Hostname on which to start the application
+      --spa               Launch in SPA mode
+      --universal         Launch in Universal mode (default)
       --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h          Displays this message
   `)
@@ -108,6 +112,9 @@ function loadNuxtConfig () {
 
   // Force development mode for add hot reloading and watching changes
   options.dev = true
+
+  // Nuxt Mode
+  options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
   return options
 }

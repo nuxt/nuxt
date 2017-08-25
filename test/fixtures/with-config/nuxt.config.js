@@ -4,11 +4,14 @@ module.exports = {
     base: '/test/',
     middleware: 'noop',
     extendRoutes (routes) {
-      routes.push({
-        name: 'about-bis',
-        path: '/about-bis',
-        component: '~/pages/about.vue'
-      })
+      return [
+        ...routes,
+        {
+          name: 'about-bis',
+          path: '/about-bis',
+          component: '~/pages/about.vue'
+        }
+      ]
     }
   },
   transition: 'test',
@@ -31,7 +34,9 @@ module.exports = {
       generateStatsFile: true
     },
     extend (config, options) {
-      config.devtool = 'nosources-source-map'
+      return Object.assign({}, config, {
+        devtool: 'nosources-source-map'
+      })
     }
   },
   css: [

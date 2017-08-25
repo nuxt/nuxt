@@ -75,7 +75,13 @@ test('Check .nuxt/router.js', t => {
       t.is(routes[12].path, '/:key/:id?')
       t.is(routes[12].name, 'key-id')
       // pages/_.vue
-      t.is(routes[13].path, '/*')
-      t.is(routes[13].name, 'all')
+      t.is(routes[13].path, '/*/p/*')
+      t.is(routes[13].name, 'all-p-all')
+      // pages/_/_.vue
+      t.is(routes[14].path, '/*/*')
+      t.is(routes[14].name, 'all-all')
+      // pages/_.vue
+      t.is(routes[15].path, '/*')
+      t.is(routes[15].name, 'all')
     })
 })

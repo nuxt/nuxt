@@ -1,0 +1,84 @@
+<style>
+body, html, #__nuxt {
+  background-color: <%= options.background %>;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.logo {
+  animation: turn 2s linear forwards 1s;
+  transform: rotateX(180deg);
+  position: relative;
+  height: 346px;
+  width: 536px;
+  margin: 50px auto;
+}
+
+.triangle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+.triangle--one {
+  border-left: 210px solid transparent;
+  border-right: 210px solid transparent;
+  border-bottom: 360px solid #41B883;
+}
+.triangle--two {
+  top: 60px;
+  left: 70px;
+  animation: goright 0.5s linear forwards 3.5s;
+  border-left: 175px solid transparent;
+  border-right: 175px solid transparent;
+  border-bottom: 300px solid #3B8070;
+}
+.triangle--three {
+  top: 120px;
+  left: 70px;
+  animation: goright 0.5s linear forwards 3.5s;
+  border-left: 140px solid transparent;
+  border-right: 140px solid transparent;
+  border-bottom: 240px solid #35495E;
+}
+.triangle--four {
+  top: 240px;
+  left: 140px;
+  animation: godown 0.5s linear forwards 3s;
+  border-left: 70px solid transparent;
+  border-right: 70px solid transparent;
+  border-bottom: 120px solid #fff;
+}
+
+@keyframes turn {
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+@keyframes godown {
+  100% {
+    top: 360px;
+  }
+}
+@keyframes goright {
+  100% {
+    left: 140px;
+  }
+}
+</style>
+
+<div class="logo">
+<div class="triangle triangle--two"></div>
+<div class="triangle triangle--one"></div>
+<div class="triangle triangle--three"></div>
+<div class="triangle triangle--four"></div>
+</div>
+
+
+<!-- https://codepen.io/alexchopin/pen/jBWrej -->

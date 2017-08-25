@@ -30,7 +30,9 @@ export default {
     'counter'
   ]),
   methods: {
-    increment () { this.$store.commit('increment') }
+    increment () {
+      this.$store.commit('increment')
+    }
   }
 }
 </script>

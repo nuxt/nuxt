@@ -14,10 +14,12 @@ const argv = parseArgs(process.argv.slice(2), {
     h: 'help',
     c: 'config-file',
     j: 'workers'
+    s: 'spa',
+    u: 'universal'
   },
-  boolean: ['h'],
-  number: ['j'],
+  boolean: ['h', 's', 'u'],
   string: ['c'],
+  number: ['j'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -34,6 +36,8 @@ if (argv.help) {
       --help, -h          Displays this message
       -j, --workers [NUM] How many workers should be started
                           (default: # cpus or 1 if omitted)
+      --spa              Launch in SPA mode
+      --universal        Launch in Universal mode (default)
   `)
   process.exit(0)
 }
@@ -52,6 +56,11 @@ if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 options.dev = false // Force production mode (no webpack middleware called)
+
+// Nuxt Mode
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+
+debug('Generating...')
 
 const nuxt = new Nuxt(options)
 
