@@ -1,14 +1,19 @@
 // Specify overrides (theme and/or base variables etc.)
 // See https://vuetifyjs.com/quick-start
+// And for themes customizing: https://vuetifyjs.com/style/theme
+
+// Color Palette: https://vuetifyjs.com/style/colors
+@require '~vuetify/src/stylus/settings/_colors'
+
 $theme := {
-  primary: #9c27b0
-  accent: #ce93d8
-  secondary: #424242
-  info: #0D47A1
-  warning: #ffb300
-  error: #B71C1C
-  success: #2E7D32
+  primary:     $red.darken-2
+  accent:      $red.accent-2
+  secondary:   $grey.lighten-1
+  info:        $blue.lighten-1
+  warning:     $amber.darken-2
+  error:       $red.accent-4
+  success:     $green.lighten-2
 }
 
 // Import Vuetify styling
-@require '~vuetify/src/stylus/main.styl'
+@require '~vuetify/src/stylus/main'
