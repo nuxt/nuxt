@@ -87,7 +87,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .nuxt-progress {
   position: fixed;
   top: 0px;
