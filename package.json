@@ -116,7 +116,7 @@
     "vue-router": "^2.7.0",
     "vue-server-renderer": "~2.4.2",
     "vue-template-compiler": "~2.4.2",
-    "vuex": "^2.3.1",
+    "vuex": "^2.4.0",
     "webpack": "^3.5.5",
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-dev-middleware": "^1.12.0",
