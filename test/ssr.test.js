@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import { Nuxt, Builder, Utils } from '..'
 import { uniq } from 'lodash'
+import rp from 'request-promise-native'
 
 const port = 4008
 let nuxt = null
@@ -10,6 +11,8 @@ let nuxt = null
 const range = n => [...Array(n).keys()]
 const FOOBAR_REGEX = /<foobar>([\s\S]*)<\/foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
+
+const url = (route) => 'http://localhost:' + port + route
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -29,7 +32,7 @@ test.before('Init Nuxt.js', async t => {
 })
 
 // == Uniq Test ==
-// The idea behind is pages using a shared nextId() which retuns an increamenting id
+// The idea behind is pages using a shared nextId() which returns an incrementing id
 // So all responses should strictly be different and length of unique responses should equal to responses
 // We strictly compare <foorbar>{id}</foorbar> section
 // Because other response parts such as window.__NUXT may be different resulting false positive passes.
@@ -80,6 +83,33 @@ test('unique responses with nuxtServerInit', async t => {
 
 test('unique responses with fetch', async t => {
   await uniqueTest(t, '/fetch')
+})
+
+// == Stress Test ==
+// The idea of this test is to ensure there is no memory or data leak during SSR requests
+// Or pending promises/sockets and function calls.
+// Making 16K requests by default
+// Related issue: https://github.com/nuxt/nuxt.js/issues/1354
+const stressTest = async (t, _url, concurrency = 64, steps = 256) => {
+  let statusCodes = { }
+
+  await Utils.sequence(range(steps), async () => {
+    await Utils.parallel(range(concurrency), async () => {
+      let response = await rp(url(_url), { resolveWithFullResponse: true })
+      // Status Code
+      let code = response.statusCode
+      if (!statusCodes[code]) {
+        statusCodes[code] = 0
+      }
+      statusCodes[code]++
+    })
+  })
+
+  t.is(statusCodes[200], concurrency * steps)
+}
+
+test('stress test with asyncData', async t => {
+  await stressTest(t, '/asyncData')
 })
 
 // Close server and ask nuxt to stop listening to file changes
