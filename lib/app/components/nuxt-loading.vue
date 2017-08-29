@@ -91,7 +91,7 @@ export default {
 .progress {
   position: fixed;
   top: 0px;
-  left: 0px;
+  left: <%= loading.rtl === true ? 'auto' : '0px' %>;
   right: 0px;
   height: 2px;
   width: 0%;
