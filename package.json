@@ -76,7 +76,7 @@
     "clone": "^2.1.1",
     "compression": "^1.7.0",
     "connect": "^3.6.3",
-    "css-loader": "https://github.com/nuxt/css-loader.git",
+    "css-loader": "^0.28.6",
     "debug": "^3.0.1",
     "es6-promise": "^4.1.1",
     "etag": "^1.8.0",
