@@ -27,7 +27,7 @@ module.exports = {
     string: 'Nuxt.js'
   },
   build: {
-    extractCSS: true,
+    // extractCSS: true,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
@@ -45,6 +45,11 @@ module.exports = {
   render: {
     http2: {
       push: true
+    },
+    bundleRenderer: {
+      shouldPreload: (file, type) => {
+        return ['script', 'style', 'font'].includes(type)
+      }
     },
     static: {
       maxAge: '1y'
