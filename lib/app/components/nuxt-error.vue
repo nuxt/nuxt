@@ -5,16 +5,14 @@
 
   <div class="title">{{ message }}</div>
   <p class="description" v-if="statusCode === 404">
-    <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
+    <nuxt-link class="error-link" to="/"><%= messages.back_to_home %></nuxt-link>
   </p>
   <% if(debug) { %>
-  <p class="description" v-else>
-    An error occurred while rendering the page. Check developer tools console for details.
-  </p>
+  <p class="description" v-else><%= messages.client_error_details %></p>
   <% } %>
 
   <div class="logo">
-    Powered by <a href="https://nuxtjs.org" target="_blank" rel="noopener">Nuxt.js</a>
+    <a href="https://nuxtjs.org" target="_blank" rel="noopener"><%= messages.nuxtjs %></a>
   </div>
 </div>
 </div>
@@ -50,7 +48,7 @@ export default {
       return (this.error && this.error.statusCode) || 500
     },
     message () {
-      return this.error.message || 'Nuxt Server Error'
+      return this.error.message || '<%= messages.client_error %>'
     }
   }
 }
