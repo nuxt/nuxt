@@ -56,6 +56,7 @@ export default {
 
 <style>
 .__nuxt-error-page {
+  padding: 1rem;
   background: #F7F8FB;
   color: #47494E;
   text-align: center;
