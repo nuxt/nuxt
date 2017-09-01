@@ -1,32 +1,23 @@
 <template>
-  <div class="__nuxt-error-page">
-    <div class="container">
+<div class="__nuxt-error-page">
+<div class="error">
+  <svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" fill="#DBE1EC" viewBox="0 0 48 48"><path d="M22 30h4v4h-4zm0-16h4v12h-4zm1.99-10C12.94 4 4 12.95 4 24s8.94 20 19.99 20S44 35.05 44 24 35.04 4 23.99 4zM24 40c-8.84 0-16-7.16-16-16S15.16 8 24 8s16 7.16 16 16-7.16 16-16 16z"/></svg>
 
-        <div class="row">
-          <div class="column">
-            <h1>{{ statusCode }} </h1>
-            <h3> {{ message }} </h3>
-            <p v-if="statusCode === 404">
-              <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
-            </p>
-            <% if(debug) { %>
-            <small v-else>
-              Open developer tools to view stack trace
-            </small>
-            <% } %>
-          </div>
-        </div>
+  <div class="title">{{ message }}</div>
+  <p class="description" v-if="statusCode === 404">
+    <nuxt-link class="error-link" to="/">Back to the home page</nuxt-link>
+  </p>
+  <% if(debug) { %>
+  <p class="description" v-else>
+    An error occurred while rendering the page. Check developer tools console for details.
+  </p>
+  <% } %>
 
-        <div class="row">
-          <div class="column">
-            <div class="poweredby">
-              <small> Powered by <a href="https://nuxtjs.org" target="_blank" rel="noopener">Nuxt.js</a> </small>
-            </div>
-          </div>
-        </div>
-
-    </div>
+  <div class="logo">
+    Powered by <a href="https://nuxtjs.org" target="_blank" rel="noopener">Nuxt.js</a>
   </div>
+</div>
+</div>
 </template>
 
 <script>
@@ -35,10 +26,12 @@ export default {
   props: ['error'],
   head () {
     return {
-      title: this.statusCode + ' - ' + this.message,
-      link: [
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css', type: 'text/css', media: 'all' },
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/milligram/1.3.0/milligram.min.css', type: 'text/css', media: 'all' }
+      title: this.message,
+      meta: [
+        {
+          name: 'viewport',
+          content: 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'
+        }
       ]
     }
   },
@@ -65,29 +58,45 @@ export default {
 
 <style>
 .__nuxt-error-page {
-  background: #F5F7FA;
-  font-size: 14px;
-  word-spacing: 1px;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
+  background: #F7F8FB;
+  color: #47494E;
   text-align: center;
-}
-.__nuxt-error-page .container {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
-  margin: 0 auto;
-  max-width: 70%;
+  font-family: sans-serif;
+  font-weight: 100 !important;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
-.__nuxt-error-page .poweredby {
-  text-align: center;
-  margin-top: 10%;
+.__nuxt-error-page .error {
+  max-width: 450px;
+}
+.__nuxt-error-page .title {
+  font-size: 1.5rem;
+  margin-top: 15px;
+  color: #47494E;
+  margin-bottom: 8px; 
+}
+.__nuxt-error-page .description {
+  color: #7F828B;
+  line-height: 21px;
+  margin-bottom: 10px;
 }
 .__nuxt-error-page a {
-  color: #42b983 !important;
+  color: #7F828B !important;
+  text-decoration: none;
+}
+.__nuxt-error-page .logo {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
 }
 </style>
