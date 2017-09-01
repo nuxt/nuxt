@@ -94,7 +94,7 @@ export default {
 }
 .__nuxt-error-page .logo {
   position: fixed;
-  right: 12px;
+  left: 12px;
   bottom: 12px;
 }
 </style>
