@@ -29,7 +29,7 @@ test('/ should display an error', async t => {
 
 test('/404 should display an error too', async t => {
   let { error } = await nuxt.renderRoute('/404')
-  t.true(error.message.includes('This page could not be found.'))
+  t.true(error.message.includes('This page could not be found'))
 })
 
 test('/ with renderAndGetWindow()', async t => {
