@@ -44,7 +44,7 @@ ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  with: 100%;
+  width: 100%;
   max-width: 300px;
   margin: auto;
 }
