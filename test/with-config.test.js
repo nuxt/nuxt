@@ -68,6 +68,10 @@ test('/test/env', async t => {
   t.true(html.includes('"bool": true'))
   t.true(html.includes('"num": 23'))
   t.true(html.includes('"string": "Nuxt.js"'))
+  t.true(html.includes('"bool": false'))
+  t.true(html.includes('"string": "ok"'))
+  t.true(html.includes('"num2": 8.23'))
+  t.true(html.includes('"obj": {'))
 })
 
 test('/test/error', async t => {

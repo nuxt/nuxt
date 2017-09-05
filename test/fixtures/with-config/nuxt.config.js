@@ -24,7 +24,15 @@ module.exports = {
   env: {
     bool: true,
     num: 23,
-    string: 'Nuxt.js'
+    string: 'Nuxt.js',
+    object: {
+      bool: true,
+      string: 'ok',
+      num2: 8.23,
+      obj: {
+        again: true
+      }
+    }
   },
   build: {
     // extractCSS: true,
