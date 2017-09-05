@@ -26,7 +26,7 @@ module.exports = {
     num: 23,
     string: 'Nuxt.js',
     object: {
-      bool: true,
+      bool: false,
       string: 'ok',
       num2: 8.23,
       obj: {
