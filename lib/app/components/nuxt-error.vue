@@ -34,6 +34,7 @@ export default {
     }
   },
   <% if(debug) { %>
+  // Only on debug mode
   data () {
     return {
       mounted: false
@@ -41,6 +42,16 @@ export default {
   },
   mounted () {
     this.mounted = true
+  },
+  created () {
+    console.error(this.error)
+  },
+  watch: {
+    error(newErr) {
+      if(newErr) {
+        console.error(newErr)
+      }
+    }
   },
   <% } %>
   computed: {
