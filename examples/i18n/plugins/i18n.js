@@ -3,11 +3,11 @@ import VueI18n from 'vue-i18n'
 
 Vue.use(VueI18n)
 
-export default ({ app, isClient, store, serverStore }) => {
+export default ({ app, isClient, store }) => {
   // Set i18n instance on app
   // This way we can use it in middleware and pages asyncData/fetch
   app.i18n = new VueI18n({
-    locale: (isClient ? serverStore.locale : store.state.locale),
+    locale: store.state.locale,
     fallbackLocale: 'en',
     messages: {
       'en': require('~/locales/en.json'),
