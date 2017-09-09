@@ -64,7 +64,7 @@
     "npm": ">=3.10.0"
   },
   "dependencies": {
-    "@nuxtjs/youch": "3.0.2",
+    "@nuxtjs/youch": "3.1.0",
     "ansi-html": "^0.0.7",
     "autoprefixer": "^7.1.3",
     "babel-core": "^6.26.0",
@@ -93,6 +93,7 @@
     "lru-cache": "^4.1.1",
     "memory-fs": "^0.4.1",
     "minimist": "^1.2.0",
+    "open-in-editor": "^2.2.0",
     "opencollective": "^1.0.3",
     "pify": "^3.0.0",
     "postcss": "^6.0.10",
