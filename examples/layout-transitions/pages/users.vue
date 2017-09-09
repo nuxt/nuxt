@@ -24,7 +24,7 @@ export default {
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
   async asyncData ({ query }) {
-    const page = +query.page || 1
+    const page = query.page || 1
     const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
     return {
       page: +data.page,
