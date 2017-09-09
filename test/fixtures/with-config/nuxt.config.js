@@ -15,6 +15,7 @@ module.exports = {
     }
   },
   transition: 'test',
+  layoutTransition: 'test',
   offline: true,
   plugins: [
     '~/plugins/test.js',
