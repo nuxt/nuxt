@@ -1,0 +1,12 @@
+{
+  "name": "nuxt-layout-transitions",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "../../bin/nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
