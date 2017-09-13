@@ -23,3 +23,9 @@ if (commands.has(cmd)) {
 const bin = join(__dirname, 'nuxt-' + cmd)
 
 require(bin)
+
+// Exit if stdin is closed
+process.stdin.on('close', function() {
+  process.exit()
+})
+process.stdin.resume()
