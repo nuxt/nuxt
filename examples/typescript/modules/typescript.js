@@ -7,7 +7,7 @@ module.exports = function (options) {
       loader: 'ts-loader'
     })
     // Add TypeScript loader for vue files
-    for (rule of config.module.rules) {
+    for (let rule of config.module.rules) {
       if (rule.loader === 'vue-loader') {
         rule.query.loaders.ts = 'ts-loader?{"appendTsSuffixTo":["\\\\.vue$"]}'
       }

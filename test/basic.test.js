@@ -119,7 +119,7 @@ test('/error status code', async t => {
     await rp(url('/error'))
   } catch (err) {
     t.true(err.statusCode === 500)
-    t.true(err.response.body.includes('Error mouahahah'))
+    t.true(err.response.body.includes('An error occurred in the application and your page could not be served'))
   }
 })
 

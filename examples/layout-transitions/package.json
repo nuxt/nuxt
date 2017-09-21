@@ -1,11 +1,11 @@
 {
-  "name": "nuxt-global-css",
+  "name": "nuxt-layout-transitions",
   "dependencies": {
-    "bulma": "^0.5.1",
+    "axios": "^0.15.3",
     "nuxt": "latest"
   },
   "scripts": {
-    "dev": "nuxt",
+    "dev": "../../bin/nuxt",
     "build": "nuxt build",
     "start": "nuxt start"
   }
