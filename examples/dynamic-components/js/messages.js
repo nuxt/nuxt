@@ -18,10 +18,10 @@ export const messages = [
   { component: 'vText', data: 'End of demo 🎉' },
 ]
 
-function streamMessages (fn, i = 0) {
+async function streamMessages (fn, i = 0) {
   if (i >= messages.length) return
-  fn(messages[i])
-  setTimeout(() => streamMessages(fn, i + 1), 2000)
+  await fn(messages[i])
+  setTimeout(() => streamMessages(fn, i + 1), 1500)
 }
 
 export default streamMessages
