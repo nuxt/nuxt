@@ -81,7 +81,12 @@ function genConfig (opts) {
           'external-helpers'
         ],
         presets: [
-          ['es2015', { modules: false }]
+          ['env', {
+            targets: {
+              node: '6.11.0'
+            },
+            modules: false
+          }]
         ],
         'env': {
           'test': {
