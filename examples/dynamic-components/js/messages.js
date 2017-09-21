@@ -1,9 +1,20 @@
-const messages = [
+export const messages = [
   { component: 'vText', data: 'Welcome to the <b>Dynamic Component</b> demo!' },
-  { component: 'vText', data: 'Look at this nice picture:' },
   { component: 'vImage', data: 'https://placeimg.com/350/200/animals' },
-  { component: 'vText', data: 'If you prefer, look at this code component:' },
   { component: 'vCode', data: 'var a = 1;\nvar b = 2;\nb = a;' },
+  {
+    component: 'vChart',
+    data: {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      datasets:[
+          {
+            label: 'Activity',
+            backgroundColor: '#41b883',
+            data: [40, 20, 12, 39, 10, 40, 39, 50, 40, 20, 12, 11]
+          }
+      ]
+    }
+  },
   { component: 'vText', data: 'End of demo 🎉' },
 ]
 
