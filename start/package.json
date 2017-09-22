@@ -63,13 +63,14 @@
     "compression": "^1.7.0",
     "fs-extra": "^4.0.1",
     "vue-server-renderer": "~2.4.2",
-    "@nuxtjs/youch": "3.0.2",
+    "@nuxtjs/youch": "3.1.0",
     "source-map": "^0.5.7",
     "connect": "^3.6.3",
     "vue": "~2.4.2",
     "vue-meta": "^1.1.0",
     "lru-cache": "^4.1.1",
-    "server-destroy": "^1.0.1"
+    "server-destroy": "^1.0.1",
+    "open-in-editor": "^2.2.0"
   },
   "collective": {
     "type": "opencollective",
