@@ -27,7 +27,7 @@ module.exports = {
   */
   loadingIndicator: {
     /*
-    ** See https://github.com/nuxt/nuxt.js/tree/dev/lib/app/views/loading for available loading indicators
+    ** See https://nuxtjs.org/api/configuration-loading-indicator for available loading indicators
     ** You can add a custom indicator by giving a path
     */
     // name: 'folding-cube',
