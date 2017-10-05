@@ -1,0 +1,11 @@
+{
+  "name": "amp-nuxt",
+  "dependencies": {
+    "nuxt": "../../"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
