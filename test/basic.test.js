@@ -153,10 +153,10 @@ test('/no-ssr', async t => {
   t.true(html.includes('<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'))
 })
 
-test('/no-ssr (clien-side)', async t => {
+test('/no-ssr (client-side)', async t => {
   const window = await nuxt.renderAndGetWindow(url('/no-ssr'))
   const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>Displayed only on client-side</h1>'))
+  t.true(html.includes('Displayed only on client-side</h1>'))
 })
 
 test('ETag Header', async t => {
