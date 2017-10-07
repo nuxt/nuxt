@@ -6,8 +6,9 @@
 
 <script>
 export default {
+  layout: 'custom',
   mounted () {
-    window.indexMounted = (+window.indexMounted) + 1
+    window.customMounted = (+window.customMounted) + 1
     console.log('mounted')
   }
 }
