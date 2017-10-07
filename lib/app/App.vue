@@ -31,7 +31,11 @@ export default {
       }
     }, [ layoutEl ])
 
-    return h('div', [
+    return h('div',{
+      domProps: {
+        id: '__nuxt'
+      }
+    }, [
       <% if (loading) { %>loadingEl,<% } %>
       transitionEl
     ])
