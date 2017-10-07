@@ -14,6 +14,8 @@ const match = (regex, text) => (regex.exec(text) || [])[1]
 
 const url = (route) => 'http://localhost:' + port + route
 
+const isWindows = /^win/.test(process.platform)
+
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
   const options = {
@@ -92,6 +94,12 @@ test('unique responses with fetch', async t => {
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
 const stressTest = async (t, _url, concurrency = 64, steps = 256) => {
   let statusCodes = { }
+
+  // appveyor memory limit!
+  if (isWindows) {
+    concurrency = 1
+    steps = 1
+  }
 
   await Utils.sequence(range(steps), async () => {
     await Utils.parallel(range(concurrency), async () => {
