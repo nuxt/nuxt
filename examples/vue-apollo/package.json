@@ -1,12 +1,13 @@
 {
   "name": "nuxt-vue-apollo",
   "dependencies": {
-    "@nuxtjs/apollo": "^1.0.0",
-    "nuxt": "^1.0.0-rc3"
+    "@nuxtjs/apollo": "^2.1.1",
+    "nuxt": "^1.0.0-rc9"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "generate": "nuxt generate"
   }
 }

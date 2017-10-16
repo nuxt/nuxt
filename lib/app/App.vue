@@ -1,10 +1,3 @@
-<template>
-  <div id="__nuxt">
-    <% if (loading) { %><nuxt-loading ref="loading"></nuxt-loading><% } %>
-    <component v-if="layout" :is="nuxt.err ? 'nuxt' : layout"></component>
-  </div>
-</template>
-
 <script>
 import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
@@ -24,6 +17,29 @@ let resolvedLayouts = {}
 
 export default {
   head: <%= JSON.stringify(head) %>,
+  render(h, props) {
+    <% if (loading) { %>const loadingEl = h('nuxt-loading', { ref: 'loading' })<% } %>
+
+    const layoutEl = h(this.nuxt.err ? 'nuxt' : this.layout, {
+      key: this.layoutName
+    })
+
+    const transitionEl = h('transition', {
+      props: {
+        name: '<%= layoutTransition.name %>',
+        mode: '<%= layoutTransition.mode %>'
+      }
+    }, [ layoutEl ])
+
+    return h('div',{
+      domProps: {
+        id: '__nuxt'
+      }
+    }, [
+      <% if (loading) { %>loadingEl,<% } %>
+      transitionEl
+    ])
+  },
   data: () => ({
     layout: null,
     layoutName: ''

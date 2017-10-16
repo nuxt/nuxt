@@ -1,8 +1,3 @@
-<template>
-  <nuxt-error v-if="nuxt.err" :error="nuxt.err"></nuxt-error>
-  <nuxt-child :key="routerViewKey" v-else></nuxt-child>
-</template>
-
 <script>
 import Vue from 'vue'
 import NuxtChild from './nuxt-child'
@@ -12,6 +7,20 @@ import { compile } from '../utils'
 export default {
   name: 'nuxt',
   props: ['nuxtChildKey'],
+  render(h) {
+    // If there is some error
+    if (this.nuxt.err) {
+      return h('nuxt-error', {
+        props: {
+          error: this.nuxt.err
+        }
+      })
+    }
+    // Directly return nuxt child
+    return h('nuxt-child', {
+      key: this.routerViewKey
+    })
+  },
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options._nuxt)
   },

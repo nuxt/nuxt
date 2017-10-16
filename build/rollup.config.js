@@ -40,11 +40,11 @@ const aliases = {
 const builds = {
   nuxt: {
     entry: resolve(libDir, 'index.js'),
-    dest: resolve(distDir, 'nuxt.js')
+    file: resolve(distDir, 'nuxt.js')
   },
   core: {
     entry: resolve(libDir, 'core/index.js'),
-    dest: resolve(distDir, 'core.js'),
+    file: resolve(distDir, 'core.js')
   }
 }
 
@@ -53,19 +53,22 @@ const builds = {
 // -----------------------------
 function genConfig (opts) {
   const config = {
-    entry: opts.entry,
-    dest: opts.dest,
-    external: ['fs', 'path', 'http', 'module', 'vue-server-renderer/server-plugin', 'vue-server-renderer/client-plugin'].concat(dependencies, opts.external),
-    format: opts.format || 'cjs',
+    input: opts.entry,
+    output: {
+      file: opts.file,
+      format: 'cjs',
+      sourcemap: true
+    },
+    external: ['fs', 'path', 'http', 'module', 'vue-server-renderer/server-plugin', 'vue-server-renderer/client-plugin']
+      .concat(dependencies, opts.external),
     banner: opts.banner || banner,
-    moduleName: opts.moduleName || 'Nuxt',
-    sourceMap: true,
+    name: opts.modulename || 'Nuxt',
     plugins: [
       rollupAlias(Object.assign({
         resolve: ['.js', '.json', '.jsx', '.ts']
       }, aliases, opts.alias)),
 
-      rollupNodeResolve({ main: true, jsnext: true }),
+      rollupNodeResolve({ preferBuiltins: true }),
 
       rollupCommonJS(),
 
@@ -74,10 +77,16 @@ function genConfig (opts) {
         plugins: [
           ['transform-runtime', { 'helpers': false, 'polyfill': false }],
           'transform-async-to-generator',
-          'array-includes'
+          'array-includes',
+          'external-helpers'
         ],
         presets: [
-          'babel-preset-es2015-rollup'
+          ['env', {
+            targets: {
+              node: '6.11.0'
+            },
+            modules: false
+          }]
         ],
         'env': {
           'test': {
@@ -86,9 +95,7 @@ function genConfig (opts) {
         }
       }, opts.babel)),
 
-      rollupReplace({
-        __VERSION__: version
-      })
+      rollupReplace({ __VERSION__: version })
     ].concat(opts.plugins || [])
   }
 
