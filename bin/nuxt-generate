@@ -5,6 +5,7 @@ process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
 const fs = require('fs')
 const parseArgs = require('minimist')
+const debug = require('debug')('nuxt:generate')
 
 const { Nuxt, Builder, Generator } = require('../')
 const resolve = require('path').resolve
@@ -13,13 +14,13 @@ const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
     c: 'config-file',
-    j: 'workers'
+    w: 'workers',
     s: 'spa',
     u: 'universal'
   },
   boolean: ['h', 's', 'u'],
   string: ['c'],
-  number: ['j'],
+  number: ['w'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -34,8 +35,8 @@ if (argv.help) {
     Options
       --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h          Displays this message
-      -j, --workers [NUM] How many workers should be started
-                          (default: # cpus or 1 if omitted)
+      --workers,-w [NUM]  How many workers should be started
+                            (default: # cpus or 1 if omitted)
       --spa              Launch in SPA mode
       --universal        Launch in Universal mode (default)
   `)
@@ -190,7 +191,7 @@ if (numWorkers <= 1) {
       // print report
       let errors = []
       for (let pid in watchdog) {
-        let worker_msg = `Worker ${pid} generated ${watchdog[pid].routes} routes in ${watchdog[pid].duration}ms`
+        let worker_msg = `Worker ${pid} generated ${watchdog[pid].routes} routes in ${Math.round(watchdog[pid].duration/100)/10}s`
         if (watchdog[pid].errors.length) {
           worker_msg += ` with ${watchdog[pid].errors.length} errors`
 
@@ -199,8 +200,10 @@ if (numWorkers <= 1) {
         debug(worker_msg)
       }
 
+      generator.postGenerate()
+
       duration = process.hrtime(start)
-      duration = Math.round((duration[0] * 1E9 + duration[1]) / 1E6)
+      duration = Math.round((duration[0] * 1E9 + duration[1]) / 1E8)/10
 
       generator.printReport(duration, errors)
     }
