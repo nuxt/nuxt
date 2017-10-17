@@ -10,7 +10,9 @@ const fs = require('fs')
 const parseArgs = require('minimist')
 const { Nuxt, Builder } = require('../')
 const chokidar = require('chokidar')
-const resolve = require('path').resolve
+const path = require('path')
+const resolve = path.resolve
+const pkg = require(path.join('..','package.json'))
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -19,14 +21,20 @@ const argv = parseArgs(process.argv.slice(2), {
     p: 'port',
     c: 'config-file',
     s: 'spa',
-    u: 'universal'
+    u: 'universal',
+    v: 'version'
   },
-  boolean: ['h', 's', 'u'],
+  boolean: ['h', 's', 'u', 'v'],
   string: ['H', 'c'],
   default: {
     c: 'nuxt.config.js'
   }
 })
+
+if(argv.version){
+  console.log(pkg.version)
+  process.exit(0)
+}
 
 if (argv.hostname === '') {
   console.error(`> Provided hostname argument has no value`)
