@@ -1,5 +1,6 @@
 const app = require('express')()
 const { Nuxt, Builder } = require('nuxt')
+const chalk = require('chalk')
 
 const host = process.env.HOST || '127.0.0.1'
 const port = process.env.PORT || 3000
@@ -21,4 +22,4 @@ app.use(nuxt.render)
 
 // Start express server
 app.listen(port, host)
-console.log('Server listening on ' + host + ':' + port)
+console.log('\n' + chalk.bgGreen.black(' OPEN ') + chalk.green(` http://${host}:${port}`))
