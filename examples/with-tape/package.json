@@ -1,0 +1,21 @@
+{
+	"name": "nuxt-with-tape",
+	"scripts": {
+		"dev": "nuxt",
+		"build": "nuxt build",
+		"start": "nuxt start",
+		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec"
+	},
+	"devDependencies": {
+		"browser-env": "^3.2.1",
+		"require-extension-hooks": "^0.3.2",
+		"require-extension-hooks-babel": "^0.1.1",
+		"require-extension-hooks-vue": "^0.4.1",
+		"tap-spec": "^4.1.1",
+		"tape": "^4.8.0",
+		"vue-test-utils": "^1.0.0-beta.2"
+	},
+	"dependencies": {
+		"nuxt": "latest"
+	}
+}
