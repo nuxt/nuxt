@@ -4,6 +4,10 @@ environment:
     - nodejs_version: "6"
     - nodejs_version: "8"
 
+cache:
+  - "%LOCALAPPDATA%\\Yarn"
+  - node_modules
+
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js

@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "express": "^4.14.0",
-    "nuxt": "^0.9.5",
+    "nuxt": "latest",
     "socket.io": "^1.7.2",
     "socket.io-client": "^1.7.2"
   },
