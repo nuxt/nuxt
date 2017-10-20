@@ -9,16 +9,16 @@ module.exports = function () {
 
   // Add `socket.io-client` in vendor
   this.addVendor('socket.io-client')
-  
+
   // Add socket.io events
   let messages = []
   io.on('connection', (socket) => {
     socket.on('last-messages', function (fn) {
       fn(messages.slice(-50))
-    });
+    })
     socket.on('send-message', function (message) {
       messages.push(message)
       socket.broadcast.emit('new-message', message)
     })
-  });
+  })
 }
