@@ -4,12 +4,15 @@
   "dependencies": {
     "axios": "^0.16.1",
     "gsap": "^1.19.1",
-    "nuxt": "^1.0.0-alpha2",
-    "nuxt-class-component": "^1.0.1",
+    "nuxt": "latest",
+    "nuxt-class-component": "^1.0.3",
     "tachyons": "^4.7.0",
-    "vue-class-component": "^5.0.1",
-    "vue-property-decorator": "^5.0.1",
-    "vuex-class": "^0.2.0"
+    "vue": "~2.5.1",
+    "vue-server-renderer": "~2.5.1",
+    "vue-template-compiler": "~2.5.1",
+    "vue-class-component": "^6.0.0",
+    "vue-property-decorator": "^6.0.0",
+    "vuex-class": "^0.3.0"
   },
   "scripts": {
     "dev": "nuxt",
@@ -18,7 +21,7 @@
     "generate": "nuxt generate"
   },
   "devDependencies": {
-    "ts-loader": "^2.0.3",
+    "ts-loader": "^3.0.0",
     "typescript": "^2.2.2"
   }
 }
