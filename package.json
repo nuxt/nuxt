@@ -128,6 +128,7 @@
     "babel-plugin-array-includes": "^2.0.3",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-istanbul": "^4.1.5",
+    "babel-register": "^6.26.0",
     "codecov": "^2.3.0",
     "copy-webpack-plugin": "^4.1.1",
     "cross-env": "^5.0.5",

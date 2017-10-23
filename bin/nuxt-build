@@ -3,6 +3,7 @@
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
+require('babel-register')
 const fs = require('fs')
 const parseArgs = require('minimist')
 const { Nuxt, Builder, Generator } = require('../')
