@@ -2,7 +2,7 @@
   "name": "nuxt-vue-apollo",
   "dependencies": {
     "@nuxtjs/apollo": "^2.1.1",
-    "nuxt": "^1.0.0-rc9"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
