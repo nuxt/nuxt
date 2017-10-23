@@ -73,6 +73,7 @@
     "chalk": "^2.1.0",
     "chokidar": "^1.7.0",
     "clone": "^2.1.1",
+    "cluster": "^0.7.7",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
     "css-loader": "^0.28.7",
