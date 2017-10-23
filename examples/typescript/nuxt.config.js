@@ -22,5 +22,5 @@ module.exports = {
   build: {
     vendor: ['axios', 'gsap', 'vuex-class', 'nuxt-class-component']
   },
-  modules: ['~modules/typescript']
+  modules: ['~/modules/typescript']
 }
