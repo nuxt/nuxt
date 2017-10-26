@@ -13,7 +13,11 @@ let nuxt = null
 test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
-    dev: false
+    dev: false,
+    head: {
+      titleTemplate: titleChunk => titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+      // titleTemplate: '%s - Nuxt.js'
+    }
   }
   nuxt = new Nuxt(options)
   await new Builder(nuxt).build()
@@ -53,7 +57,7 @@ test('/head', async t => {
   const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
   const html = window.document.body.innerHTML
   const metas = window.document.getElementsByTagName('meta')
-  t.is(window.document.title, 'My title')
+  t.is(window.document.title, 'My title - Nuxt.js')
   t.is(metas[0].getAttribute('content'), 'my meta')
   t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
 })
