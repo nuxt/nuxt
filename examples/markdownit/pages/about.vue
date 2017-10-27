@@ -1,5 +1,5 @@
 <template lang="md">
-  # Hello World!
+  # About Page!
   Current route is: {{ $route.name }}
 
   <nuxt-link to="/">Back home</nuxt-link>
