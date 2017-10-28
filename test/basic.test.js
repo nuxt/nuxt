@@ -9,7 +9,7 @@ const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 
-// Init nuxt.js and create server listening on localhost:4000
+// Init nuxt.js and create server listening on localhost:4003
 test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
