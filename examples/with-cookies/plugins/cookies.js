@@ -11,14 +11,14 @@ export const getCookies = (str) => {
 ** Executed by ~/.nuxt/index.js with context given
 ** This method can be asynchronous
 */
-export default ({ isServer, req }, inject) => {
+export default ({ req }, inject) => {
   // Inject `cookies` key
   // -> app.$cookies
   // -> this.$cookies in vue components
   // -> this.$cookies in store actions/mutations
   inject('cookies', new Vue({
     data: () => ({
-      cookies: getCookies(isServer ? req.headers.cookie : document.cookie)
+      cookies: getCookies(process.server ? req.headers.cookie : document.cookie)
     }),
     methods: {
       set(...args) {

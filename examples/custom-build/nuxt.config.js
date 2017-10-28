@@ -7,8 +7,8 @@ module.exports = {
       app: 'app.[chunkhash].js' // default: nuxt.bundle.[chunkhash].js
     },
     vendor: ['lodash'],
-    extend (config, { dev }) {
-      if (dev) {
+    extend (config, { isDev }) {
+      if (isDev) {
         config.devtool = 'eval-source-map'
       }
       const urlLoader = config.module.rules.find((loader) => loader.loader === 'url-loader')
