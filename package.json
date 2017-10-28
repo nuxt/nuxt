@@ -108,6 +108,7 @@
     "source-map": "^0.6.1",
     "source-map-support": "^0.5.0",
     "tappable": "^1.1.0",
+    "uglifyjs-webpack-plugin": "^1.0.1",
     "url-loader": "^0.6.2",
     "vue": "^2.5.2",
     "vue-loader": "^13.3.0",
