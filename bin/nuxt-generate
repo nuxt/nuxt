@@ -17,10 +17,11 @@ const argv = parseArgs(process.argv.slice(2), {
     s: 'spa',
     u: 'universal'
   },
-  boolean: ['h', 's', 'u'],
+  boolean: ['h', 's', 'u', 'build'],
   string: ['c'],
   default: {
-    c: 'nuxt.config.js'
+    c: 'nuxt.config.js',
+    build: true
   }
 })
 
@@ -36,6 +37,7 @@ if (argv.help) {
       --universal        Launch in Universal mode (default)
       --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h         Displays this message
+      --no-build         Just run generate for faster builds when just dynamic routes changed. Nuxt build is needed before this command.
   `)
   process.exit(0)
 }
@@ -62,7 +64,13 @@ debug('Generating...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 const generator = new Generator(nuxt, builder)
-generator.generate()
+
+const generateOptions = {
+  init: true,
+  build: argv['build']
+}
+
+generator.generate(generateOptions)
   .then(() => {
     debug('Generate done')
     process.exit(0)

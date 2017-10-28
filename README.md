@@ -254,4 +254,4 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 https://github.com/nuxt/nuxt.js/projects/1
 
 ## Contributing
-Please see our [contributing.md](./contributing.md)
+Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
