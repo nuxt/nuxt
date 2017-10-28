@@ -24,7 +24,7 @@ test('/ (basic spa)', async t => {
   t.true(html.includes('Hello SPA!'))
 })
 
-test.failing('/ (custom layout)', async t => {
+test('/custom (custom layout)', async t => {
   const { html } = await renderRoute('/custom')
   t.true(html.includes('Custom layout'))
 })

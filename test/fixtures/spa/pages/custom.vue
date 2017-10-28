@@ -1,7 +1,5 @@
 <template>
-<div>
-  Hello SPA!
-</div>
+  <div>Hello SPA!</div>
 </template>
 
 <script>
