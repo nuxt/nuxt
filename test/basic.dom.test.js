@@ -34,8 +34,9 @@ test.before('Init Nuxt.js', async t => {
 })
 
 test.before('Start Puppeteer', async t => {
+  // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
   browser = await puppeteer.launch({
-    // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
 })
 
