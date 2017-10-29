@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /usr/src/app
     docker:
-      - image: banian/node
+      - image: banian/node-headless-chrome
     steps:
       # Checkout repository
       - checkout
