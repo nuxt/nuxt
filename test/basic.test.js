@@ -15,7 +15,7 @@ test.before('Init Nuxt.js', async t => {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: false,
     head: {
-      titleTemplate (titleChunk) {
+      titleTemplate(titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
       }
     }

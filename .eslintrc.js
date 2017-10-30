@@ -22,7 +22,14 @@ module.exports = {
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
     // do not allow console.logs etc...
-    'no-console': 2
+    'no-console': 2,
+    'space-before-function-paren': [
+			2,
+			{
+				anonymous: 'always',
+				named: 'never'
+			}
+		],
   },
   globals: {}
 }
