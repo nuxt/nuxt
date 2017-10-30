@@ -31,7 +31,7 @@ const argv = parseArgs(process.argv.slice(2), {
   }
 })
 
-if(argv.version){
+if (argv.version) {
   console.log(pkg.version)
   process.exit(0)
 }
