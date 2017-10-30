@@ -2,7 +2,7 @@ module.exports = function () {
   let ctr = 1
 
   // Add hook for module
-  this.plugin('modules:done', (moduleContainer) => {
+  this.nuxt.hook('modules:done', (moduleContainer) => {
     this.nuxt.__module_hook = moduleContainer && ctr++
   })
 
@@ -12,7 +12,7 @@ module.exports = function () {
   })
 
   // Add hook for build
-  this.nuxt.plugin('build:done', (builder) => {
+  this.nuxt.hook('build:done', (builder) => {
     this.nuxt.__builder_hook = builder && ctr++
   })
 }
