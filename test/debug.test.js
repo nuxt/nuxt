@@ -20,17 +20,17 @@ test.before('Init Nuxt.js', async t => {
   await nuxt.listen(port, 'localhost')
 })
 
-test('Check /test/_open (open-in-editor)', async t => {
+test('/test/_open (open-in-editor)', async t => {
   const { body } = await rp(url('/test/_open?file=pages/index.vue'), { resolveWithFullResponse: true })
   t.is(body, 'opened in editor!')
 })
 
-test('Check /test/_open with error (open-in-editor)', async t => {
+test('/test/_open should return error (open-in-editor)', async t => {
   const { body } = await rp(url('/test/_open?file='), { resolveWithFullResponse: true })
   t.is(body, 'File is not specified')
 })
 
-test('Check /test/error (Youch)', async t => {
+test('/test/error should return error stack trace (Youch)', async t => {
   const { response, error } = await t.throws(nuxt.renderAndGetWindow(url('/test/error')))
   t.is(response.statusCode, 500)
   t.is(response.statusMessage, 'NuxtServerError')
