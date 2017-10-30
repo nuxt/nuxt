@@ -36,7 +36,7 @@ test('Middleware', async t => {
   t.is(response, 'It works!', '/api response is correct')
 })
 
-test('Tapable', async t => {
+test('Hooks', async t => {
   t.is(nuxt.__module_hook, 1)
   t.is(nuxt.__renderer_hook, 2)
   t.is(nuxt.__builder_hook, 3)

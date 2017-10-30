@@ -6488,16 +6488,9 @@ table@^4.0.1:
     slice-ansi "1.0.0"
     string-width "^2.1.1"
 
-tapable@^0.2.6, tapable@^0.2.7:
+tapable@^0.2.7:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-0.2.8.tgz#99372a5c999bf2df160afc0d74bed4f47948cd22"
-
-tappable@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/tappable/-/tappable-1.1.0.tgz#521770dea7dc4715d48ddb4c471071afee012025"
-  dependencies:
-    pify "^3.0.0"
-    tapable "^0.2.6"
 
 tar-pack@^3.4.0:
   version "3.4.1"
