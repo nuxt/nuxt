@@ -30,6 +30,14 @@ test('Check /test/_open with error (open-in-editor)', async t => {
   t.is(body, 'File is not specified')
 })
 
+test('Check /test/error (Youch)', async t => {
+  const { response, error } = await t.throws(nuxt.renderAndGetWindow(url('/test/error')))
+  t.is(response.statusCode, 500)
+  t.is(response.statusMessage, 'NuxtServerError')
+  t.true(error.includes('test youch !'))
+  t.true(error.includes('<div class="error-frames">'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
