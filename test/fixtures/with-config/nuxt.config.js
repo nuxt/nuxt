@@ -3,7 +3,7 @@ module.exports = {
   router: {
     base: '/test/',
     middleware: 'noop',
-    extendRoutes (routes) {
+    extendRoutes(routes) {
       return [
         ...routes,
         {
@@ -42,7 +42,7 @@ module.exports = {
       analyzerMode: 'disabled',
       generateStatsFile: true
     },
-    extend (config, options) {
+    extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })

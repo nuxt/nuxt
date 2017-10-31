@@ -3,7 +3,7 @@ export const state = () => ({
 })
 
 export const getters = {
-  baz (state) {
+  baz(state) {
     return state.baz
   }
 }

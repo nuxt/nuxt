@@ -5,7 +5,7 @@
 <script>
 /* eslint no-undef: 0 */
 export default {
-  data () {
+  data() {
     throw new Error('test youch !')
   }
 }

@@ -5,9 +5,9 @@
 <script>
 export default {
   layout: 'custom',
-  mounted () {
+  mounted() {
     window.customMounted = (+window.customMounted) + 1
-    console.log('mounted')
+    console.log('mounted') // eslint-disable-line no-console
   }
 }
 </script>

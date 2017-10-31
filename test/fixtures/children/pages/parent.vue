@@ -8,16 +8,16 @@
 <script>
 export default {
   async asyncData({ route }) {
-    const asyncData = {};
+    const asyncData = {}
 
     await new Promise((resolve, reject) => {
       setTimeout(() => {
         asyncData.name = 'parent'
-        resolve();
+        resolve()
       }, 100)
-    });
+    })
 
-    return asyncData;
+    return asyncData
   }
 }
 </script>

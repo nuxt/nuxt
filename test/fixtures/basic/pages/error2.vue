@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  asyncData ({ error }) {
+  asyncData({ error }) {
     error({ message: 'Custom error' })
   }
 }

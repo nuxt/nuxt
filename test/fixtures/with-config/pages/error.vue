@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  fetch ({ error }) {
+  fetch({ error }) {
     error({ message: 'Nuxt Error', statusCode: 200 })
   }
 }

@@ -10,8 +10,9 @@ const fetchData = () => {
 }
 
 export default {
-  async asyncData () {
-    return await fetchData()
+  async asyncData() {
+    const data = await fetchData()
+    return data
   }
 }
 </script>
