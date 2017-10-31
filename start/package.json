@@ -51,7 +51,6 @@
     "minimist": "^1.2.0",
     "lodash": "^4.17.4",
     "hash-sum": "^1.0.2",
-    "tappable": "^1.1.0",
     "debug": "^3.1.0",
     "chalk": "^2.3.0",
     "ansi-html": "^0.0.7",
