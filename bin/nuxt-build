@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
@@ -75,7 +76,7 @@ if (options.mode !== 'spa') {
   builder.build()
     .then(() => debug('Building done'))
     .catch((err) => {
-      console.error(err) // eslint-disable-line no-console
+      console.error(err)
       process.exit(1)
     })
 } else {
@@ -84,7 +85,6 @@ if (options.mode !== 'spa') {
   // Generate on spa mode
   new Generator(nuxt, builder).generate({ build: true }).then(() => {
     if (!nuxt.options.dev) {
-      // eslint-disable-next-line no-console
       console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
     }
   })

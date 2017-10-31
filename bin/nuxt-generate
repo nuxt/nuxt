@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
@@ -76,6 +77,6 @@ generator.generate(generateOptions)
     process.exit(0)
   })
   .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
+    console.error(err)
     process.exit(1)
   })

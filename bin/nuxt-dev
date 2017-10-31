@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
@@ -12,7 +13,7 @@ const { Nuxt, Builder } = require('../')
 const chokidar = require('chokidar')
 const path = require('path')
 const resolve = path.resolve
-const pkg = require(path.join('..','package.json'))
+const pkg = require(path.join('..', 'package.json'))
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -78,7 +79,7 @@ chokidar
     dev = dev.then(startDev)
   }), 2500)
 
-function startDev (oldNuxt) {
+function startDev(oldNuxt) {
   // Get latest environment variables
   const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
@@ -103,7 +104,7 @@ function startDev (oldNuxt) {
     .then(() => nuxt) // 4- Pass new nuxt to watch chain
 }
 
-function loadNuxtConfig () {
+function loadNuxtConfig() {
   let options = {}
 
   if (fs.existsSync(nuxtConfigFile)) {
