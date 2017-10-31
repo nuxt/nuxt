@@ -3,20 +3,20 @@ export const state = () => ({
 })
 
 export const mutations = {
-  add (state, { text }) {
+  add(state, { text }) {
     state.list.push({
       text,
       done: false
     })
   },
 
-  toggle (state, todo) {
+  toggle(state, todo) {
     todo.done = !todo.done
   }
 }
 
 export const getters = {
-  todos (state) {
+  todos(state) {
     return state.list
   }
 }

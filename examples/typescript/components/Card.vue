@@ -9,10 +9,10 @@
 </template>
 // **PLEASE NOTE** All "Nuxt Class Components" require at minimum a script tag that exports a default object
 <script lang="ts">
-import Vue from "vue"
-import Component from "nuxt-class-component"
+import Vue from 'vue'
+import Component from 'nuxt-class-component'
 import { Prop } from 'vue-property-decorator'
-import { Action } from "vuex-class"
+import { Action } from 'vuex-class'
 
 @Component({})
 export default class Card extends Vue {

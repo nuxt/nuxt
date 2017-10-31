@@ -1,6 +1,3 @@
-
-const { join } = require('path')
-
 module.exports = {
   /*
   ** Head elements

@@ -2,7 +2,7 @@ import { Bar } from 'vue-chartjs'
 
 export default Bar.extend({
   props: ['data', 'options'],
-  mounted () {
+  mounted() {
     this.renderChart(this.data, this.options)
   }
 })

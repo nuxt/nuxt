@@ -1,7 +1,7 @@
 const mutations = {
-    increment (state) {
-        state.counter++
-    }
+  increment(state) {
+    state.counter++
+  }
 }
 
 export default mutations

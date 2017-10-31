@@ -9,7 +9,7 @@
 
 <script>
 export default {
-  asyncData ({ req }) {
+  asyncData({ req }) {
     return {
       name: req ? 'server' : 'client'
     }

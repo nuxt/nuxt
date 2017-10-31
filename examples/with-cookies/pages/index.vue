@@ -33,7 +33,7 @@ export default {
     }
   }),
   computed: {
-    cookies () {
+    cookies() {
       return this.$cookies.cookies
     }
   },

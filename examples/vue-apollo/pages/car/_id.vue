@@ -30,7 +30,7 @@ export default {
       return formatter.format(num)
     }
   },
-  head () {
+  head() {
     return {
       title: (this.Car ? `${this.Car.make} ${this.Car.model}` : 'Loading')
     }

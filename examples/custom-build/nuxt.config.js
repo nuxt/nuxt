@@ -7,7 +7,7 @@ module.exports = {
       app: 'app.[chunkhash].js' // default: nuxt.bundle.[chunkhash].js
     },
     vendor: ['lodash'],
-    extend (config, { isDev }) {
+    extend(config, { isDev }) {
       if (isDev) {
         config.devtool = 'eval-source-map'
       }

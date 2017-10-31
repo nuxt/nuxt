@@ -5,7 +5,7 @@ export default async () => {
 
   return VueChart.Bar.extend({
     props: ['data'],
-    mounted () {
+    mounted() {
       this.renderChart(this.data)
     }
   })

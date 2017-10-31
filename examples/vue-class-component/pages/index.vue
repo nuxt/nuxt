@@ -11,7 +11,7 @@ import Child from '@/components/Child'
   components: { Child }
 })
 export default class App extends Vue {
-  asyncData ({ req }) {
+  asyncData({ req }) {
     return { env: req ? 'server' : 'client' }
   }
 }

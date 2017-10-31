@@ -1,12 +1,12 @@
-module.exports = function(options) {
+module.exports = function (options) {
   // Extend build
   this.extendBuild(config => {
     const tsLoader = {
-      loader: "ts-loader",
+      loader: 'ts-loader',
       options: {
         appendTsSuffixTo: [/\.vue$/]
       }
-    };
+    }
     // Add TypeScript loader
     config.module.rules.push(
       Object.assign(
@@ -15,12 +15,12 @@ module.exports = function(options) {
         },
         tsLoader
       )
-    );
+    )
     // Add TypeScript loader for vue files
     for (let rule of config.module.rules) {
-      if (rule.loader === "vue-loader") {
-        rule.options.loaders.ts = tsLoader;
+      if (rule.loader === 'vue-loader') {
+        rule.options.loaders.ts = tsLoader
       }
     }
-  });
-};
+  })
+}
