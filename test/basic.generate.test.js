@@ -32,6 +32,10 @@ test.before('Init Nuxt.js', async t => {
   server.listen(port)
 })
 
+test('Check ready hook called', async t => {
+  t.true(nuxt.__hook_called__)
+})
+
 test('/stateless', async t => {
   const window = await nuxt.renderAndGetWindow(url('/stateless'))
   const html = window.document.body.innerHTML
