@@ -19,11 +19,11 @@
 import axios from 'axios'
 
 export default {
-  transition (to, from) {
+  transition(to, from) {
     if (!from) return 'slide-left'
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  async asyncData ({ query }) {
+  async asyncData({ query }) {
     const page = +query.page || 1
     const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
     return {

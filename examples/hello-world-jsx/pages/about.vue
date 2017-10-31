@@ -1,11 +1,11 @@
 <script>
 export default {
-  asyncData ({ req }) {
+  asyncData({ req }) {
     return {
       name: req ? 'server' : 'client'
     }
   },
-  render (h) {
+  render(h) {
     return <div>
       <p>Hi from {this.name}</p>
       <nuxt-link to="/">Home page</nuxt-link>

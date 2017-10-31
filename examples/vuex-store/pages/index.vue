@@ -13,14 +13,14 @@ import { mapState } from 'vuex'
 export default {
   // fetch(context) is called by the server-side
   // and nuxt before instantiating the component
-  fetch ({ store }) {
+  fetch({ store }) {
     store.commit('increment')
   },
   computed: mapState([
     'counter'
   ]),
   methods: {
-    increment () {
+    increment() {
       this.$store.commit('increment')
     }
   }

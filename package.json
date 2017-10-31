@@ -49,7 +49,7 @@
   "scripts": {
     "test": "npm run lint && cross-env NODE_ENV=test npm run build:nuxt && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "eslint --ext .js,.vue bin/** lib/** test/** --ignore-pattern app --ignore-pattern node_modules --ignore-pattern dist/",
+    "lint": "eslint --ext .js,.vue bin/** lib/** test/*.js examples/**",
     "build": "rimraf dist/ && npm run build:nuxt && npm run build:core",
     "build:nuxt": "rollup -c build/rollup.config.js --environment TARGET:nuxt",
     "build:core": "rollup -c build/rollup.config.js --environment TARGET:core",

@@ -26,7 +26,7 @@
 <script>
 export default {
   methods: {
-    path (url) {
+    path(url) {
       return (this.$i18n.locale === 'en' ? url : '/' + this.$i18n.locale + url)
     }
   }

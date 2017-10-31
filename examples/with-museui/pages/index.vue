@@ -23,16 +23,16 @@
 
 <script>
 	export default {
-		data() {
-			return {
-				open: false
-			}
-		},
-		methods: {
-			toggle(flag) {
-				this.open = !this.open;
-			}
-		}
+	  data() {
+	    return {
+	      open: false
+	    }
+	  },
+	  methods: {
+	    toggle(flag) {
+	      this.open = !this.open
+	    }
+	  }
 	}
 </script>
 

@@ -1,7 +1,6 @@
 {
   "name": "nuxt-custom-server",
   "dependencies": {
-    "chalk": "^2.2.0",
     "express": "^4.15.3",
     "nuxt": "latest"
   },

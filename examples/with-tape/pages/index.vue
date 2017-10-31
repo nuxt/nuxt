@@ -7,14 +7,14 @@
 
 <script>
   export default {
-  	data() {
-  		return { name: 'world', className: 'red' }
-  	},
-  	methods: {
-  		changeColor() {
-  			this.className = this.className === 'red' ? 'blue' : 'green'
-  		}
-  	}
+    data() {
+      return { name: 'world', className: 'red' }
+    },
+    methods: {
+      changeColor() {
+        this.className = this.className === 'red' ? 'blue' : 'green'
+      }
+    }
   }
 </script>
 

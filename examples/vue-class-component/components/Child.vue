@@ -16,8 +16,8 @@ import Base from '@/components/Base'
 @Component
 export default class Child extends Base {
   // override parent method
-  greet () {
-    console.log('child greeting: ' + this.msg)
+  greet() {
+    console.log('child greeting: ' + this.msg) // eslint-disable-line no-console
   }
 }
 </script>
