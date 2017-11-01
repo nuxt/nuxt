@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>_id: {{ date }}</h2>
+    <h2>_id: <i data-date-id>{{ date }}</i></h2>
     <nuxt-child/>
   </div>
 </template>

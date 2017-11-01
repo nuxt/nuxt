@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>patch: {{ date }}</h1>
+    <h1>patch: <i data-date-patch>{{ date }}</i></h1>
     <nuxt-child/>
   </div>
 </template>

@@ -1,20 +1,12 @@
 import test from 'ava'
 import { resolve } from 'path'
-import puppeteer from 'puppeteer'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '../index'
+import * as browser from './helpers/browser'
 
 const port = 4003
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let browser
-const open = async (path) => {
-  const page = await browser.newPage()
-  await page.goto(url(path))
-  await page.waitForFunction('!!window.$nuxt')
-  page.html = () => page.evaluate(() => window.document.documentElement.outerHTML)
-  return page
-}
 
 // Init nuxt.js and create server listening on localhost:4003
 test.before('Init Nuxt.js', async t => {
@@ -33,34 +25,30 @@ test.before('Init Nuxt.js', async t => {
   await nuxt.listen(port, 'localhost')
 })
 
-test.before('Start Puppeteer', async t => {
-  // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
-  browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+test.before('Start browser', async t => {
+  await browser.start()
 })
 
 test('/stateless', async t => {
-  const page = await open('/stateless')
-  const h1 = await page.$eval('h1', (h1) => h1.textContent)
-  const loading = await page.evaluate(() => window.$nuxt.$loading.$data)
+  const page = await browser.page(url('/stateless'))
+  const loading = await page.nuxt.loadingData()
 
   t.is(await page.title(), 'Nuxt.js')
-  t.is(h1, 'My component!')
+  t.is(await page.$text('h1'), 'My component!')
   t.is(loading.show, false)
   t.is(loading.percent, 0)
   await page.close()
 })
 
 test('/css', async t => {
-  const page = await open('/css')
+  const page = await browser.page(url('/css'))
   t.is(await page.$eval('.red', (red) => red.textContent), 'This is red')
   t.is(await page.$eval('.red', (red) => window.getComputedStyle(red).color), 'rgb(255, 0, 0)')
   await page.close()
 })
 
 test('/stateful', async t => {
-  const page = await open('/stateful')
+  const page = await browser.page(url('/stateful'))
   const html = await page.html()
   t.true(html.includes('<div><p>The answer is 42</p></div>'))
   await page.close()
@@ -207,7 +195,6 @@ test.after('Closing server and nuxt.js', t => {
   nuxt.close()
 })
 
-test.after('Close Puppeteer', async t => {
-  await browser.close()
-  browser = null
+test.after('Stop browser', async t => {
+  await browser.stop()
 })
