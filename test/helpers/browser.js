@@ -22,6 +22,8 @@ export async function page(url) {
   page.html = () => page.evaluate(() => window.document.documentElement.outerHTML)
   page.$text = (selector) => page.$eval(selector, (el) => el.textContent)
   page.$$text = (selector) => page.$$eval(selector, (els) => els.map((el) => el.textContent))
+  page.$attr = (selector, attr) => page.$eval(selector, (el, attr) => el.getAttribute(attr), attr)
+  page.$$attr = (selector, attr) => page.$$eval(selector, (els, attr) => els.map((el) => el.getAttribute(attr)), attr)
   page.$nuxt = await page.evaluateHandle('window.$nuxt')
 
   page.nuxt = {
@@ -41,6 +43,9 @@ export async function page(url) {
     },
     loadingData() {
       return page.evaluate(($nuxt) => $nuxt.$loading.$data, page.$nuxt)
+    },
+    errorData() {
+      return page.evaluate(($nuxt) => $nuxt.nuxt.err, page.$nuxt)
     },
     waitForNavigation() {
       return page.waitForFunction('window.$nuxt.$loading.$data.show === false')
