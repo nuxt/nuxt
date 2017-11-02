@@ -251,7 +251,7 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 ## Roadmap
 
-https://github.com/nuxt/nuxt.js/projects/1
+https://trello.com/b/lgy93IOl/nuxtjs-10
 
 ## Contributing
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
