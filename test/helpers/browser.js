@@ -2,11 +2,11 @@ import puppeteer from 'puppeteer'
 
 let browser = null
 
-export async function start() {
+export async function start(options = {}) {
   // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
-  browser = await puppeteer.launch({
+  browser = await puppeteer.launch(Object.assign({
     args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+  }, options))
 }
 
 export async function stop() {
@@ -21,6 +21,7 @@ export async function page(url) {
   await page.waitForFunction('!!window.$nuxt')
   page.html = () => page.evaluate(() => window.document.documentElement.outerHTML)
   page.$text = (selector) => page.$eval(selector, (el) => el.textContent)
+  page.$$text = (selector) => page.$$eval(selector, (els) => els.map((el) => el.textContent))
   page.$nuxt = await page.evaluateHandle('window.$nuxt')
 
   page.nuxt = {
@@ -29,6 +30,14 @@ export async function page(url) {
       if (wait) {
         await this.waitForNavigation()
       }
+    },
+    routeData() {
+      return page.evaluate(($nuxt) => {
+        return {
+          path: $nuxt.$route.path,
+          query: $nuxt.$route.query
+        }
+      }, page.$nuxt)
     },
     loadingData() {
       return page.evaluate(($nuxt) => $nuxt.$loading.$data, page.$nuxt)
