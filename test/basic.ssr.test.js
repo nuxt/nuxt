@@ -145,9 +145,23 @@ test('/error2 status code', async t => {
   }
 })
 
+test('/error-midd', async t => {
+  stdMocks.use()
+  try {
+    await rp(url('/error-midd'))
+  } catch (err) {
+    stdMocks.restore()
+    t.is(err.statusCode, 505)
+    t.true(err.response.body.includes('Middleware Error'))
+    const output = stdMocks.flush()
+    // Don't display error since redirect returns a noopApp
+    t.true(output.stderr.length === 0)
+  }
+})
+
 test('/redirect2', async t => {
   stdMocks.use()
-  await rp(url('/redirect2')) // Should console.error
+  await rp(url('/redirect2')) // Should not console.error
   stdMocks.restore()
   const output = stdMocks.flush()
   // Don't display error since redirect returns a noopApp
