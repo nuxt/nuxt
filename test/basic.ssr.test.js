@@ -198,6 +198,12 @@ test('/_nuxt/ should return 404', async t => {
   t.is(err.statusCode, 404)
 })
 
+test('/meta', async t => {
+  const { html } = await nuxt.renderRoute('/meta')
+
+  t.true(html.includes('"meta":[{"works":true}]'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()

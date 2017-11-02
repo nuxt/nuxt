@@ -147,6 +147,13 @@ test('/no-ssr', async t => {
   t.is(await page.$text('h1'), 'Displayed only on client-side')
 })
 
+test('/meta', async t => {
+  await page.nuxt.navigate('/meta', true)
+
+  const state = await page.nuxt.storeState()
+  t.deepEqual(state.meta, [{ works: true }])
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()

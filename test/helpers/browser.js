@@ -47,6 +47,9 @@ export async function page(url) {
     errorData() {
       return page.evaluate(($nuxt) => $nuxt.nuxt.err, page.$nuxt)
     },
+    storeState() {
+      return page.evaluate(($nuxt) => $nuxt.$store.state, page.$nuxt)
+    },
     waitForNavigation() {
       return page.waitForFunction('window.$nuxt.$loading.$data.show === false')
     }
