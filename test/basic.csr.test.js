@@ -154,6 +154,20 @@ test('/meta', async t => {
   t.deepEqual(state.meta, [{ works: true }])
 })
 
+test('/fn-midd', async t => {
+  await page.nuxt.navigate('/fn-midd', true)
+
+  t.is(await page.$text('.title'), 'You need to ask the permission')
+  t.deepEqual(await page.nuxt.errorData(), { message: 'You need to ask the permission', statusCode: 403 })
+})
+
+test('/fn-midd?please=true', async t => {
+  await page.nuxt.navigate('/fn-midd?please=true', true)
+
+  const h1 = await page.$text('h1')
+  t.true(h1.includes('Date:'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()

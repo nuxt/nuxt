@@ -204,6 +204,17 @@ test('/meta', async t => {
   t.true(html.includes('"meta":[{"works":true}]'))
 })
 
+test('/fn-midd', async t => {
+  const err = await t.throws(rp(url('/fn-midd'), { resolveWithFullResponse: true }))
+  t.is(err.statusCode, 403)
+  t.true(err.response.body.includes('You need to ask the permission'))
+})
+
+test('/fn-midd?please=true', async t => {
+  const { html } = await nuxt.renderRoute('/fn-midd?please=true')
+  t.true(html.includes('<h1>Date:'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
