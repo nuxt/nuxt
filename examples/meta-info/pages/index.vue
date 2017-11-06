@@ -14,7 +14,7 @@ export default {
     ],
     script: [
       { src: '/head.js' },
-      // will be supported in the near future
+      // Supported since 1.0
       { src: '/body.js', body: true },
       { src: '/defer.js', defer: undefined }
     ]
