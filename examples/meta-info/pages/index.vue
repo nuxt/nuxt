@@ -16,7 +16,7 @@ export default {
       { src: '/head.js' },
       // Supported since 1.0
       { src: '/body.js', body: true },
-      { src: '/defer.js', defer: undefined }
+      { src: '/defer.js', defer: '' }
     ]
   }
 }
