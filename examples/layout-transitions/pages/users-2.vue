@@ -5,12 +5,14 @@
     <span>{{ page }}/{{ totalPages }}</span>
     <nuxt-link v-if="page < totalPages" :to="'?page=' + (page + 1)">Next &gt;</nuxt-link>
     <a v-else class="disabled">Next &gt;</a>
-    <ul>
-      <li v-for="user in users" :key="user.id">
-        <img :src="user.avatar" class="avatar" />
-        <span>{{ user.first_name }} {{ user.last_name }}</span>
-      </li>
-    </ul>
+    <transition mode="out-in" :name="transitionName">
+      <ul :key="page">
+        <li v-for="user in users" :key="user.id">
+          <img :src="user.avatar" class="avatar" />
+          <span>{{ user.first_name }} {{ user.last_name }}</span>
+        </li>
+      </ul>
+    </transition>
     <p><nuxt-link to="/">Back home</nuxt-link></p>
   </div>
 </template>
@@ -19,14 +21,16 @@
 import axios from 'axios'
 
 export default {
-  // Watch for $route.query.page to call Component methods (asyncData, fetch, validate, layout, etc.)
-  watchQuery: ['page'],
-  // Key for <nuxt-child> (transitions)
-  key: (to) => to.fullPath,
-  // Called to know which transition to apply
-  transition(to, from) {
-    if (!from) return 'slide-left'
-    return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
+  watch: {
+    '$route.query.page': async function (page) {
+      this.$nuxt.$loading.start()
+      const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+      this.users = data.data
+      this.transitionName = this.getTransitionName(page)
+      this.page = +(page || 1)
+      this.totalPages = data.total_pages
+      this.$nuxt.$loading.finish()
+    }
   },
   async asyncData({ query }) {
     const page = +(query.page || 1)
@@ -35,6 +39,16 @@ export default {
       page,
       totalPages: data.total_pages,
       users: data.data
+    }
+  },
+  data() {
+    return {
+      transitionName: this.getTransitionName(this.page)
+    }
+  },
+  methods: {
+    getTransitionName(newPage) {
+      return newPage < this.page ? 'slide-right' : 'slide-left'
     }
   }
 }
@@ -56,6 +70,7 @@ ul {
   width: 100%;
   max-width: 400px;
   padding-top: 40px;
+  transition: all .5s cubic-bezier(.55,0,.1,1);
 }
 li {
   list-style-type: none;
