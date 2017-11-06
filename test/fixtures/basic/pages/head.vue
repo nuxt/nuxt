@@ -10,6 +10,9 @@ export default {
     title: 'My title',
     meta: [
       { content: 'my meta' }
+    ],
+    script: [
+      { src: '/body.js', body: true }
     ]
   }
 }

@@ -69,9 +69,11 @@ test('/store', async t => {
 })
 
 test('/head', async t => {
+  const msg = new Promise((resolve) => page.on('console', (msg) => resolve(msg.text)))
   await page.nuxt.navigate('/head', true)
   const metas = await page.$$attr('meta', 'content')
 
+  t.is(await msg, 'Body script!')
   t.is(await page.title(), 'My title - Nuxt.js')
   t.is(await page.$text('h1'), 'I can haz meta tags')
   t.is(metas[0], 'my meta')
