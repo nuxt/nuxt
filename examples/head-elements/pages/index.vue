@@ -11,6 +11,12 @@ export default {
     title: 'Home page 🚀',
     meta: [
       { hid: 'description', name: 'description', content: 'Home page description' }
+    ],
+    script: [
+      { src: '/head.js' },
+      // will be supported in the near future
+      { src: '/body.js', body: true },
+      { src: '/defer.js', defer: undefined }
     ]
   }
 }
