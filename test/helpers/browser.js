@@ -27,11 +27,14 @@ export async function page(url) {
   page.$nuxt = await page.evaluateHandle('window.$nuxt')
 
   page.nuxt = {
-    async navigate(path, wait = false) {
+    async navigate(path, waitEnd = true) {
+      const hook = page.evaluate(async () => {
+        await new Promise((resolve) => window.$nuxt.$once('routeChanged', resolve))
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      })
       await page.evaluate(($nuxt, path) => $nuxt.$router.push(path), page.$nuxt, path)
-      if (wait) {
-        await this.waitForNavigation()
-      }
+      if (waitEnd) await hook
+      return { hook }
     },
     routeData() {
       return page.evaluate(($nuxt) => {
@@ -49,9 +52,6 @@ export async function page(url) {
     },
     storeState() {
       return page.evaluate(($nuxt) => $nuxt.$store.state, page.$nuxt)
-    },
-    waitForNavigation() {
-      return page.waitForFunction('window.$nuxt.$loading.$data.show === false')
     }
   }
   return page
