@@ -28,9 +28,9 @@ export async function page(url) {
 
   page.nuxt = {
     async navigate(path, waitEnd = true) {
-      const hook = page.evaluate(async () => {
-        await new Promise((resolve) => window.$nuxt.$once('routeChanged', resolve))
-        await new Promise((resolve) => setTimeout(resolve, 50))
+      const hook = page.evaluate(() => {
+        return new Promise((resolve) => window.$nuxt.$once('routeChanged', resolve))
+          .then(() => new Promise((resolve) => setTimeout(resolve, 50)))
       })
       await page.evaluate(($nuxt, path) => $nuxt.$router.push(path), page.$nuxt, path)
       if (waitEnd) await hook
