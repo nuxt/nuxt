@@ -148,6 +148,7 @@ test('/redirect3', async t => {
   const page = await browser.page(url('/'))
   await page.nuxt.navigate('/redirect3', false)
   await page.waitForFunction(() => window.location.href === 'https://nuxtjs.org/')
+  page.close()
   t.pass()
 })
 
