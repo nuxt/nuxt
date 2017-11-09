@@ -143,6 +143,14 @@ test('/redirect2', async t => {
   t.is(await page.$text('h1'), 'Index page')
 })
 
+test('/redirect3', async t => {
+  // New page for redirecting to external link.
+  const page = await browser.page(url('/'))
+  await page.nuxt.navigate('/redirect3', false)
+  await page.waitForFunction(() => window.location.href === 'https://nuxtjs.org/')
+  t.pass()
+})
+
 test('/no-ssr', async t => {
   await page.nuxt.navigate('/no-ssr')
 
