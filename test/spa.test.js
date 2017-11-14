@@ -8,8 +8,9 @@ const url = (route) => 'http://localhost:' + port + route
 
 const renderRoute = async _url => {
   const window = await nuxt.renderAndGetWindow(url(_url))
+  const head = window.document.head.innerHTML
   const html = window.document.body.innerHTML
-  return { window, html }
+  return { window, head, html }
 }
 
 // Init nuxt.js and create server listening on localhost:4000
@@ -27,6 +28,11 @@ test('/ (basic spa)', async t => {
 test('/custom (custom layout)', async t => {
   const { html } = await renderRoute('/custom')
   t.true(html.includes('Custom layout'))
+})
+
+test('/custom (not default layout)', async t => {
+  const { head } = await renderRoute('/custom')
+  t.false(head.includes('src="/_nuxt/layouts/default.'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
