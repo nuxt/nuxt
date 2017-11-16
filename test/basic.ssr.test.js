@@ -55,12 +55,17 @@ test('/store', async t => {
 })
 
 test('/head', async t => {
+  stdMocks.use()
   const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
   const html = window.document.body.innerHTML
   const metas = window.document.getElementsByTagName('meta')
+  stdMocks.restore()
+  const { stdout } = stdMocks.flush()
+  t.is(stdout[0], 'Body script!\n')
   t.is(window.document.title, 'My title - Nuxt.js')
   t.is(metas[0].getAttribute('content'), 'my meta')
   t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
+  t.true(html.includes('<script data-n-head="true" src="/body.js" data-body="true">'))
 })
 
 test('/async-data', async t => {

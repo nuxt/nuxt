@@ -40,69 +40,71 @@ test('Open /', async t => {
 })
 
 test('/stateless', async t => {
-  await page.nuxt.navigate('/stateless')
+  const { hook } = await page.nuxt.navigate('/stateless', false)
   const loading = await page.nuxt.loadingData()
 
   t.is(loading.show, true)
-  await page.nuxt.waitForNavigation()
+  await hook
   t.is(await page.$text('h1'), 'My component!')
 })
 
 test('/css', async t => {
-  await page.nuxt.navigate('/css', true)
+  await page.nuxt.navigate('/css')
 
   t.is(await page.$text('.red'), 'This is red')
   t.is(await page.$eval('.red', (red) => window.getComputedStyle(red).color), 'rgb(255, 0, 0)')
 })
 
 test('/stateful', async t => {
-  await page.nuxt.navigate('/stateful', true)
+  await page.nuxt.navigate('/stateful')
 
   t.is(await page.$text('p'), 'The answer is 42')
 })
 
 test('/store', async t => {
-  await page.nuxt.navigate('/store', true)
+  await page.nuxt.navigate('/store')
 
   t.is(await page.$text('h1'), 'Vuex Nested Modules')
   t.is(await page.$text('p'), '1')
 })
 
 test('/head', async t => {
-  await page.nuxt.navigate('/head', true)
+  const msg = new Promise((resolve) => page.on('console', (msg) => resolve(msg.text)))
+  await page.nuxt.navigate('/head')
   const metas = await page.$$attr('meta', 'content')
 
+  t.is(await msg, 'Body script!')
   t.is(await page.title(), 'My title - Nuxt.js')
   t.is(await page.$text('h1'), 'I can haz meta tags')
   t.is(metas[0], 'my meta')
 })
 
 test('/async-data', async t => {
-  await page.nuxt.navigate('/async-data', true)
+  await page.nuxt.navigate('/async-data')
 
   t.is(await page.$text('p'), 'Nuxt.js')
 })
 
 test('/await-async-data', async t => {
-  await page.nuxt.navigate('/await-async-data', true)
+  await page.nuxt.navigate('/await-async-data')
 
   t.is(await page.$text('p'), 'Await Nuxt.js')
 })
 
 test('/callback-async-data', async t => {
-  await page.nuxt.navigate('/callback-async-data', true)
+  await page.nuxt.navigate('/callback-async-data')
 
   t.is(await page.$text('p'), 'Callback Nuxt.js')
 })
 
 test('/users/1', async t => {
-  await page.nuxt.navigate('/users/1', true)
+  await page.nuxt.navigate('/users/1')
 
   t.is(await page.$text('h1'), 'User: 1')
 })
 
 test('/validate should display a 404', async t => {
-  await page.nuxt.navigate('/validate', true)
+  await page.nuxt.navigate('/validate')
   const error = await page.nuxt.errorData()
 
   t.is(error.statusCode, 404)
@@ -110,59 +112,59 @@ test('/validate should display a 404', async t => {
 })
 
 test('/validate?valid=true', async t => {
-  await page.nuxt.navigate('/validate?valid=true', true)
+  await page.nuxt.navigate('/validate?valid=true')
 
   t.is(await page.$text('h1'), 'I am valid')
 })
 
 test('/redirect', async t => {
-  await page.nuxt.navigate('/redirect', true)
+  await page.nuxt.navigate('/redirect')
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
 test('/error', async t => {
-  await page.nuxt.navigate('/error', true)
+  await page.nuxt.navigate('/error')
 
   t.deepEqual(await page.nuxt.errorData(), { statusCode: 500 })
   t.is(await page.$text('.title'), 'Error mouahahah')
 })
 
 test('/error2', async t => {
-  await page.nuxt.navigate('/error2', true)
+  await page.nuxt.navigate('/error2')
 
   t.is(await page.$text('.title'), 'Custom error')
   t.deepEqual(await page.nuxt.errorData(), { message: 'Custom error' })
 })
 
 test('/redirect2', async t => {
-  await page.nuxt.navigate('/redirect2', true)
+  await page.nuxt.navigate('/redirect2')
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
 test('/no-ssr', async t => {
-  await page.nuxt.navigate('/no-ssr', true)
+  await page.nuxt.navigate('/no-ssr')
 
   t.is(await page.$text('h1'), 'Displayed only on client-side')
 })
 
 test('/meta', async t => {
-  await page.nuxt.navigate('/meta', true)
+  await page.nuxt.navigate('/meta')
 
   const state = await page.nuxt.storeState()
   t.deepEqual(state.meta, [{ works: true }])
 })
 
 test('/fn-midd', async t => {
-  await page.nuxt.navigate('/fn-midd', true)
+  await page.nuxt.navigate('/fn-midd')
 
   t.is(await page.$text('.title'), 'You need to ask the permission')
   t.deepEqual(await page.nuxt.errorData(), { message: 'You need to ask the permission', statusCode: 403 })
 })
 
 test('/fn-midd?please=true', async t => {
-  await page.nuxt.navigate('/fn-midd?please=true', true)
+  await page.nuxt.navigate('/fn-midd?please=true')
 
   const h1 = await page.$text('h1')
   t.true(h1.includes('Date:'))

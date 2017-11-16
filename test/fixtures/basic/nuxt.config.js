@@ -14,5 +14,6 @@ module.exports = {
     },
     bad: null,
     '': true
-  }
+  },
+  transition: false
 }

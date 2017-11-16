@@ -42,7 +42,7 @@ test('/ (custom app.html)', async t => {
 
 test('/ (custom build.publicPath)', async t => {
   const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('src="/test/orion/common.'))
+  t.true(html.includes('src="/test/orion/vendor.'))
 })
 
 test('/test/ (router base)', async t => {

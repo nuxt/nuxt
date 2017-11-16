@@ -5,7 +5,7 @@
     "nuxt": "latest"
   },
   "scripts": {
-    "dev": "../../bin/nuxt",
+    "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start"
   }

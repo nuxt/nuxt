@@ -40,10 +40,10 @@ test('Loading /patch and keep ', async t => {
 })
 
 test('Navigate to /patch/1', async t => {
-  await page.nuxt.navigate('/patch/1')
+  const { hook } = await page.nuxt.navigate('/patch/1', false)
   const loading = await page.nuxt.loadingData()
   t.is(loading.show, true)
-  await page.nuxt.waitForNavigation()
+  await hook
 
   const h2 = await page.$text('h2')
   t.true(h2.includes('_id:'))
@@ -53,7 +53,7 @@ test('Navigate to /patch/1', async t => {
 })
 
 test('Navigate to /patch/2', async t => {
-  await page.nuxt.navigate('/patch/2', true)
+  await page.nuxt.navigate('/patch/2')
   const date = await page.$text('[data-date-id]')
 
   t.is(await page.$text('h3'), 'Index')
@@ -63,28 +63,19 @@ test('Navigate to /patch/2', async t => {
 })
 
 test('Navigate to /patch/2?test=true', async t => {
-  await page.nuxt.navigate('/patch/2?test=true', true)
+  await page.nuxt.navigate('/patch/2?test=true')
   t.is(dates.patch, await page.$text('[data-date-patch]'))
   t.is(dates.id, await page.$text('[data-date-id]'))
 })
 
 test('Navigate to /patch/2#test', async t => {
-  await page.nuxt.navigate('/patch/2#test', true)
+  await page.nuxt.navigate('/patch/2#test')
   t.is(dates.patch, await page.$text('[data-date-patch]'))
   t.is(dates.id, await page.$text('[data-date-id]'))
 })
 
 test('Navigate to /patch/2/child', async t => {
-  await page.nuxt.navigate('/patch/2/child', true)
-  dates.child = await page.$text('[data-date-child]')
-
-  t.is(dates.patch, await page.$text('[data-date-patch]'))
-  t.is(dates.id, await page.$text('[data-date-id]'))
-  t.true(+dates.child > +dates.id)
-})
-
-test('Navigate to /patch/2/child', async t => {
-  await page.nuxt.navigate('/patch/2/child', true)
+  await page.nuxt.navigate('/patch/2/child')
   dates.child = await page.$text('[data-date-child]')
   dates.slug = await page.$text('[data-date-child-slug]')
 
@@ -95,7 +86,7 @@ test('Navigate to /patch/2/child', async t => {
 })
 
 test('Navigate to /patch/2/child/1', async t => {
-  await page.nuxt.navigate('/patch/2/child/1', true)
+  await page.nuxt.navigate('/patch/2/child/1')
   const date = await page.$text('[data-date-child-slug]')
 
   t.is(dates.patch, await page.$text('[data-date-patch]'))
@@ -106,7 +97,7 @@ test('Navigate to /patch/2/child/1', async t => {
 })
 
 test('Navigate to /patch/2/child/1?foo=bar', async t => {
-  await page.nuxt.navigate('/patch/2/child/1?foo=bar', true)
+  await page.nuxt.navigate('/patch/2/child/1?foo=bar')
 
   t.is(dates.patch, await page.$text('[data-date-patch]'))
   t.is(dates.id, await page.$text('[data-date-id]'))
