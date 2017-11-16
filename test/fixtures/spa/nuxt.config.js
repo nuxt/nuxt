@@ -1,5 +1,6 @@
 module.exports = {
   rootDir: __dirname,
   mode: 'spa',
-  dev: false
+  dev: false,
+  transition: false
 }
