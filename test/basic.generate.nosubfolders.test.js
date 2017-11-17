@@ -1,5 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
+import { existsSync } from 'fs'
 import http from 'http'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
@@ -78,6 +79,8 @@ test('/async-data', async t => {
 test('/users/1', async t => {
   const html = await rp(url('/users/1'))
   t.true(html.includes('<h1>User: 1</h1>'))
+  t.true(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1.html')))
+  t.false(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html')))
 })
 
 test('/users/2', async t => {
