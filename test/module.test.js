@@ -1,4 +1,5 @@
 import test from 'ava'
+import stdMocks from 'std-mocks'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
@@ -8,6 +9,7 @@ const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
+let builtErr = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -17,7 +19,14 @@ test.before('Init Nuxt.js', async t => {
   config.dev = false
   nuxt = new Nuxt(config)
   builder = new Builder(nuxt)
+
+  stdMocks.use({
+    stdout: false,
+    stderr: true
+  })
   await builder.build()
+  stdMocks.restore()
+  builtErr = stdMocks.flush().stderr
 
   await nuxt.listen(port, 'localhost')
 })
@@ -49,9 +58,16 @@ test('Hooks - Functional', async t => {
   t.true(builder.__build_done__)
 })
 
+test('Hooks - Error', async t => {
+  const errors = builtErr.filter(value => value.indexOf('build:extendRoutes') >= 0)
+  t.true(errors.length === 1)
+})
+
 // Note: Plugin is deprecated. Please use new hooks system.
 test('Plugin', async t => {
   t.is(nuxt.__builder_plugin, 4)
+  const error = builtErr.filter(value => value.indexOf('deprecated') >= 0)
+  t.true(error.length === 1)
 })
 
 // Close server and ask nuxt to stop listening to file changes

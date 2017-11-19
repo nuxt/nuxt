@@ -20,4 +20,8 @@ module.exports = function () {
   this.nuxt.plugin('built', (builder) => {
     this.nuxt.__builder_plugin = builder && ctr++
   })
+
+  this.nuxt.hook('build:extendRoutes', (builder) => {
+    throw new Error('hook error testing')
+  })
 }
