@@ -6848,6 +6848,10 @@ urlgrey@0.4.4:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/urlgrey/-/urlgrey-0.4.4.tgz#892fe95960805e85519f1cd4389f2cb4cbb7652f"
 
+urlite@^1.2.8:
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/urlite/-/urlite-1.2.8.tgz#dacf3d55aa472f023680a9a3d984d7616cf5e3bc"
+
 util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
