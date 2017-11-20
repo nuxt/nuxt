@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   srcDir: __dirname,
   router: {
@@ -14,6 +16,7 @@ module.exports = {
       ]
     }
   },
+  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   transition: 'test',
   layoutTransition: 'test',
   offline: true,
@@ -43,6 +46,9 @@ module.exports = {
       generateStatsFile: true
     },
     extend(config, options) {
+      if (options.dev) {
+        // Please use isDev instead of dev
+      }
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })
