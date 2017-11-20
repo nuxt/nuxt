@@ -1,5 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
+import stdMocks from 'std-mocks'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
 
@@ -7,6 +8,7 @@ const port = 4007
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
+let builtErr = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -15,7 +17,14 @@ test.before('Init Nuxt.js', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
+
+  stdMocks.use({
+    stdout: false,
+    stderr: true
+  })
   await new Builder(nuxt).build()
+  stdMocks.restore()
+  builtErr = stdMocks.flush().stderr
 
   await nuxt.listen(port, 'localhost')
 })
@@ -122,6 +131,12 @@ test('Check /test/test.txt with custom serve-static options', async t => {
 test('Check /test.txt should return 404', async t => {
   const err = await t.throws(rp(url('/test.txt')))
   t.is(err.response.statusCode, 404)
+})
+
+test('Check deprecated dev in build.extend()', async t => {
+  const deprecatedMsg = 'dev has been deprecated in build.extend(), please use isDev\n'
+  const errors = builtErr.filter(value => value === deprecatedMsg)
+  t.true(errors.length === 2)
 })
 
 // Close server and ask nuxt to stop listening to file changes
