@@ -3,20 +3,23 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export function createRouter () {
+const indexPage = () => import('~/views/index.vue').then(m => m.default || m)
+const aboutPage = () => import('~/views/about.vue').then(m => m.default || m)
+
+export function createRouter() {
   return new Router({
     mode: 'history',
     routes: [
-  		{
-			path: "/",
-			component: require('~/views/index.vue'),
-			name: "index"
-		},
-		{
-			path: "/about",
-			component: require('~/views/about.vue'),
-			name: "about"
-		}
+      {
+        path: '/',
+        component: indexPage,
+        name: 'index'
+      },
+      {
+        path: '/about',
+        component: aboutPage,
+        name: 'about'
+      }
     ]
   })
 }

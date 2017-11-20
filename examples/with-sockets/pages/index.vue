@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import socket from '~plugins/socket.io.js'
+import socket from '~/plugins/socket.io.js'
 
 export default {
-  asyncData (context, callback) {
+  asyncData(context, callback) {
     socket.emit('last-messages', function (messages) {
       callback(null, {
         messages,
@@ -28,16 +28,16 @@ export default {
   watch: {
     'messages': 'scrollToBottom'
   },
-  beforeMount () {
+  beforeMount() {
     socket.on('new-message', (message) => {
       this.messages.push(message)
     })
   },
-  mounted () {
+  mounted() {
     this.scrollToBottom()
   },
   methods: {
-    sendMessage () {
+    sendMessage() {
       if (!this.message.trim()) return
       let message = {
         date: new Date().toJSON(),
@@ -47,7 +47,7 @@ export default {
       this.message = ''
       socket.emit('send-message', message)
     },
-    scrollToBottom () {
+    scrollToBottom() {
       this.$nextTick(() => {
         this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
       })

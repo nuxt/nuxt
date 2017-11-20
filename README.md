@@ -2,7 +2,7 @@
 <p align="center">
   <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/Atinux/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/gwab06obc6srx9g4?svg=true" alt="Windows Build Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/dev.svg" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
@@ -15,7 +15,7 @@
 
 </p>
 
-> Nuxt.js is a framework for server-rendered Vue applications (inspired by [Next.js](https://github.com/zeit/next.js))
+> Nuxt.js is a Versatile Vue.js Framework
 
 ## 🚧 Under active development, [1.0](https://github.com/nuxt/nuxt.js/projects/1) will be released soon :fire:
 
@@ -98,6 +98,8 @@ Support us with a monthly donation and help us continue our activities. [[Become
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 👥 [Nuxt.js Community](https://github.com/nuxt-community)
+- 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
 - 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
 ## Getting started
@@ -157,19 +159,28 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 ## Templates
 
 You can start by using one of our starter templates:
-- [starter](https://github.com/nuxt/starter): Basic Nuxt.js project template
-- [express](https://github.com/nuxt/express): Nuxt.js + Express
-- [koa](https://github.com/nuxt/koa): Nuxt.js + Koa
-- [adonuxt](https://github.com/nuxt/adonuxt): Nuxt.js + AdonisJS
+- [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
+- [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
+- [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
+- [adonuxt](https://github.com/nuxt-community/adonuxt-template): Nuxt.js + AdonisJS
+- [micro](https://github.com/nuxt-community/micro-template): Nuxt.js + Micro
+- [nuxtent](https://github.com/nuxt-community/nuxtent-template): Nuxt.js + Nuxtent module for content heavy sites
 
 ## Using nuxt.js programmatically
 
 ```js
-const Nuxt = require('nuxt')
+const { Nuxt, Builder } = require('nuxt')
 
-// Launch nuxt build with given options
+// Import and set nuxt.js options
 let config = require('./nuxt.config.js')
+config.dev = !(process.env.NODE_ENV === 'production')
+
 let nuxt = new Nuxt(config)
+
+// Start build process (only in development)
+if (config.dev) {
+  new Builder(nuxt).build()
+}
 
 // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
@@ -240,4 +251,7 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 ## Roadmap
 
-https://github.com/nuxt/nuxt.js/projects/1
+https://trello.com/b/lgy93IOl/nuxtjs-10
+
+## Contributing
+Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)

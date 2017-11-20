@@ -7,9 +7,9 @@
 
 <script>
 export default {
-  asyncData ({ req }) {
+  asyncData() {
     return {
-      name: req ? 'server' : 'client'
+      name: process.static ? 'static' : (process.server ? 'server' : 'client')
     }
   }
 }

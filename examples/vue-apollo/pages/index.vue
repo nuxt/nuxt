@@ -12,21 +12,17 @@
 </template>
 
 <script>
-import client from '~plugins/apollo'
-import gql from 'graphql-tag'
+import allCars from '~/apollo/queries/allCars'
 
 export default {
   apollo: {
-    allCars: gql`
-      query {
-        allCars {
-          id
-          make
-          model
-          year
-        }
-      }
-    `
+    allCars: {
+      prefetch: true,
+      query: allCars
+    }
+  },
+  head: {
+    title: 'Cars with Apollo'
   }
 }
 </script>

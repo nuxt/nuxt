@@ -11,15 +11,13 @@
 </template>
 
 <script>
-import axios from '~plugins/axios'
+import axios from '~/plugins/axios'
 
 export default {
-  async data({ route }) {
+  async asyncData({ route }) {
     const { key } = route.params
-    const { data } = await axios.get(`users/${key}.json`)
-    return {
-      user: data
-    }
+    const { data: user } = await axios.get(`users/${key}.json`)
+    return { user }
   }
 }
 </script>

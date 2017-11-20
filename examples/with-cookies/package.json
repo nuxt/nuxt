@@ -1,0 +1,13 @@
+{
+  "name": "hello-nuxt",
+  "dependencies": {
+    "cookie": "^0.3.1",
+    "js-cookie": "^2.1.4",
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

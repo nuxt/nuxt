@@ -1,4 +1,5 @@
 module.exports = {
+  loading: false,
   head: {
     meta: [
       { charset: 'utf-8' },
@@ -13,6 +14,16 @@ module.exports = {
       { id: 4, name: 'Lebron James', number: 23 },
       { id: 5, name: 'Kevin Durant', number: 35 },
       { id: 6, name: 'Kyrie Irving', number: 2 }
+    ]
+  },
+  generate: {
+    routes: [
+      '/1',
+      '/2',
+      '/3',
+      '/4',
+      '/5',
+      '/6'
     ]
   }
 }

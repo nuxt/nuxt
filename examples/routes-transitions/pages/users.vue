@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :key="page">
+  <div class="container">
     <nuxt-link v-if="page > 1" :to="'?page=' + (page - 1)">&lt; Prev</nuxt-link>
     <a v-else class="disabled">&lt; Prev</a>
     <span>{{ page }}/{{ totalPages }}</span>
@@ -19,20 +19,18 @@
 import axios from 'axios'
 
 export default {
-  transition (to, from) {
+  transition(to, from) {
     if (!from) return 'slide-left'
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  asyncData ({ query }) {
+  async asyncData({ query }) {
     const page = +query.page || 1
-    return axios.get('https://reqres.in/api/users?page=' + page)
-    .then((res) => {
-      return {
-        page: +res.data.page,
-        totalPages: res.data.total_pages,
-        users: res.data.data
-      }
-    })
+    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+    return {
+      page: +data.page,
+      totalPages: data.total_pages,
+      users: data.data
+    }
   }
 }
 </script>

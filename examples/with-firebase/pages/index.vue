@@ -28,14 +28,12 @@
 </template>
 
 <script>
-import axios from '~plugins/axios'
+import axios from '~/plugins/axios'
 
 export default {
-  async data() {
-    const { data } = await axios.get('users.json')
-    return {
-      users: data
-    }
+  async asyncData() {
+    const { data: users } = await axios.get('users.json')
+    return { users }
   }
 }
 </script>

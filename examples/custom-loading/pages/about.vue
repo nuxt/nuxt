@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  asyncData () {
+  asyncData() {
     return new Promise((resolve) => {
       setTimeout(function () {
         resolve({})

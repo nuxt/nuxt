@@ -20,7 +20,7 @@ export default {
     todos: 'todos/todos'
   }),
   methods: {
-    addTodo (e) {
+    addTodo(e) {
       var text = e.target.value
       if (text.trim()) {
         this.$store.commit('todos/add', { text })

@@ -1,63 +1,91 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
-process.env.DEBUG = 'nuxt:*'
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
-var fs = require('fs')
-var without = require('lodash').without
-var Nuxt = require('../')
-var resolve = require('path').resolve
+const fs = require('fs')
+const parseArgs = require('minimist')
+const { Nuxt, Builder, Generator } = require('../')
+const resolve = require('path').resolve
+const debug = require('debug')('nuxt:build')
+debug.color = 2 // Force green color
 
-// --analyze option
-var analyzeBuild = false
-if (process.argv.indexOf('--analyze') !== -1 || process.argv.indexOf('-a') !== -1) {
-  analyzeBuild = true
-  process.argv = without(process.argv, '--analyze', '-a')
+const argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    c: 'config-file',
+    a: 'analyze',
+    s: 'spa',
+    u: 'universal'
+  },
+  boolean: ['h', 'a', 's', 'u'],
+  string: ['c'],
+  default: {
+    c: 'nuxt.config.js'
+  }
+})
+
+if (argv.help) {
+  console.log(`
+    Description
+      Compiles the application for production deployment
+    Usage
+      $ nuxt build <dir>
+    Options
+      --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
+      --spa                Launch in SPA mode
+      --universal          Launch in Universal mode (default)
+      --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h           Displays this message
+  `)
+  process.exit(0)
 }
 
-var nuxtConfigFileName = 'nuxt.config.js'
-
-// --config-file option
-var indexOfConfig = false
-if (process.argv.indexOf('--config-file') !== -1) {
-  indexOfConfig = process.argv.indexOf('--config-file')
-} else if (process.argv.indexOf('-c') !== -1) {
-  indexOfConfig = process.argv.indexOf('-c')
-}
-
-if (indexOfConfig !== false) {
-  nuxtConfigFileName = process.argv.slice(indexOfConfig)[1]
-  process.argv = without(process.argv, '--config-file', '-c', nuxtConfigFileName)
-}
-
-// Root directory parameter
-var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFilePath = resolve(rootDir, nuxtConfigFileName)
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
-if (fs.existsSync(nuxtConfigFilePath)) {
-  options = require(nuxtConfigFilePath)
-} else {
-  console.log(`Could not locate ${nuxtConfigFilePath}`) // eslint-disable-line no-console
+if (fs.existsSync(nuxtConfigFile)) {
+  options = require(nuxtConfigFile)
+} else if (argv['config-file'] !== 'nuxt.config.js') {
+  console.error(`> Could not load config file ${argv['config-file']}`)
+  process.exit(1)
 }
-
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
-options.dev = false // Create production build when calling `nuxt build`
+// Create production build when calling `nuxt build`
+options.dev = false
 
+// Nuxt Mode
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+
+// Analyze option
 options.build = options.build || {}
-if (analyzeBuild) {
-  options.build.analyze = analyzeBuild
+if (argv.analyze) {
+  options.build.analyze = true
 }
 
-console.log('[nuxt] Building...') // eslint-disable-line no-console
-var nuxt = module.exports = new Nuxt(options)
-nuxt.build()
-  .then(() => {
-    console.log('[nuxt] Building done') // eslint-disable-line no-console
+debug('Building...')
+const nuxt = new Nuxt(options)
+const builder = new Builder(nuxt)
+
+if (options.mode !== 'spa') {
+  // Build for SSR app
+  builder.build()
+    .then(() => debug('Building done'))
+    .catch((err) => {
+      console.error(err)
+      process.exit(1)
+    })
+} else {
+  // Disable minify to get exact results of nuxt start
+  nuxt.options.generate.minify = false
+  // Generate on spa mode
+  new Generator(nuxt, builder).generate({ build: true }).then(() => {
+    if (!nuxt.options.dev) {
+      console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
+    }
   })
-  .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
-    process.exit(1)
-  })
+}

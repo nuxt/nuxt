@@ -1,31 +1,82 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
-process.env.DEBUG = 'nuxt:*'
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
-var fs = require('fs')
-var Nuxt = require('../')
-var resolve = require('path').resolve
+const fs = require('fs')
+const parseArgs = require('minimist')
+const debug = require('debug')('nuxt:generate')
 
-var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js')
+const { Nuxt, Builder, Generator } = require('../')
+const resolve = require('path').resolve
+
+const argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    c: 'config-file',
+    s: 'spa',
+    u: 'universal'
+  },
+  boolean: ['h', 's', 'u', 'build'],
+  string: ['c'],
+  default: {
+    c: 'nuxt.config.js',
+    build: true
+  }
+})
+
+if (argv.help) {
+  console.log(`
+    Description
+      Generate a static web application (server-rendered)
+    Usage
+      $ nuxt generate <dir>
+    Options
+      --spa              Launch in SPA mode
+      --spa              Launch in SPA mode
+      --universal        Launch in Universal mode (default)
+      --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h         Displays this message
+      --no-build         Just run generate for faster builds when just dynamic routes changed. Nuxt build is needed before this command.
+  `)
+  process.exit(0)
+}
+
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
 var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
+} else if (argv['config-file'] !== 'nuxt.config.js') {
+  console.error(`> Could not load config file ${argv['config-file']}`)
+  process.exit(1)
 }
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
 options.dev = false // Force production mode (no webpack middleware called)
 
-console.log('[nuxt] Generating...') // eslint-disable-line no-console
-var nuxt = module.exports = new Nuxt(options)
-nuxt.generate()
+// Nuxt Mode
+options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+
+debug('Generating...')
+const nuxt = new Nuxt(options)
+const builder = new Builder(nuxt)
+const generator = new Generator(nuxt, builder)
+
+const generateOptions = {
+  init: true,
+  build: argv['build']
+}
+
+generator.generate(generateOptions)
   .then(() => {
-    console.log('[nuxt] Generate done') // eslint-disable-line no-console
+    debug('Generate done')
+    process.exit(0)
   })
   .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
+    console.error(err)
     process.exit(1)
   })

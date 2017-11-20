@@ -1,17 +1,21 @@
-# dependencies
+# Dependencies
 node_modules
 examples/**/*/yarn.lock
+jspm_packages
+package-lock.json
 
-# logs
+# Logs
 *.log
+npm-debug.log*
 
-# other
+# Other
 .nuxt
+.cache
 
 # Dist folder
 dist
 
-# dist example generation
+# Dist example generation
 examples/**/dist
 
 # Coverage support
@@ -23,3 +27,24 @@ coverage
 # Intellij idea
 *.iml
 .idea
+
+# OSX
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk

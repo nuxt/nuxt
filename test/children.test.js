@@ -1,22 +1,22 @@
 import test from 'ava'
 import { resolve } from 'path'
+import { Nuxt, Builder } from '../index.js'
+
 const port = 4004
 // const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
-let server = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const Nuxt = require('../')
   const options = {
     rootDir: resolve(__dirname, 'fixtures/children'),
     dev: false
   }
   nuxt = new Nuxt(options)
-  await nuxt.build()
-  server = new nuxt.Server(nuxt)
-  server.listen(port, 'localhost')
+  await new Builder(nuxt).build()
+
+  await nuxt.listen(port, 'localhost')
 })
 
 test('/parent', async t => {
@@ -55,6 +55,5 @@ test('/parent/validate-child?key=12345', async t => {
 
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
-  server.close()
   nuxt.close()
 })

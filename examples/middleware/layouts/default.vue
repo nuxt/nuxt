@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import Visits from '~components/Visits'
+import Visits from '~/components/Visits'
 
 export default {
   components: { Visits }

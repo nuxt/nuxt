@@ -1,0 +1,9 @@
+{
+  "name": "nuxt-benchmarks",
+  "scripts": {
+    "build": "nuxt build",
+    "start": "npm run build && nuxt start",
+    "bench:stateless": "ab -c1 -n3000 http://127.0.0.1:3000/stateless",
+    "bench:stateless-big": "ab -c1 -n500 http://127.0.0.1:3000/stateless-big"
+  }
+}

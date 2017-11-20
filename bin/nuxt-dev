@@ -1,80 +1,129 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
-process.env.DEBUG = 'nuxt:*'
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
-var _ = require('lodash')
-var debug = require('debug')('nuxt:build')
+const _ = require('lodash')
+const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
-var fs = require('fs')
-var Nuxt = require('../')
-var chokidar = require('chokidar')
-var resolve = require('path').resolve
-var without = require('lodash').without
+const fs = require('fs')
+const parseArgs = require('minimist')
+const { Nuxt, Builder } = require('../')
+const chokidar = require('chokidar')
+const path = require('path')
+const resolve = path.resolve
+const pkg = require(path.join('..', 'package.json'))
 
-var nuxtConfigFileName = 'nuxt.config.js'
+const argv = parseArgs(process.argv.slice(2), {
+  alias: {
+    h: 'help',
+    H: 'hostname',
+    p: 'port',
+    c: 'config-file',
+    s: 'spa',
+    u: 'universal',
+    v: 'version'
+  },
+  boolean: ['h', 's', 'u', 'v'],
+  string: ['H', 'c'],
+  default: {
+    c: 'nuxt.config.js'
+  }
+})
 
-// --config-file option
-var indexOfConfig = false
-if (process.argv.indexOf('--config-file') !== -1) {
-  indexOfConfig = process.argv.indexOf('--config-file')
-} else if (process.argv.indexOf('-c') !== -1) {
-  indexOfConfig = process.argv.indexOf('-c')
+if (argv.version) {
+  console.log(pkg.version)
+  process.exit(0)
 }
 
-if (indexOfConfig !== false) {
-  nuxtConfigFileName = process.argv.slice(indexOfConfig)[1]
-  process.argv = without(process.argv, '--config-file', '-c', nuxtConfigFileName)
+if (argv.hostname === '') {
+  console.error(`> Provided hostname argument has no value`)
+  process.exit(1)
 }
 
-var rootDir = resolve(process.argv.slice(2)[0] || '.')
-var nuxtConfigFile = resolve(rootDir, nuxtConfigFileName)
-
-var options = {}
-if (fs.existsSync(nuxtConfigFile)) {
-  options = require(nuxtConfigFile)
+if (argv.help) {
+  console.log(`
+    Description
+      Starts the application in development mode (hot-code reloading, error
+      reporting, etc)
+    Usage
+      $ nuxt dev <dir> -p <port number> -H <hostname>
+    Options
+      --port, -p          A port number on which to start the application
+      --hostname, -H      Hostname on which to start the application
+      --spa               Launch in SPA mode
+      --universal         Launch in Universal mode (default)
+      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
+      --help, -h          Displays this message
+  `)
+  process.exit(0)
 }
-if (typeof options.rootDir !== 'string') {
-  options.rootDir = rootDir
-}
-options.dev = true // Add hot reloading and watching changes
 
-var nuxt = module.exports = new Nuxt(options)
-var port = process.env.PORT || process.env.npm_package_config_nuxt_port
-var host = process.env.HOST || process.env.npm_package_config_nuxt_host
-var server = nuxt.server = new nuxt.Server(nuxt).listen(port, host)
+const rootDir = resolve(argv._[0] || '.')
+const nuxtConfigFile = resolve(rootDir, argv['config-file'])
 
-listenOnConfigChanges(nuxt, server)
+// Load config once for chokidar
+const nuxtConfig = loadNuxtConfig()
+_.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
-function listenOnConfigChanges(nuxt, server) {
-  // Listen on nuxt.config.js changes
-  var build = _.debounce(() => {
+// Start dev
+let dev = startDev()
+
+// Start watching for nuxt.config.js changes
+chokidar
+  .watch(nuxtConfigFile, nuxtConfig.watchers.chokidar)
+  .on('all', _.debounce(() => {
     debug('[nuxt.config.js] changed')
+    debug('Rebuilding the app...')
+    dev = dev.then(startDev)
+  }), 2500)
+
+function startDev(oldNuxt) {
+  // Get latest environment variables
+  const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
+  const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+
+  // Load options
+  let options = {}
+  try {
+    options = loadNuxtConfig()
+  } catch (err) {
+    console.error(err)
+    return // Wait for next reload
+  }
+
+  // Create nuxt and builder instance
+  const nuxt = new Nuxt(options)
+  const builder = new Builder(nuxt)
+
+  return Promise.resolve()
+    .then(() => builder.build()) // 1- Start build
+    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve()) // 2- Close old nuxt after successful build
+    .then(() => nuxt.listen(port, host)) // 3- Start listening
+    .then(() => nuxt) // 4- Pass new nuxt to watch chain
+}
+
+function loadNuxtConfig() {
+  let options = {}
+
+  if (fs.existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    var options = {}
-    if (fs.existsSync(nuxtConfigFile)) {
-      try {
-        options = require(nuxtConfigFile)
-      } catch (e) {
-        return console.error(e) // eslint-disable-line no-console
-      }
-    }
+    options = require(nuxtConfigFile)
+  } else if (argv['config-file'] !== 'nuxt.config.js') {
+    console.error(`> Could not load config file ${argv['config-file']}`)
+    process.exit(1)
+  }
+
+  if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
-    nuxt.close()
-      .then(() => {
-        nuxt.renderer = null
-        debug('Rebuilding the app...')
-        return new Nuxt(options).build()
-      })
-      .then((nuxt) => {
-        server.nuxt = nuxt
-      })
-      .catch((error) => {
-        console.error('Error while rebuild the app:', error) // eslint-disable-line no-console
-        process.exit(1)
-      })
-  }, 200)
-  var nuxtConfigFile = resolve(rootDir, nuxtConfigFileName)
-  chokidar.watch(nuxtConfigFile, Object.assign({}, nuxt.options.watchers.chokidar, {ignoreInitial: true}))
-    .on('all', build)
+  }
+
+  // Force development mode for add hot reloading and watching changes
+  options.dev = true
+
+  // Nuxt Mode
+  options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+
+  return options
 }

@@ -11,15 +11,16 @@
 import axios from 'axios'
 
 export default {
-  validate ({ params }) {
+  validate({ params }) {
     return !isNaN(+params.id)
   },
-  asyncData ({ params, error }) {
-    return axios.get(`https://jsonplaceholder.typicode.com/users/${+params.id}`)
-    .then((res) => res.data)
-    .catch(() => {
+  async asyncData({ params, error }) {
+    try {
+      const { data } = await axios.get(`https://jsonplaceholder.typicode.com/users/${+params.id}`)
+      return data
+    } catch (e) {
       error({ message: 'User not found', statusCode: 404 })
-    })
+    }
   }
 }
 </script>

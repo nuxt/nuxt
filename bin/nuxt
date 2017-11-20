@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-var join = require('path').join
+const join = require('path').join
+require('../lib/common/cli/errors')
 
-var defaultCommand = 'dev'
-var commands = new Set([
+const defaultCommand = 'dev'
+const commands = new Set([
   defaultCommand,
   'init',
   'build',
@@ -19,6 +20,6 @@ if (commands.has(cmd)) {
   cmd = defaultCommand
 }
 
-var bin = join(__dirname, 'nuxt-' + cmd)
+const bin = join(__dirname, 'nuxt-' + cmd)
 
 require(bin)

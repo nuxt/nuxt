@@ -1,4 +1,4 @@
 import io from 'socket.io-client'
-const socket = io(process.env.HOST_URL)
+const socket = io(process.env.WS_URL)
 
 export default socket

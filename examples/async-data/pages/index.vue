@@ -9,14 +9,9 @@
 
 <script>
 export default {
-  asyncData ({ req }, callback) {
-    setTimeout(function () {
-      // callback(err, data)
-      callback(null, {
-        userAgent: (req ? req.headers['user-agent'] : navigator.userAgent)
-      })
-    }, 100)
-  }
+  asyncData: ({ req }) => ({
+    userAgent: (req ? req.headers['user-agent'] : (typeof navigator !== 'undefined' ? navigator.userAgent : 'No user agent (generated)'))
+  })
 }
 </script>
 

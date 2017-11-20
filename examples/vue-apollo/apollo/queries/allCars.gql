@@ -1,0 +1,8 @@
+{
+  allCars {
+    id
+    make
+    model
+    year
+  }
+}

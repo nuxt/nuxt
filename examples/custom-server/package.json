@@ -1,0 +1,12 @@
+{
+  "name": "nuxt-custom-server",
+  "dependencies": {
+    "express": "^4.15.3",
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "node server.js",
+    "build": "nuxt build",
+    "start": "NODE_ENV=production node server.js"
+  }
+}

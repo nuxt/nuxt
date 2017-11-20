@@ -23,14 +23,16 @@ import { mapState } from 'vuex'
 export default {
   // fetch(context) is called by the server-side
   // and before instantiating the component
-  fetch ({ store }) {
+  fetch({ store }) {
     store.commit('increment')
   },
   computed: mapState([
     'counter'
   ]),
   methods: {
-    increment () { this.$store.commit('increment') }
+    increment() {
+      this.$store.commit('increment')
+    }
   }
 }
 </script>

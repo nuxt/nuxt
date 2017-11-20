@@ -15,12 +15,15 @@
 import axios from 'axios'
 
 export default {
-  asyncData ({ req, params }) {
+  asyncData({ req, params }) {
     // We can return a Promise instead of calling the callback
     return axios.get('https://jsonplaceholder.typicode.com/posts')
-    .then((res) => {
-      return { posts: res.data.slice(0, 5) }
-    })
+      .then((res) => {
+        return { posts: res.data.slice(0, 5) }
+      })
+  },
+  head: {
+    title: 'List of posts'
   }
 }
 </script>

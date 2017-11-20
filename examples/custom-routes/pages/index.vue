@@ -13,11 +13,9 @@
 import axios from 'axios'
 
 export default {
-  asyncData () {
-    return axios.get('https://jsonplaceholder.typicode.com/users')
-    .then((res) => {
-      return { users: res.data }
-    })
+  async asyncData() {
+    const { data } = await axios.get('https://jsonplaceholder.typicode.com/users')
+    return { users: data }
   }
 }
 </script>

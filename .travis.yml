@@ -1,10 +1,11 @@
 language: node_js
 node_js:
-  - "8.0"
-  - "7.2"
-  - "6.9"
-before_install:
-  - if [[ `npm -v` != 3* ]]; then npm i -g npm@3; fi
+  - "8"
+  - "6"
+cache:
+  yarn: true
+  directories:
+    - node_modules
 install:
   - yarn install
   - yarn run build

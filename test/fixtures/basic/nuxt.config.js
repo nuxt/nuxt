@@ -5,6 +5,15 @@ module.exports = {
       '/users/2',
       { route: '/users/3', payload: { id: 3000 } }
     ],
-    interval: 200
-  }
+    interval: 200,
+    subFolders: true
+  },
+  hooks: {
+    ready(nuxt) {
+      nuxt.__hook_called__ = true
+    },
+    bad: null,
+    '': true
+  },
+  transition: false
 }

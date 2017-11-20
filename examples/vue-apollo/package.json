@@ -1,13 +1,13 @@
 {
-  "name": "nuxt-i18n",
+  "name": "nuxt-vue-apollo",
   "dependencies": {
-    "apollo-client": "^1.0.3",
-    "nuxt": "latest",
-    "vue-apollo": "^2.1.0-beta.2"
+    "@nuxtjs/apollo": "^2.1.1",
+    "nuxt": "latest"
   },
   "scripts": {
-    "dev": "node server.js",
+    "dev": "nuxt",
     "build": "nuxt build",
-    "start": "cross-env NODE_ENV=production node server.js"
+    "start": "nuxt start",
+    "generate": "nuxt generate"
   }
 }

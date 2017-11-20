@@ -11,31 +11,27 @@ export const mutations = {
 }
 
 export const actions = {
-  nuxtServerInit ({ commit }, { req }) {
+  // nuxtServerInit is called by Nuxt.js before server-rendering every page
+  nuxtServerInit({ commit }, { req }) {
     if (req.session && req.session.authUser) {
       commit('SET_USER', req.session.authUser)
     }
   },
-  login ({ commit }, { username, password }) {
-    return axios.post('/api/login', {
-      username,
-      password
-    })
-    .then((res) => {
-      commit('SET_USER', res.data)
-    })
-    .catch((error) => {
-      if (error.response.status === 401) {
+  async login({ commit }, { username, password }) {
+    try {
+      const { data } = await axios.post('/api/login', { username, password })
+      commit('SET_USER', data)
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
         throw new Error('Bad credentials')
       }
-    })
+      throw error
+    }
   },
 
-  logout ({ commit }) {
-    return axios.post('/api/logout')
-    .then(() => {
-      commit('SET_USER', null)
-    })
+  async logout({ commit }) {
+    await axios.post('/api/logout')
+    commit('SET_USER', null)
   }
 
 }

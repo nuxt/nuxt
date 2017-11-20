@@ -1,10 +1,10 @@
 {
   "name": "nuxt-plugins-vendor",
   "dependencies": {
-    "axios": "^0.15.2",
-    "mini-toastr": "^0.3.10",
+    "axios": "^0.16.2",
+    "mini-toastr": "^0.6.5",
     "nuxt": "latest",
-    "vue-notifications": "^0.7.0"
+    "vue-notifications": "^0.8.0"
   },
   "scripts": {
     "dev": "nuxt",

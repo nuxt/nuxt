@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       formError: null,
       formUsername: '',
@@ -28,22 +28,25 @@ export default {
     }
   },
   methods: {
-    login () {
-      this.$store.dispatch('login', {
-        username: this.formUsername,
-        password: this.formPassword
-      })
-      .then(() => {
+    async login() {
+      try {
+        await this.$store.dispatch('login', {
+          username: this.formUsername,
+          password: this.formPassword
+        })
         this.formUsername = ''
         this.formPassword = ''
         this.formError = null
-      })
-      .catch((e) => {
+      } catch (e) {
         this.formError = e.message
-      })
+      }
     },
-    logout () {
-      this.$store.dispatch('logout')
+    async logout() {
+      try {
+        await this.$store.dispatch('logout')
+      } catch (e) {
+        this.formError = e.message
+      }
     }
   }
 }
