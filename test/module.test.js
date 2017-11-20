@@ -63,13 +63,6 @@ test('Hooks - Error', async t => {
   t.true(errors.length === 1)
 })
 
-// Note: Plugin is deprecated. Please use new hooks system.
-test('Plugin', async t => {
-  t.is(nuxt.__builder_plugin, 4)
-  const error = builtErr.filter(value => value.indexOf('deprecated') >= 0)
-  t.true(error.length === 1)
-})
-
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()

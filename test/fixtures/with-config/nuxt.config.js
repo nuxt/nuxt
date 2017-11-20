@@ -46,9 +46,6 @@ module.exports = {
       generateStatsFile: true
     },
     extend(config, options) {
-      if (options.dev) {
-        // Please use isDev instead of dev
-      }
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })
