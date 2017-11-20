@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
 import pify from 'pify'
+import stdMocks from 'std-mocks'
 import { Nuxt, Builder } from '../index.js'
 
 const readFile = pify(fs.readFile)
@@ -16,11 +17,13 @@ const checkCache = (lib) => {
   }
 }
 
+let nuxt
+
 test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = true
-  const nuxt = new Nuxt(config)
+  nuxt = new Nuxt(config)
   await new Builder(nuxt).build()
 })
 
@@ -29,3 +32,17 @@ test('Check vue cache', checkCache('vue'))
 test('Check vue-meta cache', checkCache('vue-meta'))
 
 test('Check vue-router cache', checkCache('vue-router'))
+
+test('Build with DllReferencePlugin', async t => {
+  stdMocks.use()
+  await new Builder(nuxt).build()
+  stdMocks.restore()
+  const output = stdMocks.flush()
+  const dllLog = output.stdout.filter(value => value === 'Using dll for 3 libs\n')
+  t.true(dllLog.length === 1)
+})
+
+// Close server and ask nuxt to stop listening to file changes
+test.after('Closing nuxt.js', t => {
+  nuxt.close()
+})
