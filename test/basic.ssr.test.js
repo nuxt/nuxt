@@ -43,6 +43,12 @@ test('/css', async t => {
   t.is(window.getComputedStyle(element).color, 'red')
 })
 
+test('/postcss', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/css'))
+  const element = window.document.querySelector('div.red')
+  t.is(window.getComputedStyle(element)['background-color'], 'blue')
+})
+
 test('/stateful', async t => {
   const { html } = await nuxt.renderRoute('/stateful')
   t.true(html.includes('<div><p>The answer is 42</p></div>'))
