@@ -44,6 +44,11 @@ test('/ (custom build.publicPath)', async t => {
   t.true(html.includes('src="/test/orion/vendor.'))
 })
 
+test('/ (custom postcss.config.js)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('::-webkit-input-placeholder'))
+})
+
 test('/test/ (router base)', async t => {
   const window = await nuxt.renderAndGetWindow(url('/test/'))
   const html = window.document.body.innerHTML
