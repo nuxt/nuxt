@@ -4,3 +4,9 @@
     <nuxt-link to="/about">About page</nuxt-link>
   </div>
 </template>
+
+<style>
+::placeholder {
+  color: black;
+}
+</style>

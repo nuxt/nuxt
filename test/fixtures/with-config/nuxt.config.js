@@ -19,6 +19,7 @@ module.exports = {
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   transition: 'test',
   layoutTransition: 'test',
+  loadingIndicator: 'circle',
   offline: true,
   plugins: [
     '~/plugins/test.js',
