@@ -1,5 +1,5 @@
 {
-  "name": "hello-nuxt",
+  "name": "style-resources",
   "dependencies": {
     "nuxt": "latest"
   },
@@ -7,5 +7,9 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start"
+  },
+  "devDependencies": {
+    "node-sass": "^4.7.2",
+    "sass-loader": "^6.0.6"
   }
 }
