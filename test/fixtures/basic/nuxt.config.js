@@ -15,5 +15,10 @@ module.exports = {
     bad: null,
     '': true
   },
-  transition: false
+  transition: false,
+  build: {
+    postcss: [
+      require('postcss-cssnext')()
+    ]
+  }
 }

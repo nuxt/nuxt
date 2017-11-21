@@ -84,24 +84,41 @@ function startDev(oldNuxt) {
   const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
 
+  // Error handler
+  const onError = (err, nuxt) => {
+    debug('Error while reloading [nuxt.config.js]', err)
+    return Promise.resolve(nuxt) // Wait for next reload
+  }
+
   // Load options
   let options = {}
   try {
     options = loadNuxtConfig()
   } catch (err) {
-    console.error(err)
-    return // Wait for next reload
+    return onError(err, oldNuxt)
   }
 
   // Create nuxt and builder instance
-  const nuxt = new Nuxt(options)
-  const builder = new Builder(nuxt)
+  let nuxt
+  let builder
+  try {
+    nuxt = new Nuxt(options)
+    builder = new Builder(nuxt)
+  } catch (err) {
+    return onError(err, nuxt || oldNuxt)
+  }
 
   return Promise.resolve()
-    .then(() => builder.build()) // 1- Start build
-    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve()) // 2- Close old nuxt after successful build
-    .then(() => nuxt.listen(port, host)) // 3- Start listening
-    .then(() => nuxt) // 4- Pass new nuxt to watch chain
+    // Start build
+    .then(() => builder.build())
+    // Close old nuxt after successful build
+    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve())
+    // Start listening
+    .then(() => nuxt.listen(port, host))
+    // Pass new nuxt to watch chain
+    .then(() => nuxt)
+    // Handle errors
+    .catch((err) => onError(err, nuxt))
 }
 
 function loadNuxtConfig() {
