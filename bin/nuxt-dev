@@ -69,15 +69,29 @@ _.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
 // Start dev
 let dev = startDev()
+let reloadQueue = 0
 
 // Start watching for nuxt.config.js changes
 chokidar
   .watch(nuxtConfigFile, nuxtConfig.watchers.chokidar)
-  .on('all', _.debounce(() => {
+  .on('all', () => {
     debug('[nuxt.config.js] changed')
-    debug('Rebuilding the app...')
-    dev = dev.then(startDev)
-  }), 2500)
+    reload()
+  })
+
+function reload() {
+  ++reloadQueue
+  
+  dev = dev.then((nuxt) => {
+    console.log('reloadQueue', reloadQueue)
+    if (reloadQueue > 0) {
+      debug('Rebuilding the app...')
+      reloadQueue = 0
+      return startDev(nuxt)
+    }
+    return nuxt;
+  })
+}
 
 function startDev(oldNuxt) {
   // Get latest environment variables
@@ -90,7 +104,7 @@ function startDev(oldNuxt) {
     options = loadNuxtConfig()
   } catch (err) {
     console.error(err)
-    return // Wait for next reload
+    return oldNuxt // Wait for next reload
   }
 
   // Create nuxt and builder instance
