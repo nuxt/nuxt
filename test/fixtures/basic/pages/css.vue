@@ -3,6 +3,10 @@
 </template>
 
 <style>
+@custom-selector :--red div.red;
+:--red {
+  background-color: blue;
+}
 .red {
   color: red;
 }
