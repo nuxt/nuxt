@@ -63,7 +63,6 @@ test('bin/nuxt-start', async t => {
   const html = await rp(url('/users/1'))
   t.true(html.includes('<h1>User: 1</h1>'))
 
-  await Utils.waitFor(1000)
   nuxtStart.kill()
 
   // Wait max 10s for the process to be killed
