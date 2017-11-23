@@ -14,7 +14,7 @@ const url = (route) => 'http://localhost:' + port + route
 test('bin/nuxt-build', async t => {
   const binBuild = resolve(__dirname, '..', 'bin', 'nuxt-build')
 
-  const [ stdout, stderr ] = await execify(`${binBuild} ${rootDir}`)
+  const [ stdout, stderr ] = await execify(`node ${binBuild} ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Building done'))
@@ -31,7 +31,7 @@ test('bin/nuxt-start', async t => {
   const env = process.env
   env.PORT = port
 
-  const nuxtStart = spawn(binStart, [rootDir], { env: env })
+  const nuxtStart = spawn('node', [binStart, rootDir], { env: env })
 
   nuxtStart.stdout.on('data', (data) => {
     stdout += data
@@ -82,7 +82,7 @@ test('bin/nuxt-start', async t => {
 test('bin/nuxt-generate', async t => {
   const binGenerate = resolve(__dirname, '..', 'bin', 'nuxt-generate')
 
-  const [ stdout, stderr ] = await execify(`${binGenerate} ${rootDir}`)
+  const [ stdout, stderr ] = await execify(`node ${binGenerate} ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Destination folder cleaned'))
