@@ -78,24 +78,24 @@ chokidar
     debug('[nuxt.config.js] changed')
     needToRestart = true
   
-    dev = dev.then((nuxt) => {
-      if (needToRestart === false) return nuxt
+    dev = dev.then((instance) => {
+      if (needToRestart === false) return instance
       needToRestart = false
 
       debug('Rebuilding the app...')
-      return startDev(nuxt)
+      return startDev(instance)
     })
   })
 
-function startDev(oldNuxt) {
+function startDev(oldInstance) {
   // Get latest environment variables
   const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
 
   // Error handler
-  const onError = (err, nuxt) => {
+  const onError = (err, instance) => {
     debug('Error while reloading [nuxt.config.js]', err)
-    return Promise.resolve(nuxt) // Wait for next reload
+    return Promise.resolve(instance) // Wait for next reload
   }
 
   // Load options
@@ -103,30 +103,33 @@ function startDev(oldNuxt) {
   try {
     options = loadNuxtConfig()
   } catch (err) {
-    return onError(err, oldNuxt)
+    return onError(err, oldInstance)
   }
 
   // Create nuxt and builder instance
   let nuxt
   let builder
+  let instance
   try {
     nuxt = new Nuxt(options)
     builder = new Builder(nuxt)
+    instance = { nuxt: nuxt, builder: builder }
   } catch (err) {
-    return onError(err, nuxt || oldNuxt)
+    return onError(err, instance || oldInstance)
   }
 
   return Promise.resolve()
+    .then(() => oldInstance && oldInstance.builder ? oldInstance.builder.unwatch() : Promise.resolve())
     // Start build
     .then(() => builder.build())
     // Close old nuxt after successful build
-    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve())
+    .then(() => oldInstance && oldInstance.nuxt ? oldInstance.nuxt.close() : Promise.resolve())
     // Start listening
     .then(() => nuxt.listen(port, host))
     // Pass new nuxt to watch chain
-    .then(() => nuxt)
+    .then(() => instance)
     // Handle errors
-    .catch((err) => onError(err, nuxt))
+    .catch((err) => onError(err, instance))
 }
 
 function loadNuxtConfig() {
