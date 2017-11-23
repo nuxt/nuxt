@@ -9,6 +9,8 @@
     "start": "nuxt start"
   },
   "devDependencies": {
+    "less": "^2.7.3",
+    "less-loader": "^4.0.5",
     "node-sass": "^4.7.2",
     "sass-loader": "^6.0.6"
   }

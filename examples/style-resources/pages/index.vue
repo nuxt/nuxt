@@ -1,4 +1,4 @@
-<style lang="scss">
+<style lang="scss" scoped>
 .main {
   background: $main;
 }
@@ -6,7 +6,9 @@
 
 <template>
   <div class="main">
-    <h1>Welcome!</h1>
-    <p>Background is grey</p>
+    <p>Page with SCSS</p>
+    <p>
+      <nuxt-link to="/less">LESS</nuxt-link>
+    </p>
   </div>
 </template>
