@@ -1,5 +1,5 @@
 import test from 'ava'
-import { resolve } from 'path'
+import { resolve, sep } from 'path'
 import rp from 'request-promise-native'
 import { Utils } from '../index.js'
 import pify from 'pify'
@@ -87,7 +87,7 @@ test('bin/nuxt-generate', async t => {
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Destination folder cleaned'))
   t.true(stderr.includes('Static & build files copied'))
-  t.true(stderr.includes('Generate file: /users/1/index.html'))
+  t.true(stderr.includes(`Generate file: ${sep}users${sep}1${sep}index.html`))
   t.true(stderr.includes('Error report'))
   t.true(stderr.includes('Generate done'))
 })
