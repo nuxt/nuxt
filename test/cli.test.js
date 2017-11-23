@@ -2,10 +2,10 @@ import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { Utils } from '../index.js'
-import { promisify } from 'util'
+import pify from 'pify'
 import { exec, spawn } from 'child_process'
 
-const execify = promisify(exec)
+const execify = pify(exec, { multiArgs: true })
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
 const port = 4011
@@ -14,9 +14,8 @@ const url = (route) => 'http://localhost:' + port + route
 test('bin/nuxt-build', async t => {
   const binBuild = resolve(__dirname, '..', 'bin', 'nuxt-build')
 
-  const { error, stdout, stderr } = await execify(`${binBuild} ${rootDir}`)
+  const [ stdout, stderr ] = await execify(`${binBuild} ${rootDir}`)
 
-  t.is(error, undefined)
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Building done'))
 })
@@ -83,9 +82,8 @@ test('bin/nuxt-start', async t => {
 test('bin/nuxt-generate', async t => {
   const binGenerate = resolve(__dirname, '..', 'bin', 'nuxt-generate')
 
-  const { error, stdout, stderr } = await execify(`${binGenerate} ${rootDir}`)
+  const [ stdout, stderr ] = await execify(`${binGenerate} ${rootDir}`)
 
-  t.is(error, undefined)
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Destination folder cleaned'))
   t.true(stderr.includes('Static & build files copied'))
