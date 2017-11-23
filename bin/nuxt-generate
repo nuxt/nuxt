@@ -104,7 +104,7 @@ nuxt.hook('generate:done', function(errors) {
 })
 
 generator.generate(generateOptions)
-  .then(({ errors }) => {
+  .then(() => {
     debug('Generate done')
     process.exit(0)
   })
