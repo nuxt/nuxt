@@ -85,7 +85,7 @@ nuxt.hook('generate:page', function(page) {
   debug('Generate file: ' + page.path)
 })
 
-nuxt.hook('generate:done', function(errors) {
+nuxt.hook('generate:done', function(generator, errors) {
   const duration = Math.round((Date.now() - s) / 100) / 10
 
   debug(`HTML Files generated in ${duration}s`)
