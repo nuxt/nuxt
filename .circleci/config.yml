@@ -33,3 +33,12 @@ jobs:
       - run:
           name: Tests
           command: yarn test && yarn coverage
+
+      # Release next
+      - run:
+          name: Release Next version
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              npm run release-next
+            fi

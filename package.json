@@ -56,8 +56,8 @@
     "watch": "npm run build:nuxt -- -w",
     "make-start": "node ./build/start.js",
     "precommit": "npm run lint",
-    "prepare": "npm run build && npm run make-start",
-    "postinstall": "opencollective postinstall || exit 0"
+    "postinstall": "opencollective postinstall || exit 0",
+    "release-next": "npm run build && node ./build/release-next && npm publish --tag next"
   },
   "engines": {
     "node": ">=6.11",
