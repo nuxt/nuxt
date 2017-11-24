@@ -36,10 +36,9 @@ jobs:
 
       # Release next
       - run:
-          name: Release Next version
+          name: Publish nuxt-next
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "TOKEN: $NPM_TOKEN"
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               npm run release-next
             fi
