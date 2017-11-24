@@ -39,6 +39,7 @@ jobs:
           name: Release Next version
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+              echo "TOKEN: $NPM_TOKEN"
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               npm run release-next
             fi
