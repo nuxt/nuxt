@@ -77,7 +77,7 @@ chokidar
   .on('all', () => {
     debug('[nuxt.config.js] changed')
     needToRestart = true
-  
+
     dev = dev.then((instance) => {
       if (needToRestart === false) return instance
       needToRestart = false
