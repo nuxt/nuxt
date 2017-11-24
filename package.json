@@ -135,7 +135,7 @@
     "cross-env": "^5.1.1",
     "eslint": "^4.10.0",
     "eslint-config-standard": "^10.2.1",
-    "eslint-plugin-html": "^3.2.2",
+    "eslint-plugin-html": "^4.0.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^5.2.1",
     "eslint-plugin-promise": "^3.6.0",
