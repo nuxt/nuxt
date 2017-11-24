@@ -57,7 +57,7 @@
     "make-start": "node ./build/start.js",
     "precommit": "npm run lint",
     "postinstall": "opencollective postinstall || exit 0",
-    "release-next": "npm run build && node ./build/release-next && npm publish"
+    "release-next": "npm run build && node ./build/release-next && npm publish --tag next"
   },
   "engines": {
     "node": ">=6.11",

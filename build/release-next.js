@@ -16,12 +16,12 @@ const originalPackage = readFileSync(packagePath, 'utf-8')
 const p = JSON.parse(originalPackage)
 
 // Change package name
-p.name = 'nuxt-next'
+// p.name = 'nuxt-next'
 
 // Get latest git commit id
 const gitCommit = String(spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout).trim()
 
-// Version with git tag
+// Version with latest git commit id
 p.version = p.version.split('-')[0] + '-gh-' + gitCommit
 
 // Write package.json
