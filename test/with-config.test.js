@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
+import * as testconsole from './helpers/console'
 
 const port = 4007
 const url = (route) => 'http://localhost:' + port + route
@@ -15,13 +16,18 @@ test.before('Init Nuxt.js', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
-  await new Builder(nuxt).build()
-  await nuxt.listen(port, 'localhost')
+
+  await testconsole.interceptLog(t, 'building nuxt', async () => {
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
 })
 
 test('/', async t => {
+  testconsole.interceptLog(t)
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>I have custom configurations</h1>'))
+  testconsole.release(t)
 })
 
 test('/ (global styles inlined)', async t => {
@@ -50,7 +56,11 @@ test('/ (custom postcss.config.js)', async t => {
 })
 
 test('/test/ (router base)', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.is(window.__NUXT__.layout, 'default')
   t.true(html.includes('<h1>Default layout</h1>'))
@@ -58,7 +68,11 @@ test('/test/ (router base)', async t => {
 })
 
 test('/test/about (custom layout)', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/about'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.is(window.__NUXT__.layout, 'custom')
   t.true(html.includes('<h1>Custom layout</h1>'))
@@ -66,7 +80,11 @@ test('/test/about (custom layout)', async t => {
 })
 
 test('/test/desktop (custom layout in desktop folder)', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.is(window.__NUXT__.layout, 'desktop/default')
   t.true(html.includes('<h1>Default desktop layout</h1>'))
@@ -74,7 +92,11 @@ test('/test/desktop (custom layout in desktop folder)', async t => {
 })
 
 test('/test/mobile (custom layout in mobile folder)', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.is(window.__NUXT__.layout, 'mobile/default')
   t.true(html.includes('<h1>Default mobile layout</h1>'))
@@ -82,7 +104,11 @@ test('/test/mobile (custom layout in mobile folder)', async t => {
 })
 
 test('/test/env', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/env'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>Custom env layout</h1>'))
   t.true(html.includes('"bool": true'))
@@ -95,19 +121,31 @@ test('/test/env', async t => {
 })
 
 test('/test/error', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/error'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.true(html.includes('Error page'))
 })
 
 test('/test/user-agent', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.true(html.includes('<pre>Mozilla'))
 })
 
 test('/test/about-bis (added with extendRoutes)', async t => {
+  testconsole.interceptLog(t)
   const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
+  t.true(console.log.calledOnce) // eslint-disable-line no-console
+  testconsole.release(t)
+
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>Custom layout</h1>'))
   t.true(html.includes('<h1>About page</h1>'))
@@ -129,6 +167,6 @@ test('Check /test.txt should return 404', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })
