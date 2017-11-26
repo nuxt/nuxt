@@ -4,7 +4,9 @@
       <li class="chat page">
         <div class="chatArea">
           <ul class="messages" ref="messages">
-            <li class="message" v-for="message in messages"><i :title="message.date">{{ message.date.split('T')[1].slice(0, -2) }}</i>: {{ message.text }}</li>
+            <li class="message" v-for="(message, index) in messages" :key="index">
+              <i :title="message.date">{{ message.date.split('T')[1].slice(0, -2) }}</i>: {{ message.text }}
+            </li>
           </ul>
         </div>
         <input class="inputMessage" type="text" v-model="message" @keyup.enter="sendMessage" placeholder="Type here..." />
