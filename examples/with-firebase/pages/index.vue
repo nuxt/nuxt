@@ -10,7 +10,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(user, key) in users">
+        <tr v-for="(user, key) in users" :key="key">
           <td>
             <nuxt-link :to="{ path: `/users/${key}`}">
               <img :src="user.avatar" class="rounded" alt="avatar">
