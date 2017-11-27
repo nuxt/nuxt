@@ -1,8 +1,8 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-import stdMocks from 'std-mocks'
 import { Nuxt, Builder } from '../index.js'
+import { interceptLog, interceptError } from './helpers/console'
 
 const port = 4003
 const url = (route) => 'http://localhost:' + port + route
@@ -20,10 +20,12 @@ test.before('Init Nuxt.js', async t => {
       }
     }
   }
-  nuxt = new Nuxt(options)
-  await new Builder(nuxt).build()
 
-  await nuxt.listen(port, 'localhost')
+  await interceptLog('building nuxt', async () => {
+    nuxt = new Nuxt(options)
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
 })
 
 test('/stateless', async t => {
@@ -61,17 +63,19 @@ test('/store', async t => {
 })
 
 test('/head', async t => {
-  stdMocks.use()
-  const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
-  const html = window.document.body.innerHTML
-  const metas = window.document.getElementsByTagName('meta')
-  stdMocks.restore()
-  const { stdout } = stdMocks.flush()
-  t.is(stdout[0], 'Body script!\n')
-  t.is(window.document.title, 'My title - Nuxt.js')
-  t.is(metas[0].getAttribute('content'), 'my meta')
-  t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
-  t.true(html.includes('<script data-n-head="true" src="/body.js" data-body="true">'))
+  const logSpy = await interceptLog(async () => {
+    const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
+    t.is(window.document.title, 'My title - Nuxt.js')
+
+    const html = window.document.body.innerHTML
+    t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
+    t.true(html.includes('<script data-n-head="true" src="/body.js" data-body="true">'))
+
+    const metas = window.document.getElementsByTagName('meta')
+    t.is(metas[0].getAttribute('content'), 'my meta')
+  })
+  t.true(logSpy.calledOnce)
+  t.is(logSpy.args[0][0], 'Body script!')
 })
 
 test('/async-data', async t => {
@@ -124,20 +128,18 @@ test('/special-state -> check window.__NUXT__.test = true', async t => {
 })
 
 test('/error', async t => {
-  try {
-    await nuxt.renderRoute('/error', { req: {}, res: {} })
-  } catch (err) {
-    t.true(err.message.includes('Error mouahahah'))
-  }
+  const err = await t.throws(nuxt.renderRoute('/error', { req: {}, res: {} }))
+  t.true(err.message.includes('Error mouahahah'))
 })
 
 test('/error status code', async t => {
-  try {
-    await rp(url('/error'))
-  } catch (err) {
+  const errorSpy = await interceptError(async () => {
+    const err = await t.throws(rp(url('/error')))
     t.true(err.statusCode === 500)
     t.true(err.response.body.includes('An error occurred in the application and your page could not be served'))
-  }
+  })
+  t.true(errorSpy.calledOnce)
+  t.true(errorSpy.args[0][0].message.includes('Error mouahahah'))
 })
 
 test('/error2', async t => {
@@ -157,26 +159,22 @@ test('/error2 status code', async t => {
 })
 
 test('/error-midd', async t => {
-  stdMocks.use()
-  try {
-    await rp(url('/error-midd'))
-  } catch (err) {
-    stdMocks.restore()
+  const errorSpy = await interceptError(async () => {
+    const err = await t.throws(rp(url('/error-midd')))
+
     t.is(err.statusCode, 505)
     t.true(err.response.body.includes('Middleware Error'))
-    const output = stdMocks.flush()
-    // Don't display error since redirect returns a noopApp
-    t.true(output.stderr.length === 0)
-  }
+  })
+  // Don't display error since redirect returns a noopApp
+  t.true(errorSpy.notCalled)
 })
 
 test('/redirect2', async t => {
-  stdMocks.use()
-  await rp(url('/redirect2')) // Should not console.error
-  stdMocks.restore()
-  const output = stdMocks.flush()
+  const errorSpy = await interceptError(async () => {
+    await rp(url('/redirect2')) // Should not console.error
+  })
   // Don't display error since redirect returns a noopApp
-  t.true(output.stderr.length === 0)
+  t.true(errorSpy.notCalled)
 })
 
 test('/no-ssr', async t => {
@@ -191,12 +189,16 @@ test('/no-ssr (client-side)', async t => {
 })
 
 test('ETag Header', async t => {
-  const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
-  // Validate etag
-  t.regex(etag, /W\/".*"$/)
-  // Verify functionality
-  const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
-  t.is(error.statusCode, 304)
+  const errorSpy = await interceptError(async () => {
+    const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
+    // Validate etag
+    t.regex(etag, /W\/".*"$/)
+    // Verify functionality
+    const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
+    t.is(error.statusCode, 304)
+  })
+  t.true(errorSpy.calledOnce)
+  t.true(errorSpy.args[0][0].includes('TypeError: Cannot read property \'split\' of undefined'))
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
@@ -227,6 +229,6 @@ test('/fn-midd?please=true', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })
