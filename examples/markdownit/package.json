@@ -10,5 +10,8 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start"
+  },
+  "devDependencies": {
+    "jstransformer-markdown-it": "^2.0.0"
   }
 }
