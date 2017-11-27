@@ -6,10 +6,10 @@
 import { nextId } from '@/lib/db'
 
 export default {
-    data() {
-        return {
-            id: nextId()
-        }
+  data() {
+    return {
+      id: nextId()
     }
+  }
 }
 </script>

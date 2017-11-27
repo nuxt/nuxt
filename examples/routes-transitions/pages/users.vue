@@ -6,7 +6,7 @@
     <nuxt-link v-if="page < totalPages" :to="'?page=' + (page + 1)">Next &gt;</nuxt-link>
     <a v-else class="disabled">Next &gt;</a>
     <ul>
-      <li v-for="user in users">
+      <li v-for="user in users" :key="user.id">
         <img :src="user.avatar" class="avatar" />
         <span>{{ user.first_name }} {{ user.last_name }}</span>
       </li>
@@ -19,11 +19,11 @@
 import axios from 'axios'
 
 export default {
-  transition (to, from) {
+  transition(to, from) {
     if (!from) return 'slide-left'
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  async asyncData ({ query }) {
+  async asyncData({ query }) {
     const page = +query.page || 1
     const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
     return {

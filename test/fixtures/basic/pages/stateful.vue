@@ -6,10 +6,10 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return { answer: null }
   },
-  created () {
+  created() {
     this.answer = 42
   }
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
@@ -17,10 +18,11 @@ const argv = parseArgs(process.argv.slice(2), {
     s: 'spa',
     u: 'universal'
   },
-  boolean: ['h', 's', 'u'],
+  boolean: ['h', 's', 'u', 'build'],
   string: ['c'],
   default: {
-    c: 'nuxt.config.js'
+    c: 'nuxt.config.js',
+    build: true
   }
 })
 
@@ -36,6 +38,7 @@ if (argv.help) {
       --universal        Launch in Universal mode (default)
       --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h         Displays this message
+      --no-build         Just run generate for faster builds when just dynamic routes changed. Nuxt build is needed before this command.
   `)
   process.exit(0)
 }
@@ -62,12 +65,50 @@ debug('Generating...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 const generator = new Generator(nuxt, builder)
-generator.generate()
+
+const generateOptions = {
+  init: true,
+  build: argv['build']
+}
+
+const s = Date.now()
+
+nuxt.hook('generate:distRemoved', function () {
+  debug('Destination folder cleaned')
+})
+
+nuxt.hook('generate:distCopied', function () {
+  debug('Static & build files copied')
+})
+
+nuxt.hook('generate:page', function (page) {
+  debug('Generate file: ' + page.path)
+})
+
+nuxt.hook('generate:done', function (generator, errors) {
+  const duration = Math.round((Date.now() - s) / 100) / 10
+
+  debug(`HTML Files generated in ${duration}s`)
+
+  if (errors.length) {
+    const report = errors.map(({ type, route, error }) => {
+      /* istanbul ignore if */
+      if (type === 'unhandled') {
+        return `Route: '${route}'\n${error.stack}`
+      } else {
+        return `Route: '${route}' thrown an error: \n` + JSON.stringify(error)
+      }
+    })
+    console.error('==== Error report ==== \n' + report.join('\n\n')) // eslint-disable-line no-console
+  }
+})
+
+generator.generate(generateOptions)
   .then(() => {
     debug('Generate done')
     process.exit(0)
   })
   .catch((err) => {
-    console.error(err) // eslint-disable-line no-console
+    console.error(err)
     process.exit(1)
   })

@@ -12,7 +12,7 @@ module.exports = {
   },
   generate: {
     routes: [
-      '/posts/1',
+      '/posts/1'
     ]
   }
 }

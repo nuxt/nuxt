@@ -1,4 +1,5 @@
 import test from 'ava'
+import stdMocks from 'std-mocks'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
@@ -7,6 +8,8 @@ const port = 4006
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
+let builtErr = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -15,7 +18,15 @@ test.before('Init Nuxt.js', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
-  await new Builder(nuxt).build()
+  builder = new Builder(nuxt)
+
+  stdMocks.use({
+    stdout: false,
+    stderr: true
+  })
+  await builder.build()
+  stdMocks.restore()
+  builtErr = stdMocks.flush().stderr
 
   await nuxt.listen(port, 'localhost')
 })
@@ -36,10 +47,20 @@ test('Middleware', async t => {
   t.is(response, 'It works!', '/api response is correct')
 })
 
-test('Tapable', async t => {
+test('Hooks', async t => {
   t.is(nuxt.__module_hook, 1)
   t.is(nuxt.__renderer_hook, 2)
   t.is(nuxt.__builder_hook, 3)
+})
+
+test('Hooks - Functional', async t => {
+  t.true(nuxt.__ready_called__)
+  t.true(builder.__build_done__)
+})
+
+test('Hooks - Error', async t => {
+  const errors = builtErr.filter(value => value.indexOf('build:extendRoutes') >= 0)
+  t.true(errors.length === 1)
 })
 
 // Close server and ask nuxt to stop listening to file changes

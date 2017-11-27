@@ -1,9 +1,11 @@
+const path = require('path')
+
 module.exports = {
   srcDir: __dirname,
   router: {
     base: '/test/',
     middleware: 'noop',
-    extendRoutes (routes) {
+    extendRoutes(routes) {
       return [
         ...routes,
         {
@@ -14,7 +16,12 @@ module.exports = {
       ]
     }
   },
+  modulesDir: [
+    path.join(__dirname, '..', '..', '..', 'node_modules')
+  ],
   transition: 'test',
+  layoutTransition: 'test',
+  loadingIndicator: 'circle',
   offline: true,
   plugins: [
     '~/plugins/test.js',
@@ -24,16 +31,24 @@ module.exports = {
   env: {
     bool: true,
     num: 23,
-    string: 'Nuxt.js'
+    string: 'Nuxt.js',
+    object: {
+      bool: false,
+      string: 'ok',
+      num2: 8.23,
+      obj: {
+        again: true
+      }
+    }
   },
   build: {
-    extractCSS: true,
+    // extractCSS: true,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
     },
-    extend (config, options) {
+    extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })
@@ -45,6 +60,11 @@ module.exports = {
   render: {
     http2: {
       push: true
+    },
+    bundleRenderer: {
+      shouldPreload: (file, type) => {
+        return ['script', 'style', 'font'].includes(type)
+      }
     },
     static: {
       maxAge: '1y'

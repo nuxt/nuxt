@@ -3,7 +3,7 @@
 const now = Date.now()
 
 const { readFileSync, readJSONSync, writeFileSync, copySync, removeSync } = require('fs-extra')
-const { resolve, relative } = require('path')
+const { resolve } = require('path')
 
 // Dirs
 const rootDir = resolve(__dirname, '..')
@@ -15,7 +15,8 @@ const packageJSON = readJSONSync(resolve(rootDir, 'package.json'))
 // Required and Excluded packages for start
 let requires = [
   'source-map-support',
-  'pretty-error'
+  'pretty-error',
+  'minimist'
 ]
 
 const excludes = [
@@ -41,6 +42,7 @@ requires = requires.filter(r => excludes.indexOf(r) === -1)
 let dependencies = {}
 requires.forEach(r => {
   if (!packageJSON.dependencies[r]) {
+    // eslint-disable-next-line no-console
     console.warn('Cannot resolve dependency version for ' + r)
     return
   }
@@ -103,5 +105,5 @@ writeFileSync(startIndexjs, String(readFileSync(startIndexjs)).replace('./dist/n
 const binStart = resolve(startDir, 'bin/nuxt-start')
 writeFileSync(binStart, String(readFileSync(binStart)).replace(/nuxt start/g, 'nuxt-start'))
 
-const ms = Date.now() - now
-console.log(`Generated ${packageJSON.name}@${packageJSON.version} in ${ms}ms`)
+// eslint-disable-next-line no-console
+console.log(`Generated ${packageJSON.name}@${packageJSON.version} in ${Date.now() - now}ms`)

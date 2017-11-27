@@ -8,7 +8,7 @@
 <script>
 export default {
   layout: 'dark',
-  asyncData ({ req }) {
+  asyncData({ req }) {
     return {
       name: req ? 'server' : 'client'
     }

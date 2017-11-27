@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 // Show logs
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
@@ -10,7 +11,9 @@ const fs = require('fs')
 const parseArgs = require('minimist')
 const { Nuxt, Builder } = require('../')
 const chokidar = require('chokidar')
-const resolve = require('path').resolve
+const path = require('path')
+const resolve = path.resolve
+const pkg = require(path.join('..', 'package.json'))
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -19,14 +22,20 @@ const argv = parseArgs(process.argv.slice(2), {
     p: 'port',
     c: 'config-file',
     s: 'spa',
-    u: 'universal'
+    u: 'universal',
+    v: 'version'
   },
-  boolean: ['h', 's', 'u'],
+  boolean: ['h', 's', 'u', 'v'],
   string: ['H', 'c'],
   default: {
     c: 'nuxt.config.js'
   }
 })
+
+if (argv.version) {
+  console.log(pkg.version)
+  process.exit(0)
+}
 
 if (argv.hostname === '') {
   console.error(`> Provided hostname argument has no value`)
@@ -60,42 +69,70 @@ _.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
 // Start dev
 let dev = startDev()
+let needToRestart = false
 
 // Start watching for nuxt.config.js changes
 chokidar
   .watch(nuxtConfigFile, nuxtConfig.watchers.chokidar)
-  .on('all', _.debounce(() => {
+  .on('all', () => {
     debug('[nuxt.config.js] changed')
-    debug('Rebuilding the app...')
-    dev = dev.then(startDev)
-  }), 2500)
+    needToRestart = true
 
-function startDev (oldNuxt) {
+    dev = dev.then((instance) => {
+      if (needToRestart === false) return instance
+      needToRestart = false
+
+      debug('Rebuilding the app...')
+      return startDev(instance)
+    })
+  })
+
+function startDev(oldInstance) {
   // Get latest environment variables
   const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+
+  // Error handler
+  const onError = (err, instance) => {
+    debug('Error while reloading [nuxt.config.js]', err)
+    return Promise.resolve(instance) // Wait for next reload
+  }
 
   // Load options
   let options = {}
   try {
     options = loadNuxtConfig()
   } catch (err) {
-    console.error(err)
-    return // Wait for next reload
+    return onError(err, oldInstance)
   }
 
   // Create nuxt and builder instance
-  const nuxt = new Nuxt(options)
-  const builder = new Builder(nuxt)
+  let nuxt
+  let builder
+  let instance
+  try {
+    nuxt = new Nuxt(options)
+    builder = new Builder(nuxt)
+    instance = { nuxt: nuxt, builder: builder }
+  } catch (err) {
+    return onError(err, instance || oldInstance)
+  }
 
   return Promise.resolve()
-    .then(() => builder.build()) // 1- Start build
-    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve()) // 2- Close old nuxt after successful build
-    .then(() => nuxt.listen(port, host)) // 3- Start listening
-    .then(() => nuxt) // 4- Pass new nuxt to watch chain
+    .then(() => oldInstance && oldInstance.builder ? oldInstance.builder.unwatch() : Promise.resolve())
+    // Start build
+    .then(() => builder.build())
+    // Close old nuxt after successful build
+    .then(() => oldInstance && oldInstance.nuxt ? oldInstance.nuxt.close() : Promise.resolve())
+    // Start listening
+    .then(() => nuxt.listen(port, host))
+    // Pass new nuxt to watch chain
+    .then(() => instance)
+    // Handle errors
+    .catch((err) => onError(err, instance))
 }
 
-function loadNuxtConfig () {
+function loadNuxtConfig() {
   let options = {}
 
   if (fs.existsSync(nuxtConfigFile)) {

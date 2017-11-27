@@ -13,19 +13,20 @@
 import streamMessages from '@/js/messages.js'
 // Dynamic components
 const components = {
-  vText: () => import('@/components/text.vue').then(m => m.default),
-  vImage: () => import('@/components/image.vue').then(m => m.default),
-  vCode: () => import('@/components/code.vue').then(m => m.default)
+  vText: () => import('@/components/text.vue' /* webpackChunkName: "components/text" */),
+  vImage: () => import('@/components/image.vue' /* webpackChunkName: "components/image" */),
+  vCode: () => import('@/components/code.vue' /* webpackChunkName: "components/code" */),
+  vChart: () => import('@/components/chart.js' /* webpackChunkName: "components/chart" */).then((m) => m.default())
 }
 
 export default {
   data: () => ({
     messages: []
   }),
-  mounted () {
-    // Listen to new messages
+  mounted() {
+    // Listen for incoming messages
     streamMessages(async (message) => {
-      // Make sure to wait for async chunk to be loaded before adding the message
+      // Wait for the component to load before displaying it
       await components[message.component]()
       // Add the message to the list
       this.messages.push(message)
@@ -44,7 +45,7 @@ ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  with: 100%;
+  width: 100%;
   max-width: 300px;
   margin: auto;
 }

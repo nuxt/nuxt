@@ -2,7 +2,7 @@
   <div>
     <h2>Todos</h2>
     <ul>
-      <li v-for="todo in todos">
+      <li v-for="(todo, index) in todos" :key="index">
         <input type="checkbox" :checked="todo.done" @change="toggle(todo)">
         <span :class="{ done: todo.done }">{{ todo.text }}</span>
       </li>
@@ -20,7 +20,7 @@ export default {
     todos: 'todos/todos'
   }),
   methods: {
-    addTodo (e) {
+    addTodo(e) {
       var text = e.target.value
       if (text.trim()) {
         this.$store.commit('todos/add', { text })

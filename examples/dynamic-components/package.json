@@ -1,11 +1,14 @@
 {
   "name": "dynamic-components-nuxt",
   "dependencies": {
-    "nuxt": "1.0.0-rc3"
+    "chart.js": "^2.7.0",
+    "nuxt": "latest",
+    "vue-chartjs": "^2.8.7"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt"
+    "start": "nuxt start",
+    "generate": "nuxt generate"
   }
 }

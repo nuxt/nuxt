@@ -7,7 +7,7 @@ test('Fail with routes() which throw an error', async t => {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     dev: false,
     generate: {
-      async routes () {
+      async routes() {
         throw new Error('Not today!')
       }
     }

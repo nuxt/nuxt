@@ -2,7 +2,7 @@
   "name": "nuxt-custom-server",
   "dependencies": {
     "express": "^4.15.3",
-    "nuxt": "^1.0.0-rc3"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "node server.js",

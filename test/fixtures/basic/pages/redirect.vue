@@ -1,10 +1,10 @@
 <template>
-  <div></div>
+  <div>Redirecting...</div>
 </template>
 
 <script>
 export default {
-  fetch ({ redirect }) {
+  fetch({ redirect }) {
     return redirect('/')
   }
 }

@@ -1,8 +1,8 @@
 module.exports = {
   loading: true,
   modules: [
-    '~/modules/basic',
-    '~/modules/tapable',
+    '~~/modules/basic',
+    '~/modules/hooks',
     {
       src: '~/modules/middleware',
       options: {
@@ -13,5 +13,13 @@ module.exports = {
   ],
   serverMiddleware: [
     './modules/middleware/midd2'
-  ]
+  ],
+  hooks(hook) {
+    hook('ready', nuxt => {
+      nuxt.__ready_called__ = true
+    })
+    hook('build:done', builder => {
+      builder.__build_done__ = true
+    })
+  }
 }
