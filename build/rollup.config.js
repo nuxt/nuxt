@@ -51,7 +51,7 @@ const builds = {
 // -----------------------------
 // Default config
 // -----------------------------
-function genConfig (opts) {
+function genConfig(opts) {
   const config = {
     input: opts.entry,
     output: {

@@ -6,7 +6,7 @@
     <nuxt-link v-if="page < totalPages" :to="'?page=' + (page + 1)">Next &gt;</nuxt-link>
     <a v-else class="disabled">Next &gt;</a>
     <ul>
-      <li v-for="user in users">
+      <li v-for="user in users" :key="user.id">
         <img :src="user.avatar" class="avatar" />
         <span>{{ user.first_name }} {{ user.last_name }}</span>
       </li>

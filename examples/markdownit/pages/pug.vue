@@ -1,8 +1,10 @@
 <template lang="pug">
   div
     h1 Pug Page
-    div(language="md") Current route is: {{ $route.name }}
-    div(language="md") Data model is: {{ model }}
+    :markdown-it()
+      ## Current route is: {{ $route.name }}
+    div(v-html="$md.render(model)")
+
     br
     nuxt-link(to='/') Back Home
 </template>
@@ -11,7 +13,7 @@
 export default {
   data() {
     return {
-      model: 'I am pug'
+      model: '## Title h2\n### title h3\n\nLong text Long text Long text Long text Long text Long text Long text Long text Long text \n\n* gimme a list item\n* and one more yeehaw'
     }
   }
 }

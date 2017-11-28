@@ -6,7 +6,7 @@
       {{selected}}
     </div>
     <div class="flex flex-wrap ph2 justify-between bg-white-80">
-      <div v-for="person in people">
+      <div v-for="person in people" :key="person.id">
         <Card :person="person"></Card>
       </div>
     </div>

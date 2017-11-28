@@ -111,7 +111,7 @@ test('Search a country', async t => {
 
   await page.type('[data-test-search-input]', 'gu')
 
-  await Utils.waitFor(100)
+  await Utils.waitFor(250)
   const newCountries = await page.$$text('[data-test-search-result]')
   t.is(newCountries.length, 1)
   t.deepEqual(newCountries, ['Guinea'])

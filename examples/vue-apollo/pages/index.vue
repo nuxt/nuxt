@@ -2,7 +2,7 @@
   <div>
     <h3>Cars</h3>
     <ul>
-      <li v-for="car in allCars">
+      <li v-for="car in allCars" :key="car.id">
         <nuxt-link :to="`car/${car.id}`">
           {{ car.year }} {{ car.make }} {{ car.model }}
         </nuxt-link>
