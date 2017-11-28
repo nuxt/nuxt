@@ -127,7 +127,7 @@ test('/redirect -> external link', async t => {
     }
   })
   t.is(headers.Location, 'https://nuxtjs.org')
-  t.true(html.includes('<div>redirecting.</div>'))
+  t.true(html.includes('<div>Redirecting to external page.</div>'))
 })
 
 test('/special-state -> check window.__NUXT__.test = true', async t => {
