@@ -117,6 +117,19 @@ test('/redirect -> check redirected source', async t => {
   t.true(html.includes('<h1>Index page</h1>'))
 })
 
+test('/redirect -> external link', async t => {
+  const headers = {}
+  const { html } = await nuxt.renderRoute('/redirect3', {
+    res: {
+      setHeader(k, v) {
+        headers[k] = v
+      }
+    }
+  })
+  t.is(headers.Location, 'https://nuxtjs.org')
+  t.true(html.includes('<div>redirecting.</div>'))
+})
+
 test('/special-state -> check window.__NUXT__.test = true', async t => {
   const window = await nuxt.renderAndGetWindow(url('/special-state'))
   t.is(window.document.title, 'Nuxt.js')
