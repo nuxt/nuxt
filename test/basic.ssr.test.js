@@ -239,6 +239,12 @@ test('/fn-midd?please=true', async t => {
   t.true(html.includes('<h1>Date:'))
 })
 
+test('/router-guard', async t => {
+  const { html } = await nuxt.renderRoute('/router-guard')
+  t.true(html.includes('<p>Nuxt.js</p>'))
+  t.false(html.includes('Router Guard'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
