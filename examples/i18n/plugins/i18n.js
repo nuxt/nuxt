@@ -14,7 +14,7 @@ export default ({ app, store }) => {
       'fr': require('~/locales/fr.json')
     }
   })
-  
+
   app.i18n.path = (link) => {
     if (app.i18n.locale === app.i18n.fallbackLocale) {
       return `/${link}`
