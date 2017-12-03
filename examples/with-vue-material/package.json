@@ -1,13 +1,14 @@
 {
-	"name": "with-vue-material",
-	"version": "1.0.0",
-	"dependencies": {
-		"nuxt": "latest",
-		"vue-material": "^1.0.0-beta-6"
-	},
-	"scripts": {
-		"dev": "nuxt",
-		"build": "nuxt build",
-		"start": "nuxt start"
-	}
+  "name": "with-vue-material",
+  "version": "1.0.0",
+  "dependencies": {
+    "nuxt": "latest",
+    "vue": "~2.4.4",
+    "vue-material": "beta"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
 }

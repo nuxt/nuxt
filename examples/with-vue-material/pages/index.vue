@@ -78,29 +78,29 @@
 </template>
 
 <script>
-	export default {
-		name: 'Sidenav',
-		data: () => ({
-			showNavigation: false,
-			showSidepanel: false
-		})
-	}
+export default {
+  name: 'Sidenav',
+  data: () => ({
+    showNavigation: false,
+    showSidepanel: false
+  })
+}
 </script>
 
 <style scoped>
-	.page-container {
-		min-height: 100vh;
-		overflow: hidden;
-		position: relative;
-		border: 1px solid rgba(#000, 0.12);
-	}
+  .page-container {
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(#000, 0.12);
+  }
 
-	.md-drawer {
-		width: 230px;
-		max-width: calc(100vw - 125px);
-	}
+  .md-drawer {
+    width: 230px;
+    max-width: calc(100vw - 125px);
+  }
 
-	.md-content {
-		padding: 16px;
-	}
+  .md-content {
+    padding: 16px;
+  }
 </style>
