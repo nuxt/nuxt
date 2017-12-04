@@ -22,7 +22,6 @@ module.exports = {
   build: {
     postcss: [
       require('postcss-cssnext')()
-    ],
-    includeConfig: true
+    ]
   }
 }
