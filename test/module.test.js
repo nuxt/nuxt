@@ -63,6 +63,11 @@ test('Hooks - Error', async t => {
   t.true(errors.length === 1)
 })
 
+test('Hooks - Use external middleware before render', async t => {
+  let response = await rp(url('/use-middleware'))
+  t.is(response, 'Use external middleware')
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
