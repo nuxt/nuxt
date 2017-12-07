@@ -38,6 +38,19 @@ test('/test/error should return error stack trace (Youch)', async t => {
   t.true(error.includes('<div class="error-frames">'))
 })
 
+test('/test/error no source-map (Youch)', async t => {
+  const sourceMaps = nuxt.renderer.resources.serverBundle.maps
+  nuxt.renderer.resources.serverBundle.maps = {}
+
+  const { response, error } = await t.throws(nuxt.renderAndGetWindow(url('/test/error')))
+  t.is(response.statusCode, 500)
+  t.is(response.statusMessage, 'NuxtServerError')
+  t.true(error.includes('test youch !'))
+  t.true(error.includes('<div class="error-frames">'))
+
+  nuxt.renderer.resources.serverBundle.maps = sourceMaps
+})
+
 test('/test/error should return json format error (Youch)', async t => {
   const opts = {
     headers: {

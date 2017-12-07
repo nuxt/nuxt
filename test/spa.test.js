@@ -47,6 +47,12 @@ test('/custom (call mounted and created once)', async t => {
   t.true(mounts.length === 1)
 })
 
+test('/_nuxt/ (access publicPath in spa mode)', async t => {
+  const { response: { statusCode, statusMessage } } = await t.throws(renderRoute('/_nuxt/'))
+  t.is(statusCode, 404)
+  t.is(statusMessage, 'ResourceNotFound')
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
