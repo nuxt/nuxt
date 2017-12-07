@@ -1,5 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
+import rp from 'request-promise-native'
 import { Nuxt, Builder } from '../index.js'
 
 const port = 4005
@@ -36,6 +37,17 @@ test('/ with renderAndGetWindow()', async t => {
   const err = await t.throws(nuxt.renderAndGetWindow(url('/')))
   t.is(err.response.statusCode, 500)
   t.is(err.response.statusMessage, 'NuxtServerError')
+})
+
+test('/ with text/json content', async t => {
+  const opts = {
+    headers: {
+      'accept': 'application/json'
+    },
+    resolveWithFullResponse: true
+  }
+  const { response: { headers } } = await t.throws(rp(url('/'), opts))
+  t.is(headers['content-type'], 'text/json; charset=utf-8')
 })
 
 // Close server and ask nuxt to stop listening to file changes
