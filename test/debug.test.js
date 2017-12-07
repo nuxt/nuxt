@@ -38,6 +38,17 @@ test('/test/error should return error stack trace (Youch)', async t => {
   t.true(error.includes('<div class="error-frames">'))
 })
 
+test('/test/error should return json format error (Youch)', async t => {
+  const opts = {
+    headers: {
+      'accept': 'application/json'
+    },
+    resolveWithFullResponse: true
+  }
+  const { response: { headers } } = await t.throws(rp(url('/test/error'), opts))
+  t.is(headers['content-type'], 'text/json; charset=utf-8')
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
