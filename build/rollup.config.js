@@ -75,15 +75,12 @@ function genConfig(opts) {
       rollupBabel(Object.assign({
         exclude: 'node_modules/**',
         plugins: [
-          ['transform-runtime', { 'helpers': false, 'polyfill': false }],
-          'transform-async-to-generator',
-          'array-includes',
-          'external-helpers'
+          'array-includes'
         ],
         presets: [
           ['env', {
             targets: {
-              node: '6.11.0'
+              node: '8.0.0'
             },
             modules: false
           }]
