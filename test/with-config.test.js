@@ -7,6 +7,7 @@ const port = 4007
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -15,7 +16,8 @@ test.before('Init Nuxt.js', async t => {
   config.rootDir = rootDir
   config.dev = false
   nuxt = new Nuxt(config)
-  await new Builder(nuxt).build()
+  builder = new Builder(nuxt)
+  await builder.build()
   await nuxt.listen(port, 'localhost')
 })
 
@@ -126,6 +128,17 @@ test('Check /test/test.txt with custom serve-static options', async t => {
 test('Check /test.txt should return 404', async t => {
   const err = await t.throws(rp(url('/test.txt')))
   t.is(err.response.statusCode, 404)
+})
+
+test('Check build.styleResources for style-resources-loader', async t => {
+  const loaders = builder.styleLoader('scss')
+  const loader = loaders.find(l => l.loader === 'style-resources-loader')
+  t.is(typeof loader, 'object')
+  t.deepEqual(loader.options, {
+    patterns: [
+      '~/assets/pre-process.scss'
+    ]
+  })
 })
 
 // Close server and ask nuxt to stop listening to file changes
