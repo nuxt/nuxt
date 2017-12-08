@@ -52,6 +52,11 @@ module.exports = {
         '~/assets/pre-process.scss'
       ]
     },
+    babel: {
+      presets({ isServer }) {
+        return null // Coverage: Return null, so defaults will be used.
+      }
+    },
     extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
