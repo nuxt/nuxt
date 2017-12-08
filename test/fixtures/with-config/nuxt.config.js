@@ -42,7 +42,6 @@ module.exports = {
     }
   },
   build: {
-    // extractCSS: true,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
