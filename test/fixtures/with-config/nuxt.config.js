@@ -48,6 +48,11 @@ module.exports = {
       analyzerMode: 'disabled',
       generateStatsFile: true
     },
+    styleResources: {
+      patterns: [
+        '~/assets/pre-process.scss'
+      ]
+    },
     extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
