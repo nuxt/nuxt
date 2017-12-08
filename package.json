@@ -60,8 +60,8 @@
     "release-next": "npm run build && node ./build/release-next && npm publish --tag next"
   },
   "engines": {
-    "node": ">=6.11",
-    "npm": ">=3.10.0"
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
   },
   "dependencies": {
     "@nuxtjs/youch": "^3.1.0",
