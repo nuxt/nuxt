@@ -6,5 +6,12 @@ module.exports = {
   editor: {
     cmd: 'echo',
     pattern: ''
+  },
+  build: {
+    extend(config, ctx) {
+      if (ctx.isServer) {
+        config.devtool = 'source-map'
+      }
+    }
   }
 }
