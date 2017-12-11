@@ -89,9 +89,10 @@ chokidar
 
 function startDev(oldInstance) {
   // Get latest environment variables
+  let h = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+  const host = (h===undefined || h==='*'?'':h)
   const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
-
+  
   // Error handler
   const onError = (err, instance) => {
     debug('Error while reloading [nuxt.config.js]', err)
