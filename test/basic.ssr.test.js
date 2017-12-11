@@ -245,6 +245,11 @@ test('/router-guard', async t => {
   t.false(html.includes('Router Guard'))
 })
 
+test('/jsx', async t => {
+  const { html } = await nuxt.renderRoute('/jsx')
+  t.true(html.includes('<h1>JSX Page</h1>'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after('Closing server and nuxt.js', t => {
   nuxt.close()
