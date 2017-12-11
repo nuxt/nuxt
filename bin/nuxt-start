@@ -85,7 +85,8 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
+let h = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+const host = (h===undefined || h==='*'?'':h)
 const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
 
 nuxt.listen(port, host)
