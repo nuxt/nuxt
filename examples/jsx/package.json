@@ -1,7 +1,7 @@
 {
   "name": "nuxt-jsx",
   "dependencies": {
-    "nuxt": "next"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
