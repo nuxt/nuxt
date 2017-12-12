@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const { readFileSync, writeFileSync } = require('fs-extra')
 const { resolve } = require('path')
 const { spawnSync } = require('child_process')
