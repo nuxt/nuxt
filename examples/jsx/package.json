@@ -1,5 +1,5 @@
 {
-  "name": "hello-nuxt-jsx",
+  "name": "nuxt-jsx",
   "dependencies": {
     "nuxt": "latest"
   },

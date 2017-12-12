@@ -23,12 +23,6 @@ jobs:
           paths:
             - "node_modules"
 
-      # Build
-      - run:
-          name: Build
-          command: |
-            yarn build
-
       # Test
       - run:
           name: Tests
@@ -36,10 +30,10 @@ jobs:
 
       # Release next
       - run:
-          name: Release Next version
+          name: Publish nuxt-next
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "TOKEN: $NPM_TOKEN"
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              npm run release-next
+              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              ./scripts/release-next && npm publish --tag next
             fi

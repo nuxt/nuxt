@@ -1,10 +1,10 @@
 import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import pify from 'pify'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
+import { promisify } from 'util'
 
-const readFile = pify(fs.readFile)
+const readFile = promisify(fs.readFile)
 
 test.before('Init Nuxt.js', async t => {
   const nuxt = new Nuxt({

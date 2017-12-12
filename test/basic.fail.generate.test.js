@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder, Generator } from '../index.js'
+import { Nuxt, Builder, Generator } from '..'
 
 test('Fail with routes() which throw an error', async t => {
   const options = {

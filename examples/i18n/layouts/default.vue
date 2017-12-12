@@ -4,10 +4,10 @@
       <div class="container">
         <h1 class="Header__Title">Nuxt i18n</h1>
         <nav class="Header__Menu">
-          <nuxt-link class="Header__Link" :to="path('/')" exact>
+          <nuxt-link class="Header__Link" :to="$i18n.path('')" exact>
             {{ $t('links.home') }}
           </nuxt-link>
-          <nuxt-link class="Header__Link" :to="path('/about')" exact>
+          <nuxt-link class="Header__Link" :to="$i18n.path('about')" exact>
             {{ $t('links.about') }}
           </nuxt-link>
           <nuxt-link class="Header__Link" v-if="$i18n.locale === 'en'" :to="`/fr` + $route.fullPath" active-class="none" exact>
@@ -24,13 +24,7 @@
 </template>
 
 <script>
-export default {
-  methods: {
-    path(url) {
-      return (this.$i18n.locale === 'en' ? url : '/' + this.$i18n.locale + url)
-    }
-  }
-}
+export default {}
 </script>
 
 <style>

@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 import { interceptLog, interceptError } from './helpers/console'
 
 const port = 4003
@@ -121,6 +121,19 @@ test('/redirect -> check redirected source', async t => {
   t.true(html.includes('<h1>Index page</h1>'))
 })
 
+test('/redirect -> external link', async t => {
+  const headers = {}
+  const { html } = await nuxt.renderRoute('/redirect3', {
+    res: {
+      setHeader(k, v) {
+        headers[k] = v
+      }
+    }
+  })
+  t.is(headers.Location, 'https://nuxtjs.org')
+  t.true(html.includes('<div>Redirecting to external page.</div>'))
+})
+
 test('/special-state -> check window.__NUXT__.test = true', async t => {
   const window = await nuxt.renderAndGetWindow(url('/special-state'))
   t.is(window.document.title, 'Nuxt.js')
@@ -226,6 +239,22 @@ test('/fn-midd', async t => {
 test('/fn-midd?please=true', async t => {
   const { html } = await nuxt.renderRoute('/fn-midd?please=true')
   t.true(html.includes('<h1>Date:'))
+})
+
+test('/router-guard', async t => {
+  const { html } = await nuxt.renderRoute('/router-guard')
+  t.true(html.includes('<p>Nuxt.js</p>'))
+  t.false(html.includes('Router Guard'))
+})
+
+test('/jsx', async t => {
+  const { html } = await nuxt.renderRoute('/jsx')
+  t.true(html.includes('<h1>JSX Page</h1>'))
+})
+
+test('/js-link', async t => {
+  const { html } = await nuxt.renderRoute('/js-link')
+  t.true(html.includes('<h1>vue file is first-class</h1>'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
