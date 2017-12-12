@@ -1,11 +1,11 @@
+import { promisify } from 'util'
 import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import pify from 'pify'
 import stdMocks from 'std-mocks'
 import { Nuxt, Builder } from '../index.js'
 
-const readFile = pify(fs.readFile)
+const readFile = promisify(fs.readFile)
 const rootDir = resolve(__dirname, './fixtures/dll')
 const dllDir = resolve(rootDir, '.cache/client-dll')
 

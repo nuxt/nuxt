@@ -1,11 +1,11 @@
+import { promisify } from 'util'
 import test from 'ava'
 import { resolve, sep } from 'path'
 import rp from 'request-promise-native'
 import { Utils } from '../index.js'
-import pify from 'pify'
 import { exec, spawn } from 'child_process'
 
-const execify = pify(exec, { multiArgs: true })
+const execify = promisify(exec, { multiArgs: true })
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
 const port = 4011
