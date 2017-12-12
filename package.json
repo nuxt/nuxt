@@ -21,8 +21,7 @@
   },
   "files": [
     "bin",
-    "lib",
-    "index.js"
+    "lib"
   ],
   "keywords": [
     "nuxt",
