@@ -59,7 +59,7 @@ function genConfig(opts) {
       format: 'cjs',
       sourcemap: true
     },
-    external: ['fs', 'path', 'http', 'module', 'vue-server-renderer/server-plugin', 'vue-server-renderer/client-plugin']
+    external: ['fs', 'path', 'http', 'module', 'util', 'vue-server-renderer/server-plugin', 'vue-server-renderer/client-plugin']
       .concat(dependencies, opts.external),
     banner: opts.banner || banner,
     name: opts.modulename || 'Nuxt',
