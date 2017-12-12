@@ -50,8 +50,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
-    "postinstall": "opencollective postinstall || exit 0",
-    "release-next": "npm run build && node ./build/release-next && npm publish --tag next"
+    "postinstall": "opencollective postinstall || exit 0"
   },
   "engines": {
     "node": ">=8.0.0",
