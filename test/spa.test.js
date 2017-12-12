@@ -1,6 +1,6 @@
 import test from 'ava'
 import stdMocks from 'std-mocks'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 let nuxt = null
 

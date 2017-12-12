@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index'
+import { Nuxt, Builder } from '..'
 import * as browser from './helpers/browser'
 
 const port = 4003

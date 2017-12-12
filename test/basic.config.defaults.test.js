@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Options } from '../index'
+import { Nuxt, Options } from '..'
 import { version } from '../package.json'
 
 test('Nuxt.version is same as package', t => {

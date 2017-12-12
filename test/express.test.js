@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 import express from 'express'
 import rp from 'request-promise-native'
 

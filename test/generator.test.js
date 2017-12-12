@@ -1,5 +1,5 @@
 import test from 'ava'
-import { Nuxt, Generator } from '../index.js'
+import { Nuxt, Generator } from '..'
 
 test('initRoutes with routes (fn => array)', async t => {
   const array = ['/1', '/2', '/3', '/4']

@@ -23,12 +23,6 @@ jobs:
           paths:
             - "node_modules"
 
-      # Build
-      - run:
-          name: Build
-          command: |
-            yarn build
-
       # Test
       - run:
           name: Tests

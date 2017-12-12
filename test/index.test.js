@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 test('Nuxt.js Class', t => {
   t.is(typeof Nuxt, 'function')

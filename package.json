@@ -13,7 +13,7 @@
       "name": "Pooya Parsa (@pi0)"
     }
   ],
-  "main": "./index.js",
+  "main": "./lib/index.js",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,7 +21,6 @@
   },
   "files": [
     "bin",
-    "dist",
     "lib",
     "index.js"
   ],
@@ -47,14 +46,9 @@
     ]
   },
   "scripts": {
-    "test": "npm run lint && cross-env NODE_ENV=test npm run build:nuxt && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
+    "test": "npm run lint && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
-    "build": "rimraf dist/ && npm run build:nuxt && npm run build:core",
-    "build:nuxt": "rollup -c build/rollup.config.js --environment TARGET:nuxt",
-    "build:core": "rollup -c build/rollup.config.js --environment TARGET:core",
-    "watch": "npm run build:nuxt -- -w",
-    "make-start": "node ./build/start.js",
     "precommit": "npm run lint",
     "postinstall": "opencollective postinstall || exit 0",
     "release-next": "npm run build && node ./build/release-next && npm publish --tag next"
@@ -106,7 +100,6 @@
     "serve-static": "^1.13.1",
     "server-destroy": "^1.0.1",
     "source-map": "^0.6.1",
-    "source-map-support": "^0.5.0",
     "style-resources-loader": "^1.0.0",
     "uglifyjs-webpack-plugin": "^1.1.2",
     "url-loader": "^0.6.2",
@@ -149,14 +142,6 @@
     "puppeteer": "^0.13.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.52.1",
-    "rollup-plugin-alias": "^1.4.0",
-    "rollup-plugin-babel": "^3.0.2",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-replace": "^2.0.0",
-    "rollup-watch": "^4.3.1",
     "std-mocks": "^1.0.1",
     "uglify-js": "^3.2.2"
   },

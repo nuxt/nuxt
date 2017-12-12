@@ -3,7 +3,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
 import stdMocks from 'std-mocks'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 const readFile = promisify(fs.readFile)
 const rootDir = resolve(__dirname, './fixtures/dll')

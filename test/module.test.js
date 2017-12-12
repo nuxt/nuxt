@@ -2,7 +2,7 @@ import test from 'ava'
 import stdMocks from 'std-mocks'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route

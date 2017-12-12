@@ -2,7 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import stdMocks from 'std-mocks'
 // import rp from 'request-promise-native'
-import { Nuxt, Builder, Utils } from '../index.js'
+import { Nuxt, Builder, Utils } from '..'
 import { truncateSync, readFileSync, writeFileSync } from 'fs'
 
 const port = 4001

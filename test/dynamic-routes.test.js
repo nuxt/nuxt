@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 import { promisify } from 'util'
 
 const readFile = promisify(fs.readFile)

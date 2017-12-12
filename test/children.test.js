@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 const port = 4004
 // const url = (route) => 'http://localhost:' + port + route
