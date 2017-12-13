@@ -1,5 +1,5 @@
 import test from 'ava'
-import stdMocks from 'std-mocks'
+import { interceptWarn, release } from './helpers/console'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
@@ -9,7 +9,7 @@ const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
-let builtErr = null
+let buildLog = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
@@ -20,29 +20,24 @@ test.before('Init Nuxt.js', async t => {
   nuxt = new Nuxt(config)
   builder = new Builder(nuxt)
 
-  stdMocks.use({
-    stdout: false,
-    stderr: true
-  })
+  buildLog = await interceptWarn()
   await builder.build()
-  stdMocks.restore()
-  builtErr = stdMocks.flush().stderr
+  release()
 
   await nuxt.listen(port, 'localhost')
 })
 
 test('Deprecated: context.isServer and context.isClient', async t => {
-  stdMocks.use()
+  const logSpy = await interceptWarn()
   await rp(url('/'))
-  stdMocks.restore()
-  const output = stdMocks.flush()
-  t.true(output.stderr.length === 2)
+  t.true(logSpy.calledWith('context.isServer has been deprecated, please use process.server instead.'))
+  t.true(logSpy.calledWith('context.isClient has been deprecated, please use process.client instead.'))
+  t.true(logSpy.calledTwice)
+  release()
 })
 
 test('Deprecated: dev in build.extend()', async t => {
-  const deprecatedMsg = 'dev has been deprecated in build.extend(), please use isDev'
-  const errors = builtErr.filter(value => value.indexOf(deprecatedMsg) === 0)
-  t.true(errors.length === 2)
+  t.true(buildLog.withArgs('dev has been deprecated in build.extend(), please use isDev').calledTwice)
 })
 
 test('Deprecated: nuxt.plugin()', async t => {

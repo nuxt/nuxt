@@ -2,8 +2,8 @@ import { promisify } from 'util'
 import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import stdMocks from 'std-mocks'
 import { Nuxt, Builder } from '..'
+import { interceptLog, release } from './helpers/console'
 
 const readFile = promisify(fs.readFile)
 const rootDir = resolve(__dirname, './fixtures/dll')
@@ -34,12 +34,10 @@ test('Check vue-meta cache', checkCache('vue-meta'))
 test('Check vue-router cache', checkCache('vue-router'))
 
 test('Build with DllReferencePlugin', async t => {
-  stdMocks.use()
+  const logSpy = await interceptLog()
   await new Builder(nuxt).build()
-  stdMocks.restore()
-  const output = stdMocks.flush()
-  const dllLog = output.stdout.filter(value => value === 'Using dll for 3 libs\n')
-  t.true(dllLog.length === 1)
+  release()
+  t.true(logSpy.withArgs('Using dll for 3 libs').calledOnce)
 })
 
 // Close server and ask nuxt to stop listening to file changes

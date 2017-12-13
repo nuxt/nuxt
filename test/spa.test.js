@@ -1,6 +1,6 @@
 import test from 'ava'
-import stdMocks from 'std-mocks'
 import { Nuxt, Builder } from '..'
+import { interceptLog, release } from './helpers/console'
 
 let nuxt = null
 
@@ -37,14 +37,11 @@ test('/custom (not default layout)', async t => {
 })
 
 test('/custom (call mounted and created once)', async t => {
-  stdMocks.use()
+  const logSpy = await interceptLog()
   await renderRoute('/custom')
-  stdMocks.restore()
-  const output = stdMocks.flush()
-  const creates = output.stdout.filter(value => value === 'created\n')
-  t.true(creates.length === 1)
-  const mounts = output.stdout.filter(value => value === 'mounted\n')
-  t.true(mounts.length === 1)
+  release()
+  t.true(logSpy.withArgs('created').calledOnce)
+  t.true(logSpy.withArgs('mounted').calledOnce)
 })
 
 test('/_nuxt/ (access publicPath in spa mode)', async t => {
