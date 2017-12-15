@@ -1,6 +1,6 @@
 import test from 'ava'
 import stdMocks from 'std-mocks'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 let nuxt = null
 
@@ -45,6 +45,12 @@ test('/custom (call mounted and created once)', async t => {
   t.true(creates.length === 1)
   const mounts = output.stdout.filter(value => value === 'mounted\n')
   t.true(mounts.length === 1)
+})
+
+test('/_nuxt/ (access publicPath in spa mode)', async t => {
+  const { response: { statusCode, statusMessage } } = await t.throws(renderRoute('/_nuxt/'))
+  t.is(statusCode, 404)
+  t.is(statusMessage, 'ResourceNotFound')
 })
 
 // Close server and ask nuxt to stop listening to file changes

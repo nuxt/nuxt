@@ -42,11 +42,20 @@ module.exports = {
     }
   },
   build: {
-    // extractCSS: true,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
+    },
+    styleResources: {
+      patterns: [
+        '~/assets/pre-process.scss'
+      ]
+    },
+    babel: {
+      presets({ isServer }) {
+        return null // Coverage: Return null, so defaults will be used.
+      }
     },
     extend(config, options) {
       return Object.assign({}, config, {

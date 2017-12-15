@@ -2,7 +2,7 @@ import test from 'ava'
 import stdMocks from 'std-mocks'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route
@@ -61,6 +61,11 @@ test('Hooks - Functional', async t => {
 test('Hooks - Error', async t => {
   const errors = builtErr.filter(value => value.indexOf('build:extendRoutes') >= 0)
   t.true(errors.length === 1)
+})
+
+test('Hooks - Use external middleware before render', async t => {
+  let response = await rp(url('/use-middleware'))
+  t.is(response, 'Use external middleware')
 })
 
 // Close server and ask nuxt to stop listening to file changes

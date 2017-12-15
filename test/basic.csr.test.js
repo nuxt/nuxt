@@ -1,6 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index'
+import { Nuxt, Builder } from '..'
 import * as browser from './helpers/browser'
 
 const port = 4003
@@ -177,6 +177,12 @@ test('/fn-midd?please=true', async t => {
 
   const h1 = await page.$text('h1')
   t.true(h1.includes('Date:'))
+})
+
+test('/router-guard', async t => {
+  await page.nuxt.navigate('/router-guard')
+
+  t.is(await page.$text('p'), 'Nuxt.js')
 })
 
 // Close server and ask nuxt to stop listening to file changes
