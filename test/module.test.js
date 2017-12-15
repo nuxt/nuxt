@@ -1,8 +1,8 @@
 import test from 'ava'
-import stdMocks from 'std-mocks'
 import { resolve, normalize } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
+import { interceptError, release } from './helpers/console'
 
 const port = 4006
 const url = (route) => 'http://localhost:' + port + route
@@ -20,13 +20,9 @@ test.before('Init Nuxt.js', async t => {
   nuxt = new Nuxt(config)
   builder = new Builder(nuxt)
 
-  stdMocks.use({
-    stdout: false,
-    stderr: true
-  })
+  builtErr = await interceptError()
   await builder.build()
-  stdMocks.restore()
-  builtErr = stdMocks.flush().stderr
+  release()
 
   await nuxt.listen(port, 'localhost')
 })
@@ -59,8 +55,7 @@ test('Hooks - Functional', async t => {
 })
 
 test('Hooks - Error', async t => {
-  const errors = builtErr.filter(value => value.indexOf('build:extendRoutes') >= 0)
-  t.true(errors.length === 1)
+  t.true(builtErr.calledWithMatch(/build:extendRoutes/))
 })
 
 test('Hooks - Use external middleware before render', async t => {

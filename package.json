@@ -141,7 +141,6 @@
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "sinon": "^4.1.2",
-    "std-mocks": "^1.0.1",
     "uglify-js": "^3.2.2"
   },
   "collective": {

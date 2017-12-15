@@ -1,7 +1,6 @@
 import test from 'ava'
 import { resolve } from 'path'
-import stdMocks from 'std-mocks'
-// import rp from 'request-promise-native'
+import { interceptLog, release } from './helpers/console'
 import { Nuxt, Builder, Utils } from '..'
 import { truncateSync, readFileSync, writeFileSync } from 'fs'
 
@@ -32,26 +31,26 @@ test.before('Init Nuxt.js', async t => {
 })
 
 test('remove mixins in live reloading', async t => {
-  stdMocks.use()
+  const logSpy = await interceptLog()
   await nuxt.renderRoute(url('/'))
-  t.true(stdMocks.flush().stdout.some(v => v === 'I am mixin\n'))
+  t.true(logSpy.calledWith('I am mixin'))
 
   truncateSync(pluginPath)
   await new Promise(async (resolve, reject) => {
     let waitTimes = 0
-    while (!stdMocks.flush().stdout.some(v => ~v.indexOf('Compiled successfully'))) {
-      await Utils.waitFor(100) && waitTimes++
-      if (waitTimes === 20) {
-        reject(Error('Dev server doesn\'t reload after 2000ms'))
+    while (logSpy.neverCalledWithMatch(/Compiled successfully/)) {
+      if (waitTimes++ >= 20) {
+        t.fail('Dev server doesn\'t reload after 2000ms')
+        reject(Error())
       }
+      await Utils.waitFor(100)
     }
     resolve()
   })
-
+  logSpy.reset()
   await nuxt.renderRoute(url('/'))
-  t.false(stdMocks.flush().stdout.some(v => v === 'I am mixin\n'))
-
-  stdMocks.restore()
+  t.true(logSpy.neverCalledWith('I am mixin'))
+  release()
 })
 
 test('/stateless', async t => {
