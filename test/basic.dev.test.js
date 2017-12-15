@@ -17,6 +17,9 @@ test.before('Init Nuxt.js', async t => {
   const options = {
     rootDir,
     dev: true,
+    build: {
+      profile: true
+    },
     plugins: [
       '~/plugins/watch.js'
     ]
