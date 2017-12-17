@@ -11,7 +11,7 @@ const rootDir = resolve(__dirname, 'fixtures/basic')
 const port = 4011
 const url = (route) => 'http://localhost:' + port + route
 
-test('bin/nuxt-build', async t => {
+test.serial('bin/nuxt-build', async t => {
   const binBuild = resolve(__dirname, '..', 'bin', 'nuxt-build')
 
   const { stdout, stderr } = await execify(`node ${binBuild} ${rootDir}`)
@@ -20,7 +20,7 @@ test('bin/nuxt-build', async t => {
   t.true(stderr.includes('Building done'))
 })
 
-test('bin/nuxt-start', async t => {
+test.serial('bin/nuxt-start', async t => {
   const binStart = resolve(__dirname, '..', 'bin', 'nuxt-start')
 
   let stdout = ''
@@ -79,7 +79,7 @@ test('bin/nuxt-start', async t => {
   t.is(exitCode, null)
 })
 
-test('bin/nuxt-generate', async t => {
+test.serial('bin/nuxt-generate', async t => {
   const binGenerate = resolve(__dirname, '..', 'bin', 'nuxt-generate')
 
   const { stdout, stderr } = await execify(`node ${binGenerate} ${rootDir}`)

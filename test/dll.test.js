@@ -6,7 +6,7 @@ import { Nuxt, Builder } from '..'
 import { interceptLog, release } from './helpers/console'
 
 const readFile = promisify(fs.readFile)
-const rootDir = resolve(__dirname, './fixtures/dll')
+const rootDir = resolve(__dirname, 'fixtures/dll')
 const dllDir = resolve(rootDir, '.cache/client-dll')
 
 const checkCache = (lib) => {
@@ -19,12 +19,16 @@ const checkCache = (lib) => {
 
 let nuxt
 
-test.before('Init Nuxt.js', async t => {
+test.serial('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = true
-  nuxt = new Nuxt(config)
-  await new Builder(nuxt).build()
+
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(config)
+    await new Builder(nuxt).build()
+  })
+  t.true(logSpy.calledWithMatch('DONE'))
 })
 
 test('Check vue cache', checkCache('vue'))
@@ -41,6 +45,6 @@ test('Build with DllReferencePlugin', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing nuxt.js', t => {
+test.after.always('Closing nuxt.js', t => {
   nuxt.close()
 })

@@ -45,7 +45,7 @@
     ]
   },
   "scripts": {
-    "test": "npm run lint && nyc ava --verbose --serial test/ -- && nyc report --reporter=html",
+    "test": "npm run lint && nyc ava --verbose test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",

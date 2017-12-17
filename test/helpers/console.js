@@ -20,6 +20,12 @@ export function release() {
   if (context.error) {
     console.error = context.error // eslint-disable-line no-console
   }
+  if (context.stdout) {
+    process.stdout.write = context.stdout
+  }
+  if (context.stderr) {
+    process.stderr.write = context.stderr
+  }
 
   context = null
 }
@@ -68,18 +74,32 @@ export async function intercept(levels, msg, cb) {
     spies.error = console.error = sinon.spy() // eslint-disable-line no-console
   }
 
+  if (levels && levels.stdout) {
+    context.stdout = process.stdout.write
+    spies.stdout = process.stdout.write = sinon.spy()
+  }
+
+  if (levels && levels.stderr) {
+    context.stdout = process.stderr.write
+    spies.stdout = process.stderr.write = sinon.spy()
+  }
+
   if (cb) {
     if (msg) {
-      process.stdout.write(`  ${msg}`)
+      if (context.stdout) {
+        context.stdout(`  ${msg}`)
+      } else {
+        process.stdout.write(`  ${msg}`)
+      }
     }
 
     await cb()
 
+    release()
+
     if (msg) {
       process.stdout.write('\n')
     }
-
-    release()
   }
 
   return spies
@@ -103,4 +123,14 @@ export async function interceptWarn(msg, cb) {
 export async function interceptError(msg, cb) {
   const { error } = await intercept({ error: true }, msg, cb)
   return error
+}
+
+export async function interceptStdout(msg, cb) {
+  const { stderr } = await intercept({ stdout: true }, msg, cb)
+  return stderr
+}
+
+export async function interceptStderr(msg, cb) {
+  const { stderr } = await intercept({ stderr: true }, msg, cb)
+  return stderr
 }
