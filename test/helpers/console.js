@@ -80,8 +80,8 @@ export async function intercept(levels, msg, cb) {
   }
 
   if (levels && levels.stderr) {
-    context.stdout = process.stderr.write
-    spies.stdout = process.stderr.write = sinon.spy()
+    context.stderr = process.stderr.write
+    spies.stderr = process.stderr.write = sinon.spy()
   }
 
   if (cb) {
@@ -126,8 +126,8 @@ export async function interceptError(msg, cb) {
 }
 
 export async function interceptStdout(msg, cb) {
-  const { stderr } = await intercept({ stdout: true }, msg, cb)
-  return stderr
+  const { stdout } = await intercept({ stdout: true }, msg, cb)
+  return stdout
 }
 
 export async function interceptStderr(msg, cb) {

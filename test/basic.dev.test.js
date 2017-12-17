@@ -38,7 +38,7 @@ test.serial('Init Nuxt.js', async t => {
 })
 
 test.serial('remove mixins in live reloading', async t => {
-  const spies = await intercept()
+  const spies = await intercept({ log: true, error: true, stderr: true })
   await nuxt.renderRoute(url('/'))
   t.true(spies.log.calledWith('I am mixin'))
 
