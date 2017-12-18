@@ -16,19 +16,23 @@ test.before('Init Nuxt.js', async t => {
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = new Nuxt(config)
-  builder = new Builder(nuxt)
-  await interceptLog('building nuxt', async () => {
+
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(config)
+    builder = new Builder(nuxt)
     await builder.build()
+    await nuxt.listen(port, 'localhost')
   })
-  await nuxt.listen(port, 'localhost')
+
+  t.true(logSpy.calledWithMatch('DONE'))
+  t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test('/', async t => {
-  const logSpy = await interceptLog(async () => {
-    const { html } = await nuxt.renderRoute('/')
-    t.true(html.includes('<h1>I have custom configurations</h1>'))
-  })
+test.serial('/', async t => {
+  const logSpy = await interceptLog()
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('<h1>I have custom configurations</h1>'))
+  release()
   t.true(logSpy.calledOnce)
   t.is(logSpy.args[0][0], 'Test plugin!')
 })
@@ -58,21 +62,20 @@ test('/ (custom postcss.config.js)', async t => {
   t.true(html.includes('::-webkit-input-placeholder'))
 })
 
-test('/test/ (router base)', async t => {
-  const logSpy = await interceptLog(async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/'))
+test.serial('/test/ (router base)', async t => {
+  const logSpy = await interceptLog()
+  const window = await nuxt.renderAndGetWindow(url('/test/'))
 
-    const html = window.document.body.innerHTML
-    t.is(window.__NUXT__.layout, 'default')
-    t.true(html.includes('<h1>Default layout</h1>'))
-    t.true(html.includes('<h1>I have custom configurations</h1>'))
-  })
-
+  const html = window.document.body.innerHTML
+  t.is(window.__NUXT__.layout, 'default')
+  t.true(html.includes('<h1>Default layout</h1>'))
+  t.true(html.includes('<h1>I have custom configurations</h1>'))
+  release()
   t.true(logSpy.calledOnce)
   t.is(logSpy.args[0][0], 'Test plugin!')
 })
 
-test('/test/about (custom layout)', async t => {
+test.serial('/test/about (custom layout)', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/about'))
   t.true(logSpy.calledOnce)
@@ -85,7 +88,7 @@ test('/test/about (custom layout)', async t => {
   t.true(html.includes('<h1>About page</h1>'))
 })
 
-test('/test/desktop (custom layout in desktop folder)', async t => {
+test.serial('/test/desktop (custom layout in desktop folder)', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
   t.true(logSpy.calledOnce)
@@ -98,7 +101,7 @@ test('/test/desktop (custom layout in desktop folder)', async t => {
   t.true(html.includes('<h1>Desktop page</h1>'))
 })
 
-test('/test/mobile (custom layout in mobile folder)', async t => {
+test.serial('/test/mobile (custom layout in mobile folder)', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
   t.true(logSpy.calledOnce)
@@ -111,7 +114,7 @@ test('/test/mobile (custom layout in mobile folder)', async t => {
   t.true(html.includes('<h1>Mobile page</h1>'))
 })
 
-test('/test/env', async t => {
+test.serial('/test/env', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/env'))
   t.true(logSpy.calledOnce)
@@ -129,7 +132,7 @@ test('/test/env', async t => {
   t.true(html.includes('"obj": {'))
 })
 
-test('/test/error', async t => {
+test.serial('/test/error', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/error'))
   t.true(logSpy.calledOnce)
@@ -140,7 +143,7 @@ test('/test/error', async t => {
   t.true(html.includes('Error page'))
 })
 
-test('/test/user-agent', async t => {
+test.serial('/test/user-agent', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
   t.true(logSpy.calledOnce)
@@ -151,7 +154,7 @@ test('/test/user-agent', async t => {
   t.true(html.includes('<pre>Mozilla'))
 })
 
-test('/test/about-bis (added with extendRoutes)', async t => {
+test.serial('/test/about-bis (added with extendRoutes)', async t => {
   const logSpy = await interceptLog()
   const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
   t.true(logSpy.calledOnce)
@@ -190,6 +193,6 @@ test('Check build.styleResources for style-resources-loader', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', async t => {
+test.after.always('Closing server and nuxt.js', async t => {
   await nuxt.close()
 })

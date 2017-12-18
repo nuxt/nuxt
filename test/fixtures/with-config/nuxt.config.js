@@ -42,6 +42,7 @@ module.exports = {
     }
   },
   build: {
+    stats: false,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',

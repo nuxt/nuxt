@@ -28,5 +28,8 @@ module.exports = {
         handler: '~/modules/middleware/use-middleware'
       })
     })
+  },
+  build: {
+    stats: false
   }
 }

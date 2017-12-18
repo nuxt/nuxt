@@ -1,5 +1,6 @@
 module.exports = {
   build: {
+    stats: false,
     dll: true,
     extend(config, options) {
       if (options.isClient) {
