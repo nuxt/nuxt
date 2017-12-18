@@ -2874,9 +2874,9 @@ file-entry-cache@^2.0.0:
     flat-cache "^1.2.1"
     object-assign "^4.0.1"
 
-file-loader@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/file-loader/-/file-loader-1.1.5.tgz#91c25b6b6fbe56dae99f10a425fd64933b5c9daa"
+file-loader@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/file-loader/-/file-loader-1.1.6.tgz#7b9a8f2c58f00a77fddf49e940f7ac978a3ea0e8"
   dependencies:
     loader-utils "^1.0.2"
     schema-utils "^0.3.0"
@@ -7084,9 +7084,9 @@ vue-hot-reload-api@^2.2.0:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.2.4.tgz#683bd1d026c0d3b3c937d5875679e9a87ec6cd8f"
 
-vue-loader@^13.5.0:
-  version "13.5.0"
-  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-13.5.0.tgz#52f7b3790a267eff80012b77ea187a54586dd5d4"
+vue-loader@^13.6.0:
+  version "13.6.0"
+  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-13.6.0.tgz#c1c9570e1e57475f8acb02cda35551b812f88086"
   dependencies:
     consolidate "^0.14.0"
     hash-sum "^1.0.2"
