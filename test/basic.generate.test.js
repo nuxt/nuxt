@@ -159,6 +159,12 @@ test.serial('/users/1.html', async t => {
   t.false(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html')))
 })
 
+test.serial('/-ignored', async t => {
+  const error = await t.throws(rp(url('/-ignored')))
+  t.true(error.statusCode === 404)
+  t.true(error.response.body.includes('Cannot GET /-ignored'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server', async t => {
   await server.close()
