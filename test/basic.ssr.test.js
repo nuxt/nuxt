@@ -132,7 +132,7 @@ test('/redirect -> check redirected source', async t => {
 
 test('/redirect -> external link', async t => {
   const headers = {}
-  const { html } = await nuxt.renderRoute('/redirect3', {
+  const { html } = await nuxt.renderRoute('/redirect-external', {
     res: {
       setHeader(k, v) {
         headers[k] = v
@@ -187,12 +187,19 @@ test.serial('/error-midd', async t => {
   t.true(errorSpy.notCalled)
 })
 
-test.serial('/redirect2', async t => {
+test.serial('/redirect-middleware', async t => {
   const errorSpy = await interceptError()
-  await rp(url('/redirect2')) // Should not console.error
+  await rp(url('/redirect-middleware')) // Should not console.error
   release()
   // Don't display error since redirect returns a noopApp
   t.true(errorSpy.notCalled)
+})
+
+test('/redirect-name', async t => {
+  const { html, redirected } = await nuxt.renderRoute('/redirect-name')
+  t.true(html.includes('<div id="__nuxt"></div>'))
+  t.true(redirected.path === '/stateless')
+  t.true(redirected.status === 302)
 })
 
 test('/no-ssr', async t => {
