@@ -148,19 +148,25 @@ test.serial('/error2', async t => {
   t.deepEqual(await page.nuxt.errorData(), { message: 'Custom error' })
 })
 
-test.serial('/redirect2', async t => {
-  await page.nuxt.navigate('/redirect2')
+test.serial('/redirect-middleware', async t => {
+  await page.nuxt.navigate('/redirect-middleware')
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
-test.serial('/redirect3', async t => {
+test.serial('/redirect-external', async t => {
   // New page for redirecting to external link.
   const page = await browser.page(url('/'))
-  await page.nuxt.navigate('/redirect3', false)
+  await page.nuxt.navigate('/redirect-external', false)
   await page.waitForFunction(() => window.location.href === 'https://nuxtjs.org/')
   page.close()
   t.pass()
+})
+
+test.serial('/redirect-name', async t => {
+  await page.nuxt.navigate('/redirect-name')
+
+  t.is(await page.$text('h1'), 'My component!')
 })
 
 test.serial('/no-ssr', async t => {
