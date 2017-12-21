@@ -20,7 +20,10 @@ test.serial('Init Nuxt.js', async t => {
     dev: true,
     build: {
       stats: false,
-      profile: true
+      profile: true,
+      extractCSS: {
+        allChunks: true
+      }
     },
     plugins: [
       '~/plugins/watch.js'
@@ -35,6 +38,14 @@ test.serial('Init Nuxt.js', async t => {
 
   t.true(spies.log.calledWithMatch('DONE'))
   t.true(spies.log.calledWithMatch('OPEN'))
+})
+
+test.serial('/extractCSS', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/extractCSS'))
+  const html = window.document.head.innerHTML
+  t.true(html.includes('vendor.css'))
+  t.true(!html.includes('30px'))
+  t.is(window.getComputedStyle(window.document.body).getPropertyValue('font-size'), '30px')
 })
 
 test.serial('remove mixins in live reloading', async t => {
