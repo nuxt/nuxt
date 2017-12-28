@@ -21,5 +21,15 @@ module.exports = {
     hook('build:done', builder => {
       builder.__build_done__ = true
     })
+    // Add hook for renderer
+    hook('render:before', (renderer) => {
+      renderer.useMiddleware({
+        path: '/use-middleware',
+        handler: '~/modules/middleware/use-middleware'
+      })
+    })
+  },
+  build: {
+    stats: false
   }
 }

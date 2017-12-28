@@ -23,12 +23,6 @@ jobs:
           paths:
             - "node_modules"
 
-      # Build
-      - run:
-          name: Build
-          command: |
-            yarn build
-
       # Test
       - run:
           name: Tests
@@ -41,5 +35,5 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              npm run release-next
+              ./scripts/release-next && npm publish --tag next
             fi
