@@ -186,6 +186,7 @@ test('Check build.styleResources for style-resources-loader', async t => {
   const loader = loaders.find(l => l.loader === 'style-resources-loader')
   t.is(typeof loader, 'object')
   t.deepEqual(loader.options, {
+    sourceMap: false,
     patterns: [
       '~/assets/pre-process.scss'
     ]

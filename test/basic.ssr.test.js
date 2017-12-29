@@ -46,17 +46,25 @@ test('/stateless', async t => {
 */
 test('/css', async t => {
   const window = await nuxt.renderAndGetWindow(url('/css'))
+
+  const headHtml = window.document.head.innerHTML
+  t.true(headHtml.includes('color:red'))
+
   const element = window.document.querySelector('.red')
   t.not(element, null)
   t.is(element.textContent, 'This is red')
   t.is(element.className, 'red')
-  t.is(window.getComputedStyle(element).color, 'red')
+  // t.is(window.getComputedStyle(element).color, 'red')
 })
 
 test('/postcss', async t => {
   const window = await nuxt.renderAndGetWindow(url('/css'))
-  const element = window.document.querySelector('div.red')
-  t.is(window.getComputedStyle(element)['background-color'], 'blue')
+
+  const headHtml = window.document.head.innerHTML
+  t.true(headHtml.includes('background-color:blue'))
+
+  // const element = window.document.querySelector('div.red')
+  // t.is(window.getComputedStyle(element)['background-color'], 'blue')
 })
 
 test('/stateful', async t => {
