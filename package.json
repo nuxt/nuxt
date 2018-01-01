@@ -64,7 +64,7 @@
     "babel-preset-vue-app": "^2.0.0",
     "caniuse-lite": "^1.0.30000784",
     "chalk": "^2.3.0",
-    "chokidar": "^2.0.0",
+    "chokidar": "^1.7.0",
     "clone": "^2.1.1",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
