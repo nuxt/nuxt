@@ -64,7 +64,7 @@
     "babel-preset-vue-app": "^2.0.0",
     "caniuse-lite": "^1.0.30000784",
     "chalk": "^2.3.0",
-    "chokidar": "^1.7.0",
+    "chokidar": "^2.0.0",
     "clone": "^2.1.1",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
@@ -103,7 +103,7 @@
     "uglifyjs-webpack-plugin": "^1.1.5",
     "url-loader": "^0.6.2",
     "vue": "^2.5.13",
-    "vue-loader": "^13.6.1",
+    "vue-loader": "^13.6.2",
     "vue-meta": "^1.4.0",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.13",
@@ -142,7 +142,7 @@
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "sinon": "^4.1.2",
-    "uglify-js": "^3.3.2"
+    "uglify-js": "^3.3.4"
   },
   "collective": {
     "type": "opencollective",
