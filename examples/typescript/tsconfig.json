@@ -23,7 +23,8 @@
       "~/middleware/*": ["./middleware/*"],
       "~/pages/*": ["./pages/*"],
       "~/plugins/*": ["./plugins/*"],
-      "~/static/*": ["./static/*"]
+      "~/static/*": ["./static/*"],
+      "~/store/*": ["./store/*"]
     }
   }
 }
