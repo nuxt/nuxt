@@ -223,8 +223,6 @@ test('/no-ssr (client-side)', async t => {
 
 test('ETag Header', async t => {
   const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
-  // Validate etag
-  t.regex(etag, /W\/".*"$/)
   // Verify functionality
   const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
   t.is(error.statusCode, 304)
