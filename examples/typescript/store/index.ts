@@ -1,33 +1,25 @@
-import axios from "~/plugins/axios";
+import * as root from "./root";
+import * as people from "./modules/people";
 
-export const state = () => ({
-  selected: 1,
-  people: []
-});
+// more info about store: https://vuex.vuejs.org/en/core-concepts.html
+// structure of the store:
+    // types: Types that represent the keys of the mutations to commit
+    // state: The information of our app, we can get or update it.
+    // getters: Get complex information from state
+    // action: Sync or async operations that commit mutations
+    // mutations: Modify the state
 
-export const mutations = {
-  select(state, id) {
-    state.selected = id;
-  },
-  setPeople(state, people) {
-    state.people = people;
-  }
+export const modules = {
+    [people.name]: people
 };
 
-export const getters = {
-  selectedPerson: state => {
-    const p = state.people.find(person => person.id === state.selected);
-    return p ? p : { first_name: "Please,", last_name: "select someone" };
-  }
-};
+interface ModulesStates {
+    people: people.State;
+}
 
-export const actions = {
-  async nuxtServerInit({ commit }) {
-    const response = await axios.get("/random-data.json");
-    const people = response.data.slice(0, 10);
-    commit("setPeople", people);
-  },
-  select({ commit }, id) {
-    commit("select", id);
-  }
-};
+export type RootState = root.State & ModulesStates;
+
+export const state = root.state;
+export const getters = root.getters;
+export const actions = root.actions;
+export const mutations = root.mutations;
