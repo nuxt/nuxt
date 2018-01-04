@@ -97,9 +97,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@nuxtjs/youch@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@nuxtjs/youch/-/youch-3.1.0.tgz#0e4f38d1b9ede2a77b121c02cbd839937e8918ad"
+"@nuxtjs/youch@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/youch/-/youch-4.0.0.tgz#74eb880f57a3f76f7684f69ba2753a815f308deb"
   dependencies:
     cookie "^0.3.1"
     mustache "^2.3.0"

@@ -2,7 +2,7 @@ module.exports = {
   router: {
     base: '/test/'
   },
-  dev: true, // Needed for _open middleware
+  dev: true, // Needed for __open-in-editor middleware
   debug: true,
   editor: {
     cmd: 'echo',
