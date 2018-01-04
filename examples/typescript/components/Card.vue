@@ -7,16 +7,18 @@
     </div>
   </div>
 </template>
-// **PLEASE NOTE** All "Nuxt Class Components" require at minimum a script tag that exports a default object
+
 <script lang="ts">
+// PLEASE NOTE
+// All "Nuxt Class Components" require at minimum a script tag that exports a default object
 import Vue from 'vue'
 import Component from 'nuxt-class-component'
 import { Prop } from 'vue-property-decorator'
 import { Action, namespace } from 'vuex-class'
 
-import * as people from '~/store/modules/people';
+import * as people from '~/store/modules/people'
 
-const PeopleAction = namespace(people.name, Action);
+const PeopleAction = namespace(people.name, Action)
 
 @Component({})
 export default class Card extends Vue {
