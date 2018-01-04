@@ -2,6 +2,7 @@ import test from 'ava'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
+import styleLoader from '../lib/builder/webpack/style-loader'
 import { interceptLog, release } from './helpers/console'
 
 const port = 4007
@@ -54,7 +55,7 @@ test('/ (custom app.html)', async t => {
 
 test('/ (custom build.publicPath)', async t => {
   const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('src="/test/orion/vendor.'))
+  t.true(html.includes('src="/test/orion/js/vendor.'))
 })
 
 test('/ (custom postcss.config.js)', async t => {
@@ -182,10 +183,11 @@ test('Check /test.txt should return 404', async t => {
 })
 
 test('Check build.styleResources for style-resources-loader', async t => {
-  const loaders = builder.styleLoader('scss')
+  const loaders = styleLoader.call(builder, 'scss')
   const loader = loaders.find(l => l.loader === 'style-resources-loader')
   t.is(typeof loader, 'object')
   t.deepEqual(loader.options, {
+    sourceMap: false,
     patterns: [
       '~/assets/pre-process.scss'
     ]
