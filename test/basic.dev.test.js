@@ -1,14 +1,11 @@
 import test from 'ava'
 import { resolve } from 'path'
 import { intercept, release } from './helpers/console'
-import { Nuxt, Builder, Utils } from '..'
-import { truncateSync, readFileSync, writeFileSync } from 'fs'
+import { Nuxt, Builder } from '..'
 
 const port = 4001
 const url = (route) => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, 'fixtures/basic')
-const pluginPath = resolve(rootDir, 'plugins', 'watch.js')
-const pluginContent = readFileSync(pluginPath)
 
 let nuxt = null
 
@@ -24,10 +21,7 @@ test.serial('Init Nuxt.js', async t => {
       extractCSS: {
         allChunks: true
       }
-    },
-    plugins: [
-      '~/plugins/watch.js'
-    ]
+    }
   }
 
   const spies = await intercept({ log: true, stderr: true }, async () => {
@@ -49,31 +43,6 @@ test.serial('Init Nuxt.js', async t => {
 //   t.is(window.getComputedStyle(window.document.body).getPropertyValue('font-size'), '30px')
 // })
 
-test.serial('remove mixins in live reloading', async t => {
-  const spies = await intercept({ log: true, error: true, stderr: true })
-  await nuxt.renderRoute(url('/'))
-  t.true(spies.log.calledWith('I am mixin'))
-
-  truncateSync(pluginPath)
-  await new Promise(async (resolve, reject) => {
-    let waitTimes = 0
-    while (spies.log.neverCalledWithMatch(/Compiled successfully/)) {
-      if (waitTimes++ >= 20) {
-        t.fail('Dev server doesn\'t reload after 2000ms')
-        reject(Error())
-      }
-      await Utils.waitFor(100)
-    }
-    resolve()
-  })
-  spies.log.reset()
-
-  await nuxt.renderRoute(url('/'))
-  t.true(spies.log.neverCalledWith('I am mixin'))
-  t.is(spies.error.getCall(0).args[0].statusCode, 404)
-  release()
-})
-
 test.serial('/stateless', async t => {
   const spies = await intercept()
   const window = await nuxt.renderAndGetWindow(url('/stateless'))
@@ -94,6 +63,5 @@ test.serial('/stateless', async t => {
 
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server and nuxt.js', async t => {
-  writeFileSync(pluginPath, pluginContent)
   await nuxt.close()
 })
