@@ -1,7 +1,10 @@
 module.exports = {
   dev: false,
   render: {
-    resourceHints: false
+    resourceHints: false,
+    http2: {
+      push: true
+    }
   },
   build: {
     stats: false,

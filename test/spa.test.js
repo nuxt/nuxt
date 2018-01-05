@@ -66,6 +66,12 @@ test.serial('/custom (call mounted and created once)', async t => {
   t.true(logSpy.withArgs('mounted').calledOnce)
 })
 
+test.serial('/mounted', async t => {
+  const { html } = await renderRoute('/mounted')
+
+  t.true(html.includes('<h1>Test: updated</h1>'))
+})
+
 test('/_nuxt/ (access publicPath in spa mode)', async t => {
   const { response: { statusCode, statusMessage } } = await t.throws(renderRoute('/_nuxt/'))
   t.is(statusCode, 404)

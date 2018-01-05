@@ -1,0 +1,19 @@
+{
+  "name": "coffeescript",
+  "version": "1.0.0",
+  "description": "Nuxt.js with CoffeeScript",
+  "author": "Alex Ananiev <alex.ananiev.r@gmail.com>",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.8.0",
+    "coffeescript": "^2.0.1"
+  }
+}

@@ -15,9 +15,29 @@
 
 </p>
 
-> Nuxt.js is a Versatile Vue.js Framework
+> Vue.js Meta Framework to create complex, fast & universal web application *quickly*.
 
-## 🚧 Under active development, [1.0](https://github.com/nuxt/nuxt.js/projects/1) will be released soon :fire:
+## Links
+
+- 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
+- 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
+- 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 👥 [Nuxt.js Community](https://github.com/nuxt-community)
+- 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
+- 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
+
+## Features
+
+- Automatic transpilation and bundling (with webpack and babel)
+- Hot code reloading
+- Server-side rendering OR Single Page App OR Static Generated, you choose :fire:
+- Static file serving. `./static/` is mapped to `/`
+- Configurable with a `nuxt.config.js` file
+- Custom layouts with the `layouts/` directory
+- Middleware
+- Code splitting for every `pages/`
+
+Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 ## Sponsors
 
@@ -93,15 +113,6 @@ Support us with a monthly donation and help us continue our activities. [[Become
 <a href="https://opencollective.com/nuxtjs/backer/29/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/29/avatar.svg"></a>
 </p>
 
-## Links
-
-- 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
-- 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
-- 👥 [Nuxt.js Community](https://github.com/nuxt-community)
-- 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
-- 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
-
 ## Getting started
 
 ```
@@ -143,22 +154,11 @@ npm start
 
 Go to [http://localhost:3000](http://localhost:3000)
 
-So far, we get:
-
-- Automatic transpilation and bundling (with webpack and babel)
-- Hot code reloading
-- Server rendering and indexing of `pages/`
-- Static file serving. `./static/` is mapped to `/`
-- Configurable with a `nuxt.config.js` file
-- Custom layouts with the `layouts/` directory
-- Middleware
-- Code splitting via webpack
-
-Learn more at [nuxtjs.org](https://nuxtjs.org).
-
 ## Templates
 
-You can start by using one of our starter templates:
+:point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the lastest updates.
+
+Or you can start by using one of our starter templates:
 - [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
 - [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
 - [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
@@ -173,7 +173,7 @@ const { Nuxt, Builder } = require('nuxt')
 
 // Import and set nuxt.js options
 let config = require('./nuxt.config.js')
-config.dev = !(process.env.NODE_ENV === 'production')
+config.dev = (process.env.NODE_ENV !== 'production')
 
 let nuxt = new Nuxt(config)
 
@@ -220,7 +220,7 @@ Learn more: https://nuxtjs.org/api/nuxt-render-route
 
 ## Examples
 
-Please take a look at https://nuxtjs.org/examples
+Please take a look at https://nuxtjs.org/examples or directly in https://github.com/nuxt/nuxt.js/tree/dev/examples.
 
 ## Production deployment
 
@@ -249,9 +249,21 @@ Then run `now` and enjoy!
 
 Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
+## Core team
+
+| [Sebastien Chopin](https://github.com/Atinux) | [Alexandre Chopin](https://github.com/alexchopin) | [Pooya Parsa](https://github.com/pi0) | [Clark Du](https://github.com/clarkdo) |
+| --- | --- | --- | --- |
+| [![Atinux](https://avatars1.githubusercontent.com/u/904724?s=150&v=4)](https://github.com/Atinux) | [![alexchopin](https://avatars1.githubusercontent.com/u/4084277?s=150&v=4)](https://github.com/alexchopin) | [![pi0](https://avatars1.githubusercontent.com/u/5158436?s=150&v=4)](https://github.com/pi0) | [![clarkdo](https://avatars3.githubusercontent.com/u/4312154?s=150&v=4)](https://github.com/clarkdo) |
+
+## Contributors
+
+Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
+
+## Contributing
+
+Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+
 ## Roadmap
 
 https://trello.com/b/lgy93IOl/nuxtjs-10
-
-## Contributing
-Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)

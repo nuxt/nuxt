@@ -25,18 +25,18 @@ test.serial('Init Nuxt.js', async t => {
   t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test.serial('/test/_open (open-in-editor)', async t => {
+test.serial('/test/__open-in-editor (open-in-editor)', async t => {
   const logSpy = await interceptLog()
-  const { body } = await rp(url('/test/_open?file=pages/index.vue'), { resolveWithFullResponse: true })
+  const { body } = await rp(url('/test/__open-in-editor?file=pages/index.vue'), { resolveWithFullResponse: true })
   t.is(body, 'opened in editor!')
   release()
   t.is(logSpy.getCall(0).args[0], '[open in editor]')
   t.true(logSpy.calledOnce)
 })
 
-test.serial('/test/_open should return error (open-in-editor)', async t => {
+test.serial('/test/__open-in-editor should return error (open-in-editor)', async t => {
   const logSpy = await interceptLog()
-  const { body } = await rp(url('/test/_open?file='), { resolveWithFullResponse: true })
+  const { body } = await rp(url('/test/__open-in-editor?file='), { resolveWithFullResponse: true })
   t.is(body, 'File is not specified')
   release()
   t.is(logSpy.getCall(0).args[0], '[open in editor]')

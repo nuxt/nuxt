@@ -46,17 +46,25 @@ test('/stateless', async t => {
 */
 test('/css', async t => {
   const window = await nuxt.renderAndGetWindow(url('/css'))
+
+  const headHtml = window.document.head.innerHTML
+  t.true(headHtml.includes('color:red'))
+
   const element = window.document.querySelector('.red')
   t.not(element, null)
   t.is(element.textContent, 'This is red')
   t.is(element.className, 'red')
-  t.is(window.getComputedStyle(element).color, 'red')
+  // t.is(window.getComputedStyle(element).color, 'red')
 })
 
 test('/postcss', async t => {
   const window = await nuxt.renderAndGetWindow(url('/css'))
-  const element = window.document.querySelector('div.red')
-  t.is(window.getComputedStyle(element)['background-color'], 'blue')
+
+  const headHtml = window.document.head.innerHTML
+  t.true(headHtml.includes('background-color:blue'))
+
+  // const element = window.document.querySelector('div.red')
+  // t.is(window.getComputedStyle(element)['background-color'], 'blue')
 })
 
 test('/stateful', async t => {
@@ -132,7 +140,7 @@ test('/redirect -> check redirected source', async t => {
 
 test('/redirect -> external link', async t => {
   const headers = {}
-  const { html } = await nuxt.renderRoute('/redirect3', {
+  const { html } = await nuxt.renderRoute('/redirect-external', {
     res: {
       setHeader(k, v) {
         headers[k] = v
@@ -187,12 +195,19 @@ test.serial('/error-midd', async t => {
   t.true(errorSpy.notCalled)
 })
 
-test.serial('/redirect2', async t => {
+test.serial('/redirect-middleware', async t => {
   const errorSpy = await interceptError()
-  await rp(url('/redirect2')) // Should not console.error
+  await rp(url('/redirect-middleware')) // Should not console.error
   release()
   // Don't display error since redirect returns a noopApp
   t.true(errorSpy.notCalled)
+})
+
+test('/redirect-name', async t => {
+  const { html, redirected } = await nuxt.renderRoute('/redirect-name')
+  t.true(html.includes('<div id="__nuxt"></div>'))
+  t.true(redirected.path === '/stateless')
+  t.true(redirected.status === 302)
 })
 
 test('/no-ssr', async t => {
@@ -208,8 +223,6 @@ test('/no-ssr (client-side)', async t => {
 
 test('ETag Header', async t => {
   const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
-  // Validate etag
-  t.regex(etag, /W\/".*"$/)
   // Verify functionality
   const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
   t.is(error.statusCode, 304)

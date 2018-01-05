@@ -23,6 +23,7 @@ module.exports = {
   layoutTransition: 'test',
   loadingIndicator: 'circle',
   offline: true,
+  extensions: 'ts',
   plugins: [
     '~/plugins/test.js',
     { src: '~/plugins/only-client.js', ssr: false }
@@ -69,7 +70,8 @@ module.exports = {
   ],
   render: {
     http2: {
-      push: true
+      push: true,
+      shouldPush: (file, type) => type === 'script'
     },
     bundleRenderer: {
       shouldPreload: (file, type) => {
