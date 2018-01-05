@@ -20,8 +20,10 @@ module.exports = {
   /*
   ** Build configuration
   */
+  extensions: ['coffee'],
   build: {
     extend (config, ctx) {
+      config.resolve.extensions.push('.ts')
       config.module.rules.push({
         test: /\.coffee$/,
         loader: 'coffee-loader'
