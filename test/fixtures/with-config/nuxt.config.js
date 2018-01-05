@@ -70,7 +70,8 @@ module.exports = {
   ],
   render: {
     http2: {
-      push: true
+      push: true,
+      shouldPush: (file, type) => type === 'script'
     },
     bundleRenderer: {
       shouldPreload: (file, type) => {
