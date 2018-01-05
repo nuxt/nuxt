@@ -1,9 +1,11 @@
+const path = require('path')
+
 module.exports = {
   srcDir: __dirname,
   router: {
     base: '/test/',
     middleware: 'noop',
-    extendRoutes (routes) {
+    extendRoutes(routes) {
       return [
         ...routes,
         {
@@ -14,8 +16,12 @@ module.exports = {
       ]
     }
   },
+  modulesDir: [
+    path.join(__dirname, '..', '..', '..', 'node_modules')
+  ],
   transition: 'test',
   layoutTransition: 'test',
+  loadingIndicator: 'circle',
   offline: true,
   plugins: [
     '~/plugins/test.js',
@@ -36,13 +42,23 @@ module.exports = {
     }
   },
   build: {
-    // extractCSS: true,
+    stats: false,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
     },
-    extend (config, options) {
+    styleResources: {
+      patterns: [
+        '~/assets/pre-process.scss'
+      ]
+    },
+    babel: {
+      presets({ isServer }) {
+        return null // Coverage: Return null, so defaults will be used.
+      }
+    },
+    extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })

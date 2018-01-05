@@ -3,7 +3,7 @@
     <div class="left">
       <h2><nuxt-link to="/">Players</nuxt-link></h2>
       <ul class="players">
-        <li v-for="user in users">
+        <li v-for="user in users" :key="user.id">
           <nuxt-link :to="'/'+user.id">{{ user.name }}</nuxt-link>
         </li>
       </ul>
@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  asyncData ({ env }) {
+  asyncData({ env }) {
     return { users: env.users }
   }
 }

@@ -11,12 +11,12 @@
 import axios from 'axios'
 
 export default {
-  async asyncData ({ params }) {
+  async asyncData({ params }) {
     // We can use async/await ES6 feature
     let { data } = await axios.get(`https://jsonplaceholder.typicode.com/posts/${params.id}`)
     return { post: data }
   },
-  head () {
+  head() {
     return {
       title: this.post.title
     }

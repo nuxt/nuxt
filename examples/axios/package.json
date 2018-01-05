@@ -1,0 +1,14 @@
+{
+  "name": "nuxt-proxy",
+  "version": "1.0.0",
+  "dependencies": {
+    "@nuxtjs/axios": "^4.4.0",
+    "@nuxtjs/proxy": "^1.1.2",
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

@@ -12,7 +12,7 @@ if (process.browser) {
 }
 
 export default {
-  mounted () {
+  mounted() {
     miniToastr.init()
   },
   notifications: {

@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  asyncData () {
+  asyncData() {
     return new Promise((resolve) => {
       setTimeout(() => resolve({ name: 'Nuxt.js' }), 10)
     })

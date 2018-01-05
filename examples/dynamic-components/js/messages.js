@@ -6,19 +6,19 @@ export const messages = [
     component: 'vChart',
     data: {
       labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-      datasets:[
-          {
-            label: 'Activity',
-            backgroundColor: '#41b883',
-            data: [40, 20, 12, 39, 10, 40, 39, 50, 40, 20, 12, 11]
-          }
+      datasets: [
+        {
+          label: 'Activity',
+          backgroundColor: '#41b883',
+          data: [40, 20, 12, 39, 10, 40, 39, 50, 40, 20, 12, 11]
+        }
       ]
     }
   },
-  { component: 'vText', data: 'End of demo 🎉' },
+  { component: 'vText', data: 'End of demo 🎉' }
 ]
 
-async function streamMessages (fn, i = 0) {
+async function streamMessages(fn, i = 0) {
   if (i >= messages.length) return
   await fn(messages[i])
   setTimeout(() => streamMessages(fn, i + 1), 1500)

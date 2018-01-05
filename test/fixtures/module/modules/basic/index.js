@@ -1,6 +1,6 @@
 const path = require('path')
 
-module.exports = function basicModule (options, resolve) {
+module.exports = function basicModule(options, resolve) {
   // Add  vendor
   this.addVendor('lodash')
 

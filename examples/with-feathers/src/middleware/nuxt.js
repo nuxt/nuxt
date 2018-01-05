@@ -1,22 +1,23 @@
-const resolve = require('path').resolve;
-const Nuxt = require('nuxt');
+const resolve = require('path').resolve
+const { Nuxt, Builder } = require('nuxt')
 
 // Setup nuxt.js
-let config = {};
+let config = {}
 try {
-  config = require('../../nuxt.config.js');
+  config = require('../../nuxt.config.js')
 } catch (e) {}
-config.rootDir = resolve(__dirname, '..', '..');
-config.dev = process.env.NODE_ENV !== 'production';
-const nuxt = new Nuxt(config);
+config.rootDir = resolve(__dirname, '..', '..')
+config.dev = process.env.NODE_ENV !== 'production'
+
+const nuxt = new Nuxt(config)
 if (config.dev) {
-  nuxt.build().then(() => {
-    process.emit('nuxt:build:done');
-  });
+  const builder = new Builder(nuxt)
+  builder.build().then(() => process.emit('nuxt:build:done'))
 } else {
-  process.nextTick(() => process.emit('nuxt:build:done'));
+  process.nextTick(() => process.emit('nuxt:build:done'))
 }
+
 // Add nuxt.js middleware
 module.exports = function (req, res) {
-  nuxt.render(req, res);
-};
+  nuxt.render(req, res)
+}

@@ -1,0 +1,12 @@
+{
+	"name": "with-museui",
+	"dependencies": {
+		"nuxt": "latest",
+		"muse-ui": "latest"
+	},
+	"scripts": {
+		"dev": "nuxt",
+		"build": "nuxt build",
+		"start": "nuxt start"
+	}
+}

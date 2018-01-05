@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    working_directory: /usr/src/app
+    docker:
+      - image: banian/node-headless-chrome
+    steps:
+      # Checkout repository
+      - checkout
+
+      # Restore cache
+      - restore_cache:
+          key: yarn-{{ checksum "yarn.lock" }}
+
+      # Install dependencies
+      - run:
+          name: Install Dependencies
+          command: NODE_ENV=dev yarn
+
+      # Keep cache
+      - save_cache:
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - "node_modules"
+
+      # Test
+      - run:
+          name: Tests
+          command: yarn test && yarn coverage
+
+      # Release next
+      - run:
+          name: Publish nuxt-next
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              ./scripts/release-next && npm publish --tag next
+            fi

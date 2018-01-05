@@ -8,7 +8,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(value, key) in cookies">
+        <tr v-for="(value, key) in cookies" :key="key">
           <td>{{ key }}</td>
           <td>{{ value }}</td>
           <td><button @click="removeCookie(key)">Remove</button></td>
@@ -33,7 +33,7 @@ export default {
     }
   }),
   computed: {
-    cookies () {
+    cookies() {
       return this.$cookies.cookies
     }
   },

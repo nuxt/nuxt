@@ -1,0 +1,4 @@
+app
+node_modules
+dist
+.nuxt

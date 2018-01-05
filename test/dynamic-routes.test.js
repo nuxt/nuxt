@@ -1,17 +1,26 @@
 import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import pify from 'pify'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
+import { promisify } from 'util'
+import { interceptLog } from './helpers/console'
 
-const readFile = pify(fs.readFile)
+const readFile = promisify(fs.readFile)
 
-test.before('Init Nuxt.js', async t => {
-  const nuxt = new Nuxt({
+test.serial('Init Nuxt.js', async t => {
+  const config = {
     rootDir: resolve(__dirname, 'fixtures/dynamic-routes'),
-    dev: false
+    dev: false,
+    build: {
+      stats: false
+    }
+  }
+
+  const logSpy = await interceptLog(async () => {
+    const nuxt = new Nuxt(config)
+    await new Builder(nuxt).build()
   })
-  await new Builder(nuxt).build()
+  t.true(logSpy.calledWithMatch('DONE'))
 })
 
 test('Check .nuxt/router.js', t => {

@@ -13,7 +13,7 @@ export default {
   data() {
     return { processEnv: process.env.object }
   },
-  asyncData ({ env }) {
+  asyncData({ env }) {
     delete env.object
     return { env }
   }

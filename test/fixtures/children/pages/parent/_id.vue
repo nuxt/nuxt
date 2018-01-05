@@ -5,16 +5,16 @@
 <script>
 export default {
   async asyncData({ route }) {
-    const asyncData = {};
+    const asyncData = {}
 
     await new Promise((resolve, reject) => {
       setTimeout(() => {
-        asyncData.id = route.params.id;
-        resolve();
+        asyncData.id = route.params.id
+        resolve()
       }, 50)
-    });
+    })
 
-    return asyncData;
+    return asyncData
   }
 }
 </script>

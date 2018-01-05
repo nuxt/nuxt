@@ -1,5 +1,4 @@
-
-const { join } = require('path')
+const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
   /*
@@ -16,7 +15,16 @@ module.exports = {
   */
   build: {
     vendor: ['vuetify'],
-    extractCSS: true
+    extractCSS: true,
+    extend(config, ctx) {
+      if (ctx.isServer) {
+        config.externals = [
+          nodeExternals({
+            whitelist: [/^vuetify/]
+          })
+        ]
+      }
+    }
   },
   /*
   ** Load Vuetify into the app

@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  validate ({ query }) {
+  validate({ query }) {
     return query.key === '12345'
   }
 }

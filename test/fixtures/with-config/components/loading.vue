@@ -10,10 +10,10 @@ export default {
     loading: false
   }),
   methods: {
-    start () {
+    start() {
       this.loading = true
     },
-    finish () {
+    finish() {
       this.loading = false
     }
   }

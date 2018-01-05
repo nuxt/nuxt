@@ -7,13 +7,13 @@ export const state = () => ({
 })
 
 export const mutations = {
-  add (state, title) {
+  add(state, title) {
     state.list.push(title)
   }
 }
 
 export const getters = {
-  get (state) {
+  get(state) {
     return state.list
   }
 }

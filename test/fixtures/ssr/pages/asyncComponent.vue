@@ -8,7 +8,7 @@
 const AsyncTest = () => import('@/components/test.vue').then((m) => m.default || m)
 
 export default {
-  components:{
+  components: {
     AsyncTest
   }
 }

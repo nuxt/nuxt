@@ -17,14 +17,14 @@ body {
 }
 
 .layout-enter-active, .layout-leave-active {
-  transition: opacity .5s
+  transition: opacity 0.5s
 }
 .layout-enter, .layout-leave-active {
   opacity: 0
 }
 
 .bounce-enter-active {
-  animation: bounce-in .8s;
+  animation: bounce-in .5s;
 }
 .bounce-leave-active {
   animation: bounce-out .5s;
