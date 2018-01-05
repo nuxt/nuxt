@@ -25,3 +25,5 @@ export default {
   }
 }
 </script>
+
+<!-- You should not write any CSS here, but use ~/assets/main.css instead -->
