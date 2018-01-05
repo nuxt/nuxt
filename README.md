@@ -255,9 +255,15 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 | --- | --- | --- | --- |
 | [![Atinux](https://avatars1.githubusercontent.com/u/904724?s=150&v=4)](https://github.com/Atinux) | [![alexchopin](https://avatars1.githubusercontent.com/u/4084277?s=150&v=4)](https://github.com/alexchopin) | [![pi0](https://avatars1.githubusercontent.com/u/5158436?s=150&v=4)](https://github.com/pi0) | [![clarkdo](https://avatars3.githubusercontent.com/u/4312154?s=150&v=4)](https://github.com/clarkdo) |
 
+## Contributors
+
+Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
+
+## Contributing
+
+Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+
 ## Roadmap
 
 https://trello.com/b/lgy93IOl/nuxtjs-10
-
-## Contributing
-Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
