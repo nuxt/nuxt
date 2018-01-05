@@ -173,7 +173,7 @@ const { Nuxt, Builder } = require('nuxt')
 
 // Import and set nuxt.js options
 let config = require('./nuxt.config.js')
-config.dev = !(process.env.NODE_ENV === 'production')
+config.dev = (process.env.NODE_ENV !== 'production')
 
 let nuxt = new Nuxt(config)
 
@@ -220,7 +220,7 @@ Learn more: https://nuxtjs.org/api/nuxt-render-route
 
 ## Examples
 
-Please take a look at https://nuxtjs.org/examples
+Please take a look at https://nuxtjs.org/examples or directly in https://github.com/nuxt/nuxt.js/tree/dev/examples.
 
 ## Production deployment
 
@@ -248,6 +248,12 @@ For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like f
 Then run `now` and enjoy!
 
 Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
+
+## Core team
+
+| [Sebastien Chopin](https://github.com/Atinux) | [Alexandre Chopin](https://github.com/alexchopin) | [Pooya Parsa](https://github.com/pi0) | [Clark Du](https://github.com/clarkdo) |
+| --- | --- | --- | --- |
+| [![Atinux](https://avatars1.githubusercontent.com/u/904724?s=150&v=4)](https://github.com/Atinux) | [![alexchopin](https://avatars1.githubusercontent.com/u/4084277?s=150&v=4)](https://github.com/alexchopin) | [![pi0](https://avatars1.githubusercontent.com/u/5158436?s=150&v=4)](https://github.com/pi0) | [![clarkdo](https://avatars3.githubusercontent.com/u/4312154?s=150&v=4)](https://github.com/clarkdo) |
 
 ## Roadmap
 
