@@ -3,7 +3,7 @@ module.exports = {
   ** Headers of the page
   */
   head: {
-    title: 'with-coffee',
+    title: 'Nuxt with CoffeeScript',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -18,16 +18,7 @@ module.exports = {
   */
   loading: { color: '#3B8070' },
   /*
-  ** Build configuration
+  ** Modules
   */
-  extensions: ['coffee'],
-  build: {
-    extend (config, ctx) {
-      config.resolve.extensions.push('.ts')
-      config.module.rules.push({
-        test: /\.coffee$/,
-        loader: 'coffee-loader'
-      })
-    }
-  }
+  modules: ['~/modules/coffeescript']
 }

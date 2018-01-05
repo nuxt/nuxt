@@ -1,6 +1,6 @@
-# with-coffee
+# CoffeeScript
 
-> Nuxt.js project
+> Nuxt.js project with CoffeeScript
 
 ## Build Setup
 
