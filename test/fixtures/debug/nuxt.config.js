@@ -4,10 +4,6 @@ module.exports = {
   },
   dev: true, // Needed for __open-in-editor middleware
   debug: true,
-  editor: {
-    cmd: 'echo',
-    pattern: ''
-  },
   build: {
     stats: false
   }

@@ -56,7 +56,7 @@
     "npm": ">=5.0.0"
   },
   "dependencies": {
-    "@nuxtjs/youch": "^4.0.1",
+    "@nuxtjs/youch": "^4.2.2",
     "ansi-html": "^0.0.7",
     "autoprefixer": "^7.2.4",
     "babel-core": "^6.26.0",
@@ -82,11 +82,12 @@
     "hash-sum": "^1.0.2",
     "html-minifier": "3.5.8",
     "html-webpack-plugin": "^2.30.1",
+    "launch-editor": "^1.0.0",
+    "launch-editor-middleware": "^1.0.0",
     "lodash": "^4.17.4",
     "lru-cache": "^4.1.1",
     "memory-fs": "^0.4.1",
     "minimist": "^1.2.0",
-    "open-in-editor": "^2.2.0",
     "opencollective": "^1.0.3",
     "postcss": "^6.0.15",
     "postcss-cssnext": "^3.0.2",

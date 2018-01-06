@@ -26,21 +26,14 @@ test.serial('Init Nuxt.js', async t => {
 })
 
 test.serial('/test/__open-in-editor (open-in-editor)', async t => {
-  const logSpy = await interceptLog()
   const { body } = await rp(url('/test/__open-in-editor?file=pages/index.vue'), { resolveWithFullResponse: true })
-  t.is(body, 'opened in editor!')
-  release()
-  t.is(logSpy.getCall(0).args[0], '[open in editor]')
-  t.true(logSpy.calledOnce)
+  t.is(body, '')
 })
 
 test.serial('/test/__open-in-editor should return error (open-in-editor)', async t => {
-  const logSpy = await interceptLog()
-  const { body } = await rp(url('/test/__open-in-editor?file='), { resolveWithFullResponse: true })
-  t.is(body, 'File is not specified')
-  release()
-  t.is(logSpy.getCall(0).args[0], '[open in editor]')
-  t.true(logSpy.calledOnce)
+  const { error, statusCode } = await t.throws(rp(url('/test/__open-in-editor?file='), { resolveWithFullResponse: true }))
+  t.is(statusCode, 500)
+  t.is(error, 'launch-editor-middleware: required query param "file" is missing.')
 })
 
 test.serial('/test/error should return error stack trace (Youch)', async t => {
