@@ -1,5 +1,6 @@
 {
-  "name": "hello-nuxt-jsx",
+  "name": "with-amp",
+  "version": "1.0.0",
   "dependencies": {
     "nuxt": "latest"
   },

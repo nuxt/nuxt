@@ -1,35 +1,46 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder, Utils } from '../index.js'
+import { Nuxt, Builder, Utils } from '..'
 import * as browser from './helpers/browser'
+import { interceptLog } from './helpers/console'
 
-const port = 4005
+const port = 4014
 const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
+let page
+const dates = {}
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
+test.serial('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/children'),
-    dev: false
+    buildDir: '.nuxt-patch',
+    dev: false,
+    build: {
+      stats: false
+    }
   }
-  nuxt = new Nuxt(options)
-  await new Builder(nuxt).build()
 
-  await nuxt.listen(port, 'localhost')
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(options)
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
+
+  t.true(logSpy.calledWithMatch('DONE'))
+  t.true(logSpy.calledWithMatch('OPEN'))
 })
-test.before('Start browser', async t => {
+
+test.serial('Start browser', async t => {
+  t.plan(0) // suppress 'no assertions' warning
   await browser.start({
     // slowMo: 50,
     // headless: false
   })
 })
 
-let page
-const dates = {}
-
-test('Loading /patch and keep ', async t => {
+test.serial('Loading /patch and keep ', async t => {
   page = await browser.page(url('/patch'))
 
   const h1 = await page.$text('h1')
@@ -39,7 +50,7 @@ test('Loading /patch and keep ', async t => {
   dates.patch = await page.$text('[data-date-patch]')
 })
 
-test('Navigate to /patch/1', async t => {
+test.serial('Navigate to /patch/1', async t => {
   const { hook } = await page.nuxt.navigate('/patch/1', false)
   const loading = await page.nuxt.loadingData()
   t.is(loading.show, true)
@@ -52,7 +63,7 @@ test('Navigate to /patch/1', async t => {
   t.is(dates.patch, await page.$text('[data-date-patch]'))
 })
 
-test('Navigate to /patch/2', async t => {
+test.serial('Navigate to /patch/2', async t => {
   await page.nuxt.navigate('/patch/2')
   const date = await page.$text('[data-date-id]')
 
@@ -62,19 +73,19 @@ test('Navigate to /patch/2', async t => {
   dates.id = date
 })
 
-test('Navigate to /patch/2?test=true', async t => {
+test.serial('Navigate to /patch/2?test=true', async t => {
   await page.nuxt.navigate('/patch/2?test=true')
   t.is(dates.patch, await page.$text('[data-date-patch]'))
   t.is(dates.id, await page.$text('[data-date-id]'))
 })
 
-test('Navigate to /patch/2#test', async t => {
+test.serial('Navigate to /patch/2#test', async t => {
   await page.nuxt.navigate('/patch/2#test')
   t.is(dates.patch, await page.$text('[data-date-patch]'))
   t.is(dates.id, await page.$text('[data-date-id]'))
 })
 
-test('Navigate to /patch/2/child', async t => {
+test.serial('Navigate to /patch/2/child', async t => {
   await page.nuxt.navigate('/patch/2/child')
   dates.child = await page.$text('[data-date-child]')
   dates.slug = await page.$text('[data-date-child-slug]')
@@ -85,7 +96,7 @@ test('Navigate to /patch/2/child', async t => {
   t.true(+dates.slug > +dates.child)
 })
 
-test('Navigate to /patch/2/child/1', async t => {
+test.serial('Navigate to /patch/2/child/1', async t => {
   await page.nuxt.navigate('/patch/2/child/1')
   const date = await page.$text('[data-date-child-slug]')
 
@@ -96,7 +107,7 @@ test('Navigate to /patch/2/child/1', async t => {
   dates.slug = date
 })
 
-test('Navigate to /patch/2/child/1?foo=bar', async t => {
+test.serial('Navigate to /patch/2/child/1?foo=bar', async t => {
   await page.nuxt.navigate('/patch/2/child/1?foo=bar')
 
   t.is(dates.patch, await page.$text('[data-date-patch]'))
@@ -105,13 +116,13 @@ test('Navigate to /patch/2/child/1?foo=bar', async t => {
   t.is(dates.slug, await page.$text('[data-date-child-slug]'))
 })
 
-test('Search a country', async t => {
+test.serial('Search a country', async t => {
   const countries = await page.$$text('[data-test-search-result]')
   t.is(countries.length, 5)
 
   await page.type('[data-test-search-input]', 'gu')
 
-  await Utils.waitFor(100)
+  await Utils.waitFor(250)
   const newCountries = await page.$$text('[data-test-search-result]')
   t.is(newCountries.length, 1)
   t.deepEqual(newCountries, ['Guinea'])
@@ -125,10 +136,11 @@ test('Search a country', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after.always('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })
-test.after('Stop browser', async t => {
+
+test.after.always('Stop browser', async t => {
   await page.close()
   await browser.stop()
 })

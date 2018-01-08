@@ -1,6 +1,6 @@
 import test from 'ava'
 import ansiHTML from 'ansi-html'
-import { Utils } from '../index.js'
+import { Utils } from '..'
 
 test('encodeHtml', t => {
   const html = '<h1>Hello</h1>'
@@ -70,6 +70,21 @@ test('promisifyRoute (fn => promise)', t => {
     })
 })
 
+test('promisifyRoute ((fn(args) => promise))', t => {
+  const fn = function (array) {
+    return new Promise((resolve) => {
+      resolve(array)
+    })
+  }
+  const array = [1, 2, 3]
+  const promise = Utils.promisifyRoute(fn, array)
+  t.is(typeof promise, 'object')
+  return promise
+    .then((res) => {
+      t.is(res, array)
+    })
+})
+
 test('promisifyRoute (fn(cb) with error)', t => {
   const fn = function (cb) {
     cb(new Error('Error here'))
@@ -79,6 +94,19 @@ test('promisifyRoute (fn(cb) with error)', t => {
   return promise
     .catch((e) => {
       t.is(e.message, 'Error here')
+    })
+})
+
+test('promisifyRoute (fn(cb, args) with error)', t => {
+  const fn = function (cb, array) {
+    cb(new Error('Error here: ' + array.join()))
+  }
+  const array = [1, 2, 3, 4]
+  const promise = Utils.promisifyRoute(fn, array)
+  t.is(typeof promise, 'object')
+  return promise
+    .catch((e) => {
+      t.is(e.message, 'Error here: ' + array.join())
     })
 })
 
@@ -92,6 +120,21 @@ test('promisifyRoute (fn(cb) with result)', t => {
   return promise
     .then((res) => {
       t.is(res, array)
+    })
+})
+
+test('promisifyRoute (fn(cb, args) with result)', t => {
+  const fn = function (cb, array, object) {
+    cb(null, { array, object })
+  }
+  const array = [1, 2, 3, 4]
+  const object = { a: 1 }
+  const promise = Utils.promisifyRoute(fn, array, object)
+  t.is(typeof promise, 'object')
+  return promise
+    .then((res) => {
+      t.is(res.array, array)
+      t.is(res.object, object)
     })
 })
 

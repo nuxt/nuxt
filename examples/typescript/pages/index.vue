@@ -6,7 +6,7 @@
       {{selected}}
     </div>
     <div class="flex flex-wrap ph2 justify-between bg-white-80">
-      <div v-for="person in people">
+      <div v-for="person in people" :key="person.id">
         <Card :person="person"></Card>
       </div>
     </div>
@@ -16,8 +16,13 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'nuxt-class-component'
-import Card from '~/components/Card'
-import { State, Getter } from 'vuex-class'
+import Card from '~/components/Card.vue'
+import { State, Getter, namespace } from 'vuex-class'
+
+import * as people from '~/store/modules/people'
+
+const PeopleState = namespace(people.name, State)
+const PeopleGetter = namespace(people.name, Getter)
 
 @Component({
   components: {
@@ -25,8 +30,8 @@ import { State, Getter } from 'vuex-class'
   }
 })
 export default class extends Vue {
-  @State selected
-  @State people
-  @Getter selectedPerson
+  @PeopleState selected
+  @PeopleState people
+  @PeopleGetter selectedPerson
 }
 </script>

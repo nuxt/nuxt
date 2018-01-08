@@ -1,3 +1,5 @@
+const path = require('path')
+
 module.exports = {
   generate: {
     routes: [
@@ -8,6 +10,7 @@ module.exports = {
     interval: 200,
     subFolders: true
   },
+  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
     ready(nuxt) {
       nuxt.__hook_called__ = true
@@ -17,6 +20,7 @@ module.exports = {
   },
   transition: false,
   build: {
+    scopeHoisting: true,
     postcss: [
       require('postcss-cssnext')()
     ]

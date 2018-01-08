@@ -1,22 +1,31 @@
 import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
+import { interceptLog } from './helpers/console'
 
-const port = 4004
+const port = 4013
 // const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
+test.serial('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/children'),
-    dev: false
+    dev: false,
+    build: {
+      stats: false
+    }
   }
-  nuxt = new Nuxt(options)
-  await new Builder(nuxt).build()
 
-  await nuxt.listen(port, 'localhost')
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(options)
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
+
+  t.true(logSpy.calledWithMatch('DONE'))
+  t.true(logSpy.calledWithMatch('OPEN'))
 })
 
 test('/parent', async t => {
@@ -54,6 +63,6 @@ test('/parent/validate-child?key=12345', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after.always('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })
