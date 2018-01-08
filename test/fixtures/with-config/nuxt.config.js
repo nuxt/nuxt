@@ -50,9 +50,7 @@ module.exports = {
       generateStatsFile: true
     },
     styleResources: {
-      patterns: [
-        '~/assets/pre-process.scss'
-      ]
+      scss: '~/assets/pre-process.scss'
     },
     babel: {
       presets({ isServer }) {
