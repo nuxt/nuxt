@@ -23,7 +23,10 @@ p.name = 'nuxt-edge'
 const gitCommit = String(spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout).trim()
 
 // Version with latest git commit id
-p.version = p.version.split('-')[0] + gitCommit
+// Using date.now() so latest push will be always choosen by npm/yarn
+const date = Math.round(Date.now() / (1000 * 60))
+const baseVersion = p.version.split('-')[0]
+p.version = `${baseVersion}-${date}.${gitCommit}`
 
 // Write package.json
 writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
