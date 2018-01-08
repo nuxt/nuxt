@@ -28,12 +28,12 @@ jobs:
           name: Tests
           command: yarn test && yarn coverage
 
-      # Release next
+      # Release edge
       - run:
-          name: Publish nuxt-next
+          name: Publish nuxt-edge
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              ./scripts/release-next && npm publish --tag next
+              ./scripts/release-edge
             fi

@@ -17,16 +17,29 @@ const originalPackage = readFileSync(packagePath, 'utf-8')
 const p = JSON.parse(originalPackage)
 
 // Change package name
-// p.name = 'nuxt-next'
+p.name = 'nuxt-edge'
 
 // Get latest git commit id
 const gitCommit = String(spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout).trim()
 
 // Version with latest git commit id
-p.version = p.version.split('-')[0] + '-gh-' + gitCommit
+p.version = p.version.split('-')[0] + gitCommit
 
 // Write package.json
 writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
 
+// Parse git branch to decide npm tag
+let tag = String(spawnSync('git', 'rev-parse --abbrev-ref HEAD'.split(' ')).stdout).trim()
+
+// dev ~> latest
+if (tag === 'dev') {
+  tag = 'latest'
+}
+
 // Log
-console.log(p.name + '@' + p.version) // eslint-disable-line no-console
+// eslint-disable-next-line no-console
+console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
+
+// Do publish
+// eslint-disable-next-line no-console
+console.log(String(spawnSync('npm', `publish --tag ${tag}`.split(' ')).stdout).trim())
