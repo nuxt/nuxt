@@ -10,8 +10,12 @@
 export default {
 
   async asyncData({ app }) {
-    const { data: { message: dog } } = await app.$axios.get('/dog')
-    return { dog }
+    try {
+      const { data: { message: dog } } = await app.$axios.get('/dog')
+      return { dog }
+    } catch (e) {
+      throw Error(e)
+    }
   }
 }
 </script>

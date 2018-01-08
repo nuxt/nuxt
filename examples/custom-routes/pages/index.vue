@@ -14,8 +14,12 @@ import axios from 'axios'
 
 export default {
   async asyncData() {
-    const { data } = await axios.get('https://jsonplaceholder.typicode.com/users')
-    return { users: data }
+    try {
+      const { data } = await axios.get('https://jsonplaceholder.typicode.com/users')
+      return { users: data }
+    } catch (e) {
+      throw Error(e)
+    }
   }
 }
 </script>
