@@ -22,6 +22,9 @@ test.serial('Init Nuxt.js', async t => {
     },
     build: {
       stats: false
+    },
+    render: {
+      csp: true
     }
   }
 
@@ -226,6 +229,12 @@ test('ETag Header', async t => {
   // Verify functionality
   const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
   t.is(error.statusCode, 304)
+})
+
+test('Content-Security-Policy Header', async t => {
+  const { headers } = await rp(url('/stateless'), { resolveWithFullResponse: true })
+  // Verify functionality
+  t.is(headers['content-security-policy'], "script-src 'self' 'sha256-BBvfKxDOoRM/gnFwke9u60HBZX3HUss/0lSI1sBRvOU='")
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
