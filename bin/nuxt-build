@@ -104,15 +104,8 @@ if (options.mode !== 'spa') {
     debug(`HTML Files generated in ${duration}s`)
 
     if (errors.length) {
-      const report = errors.map(({ type, route, error }) => {
-        /* istanbul ignore if */
-        if (type === 'unhandled') {
-          return `Route: '${route}'\n${error.stack}`
-        } else {
-          return `Route: '${route}' thrown an error: \n` + JSON.stringify(error)
-        }
-      })
-      Utils.printError(report.join('\n\n'), 'Generate errors summary:')
+      /* eslint-disable no-console */
+      console.log('\n' + errors.toString())
     }
   })
 

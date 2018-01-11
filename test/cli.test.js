@@ -93,6 +93,6 @@ test.serial('bin/nuxt-generate', async t => {
   t.true(stderr.includes('Destination folder cleaned'))
   t.true(stderr.includes('Static & build files copied'))
   t.true(stderr.includes(`Generate file: ${sep}users${sep}1${sep}index.html`))
-  t.true(stderr.includes('Generate errors summary:'))
+  t.true(stdout.includes('Generate errors summary:'))
   t.true(stderr.includes('Generate done'))
 })

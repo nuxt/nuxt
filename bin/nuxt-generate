@@ -86,17 +86,11 @@ nuxt.hook('generate:done', (generator, errors) => {
   const duration = Math.round((Date.now() - s) / 100) / 10
 
   debug(`HTML Files generated in ${duration}s`)
-
+  console.log(errors.length)
   if (errors.length) {
-    const report = errors.map(({ type, route, error }) => {
-      /* istanbul ignore if */
-      if (type === 'unhandled') {
-        return `Route: '${route}'\n${error.stack}`
-      } else {
-        return `Route: '${route}' thrown an error: \n` + JSON.stringify(error)
-      }
-    })
-    Utils.printError(report.join('\n\n'), 'Generate errors summary:')
+    /* eslint-disable no-console */
+    console.log('\n Generate errors summary:')
+    console.log('\n' + errors.toString())
   }
 })
 
