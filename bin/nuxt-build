@@ -80,8 +80,7 @@ if (options.mode !== 'spa') {
     .build()
     .then(() => debug('Building done'))
     .catch(err => {
-      console.error(err)
-      process.exit(1)
+      Utils.fatalError(err)
     })
 } else {
   const s = Date.now()
