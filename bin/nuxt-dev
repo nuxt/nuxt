@@ -9,7 +9,7 @@ const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder } = require('../')
+const { Nuxt, Builder, Utils } = require('../')
 const chokidar = require('chokidar')
 const path = require('path')
 const resolve = path.resolve
@@ -38,8 +38,7 @@ if (argv.version) {
 }
 
 if (argv.hostname === '') {
-  console.error(`> Provided hostname argument has no value`)
-  process.exit(1)
+  Utils.fatalError('Provided hostname argument has no value')
 }
 
 if (argv.help) {
@@ -72,29 +71,31 @@ let dev = startDev()
 let needToRestart = false
 
 // Start watching for nuxt.config.js changes
-chokidar
-  .watch(nuxtConfigFile, nuxtConfig.watchers.chokidar)
-  .on('all', () => {
-    debug('[nuxt.config.js] changed')
-    needToRestart = true
+chokidar.watch(nuxtConfigFile, nuxtConfig.watchers.chokidar).on('all', () => {
+  debug('[nuxt.config.js] changed')
+  needToRestart = true
 
-    dev = dev.then((instance) => {
-      if (needToRestart === false) return instance
-      needToRestart = false
+  dev = dev.then(instance => {
+    if (needToRestart === false) return instance
+    needToRestart = false
 
-      debug('Rebuilding the app...')
-      return startDev(instance)
-    })
+    debug('Rebuilding the app...')
+    return startDev(instance)
   })
+})
 
 function startDev(oldInstance) {
   // Get latest environment variables
-  const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+  const port =
+    argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
+  const host =
+    argv.hostname ||
+    process.env.HOST ||
+    process.env.npm_package_config_nuxt_host
 
   // Error handler
   const onError = (err, instance) => {
-    debug('Error while reloading [nuxt.config.js]', err)
+    Utils.printError(err)
     return Promise.resolve(instance) // Wait for next reload
   }
 
@@ -118,18 +119,30 @@ function startDev(oldInstance) {
     return onError(err, instance || oldInstance)
   }
 
-  return Promise.resolve()
-    .then(() => oldInstance && oldInstance.builder ? oldInstance.builder.unwatch() : Promise.resolve())
-    // Start build
-    .then(() => builder.build())
-    // Close old nuxt after successful build
-    .then(() => oldInstance && oldInstance.nuxt ? oldInstance.nuxt.close() : Promise.resolve())
-    // Start listening
-    .then(() => nuxt.listen(port, host))
-    // Pass new nuxt to watch chain
-    .then(() => instance)
-    // Handle errors
-    .catch((err) => onError(err, instance))
+  return (
+    Promise.resolve()
+      .then(
+        () =>
+          oldInstance && oldInstance.builder
+            ? oldInstance.builder.unwatch()
+            : Promise.resolve()
+      )
+      // Start build
+      .then(() => builder.build())
+      // Close old nuxt after successful build
+      .then(
+        () =>
+          oldInstance && oldInstance.nuxt
+            ? oldInstance.nuxt.close()
+            : Promise.resolve()
+      )
+      // Start listening
+      .then(() => nuxt.listen(port, host))
+      // Pass new nuxt to watch chain
+      .then(() => instance)
+      // Handle errors
+      .catch(err => onError(err, instance))
+  )
 }
 
 function loadNuxtConfig() {
@@ -139,8 +152,7 @@ function loadNuxtConfig() {
     delete require.cache[nuxtConfigFile]
     options = require(nuxtConfigFile)
   } else if (argv['config-file'] !== 'nuxt.config.js') {
-    console.error(`> Could not load config file ${argv['config-file']}`)
-    process.exit(1)
+    Utils.fatalError('Could not load config file: ' + argv['config-file'])
   }
 
   if (typeof options.rootDir !== 'string') {
@@ -151,7 +163,8 @@ function loadNuxtConfig() {
   options.dev = true
 
   // Nuxt Mode
-  options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+  options.mode =
+    (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
   return options
 }
