@@ -1,16 +1,14 @@
 #!/usr/bin/env node
+const { join } = require('path')
+const { logError } = require('../lib/common/utils')
 
-const join = require('path').join
-require('../lib/common/cli/errors')
+// Global error handler
+process.on('unhandledRejection', _error => {
+  logError(_error) // eslint-disable no-console
+})
 
 const defaultCommand = 'dev'
-const commands = new Set([
-  defaultCommand,
-  'init',
-  'build',
-  'start',
-  'generate'
-])
+const commands = new Set([defaultCommand, 'init', 'build', 'start', 'generate'])
 
 var cmd = process.argv[2]
 
