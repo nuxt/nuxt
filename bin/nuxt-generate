@@ -96,7 +96,7 @@ nuxt.hook('generate:done', (generator, errors) => {
         return `Route: '${route}' thrown an error: \n` + JSON.stringify(error)
       }
     })
-    Utils.printError(report.join('\n\n'), 'generate')
+    Utils.printError(report.join('\n\n'), 'Generate errors summary:')
   }
 })
 

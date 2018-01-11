@@ -9,7 +9,7 @@ const execify = promisify(exec)
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
 const port = 4011
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 test.serial('bin/nuxt-build', async t => {
   const binBuild = resolve(__dirname, '..', 'bin', 'nuxt-build')
@@ -33,19 +33,19 @@ test.serial('bin/nuxt-start', async t => {
 
   const nuxtStart = spawn('node', [binStart, rootDir], { env: env })
 
-  nuxtStart.stdout.on('data', (data) => {
+  nuxtStart.stdout.on('data', data => {
     stdout += data
   })
 
-  nuxtStart.stderr.on('data', (data) => {
+  nuxtStart.stderr.on('data', data => {
     stderr += data
   })
 
-  nuxtStart.on('error', (err) => {
+  nuxtStart.on('error', err => {
     error = err
   })
 
-  nuxtStart.on('close', (code) => {
+  nuxtStart.on('close', code => {
     exitCode = code
   })
 
@@ -66,13 +66,18 @@ test.serial('bin/nuxt-start', async t => {
 
   // Wait max 10s for the process to be killed
   iterator = 0
-  while (exitCode === undefined && iterator < 40) { // eslint-disable-line no-unmodified-loop-condition
+  while (exitCode === undefined && iterator < 40) {
+    // eslint-disable-line no-unmodified-loop-condition
     await Utils.waitFor(250)
     iterator++
   }
 
   if (iterator >= 40) {
-    t.log(`WARN: we were unable to automatically kill the child process with pid: ${nuxtStart.pid}`)
+    t.log(
+      `WARN: we were unable to automatically kill the child process with pid: ${
+        nuxtStart.pid
+      }`
+    )
   }
 
   t.is(stderr, '')
@@ -88,6 +93,6 @@ test.serial('bin/nuxt-generate', async t => {
   t.true(stderr.includes('Destination folder cleaned'))
   t.true(stderr.includes('Static & build files copied'))
   t.true(stderr.includes(`Generate file: ${sep}users${sep}1${sep}index.html`))
-  t.true(stderr.includes('Error report'))
+  t.true(stderr.includes('Generate errors summary:'))
   t.true(stderr.includes('Generate done'))
 })
