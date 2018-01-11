@@ -66,8 +66,8 @@ test.serial('bin/nuxt-start', async t => {
 
   // Wait max 10s for the process to be killed
   iterator = 0
+  // eslint-disable-next-line  no-unmodified-loop-condition
   while (exitCode === undefined && iterator < 40) {
-    // eslint-disable-line no-unmodified-loop-condition
     await Utils.waitFor(250)
     iterator++
   }
