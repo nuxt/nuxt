@@ -86,7 +86,7 @@ nuxt.hook('generate:done', (generator, errors) => {
   const duration = Math.round((Date.now() - s) / 100) / 10
 
   debug(`HTML Files generated in ${duration}s`)
-  console.log(errors.length)
+
   if (errors.length) {
     /* eslint-disable no-console */
     console.log('\n Generate errors summary:')
