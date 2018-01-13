@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 const { join } = require('path')
-const { logError } = require('../lib/common/utils')
+const { Utils } = require('..')
 
 // Global error handler
 process.on('unhandledRejection', _error => {
-  logError(_error) // eslint-disable no-console
+  Utils.printError(_error)
 })
 
 const defaultCommand = 'dev'
