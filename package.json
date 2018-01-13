@@ -1,7 +1,8 @@
 {
   "name": "nuxt",
   "version": "1.1.0",
-  "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
+  "description":
+    "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
     {
       "name": "Sebastien Chopin (@Atinux)"
@@ -19,10 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js"
   },
-  "files": [
-    "bin",
-    "lib"
-  ],
+  "files": ["bin", "lib"],
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -40,12 +38,13 @@
     "nuxt": "./bin/nuxt"
   },
   "nyc": {
-    "include": [
-      "lib"
-    ]
+    "include": ["lib"]
   },
   "scripts": {
-    "test": "npm run lint && nyc ava --verbose test/ -- && nyc report --reporter=html",
+    "test":
+      "npm run lint && nyc ava --verbose test/ -- && nyc report --reporter=html",
+    "test-appveyor":
+      "npm run lint && nyc ava --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
@@ -149,6 +148,7 @@
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/nuxtjs",
-    "logo": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+    "logo":
+      "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }
