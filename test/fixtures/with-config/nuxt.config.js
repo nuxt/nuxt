@@ -16,9 +16,7 @@ module.exports = {
       ]
     }
   },
-  modulesDir: [
-    path.join(__dirname, '..', '..', '..', 'node_modules')
-  ],
+  modulesDir: [path.join(__dirname, '..', '..', '..', 'node_modules')],
   transition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
@@ -63,9 +61,7 @@ module.exports = {
       })
     }
   },
-  css: [
-    { src: '~/assets/app.css' }
-  ],
+  css: [{ src: '~/assets/app.css' }],
   render: {
     http2: {
       push: true,

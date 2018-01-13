@@ -20,7 +20,9 @@ const p = JSON.parse(originalPackage)
 p.name = 'nuxt-edge'
 
 // Get latest git commit id
-const gitCommit = String(spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout).trim()
+const gitCommit = String(
+  spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout
+).trim()
 
 // Version with latest git commit id
 // Using date.now() so latest push will be always choosen by npm/yarn
@@ -32,7 +34,9 @@ p.version = `${baseVersion}-${date}.${gitCommit}`
 writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
 
 // Parse git branch to decide npm tag
-let tag = String(spawnSync('git', 'rev-parse --abbrev-ref HEAD'.split(' ')).stdout).trim()
+let tag = String(
+  spawnSync('git', 'rev-parse --abbrev-ref HEAD'.split(' ')).stdout
+).trim()
 
 // dev ~> latest
 if (tag === 'dev') {
@@ -45,4 +49,6 @@ console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
 
 // Do publish
 // eslint-disable-next-line no-console
-console.log(String(spawnSync('npm', `publish --tag ${tag}`.split(' ')).stdout).trim())
+console.log(
+  String(spawnSync('npm', `publish --tag ${tag}`.split(' ')).stdout).trim()
+)

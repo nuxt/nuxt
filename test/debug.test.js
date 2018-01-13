@@ -5,7 +5,7 @@ import { Nuxt, Builder } from '..'
 import { interceptLog, interceptError, release } from './helpers/console'
 
 const port = 4009
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
@@ -26,19 +26,32 @@ test.serial('Init Nuxt.js', async t => {
 })
 
 test.serial('/test/__open-in-editor (open-in-editor)', async t => {
-  const { body } = await rp(url('/test/__open-in-editor?file=pages/index.vue'), { resolveWithFullResponse: true })
+  const { body } = await rp(
+    url('/test/__open-in-editor?file=pages/index.vue'),
+    { resolveWithFullResponse: true }
+  )
   t.is(body, '')
 })
 
-test.serial('/test/__open-in-editor should return error (open-in-editor)', async t => {
-  const { error, statusCode } = await t.throws(rp(url('/test/__open-in-editor?file='), { resolveWithFullResponse: true }))
-  t.is(statusCode, 500)
-  t.is(error, 'launch-editor-middleware: required query param "file" is missing.')
-})
+test.serial(
+  '/test/__open-in-editor should return error (open-in-editor)',
+  async t => {
+    const { error, statusCode } = await t.throws(
+      rp(url('/test/__open-in-editor?file='), { resolveWithFullResponse: true })
+    )
+    t.is(statusCode, 500)
+    t.is(
+      error,
+      'launch-editor-middleware: required query param "file" is missing.'
+    )
+  }
+)
 
 test.serial('/test/error should return error stack trace (Youch)', async t => {
   const errorSpy = await interceptError()
-  const { response, error } = await t.throws(nuxt.renderAndGetWindow(url('/test/error')))
+  const { response, error } = await t.throws(
+    nuxt.renderAndGetWindow(url('/test/error'))
+  )
   t.is(response.statusCode, 500)
   t.is(response.statusMessage, 'NuxtServerError')
   t.true(error.includes('test youch !'))
@@ -54,7 +67,9 @@ test.serial('/test/error no source-map (Youch)', async t => {
   nuxt.renderer.resources.serverBundle.maps = {}
 
   const errorSpy = await interceptError()
-  const { response, error } = await t.throws(nuxt.renderAndGetWindow(url('/test/error')))
+  const { response, error } = await t.throws(
+    nuxt.renderAndGetWindow(url('/test/error'))
+  )
   t.is(response.statusCode, 500)
   t.is(response.statusMessage, 'NuxtServerError')
   t.true(error.includes('test youch !'))
@@ -70,7 +85,7 @@ test.serial('/test/error no source-map (Youch)', async t => {
 test.serial('/test/error should return json format error (Youch)', async t => {
   const opts = {
     headers: {
-      'accept': 'application/json'
+      accept: 'application/json'
     },
     resolveWithFullResponse: true
   }

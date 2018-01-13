@@ -9,9 +9,12 @@ const readFile = promisify(fs.readFile)
 const rootDir = resolve(__dirname, 'fixtures/dll')
 const dllDir = resolve(rootDir, '.cache/client-dll')
 
-const checkCache = (lib) => {
-  return async (t) => {
-    const manifest = await readFile(resolve(dllDir, `./${lib}-manifest.json`), 'utf-8')
+const checkCache = lib => {
+  return async t => {
+    const manifest = await readFile(
+      resolve(dllDir, `./${lib}-manifest.json`),
+      'utf-8'
+    )
     t.truthy(JSON.parse(manifest).name)
     t.true(fs.existsSync(resolve(dllDir, `./${JSON.parse(manifest).name}.js`)))
   }

@@ -60,7 +60,7 @@ test('initRoutes with routes (fn(cb, args))', async t => {
   const config = {
     generate: {
       routes(cb, arg1, arg2, arg3, arg4) {
-        cb(null, [ arg1, arg2, arg3, arg4 ])
+        cb(null, [arg1, arg2, arg3, arg4])
       }
     }
   }

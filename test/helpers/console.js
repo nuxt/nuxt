@@ -4,7 +4,9 @@ let context = null
 
 export function release() {
   if (context === null) {
-    process.stderr.write('Console spy context was empty, did a previous test already release it?\n')
+    process.stderr.write(
+      'Console spy context was empty, did a previous test already release it?\n'
+    )
     return
   }
 
@@ -32,7 +34,9 @@ export function release() {
 
 export async function intercept(levels, msg, cb) {
   if (context !== null) {
-    process.stderr.write('Console spy context was not empty, did a previous test not release it?\n')
+    process.stderr.write(
+      'Console spy context was not empty, did a previous test not release it?\n'
+    )
   }
   context = {}
 

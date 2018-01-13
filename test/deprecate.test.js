@@ -5,7 +5,7 @@ import { Nuxt, Builder } from '..'
 import { intercept, interceptWarn, release } from './helpers/console'
 
 const port = 4010
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
@@ -32,14 +32,26 @@ test.serial('Init Nuxt.js', async t => {
 test.serial('Deprecated: context.isServer and context.isClient', async t => {
   const warnSpy = await interceptWarn()
   await rp(url('/'))
-  t.true(warnSpy.calledWith('context.isServer has been deprecated, please use process.server instead.'))
-  t.true(warnSpy.calledWith('context.isClient has been deprecated, please use process.client instead.'))
+  t.true(
+    warnSpy.calledWith(
+      'context.isServer has been deprecated, please use process.server instead.'
+    )
+  )
+  t.true(
+    warnSpy.calledWith(
+      'context.isClient has been deprecated, please use process.client instead.'
+    )
+  )
   t.true(warnSpy.calledTwice)
   release()
 })
 
 test.serial('Deprecated: dev in build.extend()', async t => {
-  t.true(buildSpies.warn.withArgs('dev has been deprecated in build.extend(), please use isDev').calledTwice)
+  t.true(
+    buildSpies.warn.withArgs(
+      'dev has been deprecated in build.extend(), please use isDev'
+    ).calledTwice
+  )
 })
 
 test.serial('Deprecated: nuxt.plugin()', async t => {

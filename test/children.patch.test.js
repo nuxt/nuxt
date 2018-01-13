@@ -5,7 +5,7 @@ import * as browser from './helpers/browser'
 import { interceptLog } from './helpers/console'
 
 const port = 4014
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let page

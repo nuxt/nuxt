@@ -25,7 +25,9 @@ test('Fail to build when no pages/ directory but is in the parent', t => {
   return new Builder(nuxt).build().catch(err => {
     let s = String(err)
     t.true(s.includes('No `pages` directory found'))
-    t.true(s.includes('Did you mean to run `nuxt` in the parent (`../`) directory?'))
+    t.true(
+      s.includes('Did you mean to run `nuxt` in the parent (`../`) directory?')
+    )
   })
 })
 
@@ -36,7 +38,7 @@ test('Fail to build when no pages/ directory', t => {
   })
   return new Builder(nuxt).build().catch(err => {
     let s = String(err)
-    t.true(s.includes('Couldn\'t find a `pages` directory'))
+    t.true(s.includes("Couldn't find a `pages` directory"))
     t.true(s.includes('Please create one under the project root'))
   })
 })

@@ -5,7 +5,7 @@ import { Nuxt, Builder } from '..'
 import { intercept } from './helpers/console'
 
 const port = 4006
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
@@ -30,12 +30,19 @@ test.serial('Init Nuxt.js', async t => {
 })
 
 test.serial('Vendor', async t => {
-  t.true(nuxt.options.build.vendor.indexOf('lodash') !== -1, 'lodash added to config')
+  t.true(
+    nuxt.options.build.vendor.indexOf('lodash') !== -1,
+    'lodash added to config'
+  )
 })
 
 test.serial('Plugin', async t => {
-  t.true(normalize(nuxt.options.plugins[0].src)
-    .includes(normalize('fixtures/module/.nuxt/basic.reverse.')), 'plugin added to config')
+  t.true(
+    normalize(nuxt.options.plugins[0].src).includes(
+      normalize('fixtures/module/.nuxt/basic.reverse.')
+    ),
+    'plugin added to config'
+  )
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })

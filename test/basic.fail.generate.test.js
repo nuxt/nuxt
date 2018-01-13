@@ -22,10 +22,9 @@ test('Fail with routes() which throw an error', async t => {
     const builder = new Builder(nuxt)
     const generator = new Generator(nuxt, builder)
 
-    return generator.generate()
-      .catch((e) => {
-        t.true(e.message === 'Not today!')
-      })
+    return generator.generate().catch(e => {
+      t.true(e.message === 'Not today!')
+    })
   })
   t.true(spies.log.calledWithMatch('DONE'))
   t.true(spies.error.withArgs('Could not resolve routes').calledOnce)

@@ -5,7 +5,7 @@ import * as browser from './helpers/browser'
 import { interceptLog } from './helpers/console'
 
 const port = 4003
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let page = null
@@ -63,7 +63,10 @@ test.serial('/css', async t => {
   await page.nuxt.navigate('/css')
 
   t.is(await page.$text('.red'), 'This is red')
-  t.is(await page.$eval('.red', (red) => window.getComputedStyle(red).color), 'rgb(255, 0, 0)')
+  t.is(
+    await page.$eval('.red', red => window.getComputedStyle(red).color),
+    'rgb(255, 0, 0)'
+  )
 })
 
 test.serial('/stateful', async t => {
@@ -80,7 +83,9 @@ test.serial('/store', async t => {
 })
 
 test.serial('/head', async t => {
-  const msg = new Promise((resolve) => page.on('console', (msg) => resolve(msg.text)))
+  const msg = new Promise(resolve =>
+    page.on('console', msg => resolve(msg.text))
+  )
   await page.nuxt.navigate('/head')
   const metas = await page.$$attr('meta', 'content')
 
@@ -158,7 +163,9 @@ test.serial('/redirect-external', async t => {
   // New page for redirecting to external link.
   const page = await browser.page(url('/'))
   await page.nuxt.navigate('/redirect-external', false)
-  await page.waitForFunction(() => window.location.href === 'https://nuxtjs.org/')
+  await page.waitForFunction(
+    () => window.location.href === 'https://nuxtjs.org/'
+  )
   page.close()
   t.pass()
 })
@@ -186,7 +193,10 @@ test.serial('/fn-midd', async t => {
   await page.nuxt.navigate('/fn-midd')
 
   t.is(await page.$text('.title'), 'You need to ask the permission')
-  t.deepEqual(await page.nuxt.errorData(), { message: 'You need to ask the permission', statusCode: 403 })
+  t.deepEqual(await page.nuxt.errorData(), {
+    message: 'You need to ask the permission',
+    statusCode: 403
+  })
 })
 
 test.serial('/fn-midd?please=true', async t => {

@@ -21,7 +21,7 @@ test('setAnsiColors', t => {
   t.pass()
 })
 
-test('waitFor', async (t) => {
+test('waitFor', async t => {
   let s = Date.now()
   await Utils.waitFor(100)
   t.true(Date.now() - s >= 100)
@@ -36,10 +36,9 @@ test('promisifyRoute (array)', t => {
   const array = [1]
   const promise = Utils.promisifyRoute(array)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res, array)
-    })
+  return promise.then(res => {
+    t.is(res, array)
+  })
 })
 
 test('promisifyRoute (fn => array)', t => {
@@ -49,40 +48,37 @@ test('promisifyRoute (fn => array)', t => {
   }
   const promise = Utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res, array)
-    })
+  return promise.then(res => {
+    t.is(res, array)
+  })
 })
 
 test('promisifyRoute (fn => promise)', t => {
   const array = [1, 2, 3]
   const fn = function () {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       resolve(array)
     })
   }
   const promise = Utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res, array)
-    })
+  return promise.then(res => {
+    t.is(res, array)
+  })
 })
 
 test('promisifyRoute ((fn(args) => promise))', t => {
   const fn = function (array) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       resolve(array)
     })
   }
   const array = [1, 2, 3]
   const promise = Utils.promisifyRoute(fn, array)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res, array)
-    })
+  return promise.then(res => {
+    t.is(res, array)
+  })
 })
 
 test('promisifyRoute (fn(cb) with error)', t => {
@@ -91,10 +87,9 @@ test('promisifyRoute (fn(cb) with error)', t => {
   }
   const promise = Utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
-  return promise
-    .catch((e) => {
-      t.is(e.message, 'Error here')
-    })
+  return promise.catch(e => {
+    t.is(e.message, 'Error here')
+  })
 })
 
 test('promisifyRoute (fn(cb, args) with error)', t => {
@@ -104,10 +99,9 @@ test('promisifyRoute (fn(cb, args) with error)', t => {
   const array = [1, 2, 3, 4]
   const promise = Utils.promisifyRoute(fn, array)
   t.is(typeof promise, 'object')
-  return promise
-    .catch((e) => {
-      t.is(e.message, 'Error here: ' + array.join())
-    })
+  return promise.catch(e => {
+    t.is(e.message, 'Error here: ' + array.join())
+  })
 })
 
 test('promisifyRoute (fn(cb) with result)', t => {
@@ -117,10 +111,9 @@ test('promisifyRoute (fn(cb) with result)', t => {
   }
   const promise = Utils.promisifyRoute(fn)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res, array)
-    })
+  return promise.then(res => {
+    t.is(res, array)
+  })
 })
 
 test('promisifyRoute (fn(cb, args) with result)', t => {
@@ -131,11 +124,10 @@ test('promisifyRoute (fn(cb, args) with result)', t => {
   const object = { a: 1 }
   const promise = Utils.promisifyRoute(fn, array, object)
   t.is(typeof promise, 'object')
-  return promise
-    .then((res) => {
-      t.is(res.array, array)
-      t.is(res.object, object)
-    })
+  return promise.then(res => {
+    t.is(res.array, array)
+    t.is(res.object, object)
+  })
 })
 
 test('chainFn (mutate, mutate)', t => {

@@ -2,7 +2,13 @@
 
 const now = Date.now()
 
-const { readFileSync, readJSONSync, writeFileSync, copySync, removeSync } = require('fs-extra')
+const {
+  readFileSync,
+  readJSONSync,
+  writeFileSync,
+  copySync,
+  removeSync
+} = require('fs-extra')
 const { resolve } = require('path')
 
 // Dirs
@@ -13,18 +19,11 @@ const startDir = resolve(rootDir, 'start')
 const packageJSON = readJSONSync(resolve(rootDir, 'package.json'))
 
 // Required and Excluded packages for start
-let requires = [
-  'source-map-support',
-  'pretty-error',
-  'minimist'
-]
+let requires = ['source-map-support', 'pretty-error', 'minimist']
 
-const excludes = [
-  'path',
-  'fs',
-  'http',
-  'module'
-].concat(Object.keys(packageJSON.devDependencies))
+const excludes = ['path', 'fs', 'http', 'module'].concat(
+  Object.keys(packageJSON.devDependencies)
+)
 
 // Parse dist/core.js for all external dependencies
 const requireRegex = /require\('([-@/\w]+)'\)/g
@@ -66,13 +65,13 @@ packageJSON.bin = {
 }
 
 // Update package.json
-writeFileSync(resolve(startDir, 'package.json'), JSON.stringify(packageJSON, null, 2))
+writeFileSync(
+  resolve(startDir, 'package.json'),
+  JSON.stringify(packageJSON, null, 2)
+)
 
 // Copy required files
-const excludeFiles = [
-  'README.md',
-  '.gitignore'
-]
+const excludeFiles = ['README.md', '.gitignore']
 packageJSON.files.forEach(file => {
   if (excludeFiles.indexOf(file) !== -1) {
     return
@@ -99,11 +98,20 @@ extraFiles.forEach(file => {
 
 // Patch index.js
 const startIndexjs = resolve(startDir, 'index.js')
-writeFileSync(startIndexjs, String(readFileSync(startIndexjs)).replace('./dist/nuxt', './dist/core'))
+writeFileSync(
+  startIndexjs,
+  String(readFileSync(startIndexjs)).replace('./dist/nuxt', './dist/core')
+)
 
 // Patch bin/nuxt-start
 const binStart = resolve(startDir, 'bin/nuxt-start')
-writeFileSync(binStart, String(readFileSync(binStart)).replace(/nuxt start/g, 'nuxt-start'))
+writeFileSync(
+  binStart,
+  String(readFileSync(binStart)).replace(/nuxt start/g, 'nuxt-start')
+)
 
 // eslint-disable-next-line no-console
-console.log(`Generated ${packageJSON.name}@${packageJSON.version} in ${Date.now() - now}ms`)
+console.log(
+  `Generated ${packageJSON.name}@${packageJSON.version} in ${Date.now() -
+    now}ms`
+)

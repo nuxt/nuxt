@@ -6,7 +6,7 @@ import { interceptLog, release } from './helpers/console'
 let nuxt = null
 
 const port = 4012
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 const renderRoute = async _url => {
   const window = await nuxt.renderAndGetWindow(url(_url))
@@ -73,7 +73,9 @@ test.serial('/mounted', async t => {
 })
 
 test('/_nuxt/ (access publicPath in spa mode)', async t => {
-  const { response: { statusCode, statusMessage } } = await t.throws(renderRoute('/_nuxt/'))
+  const { response: { statusCode, statusMessage } } = await t.throws(
+    renderRoute('/_nuxt/')
+  )
   t.is(statusCode, 404)
   t.is(statusMessage, 'ResourceNotFound')
 })

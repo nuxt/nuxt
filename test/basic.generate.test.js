@@ -10,7 +10,7 @@ import { interceptLog, release } from './helpers/console'
 import { Nuxt, Builder, Generator } from '..'
 
 const port = 4002
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
 let nuxt = null
@@ -91,7 +91,9 @@ test.serial('/async-data', async t => {
 test.serial('/users/1/index.html', async t => {
   const html = await rp(url('/users/1/index.html'))
   t.true(html.includes('<h1>User: 1</h1>'))
-  t.true(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html')))
+  t.true(
+    existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html'))
+  )
   t.false(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1.html')))
 })
 
@@ -160,7 +162,9 @@ test.serial('/users/1.html', async t => {
   const html = await rp(url('/users/1.html'))
   t.true(html.includes('<h1>User: 1</h1>'))
   t.true(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1.html')))
-  t.false(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html')))
+  t.false(
+    existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html'))
+  )
 })
 
 test.serial('/-ignored', async t => {

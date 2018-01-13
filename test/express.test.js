@@ -6,7 +6,7 @@ import rp from 'request-promise-native'
 import { interceptLog } from './helpers/console'
 
 const port = 4000
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt
 let app

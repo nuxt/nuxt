@@ -5,7 +5,7 @@ import { Nuxt, Builder } from '..'
 import { interceptLog, interceptError, release } from './helpers/console'
 
 const port = 4005
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
@@ -46,13 +46,19 @@ test.serial('/ with renderAndGetWindow()', async t => {
   t.is(err.response.statusMessage, 'NuxtServerError')
   release()
   t.true(errorSpy.calledOnce)
-  t.true(errorSpy.getCall(0).args[0].message.includes('render function or template not defined in component: anonymous'))
+  t.true(
+    errorSpy
+      .getCall(0)
+      .args[0].message.includes(
+        'render function or template not defined in component: anonymous'
+      )
+  )
 })
 
 test.serial('/ with text/json content', async t => {
   const opts = {
     headers: {
-      'accept': 'application/json'
+      accept: 'application/json'
     },
     resolveWithFullResponse: true
   }
@@ -61,7 +67,13 @@ test.serial('/ with text/json content', async t => {
   t.is(headers['content-type'], 'text/json; charset=utf-8')
   release()
   t.true(errorSpy.calledOnce)
-  t.true(errorSpy.getCall(0).args[0].message.includes('render function or template not defined in component: anonymous'))
+  t.true(
+    errorSpy
+      .getCall(0)
+      .args[0].message.includes(
+        'render function or template not defined in component: anonymous'
+      )
+  )
 })
 
 // Close server and ask nuxt to stop listening to file changes

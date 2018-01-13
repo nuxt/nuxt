@@ -13,7 +13,7 @@ const range = n => [...Array(n).keys()]
 const FOOBAR_REGEX = /<foobar>([\s\S]*)<\/foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
 
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 const isWindows = /^win/.test(process.platform)
 
@@ -93,7 +93,7 @@ test('unique responses with fetch', async t => {
 // Making 16K requests by default
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
 const stressTest = async (t, _url, concurrency = 64, steps = 256) => {
-  let statusCodes = { }
+  let statusCodes = {}
 
   // appveyor memory limit!
   if (isWindows) {

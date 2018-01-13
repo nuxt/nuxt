@@ -5,7 +5,7 @@ import { Nuxt, Builder } from '..'
 import { interceptLog, interceptError, release } from './helpers/console'
 
 const port = 4004
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
@@ -83,12 +83,16 @@ test('/store', async t => {
 
 test.serial('/head', async t => {
   const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/head'), { virtualConsole: false })
+  const window = await nuxt.renderAndGetWindow(url('/head'), {
+    virtualConsole: false
+  })
   t.is(window.document.title, 'My title - Nuxt.js')
 
   const html = window.document.body.innerHTML
   t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
-  t.true(html.includes('<script data-n-head="true" src="/body.js" data-body="true">'))
+  t.true(
+    html.includes('<script data-n-head="true" src="/body.js" data-body="true">')
+  )
 
   const metas = window.document.getElementsByTagName('meta')
   t.is(metas[0].getAttribute('content'), 'my meta')
@@ -169,7 +173,11 @@ test.serial('/error status code', async t => {
   const errorSpy = await interceptError()
   const err = await t.throws(rp(url('/error')))
   t.true(err.statusCode === 500)
-  t.true(err.response.body.includes('An error occurred in the application and your page could not be served'))
+  t.true(
+    err.response.body.includes(
+      'An error occurred in the application and your page could not be served'
+    )
+  )
   release()
   t.true(errorSpy.calledOnce)
   t.true(errorSpy.args[0][0].message.includes('Error mouahahah'))
@@ -215,7 +223,11 @@ test('/redirect-name', async t => {
 
 test('/no-ssr', async t => {
   const { html } = await nuxt.renderRoute('/no-ssr')
-  t.true(html.includes('<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'))
+  t.true(
+    html.includes(
+      '<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'
+    )
+  )
 })
 
 test('/no-ssr (client-side)', async t => {
@@ -225,25 +237,38 @@ test('/no-ssr (client-side)', async t => {
 })
 
 test('ETag Header', async t => {
-  const { headers: { etag } } = await rp(url('/stateless'), { resolveWithFullResponse: true })
+  const { headers: { etag } } = await rp(url('/stateless'), {
+    resolveWithFullResponse: true
+  })
   // Verify functionality
-  const error = await t.throws(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
+  const error = await t.throws(
+    rp(url('/stateless'), { headers: { 'If-None-Match': etag } })
+  )
   t.is(error.statusCode, 304)
 })
 
 test('Content-Security-Policy Header', async t => {
-  const { headers } = await rp(url('/stateless'), { resolveWithFullResponse: true })
+  const { headers } = await rp(url('/stateless'), {
+    resolveWithFullResponse: true
+  })
   // Verify functionality
-  t.is(headers['content-security-policy'], "script-src 'self' 'sha256-BBvfKxDOoRM/gnFwke9u60HBZX3HUss/0lSI1sBRvOU='")
+  t.is(
+    headers['content-security-policy'],
+    "script-src 'self' 'sha256-BBvfKxDOoRM/gnFwke9u60HBZX3HUss/0lSI1sBRvOU='"
+  )
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
-  const err = await t.throws(rp(url('/_nuxt/server-bundle.json'), { resolveWithFullResponse: true }))
+  const err = await t.throws(
+    rp(url('/_nuxt/server-bundle.json'), { resolveWithFullResponse: true })
+  )
   t.is(err.statusCode, 404)
 })
 
 test('/_nuxt/ should return 404', async t => {
-  const err = await t.throws(rp(url('/_nuxt/'), { resolveWithFullResponse: true }))
+  const err = await t.throws(
+    rp(url('/_nuxt/'), { resolveWithFullResponse: true })
+  )
   t.is(err.statusCode, 404)
 })
 
@@ -253,7 +278,9 @@ test('/meta', async t => {
 })
 
 test('/fn-midd', async t => {
-  const err = await t.throws(rp(url('/fn-midd'), { resolveWithFullResponse: true }))
+  const err = await t.throws(
+    rp(url('/fn-midd'), { resolveWithFullResponse: true })
+  )
   t.is(err.statusCode, 403)
   t.true(err.response.body.includes('You need to ask the permission'))
 })
