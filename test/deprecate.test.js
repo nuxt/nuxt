@@ -48,9 +48,9 @@ test.serial('Deprecated: context.isServer and context.isClient', async t => {
 
 test.serial('Deprecated: dev in build.extend()', async t => {
   t.true(
-    buildSpies.warn.withArgs(
+    buildSpies.warn.calledWithMatch(
       'dev has been deprecated in build.extend(), please use isDev'
-    ).calledTwice
+    )
   )
 })
 
