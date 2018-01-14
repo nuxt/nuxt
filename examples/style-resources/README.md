@@ -27,6 +27,12 @@ You need to specify the patterns/path you want to include for the given pre-proc
 }
 ```
 
+:warning: If you want to use `@import` in these `styleResources` files, you should use path aliase (`~@`) like this
+
+```scss
+@import '~@/assets/other.scss';
+```
+
 Then in your pages, you can use directly:
 
 `pages/index.vue`
