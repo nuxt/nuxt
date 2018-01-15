@@ -173,6 +173,12 @@ test.serial('/-ignored', async t => {
   t.true(error.response.body.includes('Cannot GET /-ignored'))
 })
 
+test.serial('/ignored.test', async t => {
+  const error = await t.throws(rp(url('/ignored.test')))
+  t.true(error.statusCode === 404)
+  t.true(error.response.body.includes('Cannot GET /ignored.test'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server', async t => {
   await server.close()
