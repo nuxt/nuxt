@@ -146,16 +146,19 @@ test('/redirect -> check redirected source', async t => {
 })
 
 test('/redirect -> external link', async t => {
-  const headers = {}
+  let _headers, _status
   const { html } = await nuxt.renderRoute('/redirect-external', {
     res: {
-      setHeader(k, v) {
-        headers[k] = v
-      }
+      writeHead(status, headers) {
+        _status = status
+        _headers = headers
+      },
+      end() {}
     }
   })
-  t.is(headers.Location, 'https://nuxtjs.org')
-  t.true(html.includes('<div>Redirecting to external page.</div>'))
+  t.is(_status, 302)
+  t.is(_headers.Location, 'https://nuxtjs.org')
+  t.true(html.includes('<div data-server-rendered="true"></div>'))
 })
 
 test('/special-state -> check window.__NUXT__.test = true', async t => {

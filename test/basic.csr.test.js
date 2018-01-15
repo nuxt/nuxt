@@ -84,7 +84,7 @@ test.serial('/store', async t => {
 
 test.serial('/head', async t => {
   const msg = new Promise(resolve =>
-    page.on('console', msg => resolve(msg.text))
+    page.on('console', msg => resolve(msg.text()))
   )
   await page.nuxt.navigate('/head')
   const metas = await page.$$attr('meta', 'content')
@@ -209,14 +209,16 @@ test.serial('/fn-midd?please=true', async t => {
 test.serial('/router-guard', async t => {
   await page.nuxt.navigate('/router-guard')
 
-  t.is(await page.$text('p'), 'Nuxt.js')
+  const p = await page.$text('p')
+  t.is(p, 'Nuxt.js')
+})
+
+test.after.always('Stop browser', async () => {
+  process.on('unhandledRejection', () => {})
+  await browser.stop()
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after.always('Closing server and nuxt.js', async t => {
+test.after.always('Closing server and nuxt.js', async () => {
   await nuxt.close()
-})
-
-test.after.always('Stop browser', async t => {
-  await browser.stop()
 })
