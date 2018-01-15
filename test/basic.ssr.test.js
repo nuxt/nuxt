@@ -252,10 +252,7 @@ test('Content-Security-Policy Header', async t => {
     resolveWithFullResponse: true
   })
   // Verify functionality
-  t.is(
-    headers['content-security-policy'],
-    "script-src 'self' 'sha256-BBvfKxDOoRM/gnFwke9u60HBZX3HUss/0lSI1sBRvOU='"
-  )
+  t.regex(headers['content-security-policy'], /script-src 'self' 'sha256-.*'/)
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
