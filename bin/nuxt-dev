@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-// Show logs
-process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
-
 const _ = require('lodash')
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder, Utils } = require('../')
+const { Nuxt, Builder, Utils } = require('..')
 const chokidar = require('chokidar')
 const path = require('path')
 const resolve = path.resolve

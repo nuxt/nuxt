@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+
+// Show logs
+process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
+
 const { join } = require('path')
 const { Utils } = require('..')
 

@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-// Show logs
-process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
-
 const fs = require('fs')
 const parseArgs = require('minimist')
 const debug = require('debug')('nuxt:generate')
 
-const { Nuxt, Builder, Generator, Utils } = require('../')
+const { Nuxt, Builder, Generator, Utils } = require('..')
 const resolve = require('path').resolve
 
 const argv = parseArgs(process.argv.slice(2), {

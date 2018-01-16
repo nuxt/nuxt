@@ -3,7 +3,7 @@
 
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Utils } = require('../')
+const { Nuxt, Utils } = require('..')
 const { resolve } = require('path')
 
 const argv = parseArgs(process.argv.slice(2), {
