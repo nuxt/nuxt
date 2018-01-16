@@ -25,7 +25,7 @@ test.serial('Init Nuxt.js', async t => {
     },
     render: {
       csp: {
-        hashAlgorithm: 'sha256',
+        enabled: true,
         allowedSources: ['https://example.com', 'https://example.io']
       }
     }
