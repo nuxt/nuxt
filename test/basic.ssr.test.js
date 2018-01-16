@@ -24,7 +24,10 @@ test.serial('Init Nuxt.js', async t => {
       stats: false
     },
     render: {
-      csp: true
+      csp: {
+        hashAlgorithm: 'sha256',
+        allowDomains: ['https://example.com', 'https://example.io']
+      }
     }
   }
 
@@ -256,6 +259,8 @@ test('Content-Security-Policy Header', async t => {
   })
   // Verify functionality
   t.regex(headers['content-security-policy'], /script-src 'self' 'sha256-.*'/)
+  t.true(headers['content-security-policy'].includes('https://example.com'))
+  t.true(headers['content-security-policy'].includes('https://example.io'))
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
