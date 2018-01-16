@@ -11,34 +11,32 @@ const rootDir = resolve(__dirname, 'fixtures/basic')
 const port = 4011
 const url = route => 'http://localhost:' + port + route
 
-test.serial('bin/nuxt-build', async t => {
-  const binBuild = resolve(__dirname, '..', 'bin', 'nuxt-build')
+const nuxtBin = resolve(__dirname, '..', 'bin', 'nuxt')
 
-  const { stdout, stderr } = await execify(`node ${binBuild} ${rootDir}`)
+test.serial('nuxt build', async t => {
+  const { stdout, stderr } = await execify(`node ${nuxtBin} build ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Building done'))
 })
 
-test.serial('bin/nuxt-start', async t => {
-  const binStart = resolve(__dirname, '..', 'bin', 'nuxt-start')
-
+test.serial('nuxt start', async t => {
   let stdout = ''
-  let stderr = ''
+  // let stderr = ''
   let error
   let exitCode
 
   const env = process.env
   env.PORT = port
 
-  const nuxtStart = spawn('node', [binStart, rootDir], { env: env })
+  const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env: env })
 
   nuxtStart.stdout.on('data', data => {
     stdout += data
   })
 
   nuxtStart.stderr.on('data', data => {
-    stderr += data
+    // stderr += data
   })
 
   nuxtStart.on('error', err => {
@@ -80,14 +78,11 @@ test.serial('bin/nuxt-start', async t => {
     )
   }
 
-  t.is(stderr, '')
   t.is(exitCode, null)
 })
 
-test.serial('bin/nuxt-generate', async t => {
-  const binGenerate = resolve(__dirname, '..', 'bin', 'nuxt-generate')
-
-  const { stdout, stderr } = await execify(`node ${binGenerate} ${rootDir}`)
+test.serial('nuxt generate', async t => {
+  const { stdout, stderr } = await execify(`node ${nuxtBin} generate ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
   t.true(stderr.includes('Destination folder cleaned'))
