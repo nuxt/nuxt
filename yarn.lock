@@ -5779,9 +5779,9 @@ postcss-image-set-polyfill@^0.3.5:
     postcss "^6.0.1"
     postcss-media-query-parser "^0.2.3"
 
-postcss-import-webpack-resolver@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/postcss-import-webpack-resolver/-/postcss-import-webpack-resolver-1.0.1.tgz#4be0e9400b7609313e11258a17c3c4d7db186ac9"
+postcss-import-resolver@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/postcss-import-resolver/-/postcss-import-resolver-1.1.0.tgz#08a1a9811da625d28317abc31565a8408ff28cd2"
   dependencies:
     enhanced-resolve "^3.4.1"
 
