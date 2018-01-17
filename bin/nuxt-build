@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-// Show logs
-process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
-
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder, Generator } = require('../')
+const { Nuxt, Builder, Generator, Utils } = require('..')
 const resolve = require('path').resolve
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // Force green color
@@ -49,17 +46,18 @@ var options = {}
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile)
 } else if (argv['config-file'] !== 'nuxt.config.js') {
-  console.error(`> Could not load config file ${argv['config-file']}`)
-  process.exit(1)
+  Utils.fatalError(`Could not load config file`, argv['config-file'])
 }
 if (typeof options.rootDir !== 'string') {
   options.rootDir = rootDir
 }
+
 // Create production build when calling `nuxt build`
 options.dev = false
 
 // Nuxt Mode
-options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+options.mode =
+  (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
 // Analyze option
 options.build = options.build || {}
@@ -71,21 +69,52 @@ debug('Building...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 
+// Setup hooks
+nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
+
+// Close function
+const close = () => {
+  if (options.build.analyze === true) {
+    return // Wait for user exit
+  }
+  process.exit(0)
+}
+
 if (options.mode !== 'spa') {
-  // Build for SSR app
-  builder.build()
+  // -- Build for SSR app --
+  builder
+    .build()
     .then(() => debug('Building done'))
-    .catch((err) => {
-      console.error(err)
-      process.exit(1)
+    .then(() => close())
+    .catch(err => {
+      Utils.fatalError(err)
     })
 } else {
+  // -- Build for SPA app --
+  const s = Date.now()
+
+  nuxt.hook('generate:distRemoved', () => debug('Destination folder cleaned'))
+
+  nuxt.hook('generate:distCopied', () => debug('Static & build files copied'))
+
+  nuxt.hook('generate:page', page => debug('Generate file: ' + page.path))
+
+  nuxt.hook('generate:done', (generator, errors) => {
+    const duration = Math.round((Date.now() - s) / 100) / 10
+
+    debug(`HTML Files generated in ${duration}s`)
+
+    if (errors.length) {
+      /* eslint-disable no-console */
+      console.log('\n' + errors.toString())
+    }
+  })
+
   // Disable minify to get exact results of nuxt start
   nuxt.options.generate.minify = false
-  // Generate on spa mode
+
+  // Generate dist for SPA static deployment
   new Generator(nuxt, builder).generate({ build: true }).then(() => {
-    if (!nuxt.options.dev) {
-      console.log(`✓ You can now directly upload ${nuxt.options.generate.dir}/ or start server using "nuxt start"`)
-    }
+    close()
   })
 }

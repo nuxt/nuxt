@@ -1,6 +1,8 @@
 module.exports = {
-  rootDir: __dirname,
   mode: 'spa',
   dev: false,
-  transition: false
+  transition: false,
+  build: {
+    stats: false
+  }
 }

@@ -1,11 +1,12 @@
 import test from 'ava'
-import stdMocks from 'std-mocks'
-import { Nuxt, Builder } from '../index.js'
+import { resolve } from 'path'
+import { Nuxt, Builder } from '..'
+import { interceptLog, release } from './helpers/console'
 
 let nuxt = null
 
-const port = 4004
-const url = (route) => 'http://localhost:' + port + route
+const port = 4012
+const url = route => 'http://localhost:' + port + route
 
 const renderRoute = async _url => {
   const window = await nuxt.renderAndGetWindow(url(_url))
@@ -15,39 +16,71 @@ const renderRoute = async _url => {
 }
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
-  nuxt = new Nuxt(require('./fixtures/spa/nuxt.config'))
-  await new Builder(nuxt).build()
-  await nuxt.listen(port, 'localhost')
+test.serial('Init Nuxt.js', async t => {
+  const rootDir = resolve(__dirname, 'fixtures/spa')
+  const config = require(resolve(rootDir, 'nuxt.config.js'))
+  config.rootDir = rootDir
+
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(config)
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
+
+  t.true(logSpy.calledWithMatch('DONE'))
+  t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test('/ (basic spa)', async t => {
+test.serial('/ (basic spa)', async t => {
+  const logSpy = await interceptLog()
   const { html } = await renderRoute('/')
   t.true(html.includes('Hello SPA!'))
+  release()
+  t.true(logSpy.withArgs('created').notCalled)
+  t.true(logSpy.withArgs('mounted').calledOnce)
 })
 
-test('/custom (custom layout)', async t => {
+test.serial('/custom (custom layout)', async t => {
+  const logSpy = await interceptLog()
   const { html } = await renderRoute('/custom')
   t.true(html.includes('Custom layout'))
+  release()
+  t.true(logSpy.withArgs('created').calledOnce)
+  t.true(logSpy.withArgs('mounted').calledOnce)
 })
 
-test('/custom (not default layout)', async t => {
+test.serial('/custom (not default layout)', async t => {
+  const logSpy = await interceptLog()
   const { head } = await renderRoute('/custom')
   t.false(head.includes('src="/_nuxt/layouts/default.'))
+  release()
+  t.true(logSpy.withArgs('created').calledOnce)
+  t.true(logSpy.withArgs('mounted').calledOnce)
 })
 
-test('/custom (call mounted and created once)', async t => {
-  stdMocks.use()
+test.serial('/custom (call mounted and created once)', async t => {
+  const logSpy = await interceptLog()
   await renderRoute('/custom')
-  stdMocks.restore()
-  const output = stdMocks.flush()
-  const creates = output.stdout.filter(value => value === 'created\n')
-  t.true(creates.length === 1)
-  const mounts = output.stdout.filter(value => value === 'mounted\n')
-  t.true(mounts.length === 1)
+  release()
+  t.true(logSpy.withArgs('created').calledOnce)
+  t.true(logSpy.withArgs('mounted').calledOnce)
+})
+
+test.serial('/mounted', async t => {
+  const { html } = await renderRoute('/mounted')
+
+  t.true(html.includes('<h1>Test: updated</h1>'))
+})
+
+test('/_nuxt/ (access publicPath in spa mode)', async t => {
+  const { response: { statusCode, statusMessage } } = await t.throws(
+    renderRoute('/_nuxt/')
+  )
+  t.is(statusCode, 404)
+  t.is(statusMessage, 'ResourceNotFound')
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after.always('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })

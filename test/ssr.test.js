@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import { Nuxt, Builder, Utils } from '..'
 import { uniq } from 'lodash'
 import rp from 'request-promise-native'
+import { interceptLog } from './helpers/console'
 
 const port = 4008
 let nuxt = null
@@ -12,25 +13,24 @@ const range = n => [...Array(n).keys()]
 const FOOBAR_REGEX = /<foobar>([\s\S]*)<\/foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
 
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 const isWindows = /^win/.test(process.platform)
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
-  const options = {
-    rootDir: resolve(__dirname, 'fixtures/ssr'),
-    dev: false,
-    render: {
-      resourceHints: false
-    },
-    build: {
-      extractCSS: true
-    }
-  }
-  nuxt = new Nuxt(options)
-  await new Builder(nuxt).build()
-  await nuxt.listen(port, 'localhost')
+test.serial('Init Nuxt.js', async t => {
+  const rootDir = resolve(__dirname, 'fixtures/ssr')
+  const config = require(resolve(rootDir, 'nuxt.config.js'))
+  config.rootDir = rootDir
+
+  const logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(config)
+    await new Builder(nuxt).build()
+    await nuxt.listen(port, 'localhost')
+  })
+
+  t.true(logSpy.calledWithMatch('DONE'))
+  t.true(logSpy.calledWithMatch('OPEN'))
 })
 
 // == Uniq Test ==
@@ -93,7 +93,7 @@ test('unique responses with fetch', async t => {
 // Making 16K requests by default
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
 const stressTest = async (t, _url, concurrency = 64, steps = 256) => {
-  let statusCodes = { }
+  let statusCodes = {}
 
   // appveyor memory limit!
   if (isWindows) {
@@ -121,6 +121,6 @@ test('stress test with asyncData', async t => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after.always('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })

@@ -16,10 +16,12 @@ module.exports = {
       ]
     }
   },
-  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
+  modulesDir: [path.join(__dirname, '..', '..', '..', 'node_modules')],
   transition: 'test',
   layoutTransition: 'test',
+  loadingIndicator: 'circle',
   offline: true,
+  extensions: 'ts',
   plugins: [
     '~/plugins/test.js',
     { src: '~/plugins/only-client.js', ssr: false }
@@ -39,11 +41,19 @@ module.exports = {
     }
   },
   build: {
-    // extractCSS: true,
+    stats: false,
     publicPath: '/orion/',
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true
+    },
+    styleResources: {
+      scss: '~/assets/pre-process.scss'
+    },
+    babel: {
+      presets({ isServer }) {
+        return null // Coverage: Return null, so defaults will be used.
+      }
     },
     extend(config, options) {
       return Object.assign({}, config, {
@@ -51,12 +61,11 @@ module.exports = {
       })
     }
   },
-  css: [
-    { src: '~/assets/app.css' }
-  ],
+  css: [{ src: '~/assets/app.css' }],
   render: {
     http2: {
-      push: true
+      push: true,
+      shouldPush: (file, type) => type === 'script'
     },
     bundleRenderer: {
       shouldPreload: (file, type) => {

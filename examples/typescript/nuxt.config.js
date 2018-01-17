@@ -20,7 +20,7 @@ module.exports = {
   */
   css: ['tachyons/css/tachyons.min.css', '~/assets/css/main.css'],
   build: {
-    vendor: ['axios', 'gsap', 'vuex-class', 'nuxt-class-component']
+    vendor: ['axios', 'vuex-class', 'nuxt-class-component']
   },
   modules: ['~/modules/typescript']
 }

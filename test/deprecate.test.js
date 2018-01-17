@@ -1,55 +1,64 @@
 import test from 'ava'
-import stdMocks from 'std-mocks'
 import { resolve } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '../index.js'
+import { Nuxt, Builder } from '..'
+import { intercept, interceptWarn, release } from './helpers/console'
 
 const port = 4010
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
-let builtErr = null
+let buildSpies = null
 
 // Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
+test.serial('Init Nuxt.js', async t => {
   const rootDir = resolve(__dirname, 'fixtures/deprecate')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
-  nuxt = new Nuxt(config)
-  builder = new Builder(nuxt)
 
-  stdMocks.use({
-    stdout: false,
-    stderr: true
+  buildSpies = await intercept(async () => {
+    nuxt = new Nuxt(config)
+    builder = await new Builder(nuxt)
+    await builder.build()
+    await nuxt.listen(port, 'localhost')
   })
-  await builder.build()
-  stdMocks.restore()
-  builtErr = stdMocks.flush().stderr
 
-  await nuxt.listen(port, 'localhost')
+  t.true(buildSpies.log.calledWithMatch('DONE'))
+  t.true(buildSpies.log.calledWithMatch('OPEN'))
 })
 
-test('Deprecated: context.isServer and context.isClient', async t => {
-  stdMocks.use()
+test.serial('Deprecated: context.isServer and context.isClient', async t => {
+  const warnSpy = await interceptWarn()
   await rp(url('/'))
-  stdMocks.restore()
-  const output = stdMocks.flush()
-  t.true(output.stderr.length === 2)
+  t.true(
+    warnSpy.calledWith(
+      'context.isServer has been deprecated, please use process.server instead.'
+    )
+  )
+  t.true(
+    warnSpy.calledWith(
+      'context.isClient has been deprecated, please use process.client instead.'
+    )
+  )
+  t.true(warnSpy.calledTwice)
+  release()
 })
 
-test('Deprecated: dev in build.extend()', async t => {
-  const deprecatedMsg = 'dev has been deprecated in build.extend(), please use isDev'
-  const errors = builtErr.filter(value => value.indexOf(deprecatedMsg) === 0)
-  t.true(errors.length === 2)
+test.serial('Deprecated: dev in build.extend()', async t => {
+  t.true(
+    buildSpies.warn.calledWithMatch(
+      'dev has been deprecated in build.extend(), please use isDev'
+    )
+  )
 })
 
-test('Deprecated: nuxt.plugin()', async t => {
+test.serial('Deprecated: nuxt.plugin()', async t => {
   t.true(nuxt.__builder_plugin)
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', t => {
-  nuxt.close()
+test.after.always('Closing server and nuxt.js', async t => {
+  await nuxt.close()
 })

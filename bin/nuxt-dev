@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-// Show logs
-process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
-
 const _ = require('lodash')
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
 const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder } = require('../')
+const { Nuxt, Builder, Utils } = require('..')
 const chokidar = require('chokidar')
 const path = require('path')
 const resolve = path.resolve
@@ -38,8 +35,7 @@ if (argv.version) {
 }
 
 if (argv.hostname === '') {
-  console.error(`> Provided hostname argument has no value`)
-  process.exit(1)
+  Utils.fatalError('Provided hostname argument has no value')
 }
 
 if (argv.help) {
@@ -69,39 +65,81 @@ _.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
 // Start dev
 let dev = startDev()
+let needToRestart = false
 
 // Start watching for nuxt.config.js changes
-chokidar
-  .watch(nuxtConfigFile, nuxtConfig.watchers.chokidar)
-  .on('all', _.debounce(() => {
-    debug('[nuxt.config.js] changed')
-    debug('Rebuilding the app...')
-    dev = dev.then(startDev)
-  }), 2500)
+chokidar.watch(nuxtConfigFile, nuxtConfig.watchers.chokidar).on('all', () => {
+  debug('[nuxt.config.js] changed')
+  needToRestart = true
 
-function startDev(oldNuxt) {
+  dev = dev.then(instance => {
+    if (needToRestart === false) return instance
+    needToRestart = false
+
+    debug('Rebuilding the app...')
+    return startDev(instance)
+  })
+})
+
+function startDev(oldInstance) {
   // Get latest environment variables
-  const port = argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host = argv.hostname || process.env.HOST || process.env.npm_package_config_nuxt_host
+  const port =
+    argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
+  const host =
+    argv.hostname ||
+    process.env.HOST ||
+    process.env.npm_package_config_nuxt_host
+
+  // Error handler
+  const onError = (err, instance) => {
+    Utils.printError(err)
+    return Promise.resolve(instance) // Wait for next reload
+  }
 
   // Load options
   let options = {}
   try {
     options = loadNuxtConfig()
   } catch (err) {
-    console.error(err)
-    return // Wait for next reload
+    return onError(err, oldInstance)
   }
 
   // Create nuxt and builder instance
-  const nuxt = new Nuxt(options)
-  const builder = new Builder(nuxt)
+  let nuxt
+  let builder
+  let instance
+  try {
+    nuxt = new Nuxt(options)
+    builder = new Builder(nuxt)
+    instance = { nuxt: nuxt, builder: builder }
+  } catch (err) {
+    return onError(err, instance || oldInstance)
+  }
 
-  return Promise.resolve()
-    .then(() => builder.build()) // 1- Start build
-    .then(() => oldNuxt ? oldNuxt.close() : Promise.resolve()) // 2- Close old nuxt after successful build
-    .then(() => nuxt.listen(port, host)) // 3- Start listening
-    .then(() => nuxt) // 4- Pass new nuxt to watch chain
+  return (
+    Promise.resolve()
+      .then(
+        () =>
+          oldInstance && oldInstance.builder
+            ? oldInstance.builder.unwatch()
+            : Promise.resolve()
+      )
+      // Start build
+      .then(() => builder.build())
+      // Close old nuxt after successful build
+      .then(
+        () =>
+          oldInstance && oldInstance.nuxt
+            ? oldInstance.nuxt.close()
+            : Promise.resolve()
+      )
+      // Start listening
+      .then(() => nuxt.listen(port, host))
+      // Pass new nuxt to watch chain
+      .then(() => instance)
+      // Handle errors
+      .catch(err => onError(err, instance))
+  )
 }
 
 function loadNuxtConfig() {
@@ -111,8 +149,7 @@ function loadNuxtConfig() {
     delete require.cache[nuxtConfigFile]
     options = require(nuxtConfigFile)
   } else if (argv['config-file'] !== 'nuxt.config.js') {
-    console.error(`> Could not load config file ${argv['config-file']}`)
-    process.exit(1)
+    Utils.fatalError('Could not load config file: ' + argv['config-file'])
   }
 
   if (typeof options.rootDir !== 'string') {
@@ -123,7 +160,8 @@ function loadNuxtConfig() {
   options.dev = true
 
   // Nuxt Mode
-  options.mode = (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+  options.mode =
+    (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
   return options
 }

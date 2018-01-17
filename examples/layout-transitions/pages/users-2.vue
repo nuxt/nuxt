@@ -50,6 +50,9 @@ export default {
     getTransitionName(newPage) {
       return newPage < this.page ? 'slide-right' : 'slide-left'
     }
+  },
+  head: {
+    title: 'Users #2'
   }
 }
 </script>
