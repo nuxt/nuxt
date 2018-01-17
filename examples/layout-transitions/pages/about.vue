@@ -8,6 +8,9 @@
 <script>
 export default {
   layout: 'secondary',
-  transition: 'bounce'
+  transition: 'bounce',
+  head: {
+    title: 'About'
+  }
 }
 </script>

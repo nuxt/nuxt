@@ -6,3 +6,11 @@
     <p><nuxt-link to="/users-2">Lists of users #2 (with `watch`)</nuxt-link></p>
   </div>
 </template>
+
+<script>
+export default {
+  head: {
+    title: 'Home'
+  }
+}
+</script>

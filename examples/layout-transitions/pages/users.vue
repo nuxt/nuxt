@@ -36,6 +36,9 @@ export default {
       totalPages: data.total_pages,
       users: data.data
     }
+  },
+  head: {
+    title: 'Users'
   }
 }
 </script>
