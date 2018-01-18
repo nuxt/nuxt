@@ -306,6 +306,11 @@ test('/jsx', async t => {
   t.true(html.includes('<h1>JSX Page</h1>'))
 })
 
+test('/jsx-link', async t => {
+  const { html } = await nuxt.renderRoute('/jsx-link')
+  t.true(html.includes('<h1>JSX Link Page</h1>'))
+})
+
 test('/js-link', async t => {
   const { html } = await nuxt.renderRoute('/js-link')
   t.true(html.includes('<h1>vue file is first-class</h1>'))
