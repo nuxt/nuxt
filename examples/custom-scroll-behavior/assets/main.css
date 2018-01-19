@@ -3,10 +3,28 @@ body {
 }
 
 .container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   text-align: center;
-  /* padding-top: 200px; */
   font-size: 20px;
   transition: all .5s cubic-bezier(.55,0,.1,1);
+}
+
+.child {
+  position: absolute;
+  top: 200px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  transition: all .5s cubic-bezier(.55,0,.1,1);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
 
 .page-enter-active, .page-leave-active {

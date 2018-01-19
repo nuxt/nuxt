@@ -2,7 +2,8 @@
   "name": "nuxt-routes-transitions",
   "dependencies": {
     "axios": "^0.15.3",
-    "nuxt": "latest"
+    "nuxt": "latest",
+    "vue-router": "https://github.com/homerjam/vue-router#dist"
   },
   "scripts": {
     "dev": "nuxt",
