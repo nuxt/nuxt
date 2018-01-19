@@ -1,0 +1,12 @@
+{
+  "name": "nuxt-routes-transitions",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
