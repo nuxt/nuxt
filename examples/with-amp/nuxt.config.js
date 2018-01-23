@@ -1,3 +1,13 @@
+const modifyHtml = (html) => {
+  // Add amp-custom tag to added CSS
+  html = html.replace(/<style data-vue-ssr/g, '<style amp-custom data-vue-ssr')
+  // Remove every script tag from generated HTML
+  html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  // Add AMP script before </head>
+  const ampScript = '<script async src="https://cdn.ampproject.org/v0.js"></script>'
+  html = html.replace('</head>', ampScript + '</head>')
+  return html;
+}
 module.exports = {
   head: {
     meta: [
@@ -16,18 +26,13 @@ module.exports = {
     resourceHints: false
   },
   hooks: {
+    // This hook is called before generatic static html files for SPA mode
+    'generate:page': (page) => {
+      page.html = modifyHtml(page.html)
+    },
     // This hook is called before rendering the html to the browser
-    'render:route': (url, result) => {
-      let html = result.html
-      // Add amp-custom tag to added CSS
-      html = html.replace(/<style data-vue-ssr/g, '<style amp-custom data-vue-ssr')
-      // Remove every script tag from generated HTML
-      html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      // Add AMP script before </head>
-      const ampScript = '<script async src="https://cdn.ampproject.org/v0.js"></script>'
-      html = html.replace('</head>', ampScript + '</head>')
-      // Update result html
-      result.html = html
+    'render:route': (url, page) => {
+      page.html = modifyHtml(page.html)
     }
   }
 }
