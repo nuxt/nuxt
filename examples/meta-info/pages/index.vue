@@ -12,6 +12,9 @@ export default {
     meta: [
       { hid: 'description', name: 'description', content: 'Home page description' }
     ],
+    noscript: [
+      { innerHTML: 'Body No Scripts', body: true }
+    ],
     script: [
       { src: '/head.js' },
       // Supported since 1.0
