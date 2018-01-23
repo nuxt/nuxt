@@ -6,7 +6,7 @@ const modifyHtml = (html) => {
   // Add AMP script before </head>
   const ampScript = '<script async src="https://cdn.ampproject.org/v0.js"></script>'
   html = html.replace('</head>', ampScript + '</head>')
-  return html;
+  return html
 }
 module.exports = {
   head: {
