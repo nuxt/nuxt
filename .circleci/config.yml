@@ -26,7 +26,7 @@ jobs:
       # Test
       - run:
           name: Tests
-          command: yarn test && yarn coverage
+          command: NODE_ENV=test yarn test && yarn coverage
 
       # Release edge
       - run:
