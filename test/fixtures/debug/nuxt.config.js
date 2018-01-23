@@ -6,5 +6,8 @@ module.exports = {
   debug: true,
   build: {
     stats: false
+  },
+  env: {
+    'NODE_ENV': 'development'
   }
 }

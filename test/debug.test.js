@@ -10,8 +10,7 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 
 // Init nuxt.js and create server listening on localhost:4000
-test.serial('Init Nuxt.js', async t => {
-  process.env.NODE_ENV = 'development'
+test.before('Init Nuxt.js', async t => {
   const rootDir = resolve(__dirname, 'fixtures/debug')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
@@ -101,6 +100,5 @@ test.serial('/test/error should return json format error (Youch)', async t => {
 
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server and nuxt.js', async t => {
-  delete process.env.NODE_ENV
   await nuxt.close()
 })
