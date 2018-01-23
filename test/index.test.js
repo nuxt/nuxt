@@ -8,6 +8,7 @@ test('Nuxt.js Class', t => {
 
 test('Nuxt.js Instance', async t => {
   const nuxt = new Nuxt({
+    dev: true,
     rootDir: resolve(__dirname, 'fixtures', 'empty')
   })
   t.is(typeof nuxt, 'object')
