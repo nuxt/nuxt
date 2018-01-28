@@ -279,7 +279,7 @@ test('/_nuxt/ should return 404', async t => {
 
 test('/meta', async t => {
   const { html } = await nuxt.renderRoute('/meta')
-  t.true(html.includes('"meta":[{"works":true}]'))
+  t.true(html.includes('"meta":{"works":true}'))
 })
 
 test('/fn-midd', async t => {
