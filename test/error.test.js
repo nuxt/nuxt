@@ -78,6 +78,14 @@ test.serial('Deprecated: dev in build.extend()', async t => {
   t.true(logSpy.calledWith('[build:done]: hook error'))
 })
 
+test.serial('Error: resolvePath()', async t => {
+  let error = t.throws(() => nuxt.resolvePath())
+  t.true(error instanceof TypeError)
+
+  error = t.throws(() => nuxt.resolvePath('@/pages/about.vue'))
+  t.true(error.message.includes('Cannot resolve "@/pages/about.vue"'))
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server and nuxt.js', async t => {
   await nuxt.close()
