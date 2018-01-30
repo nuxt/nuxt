@@ -98,6 +98,7 @@
     "postcss-url": "^7.3.0",
     "pretty-error": "^2.1.1",
     "progress-bar-webpack-plugin": "^1.10.0",
+    "semver": "^5.5.0",
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.13.1",
     "server-destroy": "^1.0.1",
