@@ -156,7 +156,7 @@ Go to [http://localhost:3000](http://localhost:3000)
 
 ## Templates
 
-:point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the lastest updates.
+:point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the latest updates.
 
 Or you can start by using one of our starter templates:
 - [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
