@@ -3,10 +3,7 @@ body {
 }
 
 .container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+  padding: 20px;
   text-align: center;
   font-size: 20px;
   transition: all .5s cubic-bezier(.55,0,.1,1);
