@@ -108,7 +108,7 @@
     "upath": "^1.0.2",
     "url-loader": "^0.6.2",
     "vue": "^2.5.13",
-    "vue-loader": "^14.0.2",
+    "vue-loader": "13.7.0",
     "vue-meta": "^1.4.2",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.13",
