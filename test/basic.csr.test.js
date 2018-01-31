@@ -81,6 +81,7 @@ test.serial('/store', async t => {
   t.is(await page.$text('h1'), 'Vuex Nested Modules')
   t.is(await page.$text('p'), '1')
   t.is(await page.$text('h2'), '4')
+  t.is(await page.$text('h3'), '10')
 })
 
 test.serial('/head', async t => {
