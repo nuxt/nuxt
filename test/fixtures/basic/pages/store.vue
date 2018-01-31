@@ -3,6 +3,8 @@
     <h1>{{ baz }}</h1>
     <br>
     <p>{{ $store.state.counter }}</p>
+    <br>
+    <h2>{{ getVal }}</h2>
   </div>
 </template>
 
@@ -10,6 +12,9 @@
 import { mapGetters } from 'vuex'
 
 export default {
-  computed: mapGetters('foo/bar', ['baz'])
+  computed: {
+    ...mapGetters('foo/bar', ['baz']),
+    ...mapGetters('foo/blarg', ['getVal'])
+  }
 }
 </script>
