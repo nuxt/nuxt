@@ -26,7 +26,10 @@ test.serial('Init Nuxt.js', async t => {
     render: {
       csp: {
         enabled: true,
-        allowedSources: ['https://example.com', 'https://example.io']
+        policies: {
+          'default-src': [`'none'`],
+          'script-src': ['https://example.com', 'https://example.io']
+        }
       }
     }
   }
@@ -258,6 +261,7 @@ test('Content-Security-Policy Header', async t => {
     resolveWithFullResponse: true
   })
   // Verify functionality
+  t.regex(headers['content-security-policy'], /default-src 'none'/)
   t.regex(headers['content-security-policy'], /script-src 'self' 'sha256-.*'/)
   t.true(headers['content-security-policy'].includes('https://example.com'))
   t.true(headers['content-security-policy'].includes('https://example.io'))
