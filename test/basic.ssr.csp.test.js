@@ -101,3 +101,22 @@ test.serial('Contain Content-Security-Policy header, when csp.policies set', asy
 
   await nuxt.close()
 })
+
+test.serial('Contain Content-Security-Policy header, when csp.policies.script-src is not set', async t => {
+  const cspOption = {
+    enabled: true,
+    policies: {
+      'default-src': [`'none'`]
+    }
+  }
+
+  const nuxt = await startCSPTestServer(t, cspOption)
+  const { headers } = await rp(url('/stateless'), {
+    resolveWithFullResponse: true
+  })
+
+  t.regex(headers['content-security-policy'], /default-src 'none'/)
+  t.regex(headers['content-security-policy'], /script-src 'self' 'sha256-.*'/)
+
+  await nuxt.close()
+})
