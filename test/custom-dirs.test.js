@@ -33,6 +33,11 @@ test('/ (custom assets directory)', async t => {
   t.true(html.includes('.global-css-selector'))
 })
 
+test('/ (custom layouts directory)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('<p>I have custom layouts directory</p>'))
+})
+
 test('/ (custom pages directory)', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>I have custom pages directory</h1>'))
