@@ -31,7 +31,7 @@ module.exports = {
       page.html = modifyHtml(page.html)
     },
     // This hook is called before rendering the html to the browser
-    'render:route': (url, page) => {
+    'render:route': (req, page) => {
       page.html = modifyHtml(page.html)
     }
   }
