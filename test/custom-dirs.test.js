@@ -1,7 +1,11 @@
 import test from 'ava'
 import { resolve } from 'path'
+import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
 import { interceptLog } from './helpers/console'
+
+const port = 4007
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let builder = null
@@ -24,14 +28,21 @@ test.before('Init Nuxt.js', async t => {
   t.true(logSpy.calledWithMatch('OPEN'))
 })
 
+test('/ (custom assets directory)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('.global-css-selector'))
+})
+
 test('/ (custom pages directory)', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>I have custom pages directory</h1>'))
 })
 
-test('/ (custom assets directory)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('.global-css-selector'))
+test('Check /test.txt with custom static directory', async t => {
+  const { headers } = await rp(url('/test.txt'), {
+    resolveWithFullResponse: true
+  })
+  t.is(headers['cache-control'], 'public, max-age=0')
 })
 
 // Close server and ask nuxt to stop listening to file changes
