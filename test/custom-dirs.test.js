@@ -8,7 +8,7 @@ let builder = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.before('Init Nuxt.js', async t => {
-  const rootDir = resolve(__dirname, 'fixtures/custom-pages-dir')
+  const rootDir = resolve(__dirname, 'fixtures/custom-dirs')
   let config = require(resolve(rootDir, 'nuxt.config.js'))
   config.rootDir = rootDir
   config.dev = false
@@ -24,9 +24,14 @@ test.before('Init Nuxt.js', async t => {
   t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test('/', async t => {
+test('/ (custom pages directory)', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>I have custom pages directory</h1>'))
+})
+
+test('/ (custom assets directory)', async t => {
+  const { html } = await nuxt.renderRoute('/')
+  t.true(html.includes('.global-css-selector'))
 })
 
 // Close server and ask nuxt to stop listening to file changes
