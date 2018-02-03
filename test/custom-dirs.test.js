@@ -28,22 +28,28 @@ test.before('Init Nuxt.js', async t => {
   t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test('/ (custom assets directory)', async t => {
+test('custom assets directory', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('.global-css-selector'))
 })
 
-test('/ (custom layouts directory)', async t => {
+test('custom layouts directory', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<p>I have custom layouts directory</p>'))
 })
 
-test('/ (custom pages directory)', async t => {
+test('custom middleware directory', async t => {
+  const window = await nuxt.renderAndGetWindow(url('/user-agent'))
+  const html = window.document.body.innerHTML
+  t.true(html.includes('<pre>Mozilla'))
+})
+
+test('custom pages directory', async t => {
   const { html } = await nuxt.renderRoute('/')
   t.true(html.includes('<h1>I have custom pages directory</h1>'))
 })
 
-test('Check /test.txt with custom static directory', async t => {
+test('custom static directory', async t => {
   const { headers } = await rp(url('/test.txt'), {
     resolveWithFullResponse: true
   })

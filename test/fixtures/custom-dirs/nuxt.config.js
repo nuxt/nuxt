@@ -3,6 +3,7 @@ module.exports = {
   dir: {
     assets: 'custom-assets',
     layouts: 'custom-layouts',
+    middleware: 'custom-middleware',
     pages: 'custom-pages',
     static: 'custom-static'
   }
