@@ -1,6 +1,8 @@
 module.exports = {
-  assetsDir: 'custom-assets',
-  pagesDir: 'custom-pages',
-  staticDir: 'custom-static',
-  css: [{ src: '~/custom-assets/app.css' }]
+  css: [{ src: '~/custom-assets/app.css' }],
+  dir: {
+    assets: 'custom-assets',
+    pages: 'custom-pages',
+    static: 'custom-static'
+  }
 }
