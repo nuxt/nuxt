@@ -9,7 +9,7 @@ const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
-// Init nuxt.js and create server listening on localhost:4003
+// Init nuxt.js and create server listening on localhost:4004
 test.serial('Init Nuxt.js', async t => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
@@ -22,12 +22,6 @@ test.serial('Init Nuxt.js', async t => {
     },
     build: {
       stats: false
-    },
-    render: {
-      csp: {
-        enabled: true,
-        allowedSources: ['https://example.com', 'https://example.io']
-      }
     }
   }
 
@@ -251,16 +245,6 @@ test('ETag Header', async t => {
     rp(url('/stateless'), { headers: { 'If-None-Match': etag } })
   )
   t.is(error.statusCode, 304)
-})
-
-test('Content-Security-Policy Header', async t => {
-  const { headers } = await rp(url('/stateless'), {
-    resolveWithFullResponse: true
-  })
-  // Verify functionality
-  t.regex(headers['content-security-policy'], /script-src 'self' 'sha256-.*'/)
-  t.true(headers['content-security-policy'].includes('https://example.com'))
-  t.true(headers['content-security-policy'].includes('https://example.io'))
 })
 
 test('/_nuxt/server-bundle.json should return 404', async t => {
