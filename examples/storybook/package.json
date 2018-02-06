@@ -1,0 +1,43 @@
+{
+  "name": "storybook",
+  "version": "1.0.0",
+  "description": "sample storybook setup",
+  "author": "Huseyn Guliyev",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "lintfix": "eslint --fix --ext .js,.vue --ignore-path .gitignore .",
+    "precommit": "yarn run lint",
+    "storybook": "start-storybook -p 9001 -c .storybook",
+    "storybookoutput": "build-storybook -c .storybook -o .out"
+  },
+  "dependencies": {
+    "@nuxtjs/axios": "^5.0.0",
+    "chart.js": "^2.7.1",
+    "nuxt": "^1.3.0",
+    "vue-chartjs": "^3.1.1",
+    "vuetify": "1.0.0-beta.5"
+  },
+  "devDependencies": {
+    "@storybook/addon-actions": "^3.4.0-alpha.7",
+    "@storybook/addon-centered": "^3.4.0-alpha.7",
+    "@storybook/addon-knobs": "^3.4.0-alpha.7",
+    "@storybook/addon-links": "^3.4.0-alpha.7",
+    "@storybook/addon-notes": "^3.4.0-alpha.7",
+    "@storybook/addon-storyshots": "^3.4.0-alpha.7",
+    "@storybook/addon-viewport": "^3.4.0-alpha.7",
+    "@storybook/addons": "^3.4.0-alpha.7",
+    "@storybook/vue": "^3.4.0-alpha.7",
+    "babel-eslint": "^8.2.1",
+    "cross-env": "^5.0.1",
+    "eslint": "^4.15.0",
+    "eslint-loader": "^1.7.1",
+    "eslint-plugin-vue": "^4.0.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.1"
+  }
+}
