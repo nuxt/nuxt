@@ -65,7 +65,7 @@
 
 <script>
 export default {
-  name: "layout",
+  name: 'layout',
 
   data: () => ({
     drawer: null
@@ -74,7 +74,7 @@ export default {
     items: Array,
     source: String
   }
-};
+}
 </script>
 
 <style type="text/css">

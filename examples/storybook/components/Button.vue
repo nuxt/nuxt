@@ -10,10 +10,10 @@ export default {
       default: () => () => null
     },
     color: {
-      default: "#42b983"
+      default: '#42b983'
     }
   }
-};
+}
 </script>
 
 <style>

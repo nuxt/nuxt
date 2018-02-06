@@ -68,7 +68,7 @@ export default {
   props: {
     showApp: {
       type: Function,
-      default: () => console.log('Welcome to storybook!')
+      default: () => console.log('Welcome to storybook!') // eslint-disable-line
     }
   }
 }

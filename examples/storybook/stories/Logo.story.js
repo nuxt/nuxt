@@ -1,15 +1,14 @@
 import {
   nStoriesOf,
-  action,
-  boolean,
-  text,
-  color,
-  array,
+  // action,
+  // boolean,
+  // text,
+  // color,
+  // array,
   object
-} from "./storybase.js"
+} from './storybase.js'
 
-import Logo from "~/components/Logo.vue"
-
+import Logo from '~/components/Logo.vue'
 
 // nStoriesOf({ Logo }, "Logo 1")
 // .addDecorator(story => (
@@ -23,8 +22,8 @@ import Logo from "~/components/Logo.vue"
 //   <logo :data="{  }  "/>`
 //   }))
 
-nStoriesOf({ Logo }, "Logo ")
-  .add("with some data", () => ({
+nStoriesOf({ Logo }, 'Logo ')
+  .add('with some data', () => ({
     components: { Logo },
     template: `
        <v-app dark style="min-width:400px">
@@ -34,11 +33,11 @@ nStoriesOf({ Logo }, "Logo ")
   </v-flex>
   </v-container></v-app>`
   }))
-  .addVT("with App layout", '<logo :data="{  }  "/>')
-  .addVT("with a knob", () => {
+  .addVT('with App layout', '<logo :data="{  }  "/>')
+  .addVT('with a knob', () => {
     let data = JSON.stringify(
-      object("Data", {
-        name: "Apple",
+      object('Data', {
+        name: 'Apple',
         count: 132
       })
     )

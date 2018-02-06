@@ -1,5 +1,5 @@
-import { storiesOf } from "@storybook/vue"
-import { action } from "@storybook/addon-actions"
+import { storiesOf } from '@storybook/vue'
+import { action } from '@storybook/addon-actions'
 import {
   withKnobs,
   text,
@@ -11,11 +11,11 @@ import {
   date,
   object,
   button
-} from "@storybook/addon-knobs/vue"
+} from '@storybook/addon-knobs/vue'
 // import { withSmartKnobs } from "storybook-addon-smart-knobs"
 // import { withInfo } from "@storybook/addon-info"
-import centered from "@storybook/addon-centered"
-import { linkTo } from "@storybook/addon-links"
+import centered from '@storybook/addon-centered'
+import { linkTo } from '@storybook/addon-links'
 
 /**
  * Template function for Vuetify
@@ -44,7 +44,7 @@ const nStoriesOf = (cmp, name = Object.keys(cmp)[0], params = {}) => {
     .addDecorator(withKnobs)
 
   if (params.withDefault) {
-    x.add("Default", () => ({
+    x.add('Default', () => ({
       render: h => h(Object.values(cmp)[0])
     }))
   }
@@ -63,14 +63,12 @@ const nStoriesOf = (cmp, name = Object.keys(cmp)[0], params = {}) => {
  * @param {*} name
  */
 const nStoriesOfWithDefault = (cmp, name = Object.keys(cmp)[0]) =>
-  nStoriesOf(cmp, name, { withDefault: "withDefault" })
+  nStoriesOf(cmp, name, { withDefault: 'withDefault' })
 
 export {
   nStoriesOf,
   nStoriesOfWithDefault,
   action,
-  withSmartKnobs,
-  withInfo,
   linkTo,
   withKnobs,
   text,

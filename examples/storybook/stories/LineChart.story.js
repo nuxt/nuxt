@@ -5,12 +5,12 @@ import {
   text,
   color,
   array
-} from "./storybase.js"
+} from './storybase.js'
 
-import LineChart from "~/components/LineChart"
+import LineChart from '~/components/LineChart'
 
 nStoriesOfWithDefault({ LineChart })
-  .add("with some data", () => ({
+  .add('with some data', () => ({
     components: { LineChart },
     template: `
 <div>
@@ -26,14 +26,14 @@ nStoriesOfWithDefault({ LineChart })
   }" :options="{ maintainAspectRatio: false, responsive:true}"/>
 </div>`
   }))
-  .add("with knobs demo", () => {
-    const maintainAspectRatio = boolean("Aspect Ratio", false)
-    const responsive = boolean("Responsive", true)
-    const title = text("Title", "Sample chart")
-    const myColor = color("Background Color", "darkred")
+  .add('with knobs demo', () => {
+    const maintainAspectRatio = boolean('Aspect Ratio', false)
+    const responsive = boolean('Responsive', true)
+    const title = text('Title', 'Sample chart')
+    const myColor = color('Background Color', 'darkred')
 
-    const defaultValue = array("Values", [1, 2, 3, 6, 3, 8])
-    const defaultLabel = array("Labels", [
+    const defaultValue = array('Values', [1, 2, 3, 6, 3, 8])
+    const defaultLabel = array('Labels', [
       "'a'",
       "'b'",
       "'c'",
@@ -44,7 +44,7 @@ nStoriesOfWithDefault({ LineChart })
 
     return {
       components: { LineChart },
-      methods: { onResize: action("resized") },
+      methods: { onResize: action('resized') },
       template: `
         <div  style="position: relative; height:40vh; width:80vw">
         <line-chart :data="{
@@ -61,7 +61,7 @@ nStoriesOfWithDefault({ LineChart })
       `
     }
   })
-  .addVT("with Vuetify", () => {
+  .addVT('with Vuetify', () => {
     const data = { "'a'": 1, "'b'": 2, "'c'": 3 }
     return `
         <line-chart :data="{
@@ -77,8 +77,8 @@ nStoriesOfWithDefault({ LineChart })
   `
   })
   .addVT(
-  "with Vuetify2",
-  `<line-chart :data="{
+    'with Vuetify2',
+    `<line-chart :data="{
           labels: [1,2,3],
           datasets: [
             {
