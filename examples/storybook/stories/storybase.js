@@ -12,8 +12,6 @@ import {
   object,
   button
 } from '@storybook/addon-knobs/vue'
-// import { withSmartKnobs } from "storybook-addon-smart-knobs"
-// import { withInfo } from "@storybook/addon-info"
 import centered from '@storybook/addon-centered'
 import { linkTo } from '@storybook/addon-links'
 

@@ -1,8 +1,6 @@
 import { storiesOf } from '@storybook/vue'
-// import { linkTo } from '@storybook/addon-links'
 
 import VuetifyLogo from '~/components/VuetifyLogo.vue'
-// import Layout from '~/components/Layout.vue'
 
 import Centered from '@storybook/addon-centered'
 

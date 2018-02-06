@@ -66,7 +66,6 @@
 <script>
 export default {
   name: 'layout',
-
   data: () => ({
     drawer: null
   }),

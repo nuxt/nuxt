@@ -1,5 +1,4 @@
 /* eslint-disable react/react-in-jsx-scope */
-
 import Vuex from 'vuex'
 import { storiesOf } from '@storybook/vue'
 import { action } from '@storybook/addon-actions'
@@ -16,12 +15,7 @@ import {
   date,
   button
 } from '@storybook/addon-knobs/vue'
-
 import MyButton from '~/components/Button.vue'
-
-// storiesOf('App', module).add('App', () => ({
-//  render: h => h(App),
-// }));
 
 storiesOf('Features/Method for rendering Vue', module)
   .add('render', () => ({

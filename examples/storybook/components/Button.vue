@@ -20,7 +20,6 @@ export default {
 .rounded {
   border-radius: 10px;
 }
-
 .wr-button {
   border: 3px solid;
   padding: 10px 20px;

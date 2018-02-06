@@ -1,24 +1,21 @@
-import "vuetify/dist/vuetify.css";
+import 'vuetify/dist/vuetify.css'
 
-import { configure } from "@storybook/vue";
-import Vue from "vue";
-import Vuex from "vuex";
-import Vuetify from "vuetify";
-import MyButton from "../components/Button.vue";
+import { configure } from '@storybook/vue'
+import Vue from 'vue'
+import Vuex from 'vuex'
+import Vuetify from 'vuetify'
+import MyButton from '../components/Button.vue'
 
-Vue.use(Vuex);
-Vue.use(Vuetify);
+Vue.use(Vuex)
+Vue.use(Vuetify)
 
-Vue.component("my-button", MyButton);
+Vue.component('my-button', MyButton)
 
-//function loadStories() {
-//  require("../src/stories");
-//}
+// Automatically import all files ending in *.stories.js
+const req = require.context('../stories', true, /.story.js$/)
 
-// automatically import all files ending in *.stories.js
-const req = require.context('../stories', true, /.story.js$/);
 function loadStories() {
-  req.keys().forEach((filename) => req(filename));
+  req.keys().forEach((filename) => req(filename))
 }
 
-configure(loadStories, module);
+configure(loadStories, module)

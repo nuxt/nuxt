@@ -36,20 +36,5 @@ module.exports = {
   */
   plugins: [
     '@/plugins/vuetify'
-  ],
-
-  /*
-  ** Nuxt.js modules
-  */
-  modules: [
-  ],
-
-  /*
-  ** Build configuration
-  */
-  build: {
-    /*
-    ** You can extend webpack config here
-    */
-  }
+  ]
 }
