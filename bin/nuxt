@@ -4,9 +4,10 @@
 process.env.DEBUG = process.env.DEBUG || 'nuxt:*'
 
 const { join } = require('path')
-const { name, engines } = require('../package.json')
 const semver = require('semver')
+
 const { Utils } = require('..')
+const { name, engines } = require('../package.json')
 
 // Global error handler
 process.on('unhandledRejection', _error => {
@@ -14,7 +15,11 @@ process.on('unhandledRejection', _error => {
 })
 
 if (!semver.satisfies(process.version, engines.node)) {
-  Utils.fatalError(`The engine "node" is incompatible with ${name}. Expected version "${engines.node}".`)
+  Utils.fatalError(
+    `The engine "node" is incompatible with ${name}. Expected version "${
+      engines.node
+    }".`
+  )
 }
 
 const defaultCommand = 'dev'

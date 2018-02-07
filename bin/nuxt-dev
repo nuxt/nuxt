@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-const _ = require('lodash')
+const defaultsDeep = require('lodash/defaultsDeep')
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // force green color
-const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder, Utils } = require('..')
 const chokidar = require('chokidar')
-const path = require('path')
-const resolve = path.resolve
-const pkg = require(path.join('..', 'package.json'))
+const { version } = require('../package.json')
+
+const { Nuxt, Builder, Utils } = require('..')
+const {
+  loadNuxtConfig,
+  getLatestHost,
+  nuxtConfigFile
+} = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -30,7 +33,7 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.version) {
-  console.log(pkg.version)
+  console.log(version)
   process.exit(0)
 }
 
@@ -56,39 +59,33 @@ if (argv.help) {
   process.exit(0)
 }
 
-const rootDir = resolve(argv._[0] || '.')
-const nuxtConfigFile = resolve(rootDir, argv['config-file'])
-
 // Load config once for chokidar
-const nuxtConfig = loadNuxtConfig()
-_.defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
+const nuxtConfig = loadNuxtConfig(argv)
+defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 
 // Start dev
 let dev = startDev()
 let needToRestart = false
 
 // Start watching for nuxt.config.js changes
-chokidar.watch(nuxtConfigFile, nuxtConfig.watchers.chokidar).on('all', () => {
-  debug('[nuxt.config.js] changed')
-  needToRestart = true
+chokidar
+  .watch(nuxtConfigFile(argv), nuxtConfig.watchers.chokidar)
+  .on('all', () => {
+    debug('[nuxt.config.js] changed')
+    needToRestart = true
 
-  dev = dev.then(instance => {
-    if (needToRestart === false) return instance
-    needToRestart = false
+    dev = dev.then(instance => {
+      if (needToRestart === false) return instance
+      needToRestart = false
 
-    debug('Rebuilding the app...')
-    return startDev(instance)
+      debug('Rebuilding the app...')
+      return startDev(instance)
+    })
   })
-})
 
 function startDev(oldInstance) {
   // Get latest environment variables
-  const port =
-    argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host =
-    argv.hostname ||
-    process.env.HOST ||
-    process.env.npm_package_config_nuxt_host
+  const { port, host } = getLatestHost(argv)
 
   // Error handler
   const onError = (err, instance) => {
@@ -99,7 +96,7 @@ function startDev(oldInstance) {
   // Load options
   let options = {}
   try {
-    options = loadNuxtConfig()
+    options = loadAndAugmentNuxtConfig()
   } catch (err) {
     return onError(err, oldInstance)
   }
@@ -111,9 +108,9 @@ function startDev(oldInstance) {
   try {
     nuxt = new Nuxt(options)
     builder = new Builder(nuxt)
-    instance = { nuxt: nuxt, builder: builder }
+    instance = { nuxt, builder }
   } catch (err) {
-    return onError(err, instance || oldInstance)
+    return onError(err, oldInstance)
   }
 
   return (
@@ -142,26 +139,11 @@ function startDev(oldInstance) {
   )
 }
 
-function loadNuxtConfig() {
-  let options = {}
-
-  if (fs.existsSync(nuxtConfigFile)) {
-    delete require.cache[nuxtConfigFile]
-    options = require(nuxtConfigFile)
-  } else if (argv['config-file'] !== 'nuxt.config.js') {
-    Utils.fatalError('Could not load config file: ' + argv['config-file'])
-  }
-
-  if (typeof options.rootDir !== 'string') {
-    options.rootDir = rootDir
-  }
+function loadAndAugmentNuxtConfig() {
+  const options = loadNuxtConfig(argv)
 
   // Force development mode for add hot reloading and watching changes
   options.dev = true
-
-  // Nuxt Mode
-  options.mode =
-    (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
   return options
 }
