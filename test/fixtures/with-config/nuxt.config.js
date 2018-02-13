@@ -46,7 +46,8 @@ module.exports = {
     maxChunkSize: 300000,
     analyze: {
       analyzerMode: 'disabled',
-      generateStatsFile: true
+      generateStatsFile: true,
+      logLevel: 'error'
     },
     styleResources: {
       scss: '~/assets/pre-process.scss'
