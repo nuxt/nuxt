@@ -8,19 +8,17 @@ const port = 4005
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let logSpy
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  const options = {
-    rootDir: resolve(__dirname, 'fixtures/error'),
-    dev: false,
-    build: {
-      stats: false
-    }
-  }
+  const rootDir = resolve(__dirname, 'fixtures/error')
+  const config = require(resolve(rootDir, 'nuxt.config.js'))
+  config.rootDir = rootDir
+  config.dev = false
 
-  const logSpy = await interceptLog(async () => {
-    nuxt = new Nuxt(options)
+  logSpy = await interceptLog(async () => {
+    nuxt = new Nuxt(config)
     await new Builder(nuxt).build()
     await nuxt.listen(port, 'localhost')
   })
@@ -74,6 +72,18 @@ test.serial('/ with text/json content', async t => {
         'render function or template not defined in component: anonymous'
       )
   )
+})
+
+test.serial('Deprecated: dev in build.extend()', async t => {
+  t.true(logSpy.calledWith('[build:done]: hook error'))
+})
+
+test.serial('Error: resolvePath()', async t => {
+  let error = t.throws(() => nuxt.resolvePath())
+  t.true(error instanceof TypeError)
+
+  error = t.throws(() => nuxt.resolvePath('@/pages/about.vue'))
+  t.true(error.message.includes('Cannot resolve "@/pages/about.vue"'))
 })
 
 // Close server and ask nuxt to stop listening to file changes

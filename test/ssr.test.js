@@ -90,9 +90,9 @@ test('unique responses with fetch', async t => {
 // == Stress Test ==
 // The idea of this test is to ensure there is no memory or data leak during SSR requests
 // Or pending promises/sockets and function calls.
-// Making 16K requests by default
+// Making 1K requests by default
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
-const stressTest = async (t, _url, concurrency = 64, steps = 256) => {
+const stressTest = async (t, _url, concurrency = 10, steps = 100) => {
   let statusCodes = {}
 
   // appveyor memory limit!

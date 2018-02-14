@@ -20,6 +20,11 @@ test.serial('nuxt build', async t => {
   t.true(stderr.includes('Building done'))
 })
 
+test.serial('nuxt build -> error config', async t => {
+  const { stderr } = await t.throws(execify(`node ${nuxtBin} build ${rootDir} -c config.js`))
+  t.true(stderr.includes('Could not load config file'))
+})
+
 test.serial('nuxt start', async t => {
   let stdout = ''
   // let stderr = ''

@@ -2,7 +2,7 @@
   "name": "nuxt-proxy",
   "version": "1.0.0",
   "dependencies": {
-    "@nuxtjs/axios": "^4.4.0",
+    "@nuxtjs/axios": "^5.0.0",
     "@nuxtjs/proxy": "^1.1.2",
     "nuxt": "latest"
   },

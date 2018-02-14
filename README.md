@@ -1,5 +1,6 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
+  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://img.shields.io/circleci/project/github/nuxt/nuxt.js.svg" alt="Build Status"></a>
   <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/Atinux/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/gwab06obc6srx9g4?svg=true" alt="Windows Build Status"></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
@@ -156,7 +157,7 @@ Go to [http://localhost:3000](http://localhost:3000)
 
 ## Templates
 
-:point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the lastest updates.
+:point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the latest updates.
 
 Or you can start by using one of our starter templates:
 - [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template

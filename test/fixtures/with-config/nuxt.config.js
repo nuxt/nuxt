@@ -43,9 +43,11 @@ module.exports = {
   build: {
     stats: false,
     publicPath: '/orion/',
+    maxChunkSize: 300000,
     analyze: {
       analyzerMode: 'disabled',
-      generateStatsFile: true
+      generateStatsFile: true,
+      logLevel: 'error'
     },
     styleResources: {
       scss: '~/assets/pre-process.scss'
@@ -63,6 +65,7 @@ module.exports = {
   },
   css: [{ src: '~/assets/app.css' }],
   render: {
+    csp: true,
     http2: {
       push: true,
       shouldPush: (file, type) => type === 'script'

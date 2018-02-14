@@ -58,6 +58,11 @@ test.serial('Deprecated: nuxt.plugin()', async t => {
   t.true(nuxt.__builder_plugin)
 })
 
+test.serial('Error: nuxt.plugin()', async t => {
+  const error = t.throws(() => nuxt.plugin('build:done', () => {}))
+  t.is(error.message, 'nuxt.plugin(\'build:done\',..) is not supported. Use new hooks system.')
+})
+
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server and nuxt.js', async t => {
   await nuxt.close()
