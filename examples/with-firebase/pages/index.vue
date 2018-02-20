@@ -32,8 +32,12 @@ import axios from '~/plugins/axios'
 
 export default {
   async asyncData() {
-    const { data: users } = await axios.get('users.json')
-    return { users }
+    try {
+      const { data: users } = await axios.get('users.json')
+      return { users }
+    } catch (e) {
+      throw Error(e)
+    }
   }
 }
 </script>
