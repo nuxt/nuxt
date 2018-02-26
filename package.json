@@ -1,7 +1,8 @@
 {
   "name": "nuxt",
   "version": "1.3.0",
-  "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
+  "description":
+    "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
     {
       "name": "Sebastien Chopin (@Atinux)"
@@ -19,10 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js"
   },
-  "files": [
-    "bin",
-    "lib"
-  ],
+  "files": ["bin", "lib"],
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -40,13 +38,13 @@
     "nuxt": "./bin/nuxt"
   },
   "nyc": {
-    "include": [
-      "lib"
-    ]
+    "include": ["lib"]
   },
   "scripts": {
-    "test": "npm run lint && nyc ava --verbose test/ -- && nyc report --reporter=html",
-    "test-appveyor": "npm run lint && nyc ava --serial test/ -- && nyc report --reporter=html",
+    "test":
+      "npm run lint && nyc ava --verbose test/ -- && nyc report --reporter=html",
+    "test-appveyor":
+      "npm run lint && nyc ava --serial test/ -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
@@ -59,7 +57,7 @@
   "dependencies": {
     "@nuxtjs/youch": "^4.2.3",
     "ansi-html": "^0.0.7",
-    "autoprefixer": "^7.2.5",
+    "autoprefixer": "^8.0.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-vue-app": "^2.0.0",
@@ -81,7 +79,7 @@
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "hash-sum": "^1.0.2",
-    "html-minifier": "3.5.8",
+    "html-minifier": "^3.5.9",
     "html-webpack-plugin": "^2.30.1",
     "launch-editor": "^2.2.1",
     "launch-editor-middleware": "^2.2.1",
@@ -108,13 +106,13 @@
     "upath": "^1.0.2",
     "url-loader": "^0.6.2",
     "vue": "^2.5.13",
-    "vue-loader": "13.7.0",
+    "vue-loader": "^14.1.1",
     "vue-meta": "^1.4.2",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.13",
     "vue-template-compiler": "^2.5.13",
     "vuex": "^3.0.1",
-    "webpack": "^3.10.0",
+    "webpack": "^4.0.0",
     "webpack-bundle-analyzer": "^2.10.0",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-hot-middleware": "^2.21.0",
@@ -131,7 +129,7 @@
     "cross-env": "^5.1.3",
     "eslint": "^4.17.0",
     "eslint-config-standard": "^11.0.0-beta.0",
-    "eslint-config-standard-jsx": "^4.0.2",
+    "eslint-config-standard-jsx": "^5.0.0",
     "eslint-plugin-html": "^4.0.2",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^6.0.0",
@@ -152,6 +150,7 @@
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/nuxtjs",
-    "logo": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+    "logo":
+      "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }
