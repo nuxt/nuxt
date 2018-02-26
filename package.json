@@ -80,7 +80,7 @@
     "glob": "^7.1.2",
     "hash-sum": "^1.0.2",
     "html-minifier": "^3.5.9",
-    "html-webpack-plugin": "^2.30.1",
+    "html-webpack-plugin": "webpack-contrib/html-webpack-plugin",
     "launch-editor": "^2.2.1",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
