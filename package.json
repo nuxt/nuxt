@@ -72,7 +72,7 @@
     "debug": "^3.1.0",
     "es6-promise": "^4.2.4",
     "etag": "^1.8.1",
-    "extract-text-webpack-plugin": "^3.0.2",
+    "extract-text-webpack-plugin": "^4.0.0-alpha.0",
     "file-loader": "^1.1.6",
     "fresh": "^0.5.2",
     "friendly-errors-webpack-plugin": "^1.6.1",
