@@ -8,6 +8,9 @@ module.exports = function basicModule(options, resolve) {
   // Add a plugin
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 
+  // Add a layout
+  this.addLayout(path.resolve(__dirname, 'layout.vue'))
+
   // Extend build
   this.extendBuild((config, { isClient, isServer }) => {
     // Do nothing!

@@ -11,7 +11,7 @@ const url = route => 'http://localhost:' + port + route
 const startCSPTestServer = async (t, csp) => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
-    buildDir: '.nuxt-ssr',
+    buildDir: '.nuxt-ssr-csp',
     dev: false,
     head: {
       titleTemplate(titleChunk) {

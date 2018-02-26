@@ -47,6 +47,16 @@ test.serial('Plugin', async t => {
   t.true(html.includes('<h1>TXUN</h1>'), 'plugin works')
 })
 
+test.serial('Layout', async t => {
+  t.true(
+    nuxt.options.layouts.layout.includes('layout'),
+    'layout added to config'
+  )
+
+  const { html } = await nuxt.renderRoute('/layout')
+  t.true(html.includes('<h1>Module Layouts</h1>'), 'layout works')
+})
+
 test.serial('Hooks', async t => {
   t.is(nuxt.__module_hook, 1)
   t.is(nuxt.__renderer_hook, 2)
