@@ -15,7 +15,11 @@ const {
   nuxtConfigFile
 } = require('./common/utils')
 
-const argv = parseArgs(process.argv.slice(2), {
+const args = JSON.parse(JSON.stringify(process.argv))
+
+args.splice(2, 1)
+
+const argv = parseArgs(args.slice(2), {
   alias: {
     h: 'help',
     H: 'hostname',
