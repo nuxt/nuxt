@@ -102,7 +102,7 @@
     "server-destroy": "^1.0.1",
     "source-map": "^0.7.0",
     "style-resources-loader": "^1.0.0",
-    "uglifyjs-webpack-plugin": "^1.1.8",
+    "uglifyjs-webpack-plugin": "^1.2.2",
     "upath": "^1.0.2",
     "url-loader": "^0.6.2",
     "vue": "^2.5.13",
