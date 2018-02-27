@@ -25,11 +25,9 @@ if (!semver.satisfies(process.version, engines.node)) {
 const defaultCommand = 'dev'
 const commands = new Set([defaultCommand, 'init', 'build', 'start', 'generate'])
 
-var cmd = process.argv[2]
+let cmd = process.argv[2]
 
-if (commands.has(cmd)) {
-  process.argv.splice(2, 1)
-} else {
+if (!commands.has(cmd)) {
   cmd = defaultCommand
 }
 
