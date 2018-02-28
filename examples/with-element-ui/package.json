@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "element-ui": "^1.4.9",
+    "element-ui": "^2",
     "nuxt": "latest"
   },
   "scripts": {
