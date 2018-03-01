@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-const fs = require('fs')
 const parseArgs = require('minimist')
-const { Nuxt, Builder, Generator, Utils } = require('..')
-const resolve = require('path').resolve
 const debug = require('debug')('nuxt:build')
 debug.color = 2 // Force green color
+
+const { Nuxt, Builder, Generator, Utils } = require('..')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -39,25 +39,10 @@ if (argv.help) {
   process.exit(0)
 }
 
-const rootDir = resolve(argv._[0] || '.')
-const nuxtConfigFile = resolve(rootDir, argv['config-file'])
-
-var options = {}
-if (fs.existsSync(nuxtConfigFile)) {
-  options = require(nuxtConfigFile)
-} else if (argv['config-file'] !== 'nuxt.config.js') {
-  Utils.fatalError(`Could not load config file`, argv['config-file'])
-}
-if (typeof options.rootDir !== 'string') {
-  options.rootDir = rootDir
-}
+const options = loadNuxtConfig(argv)
 
 // Create production build when calling `nuxt build`
 options.dev = false
-
-// Nuxt Mode
-options.mode =
-  (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
 // Analyze option
 options.build = options.build || {}
@@ -86,9 +71,7 @@ if (options.mode !== 'spa') {
     .build()
     .then(() => debug('Building done'))
     .then(() => close())
-    .catch(err => {
-      Utils.fatalError(err)
-    })
+    .catch(Utils.fatalError)
 } else {
   // -- Build for SPA app --
   const s = Date.now()

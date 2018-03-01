@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
-const fs = require('fs')
 const parseArgs = require('minimist')
 const debug = require('debug')('nuxt:generate')
 
 const { Nuxt, Builder, Generator, Utils } = require('..')
-const resolve = require('path').resolve
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -39,23 +38,9 @@ if (argv.help) {
   process.exit(0)
 }
 
-const rootDir = resolve(argv._[0] || '.')
-const nuxtConfigFile = resolve(rootDir, argv['config-file'])
+const options = loadNuxtConfig(argv)
 
-var options = {}
-if (fs.existsSync(nuxtConfigFile)) {
-  options = require(nuxtConfigFile)
-} else if (argv['config-file'] !== 'nuxt.config.js') {
-  Utils.fatalError('Could not load config file: ' + argv['config-file'])
-}
-if (typeof options.rootDir !== 'string') {
-  options.rootDir = rootDir
-}
 options.dev = false // Force production mode (no webpack middleware called)
-
-// Nuxt Mode
-options.mode =
-  (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
 
 debug('Generating...')
 const nuxt = new Nuxt(options)
@@ -97,6 +82,4 @@ generator
     debug('Generate done')
     process.exit(0)
   })
-  .catch(err => {
-    Utils.fatalError(err)
-  })
+  .catch(Utils.fatalError)
