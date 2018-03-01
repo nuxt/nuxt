@@ -8,6 +8,6 @@ module.exports = {
   },
   build: {
     stats: false,
-    extractCSS: false // https://github.com/webpack/webpack/pull/6597
+    extractCSS: true
   }
 }
