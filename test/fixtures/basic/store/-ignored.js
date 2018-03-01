@@ -1,3 +1,1 @@
-export const state = () => ({
-  error: 'Should be ignored'
-})
+throw new Error('This file should be ignored!!')
