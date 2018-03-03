@@ -190,7 +190,7 @@ Learn more: https://nuxtjs.org/api/nuxt
 
 ## Using nuxt.js as a middleware
 
-You might want to use your own server with you configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
+You might want to use your own server with your configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
 
 ```js
 app.use(nuxt.render)
