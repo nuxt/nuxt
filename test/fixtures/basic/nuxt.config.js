@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  pageExtensions: ['js', 'vue', 'md'],
+  pageExtensions: ['js', 'vue', 'mjs'],
   generate: {
     routes: [
       '/users/1',
