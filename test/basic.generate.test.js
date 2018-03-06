@@ -102,6 +102,11 @@ test.serial('/users/2', async t => {
   t.true(html.includes('<h1>User: 2</h1>'))
 })
 
+test.serial('/custom-extension', async t => {
+  const html = await rp(url('/custom-extension'))
+  t.true(html.includes('<h1>Custom Extension</h1>'))
+})
+
 test.serial('/users/3 (payload given)', async t => {
   const html = await rp(url('/users/3'))
   t.true(html.includes('<h1>User: 3000</h1>'))
