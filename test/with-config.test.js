@@ -128,13 +128,18 @@ test.serial('/test/env', async t => {
 
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>Custom env layout</h1>'))
-  t.true(html.includes('"bool": true'))
-  t.true(html.includes('"num": 23'))
-  t.true(html.includes('"string": "Nuxt.js"'))
-  t.true(html.includes('"bool": false'))
-  t.true(html.includes('"string": "ok"'))
-  t.true(html.includes('"num2": 8.23'))
-  t.true(html.includes('"obj": {'))
+  t.true(html.includes('<span id="fromContext">' +
+      '{"bool":true,"num":23,"string":"Nuxt.js",' +
+      '"object":{"bool":false,"string":"ok","num2":8.23,"obj":{"again":true}}}' +
+      '</span>'
+  ))
+  t.true(html.includes('<span id="fromProcess">' +
+      '{"NODE_ENV":"production","VUE_ENV":"client","bool":true,"num":23,"string":"Nuxt.js",' +
+      '"object":{"bool":false,"string":"ok","num2":8.23,"obj":{"again":true}}}' +
+      '</span>'
+  ))
+  t.true(html.includes('<span id="forDynamicCall">["Nuxt.js","Nuxt.js","Nuxt.js"]</span>'))
+  t.true(html.includes('<span id="forNestedObject">true</span>'))
 })
 
 test.serial('/test/error', async t => {
