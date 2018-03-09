@@ -59,6 +59,10 @@ test.serial('nuxt start', async t => {
     iterator++
   }
 
+  if (iterator === 80) {
+    t.log('WARN: server failed to start successfully in 20 seconds')
+  }
+
   t.is(error, undefined)
   t.true(stdout.includes('OPEN'))
 
