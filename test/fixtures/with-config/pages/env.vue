@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span id="fromContext">{{ env }}</span>
+    <span id="fromContext">{{ contextEnv }}</span>
     <span id="fromProcess">{{ processEnv }}</span>
     <span id="forDynamicCall">{{ string }}</span>
     <span id="forNestedObject">{{ nestedObject }}</span>
@@ -19,7 +19,7 @@ export default {
     }
   },
   asyncData({ env }) {
-    return { env: JSON.stringify(env) }
+    return { contextEnv: JSON.stringify(env) }
   }
 }
 </script>
