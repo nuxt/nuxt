@@ -1,6 +1,6 @@
 import { promisify } from 'util'
 import test from 'ava'
-import { resolve, sep } from 'path'
+import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { exec, spawn } from 'child_process'
 import { Utils } from '..'
@@ -91,12 +91,7 @@ test.serial('nuxt start', async t => {
 })
 
 test.serial('nuxt generate', async t => {
-  const { stdout, stderr } = await execify(`node ${nuxtBin} generate ${rootDir}`)
+  const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
-  t.true(stderr.includes('Destination folder cleaned'))
-  t.true(stderr.includes('Static & build files copied'))
-  t.true(stderr.includes(`Generate file: ${sep}users${sep}1${sep}index.html`))
-  t.true(stdout.includes('Generate errors summary:'))
-  t.true(stderr.includes('Generate done'))
 })
