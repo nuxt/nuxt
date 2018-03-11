@@ -2,7 +2,7 @@
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://img.shields.io/circleci/project/github/nuxt/nuxt.js.svg" alt="Build Status"></a>
   <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/Atinux/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/gwab06obc6srx9g4?svg=true" alt="Windows Build Status"></a>
+  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/9ttoamt2c2gnwkko?svg=true" alt="Windows Build Status"></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
@@ -190,7 +190,7 @@ Learn more: https://nuxtjs.org/api/nuxt
 
 ## Using nuxt.js as a middleware
 
-You might want to use your own server with you configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
+You might want to use your own server with your configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
 
 ```js
 app.use(nuxt.render)

@@ -52,11 +52,15 @@ test.serial('nuxt start', async t => {
     exitCode = code
   })
 
-  // Give the process max 10s to start
+  // Give the process max 20s to start
   let iterator = 0
-  while (!stdout.includes('OPEN') && iterator < 40) {
+  while (!stdout.includes('OPEN') && iterator < 80) {
     await Utils.waitFor(250)
     iterator++
+  }
+
+  if (iterator === 80) {
+    t.log('WARN: server failed to start successfully in 20 seconds')
   }
 
   t.is(error, undefined)
