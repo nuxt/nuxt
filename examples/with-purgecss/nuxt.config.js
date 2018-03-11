@@ -4,7 +4,7 @@ const glob = require('glob-all')
 
 class TailwindExtractor {
   static extract(content) {
-    return content.match(/[A-z0-9-:\/]+/g) || [];
+    return content.match(/[A-z0-9-:/]+/g) || []
   }
 }
 
@@ -15,7 +15,7 @@ module.exports = {
       require('tailwindcss')('./tailwind.js'),
       require('autoprefixer')
     ],
-    extend (config, { isDev }) {
+    extend(config, { isDev }) {
       if (!isDev) {
         config.plugins.push(
           new PurgecssPlugin({
@@ -28,7 +28,7 @@ module.exports = {
             extractors: [
               {
                 extractor: TailwindExtractor,
-                extensions: ["vue"]
+                extensions: ['vue']
               }
             ],
             whitelist: ['html', 'body']
