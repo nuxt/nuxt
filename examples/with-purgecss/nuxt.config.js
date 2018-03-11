@@ -31,7 +31,7 @@ module.exports = {
                 extensions: ['vue']
               }
             ],
-            whitelist: ['html', 'body']
+            whitelist: ['html', 'body', 'nuxt-progress']
           })
         )
       }
