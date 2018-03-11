@@ -29,13 +29,6 @@ test.serial('Init Nuxt.js', async t => {
   t.true(buildSpies.log.calledWithMatch('OPEN'))
 })
 
-test.serial('Vendor', async t => {
-  t.true(
-    nuxt.options.build.vendor.indexOf('lodash') !== -1,
-    'lodash added to config'
-  )
-})
-
 test.serial('Plugin', async t => {
   t.true(
     normalize(nuxt.options.plugins[0].src).includes(
