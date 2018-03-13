@@ -104,7 +104,6 @@
     "source-map": "^0.7.2",
     "style-resources-loader": "^1.1.0",
     "time-fix-plugin": "^2.0.0",
-    "uglifyjs-webpack-plugin": "^1.2.3",
     "upath": "^1.0.2",
     "url-loader": "^1.0.1",
     "vue": "^2.5.15",
@@ -118,7 +117,8 @@
     "webpack-bundle-analyzer": "^2.11.1",
     "webpack-dev-middleware": "^3.0.1",
     "webpack-hot-middleware": "^2.21.2",
-    "webpack-node-externals": "^1.6.0"
+    "webpack-node-externals": "^1.6.0",
+    "webpack-stylish": "^0.1.6"
   },
   "devDependencies": {
     "ava": "^0.25.0",

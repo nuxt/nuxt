@@ -17,7 +17,6 @@ test.serial('nuxt build', async t => {
   const { stdout, stderr } = await execify(`node ${nuxtBin} build ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
-  t.true(stderr.includes('Building done'))
 })
 
 test.serial('nuxt build -> error config', async t => {

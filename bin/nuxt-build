@@ -69,7 +69,6 @@ if (options.mode !== 'spa') {
   // -- Build for SSR app --
   builder
     .build()
-    .then(() => console.error('Building done'))
     .then(() => close())
     .catch(Utils.fatalError)
 } else {
