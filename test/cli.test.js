@@ -16,7 +16,7 @@ const nuxtBin = resolve(__dirname, '..', 'bin', 'nuxt')
 test.serial('nuxt build', async t => {
   const { stdout } = await execify(`node ${nuxtBin} build ${rootDir}`)
 
-  t.true(stdout.includes('server-bundle.json'))
+  t.true(stdout.includes('Compiled successfully'))
 })
 
 test.serial('nuxt build -> error config', async t => {
@@ -92,5 +92,5 @@ test.serial('nuxt start', async t => {
 test.serial('nuxt generate', async t => {
   const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir}`)
 
-  t.true(stdout.includes('server-bundle.json'))
+  t.true(stdout.includes('vue-ssr-client-manifest.json'))
 })
