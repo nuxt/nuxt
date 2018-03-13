@@ -14,7 +14,7 @@ const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', 'bin', 'nuxt')
 
 test.serial('nuxt build', async t => {
-  const { stdout, stderr } = await execify(`node ${nuxtBin} build ${rootDir}`)
+  const { stdout } = await execify(`node ${nuxtBin} build ${rootDir}`)
 
   t.true(stdout.includes('server-bundle.json'))
 })
