@@ -108,7 +108,7 @@
     "url-loader": "^1.0.1",
     "vue": "^2.5.15",
     "vue-loader": "^14.2.1",
-    "vue-meta": "^1.4.3",
+    "vue-meta": "^1.4.1",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.15",
     "vue-template-compiler": "^2.5.15",
