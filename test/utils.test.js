@@ -1,6 +1,7 @@
 import test from 'ava'
 import ansiHTML from 'ansi-html'
 import { Utils } from '..'
+import { getEnvVariables } from '../lib/builder/webpack/env.utils'
 
 test('encodeHtml', t => {
   const html = '<h1>Hello</h1>'
@@ -177,4 +178,46 @@ test('chainFn (return, return)', t => {
   const chainedFn = Utils.chainFn(firstFn, secondFn)
   const expectedResult = { foo: 11, bar: 12 }
   t.deepEqual(chainedFn({}, 10), expectedResult)
+})
+
+test('getEnvVariables', t => {
+  const options = {
+    env: {
+      bar: 'bar',
+      items: [
+        {id: 1, name: 'Kobe'},
+        {id: 2, name: 'Michael'}
+      ],
+      foo: {
+        bar: {
+          baz: 'hello',
+          'wi-fi': true
+        },
+        'a"-"b': {
+          'b\'c': {}
+        }
+      }
+    }
+  }
+
+  const expectedEnvVariables = {
+    'NODE_ENV': '"production"',
+    'VUE_ENV': '"vue env"',
+    'bar': '"bar"',
+    'items[0][id]': 1,
+    'items[0][name]': '"Kobe"',
+    'items[0]': '{"id":1,"name":"Kobe"}',
+    'items[1][id]': 2,
+    'items[1][name]': '"Michael"',
+    'items[1]': '{"id":2,"name":"Michael"}',
+    'items': '[{"id":1,"name":"Kobe"},{"id":2,"name":"Michael"}]',
+    'foo[bar][baz]': '"hello"',
+    'foo[bar][wi-fi]': true,
+    'foo[bar]': '{"baz":"hello","wi-fi":true}',
+    'foo[a"-"b][b\'c]': '{}',
+    'foo[a"-"b]': '{"b\'c":{}}',
+    'foo': '{"bar":{"baz":"hello","wi-fi":true},"a\\"-\\"b":{"b\'c":{}}}'
+  }
+
+  t.deepEqual(getEnvVariables(options, 'vue env'), expectedEnvVariables)
 })
