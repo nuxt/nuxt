@@ -186,7 +186,7 @@ test.serial('/meta', async t => {
   await page.nuxt.navigate('/meta')
 
   const state = await page.nuxt.storeState()
-  t.deepEqual(state.meta, [{ works: true }])
+  t.deepEqual(state.meta, { works: true })
 })
 
 test.serial('/fn-midd', async t => {
