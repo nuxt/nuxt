@@ -7,9 +7,6 @@ module.exports = function () {
   // close this server on 'close' event
   this.nuxt.plugin('close', () => new Promise((resolve) => server.close(resolve)))
 
-  // Add `socket.io-client` in vendor
-  this.addVendor('socket.io-client')
-
   // Add socket.io events
   let messages = []
   io.on('connection', (socket) => {

@@ -28,6 +28,33 @@ test('waitFor', async t => {
   await Utils.waitFor()
 })
 
+test('timeout (promise)', async t => {
+  const result = await Utils.timeout(Promise.resolve('time not run out'), 100)
+  t.is(result, 'time not run out')
+})
+
+test('timeout (async function)', async t => {
+  const result = await Utils.timeout(async () => {
+    await Utils.waitFor(10)
+    return 'time not run out'
+  }, 100)
+  t.is(result, 'time not run out')
+})
+
+test('timeout (timeout in 100ms)', async t => {
+  const timeout = Utils.timeout(Utils.waitFor(200), 100, 'timeout test 100ms')
+  const { message } = await t.throws(timeout)
+  t.is(message, 'timeout test 100ms')
+})
+
+test('timeout (async timeout in 100ms)', async t => {
+  const timeout = Utils.timeout(async () => {
+    await Utils.waitFor(500)
+  }, 100, 'timeout test 100ms')
+  const { message } = await t.throws(timeout)
+  t.is(message, 'timeout test 100ms')
+})
+
 test('urlJoin', t => {
   t.is(Utils.urlJoin('test', '/about'), 'test/about')
 })

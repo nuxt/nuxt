@@ -19,8 +19,5 @@ module.exports = {
   ** Build configuration
   */
   css: ['tachyons/css/tachyons.min.css', '~/assets/css/main.css'],
-  build: {
-    vendor: ['axios', 'vuex-class', 'nuxt-class-component']
-  },
   modules: ['~/modules/typescript']
 }

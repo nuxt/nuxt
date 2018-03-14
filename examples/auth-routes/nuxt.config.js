@@ -10,9 +10,6 @@ module.exports = {
       { hid: 'description', content: 'Auth Routes example' }
     ]
   },
-  build: {
-    vendor: ['axios']
-  },
   /*
   ** Add server middleware
   ** Nuxt.js uses `connect` module as server

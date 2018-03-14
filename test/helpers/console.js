@@ -30,6 +30,7 @@ export function release() {
   }
 
   context = null
+  delete console.spiedInTest // eslint-disable-line no-console
 }
 
 export async function intercept(levels, msg, cb) {
@@ -39,6 +40,7 @@ export async function intercept(levels, msg, cb) {
     )
   }
   context = {}
+  console.spiedInTest = true // eslint-disable-line no-console
 
   if (cb === undefined && typeof msg === 'function') {
     cb = msg

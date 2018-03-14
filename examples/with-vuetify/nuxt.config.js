@@ -10,11 +10,8 @@ module.exports = {
       { rel: 'stylesheet', type: 'text/css', href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }
     ]
   },
-  /*
-  ** Add Vuetify into vendor.bundle.js
-  */
+
   build: {
-    vendor: ['vuetify'],
     extractCSS: true,
     extend(config, ctx) {
       if (ctx.isServer) {
