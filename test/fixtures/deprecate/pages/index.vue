@@ -7,7 +7,5 @@
 
 <script>
 export default {
-  // context.isServer and context.isClient has been deprecated
-  fetch({ isServer, isClient }) {}
 }
 </script>
