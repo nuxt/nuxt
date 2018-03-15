@@ -63,7 +63,6 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
     "babel-preset-vue-app": "^2.0.0",
-    "caniuse-lite": "^1.0.30000813",
     "chalk": "^2.3.2",
     "chokidar": "^2.0.1",
     "compression": "^1.7.1",
@@ -80,9 +79,8 @@
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "hash-sum": "^1.0.2",
-    "html-minifier": "^3.5.10",
+    "html-minifier": "^3.5.11",
     "html-webpack-plugin": "^3.0.6",
-    "launch-editor": "^2.2.1",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
     "lru-cache": "^4.1.2",
@@ -131,7 +129,7 @@
     "eslint-plugin-html": "^4.0.2",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-node": "^6.0.0",
-    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-promise": "^3.7.0",
     "eslint-plugin-react": "^7.6.1",
     "eslint-plugin-standard": "^3.0.1",
     "express": "^4.16.2",
@@ -141,7 +139,7 @@
     "puppeteer": "^1.0.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
-    "sinon": "^4.3.0"
+    "sinon": "^4.4.5"
   },
   "collective": {
     "type": "opencollective",
