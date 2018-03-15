@@ -16,8 +16,7 @@ module.exports = function () {
     this.nuxt.__builder_hook = builder && ctr++
   })
 
-  // Note: Plugin is deprecated. Please use new hooks system.
-  this.nuxt.plugin('built', (builder) => {
+  this.nuxt.hook('build:done', (builder) => {
     this.nuxt.__builder_plugin = builder && ctr++
   })
 

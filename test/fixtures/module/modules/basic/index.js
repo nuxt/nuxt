@@ -1,9 +1,6 @@
 const path = require('path')
 
-module.exports = function basicModule(options, resolve) {
-  // Add  vendor (deprecated)
-  this.addVendor('lodash')
-
+module.exports = function basicModule(options) {
   // Add a plugin
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 
@@ -30,6 +27,4 @@ module.exports = function basicModule(options, resolve) {
   // Require same module twice
   this.requireModule('~/modules/empty/index.js')
   this.requireModule('~/modules/empty/index.js')
-
-  resolve()
 }
