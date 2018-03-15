@@ -27,14 +27,6 @@ test.serial('Init Nuxt.js', async t => {
   t.true(buildSpies.log.calledWithMatch('OPEN'))
 })
 
-test.serial('Deprecated: dev in build.extend()', async t => {
-  t.true(
-    buildSpies.warn.calledWithMatch(
-      'dev has been deprecated in build.extend(), please use isDev'
-    )
-  )
-})
-
 test.serial('Deprecated: nuxt.plugin()', async t => {
   t.true(nuxt.__builder_plugin)
 })
