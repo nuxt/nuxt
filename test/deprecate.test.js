@@ -31,14 +31,6 @@ test.serial('Deprecated: module.addVendor()', async t => {
   t.true(buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary'))
 })
 
-test.serial('Deprecated: module callback', async t => {
-  t.true(
-    buildSpies.warn.calledWithMatch(
-      'Supporting callbacks is deprecated and will be removed in next releases. Consider using async/await.'
-    )
-  )
-})
-
 // Close server and ask nuxt to stop listening to file changes
 test.after.always('Closing server and nuxt.js', async t => {
   await nuxt.close()
