@@ -137,7 +137,10 @@ test('/redirect', async t => {
 })
 
 test('/redirect -> check redirected source', async t => {
+  // there are no transition properties in jsdom, ignore the error log
+  await interceptError()
   const window = await nuxt.renderAndGetWindow(url('/redirect'))
+  release()
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>Index page</h1>'))
 })
