@@ -5,7 +5,7 @@ module.exports = function () {
   // overwrite nuxt.listen()
   this.nuxt.listen = (port, host) => new Promise((resolve) => server.listen(port || 3000, host || 'localhost', resolve))
   // close this server on 'close' event
-  this.nuxt.plugin('close', () => new Promise((resolve) => server.close(resolve)))
+  this.nuxt.hook('close', () => new Promise((resolve) => server.close(resolve)))
 
   // Add socket.io events
   let messages = []

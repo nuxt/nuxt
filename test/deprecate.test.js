@@ -27,10 +27,6 @@ test.serial('Init Nuxt.js', async t => {
   t.true(buildSpies.log.calledWithMatch('OPEN'))
 })
 
-test.serial('Deprecated: nuxt.plugin()', async t => {
-  t.true(nuxt.__builder_plugin)
-})
-
 test.serial('Deprecated: module.addVendor()', async t => {
   t.true(buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary'))
 })
@@ -41,11 +37,6 @@ test.serial('Deprecated: module callback', async t => {
       'Supporting callbacks is deprecated and will be removed in next releases. Consider using async/await.'
     )
   )
-})
-
-test.serial('Error: nuxt.plugin()', async t => {
-  const error = t.throws(() => nuxt.plugin('build:done', () => {}))
-  t.is(error.message, 'nuxt.plugin(\'build:done\',..) is not supported. Use new hooks system.')
 })
 
 // Close server and ask nuxt to stop listening to file changes
