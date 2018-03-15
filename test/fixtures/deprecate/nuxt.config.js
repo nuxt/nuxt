@@ -1,5 +1,5 @@
 module.exports = {
-  modules: ['~/modules/hooks'],
+  modules: ['~/modules/deprecated-apis'],
   build: {
     stats: false,
     extend(config, options) {
