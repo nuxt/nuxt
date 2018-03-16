@@ -1,7 +1,10 @@
-import test from 'ava'
 import { normalize } from 'path'
+
+import test from 'ava'
 import rp from 'request-promise-native'
+
 import { Nuxt, Builder } from '..'
+
 import { intercept } from './helpers/console'
 import { loadConfig } from './helpers/config'
 

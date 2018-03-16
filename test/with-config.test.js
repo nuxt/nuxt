@@ -1,8 +1,11 @@
-import test from 'ava'
 import { resolve } from 'path'
+
+import test from 'ava'
 import rp from 'request-promise-native'
+
 import { Nuxt, Builder } from '..'
 import styleLoader from '../lib/builder/webpack/style-loader'
+
 import { interceptLog, release } from './helpers/console'
 import { loadConfig } from './helpers/config'
 

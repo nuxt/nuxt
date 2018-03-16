@@ -1,6 +1,7 @@
+import http from 'http'
+
 import { Nuxt, Builder } from 'nuxt'
 import express from 'express'
-import http from 'http'
 import SocketIO from 'socket.io'
 
 const port = process.env.PORT || 3000

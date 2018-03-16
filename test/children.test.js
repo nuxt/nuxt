@@ -1,6 +1,9 @@
-import test from 'ava'
 import { resolve } from 'path'
+
+import test from 'ava'
+
 import { Nuxt, Builder } from '..'
+
 import { interceptLog } from './helpers/console'
 
 const port = 4013

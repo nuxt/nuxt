@@ -1,8 +1,11 @@
-import test from 'ava'
 import { resolve } from 'path'
 import fs from 'fs'
-import { Nuxt, Builder } from '..'
 import { promisify } from 'util'
+
+import test from 'ava'
+
+import { Nuxt, Builder } from '..'
+
 import { interceptLog } from './helpers/console'
 
 const readFile = promisify(fs.readFile)

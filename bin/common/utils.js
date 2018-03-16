@@ -1,6 +1,8 @@
-const { Utils } = require('../..')
+
 const { resolve } = require('path')
 const { existsSync } = require('fs')
+
+const { Utils } = require('../..')
 const { requireModule } = require('../../lib/common/module')
 
 const getRootDir = argv => resolve(argv._[0] || '.')

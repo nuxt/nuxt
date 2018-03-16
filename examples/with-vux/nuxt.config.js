@@ -1,5 +1,6 @@
-import vuxLoader from 'vux-loader'
 import path from 'path'
+
+import vuxLoader from 'vux-loader'
 
 export default {
   head: {

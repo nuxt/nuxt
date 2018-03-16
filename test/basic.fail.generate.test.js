@@ -1,6 +1,9 @@
-import test from 'ava'
 import { resolve } from 'path'
+
+import test from 'ava'
+
 import { Nuxt, Builder, Generator } from '..'
+
 import { intercept } from './helpers/console'
 
 test('Fail with routes() which throw an error', async t => {

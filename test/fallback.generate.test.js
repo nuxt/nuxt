@@ -1,12 +1,15 @@
-import test from 'ava'
-import { resolve } from 'path'
-import { existsSync } from 'fs'
 import http from 'http'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
+
+import test from 'ava'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-import { intercept, interceptLog } from './helpers/console'
+
 import { Nuxt, Builder, Generator, Options } from '..'
+
+import { intercept, interceptLog } from './helpers/console'
 import { loadConfig } from './helpers/config'
 
 const port = 4015
