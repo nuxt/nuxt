@@ -96,7 +96,6 @@
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^2.1.0",
     "postcss-url": "^7.3.0",
-    "pretty-error": "^2.1.1",
     "semver": "^5.5.0",
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.13.2",
