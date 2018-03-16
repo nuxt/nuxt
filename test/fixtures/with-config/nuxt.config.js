@@ -12,6 +12,10 @@ export default {
           name: 'about-bis',
           path: '/about-bis',
           component: '~/pages/about.vue'
+        },
+        {
+          path: '/redirect/about-bis',
+          redirect: '/about-bis'
         }
       ]
     }
