@@ -1,3 +1,3 @@
-module.exports = function basicModule(options, resolve) {
+export default function basicModule(options, resolve) {
   this.addVendor('lodash')
 }

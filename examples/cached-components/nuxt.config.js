@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   render: {
     bundleRenderer: {
       cache: require('lru-cache')({

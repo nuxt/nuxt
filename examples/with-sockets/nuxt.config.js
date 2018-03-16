@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     meta: [
       { charset: 'utf-8' },

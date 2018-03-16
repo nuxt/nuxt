@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   loading: {
     color: '#4FC08D',
     failedColor: '#bf5050',

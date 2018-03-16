@@ -1,7 +1,7 @@
 import test from 'ava'
-import { resolve } from 'path'
 import { Nuxt, Builder } from '..'
 import { interceptLog, release } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 let nuxt = null
 
@@ -17,9 +17,7 @@ const renderRoute = async _url => {
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  const rootDir = resolve(__dirname, 'fixtures/spa')
-  const config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
+  const config = loadConfig('spa')
 
   const logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(config)

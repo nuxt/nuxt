@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   mode: 'spa',
   dev: false,
   transition: false,

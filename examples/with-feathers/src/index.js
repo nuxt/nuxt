@@ -1,6 +1,5 @@
-'use strict'
+import app from './app'
 
-const app = require('./app')
 const port = app.get('port')
 
 process.on('nuxt:build:done', (err) => {

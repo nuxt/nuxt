@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   modules: [
     '@nuxtjs/axios',
     '@nuxtjs/proxy'

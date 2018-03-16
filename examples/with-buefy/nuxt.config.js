@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   /*
   ** Customize the progress bar color
   */

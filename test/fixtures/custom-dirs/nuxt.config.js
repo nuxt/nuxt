@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   css: [{ src: '~/custom-assets/app.css' }],
   dir: {
     assets: 'custom-assets',

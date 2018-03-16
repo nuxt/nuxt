@@ -1,3 +1,3 @@
-module.exports = {
+export default {
   css: ['~/assets/css/tailwind.css']
 }

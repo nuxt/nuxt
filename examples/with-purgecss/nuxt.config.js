@@ -1,6 +1,6 @@
-const path = require('path')
-const PurgecssPlugin = require('purgecss-webpack-plugin')
-const glob = require('glob-all')
+import path from 'path'
+import PurgecssPlugin from 'purgecss-webpack-plugin'
+import glob from 'glob-all'
 
 class TailwindExtractor {
   static extract(content) {
@@ -8,7 +8,7 @@ class TailwindExtractor {
   }
 }
 
-module.exports = {
+export default {
   build: {
     extractCSS: true,
     postcss: [

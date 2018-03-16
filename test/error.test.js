@@ -1,8 +1,8 @@
 import test from 'ava'
-import { resolve } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
 import { interceptLog, interceptError, release } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 const port = 4005
 const url = route => 'http://localhost:' + port + route
@@ -12,10 +12,7 @@ let logSpy
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  const rootDir = resolve(__dirname, 'fixtures/error')
-  const config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
-  config.dev = false
+  const config = loadConfig('error', { dev: false })
 
   logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(config)

@@ -1,7 +1,7 @@
-const vuxLoader = require('vux-loader')
-const path = require('path')
+import vuxLoader from 'vux-loader'
+import path from 'path'
 
-module.exports = {
+export default {
   head: {
     meta: [
       { charset: 'utf-8' },

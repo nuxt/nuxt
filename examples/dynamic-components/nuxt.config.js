@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     titleTemplate: 'Nuxt.js - Dynamic Components',
     meta: [

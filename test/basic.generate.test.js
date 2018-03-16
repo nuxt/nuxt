@@ -8,6 +8,7 @@ import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
 import { interceptLog, release } from './helpers/console'
 import { Nuxt, Builder, Generator } from '..'
+import { loadConfig } from './helpers/config'
 
 const port = 4002
 const url = route => 'http://localhost:' + port + route
@@ -19,10 +20,11 @@ let generator = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  let config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
-  config.buildDir = '.nuxt-generate'
-  config.dev = false
+  const config = loadConfig('basic', {
+    buildDir: '.nuxt-generate',
+    dev: false
+  })
+
   config.build.stats = false
 
   const logSpy = await interceptLog(async () => {

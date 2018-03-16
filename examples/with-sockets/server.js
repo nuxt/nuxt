@@ -1,9 +1,14 @@
-const { Nuxt, Builder } = require('nuxt')
-const app = require('express')()
-const server = require('http').createServer(app)
-const io = require('socket.io')(server)
+import { Nuxt, Builder } from 'nuxt'
+import express from 'express'
+import http from 'http'
+import SocketIO from 'socket.io'
+
 const port = process.env.PORT || 3000
 const isProd = process.env.NODE_ENV === 'production'
+
+const app = express()
+const server = http.createServer(app)
+const io = SocketIO(server)
 
 // We instantiate Nuxt.js with the options
 let config = require('./nuxt.config.js')

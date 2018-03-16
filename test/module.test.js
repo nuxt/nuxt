@@ -1,8 +1,9 @@
 import test from 'ava'
-import { resolve, normalize } from 'path'
+import { normalize } from 'path'
 import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
 import { intercept } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 const port = 4006
 const url = route => 'http://localhost:' + port + route
@@ -13,10 +14,8 @@ let buildSpies = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  const rootDir = resolve(__dirname, 'fixtures/module')
-  const config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
-  config.dev = false
+  const config = loadConfig('module', { dev: false })
+
   nuxt = new Nuxt(config)
   builder = new Builder(nuxt)
 

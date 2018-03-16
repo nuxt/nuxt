@@ -127,7 +127,7 @@ var colors = {
   'pink-lightest': '#ffebef'
 }
 
-module.exports = {
+export default {
 
   /*
   |-----------------------------------------------------------------------------
