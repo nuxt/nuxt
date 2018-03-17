@@ -15,7 +15,7 @@ const match = (regex, text) => (regex.exec(text) || [])[1]
 
 const url = route => 'http://localhost:' + port + route
 
-const isWindows = /^win/.test(process.platform)
+// const isWindows = /^win/.test(process.platform)
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
@@ -39,7 +39,7 @@ test.serial('Init Nuxt.js', async t => {
 const uniqueTest = async (t, url) => {
   let results = []
 
-  await Utils.parallel(range(20), async () => {
+  await Utils.parallel(range(5), async () => {
     let { html } = await nuxt.renderRoute(url)
     let foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))
@@ -88,16 +88,9 @@ test('unique responses with fetch', async t => {
 // == Stress Test ==
 // The idea of this test is to ensure there is no memory or data leak during SSR requests
 // Or pending promises/sockets and function calls.
-// Making 1K requests by default
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
-const stressTest = async (t, _url, concurrency = 10, steps = 100) => {
+const stressTest = async (t, _url, concurrency = 2, steps = 4) => {
   let statusCodes = {}
-
-  // appveyor memory limit!
-  if (isWindows) {
-    concurrency = 1
-    steps = 1
-  }
 
   await Utils.sequence(range(steps), async () => {
     await Utils.parallel(range(concurrency), async () => {
