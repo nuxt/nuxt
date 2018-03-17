@@ -22,7 +22,7 @@ test_script:
   - npm --version
   - yarn --version
   # run tests
-  - yarn test-appveyor
+  - yarn test
 
 # Don't actually build.
 build: off
