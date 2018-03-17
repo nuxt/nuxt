@@ -59,31 +59,31 @@ const uniqueTest = async (t, url) => {
   return results
 }
 
-test('unique responses with data()', async t => {
+test.serial('unique responses with data()', async t => {
   await uniqueTest(t, '/data')
 })
 
-test('unique responses with component', async t => {
+test.serial('unique responses with component', async t => {
   await uniqueTest(t, '/component')
 })
 
-test('unique responses with async components', async t => {
+test.serial('unique responses with async components', async t => {
   await uniqueTest(t, '/asyncComponent')
 })
 
-test('unique responses with asyncData()', async t => {
+test.serial('unique responses with asyncData()', async t => {
   await uniqueTest(t, '/asyncData')
 })
 
-test('unique responses with store initial state', async t => {
+test.serial('unique responses with store initial state', async t => {
   await uniqueTest(t, '/store')
 })
 
-test('unique responses with nuxtServerInit', async t => {
+test.serial('unique responses with nuxtServerInit', async t => {
   await uniqueTest(t, '/store?onServerInit=1')
 })
 
-test('unique responses with fetch', async t => {
+test.serial('unique responses with fetch', async t => {
   await uniqueTest(t, '/fetch')
 })
 
@@ -109,7 +109,7 @@ const stressTest = async (t, _url, concurrency = 2, steps = 4) => {
   t.is(statusCodes[200], concurrency * steps)
 }
 
-test('stress test with asyncData', async t => {
+test.serial('stress test with asyncData', async t => {
   await stressTest(t, '/asyncData')
 })
 
