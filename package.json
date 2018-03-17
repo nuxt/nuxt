@@ -45,7 +45,7 @@
     ]
   },
   "scripts": {
-    "test": "npm run lint && nyc ava --fail-fast -v -s -T 30000 test/ -- && nyc report --reporter=html",
+    "test": "npm run lint && nyc ava --fail-fast -v -s -T 60000 test/ -- && nyc report --reporter=html",
     "test-appveyor": "yarn test",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
