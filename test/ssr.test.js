@@ -41,7 +41,7 @@ test.serial('Init Nuxt.js', async t => {
 const uniqueTest = async (t, url) => {
   let results = []
 
-  await Utils.parallel(range(20), async () => {
+  await Utils.parallel(range(5), async () => {
     let { html } = await nuxt.renderRoute(url)
     let foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))

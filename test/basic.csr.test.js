@@ -10,6 +10,8 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 let page = null
 
+const waitFor = ms => new Promise(resolve => setTimeout(resolve, ms || 0))
+
 // Init nuxt.js and create server listening on localhost:4003
 test.serial('Init Nuxt.js', async t => {
   const options = {
@@ -46,6 +48,7 @@ test.serial('Start browser', async t => {
 
 test.serial('Open /', async t => {
   page = await browser.page(url('/'))
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'Index page')
 })
@@ -53,6 +56,7 @@ test.serial('Open /', async t => {
 test.serial('/stateless', async t => {
   const { hook } = await page.nuxt.navigate('/stateless', false)
   const loading = await page.nuxt.loadingData()
+  await waitFor(1000)
 
   t.is(loading.show, true)
   await hook
@@ -61,6 +65,7 @@ test.serial('/stateless', async t => {
 
 test.serial('/css', async t => {
   await page.nuxt.navigate('/css')
+  await waitFor(1000)
 
   t.is(await page.$text('.red'), 'This is red')
   t.is(
@@ -71,12 +76,14 @@ test.serial('/css', async t => {
 
 test.serial('/stateful', async t => {
   await page.nuxt.navigate('/stateful')
+  await waitFor(1000)
 
   t.is(await page.$text('p'), 'The answer is 42')
 })
 
 test.serial('/store', async t => {
   await page.nuxt.navigate('/store')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'Vuex Nested Modules')
   t.is(await page.$text('p'), '1')
@@ -88,6 +95,7 @@ test.serial('/head', async t => {
   )
   await page.nuxt.navigate('/head')
   const metas = await page.$$attr('meta', 'content')
+  await waitFor(1000)
 
   t.is(await msg, 'Body script!')
   t.is(await page.title(), 'My title - Nuxt.js')
@@ -97,30 +105,36 @@ test.serial('/head', async t => {
 
 test.serial('/async-data', async t => {
   await page.nuxt.navigate('/async-data')
+  await waitFor(1000)
 
   t.is(await page.$text('p'), 'Nuxt.js')
 })
 
 test.serial('/await-async-data', async t => {
   await page.nuxt.navigate('/await-async-data')
+  await waitFor(1000)
 
   t.is(await page.$text('p'), 'Await Nuxt.js')
 })
 
 test.serial('/callback-async-data', async t => {
   await page.nuxt.navigate('/callback-async-data')
+  await waitFor(1000)
 
   t.is(await page.$text('p'), 'Callback Nuxt.js')
 })
 
 test.serial('/users/1', async t => {
   await page.nuxt.navigate('/users/1')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'User: 1')
 })
 
 test.serial('/validate should display a 404', async t => {
   await page.nuxt.navigate('/validate')
+  await waitFor(1000)
+
   const error = await page.nuxt.errorData()
 
   t.is(error.statusCode, 404)
@@ -129,18 +143,21 @@ test.serial('/validate should display a 404', async t => {
 
 test.serial('/validate?valid=true', async t => {
   await page.nuxt.navigate('/validate?valid=true')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'I am valid')
 })
 
 test.serial('/redirect', async t => {
   await page.nuxt.navigate('/redirect')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
 test.serial('/error', async t => {
   await page.nuxt.navigate('/error')
+  await waitFor(1000)
 
   t.deepEqual(await page.nuxt.errorData(), { statusCode: 500 })
   t.is(await page.$text('.title'), 'Error mouahahah')
@@ -148,6 +165,7 @@ test.serial('/error', async t => {
 
 test.serial('/error2', async t => {
   await page.nuxt.navigate('/error2')
+  await waitFor(1000)
 
   t.is(await page.$text('.title'), 'Custom error')
   t.deepEqual(await page.nuxt.errorData(), { message: 'Custom error' })
@@ -155,6 +173,7 @@ test.serial('/error2', async t => {
 
 test.serial('/redirect-middleware', async t => {
   await page.nuxt.navigate('/redirect-middleware')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'Index page')
 })
@@ -162,7 +181,10 @@ test.serial('/redirect-middleware', async t => {
 test.serial('/redirect-external', async t => {
   // New page for redirecting to external link.
   const page = await browser.page(url('/'))
+
   await page.nuxt.navigate('/redirect-external', false)
+  await waitFor(1000)
+
   await page.waitForFunction(
     () => window.location.href === 'https://nuxtjs.org/'
   )
@@ -172,18 +194,21 @@ test.serial('/redirect-external', async t => {
 
 test.serial('/redirect-name', async t => {
   await page.nuxt.navigate('/redirect-name')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'My component!')
 })
 
 test.serial('/no-ssr', async t => {
   await page.nuxt.navigate('/no-ssr')
+  await waitFor(1000)
 
   t.is(await page.$text('h1'), 'Displayed only on client-side')
 })
 
 test.serial('/meta', async t => {
   await page.nuxt.navigate('/meta')
+  await waitFor(1000)
 
   const state = await page.nuxt.storeState()
   t.deepEqual(state.meta, [{ works: true }])
@@ -191,6 +216,7 @@ test.serial('/meta', async t => {
 
 test.serial('/fn-midd', async t => {
   await page.nuxt.navigate('/fn-midd')
+  await waitFor(1000)
 
   t.is(await page.$text('.title'), 'You need to ask the permission')
   t.deepEqual(await page.nuxt.errorData(), {
@@ -201,6 +227,7 @@ test.serial('/fn-midd', async t => {
 
 test.serial('/fn-midd?please=true', async t => {
   await page.nuxt.navigate('/fn-midd?please=true')
+  await waitFor(1000)
 
   const h1 = await page.$text('h1')
   t.true(h1.includes('Date:'))
@@ -208,6 +235,7 @@ test.serial('/fn-midd?please=true', async t => {
 
 test.serial('/router-guard', async t => {
   await page.nuxt.navigate('/router-guard')
+  await waitFor(1000)
 
   const p = await page.$text('p')
   t.is(p, 'Nuxt.js')
