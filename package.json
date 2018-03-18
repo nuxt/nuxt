@@ -47,6 +47,7 @@
     "setupTestFrameworkScriptFile": "./test/helpers/setup"
   },
   "scripts": {
+    "build-fixtures": "./scripts/build-fixtures",
     "test": "npm run lint && jest",
     "test-appveyor": "yarn test",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",

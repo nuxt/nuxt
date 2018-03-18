@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+process.env.NODE_ENV = 'test'
+
+const { Builder, Nuxt } = require('..')
+const { requireModule } = require('../lib/common/module')
+const path = require('path')
+const fs = require('fs')
+const ORA = require('ora')
+
+const fixtures = [
+  // csr, dev, generate, fail generate, fallback generate, ssr, ssr csp, spa
+  'basic',
+
+  'children',
+  'custom-dirs',
+  'debug',
+  'deprecate',
+  'dynamic-routes',
+  'empty',
+  'error',
+  'module',
+  'ssr',
+  'with-config'
+]
+
+const spinner = new ORA()
+
+async function buildFixture(name) {
+  spinner.info('Loading config for fixture ' + name)
+
+  const rootDir = path.resolve(__dirname, '../test/fixtures', name)
+  const configFile = path.resolve(rootDir, 'nuxt.config.js')
+  const config = fs.existsSync(configFile) ? requireModule(configFile) : {}
+
+  config.rootDir = rootDir
+
+  spinner.start('Building fixture ' + name)
+
+  const nuxt = new Nuxt(config)
+  const builder = new Builder(nuxt)
+
+  await builder.build()
+
+  spinner.succeed('Built fixture ' + name)
+
+  await nuxt.close()
+}
+
+async function run() {
+  for (let fixture of fixtures) {
+    await buildFixture(fixture)
+  }
+}
+
+run()
+  .catch(console.error) // eslint-disable-line no-console
+  .then(() => process.exit(0))
