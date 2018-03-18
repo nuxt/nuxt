@@ -10,6 +10,11 @@ export default {
     interval: 200,
     subFolders: true
   },
+  head: {
+    titleTemplate: (titleChunk) => {
+      return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+    }
+  },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
     ready(nuxt) {

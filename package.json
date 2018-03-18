@@ -43,7 +43,8 @@
   "jest": {
     "testEnvironment": "node",
     "coverageDirectory": "./coverage/",
-    "collectCoverage": false
+    "collectCoverage": false,
+    "setupTestFrameworkScriptFile": "./test/helpers/setup"
   },
   "scripts": {
     "test": "npm run lint && jest",

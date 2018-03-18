@@ -1,312 +1,285 @@
-import { resolve } from 'path'
-
-import test from 'ava'
 import rp from 'request-promise-native'
 
 import { Nuxt, Builder } from '..'
 
-import { interceptLog, interceptError, release } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 const port = 4004
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
-// Init nuxt.js and create server listening on localhost:4004
-test.serial('Init Nuxt.js', async t => {
-  const options = {
-    rootDir: resolve(__dirname, 'fixtures/basic'),
-    buildDir: '.nuxt-ssr',
-    dev: false,
-    head: {
-      titleTemplate(titleChunk) {
-        return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+describe('basic ssr', () => {
+  // Init nuxt.js and create server listening on localhost:4004
+  beforeAll(async () => {
+    const options = loadConfig('basic', {
+      buildDir: '.nuxt-ssr',
+      dev: false,
+      build: {
+        stats: false
       }
-    },
-    build: {
-      stats: false
-    }
-  }
+    })
 
-  const logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(options)
-    const builder = await new Builder(nuxt)
+    const builder = new Builder(nuxt)
     await builder.build()
     await nuxt.listen(port, '0.0.0.0')
+  }, 30000)
+
+  test('/stateless', async () => {
+    const { html } = await nuxt.renderRoute('/stateless')
+    expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
-  t.true(logSpy.calledWithMatch('DONE'))
-  t.true(logSpy.calledWithMatch('OPEN'))
-})
+  /*
+  ** Example of testing via dom checking
+  */
+  test('/css', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/css'))
 
-test('/stateless', async t => {
-  const { html } = await nuxt.renderRoute('/stateless')
-  t.true(html.includes('<h1>My component!</h1>'))
-})
+    const headHtml = window.document.head.innerHTML
+    expect(headHtml.includes('color:red')).toBe(true)
 
-/*
-** Example of testing via dom checking
-*/
-test('/css', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/css'))
-
-  const headHtml = window.document.head.innerHTML
-  t.true(headHtml.includes('color:red'))
-
-  const element = window.document.querySelector('.red')
-  t.not(element, null)
-  t.is(element.textContent, 'This is red')
-  t.is(element.className, 'red')
-  // t.is(window.getComputedStyle(element).color, 'red')
-})
-
-test('/postcss', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/css'))
-
-  const headHtml = window.document.head.innerHTML
-  t.true(headHtml.includes('background-color:blue'))
-
-  // const element = window.document.querySelector('div.red')
-  // t.is(window.getComputedStyle(element)['background-color'], 'blue')
-})
-
-test('/stateful', async t => {
-  const { html } = await nuxt.renderRoute('/stateful')
-  t.true(html.includes('<div><p>The answer is 42</p></div>'))
-})
-
-test('/store', async t => {
-  const { html } = await nuxt.renderRoute('/store')
-  t.true(html.includes('<h1>Vuex Nested Modules</h1>'))
-  t.true(html.includes('<p>1</p>'))
-})
-
-test.serial('/head', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/head'), {
-    virtualConsole: false
+    const element = window.document.querySelector('.red')
+    expect(element).not.toBe(null)
+    expect(element.textContent).toBe('This is red')
+    expect(element.className).toBe('red')
+    // t.is(window.getComputedStyle(element).color, 'red')
   })
-  t.is(window.document.title, 'My title - Nuxt.js')
 
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<div><h1>I can haz meta tags</h1></div>'))
-  t.true(
-    html.includes('<script data-n-head="true" src="/body.js" data-body="true">')
-  )
+  test('/postcss', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/css'))
 
-  const metas = window.document.getElementsByTagName('meta')
-  t.is(metas[0].getAttribute('content'), 'my meta')
-  release()
+    const headHtml = window.document.head.innerHTML
+    expect(headHtml.includes('background-color:blue')).toBe(true)
 
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Body script!')
-})
-
-test('/async-data', async t => {
-  const { html } = await nuxt.renderRoute('/async-data')
-  t.true(html.includes('<p>Nuxt.js</p>'))
-})
-
-test('/await-async-data', async t => {
-  const { html } = await nuxt.renderRoute('/await-async-data')
-  t.true(html.includes('<p>Await Nuxt.js</p>'))
-})
-
-test('/callback-async-data', async t => {
-  const { html } = await nuxt.renderRoute('/callback-async-data')
-  t.true(html.includes('<p>Callback Nuxt.js</p>'))
-})
-
-test('/users/1', async t => {
-  const { html } = await nuxt.renderRoute('/users/1')
-  t.true(html.includes('<h1>User: 1</h1>'))
-})
-
-test('/validate should display a 404', async t => {
-  const { html } = await nuxt.renderRoute('/validate')
-  t.true(html.includes('This page could not be found'))
-})
-
-test('/validate?valid=true', async t => {
-  const { html } = await nuxt.renderRoute('/validate?valid=true')
-  t.true(html.includes('<h1>I am valid</h1>'))
-})
-
-test('/redirect', async t => {
-  const { html, redirected } = await nuxt.renderRoute('/redirect')
-  t.true(html.includes('<div id="__nuxt"></div>'))
-  t.true(redirected.path === '/')
-  t.true(redirected.status === 302)
-})
-
-test('/redirect -> check redirected source', async t => {
-  // there are no transition properties in jsdom, ignore the error log
-  await interceptError()
-  const window = await nuxt.renderAndGetWindow(url('/redirect'))
-  release()
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>Index page</h1>'))
-})
-
-test('/redirect -> external link', async t => {
-  let _headers, _status
-  const { html } = await nuxt.renderRoute('/redirect-external', {
-    res: {
-      writeHead(status, headers) {
-        _status = status
-        _headers = headers
-      },
-      end() {}
-    }
+    // const element = window.document.querySelector('div.red')
+    // t.is(window.getComputedStyle(element)['background-color'], 'blue')
   })
-  t.is(_status, 302)
-  t.is(_headers.Location, 'https://nuxtjs.org')
-  t.true(html.includes('<div data-server-rendered="true"></div>'))
-})
 
-test('/special-state -> check window.__NUXT__.test = true', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/special-state'))
-  t.is(window.document.title, 'Nuxt.js')
-  t.is(window.__NUXT__.test, true)
-})
+  test('/stateful', async () => {
+    const { html } = await nuxt.renderRoute('/stateful')
+    expect(html.includes('<div><p>The answer is 42</p></div>')).toBe(true)
+  })
 
-test('/error', async t => {
-  const err = await t.throws(nuxt.renderRoute('/error', { req: {}, res: {} }))
-  t.true(err.message.includes('Error mouahahah'))
-})
+  test('/store', async () => {
+    const { html } = await nuxt.renderRoute('/store')
+    expect(html.includes('<h1>Vuex Nested Modules</h1>')).toBe(true)
+    expect(html.includes('<p>1</p>')).toBe(true)
+  })
 
-test.serial('/error status code', async t => {
-  const errorSpy = await interceptError()
-  const err = await t.throws(rp(url('/error')))
-  t.true(err.statusCode === 500)
-  t.true(
-    err.response.body.includes(
-      'An error occurred in the application and your page could not be served'
-    )
-  )
-  release()
-  t.true(errorSpy.calledOnce)
-  t.true(errorSpy.args[0][0].message.includes('Error mouahahah'))
-})
+  test('/head', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/head'), {
+      virtualConsole: false
+    })
+    expect(window.document.title).toBe('My title - Nuxt.js')
 
-test('/error2', async t => {
-  const { html, error } = await nuxt.renderRoute('/error2')
-  t.true(html.includes('Custom error'))
-  t.true(error.message.includes('Custom error'))
-  t.true(error.statusCode === undefined)
-})
+    const html = window.document.body.innerHTML
+    expect(html.includes('<div><h1>I can haz meta tags</h1></div>')).toBe(true)
+    expect(
+      html.includes('<script data-n-head="true" src="/body.js" data-body="true">')
+    ).toBe(true)
 
-test('/error2 status code', async t => {
-  const error = await t.throws(rp(url('/error2')))
-  t.is(error.statusCode, 500)
-  t.true(error.response.body.includes('Custom error'))
-})
+    const metas = window.document.getElementsByTagName('meta')
+    expect(metas[0].getAttribute('content')).toBe('my meta')
+    // release()
 
-test.serial('/error-midd', async t => {
-  const errorSpy = await interceptError()
-  const err = await t.throws(rp(url('/error-midd')))
-  t.is(err.statusCode, 505)
-  t.true(err.response.body.includes('Middleware Error'))
-  release()
-  // Don't display error since redirect returns a noopApp
-  t.true(errorSpy.notCalled)
-})
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Body script!')
+  })
 
-test.serial('/redirect-middleware', async t => {
-  const errorSpy = await interceptError()
-  await rp(url('/redirect-middleware')) // Should not console.error
-  release()
-  // Don't display error since redirect returns a noopApp
-  t.true(errorSpy.notCalled)
-})
+  test('/async-data', async () => {
+    const { html } = await nuxt.renderRoute('/async-data')
+    expect(html.includes('<p>Nuxt.js</p>')).toBe(true)
+  })
 
-test('/redirect-name', async t => {
-  const { html, redirected } = await nuxt.renderRoute('/redirect-name')
-  t.true(html.includes('<div id="__nuxt"></div>'))
-  t.true(redirected.path === '/stateless')
-  t.true(redirected.status === 302)
-})
+  test('/await-async-data', async () => {
+    const { html } = await nuxt.renderRoute('/await-async-data')
+    expect(html.includes('<p>Await Nuxt.js</p>')).toBe(true)
+  })
 
-test('/no-ssr', async t => {
-  const { html } = await nuxt.renderRoute('/no-ssr')
-  t.true(
-    html.includes(
+  test('/callback-async-data', async () => {
+    const { html } = await nuxt.renderRoute('/callback-async-data')
+    expect(html.includes('<p>Callback Nuxt.js</p>')).toBe(true)
+  })
+
+  test('/users/1', async () => {
+    const { html } = await nuxt.renderRoute('/users/1')
+    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+  })
+
+  test('/validate should display a 404', async () => {
+    const { html } = await nuxt.renderRoute('/validate')
+    expect(html.includes('This page could not be found')).toBe(true)
+  })
+
+  test('/validate?valid=true', async () => {
+    const { html } = await nuxt.renderRoute('/validate?valid=true')
+    expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/redirect', async () => {
+    const { html, redirected } = await nuxt.renderRoute('/redirect')
+    expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
+    expect(redirected.path === '/').toBe(true)
+    expect(redirected.status === 302).toBe(true)
+  })
+
+  test('/redirect -> check redirected source', async () => {
+    // there are no transition properties in jsdom, ignore the error log
+    // await interceptError()
+    const window = await nuxt.renderAndGetWindow(url('/redirect'))
+    // release()
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>Index page</h1>')).toBe(true)
+  })
+
+  test('/redirect -> external link', async () => {
+    let _headers, _status
+    const { html } = await nuxt.renderRoute('/redirect-external', {
+      res: {
+        writeHead(status, headers) {
+          _status = status
+          _headers = headers
+        },
+        end() { }
+      }
+    })
+    expect(_status).toBe(302)
+    expect(_headers.Location).toBe('https://nuxtjs.org')
+    expect(html.includes('<div data-server-rendered="true"></div>')).toBe(true)
+  })
+
+  test('/special-state -> check window.__NUXT__.test = true', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/special-state'))
+    expect(window.document.title).toBe('Nuxt.js')
+    expect(window.__NUXT__.test).toBe(true)
+  })
+
+  test('/error', async () => {
+    await expect(nuxt.renderRoute('/error', { req: {}, res: {} }))
+      .rejects.toThrow('Error mouahahah')
+  })
+
+  test('/error status code', async () => {
+    // const errorSpy = await interceptError()
+    await expect(rp(url('/error'))).rejects.toMatchObject({
+      statusCode: 500
+    })
+    // release()
+    // expect(errorSpy.calledOnce).toBe(true)
+    // expect(errorSpy.args[0][0].message.includes('Error mouahahah')).toBe(true)
+  })
+
+  test('/error2', async () => {
+    const { html, error } = await nuxt.renderRoute('/error2')
+    expect(html.includes('Custom error')).toBe(true)
+    expect(error.message.includes('Custom error')).toBe(true)
+    expect(error.statusCode === undefined).toBe(true)
+  })
+
+  test('/error2 status code', async () => {
+    await expect(rp(url('/error2'))).rejects.toMatchObject({
+      statusCode: 500,
+      message: expect.stringContaining('Custom error')
+    })
+  })
+
+  test('/error-midd', async () => {
+    // const errorSpy = await interceptError()
+    await expect(rp(url('/error-midd')))
+      .rejects.toMatchObject({ statusCode: 505 })
+    // release()
+    // Don't display error since redirect returns a noopApp
+    // expect(errorSpy.notCalled).toBe(true)
+  })
+
+  test('/redirect-middleware', async () => {
+    // const errorSpy = await interceptError()
+    await rp(url('/redirect-middleware')) // Should not console.error
+    // release()
+    // Don't display error since redirect returns a noopApp
+    // expect(errorSpy.notCalled).toBe(true)
+  })
+
+  test('/redirect-name', async () => {
+    const { html, redirected } = await nuxt.renderRoute('/redirect-name')
+    expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
+    expect(redirected.path === '/stateless').toBe(true)
+    expect(redirected.status === 302).toBe(true)
+  })
+
+  test('/no-ssr', async () => {
+    const { html } = await nuxt.renderRoute('/no-ssr')
+    expect(html.includes(
       '<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'
-    )
-  )
-})
-
-test('/no-ssr (client-side)', async t => {
-  const window = await nuxt.renderAndGetWindow(url('/no-ssr'))
-  const html = window.document.body.innerHTML
-  t.true(html.includes('Displayed only on client-side</h1>'))
-})
-
-test('ETag Header', async t => {
-  const { headers: { etag } } = await rp(url('/stateless'), {
-    resolveWithFullResponse: true
+    )).toBe(true)
   })
-  // Verify functionality
-  const error = await t.throws(
-    rp(url('/stateless'), { headers: { 'If-None-Match': etag } })
-  )
-  t.is(error.statusCode, 304)
-})
 
-test('/_nuxt/server-bundle.json should return 404', async t => {
-  const err = await t.throws(
-    rp(url('/_nuxt/server-bundle.json'), { resolveWithFullResponse: true })
-  )
-  t.is(err.statusCode, 404)
-})
+  test('/no-ssr (client-side)', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/no-ssr'))
+    const html = window.document.body.innerHTML
+    expect(html.includes('Displayed only on client-side</h1>')).toBe(true)
+  })
 
-test('/_nuxt/ should return 404', async t => {
-  const err = await t.throws(
-    rp(url('/_nuxt/'), { resolveWithFullResponse: true })
-  )
-  t.is(err.statusCode, 404)
-})
+  test('ETag Header', async () => {
+    const { headers: { etag } } = await rp(url('/stateless'), {
+      resolveWithFullResponse: true
+    })
+    // Verify functionality
+    await expect(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
+      .rejects.toMatchObject({ statusCode: 304 })
+  })
 
-test('/meta', async t => {
-  const { html } = await nuxt.renderRoute('/meta')
-  t.true(html.includes('"meta":[{"works":true}]'))
-})
+  test('/_nuxt/server-bundle.json should return 404', async () => {
+    await expect(rp(url('/_nuxt/server-bundle.json')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
 
-test('/fn-midd', async t => {
-  const err = await t.throws(
-    rp(url('/fn-midd'), { resolveWithFullResponse: true })
-  )
-  t.is(err.statusCode, 403)
-  t.true(err.response.body.includes('You need to ask the permission'))
-})
+  test('/_nuxt/ should return 404', async () => {
+    await expect(rp(url('/_nuxt/')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
 
-test('/fn-midd?please=true', async t => {
-  const { html } = await nuxt.renderRoute('/fn-midd?please=true')
-  t.true(html.includes('<h1>Date:'))
-})
+  test('/meta', async () => {
+    const { html } = await nuxt.renderRoute('/meta')
+    expect(html.includes('"meta":[{"works":true}]')).toBe(true)
+  })
 
-test('/router-guard', async t => {
-  const { html } = await nuxt.renderRoute('/router-guard')
-  t.true(html.includes('<p>Nuxt.js</p>'))
-  t.false(html.includes('Router Guard'))
-})
+  test('/fn-midd', async () => {
+    await expect(rp(url('/fn-midd')))
+      .rejects.toMatchObject({ statusCode: 403 })
+  })
 
-test('/jsx', async t => {
-  const { html } = await nuxt.renderRoute('/jsx')
-  t.true(html.includes('<h1>JSX Page</h1>'))
-})
+  test('/fn-midd?please=true', async () => {
+    const { html } = await nuxt.renderRoute('/fn-midd?please=true')
+    expect(html.includes('<h1>Date:')).toBe(true)
+  })
 
-test('/jsx-link', async t => {
-  const { html } = await nuxt.renderRoute('/jsx-link')
-  t.true(html.includes('<h1>JSX Link Page</h1>'))
-})
+  test('/router-guard', async () => {
+    const { html } = await nuxt.renderRoute('/router-guard')
+    expect(html.includes('<p>Nuxt.js</p>')).toBe(true)
+    expect(html.includes('Router Guard')).toBe(false)
+  })
 
-test('/js-link', async t => {
-  const { html } = await nuxt.renderRoute('/js-link')
-  t.true(html.includes('<h1>vue file is first-class</h1>'))
-})
+  test('/jsx', async () => {
+    const { html } = await nuxt.renderRoute('/jsx')
+    expect(html.includes('<h1>JSX Page</h1>')).toBe(true)
+  })
 
-// Close server and ask nuxt to stop listening to file changes
-test.after.always('Closing server and nuxt.js', async t => {
-  await nuxt.close()
+  test('/jsx-link', async () => {
+    const { html } = await nuxt.renderRoute('/jsx-link')
+    expect(html.includes('<h1>JSX Link Page</h1>')).toBe(true)
+  })
+
+  test('/js-link', async () => {
+    const { html } = await nuxt.renderRoute('/js-link')
+    expect(html.includes('<h1>vue file is first-class</h1>')).toBe(true)
+  })
+
+  // Close server and ask nuxt to stop listening to file changes
+  test('Closing server and nuxt.js', async () => {
+    await nuxt.close()
+  })
 })

@@ -1,8 +1,6 @@
-import test from 'ava'
 import { Nuxt, Builder, Utils } from '..'
 import { uniq } from 'lodash'
 import rp from 'request-promise-native'
-import { interceptLog } from './helpers/console'
 import { loadConfig } from './helpers/config'
 
 const port = 4008
@@ -17,101 +15,98 @@ const url = route => 'http://localhost:' + port + route
 
 // const isWindows = /^win/.test(process.platform)
 
-// Init nuxt.js and create server listening on localhost:4000
-test.serial('Init Nuxt.js', async t => {
-  const config = loadConfig('ssr')
+describe('ssr', () => {
+  // Init nuxt.js and create server listening on localhost:4000
+  beforeAll(async () => {
+    const config = loadConfig('ssr')
 
-  const logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    new Builder(nuxt).build()
     await nuxt.listen(port, 'localhost')
-  })
+  }, 30000)
 
-  t.true(logSpy.calledWithMatch('DONE'))
-  t.true(logSpy.calledWithMatch('OPEN'))
-})
+  // == Uniq Test ==
+  // The idea behind is pages using a shared nextId() which returns an incrementing id
+  // So all responses should strictly be different and length of unique responses should equal to responses
+  // We strictly compare <foorbar>{id}</foorbar> section
+  // Because other response parts such as window.__NUXT may be different resulting false positive passes.
+  const uniqueTest = async (t, url) => {
+    let results = []
 
-// == Uniq Test ==
-// The idea behind is pages using a shared nextId() which returns an incrementing id
-// So all responses should strictly be different and length of unique responses should equal to responses
-// We strictly compare <foorbar>{id}</foorbar> section
-// Because other response parts such as window.__NUXT may be different resulting false positive passes.
-const uniqueTest = async (t, url) => {
-  let results = []
+    await Utils.parallel(range(5), async () => {
+      let { html } = await nuxt.renderRoute(url)
+      let foobar = match(FOOBAR_REGEX, html)
+      results.push(parseInt(foobar))
+    })
 
-  await Utils.parallel(range(5), async () => {
-    let { html } = await nuxt.renderRoute(url)
-    let foobar = match(FOOBAR_REGEX, html)
-    results.push(parseInt(foobar))
-  })
+    let isUnique = uniq(results).length === results.length
 
-  let isUnique = uniq(results).length === results.length
+    if (!isUnique) {
+      /* eslint-disable no-console */
+      console.log(url + '\n' + results.join(', ') + '\n')
+    }
 
-  if (!isUnique) {
-    /* eslint-disable no-console */
-    console.log(url + '\n' + results.join(', ') + '\n')
+    expect(isUnique).toBe(true)
+
+    return results
   }
 
-  t.true(isUnique)
-
-  return results
-}
-
-test.serial('unique responses with data()', async t => {
-  await uniqueTest(t, '/data')
-})
-
-test.serial('unique responses with component', async t => {
-  await uniqueTest(t, '/component')
-})
-
-test.serial('unique responses with async components', async t => {
-  await uniqueTest(t, '/asyncComponent')
-})
-
-test.serial('unique responses with asyncData()', async t => {
-  await uniqueTest(t, '/asyncData')
-})
-
-test.serial('unique responses with store initial state', async t => {
-  await uniqueTest(t, '/store')
-})
-
-test.serial('unique responses with nuxtServerInit', async t => {
-  await uniqueTest(t, '/store?onServerInit=1')
-})
-
-test.serial('unique responses with fetch', async t => {
-  await uniqueTest(t, '/fetch')
-})
-
-// == Stress Test ==
-// The idea of this test is to ensure there is no memory or data leak during SSR requests
-// Or pending promises/sockets and function calls.
-// Related issue: https://github.com/nuxt/nuxt.js/issues/1354
-const stressTest = async (t, _url, concurrency = 2, steps = 4) => {
-  let statusCodes = {}
-
-  await Utils.sequence(range(steps), async () => {
-    await Utils.parallel(range(concurrency), async () => {
-      let response = await rp(url(_url), { resolveWithFullResponse: true })
-      // Status Code
-      let code = response.statusCode
-      if (!statusCodes[code]) {
-        statusCodes[code] = 0
-      }
-      statusCodes[code]++
-    })
+  test('unique responses with data()', async () => {
+    await uniqueTest('/data')
   })
 
-  t.is(statusCodes[200], concurrency * steps)
-}
+  test('unique responses with component', async () => {
+    await uniqueTest('/component')
+  })
 
-test.serial('stress test with asyncData', async t => {
-  await stressTest(t, '/asyncData')
-})
+  test('unique responses with async components', async () => {
+    await uniqueTest('/asyncComponent')
+  })
 
-// Close server and ask nuxt to stop listening to file changes
-test.after.always('Closing server and nuxt.js', async t => {
-  await nuxt.close()
+  test('unique responses with asyncData()', async () => {
+    await uniqueTest('/asyncData')
+  })
+
+  test('unique responses with store initial state', async () => {
+    await uniqueTest('/store')
+  })
+
+  test('unique responses with nuxtServerInit', async () => {
+    await uniqueTest('/store?onServerInit=1')
+  })
+
+  test('unique responses with fetch', async () => {
+    await uniqueTest('/fetch')
+  })
+
+  // == Stress Test ==
+  // The idea of this test is to ensure there is no memory or data leak during SSR requests
+  // Or pending promises/sockets and function calls.
+  // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
+  const stressTest = async (t, _url, concurrency = 2, steps = 4) => {
+    let statusCodes = {}
+
+    await Utils.sequence(range(steps), async () => {
+      await Utils.parallel(range(concurrency), async () => {
+        let response = await rp(url(_url), { resolveWithFullResponse: true })
+        // Status Code
+        let code = response.statusCode
+        if (!statusCodes[code]) {
+          statusCodes[code] = 0
+        }
+        statusCodes[code]++
+      })
+    })
+
+    expect(statusCodes[200]).toBe(concurrency * steps)
+  }
+
+  test('stress test with asyncData', async () => {
+    await stressTest('/asyncData')
+  })
+
+  // Close server and ask nuxt to stop listening to file changes
+  test('Closing server and nuxt.js', async () => {
+    await nuxt.close()
+  })
 })

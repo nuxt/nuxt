@@ -1,12 +1,10 @@
 import { resolve } from 'path'
 
-import test from 'ava'
 import rp from 'request-promise-native'
 
 import { Nuxt, Builder } from '..'
 import styleLoader from '../lib/builder/webpack/style-loader'
 
-import { interceptLog, release } from './helpers/console'
 import { loadConfig } from './helpers/config'
 
 const port = 4007
@@ -15,210 +13,205 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 let builder = null
 
-// Init nuxt.js and create server listening on localhost:4000
-test.before('Init Nuxt.js', async t => {
-  const config = loadConfig('with-config', {
-    dev: false
-  })
+describe('with-config', () => {
+  // Init nuxt.js and create server listening on localhost:4000
+  beforeAll(async () => {
+    const config = loadConfig('with-config', {
+      dev: false
+    })
 
-  const logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(config)
     builder = new Builder(nuxt)
     await builder.build()
     await nuxt.listen(port, 'localhost')
+  }, 30000)
+
+  test('/', async () => {
+    // const logSpy = await interceptLog()
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
+    // release()
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
   })
 
-  t.true(logSpy.calledWithMatch('DONE'))
-  t.true(logSpy.calledWithMatch('OPEN'))
-})
+  test('/ (global styles inlined)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('.global-css-selector')).toBe(true)
+  })
 
-test.serial('/', async t => {
-  const logSpy = await interceptLog()
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('<h1>I have custom configurations</h1>'))
-  release()
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-})
-
-test('/ (global styles inlined)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('.global-css-selector'))
-})
-
-test.skip('/ (preload fonts)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(
-    html.includes(
+  test.skip('/ (preload fonts)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes(
       '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
-    )
-  )
-})
-
-test('/ (custom app.html)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('<p>Made by Nuxt.js team</p>'))
-})
-
-test('/ (custom build.publicPath)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('<script src="/test/orion/'))
-})
-
-test('/ (custom postcss.config.js)', async t => {
-  const { html } = await nuxt.renderRoute('/')
-  t.true(html.includes('::-webkit-input-placeholder'))
-})
-
-test.serial('/test/ (router base)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/'))
-
-  const html = window.document.body.innerHTML
-  t.is(window.__NUXT__.layout, 'default')
-  t.true(html.includes('<h1>Default layout</h1>'))
-  t.true(html.includes('<h1>I have custom configurations</h1>'))
-  release()
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-})
-
-test.serial('/test/about (custom layout)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/about'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.is(window.__NUXT__.layout, 'custom')
-  t.true(html.includes('<h1>Custom layout</h1>'))
-  t.true(html.includes('<h1>About page</h1>'))
-})
-
-test.serial('/test/desktop (custom layout in desktop folder)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.is(window.__NUXT__.layout, 'desktop/default')
-  t.true(html.includes('<h1>Default desktop layout</h1>'))
-  t.true(html.includes('<h1>Desktop page</h1>'))
-})
-
-test.serial('/test/mobile (custom layout in mobile folder)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.is(window.__NUXT__.layout, 'mobile/default')
-  t.true(html.includes('<h1>Default mobile layout</h1>'))
-  t.true(html.includes('<h1>Mobile page</h1>'))
-})
-
-test.serial('/test/env', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/env'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>Custom env layout</h1>'))
-  t.true(html.includes('"bool": true'))
-  t.true(html.includes('"num": 23'))
-  t.true(html.includes('"string": "Nuxt.js"'))
-  t.true(html.includes('"bool": false'))
-  t.true(html.includes('"string": "ok"'))
-  t.true(html.includes('"num2": 8.23'))
-  t.true(html.includes('"obj": {'))
-})
-
-test.serial('/test/error', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/error'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.true(html.includes('Error page'))
-})
-
-test.serial('/test/user-agent', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<pre>Mozilla'))
-})
-
-test.serial('/test/about-bis (added with extendRoutes)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>Custom layout</h1>'))
-  t.true(html.includes('<h1>About page</h1>'))
-})
-
-test.serial('/test/redirect/about-bis (redirect with extendRoutes)', async t => {
-  const logSpy = await interceptLog()
-  const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
-  t.true(logSpy.calledOnce)
-  t.is(logSpy.args[0][0], 'Test plugin!')
-  release()
-
-  const windowHref = window.location.href
-  t.true(windowHref.includes('/test/about-bis'))
-
-  const html = window.document.body.innerHTML
-  t.true(html.includes('<h1>Custom layout</h1>'))
-  t.true(html.includes('<h1>About page</h1>'))
-})
-
-test('Check stats.json generated by build.analyze', t => {
-  const stats = require(resolve(
-    __dirname,
-    'fixtures/with-config/.nuxt/dist/stats.json'
-  ))
-  t.is(stats.assets.length > 0, true)
-})
-
-test('Check /test/test.txt with custom serve-static options', async t => {
-  const { headers } = await rp(url('/test/test.txt'), {
-    resolveWithFullResponse: true
+    )).toBe(true)
   })
-  t.is(headers['cache-control'], 'public, max-age=31536000')
-})
 
-test('Check /test.txt should return 404', async t => {
-  const err = await t.throws(rp(url('/test.txt')))
-  t.is(err.response.statusCode, 404)
-})
-
-test('Check build.styleResources for style-resources-loader', async t => {
-  const loaders = styleLoader.call(builder, 'scss')
-  const loader = loaders.find(l => l.loader === 'style-resources-loader')
-  t.is(typeof loader, 'object')
-  t.deepEqual(loader.options, {
-    patterns: ['~/assets/pre-process.scss']
+  test('/ (custom app.html)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('<p>Made by Nuxt.js team</p>')).toBe(true)
   })
-})
 
-// Close server and ask nuxt to stop listening to file changes
-test.after.always('Closing server and nuxt.js', async t => {
-  await nuxt.close()
+  test('/ (custom build.publicPath)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('<script src="/test/orion/')).toBe(true)
+  })
+
+  test('/ (custom postcss.config.js)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('::-webkit-input-placeholder')).toBe(true)
+  })
+
+  test('/test/ (router base)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/'))
+
+    const html = window.document.body.innerHTML
+    expect(window.__NUXT__.layout).toBe('default')
+    expect(html.includes('<h1>Default layout</h1>')).toBe(true)
+    expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
+    // release()
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+  })
+
+  test('/test/about (custom layout)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/about'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(window.__NUXT__.layout).toBe('custom')
+    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
+    expect(html.includes('<h1>About page</h1>')).toBe(true)
+  })
+
+  test('/test/desktop (custom layout in desktop folder)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(window.__NUXT__.layout).toBe('desktop/default')
+    expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
+    expect(html.includes('<h1>Desktop page</h1>')).toBe(true)
+  })
+
+  test('/test/mobile (custom layout in mobile folder)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(window.__NUXT__.layout).toBe('mobile/default')
+    expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
+    expect(html.includes('<h1>Mobile page</h1>')).toBe(true)
+  })
+
+  test('/test/env', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/env'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>Custom env layout</h1>')).toBe(true)
+    expect(html.includes('"bool": true')).toBe(true)
+    expect(html.includes('"num": 23')).toBe(true)
+    expect(html.includes('"string": "Nuxt.js"')).toBe(true)
+    expect(html.includes('"bool": false')).toBe(true)
+    expect(html.includes('"string": "ok"')).toBe(true)
+    expect(html.includes('"num2": 8.23')).toBe(true)
+    expect(html.includes('"obj": {')).toBe(true)
+  })
+
+  test('/test/error', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/error'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('Error page')).toBe(true)
+  })
+
+  test('/test/user-agent', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('<pre>Mozilla')).toBe(true)
+  })
+
+  test('/test/about-bis (added with extendRoutes)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
+    expect(html.includes('<h1>About page</h1>')).toBe(true)
+  })
+
+  test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const windowHref = window.location.href
+    expect(windowHref.includes('/test/about-bis')).toBe(true)
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
+    expect(html.includes('<h1>About page</h1>')).toBe(true)
+  })
+
+  test('Check stats.json generated by build.analyze', () => {
+    const stats = require(resolve(
+      __dirname,
+      'fixtures/with-config/.nuxt/dist/stats.json'
+    ))
+    expect(stats.assets.length > 0).toBe(true)
+  })
+
+  test('Check /test/test.txt with custom serve-static options', async () => {
+    const { headers } = await rp(url('/test/test.txt'), {
+      resolveWithFullResponse: true
+    })
+    expect(headers['cache-control']).toBe('public, max-age=31536000')
+  })
+
+  test('Check /test.txt should return 404', async () => {
+    await expect(rp(url('/test.txt')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
+  test('Check build.styleResources for style-resources-loader', async () => {
+    const loaders = styleLoader.call(builder, 'scss')
+    const loader = loaders.find(l => l.loader === 'style-resources-loader')
+    expect(typeof loader).toBe('object')
+    expect(loader.options).toEqual({
+      patterns: ['~/assets/pre-process.scss']
+    })
+  })
+
+  // Close server and ask nuxt to stop listening to file changes
+  test('Closing server and nuxt.js', async () => {
+    await nuxt.close()
+  })
 })

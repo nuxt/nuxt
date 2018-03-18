@@ -1,89 +1,80 @@
-import test from 'ava'
-import rp from 'request-promise-native'
+// import rp from 'request-promise-native'
 import { Nuxt, Builder } from '..'
-import { interceptLog, interceptError, release } from './helpers/console'
 import { loadConfig } from './helpers/config'
 
 const port = 4005
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
-let logSpy
+// let logSpy
 
-// Init nuxt.js and create server listening on localhost:4000
-test.serial('Init Nuxt.js', async t => {
-  const config = loadConfig('error', { dev: false })
+describe('error', () => {
+  // Init nuxt.js and create server listening on localhost:4000
+  beforeAll(async () => {
+    const config = loadConfig('error', { dev: false })
 
-  logSpy = await interceptLog(async () => {
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    new Builder(nuxt).build()
     await nuxt.listen(port, 'localhost')
+  }, 30000)
+
+  test('/ should display an error', async () => {
+    await expect(nuxt.renderRoute('/')).rejects.toMatchObject({
+      message: expect.stringContaining('not_defined is not defined')
+    })
   })
 
-  t.true(logSpy.calledWithMatch('DONE'))
-  t.true(logSpy.calledWithMatch('OPEN'))
-})
+  test('/404 should display an error too', async () => {
+    let { error } = await nuxt.renderRoute('/404')
+    expect(error.message.includes('This page could not be found')).toBe(true)
+  })
 
-test.serial('/ should display an error', async t => {
-  const error = await t.throws(nuxt.renderRoute('/'))
-  t.true(error.message.includes('not_defined is not defined'))
-})
+  test('/ with renderAndGetWindow()', async () => {
+    // const errorSpy = await interceptError()
+    await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
+      statusCode: 500
+    })
 
-test.serial('/404 should display an error too', async t => {
-  let { error } = await nuxt.renderRoute('/404')
-  t.true(error.message.includes('This page could not be found'))
-})
+    // release()
+    // expect(errorSpy.calledOnce).toBe(true)
+    // expect(errorSpy
+    // .getCall(0)
+    // .args[0].message.includes(
+    // 'render function or template not defined in component: anonymous'
+    // )).toBe(true)
+  })
 
-test.serial('/ with renderAndGetWindow()', async t => {
-  const errorSpy = await interceptError()
-  const err = await t.throws(nuxt.renderAndGetWindow(url('/')))
-  t.is(err.response.statusCode, 500)
-  t.is(err.response.statusMessage, 'NuxtServerError')
-  release()
-  t.true(errorSpy.calledOnce)
-  t.true(
-    errorSpy
-      .getCall(0)
-      .args[0].message.includes(
-        'render function or template not defined in component: anonymous'
-      )
-  )
-})
+  // test('/ with text/json content', async () => {
+  //   const opts = {
+  //     headers: {
+  //       accept: 'application/json'
+  //     },
+  //     resolveWithFullResponse: true
+  //   }
+  // const errorSpy = await interceptError()
+  // const { response: { headers } } = await expect(rp(url('/'), opts)).toThrow()
+  // expect(headers['content-type']).toBe('text/json; charset=utf-8')
+  // release()
+  // expect(errorSpy.calledOnce).toBe(true)
+  // expect(errorSpy
+  //   .getCall(0)
+  //   .args[0].message.includes(
+  //     'render function or template not defined in component: anonymous'
+  //   )).toBe(true)
+  // })
 
-test.serial('/ with text/json content', async t => {
-  const opts = {
-    headers: {
-      accept: 'application/json'
-    },
-    resolveWithFullResponse: true
-  }
-  const errorSpy = await interceptError()
-  const { response: { headers } } = await t.throws(rp(url('/'), opts))
-  t.is(headers['content-type'], 'text/json; charset=utf-8')
-  release()
-  t.true(errorSpy.calledOnce)
-  t.true(
-    errorSpy
-      .getCall(0)
-      .args[0].message.includes(
-        'render function or template not defined in component: anonymous'
-      )
-  )
-})
+  // test('Deprecated: dev in build.extend()', async () => {
+  // expect(logSpy.calledWith('[build:done]: hook error')).toBe(true)
+  // })
 
-test.serial('Deprecated: dev in build.extend()', async t => {
-  t.true(logSpy.calledWith('[build:done]: hook error'))
-})
+  test('Error: resolvePath()', async () => {
+    expect(() => nuxt.resolvePath()).toThrowError(TypeError)
 
-test.serial('Error: resolvePath()', async t => {
-  let error = t.throws(() => nuxt.resolvePath())
-  t.true(error instanceof TypeError)
+    expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
+  })
 
-  error = t.throws(() => nuxt.resolvePath('@/pages/about.vue'))
-  t.true(error.message.includes('Cannot resolve "@/pages/about.vue"'))
-})
-
-// Close server and ask nuxt to stop listening to file changes
-test.after.always('Closing server and nuxt.js', async t => {
-  await nuxt.close()
+  // Close server and ask nuxt to stop listening to file changes
+  test('Closing server and nuxt.js', async () => {
+    await nuxt.close()
+  })
 })
