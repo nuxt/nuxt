@@ -7,7 +7,6 @@ import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
 import { Nuxt, Generator } from '..'
 import { loadFixture, getPort } from './utils'
-import { get } from 'https';
 
 let port
 const url = route => 'http://localhost:' + port + route

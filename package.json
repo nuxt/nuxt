@@ -42,7 +42,7 @@
   },
   "scripts": {
     "build-fixtures": "./scripts/build-fixtures",
-    "test": "npm run lint && jest",
+    "test": "npm run lint && npm run build-fixtures && jest",
     "test-appveyor": "yarn test",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",

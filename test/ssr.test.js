@@ -45,7 +45,7 @@ const uniqueTest = async (url) => {
 // The idea of this test is to ensure there is no memory or data leak during SSR requests
 // Or pending promises/sockets and function calls.
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
-const stressTest = async (_url, concurrency = 2, steps = 4) => {port = await getPort() ; await nuxt.listen(port, 'localhost')
+const stressTest = async (_url, concurrency = 2, steps = 4) => {
   let statusCodes = {}
 
   await Utils.sequence(range(steps), async () => {

@@ -12,7 +12,8 @@ describe('basic browser', () => {
   beforeAll(async () => {
     const config = loadFixture('basic')
     nuxt = new Nuxt(config)
-    port = await getPort() ; await nuxt.listen(port, 'localhost')
+    port = await getPort()
+    await nuxt.listen(port, 'localhost')
 
     await browser.start({
       // slowMo: 50,
