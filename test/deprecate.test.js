@@ -1,28 +1,25 @@
-import { Nuxt, Builder } from '..'
-import { loadConfig } from './helpers/config'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-const port = 4010
+let port
 
 let nuxt = null
-let builder = null
 // let buildSpies = null
 
 describe('depricate', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const config = loadConfig('deprecate', { dev: false })
+    const config = loadFixture('deprecate')
 
     nuxt = new Nuxt(config)
-    builder = new Builder(nuxt)
-    await builder.build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
-  // test('Deprecated: module.addVendor()', async () => {
-  //   expect(
-  //     buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary')
-  //   ).toBe(true)
-  // })
+  test.skip('Deprecated: module.addVendor()', async () => {
+    // expect(
+    //   buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary')
+    // ).toBe(true)
+  })
 
   // Close server and ask nuxt to stop listening to file changes
   test('Closing server and nuxt.js', async () => {

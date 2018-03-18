@@ -1,32 +1,20 @@
-import { resolve } from 'path'
 import { Nuxt, Builder } from '..'
+import { loadFixture, getPort } from './utils'
 
-const port = 4001
+let port
 const url = route => 'http://localhost:' + port + route
-const rootDir = resolve(__dirname, 'fixtures/basic')
 
 let nuxt = null
 
 describe('basic dev', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const options = {
-      rootDir,
-      buildDir: '.nuxt-dev',
-      dev: true,
-      build: {
-        stats: false,
-        profile: true,
-        extractCSS: {
-          allChunks: true
-        }
-      }
-    }
-
-    nuxt = new Nuxt(options)
+    const config = loadFixture('basic', { buildDir: '.nuxt-dev' })
+    config.dev = true
+    nuxt = new Nuxt(config)
     new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   // TODO: enable test when style-loader.js:60 was resolved
   // test.serial('/extractCSS', async t => {

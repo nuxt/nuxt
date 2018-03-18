@@ -1,32 +1,21 @@
-import { resolve } from 'path'
+import { Nuxt, Utils } from '..'
+import * as browser from './utils/browser'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder, Utils } from '..'
-
-import * as browser from './helpers/browser'
-
-const port = 4014
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let page
 const dates = {}
 
-describe('children patch', () => {
-  // Init nuxt.js and create server listening on localhost:4000
+describe('children patch (browser)', () => {
   beforeAll(async () => {
-    const options = {
-      rootDir: resolve(__dirname, 'fixtures/children'),
-      buildDir: '.nuxt-patch',
-      dev: false,
-      build: {
-        stats: false
-      }
-    }
-
+    const options = loadFixture('children')
     nuxt = new Nuxt(options)
-    new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   test('Start browser', async () => {
     expect.assertions(0) // suppress 'no assertions' warning
@@ -138,6 +127,6 @@ describe('children patch', () => {
 
   test('Stop browser', async () => {
     await page.close()
-    await browser.stop()
+    await browser.close()
   })
 })

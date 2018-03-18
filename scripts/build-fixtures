@@ -33,6 +33,7 @@ async function buildFixture(name) {
   const config = fs.existsSync(configFile) ? requireModule(configFile) : {}
 
   config.rootDir = rootDir
+  config.dev = false
 
   spinner.start('Building fixture ' + name)
 

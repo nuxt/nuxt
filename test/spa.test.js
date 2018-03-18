@@ -1,27 +1,25 @@
-import { Nuxt, Builder } from '..'
-import { loadConfig } from './helpers/config'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
 let nuxt = null
 
-const port = 4012
+let port
 const url = route => 'http://localhost:' + port + route
 
+const renderRoute = async _url => {
+  const window = await nuxt.renderAndGetWindow(url(_url))
+  const head = window.document.head.innerHTML
+  const html = window.document.body.innerHTML
+  return { window, head, html }
+}
+
 describe('spa', () => {
-  const renderRoute = async _url => {
-    const window = await nuxt.renderAndGetWindow(url(_url))
-    const head = window.document.head.innerHTML
-    const html = window.document.body.innerHTML
-    return { window, head, html }
-  }
-
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const config = loadConfig('spa')
-
+    const config = loadFixture('spa')
     nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   test('/ (basic spa)', async () => {
     // const logSpy = await interceptLog()

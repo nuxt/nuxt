@@ -1,27 +1,15 @@
-import { resolve } from 'path'
-
 import rp from 'request-promise-native'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder } from '..'
-
-const port = 4005
+let port
 const url = route => 'http://localhost:' + port + route
 
 const startCSPTestServer = async (csp) => {
-  const options = {
-    rootDir: resolve(__dirname, 'fixtures/basic'),
-    buildDir: '.nuxt-ssr-csp',
-    dev: false,
-    build: { stats: false },
-    render: { csp }
-  }
-
-  let nuxt = null
-  nuxt = new Nuxt(options)
-  const builder = new Builder(nuxt)
-  await builder.build()
+  const options = loadFixture('basic', { render: { csp } })
+  const nuxt = new Nuxt(options)
+  port = await getPort()
   await nuxt.listen(port, '0.0.0.0')
-
   return nuxt
 }
 

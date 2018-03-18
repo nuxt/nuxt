@@ -1,28 +1,20 @@
 import { normalize } from 'path'
-
 import rp from 'request-promise-native'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder } from '..'
-
-import { loadConfig } from './helpers/config'
-
-const port = 4006
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
-let builder = null
-let buildSpies = null
+// let buildSpies = null
 
-// Init nuxt.js and create server listening on localhost:4000
 beforeAll(async () => {
-  const config = loadConfig('module', { dev: false })
-
+  const config = loadFixture('module')
   nuxt = new Nuxt(config)
-  builder = new Builder(nuxt)
-
-  await builder.build()
+  port = await getPort()
   await nuxt.listen(port, 'localhost')
-}, 30000)
+})
 
 test('Plugin', async () => {
   expect(normalize(nuxt.options.plugins[0].src).includes(
@@ -42,17 +34,15 @@ test('Layout', async () => {
 test('Hooks', async () => {
   expect(nuxt.__module_hook).toBe(1)
   expect(nuxt.__renderer_hook).toBe(2)
-  expect(nuxt.__builder_hook).toBe(3)
 })
 
 test('Hooks - Functional', async () => {
   expect(nuxt.__ready_called__).toBe(true)
-  expect(builder.__build_done__).toBe(true)
 })
 
-test('Hooks - Error', async () => {
-  expect(buildSpies.error.calledWithMatch(/build:extendRoutes/)).toBe(true)
-})
+// test('Hooks - Error', async () => {
+//   expect(buildSpies.error.calledWithMatch(/build:extendRoutes/)).toBe(true)
+// })
 
 test('Middleware', async () => {
   let response = await rp(url('/api'))

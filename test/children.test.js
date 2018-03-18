@@ -1,27 +1,18 @@
-import { resolve } from 'path'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder } from '..'
-
-const port = 4013
+let port
 // const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 
 describe('children', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const options = {
-      rootDir: resolve(__dirname, 'fixtures/children'),
-      dev: false,
-      build: {
-        stats: false
-      }
-    }
-
+    const options = loadFixture('children')
     nuxt = new Nuxt(options)
-    new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   test('/parent', async () => {
     const { html } = await nuxt.renderRoute('/parent')

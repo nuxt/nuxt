@@ -1,16 +1,13 @@
 import http from 'http'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
+import { Nuxt, Generator, Options } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder, Generator, Options } from '..'
-
-import { loadConfig } from './helpers/config'
-
-const port = 4015
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
@@ -18,26 +15,23 @@ let server = null
 let generator = null
 
 describe('fallback generate', () => {
-  // Init nuxt.js and create server listening on localhost:4015
   beforeAll(async () => {
-    let config = loadConfig('basic', {
-      buildDir: '.nuxt-spa-fallback',
-      dev: false
-    })
-    config.build.stats = false
+    const config = loadFixture('basic')
 
     nuxt = new Nuxt(config)
-    const builder = new Builder(nuxt)
-    generator = new Generator(nuxt, builder)
+    generator = new Generator(nuxt)
 
-    await generator.generate()
+    await generator.generate({ build: false })
 
     const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
     server = http.createServer((req, res) => {
       serve(req, res, finalhandler(req, res))
     })
+
+    port = await getPort()
+
     server.listen(port)
-  }, 30000)
+  })
 
   test('default creates /200.html as fallback', async () => {
     const html = await rp(url('/200.html'))
@@ -50,7 +44,7 @@ describe('fallback generate', () => {
   test('nuxt re-generating with generate.fallback = false', async () => {
     // const logSpy = await interceptLog(async () => {
     nuxt.options.generate.fallback = false
-    await generator.generate()
+    await generator.generate({ build: false })
     // expect(logSpy.calledWithMatch('DONE')).toBe(true)
   })
 
@@ -76,35 +70,9 @@ describe('fallback generate', () => {
     'nuxt re-generating with generate.fallback = "spa-fallback.html"',
     async () => {
       nuxt.options.generate.fallback = 'spa-fallback.html'
-      await generator.generate()
+      await generator.generate({ build: false })
     }
   )
-
-  test(
-    '"spa-fallback.html" creates /spa-fallback.html as fallback',
-    async () => {
-      const html = await rp(url('/spa-fallback.html'))
-      expect(html.includes('<h1>Index page</h1>')).toBe(false)
-      expect(html.includes('data-server-rendered')).toBe(false)
-      expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'spa-fallback.html'))).toBe(true)
-      expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '404.html'))).toBe(false)
-      expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '200.html'))).toBe(false)
-    }
-  )
-
-  test('nuxt re-generating with generate.fallback = "index.html"', async () => {
-    nuxt.options.generate.fallback = 'index.html'
-    await generator.generate()
-  })
-
-  test('"index.html" creates /index.html as fallback', async () => {
-    const html = await rp(url('/index.html'))
-    expect(html.includes('<h1>Index page</h1>')).toBe(true)
-    expect(html.includes('data-server-rendered')).toBe(true)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'index.html'))).toBe(true)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '404.html'))).toBe(false)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '200.html'))).toBe(false)
-  })
 
   // Close server and ask nuxt to stop listening to file changes
   test('Closing server', async () => {

@@ -1,21 +1,19 @@
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '..'
-import { loadConfig } from './helpers/config'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-const port = 4009
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
-describe('debug', () => {
-  // Init nuxt.js and create server listening on localhost:4000
+describe.skip('debug', () => {
   beforeAll(async () => {
-    const config = loadConfig('debug')
-
+    const config = loadFixture('debug')
     nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   test('/test/__open-in-editor (open-in-editor)', async () => {
     const { body } = await rp(

@@ -1,5 +1,4 @@
 import { resolve } from 'path'
-
 import { Nuxt, Options } from '..'
 import { version } from '../package.json'
 

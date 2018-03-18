@@ -1,17 +1,15 @@
 import { existsSync } from 'fs'
 import http from 'http'
 import { resolve } from 'path'
-
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
+import { Nuxt, Generator } from '..'
+import { loadFixture, getPort } from './utils'
+import { get } from 'https';
 
-import { Nuxt, Builder, Generator } from '..'
-
-import { loadConfig } from './helpers/config'
-
-const port = 4002
+let port
 const url = route => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
@@ -20,27 +18,21 @@ let server = null
 let generator = null
 
 describe('basic generate', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const config = loadConfig('basic', {
-      buildDir: '.nuxt-generate',
-      dev: false
-    })
-
-    config.build.stats = false
-
+    const config = loadFixture('basic')
     nuxt = new Nuxt(config)
-    const builder = new Builder(nuxt)
-    generator = new Generator(nuxt, builder)
+    generator = new Generator(nuxt)
 
-    await generator.generate()
+    await generator.generate({ build: false })
 
     const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
     server = http.createServer((req, res) => {
       serve(req, res, finalhandler(req, res))
     })
+
+    port = await getPort()
     server.listen(port)
-  }, 30000)
+  })
 
   test('Check ready hook called', async () => {
     expect(nuxt.__hook_called__).toBe(true)
@@ -76,7 +68,7 @@ describe('basic generate', () => {
     const window = await nuxt.renderAndGetWindow(url('/head'))
     const html = window.document.body.innerHTML
     const metas = window.document.getElementsByTagName('meta')
-    expect(window.document.title).toBe('My title')
+    expect(window.document.title).toBe('My title - Nuxt.js')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(html.includes('<div><h1>I can haz meta tags</h1></div>')).toBe(true)
     // release()
@@ -160,7 +152,7 @@ describe('basic generate', () => {
   test('nuxt re-generating with no subfolders', async () => {
     // const logSpy = await interceptLog()
     nuxt.options.generate.subFolders = false
-    await generator.generate()
+    await generator.generate({ build: false })
     // release()
     // expect(logSpy.calledWithMatch('DONE')).toBe(true)
   })

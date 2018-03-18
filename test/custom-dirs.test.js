@@ -1,23 +1,19 @@
 import rp from 'request-promise-native'
-import { Nuxt, Builder } from '..'
-import { loadConfig } from './helpers/config'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-const port = 4007
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
-let builder = null
 
 describe('custom-dirs', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const config = loadConfig('/custom-dirs', { dev: false })
-
+    const config = loadFixture('custom-dirs')
     nuxt = new Nuxt(config)
-    builder = new Builder(nuxt)
-    await builder.build()
-    await nuxt.listen(4007, 'localhost')
-  }, 30000)
+    port = await getPort()
+    await nuxt.listen(port, 'localhost')
+  })
 
   test('custom assets directory', async () => {
     const { html } = await nuxt.renderRoute('/')

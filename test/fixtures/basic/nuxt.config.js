@@ -3,6 +3,15 @@ import path from 'path'
 export default {
   generate: {
     routes: [
+      // TODO: generate with {build: false} does not scans pages!
+      '/stateless',
+      '/css',
+      '/stateful',
+      '/head',
+      '/async-data',
+      '/validate',
+      '/redirect',
+
       '/users/1',
       '/users/2',
       { route: '/users/3', payload: { id: 3000 } }

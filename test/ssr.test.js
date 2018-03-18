@@ -1,9 +1,9 @@
-import { Nuxt, Builder, Utils } from '..'
+import { Nuxt, Utils } from '..'
 import { uniq } from 'lodash'
 import rp from 'request-promise-native'
-import { loadConfig } from './helpers/config'
+import { loadFixture, getPort } from './utils'
 
-const port = 4008
+let port
 let nuxt = null
 
 // Utils
@@ -15,41 +15,61 @@ const url = route => 'http://localhost:' + port + route
 
 // const isWindows = /^win/.test(process.platform)
 
-describe('ssr', () => {
-  // Init nuxt.js and create server listening on localhost:4000
-  beforeAll(async () => {
-    const config = loadConfig('ssr')
+// == Uniq Test ==
+// The idea behind is pages using a shared nextId() which returns an incrementing id
+// So all responses should strictly be different and length of unique responses should equal to responses
+// We strictly compare <foorbar>{id}</foorbar> section
+// Because other response parts such as window.__NUXT may be different resulting false positive passes.
+const uniqueTest = async (url) => {
+  let results = []
 
-    nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
-    await nuxt.listen(port, 'localhost')
-  }, 30000)
+  await Utils.parallel(range(5), async () => {
+    let { html } = await nuxt.renderRoute(url)
+    let foobar = match(FOOBAR_REGEX, html)
+    results.push(parseInt(foobar))
+  })
 
-  // == Uniq Test ==
-  // The idea behind is pages using a shared nextId() which returns an incrementing id
-  // So all responses should strictly be different and length of unique responses should equal to responses
-  // We strictly compare <foorbar>{id}</foorbar> section
-  // Because other response parts such as window.__NUXT may be different resulting false positive passes.
-  const uniqueTest = async (t, url) => {
-    let results = []
+  let isUnique = uniq(results).length === results.length
 
-    await Utils.parallel(range(5), async () => {
-      let { html } = await nuxt.renderRoute(url)
-      let foobar = match(FOOBAR_REGEX, html)
-      results.push(parseInt(foobar))
-    })
-
-    let isUnique = uniq(results).length === results.length
-
-    if (!isUnique) {
-      /* eslint-disable no-console */
-      console.log(url + '\n' + results.join(', ') + '\n')
-    }
-
-    expect(isUnique).toBe(true)
-
-    return results
+  if (!isUnique) {
+    /* eslint-disable no-console */
+    console.log(url + '\n' + results.join(', ') + '\n')
   }
+
+  expect(isUnique).toBe(true)
+
+  return results
+}
+
+// == Stress Test ==
+// The idea of this test is to ensure there is no memory or data leak during SSR requests
+// Or pending promises/sockets and function calls.
+// Related issue: https://github.com/nuxt/nuxt.js/issues/1354
+const stressTest = async (_url, concurrency = 2, steps = 4) => {port = await getPort() ; await nuxt.listen(port, 'localhost')
+  let statusCodes = {}
+
+  await Utils.sequence(range(steps), async () => {
+    await Utils.parallel(range(concurrency), async () => {
+      let response = await rp(url(_url), { resolveWithFullResponse: true })
+      // Status Code
+      let code = response.statusCode
+      if (!statusCodes[code]) {
+        statusCodes[code] = 0
+      }
+      statusCodes[code]++
+    })
+  })
+
+  expect(statusCodes[200]).toBe(concurrency * steps)
+}
+
+describe('ssr', () => {
+  beforeAll(async () => {
+    const config = loadFixture('ssr')
+    nuxt = new Nuxt(config)
+    port = await getPort()
+    await nuxt.listen(port, 'localhost')
+  })
 
   test('unique responses with data()', async () => {
     await uniqueTest('/data')
@@ -78,28 +98,6 @@ describe('ssr', () => {
   test('unique responses with fetch', async () => {
     await uniqueTest('/fetch')
   })
-
-  // == Stress Test ==
-  // The idea of this test is to ensure there is no memory or data leak during SSR requests
-  // Or pending promises/sockets and function calls.
-  // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
-  const stressTest = async (t, _url, concurrency = 2, steps = 4) => {
-    let statusCodes = {}
-
-    await Utils.sequence(range(steps), async () => {
-      await Utils.parallel(range(concurrency), async () => {
-        let response = await rp(url(_url), { resolveWithFullResponse: true })
-        // Status Code
-        let code = response.statusCode
-        if (!statusCodes[code]) {
-          statusCodes[code] = 0
-        }
-        statusCodes[code]++
-      })
-    })
-
-    expect(statusCodes[200]).toBe(concurrency * steps)
-  }
 
   test('stress test with asyncData', async () => {
     await stressTest('/asyncData')

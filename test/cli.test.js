@@ -1,18 +1,18 @@
-import { promisify } from 'util'
-import { resolve } from 'path'
-import rp from 'request-promise-native'
 import { exec, spawn } from 'child_process'
+import { resolve } from 'path'
+import { promisify } from 'util'
+import rp from 'request-promise-native'
 import { Utils } from '..'
 
 const execify = promisify(exec)
 const rootDir = resolve(__dirname, 'fixtures/basic')
 
-const port = 4011
+let port
 const url = route => 'http://localhost:' + port + route
 
 const nuxtBin = resolve(__dirname, '..', 'bin', 'nuxt')
 
-describe('cli', () => {
+describe.skip('cli', () => {
   test('nuxt build', async () => {
     const { stdout } = await execify(`node ${nuxtBin} build ${rootDir}`)
 

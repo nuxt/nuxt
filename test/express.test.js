@@ -1,30 +1,22 @@
-import { resolve } from 'path'
-
 import express from 'express'
 import rp from 'request-promise-native'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder } from '..'
-
-const port = 4000
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt
 let app
+let server
 
 describe('express', () => {
   // Init nuxt.js and create express server
   beforeAll(async () => {
-    const config = {
-      rootDir: resolve(__dirname, 'fixtures/basic'),
-      buildDir: '.nuxt-express',
-      dev: false,
-      build: {
-        stats: false
-      }
-    }
-
+    const config = loadFixture('basic')
     nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
+
+    port = await getPort()
 
     // Create express app
     app = express()
@@ -33,12 +25,19 @@ describe('express', () => {
     app.use(nuxt.render)
 
     // Start listening on localhost:4000
-    app.listen(port)
-  }, 30000)
+    server = app.listen(port)
+  })
 
   test('/stateless with express', async () => {
     const html = await rp(url('/stateless'))
 
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
+  })
+
+  test('close server', async () => {
+    await nuxt.close()
+    await new Promise((resolve, reject) => {
+      server.close(err => err ? reject(err) : resolve())
+    })
   })
 })

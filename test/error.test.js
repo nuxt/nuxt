@@ -1,22 +1,20 @@
 // import rp from 'request-promise-native'
-import { Nuxt, Builder } from '..'
-import { loadConfig } from './helpers/config'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-const port = 4005
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 // let logSpy
 
 describe('error', () => {
-  // Init nuxt.js and create server listening on localhost:4000
   beforeAll(async () => {
-    const config = loadConfig('error', { dev: false })
-
+    const config = loadFixture('error')
     nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
+    port = await getPort()
     await nuxt.listen(port, 'localhost')
-  }, 30000)
+  })
 
   test('/ should display an error', async () => {
     await expect(nuxt.renderRoute('/')).rejects.toMatchObject({

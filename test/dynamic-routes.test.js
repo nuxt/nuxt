@@ -2,24 +2,9 @@ import { resolve } from 'path'
 import fs from 'fs'
 import { promisify } from 'util'
 
-import { Nuxt, Builder } from '..'
-
 const readFile = promisify(fs.readFile)
 
 describe('dynamic routes', () => {
-  beforeAll(async () => {
-    const config = {
-      rootDir: resolve(__dirname, 'fixtures/dynamic-routes'),
-      dev: false,
-      build: {
-        stats: false
-      }
-    }
-
-    const nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
-  }, 30000)
-
   test('Check .nuxt/router.js', () => {
     return readFile(
       resolve(__dirname, './fixtures/dynamic-routes/.nuxt/router.js'),

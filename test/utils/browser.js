@@ -14,7 +14,7 @@ export async function start(options = {}) {
   )
 }
 
-export async function stop() {
+export async function close() {
   if (!browser) return
   await browser.close()
 }

@@ -1,30 +1,19 @@
 import rp from 'request-promise-native'
+import { Nuxt } from '..'
+import { loadFixture, getPort } from './utils'
 
-import { Nuxt, Builder } from '..'
-
-import { loadConfig } from './helpers/config'
-
-const port = 4004
+let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
 describe('basic ssr', () => {
-  // Init nuxt.js and create server listening on localhost:4004
   beforeAll(async () => {
-    const options = loadConfig('basic', {
-      buildDir: '.nuxt-ssr',
-      dev: false,
-      build: {
-        stats: false
-      }
-    })
-
+    const options = loadFixture('basic')
     nuxt = new Nuxt(options)
-    const builder = new Builder(nuxt)
-    await builder.build()
+    port = await getPort()
     await nuxt.listen(port, '0.0.0.0')
-  }, 30000)
+  })
 
   test('/stateless', async () => {
     const { html } = await nuxt.renderRoute('/stateless')
