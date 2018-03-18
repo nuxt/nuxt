@@ -6,7 +6,8 @@ module.exports = {
   },
   env: {
     browser: true,
-    node: true
+    node: true,
+    'jest/globals': true
   },
   extends: [
     'standard',
@@ -14,9 +15,9 @@ module.exports = {
     'plugin:import/errors',
     'plugin:import/warnings'
   ],
-  // required to lint *.vue files
   plugins: [
-    'html'
+    'html',
+    'jest'
   ],
   settings: {
     'import/resolver': {
