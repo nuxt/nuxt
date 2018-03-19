@@ -37,7 +37,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
           name: ESLint
           command: yarn lint
@@ -46,7 +46,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
           name: Build Fixtures
           command: yarn build-fixtures
@@ -55,7 +55,7 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
           name: Test
           command: yarn jest test/
@@ -64,15 +64,15 @@ jobs:
     <<: *defaults
     steps:
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
-        name: release
-        command: |
-          if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            ./scripts/release-edge
-          fi
+          name: release
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              ./scripts/release-edge
+            fi
 
 workflows:
   version: 2
