@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-global-css",
+  "name": "example-global-css",
   "dependencies": {
     "bulma": "^0.5.1",
     "nuxt": "latest"

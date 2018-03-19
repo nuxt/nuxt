@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-markdownit",
+  "name": "example-markdownit",
   "version": "1.0.0",
   "dependencies": {
     "@nuxtjs/markdownit": "^1.1.2",

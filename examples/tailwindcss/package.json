@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-tailwindcss",
+  "name": "example-tailwindcss",
   "description": "Nuxt.js with Tailwind CSS",
   "scripts": {
     "dev": "nuxt",

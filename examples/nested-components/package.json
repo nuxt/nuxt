@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-nested-components",
+  "name": "example-nested-components",
   "dependencies": {
     "nuxt": "latest"
   },

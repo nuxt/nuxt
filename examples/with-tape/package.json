@@ -1,5 +1,5 @@
 {
-	"name": "nuxt-with-tape",
+	"name": "example-with-tape",
 	"scripts": {
 		"dev": "nuxt",
 		"build": "nuxt build",

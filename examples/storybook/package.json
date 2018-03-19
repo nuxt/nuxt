@@ -1,5 +1,5 @@
 {
-  "name": "storybook",
+  "name": "example-storybook",
   "version": "1.0.0",
   "description": "sample storybook setup for nuxt",
   "scripts": {

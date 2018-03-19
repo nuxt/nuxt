@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-middleware",
+  "name": "example-middleware",
   "dependencies": {
     "nuxt": "latest"
   },
