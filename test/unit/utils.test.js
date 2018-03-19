@@ -16,10 +16,6 @@ describe('utils', () => {
     expect(ctx.res.b).toBe(2)
   })
 
-  test('setAnsiColors', () => {
-    Utils.setAnsiColors(ansiHTML)
-  })
-
   test('waitFor', async () => {
     let s = Date.now()
     await Utils.waitFor(100)
