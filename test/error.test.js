@@ -32,6 +32,7 @@ describe('error', () => {
     await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
     })
+  })
 
   test('Error: resolvePath()', async () => {
     expect(() => nuxt.resolvePath()).toThrowError(TypeError)
