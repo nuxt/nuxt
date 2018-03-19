@@ -42,12 +42,16 @@
   },
   "scripts": {
     "build-fixtures": "node ./scripts/build-fixtures",
-    "test": "npm run lint && npm run build-fixtures && jest test/",
+    "test": "npm run lint && npm run build-fixtures && jest test/ --coverage",
     "test:unit": "jest",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
     "postinstall": "opencollective postinstall || exit 0"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
   },
   "engines": {
     "node": ">=8.0.0",
