@@ -62,7 +62,7 @@ jobs:
           at: ~/project
       - run:
           name: Test
-          command: yarn test:unit
+          command: yarn test:unit && yarn coverage
     environment:
       - NODE_ENV: "test"
 
@@ -73,7 +73,7 @@ jobs:
           at: ~/project
       - run:
           name: Test (e2e)
-          command: yarn test:e2e
+          command: yarn test:e2e && yarn coverage
     environment:
       - NODE_ENV: "test"
 

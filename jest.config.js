@@ -1,5 +1,6 @@
 module.exports = {
-  'testEnvironment': 'node',
-  'coverageDirectory': './coverage/',
-  'setupTestFrameworkScriptFile': './test/utils/setup'
+  testEnvironment: 'node',
+  coverageDirectory: './coverage/',
+  collectCoverage: true,
+  setupTestFrameworkScriptFile: './test/utils/setup'
 }
