@@ -28,37 +28,37 @@ jobs:
             - "node_modules"
 
   lint:
-      <<: *defaults
-      steps:
-        - run:
+    <<: *defaults
+    steps:
+      - run:
           name: ESLint
           command: yarn lint
 
   build:
-      <<: *defaults
-      steps:
-        - run:
-            name: Build Fixtures
-            command: yarn build-fixtures
+    <<: *defaults
+    steps:
+      - run:
+          name: Build Fixtures
+          command: yarn build-fixtures
 
   test:
-      <<: *defaults
-      steps:
-        - run:
-            name: Test
-            command: yarn jest test/
+    <<: *defaults
+    steps:
+      - run:
+          name: Test
+          command: yarn jest test/
 
   release:
-      <<: *defaults
-      steps:
-        - run:
-          name: release
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              ./scripts/release-edge
-            fi
+    <<: *defaults
+    steps:
+      - run:
+        name: release
+        command: |
+          if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            ./scripts/release-edge
+          fi
 
 workflows:
   version: 2
