@@ -33,38 +33,6 @@ describe('error', () => {
       statusCode: 500
     })
 
-    // release()
-    // expect(errorSpy.calledOnce).toBe(true)
-    // expect(errorSpy
-    // .getCall(0)
-    // .args[0].message.includes(
-    // 'render function or template not defined in component: anonymous'
-    // )).toBe(true)
-  })
-
-  // test('/ with text/json content', async () => {
-  //   const opts = {
-  //     headers: {
-  //       accept: 'application/json'
-  //     },
-  //     resolveWithFullResponse: true
-  //   }
-  // const errorSpy = await interceptError()
-  // const { response: { headers } } = await expect(rp(url('/'), opts)).toThrow()
-  // expect(headers['content-type']).toBe('text/json; charset=utf-8')
-  // release()
-  // expect(errorSpy.calledOnce).toBe(true)
-  // expect(errorSpy
-  //   .getCall(0)
-  //   .args[0].message.includes(
-  //     'render function or template not defined in component: anonymous'
-  //   )).toBe(true)
-  // })
-
-  // test('Deprecated: dev in build.extend()', async () => {
-  // expect(logSpy.calledWith('[build:done]: hook error')).toBe(true)
-  // })
-
   test('Error: resolvePath()', async () => {
     expect(() => nuxt.resolvePath()).toThrowError(TypeError)
 
