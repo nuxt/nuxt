@@ -49,7 +49,7 @@ for (let fixture of fixtures) {
 }
 
 const options = {
-  renderer: process.env.CI === true ? 'silent' : 'default',
+  renderer: process.env.CI ? 'silent' : 'default',
   nonTTYRenderer: 'silent',
   concurrent: Math.min(4, cpus().length)
 }
