@@ -53,7 +53,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt
+            - nuxt/test/fixtures
 
   test:
     <<: *defaults
@@ -62,7 +62,18 @@ jobs:
           at: ~/project
       - run:
           name: Test
-          command: yarn jest test/
+          command: yarn test:unit
+    environment:
+      - NODE_ENV: "test"
+
+  test-e2e:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Test (e2e)
+          command: yarn test:e2e
     environment:
       - NODE_ENV: "test"
 
@@ -98,8 +109,13 @@ workflows:
           requires:
             - build
 
+      - test-e2e:
+          requires:
+            - build
+
       - release:
           requires:
             - build
             - lint
             - test
+            - test-e2e
