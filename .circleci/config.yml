@@ -1,7 +1,7 @@
 version: 2
 
 defaults: &defaults
-  working_directory: /usr/src/app
+  working_directory: ~/project/nuxt
   docker:
     - image: banian/node-headless-chrome
 
@@ -27,9 +27,17 @@ jobs:
           paths:
             - "node_modules"
 
+      # Persist files
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt
+
   lint:
     <<: *defaults
     steps:
+      - attach_workspace:
+        at: ~/project
       - run:
           name: ESLint
           command: yarn lint
@@ -37,6 +45,8 @@ jobs:
   build:
     <<: *defaults
     steps:
+      - attach_workspace:
+        at: ~/project
       - run:
           name: Build Fixtures
           command: yarn build-fixtures
@@ -44,6 +54,8 @@ jobs:
   test:
     <<: *defaults
     steps:
+      - attach_workspace:
+        at: ~/project
       - run:
           name: Test
           command: yarn jest test/
@@ -51,6 +63,8 @@ jobs:
   release:
     <<: *defaults
     steps:
+      - attach_workspace:
+        at: ~/project
       - run:
         name: release
         command: |
