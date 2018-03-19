@@ -198,3 +198,43 @@ describe('utils', () => {
     expect(chainedFn({}, 10)).toEqual({ foo: 11, bar: 12 })
   })
 })
+
+test('createRoutes should allow snake case routes', () => {
+  const files = [
+    'pages/_param.vue',
+    'pages/subpage/_param.vue',
+    'pages/snake_case_route.vue',
+    'pages/another_route/_id.vue'
+  ]
+  const srcDir = '/some/nuxt/app'
+  const pagesDir = 'pages'
+  const routesResult = Utils.createRoutes(files, srcDir, pagesDir)
+  const expectedResult = [
+    {
+      name: 'snake_case_route',
+      path: '/snake_case_route',
+      component: Utils.r('/some/nuxt/app/pages/snake_case_route.vue'),
+      chunkName: 'pages/snake_case_route'
+    },
+    {
+      name: 'another_route-id',
+      path: '/another_route/:id?',
+      component: Utils.r('/some/nuxt/app/pages/another_route/_id.vue'),
+      chunkName: 'pages/another_route/_id'
+    },
+    {
+      name: 'subpage-param',
+      path: '/subpage/:param?',
+      component: Utils.r('/some/nuxt/app/pages/subpage/_param.vue'),
+      chunkName: 'pages/subpage/_param'
+    },
+    {
+      name: 'param',
+      path: '/:param?',
+      component: Utils.r('/some/nuxt/app/pages/_param.vue'),
+      chunkName: 'pages/_param'
+    }
+  ]
+
+  expect(routesResult).toEqual(expectedResult)
+})
