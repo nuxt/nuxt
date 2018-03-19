@@ -41,9 +41,9 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
+    "test": "npm run build-fixtures && npm run test:unit",
     "build-fixtures": "node ./scripts/build-fixtures",
-    "test": "npm run build-fixtures && jest",
-    "test:unit": "jest",
+    "test:unit": "jest --maxWorkers=2",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
