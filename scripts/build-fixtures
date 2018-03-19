@@ -59,7 +59,7 @@ async function buildFixture(name) {
 async function run() {
   const concurrency = Math.min(4, cpus().length)
 
-  spinner.info('Builing with concurrency of ' + concurrency)
+  spinner.info('Building with concurrency of ' + concurrency)
   const limit = pLimit(concurrency)
 
   await Promise.all(fixtures.map(fixture =>

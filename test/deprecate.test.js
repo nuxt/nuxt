@@ -6,7 +6,7 @@ let port
 let nuxt = null
 // let buildSpies = null
 
-describe('depricate', () => {
+describe('deprecate', () => {
   beforeAll(async () => {
     const config = loadFixture('deprecate')
 
