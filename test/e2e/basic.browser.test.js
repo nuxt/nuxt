@@ -1,8 +1,9 @@
-import { Nuxt } from '../..'
-import { loadFixture, getPort } from '../utils'
-import * as browser from '../utils/browser'
+import { Nuxt } from '..'
+import Browser from './utils/browser'
+import { loadFixture, getPort } from './utils'
 
 let port
+const browser = new Browser()
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
