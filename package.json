@@ -41,7 +41,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build-fixtures": "./scripts/build-fixtures",
+    "build-fixtures": "node ./scripts/build-fixtures",
     "test": "npm run lint && npm run build-fixtures && jest",
     "test-appveyor": "yarn test",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
