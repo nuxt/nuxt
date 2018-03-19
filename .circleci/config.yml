@@ -63,6 +63,8 @@ jobs:
       - run:
           name: Test
           command: yarn jest test/
+    environment:
+      - NODE_ENV: "test"
 
   release:
     <<: *defaults
