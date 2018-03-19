@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 process.env.NODE_ENV = 'test'
 
-const { Builder, Nuxt } = require('..')
-const { requireModule } = require('../lib/common/module')
-const path = require('path')
-const fs = require('fs')
+const { resolve } = require('path')
+const { cpus } = require('os')
+
+const spawnAsync = require('@expo/spawn-async')
 const ORA = require('ora')
+const pLimit = require('p-limit')
 
 const fixtures = [
-  // csr, dev, generate, fail generate, fallback generate, ssr, ssr csp, spa
-  'basic',
-
   'children',
   'custom-dirs',
   'debug',
@@ -20,37 +18,52 @@ const fixtures = [
   'error',
   'module',
   'ssr',
-  'with-config'
+  'with-config',
+
+  // csr,
+  // dev,
+  // generate,
+  // fail generate,
+  // fallback generate,
+  // ssr,
+  // ssr csp,
+  // spa
+  'basic'
 ]
 
 const spinner = new ORA()
+const nuxtBuild = resolve(__dirname, '../bin/nuxt-build')
+
+let _total = fixtures.length
+let _done = 0
+let remaining = () => ` (${_done}/${_total})`
 
 async function buildFixture(name) {
-  spinner.info('Loading config for fixture ' + name)
+  _done++
 
-  const rootDir = path.resolve(__dirname, '../test/fixtures', name)
-  const configFile = path.resolve(rootDir, 'nuxt.config.js')
-  const config = fs.existsSync(configFile) ? requireModule(configFile) : {}
+  let _name = `'${name}'`
 
-  config.rootDir = rootDir
-  config.dev = false
+  spinner.info('Building ' + _name + remaining())
 
-  spinner.start('Building fixture ' + name)
+  const rootDir = resolve(__dirname, '../test/fixtures', name)
 
-  const nuxt = new Nuxt(config)
-  const builder = new Builder(nuxt)
-
-  await builder.build()
-
-  spinner.succeed('Built fixture ' + name)
-
-  await nuxt.close()
+  await spawnAsync('node', [nuxtBuild, rootDir])
+    .catch((err) => {
+      spinner.warn('Errors while building ' + _name + ': ' + err)
+    })
+    .then(() => {
+      spinner.succeed('Built fixture: ' + _name + remaining())
+    })
 }
 
 async function run() {
-  for (let fixture of fixtures) {
-    await buildFixture(fixture)
-  }
+  const cpuCount = cpus().length
+
+  spinner.info('Builing with concurrency of ' + cpuCount)
+  const limit = pLimit(cpuCount)
+
+  await Promise.all(fixtures.map(fixture =>
+    limit(() => buildFixture(fixture))))
 }
 
 run()
