@@ -26,3 +26,6 @@ test_script:
 
 # Don't actually build.
 build: off
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
