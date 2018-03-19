@@ -1,4 +1,4 @@
-module.exports = function () {
+export default function () {
   let ctr = 1
 
   // Add hook for module

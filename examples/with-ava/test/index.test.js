@@ -1,6 +1,7 @@
+import { resolve } from 'path'
+
 import test from 'ava'
 import { Nuxt, Builder } from 'nuxt'
-import { resolve } from 'path'
 
 // We keep the nuxt and server instance
 // So we can close them at the end of the test

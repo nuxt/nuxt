@@ -1,6 +1,6 @@
-const path = require('path')
+import path from 'path'
 
-module.exports = function basicModule(options) {
+export default function basicModule(options) {
   // Add a plugin
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 

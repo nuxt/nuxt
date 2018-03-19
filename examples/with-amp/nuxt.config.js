@@ -8,7 +8,7 @@ const modifyHtml = (html) => {
   html = html.replace('</head>', ampScript + '</head>')
   return html
 }
-module.exports = {
+export default {
   head: {
     meta: [
       { charset: 'utf-8' },

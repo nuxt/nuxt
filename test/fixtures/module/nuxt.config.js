@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   loading: true,
   modules: [
     '~~/modules/basic',

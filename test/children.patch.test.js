@@ -1,6 +1,9 @@
-import test from 'ava'
 import { resolve } from 'path'
+
+import test from 'ava'
+
 import { Nuxt, Builder, Utils } from '..'
+
 import * as browser from './helpers/browser'
 import { interceptLog } from './helpers/console'
 

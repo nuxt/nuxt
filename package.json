@@ -14,6 +14,7 @@
     }
   ],
   "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -47,7 +48,7 @@
   "scripts": {
     "test": "npm run lint && nyc ava -v test -- && nyc report --reporter=html",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
+    "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
     "postinstall": "opencollective postinstall || exit 0"
   },
@@ -71,6 +72,7 @@
     "css-loader": "^0.28.9",
     "debug": "^3.1.0",
     "es6-promise": "^4.2.4",
+    "esm": "^3.0.6",
     "etag": "^1.8.1",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
@@ -93,7 +95,6 @@
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^2.1.0",
     "postcss-url": "^7.3.0",
-    "pretty-error": "^2.1.1",
     "semver": "^5.5.0",
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.13.2",

@@ -8,20 +8,44 @@ module.exports = {
     browser: true,
     node: true
   },
-  extends: ['standard', 'standard-jsx'],
+  extends: [
+    'standard',
+    'standard-jsx',
+    'plugin:import/errors',
+    'plugin:import/warnings'
+  ],
   // required to lint *.vue files
   plugins: [
     'html'
   ],
-  // add your custom rules here
+  settings: {
+    'import/resolver': {
+      node: { extensions: ['.js', '.mjs'] }
+    }
+  },
   rules: {
-    // allow paren-less arrow functions
+    // Enforce import order
+    'import/order': 2,
+
+    // Imports should come first
+    'import/first': 2,
+
+    // Other import rules
+    "import/no-mutable-exports": 2,
+
+    // Allow unresolved imports
+    'import/no-unresolved': 0,
+
+    // Allow paren-less arrow functions
     'arrow-parens': 0,
-    // allow async-await
+
+    // Allow async-await
     'generator-star-spacing': 0,
-    // allow debugger during development
+
+    // Allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
-    // do not allow console.logs etc...
+
+    // Do not allow console.logs etc...
     'no-console': 2,
     'space-before-function-paren': [
 			2,
@@ -31,5 +55,6 @@ module.exports = {
 			}
 		],
   },
+
   globals: {}
 }

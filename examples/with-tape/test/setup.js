@@ -1,4 +1,4 @@
-const hooks = require('require-extension-hooks')
+import hooks from 'require-extension-hooks'
 
 // Setup browser environment
 require('browser-env')()

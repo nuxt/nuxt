@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   loading: { color: 'cyan' },
   router: {
     middleware: 'i18n'

@@ -3,17 +3,15 @@
 
 const defaultsDeep = require('lodash/defaultsDeep')
 const debug = require('debug')('nuxt:build')
-debug.color = 2 // force green color
 const parseArgs = require('minimist')
 const chokidar = require('chokidar')
-const { version } = require('../package.json')
 
+const { version } = require('../package.json')
 const { Nuxt, Builder, Utils } = require('..')
-const {
-  loadNuxtConfig,
-  getLatestHost,
-  nuxtConfigFile
-} = require('./common/utils')
+
+const { loadNuxtConfig, getLatestHost, nuxtConfigFile } = require('./common/utils')
+
+debug.color = 2 // force green color
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {

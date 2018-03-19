@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   css: ['~/assets/main.css'],
   layoutTransition: {
     name: 'layout',

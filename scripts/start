@@ -19,7 +19,7 @@ const startDir = resolve(rootDir, 'start')
 const packageJSON = readJSONSync(resolve(rootDir, 'package.json'))
 
 // Required and Excluded packages for start
-let requires = ['source-map-support', 'pretty-error', 'minimist']
+let requires = ['minimist']
 
 const excludes = ['path', 'fs', 'http', 'module'].concat(
   Object.keys(packageJSON.devDependencies)

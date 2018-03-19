@@ -1,7 +1,7 @@
 import test from 'ava'
-import { resolve } from 'path'
 import { Nuxt, Builder } from '..'
 import { intercept } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 const port = 4010
 
@@ -11,10 +11,7 @@ let buildSpies = null
 
 // Init nuxt.js and create server listening on localhost:4000
 test.serial('Init Nuxt.js', async t => {
-  const rootDir = resolve(__dirname, 'fixtures/deprecate')
-  let config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
-  config.dev = false
+  const config = loadConfig('deprecate', { dev: false })
 
   buildSpies = await intercept(async () => {
     nuxt = new Nuxt(config)

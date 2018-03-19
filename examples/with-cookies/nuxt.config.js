@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     title: 'Nuxt-Cookies',
     meta: [

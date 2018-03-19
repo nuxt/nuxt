@@ -1,8 +1,10 @@
-import test from 'ava'
 import { resolve } from 'path'
-import { Nuxt, Builder } from '..'
+
+import test from 'ava'
 import express from 'express'
 import rp from 'request-promise-native'
+
+import { Nuxt, Builder } from '..'
 import { interceptLog } from './helpers/console'
 
 const port = 4000

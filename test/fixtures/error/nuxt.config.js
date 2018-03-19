@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   hooks(hook) {
     hook('build:done', nuxt => {
       throw new Error('hook error')

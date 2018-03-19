@@ -47,7 +47,6 @@
   },
   "dependencies": {
     "source-map-support": "^0.5.0",
-    "pretty-error": "^2.1.1",
     "minimist": "^1.2.0",
     "lodash": "^4.17.4",
     "debug": "^3.1.0",

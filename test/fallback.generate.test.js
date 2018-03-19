@@ -1,16 +1,19 @@
-import test from 'ava'
-import { resolve } from 'path'
-import { existsSync } from 'fs'
 import http from 'http'
+import { existsSync } from 'fs'
+import { resolve } from 'path'
+
+import test from 'ava'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-import { intercept, interceptLog } from './helpers/console'
+
 import { Nuxt, Builder, Generator, Options } from '..'
+
+import { intercept, interceptLog } from './helpers/console'
+import { loadConfig } from './helpers/config'
 
 const port = 4015
 const url = route => 'http://localhost:' + port + route
-const rootDir = resolve(__dirname, 'fixtures/basic')
 
 let nuxt = null
 let server = null
@@ -18,10 +21,10 @@ let generator = null
 
 // Init nuxt.js and create server listening on localhost:4015
 test.serial('Init Nuxt.js', async t => {
-  let config = require(resolve(rootDir, 'nuxt.config.js'))
-  config.rootDir = rootDir
-  config.buildDir = '.nuxt-spa-fallback'
-  config.dev = false
+  let config = loadConfig('basic', {
+    buildDir: '.nuxt-spa-fallback',
+    dev: false
+  })
   config.build.stats = false
 
   const logSpy = await interceptLog(async () => {

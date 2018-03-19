@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     titleTemplate: '%s - Nuxt.js',
     meta: [

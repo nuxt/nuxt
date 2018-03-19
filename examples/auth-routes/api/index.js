@@ -1,4 +1,4 @@
-const express = require('express')
+import express from 'express'
 
 // Create express router
 const router = express.Router()
@@ -30,7 +30,7 @@ router.post('/logout', (req, res) => {
 })
 
 // Export the server middleware
-module.exports = {
+export default {
   path: '/api',
   handler: router
 }
