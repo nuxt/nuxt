@@ -29,24 +29,29 @@ jobs:
 
   lint:
       <<: *defaults
-      - run:
+      steps:
+        - run:
           name: ESLint
           command: yarn lint
 
   build:
       <<: *defaults
-      - run:
-          name: Build Fixtures
-          command: yarn build-fixtures
+      steps:
+        - run:
+            name: Build Fixtures
+            command: yarn build-fixtures
 
   test:
       <<: *defaults
-      - run:
-          name: Test
-          command: yarn jest test/
+      steps:
+        - run:
+            name: Test
+            command: yarn jest test/
 
   release:
-      - run:
+      <<: *defaults
+      steps:
+        - run:
           name: release
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
