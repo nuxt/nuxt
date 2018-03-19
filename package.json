@@ -43,7 +43,7 @@
   "scripts": {
     "test": "npm run build-fixtures && npm run test:unit",
     "build-fixtures": "node ./scripts/build-fixtures",
-    "test:unit": "jest --maxWorkers=4 test/unit",
+    "test:unit": "jest --maxWorkers=4 --coverage test/unit",
     "test:e2e": "jest --maxWorkers=1 test/e2e",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
