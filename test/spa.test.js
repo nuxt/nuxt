@@ -13,7 +13,7 @@ const renderRoute = async _url => {
   return { window, head, html }
 }
 
-describe('spa', () => {
+describe.skip('spa', () => {
   beforeAll(async () => {
     const config = loadFixture('spa')
     nuxt = new Nuxt(config)
