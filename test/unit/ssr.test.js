@@ -1,7 +1,7 @@
-import { Nuxt, Utils } from '..'
+import { Nuxt, Utils } from '../../'
 import { uniq } from 'lodash'
 import rp from 'request-promise-native'
-import { loadFixture, getPort } from './utils'
+import { loadFixture, getPort } from '../utils'
 
 let port
 let nuxt = null

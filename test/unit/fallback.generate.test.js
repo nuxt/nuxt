@@ -4,12 +4,12 @@ import { resolve } from 'path'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-import { Nuxt, Generator, Options } from '..'
-import { loadFixture, getPort } from './utils'
+import { Nuxt, Generator, Options } from '../../'
+import { loadFixture, getPort } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
-const distDir = resolve(__dirname, 'fixtures/basic/.nuxt-generate-fallback')
+const distDir = resolve(__dirname, '..', 'fixtures/basic/.nuxt-generate-fallback')
 
 let nuxt = null
 let server = null

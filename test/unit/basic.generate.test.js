@@ -5,12 +5,12 @@ import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
 import rp from 'request-promise-native'
-import { Nuxt, Generator } from '..'
-import { loadFixture, getPort } from './utils'
+import { Nuxt, Generator } from '../../'
+import { loadFixture, getPort } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
-const rootDir = resolve(__dirname, 'fixtures/basic')
+const rootDir = resolve(__dirname, '..', 'fixtures/basic')
 const distDir = resolve(rootDir, '.nuxt-generate')
 
 let nuxt = null

@@ -7,7 +7,7 @@ const readFile = promisify(fs.readFile)
 describe('dynamic routes', () => {
   test('Check .nuxt/router.js', () => {
     return readFile(
-      resolve(__dirname, './fixtures/dynamic-routes/.nuxt/router.js'),
+      resolve(__dirname, '..', 'fixtures/dynamic-routes/.nuxt/router.js'),
       'utf-8'
     ).then(routerFile => {
       routerFile = routerFile

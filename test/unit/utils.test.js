@@ -1,5 +1,5 @@
 import ansiHTML from 'ansi-html'
-import { Utils } from '..'
+import { Utils } from '../../'
 
 describe('utils', () => {
   test('encodeHtml', () => {

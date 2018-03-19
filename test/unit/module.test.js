@@ -1,7 +1,7 @@
 import { normalize } from 'path'
 import rp from 'request-promise-native'
-import { Nuxt } from '..'
-import { loadFixture, getPort } from './utils'
+import { Nuxt } from '../../'
+import { loadFixture, getPort } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

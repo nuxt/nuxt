@@ -1,4 +1,4 @@
-import { Nuxt, Generator } from '..'
+import { Nuxt, Generator } from '../../'
 
 describe('generator', () => {
   test('initRoutes with routes (fn => array)', async () => {

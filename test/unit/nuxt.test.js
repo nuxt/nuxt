@@ -1,6 +1,6 @@
 import { resolve } from 'path'
-import { Nuxt, Builder } from '..'
-import { loadFixture } from './utils'
+import { Nuxt, Builder } from '../../'
+import { loadFixture } from '../utils'
 
 describe('nuxt', () => {
   test('Nuxt.js Class', () => {
@@ -23,7 +23,7 @@ describe('nuxt', () => {
   test('Fail to build when no pages/ directory but is in the parent', () => {
     const nuxt = new Nuxt({
       dev: false,
-      rootDir: resolve(__dirname, 'fixtures', 'empty', 'pages')
+      rootDir: resolve(__dirname, '..', 'fixtures', 'empty', 'pages')
     })
 
     return new Builder(nuxt).build().catch(err => {
