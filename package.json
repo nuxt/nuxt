@@ -135,7 +135,7 @@
     "jest": "^22.4.2",
     "jest-runner-eslint": "^0.4.0",
     "jsdom": "^11.6.2",
-    "p-limit": "^1.2.0",
+    "listr": "^0.13.0",
     "puppeteer": "^1.0.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",

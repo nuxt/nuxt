@@ -5,8 +5,7 @@ const { resolve } = require('path')
 const { cpus } = require('os')
 
 const spawnAsync = require('@expo/spawn-async')
-const ORA = require('ora')
-const pLimit = require('p-limit')
+const Listr = require('listr')
 
 const fixtures = [
   'children',
@@ -31,41 +30,29 @@ const fixtures = [
   'basic'
 ]
 
-const spinner = new ORA({ enabled: true })
 const nuxtBuild = resolve(__dirname, '../bin/nuxt-build')
 
-let _total = fixtures.length
-let _done = 0
-let remaining = () => ` (${_done}/${_total})`
-
-async function buildFixture(name) {
-  _done++
-
-  let _name = `'${name}'`
-
-  spinner.info('Building ' + _name + remaining())
-
+function buildFixture(name) {
   const rootDir = resolve(__dirname, '../test/fixtures', name)
-
-  await spawnAsync('node', [nuxtBuild, rootDir])
-    .catch((err) => {
-      spinner.warn('Errors while building ' + _name + ': ' + err)
-    })
-    .then(() => {
-      spinner.succeed('Built fixture: ' + _name + remaining())
-    })
+  return spawnAsync('node', [nuxtBuild, rootDir])
 }
 
-async function run() {
-  const concurrency = Math.min(4, cpus().length)
-
-  spinner.info('Building with concurrency of ' + concurrency)
-  const limit = pLimit(concurrency)
-
-  await Promise.all(fixtures.map(fixture =>
-    limit(() => buildFixture(fixture))))
+const tasks = []
+for (let fixture of fixtures) {
+  tasks.push({
+    title: 'Building fixtures ' + fixture,
+    task: (ctx, task) => buildFixture(fixture)
+      .then(() => {
+        task.title = task.title.replace(/^Building/, 'Built') + ' Successfully'
+      })
+  })
 }
 
-run()
+const concurrency = Math.min(4, cpus().length)
+new Listr([{
+  title: `Build ${fixtures.length} fixtures with concurrency of ${concurrency}`,
+  task: () => new Listr(tasks, {concurrent: concurrency})
+}])
+  .run()
   .catch(console.error) // eslint-disable-line no-console
   .then(() => process.exit(0))
