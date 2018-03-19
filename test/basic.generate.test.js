@@ -11,6 +11,7 @@ import { loadFixture, getPort } from './utils'
 let port
 const url = route => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, 'fixtures/basic')
+const distDir = resolve(rootDir, '.nuxt-generate')
 
 let nuxt = null
 let server = null
@@ -18,13 +19,13 @@ let generator = null
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic')
+    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate'}})
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
 
     await generator.generate({ build: false })
 
-    const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
+    const serve = serveStatic(distDir)
     server = http.createServer((req, res) => {
       serve(req, res, finalhandler(req, res))
     })
@@ -84,9 +85,9 @@ describe('basic generate', () => {
     const html = await rp(url('/users/1/index.html'))
     expect(html.includes('<h1>User: 1</h1>')).toBe(true)
     expect(
-      existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html'))
+      existsSync(resolve(distDir, 'users/1/index.html'))
     ).toBe(true)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(false)
   })
 
   test('/users/2', async () => {
@@ -139,7 +140,7 @@ describe('basic generate', () => {
   })
 
   test('/users/1 not found', async () => {
-    await remove(resolve(rootDir, 'dist/users'))
+    await remove(resolve(distDir, 'users'))
     await expect(rp(url('/users/1'))).rejects.toMatchObject({
       statusCode: 404,
       response: {
@@ -159,9 +160,9 @@ describe('basic generate', () => {
   test('/users/1.html', async () => {
     const html = await rp(url('/users/1.html'))
     expect(html.includes('<h1>User: 1</h1>')).toBe(true)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1.html'))).toBe(true)
+    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
     expect(
-      existsSync(resolve(__dirname, 'fixtures/basic/dist', 'users/1/index.html'))
+      existsSync(resolve(distDir, 'users/1/index.html'))
     ).toBe(false)
   })
 

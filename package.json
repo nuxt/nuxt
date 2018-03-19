@@ -43,6 +43,7 @@
   "scripts": {
     "build-fixtures": "node ./scripts/build-fixtures",
     "test": "npm run lint && npm run build-fixtures && jest test/",
+    "test:unit": "jest",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",

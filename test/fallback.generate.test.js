@@ -9,6 +9,7 @@ import { loadFixture, getPort } from './utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
+const distDir = resolve(__dirname, 'fixtures/basic/.nuxt-generate-fallback')
 
 let nuxt = null
 let server = null
@@ -16,14 +17,14 @@ let generator = null
 
 describe('fallback generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic')
+    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
 
     await generator.generate({ build: false })
 
-    const serve = serveStatic(resolve(__dirname, 'fixtures/basic/dist'))
+    const serve = serveStatic(distDir)
     server = http.createServer((req, res) => {
       serve(req, res, finalhandler(req, res))
     })
@@ -37,8 +38,8 @@ describe('fallback generate', () => {
     const html = await rp(url('/200.html'))
     expect(html.includes('<h1>Index page</h1>')).toBe(false)
     expect(html.includes('data-server-rendered')).toBe(false)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '200.html'))).toBe(true)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '404.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(true)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
   test('nuxt re-generating with generate.fallback = false', async () => {
@@ -56,8 +57,8 @@ describe('fallback generate', () => {
       }
     })
 
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '200.html'))).toBe(false)
-    expect(existsSync(resolve(__dirname, 'fixtures/basic/dist', '404.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
   test('generate.fallback = true is transformed to /404.html', async () => {
