@@ -52,7 +52,7 @@ const concurrency = Math.min(4, cpus().length)
 new Listr([{
   title: `Build ${fixtures.length} fixtures with concurrency of ${concurrency}`,
   task: () => new Listr(tasks, {concurrent: concurrency})
-}])
+}], { nonTTYRenderer: 'silent' })
   .run()
   .catch(console.error) // eslint-disable-line no-console
   .then(() => process.exit(0))
