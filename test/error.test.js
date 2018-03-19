@@ -35,8 +35,7 @@ describe('error', () => {
   })
 
   test('Error: resolvePath()', async () => {
-    expect(() => nuxt.resolvePath()).toThrowError(TypeError)
-
+    expect(() => nuxt.resolvePath()).toThrowError('The \'request\' argument must be string')
     expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
   })
 
