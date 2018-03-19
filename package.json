@@ -42,7 +42,7 @@
   },
   "scripts": {
     "build-fixtures": "node ./scripts/build-fixtures",
-    "test": "npm run lint && npm run build-fixtures && jest test/ --coverage",
+    "test": "npm run lint && npm run build-fixtures && jest test/",
     "test:unit": "jest",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
