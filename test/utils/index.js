@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import _getPort from 'get-port'
+// import _getPort from 'get-port'
 import { defaultsDeep } from 'lodash'
 
 import { requireModule } from '../../lib/common/module'
@@ -17,6 +17,8 @@ export function loadFixture(fixture, overrides) {
   return defaultsDeep({}, overrides, config)
 }
 
+let port = 4000
+
 export function getPort() {
-  return _getPort()
+  return port++
 }
