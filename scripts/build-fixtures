@@ -58,5 +58,8 @@ new Listr([{
   task: () => new Listr(tasks, {concurrent: options.concurrent})
 }], options)
   .run()
-  .catch(console.error) // eslint-disable-line no-console
   .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err) // eslint-disable-line no-console
+    process.exit(1)
+  })
