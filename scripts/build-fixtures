@@ -48,11 +48,15 @@ for (let fixture of fixtures) {
   })
 }
 
-const concurrency = Math.min(4, cpus().length)
+const options = {
+  renderer: process.env.CI === true ? 'silent' : 'default',
+  nonTTYRenderer: 'silent',
+  concurrent: Math.min(4, cpus().length)
+}
 new Listr([{
-  title: `Build ${fixtures.length} fixtures with concurrency of ${concurrency}`,
-  task: () => new Listr(tasks, {concurrent: concurrency})
-}], { nonTTYRenderer: 'silent' })
+  title: `Build ${fixtures.length} fixtures with concurrency of ${options.concurrent}`,
+  task: () => new Listr(tasks, {concurrent: options.concurrent})
+}], options)
   .run()
   .catch(console.error) // eslint-disable-line no-console
   .then(() => process.exit(0))
