@@ -137,7 +137,7 @@
     "jest-runner-eslint": "^0.4.0",
     "jsdom": "^11.6.2",
     "listr": "^0.13.0",
-    "puppeteer": "^1.0.0",
+    "puppeteer": "^1.2.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "sinon": "^4.4.5"
