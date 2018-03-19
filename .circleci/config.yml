@@ -6,7 +6,7 @@ defaults: &defaults
     - image: banian/node-headless-chrome
 
 jobs:
-  install:
+  setup:
     <<: *defaults
     steps:
       # Checkout repository
@@ -50,6 +50,10 @@ jobs:
       - run:
           name: Build Fixtures
           command: yarn build-fixtures
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt
 
   test:
     <<: *defaults
@@ -76,17 +80,17 @@ jobs:
 
 workflows:
   version: 2
-  install-and-parallel-test:
+  setup-and-parallel-test:
     jobs:
-      - install
+      - setup
 
       - lint:
           requires:
-            - install
+            - setup
 
       - build:
           requires:
-            - install
+            - setup
 
       - test:
           requires:
