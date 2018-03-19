@@ -1,4 +1,3 @@
-import ansiHTML from 'ansi-html'
 import { Utils } from '../../'
 
 describe('utils', () => {
