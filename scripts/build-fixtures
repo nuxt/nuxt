@@ -31,7 +31,7 @@ const fixtures = [
   'basic'
 ]
 
-const spinner = new ORA()
+const spinner = new ORA({ enabled: true })
 const nuxtBuild = resolve(__dirname, '../bin/nuxt-build')
 
 let _total = fixtures.length
