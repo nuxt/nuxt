@@ -1,5 +1,5 @@
 {
-  "name": "auth-routes",
+  "name": "example-auth-routes",
   "dependencies": {
     "axios": "^0.16.1",
     "body-parser": "^1.17.2",

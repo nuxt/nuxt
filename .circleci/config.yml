@@ -1,9 +1,13 @@
 version: 2
+
+defaults: &defaults
+  working_directory: ~/project/nuxt
+  docker:
+    - image: banian/node-headless-chrome
+
 jobs:
-  build:
-    working_directory: /usr/src/app
-    docker:
-      - image: banian/node-headless-chrome
+  setup:
+    <<: *defaults
     steps:
       # Checkout repository
       - checkout
@@ -23,17 +27,95 @@ jobs:
           paths:
             - "node_modules"
 
-      # Test
-      - run:
-          name: Tests
-          command: NODE_ENV=test yarn test && yarn coverage
+      # Persist files
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt
 
-      # Release edge
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
       - run:
-          name: Publish nuxt-edge
+          name: ESLint
+          command: yarn lint
+
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Build Fixtures
+          command: yarn build-fixtures
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt/test/fixtures
+
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Test
+          command: yarn test:unit && yarn coverage
+    environment:
+      - NODE_ENV: "test"
+
+  test-e2e:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Test (e2e)
+          command: yarn test:e2e && yarn coverage
+    environment:
+      - NODE_ENV: "test"
+
+  release:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: release
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               ./scripts/release-edge
             fi
+
+workflows:
+  version: 2
+  setup-and-parallel-test:
+    jobs:
+      - setup
+
+      - lint:
+          requires:
+            - setup
+
+      - build:
+          requires:
+            - setup
+
+      - test:
+          requires:
+            - build
+
+      - test-e2e:
+          requires:
+            - build
+
+      - release:
+          requires:
+            - build
+            - lint
+            - test
+            - test-e2e

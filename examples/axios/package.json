@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-proxy",
+  "name": "example-axios",
   "version": "1.0.0",
   "dependencies": {
     "@nuxtjs/axios": "^5.0.0",

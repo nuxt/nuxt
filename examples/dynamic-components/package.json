@@ -1,5 +1,5 @@
 {
-  "name": "dynamic-components-nuxt",
+  "name": "example-dynamic-components",
   "dependencies": {
     "chart.js": "^2.7.0",
     "nuxt": "latest",

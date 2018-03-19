@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-custom-build",
+  "name": "example-custom-build",
   "description": "",
   "dependencies": {
     "nuxt": "latest"

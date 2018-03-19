@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-custom-server",
+  "name": "example-custom-server",
   "dependencies": {
     "express": "^4.15.3",
     "nuxt": "latest"

@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-vue-apollo",
+  "name": "example-vue-apollo",
   "dependencies": {
     "@nuxtjs/apollo": "^2.1.1",
     "nuxt": "latest"

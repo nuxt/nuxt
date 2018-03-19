@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-tailwindcss",
+  "name": "example-with-purgecss",
   "description": "Nuxt.js with Tailwind CSS",
   "scripts": {
     "dev": "nuxt",

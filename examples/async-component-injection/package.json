@@ -1,5 +1,5 @@
 {
-  "name": "components-injection-nuxt",
+  "name": "example-async-components-injection",
   "dependencies": {
     "nuxt": "latest"
   },

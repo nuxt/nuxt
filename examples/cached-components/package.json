@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-cached-components",
+  "name": "example-cached-components",
   "dependencies": {
     "lru-cache": "^4.0.2",
     "nuxt": "latest"

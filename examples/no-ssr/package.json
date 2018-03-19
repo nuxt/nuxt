@@ -1,5 +1,5 @@
 {
-  "name": "no-ssr-cmp-nuxt",
+  "name": "example-no-ssr",
   "dependencies": {
     "nuxt": "latest"
   },

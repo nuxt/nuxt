@@ -19,8 +19,4 @@ export default function () {
   this.nuxt.hook('build:done', (builder) => {
     this.nuxt.__builder_plugin = builder && ctr++
   })
-
-  this.nuxt.hook('build:extendRoutes', (builder) => {
-    throw new Error('hook error testing')
-  })
 }
