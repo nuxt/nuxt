@@ -1,0 +1,19 @@
+{
+  "name": "web-worker",
+  "description": "Demo web workers in nuxt.js",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "precommit": "npm run lint"
+  },
+  "dependencies": {
+    "nuxt": "^1.4.0"
+  },
+  "devDependencies": {
+    "worker-loader": "^1.1.1"
+  }
+}

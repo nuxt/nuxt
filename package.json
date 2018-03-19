@@ -130,6 +130,7 @@
     "eslint-plugin-promise": "^3.7.0",
     "eslint-plugin-react": "^7.6.1",
     "eslint-plugin-standard": "^3.0.1",
+    "eslint-plugin-vue": "^4.3.0",
     "express": "^4.16.2",
     "finalhandler": "^1.1.1",
     "get-port": "^3.2.0",
