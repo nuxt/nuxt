@@ -1,9 +1,13 @@
 version: 2
+
+defaults: &defaults
+  working_directory: /usr/src/app
+  docker:
+    - image: banian/node-headless-chrome
+
 jobs:
-  build:
-    working_directory: /usr/src/app
-    docker:
-      - image: banian/node-headless-chrome
+  install:
+    <<: *defaults
     steps:
       # Checkout repository
       - checkout
@@ -23,17 +27,54 @@ jobs:
           paths:
             - "node_modules"
 
-      # Test
+  lint:
+      <<: *defaults
       - run:
-          name: Tests
-          command: NODE_ENV=test yarn test && yarn coverage
+          name: ESLint
+          command: yarn lint
 
-      # Release edge
+  build:
+      <<: *defaults
       - run:
-          name: Publish nuxt-edge
+          name: Build Fixtures
+          command: yarn build-fixtures
+
+  test:
+      <<: *defaults
+      - run:
+          name: Test
+          command: yarn jest test/
+
+  release:
+      - run:
+          name: release
           command: |
             if [ "${CIRCLE_BRANCH}" == "dev" ]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               ./scripts/release-edge
             fi
+
+workflows:
+  version: 2
+  install-and-parallel-test:
+    jobs:
+      - install
+
+      - lint:
+          requires:
+            - install
+
+      - build:
+          requires:
+            - install
+
+      - test:
+          requires:
+            - build
+
+      - release:
+          requires:
+            - build
+            - lint
+            - test
