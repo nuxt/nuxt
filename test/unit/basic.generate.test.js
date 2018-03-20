@@ -2,7 +2,7 @@ import { existsSync } from 'fs'
 import http from 'http'
 import { resolve } from 'path'
 import { remove } from 'fs-extra'
-import serveStatic from 'serve-static'
+import gzipStatic from 'connect-gzip-static'
 import finalhandler from 'finalhandler'
 import { loadFixture, getPort, Nuxt, Generator, Builder, rp } from '../utils'
 
@@ -25,7 +25,7 @@ describe('basic generate', () => {
 
     await generator.generate()
 
-    const serve = serveStatic(distDir)
+    const serve = gzipStatic(distDir)
     server = http.createServer((req, res) => {
       serve(req, res, finalhandler(req, res))
     })
