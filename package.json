@@ -79,6 +79,7 @@
     "glob": "^7.1.2",
     "hash-sum": "^1.0.2",
     "html-minifier": "^3.5.11",
+    "html-webpack-inline-source-plugin": "^0.0.10",
     "html-webpack-plugin": "^3.0.6",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
