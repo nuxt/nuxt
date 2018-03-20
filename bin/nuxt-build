@@ -33,6 +33,7 @@ if (argv.help) {
       --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
       --spa                Launch in SPA mode
       --universal          Launch in Universal mode (default)
+      --generate           Generate static version after build
       --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h           Displays this message
   `)
@@ -65,14 +66,14 @@ const close = () => {
   process.exit(0)
 }
 
-if (options.mode !== 'spa') {
-  // -- Build for SSR app --
+if (!argv.generate) {
+  // -- Build only --
   builder
     .build()
     .then(() => close())
     .catch(Utils.fatalError)
 } else {
-  // -- Build for SPA app --
+  // -- Build and generate --
   const s = Date.now()
 
   nuxt.hook('generate:distRemoved', () => debug('Destination folder cleaned'))
@@ -91,9 +92,6 @@ if (options.mode !== 'spa') {
       console.log('\n' + errors.toString())
     }
   })
-
-  // Disable minify to get exact results of nuxt start
-  nuxt.options.generate.minify = false
 
   // Generate dist for SPA static deployment
   new Generator(nuxt, builder).generate({ build: true }).then(() => {
