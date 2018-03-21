@@ -6,6 +6,7 @@ const { cpus } = require('os')
 
 const spawnAsync = require('@expo/spawn-async')
 const Listr = require('listr')
+const isCI = require('is-ci')
 
 const fixtures = [
   'children',
@@ -49,7 +50,7 @@ for (let fixture of fixtures) {
 }
 
 const options = {
-  renderer: process.env.CI ? 'silent' : 'default',
+  renderer: isCI ? 'silent' : 'default',
   nonTTYRenderer: 'silent',
   concurrent: Math.min(4, cpus().length)
 }
