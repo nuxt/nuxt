@@ -2488,9 +2488,9 @@ eslint@^4.19.0, eslint@^4.5.0:
     table "4.0.2"
     text-table "~0.2.0"
 
-esm@^3.0.6:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.6.tgz#0b327fb312e287d9e1a95e728c18b79603fb6d9e"
+esm@^3.0.7:
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.7.tgz#44ede5534a3e22427176732f260312f777765bb5"
 
 espree@^3.5.2, espree@^3.5.4:
   version "3.5.4"
@@ -7468,9 +7468,9 @@ webpack-stylish@^0.1.6:
     text-table "^0.2.0"
     wordwrap "^1.0.0"
 
-webpack@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.1.1.tgz#44e4d6a869dd36fdfc0b227f9bd865a4bccfd81c"
+webpack@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/webpack/-/webpack-4.2.0.tgz#a4f80807651a0e611bb09609600dc266262efcc1"
   dependencies:
     acorn "^5.0.0"
     acorn-dynamic-import "^3.0.0"
