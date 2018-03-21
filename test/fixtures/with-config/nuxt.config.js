@@ -16,6 +16,14 @@ export default {
         {
           path: '/redirect/about-bis',
           redirect: '/about-bis'
+        },
+        {
+          name: 'hello-world',
+          path: '/hello-world',
+          component: '~/components/test.vue',
+          props: {
+            name: 'world'
+          }
         }
       ]
     }
