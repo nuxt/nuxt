@@ -102,6 +102,7 @@
     "source-map": "^0.7.2",
     "style-resources-loader": "^1.1.0",
     "time-fix-plugin": "^2.0.0",
+    "uglifyjs-webpack-plugin": "^1.2.4",
     "upath": "^1.0.2",
     "url-loader": "^1.0.1",
     "vue": "^2.5.16",
