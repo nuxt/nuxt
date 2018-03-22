@@ -13,5 +13,7 @@ self.addEventListener('message', (event) => {
   if (event.data.action === 'expensive' && event.data.time) {
 		// Post data to parent thread
 		self.postMessage(expensive(Number(event.data.time)))
+	} else {
+		self.postMessage({ hello: 'from worker' })
 	}
 })

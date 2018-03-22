@@ -14,6 +14,7 @@
     "nuxt": "^1.4.0"
   },
   "devDependencies": {
+    "eslint-loader": "^2.0.0",
     "worker-loader": "^1.1.1"
   }
 }

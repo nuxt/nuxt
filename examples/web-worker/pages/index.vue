@@ -68,6 +68,12 @@ export default {
     test () {
       const worker = this.workers[this.workerIndex++ % this.workers.length]
 
+      if (worker) {
+        worker.onmessage = (event) => {
+          this.notification = event.data.hello
+        }
+      }
+
       if (worker) worker.postMessage({ hello: 'world' })
       else this.notification = 'No more test workers available'
     },
@@ -76,7 +82,7 @@ export default {
 
       if (worker) {
         worker.onmessage = (event) => {
-          console.log(`expensive made ${event.data} loops`)
+          this.notification = `expensive made ${event.data} loops`
         }
         this.longRunningWorkers.push(worker)
       } else {
@@ -86,9 +92,11 @@ export default {
       worker.postMessage({ action: 'expensive', time: miliseconds })
     },
     freeWorker () {
+      // we can't really free a worker, we can only terminate it and create a new
       const worker = this.longRunningWorkers.pop()
       worker.onmessage = null
-      this.workers.push(worker)
+      worker.terminate()
+      this.workers.push(this.$worker.createWorker())
       this.notification = 'Worker freed'
     },
     removeWorker () {
