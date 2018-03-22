@@ -83,6 +83,8 @@ export default {
       if (worker) {
         worker.onmessage = (event) => {
           this.notification = `expensive made ${event.data} loops`
+          worker.onmessage = null
+          this.workers.push(...this.longRunningWorkers.splice(this.longRunningWorkers.indexOf(worker), 1))
         }
         this.longRunningWorkers.push(worker)
       } else {
