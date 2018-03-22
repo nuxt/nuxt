@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-custom-layouts",
+  "name": "example-custom-layouts",
   "dependencies": {
     "nuxt": "latest"
   },

@@ -1,5 +1,5 @@
 {
-  "name": "with-vuetify",
+  "name": "example-with-vuetify",
   "dependencies": {
     "nuxt": "latest",
     "vuetify": "latest"

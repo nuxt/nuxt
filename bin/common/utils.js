@@ -1,6 +1,9 @@
-const { Utils } = require('../..')
+
 const { resolve } = require('path')
 const { existsSync } = require('fs')
+
+const { Utils } = require('../..')
+const { requireModule } = require('../../lib/common/module')
 
 const getRootDir = argv => resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
@@ -15,7 +18,7 @@ exports.loadNuxtConfig = argv => {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = require(nuxtConfigFile)
+    options = requireModule(nuxtConfigFile)
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     Utils.fatalError('Could not load config file: ' + argv['config-file'])
   }

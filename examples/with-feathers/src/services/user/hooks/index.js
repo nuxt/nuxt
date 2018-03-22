@@ -1,8 +1,7 @@
-'use strict'
+import hooks from 'feathers-hooks'
+import { hooks as auth } from 'feathers-authentication'
 
 require('../../../hooks')
-const hooks = require('feathers-hooks')
-const auth = require('feathers-authentication').hooks
 
 exports.before = {
   all: [],

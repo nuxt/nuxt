@@ -1,4 +1,4 @@
-module.exports = function middlewareModule(options) {
+export default function middlewareModule(options) {
   // Empty module
 }
 

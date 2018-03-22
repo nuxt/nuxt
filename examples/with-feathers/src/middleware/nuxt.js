@@ -1,5 +1,5 @@
-const resolve = require('path').resolve
-const { Nuxt, Builder } = require('nuxt')
+import { resolve } from 'path'
+import { Nuxt, Builder } from 'nuxt'
 
 // Setup nuxt.js
 let config = {}
@@ -18,6 +18,6 @@ if (config.dev) {
 }
 
 // Add nuxt.js middleware
-module.exports = function (req, res) {
+export default function (req, res) {
   nuxt.render(req, res)
 }

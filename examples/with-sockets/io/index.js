@@ -1,7 +1,10 @@
-module.exports = function () {
-  const server = require('http').createServer(this.nuxt.renderer.app)
-  const io = require('socket.io')(server)
+import http from 'http'
+import socketIO from 'socket.io'
 
+const server = http.createServer(this.nuxt.renderer.app)
+const io = socketIO(server)
+
+export default function () {
   // overwrite nuxt.listen()
   this.nuxt.listen = (port, host) => new Promise((resolve) => server.listen(port || 3000, host || 'localhost', resolve))
   // close this server on 'close' event

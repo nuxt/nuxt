@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-hello-world",
+  "name": "example-static-images",
   "dependencies": {
     "nuxt": "latest"
   },

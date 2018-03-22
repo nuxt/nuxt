@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     title: 'Nuxt.js + Vue-ChartJS',
     meta: [

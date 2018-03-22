@@ -1,5 +1,5 @@
 {
-  "name": "uikit-nuxt",
+  "name": "example-uikit",
   "dependencies": {
     "nuxt": "latest",
     "uikit": "^3.0.0-beta.30",

@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-custom-routes",
+  "name": "example-custom-routes",
   "dependencies": {
     "axios": "latest",
     "nuxt": "latest"

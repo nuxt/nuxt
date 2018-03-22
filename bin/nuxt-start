@@ -2,8 +2,8 @@
 /* eslint-disable no-console */
 
 const fs = require('fs')
-const parseArgs = require('minimist')
 const { resolve } = require('path')
+const parseArgs = require('minimist')
 
 const { Nuxt, Utils } = require('..')
 const { loadNuxtConfig, getLatestHost } = require('./common/utils')

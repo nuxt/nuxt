@@ -1,14 +1,13 @@
-const webpack = require('webpack')
 const path = require('path')
-const nxtConf = require('../nuxt.config')
+const nuxtConf = require('../nuxt.config')
 
 module.exports = (sBaseConfig, configType, defaultConfig) => {
-  const srcDir = `../${nxtConf.srcDir||''}`
-  const rootDir = `../${nxtConf.rootDir||''}`
+  const srcDir = `../${nuxtConf.srcDir || ''}`
+  const rootDir = `../${nuxtConf.rootDir || ''}`
 
   Object.assign(defaultConfig.resolve.alias, {
-      '~~': path.resolve(__dirname, rootDir),
-      '~': path.resolve(__dirname, srcDir)
+    '~~': path.resolve(__dirname, rootDir),
+    '~': path.resolve(__dirname, srcDir)
   })
 
   return defaultConfig

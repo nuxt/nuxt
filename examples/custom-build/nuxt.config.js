@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   build: {
     filenames: {
       css: 'styles.[chunkhash].css', // default: common.[chunkhash].css

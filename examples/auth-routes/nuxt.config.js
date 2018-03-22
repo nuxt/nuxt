@@ -1,7 +1,7 @@
-const bodyParser = require('body-parser')
-const session = require('express-session')
+import bodyParser from 'body-parser'
+import session from 'express-session'
 
-module.exports = {
+export default {
   head: {
     title: 'Auth Routes',
     meta: [

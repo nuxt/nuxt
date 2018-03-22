@@ -1,5 +1,5 @@
 {
-	"name": "with-museui",
+	"name": "example-with-museui",
 	"dependencies": {
 		"nuxt": "latest",
 		"muse-ui": "latest"

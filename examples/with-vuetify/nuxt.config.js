@@ -1,6 +1,6 @@
-const nodeExternals = require('webpack-node-externals')
+import nodeExternals from 'webpack-node-externals'
 
-module.exports = {
+export default {
   /*
   ** Head elements
   ** Add Roboto font and Material Icons

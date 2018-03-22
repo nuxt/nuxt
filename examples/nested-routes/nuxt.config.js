@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   loading: false,
   head: {
     meta: [
