@@ -45,7 +45,6 @@ export default {
     }
   },
   build: {
-    stats: false,
     publicPath: '/orion/',
     maxChunkSize: 300000,
     analyze: {

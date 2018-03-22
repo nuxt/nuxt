@@ -1,5 +1,4 @@
 export default {
-  dev: false,
   render: {
     resourceHints: false,
     http2: {
@@ -7,7 +6,6 @@ export default {
     }
   },
   build: {
-    stats: false,
     extractCSS: true
   }
 }

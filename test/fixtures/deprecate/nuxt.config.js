@@ -1,6 +1,3 @@
 export default {
-  modules: ['~/modules/deprecated-apis'],
-  build: {
-    stats: false
-  }
+  modules: ['~/modules/deprecated-apis']
 }
