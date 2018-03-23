@@ -121,7 +121,6 @@
     "webpack-node-externals": "^1.6.0"
   },
   "devDependencies": {
-    "@expo/spawn-async": "^1.3.0",
     "babel-eslint": "^8.2.1",
     "codecov": "^3.0.0",
     "eslint": "^4.19.1",
@@ -135,6 +134,7 @@
     "eslint-plugin-react": "^7.6.1",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-plugin-vue": "^4.4.0",
+    "execa": "^0.10.0",
     "express": "^4.16.2",
     "finalhandler": "^1.1.1",
     "get-port": "^3.2.0",
