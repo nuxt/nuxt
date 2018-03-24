@@ -7537,6 +7537,15 @@ webpack@^4.2.0:
     watchpack "^1.5.0"
     webpack-sources "^1.0.1"
 
+webpackbar@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-1.0.0.tgz#9dd1dcc8c1744233156798d6c882a7ed1d02cc4d"
+  dependencies:
+    chalk "^2.3.2"
+    figures "^2.0.0"
+    lodash "^4.17.5"
+    log-update "^2.3.0"
+
 whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/whatwg-encoding/-/whatwg-encoding-1.0.3.tgz#57c235bc8657e914d24e1a397d3c82daee0a6ba3"
