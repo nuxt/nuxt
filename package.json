@@ -119,7 +119,7 @@
     "webpack-dev-middleware": "^3.0.1",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.6.0",
-    "webpackbar": "^1.0.0"
+    "webpackbar": "^1.1.0"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
