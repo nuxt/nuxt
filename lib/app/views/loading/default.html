@@ -8,6 +8,7 @@ body, html, #__nuxt {
   align-items: center;
   margin: 0;
   padding: 0;
+  flex-direction: column;
 }
 
 .loader,
@@ -29,6 +30,11 @@ body, html, #__nuxt {
   transform: translateZ(0);
   -webkit-animation: load8 1.1s infinite linear;
   animation: load8 1.1s infinite linear;
+}
+
+.loader.error {
+  border-left: .5rem solid #ff4500;
+  animation-duration: 5s;
 }
 
 @-webkit-keyframes load8 {
@@ -53,6 +59,13 @@ body, html, #__nuxt {
   }
 }
 </style>
+
+<script>
+window.addEventListener('error', function() {
+  var e = document.getElementById("loader");
+  if (e) e.className += " error";
+});
+</script>
 
 <div class="loader"><%= options.loading %></div>
 
