@@ -24,7 +24,7 @@ describe('build fixtures', () => {
       if (!config.build) {
         config.build = {}
       }
-      config.build.stats = 'errors-only'
+      config.build.stats = false
       const nuxt = new Nuxt(config)
       await new Builder(nuxt).build()
     })
