@@ -18,15 +18,20 @@ const fixtures = [
 describe('build fixtures', () => {
   function build(fixture) {
     test.concurrent(`building ${fixture}`, async () => {
-      const config = loadFixture(fixture)
-      config.test = true
-      config.minimalCLI = true
-      if (!config.build) {
-        config.build = {}
-      }
-      config.build.stats = false
+      const config = loadFixture(fixture, {
+        test: true,
+        minimalCLI: true,
+        build: {
+          stats: false
+        }
+      })
       const nuxt = new Nuxt(config)
-      await new Builder(nuxt).build()
+      const buildDone = jest.fn()
+      nuxt.hook('build:done', buildDone)
+      const builder = await new Builder(nuxt).build()
+      // 2: BUILD_DONE
+      expect(builder._buildStatus).toBe(2)
+      expect(buildDone).toHaveBeenCalledTimes(1)
     })
   }
 
