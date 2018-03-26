@@ -49,7 +49,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn build-fixtures
+          command: yarn build:fixtures && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:

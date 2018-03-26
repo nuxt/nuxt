@@ -41,10 +41,10 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "test": "npm run build-fixtures && npm run test:unit",
-    "build-fixtures": "node ./scripts/build-fixtures",
+    "test": "npm run build:fixtures && npm run test:unit",
     "test:unit": "jest --maxWorkers=4 --coverage test/unit",
     "test:e2e": "jest --maxWorkers=1 test/e2e",
+    "build:fixtures": "jest --maxWorkers=4 --coverage test/fixtures/build.fixtures.test.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
@@ -135,14 +135,12 @@
     "eslint-plugin-react": "^7.6.1",
     "eslint-plugin-standard": "^3.0.1",
     "eslint-plugin-vue": "^4.4.0",
-    "execa": "^0.10.0",
     "express": "^4.16.2",
     "finalhandler": "^1.1.1",
     "get-port": "^3.2.0",
     "jest": "^22.4.3",
     "jest-runner-eslint": "^0.4.0",
     "jsdom": "^11.6.2",
-    "listr": "^0.13.0",
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5"
