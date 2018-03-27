@@ -56,7 +56,7 @@
     "lint": "eslint --ext .js,.mjs,.vue bin lib test examples",
     "postinstall": "opencollective postinstall || exit 0",
     "prebuild": "yarn clean",
-    "security": "nsp check",
+    "security": "nsp check || true",
     "test": "NODE_ENV=test yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest --maxWorkers=4 --coverage test/fixtures",
     "test:e2e": "jest --maxWorkers=1 test/e2e",
