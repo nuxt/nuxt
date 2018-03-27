@@ -1,5 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
   coverageDirectory: './coverage/',
-  setupTestFrameworkScriptFile: './test/utils/setup'
+  setupTestFrameworkScriptFile: './test/utils/setup',
+  testPathIgnorePatterns: ['test/fixtures/.*?/']
 }
