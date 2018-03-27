@@ -54,6 +54,7 @@ jobs:
           root: ~/project
           paths:
             - nuxt/test/fixtures
+            - dist
     environment:
       - NODE_ENV: "test"
 
