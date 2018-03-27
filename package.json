@@ -25,7 +25,8 @@
   },
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "dist"
   ],
   "keywords": [
     "nuxt",
@@ -44,19 +45,23 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "rimraf dist && yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
+    "build": "yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
     "build:nuxt": "rollup -c scripts/rollup/nuxt.js",
-    "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js",
     "build:nuxt-legacy": "rollup -c scripts/rollup/nuxt-legacy.js",
-    "build:nuxt-test": "rollup -c scripts/rollup/nuxt-test.js",
+    "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js",
+    "clean": "rimraf dist",
+    "coverage": "codecov",
+    "lint": "eslint --ext .js,.mjs,.vue bin lib test examples",
+    "postinstall": "opencollective postinstall || exit 0",
+    "prebuild": "yarn clean",
+    "precommit": "yarn lint",
+    "prepublish": "yarn build",
+    "security": "nsp check",
     "test": "yarn test:build && yarn test:unit",
     "test:build": "jest --coverage test/fixtures",
-    "test:unit": "jest --coverage test/unit",
     "test:e2e": "jest test/e2e",
-    "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
-    "precommit": "yarn lint",
-    "postinstall": "opencollective postinstall || exit 0"
+    "test:lint": "yarn lint && yarn security",
+    "test:unit": "jest --coverage test/unit"
   },
   "engines": {
     "node": ">=8.0.0",
@@ -65,9 +70,7 @@
   "dependencies": {
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/youch": "^4.2.3",
-    "ansi-html": "^0.0.7",
     "autoprefixer": "^8.2.0",
-    "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
     "babel-preset-vue-app": "^2.0.0",
     "cache-loader": "^1.2.2",
@@ -75,7 +78,6 @@
     "chokidar": "^2.0.3",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
-    "css-hot-loader": "^1.3.9",
     "css-loader": "^0.28.11",
     "debug": "^3.1.0",
     "es6-promise": "^4.2.4",
@@ -91,7 +93,6 @@
     "is-ci": "^1.1.0",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
-    "log-update": "^2.3.0",
     "lru-cache": "^4.1.2",
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.2.0",
@@ -108,7 +109,6 @@
     "serialize-javascript": "^1.4.0",
     "serve-static": "^1.13.2",
     "server-destroy": "^1.0.1",
-    "source-map": "^0.7.2",
     "style-resources-loader": "^1.1.0",
     "thread-loader": "^1.1.5",
     "time-fix-plugin": "^2.0.0",
@@ -148,8 +148,8 @@
     "finalhandler": "^1.1.1",
     "get-port": "^3.2.0",
     "jest": "^22.4.3",
-    "jest-runner-eslint": "^0.4.0",
     "jsdom": "^11.6.2",
+    "nsp": "^3.2.1",
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
@@ -157,7 +157,6 @@
     "rollup": "^0.57.1",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-istanbul": "^2.0.1",
     "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.3.0"
   },
