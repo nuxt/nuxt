@@ -1,16 +1,8 @@
 /*!
  * Nuxt.js
- * (c) 2016-2017 Chopin Brothers
- * Core maintainer: Pooya (@pi0)
+ * (c) 2016-2018 Chopin Brothers
+ * Core maintainers: Pooya Parsa (@pi0) - Clark Du (@clarkdo)
  * Released under the MIT License.
  */
 
-// Node Source Map Support
-// https://github.com/evanw/node-source-map-support
-require('source-map-support').install()
-
-// Fix babel flag
-/* istanbul ignore else */
-process.noDeprecation = true
-
-module.exports = require('./dist/core')
+module.exports = require('./dist/core-start.js')

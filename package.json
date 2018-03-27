@@ -26,7 +26,8 @@
   "files": [
     "bin",
     "lib",
-    "dist"
+    "dist",
+    "index.js"
   ],
   "keywords": [
     "nuxt",
@@ -48,7 +49,7 @@
     "build": "yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
     "build:nuxt": "rollup -c scripts/rollup/nuxt.js",
     "build:nuxt-legacy": "rollup -c scripts/rollup/nuxt-legacy.js",
-    "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js",
+    "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js && node scripts/make-start",
     "clean": "rimraf dist",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin lib test examples",

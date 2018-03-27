@@ -88,11 +88,9 @@ jobs:
       - run:
           name: release
           command: |
-            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              ./scripts/release-edge
-            fi
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            ./scripts/release-edge
 
 workflows:
   version: 2
@@ -122,3 +120,6 @@ workflows:
             - lint
             - test-unit
             - test-e2e
+          branches:
+            only:
+              - dev
