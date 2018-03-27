@@ -46,7 +46,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
+    "build": "NODE_ENV=production yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
     "build:nuxt": "rollup -c scripts/rollup/nuxt.js",
     "build:nuxt-legacy": "rollup -c scripts/rollup/nuxt-legacy.js",
     "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js && node scripts/make-start",
@@ -55,11 +55,9 @@
     "lint": "eslint --ext .js,.mjs,.vue bin lib test examples",
     "postinstall": "opencollective postinstall || exit 0",
     "prebuild": "yarn clean",
-    "precommit": "yarn lint",
-    "prepublish": "yarn build",
     "security": "nsp check",
-    "test": "yarn test:build && yarn test:unit",
-    "test:build": "jest --coverage test/fixtures",
+    "test": "NODE_ENV=test yarn test:fixtures && yarn test:unit",
+    "test:fixtures": "jest --coverage test/fixtures",
     "test:e2e": "jest test/e2e",
     "test:lint": "yarn lint && yarn security",
     "test:unit": "jest --coverage test/unit"

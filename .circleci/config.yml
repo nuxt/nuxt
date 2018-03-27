@@ -49,11 +49,12 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:build && yarn coverage
+          command: yarn build && yarn test:fixtures && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
             - nuxt/test/fixtures
+            - nuxt/dist
     environment:
       - NODE_ENV: "test"
 
