@@ -1,6 +1,4 @@
-import rp from 'request-promise-native'
-import { Nuxt } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -24,9 +22,9 @@ describe('with-config', () => {
     // expect(logSpy.args[0][0]).toBe('Test plugin!')
   })
 
-  test('/ (global styles inlined)', async () => {
+  test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('.global-css-selector')).toBe(true)
+    expect(html).toContain('.global-css-selector')
   })
 
   test.skip('/ (preload fonts)', async () => {
@@ -52,16 +50,14 @@ describe('with-config', () => {
   })
 
   test('/test/ (router base)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('default')
     expect(html.includes('<h1>Default layout</h1>')).toBe(true)
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
-    // release()
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+
+    expect(window.__test_plugin).toBe(true)
   })
 
   test('/test/about (custom layout)', async () => {

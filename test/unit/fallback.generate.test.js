@@ -3,9 +3,7 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import rp from 'request-promise-native'
-import { Nuxt, Generator, Options } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, Options, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -21,6 +19,7 @@ describe('fallback generate', () => {
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
+    generator.spinner.enabled = false
 
     await generator.generate({ build: false })
 

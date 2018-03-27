@@ -4,9 +4,7 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import rp from 'request-promise-native'
-import { Nuxt, Generator } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -22,6 +20,7 @@ describe('basic generate', () => {
     const config = loadFixture('basic', {generate: {dir: '.nuxt-generate'}})
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
+    generator.spinner.enabled = false
 
     await generator.generate({ build: false })
 
@@ -64,15 +63,12 @@ describe('basic generate', () => {
   })
 
   test('/head', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/head'))
     const html = window.document.body.innerHTML
     const metas = window.document.getElementsByTagName('meta')
     expect(window.document.title).toBe('My title - Nuxt.js')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(html.includes('<div><h1>I can haz meta tags</h1></div>')).toBe(true)
-    // release()
-    // expect(logSpy.getCall(0).args[0]).toBe('Body script!')
   })
 
   test('/async-data', async () => {

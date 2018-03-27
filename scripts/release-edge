@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const { readFileSync, writeFileSync } = require('fs-extra')
 const { resolve } = require('path')
 const { spawnSync } = require('child_process')
+const { readFileSync, writeFileSync } = require('fs-extra')
 
 // paths
 const packagePath = resolve(__dirname, '..', 'package.json')
@@ -51,4 +51,19 @@ console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
 // eslint-disable-next-line no-console
 console.log(
   String(spawnSync('npm', `publish --tag ${tag}`.split(' ')).stdout).trim()
+)
+
+// Run make start
+spawnSync('npm', 'run build:nuxt-start'.split(' '))
+
+// Log
+// eslint-disable-next-line no-console
+console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`)
+
+// Do publish
+// eslint-disable-next-line no-console
+console.log(
+  String(spawnSync('npm', `publish --tag ${tag}`.split(' '), {
+    cwd: resolve(__dirname, '..', 'start')
+  }).stdout).trim()
 )

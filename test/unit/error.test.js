@@ -1,6 +1,5 @@
 // import rp from 'request-promise-native'
-import { Nuxt } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -35,7 +34,7 @@ describe('error', () => {
   })
 
   test('Error: resolvePath()', async () => {
-    expect(() => nuxt.resolvePath()).toThrowError('The \'request\' argument must be string')
+    expect(() => nuxt.resolvePath()).toThrowError()
     expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
   })
 

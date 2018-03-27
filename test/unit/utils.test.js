@@ -1,4 +1,4 @@
-import { Utils } from '../../'
+import { Utils } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {

@@ -1,8 +1,7 @@
 import { exec, spawn } from 'child_process'
 import { resolve } from 'path'
 import { promisify } from 'util'
-import rp from 'request-promise-native'
-import { Utils } from '../../'
+import { Utils, rp } from '../utils'
 
 const execify = promisify(exec)
 const rootDir = resolve(__dirname, '..', 'fixtures/basic')

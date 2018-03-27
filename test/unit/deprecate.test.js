@@ -1,5 +1,4 @@
-import { Nuxt } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
 
@@ -13,12 +12,6 @@ describe('deprecate', () => {
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
-  })
-
-  test.skip('Deprecated: module.addVendor()', async () => {
-    // expect(
-    //   buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary')
-    // ).toBe(true)
   })
 
   // Close server and ask nuxt to stop listening to file changes
