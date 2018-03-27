@@ -61,7 +61,7 @@ nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
 // Close function
 const close = () => {
   // In analyze mode wait for plugin opening the browser
-  if (options.build.analyze === true && !(this.options.ci || this.options.test)) {
+  if (options.build.analyze === true && !(options.ci || options.test)) {
     return
   }
 
