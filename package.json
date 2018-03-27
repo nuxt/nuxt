@@ -44,7 +44,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "rm -r dist && yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
+    "build": "rimraf dist && yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
     "build:nuxt": "rollup -c scripts/rollup/nuxt.js",
     "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js",
     "build:nuxt-legacy": "rollup -c scripts/rollup/nuxt-legacy.js",
@@ -153,6 +153,7 @@
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
+    "rimraf": "^2.6.2",
     "rollup": "^0.57.1",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
