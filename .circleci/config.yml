@@ -39,8 +39,8 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: ESLint
-          command: yarn lint
+          name: Lint and Security
+          command: yarn test:lint
 
   build:
     <<: *defaults
