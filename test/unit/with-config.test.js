@@ -50,16 +50,14 @@ describe('with-config', () => {
   })
 
   test('/test/ (router base)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('default')
     expect(html.includes('<h1>Default layout</h1>')).toBe(true)
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
-    // release()
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+
+    expect(window.__test_plugin).toBe(true)
   })
 
   test('/test/about (custom layout)', async () => {
