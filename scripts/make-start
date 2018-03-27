@@ -97,13 +97,6 @@ extraFiles.forEach(file => {
   removeSync(resolve(startDir, file))
 })
 
-// Patch index.js
-const startIndexjs = resolve(startDir, 'index.js')
-writeFileSync(
-  startIndexjs,
-  String(readFileSync(startIndexjs)).replace('./dist/nuxt', './dist/core')
-)
-
 // Patch bin/nuxt-start
 const binStart = resolve(startDir, 'bin/nuxt-start')
 writeFileSync(

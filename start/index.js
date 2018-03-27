@@ -5,4 +5,4 @@
  * Released under the MIT License.
  */
 
-module.exports = require('./dist/core-start.js')
+module.exports = require('./dist/nuxt-start.js')
