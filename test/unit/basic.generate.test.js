@@ -4,9 +4,7 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import rp from 'request-promise-native'
-import { Nuxt, Generator } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

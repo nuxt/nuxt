@@ -1,4 +1,7 @@
 {
+  "ignore": [
+    "nuxt-test.js"
+  ],
   "env": {
     "test": {
       "presets": [

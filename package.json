@@ -11,10 +11,13 @@
     },
     {
       "name": "Pooya Parsa (@pi0)"
+    },
+    {
+      "name": "Clark Du (@clarkdo)"
     }
   ],
-  "main": "./lib/index.js",
-  "module": "./lib/index.mjs",
+  "main": "index.js",
+  "module": "./lib/nuxt.js",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -41,13 +44,18 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "test": "npm run build:fixtures && npm run test:unit",
+    "build": "rm -r dist && yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
+    "build:nuxt": "rollup -c scripts/rollup/nuxt.js",
+    "build:nuxt-start": "rollup -c scripts/rollup/nuxt-start.js",
+    "build:nuxt-legacy": "rollup -c scripts/rollup/nuxt-legacy.js",
+    "build:nuxt-test": "rollup -c scripts/rollup/nuxt-test.js",
+    "build:fixtures": "jest --maxWorkers=4 --coverage test/fixtures",
+    "test": "yarn build:nuxt-test && yarn build:fixtures && yarn test:unit",
     "test:unit": "jest --maxWorkers=4 --coverage test/unit",
     "test:e2e": "jest --maxWorkers=1 test/e2e",
-    "build:fixtures": "jest --maxWorkers=4 --coverage test/fixtures",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/* build/ lib/ test/ examples/",
-    "precommit": "npm run lint",
+    "precommit": "yarn lint",
     "postinstall": "opencollective postinstall || exit 0"
   },
   "engines": {
@@ -116,13 +124,14 @@
     "vuex": "^3.0.1",
     "webpack": "^4.2.0",
     "webpack-bundle-analyzer": "^2.11.1",
-    "webpack-dev-middleware": "^3.0.1",
+    "webpack-dev-middleware": "^3.1.0",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.6.0",
     "webpackbar": "^1.1.3"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
+    "babel-plugin-external-helpers": "^6.22.0",
     "codecov": "^3.0.0",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
@@ -143,7 +152,13 @@
     "jsdom": "^11.6.2",
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-istanbul": "^2.0.1",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-node-resolve": "^3.3.0"
   },
   "collective": {
     "type": "opencollective",

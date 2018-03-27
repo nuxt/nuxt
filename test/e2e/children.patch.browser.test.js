@@ -1,6 +1,5 @@
-import { Nuxt, Utils } from '../..'
 import Browser from '../utils/browser'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Utils } from '../utils'
 
 let port
 const browser = new Browser()

@@ -1,6 +1,5 @@
 import { resolve } from 'path'
-import { Nuxt, Options } from '../../'
-import { version } from '../../package.json'
+import { Nuxt, Options, version } from '../utils'
 
 describe('basic config defaults', () => {
   test('Nuxt.version is same as package', () => {
