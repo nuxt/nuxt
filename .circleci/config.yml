@@ -119,5 +119,5 @@ workflows:
           requires:
             - build
             - lint
-            - test
+            - test-unit
             - test-e2e
