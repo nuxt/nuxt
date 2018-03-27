@@ -1,6 +1,6 @@
-const { resolve } = require('path')
-const fs = require('fs')
-const { promisify } = require('util')
+import { resolve } from 'path'
+import fs from 'fs'
+import { promisify } from 'util'
 
 const readFile = promisify(fs.readFile)
 

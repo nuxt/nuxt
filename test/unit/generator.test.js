@@ -1,4 +1,4 @@
-const { Nuxt, Generator } = require('../utils')
+import { Nuxt, Generator } from '../utils'
 
 describe('generator', () => {
   test('initRoutes with routes (fn => array)', async () => {

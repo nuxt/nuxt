@@ -4,5 +4,5 @@ module.exports = {
   setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
   moduleFileExtensions: ['js', 'mjs', 'json'],
-  transform: {} // Required to disable babel transform
+  expand: true
 }

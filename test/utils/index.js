@@ -1,24 +1,24 @@
-const path = require('path')
-const fs = require('fs')
+import path from 'path'
+import fs from 'fs'
 
-const _getPort = require('get-port')
-const { defaultsDeep } = require('lodash')
-const _rp = require('request-promise-native')
-const { requireModule } = require('../../lib/common/module')
-const pkg = require('../../package.json')
-const Dist = require('../../dist/nuxt-test')
+import _getPort from 'get-port'
+import { defaultsDeep } from 'lodash'
+import _rp from 'request-promise-native'
+import { requireModule } from '../../lib/common/module'
+import pkg from '../../package.json'
+import Dist from '../../lib/nuxt'
 
-exports.rp = _rp
-exports.getPort = _getPort
-exports.version = pkg.version
+export const rp = _rp
+export const getPort = _getPort
+export const version = pkg.version
 
-exports.Nuxt = Dist.Nuxt
-exports.Utils = Dist.Utils
-exports.Options = Dist.Options
-exports.Builder = Dist.Builder
-exports.Generator = Dist.Generator
+export const Nuxt = Dist.Nuxt
+export const Utils = Dist.Utils
+export const Options = Dist.Options
+export const Builder = Dist.Builder
+export const Generator = Dist.Generator
 
-exports.loadFixture = function loadFixture(fixture, overrides) {
+export const loadFixture = function loadFixture(fixture, overrides) {
   const rootDir = path.resolve(__dirname, '../fixtures/' + fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 

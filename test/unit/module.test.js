@@ -1,5 +1,5 @@
-const { normalize } = require('path')
-const { loadFixture, getPort, Nuxt, rp } = require('../utils')
+import { normalize } from 'path'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

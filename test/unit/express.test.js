@@ -1,5 +1,5 @@
-const express = require('express')
-const { loadFixture, getPort, Nuxt, rp } = require('../utils')
+import express from 'express'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

@@ -1,4 +1,4 @@
-const { Utils } = require('../utils')
+import { Utils } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {

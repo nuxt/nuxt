@@ -1,10 +1,10 @@
-const { existsSync } = require('fs')
-const http = require('http')
-const { resolve } = require('path')
-const { remove } = require('fs-extra')
-const serveStatic = require('serve-static')
-const finalhandler = require('finalhandler')
-const { loadFixture, getPort, Nuxt, Generator, rp } = require('../utils')
+import { existsSync } from 'fs'
+import http from 'http'
+import { resolve } from 'path'
+import { remove } from 'fs-extra'
+import serveStatic from 'serve-static'
+import finalhandler from 'finalhandler'
+import { loadFixture, getPort, Nuxt, Generator, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

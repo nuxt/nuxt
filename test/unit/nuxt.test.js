@@ -1,5 +1,5 @@
-const { resolve } = require('path')
-const { loadFixture, Nuxt, Builder } = require('../utils')
+import { resolve } from 'path'
+import { loadFixture, Nuxt, Builder } from '../utils'
 
 describe('nuxt', () => {
   test('Nuxt.js Class', () => {

@@ -1,6 +1,6 @@
-const puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer'
 
-module.exports = class Browser {
+export class Browser {
   async start(options = {}) {
     // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
     this.browser = await puppeteer.launch(

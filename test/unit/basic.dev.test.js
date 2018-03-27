@@ -1,4 +1,4 @@
-const { loadFixture, getPort, Nuxt, Builder } = require('../utils')
+import { loadFixture, getPort, Nuxt, Builder } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route

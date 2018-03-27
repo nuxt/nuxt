@@ -1,4 +1,4 @@
-const { loadFixture, getPort, Nuxt, rp } = require('../utils')
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -22,9 +22,9 @@ describe('with-config', () => {
     // expect(logSpy.args[0][0]).toBe('Test plugin!')
   })
 
-  test('/ (global styles inlined)', async () => {
+  test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('.global-css-selector')).toBe(true)
+    expect(html).toContain('.global-css-selector')
   })
 
   test.skip('/ (preload fonts)', async () => {
