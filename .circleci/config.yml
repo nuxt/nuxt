@@ -49,7 +49,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn build:fixtures && yarn coverage
+          command: yarn test:pre && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -57,13 +57,13 @@ jobs:
     environment:
       - NODE_ENV: "test"
 
-  test:
+  test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Test
+          name: Unit Test
           command: yarn test:unit && yarn coverage
     environment:
       - NODE_ENV: "test"
@@ -74,7 +74,7 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Test (e2e)
+          name: E2E Test
           command: yarn test:e2e && yarn coverage
     environment:
       - NODE_ENV: "test"
@@ -107,7 +107,7 @@ workflows:
           requires:
             - setup
 
-      - test:
+      - test-unit:
           requires:
             - build
 
