@@ -91,10 +91,6 @@ jobs:
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             ./scripts/release-edge
-    branches:
-      only:
-        - dev
-
 
 workflows:
   version: 2
@@ -124,3 +120,7 @@ workflows:
             - lint
             - test-unit
             - test-e2e
+          filters:
+            branches:
+              only:
+                - dev
