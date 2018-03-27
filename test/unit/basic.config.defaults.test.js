@@ -1,5 +1,5 @@
-import { resolve } from 'path'
-import { Nuxt, Options, version } from '../utils'
+const { resolve } = require('path')
+const { Nuxt, Options, version } = require('../utils')
 
 describe('basic config defaults', () => {
   test('Nuxt.version is same as package', () => {

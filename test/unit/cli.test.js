@@ -1,7 +1,7 @@
-import { exec, spawn } from 'child_process'
-import { resolve } from 'path'
-import { promisify } from 'util'
-import { Utils, rp } from '../utils'
+const { exec, spawn } = require('child_process')
+const { resolve } = require('path')
+const { promisify } = require('util')
+const { Utils, rp } = require('../utils')
 
 const execify = promisify(exec)
 const rootDir = resolve(__dirname, '..', 'fixtures/basic')

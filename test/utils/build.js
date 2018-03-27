@@ -1,6 +1,6 @@
-import { loadFixture, Nuxt, Builder } from './index'
+const { loadFixture, Nuxt, Builder } = require('./index')
 
-export function buildFixture(fixture) {
+exports.buildFixture = function buildFixture(fixture) {
   test(`Build ${fixture}`, async () => {
     const config = loadFixture(fixture, {
       test: true,

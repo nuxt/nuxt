@@ -1,4 +1,4 @@
-import { loadFixture, Nuxt, Generator } from '../utils'
+const { loadFixture, Nuxt, Generator } = require('../utils')
 
 describe('basic fail generate', () => {
   test('Fail with routes() which throw an error', async () => {

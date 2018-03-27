@@ -1,3 +1,3 @@
-import { buildFixture } from '../../utils/build'
+const { buildFixture } = require('../../utils/build')
 
 buildFixture('debug')

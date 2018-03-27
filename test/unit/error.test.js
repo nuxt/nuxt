@@ -1,5 +1,5 @@
-// import rp from 'request-promise-native'
-import { loadFixture, getPort, Nuxt } from '../utils'
+// const rp = require('request-promise-native')
+const { loadFixture, getPort, Nuxt } = require('../utils')
 
 let port
 const url = route => 'http://localhost:' + port + route

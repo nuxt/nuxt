@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt } from '../utils'
+const { loadFixture, getPort, Nuxt } = require('../utils')
 
 let port
 

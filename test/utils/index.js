@@ -1,32 +1,24 @@
-import path from 'path'
-import fs from 'fs'
+const path = require('path')
+const fs = require('fs')
 
-import _getPort from 'get-port'
-import { defaultsDeep } from 'lodash'
-import _rp from 'request-promise-native'
+const _getPort = require('get-port')
+const { defaultsDeep } = require('lodash')
+const _rp = require('request-promise-native')
+const { requireModule } = require('../../lib/common/module')
+const pkg = require('../../package.json')
+const Dist = require('../../dist/nuxt-test')
 
-import { requireModule } from '../../lib/common/module'
-import { version as _version } from '../../package.json'
+exports.rp = _rp
+exports.getPort = _getPort
+exports.version = pkg.version
 
-import {
-  Nuxt as _Nuxt,
-  Utils as _Utils,
-  Options as _Options,
-  Builder as _Builder,
-  Generator as _Generator
-} from '../../dist/nuxt-test'
+exports.Nuxt = Dist.Nuxt
+exports.Utils = Dist.Utils
+exports.Options = Dist.Options
+exports.Builder = Dist.Builder
+exports.Generator = Dist.Generator
 
-export const rp = _rp
-export const getPort = _getPort
-export const version = _version
-
-export const Nuxt = _Nuxt
-export const Utils = _Utils
-export const Options = _Options
-export const Builder = _Builder
-export const Generator = _Generator
-
-export function loadFixture(fixture, overrides) {
+exports.loadFixture = function loadFixture(fixture, overrides) {
   const rootDir = path.resolve(__dirname, '../fixtures/' + fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 

@@ -1,5 +1,5 @@
-import Browser from '../utils/browser'
-import { loadFixture, getPort, Nuxt } from '../utils'
+const Browser = require('../utils/browser')
+const { loadFixture, getPort, Nuxt } = require('../utils')
 
 let port
 const browser = new Browser()

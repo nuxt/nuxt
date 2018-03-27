@@ -1,5 +1,5 @@
-import { uniq } from 'lodash'
-import { loadFixture, getPort, Nuxt, Utils, rp } from '../utils'
+const { uniq } = require('lodash')
+const { loadFixture, getPort, Nuxt, Utils, rp } = require('../utils')
 
 let port
 let nuxt = null
