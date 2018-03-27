@@ -60,9 +60,12 @@ nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
 
 // Close function
 const close = () => {
+  // In analyze mode wait for plugin
+  // emitting assets and opening browser
   if (options.build.analyze === true) {
-    return // Wait for user exit
+    return
   }
+
   process.exit(0)
 }
 
