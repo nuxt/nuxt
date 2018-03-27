@@ -14,12 +14,6 @@ describe('deprecate', () => {
     await nuxt.listen(port, 'localhost')
   })
 
-  test.skip('Deprecated: module.addVendor()', async () => {
-    // expect(
-    //   buildSpies.warn.calledWithMatch('module: addVendor is no longer necessary')
-    // ).toBe(true)
-  })
-
   // Close server and ask nuxt to stop listening to file changes
   test('Closing server and nuxt.js', async () => {
     await nuxt.close()
