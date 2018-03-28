@@ -95,6 +95,7 @@
     "is-ci": "^1.1.0",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
+    "log-update": "^2.3.0",
     "lru-cache": "^4.1.2",
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.3.0",
@@ -129,7 +130,7 @@
     "webpack-dev-middleware": "^3.1.0",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.6.0",
-    "webpackbar": "^1.1.4"
+    "webpackbar": "^1.5.1"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
