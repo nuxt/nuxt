@@ -2532,9 +2532,9 @@ eslint@^4.19.1:
     table "4.0.2"
     text-table "~0.2.0"
 
-esm@^3.0.10:
-  version "3.0.10"
-  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.10.tgz#75d541a776b587427f942d31f66aea8f4c911702"
+esm@^3.0.12:
+  version "3.0.12"
+  resolved "https://registry.yarnpkg.com/esm/-/esm-3.0.12.tgz#c443d871a70100f3c1ec66008de7c84e3c1d6e3b"
 
 espree@^3.5.2, espree@^3.5.4:
   version "3.5.4"
@@ -4599,9 +4599,9 @@ mimic-fn@^1.0.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-1.2.0.tgz#820c86a39334640e99516928bd03fca88057d022"
 
-mini-css-extract-plugin@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/mini-css-extract-plugin/-/mini-css-extract-plugin-0.2.0.tgz#7a16b0e1096c86de8e4d1c3b063aa1aeae88d41d"
+mini-css-extract-plugin@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/mini-css-extract-plugin/-/mini-css-extract-plugin-0.3.0.tgz#f8dc03abb3a8663f1a431143e232fb47fb4d9318"
   dependencies:
     loader-utils "^1.1.0"
     webpack-sources "^1.1.0"
