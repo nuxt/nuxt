@@ -6,9 +6,10 @@
  */
 
 const fs = require('fs')
+const path = require('path')
 
-if (fs.existsSync('dist/nuxt.js')) {
-  module.exports = require('./dist/nuxt.js')
-} else {
+if (fs.existsSync(path.resolve(__dirname, '.babelrc'))) {
   module.exports = require('./lib/index.js')
+} else {
+  module.exports = require('./dist/nuxt.js')
 }
