@@ -78,6 +78,7 @@
     "caniuse-lite": "^1.0.30000821",
     "chalk": "^2.3.2",
     "chokidar": "^2.0.3",
+    "clear": "^0.1.0",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
     "css-loader": "^0.28.11",
