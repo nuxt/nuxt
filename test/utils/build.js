@@ -6,7 +6,7 @@ export const buildFixture = function buildFixture(fixture) {
       test: true,
       minimalCLI: true,
       build: {
-        stats: false
+        stats: 'errors-only'
       }
     })
     const nuxt = new Nuxt(config)

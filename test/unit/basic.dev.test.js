@@ -7,8 +7,13 @@ let nuxt = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', { buildDir: '.nuxt-dev' })
-    config.dev = true
+    const config = loadFixture('basic', {
+      dev: true,
+      buildDir: '.nuxt-dev',
+      build: {
+        stats: 'none'
+      }
+    })
     nuxt = new Nuxt(config)
     new Builder(nuxt).build()
     port = await getPort()
