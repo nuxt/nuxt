@@ -1,7 +1,7 @@
-import test from 'ava'
 import { resolve } from 'path'
 import { Nuxt, Builder } from 'nuxt'
 import { JSDOM } from 'jsdom'
+import test from 'ava'
 
 // We keep the nuxt and server instance
 // So we can close them at the end of the test
@@ -14,7 +14,6 @@ test.before(async () => {
   try {
     config = require(resolve(rootDir, 'nuxt.config.js'))
   } catch (e) {
-    console.log(e)
   }
   config.rootDir = rootDir // project folder
   config.dev = false // production build
