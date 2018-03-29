@@ -2,6 +2,7 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: './coverage/',
   collectCoverageFrom: [
+    '<rootDir>/**/*.js',
     '!<rootDir>/lib/builder/webpack/plugins/vue/'
   ],
   setupTestFrameworkScriptFile: './test/utils/setup',
