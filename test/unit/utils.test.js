@@ -2,7 +2,7 @@ import { Utils } from '../utils'
 import mockConsole from '../utils/console'
 
 describe('utils', () => {
-  const console = mockConsole()
+  const console = mockConsole(['warn', 'error'])
 
   test('printWarn', () => {
     Utils.printWarn('Testing printWarn', 'utils.test.js')
