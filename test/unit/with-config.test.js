@@ -179,7 +179,7 @@ describe('with-config', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll('Closing server and nuxt.js', async () => {
     await nuxt.close()
   })
 })

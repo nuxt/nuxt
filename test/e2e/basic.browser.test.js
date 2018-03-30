@@ -191,11 +191,11 @@ describe('basic browser', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll('Closing server and nuxt.js', async () => {
     await nuxt.close()
   })
 
-  test('Stop browser', async () => {
+  afterAll('Stop browser', async () => {
     await page.close()
     await browser.close()
   })

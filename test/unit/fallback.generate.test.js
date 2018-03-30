@@ -75,7 +75,7 @@ describe('fallback generate', () => {
   )
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server', async () => {
+  afterAll('Closing server', async () => {
     await server.close()
   })
 })
