@@ -117,7 +117,7 @@ Support us with a monthly donation and help us continue our activities. [[Become
 ## Getting started
 
 ```
-$ npm install nuxt --save
+$ npm install nuxt
 ```
 
 Add a script to your package.json like this:
