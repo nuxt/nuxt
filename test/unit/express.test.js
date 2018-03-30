@@ -32,7 +32,7 @@ describe('express', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
-  afterAll('close server', async () => {
+  afterAll(async () => {
     await nuxt.close()
     await new Promise((resolve, reject) => {
       server.close(err => err ? reject(err) : resolve())

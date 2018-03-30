@@ -17,7 +17,7 @@ describe.skip('deprecate', () => {
   test()
 
   // Close server and ask nuxt to stop listening to file changes
-  afterAll('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 })
