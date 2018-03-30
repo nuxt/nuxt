@@ -5,7 +5,7 @@ let port
 let nuxt = null
 // let buildSpies = null
 
-describe('deprecate', () => {
+describe.skip('deprecate', () => {
   beforeAll(async () => {
     const config = loadFixture('deprecate')
 
@@ -13,6 +13,8 @@ describe('deprecate', () => {
     port = await getPort()
     await nuxt.listen(port, 'localhost')
   })
+
+  test()
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll('Closing server and nuxt.js', async () => {

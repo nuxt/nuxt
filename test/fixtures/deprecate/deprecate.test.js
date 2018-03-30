@@ -1,3 +1,5 @@
 const { buildFixture } = require('../../utils/build')
 
-buildFixture('deprecate')
+describe.skip('build deprecate fixture', () => {
+  buildFixture('deprecate')
+})
