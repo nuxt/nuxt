@@ -1,7 +1,42 @@
-
 import { Utils } from '../utils'
+import mockConsole from '../utils/console'
 
 describe('utils', () => {
+  const console = mockConsole(['warn', 'error'])
+
+  test('printWarn', () => {
+    Utils.printWarn('Testing printWarn', 'utils.test.js')
+
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    expect(console.warn.mock.calls[0][0]).toContain('WARN')
+    expect(console.warn.mock.calls[0][0]).toContain('Testing printWarn')
+  })
+
+  test('printError', () => {
+    Utils.printError(new Error('Error object'), 'utils.test.js')
+    expect(console.error).toHaveBeenCalledTimes(1)
+    expect(console.error.mock.calls[0][0]).toContain('Error: Error object')
+
+    console.error.mockClear()
+
+    Utils.printError('Error string', 'utils.test.js')
+    expect(console.error).toHaveBeenCalledTimes(1)
+    expect(console.error.mock.calls[0][0]).toContain('Error string')
+  })
+
+  test('fatalError', () => {
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation()
+
+    Utils.fatalError('Testing fatalError')
+
+    expect(console.error).toHaveBeenCalledTimes(1)
+    expect(console.error.mock.calls[0][0]).toContain('Testing fatalError')
+    expect(exitSpy).toHaveBeenCalledTimes(1)
+    expect(exitSpy).toHaveBeenCalledWith(1)
+
+    exitSpy.mockRestore()
+  })
+
   test('encodeHtml', () => {
     const html = '<h1>Hello</h1>'
     expect(Utils.encodeHtml(html)).toBe('&lt;h1&gt;Hello&lt;/h1&gt;')
