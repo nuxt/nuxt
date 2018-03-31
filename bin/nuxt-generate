@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
-
 const parseArgs = require('minimist')
-const debug = require('debug')('nuxt:generate')
-
-const { Nuxt, Builder, Generator, Utils } = require('..')
+const consola = require('consola')
+const { Nuxt, Builder, Generator } = require('..')
 const { loadNuxtConfig } = require('./common/utils')
+
+const logger = consola.withScope('nuxt:generate')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -23,7 +22,7 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.help) {
-  console.log(`
+  process.stderr.write(`
     Description
       Generate a static web application (server-rendered)
     Usage
@@ -42,7 +41,6 @@ const options = loadNuxtConfig(argv)
 
 options.dev = false // Force production mode (no webpack middleware called)
 
-debug('Generating...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 const generator = new Generator(nuxt, builder)
@@ -52,34 +50,9 @@ const generateOptions = {
   build: argv['build']
 }
 
-const s = Date.now()
-
-// Setup hooks
-
-nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
-
-nuxt.hook('generate:distRemoved', () => debug('Destination folder cleaned'))
-
-nuxt.hook('generate:distCopied', () => debug('Static & build files copied'))
-
-nuxt.hook('generate:page', page => debug('Generate file: ' + page.path))
-
-nuxt.hook('generate:done', (generator, errors) => {
-  const duration = Math.round((Date.now() - s) / 100) / 10
-
-  debug(`HTML Files generated in ${duration}s`)
-
-  if (errors.length) {
-    /* eslint-disable no-console */
-    console.log('\n Generate errors summary:')
-    console.log('\n' + errors.toString())
-  }
-})
-
 generator
   .generate(generateOptions)
   .then(() => {
-    debug('Generate done')
     process.exit(0)
   })
-  .catch(Utils.fatalError)
+  .catch(error => logger.fatal(error))

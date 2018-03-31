@@ -1504,10 +1504,6 @@ clean-css@4.1.x:
   dependencies:
     source-map "0.5.x"
 
-clear@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/clear/-/clear-0.1.0.tgz#b81b1e03437a716984fd7ac97c87d73bdfe7048a"
-
 cli-cursor@^2.0.0, cli-cursor@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-2.1.0.tgz#b35dac376479facc3e94747d41d0d0f5238ffcb5"
@@ -1722,6 +1718,14 @@ connect@^3.6.5:
     finalhandler "1.1.0"
     parseurl "~1.3.2"
     utils-merge "1.0.1"
+
+consola@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/consola/-/consola-0.0.1.tgz#453784b2f82e3c2a164c14f535a7aaf673b45089"
+  dependencies:
+    figures "^2.0.0"
+    ora "^2.0.0"
+    std-env "^1.1.0"
 
 console-browserify@^1.1.0:
   version "1.1.0"
@@ -2418,9 +2422,9 @@ eslint-import-resolver-node@^0.3.1:
     debug "^2.6.9"
     resolve "^1.5.0"
 
-eslint-module-utils@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/eslint-module-utils/-/eslint-module-utils-2.1.1.tgz#abaec824177613b8a95b299639e1b6facf473449"
+eslint-module-utils@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-module-utils/-/eslint-module-utils-2.2.0.tgz#b270362cd88b1a48ad308976ce7fa54e98411746"
   dependencies:
     debug "^2.6.8"
     pkg-dir "^1.0.0"
@@ -2431,16 +2435,16 @@ eslint-plugin-html@^4.0.2:
   dependencies:
     htmlparser2 "^3.8.2"
 
-eslint-plugin-import@^2.8.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.9.0.tgz#26002efbfca5989b7288ac047508bd24f217b169"
+eslint-plugin-import@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.10.0.tgz#fa09083d5a75288df9c6c7d09fe12255985655e7"
   dependencies:
     builtin-modules "^1.1.1"
     contains-path "^0.1.0"
     debug "^2.6.8"
     doctrine "1.5.0"
     eslint-import-resolver-node "^0.3.1"
-    eslint-module-utils "^2.1.1"
+    eslint-module-utils "^2.2.0"
     has "^1.0.1"
     lodash "^4.17.4"
     minimatch "^3.0.3"
@@ -3296,7 +3300,7 @@ html-entities@^1.2.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-1.2.1.tgz#0df29351f0721163515dfb9e5543e5f6eed5162f"
 
-html-minifier@^3.2.3, html-minifier@^3.5.12:
+html-minifier@^3.2.3:
   version "3.5.12"
   resolved "https://registry.yarnpkg.com/html-minifier/-/html-minifier-3.5.12.tgz#6bfad4d0327f5b8d2b62f5854654ac3703b9b031"
   dependencies:
@@ -3305,6 +3309,18 @@ html-minifier@^3.2.3, html-minifier@^3.5.12:
     commander "2.15.x"
     he "1.1.x"
     ncname "1.0.x"
+    param-case "2.1.x"
+    relateurl "0.2.x"
+    uglify-js "3.3.x"
+
+html-minifier@^3.5.13:
+  version "3.5.13"
+  resolved "https://registry.yarnpkg.com/html-minifier/-/html-minifier-3.5.13.tgz#6bca6d533a7f18a476dc6aeb3d113071ab5c165e"
+  dependencies:
+    camel-case "3.0.x"
+    clean-css "4.1.x"
+    commander "2.15.x"
+    he "1.1.x"
     param-case "2.1.x"
     relateurl "0.2.x"
     uglify-js "3.3.x"
@@ -6780,6 +6796,18 @@ statuses@~1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.3.1.tgz#faf51b9eb74aaef3b3acf4ad5f61abf24cb7b93e"
 
+std-env@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/std-env/-/std-env-1.0.0.tgz#7435477a5900f38088f2b021dd2dd98679816b0a"
+  dependencies:
+    is-ci "^1.1.0"
+
+std-env@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/std-env/-/std-env-1.1.0.tgz#f89ded0c3facd5b53cd3cda288779ed88d3b87ad"
+  dependencies:
+    is-ci "^1.1.0"
+
 stealthy-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
@@ -7553,18 +7581,18 @@ webpack@^4.4.1:
     watchpack "^1.5.0"
     webpack-sources "^1.0.1"
 
-webpackbar@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-1.5.1.tgz#05fd64a168ac6cbef763ab074ababeaf9edb72fc"
+webpackbar@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.1.0.tgz#c6ef3529f63d4369435a72ea0aaba289e1d2dc61"
   dependencies:
     chalk "^2.3.2"
     figures "^2.0.0"
-    is-ci "^1.1.0"
     loader-utils "^1.1.0"
     lodash "^4.17.5"
     log-update "^2.3.0"
     pretty-time "^1.0.0"
     schema-utils "^0.4.5"
+    std-env "^1.0.0"
     table "^4.0.3"
 
 whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3:
