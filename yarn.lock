@@ -7581,11 +7581,12 @@ webpack@^4.4.1:
     watchpack "^1.5.0"
     webpack-sources "^1.0.1"
 
-webpackbar@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.1.0.tgz#c6ef3529f63d4369435a72ea0aaba289e1d2dc61"
+webpackbar@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.2.0.tgz#db08d5f997b6dfd717c070fb1cf9c0c4ae35f1b3"
   dependencies:
     chalk "^2.3.2"
+    consola "^0.1.0"
     figures "^2.0.0"
     loader-utils "^1.1.0"
     lodash "^4.17.5"
