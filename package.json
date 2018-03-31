@@ -80,7 +80,7 @@
     "chokidar": "^2.0.3",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
-    "consola": "^1.0.0",
+    "consola": "^1.1.1",
     "css-loader": "^0.28.11",
     "es6-promise": "^4.2.4",
     "esm": "^3.0.14",
@@ -130,7 +130,7 @@
     "webpack-dev-middleware": "^3.1.0",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.6.0",
-    "webpackbar": "^2.2.1"
+    "webpackbar": "^2.3.1"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
