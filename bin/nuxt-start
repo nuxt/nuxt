@@ -81,5 +81,5 @@ if (nuxt.options.render.ssr === true) {
 const { port, host } = getLatestHost(argv)
 
 nuxt.listen(port, host).then(() => {
-  nuxt.showReady()
+  nuxt.showReady(false)
 })
