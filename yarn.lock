@@ -1711,17 +1711,9 @@ connect@^3.6.5:
     parseurl "~1.3.2"
     utils-merge "1.0.1"
 
-consola@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/consola/-/consola-1.1.1.tgz#282566e34573d33f01e3c0aca0cd6d383f82925c"
-  dependencies:
-    figures "^2.0.0"
-    lodash "^4.17.5"
-    std-env "^1.1.0"
-
-consola@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/consola/-/consola-1.1.2.tgz#b475910f42e14b6789a296c83ce5cd67a2222ce7"
+consola@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/consola/-/consola-1.1.3.tgz#27081a3f2e1cd7a8ebc4788a95d64af927d5f0ab"
   dependencies:
     figures "^2.0.0"
     lodash "^4.17.5"
@@ -7546,12 +7538,12 @@ webpack@^4.4.1:
     watchpack "^1.5.0"
     webpack-sources "^1.0.1"
 
-webpackbar@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.3.1.tgz#cbaee8c500ad18efe3bfa81aad79c575e1c38420"
+webpackbar@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.3.2.tgz#bdb1cfae1725a1341e583c9c8ef4e37a16bb8136"
   dependencies:
     chalk "^2.3.2"
-    consola "^1.1.1"
+    consola "^1.1.3"
     figures "^2.0.0"
     loader-utils "^1.1.0"
     lodash "^4.17.5"
