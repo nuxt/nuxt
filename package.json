@@ -94,7 +94,6 @@
     "html-webpack-plugin": "^3.1.0",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.5",
-    "log-update": "^2.3.0",
     "lru-cache": "^4.1.2",
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.4.0",
