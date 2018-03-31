@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-
 const { join } = require('path')
 const semver = require('semver')
-
-const { Utils } = require('..')
+const consola = require('consola')
 const { name, engines } = require('../package.json')
+
+const logger = consola.withScope('nuxt')
 
 // Global error handler
 process.on('unhandledRejection', _error => {
-  Utils.printError(_error)
+  logger.error(_error)
 })
 
 if (!semver.satisfies(process.version, engines.node)) {
-  Utils.fatalError(
+  logger.fatal(
     `The engine "node" is incompatible with ${name}. Expected version "${
       engines.node
     }".`

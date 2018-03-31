@@ -19,7 +19,6 @@ describe('fallback generate', () => {
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
-    generator.spinner.enabled = false
 
     await generator.generate({ build: false })
 
