@@ -20,7 +20,6 @@ describe('basic generate', () => {
     const config = loadFixture('basic', {generate: {dir: '.nuxt-generate'}})
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
-    generator.spinner.enabled = false
 
     await generator.generate({ build: false })
 
