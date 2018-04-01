@@ -80,7 +80,7 @@
     "chokidar": "^2.0.3",
     "compression": "^1.7.1",
     "connect": "^3.6.5",
-    "consola": "^1.1.3",
+    "consola": "^1.1.4",
     "css-loader": "^0.28.11",
     "es6-promise": "^4.2.4",
     "esm": "^3.0.14",
@@ -128,7 +128,7 @@
     "webpack-dev-middleware": "^3.1.0",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.6.0",
-    "webpackbar": "^2.3.2"
+    "webpackbar": "^2.4.0"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
@@ -150,7 +150,7 @@
     "finalhandler": "^1.1.1",
     "get-port": "^3.2.0",
     "jest": "^22.4.3",
-    "jsdom": "^11.6.2",
+    "jsdom": "^11.7.0",
     "nsp": "^3.2.1",
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
