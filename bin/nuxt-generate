@@ -4,8 +4,6 @@ const consola = require('consola')
 const { Nuxt, Builder, Generator } = require('..')
 const { loadNuxtConfig } = require('./common/utils')
 
-const logger = consola.withScope('nuxt:generate')
-
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
@@ -55,4 +53,4 @@ generator
   .then(() => {
     process.exit(0)
   })
-  .catch(error => logger.fatal(error))
+  .catch(error => consola.fatal(error))

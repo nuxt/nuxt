@@ -4,8 +4,6 @@ const consola = require('consola')
 const { Nuxt, Builder, Generator } = require('..')
 const { loadNuxtConfig } = require('./common/utils')
 
-const logger = consola.withScope('nuxt:build')
-
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
@@ -53,7 +51,7 @@ const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 
 // Setup hooks
-nuxt.hook('error', (_err) => logger.fatal(_err))
+nuxt.hook('error', (_err) => consola.fatal(_err))
 
 // Close function
 const close = () => {
@@ -71,7 +69,7 @@ if (!argv.generate) {
   builder
     .build()
     .then(() => close())
-    .catch(error => logger.fatal(error))
+    .catch(error => consola.fatal(error))
 } else {
   // Generate dist for SPA static deployment
   new Generator(nuxt, builder).generate({ build: true }).then(() => {

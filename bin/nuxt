@@ -4,11 +4,9 @@ const semver = require('semver')
 const consola = require('consola')
 const { name, engines } = require('../package.json')
 
-const logger = consola.withScope('nuxt')
-
 // Global error handler
 process.on('unhandledRejection', _error => {
-  logger.error(_error)
+  consola.error(_error)
 })
 
 // Exit process on fatal errors
@@ -22,7 +20,7 @@ consola.add({
 })
 
 if (!semver.satisfies(process.version, engines.node)) {
-  logger.fatal(
+  consola.fatal(
     `The engine "node" is incompatible with ${name}. Expected version "${
       engines.node
     }".`

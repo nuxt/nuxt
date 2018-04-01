@@ -6,8 +6,6 @@ const consola = require('consola')
 const { Nuxt } = require('..')
 const { loadNuxtConfig, getLatestHost } = require('./common/utils')
 
-const logger = consola.withScope('nuxt:start')
-
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
@@ -25,7 +23,7 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.hostname === '') {
-  logger.fatal('Provided hostname argument has no value')
+  consola.fatal('Provided hostname argument has no value')
 }
 
 if (argv.help) {
@@ -54,7 +52,7 @@ options.dev = false
 const nuxt = new Nuxt(options)
 
 // Setup hooks
-nuxt.hook('error', (_err) => logger.fatal(_err))
+nuxt.hook('error', (_err) => consola.fatal(_err))
 
 // Check if project is built for production
 const distDir = resolve(
@@ -63,7 +61,7 @@ const distDir = resolve(
   'dist'
 )
 if (!fs.existsSync(distDir)) {
-  logger.fatal(
+  consola.fatal(
     'No build files found, please run `nuxt build` before launching `nuxt start`'
   )
 }
@@ -72,7 +70,7 @@ if (!fs.existsSync(distDir)) {
 if (nuxt.options.render.ssr === true) {
   const ssrBundlePath = resolve(distDir, 'server-bundle.json')
   if (!fs.existsSync(ssrBundlePath)) {
-    logger.fatal(
+    consola.fatal(
       'No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`'
     )
   }
