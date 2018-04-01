@@ -11,6 +11,16 @@ process.on('unhandledRejection', _error => {
   logger.error(_error)
 })
 
+// Exit process on fatal errors
+consola.add({
+  log(logObj) {
+    if (logObj.type === 'fatal') {
+      process.stderr.write('Nuxt Fatal Error :(\n')
+      process.exit(1)
+    }
+  }
+})
+
 if (!semver.satisfies(process.version, engines.node)) {
   logger.fatal(
     `The engine "node" is incompatible with ${name}. Expected version "${
