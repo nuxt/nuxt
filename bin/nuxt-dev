@@ -128,8 +128,6 @@ function startDev(oldInstance) {
       .then(() => nuxt.listen(port, host))
       // Pass new nuxt to watch chain
       .then(() => instance)
-      // Call showReady
-      .then(() => nuxt.showReady())
       // Handle errors
       .catch(err => onError(err, instance))
   )
