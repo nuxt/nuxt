@@ -109,12 +109,13 @@ function startDev(oldInstance) {
 
   return (
     Promise.resolve()
-      .then(
-        () =>
-          oldInstance && oldInstance.builder
-            ? oldInstance.builder.unwatch()
-            : Promise.resolve()
-      )
+      .then(() => {
+        if (oldInstance && oldInstance.builder) {
+          return oldInstance.builder.unwatch()
+        } else {
+          return nuxt.listen(port, host)
+        }
+      })
       // Start build
       .then(() => builder.build())
       // Close old nuxt after successful build
@@ -125,7 +126,13 @@ function startDev(oldInstance) {
             : Promise.resolve()
       )
       // Start listening
-      .then(() => nuxt.listen(port, host))
+      .then(() => {
+        if (oldInstance) {
+          return nuxt.listen(port, host)
+        } else {
+          return Promise.resolve()
+        }
+      })
       // Pass new nuxt to watch chain
       .then(() => instance)
       // Handle errors
