@@ -50,7 +50,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "eslint --ext .js,.vue bin/* build/ lib/ test/ examples/",
     "precommit": "npm run lint",
-    "postinstall": "opencollective postinstall || exit 0"
+    "postinstall": "opencollective-postinstall || exit 0"
   },
   "engines": {
     "node": ">=8.0.0",
@@ -89,7 +89,7 @@
     "lru-cache": "^4.1.1",
     "memory-fs": "^0.4.1",
     "minimist": "^1.2.0",
-    "opencollective": "opencollective/opencollective-cli",
+    "opencollective-postinstall": "^2.0.0",
     "postcss": "^6.0.17",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
