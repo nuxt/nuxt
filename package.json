@@ -89,7 +89,7 @@
     "lru-cache": "^4.1.1",
     "memory-fs": "^0.4.1",
     "minimist": "^1.2.0",
-    "opencollective": "^1.0.3",
+    "opencollective": "opencollective/opencollective-cli",
     "postcss": "^6.0.17",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
