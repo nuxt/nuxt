@@ -7,7 +7,11 @@ export default function () {
       loader: 'ts-loader',
       options: {
         appendTsSuffixTo: [/\.vue$/]
-      }
+      },
+      exclude: [
+        /dist/,
+        /\.temp/
+      ]
     }
     // Add TypeScript loader
     config.module.rules.push(
