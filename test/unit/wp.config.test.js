@@ -15,12 +15,11 @@ describe('webpack configuration', () => {
     const css = { name: 'css', poolTimeout: Infinity }
     expect(perfLoader.workerPools).toMatchObject({ js, css })
 
-    const warmup = jest.fn()
-    perfLoader.threadLoader = { warmup }
-    perfLoader.warmup()
-    expect(warmup).toHaveBeenCalledTimes(2)
-    expect(warmup).toHaveBeenCalledWith(js, ['babel-loader', 'babel-preset-env'])
-    expect(warmup).toHaveBeenCalledWith(css, ['css-loader'])
+    perfLoader.warmup = jest.fn()
+    perfLoader.warmupAll()
+    expect(perfLoader.warmup).toHaveBeenCalledTimes(2)
+    expect(perfLoader.warmup).toHaveBeenCalledWith(js, ['babel-loader', 'babel-preset-env'])
+    expect(perfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
     const loaders = perfLoader.pool('js', { loader: 'test-perf-loader' })
     const cacheDirectory = path.resolve('node_modules/.cache/cache-loader')
