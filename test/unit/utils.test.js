@@ -197,6 +197,25 @@ describe('utils', () => {
     const chainedFn = Utils.chainFn(firstFn, secondFn)
     expect(chainedFn({}, 10)).toEqual({ foo: 11, bar: 12 })
   })
+
+  test('flatRoutes', () => {
+    const routes = Utils.flatRoutes([
+      { name: 'login', path: '/login' },
+      { name: 'about', path: '/about' },
+      { name: 'posts',
+        path: '',
+        children: [
+          { name: 'posts-list',
+            path: ''
+          },
+          { name: 'posts-create',
+            path: 'post'
+          }
+        ]
+      }
+    ])
+    expect(routes).toMatchObject([ '/login', '/about', '', '/post' ])
+  })
 })
 
 test('createRoutes should allow snake case routes', () => {
