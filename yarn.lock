@@ -1401,6 +1401,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000792, caniuse-lite@^1.0.30000805, can
   version "1.0.30000821"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000821.tgz#0f3223f1e048ed96451c56ca6cf197058c42cb93"
 
+caniuse-lite@^1.0.30000823:
+  version "1.0.30000823"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30000823.tgz#b79842a5b5a48eaa416b73f5a5d7a23f52d26014"
+
 caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
@@ -1710,15 +1714,6 @@ connect@^3.6.5:
     finalhandler "1.1.0"
     parseurl "~1.3.2"
     utils-merge "1.0.1"
-
-consola@^1.1.3:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/consola/-/consola-1.1.4.tgz#278035fb0c7b10c93528a57c2685ede476e00c9b"
-  dependencies:
-    chalk "^2.3.2"
-    figures "^2.0.0"
-    lodash "^4.17.5"
-    std-env "^1.1.0"
 
 consola@^1.2.0:
   version "1.2.0"
@@ -3316,9 +3311,9 @@ html-tags@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/html-tags/-/html-tags-2.0.0.tgz#10b30a386085f43cede353cc8fa7cb0deeea668b"
 
-html-webpack-plugin@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/html-webpack-plugin/-/html-webpack-plugin-3.1.0.tgz#6e02baaedb1e906310917f03239c793a75af2885"
+html-webpack-plugin@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/html-webpack-plugin/-/html-webpack-plugin-3.2.0.tgz#b01abbd723acaaa7b37b6af4492ebda03d9dd37b"
   dependencies:
     html-minifier "^3.2.3"
     loader-utils "^0.2.16"
@@ -5752,9 +5747,9 @@ postcss-unique-selectors@^2.0.2:
     postcss "^5.0.4"
     uniqs "^2.0.0"
 
-postcss-url@^7.3.0:
-  version "7.3.1"
-  resolved "https://registry.yarnpkg.com/postcss-url/-/postcss-url-7.3.1.tgz#b43ae0f0dae4cd06c831fa3aeac2d7a5b73754ed"
+postcss-url@^7.3.2:
+  version "7.3.2"
+  resolved "https://registry.yarnpkg.com/postcss-url/-/postcss-url-7.3.2.tgz#5fea273807fb84b38c461c3c9a9e8abd235f7120"
   dependencies:
     mime "^1.4.1"
     minimatch "^3.0.4"
@@ -6785,6 +6780,12 @@ std-env@^1.1.0:
   dependencies:
     is-ci "^1.1.0"
 
+std-env@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/std-env/-/std-env-1.3.0.tgz#8ce754a401a61f1ac49c8eb55f2a8c0c63d54954"
+  dependencies:
+    is-ci "^1.1.0"
+
 stealthy-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
@@ -7552,19 +7553,19 @@ webpack@^4.4.1:
     watchpack "^1.5.0"
     webpack-sources "^1.0.1"
 
-webpackbar@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.4.0.tgz#858cc5d9b44085214ca628a1f676d5a54e35b7f1"
+webpackbar@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/webpackbar/-/webpackbar-2.5.0.tgz#a6ec1a01e37914190513995ad0c22f1bb9de99e6"
   dependencies:
     chalk "^2.3.2"
-    consola "^1.1.3"
+    consola "^1.2.0"
     figures "^2.0.0"
     loader-utils "^1.1.0"
     lodash "^4.17.5"
     log-update "^2.3.0"
     pretty-time "^1.0.0"
     schema-utils "^0.4.5"
-    std-env "^1.1.0"
+    std-env "^1.3.0"
     table "^4.0.3"
 
 whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3:
