@@ -83,7 +83,7 @@
     "consola": "^1.2.0",
     "css-loader": "^0.28.11",
     "es6-promise": "^4.2.4",
-    "esm": "^3.0.15",
+    "esm": "^3.0.16",
     "etag": "^1.8.1",
     "file-loader": "^1.1.11",
     "fresh": "^0.5.2",
@@ -123,12 +123,12 @@
     "vue-server-renderer": "^2.5.16",
     "vue-template-compiler": "^2.5.16",
     "vuex": "^3.0.1",
-    "webpack": "^4.4.1",
+    "webpack": "^4.5.0",
     "webpack-bundle-analyzer": "^2.11.1",
     "webpack-dev-middleware": "^3.1.0",
     "webpack-hot-middleware": "^2.21.2",
     "webpack-node-externals": "^1.7.2",
-    "webpackbar": "^2.5.0"
+    "webpackbar": "^2.6.1"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
