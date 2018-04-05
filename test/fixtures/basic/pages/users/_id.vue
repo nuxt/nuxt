@@ -9,7 +9,7 @@
 <script>
 export default {
   props: ['numericId'],
-  routeToProps (route) {
+  routeToProps(route) {
     return {
       numericId: parseInt(route.params.id)
     }

@@ -21,8 +21,8 @@ describe('dynamic routes', () => {
 
       // Mock -- we can't test extensively here
       // so just prevent a test failure
-      const routeToPropsCache = {
-        routeToPropsFn (name, props) {
+      const routeToPropsCache = { // eslint-disable-line
+        routeToPropsFn(name, props) {
           expect(typeof name).toBe('string')
           expect(props).toBeInstanceOf(Array)
         }
