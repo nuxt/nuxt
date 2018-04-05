@@ -16,7 +16,13 @@ exports.loadNuxtConfig = argv => {
   let options = {}
 
   if (existsSync(nuxtConfigFile)) {
-    options = esm(nuxtConfigFile).default
+    options = esm(nuxtConfigFile)
+    if (!options) {
+      options = {}
+    }
+    if (options.default) {
+      options = options.default
+    }
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
