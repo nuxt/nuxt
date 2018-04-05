@@ -4,7 +4,7 @@ import fs from 'fs'
 import _getPort from 'get-port'
 import { defaultsDeep } from 'lodash'
 import _rp from 'request-promise-native'
-import { requireModule } from '../../lib/common/module'
+import esm from 'esm'
 import pkg from '../../package.json'
 import Dist from '../../lib/nuxt'
 
@@ -18,11 +18,13 @@ export const Options = Dist.Options
 export const Builder = Dist.Builder
 export const Generator = Dist.Generator
 
+const requireModule = esm(module, {})
+
 export const loadFixture = function loadFixture(fixture, overrides) {
   const rootDir = path.resolve(__dirname, '../fixtures/' + fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 
-  const config = fs.existsSync(configFile) ? requireModule(configFile) : {}
+  const config = fs.existsSync(configFile) ? requireModule(configFile).default : {}
 
   config.rootDir = rootDir
   config.dev = false
