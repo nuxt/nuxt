@@ -36,6 +36,18 @@ describe('children', () => {
     expect(html.includes('<h2>Id=1</h2>')).toBe(true)
   })
 
+  test('/routeToPropsManual/0x10', async () => {
+    const { html } = await nuxt.renderRoute('/routeToPropsManual/0x10')
+    expect(html.includes('<div><h2>Id=0x10,IdType=number,NumericId=16</h2></div>'))
+      .toBe(true)
+  })
+
+  test('/routeToPropsAuto/0x10', async () => {
+    const { html } = await nuxt.renderRoute('/routeToPropsAuto/0x10')
+    expect(html.includes('<h2>Test=0x10</h2>'))
+      .toBe(true)
+  })
+
   test('/parent/validate-child should display 404', async () => {
     const { html } = await nuxt.renderRoute('/parent/validate-child')
     expect(html.includes('This page could not be found')).toBe(true)
