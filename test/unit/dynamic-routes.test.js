@@ -18,7 +18,18 @@ describe('dynamic routes', () => {
         routerFile.indexOf('['),
         routerFile.lastIndexOf(']') + 1
       )
+
+      // Mock -- we can't test extensively here
+      // so just prevent a test failure
+      const routeToPropsCache = {
+        routeToPropsFn (name, props) {
+          expect(typeof name).toBe('string')
+          expect(props).toBeInstanceOf(Array)
+        }
+      }
+
       let routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
+
       // pages/test/index.vue
       expect(routes[0].path).toBe('/test')
       expect(routes[0].name).toBe('test')
