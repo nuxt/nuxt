@@ -7,6 +7,5 @@ module.exports = {
   ],
   setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
-  moduleFileExtensions: ['js', 'mjs', 'json'],
-  expand: true
+  moduleFileExtensions: ['js', 'mjs', 'json']
 }
