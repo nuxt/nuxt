@@ -1,11 +1,9 @@
 module.exports = {
   testEnvironment: 'node',
   coverageDirectory: './coverage/',
-  coveragePathIgnorePatterns: [
-    '<rootDir>/node_modules/',
-    '<rootDir>/test/',
-    '<rootDir>/lib/builder/webpack/plugins/vue/',
-    '<rootDir>/lib/[^/]*\\.js'
+  collectCoverageFrom: [
+    'lib/!(app)/**',
+    '!lib/builder/webpack/plugins/vue/**'
   ],
   setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
