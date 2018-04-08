@@ -92,6 +92,8 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/users/1')
 
     expect(await page.$text('h1')).toBe('User: 1')
+    expect(await page.$text('h2')).toBe('Type: number')
+    expect(await page.$text('h3')).toBe('Plus One: 2')
   })
 
   test('/validate should display a 404', async () => {
