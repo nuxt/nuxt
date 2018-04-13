@@ -29,7 +29,6 @@ if (argv.help) {
       --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
       --spa                Launch in SPA mode
       --universal          Launch in Universal mode (default)
-      --generate           Generate static version after build
       --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h           Displays this message
   `)
@@ -64,7 +63,7 @@ const close = () => {
   process.exit(0)
 }
 
-if (!argv.generate) {
+if (options.mode !== 'spa') {
   // -- Build only --
   builder
     .build()
