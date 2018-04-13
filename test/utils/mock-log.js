@@ -5,7 +5,7 @@ export default function mockLog(levels = 'all', logger = console) {
   }
   beforeAll(() => {
     for (let level of levels) {
-      logger[level] = jest.fn()
+      jest.spyOn(logger, level).mockImplementation(()=>{})
     }
   })
   beforeEach(() => {
