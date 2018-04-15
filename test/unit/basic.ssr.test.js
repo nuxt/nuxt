@@ -159,6 +159,23 @@ describe('basic ssr', () => {
     // expect(errorSpy.args[0][0].message.includes('Error mouahahah')).toBe(true)
   })
 
+  test('/error json format error', async () => {
+    const opts = {
+      headers: {
+        accept: 'application/json'
+      },
+      resolveWithFullResponse: true
+    }
+    await expect(rp(url('/error'), opts)).rejects.toMatchObject({
+      statusCode: 500,
+      response: {
+        headers: {
+          'content-type': 'text/json; charset=utf-8'
+        }
+      }
+    })
+  })
+
   test('/error2', async () => {
     const { html, error } = await nuxt.renderRoute('/error2')
     expect(html.includes('Custom error')).toBe(true)
