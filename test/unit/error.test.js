@@ -28,7 +28,6 @@ describe('error', () => {
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    // const errorSpy = await interceptError()
     await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
     })

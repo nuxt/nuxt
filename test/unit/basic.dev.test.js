@@ -31,12 +31,9 @@ describe('basic dev', () => {
   // })
 
   test('/stateless', async () => {
-    // const spies = await intercept()
     const window = await nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
-    // expect(spies.info.calledWithMatch('You are running Vue in development mode.')).toBe(true)
-    // release()
   })
 
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {
@@ -73,7 +70,6 @@ describe('basic dev', () => {
     const sourceMaps = nuxt.renderer.resources.serverBundle.maps
     nuxt.renderer.resources.serverBundle.maps = {}
 
-    // const errorSpy = await interceptError()
     await expect(nuxt.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
