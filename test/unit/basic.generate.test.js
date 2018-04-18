@@ -145,11 +145,8 @@ describe('basic generate', () => {
   })
 
   test('nuxt re-generating with no subfolders', async () => {
-    // const logSpy = await interceptLog()
     nuxt.options.generate.subFolders = false
-    await generator.generate({ build: false })
-    // release()
-    // expect(logSpy.calledWithMatch('DONE')).toBe(true)
+    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
   })
 
   test('/users/1.html', async () => {
