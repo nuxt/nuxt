@@ -93,7 +93,7 @@
     "postcss": "^6.0.16",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.0.0",
-    "postcss-loader": "^2.0.10",
+    "postcss-loader": "^2.1.4",
     "postcss-url": "^7.3.0",
     "pretty-error": "^2.1.1",
     "progress-bar-webpack-plugin": "^1.10.0",
