@@ -2,6 +2,8 @@
 export default function mockLog(levels = 'all', logger = console) {
   if (levels === 'all') {
     levels = ['trace', 'debug', 'log', 'info', 'warn', 'error']
+  } else if (typeof levels === 'string') {
+    levels = [levels]
   }
   beforeAll(() => {
     for (let level of levels) {
