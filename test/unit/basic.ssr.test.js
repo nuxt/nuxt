@@ -1,3 +1,4 @@
+import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
@@ -56,10 +57,9 @@ describe('basic ssr', () => {
   })
 
   test('/head', async () => {
-    // const logSpy = await interceptLog()
-    const window = await nuxt.renderAndGetWindow(url('/head'), {
-      virtualConsole: false
-    })
+    jest.spyOn(consola, 'log')
+
+    const window = await nuxt.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
     const html = window.document.body.innerHTML
@@ -70,10 +70,9 @@ describe('basic ssr', () => {
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
-    // release()
+    expect(consola.log).toHaveBeenCalledWith('Body script!')
 
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Body script!')
+    consola.log.mockRestore()
   })
 
   test('/async-data', async () => {
@@ -115,9 +114,7 @@ describe('basic ssr', () => {
 
   test('/redirect -> check redirected source', async () => {
     // there are no transition properties in jsdom, ignore the error log
-    // await interceptError()
     const window = await nuxt.renderAndGetWindow(url('/redirect'))
-    // release()
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
@@ -150,13 +147,9 @@ describe('basic ssr', () => {
   })
 
   test('/error status code', async () => {
-    // const errorSpy = await interceptError()
     await expect(rp(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
-    // release()
-    // expect(errorSpy.calledOnce).toBe(true)
-    // expect(errorSpy.args[0][0].message.includes('Error mouahahah')).toBe(true)
   })
 
   test('/error json format error', async () => {
@@ -191,20 +184,11 @@ describe('basic ssr', () => {
   })
 
   test('/error-midd', async () => {
-    // const errorSpy = await interceptError()
-    await expect(rp(url('/error-midd')))
-      .rejects.toMatchObject({ statusCode: 505 })
-    // release()
-    // Don't display error since redirect returns a noopApp
-    // expect(errorSpy.notCalled).toBe(true)
+    await expect(rp(url('/error-midd'))).rejects.toMatchObject({ statusCode: 505 })
   })
 
   test('/redirect-middleware', async () => {
-    // const errorSpy = await interceptError()
-    await rp(url('/redirect-middleware')) // Should not console.error
-    // release()
-    // Don't display error since redirect returns a noopApp
-    // expect(errorSpy.notCalled).toBe(true)
+    await expect(rp(url('/redirect-middleware'))).resolves.toBeTruthy()
   })
 
   test('/redirect-name', async () => {
