@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`basic generate Format errors 1`] = `
+"[30m[43m GEN ERR [49m[39m[33m /h1[39m
+[33m[39m
+[33m[39m[90m\\"page not found\\"[39m
+[90m[39m
+[30m[41m GEN ERR [49m[39m[31m /h2[39m
+[31m[39m
+[31m[39m[90munhandled error stack[39m"
+`;

@@ -4,24 +4,26 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { loadFixture, getPort, Nuxt, Generator, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, Builder, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, '..', 'fixtures/basic')
 const distDir = resolve(rootDir, '.nuxt-generate')
 
-let nuxt = null
 let server = null
 let generator = null
 
 describe('basic generate', () => {
   beforeAll(async () => {
     const config = loadFixture('basic', {generate: {dir: '.nuxt-generate'}})
-    nuxt = new Nuxt(config)
-    generator = new Generator(nuxt)
+    const nuxt = new Nuxt(config)
+    const builder = new Builder(nuxt)
+    builder.build = jest.fn()
 
-    await generator.generate({ build: false })
+    generator = new Generator(nuxt, builder)
+
+    await generator.generate()
 
     const serve = serveStatic(distDir)
     server = http.createServer((req, res) => {
@@ -32,18 +34,31 @@ describe('basic generate', () => {
     server.listen(port)
   })
 
+  test('Check builder', async () => {
+    expect(generator.builder.isStatic).toBe(true)
+    expect(generator.builder.build).toHaveBeenCalledTimes(1)
+  })
+
   test('Check ready hook called', async () => {
-    expect(nuxt.__hook_called__).toBe(true)
+    expect(generator.nuxt.__hook_called__).toBe(true)
+  })
+
+  test('Format errors', async () => {
+    const error = generator._formatErrors([
+      { type: 'handled', route: '/h1', error: 'page not found' },
+      { type: 'unhandled', route: '/h2', error: { stack: 'unhandled error stack' } }
+    ])
+    expect(error).toMatchSnapshot()
   })
 
   test('/stateless', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/stateless'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
   test('/css', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/css'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
     expect(headHtml.includes('.red{color:red}')).toBe(true)
@@ -56,13 +71,13 @@ describe('basic generate', () => {
   })
 
   test('/stateful', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/stateful'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/stateful'))
     const html = window.document.body.innerHTML
     expect(html.includes('<div><p>The answer is 42</p></div>')).toBe(true)
   })
 
   test('/head', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/head'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/head'))
     const html = window.document.body.innerHTML
     const metas = window.document.getElementsByTagName('meta')
     expect(window.document.title).toBe('My title - Nuxt.js')
@@ -71,7 +86,7 @@ describe('basic generate', () => {
   })
 
   test('/async-data', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/async-data'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/async-data'))
     const html = window.document.body.innerHTML
     expect(html.includes('<p>Nuxt.js</p>')).toBe(true)
   })
@@ -111,13 +126,13 @@ describe('basic generate', () => {
   })
 
   test('/validate -> should display a 404', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/validate'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/validate'))
     const html = window.document.body.innerHTML
     expect(html.includes('This page could not be found')).toBe(true)
   })
 
   test('/validate?valid=true', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/validate?valid=true'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/validate?valid=true'))
     const html = window.document.body.innerHTML
     expect(html.includes('I am valid</h1>')).toBe(true)
   })
@@ -129,7 +144,7 @@ describe('basic generate', () => {
   })
 
   test('/redirect -> check redirected source', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/redirect'))
+    const window = await generator.nuxt.renderAndGetWindow(url('/redirect'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
@@ -145,7 +160,7 @@ describe('basic generate', () => {
   })
 
   test('nuxt re-generating with no subfolders', async () => {
-    nuxt.options.generate.subFolders = false
+    generator.nuxt.options.generate.subFolders = false
     await expect(generator.generate({ build: false })).resolves.toBeTruthy()
   })
 
