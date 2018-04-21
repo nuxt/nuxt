@@ -4,7 +4,6 @@ export const buildFixture = function buildFixture(fixture) {
   test(`Build ${fixture}`, async () => {
     const config = loadFixture(fixture, {
       test: true,
-      minimalCLI: true,
       build: {
         stats: 'errors-only'
       }

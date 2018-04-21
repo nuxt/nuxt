@@ -41,10 +41,8 @@ describe('fallback generate', () => {
   })
 
   test('nuxt re-generating with generate.fallback = false', async () => {
-    // const logSpy = await interceptLog(async () => {
     nuxt.options.generate.fallback = false
-    await generator.generate({ build: false })
-    // expect(logSpy.calledWithMatch('DONE')).toBe(true)
+    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
   })
 
   test('false creates no fallback', async () => {
@@ -69,7 +67,7 @@ describe('fallback generate', () => {
     'nuxt re-generating with generate.fallback = "spa-fallback.html"',
     async () => {
       nuxt.options.generate.fallback = 'spa-fallback.html'
-      await generator.generate({ build: false })
+      await expect(generator.generate({ build: false })).resolves.toBeTruthy()
     }
   )
 

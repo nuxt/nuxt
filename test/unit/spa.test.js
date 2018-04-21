@@ -1,3 +1,5 @@
+import consola from 'consola'
+import mockLog from '../utils/mock-log'
 import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
@@ -12,7 +14,9 @@ const renderRoute = async _url => {
   return { window, head, html }
 }
 
-describe.skip('spa', () => {
+describe('spa', () => {
+  mockLog(['log'], consola)
+
   beforeAll(async () => {
     const config = loadFixture('spa')
     nuxt = new Nuxt(config)
@@ -21,44 +25,22 @@ describe.skip('spa', () => {
   })
 
   test('/ (basic spa)', async () => {
-    // const logSpy = await interceptLog()
     const { html } = await renderRoute('/')
-    expect(html.includes('Hello SPA!')).toBe(true)
-    // release()
-    // expect(logSpy.withArgs('created').notCalled).toBe(true)
-    // expect(logSpy.withArgs('mounted').calledOnce).toBe(true)
+    expect(html).toMatch('Hello SPA!')
+    expect(consola.log).not.toHaveBeenCalledWith('created')
+    expect(consola.log).toHaveBeenCalledWith('mounted')
   })
 
   test('/custom (custom layout)', async () => {
-    // const logSpy = await interceptLog()
     const { html } = await renderRoute('/custom')
-    expect(html.includes('Custom layout')).toBe(true)
-    // release()
-    // expect(logSpy.withArgs('created').calledOnce).toBe(true)
-    // expect(logSpy.withArgs('mounted').calledOnce).toBe(true)
-  })
-
-  test('/custom (not default layout)', async () => {
-    // const logSpy = await interceptLog()
-    const { head } = await renderRoute('/custom')
-    expect(head.includes('src="/_nuxt/layouts/default.')).toBe(false)
-    // release()
-    // expect(logSpy.withArgs('created').calledOnce).toBe(true)
-    // expect(logSpy.withArgs('mounted').calledOnce).toBe(true)
-  })
-
-  test('/custom (call mounted and created once)', async () => {
-    // const logSpy = await interceptLog()
-    await renderRoute('/custom')
-    // release()
-    // expect(logSpy.withArgs('created').calledOnce).toBe(true)
-    // expect(logSpy.withArgs('mounted').calledOnce).toBe(true)
+    expect(html).toMatch('Custom layout')
+    expect(consola.log).toHaveBeenCalledWith('created')
+    expect(consola.log).toHaveBeenCalledWith('mounted')
   })
 
   test('/mounted', async () => {
     const { html } = await renderRoute('/mounted')
-
-    expect(html.includes('<h1>Test: updated</h1>')).toBe(true)
+    expect(html).toMatch('<h1>Test: updated</h1>')
   })
 
   test('/_nuxt/ (access publicPath in spa mode)', async () => {

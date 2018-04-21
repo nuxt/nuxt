@@ -1,4 +1,5 @@
 // import rp from 'request-promise-native'
+import consola from 'consola'
 import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
@@ -27,7 +28,6 @@ describe('error', () => {
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    // const errorSpy = await interceptError()
     await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
     })
@@ -36,6 +36,23 @@ describe('error', () => {
   test('Error: resolvePath()', async () => {
     expect(() => nuxt.resolvePath()).toThrowError()
     expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
+  })
+
+  test('Error: callHook()', async () => {
+    const errorHook = jest.fn()
+    const error = new Error('test hook error')
+    jest.spyOn(consola, 'error')
+
+    nuxt.hook('error', errorHook)
+    nuxt.hook('test:error', () => { throw error })
+    await nuxt.callHook('test:error')
+
+    expect(errorHook).toHaveBeenCalledTimes(1)
+    expect(errorHook).toHaveBeenCalledWith(error)
+    expect(consola.error).toHaveBeenCalledTimes(1)
+    expect(consola.error).toHaveBeenCalledWith(error)
+
+    consola.error.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

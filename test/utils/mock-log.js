@@ -1,22 +1,24 @@
 /* eslint-disable no-console */
-export default function mockConsole(levels = 'all') {
+export default function mockLog(levels = 'all', logger = console) {
   if (levels === 'all') {
     levels = ['trace', 'debug', 'log', 'info', 'warn', 'error']
+  } else if (typeof levels === 'string') {
+    levels = [levels]
   }
   beforeAll(() => {
     for (let level of levels) {
-      console[level] = jest.fn()
+      jest.spyOn(logger, level).mockImplementation(() => {})
     }
   })
   beforeEach(() => {
     for (let level of levels) {
-      console[level].mockClear()
+      logger[level].mockClear()
     }
   })
   afterAll(() => {
     for (let level of levels) {
-      console[level].mockRestore()
+      logger[level].mockRestore()
     }
   })
-  return console
+  return logger
 }
