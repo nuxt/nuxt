@@ -152,6 +152,8 @@
     "jest": "^22.4.3",
     "jsdom": "^11.8.0",
     "nsp": "^3.2.1",
+    "pug": "^2.0.3",
+    "pug-plain-loader": "^1.0.0",
     "puppeteer": "^1.2.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",

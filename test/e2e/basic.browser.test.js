@@ -159,6 +159,12 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('Displayed only on client-side')
   })
 
+  test('/pug', async () => {
+    await page.nuxt.navigate('/pug')
+
+    expect(await page.$text('h1')).toBe('Pug page')
+  })
+
   test('/meta', async () => {
     await page.nuxt.navigate('/meta')
 
