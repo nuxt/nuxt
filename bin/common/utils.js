@@ -2,7 +2,12 @@
 const { resolve } = require('path')
 const { existsSync } = require('fs')
 const consola = require('consola')
-const esm = require('esm')(module, {})
+const esm = require('esm')(module, {
+  cache: false,
+  cjs: {
+    cache: true
+  }
+})
 
 const getRootDir = argv => resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
@@ -16,6 +21,7 @@ exports.loadNuxtConfig = argv => {
   let options = {}
 
   if (existsSync(nuxtConfigFile)) {
+    delete require.cache[nuxtConfigFile]
     options = esm(nuxtConfigFile)
     if (!options) {
       options = {}
