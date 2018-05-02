@@ -5,7 +5,9 @@ const consola = require('consola')
 const esm = require('esm')(module, {
   cache: false,
   cjs: {
-    cache: true
+    cache: true,
+    vars: true,
+    namedExports: true
   }
 })
 
