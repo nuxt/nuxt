@@ -36,5 +36,8 @@ export default {
   build: {
     scopeHoisting: true,
     postcss: [require('postcss-cssnext')()]
+  },
+  render: {
+    resourceHints: true
   }
 }
