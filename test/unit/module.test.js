@@ -7,7 +7,7 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 // let buildSpies = null
 
-describe.skip('module', () => {
+describe('module', () => {
   beforeAll(async () => {
     const config = loadFixture('module')
     nuxt = new Nuxt(config)
