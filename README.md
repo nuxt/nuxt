@@ -40,6 +40,18 @@
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
 
+## Partners
+
+Become a partner and get your logo on our README on Github and every page of https://nuxtjs.org website with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
+
+<p>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg"></a>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/1/avatar.svg"></a>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/2/avatar.svg"></a>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/3/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/3/avatar.svg"></a>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/4/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/4/avatar.svg"></a>
+<a href="https://opencollective.com/nuxtjs/tiers/partner/5/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/5/avatar.svg"></a>
+
 ## Sponsors
 
 Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
