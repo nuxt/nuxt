@@ -46,6 +46,8 @@ Become a partner and get your logo on our README on Github and every page of htt
 
 <p>
 <a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg">
+</a>
+</p>
 
 ## Sponsors
 
