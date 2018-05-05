@@ -45,7 +45,7 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 Become a partner and get your logo on our README on Github and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
 <p>
-<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg">
+<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img height="72px" src="https://user-images.githubusercontent.com/1016365/34124854-48fafa06-e3e9-11e7-8c04-251055feebee.png">
 </a>
 </p>
 
