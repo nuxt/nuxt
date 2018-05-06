@@ -15,7 +15,7 @@ describe('basic dev', () => {
       build: {
         stats: 'none',
         transpile: [
-          '\\vue.test\\.js',
+          'vue\\.test\\.js',
           /vue-test/
         ],
         extend({ module: { rules } }, { isClient }) {
@@ -36,6 +36,7 @@ describe('basic dev', () => {
     expect(transpile('vue-test')).toBeUndefined()
     expect(transpile('node_modules/test.js')).toBe(true)
     expect(transpile('node_modules/vue-test')).toBe(false)
+    expect(transpile('node_modules/vue.test.js')).toBe(false)
     expect(transpile('node_modules/test.vue.js')).toBe(false)
   })
 
