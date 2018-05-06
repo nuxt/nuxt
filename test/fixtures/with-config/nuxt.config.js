@@ -62,6 +62,7 @@ export default {
         return null // Coverage: Return null, so defaults will be used.
       }
     },
+    transpile: 'vue-test',
     extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
