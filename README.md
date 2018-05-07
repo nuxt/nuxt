@@ -277,3 +277,7 @@ Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
 ## Roadmap
 
 https://trello.com/b/lgy93IOl/nuxtjs-10
+
+## License
+
+[MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE.md)
