@@ -216,6 +216,17 @@ describe('utils', () => {
     ])
     expect(routes).toMatchObject([ '/login', '/about', '', '/post' ])
   })
+
+  describe('relativeTo', () => {
+    test('makes path relative to dir', () => {
+      expect(Utils.relativeTo('/foo/bar', '/foo/baz')).toBe('../baz')
+    })
+
+    test('keeps webpack inline loaders prepended', () => {
+      expect(Utils.relativeTo('/foo/bar', 'loader1!loader2!/foo/baz'))
+        .toBe('loader1!loader2!../baz')
+    })
+  })
 })
 
 test('createRoutes should allow snake case routes', () => {
