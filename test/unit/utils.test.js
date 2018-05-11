@@ -1,3 +1,4 @@
+import path from 'path'
 import { Utils } from '../utils'
 
 describe('utils', () => {
@@ -218,13 +219,16 @@ describe('utils', () => {
   })
 
   describe('relativeTo', () => {
+    const path1 = path.join(path.sep, 'foo', 'bar')
+    const path2 = path.join(path.sep, 'foo', 'baz')
+
     test('makes path relative to dir', () => {
-      expect(Utils.relativeTo('/foo/bar', '/foo/baz')).toBe('../baz')
+      expect(Utils.relativeTo(path1, path2)).toBe(Utils.wp(`..${path.sep}baz`))
     })
 
     test('keeps webpack inline loaders prepended', () => {
-      expect(Utils.relativeTo('/foo/bar', 'loader1!loader2!/foo/baz'))
-        .toBe('loader1!loader2!../baz')
+      expect(Utils.relativeTo(path1, `loader1!loader2!${path2}`))
+        .toBe(Utils.wp(`loader1!loader2!..${path.sep}baz`))
     })
   })
 })
