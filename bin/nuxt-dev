@@ -59,9 +59,9 @@ defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 let dev = startDev()
 let needToRestart = false
 
-// Start watching for nuxt.config.js changes
+// Start watching for nuxt.config.js (and user defined file) changes
 chokidar
-  .watch(nuxtConfigFile(argv), nuxtConfig.watchers.chokidar)
+  .watch((nuxtConfig.watch || []).concat(nuxtConfigFile(argv)), nuxtConfig.watchers.chokidar)
   .on('all', () => {
     consola.debug('[nuxt.config.js] changed')
     needToRestart = true
