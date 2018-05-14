@@ -122,6 +122,17 @@ describe('with-config', () => {
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
 
+  test('/test/hello-world (added with extendRoutes)', async () => {
+    // const logSpy = await interceptLog()
+    const window = await nuxt.renderAndGetWindow(url('/test/hello-world'))
+    // expect(logSpy.calledOnce).toBe(true)
+    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+    // release()
+
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>Hello world!</h1>')).toBe(true)
+  })
+
   test('Check /test/test.txt with custom serve-static options', async () => {
     const { headers } = await rp(url('/test/test.txt'), {
       resolveWithFullResponse: true
