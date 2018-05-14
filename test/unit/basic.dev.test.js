@@ -33,7 +33,7 @@ describe('basic dev', () => {
   })
 
   test('Config: build.transpile', async () => {
-    expect(transpile('vue-test')).toBeUndefined()
+    expect(transpile('vue-test')).toBe(true)
     expect(transpile('node_modules/test.js')).toBe(false)
     expect(transpile('node_modules/vue-test')).toBe(true)
     expect(transpile('node_modules/vue.test.js')).toBe(true)
