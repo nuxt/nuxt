@@ -4,6 +4,7 @@ let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let transpile = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -12,23 +13,32 @@ describe('basic dev', () => {
       debug: true,
       buildDir: '.nuxt-dev',
       build: {
-        stats: 'none'
+        stats: 'none',
+        transpile: [
+          'vue\\.test\\.js',
+          /vue-test/
+        ],
+        extend({ module: { rules } }, { isClient }) {
+          if (isClient) {
+            const babelLoader = rules.find(loader => loader.test.test('.jsx'))
+            transpile = (file) => !babelLoader.exclude(file)
+          }
+        }
       }
     })
     nuxt = new Nuxt(config)
-    new Builder(nuxt).build()
+    await new Builder(nuxt).build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')
   })
 
-  // TODO: enable test when style-loader.js:60 was resolved
-  // test.serial('/extractCSS', async t => {
-  //   const window = await nuxt.renderAndGetWindow(url('/extractCSS'))
-  //   const html = window.document.head.innerHTML
-  //   t.true(html.includes('vendor.css'))
-  //   t.true(!html.includes('30px'))
-  //   t.is(window.getComputedStyle(window.document.body).getPropertyValue('font-size'), '30px')
-  // })
+  test('Config: build.transpile', async () => {
+    expect(transpile('vue-test')).toBe(true)
+    expect(transpile('node_modules/test.js')).toBe(false)
+    expect(transpile('node_modules/vue-test')).toBe(true)
+    expect(transpile('node_modules/vue.test.js')).toBe(true)
+    expect(transpile('node_modules/test.vue.js')).toBe(true)
+  })
 
   test('/stateless', async () => {
     const window = await nuxt.renderAndGetWindow(url('/stateless'))
