@@ -21,7 +21,7 @@ describe('basic dev', () => {
         extend({ module: { rules } }, { isClient }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
-            transpile = babelLoader.exclude
+            transpile = (file) => !babelLoader.exclude(file)
           }
         }
       }
@@ -34,10 +34,10 @@ describe('basic dev', () => {
 
   test('Config: build.transpile', async () => {
     expect(transpile('vue-test')).toBeUndefined()
-    expect(transpile('node_modules/test.js')).toBe(true)
-    expect(transpile('node_modules/vue-test')).toBe(false)
-    expect(transpile('node_modules/vue.test.js')).toBe(false)
-    expect(transpile('node_modules/test.vue.js')).toBe(false)
+    expect(transpile('node_modules/test.js')).toBe(false)
+    expect(transpile('node_modules/vue-test')).toBe(true)
+    expect(transpile('node_modules/vue.test.js')).toBe(true)
+    expect(transpile('node_modules/test.vue.js')).toBe(true)
   })
 
   test('/stateless', async () => {
