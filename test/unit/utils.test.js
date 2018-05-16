@@ -23,11 +23,6 @@ describe('utils', () => {
     await Utils.waitFor()
   })
 
-  test('waitUntil', async () => {
-    expect(await Utils.waitUntil(() => true, 0.1, 100)).toBe(false)
-    expect(await Utils.waitUntil(() => false, 0.1, 100)).toBe(true)
-  })
-
   test('timeout (promise)', async () => {
     const result = await Utils.timeout(Promise.resolve('time not run out'), 100)
     expect(result).toBe('time not run out')
