@@ -1,46 +1,27 @@
-import { exec, spawn } from 'child_process'
+import { spawn } from 'child_process'
 import { resolve } from 'path'
-import { promisify } from 'util'
-import { Utils, rp } from '../utils'
-
-const execify = promisify(exec)
-const rootDir = resolve(__dirname, '..', 'fixtures/basic')
+import { getPort, Utils, rp } from '../utils'
 
 let port
+const rootDir = resolve(__dirname, '..', 'fixtures/cli')
+
 const url = route => 'http://localhost:' + port + route
 
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
-describe.skip('cli', () => {
-  test('nuxt build', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} build ${rootDir}`)
-
-    expect(stdout.includes('Compiled successfully')).toBe(true)
-  })
-
-  test('nuxt build -> error config', async () => {
-    await expect(execify(`node ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
-      stderr: expect.stringContaining('Could not load config file')
-    })
-  })
-
+describe('cli', () => {
   test('nuxt start', async () => {
     let stdout = ''
-    // let stderr = ''
     let error
     let exitCode
 
     const env = process.env
-    env.PORT = port
+    env.PORT = port = await getPort()
 
-    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env: env })
+    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
 
     nuxtStart.stdout.on('data', data => {
       stdout += data
-    })
-
-    nuxtStart.stderr.on('data', data => {
-      // stderr += data
     })
 
     nuxtStart.on('error', err => {
@@ -51,48 +32,32 @@ describe.skip('cli', () => {
       exitCode = code
     })
 
-    // Give the process max 20s to start
-    let iterator = 0
-    while (!stdout.includes('OPEN') && iterator < 80) {
-      await Utils.waitFor(250)
-      iterator++
-    }
+    // Wait max 20s for the starting
+    let timeout = await Utils.waitUntil(() => stdout.includes('Listening on'))
 
-    if (iterator === 80) {
-      test.log('WARN: server failed to start successfully in 20 seconds')
+    if (timeout === true) {
+      error = 'server failed to start successfully in 20 seconds'
     }
 
     expect(error).toBe(undefined)
-    expect(stdout.includes('OPEN')).toBe(true)
+    expect(stdout.includes('Listening on')).toBe(true)
 
-    const html = await rp(url('/users/1'))
-    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+    const html = await rp(url('/'))
+    expect(html).toMatch(('<div>CLI Test</div>'))
 
     nuxtStart.kill()
 
     // Wait max 10s for the process to be killed
-    iterator = 0
-    // eslint-disable-next-line  no-unmodified-loop-condition
-    while (exitCode === undefined && iterator < 40) {
-      await Utils.waitFor(250)
-      iterator++
-    }
+    timeout = await Utils.waitUntil(() => exitCode !== undefined, 10)
 
-    if (iterator >= 40) {
-      // eslint-disable-line no-console
-      test.log(
-        `WARN: we were unable to automatically kill the child process with pid: ${
+    if (timeout === true) {
+      console.warn( // eslint-disable-line no-console
+        `we were unable to automatically kill the child process with pid: ${
           nuxtStart.pid
         }`
       )
     }
 
     expect(exitCode).toBe(null)
-  })
-
-  test('nuxt generate', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir}`)
-
-    expect(stdout.includes('vue-ssr-client-manifest.json')).toBe(true)
   })
 })
