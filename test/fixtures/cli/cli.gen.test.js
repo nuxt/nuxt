@@ -8,7 +8,7 @@ const nuxtBin = resolve(__dirname, '..', '..', '..', 'bin', 'nuxt')
 
 describe('cli generate', () => {
   test('nuxt generate', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir}`)
+    const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir} -c cli.gen.config.js`)
 
     expect(stdout.includes('Generated successfully')).toBe(true)
   })
