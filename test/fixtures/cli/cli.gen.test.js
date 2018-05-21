@@ -11,5 +11,5 @@ describe('cli generate', () => {
     const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir} -c cli.gen.config.js`)
 
     expect(stdout.includes('Generated successfully')).toBe(true)
-  })
+  }, 80000)
 })

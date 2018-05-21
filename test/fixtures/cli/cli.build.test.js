@@ -11,7 +11,7 @@ describe('cli build', () => {
     const { stdout } = await execify(`node ${nuxtBin} build ${rootDir} -c cli.build.config.js`)
 
     expect(stdout.includes('Compiled successfully')).toBe(true)
-  })
+  }, 80000)
 
   test('nuxt build -> error config', async () => {
     await expect(execify(`node ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
