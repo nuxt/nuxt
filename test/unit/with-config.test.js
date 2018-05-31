@@ -122,7 +122,7 @@ describe('with-config', () => {
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
 
-  test('Check /test/test.txt with custom serve-static options', async () => {
+  test('Check /test/test.txt with custom connect-gzip-static options', async () => {
     const { headers } = await rp(url('/test/test.txt'), {
       resolveWithFullResponse: true
     })
