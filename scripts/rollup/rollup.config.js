@@ -1,7 +1,8 @@
-import nodeResolve from 'rollup-plugin-node-resolve'
 import json from 'rollup-plugin-json'
 import commonjs from 'rollup-plugin-commonjs'
 import defaultsDeep from 'lodash/defaultsDeep'
+
+import externals from './externals'
 
 export default ({ name, input, plugins = [], options }) => defaultsDeep({}, options, {
   input,
@@ -10,13 +11,8 @@ export default ({ name, input, plugins = [], options }) => defaultsDeep({}, opti
     format: 'cjs',
     sourcemap: true
   },
+  external: externals,
   plugins: [
-    nodeResolve({
-      modulesOnly: true,
-      preferBuiltins: true,
-      only: ['./'],
-      extensions: ['.mjs', '.js']
-    }),
     commonjs(),
     json()
   ].concat(plugins)
