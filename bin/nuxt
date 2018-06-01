@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 const { join } = require('path')
-const semver = require('semver')
+
 const consola = require('consola')
-const { name, engines } = require('../package.json')
 
 // Global error handler
 process.on('unhandledRejection', _error => {
@@ -18,14 +17,6 @@ consola.add({
     }
   }
 })
-
-if (!semver.satisfies(process.version, engines.node)) {
-  consola.fatal(
-    `The engine "node" is incompatible with ${name}. Expected version "${
-      engines.node
-    }".`
-  )
-}
 
 const defaultCommand = 'dev'
 const commands = new Set([defaultCommand, 'init', 'build', 'start', 'generate'])
