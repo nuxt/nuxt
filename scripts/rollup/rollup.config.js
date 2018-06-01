@@ -14,6 +14,7 @@ export default ({ name, input, plugins = [], options }) => defaultsDeep({}, opti
     nodeResolve({
       modulesOnly: true,
       preferBuiltins: true,
+      only: ['./'],
       extensions: ['.mjs', '.js']
     }),
     commonjs(),
