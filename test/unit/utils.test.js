@@ -1,5 +1,5 @@
 import path from 'path'
-import { Utils } from '../utils'
+import { Utils, waitUntil } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {
@@ -24,8 +24,8 @@ describe('utils', () => {
   })
 
   test('waitUntil', async () => {
-    expect(await Utils.waitUntil(() => true, 0.1, 100)).toBe(false)
-    expect(await Utils.waitUntil(() => false, 0.1, 100)).toBe(true)
+    expect(await waitUntil(() => true, 0.1, 100)).toBe(false)
+    expect(await waitUntil(() => false, 0.1, 100)).toBe(true)
   })
 
   test('timeout (promise)', async () => {
