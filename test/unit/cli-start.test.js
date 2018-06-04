@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import { resolve } from 'path'
-import { getPort, Utils, rp } from '../utils'
+import { getPort, rp, waitUntil } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -33,7 +33,7 @@ describe('cli', () => {
     })
 
     // Wait max 20s for the starting
-    let timeout = await Utils.waitUntil(() => stdout.includes('Listening on'))
+    let timeout = await waitUntil(() => stdout.includes('Listening on'))
 
     if (timeout === true) {
       error = 'server failed to start successfully in 20 seconds'
@@ -48,7 +48,7 @@ describe('cli', () => {
     nuxtStart.kill()
 
     // Wait max 10s for the process to be killed
-    timeout = await Utils.waitUntil(() => exitCode !== undefined, 10)
+    timeout = await waitUntil(() => exitCode !== undefined, 10)
 
     if (timeout === true) {
       console.warn( // eslint-disable-line no-console
