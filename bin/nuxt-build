@@ -43,7 +43,7 @@ options.dev = false
 
 // Analyze option
 options.build = options.build || {}
-if (argv.analyze) {
+if (argv.analyze && typeof options.build.analyze !== 'object') {
   options.build.analyze = true
 }
 
@@ -57,7 +57,7 @@ nuxt.hook('error', (_err) => consola.fatal(_err))
 const close = () => {
   // In analyze mode wait for plugin
   // emitting assets and opening browser
-  if (options.build.analyze === true) {
+  if (options.build.analyze === true || typeof options.build.analyze === 'object') {
     return
   }
 
