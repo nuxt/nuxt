@@ -16,7 +16,7 @@
 
 </p>
 
-> Vue.js Meta Framework to create complex, fast & universal web application *quickly*.
+> Vue.js Meta Framework to create complex, fast & universal web applications *quickly*.
 
 ## Links
 
