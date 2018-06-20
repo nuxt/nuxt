@@ -99,6 +99,7 @@
     "mini-css-extract-plugin": "^0.4.0",
     "minimist": "^1.2.0",
     "opencollective": "^1.0.3",
+    "optimize-css-assets-webpack-plugin": "^4.0.2",
     "pify": "^3.0.0",
     "postcss": "^6.0.22",
     "postcss-import": "^11.1.0",
