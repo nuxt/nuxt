@@ -58,10 +58,10 @@
     "prebuild": "yarn clean",
     "security": "nsp check || true",
     "test": "yarn test:fixtures && yarn test:unit",
-    "test:fixtures": "jest --maxWorkers=4 --forceExit --detectOpenHandles --coverage -e test/fixtures",
-    "test:e2e": "jest --maxWorkers=1 --forceExit --detectOpenHandles test/e2e",
+    "test:fixtures": "cross-env VUE_CLI_BABEL_TRANSPILE_MODULES=1 jest --maxWorkers=4 --forceExit --detectOpenHandles --coverage -e test/fixtures",
+    "test:e2e": "cross-env VUE_CLI_BABEL_TRANSPILE_MODULES=1 jest --maxWorkers=1 --forceExit --detectOpenHandles test/e2e",
     "test:lint": "yarn lint && yarn security",
-    "test:unit": "jest --maxWorkers=4 --forceExit --detectOpenHandles --coverage -e test/unit"
+    "test:unit": "cross-env VUE_CLI_BABEL_TRANSPILE_MODULES=1 jest --maxWorkers=4 --forceExit --detectOpenHandles --coverage -e test/unit"
   },
   "engines": {
     "node": ">=8.0.0",
