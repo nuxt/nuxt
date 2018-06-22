@@ -6,16 +6,9 @@ const packageDependencies = Object.keys(pkg.dependencies)
 // Allow built in node modules
 const nodeBuiltIn = ['path', 'fs', 'module', 'crypto', 'util']
 
-// Optional dependencies that user should install on demand
-const optionalDependencies = [
-  // legacy build users need this
-  'babel-polyfill'
-]
-
 const externals = [].concat(
   packageDependencies,
-  nodeBuiltIn,
-  optionalDependencies
+  nodeBuiltIn
 )
 
 export default externals

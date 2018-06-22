@@ -1,5 +1,5 @@
 // eslint-disable
-require('babel-polyfill')
+require('@babel/polyfill')
 
 const consola = require('consola')
 
