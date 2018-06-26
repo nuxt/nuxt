@@ -11,9 +11,10 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
-    "nuxt": "^1.4.0"
+    "nuxt": "^1.4.1"
   },
   "devDependencies": {
+    "eslint-loader": "^2.0.0",
     "worker-loader": "^1.1.1"
   }
 }
