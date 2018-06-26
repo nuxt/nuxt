@@ -4,7 +4,7 @@
   "dependencies": {
     "@nuxtjs/axios": "^5.0.0",
     "@nuxtjs/proxy": "^1.1.2",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

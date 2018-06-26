@@ -3,9 +3,7 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import rp from 'request-promise-native'
-import { Nuxt, Generator, Options } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, Options, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -43,10 +41,8 @@ describe('fallback generate', () => {
   })
 
   test('nuxt re-generating with generate.fallback = false', async () => {
-    // const logSpy = await interceptLog(async () => {
     nuxt.options.generate.fallback = false
-    await generator.generate({ build: false })
-    // expect(logSpy.calledWithMatch('DONE')).toBe(true)
+    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
   })
 
   test('false creates no fallback', async () => {
@@ -71,12 +67,12 @@ describe('fallback generate', () => {
     'nuxt re-generating with generate.fallback = "spa-fallback.html"',
     async () => {
       nuxt.options.generate.fallback = 'spa-fallback.html'
-      await generator.generate({ build: false })
+      await expect(generator.generate({ build: false })).resolves.toBeTruthy()
     }
   )
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server', async () => {
+  afterAll(async () => {
     await server.close()
   })
 })

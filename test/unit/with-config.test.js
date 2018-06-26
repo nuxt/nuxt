@@ -1,6 +1,4 @@
-import rp from 'request-promise-native'
-import { Nuxt } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -16,17 +14,13 @@ describe('with-config', () => {
   })
 
   test('/', async () => {
-    // const logSpy = await interceptLog()
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
-    // release()
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
   })
 
-  test('/ (global styles inlined)', async () => {
+  test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('.global-css-selector')).toBe(true)
+    expect(html).toContain('.global-css-selector')
   })
 
   test.skip('/ (preload fonts)', async () => {
@@ -52,25 +46,18 @@ describe('with-config', () => {
   })
 
   test('/test/ (router base)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('default')
     expect(html.includes('<h1>Default layout</h1>')).toBe(true)
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
-    // release()
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
+
+    expect(window.__test_plugin).toBe(true)
   })
 
   test('/test/about (custom layout)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/about'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('custom')
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
@@ -78,12 +65,7 @@ describe('with-config', () => {
   })
 
   test('/test/desktop (custom layout in desktop folder)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('desktop/default')
     expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
@@ -91,12 +73,7 @@ describe('with-config', () => {
   })
 
   test('/test/mobile (custom layout in mobile folder)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(window.__NUXT__.layout).toBe('mobile/default')
     expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
@@ -104,12 +81,7 @@ describe('with-config', () => {
   })
 
   test('/test/env', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/env'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Custom env layout</h1>')).toBe(true)
     expect(html.includes('"bool": true')).toBe(true)
@@ -122,46 +94,26 @@ describe('with-config', () => {
   })
 
   test('/test/error', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/error'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(html.includes('Error page')).toBe(true)
   })
 
   test('/test/user-agent', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(html.includes('<pre>Mozilla')).toBe(true)
   })
 
   test('/test/about-bis (added with extendRoutes)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
 
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
-    // const logSpy = await interceptLog()
     const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
-    // expect(logSpy.calledOnce).toBe(true)
-    // expect(logSpy.args[0][0]).toBe('Test plugin!')
-    // release()
-
     const windowHref = window.location.href
     expect(windowHref.includes('/test/about-bis')).toBe(true)
 
@@ -183,7 +135,7 @@ describe('with-config', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 })

@@ -1,7 +1,5 @@
 import { uniq } from 'lodash'
-import rp from 'request-promise-native'
-import { Nuxt, Utils } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Utils, rp } from '../utils'
 
 let port
 let nuxt = null
@@ -104,7 +102,7 @@ describe('ssr', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 })

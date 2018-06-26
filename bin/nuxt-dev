@@ -1,17 +1,11 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
-
 const defaultsDeep = require('lodash/defaultsDeep')
-const debug = require('debug')('nuxt:build')
 const parseArgs = require('minimist')
 const chokidar = require('chokidar')
-
+const consola = require('consola')
 const { version } = require('../package.json')
-const { Nuxt, Builder, Utils } = require('..')
-
+const { Nuxt, Builder } = require('..')
 const { loadNuxtConfig, getLatestHost, nuxtConfigFile } = require('./common/utils')
-
-debug.color = 2 // force green color
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -31,16 +25,16 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.version) {
-  console.log(version)
+  process.stderr.write(version + '\n')
   process.exit(0)
 }
 
 if (argv.hostname === '') {
-  Utils.fatalError('Provided hostname argument has no value')
+  consola.fatal('Provided hostname argument has no value')
 }
 
 if (argv.help) {
-  console.log(`
+  process.stderr.write(`
     Description
       Starts the application in development mode (hot-code reloading, error
       reporting, etc)
@@ -69,14 +63,14 @@ let needToRestart = false
 chokidar
   .watch(nuxtConfigFile(argv), nuxtConfig.watchers.chokidar)
   .on('all', () => {
-    debug('[nuxt.config.js] changed')
+    consola.debug('[nuxt.config.js] changed')
     needToRestart = true
 
     dev = dev.then(instance => {
       if (needToRestart === false) return instance
       needToRestart = false
 
-      debug('Rebuilding the app...')
+      consola.debug('Rebuilding the app...')
       return startDev(instance)
     })
   })
@@ -87,7 +81,7 @@ function startDev(oldInstance) {
 
   // Error handler
   const onError = (err, instance) => {
-    Utils.printError(err)
+    consola.error(err)
     return Promise.resolve(instance) // Wait for next reload
   }
 
@@ -113,12 +107,13 @@ function startDev(oldInstance) {
 
   return (
     Promise.resolve()
-      .then(
-        () =>
-          oldInstance && oldInstance.builder
-            ? oldInstance.builder.unwatch()
-            : Promise.resolve()
-      )
+      .then(() => {
+        if (oldInstance && oldInstance.builder) {
+          return oldInstance.builder.unwatch()
+        } else {
+          return nuxt.listen(port, host)
+        }
+      })
       // Start build
       .then(() => builder.build())
       // Close old nuxt after successful build
@@ -129,7 +124,13 @@ function startDev(oldInstance) {
             : Promise.resolve()
       )
       // Start listening
-      .then(() => nuxt.listen(port, host))
+      .then(() => {
+        if (oldInstance) {
+          return nuxt.listen(port, host)
+        } else {
+          return Promise.resolve()
+        }
+      })
       // Pass new nuxt to watch chain
       .then(() => instance)
       // Handle errors

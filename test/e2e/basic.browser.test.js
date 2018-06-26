@@ -1,6 +1,5 @@
-import { Nuxt } from '../..'
 import Browser from '../utils/browser'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
 const browser = new Browser()
@@ -160,6 +159,12 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('Displayed only on client-side')
   })
 
+  test('/pug', async () => {
+    await page.nuxt.navigate('/pug')
+
+    expect(await page.$text('h1')).toBe('Pug page')
+  })
+
   test('/meta', async () => {
     await page.nuxt.navigate('/meta')
 
@@ -192,11 +197,12 @@ describe('basic browser', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 
-  test('Stop browser', async () => {
+  // Stop browser
+  afterAll(async () => {
     await page.close()
     await browser.close()
   })

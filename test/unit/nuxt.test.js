@@ -1,6 +1,5 @@
 import { resolve } from 'path'
-import { Nuxt, Builder } from '../../'
-import { loadFixture } from '../utils'
+import { loadFixture, getPort, Nuxt, Builder } from '../utils'
 
 describe('nuxt', () => {
   test('Nuxt.js Class', () => {
@@ -33,16 +32,15 @@ describe('nuxt', () => {
     })
   })
 
-  test('Fail to build when no pages/ directory', () => {
-    const nuxt = new Nuxt({
-      dev: false,
-      rootDir: resolve(__dirname)
-    })
+  test('Build with default page when no pages/ directory', async () => {
+    const nuxt = new Nuxt()
+    new Builder(nuxt).build()
+    const port = await getPort()
+    await nuxt.listen(port, 'localhost')
 
-    return new Builder(nuxt).build().catch(err => {
-      let s = String(err)
-      expect(s.includes("Couldn't find a `pages` directory")).toBe(true)
-      expect(s.includes('Please create one under the project root')).toBe(true)
-    })
+    const { html } = await nuxt.renderRoute('/')
+    expect(html.includes('Universal Vue.js Applications')).toBe(true)
+
+    await nuxt.close()
   })
 })

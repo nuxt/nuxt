@@ -1,3 +1,10 @@
 // eslint-disable
+require('babel-polyfill')
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 120 * 1000
+const consola = require('consola')
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000
+
+consola.clear().add({
+  log: jest.fn()
+})

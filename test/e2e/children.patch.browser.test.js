@@ -1,6 +1,5 @@
-import { Nuxt, Utils } from '../..'
 import Browser from '../utils/browser'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt, Utils } from '../utils'
 
 let port
 const browser = new Browser()
@@ -122,11 +121,12 @@ describe('children patch (browser)', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 
-  test('Stop browser', async () => {
+  // Stop browser
+  afterAll(async () => {
     await page.close()
     await browser.close()
   })

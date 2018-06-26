@@ -1,11 +1,7 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
-
 const parseArgs = require('minimist')
-const debug = require('debug')('nuxt:build')
-debug.color = 2 // Force green color
-
-const { Nuxt, Builder, Generator, Utils } = require('..')
+const consola = require('consola')
+const { Nuxt, Builder, Generator } = require('..')
 const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
@@ -24,7 +20,7 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.help) {
-  console.log(`
+  process.stderr.write(`
     Description
       Compiles the application for production deployment
     Usage
@@ -33,7 +29,7 @@ if (argv.help) {
       --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
       --spa                Launch in SPA mode
       --universal          Launch in Universal mode (default)
-      --generate           Generate static version after build
+      --no-generate        Don't generate static version for SPA mode (useful for nuxt start)
       --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
       --help, -h           Displays this message
   `)
@@ -47,54 +43,37 @@ options.dev = false
 
 // Analyze option
 options.build = options.build || {}
-if (argv.analyze) {
+if (argv.analyze && typeof options.build.analyze !== 'object') {
   options.build.analyze = true
 }
 
-debug('Building...')
 const nuxt = new Nuxt(options)
 const builder = new Builder(nuxt)
 
 // Setup hooks
-nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
+nuxt.hook('error', (_err) => consola.fatal(_err))
 
 // Close function
 const close = () => {
-  if (options.build.analyze === true) {
-    return // Wait for user exit
+  // In analyze mode wait for plugin
+  // emitting assets and opening browser
+  if (options.build.analyze === true || typeof options.build.analyze === 'object') {
+    return
   }
+
   process.exit(0)
 }
 
-if (!argv.generate) {
-  // -- Build only --
+if (options.mode !== 'spa' || argv.generate === false) {
+  // Build only
   builder
     .build()
     .then(() => close())
-    .catch(Utils.fatalError)
+    .catch(error => consola.fatal(error))
 } else {
-  // -- Build and generate --
-  const s = Date.now()
-
-  nuxt.hook('generate:distRemoved', () => debug('Destination folder cleaned'))
-
-  nuxt.hook('generate:distCopied', () => debug('Static & build files copied'))
-
-  nuxt.hook('generate:page', page => debug('Generate file: ' + page.path))
-
-  nuxt.hook('generate:done', (generator, errors) => {
-    const duration = Math.round((Date.now() - s) / 100) / 10
-
-    debug(`HTML Files generated in ${duration}s`)
-
-    if (errors.length) {
-      /* eslint-disable no-console */
-      console.log('\n' + errors.toString())
-    }
-  })
-
-  // Generate dist for SPA static deployment
-  new Generator(nuxt, builder).generate({ build: true }).then(() => {
-    close()
-  })
+  // Build + Generate for static deployment
+  new Generator(nuxt, builder)
+    .generate({ build: true })
+    .then(() => close())
+    .catch(error => consola.fatal(error))
 }

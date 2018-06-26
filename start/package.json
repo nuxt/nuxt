@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "runtime-only build for nuxt",
   "contributors": [
     {
@@ -11,9 +11,13 @@
     },
     {
       "name": "Pooya Parsa (@pi0)"
+    },
+    {
+      "name": "Clark Du (@clarkdo)"
     }
   ],
-  "main": "./index.js",
+  "main": "index.js",
+  "module": "./lib/nuxt.js",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,9 +25,8 @@
   },
   "files": [
     "bin",
-    "dist",
     "lib",
-    "index.js"
+    "dist"
   ],
   "keywords": [
     "nuxt",
@@ -46,28 +49,27 @@
     "npm": ">=5.0.0"
   },
   "dependencies": {
-    "source-map-support": "^0.5.0",
     "minimist": "^1.2.0",
-    "lodash": "^4.17.4",
-    "debug": "^3.1.0",
+    "lodash": "^4.17.5",
+    "chalk": "^2.3.2",
+    "ora": "^2.0.0",
     "hash-sum": "^1.0.2",
-    "chalk": "^2.3.0",
-    "ansi-html": "^0.0.7",
-    "serialize-javascript": "^1.4.0",
+    "is-ci": "^1.1.0",
+    "debug": "^3.1.0",
+    "esm": "^3.0.10",
+    "vue-meta": "^1.5.0",
+    "vue-server-renderer": "^2.5.16",
+    "lru-cache": "^4.1.2",
+    "@nuxtjs/youch": "^4.2.3",
+    "fs-extra": "^5.0.0",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
-    "serve-static": "^1.13.1",
+    "serialize-javascript": "^1.4.0",
+    "serve-static": "^1.13.2",
     "compression": "^1.7.1",
-    "fs-extra": "^5.0.0",
-    "vue-server-renderer": "^2.5.13",
-    "@nuxtjs/youch": "^4.2.3",
-    "source-map": "^0.6.1",
     "connect": "^3.6.5",
-    "vue": "^2.5.13",
-    "vue-meta": "^1.4.2",
-    "lru-cache": "^4.1.1",
-    "server-destroy": "^1.0.1",
-    "open-in-editor": "^2.2.0"
+    "launch-editor-middleware": "^2.2.1",
+    "server-destroy": "^1.0.1"
   },
   "collective": {
     "type": "opencollective",

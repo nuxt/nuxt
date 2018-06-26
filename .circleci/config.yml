@@ -39,8 +39,8 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: ESLint
-          command: yarn lint
+          name: Lint and Security
+          command: yarn test:lint
 
   build:
     <<: *defaults
@@ -49,19 +49,22 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn build-fixtures
+          command: yarn build && yarn test:fixtures && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
             - nuxt/test/fixtures
+            - nuxt/dist
+    environment:
+      - NODE_ENV: "test"
 
-  test:
+  test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Test
+          name: Unit Test
           command: yarn test:unit && yarn coverage
     environment:
       - NODE_ENV: "test"
@@ -72,7 +75,7 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Test (e2e)
+          name: E2E Test
           command: yarn test:e2e && yarn coverage
     environment:
       - NODE_ENV: "test"
@@ -85,11 +88,9 @@ jobs:
       - run:
           name: release
           command: |
-            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              ./scripts/release-edge
-            fi
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            ./scripts/release-edge
 
 workflows:
   version: 2
@@ -105,7 +106,7 @@ workflows:
           requires:
             - setup
 
-      - test:
+      - test-unit:
           requires:
             - build
 
@@ -117,5 +118,9 @@ workflows:
           requires:
             - build
             - lint
-            - test
+            - test-unit
             - test-e2e
+          filters:
+            branches:
+              only:
+                - dev

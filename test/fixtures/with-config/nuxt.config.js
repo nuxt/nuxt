@@ -45,9 +45,10 @@ export default {
     }
   },
   build: {
-    stats: false,
     publicPath: '/orion/',
     maxChunkSize: 300000,
+    cssSourceMap: true,
+    parallel: true,
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true,
@@ -61,6 +62,7 @@ export default {
         return null // Coverage: Return null, so defaults will be used.
       }
     },
+    transpile: 'vue-test',
     extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'

@@ -26,8 +26,5 @@ export default {
         handler: '~/modules/middleware/use-middleware'
       })
     })
-  },
-  build: {
-    stats: false
   }
 }

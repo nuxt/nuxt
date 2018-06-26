@@ -1,4 +1,5 @@
-import { Utils } from '../../'
+import path from 'path'
+import { Utils, waitUntil } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {
@@ -20,6 +21,11 @@ describe('utils', () => {
     await Utils.waitFor(100)
     expect(Date.now() - s >= 100).toBe(true)
     await Utils.waitFor()
+  })
+
+  test('waitUntil', async () => {
+    expect(await waitUntil(() => true, 0.1, 100)).toBe(false)
+    expect(await waitUntil(() => false, 0.1, 100)).toBe(true)
   })
 
   test('timeout (promise)', async () => {
@@ -196,6 +202,39 @@ describe('utils', () => {
 
     const chainedFn = Utils.chainFn(firstFn, secondFn)
     expect(chainedFn({}, 10)).toEqual({ foo: 11, bar: 12 })
+  })
+
+  test('flatRoutes', () => {
+    const routes = Utils.flatRoutes([
+      { name: 'login', path: '/login' },
+      { name: 'about', path: '/about' },
+      { name: 'posts',
+        path: '',
+        children: [
+          { name: 'posts-list',
+            path: ''
+          },
+          { name: 'posts-create',
+            path: 'post'
+          }
+        ]
+      }
+    ])
+    expect(routes).toMatchObject([ '/login', '/about', '', '/post' ])
+  })
+
+  describe('relativeTo', () => {
+    const path1 = path.join(path.sep, 'foo', 'bar')
+    const path2 = path.join(path.sep, 'foo', 'baz')
+
+    test('makes path relative to dir', () => {
+      expect(Utils.relativeTo(path1, path2)).toBe(Utils.wp(`..${path.sep}baz`))
+    })
+
+    test('keeps webpack inline loaders prepended', () => {
+      expect(Utils.relativeTo(path1, `loader1!loader2!${path2}`))
+        .toBe(Utils.wp(`loader1!loader2!..${path.sep}baz`))
+    })
   })
 })
 

@@ -1,5 +1,4 @@
-import { Nuxt } from '../../'
-import { loadFixture, getPort } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
 // const url = (route) => 'http://localhost:' + port + route
@@ -49,7 +48,7 @@ describe('children', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
-  test('Closing server and nuxt.js', async () => {
+  afterAll(async () => {
     await nuxt.close()
   })
 })
