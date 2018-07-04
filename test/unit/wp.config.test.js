@@ -18,7 +18,7 @@ describe('webpack configuration', () => {
     perfLoader.warmup = jest.fn()
     perfLoader.warmupAll()
     expect(perfLoader.warmup).toHaveBeenCalledTimes(2)
-    expect(perfLoader.warmup).toHaveBeenCalledWith(js, ['babel-loader', 'babel-preset-env'])
+    expect(perfLoader.warmup).toHaveBeenCalledWith(js, ['babel-loader', '@vue/babel-preset-app'])
     expect(perfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
     const loaders = perfLoader.pool('js', { loader: 'test-perf-loader' })
