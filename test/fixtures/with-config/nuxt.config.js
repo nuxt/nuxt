@@ -24,7 +24,6 @@ export default {
   transition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
-  offline: true,
   extensions: 'ts',
   plugins: [
     '~/plugins/test.js',
