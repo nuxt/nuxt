@@ -119,7 +119,7 @@
     "url-loader": "^1.0.1",
     "vue": "^2.5.16",
     "vue-loader": "^15.2.2",
-    "vue-meta": "^1.5.0",
+    "vue-meta": "^1.5.2",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.16",
     "vue-template-compiler": "^2.5.16",
