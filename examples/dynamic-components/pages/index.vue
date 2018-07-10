@@ -3,7 +3,7 @@
     <h1>Nuxt Chat</h1>
     <transition-group name="list" tag="ul">
       <li v-for="(message, index) in messages" :key="index">
-        <component :is="message.component" :data="message.data"></component>
+        <component :is="message.component" :data="message.data"/>
       </li>
     </transition-group>
   </div>
@@ -20,6 +20,7 @@ const components = {
 }
 
 export default {
+  components,
   data: () => ({
     messages: []
   }),
@@ -31,8 +32,7 @@ export default {
       // Add the message to the list
       this.messages.push(message)
     })
-  },
-  components
+  }
 }
 </script>
 

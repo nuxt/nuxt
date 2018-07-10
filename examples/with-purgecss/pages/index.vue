@@ -12,6 +12,6 @@
         <span class="inline-block bg-grey-lighter rounded-full px-3 py-1 text-sm font-semibold text-slate">#winter</span>
       </div>
     </div>
-    <button @click="$router.push('/about')" class="bg-blue mt-4 hover:bg-blue-dark text-white font-bold py-2 px-4 rounded">About</button>
+    <button class="bg-blue mt-4 hover:bg-blue-dark text-white font-bold py-2 px-4 rounded" @click="$router.push('/about')">About</button>
   </div>
 </template>

@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
   parserOptions: {
+    parser: 'babel-eslint',
     sourceType: 'module'
   },
   env: {
@@ -9,10 +9,13 @@ module.exports = {
     node: true,
     mocha: true
   },
-  extends: 'standard',
+  extends: [
+    'standard',
+    'plugin:vue/recommended'
+  ],
   // required to lint *.vue files
   plugins: [
-    'html'
+    'vue'
   ],
   // add your custom rules here
   rules: {
@@ -24,13 +27,16 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
     // do not allow console.logs etc...
     'no-console': 2,
-    'space-before-function-paren': [
-			2,
-			{
-				anonymous: 'always',
-				named: 'never'
-			}
-		],
+    'space-before-function-paren': [2, {
+      anonymous: 'always',
+      named: 'never'
+    }],
+    'vue/no-parsing-error': [2, {
+      'x-invalid-end-tag': false
+    }],
+    "vue/max-attributes-per-line": [2, {
+      "singleline": 5,
+    }]
   },
   globals: {}
 }

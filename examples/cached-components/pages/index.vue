@@ -8,7 +8,7 @@
 
 <script>
 export default {
-  name: 'date',
+  name: 'Date',
   serverCacheKey() {
     // Will change every 10 secondes
     return Math.floor(Date.now() / 10000)

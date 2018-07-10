@@ -1,6 +1,6 @@
 <template>
   <v-carousel>
-    <v-carousel-item v-for="(src, i) in images" v-bind:src="src" :key="i"></v-carousel-item>
+    <v-carousel-item v-for="(src, i) in images" :src="src" :key="i"/>
   </v-carousel>
 </template>
 

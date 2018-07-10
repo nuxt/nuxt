@@ -12,4 +12,3 @@
     </div>
   </div>
 </template>
-

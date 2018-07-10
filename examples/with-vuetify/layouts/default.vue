@@ -4,7 +4,7 @@
       <v-toolbar-side-icon @click.native.stop="drawer = !drawer" />
       <v-toolbar-title>Toolbar</v-toolbar-title>
     </v-toolbar>
-    <v-navigation-drawer left fixed app v-model="drawer">
+    <v-navigation-drawer v-model="drawer" left fixed app>
       <v-list>
         <v-list-tile router nuxt href="/">
           <v-list-tile-title>Home</v-list-tile-title>
