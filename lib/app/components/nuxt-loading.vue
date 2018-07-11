@@ -1,5 +1,5 @@
 <template>
-  <div class="nuxt-progress" :style="{
+  <div class="<%= globalName %>-progress" :style="{
     'width': percent+'%',
     'height': height,
     'background-color': canSuccess? color : failedColor,
@@ -88,7 +88,7 @@ export default {
 </script>
 
 <style>
-.nuxt-progress {
+.<%= globalName %>-progress {
   position: fixed;
   top: 0px;
   left: <%= loading.rtl === true ? 'auto' : '0px' %>;

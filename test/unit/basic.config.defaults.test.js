@@ -25,4 +25,20 @@ describe('basic config defaults', () => {
 
     consola.warn.mockRestore()
   })
+
+  test('globalName uses nuxt as default if not set', async () => {
+    const options = Options.from({})
+    expect(options.globalName).toEqual('nuxt')
+  })
+
+  test('globalName uses nuxt as default if set to something other than only letters', async () => {
+    let options = Options.from({ globalName: '12foo4' })
+    expect(options.globalName).toEqual('nuxt')
+
+    options = Options.from({ globalName: 'foo bar' })
+    expect(options.globalName).toEqual('nuxt')
+
+    options = Options.from({ globalName: 'foo?' })
+    expect(options.globalName).toEqual('nuxt')
+  })
 })
