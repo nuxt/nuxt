@@ -1,8 +1,8 @@
 <template>
   <ul>
     <li v-for="(post, index) in posts" :key="index">
-        <h3>{{ post.date }}</h3>
-        <h2><nuxt-link :to="post.link">{{ post.title }}</nuxt-link></h2>
+      <h3>{{ post.date }}</h3>
+      <h2><nuxt-link :to="post.link">{{ post.title }}</nuxt-link></h2>
     </li>
     <li style="border:none;text-align: center;font-size: 14px;">Design from <a href="http://blog.evanyou.me" target="_blank">EvanYou.me</a></li>
   </ul>

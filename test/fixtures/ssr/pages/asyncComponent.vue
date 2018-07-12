@@ -1,7 +1,7 @@
 <template>
-<div>
+  <div>
     <async-test/>
-</div>
+  </div>
 </template>
 
 <script>

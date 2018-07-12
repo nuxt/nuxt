@@ -6,26 +6,26 @@
 </template>
 
 <script>
-  export default {
-    data() {
-      return { name: 'world', className: 'red' }
-    },
-    methods: {
-      changeColor() {
-        this.className = this.className === 'red' ? 'blue' : 'green'
-      }
+export default {
+  data() {
+    return { name: 'world', className: 'red' }
+  },
+  methods: {
+    changeColor() {
+      this.className = this.className === 'red' ? 'blue' : 'green'
     }
   }
+}
 </script>
 
 <style>
-  .red {
-  	color: red;
-  }
-  .blue {
-  	color: blue;
-  }
-  .green {
-  	color: green;
-  }
+.red {
+  color: red;
+}
+.blue {
+  color: blue;
+}
+.green {
+  color: green;
+}
 </style>

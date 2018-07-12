@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
   parserOptions: {
+    parser: 'babel-eslint',
     sourceType: 'module'
   },
   env: {
@@ -13,10 +13,11 @@ module.exports = {
     'standard',
     'standard-jsx',
     'plugin:import/errors',
-    'plugin:import/warnings'
+    'plugin:import/warnings',
+    "plugin:vue/recommended"
   ],
   plugins: [
-    'html',
+    'vue',
     'jest'
   ],
   settings: {
@@ -48,13 +49,16 @@ module.exports = {
 
     // Do not allow console.logs etc...
     'no-console': 2,
-    'space-before-function-paren': [
-			2,
-			{
-				anonymous: 'always',
-				named: 'never'
-			}
-		],
+    'space-before-function-paren': [2, {
+      anonymous: 'always',
+      named: 'never'
+    }],
+    'vue/no-parsing-error': [2, {
+      'x-invalid-end-tag': false
+    }],
+    "vue/max-attributes-per-line": [2, {
+      "singleline": 5,
+    }]
   },
 
   globals: {}

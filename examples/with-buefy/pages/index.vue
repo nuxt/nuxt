@@ -22,4 +22,3 @@
   @import "~bulma";
   @import "~buefy/src/scss/buefy";
 </style>
-

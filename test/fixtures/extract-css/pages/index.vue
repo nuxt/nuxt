@@ -1,7 +1,7 @@
 <template>
-<div>
-  <h1>I'm RED</h1>
-</div>
+  <div>
+    <h1>I'm RED</h1>
+  </div>
 </template>
 
 <style scoped>

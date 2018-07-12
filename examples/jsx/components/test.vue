@@ -1,11 +1,14 @@
 <template>
-  <p v-html="data"></p>
+  <p v-html="data"/>
 </template>
 
 <script>
 export default {
   props: {
-    data: String
+    data: {
+      type: String,
+      default: ''
+    }
   }
 }
 </script>

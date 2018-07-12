@@ -2,10 +2,10 @@
   <div class="container">
     <h1>Please login to see the secret content</h1>
     <form v-if="!$store.state.authUser" @submit.prevent="login">
-      <p class="error" v-if="formError">{{ formError }}</p>
+      <p v-if="formError" class="error">{{ formError }}</p>
       <p><i>To login, use <b>demo</b> as username and <b>demo</b> as password.</i></p>
-      <p>Username: <input type="text" v-model="formUsername" name="username" /></p>
-      <p>Password: <input type="password" v-model="formPassword" name="password" /></p>
+      <p>Username: <input v-model="formUsername" type="text" name="username" ></p>
+      <p>Password: <input v-model="formPassword" type="password" name="password" ></p>
       <button type="submit">Login</button>
     </form>
     <div v-else>
