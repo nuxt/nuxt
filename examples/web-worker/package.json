@@ -11,10 +11,13 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
-    "nuxt": "^1.4.1"
+    "nuxt-edge": "^2.0.0-25523369.7c85202"
   },
   "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "eslint": "^5.1.0",
     "eslint-loader": "^2.0.0",
+    "eslint-plugin-vue": "^4.5.0",
     "worker-loader": "^1.1.1"
   }
 }
