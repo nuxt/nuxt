@@ -17,22 +17,22 @@
       <div class="links">
         <a
           :class="needWorkerSetup ? 'hidden' : 'visible'"
-          @click="test"
-          class="button button--green">Test Worker</a>
+          class="button button--green"
+          @click="test">Test Worker</a>
         <a
           :class="needWorkerSetup ? 'hidden' : 'visible'"
-          @click="long(4000)"
-          class="button button--green">Execute long running Worker</a>
+          class="button button--green"
+          @click="long(4000)">Execute long running Worker</a>
         <a
           :class="needWorkerSetup || !longRunningWorkers.length ? 'hidden' : 'visible'"
-          @click="freeWorker"
-          class="button button--green">Free long running Worker</a>
+          class="button button--green"
+          @click="freeWorker">Free long running Worker</a>
         <a
-          @click="removeWorker"
-          class="button button--grey">Remove Web Worker</a>
+          class="button button--grey"
+          @click="removeWorker">Remove Web Worker</a>
         <a
-          @click="createWorkers"
-          class="button button--grey">Create more Workers</a>
+          class="button button--grey"
+          @click="createWorkers">Create more Workers</a>
       </div>
     </div>
   </section>
@@ -45,11 +45,6 @@ export default {
   components: {
     AppLogo
   },
-  computed: {
-    needWorkerSetup () {
-      return this.workers.length === 0 && this.longRunningWorkers.length === 0
-    }
-  },
   data () {
     return {
       notification: '',
@@ -57,6 +52,11 @@ export default {
       workerIndex: 0,
       longRunningWorkers: [],
       longIndex: 0
+    }
+  },
+  computed: {
+    needWorkerSetup () {
+      return this.workers.length === 0 && this.longRunningWorkers.length === 0
     }
   },
   watch: {

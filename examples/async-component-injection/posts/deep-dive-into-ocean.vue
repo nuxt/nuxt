@@ -10,7 +10,7 @@
       <ul>
         <li>Vue.js</li>
         <li>Nuxt.js</li>
-        <li>= <3</li>
+        <li>= &lt;3</li>
       </ul>
     </div>
   </div>

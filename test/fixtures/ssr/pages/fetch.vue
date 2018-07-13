@@ -1,5 +1,5 @@
 <template>
-<foobar>{{$store.__id}}</foobar>
+  <foobar>{{ $store.__id }}</foobar>
 </template>
 
 <script>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Dog</h1>
-    <img :src="dog" />
+    <img :src="dog" >
   </div>
 </template>
 
