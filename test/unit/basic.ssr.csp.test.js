@@ -13,9 +13,9 @@ const startCSPTestServer = async (csp) => {
 
 describe('basic ssr csp', () => {
   test(
-    'Not contain Content-Security-Policy header, when csp.enabled is not set',
+    'Not contain Content-Security-Policy header, when csp is false',
     async () => {
-      const nuxt = await startCSPTestServer({})
+      const nuxt = await startCSPTestServer(false)
       const { headers } = await rp(url('/stateless'), {
         resolveWithFullResponse: true
       })
@@ -27,13 +27,9 @@ describe('basic ssr csp', () => {
   )
 
   test(
-    'Contain Content-Security-Policy header, when csp.enabled is only set',
+    'Contain Content-Security-Policy header, when csp is set',
     async () => {
-      const cspOption = {
-        enabled: true
-      }
-
-      const nuxt = await startCSPTestServer(cspOption)
+      const nuxt = await startCSPTestServer(true)
       const { headers } = await rp(url('/stateless'), {
         resolveWithFullResponse: true
       })
@@ -48,7 +44,6 @@ describe('basic ssr csp', () => {
     'Contain Content-Security-Policy header, when csp.allowedSources set',
     async () => {
       const cspOption = {
-        enabled: true,
         allowedSources: ['https://example.com', 'https://example.io']
       }
 
