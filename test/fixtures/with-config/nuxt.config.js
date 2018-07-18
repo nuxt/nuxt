@@ -45,7 +45,6 @@ export default {
   },
   build: {
     publicPath: '/orion/',
-    maxChunkSize: 300000,
     cssSourceMap: true,
     parallel: true,
     analyze: {
