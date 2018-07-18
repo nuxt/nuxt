@@ -69,17 +69,11 @@ if (options.mode !== 'spa' || argv.generate === false) {
   builder
     .build()
     .then(() => close())
-    .catch(error => {
-      consola.fatal(error)
-      process.exit(1)
-    })
+    .catch(error => consola.fatal(error))
 } else {
   // Build + Generate for static deployment
   new Generator(nuxt, builder)
     .generate({ build: true })
     .then(() => close())
-    .catch(error => {
-      consola.fatal(error)
-      process.exit(1)
-    })
+    .catch(error => consola.fatal(error))
 }
