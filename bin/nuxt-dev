@@ -115,7 +115,7 @@ function startDev(oldInstance) {
         }
       })
       // Start build
-      .then(() => builder.build())
+      .then(builder.build)
       // Close old nuxt after successful build
       .then(
         () =>
