@@ -1,10 +1,11 @@
 // eslint-disable
 require('babel-polyfill')
-
-const consola = require('consola')
+require('consola').clear().add({
+  log: jest.fn()
+})
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000
 
-consola.clear().add({
-  log: jest.fn()
-})
+const isAppveyor = !!process.env.APPVEYOR
+describe.skip.appveyor = isAppveyor ? describe.skip : describe
+test.skip.appveyor = isAppveyor ? test.skip : test

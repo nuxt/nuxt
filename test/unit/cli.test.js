@@ -9,7 +9,7 @@ const url = route => 'http://localhost:' + port + route
 
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
-describe('cli', () => {
+describe.skip.appveyor('cli', () => {
   test('nuxt start', async () => {
     let stdout = ''
     let error
