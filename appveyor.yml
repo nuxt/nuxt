@@ -2,8 +2,6 @@
 environment:
   matrix:
     - nodejs_version: "8"
-    # Temporary disabled
-    # - nodejs_version: "10"
 
 cache:
   - "%LOCALAPPDATA%\\Yarn"
@@ -30,3 +28,6 @@ build: off
 
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
+
+on_finish:
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
