@@ -61,7 +61,7 @@ const stressTest = async (_url, concurrency = 2, steps = 4) => {
   expect(statusCodes[200]).toBe(concurrency * steps)
 }
 
-describe('ssr', () => {
+describe.skip.appveyor('ssr', () => {
   beforeAll(async () => {
     const config = loadFixture('ssr')
     nuxt = new Nuxt(config)

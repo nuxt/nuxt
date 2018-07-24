@@ -1,3 +1,5 @@
 const { buildFixture } = require('../../utils/build')
 
-buildFixture('ssr')
+describe.skip.appveyor('cli build', () => {
+  buildFixture('ssr')
+})
