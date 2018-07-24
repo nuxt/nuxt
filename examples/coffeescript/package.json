@@ -10,7 +10,7 @@
     "start": "nuxt start"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "devDependencies": {
     "coffee-loader": "^0.8.0",

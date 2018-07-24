@@ -3,7 +3,7 @@ export default {
   transition: false,
   render: {
     http2: {
-      push: true
+      push: !process.env.APPVEYOR
     }
   }
 }

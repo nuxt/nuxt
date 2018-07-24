@@ -9,9 +9,17 @@ export default {
       if (isDev) {
         config.devtool = 'eval-source-map'
       }
-      const urlLoader = config.module.rules.find((loader) => loader.loader === 'url-loader')
-      // Increase limit to 100KO
-      urlLoader.query.limit = 100000
+
+      config.module.rules.some((loader) => {
+        if (loader.use) {
+          const urlLoader = loader.use.find(use => use.loader === 'url-loader')
+          if (urlLoader) {
+            // Increase limit to 100KO
+            urlLoader.options.limit = 100000
+            return true
+          }
+        }
+      })
     }
   }
 }
