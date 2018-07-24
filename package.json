@@ -58,7 +58,7 @@
     "prebuild": "yarn clean",
     "security": "nsp check || true",
     "test": "yarn test:fixtures && yarn test:unit",
-    "test:fixtures": "jest test/fixtures",
+    "test:fixtures": "jest -i test/fixtures",
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint && yarn security",
     "test:unit": "jest test/unit"
