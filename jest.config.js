@@ -10,5 +10,6 @@ module.exports = {
   moduleFileExtensions: ['js', 'mjs', 'json'],
   expand: true,
   forceExit: true,
+  // https://github.com/facebook/jest/pull/6747 fix warning here
   detectOpenHandles: true
 }
