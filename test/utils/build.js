@@ -2,6 +2,7 @@ import { loadFixture, Nuxt, Builder } from './index'
 
 export const buildFixture = function buildFixture(fixture) {
   test(`Build ${fixture}`, async () => {
+    jest.setTimeout(120000)
     const config = loadFixture(fixture, {
       test: true,
       build: {
