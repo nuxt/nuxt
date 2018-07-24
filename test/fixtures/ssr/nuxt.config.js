@@ -2,10 +2,7 @@ export default {
   render: {
     resourceHints: false,
     http2: {
-      push: true
+      push: !process.env.APPVEYOR
     }
-  },
-  build: {
-    extractCSS: true
   }
 }
