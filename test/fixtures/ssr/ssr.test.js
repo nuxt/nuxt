@@ -1,3 +1,5 @@
 const { buildFixture } = require('../../utils/build')
 
-buildFixture('ssr')
+describe('Build ssr fixture', () => {
+  buildFixture('ssr')
+})

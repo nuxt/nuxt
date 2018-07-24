@@ -1,9 +1,8 @@
 # Test against the latest version of this Node.js version
 environment:
+  APPVEYOR_SSH_BLOCK: true
   matrix:
     - nodejs_version: "8"
-    # Temporary disabled
-    # - nodejs_version: "10"
 
 cache:
   - "%LOCALAPPDATA%\\Yarn"
@@ -30,3 +29,7 @@ build: off
 
 # Do not build feature branch with open Pull Requests
 skip_branch_with_pr: true
+
+on_finish:
+  - sh: export APPVEYOR_SSH_BLOCK=true
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
