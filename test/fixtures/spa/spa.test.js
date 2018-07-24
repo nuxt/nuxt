@@ -1,3 +1,5 @@
 const { buildFixture } = require('../../utils/build')
 
-buildFixture('spa')
+describe('Build spa fixture', () => {
+  buildFixture('spa')
+})
