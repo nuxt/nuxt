@@ -6,7 +6,7 @@ import { defaultsDeep } from 'lodash'
 import _rp from 'request-promise-native'
 import esm from 'esm'
 import pkg from '../../package.json'
-import Dist from '../../lib/nuxt'
+import * as Dist from '../../lib/nuxt'
 
 export const rp = _rp
 export const getPort = _getPort
