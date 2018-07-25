@@ -53,4 +53,4 @@ generator
   .then(() => {
     process.exit(0)
   })
-  .catch(consola.fatal)
+  .catch(err => consola.fatal(err))
