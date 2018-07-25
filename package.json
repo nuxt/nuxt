@@ -18,6 +18,7 @@
   ],
   "main": "index.js",
   "module": "./lib/nuxt.js",
+  "sideEffects": false,
   "license": "MIT",
   "repository": {
     "type": "git",
