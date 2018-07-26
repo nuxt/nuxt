@@ -12,7 +12,7 @@ describe('nuxt', () => {
 
     expect(typeof nuxt).toBe('object')
     expect(nuxt.options.dev).toBe(false)
-    expect(typeof nuxt._ready.then).toBe('function')
+    expect(typeof nuxt.ready.then).toBe('function')
 
     await nuxt.ready()
 
