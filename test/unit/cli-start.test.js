@@ -40,7 +40,8 @@ describe.skip.appveyor('cli', () => {
     }
 
     expect(error).toBe(undefined)
-    expect(stdout.includes('Listening on')).toBe(true)
+    expect(stdout.includes('Listening on ')).toBe(true)
+    expect(stdout.includes(`http://localhost:${port}`)).toBe(true)
 
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
