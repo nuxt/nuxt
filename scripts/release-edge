@@ -69,11 +69,13 @@ class NuxtEdgePublisher {
   }
 }
 
-// NuxtEdgePublisher.publish()
+// publish nuxt-edge
+NuxtEdgePublisher.publish()
 
 // Run make start
 // eslint-disable-next-line no-console
 console.log(`building nuxt-edge-start`)
 spawnSync('npm', 'run build:nuxt-start'.split(' '))
 
+// publish nuxt-start
 NuxtEdgePublisher.publish('start')
