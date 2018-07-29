@@ -56,7 +56,9 @@ class NuxtEdgePublisher {
     console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
 
     // Do publish
-    const { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '))
+    const { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
+      cwd: resolve(__dirname, '..', module)
+    })
 
     // eslint-disable-next-line no-console
     console.log(String(output.concat('\n')).trim())
