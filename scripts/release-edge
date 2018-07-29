@@ -48,22 +48,30 @@ if (tag === 'dev') {
 console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
 
 // Do publish
+let { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '))
+
 // eslint-disable-next-line no-console
-console.log(
-  String(spawnSync('npm', `publish --tag ${tag}`.split(' ')).stdout).trim()
-)
+console.log(String(output.concat('\n')).trim())
+
+if (status === 1) {
+  process.exit(1)
+}
 
 // Run make start
 spawnSync('npm', 'run build:nuxt-start'.split(' '))
 
 // Log
 // eslint-disable-next-line no-console
-console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`)
+console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`);
+
+({ status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
+  cwd: resolve(__dirname, '..', 'start')
+}))
 
 // Do publish
 // eslint-disable-next-line no-console
-console.log(
-  String(spawnSync('npm', `publish --tag ${tag}`.split(' '), {
-    cwd: resolve(__dirname, '..', 'start')
-  }).stdout).trim()
-)
+console.log(String(output.concat('\n')).trim())
+
+if (status === 1) {
+  process.exit(1)
+}
