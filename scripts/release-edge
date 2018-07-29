@@ -57,21 +57,21 @@ if (status === 1) {
   process.exit(1)
 }
 
-// Run make start
-spawnSync('npm', 'run build:nuxt-start'.split(' '))
+// // Run make start
+// spawnSync('npm', 'run build:nuxt-start'.split(' '))
 
-// Log
-// eslint-disable-next-line no-console
-console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`);
+// // Log
+// // eslint-disable-next-line no-console
+// console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`);
 
-({ status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
-  cwd: resolve(__dirname, '..', 'start')
-}))
+// ({ status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
+//   cwd: resolve(__dirname, '..', 'start')
+// }))
 
-// Do publish
-// eslint-disable-next-line no-console
-console.log(String(output.concat('\n')).trim())
+// // Do publish
+// // eslint-disable-next-line no-console
+// console.log(String(output.concat('\n')).trim())
 
-if (status === 1) {
-  process.exit(1)
-}
+// if (status === 1) {
+//   process.exit(1)
+// }
