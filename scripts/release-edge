@@ -4,74 +4,74 @@ const { resolve } = require('path')
 const { spawnSync } = require('child_process')
 const { readFileSync, writeFileSync } = require('fs-extra')
 
-// paths
-const packagePath = resolve(__dirname, '..', 'package.json')
+class NuxtEdgePublisher {
+  static changePackageName(module = '') {
+    // paths
+    const packagePath = resolve(__dirname, '..', module, 'package.json')
 
-// Read original contents of package.json
-const originalPackage = readFileSync(packagePath, 'utf-8')
+    // Read original contents of package.json
+    const originalPackage = readFileSync(packagePath, 'utf-8')
 
-// Write to backup file
-// writeFileSync(packagePath + '.backup', originalPackage)
+    // Write to backup file
+    // writeFileSync(packagePath + '.backup', originalPackage)
 
-// Parse package.json
-const p = JSON.parse(originalPackage)
+    // Parse package.json
+    const p = JSON.parse(originalPackage)
 
-// Change package name
-p.name = 'nuxt-edge'
+    // Change package name
+    p.name = `nuxt-edge${module ? `-${module}` : ''}`
 
-// Get latest git commit id
-const gitCommit = String(
-  spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout
-).trim()
+    // Get latest git commit id
+    const gitCommit = String(
+      spawnSync('git', 'rev-parse --short HEAD'.split(' ')).stdout
+    ).trim()
 
-// Version with latest git commit id
-// Using date.now() so latest push will be always choosen by npm/yarn
-const date = Math.round(Date.now() / (1000 * 60))
-const baseVersion = p.version.split('-')[0]
-p.version = `${baseVersion}-${date}.${gitCommit}`
+    // Version with latest git commit id
+    // Using date.now() so latest push will be always choosen by npm/yarn
+    const date = Math.round(Date.now() / (1000 * 60))
+    const baseVersion = p.version.split('-')[0]
+    p.version = `${baseVersion}-${date}.${gitCommit}`
 
-// Write package.json
-writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
+    // Write package.json
+    writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
 
-// Parse git branch to decide npm tag
-let tag = String(
-  spawnSync('git', 'rev-parse --abbrev-ref HEAD'.split(' ')).stdout
-).trim()
+    return p
+  }
 
-// dev ~> latest
-if (tag === 'dev') {
-  tag = 'latest'
+  static publish(module = '') {
+    const p = this.changePackageName(module)
+
+    // Parse git branch to decide npm tag
+    let tag = String(
+      spawnSync('git', 'rev-parse --abbrev-ref HEAD'.split(' ')).stdout
+    ).trim()
+
+    // dev ~> latest
+    if (tag === 'dev') {
+      tag = 'latest'
+    }
+
+    // Log
+    // eslint-disable-next-line no-console
+    console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
+
+    // Do publish
+    const { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '))
+
+    // eslint-disable-next-line no-console
+    console.log(String(output.concat('\n')).trim())
+
+    if (status === 1) {
+      process.exit(1)
+    }
+  }
 }
 
-// Log
+// NuxtEdgePublisher.publish()
+
+// Run make start
 // eslint-disable-next-line no-console
-console.log(`publishing ${p.name}@${p.version} with tag ${tag}`)
+console.log(`building nuxt-edge-start`)
+spawnSync('npm', 'run build:nuxt-start'.split(' '))
 
-// Do publish
-let { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '))
-
-// eslint-disable-next-line no-console
-console.log(String(output.concat('\n')).trim())
-
-if (status === 1) {
-  process.exit(1)
-}
-
-// // Run make start
-// spawnSync('npm', 'run build:nuxt-start'.split(' '))
-
-// // Log
-// // eslint-disable-next-line no-console
-// console.log(`publishing ${p.name}-start@${p.version} with tag ${tag}`);
-
-// ({ status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
-//   cwd: resolve(__dirname, '..', 'start')
-// }))
-
-// // Do publish
-// // eslint-disable-next-line no-console
-// console.log(String(output.concat('\n')).trim())
-
-// if (status === 1) {
-//   process.exit(1)
-// }
+NuxtEdgePublisher.publish('start')
