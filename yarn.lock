@@ -7156,9 +7156,9 @@ text-table@^0.2.0, text-table@~0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
 
-thread-loader@^1.1.5:
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/thread-loader/-/thread-loader-1.1.5.tgz#7f9d6701f773734fff1832586779021ab8571917"
+thread-loader@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/thread-loader/-/thread-loader-1.2.0.tgz#35dedb23cf294afbbce6c45c1339b950ed17e7a4"
   dependencies:
     async "^2.3.0"
     loader-runner "^2.3.0"
