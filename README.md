@@ -1,13 +1,13 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
-  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://img.shields.io/circleci/project/github/nuxt/nuxt.js.svg" alt="Build Status"></a>
-  <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/9ttoamt2c2gnwkko?svg=true" alt="Windows Build Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg" alt="Downloads"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
-  <a href="https://gitter.im/nuxt/nuxt.js"><img src="https://img.shields.io/badge/GITTER-join%20chat-green.svg" alt="Gitter"></a>
+  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js" alt="Build Status"></a>
+  <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://badgen.net/travis/nuxt/nuxt.js" alt="Build Status"></a>
+  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js" alt="Windows Build Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
+  <a href="https://discord.gg/VApZF5W"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
   <a href="#backers" alt="sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backerss/badge.svg" /></a>
