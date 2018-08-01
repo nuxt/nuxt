@@ -1,4 +1,4 @@
-// // block for `time` ms, then return the number of loops we could run in that time:
+// block for `time` ms, then return the number of loops we could run in that time:
 function expensive(time) {
 	let start = Date.now(),
 		  count = 0
@@ -13,5 +13,7 @@ self.addEventListener('message', (event) => {
   if (event.data.action === 'expensive' && event.data.time) {
 		// Post data to parent thread
 		self.postMessage(expensive(Number(event.data.time)))
+	} else {
+		self.postMessage({ hello: 'from worker' })
 	}
 })

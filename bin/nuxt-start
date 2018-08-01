@@ -52,7 +52,7 @@ options.dev = false
 const nuxt = new Nuxt(options)
 
 // Setup hooks
-nuxt.hook('error', (_err) => consola.fatal(_err))
+nuxt.hook('error', err => consola.fatal(err))
 
 // Check if project is built for production
 const distDir = resolve(

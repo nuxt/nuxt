@@ -39,7 +39,7 @@
       </md-list>
     </md-drawer>
 
-    <md-drawer class="md-right" :md-active.sync="showSidepanel">
+    <md-drawer :md-active.sync="showSidepanel" class="md-right">
       <md-toolbar class="md-transparent" md-elevation="0">
         <span class="md-title">Favorites</span>
       </md-toolbar>

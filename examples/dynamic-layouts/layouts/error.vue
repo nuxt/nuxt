@@ -9,7 +9,12 @@
 <script>
 export default {
   layout: ({ isMobile }) => isMobile ? 'mobile' : 'default',
-  props: ['error']
+  props: {
+    error: {
+      type: Object,
+      default: null
+    }
+  }
 }
 </script>
 

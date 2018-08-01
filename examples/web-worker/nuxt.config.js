@@ -37,6 +37,9 @@ module.exports = {
         })
       }
 
+      // @see https://github.com/nuxt/nuxt.js/pull/3480#issuecomment-404150387
+      config.output.globalObject = "this"
+
       if (isClient) { // web workers are only available client-side
         config.module.rules.push({
           test: /\.worker\.js$/, // this will pick up all .js files that ends with ".worker.js"

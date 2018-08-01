@@ -2,8 +2,7 @@
 environment:
   matrix:
     - nodejs_version: "8"
-    # Temporary disabled
-    # - nodejs_version: "10"
+    - nodejs_version: "Current"
 
 cache:
   - "%LOCALAPPDATA%\\Yarn"
@@ -23,7 +22,8 @@ test_script:
   # - npm --version
   - yarn --version
   # run tests
-  - yarn test
+  - yarn test:fixtures -w=2
+  - yarn test:unit -w=2
 
 # Don't actually build.
 build: off

@@ -35,6 +35,12 @@ export default {
   transition: false,
   build: {
     scopeHoisting: true,
-    postcss: [require('postcss-cssnext')()]
+    postcss: [
+      require('postcss-preset-env')({
+        features: {
+          'custom-selectors': true
+        }
+      })
+    ]
   }
 }
