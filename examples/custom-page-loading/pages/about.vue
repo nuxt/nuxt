@@ -1,13 +1,22 @@
 <template>
   <div class="container">
     <p>About Page</p>
-    <p class="link" @click="goToFinal">Go to /final</p>
+    <p>It should take 5 seconds for the loader to disappear</p>>
+    <p>It should take 5 seconds for the route to change after you
+      <span class="link" @click="goToFinal">click here</span></p>
   </div>
 </template>
 
 <script>
 export default {
   loading: false,
+  asyncData() {
+    return new Promise((resolve) => {
+      setTimeout(function () {
+        resolve({})
+      }, 1000)
+    })
+  },
   mounted() {
     setTimeout(() => {
       // Extend loader for an additional 5s
