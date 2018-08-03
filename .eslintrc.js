@@ -38,8 +38,8 @@ module.exports = {
     // Allow unresolved imports
     'import/no-unresolved': 0,
 
-    // Allow paren-less arrow functions
-    'arrow-parens': 0,
+    // Don't allow paren-less arrow functions
+    'arrow-parens': [2, 'always'],
 
     // Allow async-await
     'generator-star-spacing': 0,
