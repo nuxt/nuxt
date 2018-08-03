@@ -8,14 +8,14 @@
 <script>
 export default {
   loading: false,
-  mounted () {
+  mounted() {
     setTimeout(() => {
       // Extend loader for an additional 5s
       this.$nuxt.$loading.finish()
     }, 5000)
   },
   methods: {
-    goToFinal () {
+    goToFinal() {
       // Start loader immediately
       this.$nuxt.$loading.start()
       // Actually change route 5s later
