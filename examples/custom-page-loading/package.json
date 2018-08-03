@@ -1,5 +1,5 @@
 {
-  "name": "example-custom-loading",
+  "name": "example-custom-page-loading",
   "dependencies": {
     "nuxt": "latest"
   },
