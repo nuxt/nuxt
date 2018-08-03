@@ -17,14 +17,14 @@ export default {
   },
   mounted () {
     setTimeout(() => {
-      // Extend loader for an additional 2s
+      // Extend loader for an additional 5s
       this.$nuxt.$loading.finish()
-    }, 10000)
+    }, 5000)
   },
   methods: {
     goToFinal () {
       // Start loader immediately
-      this.$loading.start()
+      this.$nuxt.$loading.start()
       // Actually change route 5s later
       setTimeout(() => {
         this.$router.push('/final')
@@ -36,6 +36,7 @@ export default {
 
 <style scoped>
 .link {
+  cursor: pointer;
   text-decoration: underline;
 }
 .container {

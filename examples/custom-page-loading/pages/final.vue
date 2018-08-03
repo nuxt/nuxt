@@ -7,19 +7,12 @@
 
 <script>
 export default {
-  loading: false,
   asyncData() {
     return new Promise((resolve) => {
       setTimeout(function () {
         resolve({})
       }, 1000)
     })
-  },
-  mounted () {
-    setTimeout(() => {
-      // Extend loader for an additional 2s
-      this.$nuxt.$loading.finish()
-    }, 10000)
   }
 }
 </script>
