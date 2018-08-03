@@ -19,7 +19,7 @@ export default {
     setTimeout(() => {
       // Extend loader for an additional 2s
       this.$nuxt.$loading.finish()
-    }, 2000)
+    }, 10000)
   }
 }
 </script>
