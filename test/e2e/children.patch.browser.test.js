@@ -3,7 +3,7 @@ import { loadFixture, getPort, Nuxt, Utils } from '../utils'
 
 let port
 const browser = new Browser()
-const url = route => 'http://localhost:' + port + route
+const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 let page

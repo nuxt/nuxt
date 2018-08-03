@@ -11,12 +11,12 @@ const esm = require('esm')(module, {
   }
 })
 
-const getRootDir = argv => resolve(argv._[0] || '.')
-const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
+const getRootDir = (argv) => resolve(argv._[0] || '.')
+const getNuxtConfigFile = (argv) => resolve(getRootDir(argv), argv['config-file'])
 
 exports.nuxtConfigFile = getNuxtConfigFile
 
-exports.loadNuxtConfig = argv => {
+exports.loadNuxtConfig = (argv) => {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
 
@@ -46,7 +46,7 @@ exports.loadNuxtConfig = argv => {
   return options
 }
 
-exports.getLatestHost = argv => {
+exports.getLatestHost = (argv) => {
   const port =
     argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host =

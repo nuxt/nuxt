@@ -43,7 +43,7 @@ const nStoriesOf = (cmp, name = Object.keys(cmp)[0], params = {}) => {
 
   if (params.withDefault) {
     x.add('Default', () => ({
-      render: h => h(Object.values(cmp)[0])
+      render: (h) => h(Object.values(cmp)[0])
     }))
   }
 

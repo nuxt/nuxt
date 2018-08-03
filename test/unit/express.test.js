@@ -2,7 +2,7 @@ import express from 'express'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = (route) => 'http://localhost:' + port + route
 
 let nuxt
 let app
@@ -35,7 +35,7 @@ describe('express', () => {
   afterAll(async () => {
     await nuxt.close()
     await new Promise((resolve, reject) => {
-      server.close(err => err ? reject(err) : resolve())
+      server.close((err) => err ? reject(err) : resolve())
     })
   })
 })

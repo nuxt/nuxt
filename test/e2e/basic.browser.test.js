@@ -3,7 +3,7 @@ import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
 const browser = new Browser()
-const url = route => 'http://localhost:' + port + route
+const url = (route) => 'http://localhost:' + port + route
 
 let nuxt = null
 let page = null
@@ -40,7 +40,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/css')
 
     expect(await page.$text('.red')).toBe('This is red')
-    expect(await page.$eval('.red', red => {
+    expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
     })).toEqual({
@@ -64,8 +64,8 @@ describe('basic browser', () => {
   })
 
   test('/head', async () => {
-    const msg = new Promise(resolve =>
-      page.on('console', msg => resolve(msg.text()))
+    const msg = new Promise((resolve) =>
+      page.on('console', (msg) => resolve(msg.text()))
     )
     await page.nuxt.navigate('/head')
     const metas = await page.$$attr('meta', 'content')

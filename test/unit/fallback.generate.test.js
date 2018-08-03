@@ -6,7 +6,7 @@ import finalhandler from 'finalhandler'
 import { loadFixture, getPort, Nuxt, Generator, Options, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = (route) => 'http://localhost:' + port + route
 const distDir = resolve(__dirname, '..', 'fixtures/basic/.nuxt-generate-fallback')
 
 let nuxt = null

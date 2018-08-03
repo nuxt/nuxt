@@ -5,9 +5,9 @@ import { loadFixture, getPort, Nuxt } from '../utils'
 let nuxt = null
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = (route) => 'http://localhost:' + port + route
 
-const renderRoute = async _url => {
+const renderRoute = async (_url) => {
   const window = await nuxt.renderAndGetWindow(url(_url))
   const head = window.document.head.innerHTML
   const html = window.document.body.innerHTML

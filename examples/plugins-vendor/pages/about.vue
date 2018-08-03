@@ -11,7 +11,7 @@ import axios from 'axios'
 export default {
   asyncData() {
     const nb = Math.max(1, Math.round(Math.random() * 10))
-    return axios.get(`https://jsonplaceholder.typicode.com/photos/${nb}`).then(res => res.data)
+    return axios.get(`https://jsonplaceholder.typicode.com/photos/${nb}`).then((res) => res.data)
   }
 }
 </script>

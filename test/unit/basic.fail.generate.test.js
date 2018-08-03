@@ -13,7 +13,7 @@ describe('basic fail generate', () => {
     const nuxt = new Nuxt(options)
     const generator = new Generator(nuxt)
 
-    await generator.generate({ build: false }).catch(e => {
+    await generator.generate({ build: false }).catch((e) => {
       expect(e.message).toBe('Not today!')
     })
   })
