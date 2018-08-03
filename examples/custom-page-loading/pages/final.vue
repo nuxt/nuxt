@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <p>About Page</p>
-    <p class="link" @click="goToFinal">Go to /final</p>
+    <p>Final Page</p>
+    <nuxt-link to="/">Go to /</nuxt-link>
   </div>
 </template>
 
@@ -20,24 +20,11 @@ export default {
       // Extend loader for an additional 2s
       this.$nuxt.$loading.finish()
     }, 10000)
-  },
-  methods: {
-    goToFinal () {
-      // Start loader immediately
-      this.$loading.start()
-      // Actually change route 5s later
-      setTimeout(() => {
-        this.$router.push('/final')
-      }, 5000)
-    }
   }
 }
 </script>
 
 <style scoped>
-.link {
-  text-decoration: underline;
-}
 .container {
   font-size: 20px;
   text-align: center;
