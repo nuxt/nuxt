@@ -10,7 +10,7 @@ export default {
       setTimeout(() => resolve({ name: 'Nuxt.js' }), 10)
     })
   },
-  mounted () {
+  mounted() {
     setTimeout(() => this.$nuxt.$loading.finish(), 1500)
   }
 }
