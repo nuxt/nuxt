@@ -28,14 +28,14 @@ describe('basic browser', () => {
   })
 
   test('/noloading', async () => {
-    const { hook } = await page.nuxt.navigate('/noloading', false)
+    const { hook } = await page.nuxt.navigate('/noloading', true)
     let loading = await page.nuxt.loadingData()
 
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
     await new Promise((resolve) => {
-      setTimeout(() => resolve(), 2100)
+      setTimeout(() => resolve(), 1800)
     })
     loading = await page.nuxt.loadingData()
     expect(loading.percent).toBe(100)
