@@ -11,15 +11,14 @@ export default {
     })
   },
   watch: {
-    $route (to) {
+    $route(to) {
       if (to.path === '/stateless') {
         this.$nuxt.$loading.start()
       }
     }
   },
   mounted() {
-    setTimeout(() => {
-      this.$nuxt.$loading.finish(), 1500)
+    setTimeout(() => this.$nuxt.$loading.finish(), 1500)
   }
 }
 </script>
