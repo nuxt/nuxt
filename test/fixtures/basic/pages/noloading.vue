@@ -10,8 +10,16 @@ export default {
       setTimeout(() => resolve({ name: 'Nuxt.js' }), 10)
     })
   },
+  watch: {
+    $route (to) {
+      if (to.path === '/stateless') {
+        this.$nuxt.$loading.start()
+      }
+    }
+  },
   mounted() {
-    setTimeout(() => this.$nuxt.$loading.finish(), 1500)
+    setTimeout(() => {
+      this.$nuxt.$loading.finish(), 1500)
   }
 }
 </script>
