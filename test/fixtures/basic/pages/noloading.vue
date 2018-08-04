@@ -12,9 +12,7 @@ export default {
   },
   watch: {
     $route(to) {
-      if (to.path === '/stateless') {
-        this.$nuxt.$loading.start()
-      }
+      this.$nuxt.$loading.start()
     }
   },
   mounted() {
