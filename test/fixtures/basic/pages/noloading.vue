@@ -11,7 +11,7 @@ export default {
     })
   },
   mounted () {
-    setTimeout(() => this.$nuxt.$loading.finish(), 2000)
+    setTimeout(() => this.$nuxt.$loading.finish(), 1500)
   }
 }
 </script>

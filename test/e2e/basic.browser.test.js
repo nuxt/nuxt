@@ -27,6 +27,20 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('Index page')
   })
 
+  test('/noloading', async () => {
+    const { hook } = await page.nuxt.navigate('/noloading', false)
+    let loading = await page.nuxt.loadingData()
+
+    expect(loading.show).toBe(true)
+    await hook
+    expect(loading.show).toBe(true)
+    await new Promise((resolve) => {
+      setTimeout(() => resolve(), 2100)
+    })
+    loading = await page.nuxt.loadingData()
+    expect(loading.percent).toBe(100)
+  })
+
   test('/stateless', async () => {
     const { hook } = await page.nuxt.navigate('/stateless', false)
     const loading = await page.nuxt.loadingData()
