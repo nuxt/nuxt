@@ -1,13 +1,13 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
 import { writeFile } from 'fs-extra'
-// import { getPort, rp, waitUntil } from '../utils'
+import { getPort, rp, waitUntil } from '../utils'
 import { getPort, waitUntil } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
-// const url = route => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
 const killNuxt = async (nuxtInt) => {
@@ -54,29 +54,34 @@ describe.skip.appveyor('cli', () => {
     await killNuxt(nuxtDev)
   })
 
-  // test('nuxt start', async () => {
-  //   let stdout = ''
-  //   let error
+  test('nuxt start', async () => {
+    const stdout = ''
+    let error
 
-  //   const env = process.env
-  //   env.PORT = port = await getPort()
+    const env = process.env
+    env.PORT = port = await getPort()
 
-  //   const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
+    await new Promise((resolve) => {
+      const nuxtBuild = spawn('node', [nuxtBin, 'build', rootDir], { env })
+      nuxtBuild.on('close', () => { resolve() })
+    })
 
-  //   nuxtStart.stdout.on('data', (data) => { stdout += data })
-  //   nuxtStart.on('error', (err) => { error = err })
+    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
 
-  //   // Wait max 40s for the starting
-  //   if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
-  //     error = 'server failed to start successfully in 20 seconds'
-  //   }
+    nuxtStart.stdout.on('data', (data) => { stdout += data })
+    nuxtStart.on('error', (err) => { error = err })
 
-  //   expect(error).toBe(undefined)
-  //   expect(stdout.includes('Listening on')).toBe(true)
+    // Wait max 40s for the starting
+    if (await waitUntil(() => stdout.start.includes(`${port}`), 40)) {
+      error = 'server failed to start successfully in 20 seconds'
+    }
 
-  //   const html = await rp(url('/'))
-  //   expect(html).toMatch(('<div>CLI Test</div>'))
+    expect(error).toBe(undefined)
+    expect(stdout.includes('Listening on')).toBe(true)
 
-  //   await killNuxt(nuxtStart)
-  // })
+    const html = await rp(url('/'))
+    expect(html).toMatch(('<div>CLI Test</div>'))
+
+    await killNuxt(nuxtStart)
+  })
 })
