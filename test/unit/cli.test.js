@@ -13,7 +13,7 @@ const genHandlers = (cmd) => {
 }
 
 const killNuxt = async (nuxtInt) => {
-  nuxtStart.kill()
+  nuxtInt.kill()
 
   // Wait max 10s for the process to be killed
   timeout = await waitUntil(() => exitCode !== undefined, 10)
@@ -21,7 +21,7 @@ const killNuxt = async (nuxtInt) => {
   if (timeout === true) {
     console.warn( // eslint-disable-line no-console
       `we were unable to automatically kill the child process with pid: ${
-        nuxtStart.pid
+        nuxtInt.pid
       }`
     )
   }
@@ -41,8 +41,11 @@ describe.skip.appveyor('cli', () => {
 
     const customFilePath = join(rootDir, 'custom.file')
     await writeFile(customFilePath, 'This file is used to test custom chokidar watchers.')
-    await new Promise((resolve) => setTimeout(() => resolve()), 200)
-    expect(stdout.includes('[custom.file] changed')).toBe(true)
+    await new Promise((resolve) => setTimeout(() => resolve()), 20)
+    await writeFile('/tmp/test2.txt', stdout)
+    expect(stdout.includes('Compiling')).toBe(true)
+    await new Promise((resolve) => setTimeout(() => resolve()), 1000)
+    await writeFile('/tmp/test3.txt', stdout)
 
     await killNuxt(nuxtDev)    
     expect(exitCode).toBe(null)
