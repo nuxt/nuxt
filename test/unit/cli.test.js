@@ -71,7 +71,7 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.on('error', (err) => { error = err })
 
     // Wait max 40s for the starting
-    if (await waitUntil(() => stdout.start.includes(`${port}`), 40)) {
+    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
       error = 'server failed to start successfully in 20 seconds'
     }
 
