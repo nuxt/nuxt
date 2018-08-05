@@ -11,10 +11,10 @@ const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
 const killNuxt = async (nuxtInt) => {
   let exitCode
+  nuxtInt.on('close', (code) => { exitCode = code })
   nuxtInt.kill()
   // Wait max 10s for the process to be killed
-  let timeout = await waitUntil(() => exitCode !== undefined, 10)
-  if (timeout === true) {
+  if (await waitUntil(() => exitCode !== undefined, 10)) {
     console.warn( // eslint-disable-line no-console
       `we were unable to automatically kill the child process with pid: ${
         nuxtInt.pid
@@ -27,13 +27,11 @@ describe.skip.appveyor('cli', () => {
 
   test('nuxt dev', async () => {
     let stdout = ''
-    let exitCode = null
     const env = process.env
     env.PORT = port = 4556 // await getPort()
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', data => { stdout += data })
-    nuxtDev.on('close', code => { exitCode = code })
 
     // Wait max 20s for the starting
     await waitUntil(() => stdout.includes(`${port}`), 20)
@@ -56,23 +54,20 @@ describe.skip.appveyor('cli', () => {
     })
     await writeFile('/tmp/now.txt', stdout)
     await killNuxt(nuxtDev)    
-    expect(exitCode).toBe(null)
 
   })
 
   test('nuxt start', async () => {
     let stdout = ''
     let error
-    let exitCode
 
     const env = process.env
     env.PORT = port = await getPort()
 
     const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
 
-    nuxtStart.stdout.on('data', data => { stdout += data })
-    nuxtStart.on('error', err => { error = err })
-    nuxtStart.on('close', code => { exitCode = code })
+    nuxtStart.stdout.on('data', (data) => { stdout += data })
+    nuxtStart.on('error', (err) => { error = err })
 
     // Wait max 20s for the starting
     let timeout = await waitUntil(() => stdout.includes('Listening on'), 20)
@@ -88,8 +83,6 @@ describe.skip.appveyor('cli', () => {
     expect(html).toMatch(('<div>CLI Test</div>'))
 
     await killNuxt(nuxtStart)
-
-    expect(exitCode).toBe(null)
   })
 
 })
