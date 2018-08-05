@@ -34,6 +34,7 @@ describe('basic browser', () => {
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
+    await new Promise((resolve) => setTimeout(() => resolve(), 200))
     expect(await page.$text('.loaded')).toBe('true')
   })
 
