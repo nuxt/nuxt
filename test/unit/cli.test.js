@@ -2,7 +2,6 @@ import { spawn } from 'child_process'
 import { resolve, join } from 'path'
 import { writeFile } from 'fs-extra'
 import { getPort, rp, waitUntil } from '../utils'
-import { getPort, waitUntil } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -55,7 +54,7 @@ describe.skip.appveyor('cli', () => {
   })
 
   test('nuxt start', async () => {
-    const stdout = ''
+    let stdout = ''
     let error
 
     const env = process.env
