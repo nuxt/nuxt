@@ -10,11 +10,10 @@ const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
 const killNuxt = async (nuxtInt) => {
+  let exitCode
   nuxtInt.kill()
-
   // Wait max 10s for the process to be killed
-  timeout = await waitUntil(() => exitCode !== undefined, 10)
-
+  let timeout = await waitUntil(() => exitCode !== undefined, 10)
   if (timeout === true) {
     console.warn( // eslint-disable-line no-console
       `we were unable to automatically kill the child process with pid: ${
@@ -28,22 +27,34 @@ describe.skip.appveyor('cli', () => {
 
   test('nuxt dev', async () => {
     let stdout = ''
-    let exitcode
+    let exitCode = null
     const env = process.env
-    env.PORT = port = await getPort()
+    env.PORT = port = 4556 // await getPort()
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', data => { stdout += data })
     nuxtDev.on('close', code => { exitCode = code })
 
+    // Wait max 20s for the starting
+    await waitUntil(() => stdout.includes(`${port}`), 20)
+
+    // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
     await writeFile(customFilePath, 'This file is used to test custom chokidar watchers.')
-    await new Promise((resolve) => setTimeout(() => resolve()), 20)
-    await writeFile('/tmp/test2.txt', stdout)
-    expect(stdout.includes('Compiling')).toBe(true)
-    await new Promise((resolve) => setTimeout(() => resolve()), 1000)
-    await writeFile('/tmp/test3.txt', stdout)
 
+    // Wait until two compilations are seen
+    // The first one and the one that followed the change to `custom.file`
+    await waitUntil(() => {
+      let index
+      let compiles = 0
+      let match = stdout.indexOf(/Compiled client/g)
+      while (match !== -1) {
+        compiles++
+        match = stdout.indexOf(/Compiled client/g, match)
+      }
+      return compiles > 1
+    })
+    await writeFile('/tmp/now.txt', stdout)
     await killNuxt(nuxtDev)    
     expect(exitCode).toBe(null)
 
@@ -80,4 +91,5 @@ describe.skip.appveyor('cli', () => {
 
     expect(exitCode).toBe(null)
   })
+
 })
