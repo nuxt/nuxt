@@ -52,7 +52,6 @@ describe.skip.appveyor('cli', () => {
       }
       return compiles > 1
     })
-    await writeFile('/tmp/now.txt', stdout)
     await killNuxt(nuxtDev)    
 
   })
