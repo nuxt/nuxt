@@ -35,7 +35,7 @@ describe('basic browser', () => {
     await hook
     expect(loading.show).toBe(true)
     await new Promise((resolve) => {
-      setTimeout(() => resolve(), 1800)
+      setTimeout(() => resolve(), 2100)
     })
     loading = await page.nuxt.loadingData()
     expect(loading.percent).toBe(100)

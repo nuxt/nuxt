@@ -11,7 +11,7 @@ export default {
     })
   },
   watch: {
-    $route(to) {
+    $route() {
       this.$nuxt.$loading.start()
     }
   },
