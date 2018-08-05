@@ -34,11 +34,7 @@ describe('basic browser', () => {
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
-    await new Promise((resolve) => {
-      setTimeout(() => resolve(), 2100)
-    })
-    loading = await page.nuxt.loadingData()
-    expect(loading.percent).toBe(100)
+    expect(await page.$text('.loaded')).toBe('true')
   })
 
   test('/stateless', async () => {
