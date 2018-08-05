@@ -24,7 +24,6 @@ const killNuxt = async (nuxtInt) => {
 }
 
 describe.skip.appveyor('cli', () => {
-
   test('nuxt dev', async () => {
     let stdout = ''
     const env = process.env
@@ -43,7 +42,6 @@ describe.skip.appveyor('cli', () => {
     // Wait until two compilations are seen
     // The first one and the one that followed the change to `custom.file`
     await waitUntil(() => {
-      let index
       let compiles = 0
       let match = stdout.indexOf(/Compiled client/g)
       while (match !== -1) {
@@ -52,8 +50,7 @@ describe.skip.appveyor('cli', () => {
       }
       return compiles > 1
     })
-    await killNuxt(nuxtDev)    
-
+    await killNuxt(nuxtDev)
   })
 
   test('nuxt start', async () => {
@@ -69,9 +66,7 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.on('error', (err) => { error = err })
 
     // Wait max 20s for the starting
-    let timeout = await waitUntil(() => stdout.includes('Listening on'), 20)
-
-    if (timeout === true) {
+    if (await waitUntil(() => stdout.includes(`${port}`), 20)) {
       error = 'server failed to start successfully in 20 seconds'
     }
 
