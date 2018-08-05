@@ -28,7 +28,7 @@ describe.skip.appveyor('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
     const env = process.env
-    env.PORT = port = 4556 // await getPort()
+    env.PORT = port = await getPort()
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', data => { stdout += data })
