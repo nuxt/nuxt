@@ -34,8 +34,8 @@ describe('dynamic routes', () => {
       expect(routes[2].name).toBeFalsy() // parent route has no name
       // pages/parent/*.vue
       expect(routes[2].children.length).toBe(3) // parent has 3 children
-      expect(routes[2].children.map((r) => r.path)).toEqual(['', 'teub', 'child'])
-      expect(routes[2].children.map((r) => r.name)).toEqual([
+      expect(routes[2].children.map(r => r.path)).toEqual(['', 'teub', 'child'])
+      expect(routes[2].children.map(r => r.name)).toEqual([
         'parent',
         'parent-teub',
         'parent-child'
@@ -48,14 +48,14 @@ describe('dynamic routes', () => {
       expect(routes[4].name).toBeFalsy() // parent route has no name
       // pages/test/users/*.vue
       expect(routes[4].children.length).toBe(5) // parent has 5 children
-      expect(routes[4].children.map((r) => r.path)).toEqual([
+      expect(routes[4].children.map(r => r.path)).toEqual([
         '',
         'projects',
         'projects/:category',
         ':id',
         ':index/teub'
       ])
-      expect(routes[4].children.map((r) => r.name)).toEqual([
+      expect(routes[4].children.map(r => r.name)).toEqual([
         'test-users',
         'test-users-projects',
         'test-users-projects-category',

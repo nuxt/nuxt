@@ -1,7 +1,7 @@
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 

@@ -12,7 +12,7 @@ export default {
 
       config.module.rules.some((loader) => {
         if (loader.use) {
-          const urlLoader = loader.use.find((use) => use.loader === 'url-loader')
+          const urlLoader = loader.use.find(use => use.loader === 'url-loader')
           if (urlLoader) {
             // Increase limit to 100KO
             urlLoader.options.limit = 100000

@@ -5,7 +5,7 @@ import { getPort, rp, waitUntil } from '../utils'
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 

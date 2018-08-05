@@ -5,11 +5,11 @@ let port
 let nuxt = null
 
 // Utils
-const range = (n) => [...Array(n).keys()]
+const range = n => [...Array(n).keys()]
 const FOOBAR_REGEX = /<foobar>([\s\S]*)<\/foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
 
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 // const isWindows = /^win/.test(process.platform)
 

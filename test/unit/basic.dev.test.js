@@ -1,7 +1,7 @@
 import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
 
 let port
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 let transpile = null
@@ -20,8 +20,8 @@ describe('basic dev', () => {
         ],
         extend({ module: { rules } }, { isClient }) {
           if (isClient) {
-            const babelLoader = rules.find((loader) => loader.test.test('.jsx'))
-            transpile = (file) => !babelLoader.exclude(file)
+            const babelLoader = rules.find(loader => loader.test.test('.jsx'))
+            transpile = file => !babelLoader.exclude(file)
           }
         }
       }

@@ -7,7 +7,7 @@ import Centered from '@storybook/addon-centered'
 storiesOf('Vuetify/Logo', module)
   .addDecorator(Centered)
   .add('Logo', () => ({
-    render: (h) => h(VuetifyLogo)
+    render: h => h(VuetifyLogo)
   }))
 
 const menuItems = [

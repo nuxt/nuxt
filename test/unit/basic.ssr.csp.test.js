@@ -1,7 +1,7 @@
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
-const url = (route) => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + route
 
 const startCspServer = async (csp, isProduction = true) => {
   const options = loadFixture('basic', {
@@ -14,11 +14,11 @@ const startCspServer = async (csp, isProduction = true) => {
   return nuxt
 }
 
-const getHeader = (debug) => debug ? 'content-security-policy-report-only' : 'content-security-policy'
+const getHeader = debug => debug ? 'content-security-policy-report-only' : 'content-security-policy'
 const cspHeader = getHeader(false)
 const reportOnlyHeader = getHeader(true)
 
-const startCspDevServer = async (csp) => startCspServer(csp, false)
+const startCspDevServer = async csp => startCspServer(csp, false)
 
 describe('basic ssr csp', () => {
   let nuxt
@@ -72,7 +72,7 @@ describe('basic ssr csp', () => {
           resolveWithFullResponse: true
         })
 
-        const hashes = headers[cspHeader].split(' ').filter((s) => s.startsWith('\'sha256-'))
+        const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
 
         expect(uniqueHashes.length).toBe(hashes.length)
@@ -163,7 +163,7 @@ describe('basic ssr csp', () => {
           resolveWithFullResponse: true
         })
 
-        const hashes = headers[cspHeader].split(' ').filter((s) => s.startsWith('\'sha256-'))
+        const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
 
         expect(uniqueHashes.length).toBe(hashes.length)
@@ -215,7 +215,7 @@ describe('basic ssr csp', () => {
           resolveWithFullResponse: true
         })
 
-        const hashes = headers[reportOnlyHeader].split(' ').filter((s) => s.startsWith('\'sha256-'))
+        const hashes = headers[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
 
         expect(uniqueHashes.length).toBe(hashes.length)
@@ -306,7 +306,7 @@ describe('basic ssr csp', () => {
           resolveWithFullResponse: true
         })
 
-        const hashes = headers[reportOnlyHeader].split(' ').filter((s) => s.startsWith('\'sha256-'))
+        const hashes = headers[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
 
         expect(uniqueHashes.length).toBe(hashes.length)

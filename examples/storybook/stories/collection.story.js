@@ -19,7 +19,7 @@ import MyButton from '~/components/Button.vue'
 
 storiesOf('Features/Method for rendering Vue', module)
   .add('render', () => ({
-    render: (h) => h('div', ['renders a div with some text in it..'])
+    render: h => h('div', ['renders a div with some text in it..'])
   }))
   .add('render + component', () => ({
     render(h) {
@@ -219,7 +219,7 @@ storiesOf('Features/  Addon Knobs', module)
             <p>${stockMessage}</p>
             <p>Also, I have:</p>
             <ul>
-              ${items.map((item) => `<li key=${item}>${item}</li>`).join('')}
+              ${items.map(item => `<li key=${item}>${item}</li>`).join('')}
             </ul>
             <p>${salutation}</p>
           </div>

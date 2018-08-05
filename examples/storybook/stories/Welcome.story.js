@@ -5,7 +5,7 @@ import { linkTo } from '@storybook/addon-links'
 import Welcome from '~/components/Welcome.vue'
 
 storiesOf('Welcome', module).add('to Storybook', () => ({
-  render: (h) => h(Welcome)
+  render: h => h(Welcome)
 }))
   .add('with Link To Button', () => ({
     components: { Welcome },
