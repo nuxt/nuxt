@@ -8,9 +8,6 @@ const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
 const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
-const genHandlers = (cmd) => {
-  cmd.on()
-}
 
 const killNuxt = async (nuxtInt) => {
   nuxtInt.kill()
@@ -67,7 +64,7 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.on('close', code => { exitCode = code })
 
     // Wait max 20s for the starting
-    let timeout = await waitUntil(() => stdout.includes('Listening on'))
+    let timeout = await waitUntil(() => stdout.includes('Listening on'), 20)
 
     if (timeout === true) {
       error = 'server failed to start successfully in 20 seconds'
