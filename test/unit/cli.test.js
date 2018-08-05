@@ -33,7 +33,7 @@ describe.skip.appveyor('cli', () => {
     nuxtDev.stdout.on('data', data => { stdout += data })
 
     // Wait max 20s for the starting
-    await waitUntil(() => stdout.includes(`${port}`), 20)
+    await waitUntil(() => stdout.includes(`${port}`))
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
@@ -70,9 +70,9 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.stdout.on('data', (data) => { stdout += data })
     nuxtStart.on('error', (err) => { error = err })
 
-    // Wait max 40s for the starting
-    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
-      error = 'server failed to start successfully in 20 seconds'
+    // Wait max 20s for the starting
+    if (await waitUntil(() => stdout.includes(`${port}`))) {
+      error = 'server failed to start successfully in 40 seconds'
     }
 
     expect(error).toBe(undefined)
