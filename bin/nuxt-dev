@@ -85,7 +85,7 @@ if (
     .watch(nuxtConfig.watch)
     .on('all', (event, _path) => {
       const parsedPath = path.parse(_path)
-      const fname = parsedPath.base + parsedPath.ext
+      const fname = `${parsedPath.base}.${parsedPath.ext}`
       consola.debug(`[${fname}] changed`)
       dev = dev.then(instance => {
         if (needToRestart === false) return instance

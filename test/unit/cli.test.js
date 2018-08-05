@@ -1,5 +1,6 @@
 import { spawn } from 'child_process'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
+import { writeFile } from 'fs-extra'
 import { getPort, rp, waitUntil } from '../utils'
 
 let port
@@ -36,14 +37,14 @@ describe.skip.appveyor('cli', () => {
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', data => { stdout += data })
-    nuxtStart.on('close', code => { exitCode = code })
-    
+    nuxtDev.on('close', code => { exitCode = code })
+
     const customFilePath = join(rootDir, 'custom.file')
     await writeFile(customFilePath, 'This file is used to test custom chokidar watchers.')
     await new Promise((resolve) => setTimeout(() => resolve()), 200)
     expect(stdout.includes('[custom.file] changed')).toBe(true)
 
-    await killNuxt(nuxtStart)    
+    await killNuxt(nuxtDev)    
     expect(exitCode).toBe(null)
 
   })
