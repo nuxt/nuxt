@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const path = require('path')
+const { parse } = require('path')
 const defaultsDeep = require('lodash/defaultsDeep')
 const parseArgs = require('minimist')
 const chokidar = require('chokidar')
@@ -84,9 +84,10 @@ if (
   chokidar
     .watch(nuxtConfig.watch)
     .on('all', (event, _path) => {
-      const parsedPath = path.parse(_path)
+      const parsedPath = parse(_path)
       const fname = `${parsedPath.base}.${parsedPath.ext}`
       consola.debug(`[${fname}] changed`)
+      needToRestart = true
       dev = dev.then(instance => {
         if (needToRestart === false) return instance
         needToRestart = false
