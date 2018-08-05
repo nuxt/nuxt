@@ -1,12 +1,10 @@
+import { resolve, join } from 'path'
 import { spawn } from 'child_process'
-import { resolve } from 'path'
-import { getPort, rp, waitUntil } from '../utils'
+import { writeFile } from 'fs-extra'
+import { getPort, waitUntil } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
-
-const url = route => 'http://localhost:' + port + route
-
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
 describe.skip.appveyor('cli', () => {
@@ -19,9 +17,9 @@ describe.skip.appveyor('cli', () => {
     env.PORT = port = await getPort()
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
-    nuxtDev.stdout.on('data', (data) => stdout += data)
-    nuxtDev.on('error', (err) => error = err)
-    nuxtDev.on('close', (code) => exitCode = code)
+    nuxtDev.stdout.on('data', (data) => { stdout += data })
+    nuxtDev.on('error', (err) => { error = err })
+    nuxtDev.on('close', (code) => { exitCode = code })
 
     // Wait max 20s for the starting
     let timeout = await waitUntil(() => stdout.includes('Listening on'))
@@ -34,8 +32,8 @@ describe.skip.appveyor('cli', () => {
     expect(stdout.includes('Listening on ')).toBe(true)
     expect(stdout.includes(`http://localhost:${port}`)).toBe(true)
 
-    const customFilePath = path.join(rootDir, 'custom.file')
-    fs.writeFileSync(customFilePath, 'Added contents.')
+    const customFilePath = join(rootDir, 'custom.file')
+    await writeFile(customFilePath, 'Added contents.')
 
     expect(stdout.includes('[custom.file] changed')).toBe(true)
 
