@@ -28,14 +28,15 @@ describe('basic browser', () => {
   })
 
   test('/noloading', async () => {
-    const { hook } = await page.nuxt.navigate('/noloading', true)
+    const { hook } = await page.nuxt.navigate('/noloading')
     let loading = await page.nuxt.loadingData()
-
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
-    await new Promise((resolve) => setTimeout(() => resolve(), 200))
-    expect(await page.$text('.loaded')).toBe('true')
+    await page.waitForFunction(`document.querySelector('p').innerText === 'true'`)
+    expect(await page.$text('p')).toBe('true')
+    loading = await page.nuxt.loadingData()
+    expect(loading.show).toBe(true)
   })
 
   test('/stateless', async () => {
