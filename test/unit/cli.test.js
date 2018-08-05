@@ -78,5 +78,4 @@ describe.skip.appveyor('cli', () => {
 
     await killNuxt(nuxtStart)
   })
-
 })
