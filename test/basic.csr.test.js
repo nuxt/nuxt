@@ -1,5 +1,5 @@
-import test from 'ava'
 import { resolve } from 'path'
+import test from 'ava'
 import { Nuxt, Builder } from '..'
 import * as browser from './helpers/browser'
 import { interceptLog } from './helpers/console'
@@ -11,7 +11,7 @@ let nuxt = null
 let page = null
 
 // Init nuxt.js and create server listening on localhost:4003
-test.serial('Init Nuxt.js', async t => {
+test.serial('Init Nuxt.js', async (t) => {
   const options = {
     rootDir: resolve(__dirname, 'fixtures/basic'),
     buildDir: '.nuxt-csr',
@@ -36,7 +36,7 @@ test.serial('Init Nuxt.js', async t => {
   t.true(logSpy.calledWithMatch('OPEN'))
 })
 
-test.serial('Start browser', async t => {
+test.serial('Start browser', async (t) => {
   t.plan(0) // suppress 'no assertions' warning
   await browser.start({
     // slowMo: 50,
@@ -44,13 +44,13 @@ test.serial('Start browser', async t => {
   })
 })
 
-test.serial('Open /', async t => {
+test.serial('Open /', async (t) => {
   page = await browser.page(url('/'))
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
-test.serial('/stateless', async t => {
+test.serial('/stateless', async (t) => {
   const { hook } = await page.nuxt.navigate('/stateless', false)
   const loading = await page.nuxt.loadingData()
 
@@ -59,7 +59,7 @@ test.serial('/stateless', async t => {
   t.is(await page.$text('h1'), 'My component!')
 })
 
-test.serial('/css', async t => {
+test.serial('/css', async (t) => {
   await page.nuxt.navigate('/css')
 
   t.is(await page.$text('.red'), 'This is red')
@@ -69,13 +69,13 @@ test.serial('/css', async t => {
   )
 })
 
-test.serial('/stateful', async t => {
+test.serial('/stateful', async (t) => {
   await page.nuxt.navigate('/stateful')
 
   t.is(await page.$text('p'), 'The answer is 42')
 })
 
-test.serial('/store', async t => {
+test.serial('/store', async (t) => {
   await page.nuxt.navigate('/store')
 
   t.is(await page.$text('h1'), 'Vuex Nested Modules')
@@ -84,7 +84,7 @@ test.serial('/store', async t => {
   t.is(await page.$text('h3'), '10')
 })
 
-test.serial('/head', async t => {
+test.serial('/head', async (t) => {
   const msg = new Promise(resolve =>
     page.on('console', msg => resolve(msg.text()))
   )
@@ -97,31 +97,31 @@ test.serial('/head', async t => {
   t.is(metas[0], 'my meta')
 })
 
-test.serial('/async-data', async t => {
+test.serial('/async-data', async (t) => {
   await page.nuxt.navigate('/async-data')
 
   t.is(await page.$text('p'), 'Nuxt.js')
 })
 
-test.serial('/await-async-data', async t => {
+test.serial('/await-async-data', async (t) => {
   await page.nuxt.navigate('/await-async-data')
 
   t.is(await page.$text('p'), 'Await Nuxt.js')
 })
 
-test.serial('/callback-async-data', async t => {
+test.serial('/callback-async-data', async (t) => {
   await page.nuxt.navigate('/callback-async-data')
 
   t.is(await page.$text('p'), 'Callback Nuxt.js')
 })
 
-test.serial('/users/1', async t => {
+test.serial('/users/1', async (t) => {
   await page.nuxt.navigate('/users/1')
 
   t.is(await page.$text('h1'), 'User: 1')
 })
 
-test.serial('/validate should display a 404', async t => {
+test.serial('/validate should display a 404', async (t) => {
   await page.nuxt.navigate('/validate')
   const error = await page.nuxt.errorData()
 
@@ -129,39 +129,39 @@ test.serial('/validate should display a 404', async t => {
   t.is(error.message, 'This page could not be found')
 })
 
-test.serial('/validate?valid=true', async t => {
+test.serial('/validate?valid=true', async (t) => {
   await page.nuxt.navigate('/validate?valid=true')
 
   t.is(await page.$text('h1'), 'I am valid')
 })
 
-test.serial('/redirect', async t => {
+test.serial('/redirect', async (t) => {
   await page.nuxt.navigate('/redirect')
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
-test.serial('/error', async t => {
+test.serial('/error', async (t) => {
   await page.nuxt.navigate('/error')
 
   t.deepEqual(await page.nuxt.errorData(), { statusCode: 500 })
   t.is(await page.$text('.title'), 'Error mouahahah')
 })
 
-test.serial('/error2', async t => {
+test.serial('/error2', async (t) => {
   await page.nuxt.navigate('/error2')
 
   t.is(await page.$text('.title'), 'Custom error')
   t.deepEqual(await page.nuxt.errorData(), { message: 'Custom error' })
 })
 
-test.serial('/redirect-middleware', async t => {
+test.serial('/redirect-middleware', async (t) => {
   await page.nuxt.navigate('/redirect-middleware')
 
   t.is(await page.$text('h1'), 'Index page')
 })
 
-test.serial('/redirect-external', async t => {
+test.serial('/redirect-external', async (t) => {
   // New page for redirecting to external link.
   const page = await browser.page(url('/'))
   await page.nuxt.navigate('/redirect-external', false)
@@ -172,26 +172,26 @@ test.serial('/redirect-external', async t => {
   t.pass()
 })
 
-test.serial('/redirect-name', async t => {
+test.serial('/redirect-name', async (t) => {
   await page.nuxt.navigate('/redirect-name')
 
   t.is(await page.$text('h1'), 'My component!')
 })
 
-test.serial('/no-ssr', async t => {
+test.serial('/no-ssr', async (t) => {
   await page.nuxt.navigate('/no-ssr')
 
   t.is(await page.$text('h1'), 'Displayed only on client-side')
 })
 
-test.serial('/meta', async t => {
+test.serial('/meta', async (t) => {
   await page.nuxt.navigate('/meta')
 
   const state = await page.nuxt.storeState()
   t.deepEqual(state.meta, [{ works: true }])
 })
 
-test.serial('/fn-midd', async t => {
+test.serial('/fn-midd', async (t) => {
   await page.nuxt.navigate('/fn-midd')
 
   t.is(await page.$text('.title'), 'You need to ask the permission')
@@ -201,14 +201,14 @@ test.serial('/fn-midd', async t => {
   })
 })
 
-test.serial('/fn-midd?please=true', async t => {
+test.serial('/fn-midd?please=true', async (t) => {
   await page.nuxt.navigate('/fn-midd?please=true')
 
   const h1 = await page.$text('h1')
   t.true(h1.includes('Date:'))
 })
 
-test.serial('/router-guard', async t => {
+test.serial('/router-guard', async (t) => {
   await page.nuxt.navigate('/router-guard')
 
   const p = await page.$text('p')
