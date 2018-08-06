@@ -30,7 +30,7 @@ describe.skip.appveyor('cli', () => {
     env.PORT = port = await getPort()
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
-    nuxtDev.stdout.on('data', data => { stdout += data })
+    nuxtDev.stdout.on('data', (data) => { stdout += data })
 
     // Wait max 20s for the starting
     await waitUntil(() => stdout.includes(`${port}`))
