@@ -60,14 +60,16 @@ defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
 let dev = startDev()
 let needToRestart = false
 
-// Start watching for nuxt.config.js changes
+// Start watching for nuxt.config.js and user-defined changes
 chokidar
-  .watch(nuxtConfigFile(argv), nuxtConfig.watchers.chokidar)
-  .on('all', () => {
-    consola.debug('[nuxt.config.js] changed')
+  .watch((nuxtConfig.watch || []).concat(nuxtConfigFile(argv)), nuxtConfig.watchers.chokidar)
+  .on('all', (event, _path) => {
+    const parsedPath = parse(_path)
+    const fname = `${parsedPath.base}${parsedPath.ext}`
+    consola.debug(`[${fname}] changed`)
     needToRestart = true
 
-    dev = dev.then(instance => {
+    dev = dev.then((instance) => {
       if (needToRestart === false) return instance
       needToRestart = false
 
@@ -75,28 +77,6 @@ chokidar
       return startDev(instance)
     })
   })
-
-if (
-  Array.isArray(nuxtConfig.watch) && 
-  nuxtConfig.watch.length
-) {
-  // Start watching for user-defined changes
-  chokidar
-    .watch(nuxtConfig.watch)
-    .on('all', (event, _path) => {
-      const parsedPath = parse(_path)
-      const fname = `${parsedPath.base}${parsedPath.ext}`
-      consola.debug(`[${fname}] changed`)
-      needToRestart = true
-      dev = dev.then(instance => {
-        if (needToRestart === false) return instance
-        needToRestart = false
-
-        consola.debug('Rebuilding the app...')
-        return startDev(instance)
-      })
-    })
-}
 
 function startDev(oldInstance) {
   // Get latest environment variables
