@@ -38,8 +38,8 @@ module.exports = {
     // Allow unresolved imports
     'import/no-unresolved': 0,
 
-    // Allow paren-less arrow functions
-    'arrow-parens': 0,
+    // Allow paren-less arrow functions only when there's no braces
+    'arrow-parens': [2, 'as-needed', { requireForBlockBody: true }],
 
     // Allow async-await
     'generator-star-spacing': 0,

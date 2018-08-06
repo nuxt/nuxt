@@ -103,7 +103,7 @@ storiesOf('Features/Method for rendering Vue', module)
   }))
 
 storiesOf('Features/Decorator for Vue', module)
-  .addDecorator(story => {
+  .addDecorator((story) => {
     // Decorated with story function
     const WrapButton = story()
     return {
@@ -142,7 +142,7 @@ storiesOf('Features/Addon Actions', module)
   .add('Action and method', () => ({
     template: '<my-button :handle-click="log">Click me to log the action</my-button>',
     methods: {
-      log: e => {
+      log: (e) => {
         e.preventDefault()
         action('log2')(e.target)
       }

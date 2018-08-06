@@ -1,5 +1,8 @@
 <template>
-  <p>{{ name }}</p>
+  <div>
+    <h1>{{ name }}</h1>
+    <p>{{ loaded }}</p>
+  </div>
 </template>
 
 <script>
@@ -7,16 +10,22 @@ export default {
   loading: false,
   asyncData() {
     return new Promise((resolve) => {
-      setTimeout(() => resolve({ name: 'Nuxt.js' }), 10)
+      setTimeout(() => resolve({
+        loaded: false,
+        name: 'Nuxt.js'
+      }), 10)
     })
   },
-  watch: {
-    $route(to) {
-      this.$nuxt.$loading.start()
-    }
-  },
   mounted() {
-    setTimeout(() => this.$nuxt.$loading.finish(), 1500)
+    setTimeout(() => {
+      this.$nuxt.$loading.finish()
+      setTimeout(() => {
+        // Re-enable loader as we move on
+        // to normal pages in the test
+        this.$nuxt.$loading.start()
+        this.loaded = true
+      }, 1500)
+    }, 1500)
   }
 }
 </script>

@@ -9,7 +9,7 @@ describe('dynamic routes', () => {
     return readFile(
       resolve(__dirname, '..', 'fixtures/dynamic-routes/.nuxt/router.js'),
       'utf-8'
-    ).then(routerFile => {
+    ).then((routerFile) => {
       routerFile = routerFile
         .slice(routerFile.indexOf('routes: ['))
         .replace('routes: [', '[')

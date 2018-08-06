@@ -28,17 +28,15 @@ describe('basic browser', () => {
   })
 
   test('/noloading', async () => {
-    const { hook } = await page.nuxt.navigate('/noloading', true)
+    const { hook } = await page.nuxt.navigate('/noloading')
     let loading = await page.nuxt.loadingData()
-
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
-    await new Promise((resolve) => {
-      setTimeout(() => resolve(), 1800)
-    })
+    await page.waitForFunction(`document.querySelector('p').innerText === 'true'`)
+    expect(await page.$text('p')).toBe('true')
     loading = await page.nuxt.loadingData()
-    expect(loading.percent).toBe(100)
+    expect(loading.show).toBe(true)
   })
 
   test('/stateless', async () => {
@@ -54,7 +52,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/css')
 
     expect(await page.$text('.red')).toBe('This is red')
-    expect(await page.$eval('.red', red => {
+    expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
     })).toEqual({

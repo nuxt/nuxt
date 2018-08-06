@@ -20,15 +20,15 @@ describe.skip.appveyor('cli', () => {
 
     const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
 
-    nuxtStart.stdout.on('data', data => {
+    nuxtStart.stdout.on('data', (data) => {
       stdout += data
     })
 
-    nuxtStart.on('error', err => {
+    nuxtStart.on('error', (err) => {
       error = err
     })
 
-    nuxtStart.on('close', code => {
+    nuxtStart.on('close', (code) => {
       exitCode = code
     })
 
