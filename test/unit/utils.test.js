@@ -61,7 +61,7 @@ describe('utils', () => {
     const array = [1]
     const promise = Utils.promisifyRoute(array)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res).toBe(array)
     })
   })
@@ -73,7 +73,7 @@ describe('utils', () => {
     }
     const promise = Utils.promisifyRoute(fn)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res).toBe(array)
     })
   })
@@ -81,27 +81,27 @@ describe('utils', () => {
   test('promisifyRoute (fn => promise)', () => {
     const array = [1, 2, 3]
     const fn = function () {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         resolve(array)
       })
     }
     const promise = Utils.promisifyRoute(fn)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res).toBe(array)
     })
   })
 
   test('promisifyRoute ((fn(args) => promise))', () => {
     const fn = function (array) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         resolve(array)
       })
     }
     const array = [1, 2, 3]
     const promise = Utils.promisifyRoute(fn, array)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res).toBe(array)
     })
   })
@@ -112,7 +112,7 @@ describe('utils', () => {
     }
     const promise = Utils.promisifyRoute(fn)
     expect(typeof promise).toBe('object')
-    return promise.catch(e => {
+    return promise.catch((e) => {
       expect(e.message).toBe('Error here')
     })
   })
@@ -124,7 +124,7 @@ describe('utils', () => {
     const array = [1, 2, 3, 4]
     const promise = Utils.promisifyRoute(fn, array)
     expect(typeof promise).toBe('object')
-    return promise.catch(e => {
+    return promise.catch((e) => {
       expect(e.message).toBe('Error here: ' + array.join())
     })
   })
@@ -136,7 +136,7 @@ describe('utils', () => {
     }
     const promise = Utils.promisifyRoute(fn)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res).toBe(array)
     })
   })
@@ -149,7 +149,7 @@ describe('utils', () => {
     const object = { a: 1 }
     const promise = Utils.promisifyRoute(fn, array, object)
     expect(typeof promise).toBe('object')
-    return promise.then(res => {
+    return promise.then((res) => {
       expect(res.array).toBe(array)
       expect(res.object).toBe(object)
     })

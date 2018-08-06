@@ -4,6 +4,7 @@ export default {
   generate: {
     routes: [
       // TODO: generate with {build: false} does not scans pages!
+      '/noloading',
       '/stateless',
       '/css',
       '/stateful',
