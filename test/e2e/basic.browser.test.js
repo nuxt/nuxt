@@ -33,10 +33,12 @@ describe('basic browser', () => {
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)
-    await page.waitForFunction(`document.querySelector('p').innerText === 'true'`)
-    expect(await page.$text('p')).toBe('true')
-    loading = await page.nuxt.loadingData()
-    expect(loading.show).toBe(true)
+    await page.waitForFunction(
+      `$nuxt.$loading.$data.show === false`
+    )
+    await page.waitForFunction(
+      `document.querySelector('p').innerText === 'true'`
+    )
   })
 
   test('/stateless', async () => {

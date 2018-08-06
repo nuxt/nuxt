@@ -17,14 +17,10 @@ export default {
     })
   },
   mounted() {
+    this.$nuxt.$loading.finish()
     setTimeout(() => {
-      this.$nuxt.$loading.finish()
-      setTimeout(() => {
-        // Re-enable loader as we move on
-        // to normal pages in the test
-        this.$nuxt.$loading.start()
-        this.loaded = true
-      }, 1500)
+      this.$nuxt.$loading.start()
+      this.loaded = true
     }, 1500)
   }
 }
