@@ -72,7 +72,7 @@ describe.skip.appveyor('cli', () => {
 
     // Wait max 20s for the starting
     if (await waitUntil(() => stdout.includes(`${port}`))) {
-      error = 'server failed to start successfully in 40 seconds'
+      error = 'server failed to start successfully in 20 seconds'
     }
 
     expect(error).toBe(undefined)
