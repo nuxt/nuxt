@@ -16,7 +16,7 @@ describe('basic ssr', () => {
 
   test('/', async () => {
     const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<h1>Custom Route</h1>')).toBe(true)
+    expect(html.includes('<h1>Custom Page Route</h1>')).toBe(true)
   })
 
   // Close server and ask nuxt to stop listening to file changes
