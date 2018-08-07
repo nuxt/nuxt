@@ -1,5 +1,7 @@
-export default {
-  name: 'my-custom-route',
-  path: '/',
-  component: './my-custom-route.vue'
-}
+export default [
+  {
+    name: 'my-custom-route',
+    path: '/',
+    component: '~/pages/my-custom-route'
+  }
+]
