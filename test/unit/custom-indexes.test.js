@@ -1,9 +1,6 @@
-import consola from 'consola'
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
-
 let nuxt = null
 
 describe('custom indexes', () => {
@@ -14,6 +11,7 @@ describe('custom indexes', () => {
     await nuxt.listen(port, '0.0.0.0')
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('<h1>Custom Page Route</h1>')).toBe(true)
+    await nuxt.close()
   })
 
   test('/ (pages router index)', async () => {
@@ -23,10 +21,6 @@ describe('custom indexes', () => {
     await nuxt.listen(port, '0.0.0.0')
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('<h1>Custom Page Route</h1>')).toBe(true)
-  })
-
-  // Close server and ask nuxt to stop listening to file changes
-  afterAll(async () => {
     await nuxt.close()
   })
 })

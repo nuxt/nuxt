@@ -7,5 +7,5 @@ export default {
   router: {
     index: '~/routes.js'
   },
-  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
+  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules')
 }
