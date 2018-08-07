@@ -1,5 +1,5 @@
 {
-  "name": "example-routes-index-custom",
+  "name": "example-routes-custom-index",
   "dependencies": {
     "axios": "latest",
     "nuxt": "latest"
