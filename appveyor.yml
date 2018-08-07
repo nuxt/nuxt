@@ -4,9 +4,8 @@ environment:
     - nodejs_version: "8"
     - nodejs_version: "Current"
 
-# cache:
-#   - "%LOCALAPPDATA%\\Yarn"
-#   - node_modules
+cache:
+  - "%LOCALAPPDATA%\\Yarn" -> yarn.lock
 
 # Install scripts. (runs after repo cloning)
 install:
