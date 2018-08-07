@@ -1,3 +1,3 @@
-# Custom Routes with Nuxt.js
+# Routes Pages Index with Nuxt.js
 
-https://nuxtjs.org/examples/custom-routes
+https://nuxtjs.org/examples/routes-pages-index
