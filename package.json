@@ -121,6 +121,7 @@
     "vue": "^2.5.17",
     "vue-loader": "^15.2.6",
     "vue-meta": "^1.5.2",
+    "vue-no-ssr": "^0.2.2",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.17",
     "vue-template-compiler": "^2.5.17",
