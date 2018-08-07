@@ -5,7 +5,7 @@ environment:
     - nodejs_version: "Current"
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn" -> yarn.lock
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
 
 # Install scripts. (runs after repo cloning)
 install:
