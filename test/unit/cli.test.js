@@ -41,7 +41,7 @@ describe.skip.appveyor('cli', () => {
 
     // Wait until two compilations are seen
     // The first one and the one that followed the change to `custom.file`
-    await waitUntil(() => {
+    const failure = await waitUntil(() => {
       let compiles = 0
       let match = stdout.indexOf(/Compiled client/g)
       while (match !== -1) {
@@ -50,6 +50,7 @@ describe.skip.appveyor('cli', () => {
       }
       return compiles > 1
     })
+    expect(failure).toBe(false)
     await killNuxt(nuxtDev)
   })
 
