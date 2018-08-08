@@ -1,6 +1,10 @@
 The MIT License (MIT)
 
-Copyright (c) 2016-2017 Sebastien Chopin ([@Atinux](https://github.com/Atinux)) & Alexandre Chopin ([@alexchopin](https://github.com/alexchopin))
+Copyright (c) 2016-2018
+- Sebastien Chopin ([@Atinux](https://github.com/Atinux))
+- Alexandre Chopin ([@alexchopin](https://github.com/alexchopin))
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Clark Du ([@clarkdo](https://github.com/clarkdo))
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
