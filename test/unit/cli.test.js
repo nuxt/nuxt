@@ -43,10 +43,10 @@ describe.skip.appveyor('cli', () => {
     // The first one and the one that followed the change to `custom.file`
     const failure = await waitUntil(() => {
       let compiles = 0
-      let match = stdout.indexOf(/Compiled client/g)
+      let match = stdout.indexOf('Compiled client')
       while (match !== -1) {
         compiles++
-        match = stdout.indexOf(/Compiled client/g, match)
+        match = stdout.indexOf('Compiled client', match)
       }
       return compiles > 1
     })
