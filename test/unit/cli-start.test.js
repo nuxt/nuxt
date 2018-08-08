@@ -54,11 +54,11 @@ describe.skip.appveyor('cli', () => {
     if (timeout === true) {
       console.warn( // eslint-disable-line no-console
         `we were unable to automatically kill the child process with pid: ${
-          nuxtStart.pid
+        nuxtStart.pid
         }`
       )
     }
 
-    expect(exitCode).toBe(null)
+    expect(exitCode).toBe(undefined)
   })
 })
