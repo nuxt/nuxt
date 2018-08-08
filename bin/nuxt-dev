@@ -110,6 +110,15 @@ function startDev(oldInstance) {
         if (oldInstance) {
           return nuxt.listen(port, host)
         } else {
+          nuxt.hook('watcher:restart', () => {
+            dev = dev.then((instance) => {
+              if (needToRestart === false) return instance
+              needToRestart = false
+
+              consola.debug('Rebuilding the app...')
+              return startDev(instance)
+            })
+          })
           return Promise.resolve()
         }
       })
