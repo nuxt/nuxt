@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span v-for="key in configKeys" :id="key">{{ vueConfig[key] | toStr }}</span>
+    <span v-for="(key, i) in configKeys" :id="key" :key="i">{{ vueConfig[key] | toStr }}</span>
   </div>
 </template>
 

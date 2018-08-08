@@ -7,6 +7,6 @@ export default {
     silent: false,
     performance: true,
     devtools: true,
-    productTip: true,
+    productTip: true
   }
 }

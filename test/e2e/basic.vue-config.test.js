@@ -8,7 +8,7 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 let page = null
 
-const startServer = async (type = 'basic',) => {
+const startServer = async (type = 'basic') => {
   const config = loadFixture(type)
   nuxt = new Nuxt(config)
   port = await getPort()
