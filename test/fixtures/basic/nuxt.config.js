@@ -26,6 +26,13 @@ export default {
     }
   },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
+  render: {
+    dist: {
+      setHeaders (res) {
+        res.setHeader('X-Custom', 'custom header')
+      }
+    }
+  },
   hooks: {
     ready(nuxt) {
       nuxt.__hook_called__ = true
