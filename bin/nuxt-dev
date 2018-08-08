@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const { parse } = require('path')
 const parseArgs = require('minimist')
 const chokidar = require('chokidar')
 const consola = require('consola')
