@@ -21,12 +21,13 @@ describe('basic vue-config', () => {
   beforeAll(async () => {
     await browser.start({
       // slowMo: 50,
-      //  headless: false
+      // headless: false
     })
   })
 
   test('default', async () => {
     nuxt = await startServer()
+    expect(nuxt.options.vue.config).toEqual({ silent: true, performance: false })
     page = await browser.page(url('/config'))
 
     expect(await page.$text('#silent')).toBe('true')
@@ -36,6 +37,8 @@ describe('basic vue-config', () => {
   test('explicit', async () => {
     nuxt = await startServer('config-explicit')
     page = await browser.page(url('/config'))
+
+    expect(nuxt.options.vue.config).toEqual({ silent: false, performance: true, devtools: true })
 
     expect(await page.$text('#silent')).toBe('false')
     expect(await page.$text('#performance')).toBe('true')
