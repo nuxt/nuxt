@@ -1,6 +1,13 @@
 import path from 'path'
 
 export default {
+  render: {
+    dist: {
+      setHeaders: function (res, path) {
+        res.setHeader('x-custom', 'custom header')
+      }
+    }
+  },
   generate: {
     routes: [
       // TODO: generate with {build: false} does not scans pages!
