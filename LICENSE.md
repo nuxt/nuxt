@@ -5,6 +5,7 @@ Copyright (c) 2016-2018
 - Alexandre Chopin ([@alexchopin](https://github.com/alexchopin))
 - Pooya Parsa ([@pi0](https://github.com/pi0))
 - Clark Du ([@clarkdo](https://github.com/clarkdo))
+- All the amazing contributors (https://github.com/nuxt/nuxt.js/graphs/contributors)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
