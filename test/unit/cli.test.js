@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
-import { writeFile } from 'fs-extra'
+import { writeFileSync } from 'fs-extra'
 import { getPort, rp, waitUntil } from '../utils'
 
 let port
@@ -23,7 +23,7 @@ const killNuxt = async (nuxtInt) => {
   }
 }
 
-describe.skip.appveyor('cli', () => {
+describe('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
     const env = process.env
@@ -37,20 +37,13 @@ describe.skip.appveyor('cli', () => {
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
-    await writeFile(customFilePath, 'This file is used to test custom chokidar watchers.')
+    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
 
-    // Wait until two compilations are seen
-    // The first one and the one that followed the change to `custom.file`
-    const failure = await waitUntil(() => {
-      let compiles = 0
-      let match = stdout.indexOf('Compiled client')
-      while (match !== -1) {
-        compiles++
-        match = stdout.indexOf('Compiled client', match)
-      }
-      return compiles > 1
-    })
-    expect(failure).toBe(false)
+    // Must see two compilations in the log
+    expect(
+      stdout.indexOf('Compiled client') !== 
+      stdout.lastIndexOf('Compiled client')
+    )
     await killNuxt(nuxtDev)
   })
 
