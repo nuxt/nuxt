@@ -170,7 +170,8 @@
     "rollup": "^0.59.4",
     "rollup-plugin-babel": "^3.0.4",
     "rollup-plugin-commonjs": "^9.1.3",
-    "rollup-plugin-json": "^3.0.0"
+    "rollup-plugin-json": "^3.0.0",
+    "rollup-plugin-license": "^0.7.0"
   },
   "collective": {
     "type": "opencollective",
