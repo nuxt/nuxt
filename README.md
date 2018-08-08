@@ -21,9 +21,10 @@
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 👥 [Community](https://nuxtjs.cmty.io)
+- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 💬 Chat: [Discord](https://discord.gg/VApZF5W)
 - 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
 - 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
