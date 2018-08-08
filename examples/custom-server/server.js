@@ -7,7 +7,7 @@ const host = process.env.HOST || '127.0.0.1'
 const port = process.env.PORT || 3000
 
 // Import and set Nuxt.js options
-let config = require('./nuxt.config.js')
+const config = require('./nuxt.config.js')
 config.dev = !(process.env.NODE_ENV === 'production')
 
 const nuxt = new Nuxt(config)
