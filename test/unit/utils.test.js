@@ -8,7 +8,7 @@ describe('utils', () => {
   })
 
   test('getContext', () => {
-    let ctx = Utils.getContext({ a: 1 }, { b: 2 })
+    const ctx = Utils.getContext({ a: 1 }, { b: 2 })
     expect(Utils.getContext.length).toBe(2)
     expect(typeof ctx.req).toBe('object')
     expect(typeof ctx.res).toBe('object')
@@ -17,7 +17,7 @@ describe('utils', () => {
   })
 
   test.skip.appveyor('waitFor', async () => {
-    let s = Date.now()
+    const s = Date.now()
     await Utils.waitFor(100)
     expect(Date.now() - s >= 100).toBe(true)
     await Utils.waitFor()

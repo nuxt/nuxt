@@ -12,7 +12,7 @@ const server = http.createServer(app)
 const io = SocketIO(server)
 
 // We instantiate Nuxt.js with the options
-let config = require('./nuxt.config.js')
+const config = require('./nuxt.config.js')
 config.dev = !isProd
 
 const nuxt = new Nuxt(config)
@@ -28,7 +28,7 @@ server.listen(port, '0.0.0.0')
 console.log('Server listening on localhost:' + port) // eslint-disable-line no-console
 
 // Socket.io
-let messages = []
+const messages = []
 io.on('connection', (socket) => {
   socket.on('last-messages', function (fn) {
     fn(messages.slice(-50))
