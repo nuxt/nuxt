@@ -41,7 +41,7 @@ describe.skip.appveyor('cli', () => {
 
     // Must see two compilations in the log
     expect(
-      stdout.indexOf('Compiled client') !== 
+      stdout.indexOf('Compiled client') !==
       stdout.lastIndexOf('Compiled client')
     )
     await killNuxt(nuxtDev)
