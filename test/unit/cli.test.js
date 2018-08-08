@@ -75,23 +75,6 @@ describe.skip.appveyor('cli', () => {
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
 
-<<<<<<< HEAD
     await killNuxt(nuxtStart)
-=======
-    nuxtStart.kill()
-
-    // Wait max 10s for the process to be killed
-    timeout = await waitUntil(() => exitCode !== undefined, 10)
-
-    if (timeout === true) {
-      console.warn( // eslint-disable-line no-console
-        `we were unable to automatically kill the child process with pid: ${
-          nuxtStart.pid
-        }`
-      )
-    }
-
-    expect(exitCode).toBe(undefined)
->>>>>>> 7349adde18bfcf15facfb6ca4abb299ba1f3df52
   })
 })
