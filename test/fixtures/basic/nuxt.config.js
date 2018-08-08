@@ -41,7 +41,8 @@ export default {
         features: {
           'custom-selectors': true
         }
-      })
+      }),
+      require('cssnano')
     ]
   }
 }

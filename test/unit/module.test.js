@@ -1,4 +1,5 @@
 import { normalize } from 'path'
+import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
@@ -56,6 +57,15 @@ describe('module', () => {
   test('Hooks - render context', async () => {
     await nuxt.renderRoute('/render-context')
     expect(nuxt.__render_context).toBeTruthy()
+  })
+
+  test('AddVendor - deprecated', async () => {
+    jest.spyOn(consola, 'warn')
+
+    nuxt.moduleContainer.addVendor('nuxt-test')
+    expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
+
+    consola.warn.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

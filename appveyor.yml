@@ -1,12 +1,10 @@
 # Test against the latest version of this Node.js version
 environment:
   matrix:
-    - nodejs_version: "8"
     - nodejs_version: "Current"
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn"
-  - node_modules
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
 
 # Install scripts. (runs after repo cloning)
 install:
