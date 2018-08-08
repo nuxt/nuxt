@@ -39,7 +39,7 @@ describe('basic ssr', () => {
     const window = await nuxt.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml.includes('background-color:blue')).toBe(true)
+    expect(headHtml.includes('background-color:#00f')).toBe(true)
 
     // const element = window.document.querySelector('div.red')
     // t.is(window.getComputedStyle(element)['background-color'], 'blue')

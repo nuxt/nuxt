@@ -8,7 +8,7 @@ describe('utils', () => {
   })
 
   test('getContext', () => {
-    let ctx = Utils.getContext({ a: 1 }, { b: 2 })
+    const ctx = Utils.getContext({ a: 1 }, { b: 2 })
     expect(Utils.getContext.length).toBe(2)
     expect(typeof ctx.req).toBe('object')
     expect(typeof ctx.res).toBe('object')
@@ -16,15 +16,12 @@ describe('utils', () => {
     expect(ctx.res.b).toBe(2)
   })
 
-  // This is breaking on the node==current test
-  // in appveyor -- disabling until we figure it out
-  //
-  // test('waitFor', async () => {
-  //   let s = Date.now()
-  //   await Utils.waitFor(100)
-  //   expect(Date.now() - s >= 100).toBe(true)
-  //   await Utils.waitFor()
-  // })
+  test.skip.appveyor('waitFor', async () => {
+    const s = Date.now()
+    await Utils.waitFor(100)
+    expect(Date.now() - s >= 100).toBe(true)
+    await Utils.waitFor()
+  })
 
   test('waitUntil', async () => {
     expect(await waitUntil(() => true, 0.1, 100)).toBe(false)

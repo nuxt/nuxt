@@ -41,7 +41,7 @@ export default {
   methods: {
     sendMessage() {
       if (!this.message.trim()) return
-      let message = {
+      const message = {
         date: new Date().toJSON(),
         text: this.message.trim()
       }
