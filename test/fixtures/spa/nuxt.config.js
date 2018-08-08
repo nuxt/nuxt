@@ -5,5 +5,8 @@ export default {
     http2: {
       push: true
     }
-  }
+  },
+  plugins: [
+    '~/plugins/error.js'
+  ]
 }
