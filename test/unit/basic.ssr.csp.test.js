@@ -10,7 +10,7 @@ const startCspServer = async (csp, isProduction = true) => {
   })
   const nuxt = new Nuxt(options)
   port = await getPort()
-  await nuxt.listen(port, '0.0.0.0')
+  await nuxt.listen(port, '127.0.0.1')
   return nuxt
 }
 
