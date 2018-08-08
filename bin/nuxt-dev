@@ -54,8 +54,8 @@ if (argv.help) {
 const nuxtConfig = loadNuxtConfig(argv)
 
 // Start dev
+let hooked = false
 let dev = startDev()
-let needToRestart = false
 
 function startDev(oldInstance) {
   // Get latest environment variables
@@ -87,6 +87,17 @@ function startDev(oldInstance) {
     return onError(err, oldInstance)
   }
 
+  if (!hooked) {
+    nuxt.hook('watcher:restart', (fname) => {
+      consola.debug(`[${fname}] changed`)
+      dev = dev.then((instance) => {
+        consola.debug('Rebuilding the app...')
+        return startDev(instance)
+      })
+    })
+    hooked = true
+  }
+
   return (
     Promise.resolve()
       .then(() => {
@@ -110,15 +121,6 @@ function startDev(oldInstance) {
         if (oldInstance) {
           return nuxt.listen(port, host)
         } else {
-          nuxt.hook('watcher:restart', () => {
-            dev = dev.then((instance) => {
-              if (needToRestart === false) return instance
-              needToRestart = false
-
-              consola.debug('Rebuilding the app...')
-              return startDev(instance)
-            })
-          })
           return Promise.resolve()
         }
       })
