@@ -11,7 +11,7 @@ describe('basic ssr', () => {
     const options = loadFixture('basic')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.listen(port, '127.0.0.1')
   })
 
   test('/stateless', async () => {

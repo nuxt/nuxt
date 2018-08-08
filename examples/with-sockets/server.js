@@ -24,7 +24,7 @@ if (config.dev) {
 app.use(nuxt.render)
 
 // Listen the server
-server.listen(port, '0.0.0.0')
+server.listen(port, '127.0.0.1')
 console.log('Server listening on localhost:' + port) // eslint-disable-line no-console
 
 // Socket.io
