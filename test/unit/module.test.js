@@ -45,12 +45,12 @@ describe('module', () => {
   // })
 
   test('Middleware', async () => {
-    let response = await rp(url('/api'))
+    const response = await rp(url('/api'))
     expect(response).toBe('It works!')
   })
 
   test('Hooks - Use external middleware before render', async () => {
-    let response = await rp(url('/use-middleware'))
+    const response = await rp(url('/use-middleware'))
     expect(response).toBe('Use external middleware')
   })
 
