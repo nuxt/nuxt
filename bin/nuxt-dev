@@ -88,7 +88,7 @@ function startDev(oldInstance) {
   }
 
   if (!hooked) {
-    nuxt.hook('watcher:restart', (fname) => {
+    nuxt.hook('watch:fileChanged', (fname) => {
       consola.debug(`[${fname}] changed`)
       dev = dev.then((instance) => {
         consola.debug('Rebuilding the app...')
