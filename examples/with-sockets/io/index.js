@@ -11,7 +11,7 @@ export default function () {
   this.nuxt.hook('close', () => new Promise(server.close))
 
   // Add socket.io events
-  let messages = []
+  const messages = []
   io.on('connection', (socket) => {
     socket.on('last-messages', function (fn) {
       fn(messages.slice(-50))

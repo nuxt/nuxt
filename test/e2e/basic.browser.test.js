@@ -29,7 +29,7 @@ describe('basic browser', () => {
 
   test('/noloading', async () => {
     const { hook } = await page.nuxt.navigate('/noloading')
-    let loading = await page.nuxt.loadingData()
+    const loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await hook
     expect(loading.show).toBe(true)

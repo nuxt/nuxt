@@ -35,7 +35,7 @@ nStoriesOf({ Logo }, 'Logo ')
   }))
   .addVT('with App layout', '<logo :data="{  }  "/>')
   .addVT('with a knob', () => {
-    let data = JSON.stringify(
+    const data = JSON.stringify(
       object('Data', {
         name: 'Apple',
         count: 132

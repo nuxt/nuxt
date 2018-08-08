@@ -43,6 +43,12 @@ describe('spa', () => {
     expect(html).toMatch('<h1>Test: updated</h1>')
   })
 
+  test('/error-handler', async () => {
+    await renderRoute('/error-handler')
+    const { html } = await renderRoute('/error-handler')
+    expect(html).toMatch('error handler triggered')
+  })
+
   test('/_nuxt/ (access publicPath in spa mode)', async () => {
     await expect(renderRoute('/_nuxt/')).rejects.toMatchObject({
       response: {
