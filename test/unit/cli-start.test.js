@@ -59,6 +59,6 @@ describe.skip.appveyor('cli', () => {
       )
     }
 
-    expect(exitCode).toBe(null)
+    expect(exitCode).toBe(undefined)
   })
 })
