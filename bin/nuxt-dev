@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 const parseArgs = require('minimist')
-const chokidar = require('chokidar')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig, getLatestHost, nuxtConfigFile } = require('./common/utils')
+const { loadNuxtConfig, getLatestHost } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -49,9 +48,6 @@ if (argv.help) {
   `)
   process.exit(0)
 }
-
-// Load config once for chokidar
-const nuxtConfig = loadNuxtConfig(argv)
 
 // Start dev
 let hooked = false
