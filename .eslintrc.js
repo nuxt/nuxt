@@ -53,6 +53,7 @@ module.exports = {
       "ignoreReadBeforeAssign": false
     }],
 
+    'dot-notation': 2,
     // Do not allow console.logs etc...
     'no-console': 2,
     'space-before-function-paren': [2, {
