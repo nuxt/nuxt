@@ -13,10 +13,14 @@ describe('dist options', () => {
     await nuxt.listen(port, '0.0.0.0')
   })
 
-  test('Specify maxAge in render.dist options', async () => {
+  test('Specify maxAge/index in render.dist options', async () => {
     const { body } = await rp(url('/'), {
       resolveWithFullResponse: true
     })
+    const { statusCode } = await rp(url('/_nuxt/'), {
+      resolveWithFullResponse: true
+    })
+    expect(statusCode).toBe(404)
     const distFile = body.match(/\/_nuxt\/.+?\.js/)[0]
     const { headers } = await rp(url(distFile), {
       resolveWithFullResponse: true
