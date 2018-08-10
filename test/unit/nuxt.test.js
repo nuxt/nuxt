@@ -43,4 +43,16 @@ describe('nuxt', () => {
 
     await nuxt.close()
   })
+
+  test('Fail to build when specified plugin isn\'t found', () => {
+    const nuxt = new Nuxt({
+      dev: false,
+      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-plugin')
+    })
+
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
+      expect(s.includes('Plugin not found')).toBe(true)
+    })
+  })
 })
