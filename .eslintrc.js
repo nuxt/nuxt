@@ -53,6 +53,12 @@ module.exports = {
       'ignoreReadBeforeAssign': false
     }],
 
+    // No single if in an "else" block
+    'no-lonely-if': 2,
+
+    // Force curly braces for control flow
+    curly: 2,
+
     // No async function without await
     'require-await': 2,
 
