@@ -41,7 +41,7 @@ exports.loadNuxtConfig = (argv) => {
 
   // Nuxt Mode
   options.mode =
-    (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+    (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   return options
 }
