@@ -7,7 +7,7 @@ let nuxt = null
 let port
 const url = route => 'http://localhost:' + port + route
 
-const renderRoute = async _url => {
+const renderRoute = async (_url) => {
   const window = await nuxt.renderAndGetWindow(url(_url))
   const head = window.document.head.innerHTML
   const html = window.document.body.innerHTML
@@ -41,6 +41,12 @@ describe('spa', () => {
   test('/mounted', async () => {
     const { html } = await renderRoute('/mounted')
     expect(html).toMatch('<h1>Test: updated</h1>')
+  })
+
+  test('/error-handler', async () => {
+    await renderRoute('/error-handler')
+    const { html } = await renderRoute('/error-handler')
+    expect(html).toMatch('error handler triggered')
   })
 
   test('/_nuxt/ (access publicPath in spa mode)', async () => {

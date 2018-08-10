@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
   parserOptions: {
+    parser: 'babel-eslint',
     sourceType: 'module'
   },
   env: {
@@ -13,10 +13,11 @@ module.exports = {
     'standard',
     'standard-jsx',
     'plugin:import/errors',
-    'plugin:import/warnings'
+    'plugin:import/warnings',
+    "plugin:vue/recommended"
   ],
   plugins: [
-    'html',
+    'vue',
     'jest'
   ],
   settings: {
@@ -37,8 +38,8 @@ module.exports = {
     // Allow unresolved imports
     'import/no-unresolved': 0,
 
-    // Allow paren-less arrow functions
-    'arrow-parens': 0,
+    // Allow paren-less arrow functions only when there's no braces
+    'arrow-parens': [2, 'as-needed', { requireForBlockBody: true }],
 
     // Allow async-await
     'generator-star-spacing': 0,
@@ -46,15 +47,24 @@ module.exports = {
     // Allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
 
+    // Prefer const over let
+    "prefer-const": ["error", {
+      "destructuring": "any",
+      "ignoreReadBeforeAssign": false
+    }],
+
     // Do not allow console.logs etc...
     'no-console': 2,
-    'space-before-function-paren': [
-			2,
-			{
-				anonymous: 'always',
-				named: 'never'
-			}
-		],
+    'space-before-function-paren': [2, {
+      anonymous: 'always',
+      named: 'never'
+    }],
+    'vue/no-parsing-error': [2, {
+      'x-invalid-end-tag': false
+    }],
+    "vue/max-attributes-per-line": [2, {
+      "singleline": 5,
+    }]
   },
 
   globals: {}

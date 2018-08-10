@@ -7,7 +7,7 @@
     <a v-else class="disabled">Next &gt;</a>
     <ul>
       <li v-for="user in users" :key="user.id">
-        <img :src="user.avatar" class="avatar" />
+        <img :src="user.avatar" class="avatar" >
         <span>{{ user.first_name }} {{ user.last_name }}</span>
       </li>
     </ul>
@@ -22,7 +22,7 @@ export default {
   // Watch for $route.query.page to call Component methods (asyncData, fetch, validate, layout, etc.)
   watchQuery: ['page'],
   // Key for <nuxt-child> (transitions)
-  key: (to) => to.fullPath,
+  key: to => to.fullPath,
   // Called to know which transition to apply
   transition(to, from) {
     if (!from) return 'slide-left'

@@ -4,9 +4,7 @@ const { join } = require('path')
 const consola = require('consola')
 
 // Global error handler
-process.on('unhandledRejection', _error => {
-  consola.error(_error)
-})
+process.on('unhandledRejection', err => consola.error(err))
 
 // Exit process on fatal errors
 consola.add({
@@ -21,7 +19,7 @@ consola.add({
 const defaultCommand = 'dev'
 const commands = new Set([defaultCommand, 'init', 'build', 'start', 'generate'])
 
-var cmd = process.argv[2]
+let cmd = process.argv[2]
 
 if (commands.has(cmd)) {
   process.argv.splice(2, 1)

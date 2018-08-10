@@ -21,7 +21,7 @@ describe('basic dev', () => {
         extend({ module: { rules } }, { isClient }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
-            transpile = (file) => !babelLoader.exclude(file)
+            transpile = file => !babelLoader.exclude(file)
           }
         }
       }

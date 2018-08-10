@@ -6,6 +6,9 @@
 
 <script>
 export default {
-  props: ['author']
+  author: {
+    type: String,
+    default: ''
+  }
 }
 </script>

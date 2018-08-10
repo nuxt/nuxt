@@ -1,13 +1,10 @@
 # Test against the latest version of this Node.js version
 environment:
   matrix:
-    - nodejs_version: "8"
-    # Temporary disabled
-    # - nodejs_version: "10"
+    - nodejs_version: "Current"
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn"
-  - node_modules
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -23,7 +20,8 @@ test_script:
   # - npm --version
   - yarn --version
   # run tests
-  - yarn test
+  - yarn test:fixtures -w=2
+  - yarn test:unit -w=2
 
 # Don't actually build.
 build: off

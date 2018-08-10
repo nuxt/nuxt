@@ -14,6 +14,6 @@
       </vk-dropdown>
     </div>
     <hr class="uk-divider-icon">
-    <vk-icon icon="heart"></vk-icon>
+    <vk-icon icon="heart"/>
   </vk-card>
 </template>

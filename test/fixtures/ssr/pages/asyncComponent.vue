@@ -1,11 +1,11 @@
 <template>
-<div>
+  <div>
     <async-test/>
-</div>
+  </div>
 </template>
 
 <script>
-const AsyncTest = () => import('@/components/test.vue').then((m) => m.default || m)
+const AsyncTest = () => import('@/components/test.vue').then(m => m.default || m)
 
 export default {
   components: {

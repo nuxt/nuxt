@@ -1,5 +1,5 @@
 <template>
-  <Child :env="env" ></Child>
+  <Child :env="env" />
 </template>
 
 <script>

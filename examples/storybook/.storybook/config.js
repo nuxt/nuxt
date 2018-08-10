@@ -15,7 +15,7 @@ Vue.component('my-button', MyButton)
 const req = require.context('../stories', true, /.story.js$/)
 
 function loadStories() {
-  req.keys().forEach((filename) => req(filename))
+  req.keys().forEach(req)
 }
 
 configure(loadStories, module)

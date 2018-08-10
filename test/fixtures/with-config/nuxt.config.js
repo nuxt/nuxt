@@ -24,7 +24,6 @@ export default {
   transition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
-  offline: true,
   extensions: 'ts',
   plugins: [
     '~/plugins/test.js',
@@ -46,7 +45,6 @@ export default {
   },
   build: {
     publicPath: '/orion/',
-    maxChunkSize: 300000,
     cssSourceMap: true,
     parallel: true,
     analyze: {

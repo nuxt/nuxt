@@ -4,8 +4,5 @@ export default {
     http2: {
       push: true
     }
-  },
-  build: {
-    extractCSS: true
   }
 }

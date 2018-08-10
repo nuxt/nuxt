@@ -1,3 +1,3 @@
 <template>
-	<h1>pages/_slug.vue</h1>
+  <h1>pages/_slug.vue</h1>
 </template>

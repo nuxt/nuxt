@@ -65,7 +65,7 @@ describe('basic generate', () => {
     const window = await generator.nuxt.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml.includes('.red{color:red}')).toBe(true)
+    expect(headHtml.includes('.red{color:red')).toBe(true)
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)

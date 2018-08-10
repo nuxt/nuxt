@@ -25,8 +25,8 @@ describe('nuxt', () => {
       rootDir: resolve(__dirname, '..', 'fixtures', 'empty', 'pages')
     })
 
-    return new Builder(nuxt).build().catch(err => {
-      let s = String(err)
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
       expect(s.includes('No `pages` directory found')).toBe(true)
       expect(s.includes('Did you mean to run `nuxt` in the parent (`../`) directory?')).toBe(true)
     })
