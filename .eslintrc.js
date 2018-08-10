@@ -48,13 +48,13 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
 
     // Prefer const over let
-    'prefer-const': ['error', {
+    'prefer-const': [2, {
       'destructuring': 'any',
       'ignoreReadBeforeAssign': false
     }],
 
     // No async function without await
-    'require-await': 'error',
+    'require-await': 2,
 
     // Do not allow console.logs etc...
     'no-console': 2,
