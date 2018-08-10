@@ -7,6 +7,10 @@ cache:
   - 'node_modules -> yarn.lock'
   - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
 
+image: Visual Studio 2017
+
+shallow_clone: true
+
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node.js or io.js
