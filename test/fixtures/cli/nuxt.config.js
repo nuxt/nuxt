@@ -1,3 +1,3 @@
 export default {
-  watch: ['./custom.file']
+  watch: ['~/custom.file']
 }

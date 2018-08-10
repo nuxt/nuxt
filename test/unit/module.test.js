@@ -31,12 +31,12 @@ describe('module', () => {
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
   })
 
-  test('Hooks', async () => {
+  test('Hooks', () => {
     expect(nuxt.__module_hook).toBe(1)
     expect(nuxt.__renderer_hook).toBe(2)
   })
 
-  test('Hooks - Functional', async () => {
+  test('Hooks - Functional', () => {
     expect(nuxt.__ready_called__).toBe(true)
   })
 
@@ -59,7 +59,7 @@ describe('module', () => {
     expect(nuxt.__render_context).toBeTruthy()
   })
 
-  test('AddVendor - deprecated', async () => {
+  test('AddVendor - deprecated', () => {
     jest.spyOn(consola, 'warn')
 
     nuxt.moduleContainer.addVendor('nuxt-test')

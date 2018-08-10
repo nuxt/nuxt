@@ -21,7 +21,7 @@ export const Generator = Dist.Generator
 const requireModule = esm(module, {})
 
 export const loadFixture = function loadFixture(fixture, overrides) {
-  const rootDir = path.resolve(__dirname, '../fixtures/' + fixture)
+  const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 
   const config = fs.existsSync(configFile) ? requireModule(configFile).default : {}

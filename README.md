@@ -276,11 +276,6 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-
-## Roadmap
-
-https://trello.com/b/lgy93IOl/nuxtjs-10
-
 ## License
 
 [MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE.md)

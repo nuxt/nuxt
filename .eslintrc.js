@@ -14,7 +14,7 @@ module.exports = {
     'standard-jsx',
     'plugin:import/errors',
     'plugin:import/warnings',
-    "plugin:vue/recommended"
+    'plugin:vue/recommended'
   ],
   plugins: [
     'vue',
@@ -33,7 +33,7 @@ module.exports = {
     'import/first': 2,
 
     // Other import rules
-    "import/no-mutable-exports": 2,
+    'import/no-mutable-exports': 2,
 
     // Allow unresolved imports
     'import/no-unresolved': 0,
@@ -48,11 +48,16 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
 
     // Prefer const over let
-    "prefer-const": ["error", {
-      "destructuring": "any",
-      "ignoreReadBeforeAssign": false
+    'prefer-const': [2, {
+      'destructuring': 'any',
+      'ignoreReadBeforeAssign': false
     }],
+    
+    // No async function without await
+    'require-await': 2,
 
+    'dot-notation': 2,
+    
     // Do not allow console.logs etc...
     'no-console': 2,
     'space-before-function-paren': [2, {
@@ -62,8 +67,8 @@ module.exports = {
     'vue/no-parsing-error': [2, {
       'x-invalid-end-tag': false
     }],
-    "vue/max-attributes-per-line": [2, {
-      "singleline": 5,
+    'vue/max-attributes-per-line': [2, {
+      'singleline': 5,
     }]
   },
 
