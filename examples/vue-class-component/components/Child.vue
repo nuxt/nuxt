@@ -13,8 +13,9 @@
 import Component from 'nuxt-class-component'
 import Base from '@/components/Base'
 
+export default
 @Component
-export default class Child extends Base {
+class Child extends Base {
   // override parent method
   greet() {
     console.log('child greeting: ' + this.msg) // eslint-disable-line no-console

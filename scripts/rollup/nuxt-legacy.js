@@ -10,14 +10,14 @@ export default config({
       exclude: 'node_modules/**',
       presets: [
         [
-          'env',
+          '@babel/preset-env',
           {
             'modules': false
           }
         ]
       ],
       plugins: [
-        'external-helpers'
+        '@babel/external-helpers'
       ]
     })
   ]
