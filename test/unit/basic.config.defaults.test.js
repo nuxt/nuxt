@@ -8,13 +8,13 @@ describe('basic config defaults', () => {
     expect(Nuxt.version).toBe(version)
   })
 
-  test('modulesDir uses /node_modules as default if not set', async () => {
+  test('modulesDir uses /node_modules as default if not set', () => {
     const options = Options.from({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
     expect(options.modulesDir.includes(currentNodeModulesDir)).toBe(true)
   })
 
-  test('vendor has been deprecated', async () => {
+  test('vendor has been deprecated', () => {
     jest.spyOn(consola, 'warn')
 
     const options = Options.from({

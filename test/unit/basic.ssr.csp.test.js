@@ -18,7 +18,7 @@ const getHeader = debug => debug ? 'content-security-policy-report-only' : 'cont
 const cspHeader = getHeader(false)
 const reportOnlyHeader = getHeader(true)
 
-const startCspDevServer = async csp => startCspServer(csp, false)
+const startCspDevServer = csp => startCspServer(csp, false)
 
 describe('basic ssr csp', () => {
   let nuxt

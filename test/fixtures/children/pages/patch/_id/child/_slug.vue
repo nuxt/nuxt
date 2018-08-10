@@ -14,7 +14,7 @@ const countries = [
   'Czech Republic',
   'Netherlands'
 ]
-async function search(q) {
+function search(q) {
   q = String(q || '').toLowerCase()
 
   return new Promise((resolve) => {

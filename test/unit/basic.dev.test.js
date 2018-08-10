@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
+import { Builder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -32,7 +32,7 @@ describe('basic dev', () => {
     await nuxt.listen(port, 'localhost')
   })
 
-  test('Config: build.transpile', async () => {
+  test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
     expect(transpile('node_modules/test.js')).toBe(false)
     expect(transpile('node_modules/vue-test')).toBe(true)
