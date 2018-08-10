@@ -15,6 +15,8 @@ bin/nuxt examples/your-app
 bin/nuxt test/fixtures/your-fixture-app
 ```
 
+> `npm link` could also (and does, to some extent) work for this, but it has been known to exhibit some issues. That is why we recommend calling `bin/nuxt` directly to run examples.
+
 Once you've modified Nuxt and seen your modifications reflected correctly in your example app and fixture, add `unit` and, if necessary, `e2e` tests that can ensure its functionality and future maintanability. Study other tests carefully for reference. 
 
 ## Running specific tests
@@ -28,7 +30,13 @@ jest test/unit/test.js
 
 ```sh
 yarn test
+```
+
+Or, per group:
+
+```sh
 yarn test:unit
+yarn test:e2e
 yarn test:fixtures
 ```
 
