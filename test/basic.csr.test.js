@@ -13,6 +13,7 @@ let page = null
 // Init nuxt.js and create server listening on localhost:4003
 test.serial('Init Nuxt.js', async (t) => {
   const options = {
+    test: true,
     rootDir: resolve(__dirname, 'fixtures/basic'),
     buildDir: '.nuxt-csr',
     dev: true,

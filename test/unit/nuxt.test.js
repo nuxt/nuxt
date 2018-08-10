@@ -7,7 +7,7 @@ describe('nuxt', () => {
   })
 
   test('Nuxt.js Instance', async () => {
-    const config = loadFixture('empty')
+    const config = loadFixture('empty', { test: true })
     const nuxt = new Nuxt(config)
 
     expect(typeof nuxt).toBe('object')
@@ -33,7 +33,7 @@ describe('nuxt', () => {
   })
 
   test('Build with default page when no pages/ directory', async () => {
-    const nuxt = new Nuxt()
+    const nuxt = new Nuxt({ test: true })
     new Builder(nuxt).build()
     const port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -46,6 +46,7 @@ describe('nuxt', () => {
 
   test('Fail to build when specified plugin isn\'t found', () => {
     const nuxt = new Nuxt({
+      test: true,
       dev: false,
       rootDir: resolve(__dirname, '..', 'fixtures', 'missing-plugin')
     })
