@@ -25,11 +25,4 @@ describe('basic config defaults', () => {
 
     consola.warn.mockRestore()
   })
-
-  test('render dist options', async () => {
-    const options = Options.from({ render: 'dist' })
-    expect(options.render.dist.maxAge).toBe('1y')
-    expect(options.render.dist.index).toBe(false)
-  })
-
 })
