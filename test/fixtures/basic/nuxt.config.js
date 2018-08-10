@@ -1,6 +1,11 @@
 import path from 'path'
 
 export default {
+  render: {
+    dist: {
+      maxAge: ((60 * 60 * 24 * 365) * 2)
+    }
+  },
   generate: {
     routes: [
       // TODO: generate with {build: false} does not scans pages!
