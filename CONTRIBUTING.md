@@ -6,7 +6,7 @@
 > _Note that both **npm** and **yarn** have been seen to miss installing dependencies. To remedy that, you can either delete the `node_modules` folder in your example app and install again or do a local install of the missing dependencies._
 
 3. Add an example app to `examples/` before writing any code.
-4. Create a fixture app under `test/fixtures`. See others for examples.
+4. Create a fixture app under `test/fixtures/`. See others for examples.
 
 To run an example or fixture app with your copy of Nuxt, do:
 
