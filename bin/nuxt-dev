@@ -1,11 +1,9 @@
 #!/usr/bin/env node
-const defaultsDeep = require('lodash/defaultsDeep')
 const parseArgs = require('minimist')
-const chokidar = require('chokidar')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig, getLatestHost, nuxtConfigFile } = require('./common/utils')
+const { loadNuxtConfig, getLatestHost } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -51,29 +49,9 @@ if (argv.help) {
   process.exit(0)
 }
 
-// Load config once for chokidar
-const nuxtConfig = loadNuxtConfig(argv)
-defaultsDeep(nuxtConfig, { watchers: { chokidar: { ignoreInitial: true } } })
-
 // Start dev
+let hooked = false
 let dev = startDev()
-let needToRestart = false
-
-// Start watching for nuxt.config.js changes
-chokidar
-  .watch(nuxtConfigFile(argv), nuxtConfig.watchers.chokidar)
-  .on('all', () => {
-    consola.debug('[nuxt.config.js] changed')
-    needToRestart = true
-
-    dev = dev.then(instance => {
-      if (needToRestart === false) return instance
-      needToRestart = false
-
-      consola.debug('Rebuilding the app...')
-      return startDev(instance)
-    })
-  })
 
 function startDev(oldInstance) {
   // Get latest environment variables
@@ -103,6 +81,17 @@ function startDev(oldInstance) {
     instance = { nuxt, builder }
   } catch (err) {
     return onError(err, oldInstance)
+  }
+
+  if (!hooked) {
+    nuxt.hook('watch:fileChanged', (fname) => {
+      consola.debug(`[${fname}] changed`)
+      dev = dev.then((instance) => {
+        consola.debug('Rebuilding the app...')
+        return startDev(instance)
+      })
+    })
+    hooked = true
   }
 
   return (

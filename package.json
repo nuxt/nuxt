@@ -55,7 +55,7 @@
     "build:make-start": "node scripts/make-start",
     "clean": "rimraf dist",
     "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue bin lib test examples",
+    "lint": "eslint --ext .js,.mjs,.vue bin/** lib test examples",
     "postinstall": "opencollective postinstall || exit 0",
     "prebuild": "yarn clean",
     "security": "nsp check || true",
@@ -96,6 +96,7 @@
     "hash-sum": "^1.0.2",
     "html-minifier": "^3.5.19",
     "html-webpack-plugin": "^3.2.0",
+    "ip": "^1.1.5",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.10",
     "lru-cache": "^4.1.3",
@@ -169,7 +170,8 @@
     "rollup": "^0.59.4",
     "rollup-plugin-babel": "^3.0.4",
     "rollup-plugin-commonjs": "^9.1.3",
-    "rollup-plugin-json": "^3.0.0"
+    "rollup-plugin-json": "^3.0.0",
+    "rollup-plugin-license": "^0.7.0"
   },
   "collective": {
     "type": "opencollective",

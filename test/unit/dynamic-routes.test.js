@@ -18,7 +18,7 @@ describe('dynamic routes', () => {
         routerFile.indexOf('['),
         routerFile.lastIndexOf(']') + 1
       )
-      let routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
+      const routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
       // pages/test/index.vue
       expect(routes[0].path).toBe('/test')
       expect(routes[0].name).toBe('test')
