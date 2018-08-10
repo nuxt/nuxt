@@ -35,9 +35,9 @@ yarn test
 Or, per group:
 
 ```sh
+yarn test:fixtures
 yarn test:unit
 yarn test:e2e
-yarn test:fixtures
 ```
 
 ## Opening PRs
