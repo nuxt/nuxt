@@ -15,7 +15,7 @@ bin/nuxt examples/your-app
 bin/nuxt test/fixtures/your-fixture-app
 ```
 
-Once you've modified Nuxt and seen your modifications reflect correctly in your example app and fixture, add `unit` and, if necessary, `e2e` tests that can ensure its functionality and future maintanability. Study other tests carefully for reference. 
+Once you've modified Nuxt and seen your modifications reflected correctly in your example app and fixture, add `unit` and, if necessary, `e2e` tests that can ensure its functionality and future maintanability. Study other tests carefully for reference. 
 
 ## Running specific tests
 
