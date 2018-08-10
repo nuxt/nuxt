@@ -31,3 +31,8 @@ yarn test
 yarn test:unit
 yarn test:fixtures
 ```
+
+## Opening PRs
+
+- Please make sure your PR passes the lint test (`npm run lint`).
+- Please wait for tests to run and verify potential failures.
