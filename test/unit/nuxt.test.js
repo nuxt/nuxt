@@ -44,7 +44,6 @@ describe('nuxt', () => {
     await nuxt.close()
   })
 
-
   test('Fail to build when specified plugin isn\'t found', () => {
     const nuxt = new Nuxt({
       dev: false,
@@ -56,5 +55,4 @@ describe('nuxt', () => {
       expect(s.includes('Plugin not found')).toBe(true)
     })
   })
-
 })
