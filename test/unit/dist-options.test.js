@@ -1,11 +1,9 @@
-import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
-import { writeFile } from 'fs-extra'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
-let transpile = null
 
 describe('dist options', () => {
   beforeAll(async () => {
