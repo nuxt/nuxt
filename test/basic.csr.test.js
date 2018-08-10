@@ -21,9 +21,6 @@ test.serial('Init Nuxt.js', async (t) => {
       titleTemplate(titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
       }
-    },
-    build: {
-      stats: false
     }
   }
 

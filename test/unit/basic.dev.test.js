@@ -14,7 +14,6 @@ describe('basic dev', () => {
       debug: true,
       buildDir: '.nuxt-dev',
       build: {
-        stats: 'none',
         transpile: [
           'vue\\.test\\.js',
           /vue-test/
