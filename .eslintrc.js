@@ -52,10 +52,12 @@ module.exports = {
       'destructuring': 'any',
       'ignoreReadBeforeAssign': false
     }],
-
+    
     // No async function without await
     'require-await': 2,
 
+    'dot-notation': 2,
+    
     // Do not allow console.logs etc...
     'no-console': 2,
     'space-before-function-paren': [2, {
