@@ -55,7 +55,7 @@
     "build:make-start": "node scripts/make-start",
     "clean": "rimraf dist",
     "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue bin/** lib test examples",
+    "lint": "eslint --ext .js,.mjs,.vue bin/** scripts/** lib test examples benchmarks",
     "postinstall": "opencollective postinstall || exit 0",
     "prebuild": "yarn clean",
     "security": "nsp check || true",
