@@ -3,9 +3,7 @@ import path from 'path'
 export default {
   render: {
     dist: {
-      setHeaders: function (res, path) {
-        res.setHeader('x-custom', 'custom header')
-      }
+      maxAge: ((60 * 60 * 24 * 365) * 2)
     }
   },
   generate: {

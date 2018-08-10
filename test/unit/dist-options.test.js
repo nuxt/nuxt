@@ -15,15 +15,16 @@ describe('dist options', () => {
     await nuxt.listen(port, '0.0.0.0')
   })
 
-  test('/body.js', async () => {
-    const { statusCode, body, headers } = await rp(
-      url('/body.js'),
-      { resolveWithFullResponse: true }
-    )
-    await writeFile('/tmp/debug123', JSON.stringify(headers))
-    expect(headers['x-custom']).toBe('custom header')
-    expect(statusCode).toBe('200')
-    expect(body.includes('Body script!')).toBe(true)
+  test('Specify maxAge in render.dist options', async () => {
+    const { body } = await rp(url('/'), {
+      resolveWithFullResponse: true
+    })
+    const distFile = body.match(/\/_nuxt\/.+?\.js/)[0]
+    const { headers } = await rp(url(distFile), {
+      resolveWithFullResponse: true
+    })
+    const twoYears = (((60 * 60 * 24 * 365) * 2) / 1000).toString()
+    expect(headers['cache-control'].includes(twoYears)).toBe(true)
   })
 
   // Close server and ask nuxt to stop listening to file changes
