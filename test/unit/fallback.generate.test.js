@@ -57,7 +57,7 @@ describe('fallback generate', () => {
     expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
-  test('generate.fallback = true is transformed to /404.html', async () => {
+  test('generate.fallback = true is transformed to /404.html', () => {
     nuxt.options.generate.fallback = true
     const options = Options.from(nuxt.options)
     expect(options.generate.fallback).toBe('404.html')

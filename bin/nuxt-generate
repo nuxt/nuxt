@@ -45,7 +45,7 @@ const generator = new Generator(nuxt, builder)
 
 const generateOptions = {
   init: true,
-  build: argv['build']
+  build: argv.build
 }
 
 generator
