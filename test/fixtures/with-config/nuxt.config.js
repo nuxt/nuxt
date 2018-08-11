@@ -26,7 +26,7 @@ export default {
   loadingIndicator: 'circle',
   extensions: 'ts',
   plugins: [
-    '~/plugins/test.js',
+    '~/plugins/test',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',
