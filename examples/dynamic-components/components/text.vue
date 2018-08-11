@@ -1,5 +1,7 @@
 <template>
-  <p v-html="data"/>
+  <p>
+    {{ data }}
+  </p>
 </template>
 
 <script>

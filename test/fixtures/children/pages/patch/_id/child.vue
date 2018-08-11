@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3>child: <i data-date-child>{{ date }}</i></h3>
-    <nuxt-child/>
+    <nuxt-child />
   </div>
 </template>
 

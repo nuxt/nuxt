@@ -5,7 +5,7 @@
       <v-p>This is an example of a componentized blog post</v-p>
     </post>
 
-    <v-hr/>
+    <v-hr />
 
     <post title="My second blog post">
       <v-p>Hello there</v-p>
@@ -13,7 +13,7 @@
       <v-p>Wa-hoo!</v-p>
     </post>
 
-    <v-hr/>
+    <v-hr />
 
     <post title="The final blog post">
       <v-p>C'est la fin !</v-p>

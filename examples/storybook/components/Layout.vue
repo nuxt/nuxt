@@ -7,7 +7,7 @@
       app
     >
       <v-list dense>
-        <v-list-group v-for="item in items" :value="item.active" :key="item.title">
+        <v-list-group v-for="item in items" :key="item.title" :value="item.active">
           <v-list-tile slot="item">
             <v-list-tile-action>
               <v-icon>{{ item.action }}</v-icon>
@@ -32,7 +32,7 @@
 
     </v-navigation-drawer>
     <v-toolbar app fixed clipped-left>
-      <v-toolbar-side-icon @click.stop="drawer = !drawer"/>
+      <v-toolbar-side-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Application</v-toolbar-title>
     </v-toolbar>
     <v-content>
@@ -40,7 +40,7 @@
         <v-layout row wrap>
           <v-flex xs12>
             <v-card dark color="primary">
-              <v-card-text class="px-0"><slot/></v-card-text>
+              <v-card-text class="px-0"><slot /></v-card-text>
             </v-card>
           </v-flex>
       </v-layout></v-container>

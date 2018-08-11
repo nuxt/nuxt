@@ -1,7 +1,7 @@
 <template>
   <div>
     <img src="logo.png">
-    <nuxt/>
+    <nuxt />
   </div>
 </template>
 
