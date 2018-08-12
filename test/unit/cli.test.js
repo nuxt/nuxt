@@ -9,17 +9,12 @@ const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
-const killNuxt = async (nuxtInt) => {
-  let exitCode
-  nuxtInt.on('close', (code) => { exitCode = code })
-  nuxtInt.kill()
+const close = async (nuxtInt) => {
+  nuxtInt.kill('SIGKILL')
   // Wait max 10s for the process to be killed
-  if (await waitUntil(() => exitCode !== undefined, 10)) {
-    console.warn( // eslint-disable-line no-console
-      `we were unable to automatically kill the child process with pid: ${
-        nuxtInt.pid
-      }`
-    )
+  if (await waitUntil(() => nuxtInt.killed, 10)) {
+    // eslint-disable-next-line no-console
+    console.warn(`Unable to close process with pid: ${nuxtInt.pid}`)
   }
 }
 
@@ -44,7 +39,7 @@ describe.skip.appveyor('cli', () => {
       stdout.indexOf('Compiled client') !==
       stdout.lastIndexOf('Compiled client')
     )
-    await killNuxt(nuxtDev)
+    await close(nuxtDev)
   })
 
   test('nuxt start', async () => {
@@ -75,6 +70,6 @@ describe.skip.appveyor('cli', () => {
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
 
-    await killNuxt(nuxtStart)
+    await close(nuxtStart)
   })
 })
