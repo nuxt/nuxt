@@ -44,13 +44,14 @@ exports.loadNuxtConfig = (argv) => {
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   // Server options
-  if (!options.server)
+  if (!options.server) {
     options.server = {}
-  
+  }
+
   options.server.port =
-    argv.port || 
-    process.env.NUXT_PORT || 
-    process.env.PORT || 
+    argv.port ||
+    process.env.NUXT_PORT ||
+    process.env.PORT ||
     process.env.npm_package_config_nuxt_port ||
     options.server.port
 
