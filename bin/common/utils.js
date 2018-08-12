@@ -44,6 +44,9 @@ exports.loadNuxtConfig = (argv) => {
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   // Server options
+  if (!options.server) {
+    options.server = {}
+  }
   options.server.port = argv.port || options.server.port
   options.server.host = argv.hostname || options.server.host
 
