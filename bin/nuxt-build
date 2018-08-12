@@ -10,9 +10,10 @@ const argv = parseArgs(process.argv.slice(2), {
     c: 'config-file',
     a: 'analyze',
     s: 'spa',
-    u: 'universal'
+    u: 'universal',
+    q: 'quiet'
   },
-  boolean: ['h', 'a', 's', 'u'],
+  boolean: ['h', 'a', 's', 'u', 'q'],
   string: ['c'],
   default: {
     c: 'nuxt.config.js'
@@ -27,10 +28,11 @@ if (argv.help) {
       $ nuxt build <dir>
     Options
       --analyze, -a        Launch webpack-bundle-analyzer to optimize your bundles.
-      --spa                Launch in SPA mode
-      --universal          Launch in Universal mode (default)
+      --spa, -s            Launch in SPA mode
+      --universal, -u      Launch in Universal mode (default)
       --no-generate        Don't generate static version for SPA mode (useful for nuxt start)
       --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
+      --quiet, -q          Disable output except for errors
       --help, -h           Displays this message
   `)
   process.exit(0)
@@ -45,6 +47,12 @@ options.dev = false
 options.build = options.build || {}
 if (argv.analyze && typeof options.build.analyze !== 'object') {
   options.build.analyze = true
+}
+
+// Silence output when using --quiet
+if (argv.quiet) {
+  options.test = true
+  consola.level = 0
 }
 
 const nuxt = new Nuxt(options)
