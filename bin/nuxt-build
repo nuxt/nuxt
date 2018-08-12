@@ -49,7 +49,7 @@ if (argv.analyze && typeof options.build.analyze !== 'object') {
   options.build.analyze = true
 }
 
-// Silence stdout when using --quite
+// Silence stdout when using --quiet
 if (argv.quiet) {
   options.test = true
 }
