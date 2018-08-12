@@ -52,6 +52,7 @@ if (argv.analyze && typeof options.build.analyze !== 'object') {
 // Silence output when using --quiet
 if (argv.quiet) {
   options.test = true
+  consola.level = 0
 }
 
 const nuxt = new Nuxt(options)
