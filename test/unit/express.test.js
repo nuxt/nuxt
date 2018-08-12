@@ -14,6 +14,8 @@ describe('express', () => {
     const config = loadFixture('basic')
     nuxt = new Nuxt(config)
 
+    await nuxt.ready()
+
     port = await getPort()
 
     // Create express app

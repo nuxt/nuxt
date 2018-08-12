@@ -6,17 +6,13 @@ describe('nuxt', () => {
     expect(typeof Nuxt).toBe('function')
   })
 
-  test('Nuxt.js Instance', async () => {
+  test('Nuxt.js Instance', () => {
     const config = loadFixture('empty')
     const nuxt = new Nuxt(config)
 
     expect(typeof nuxt).toBe('object')
     expect(nuxt.options.dev).toBe(false)
-    expect(typeof nuxt._ready.then).toBe('function')
-
-    await nuxt.ready()
-
-    expect(nuxt.initialized).toBe(true)
+    expect(typeof nuxt.ready).toBe('function')
   })
 
   test('Fail to build when no pages/ directory but is in the parent', () => {
