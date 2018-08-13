@@ -3,7 +3,7 @@ const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig, getLatestHost } = require('./common/utils')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -54,9 +54,6 @@ let hooked = false
 let dev = startDev()
 
 function startDev(oldInstance) {
-  // Get latest environment variables
-  const { port, host } = getLatestHost(argv)
-
   // Error handler
   const onError = (err, instance) => {
     consola.error(err)
@@ -70,6 +67,9 @@ function startDev(oldInstance) {
   } catch (err) {
     return onError(err, oldInstance)
   }
+
+  // Get latest environment variables
+  const { port, host } = options.server
 
   // Create nuxt and builder instance
   let nuxt
