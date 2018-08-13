@@ -23,7 +23,7 @@ describe('error', () => {
   })
 
   test('/404 should display an error too', async () => {
-    let { error } = await nuxt.renderRoute('/404')
+    const { error } = await nuxt.renderRoute('/404')
     expect(error.message.includes('This page could not be found')).toBe(true)
   })
 
@@ -33,7 +33,7 @@ describe('error', () => {
     })
   })
 
-  test('Error: resolvePath()', async () => {
+  test('Error: resolvePath()', () => {
     expect(() => nuxt.resolvePath()).toThrowError()
     expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
   })

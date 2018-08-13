@@ -27,6 +27,20 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('Index page')
   })
 
+  test('/noloading', async () => {
+    const { hook } = await page.nuxt.navigate('/noloading')
+    const loading = await page.nuxt.loadingData()
+    expect(loading.show).toBe(true)
+    await hook
+    expect(loading.show).toBe(true)
+    await page.waitForFunction(
+      `$nuxt.$loading.$data.show === false`
+    )
+    await page.waitForFunction(
+      `document.querySelector('p').innerText === 'true'`
+    )
+  })
+
   test('/stateless', async () => {
     const { hook } = await page.nuxt.navigate('/stateless', false)
     const loading = await page.nuxt.loadingData()
@@ -40,7 +54,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/css')
 
     expect(await page.$text('.red')).toBe('This is red')
-    expect(await page.$eval('.red', red => {
+    expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
     })).toEqual({

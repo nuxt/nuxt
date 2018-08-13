@@ -20,8 +20,9 @@ import * as people from '~/store/modules/people'
 
 const PeopleAction = namespace(people.name, Action)
 
+export default
 @Component({})
-export default class Card extends Vue {
+class Card extends Vue {
   @Prop() person
   @PeopleAction select
 }

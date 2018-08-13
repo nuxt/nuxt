@@ -2,6 +2,10 @@ import path from 'path'
 
 export default {
   srcDir: __dirname,
+  server: {
+    port: 8000,
+    host: '0.0.0.0'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
@@ -29,7 +33,7 @@ export default {
   loadingIndicator: 'circle',
   extensions: 'ts',
   plugins: [
-    '~/plugins/test.js',
+    '~/plugins/test',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',

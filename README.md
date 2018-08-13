@@ -21,9 +21,10 @@
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
-- 👥 [Community](https://nuxtjs.cmty.io)
+- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
+- 💬 Chat: [Discord](https://discord.gg/VApZF5W)
 - 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
 - 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
@@ -42,18 +43,18 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 ## Partners
 
-Become a partner and get your logo on our README on Github and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
+Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
 <p>
-<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img height="72px" src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg">
+<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img height="100px" src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg">
 </a>
-<a href="https://opencollective.com/nuxtjs/tiers/partner/1/website" target="_blank" rel="noopener noreferrer"><img height="72px" src="https://opencollective.com/nuxtjs/tiers/partner/1/avatar.svg">
+<a href="https://opencollective.com/nuxtjs/tiers/partner/1/website" target="_blank" rel="noopener noreferrer"><img height="100px" src="https://opencollective.com/nuxtjs/tiers/partner/1/avatar.svg">
 </a>
 </p>
 
 ## Sponsors
 
-Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
+Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
 <p>
 <a href="https://opencollective.com/nuxtjs/tiers/sponsors/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/0/avatar.svg"></a>
@@ -274,11 +275,6 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 ## Contributing
 
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-
-## Roadmap
-
-https://trello.com/b/lgy93IOl/nuxtjs-10
 
 ## License
 

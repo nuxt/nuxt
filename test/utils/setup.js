@@ -1,5 +1,4 @@
 // eslint-disable
-require('babel-polyfill')
 require('consola').clear().add({
   log: jest.fn()
 })

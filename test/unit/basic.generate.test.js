@@ -4,7 +4,7 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { loadFixture, getPort, Nuxt, Generator, Builder, rp } from '../utils'
+import { Builder, Generator, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -16,7 +16,7 @@ let generator = null
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate'}})
+    const config = loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
     const builder = new Builder(nuxt)
     builder.build = jest.fn()
@@ -34,16 +34,16 @@ describe('basic generate', () => {
     server.listen(port)
   })
 
-  test('Check builder', async () => {
+  test('Check builder', () => {
     expect(generator.builder.isStatic).toBe(true)
     expect(generator.builder.build).toHaveBeenCalledTimes(1)
   })
 
-  test('Check ready hook called', async () => {
+  test('Check ready hook called', () => {
     expect(generator.nuxt.__hook_called__).toBe(true)
   })
 
-  test('Format errors', async () => {
+  test('Format errors', () => {
     const error = generator._formatErrors([
       { type: 'handled', route: '/h1', error: 'page not found' },
       { type: 'unhandled', route: '/h2', error: { stack: 'unhandled error stack' } }
@@ -65,7 +65,7 @@ describe('basic generate', () => {
     const window = await generator.nuxt.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml.includes('.red{color:red}')).toBe(true)
+    expect(headHtml.includes('.red{color:red')).toBe(true)
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)

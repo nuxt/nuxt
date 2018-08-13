@@ -14,11 +14,11 @@ const countries = [
   'Czech Republic',
   'Netherlands'
 ]
-async function search(q) {
+function search(q) {
   q = String(q || '').toLowerCase()
 
   return new Promise((resolve) => {
-    const searchResults = countries.filter((s) => s.toLowerCase().includes(q))
+    const searchResults = countries.filter(s => s.toLowerCase().includes(q))
     setTimeout(() => resolve(searchResults), 100)
   })
 }
