@@ -92,7 +92,7 @@ function startDev(oldInstance) {
   }
 
   // Get latest environment variables
-  const { port, host } = options.server
+  const { port, host } = nuxt.options.server
 
   return (
     Promise.resolve()
