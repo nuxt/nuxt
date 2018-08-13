@@ -68,9 +68,6 @@ function startDev(oldInstance) {
     return onError(err, oldInstance)
   }
 
-  // Get latest environment variables
-  const { port, host } = options.server
-
   // Create nuxt and builder instance
   let nuxt
   let builder
@@ -93,6 +90,9 @@ function startDev(oldInstance) {
     })
     hooked = true
   }
+
+  // Get latest environment variables
+  const { port, host } = options.server
 
   return (
     Promise.resolve()

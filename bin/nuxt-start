@@ -76,7 +76,7 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
-const { port, host } = options.server
+const { port, host } = nuxt.options.server
 
 nuxt.listen(port, host).then(() => {
   nuxt.showReady(false)
