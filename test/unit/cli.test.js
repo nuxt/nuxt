@@ -1,6 +1,5 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
-import { writeFileSync } from 'fs-extra'
 import { getPort, rp, waitUntil } from '../utils'
 
 let port
@@ -32,11 +31,17 @@ describe.skip.appveyor('cli', () => {
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
-    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
+    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers [changed]')
 
     // Change file specified in `serverMiddleware` (nuxt.config.js)
     const serverMiddlewarePath = join(rootDir, 'middleware.js')
-    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers [changed]')
+
+    // Wait max 20s for picking up changes
+    await waitUntil(() => {
+      let match = stdout.match(/Compiled client/g)
+      return match && match.length === 3
+    })
 
     // Must see two modifications in the log
     expect(stdout.match(/custom\.file/g).length).toBe(1)

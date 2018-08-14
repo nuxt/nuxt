@@ -80,9 +80,9 @@ function startDev(oldInstance) {
   }
 
   nuxt.hook('watch:fileChanged', (fname) => {
-    consola.warn(`[${fname}] changed`)
+    process.stdout.write(`[${fname}] changed`)
     dev = dev.then((instance) => {
-      consola.info('Rebuilding the app...')
+      consola.debug('Rebuilding the app...')
       return startDev(instance)
     })
   })
