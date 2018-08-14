@@ -32,11 +32,11 @@ describe.skip.appveyor('cli', () => {
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
-    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers [changed]')
+    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
 
     // Change file specified in `serverMiddleware` (nuxt.config.js)
     const serverMiddlewarePath = join(rootDir, 'middleware.js')
-    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers [changed]')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
 
     // Wait max 20s for picking up changes
     await waitUntil(() => {
