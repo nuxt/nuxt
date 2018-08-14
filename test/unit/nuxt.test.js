@@ -52,7 +52,7 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('File not found')).toBe(true)
+      expect(s.includes('Plugin not found')).toBe(true)
     })
   })
 
@@ -64,7 +64,7 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('File not found')).toBe(true)
+      expect(s.includes('Stylesheet not found')).toBe(true)
     })
   })
 })
