@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
-import { writeFileSync } from 'fs-extra'
-import { getPort, rp, waitUntil } from '../utils'
+import { writeFileSync, readFileSync } from 'fs-extra'
+import { getPort, rp, waitUntil, Utils } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -26,6 +26,7 @@ describe.skip.appveyor('cli', () => {
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', (data) => { stdout += data })
+    nuxtDev.stderr.on('data', (data) => { stdout += data })
 
     // Wait max 20s for the starting
     await waitUntil(() => stdout.includes(`${port}`))
@@ -38,15 +39,11 @@ describe.skip.appveyor('cli', () => {
     const serverMiddlewarePath = join(rootDir, 'middleware.js')
     writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
 
-    // Wait max 20s for picking up changes
-    await waitUntil(() => {
-      const match = stdout.match(/Compiled client/g)
-      return match && match.length === 3
-    })
+    // Wait 2s for picking up changes
+    await Utils.waitFor(2000)
 
-    // Must see two modifications in the log
-    expect(stdout.match(/custom\.file/g).length).toBe(1)
-    expect(stdout.match(/middleware\.js/g).length).toBe(1)
+    const tmpFile = readFileSync('/tmp/debug-last-file-changed', 'utf8')
+    expect(tmpFile.includes('middleware.js')).toBe(true)
 
     await close(nuxtDev)
   })
