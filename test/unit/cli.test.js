@@ -41,7 +41,7 @@ describe.skip.appveyor('cli', () => {
     // Must see two modifications in the log
     expect(stdout.match(/custom.file/g).length).toBe(1)
     expect(stdout.match(/middleware.js/g).length).toBe(1)
-    
+
     await close(nuxtDev)
   })
 
