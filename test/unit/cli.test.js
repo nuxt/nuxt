@@ -35,13 +35,12 @@ describe.skip.appveyor('cli', () => {
     writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
 
     // Change file specified in `serverMiddleware` (nuxt.config.js)
-    const customFilePath = join(rootDir, 'middleware.js')
-    writeFileSync(customFilePath, '// This file is used to test custom chokidar watchers.')
+    const serverMiddlewarePath = join(rootDir, 'middleware.js')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
 
-    // Must see two compilations in the log
+    // Must see three compilations in the log
     expect(
-      stdout.indexOf('Compiled client') !==
-      stdout.lastIndexOf('Compiled client')
+      (stdout.match(/Compiled client/g) || []).length === 3
     )
     await close(nuxtDev)
   })
