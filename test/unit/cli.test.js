@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
-import { writeFileSync, readFileSync } from 'fs-extra'
+import { writeFileSync } from 'fs-extra'
 import { getPort, rp, waitUntil, Utils } from '../utils'
 
 let port
@@ -26,7 +26,6 @@ describe.skip.appveyor('cli', () => {
 
     const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
     nuxtDev.stdout.on('data', (data) => { stdout += data })
-    nuxtDev.stderr.on('data', (data) => { stdout += data })
 
     // Wait max 20s for the starting
     await waitUntil(() => stdout.includes(`${port}`))
@@ -42,8 +41,7 @@ describe.skip.appveyor('cli', () => {
     // Wait 2s for picking up changes
     await Utils.waitFor(2000)
 
-    const tmpFile = readFileSync('/tmp/debug-last-file-changed', 'utf8')
-    expect(tmpFile.includes('middleware.js')).toBe(true)
+    // [Add actual test for changes here]
 
     await close(nuxtDev)
   })

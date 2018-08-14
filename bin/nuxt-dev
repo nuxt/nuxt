@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const { writeFileSync } = require('fs')
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
@@ -82,7 +81,6 @@ function startDev(oldInstance) {
 
   nuxt.hook('watch:fileChanged', (fname) => {
     consola.debug(`[${fname}] changed`)
-    writeFileSync('/tmp/debug-last-file-changed', fname)
 
     dev = dev.then((instance) => {
       consola.debug('Rebuilding the app...')
