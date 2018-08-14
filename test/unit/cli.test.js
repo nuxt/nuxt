@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
 import { writeFileSync } from 'fs-extra'
-import { getPort, rp, waitUntil } from '../utils'
+import { getPort, rp, waitUntil, Utils } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -34,11 +34,15 @@ describe.skip.appveyor('cli', () => {
     const customFilePath = join(rootDir, 'custom.file')
     writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
 
-    // Must see two compilations in the log
-    expect(
-      stdout.indexOf('Compiled client') !==
-      stdout.lastIndexOf('Compiled client')
-    )
+    // Change file specified in `serverMiddleware` (nuxt.config.js)
+    const serverMiddlewarePath = join(rootDir, 'middleware.js')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
+
+    // Wait 2s for picking up changes
+    await Utils.waitFor(2000)
+
+    // [Add actual test for changes here]
+
     await close(nuxtDev)
   })
 
@@ -59,9 +63,9 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.stdout.on('data', (data) => { stdout += data })
     nuxtStart.on('error', (err) => { error = err })
 
-    // Wait max 20s for the starting
-    if (await waitUntil(() => stdout.includes(`${port}`))) {
-      error = 'server failed to start successfully in 20 seconds'
+    // Wait max 40s for the starting
+    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
+      error = 'server failed to start successfully in 40 seconds'
     }
 
     expect(error).toBe(undefined)
