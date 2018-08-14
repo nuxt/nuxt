@@ -39,14 +39,14 @@ describe.skip.appveyor('cli', () => {
     writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
 
     // Wait max 20s for picking up changes
-    await waitUntil(() => {
-      const match = stdout.match(/Compiled client/g)
-      return match && match.length === 3
-    })
-
-    // Must see two modifications in the log
-    expect(stdout.match(/custom\.file/g).length).toBe(1)
-    expect(stdout.match(/middleware\.js/g).length).toBe(1)
+    expect(
+      await waitUntil(() => {
+        return [
+          stdout.match(/custom\.file/g),
+          stdout.match(/middleware\.js/g)
+        ].includes(null) == false
+      })
+    ).toBe(true)
 
     await close(nuxtDev)
   })
