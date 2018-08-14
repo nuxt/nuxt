@@ -39,8 +39,8 @@ describe.skip.appveyor('cli', () => {
     writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
 
     // Must see two modifications in the log
-    expect(stdout.match(/custom.file/g).length).toBe(1)
-    expect(stdout.match(/middleware.js/g).length).toBe(1)
+    expect(stdout.match(/custom\.file/g).length).toBe(1)
+    expect(stdout.match(/middleware\.js/g).length).toBe(1)
 
     await close(nuxtDev)
   })

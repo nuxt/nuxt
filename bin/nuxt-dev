@@ -50,7 +50,6 @@ if (argv.help) {
 }
 
 // Start dev
-let hooked = false
 let dev = startDev()
 
 function startDev(oldInstance) {
@@ -80,16 +79,13 @@ function startDev(oldInstance) {
     return onError(err, oldInstance)
   }
 
-  if (!hooked) {
-    nuxt.hook('watch:fileChanged', (fname) => {
-      consola.debug(`[${fname}] changed`)
-      dev = dev.then((instance) => {
-        consola.debug('Rebuilding the app...')
-        return startDev(instance)
-      })
+  nuxt.hook('watch:fileChanged', (fname) => {
+    consola.warn(`[${fname}] changed`)
+    dev = dev.then((instance) => {
+      consola.info('Rebuilding the app...')
+      return startDev(instance)
     })
-    hooked = true
-  }
+  })
 
   // Get latest environment variables
   const { port, host } = nuxt.options.server
