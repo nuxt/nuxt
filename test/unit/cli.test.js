@@ -38,10 +38,10 @@ describe.skip.appveyor('cli', () => {
     const serverMiddlewarePath = join(rootDir, 'middleware.js')
     writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
 
-    // Must see three compilations in the log
-    expect(
-      (stdout.match(/Compiled client/g) || []).length === 3
-    )
+    // Must see two modifications in the log
+    expect(stdout.match(/custom.file/g).length).toBe(1)
+    expect(stdout.match(/middleware.js/g).length).toBe(1)
+    
     await close(nuxtDev)
   })
 
