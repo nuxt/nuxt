@@ -40,6 +40,12 @@ yarn test:unit
 yarn test:e2e
 ```
 
+## Debugging tests on macOS
+
+Searching for `getPort()` will reveal it's used to start new Nuxt processes during tests. It's been seen to stop working on macOS at times and may require you to manually set a port for testing.
+
+Another common issue is Nuxt process that may hang in memory when running fixture tests. A ghost process will often prevent subsequent tests from working. Run `ps aux | grep -i node` to inspect any hanging test processes if you suspect this happening.
+
 ## Opening PRs
 
 - Please make sure your PR passes the lint test (`npm run lint`).
