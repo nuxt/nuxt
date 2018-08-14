@@ -1,6 +1,7 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
 import { getPort, rp, waitUntil } from '../utils'
+import { writeFileSync } from 'fs-extra'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -39,7 +40,7 @@ describe.skip.appveyor('cli', () => {
 
     // Wait max 20s for picking up changes
     await waitUntil(() => {
-      let match = stdout.match(/Compiled client/g)
+      const match = stdout.match(/Compiled client/g)
       return match && match.length === 3
     })
 
