@@ -55,4 +55,16 @@ describe('nuxt', () => {
       expect(s.includes('Plugin not found')).toBe(true)
     })
   })
+
+  test('Fail to build when specified CSS isn\'t found', () => {
+    const nuxt = new Nuxt({
+      dev: false,
+      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-css')
+    })
+
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
+      expect(s.includes('Stylesheet not found')).toBe(true)
+    })
+  })
 })
