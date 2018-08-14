@@ -36,7 +36,7 @@ describe.skip.appveyor('cli', () => {
 
     // Change file specified in `serverMiddleware` (nuxt.config.js)
     const serverMiddlewarePath = join(rootDir, 'middleware.js')
-    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
 
     // Wait max 20s for picking up changes
     await waitUntil(() => {
