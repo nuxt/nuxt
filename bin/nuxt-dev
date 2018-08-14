@@ -97,7 +97,7 @@ function startDev(oldInstance) {
         if (oldInstance && oldInstance.builder) {
           return oldInstance.builder.unwatch()
         } else {
-          return nuxt.listen(port, host)
+          return nuxt.listen(port, host, nuxtConfig.https)
         }
       })
       // Start build
@@ -112,7 +112,7 @@ function startDev(oldInstance) {
       // Start listening
       .then(() => {
         if (oldInstance) {
-          return nuxt.listen(port, host)
+          return nuxt.listen(port, host, nuxtConfig.https)
         } else {
           return Promise.resolve()
         }
