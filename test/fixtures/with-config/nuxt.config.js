@@ -72,16 +72,6 @@ export default {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'
       })
-    },
-    postcss: {
-      preset: {
-        features: {
-          'custom-selectors': true
-        },
-        autoprefixer: {
-          grid: true
-        }
-      }
     }
   },
   css: [{ src: '~/assets/app.css' }],
