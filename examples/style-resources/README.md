@@ -4,7 +4,7 @@ This is useful when you need to inject some variables and mixins in your pages w
 
 Nuxt.js uses https://github.com/yenshih/style-resources-loader to achieve this behaviour.
 
-You need to specify the patterns/path you want to include for the given pre-processors: `less`, `sass`, `scss` or `stylus`
+You need to specify the patterns/path you want to include for the given pre-processors: `css`, `less`, `sass`, `scss` or `stylus`
 
 :warning: You cannot use path aliases here (`~` and `@`), you need to use relative or absolute paths.
 
