@@ -2,6 +2,10 @@ import path from 'path'
 
 export default {
   srcDir: __dirname,
+  server: {
+    port: 8000,
+    host: '0.0.0.0'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
@@ -16,6 +20,9 @@ export default {
         {
           path: '/redirect/about-bis',
           redirect: '/about-bis'
+        },
+        {
+          path: '/not-existed'
         }
       ]
     }

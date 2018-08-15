@@ -43,17 +43,12 @@ exports.loadNuxtConfig = (argv) => {
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
+  // Server options
+  if (!options.server) {
+    options.server = {}
+  }
+  options.server.port = argv.port || options.server.port
+  options.server.host = argv.hostname || options.server.host
+
   return options
-}
-
-exports.getLatestHost = (argv) => {
-  const port =
-    argv.port || process.env.NUXT_PORT || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host =
-    argv.hostname ||
-    process.env.NUXT_HOST ||
-    process.env.HOST ||
-    process.env.npm_package_config_nuxt_host
-
-  return { port, host }
 }
