@@ -60,12 +60,8 @@ describe('module', () => {
   })
 
   test('AddVendor - deprecated', () => {
-    jest.spyOn(consola, 'warn')
-
     nuxt.moduleContainer.addVendor('nuxt-test')
     expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
-
-    consola.warn.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes
