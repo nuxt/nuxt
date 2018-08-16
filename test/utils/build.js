@@ -1,6 +1,6 @@
 import { loadFixture, Nuxt, Builder } from './index'
 
-export const buildFixture = function buildFixture(fixture) {
+export const buildFixture = function (fixture, callback) {
   test(`Build ${fixture}`, async () => {
     const config = loadFixture(fixture)
     const nuxt = new Nuxt(config)
@@ -10,5 +10,8 @@ export const buildFixture = function buildFixture(fixture) {
     // 2: BUILD_DONE
     expect(builder._buildStatus).toBe(2)
     expect(buildDone).toHaveBeenCalledTimes(1)
+    if (typeof callback === 'function') {
+      callback(builder)
+    }
   }, 120000)
 }
