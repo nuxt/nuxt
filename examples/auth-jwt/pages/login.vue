@@ -1,13 +1,15 @@
 <template>
-  <h1>login view</h1>
-  <div>
-    <label for="email">
-      <input type="email" id="email">
-    </label>
-    <label for="password">
-      <input type="password" id="password">
-    </label>
-    <button @click="postLogin">login</button>
+  <div class="container">
+    <h1>login view</h1>
+    <div>
+      <label for="email">
+        <input id="email" type="email">
+      </label>
+      <label for="password">
+        <input id="password" type="password">
+      </label>
+      <button @click="postLogin">login</button>
+    </div>
   </div>
 </template>
 
@@ -17,7 +19,7 @@ import Cookie from 'js-cookie'
 export default {
   middleware: 'notAuthenticated',
   methods: {
-    postLogin () {
+    postLogin() {
       setTimeout(() => { // we simulate the async request with timeout.
         const auth = {
           accessToken: 'someStringGotFromApiServiceWithAjax'
