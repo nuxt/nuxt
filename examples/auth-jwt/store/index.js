@@ -1,6 +1,6 @@
 import Vuex from 'vuex'
 
-const cookieparser = require('cookieparser')
+const cookieparser = process.server ? require('cookieparser') : undefined
 
 const createStore = () => {
   return new Vuex.Store({
