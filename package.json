@@ -74,7 +74,6 @@
     "@nuxtjs/babel-preset-app": "^0.3.0",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/youch": "^4.2.3",
-    "autoprefixer": "^8.6.5",
     "babel-loader": "^8.0.0-beta",
     "cache-loader": "^1.2.2",
     "caniuse-lite": "^1.0.30000874",
