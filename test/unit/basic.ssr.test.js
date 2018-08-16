@@ -57,8 +57,6 @@ describe('basic ssr', () => {
   })
 
   test('/head', async () => {
-    jest.spyOn(consola, 'log')
-
     const window = await nuxt.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
@@ -71,8 +69,6 @@ describe('basic ssr', () => {
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
-
-    consola.log.mockRestore()
   })
 
   test('/async-data', async () => {
