@@ -5,7 +5,7 @@ environment:
 
 cache:
   - 'node_modules -> yarn.lock'
-  # - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
 
 image: Visual Studio 2017
 
