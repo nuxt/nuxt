@@ -24,7 +24,17 @@ export const loadFixture = function loadFixture(fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 
-  const config = fs.existsSync(configFile) ? requireModule(configFile).default : {}
+  let config = {}
+
+  if (fs.existsSync(configFile)) {
+    config = requireModule(configFile).default
+    if (process.env.APPVEYOR && !config) {
+      // retry 5 times for getting correct config 😅, I love appveyor so much
+      for (let i = 0; i < 5 && !config; i++) {
+        config = requireModule(configFile).default
+      }
+    }
+  }
 
   config.rootDir = rootDir
   config.dev = false
