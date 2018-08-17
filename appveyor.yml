@@ -1,7 +1,9 @@
 # Test against the latest version of this Node.js version
 environment:
-  matrix:
-    - nodejs_version: "Current"
+  nodejs_version: "Current"
+# environment:
+#   matrix:
+#     - nodejs_version: "Current"
 
 cache:
   - 'node_modules -> yarn.lock'
