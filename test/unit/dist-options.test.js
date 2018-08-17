@@ -7,7 +7,7 @@ let nuxt = null
 
 describe('dist options', () => {
   beforeAll(async () => {
-    const options = loadFixture('basic')
+    const options = await loadFixture('basic')
     nuxt = new Nuxt(Object.assign(options, {dev: false}))
     port = await getPort()
     await nuxt.listen(port, '0.0.0.0')

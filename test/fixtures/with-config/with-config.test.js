@@ -1,5 +1,5 @@
-const consola = require('consola')
-const { buildFixture } = require('../../utils/build')
+import consola from 'consola'
+import { buildFixture } from '../../utils/build'
 
 describe('with-config', () => {
   buildFixture('with-config', () => {

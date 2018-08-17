@@ -2,7 +2,7 @@ import { loadFixture, Nuxt, Builder } from './index'
 
 export const buildFixture = function (fixture, callback) {
   test(`Build ${fixture}`, async () => {
-    const config = loadFixture(fixture)
+    const config = await loadFixture(fixture)
     const nuxt = new Nuxt(config)
     const buildDone = jest.fn()
     nuxt.hook('build:done', buildDone)

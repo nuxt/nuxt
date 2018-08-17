@@ -15,7 +15,7 @@ let generator = null
 
 describe('fallback generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
+    const config = await loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
