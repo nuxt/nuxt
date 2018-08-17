@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>login view</h1>
+    <h1>Sign in to access the secret page</h1>
     <div>
       <label for="email">
         <input id="email" type="email" value="test">
@@ -9,12 +9,13 @@
         <input id="password" type="password" value="test">
       </label>
       <button @click="postLogin">login</button>
+      <p>The crendentials are not verified for the example purpose.</p>
     </div>
   </div>
 </template>
 
 <script>
-import Cookie from 'js-cookie'
+const Cookie = process.browser ? require('js-cookie') : undefined
 
 export default {
   middleware: 'notAuthenticated',
@@ -24,7 +25,7 @@ export default {
         const auth = {
           accessToken: 'someStringGotFromApiServiceWithAjax'
         }
-        this.$store.commit('update', auth) // mutating to store for client rendering
+        this.$store.commit('setAuth', auth) // mutating to store for client rendering
         Cookie.set('auth', auth) // saving token in cookie for server rendering
         this.$router.push('/')
       }, 1000)
