@@ -3,10 +3,10 @@
     <h1>login view</h1>
     <div>
       <label for="email">
-        <input id="email" type="email">
+        <input id="email" type="email" value="test">
       </label>
       <label for="password">
-        <input id="password" type="password">
+        <input id="password" type="password" value="test">
       </label>
       <button @click="postLogin">login</button>
     </div>
