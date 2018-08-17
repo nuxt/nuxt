@@ -8,18 +8,22 @@ const createStore = () => {
       auth: null
     },
     mutations: {
-      update(state, data) {
-        state.auth = data
+      setAuth(state, auth) {
+        state.auth = auth
       }
     },
     actions: {
       nuxtServerInit({ commit }, { req }) {
-        let accessToken = null
+        let auth = null
         if (req.headers.cookie) {
           const parsed = cookieparser.parse(req.headers.cookie)
-          accessToken = JSON.parse(parsed.auth)
+          try {
+            auth = JSON.parse(parsed.auth)
+          } catch (err) {
+            // No valid cookie found
+          }
         }
-        commit('update', accessToken)
+        commit('setAuth', auth)
       }
     }
   })
