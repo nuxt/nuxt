@@ -5,7 +5,7 @@ let nuxt = null
 
 describe('custom-app-template', () => {
   beforeAll(async () => {
-    const options = loadFixture('custom-app-template')
+    const options = await loadFixture('custom-app-template')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.listen(port, '0.0.0.0')

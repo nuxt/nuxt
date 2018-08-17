@@ -141,6 +141,7 @@
     "babel-core": "^7.0.0-0",
     "babel-eslint": "^9.0.0-beta",
     "babel-jest": "^23.4.2",
+    "babel-plugin-dynamic-import-node": "^2.0.0",
     "codecov": "^3.0.4",
     "cross-env": "^5.2.0",
     "eslint": "^4.19.1",

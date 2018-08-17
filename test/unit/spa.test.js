@@ -13,7 +13,7 @@ const renderRoute = async (_url) => {
 
 describe('spa', () => {
   beforeAll(async () => {
-    const config = loadFixture('spa')
+    const config = await loadFixture('spa')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

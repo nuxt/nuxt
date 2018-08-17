@@ -10,7 +10,7 @@ let nuxt = null
 
 describe('error', () => {
   beforeAll(async () => {
-    const config = loadFixture('error')
+    const config = await loadFixture('error')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
