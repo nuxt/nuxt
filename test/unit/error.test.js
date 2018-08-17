@@ -39,9 +39,10 @@ describe('error', () => {
   })
 
   test('Error: callHook()', async () => {
+    consola.error.mockClear()
+
     const errorHook = jest.fn()
     const error = new Error('test hook error')
-    jest.spyOn(consola, 'error')
 
     nuxt.hook('error', errorHook)
     nuxt.hook('test:error', () => { throw error })
@@ -51,8 +52,6 @@ describe('error', () => {
     expect(errorHook).toHaveBeenCalledWith(error)
     expect(consola.error).toHaveBeenCalledTimes(1)
     expect(consola.error).toHaveBeenCalledWith(error)
-
-    consola.error.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

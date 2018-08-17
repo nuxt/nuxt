@@ -1,10 +1,7 @@
 import consola from 'consola'
-import mockLog from '../utils/mock-log'
 import { loadFixture, getPort, Nuxt } from '../utils'
 
-let nuxt = null
-
-let port
+let nuxt, port
 const url = route => 'http://localhost:' + port + route
 
 const renderRoute = async (_url) => {
@@ -15,8 +12,6 @@ const renderRoute = async (_url) => {
 }
 
 describe('spa', () => {
-  mockLog(['log'], consola)
-
   beforeAll(async () => {
     const config = loadFixture('spa')
     nuxt = new Nuxt(config)
@@ -29,6 +24,7 @@ describe('spa', () => {
     expect(html).toMatch('Hello SPA!')
     expect(consola.log).not.toHaveBeenCalledWith('created')
     expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
   })
 
   test('/custom (custom layout)', async () => {
@@ -36,6 +32,7 @@ describe('spa', () => {
     expect(html).toMatch('Custom layout')
     expect(consola.log).toHaveBeenCalledWith('created')
     expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
   })
 
   test('/mounted', async () => {

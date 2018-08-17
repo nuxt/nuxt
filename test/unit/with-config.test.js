@@ -112,6 +112,11 @@ describe('with-config', () => {
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
 
+  test('/test/not-existed should return 404', async () => {
+    await expect(rp(url('/test/not-existed')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
     const windowHref = window.location.href

@@ -49,89 +49,53 @@ if (argv.help) {
   process.exit(0)
 }
 
+const config = () => {
+  // Force development mode for add hot reloading and watching changes
+  return Object.assign(loadNuxtConfig(argv), { dev: true })
+}
+
+const errorHandler = (err, instance) => {
+  instance && instance.builder.watchServer()
+  consola.error(err)
+}
+
 // Start dev
-let hooked = false
-let dev = startDev()
+(function startDev(oldInstance) {
+  let nuxt, builder
 
-function startDev(oldInstance) {
-  // Error handler
-  const onError = (err, instance) => {
-    consola.error(err)
-    return Promise.resolve(instance) // Wait for next reload
-  }
-
-  // Load options
-  let options = {}
   try {
-    options = loadAndAugmentNuxtConfig()
+    nuxt = new Nuxt(config())
+    builder = new Builder(nuxt)
+    nuxt.hook('watch:fileChanged', (builder, fname) => {
+      consola.debug(`[${fname}] changed, Rebuilding the app...`)
+      startDev({ nuxt: builder.nuxt, builder })
+    })
   } catch (err) {
-    return onError(err, oldInstance)
+    return errorHandler(err, oldInstance)
   }
 
   // Get latest environment variables
-  const { port, host } = options.server
-
-  // Create nuxt and builder instance
-  let nuxt
-  let builder
-  let instance
-  try {
-    nuxt = new Nuxt(options)
-    builder = new Builder(nuxt)
-    instance = { nuxt, builder }
-  } catch (err) {
-    return onError(err, oldInstance)
-  }
-
-  if (!hooked) {
-    nuxt.hook('watch:fileChanged', (fname) => {
-      consola.debug(`[${fname}] changed`)
-      dev = dev.then((instance) => {
-        consola.debug('Rebuilding the app...')
-        return startDev(instance)
-      })
-    })
-    hooked = true
-  }
+  const { port, host } = nuxt.options.server
 
   return (
     Promise.resolve()
-      .then(() => {
-        if (oldInstance && oldInstance.builder) {
-          return oldInstance.builder.unwatch()
-        } else {
-          return nuxt.listen(port, host)
-        }
-      })
+      .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))
+      .then(() => oldInstance && oldInstance.builder.unwatch())
       // Start build
       .then(() => builder.build())
-      // Close old nuxt after successful build
-      .then(
-        () =>
-          oldInstance && oldInstance.nuxt
-            ? oldInstance.nuxt.close()
-            : Promise.resolve()
-      )
-      // Start listening
-      .then(() => {
-        if (oldInstance) {
-          return nuxt.listen(port, host)
-        } else {
-          return Promise.resolve()
-        }
+      // Close old nuxt no mater if build successfully
+      .catch((err) => {
+        oldInstance && oldInstance.nuxt.close()
+        // Jump to eventHandler
+        throw err
       })
-      // Pass new nuxt to watch chain
-      .then(() => instance)
+      .then(() => oldInstance && oldInstance.nuxt.close())
+      // Start listening
+      .then(() => nuxt.listen(port, host))
+      // Show ready message first time, others will be shown through WebpackBar
+      .then(() => !oldInstance && nuxt.showReady(false))
+      .then(() => builder.watchServer())
       // Handle errors
-      .catch(err => onError(err, instance))
+      .catch(err => errorHandler(err, {builder, nuxt}))
   )
-}
-
-function loadAndAugmentNuxtConfig() {
-  const options = loadNuxtConfig(argv)
-
-  // Force development mode for add hot reloading and watching changes
-  options.dev = true
-
-  return options
-}
+})()

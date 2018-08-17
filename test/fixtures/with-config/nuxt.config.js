@@ -20,6 +20,9 @@ export default {
         {
           path: '/redirect/about-bis',
           redirect: '/about-bis'
+        },
+        {
+          path: '/not-existed'
         }
       ]
     }
