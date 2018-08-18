@@ -45,13 +45,13 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
-<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?width=890&button=false" /></a>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false" /></a>
 
 ## Sponsors
 
 Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?width=890&button=false" /></a>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false" /></a>
 
 ## Backers
 
