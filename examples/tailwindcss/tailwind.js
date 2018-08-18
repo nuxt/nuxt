@@ -41,7 +41,7 @@ View the full documentation at https://tailwindcss.com.
 |
 */
 
-var colors = {
+const colors = {
   'transparent': 'transparent',
 
   'black': '#222b2f',

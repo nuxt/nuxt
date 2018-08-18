@@ -10,7 +10,7 @@ let nuxt = null
 
 describe('error', () => {
   beforeAll(async () => {
-    const config = loadFixture('error')
+    const config = await loadFixture('error')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -23,7 +23,7 @@ describe('error', () => {
   })
 
   test('/404 should display an error too', async () => {
-    let { error } = await nuxt.renderRoute('/404')
+    const { error } = await nuxt.renderRoute('/404')
     expect(error.message.includes('This page could not be found')).toBe(true)
   })
 
@@ -33,15 +33,16 @@ describe('error', () => {
     })
   })
 
-  test('Error: resolvePath()', async () => {
+  test('Error: resolvePath()', () => {
     expect(() => nuxt.resolvePath()).toThrowError()
     expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
   })
 
   test('Error: callHook()', async () => {
+    consola.error.mockClear()
+
     const errorHook = jest.fn()
     const error = new Error('test hook error')
-    jest.spyOn(consola, 'error')
 
     nuxt.hook('error', errorHook)
     nuxt.hook('test:error', () => { throw error })
@@ -51,8 +52,6 @@ describe('error', () => {
     expect(errorHook).toHaveBeenCalledWith(error)
     expect(consola.error).toHaveBeenCalledTimes(1)
     expect(consola.error).toHaveBeenCalledWith(error)
-
-    consola.error.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

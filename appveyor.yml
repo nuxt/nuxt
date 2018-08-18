@@ -1,12 +1,17 @@
 # Test against the latest version of this Node.js version
 environment:
-  matrix:
-    - nodejs_version: "8"
-    - nodejs_version: "Current"
+  nodejs_version: "Current"
+# environment:
+#   matrix:
+#     - nodejs_version: "Current"
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn"
-  - node_modules
+  - 'node_modules -> yarn.lock'
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
+
+image: Visual Studio 2017
+
+shallow_clone: true
 
 # Install scripts. (runs after repo cloning)
 install:

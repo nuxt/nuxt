@@ -2,12 +2,13 @@
   "env": {
     "test": {
       "presets": [
-        ["env", {                                                                                                                              
-          "targets": {                                                                                                                                       
-            "node": "current"                                                                                                                                
-          }                                                                                                                                                  
+        ["@babel/env", {
+          "targets": {
+            "node": "current"
+          }
         }]
-      ]
+      ],
+      "plugins": ["dynamic-import-node"]
     }
   }
 }

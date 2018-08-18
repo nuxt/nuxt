@@ -22,7 +22,7 @@ export default {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/contributors?access_token=${env.githubToken}`)
     return {
       doughnutChartData: {
-        labels: res.data.map((stat) => stat.author.login),
+        labels: res.data.map(stat => stat.author.login),
         datasets: [
           {
             label: 'Nuxt.js Contributors',

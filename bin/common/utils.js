@@ -16,7 +16,7 @@ const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
 
 exports.nuxtConfigFile = getNuxtConfigFile
 
-exports.loadNuxtConfig = argv => {
+exports.loadNuxtConfig = (argv) => {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
 
@@ -41,18 +41,14 @@ exports.loadNuxtConfig = argv => {
 
   // Nuxt Mode
   options.mode =
-    (argv['spa'] && 'spa') || (argv['universal'] && 'universal') || options.mode
+    (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
+
+  // Server options
+  if (!options.server) {
+    options.server = {}
+  }
+  options.server.port = argv.port || options.server.port
+  options.server.host = argv.hostname || options.server.host
 
   return options
-}
-
-exports.getLatestHost = argv => {
-  const port =
-    argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
-  const host =
-    argv.hostname ||
-    process.env.HOST ||
-    process.env.npm_package_config_nuxt_host
-
-  return { port, host }
 }

@@ -1,9 +1,24 @@
 import path from 'path'
 
 export default {
+  render: {
+    dist: {
+      maxAge: ((60 * 60 * 24 * 365) * 2)
+    }
+  },
+  router: {
+    extendRoutes(routes, resolve) {
+      return [{
+        path: '/before-enter',
+        name: 'before-enter',
+        beforeEnter: (to, from, next) => { next('/') }
+      }, ...routes]
+    }
+  },
   generate: {
     routes: [
       // TODO: generate with {build: false} does not scans pages!
+      '/noloading',
       '/stateless',
       '/css',
       '/stateful',
@@ -36,7 +51,12 @@ export default {
   build: {
     scopeHoisting: true,
     postcss: [
-      require('postcss-preset-env')()
+      require('postcss-preset-env')({
+        features: {
+          'custom-selectors': true
+        }
+      }),
+      require('cssnano')
     ]
   }
 }

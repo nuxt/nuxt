@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
+import { Builder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -8,12 +8,11 @@ let transpile = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {
+    const config = await loadFixture('basic', {
       dev: true,
       debug: true,
       buildDir: '.nuxt-dev',
       build: {
-        stats: 'none',
         transpile: [
           'vue\\.test\\.js',
           /vue-test/
@@ -21,7 +20,7 @@ describe('basic dev', () => {
         extend({ module: { rules } }, { isClient }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
-            transpile = (file) => !babelLoader.exclude(file)
+            transpile = file => !babelLoader.exclude(file)
           }
         }
       }
@@ -32,7 +31,7 @@ describe('basic dev', () => {
     await nuxt.listen(port, 'localhost')
   })
 
-  test('Config: build.transpile', async () => {
+  test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
     expect(transpile('node_modules/test.js')).toBe(false)
     expect(transpile('node_modules/vue-test')).toBe(true)

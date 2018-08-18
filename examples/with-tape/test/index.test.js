@@ -2,7 +2,7 @@ import test from 'tape'
 import { shallow } from 'vue-test-utils'
 import Index from '../pages/index.vue'
 
-test('renders Index.vue correctly', t => {
+test('renders Index.vue correctly', (t) => {
   t.plan(4)
 
   const wrapper = shallow(Index, {

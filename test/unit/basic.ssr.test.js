@@ -8,7 +8,7 @@ let nuxt = null
 
 describe('basic ssr', () => {
   beforeAll(async () => {
-    const options = loadFixture('basic')
+    const options = await loadFixture('basic')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.listen(port, '0.0.0.0')
@@ -39,7 +39,7 @@ describe('basic ssr', () => {
     const window = await nuxt.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml.includes('background-color:blue')).toBe(true)
+    expect(headHtml.includes('background-color:#00f')).toBe(true)
 
     // const element = window.document.querySelector('div.red')
     // t.is(window.getComputedStyle(element)['background-color'], 'blue')
@@ -57,8 +57,6 @@ describe('basic ssr', () => {
   })
 
   test('/head', async () => {
-    jest.spyOn(consola, 'log')
-
     const window = await nuxt.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
@@ -71,8 +69,6 @@ describe('basic ssr', () => {
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
-
-    consola.log.mockRestore()
   })
 
   test('/async-data', async () => {
@@ -103,6 +99,11 @@ describe('basic ssr', () => {
   test('/validate?valid=true', async () => {
     const { html } = await nuxt.renderRoute('/validate?valid=true')
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/before-enter', async () => {
+    const { html } = await nuxt.renderRoute('/before-enter')
+    expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
 
   test('/redirect', async () => {

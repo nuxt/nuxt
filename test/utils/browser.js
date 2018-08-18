@@ -55,7 +55,7 @@ export default class Browser {
         return { hook }
       },
       routeData() {
-        return page.evaluate($nuxt => {
+        return page.evaluate(($nuxt) => {
           return {
             path: $nuxt.$route.path,
             query: $nuxt.$route.query

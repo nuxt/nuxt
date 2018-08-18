@@ -19,15 +19,15 @@ const url = route => 'http://localhost:' + port + route
 // We strictly compare <foorbar>{id}</foorbar> section
 // Because other response parts such as window.__NUXT may be different resulting false positive passes.
 const uniqueTest = async (url) => {
-  let results = []
+  const results = []
 
   await Utils.parallel(range(5), async () => {
-    let { html } = await nuxt.renderRoute(url)
-    let foobar = match(FOOBAR_REGEX, html)
+    const { html } = await nuxt.renderRoute(url)
+    const foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))
   })
 
-  let isUnique = uniq(results).length === results.length
+  const isUnique = uniq(results).length === results.length
 
   if (!isUnique) {
     /* eslint-disable no-console */
@@ -44,13 +44,13 @@ const uniqueTest = async (url) => {
 // Or pending promises/sockets and function calls.
 // Related issue: https://github.com/nuxt/nuxt.js/issues/1354
 const stressTest = async (_url, concurrency = 2, steps = 4) => {
-  let statusCodes = {}
+  const statusCodes = {}
 
   await Utils.sequence(range(steps), async () => {
     await Utils.parallel(range(concurrency), async () => {
-      let response = await rp(url(_url), { resolveWithFullResponse: true })
+      const response = await rp(url(_url), { resolveWithFullResponse: true })
       // Status Code
-      let code = response.statusCode
+      const code = response.statusCode
       if (!statusCodes[code]) {
         statusCodes[code] = 0
       }
@@ -63,7 +63,7 @@ const stressTest = async (_url, concurrency = 2, steps = 4) => {
 
 describe('ssr', () => {
   beforeAll(async () => {
-    const config = loadFixture('ssr')
+    const config = await loadFixture('ssr')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

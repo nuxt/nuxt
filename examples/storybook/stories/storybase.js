@@ -37,7 +37,7 @@ const vtmp = (cmp, cmpStr) => ({
  * @param {*} params
  */
 const nStoriesOf = (cmp, name = Object.keys(cmp)[0], params = {}) => {
-  let x = storiesOf(name, module)
+  const x = storiesOf(name, module)
     .addDecorator(centered)
     .addDecorator(withKnobs)
 

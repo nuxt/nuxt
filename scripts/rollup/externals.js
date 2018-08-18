@@ -9,7 +9,7 @@ const nodeBuiltIn = ['path', 'fs', 'module', 'crypto', 'util']
 // Optional dependencies that user should install on demand
 const optionalDependencies = [
   // legacy build users need this
-  'babel-polyfill'
+  '@babel/polyfill'
 ]
 
 const externals = [].concat(

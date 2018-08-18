@@ -8,21 +8,17 @@ describe('basic config defaults', () => {
     expect(Nuxt.version).toBe(version)
   })
 
-  test('modulesDir uses /node_modules as default if not set', async () => {
+  test('modulesDir uses /node_modules as default if not set', () => {
     const options = Options.from({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
     expect(options.modulesDir.includes(currentNodeModulesDir)).toBe(true)
   })
 
-  test('vendor has been deprecated', async () => {
-    jest.spyOn(consola, 'warn')
-
+  test('vendor has been deprecated', () => {
     const options = Options.from({
       build: { vendor: 'vue' }
     })
     expect(options.build.vendor).toBeUndefined()
     expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
-
-    consola.warn.mockRestore()
   })
 })
