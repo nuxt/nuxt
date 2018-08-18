@@ -1,4 +1,5 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
+[![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors)
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js/dev" alt="Windows Build Status"></a>
@@ -45,19 +46,19 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
-<img src="https://opencollective.com/nuxtjs/tiers/partner.svg?width=890&button=false" />
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?width=890&button=false" /></a>
 
 ## Sponsors
 
 Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?width=890&button=false" />
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?width=890&button=false" /></a>
 
 ## Backers
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
 
-<img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" />
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" /></a>
 
 ## Getting started
 
@@ -205,7 +206,7 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
-<img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" />
+<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" /></a>
 
 ## Contributing
 
