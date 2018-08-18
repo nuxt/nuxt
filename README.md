@@ -45,19 +45,19 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
-<object type="image/svg+xml" data="https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=72&width=890&button=false"></object>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?width=890&button=false" /></a>
 
 ## Sponsors
 
 Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<object type="image/svg+xml" data="https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=48&width=890&button=false"></object>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?width=890&button=false" /></a>
 
 ## Backers
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
 
-<object type="image/svg+xml" data="https://opencollective.com/nuxtjs/tiers/backers.svg?avatarHeight=36&width=890&button=false"></object>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" /></a>
 
 ## Getting started
 
@@ -207,7 +207,7 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
-<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?avatarHeight=36width=890&button=false" /></a>
+<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" /></a>
 
 ## Contributing
 
