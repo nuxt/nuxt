@@ -13,55 +13,55 @@
       "login": "Atinux",
       "name": "Sébastien Chopin",
       "avatar_url": "https://avatars2.githubusercontent.com/u/904724?v=4",
-      "profile": "https://twitter.com/Atinux",
+      "profile": "https://github.com/atinux",
       "contributions": [
+        "blog",
         "bug",
         "code",
         "design",
         "doc",
         "question",
         "review",
-        "talk",
-        "blog"
+        "talk"
       ]
     },
     {
       "login": "alexchopin",
       "name": "Alexandre Chopin",
       "avatar_url": "https://avatars2.githubusercontent.com/u/4084277?v=4",
-      "profile": "http://www.alexchopin.com",
+      "profile": "https://github.com/alexchopin",
       "contributions": [
         "design",
         "doc",
         "eventOrganizing",
-        "talk",
+        "platform",
         "question",
-        "platform"
+        "talk"
       ]
     },
     {
       "login": "pi0",
       "name": "Pooya Parsa",
       "avatar_url": "https://avatars0.githubusercontent.com/u/5158436?v=4",
-      "profile": "https://pi0.ir",
+      "profile": "https://github.com/pi0",
       "contributions": [
+        "bug",
         "code",
+        "plugin",
         "question",
         "review",
-        "tool",
-        "plugin",
-        "bug"
+        "tool"
       ]
     },
     {
       "login": "clarkdo",
       "name": "Clark Du",
       "avatar_url": "https://avatars3.githubusercontent.com/u/4312154?v=4",
-      "profile": "https://clark.js.org/",
+      "profile": "https://github.com/clarkdo",
       "contributions": [
+        "bug",
         "code",
         "example",
-        "bug",
         "review",
         "test",
         "tool"
