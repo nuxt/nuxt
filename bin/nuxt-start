@@ -58,7 +58,8 @@ nuxt.hook('error', err => consola.fatal(err))
 const distDir = resolve(
   nuxt.options.rootDir,
   nuxt.options.buildDir || '.nuxt',
-  'dist'
+  'dist',
+  'server'
 )
 if (!fs.existsSync(distDir)) {
   consola.fatal(
