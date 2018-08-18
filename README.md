@@ -204,6 +204,8 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
+<img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" />
+
 ## Contributing
 
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
