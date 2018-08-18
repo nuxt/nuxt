@@ -6,6 +6,15 @@ export default {
       maxAge: ((60 * 60 * 24 * 365) * 2)
     }
   },
+  router: {
+    extendRoutes(routes, resolve) {
+      return [{
+        path: '/before-enter',
+        name: 'before-enter',
+        beforeEnter: (to, from, next) => { next('/') }
+      }, ...routes]
+    }
+  },
   generate: {
     routes: [
       // TODO: generate with {build: false} does not scans pages!

@@ -101,6 +101,11 @@ describe('basic ssr', () => {
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
   })
 
+  test('/before-enter', async () => {
+    const { html } = await nuxt.renderRoute('/before-enter')
+    expect(html.includes('<h1>Index page</h1>')).toBe(true)
+  })
+
   test('/redirect', async () => {
     const { html, redirected } = await nuxt.renderRoute('/redirect')
     expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
