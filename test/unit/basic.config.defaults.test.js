@@ -22,12 +22,12 @@ describe('basic config defaults', () => {
     expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
   })
 
-  test('globalName uses nuxt as default if not set', async () => {
+  test('globalName uses nuxt as default if not set', () => {
     const options = Options.from({})
     expect(options.globalName).toEqual('nuxt')
   })
 
-  test('globalName uses nuxt as default if set to something other than only letters', async () => {
+  test('globalName uses nuxt as default if set to something other than only letters', () => {
     let options = Options.from({ globalName: '12foo4' })
     expect(options.globalName).toEqual('nuxt')
 
