@@ -29,8 +29,8 @@ const vHr = { render: h => h('hr', { class: 'hr' }) }
 export default {
   components: {
     Post,
-    vP,
-    vHr
+    'v-p': vP,
+    'v-hr': vHr
   }
 }
 </script>
