@@ -3,8 +3,8 @@ const fs = require('fs')
 const { resolve } = require('path')
 const parseArgs = require('minimist')
 const consola = require('consola')
-const { Nuxt } = require('..')
-const { loadNuxtConfig, getLatestHost } = require('./common/utils')
+const { Nuxt } = require('../dist/nuxt-start')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -52,7 +52,7 @@ options.dev = false
 const nuxt = new Nuxt(options)
 
 // Setup hooks
-nuxt.hook('error', consola.fatal)
+nuxt.hook('error', err => consola.fatal(err))
 
 // Check if project is built for production
 const distDir = resolve(
@@ -76,7 +76,7 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
-const { port, host } = getLatestHost(argv)
+const { port, host } = nuxt.options.server
 
 nuxt.listen(port, host).then(() => {
   nuxt.showReady(false)

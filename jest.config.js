@@ -7,9 +7,11 @@ module.exports = {
   ],
   setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
+  transformIgnorePatterns: ['<rootDir>/node_modules/'],
   moduleFileExtensions: ['js', 'mjs', 'json'],
   expand: true,
-  forceExit: true,
+  forceExit: true
   // https://github.com/facebook/jest/pull/6747 fix warning here
-  detectOpenHandles: true
+  // But its performance overhead is pretty bad (30+%).
+  // detectOpenHandles: true
 }

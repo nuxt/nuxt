@@ -3,7 +3,10 @@ export default {
   transition: false,
   render: {
     http2: {
-      push: !process.env.APPVEYOR
+      push: true
     }
-  }
+  },
+  plugins: [
+    '~/plugins/error.js'
+  ]
 }

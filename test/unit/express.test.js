@@ -11,7 +11,7 @@ let server
 describe('express', () => {
   // Init nuxt.js and create express server
   beforeAll(async () => {
-    const config = loadFixture('basic')
+    const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
 
     port = await getPort()

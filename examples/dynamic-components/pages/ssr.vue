@@ -17,7 +17,7 @@ const components = {
   vText: () => import('@/components/text.vue' /* webpackChunkName: "components/text" */),
   vImage: () => import('@/components/image.vue' /* webpackChunkName: "components/image" */),
   vCode: () => import('@/components/code.vue' /* webpackChunkName: "components/code" */),
-  vChart: () => import('@/components/chart.js' /* webpackChunkName: "components/chart" */).then((m) => m.default())
+  vChart: () => import('@/components/chart.js' /* webpackChunkName: "components/chart" */).then(m => m.default())
 }
 
 export default {

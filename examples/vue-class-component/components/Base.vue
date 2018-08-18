@@ -13,12 +13,13 @@
 import Vue from 'vue'
 import Component from 'nuxt-class-component'
 
+export default
 @Component({
   props: {
     env: String
   }
 })
-export default class Base extends Vue {
+class Base extends Vue {
   // initial data
   msg = 123
 

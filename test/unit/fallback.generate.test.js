@@ -15,7 +15,7 @@ let generator = null
 
 describe('fallback generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
+    const config = await loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
@@ -57,7 +57,7 @@ describe('fallback generate', () => {
     expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
-  test('generate.fallback = true is transformed to /404.html', async () => {
+  test('generate.fallback = true is transformed to /404.html', () => {
     nuxt.options.generate.fallback = true
     const options = Options.from(nuxt.options)
     expect(options.generate.fallback).toBe('404.html')

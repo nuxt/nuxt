@@ -24,12 +24,13 @@ import * as people from '~/store/modules/people'
 const PeopleState = namespace(people.name, State)
 const PeopleGetter = namespace(people.name, Getter)
 
+export default
 @Component({
   components: {
     Card
   }
 })
-export default class extends Vue {
+class extends Vue {
   @PeopleState selected
   @PeopleState people
   @PeopleGetter selectedPerson

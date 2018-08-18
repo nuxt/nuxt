@@ -1,12 +1,10 @@
-import consola from 'consola'
-
 export default {
   hooks(hook) {
-    hook('build:done', builder => {
-      consola.success('Compiled successfully')
+    hook('build:done', () => {
+      process.stdout.write('Compiled successfully')
     })
     hook('listen', (server, { port, host }) => {
-      consola.success(`Listening on http://${host}:${port}`)
+      process.stdout.write(`Listening on http://${host}:${port}`)
     })
   }
 }

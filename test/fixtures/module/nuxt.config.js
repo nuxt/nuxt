@@ -13,14 +13,14 @@ export default {
   ],
   serverMiddleware: ['./modules/middleware/midd2'],
   hooks(hook) {
-    hook('ready', nuxt => {
+    hook('ready', (nuxt) => {
       nuxt.__ready_called__ = true
     })
-    hook('build:done', builder => {
+    hook('build:done', (builder) => {
       builder.__build_done__ = true
     })
     // Add hook for renderer
-    hook('render:before', renderer => {
+    hook('render:before', (renderer) => {
       renderer.useMiddleware({
         path: '/use-middleware',
         handler: '~/modules/middleware/use-middleware'

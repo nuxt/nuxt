@@ -1,5 +1,3 @@
-import consola from 'consola'
-
 export default {
   buildDir: '.nuxt-generate/.build',
   generate: {
@@ -8,9 +6,9 @@ export default {
   hooks(hook) {
     hook('generate:done', (generator, errors) => {
       if (!errors || errors.length === 0) {
-        consola.success('Generated successfully')
+        process.stdout.write('Generated successfully')
       } else {
-        consola.error('Generated failed')
+        process.stderr.write('Generated failed')
       }
     })
   }
