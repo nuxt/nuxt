@@ -10,7 +10,7 @@ let page = null
 
 describe('basic browser', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic')
+    const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

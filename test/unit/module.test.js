@@ -10,7 +10,7 @@ let nuxt = null
 
 describe('module', () => {
   beforeAll(async () => {
-    const config = loadFixture('module')
+    const config = await loadFixture('module')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -60,12 +60,8 @@ describe('module', () => {
   })
 
   test('AddVendor - deprecated', () => {
-    jest.spyOn(consola, 'warn')
-
     nuxt.moduleContainer.addVendor('nuxt-test')
     expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
-
-    consola.warn.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

@@ -16,7 +16,7 @@ let generator = null
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
+    const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
     const builder = new Builder(nuxt)
     builder.build = jest.fn()

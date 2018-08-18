@@ -8,7 +8,7 @@ let transpile = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {
+    const config = await loadFixture('basic', {
       dev: true,
       debug: true,
       buildDir: '.nuxt-dev',

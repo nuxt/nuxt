@@ -4,7 +4,7 @@ let port
 const url = route => 'http://localhost:' + port + route
 
 const startCspServer = async (csp, isProduction = true) => {
-  const options = loadFixture('basic', {
+  const options = await loadFixture('basic', {
     debug: !isProduction,
     render: { csp }
   })
