@@ -1,2 +1,2 @@
 
-import testModule from '../node_modules/test-module/dist/bundle'
+import '../node_modules/test-module/dist/bundle'
