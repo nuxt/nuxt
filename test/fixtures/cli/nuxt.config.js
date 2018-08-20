@@ -1,5 +1,8 @@
 export default {
-  serverMiddleware: ['~/middleware.js', () => {}],
+  serverMiddleware: [
+    '~/middleware.js',
+    (_, _, next) => next()
+  ],
   watch: ['~/custom.file'],
   hooks(hook) {
     hook('listen', (server, { port, host }) => {
