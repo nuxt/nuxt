@@ -195,6 +195,52 @@ describe('basic generate', () => {
     })
   })
 
+  test('/users/1 not found', async () => {
+    await remove(resolve(distDir, 'users'))
+    await expect(rp(url('/users/1'))).rejects.toMatchObject({
+      statusCode: 404,
+      response: {
+        body: expect.stringContaining('Cannot GET /users/1')
+      }
+    })
+  })
+
+  test('nuxt re-generating to test addRoutes hook', async () => {
+    const callCounts = []
+    generator.nuxt.options.generate.routes = ['/users/2']
+    generator.nuxt.hook('generate:page', ({route, path, html}) => {
+      if (route === '/users/2') {
+        generator.nuxt.hookOnce('generate:addRoutes', (routes, callCount) => {
+          callCounts.push(callCount)
+          Array.prototype.push.apply(routes, [
+            '/users/1',
+            { route: '/users/3', payload: { id: 300 } }
+          ])
+        })
+      }
+    })
+    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
+    expect(Math.max.apply(null, callCounts)).toBe(1)
+  })
+
+  test('/users/2.html', async () => {
+    const html = await rp(url('/users/2.html'))
+    expect(html.includes('<h1>User: 2</h1>')).toBe(true)
+    expect(existsSync(resolve(distDir, 'users/2.html'))).toBe(true)
+  })
+
+  test('/users/1.html', async () => {
+    const html = await rp(url('/users/1.html'))
+    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
+  })
+
+  test('/users/3.html', async () => {
+    const html = await rp(url('/users/3.html'))
+    expect(html.includes('<h1>User: 300</h1>')).toBe(true)
+    expect(existsSync(resolve(distDir, 'users/3.html'))).toBe(true)
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await server.close()
