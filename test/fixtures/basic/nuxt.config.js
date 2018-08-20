@@ -44,6 +44,11 @@ export default {
     ready(nuxt) {
       nuxt.__hook_called__ = true
     },
+    build: {
+      done(builder) {
+        builder.__hook_called__ = true
+      }
+    },
     bad: null,
     '': true
   },
