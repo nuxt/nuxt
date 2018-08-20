@@ -1,7 +1,7 @@
 export default {
   serverMiddleware: [
     '~/middleware.js',
-    (_, _, next) => next()
+    (req, res, next) => next()
   ],
   watch: ['~/custom.file'],
   hooks(hook) {
