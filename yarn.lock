@@ -8270,8 +8270,8 @@ vue-loader@^15.3.0:
     vue-style-loader "^4.1.0"
 
 vue-meta@^1.5.2:
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-1.5.2.tgz#f5bdbce34ddd296788988dbd4eaf3873a54bc57b"
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-1.5.3.tgz#469353e16ad12253431930558ba245f0986ed1c9"
   dependencies:
     deepmerge "^2.0.0"
     lodash.isplainobject "^4.0.6"
