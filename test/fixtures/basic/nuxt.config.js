@@ -34,6 +34,7 @@ export default {
     interval: 200,
     subFolders: true
   },
+  plugins: ['~/plugins/testModule'],
   head: {
     titleTemplate: (titleChunk) => {
       return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
