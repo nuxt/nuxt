@@ -4,6 +4,7 @@ let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
 let transpile = null
 
 describe('basic dev', () => {
@@ -26,9 +27,14 @@ describe('basic dev', () => {
       }
     })
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    builder = new Builder(nuxt)
+    await builder.build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')
+  })
+
+  test('Check build:done hook called', () => {
+    expect(builder.__hook_called__).toBe(true)
   })
 
   test('Config: build.transpile', () => {
