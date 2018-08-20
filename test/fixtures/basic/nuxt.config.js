@@ -42,11 +42,11 @@ export default {
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
     ready(nuxt) {
-      nuxt.__hook_called__ = true
+      nuxt.__hook_ready_called__ = true
     },
     build: {
       done(builder) {
-        builder.__hook_called__ = true
+        builder.__hook_built_called__ = true
       }
     },
     bad: null,
