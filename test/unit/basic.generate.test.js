@@ -40,7 +40,7 @@ describe('basic generate', () => {
   })
 
   test('Check ready hook called', () => {
-    expect(generator.nuxt.__hook_called__).toBe(true)
+    expect(generator.nuxt.__hook_ready_called__).toBe(true)
   })
 
   test('Format errors', () => {
