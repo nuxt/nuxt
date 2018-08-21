@@ -51,6 +51,10 @@ describe('basic dev', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
+  test('Check render:routeDone hook called', async () => {
+    expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
+  })
+
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {
   //   try {
   //     await rp(url('/_nuxt/test.hot-update.json'))
