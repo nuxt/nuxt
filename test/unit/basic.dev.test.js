@@ -51,7 +51,7 @@ describe('basic dev', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
-  test('Check render:routeDone hook called', async () => {
+  test('Check render:routeDone hook called', () => {
     expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
 
