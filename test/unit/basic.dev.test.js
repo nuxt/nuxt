@@ -34,7 +34,7 @@ describe('basic dev', () => {
   })
 
   test('Check build:done hook called', () => {
-    expect(builder.__hook_called__).toBe(true)
+    expect(builder.__hook_built_called__).toBe(true)
   })
 
   test('Config: build.transpile', () => {
