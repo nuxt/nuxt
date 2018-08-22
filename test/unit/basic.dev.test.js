@@ -1,3 +1,4 @@
+import consola from 'consola'
 import { Builder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
@@ -16,8 +17,8 @@ describe('basic dev', () => {
       buildDir: '.nuxt-dev',
       build: {
         filenames: {
-          app: () => {
-            return 'test-app.[contenthash].js'
+          app: ({ isDev }) => {
+            return isDev ? 'test-app.js' : 'test-app.[contenthash].js'
           },
           chunk: 'test-[name].[contenthash].js'
         },
@@ -54,9 +55,11 @@ describe('basic dev', () => {
   })
 
   test('Config: build.filenames', () => {
-    expect(typeof output.filename).toBe('function')
-    expect(output.filename()).toBe('test-app.js')
-    expect(output.chunkFilename).toBe('test-[name].js')
+    expect(output.filename).toBe('test-app.js')
+    expect(output.chunkFilename).toBe('test-[name].[contenthash].js')
+    expect(consola.warn).toBeCalledWith(
+      'Notice: Please do not use contenthash in dev mode to prevent memory leak'
+    )
   })
 
   test('/stateless', async () => {
