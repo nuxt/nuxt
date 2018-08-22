@@ -8,7 +8,7 @@ let nuxt = null
 
 describe('basic ssr', () => {
   beforeAll(async () => {
-    const options = loadFixture('basic')
+    const options = await loadFixture('basic')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.listen(port, '0.0.0.0')
@@ -99,6 +99,11 @@ describe('basic ssr', () => {
   test('/validate?valid=true', async () => {
     const { html } = await nuxt.renderRoute('/validate?valid=true')
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/before-enter', async () => {
+    const { html } = await nuxt.renderRoute('/before-enter')
+    expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
 
   test('/redirect', async () => {

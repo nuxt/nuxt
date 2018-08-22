@@ -63,7 +63,7 @@ const stressTest = async (_url, concurrency = 2, steps = 4) => {
 
 describe('ssr', () => {
   beforeAll(async () => {
-    const config = loadFixture('ssr')
+    const config = await loadFixture('ssr')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

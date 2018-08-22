@@ -1,0 +1,12 @@
+{
+  "name": "examples-routes-meta",
+  "dependencies": {
+    "nuxt": "latest",
+    "wingcss": "^1.0.0-beta"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

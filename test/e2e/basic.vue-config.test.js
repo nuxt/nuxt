@@ -9,7 +9,7 @@ let nuxt = null
 let page = null
 
 const startServer = async (type = 'basic') => {
-  const config = loadFixture(type)
+  const config = await loadFixture(type)
   nuxt = new Nuxt(config)
   port = await getPort()
   await nuxt.listen(port, 'localhost')

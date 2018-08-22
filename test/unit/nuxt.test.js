@@ -7,7 +7,7 @@ describe('nuxt', () => {
   })
 
   test('Nuxt.js Instance', async () => {
-    const config = loadFixture('empty')
+    const config = await loadFixture('empty')
     const nuxt = new Nuxt(config)
 
     expect(typeof nuxt).toBe('object')

@@ -4,11 +4,12 @@ let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
 let transpile = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {
+    const config = await loadFixture('basic', {
       dev: true,
       debug: true,
       buildDir: '.nuxt-dev',
@@ -26,9 +27,14 @@ describe('basic dev', () => {
       }
     })
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    builder = new Builder(nuxt)
+    await builder.build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')
+  })
+
+  test('Check build:done hook called', () => {
+    expect(builder.__hook_built_called__).toBe(true)
   })
 
   test('Config: build.transpile', () => {
@@ -43,6 +49,10 @@ describe('basic dev', () => {
     const window = await nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
+  })
+
+  test('Check render:routeDone hook called', () => {
+    expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
 
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {
