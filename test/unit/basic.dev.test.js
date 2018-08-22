@@ -6,7 +6,7 @@ const url = route => 'http://localhost:' + port + route
 let nuxt = null
 let builder = null
 let transpile = null
-let appFileName = null
+let output = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -18,17 +18,18 @@ describe('basic dev', () => {
         filenames: {
           app: () => {
             return 'test-app.[contenthash].js'
-          }
+          },
+          chunk: 'test-[name].[contenthash].js'
         },
         transpile: [
           'vue\\.test\\.js',
           /vue-test/
         ],
-        extend({ module: { rules }, output: { filename } }, { isClient }) {
+        extend({ module: { rules }, output: wpOutput }, { isClient }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)
-            appFileName = filename
+            output = wpOutput
           }
         }
       }
@@ -52,8 +53,10 @@ describe('basic dev', () => {
     expect(transpile('node_modules/test.vue.js')).toBe(true)
   })
 
-  test('Config: build.filenames as function', () => {
-    expect(appFileName).toBe('test-app.js')
+  test('Config: build.filenames', () => {
+    expect(typeof output.filename).toBe('function')
+    expect(output.filename()).toBe('test-app.js')
+    expect(output.chunkFilename).toBe('test-[name].js')
   })
 
   test('/stateless', async () => {
