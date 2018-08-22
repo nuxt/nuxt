@@ -43,7 +43,13 @@ describe('spa', () => {
   test('/error-handler', async () => {
     await renderRoute('/error-handler')
     const { html } = await renderRoute('/error-handler')
-    expect(html).toMatch('error handler triggered')
+    expect(html).toMatch('error handler triggered: fetch error!')
+  })
+
+  test('/error-handler-async', async () => {
+    await renderRoute('/error-handler-async')
+    const { html } = await renderRoute('/error-handler-async')
+    expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
   test('/_nuxt/ (access publicPath in spa mode)', async () => {
