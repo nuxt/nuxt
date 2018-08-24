@@ -139,7 +139,8 @@ describe('basic ssr', () => {
   test('/special-state -> check window.__NUXT__.test = true', async () => {
     const window = await nuxt.renderAndGetWindow(url('/special-state'))
     expect(window.document.title).toBe('Nuxt.js')
-    expect(window.__NUXT__.test).toBe(true)
+    const ctx = Buffer.from(window.__NUXT__, 'base64').toString('utf-8')
+    expect(ctx.test).toBe(true)
   })
 
   test('/error', async () => {

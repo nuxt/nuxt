@@ -50,7 +50,8 @@ describe('with-config', () => {
     const window = await nuxt.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('default')
+    const ctx = Buffer.from(window.__NUXT__, 'base64').toString('utf-8')
+    expect(ctx.layout).toBe('default')
     expect(html.includes('<h1>Default layout</h1>')).toBe(true)
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
 
@@ -60,7 +61,8 @@ describe('with-config', () => {
   test('/test/about (custom layout)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/about'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('custom')
+    const ctx = Buffer.from(window.__NUXT__, 'base64').toString('utf-8')
+    expect(ctx.layout).toBe('custom')
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
@@ -68,7 +70,8 @@ describe('with-config', () => {
   test('/test/desktop (custom layout in desktop folder)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('desktop/default')
+    const ctx = Buffer.from(window.__NUXT__, 'base64').toString('utf-8')
+    expect(ctx.layout).toBe('desktop/default')
     expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
     expect(html.includes('<h1>Desktop page</h1>')).toBe(true)
   })
@@ -76,7 +79,8 @@ describe('with-config', () => {
   test('/test/mobile (custom layout in mobile folder)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('mobile/default')
+    const ctx = Buffer.from(window.__NUXT__, 'base64').toString('utf-8')
+    expect(ctx.layout).toBe('mobile/default')
     expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
     expect(html.includes('<h1>Mobile page</h1>')).toBe(true)
   })
