@@ -138,7 +138,7 @@
   "devDependencies": {
     "@babel/plugin-external-helpers": "7.0.0-rc.2",
     "@babel/polyfill": "7.0.0-rc.2",
-    "@babel/preset-env": "^7.0.0-rc.2",
+    "@babel/preset-env": "7.0.0-rc.2",
     "babel-core": "^7.0.0-0",
     "babel-eslint": "^9.0.0-beta",
     "babel-jest": "^23.4.2",

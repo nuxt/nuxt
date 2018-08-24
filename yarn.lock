@@ -560,7 +560,7 @@
     core-js "^2.5.7"
     regenerator-runtime "^0.11.1"
 
-"@babel/preset-env@7.0.0-rc.2", "@babel/preset-env@^7.0.0-rc.2":
+"@babel/preset-env@7.0.0-rc.2":
   version "7.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/@babel/preset-env/-/preset-env-7.0.0-rc.2.tgz#66f7ed731234b67ee9a6189f1df60203873ac98b"
   dependencies:
