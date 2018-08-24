@@ -71,7 +71,7 @@
   },
   "dependencies": {
     "@babel/core": "7.0.0-rc.2",
-    "@nuxtjs/babel-preset-app": "^0.3.0",
+    "@nuxtjs/babel-preset-app": "0.4.0",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/youch": "^4.2.3",
     "babel-loader": "^8.0.0-beta.6",
