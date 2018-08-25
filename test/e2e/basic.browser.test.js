@@ -124,7 +124,7 @@ describe('basic browser', () => {
   })
 
   test('/validate-async should display a 404', async () => {
-    await page.nuxt.navigate('/validate-async')
+    await page.nuxt.page(url('/validate-async'))
 
     const error = await page.nuxt.errorData()
 
