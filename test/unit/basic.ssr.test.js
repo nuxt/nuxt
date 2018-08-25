@@ -96,8 +96,18 @@ describe('basic ssr', () => {
     expect(html.includes('This page could not be found')).toBe(true)
   })
 
+  test('/validate-async should display a 404', async () => {
+    const { html } = await nuxt.renderRoute('/validate-async')
+    expect(html.includes('This page could not be found')).toBe(true)
+  })
+
   test('/validate?valid=true', async () => {
     const { html } = await nuxt.renderRoute('/validate?valid=true')
+    expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/validate-async?valid=true', async () => {
+    const { html } = await nuxt.renderRoute('/validate-async?valid=true')
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
   })
 
