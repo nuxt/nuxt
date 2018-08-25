@@ -8,7 +8,7 @@ export default {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(query.valid)
-      }, 2000)
+      }, 500)
     })
   }
 }
