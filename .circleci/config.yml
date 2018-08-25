@@ -49,7 +49,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn build && yarn test:fixtures && yarn coverage
+          command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -65,7 +65,7 @@ jobs:
           at: ~/project
       - run:
           name: Unit Test
-          command: yarn test:unit && yarn coverage
+          command: yarn test:unit -w=4 --coverage && yarn coverage
     environment:
       - NODE_ENV: "test"
 

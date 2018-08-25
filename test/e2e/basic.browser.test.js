@@ -10,7 +10,7 @@ let page = null
 
 describe('basic browser', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic')
+    const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -27,6 +27,20 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('Index page')
   })
 
+  test('/noloading', async () => {
+    const { hook } = await page.nuxt.navigate('/noloading')
+    const loading = await page.nuxt.loadingData()
+    expect(loading.show).toBe(true)
+    await hook
+    expect(loading.show).toBe(true)
+    await page.waitForFunction(
+      `$nuxt.$loading.$data.show === false`
+    )
+    await page.waitForFunction(
+      `document.querySelector('p').innerText === 'true'`
+    )
+  })
+
   test('/stateless', async () => {
     const { hook } = await page.nuxt.navigate('/stateless', false)
     const loading = await page.nuxt.loadingData()
@@ -40,7 +54,13 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/css')
 
     expect(await page.$text('.red')).toBe('This is red')
-    expect(await page.$eval('.red', red => window.getComputedStyle(red).color)).toBe('rgb(255, 0, 0)')
+    expect(await page.$eval('.red', (red) => {
+      const { color, backgroundColor } = window.getComputedStyle(red)
+      return { color, backgroundColor }
+    })).toEqual({
+      color: 'rgb(255, 0, 0)',
+      backgroundColor: 'rgb(0, 0, 255)'
+    })
   })
 
   test.skip('/stateful', async () => {

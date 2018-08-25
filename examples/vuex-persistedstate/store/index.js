@@ -5,8 +5,8 @@ export const state = () => ({
 })
 
 export const mutations = {
-  increment: (state) => state.counter++,
-  decrement: (state) => state.counter--
+  increment: state => state.counter++,
+  decrement: state => state.counter--
 }
 
 export const plugins = [

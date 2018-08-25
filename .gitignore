@@ -7,6 +7,7 @@ package-lock.json
 # Logs
 *.log
 npm-debug.log*
+yarn-error.log*
 
 # Other
 .nuxt*

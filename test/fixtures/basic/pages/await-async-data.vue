@@ -4,7 +4,7 @@
 
 <script>
 const fetchData = () => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => resolve({ name: 'Await Nuxt.js' }), 10)
   })
 }

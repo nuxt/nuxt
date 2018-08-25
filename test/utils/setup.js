@@ -1,10 +1,16 @@
-// eslint-disable
-require('babel-polyfill')
 
-const consola = require('consola')
+const isAppveyor = !!process.env.APPVEYOR
+describe.skip.appveyor = isAppveyor ? describe.skip : describe
+test.skip.appveyor = isAppveyor ? test.skip : test
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 60 * 1000
-
-consola.clear().add({
-  log: jest.fn()
+jest.setTimeout(60000)
+jest.mock('consola', () => {
+  const consola = {}
+  for (const level of [
+    'fatal', 'error', 'warn', 'log', 'info',
+    'start', 'success', 'ready', 'debug', 'trace'
+  ]) {
+    consola[level] = jest.fn()
+  }
+  return consola
 })

@@ -11,7 +11,7 @@ const dates = {}
 
 describe('children patch (browser)', () => {
   beforeAll(async () => {
-    const options = loadFixture('children')
+    const options = await loadFixture('children')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

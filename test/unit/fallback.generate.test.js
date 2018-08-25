@@ -15,7 +15,7 @@ let generator = null
 
 describe('fallback generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
+    const config = await loadFixture('basic', {generate: {dir: '.nuxt-generate-fallback'}})
 
     nuxt = new Nuxt(config)
     generator = new Generator(nuxt)
@@ -57,7 +57,24 @@ describe('fallback generate', () => {
     expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
-  test('generate.fallback = true is transformed to /404.html', async () => {
+  test('nuxt re-generating with generate.fallback = \'\'', async () => {
+    nuxt.options.generate.fallback = ''
+    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
+  })
+
+  test('empty string creates no fallback', async () => {
+    await expect(rp(url('/200.html'))).rejects.toMatchObject({
+      statusCode: 404,
+      response: {
+        body: expect.stringContaining('Cannot GET /200.html')
+      }
+    })
+
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
+  })
+
+  test('generate.fallback = true is transformed to /404.html', () => {
     nuxt.options.generate.fallback = true
     const options = Options.from(nuxt.options)
     expect(options.generate.fallback).toBe('404.html')
@@ -70,6 +87,15 @@ describe('fallback generate', () => {
       await expect(generator.generate({ build: false })).resolves.toBeTruthy()
     }
   )
+
+  test('spa-fallback.html was created', async () => {
+    const html = await rp(url('/spa-fallback.html'))
+    expect(html.includes('<h1>Index page</h1>')).toBe(false)
+    expect(html.includes('data-server-rendered')).toBe(false)
+    expect(existsSync(resolve(distDir, 'spa-fallback.html'))).toBe(true)
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(false)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
+  })
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {

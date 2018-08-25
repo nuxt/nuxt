@@ -11,7 +11,7 @@ export default {
     return !isNaN(+params.id)
   },
   asyncData({ params, env, error }) {
-    const user = env.users.find((user) => String(user.id) === params.id)
+    const user = env.users.find(user => String(user.id) === params.id)
     if (!user) {
       return error({ message: 'User not found', statusCode: 404 })
     }

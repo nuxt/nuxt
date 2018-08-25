@@ -1,4 +1,5 @@
 import { normalize } from 'path'
+import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
@@ -9,7 +10,7 @@ let nuxt = null
 
 describe('module', () => {
   beforeAll(async () => {
-    const config = loadFixture('module')
+    const config = await loadFixture('module')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -30,12 +31,12 @@ describe('module', () => {
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
   })
 
-  test('Hooks', async () => {
+  test('Hooks', () => {
     expect(nuxt.__module_hook).toBe(1)
     expect(nuxt.__renderer_hook).toBe(2)
   })
 
-  test('Hooks - Functional', async () => {
+  test('Hooks - Functional', () => {
     expect(nuxt.__ready_called__).toBe(true)
   })
 
@@ -44,18 +45,23 @@ describe('module', () => {
   // })
 
   test('Middleware', async () => {
-    let response = await rp(url('/api'))
+    const response = await rp(url('/api'))
     expect(response).toBe('It works!')
   })
 
   test('Hooks - Use external middleware before render', async () => {
-    let response = await rp(url('/use-middleware'))
+    const response = await rp(url('/use-middleware'))
     expect(response).toBe('Use external middleware')
   })
 
   test('Hooks - render context', async () => {
     await nuxt.renderRoute('/render-context')
     expect(nuxt.__render_context).toBeTruthy()
+  })
+
+  test('AddVendor - deprecated', () => {
+    nuxt.moduleContainer.addVendor('nuxt-test')
+    expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
   })
 
   // Close server and ask nuxt to stop listening to file changes

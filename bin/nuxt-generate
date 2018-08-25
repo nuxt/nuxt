@@ -45,7 +45,7 @@ const generator = new Generator(nuxt, builder)
 
 const generateOptions = {
   init: true,
-  build: argv['build']
+  build: argv.build
 }
 
 generator
@@ -53,4 +53,4 @@ generator
   .then(() => {
     process.exit(0)
   })
-  .catch(error => consola.fatal(error))
+  .catch(err => consola.fatal(err))

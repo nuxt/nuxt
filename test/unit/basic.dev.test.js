@@ -1,38 +1,52 @@
-import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
+import consola from 'consola'
+import { Builder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
 let transpile = null
+let output = null
 
 describe('basic dev', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', {
+    const config = await loadFixture('basic', {
       dev: true,
       debug: true,
       buildDir: '.nuxt-dev',
       build: {
-        stats: 'none',
+        filenames: {
+          app: ({ isDev }) => {
+            return isDev ? 'test-app.js' : 'test-app.[contenthash].js'
+          },
+          chunk: 'test-[name].[contenthash].js'
+        },
         transpile: [
           'vue\\.test\\.js',
           /vue-test/
         ],
-        extend({ module: { rules } }, { isClient }) {
+        extend({ module: { rules }, output: wpOutput }, { isClient }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
-            transpile = (file) => !babelLoader.exclude(file)
+            transpile = file => !babelLoader.exclude(file)
+            output = wpOutput
           }
         }
       }
     })
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    builder = new Builder(nuxt)
+    await builder.build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')
   })
 
-  test('Config: build.transpile', async () => {
+  test('Check build:done hook called', () => {
+    expect(builder.__hook_built_called__).toBe(true)
+  })
+
+  test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
     expect(transpile('node_modules/test.js')).toBe(false)
     expect(transpile('node_modules/vue-test')).toBe(true)
@@ -40,10 +54,22 @@ describe('basic dev', () => {
     expect(transpile('node_modules/test.vue.js')).toBe(true)
   })
 
+  test('Config: build.filenames', () => {
+    expect(output.filename).toBe('test-app.js')
+    expect(output.chunkFilename).toBe('test-[name].[contenthash].js')
+    expect(consola.warn).toBeCalledWith(
+      'Notice: Please do not use contenthash in dev mode to prevent memory leak'
+    )
+  })
+
   test('/stateless', async () => {
     const window = await nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
+  })
+
+  test('Check render:routeDone hook called', () => {
+    expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
 
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {

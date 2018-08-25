@@ -1,8 +1,8 @@
 <template>
   <div>
     <h4>_slug: <i data-date-child-slug>{{ date }}</i></h4>
-    <input ref="search" data-test-search-input type="text" v-model="q" @input="update"/>
-    <ul><li data-test-search-result v-for="s in searchResults" :key="s">{{ s }}</li></ul>
+    <input ref="search" v-model="q" data-test-search-input type="text" @input="update">
+    <ul><li v-for="s in searchResults" :key="s" data-test-search-result>{{ s }}</li></ul>
   </div>
 </template>
 
@@ -14,16 +14,21 @@ const countries = [
   'Czech Republic',
   'Netherlands'
 ]
-async function search(q) {
+function search(q) {
   q = String(q || '').toLowerCase()
 
   return new Promise((resolve) => {
-    const searchResults = countries.filter((s) => s.toLowerCase().includes(q))
+    const searchResults = countries.filter(s => s.toLowerCase().includes(q))
     setTimeout(() => resolve(searchResults), 100)
   })
 }
 
 export default {
+  data() {
+    return {
+      q: this.$route.query.q || ''
+    }
+  },
   watch: {
     '$route.query.q': async function (q) {
       this.searchResults = await search(q)
@@ -34,11 +39,6 @@ export default {
     return {
       searchResults,
       date: Date.now()
-    }
-  },
-  data() {
-    return {
-      q: this.$route.query.q || ''
     }
   },
   mounted() {

@@ -9,4 +9,3 @@ export default {
   layout: 'desktop/default'
 }
 </script>
-

@@ -1,98 +1,79 @@
-import { exec, spawn } from 'child_process'
-import { resolve } from 'path'
-import { promisify } from 'util'
-import { Utils, rp } from '../utils'
-
-const execify = promisify(exec)
-const rootDir = resolve(__dirname, '..', 'fixtures/basic')
+import { spawn } from 'child_process'
+import { resolve, join } from 'path'
+import { writeFileSync } from 'fs-extra'
+import { getPort, rp, waitUntil, Utils } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
+const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
-describe.skip('cli', () => {
-  test('nuxt build', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} build ${rootDir}`)
+const close = async (nuxtInt) => {
+  nuxtInt.kill('SIGKILL')
+  // Wait max 10s for the process to be killed
+  if (await waitUntil(() => nuxtInt.killed, 10)) {
+    // eslint-disable-next-line no-console
+    console.warn(`Unable to close process with pid: ${nuxtInt.pid}`)
+  }
+}
 
-    expect(stdout.includes('Compiled successfully')).toBe(true)
-  })
+describe.skip.appveyor('cli', () => {
+  test('nuxt dev', async () => {
+    let stdout = ''
+    const env = process.env
+    env.PORT = port = await getPort()
 
-  test('nuxt build -> error config', async () => {
-    await expect(execify(`node ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
-      stderr: expect.stringContaining('Could not load config file')
-    })
+    const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
+    nuxtDev.stdout.on('data', (data) => { stdout += data })
+
+    // Wait max 20s for the starting
+    await waitUntil(() => stdout.includes(`${port}`))
+
+    // Change file specified in `watchers` (nuxt.config.js)
+    const customFilePath = join(rootDir, 'custom.file')
+    writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
+
+    // Change file specified in `serverMiddleware` (nuxt.config.js)
+    const serverMiddlewarePath = join(rootDir, 'middleware.js')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
+
+    // Wait 2s for picking up changes
+    await Utils.waitFor(2000)
+
+    // [Add actual test for changes here]
+
+    await close(nuxtDev)
   })
 
   test('nuxt start', async () => {
     let stdout = ''
-    // let stderr = ''
     let error
-    let exitCode
 
     const env = process.env
-    env.PORT = port
+    env.PORT = port = await getPort()
 
-    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env: env })
-
-    nuxtStart.stdout.on('data', data => {
-      stdout += data
+    await new Promise((resolve) => {
+      const nuxtBuild = spawn('node', [nuxtBin, 'build', rootDir], { env })
+      nuxtBuild.on('close', () => { resolve() })
     })
 
-    nuxtStart.stderr.on('data', data => {
-      // stderr += data
-    })
+    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
 
-    nuxtStart.on('error', err => {
-      error = err
-    })
+    nuxtStart.stdout.on('data', (data) => { stdout += data })
+    nuxtStart.on('error', (err) => { error = err })
 
-    nuxtStart.on('close', code => {
-      exitCode = code
-    })
-
-    // Give the process max 20s to start
-    let iterator = 0
-    while (!stdout.includes('OPEN') && iterator < 80) {
-      await Utils.waitFor(250)
-      iterator++
-    }
-
-    if (iterator === 80) {
-      test.log('WARN: server failed to start successfully in 20 seconds')
+    // Wait max 40s for the starting
+    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
+      error = 'server failed to start successfully in 40 seconds'
     }
 
     expect(error).toBe(undefined)
-    expect(stdout.includes('OPEN')).toBe(true)
+    expect(stdout.includes('Listening on')).toBe(true)
 
-    const html = await rp(url('/users/1'))
-    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+    const html = await rp(url('/'))
+    expect(html).toMatch(('<div>CLI Test</div>'))
 
-    nuxtStart.kill()
-
-    // Wait max 10s for the process to be killed
-    iterator = 0
-    // eslint-disable-next-line  no-unmodified-loop-condition
-    while (exitCode === undefined && iterator < 40) {
-      await Utils.waitFor(250)
-      iterator++
-    }
-
-    if (iterator >= 40) {
-      // eslint-disable-line no-console
-      test.log(
-        `WARN: we were unable to automatically kill the child process with pid: ${
-          nuxtStart.pid
-        }`
-      )
-    }
-
-    expect(exitCode).toBe(null)
-  })
-
-  test('nuxt generate', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} generate ${rootDir}`)
-
-    expect(stdout.includes('vue-ssr-client-manifest.json')).toBe(true)
+    await close(nuxtStart)
   })
 })

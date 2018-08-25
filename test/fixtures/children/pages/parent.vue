@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>I am the {{ name }}</h1>
-    <nuxt-child></nuxt-child>
+    <nuxt-child/>
   </div>
 </template>
 

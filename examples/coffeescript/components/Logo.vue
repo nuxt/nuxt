@@ -1,9 +1,9 @@
 <template>
   <div class="VueToNuxtLogo">
-    <div class="Triangle Triangle--two"></div>
-    <div class="Triangle Triangle--one"></div>
-    <div class="Triangle Triangle--three"></div>
-    <div class="Triangle Triangle--four"></div>
+    <div class="Triangle Triangle--two"/>
+    <div class="Triangle Triangle--one"/>
+    <div class="Triangle Triangle--three"/>
+    <div class="Triangle Triangle--four"/>
   </div>
 </template>
 
