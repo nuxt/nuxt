@@ -111,6 +111,18 @@ describe('basic ssr', () => {
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
   })
 
+  test('/validate?error=403', async () => {
+    const { html, error } = await nuxt.renderRoute('/validate?error=403')
+    expect(error).toMatchObject({ statusCode: 403, message: 'Custom Error' })
+    expect(html.includes('Custom Error')).toBe(true)
+  })
+
+  test('/validate-async?error=503', async () => {
+    const { html, error } = await nuxt.renderRoute('/validate-async?error=503')
+    expect(error).toMatchObject({ statusCode: 503, message: 'Custom Error' })
+    expect(html.includes('Custom Error')).toBe(true)
+  })
+
   test('/before-enter', async () => {
     const { html } = await nuxt.renderRoute('/before-enter')
     expect(html.includes('<h1>Index page</h1>')).toBe(true)
