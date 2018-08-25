@@ -123,8 +123,23 @@ describe('basic browser', () => {
     expect(error.message).toBe('This page could not be found')
   })
 
+  test('/validate-async should display a 404', async () => {
+    await page.nuxt.navigate('/validate-async')
+
+    const error = await page.nuxt.errorData()
+
+    expect(error.statusCode).toBe(404)
+    expect(error.message).toBe('This page could not be found')
+  })
+
   test('/validate?valid=true', async () => {
     await page.nuxt.navigate('/validate?valid=true')
+
+    expect(await page.$text('h1')).toBe('I am valid')
+  })
+
+  test('/validate-async?valid=true', async () => {
+    await page.nuxt.navigate('/validate-async?valid=true')
 
     expect(await page.$text('h1')).toBe('I am valid')
   })
