@@ -7,7 +7,7 @@ export default {
   validate({ query }) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(query.valid)
+        resolve(Boolean(query.valid))
       }, 500)
     })
   }
