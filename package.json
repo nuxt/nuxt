@@ -133,6 +133,7 @@
     "webpack-dev-middleware": "^3.2.0",
     "webpack-hot-client": "^4.1.1",
     "webpack-node-externals": "^1.7.2",
+    "webpack-serve-overlay": "^0.3.0",
     "webpackbar": "^2.6.3"
   },
   "devDependencies": {
