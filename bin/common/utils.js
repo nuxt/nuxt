@@ -38,6 +38,10 @@ exports.getLatestHost = argv => {
     argv.hostname ||
     process.env.HOST ||
     process.env.npm_package_config_nuxt_host
+  const unix =
+    argv['unix-socket'] ||
+    process.env.UNIX_SOCKET ||
+    process.env.npm_package_config_unix_socket
 
-  return { port, host }
+  return { port, host, unix }
 }
