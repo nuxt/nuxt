@@ -15,9 +15,6 @@ export default config({
             'modules': false
           }
         ]
-      ],
-      plugins: [
-        '@babel/external-helpers'
       ]
     })
   ]
