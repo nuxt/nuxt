@@ -2,9 +2,16 @@
 
 const { resolve } = require('path')
 const { spawnSync } = require('child_process')
-const { readFileSync, writeFileSync } = require('fs-extra')
+const { readFileSync, writeFileSync, copySync, ensureDirSync } = require('fs-extra')
 
 class NuxtEdgePublisher {
+  static copyBin(moduleName, binName) {
+    const binFile = resolve(__dirname, 'bin', binName)
+    const moduleBin = resolve(__dirname, moduleName, 'bin')
+    ensureDirSync(moduleBin)
+    copySync(binFile, resolve(moduleBin, binName))
+  }
+
   static changePackageName(module = '') {
     // paths
     const packagePath = resolve(__dirname, '..', module, 'package.json')
@@ -34,6 +41,10 @@ class NuxtEdgePublisher {
 
     // Write package.json
     writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
+
+    if (module === 'start') {
+      this.copyBin('start', 'nuxt-start')
+    }
 
     return p
   }
