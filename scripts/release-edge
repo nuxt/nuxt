@@ -6,8 +6,8 @@ const { readFileSync, writeFileSync, copySync, ensureDirSync } = require('fs-ext
 
 class NuxtEdgePublisher {
   static copyBin(moduleName, binName) {
-    const binFile = resolve(__dirname, 'bin', binName)
-    const moduleBin = resolve(__dirname, moduleName, 'bin')
+    const binFile = resolve(__dirname, '..', 'bin', binName)
+    const moduleBin = resolve(__dirname, '..', moduleName, 'bin')
     ensureDirSync(moduleBin)
     copySync(binFile, resolve(moduleBin, binName))
   }
