@@ -13,6 +13,14 @@ class NuxtEdgePublisher {
     }
   }
 
+  static updateDeps(moduleName, packageObj) {
+    const dependencies = require(`./data/dependencies/${moduleName}.json`)
+    const { dependencies: rootDeps } = JSON.parse(readFileSync(resolve(__dirname, '..', 'package.json'), 'utf-8'))
+    for (const dep of dependencies) {
+      packageObj.dependencies[dep] = rootDeps[dep]
+    }
+  }
+
   static changePackageName(module = '') {
     // paths
     const packagePath = resolve(__dirname, '..', module, 'package.json')
@@ -40,13 +48,14 @@ class NuxtEdgePublisher {
     const baseVersion = p.version.split('-')[0]
     p.version = `${baseVersion}-${date}.${gitCommit}`
 
-    // Write package.json
-    writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
-
     if (module === 'start') {
+      this.updateDeps('start', p)
       this.copyFiles(module, 'dist', ['nuxt-start.js'])
       this.copyFiles(module, 'bin', ['nuxt-start', join('common', 'utils.js')])
     }
+
+    // Write package.json
+    writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
 
     return p
   }
