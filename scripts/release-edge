@@ -4,18 +4,39 @@ const { resolve, join } = require('path')
 const { spawnSync } = require('child_process')
 const { readFileSync, writeFileSync, copySync } = require('fs-extra')
 
+const rootDir = resolve(__dirname, '..')
+
 class NuxtEdgePublisher {
   static copyFiles(moduleName, src, fieNames) {
-    const srcDir = resolve(__dirname, '..', src)
-    const moduleDir = resolve(__dirname, '..', moduleName, src)
+    const srcDir = resolve(rootDir, src)
+    const moduleDir = resolve(rootDir, moduleName, src)
     for (const file of fieNames) {
       copySync(resolve(srcDir, file), resolve(moduleDir, file))
     }
   }
 
+  static updateDeps(moduleName, packageObj, bundleFile) {
+    const { dependencies: rootDeps } = JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf-8'))
+    // Required and Excluded packages for start
+    const requires = {'minimist': true}
+    const requireRegex = /require\('([-@/\w]+)'\)/g
+    const rawCore = readFileSync(resolve(rootDir, bundleFile))
+    let match = requireRegex.exec(rawCore)
+    while (match) {
+      requires[match[1]] = true
+      match = requireRegex.exec(rawCore)
+    }
+
+    for (const dep in rootDeps) {
+      if (requires[dep]) {
+        packageObj.dependencies[dep] = rootDeps[dep]
+      }
+    }
+  }
+
   static changePackageName(module = '') {
     // paths
-    const packagePath = resolve(__dirname, '..', module, 'package.json')
+    const packagePath = resolve(rootDir, module, 'package.json')
 
     // Read original contents of package.json
     const originalPackage = readFileSync(packagePath, 'utf-8')
@@ -40,13 +61,14 @@ class NuxtEdgePublisher {
     const baseVersion = p.version.split('-')[0]
     p.version = `${baseVersion}-${date}.${gitCommit}`
 
-    // Write package.json
-    writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
-
     if (module === 'start') {
+      this.updateDeps('start', p, join('dist', 'nuxt-start.js'))
       this.copyFiles(module, 'dist', ['nuxt-start.js'])
       this.copyFiles(module, 'bin', ['nuxt-start', join('common', 'utils.js')])
     }
+
+    // Write package.json
+    writeFileSync(packagePath, JSON.stringify(p, null, 2) + '\r\n')
 
     return p
   }
@@ -70,7 +92,7 @@ class NuxtEdgePublisher {
 
     // Do publish
     const { status, output } = spawnSync('npm', `publish --tag ${tag}`.split(' '), {
-      cwd: resolve(__dirname, '..', module)
+      cwd: resolve(rootDir, module)
     })
 
     // eslint-disable-next-line no-console
