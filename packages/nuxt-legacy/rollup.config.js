@@ -1,10 +1,10 @@
 import babel from 'rollup-plugin-babel'
-
-import config from './rollup.config'
+import config from '../../scripts/rollup.config'
+import pkg from './package.json'
 
 export default config({
-  name: 'nuxt-legacy',
-  input: './lib/nuxt-legacy.js',
+  pkg,
+  input: './src/index.js',
   plugins: [
     babel({
       exclude: 'node_modules/**',

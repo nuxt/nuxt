@@ -49,7 +49,7 @@
   },
   "scripts": {
     "build": "yarn build:nuxt && yarn build:nuxt-start && yarn build:nuxt-legacy",
-    "build:nuxt": "cross-env NODE_ENV=production rollup -c scripts/rollup/nuxt.js",
+    "build:nuxt": "cross-env NODE_ENV=production rollup -c",
     "build:nuxt-legacy": "cross-env NODE_ENV=production rollup -c scripts/rollup/nuxt-legacy.js",
     "build:nuxt-start": "cross-env NODE_ENV=production rollup -c scripts/rollup/nuxt-start.js",
     "build:make-start": "node scripts/make-start",
