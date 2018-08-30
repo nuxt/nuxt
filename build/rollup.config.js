@@ -1,26 +1,32 @@
+import path from 'path'
+import { readJSONSync } from 'fs-extra'
 import json from 'rollup-plugin-json'
 import commonjs from 'rollup-plugin-commonjs'
 import license from 'rollup-plugin-license'
 import defaultsDeep from 'lodash/defaultsDeep'
+import builtin from './builtin.json'
 
-export default function rollupFactory({ pkg, input, plugins = [], options }) {
+export default function rollupConfigFactory({
+  rootDir = process.cwd(),
+  plugins = [],
+  input = 'src/index.js',
+  ...options
+}) {
+  const pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
+
   return defaultsDeep({}, options, {
-    input,
+    input: path.resolve(rootDir, input),
     output: {
-      file: `dist/${pkg.name}.js`,
+      file: path.resolve(rootDir, 'dist', `${pkg.name}.js`),
       format: 'cjs',
       sourcemap: true
     },
     external: [
       // Dependencies that will be installed alongise with the nuxt package
-      ...Object.keys(pkg.dependencies),
+      ...Object.keys(pkg.dependencies || {}),
 
       // Builtin node modules
-      'path',
-      'fs',
-      'module',
-      'crypto',
-      'util',
+      ...builtin,
 
       // Dependencies of nuxt-legacy
       '@babel/polyfill'

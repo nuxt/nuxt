@@ -1,7 +1,6 @@
-import config from './scripts/rollup.config'
-import pkg from './package.json'
+import config from './build/rollup.config'
 
 export default config({
-  pkg,
-  input: './lib/nuxt.js'
+  rootDir: __dirname,
+  input: './lib/index.js'
 })

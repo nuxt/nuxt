@@ -1,7 +1,5 @@
-import config from '../../scripts/rollup.config'
-import pkg from './package.json'
+import config from '../../build/rollup.config'
 
 export default config({
-  pkg,
-  input: './src/index.js'
+  rootDir: __dirname
 })
