@@ -7,7 +7,7 @@ import { builtinsMap } from './builtins'
 
 const DEFAULTS = {
   distDir: 'dist',
-  buildSuffix: Boolean(process.env.BUILD_SUFFIX)
+  buildSuffix: process.env.BUILD_SUFFIX
 }
 
 export default class Package extends EventEmitter {
