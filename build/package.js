@@ -6,7 +6,7 @@ import { builtinsMap } from './builtins'
 
 const DEFAULTS = {
   distDir: 'dist',
-  npmClient: 'yarn',
+  npmClient: process.platform === 'win32' ? 'yarn.cmd' : 'yarn',
   buildCommand: 'rollup -c'
 }
 
