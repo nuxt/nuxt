@@ -49,11 +49,12 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: EDGE_BUILD=1 yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
+          command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt
+            - nuxt/test/fixtures
+            - nuxt/dist
     environment:
       - NODE_ENV: "test"
 
@@ -89,6 +90,7 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            EDGE_BUILD=1 yarn build
             npm publish
             for p in packages/*; do cd $p ; npm publish ; cd - ; done
 
