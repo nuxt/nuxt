@@ -42,7 +42,7 @@ export default class Package {
   }
 
   get version() {
-    return this.packageObj.name
+    return this.packageObj.version
   }
 
   get distDir() {
