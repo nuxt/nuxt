@@ -19,7 +19,8 @@ export default class Package extends EventEmitter {
 
     this.rootDir = this.rootDir || process.cwd()
     this.distDir = this.resolvePath(this.distDir)
-    this.packagePath = this.resolvePath('package.json')
+    this.packageJS = this.resolvePath('package.js')
+    this.packageJSON = this.resolvePath('package.json')
 
     // Initialize
     this.init()
@@ -41,13 +42,12 @@ export default class Package extends EventEmitter {
   }
 
   _readPackage() {
-    this.packageObj = readJSONSync(this.packagePath)
+    this.packageObj = readJSONSync(this.packageJSON)
   }
 
   _loadPackageJS() {
-    const packageJS = this.resolvePath(this.rootDir, 'package.js')
-    if (existsSync(packageJS)) {
-      let fn = require(packageJS)
+    if (existsSync(this.packageJS)) {
+      let fn = require(this.packageJS)
       fn = fn.default || fn
       if (typeof fn === 'function') {
         fn(this, {
@@ -60,8 +60,8 @@ export default class Package extends EventEmitter {
   }
 
   writePackage() {
-    consola.debug('Writing', this.packagePath)
-    writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2) + '\n')
+    consola.debug('Writing', this.packageJSON)
+    writeFileSync(this.packageJSON, JSON.stringify(this.packageObj, null, 2) + '\n')
   }
 
   generateVersion() {
