@@ -1,12 +1,18 @@
 import { resolve } from 'path'
 import { spawnSync } from 'child_process'
 import consola from 'consola'
-import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync } from 'fs-extra'
+import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import { builtinsMap } from './builtins'
+
+const DEFAULTS = {
+  distDir: 'dist',
+  npmClient: 'yarn',
+  buildCommand: 'rollup -c'
+}
 
 export default class Package {
   constructor(options) {
-    this.options = Object.assign({}, options)
+    this.options = Object.assign({}, DEFAULTS, options)
 
     // Use pwd() as rootDir if not specified
     if (!this.options.rootDir) {
@@ -19,6 +25,10 @@ export default class Package {
     }
   }
 
+  get rootDir() {
+    return this.options.rootDir
+  }
+
   get packageObj() {
     return this.options.packageObj
   }
@@ -27,8 +37,24 @@ export default class Package {
     this.options.packageObj = packageObj
   }
 
+  get name() {
+    return this.packageObj.name
+  }
+
+  get version() {
+    return this.packageObj.name
+  }
+
+  get distDir() {
+    return this.resolvePath(this.options.distDir)
+  }
+
   get packagePath() {
-    return resolve(this.options.rootDir, 'package.json')
+    return this.resolvePath('package.json')
+  }
+
+  resolvePath(...args) {
+    return resolve(this.rootDir, ...args)
   }
 
   readPackage() {
@@ -37,23 +63,32 @@ export default class Package {
     } else if (!this.packageObj) {
       this.packageObj = {}
     }
+    this.logger = consola.withScope(this.name)
   }
 
   writePackage() {
+    consola.log('Writing', this.packagePath)
     writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2) + '\n')
   }
 
   generateVersion() {
     const date = Math.round(Date.now() / (1000 * 60))
-    const gitCommit = this._gitShortCommit()
+    const gitCommit = this.gitShortCommit()
     const baseVersion = this.packageObj.version.split('-')[0]
     this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
+  build() {
+    this.logger.info('Cleanup')
+    removeSync(this.distDir)
+
+    this.logger.info('Building')
+    this.exec(this.options.npmClient, this.options.buildCommand)
+  }
+
   publish(tag = 'latest') {
-    consola.log(`publishing ${this.packageObj.name}@${this.packageObj.version} with tag ${tag}`)
-    const result = this._exec('npm', `publish --tag ${tag}`)
-    return result
+    this.logger.info(`publishing ${this.name}@${this.version} with tag ${tag}`)
+    this.exec('npm', `publish --tag ${tag}`)
   }
 
   copyFieldsFrom(source, fields = []) {
@@ -132,20 +167,25 @@ export default class Package {
     this.packageObj.dependencies = dependencies
   }
 
-  _exec(command, args) {
-    const r = spawnSync(command, args.split(' '), { cwd: this.options.rootDir })
+  exec(command, args) {
+    const r = spawnSync(command, args.split(' '), { cwd: this.rootDir })
 
-    const result = r.stdout.trim()
-    result.status = r.status
+    const fullCommand = command + ' ' + args
 
-    return result
+    if (r.error) {
+      this.logger.error(fullCommand, r.error)
+    } else {
+      this.logger.success(fullCommand, r.output.join('\n'))
+    }
+
+    return r
   }
 
-  _gitShortCommit() {
-    return this._exec('git', 'rev-parse --short HEAD')
+  gitShortCommit() {
+    return this.exec('git', 'rev-parse --short HEAD').stdout
   }
 
-  _gitBranch() {
-    return this._exec('git', 'rev-parse --abbrev-ref HEAD')
+  gitBranch() {
+    return this.exec('git', 'rev-parse --abbrev-ref HEAD').stdout
   }
 }
