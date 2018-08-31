@@ -1,26 +1,43 @@
 import { resolve } from 'path'
 import { spawnSync } from 'child_process'
+import EventEmitter from 'events'
 import consola from 'consola'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import { builtinsMap } from './builtins'
 
 const DEFAULTS = {
   distDir: 'dist',
-  npmClient: process.platform === 'win32' ? 'yarn.cmd' : 'yarn',
-  buildCommand: 'rollup -c'
+  edge: Boolean(process.env.EDGE_BUILD)
 }
 
-export default class Package {
+export default class Package extends EventEmitter {
   constructor(options) {
+    super()
+
+    // Assign options
     Object.assign(this, DEFAULTS, options)
 
     this.rootDir = this.rootDir || process.cwd()
     this.distDir = this.resolvePath(this.distDir)
     this.packagePath = this.resolvePath('package.json')
 
+    // Initialize
+    this.init()
+  }
+
+  init() {
     // Try to read package.json if not provided
-    if (!this.packageObj) {
-      this.readPackage()
+    this._readPackage()
+
+    // Init logger
+    this.logger = consola.withScope(this.packageObj.name)
+
+    // Try to load package.js
+    this._loadPackageJS()
+
+    // Convert to edge
+    if (this.edge) {
+      this.convertToEdge()
     }
   }
 
@@ -28,13 +45,23 @@ export default class Package {
     return resolve(this.rootDir, ...args)
   }
 
-  readPackage() {
-    if (existsSync(this.packagePath)) {
-      this.packageObj = readJSONSync(this.packagePath)
-    } else if (!this.packageObj) {
-      this.packageObj = {}
+  _readPackage() {
+    this.packageObj = readJSONSync(this.packagePath)
+  }
+
+  _loadPackageJS() {
+    const packageJS = this.resolvePath(this.rootDir, 'package.js')
+    if (existsSync(packageJS)) {
+      let fn = require(packageJS)
+      fn = fn.default || fn
+      if (typeof fn === 'function') {
+        fn(this, {
+          load: (relativeRootDir, opts) => new Package(Object.assign({
+            rootDir: resolve(this.rootDir, relativeRootDir)
+          }, opts))
+        })
+      }
     }
-    this.logger = consola.withScope(this.packageObj.name)
   }
 
   writePackage() {
@@ -49,6 +76,13 @@ export default class Package {
     this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
+  convertToEdge() {
+    this.logger.info('Converting to edge package')
+    this.addNameSuffix('-edge')
+    this.generateVersion()
+    this.writePackage()
+  }
+
   addNameSuffix(suffix) {
     if (!this.packageObj.name.includes(suffix)) {
       this.packageObj.name += suffix
@@ -56,11 +90,10 @@ export default class Package {
   }
 
   build() {
-    this.logger.info('Cleanup')
-    removeSync(this.distDir)
-
     this.logger.info('Building')
-    this.exec(this.npmClient, this.buildCommand)
+    removeSync(this.distDir)
+    this.exec('rollup', '-c')
+    this.emit('build:done')
   }
 
   publish(tag = 'latest') {
@@ -145,7 +178,7 @@ export default class Package {
   }
 
   exec(command, args, silent = false) {
-    const r = spawnSync(command, args.split(' '), { cwd: this.rootDir })
+    const r = spawnSync(command, args.split(' '), { cwd: this.rootDir }, { env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
@@ -161,7 +194,7 @@ export default class Package {
       pid: r.pid,
       status: r.status,
       signal: r.signal,
-      output: r.output.join('\n'),
+      output: (r.output || []).join('\n'),
       stdout: String(r.stdout).trim(),
       stderr: String(r.stderr).trim()
     }
