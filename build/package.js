@@ -34,7 +34,7 @@ export default class Package {
     } else if (!this.packageObj) {
       this.packageObj = {}
     }
-    this.logger = consola.withScope(this.name)
+    this.logger = consola.withScope(this.packageObj.name)
   }
 
   writePackage() {
@@ -64,7 +64,7 @@ export default class Package {
   }
 
   publish(tag = 'latest') {
-    this.logger.info(`publishing ${this.name}@${this.version} with tag ${tag}`)
+    this.logger.info(`publishing ${this.packageObj.name}@${this.packageObj.version} with tag ${tag}`)
     this.exec('npm', `publish --tag ${tag}`)
   }
 
