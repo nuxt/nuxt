@@ -1,5 +1,7 @@
 import path from 'path'
 
+let _nuxt
+
 export default {
   render: {
     dist: {
@@ -42,7 +44,18 @@ export default {
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
     ready(nuxt) {
-      nuxt.__hook_called__ = true
+      _nuxt = nuxt
+      nuxt.__hook_ready_called__ = true
+    },
+    build: {
+      done(builder) {
+        builder.__hook_built_called__ = true
+      }
+    },
+    render: {
+      routeDone(url) {
+        _nuxt.__hook_render_routeDone__ = url
+      }
     },
     bad: null,
     '': true

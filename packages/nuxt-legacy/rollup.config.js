@@ -1,10 +1,8 @@
 import babel from 'rollup-plugin-babel'
-
-import config from './rollup.config'
+import config from '../../build/rollup.config'
 
 export default config({
-  name: 'nuxt-legacy',
-  input: './lib/nuxt-legacy.js',
+  rootDir: __dirname,
   plugins: [
     babel({
       exclude: 'node_modules/**',
@@ -15,9 +13,6 @@ export default config({
             'modules': false
           }
         ]
-      ],
-      plugins: [
-        '@babel/external-helpers'
       ]
     })
   ]

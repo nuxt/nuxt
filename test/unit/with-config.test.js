@@ -1,4 +1,5 @@
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import jsdom from 'jsdom'
+import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -137,6 +138,23 @@ describe('with-config', () => {
   test('Check /test.txt should return 404', async () => {
     await expect(rp(url('/test.txt')))
       .rejects.toMatchObject({ statusCode: 404 })
+  })
+
+  test('renderAndGetWindow options', async () => {
+    const fakeErrorLog = jest.fn()
+    const mockOptions = {
+      beforeParse: jest.fn((window) => {
+        // Mock window.scrollTo
+        window.scrollTo = () => {}
+        window._virtualConsole.emit('jsdomError', new Error('test'))
+      }),
+      virtualConsole: new jsdom.VirtualConsole().sendTo({error: fakeErrorLog})
+    }
+    try {
+      await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)
+    } catch (e) {}
+    expect(mockOptions.beforeParse).toHaveBeenCalled()
+    expect(fakeErrorLog).toHaveBeenCalled()
   })
 
   // Close server and ask nuxt to stop listening to file changes
