@@ -101,31 +101,30 @@ export default class Package {
     const builtins = builtinsMap()
     // Resolve dependency versions
     for (const name in dependencies) {
-      if (!dependencies[name]) {
-        // Ignore builtin modules
-        if (builtins[name]) {
+      // Ignore builtin modules
+      if (builtins[name]) {
+        delete dependencies[name]
+        continue
+      }
+      // Try sources
+      for (const source of sources) {
+        const sourceDeps = source.packageObj.dependencies
+        if (sourceDeps && sourceDeps[name]) {
+          dependencies[name] = sourceDeps[name]
+          break
+        }
+      }
+      // Try to require package.json of dependency
+      if (dependencies[name] === null) {
+        try {
+          const _pkg = require(`${name}/package.json`)
+          if (!_pkg.version) {
+            throw Error('No version specified')
+          }
+          dependencies[name] = `^${_pkg.version}`
+        } catch (e) {
+          consola.warn(e)
           delete dependencies[name]
-          continue
-        }
-        // Try sources
-        for (const source of sources) {
-          if (source.packageObj.dependencies && source.packageObj.dependencies[name]) {
-            dependencies[name] = source.packageObj.dependencies[name]
-            break
-          }
-        }
-        // Try to require package.json of dependency
-        if (!dependencies[name]) {
-          try {
-            const _pkg = require(`${name}/package.json`)
-            if (!_pkg.version) {
-              throw Error('No version specified')
-            }
-            dependencies[name] = `^${_pkg.version}`
-          } catch (e) {
-            consola.warn(e)
-            delete dependencies[name]
-          }
         }
       }
     }
