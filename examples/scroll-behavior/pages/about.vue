@@ -9,7 +9,7 @@
         <nuxt-link to="/about/contact">Contact</nuxt-link>
       </li>
     </ul>
-    <nuxt-child/>
+    <nuxt-child />
     <nuxt-link to="/">Home page</nuxt-link>
   </div>
 </template>
