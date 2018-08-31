@@ -53,7 +53,7 @@ for (const packageName of packages) {
   // Edge release version
   if (process.env.RELEASE_EDGE) {
     pkg.generateVersion()
-    nuxtPackage.writePackage()
+    pkg.writePackage()
   }
 
   // Copy artifacts to the main dist for b.w compatibility
