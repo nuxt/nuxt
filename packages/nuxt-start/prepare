@@ -1,7 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env node -r esm
 
-const path = require('path')
-const Package = require('../../build/package')
+import path from 'path'
+import Package from '../../build/package'
 
 // Read nuxt package
 const nuxt = new Package({ rootDir: path.resolve(__dirname, '../..') })

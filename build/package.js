@@ -1,10 +1,10 @@
-const { resolve } = require('path')
-const { spawnSync } = require('child_process')
-const consola = require('consola')
-const { readFileSync, existsSync, readJSONSync, writeFileSync, copySync } = require('fs-extra')
-const builtin = require('./builtin.json')
+import { resolve } from 'path'
+import { spawnSync } from 'child_process'
+import consola from 'consola'
+import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync } from 'fs-extra'
+import builtin from './builtin.json'
 
-module.exports = class Package {
+export default class Package {
   constructor(options) {
     this.options = Object.assign({}, options)
 
@@ -40,7 +40,7 @@ module.exports = class Package {
   }
 
   writePackage() {
-    writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2))
+    writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2) + '\n')
   }
 
   generateVersion() {
