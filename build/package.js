@@ -12,45 +12,16 @@ const DEFAULTS = {
 
 export default class Package {
   constructor(options) {
-    this.options = Object.assign({}, DEFAULTS, options)
+    options = Object.assign(this, DEFAULTS, options)
 
-    // Use pwd() as rootDir if not specified
-    if (!this.options.rootDir) {
-      this.options.rootDir = process.cwd()
-    }
+    this.rootDir = this.rootDir || process.cwd()
+    this.distDir = this.resolvePath(this.distDir)
+    this.packagePath = this.resolvePath('package.json')
 
     // Try to read package.json if not provided
     if (!this.packageObj) {
       this.readPackage()
     }
-  }
-
-  get rootDir() {
-    return this.options.rootDir
-  }
-
-  get packageObj() {
-    return this.options.packageObj
-  }
-
-  set packageObj(packageObj) {
-    this.options.packageObj = packageObj
-  }
-
-  get name() {
-    return this.packageObj.name
-  }
-
-  get version() {
-    return this.packageObj.version
-  }
-
-  get distDir() {
-    return this.resolvePath(this.options.distDir)
-  }
-
-  get packagePath() {
-    return this.resolvePath('package.json')
   }
 
   resolvePath(...args) {
@@ -83,7 +54,7 @@ export default class Package {
     removeSync(this.distDir)
 
     this.logger.info('Building')
-    this.exec(this.options.npmClient, this.options.buildCommand)
+    this.exec(this.npmClient, this.buildCommand)
   }
 
   publish(tag = 'latest') {
@@ -103,8 +74,8 @@ export default class Package {
     }
 
     for (const file of files) {
-      const src = resolve(source.options.rootDir, file)
-      const dst = resolve(this.options.rootDir, file)
+      const src = resolve(source.rootDir, file)
+      const dst = resolve(this.rootDir, file)
       copySync(src, dst)
     }
   }
@@ -119,7 +90,7 @@ export default class Package {
     }
 
     // Scan require() calls inside dist
-    const distSource = readFileSync(resolve(this.options.rootDir, dist))
+    const distSource = readFileSync(resolve(this.rootDir, dist))
 
     let match = requireRegex.exec(distSource)
     while (match) {
