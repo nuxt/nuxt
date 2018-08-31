@@ -53,8 +53,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/test/fixtures
-            - nuxt/dist
+            - nuxt
     environment:
       - NODE_ENV: "test"
 
