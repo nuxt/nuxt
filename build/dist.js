@@ -8,6 +8,9 @@ import Package from './package'
 const rootDir = path.resolve(__dirname, '..')
 const rootNodeModules = path.resolve(rootDir, 'node_modules')
 
+// Ensure NODE_ENV is set to production
+process.env.NODE_ENV = 'production'
+
 // Build main package
 const nuxtPackage = new Package({ rootDir: rootDir })
 
