@@ -60,7 +60,7 @@ export default class Package extends EventEmitter {
   }
 
   writePackage() {
-    consola.debug('Writing', this.packageJSON)
+    this.logger.debug('Writing', this.packageJSON)
     writeFileSync(this.packageJSON, JSON.stringify(this.packageObj, null, 2) + '\n')
   }
 
@@ -172,7 +172,7 @@ export default class Package extends EventEmitter {
           }
           dependencies[name] = `^${_pkg.version}`
         } catch (e) {
-          consola.warn(e)
+          this.logger.warn(e)
           delete dependencies[name]
         }
       }
