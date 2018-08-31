@@ -34,11 +34,6 @@ export default class Package extends EventEmitter {
 
     // Try to load package.js
     this._loadPackageJS()
-
-    // Convert to edge
-    if (this.edge) {
-      this.convertToEdge()
-    }
   }
 
   resolvePath(...args) {
@@ -90,8 +85,14 @@ export default class Package extends EventEmitter {
   }
 
   build() {
-    this.logger.info('Building')
+    this.logger.info('Cleaning up')
     removeSync(this.distDir)
+
+    if (this.edge) {
+      this.convertToEdge()
+    }
+
+    this.logger.info('Building')
     this.exec('rollup', '-c')
     this.emit('build:done')
   }
