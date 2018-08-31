@@ -3,7 +3,7 @@ const fs = require('fs')
 const { resolve } = require('path')
 const parseArgs = require('minimist')
 const consola = require('consola')
-const { Nuxt } = require('../dist/nuxt-start')
+const { Nuxt } = require('..')
 const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
