@@ -1,3 +1,7 @@
+/*
+** Core logic from https://github.com/sindresorhus/builtin-modules
+** Many thanks to @sindresorhus
+*/
 const { builtinModules } = require('module')
 
 const blacklist = [
