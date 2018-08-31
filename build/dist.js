@@ -15,7 +15,7 @@ process.env.NODE_ENV = 'production'
 const nuxtPackage = new Package({ rootDir: rootDir })
 
 // Edge release channel support
-if (process.env.RELEASE_EDGE) {
+if (process.env.EDGE_BUILD) {
   nuxtPackage.addNameSuffix('-edge')
   nuxtPackage.generateVersion()
   nuxtPackage.writePackage()
@@ -39,7 +39,7 @@ for (const packageName of packages) {
   fs.ensureSymlinkSync(rootNodeModules, pkgNodeModules)
 
   // Edge release channel support
-  if (process.env.RELEASE_EDGE) {
+  if (process.env.EDGE_BUILD) {
     pkg.addNameSuffix('-edge')
     pkg.writePackage()
   }
@@ -51,7 +51,7 @@ for (const packageName of packages) {
   pkg.exec('node', '-r esm ./prepack.js')
 
   // Edge release version
-  if (process.env.RELEASE_EDGE) {
+  if (process.env.EDGE_BUILD) {
     pkg.generateVersion()
     pkg.writePackage()
   }
