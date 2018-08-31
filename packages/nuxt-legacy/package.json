@@ -1,7 +1,13 @@
 {
-  "name": "nuxt",
+  "name": "nuxt-legacy",
   "version": "2.0.0",
-  "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
+  "description": "Legacy build of Nuxt.js for Node.js < 8.0.0",
+  "license": "MIT",
+  "homepage": "https://github.com/nuxt/nuxt.js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js"
+  },
   "contributors": [
     {
       "name": "Sebastien Chopin (@Atinux)"
@@ -15,19 +21,6 @@
     {
       "name": "Clark Du (@clarkdo)"
     }
-  ],
-  "main": "index.js",
-  "module": "./lib/nuxt.js",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js"
-  },
-  "files": [
-    "bin",
-    "lib",
-    "dist",
-    "index.js"
   ],
   "keywords": [
     "nuxt",
@@ -43,22 +36,14 @@
     "vue isomorphic",
     "vue versatile"
   ],
-  "homepage": "https://github.com/nuxt/nuxt.js#readme",
+  "main": "dist/nuxt-legacy.js",
   "bin": {
     "nuxt": "./bin/nuxt"
   },
-  "scripts": {
-    "build": "node -r esm ./build/build.js",
-    "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks build examples lib packages test",
-    "postinstall": "opencollective postinstall || exit 0",
-    "security": "nsp check || true",
-    "test": "yarn test:fixtures && yarn test:unit",
-    "test:fixtures": "jest test/fixtures",
-    "test:e2e": "jest -i test/e2e",
-    "test:lint": "yarn lint && yarn security",
-    "test:unit": "jest test/unit"
-  },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=5.0.0"
@@ -128,47 +113,5 @@
     "webpack-hot-middleware": "^2.22.3",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^2.6.3"
-  },
-  "devDependencies": {
-    "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
-    "babel-core": "^7.0.0-0",
-    "babel-eslint": "^9.0.0",
-    "babel-jest": "^23.4.2",
-    "babel-plugin-dynamic-import-node": "^2.0.0",
-    "codecov": "^3.0.4",
-    "cross-env": "^5.2.0",
-    "eslint": "^4.19.1",
-    "eslint-config-standard": "^11.0.0",
-    "eslint-config-standard-jsx": "^5.0.0",
-    "eslint-plugin-import": "^2.12.0",
-    "eslint-plugin-jest": "^21.17.0",
-    "eslint-plugin-node": "^6.0.0",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-react": "^7.8.2",
-    "eslint-plugin-standard": "^3.1.0",
-    "eslint-plugin-vue": "^4.5.0",
-    "express": "^4.16.2",
-    "finalhandler": "^1.1.1",
-    "get-port": "^4.0.0",
-    "jest": "^23.5.0",
-    "jsdom": "^12.0.0",
-    "nsp": "^3.2.1",
-    "pug": "^2.0.3",
-    "pug-plain-loader": "^1.0.0",
-    "puppeteer": "^1.7.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.64.1",
-    "rollup-plugin-babel": "^4.0.2",
-    "rollup-plugin-commonjs": "^9.1.5",
-    "rollup-plugin-json": "^3.0.0",
-    "rollup-plugin-license": "^0.7.0"
-  },
-  "collective": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/nuxtjs",
-    "logo": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }
