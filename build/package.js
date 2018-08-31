@@ -12,7 +12,7 @@ const DEFAULTS = {
 
 export default class Package {
   constructor(options) {
-    options = Object.assign(this, DEFAULTS, options)
+    Object.assign(this, DEFAULTS, options)
 
     this.rootDir = this.rootDir || process.cwd()
     this.distDir = this.resolvePath(this.distDir)
