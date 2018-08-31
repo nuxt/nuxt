@@ -90,6 +90,8 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            npm publish
+            for p in packages/*; do cd $p ; npm publish ; cd - ; done
 
 workflows:
   version: 2
