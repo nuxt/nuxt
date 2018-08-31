@@ -28,4 +28,4 @@ legacy.copyFilesFrom(nuxt, [
 ])
 
 // Update package.json for legacy package
-legacy.writePakage()
+legacy.writePackage()

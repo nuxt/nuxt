@@ -43,4 +43,4 @@ start.updateDependencies({
 })
 
 // Update package.json for start package
-start.writePakage()
+start.writePackage()

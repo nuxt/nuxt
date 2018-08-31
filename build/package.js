@@ -39,7 +39,7 @@ module.exports = class Package {
     }
   }
 
-  writePakage() {
+  writePackage() {
     writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2))
   }
 
