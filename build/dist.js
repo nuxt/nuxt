@@ -10,6 +10,12 @@ const rootNodeModules = path.resolve(rootDir, 'node_modules')
 
 // Build main package
 const nuxtPackage = new Package({ rootDir: rootDir })
+
+// Edge release channel support
+if (process.env.RELEASE_EDGE) {
+  nuxtPackage.edge()
+}
+
 nuxtPackage.build()
 
 // Build packages/*
@@ -32,6 +38,11 @@ for (const packageName of packages) {
 
   // Run prepack
   pkg.exec('node', '-r esm ./prepack.js')
+
+  // Edge release channel support
+  if (process.env.RELEASE_EDGE) {
+    pkg.edge()
+  }
 
   // Copy artifacts to the main dist for b.w compatibility
   fs.copySync(pkg.distDir, nuxtPackage.distDir)

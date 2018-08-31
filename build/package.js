@@ -49,6 +49,15 @@ export default class Package {
     this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
+  edge() {
+    if (!this.packageObj.name.includes('-edge')) {
+      this.packageObj.name += '-edge'
+    }
+
+    this.generateVersion()
+    this.writePackage()
+  }
+
   build() {
     this.logger.info('Cleanup')
     removeSync(this.distDir)
@@ -138,25 +147,34 @@ export default class Package {
     this.packageObj.dependencies = dependencies
   }
 
-  exec(command, args) {
+  exec(command, args, silent = false) {
     const r = spawnSync(command, args.split(' '), { cwd: this.rootDir })
 
-    const fullCommand = command + ' ' + args
-
-    if (r.error) {
-      this.logger.error(fullCommand, r.error)
-    } else {
-      this.logger.success(fullCommand, r.output.join('\n'))
+    if (!silent) {
+      const fullCommand = command + ' ' + args
+      if (r.error) {
+        this.logger.error(fullCommand, r.error)
+      } else {
+        this.logger.success(fullCommand, r.output.join('\n'))
+      }
     }
 
-    return r
+    return {
+      error: r.error,
+      pid: r.pid,
+      status: r.status,
+      signal: r.signal,
+      output: r.output.join('\n'),
+      stdout: String(r.stdout).trim(),
+      stderr: String(r.stderr).trim()
+    }
   }
 
   gitShortCommit() {
-    return this.exec('git', 'rev-parse --short HEAD').stdout
+    return this.exec('git', 'rev-parse --short HEAD', true).stdout
   }
 
   gitBranch() {
-    return this.exec('git', 'rev-parse --abbrev-ref HEAD').stdout
+    return this.exec('git', 'rev-parse --abbrev-ref HEAD', true).stdout
   }
 }
