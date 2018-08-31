@@ -16,7 +16,9 @@ const nuxtPackage = new Package({ rootDir: rootDir })
 
 // Edge release channel support
 if (process.env.RELEASE_EDGE) {
-  nuxtPackage.edge()
+  nuxtPackage.addNameSuffix('-edge')
+  nuxtPackage.generateVersion()
+  nuxtPackage.writePackage()
 }
 
 nuxtPackage.build()
@@ -38,7 +40,8 @@ for (const packageName of packages) {
 
   // Edge release channel support
   if (process.env.RELEASE_EDGE) {
-    pkg.edge()
+    pkg.addNameSuffix('-edge')
+    pkg.writePackage()
   }
 
   // Build
@@ -46,6 +49,12 @@ for (const packageName of packages) {
 
   // Run prepack
   pkg.exec('node', '-r esm ./prepack.js')
+
+  // Edge release version
+  if (process.env.RELEASE_EDGE) {
+    pkg.generateVersion()
+    nuxtPackage.writePackage()
+  }
 
   // Copy artifacts to the main dist for b.w compatibility
   fs.copySync(pkg.distDir, nuxtPackage.distDir)

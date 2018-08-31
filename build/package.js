@@ -49,13 +49,10 @@ export default class Package {
     this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
-  edge() {
-    if (!this.packageObj.name.includes('-edge')) {
-      this.packageObj.name += '-edge'
+  addNameSuffix(suffix) {
+    if (!this.packageObj.name.includes(suffix)) {
+      this.packageObj.name += suffix
     }
-
-    this.generateVersion()
-    this.writePackage()
   }
 
   build() {
