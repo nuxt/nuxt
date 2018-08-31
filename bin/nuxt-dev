@@ -96,6 +96,6 @@ const errorHandler = (err, instance) => {
       .then(() => !oldInstance && nuxt.showReady(false))
       .then(() => builder.watchServer())
       // Handle errors
-      .catch(err => errorHandler(err, {builder, nuxt}))
+      .catch(err => errorHandler(err, { builder, nuxt }))
   )
 })()

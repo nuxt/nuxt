@@ -148,7 +148,7 @@ describe('with-config', () => {
         window.scrollTo = () => {}
         window._virtualConsole.emit('jsdomError', new Error('test'))
       }),
-      virtualConsole: new jsdom.VirtualConsole().sendTo({error: fakeErrorLog})
+      virtualConsole: new jsdom.VirtualConsole().sendTo({ error: fakeErrorLog })
     }
     try {
       await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)
