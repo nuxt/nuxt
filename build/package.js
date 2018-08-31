@@ -87,15 +87,16 @@ export default class Package extends EventEmitter {
   build() {
     this.emit('build:before')
 
-    this.logger.info('Cleaning up')
-    removeSync(this.distDir)
-
     if (this.edge) {
       this.convertToEdge()
     }
 
+    this.logger.info('Cleaning up')
+    removeSync(this.distDir)
+
     this.logger.info('Building')
     this.exec('rollup', '-c')
+
     this.emit('build:done')
   }
 
