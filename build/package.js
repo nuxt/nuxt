@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import { spawnSync } from 'child_process'
 import consola from 'consola'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync } from 'fs-extra'
-import builtin from './builtin.json'
+import { builtinsMap } from './builtins'
 
 export default class Package {
   constructor(options) {
@@ -98,11 +98,12 @@ export default class Package {
       delete dependencies[name]
     }
 
+    const builtins = builtinsMap()
     // Resolve dependency versions
     for (const name in dependencies) {
       if (!dependencies[name]) {
         // Ignore builtin modules
-        if (builtin.includes(name)) {
+        if (builtins[name]) {
           delete dependencies[name]
           continue
         }

@@ -4,7 +4,7 @@ import json from 'rollup-plugin-json'
 import commonjs from 'rollup-plugin-commonjs'
 import license from 'rollup-plugin-license'
 import defaultsDeep from 'lodash/defaultsDeep'
-import builtin from './builtin.json'
+import builtins from './builtins'
 
 export default function rollupConfigFactory({
   rootDir = process.cwd(),
@@ -24,10 +24,8 @@ export default function rollupConfigFactory({
     external: [
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
-
       // Builtin node modules
-      ...builtin,
-
+      ...builtins,
       // Dependencies of nuxt-legacy
       '@babel/polyfill'
     ],
