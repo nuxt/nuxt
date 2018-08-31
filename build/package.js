@@ -71,9 +71,9 @@ export default class Package extends EventEmitter {
     this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
-  convertToEdge() {
+  convertTo(suffix) {
     this.logger.info('Converting to edge package')
-    this.addNameSuffix('-edge')
+    this.addNameSuffix(`-${suffix}`)
     this.generateVersion()
     this.writePackage()
   }
@@ -88,7 +88,7 @@ export default class Package extends EventEmitter {
     this.emit('build:before')
 
     if (this.edge) {
-      this.convertToEdge()
+      this.convertTo('edge')
     }
 
     this.logger.info('Cleaning up')
@@ -112,11 +112,7 @@ export default class Package extends EventEmitter {
   }
 
   copyFilesFrom(source, files) {
-    if (!files) {
-      files = source.packageObj.files || []
-    }
-
-    for (const file of files) {
+    for (const file of files || source.packageObj.files || []) {
       const src = resolve(source.rootDir, file)
       const dst = resolve(this.rootDir, file)
       copySync(src, dst)
