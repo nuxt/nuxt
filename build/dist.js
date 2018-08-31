@@ -33,16 +33,16 @@ for (const packageName of packages) {
   fs.removeSync(pkgNodeModules)
   fs.ensureSymlinkSync(rootNodeModules, pkgNodeModules)
 
+  // Edge release channel support
+  if (process.env.RELEASE_EDGE) {
+    pkg.edge()
+  }
+
   // Build
   pkg.build()
 
   // Run prepack
   pkg.exec('node', '-r esm ./prepack.js')
-
-  // Edge release channel support
-  if (process.env.RELEASE_EDGE) {
-    pkg.edge()
-  }
 
   // Copy artifacts to the main dist for b.w compatibility
   fs.copySync(pkg.distDir, nuxtPackage.distDir)
