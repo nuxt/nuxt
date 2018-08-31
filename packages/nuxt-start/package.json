@@ -22,13 +22,6 @@
       "name": "Clark Du (@clarkdo)"
     }
   ],
-  "bin": {
-    "nuxt-start": "./bin/nuxt-start"
-  },
-  "files": [
-    "bin",
-    "dist"
-  ],
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -42,6 +35,14 @@
     "ssr",
     "vue isomorphic",
     "vue versatile"
+  ],
+  "main": "dist/nuxt-start.js",
+  "bin": {
+    "nuxt-start": "./bin/nuxt-start"
+  },
+  "files": [
+    "bin",
+    "dist"
   ],
   "engines": {
     "node": ">=8.0.0",
