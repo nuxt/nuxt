@@ -30,6 +30,9 @@ for (const packageName of packages) {
   // Build
   pkg.build()
 
+  // Run prepack
+  pkg.exec('node', '-r esm ./prepack.js')
+
   // Copy artifacts to the main dist for b.w compatibility
   fs.copySync(pkg.distDir, nuxtPackage.distDir)
 }
