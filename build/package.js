@@ -189,7 +189,7 @@ export default class Package extends EventEmitter {
       if (r.error) {
         this.logger.error(fullCommand, r.error)
       } else {
-        this.logger.success(fullCommand, r.output.join('\n'))
+        this.logger.success(fullCommand, r.output)
       }
     }
 
@@ -198,9 +198,12 @@ export default class Package extends EventEmitter {
       pid: r.pid,
       status: r.status,
       signal: r.signal,
-      output: (r.output || []).join('\n'),
       stdout: String(r.stdout).trim(),
-      stderr: String(r.stderr).trim()
+      stderr: String(r.stderr).trim(),
+      output: (r.output || [])
+        .map(l => String(l).trim())
+        .filter(l => l.length)
+        .join('\n')
     }
   }
 
