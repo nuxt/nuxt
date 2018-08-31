@@ -38,7 +38,7 @@ export default class Package {
   }
 
   writePackage() {
-    consola.log('Writing', this.packagePath)
+    consola.info('Writing', this.packagePath)
     writeFileSync(this.packagePath, JSON.stringify(this.packageObj, null, 2) + '\n')
   }
 
