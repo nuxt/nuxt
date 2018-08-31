@@ -7,7 +7,7 @@ import { builtinsMap } from './builtins'
 
 const DEFAULTS = {
   distDir: 'dist',
-  edge: Boolean(process.env.EDGE_BUILD)
+  buildSuffix: Boolean(process.env.BUILD_SUFFIX)
 }
 
 export default class Package extends EventEmitter {
@@ -87,8 +87,8 @@ export default class Package extends EventEmitter {
   build() {
     this.emit('build:before')
 
-    if (this.edge) {
-      this.convertTo('edge')
+    if (this.buildSuffix) {
+      this.convertTo(this.buildSuffix)
     }
 
     this.logger.info('Cleaning up')
