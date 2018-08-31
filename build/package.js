@@ -72,7 +72,7 @@ export default class Package extends EventEmitter {
   }
 
   convertTo(suffix) {
-    this.logger.info('Converting to edge package')
+    this.logger.info(`Converting to ${suffix} package`)
     this.addNameSuffix(`-${suffix}`)
     this.generateVersion()
     this.writePackage()
