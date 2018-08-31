@@ -1,11 +1,16 @@
 export default (pkg, { load }) => {
-  pkg.on('build:done', () => {
-    // Read nuxt package
-    const nuxt = load('../..')
+  // Read nuxt package
+  const nuxt = load('../..')
 
+  // Copy version before build for dist banner
+  pkg.on('build:before', () => {
+    pkg.copyFieldsFrom(nuxt, ['version'])
+    pkg.writePackage()
+  })
+
+  pkg.on('build:done', () => {
     // Copy fields from nuxt package
     pkg.copyFieldsFrom(nuxt, [
-      'version',
       'contributors',
       'license',
       'repository',

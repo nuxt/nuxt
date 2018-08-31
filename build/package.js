@@ -85,6 +85,8 @@ export default class Package extends EventEmitter {
   }
 
   build() {
+    this.emit('build:before')
+
     this.logger.info('Cleaning up')
     removeSync(this.distDir)
 
