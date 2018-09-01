@@ -1,5 +1,5 @@
 {
-  "name": "storybook",
+  "name": "example-storybook",
   "version": "1.0.0",
   "description": "sample storybook setup for nuxt",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "chart.js": "^2.7.1",
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vue-chartjs": "^3.1.1",
     "vuetify": "1.0.0-beta.5"
   },

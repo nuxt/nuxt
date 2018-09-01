@@ -1,9 +1,3 @@
-module.exports = {
-  build: {
-    postcss: [
-      require('tailwindcss')('./tailwind.js'),
-      require('autoprefixer')
-    ]
-  },
+export default {
   css: ['~/assets/css/tailwind.css']
 }

@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-with-ava",
+  "name": "example-with-ava",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",

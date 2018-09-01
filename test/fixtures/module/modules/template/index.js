@@ -1,6 +1,6 @@
-const path = require('path')
+import path from 'path'
 
-module.exports = function () {
+export default function () {
   // Disable parsing pages/
   this.nuxt.options.build.createRoutes = () => {}
 

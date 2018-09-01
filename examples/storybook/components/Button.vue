@@ -1,15 +1,20 @@
 <template>
-  <button class="wr-button" :style="{color: color, borderColor: color}" @click="handleClick" :class="{rounded: rounded}"><slot></slot>!</button>
+  <button :style="{color: color, borderColor: color}" :class="{rounded: rounded}" class="wr-button" @click="handleClick"><slot />!</button>
 </template>
 
 <script>
 export default {
   props: {
-    rounded: Boolean,
+    rounded: {
+      type: Boolean,
+      default: false
+    },
     handleClick: {
+      type: Function,
       default: () => () => null
     },
     color: {
+      type: String,
       default: '#42b983'
     }
   }

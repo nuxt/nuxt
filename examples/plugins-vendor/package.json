@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-plugins-vendor",
+  "name": "example-plugins-vendor",
   "dependencies": {
     "axios": "^0.16.2",
     "mini-toastr": "^0.6.5",

@@ -1,6 +1,6 @@
 <style>
 body, html, #__nuxt {
-  background-color: <%= options.background %>;
+  background: <%= options.background %>;
   width: 100%;
   height: 100%;
   display: flex;
@@ -13,7 +13,6 @@ body, html, #__nuxt {
 .sk-cube-grid {
   width: 40px;
   height: 40px;
-  margin: 100px auto;
 }
 
 .sk-cube-grid .sk-cube {
@@ -85,4 +84,4 @@ body, html, #__nuxt {
   <div class="sk-cube sk-cube9"></div>
 </div>
 
-<!-- http://tobiasahlin.com/spinkit -->
+<%= options.dev ? '<!-- http://tobiasahlin.com/spinkit -->' : '' %>

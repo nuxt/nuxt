@@ -1,12 +1,12 @@
 <template>
   <div class="post">
-    <component :is="component"/>
+    <component :is="component" />
   </div>
 </template>
 
 <script>
 // See https://vuejs.org/v2/guide/components.html#Advanced-Async-Components
-const getPost = (slug) => ({
+const getPost = slug => ({
   component: import(`@/posts/${slug}`),
   error: require('@/posts/404')
 })

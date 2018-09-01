@@ -1,8 +1,8 @@
 {
-  "name": "nuxt-async-data",
+  "name": "example-async-data",
   "dependencies": {
     "axios": "latest",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

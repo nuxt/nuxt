@@ -1,5 +1,5 @@
 {
-  "name": "with-feathers",
+  "name": "example-with-feathers",
   "description": "Nuxt.js with FeathersJS",
   "version": "1.0.0",
   "main": "src/",

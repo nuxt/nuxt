@@ -1,10 +1,8 @@
 {
-  "name": "nuxt-class-component",
+  "name": "example-vue-class-component",
   "dependencies": {
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-decorators-legacy": "^1.3.4",
-    "nuxt": "latest",
-    "nuxt-class-component": "^1.0.4"
+    "nuxt-edge": "latest",
+    "nuxt-class-component": "latest"
   },
   "scripts": {
     "dev": "nuxt",

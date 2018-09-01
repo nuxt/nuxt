@@ -1,12 +1,18 @@
-const { Nuxt, Builder } = require('nuxt')
-const app = require('express')()
-const server = require('http').createServer(app)
-const io = require('socket.io')(server)
+import http from 'http'
+
+import { Nuxt, Builder } from 'nuxt'
+import express from 'express'
+import SocketIO from 'socket.io'
+
 const port = process.env.PORT || 3000
 const isProd = process.env.NODE_ENV === 'production'
 
+const app = express()
+const server = http.createServer(app)
+const io = SocketIO(server)
+
 // We instantiate Nuxt.js with the options
-let config = require('./nuxt.config.js')
+const config = require('./nuxt.config.js')
 config.dev = !isProd
 
 const nuxt = new Nuxt(config)
@@ -22,7 +28,7 @@ server.listen(port, '0.0.0.0')
 console.log('Server listening on localhost:' + port) // eslint-disable-line no-console
 
 // Socket.io
-let messages = []
+const messages = []
 io.on('connection', (socket) => {
   socket.on('last-messages', function (fn) {
     fn(messages.slice(-50))

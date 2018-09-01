@@ -1,29 +1,30 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
-  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://img.shields.io/circleci/project/github/nuxt/nuxt.js.svg" alt="Build Status"></a>
-  <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://img.shields.io/travis/nuxt/nuxt.js/master.svg" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://ci.appveyor.com/api/projects/status/9ttoamt2c2gnwkko?svg=true" alt="Windows Build Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://img.shields.io/codecov/c/github/nuxt/nuxt.js/master.svg" alt="Coverage Status"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg" alt="Downloads"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg" alt="Version"></a>
-  <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/l/nuxt.svg" alt="License"></a>
-  <a href="https://gitter.im/nuxt/nuxt.js"><img src="https://img.shields.io/badge/GITTER-join%20chat-green.svg" alt="Gitter"></a>
+  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
+  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js/dev" alt="Windows Build Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/dev" alt="Coverage Status"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
+  <a href="https://discord.gg/VApZF5W"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#backers" alt="sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/backers/badge.svg" /></a>
-  <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/sponsors/badge.svg" /></a>
+  <a href="#partners" alt="Partner on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/partner/badge.svg" /></a>
+  <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
+  <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
   <a href="https://opencollective.com/nuxtjs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
 </p>
 
-> Vue.js Meta Framework to create complex, fast & universal web application *quickly*.
+> Vue.js Meta Framework to create complex, fast & universal web applications *quickly*.
 
 ## Links
 
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
+- 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
-- 👥 [Nuxt.js Community](https://github.com/nuxt-community)
+- 💬 Chat: [Discord](https://discord.gg/VApZF5W)
 - 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
 - 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
 
@@ -40,84 +41,28 @@
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
 
+## Partners
+
+Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
+
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false" /></a>
+
 ## Sponsors
 
-Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
+Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<p>
-<a href="https://opencollective.com/nuxtjs/sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/3/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/4/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/5/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/6/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/7/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/8/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/9/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/9/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/10/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/10/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/11/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/11/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/12/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/12/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/13/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/13/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/14/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/14/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/15/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/15/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/16/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/16/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/17/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/17/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/18/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/18/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/19/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/19/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/20/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/20/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/21/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/21/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/22/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/22/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/23/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/23/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/24/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/24/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/25/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/25/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/26/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/26/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/27/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/27/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/28/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/28/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/sponsor/29/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/sponsor/29/avatar.svg"></a>
-</p>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false" /></a>
 
 ## Backers
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
 
-<p>
-<a href="https://opencollective.com/nuxtjs/backer/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/0/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/1/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/2/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/3/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/3/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/4/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/4/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/5/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/5/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/6/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/6/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/7/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/7/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/8/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/8/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/9/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/9/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/10/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/10/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/11/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/11/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/12/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/12/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/13/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/13/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/14/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/14/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/15/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/15/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/16/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/16/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/17/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/17/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/18/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/18/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/19/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/19/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/20/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/20/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/21/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/21/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/22/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/22/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/23/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/23/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/24/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/24/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/25/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/25/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/26/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/26/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/27/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/27/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/28/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/28/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/backer/29/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/backer/29/avatar.svg"></a>
-</p>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" /></a>
 
 ## Getting started
 
 ```
-$ npm install nuxt --save
+$ npm install nuxt
 ```
 
 Add a script to your package.json like this:
@@ -190,7 +135,7 @@ Learn more: https://nuxtjs.org/api/nuxt
 
 ## Using nuxt.js as a middleware
 
-You might want to use your own server with you configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
+You might want to use your own server with your configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
 
 ```js
 app.use(nuxt.render)
@@ -252,19 +197,28 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 ## Core team
 
-| [Sebastien Chopin](https://github.com/Atinux) | [Alexandre Chopin](https://github.com/alexchopin) | [Pooya Parsa](https://github.com/pi0) | [Clark Du](https://github.com/clarkdo) |
-| --- | --- | --- | --- |
-| [![Atinux](https://avatars1.githubusercontent.com/u/904724?s=150&v=4)](https://github.com/Atinux) | [![alexchopin](https://avatars1.githubusercontent.com/u/4084277?s=150&v=4)](https://github.com/alexchopin) | [![pi0](https://avatars1.githubusercontent.com/u/5158436?s=150&v=4)](https://github.com/pi0) | [![clarkdo](https://avatars3.githubusercontent.com/u/4312154?s=150&v=4)](https://github.com/clarkdo) |
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+| [<img src="https://avatars2.githubusercontent.com/u/904724?v=4" width="150px;"/><br /><sub><b>Sébastien Chopin</b></sub>](https://github.com/atinux)<br />[📝](#blog-Atinux "Blogposts") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3AAtinux "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Code") [🎨](#design-Atinux "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Documentation") [💬](#question-Atinux "Answering Questions") [👀](#review-Atinux "Reviewed Pull Requests") [📢](#talk-Atinux "Talks") | [<img src="https://avatars2.githubusercontent.com/u/4084277?v=4" width="150px;"/><br /><sub><b>Alexandre Chopin</b></sub>](https://github.com/alexchopin)<br />[🎨](#design-alexchopin "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=alexchopin "Documentation") [📋](#eventOrganizing-alexchopin "Event Organizing") [📦](#platform-alexchopin "Packaging/porting to new platform") [💬](#question-alexchopin "Answering Questions") [📢](#talk-alexchopin "Talks") | [<img src="https://avatars0.githubusercontent.com/u/5158436?v=4" width="150px;"/><br /><sub><b>Pooya Parsa</b></sub>](https://github.com/pi0)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Api0 "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=pi0 "Code") [🔌](#plugin-pi0 "Plugin/utility libraries") [💬](#question-pi0 "Answering Questions") [👀](#review-pi0 "Reviewed Pull Requests") [🔧](#tool-pi0 "Tools") | [<img src="https://avatars3.githubusercontent.com/u/4312154?v=4" width="150px;"/><br /><sub><b>Clark Du</b></sub>](https://github.com/clarkdo)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Aclarkdo "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Code") [💡](#example-clarkdo "Examples") [👀](#review-clarkdo "Reviewed Pull Requests") [⚠️](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Tests") [🔧](#tool-clarkdo "Tools") |
+| :---: | :---: | :---: | :---: |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Contributors
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
+<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" /></a>
+
 ## Contributing
 
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+## Cross-browser testing
 
-## Roadmap
+Thanks to BrowserStack!
 
-https://trello.com/b/lgy93IOl/nuxtjs-10
+<a href="http://browserstack.com"><img height="70" src="https://p3.zdusercontent.com/attachment/1015988/PWfFdN71Aung2evRkIVQuKJpE?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..aUrNFb8clSXsFwgw5BUTcg.IJr5piuCen7PmSSBHSrOnqM9K5YZfxX3lvbp-5LCqoKOi4CjjgdA419iqjofs0nLtm26FMURvZ8JRTuKB4iHer6lGu5f8dXHtIkYAHjP5fXDWkl044Yg2mSdrhF6uPy62GdlBYoYxwvgkNrac8nN_In8GY-qOC7bYmlZyJT7tsTZUTYbNMQiXS86YA5LgdCEWzWreMvc3C6cvZtVXIrcVgpkroIhvsTQPm4vQA-Uq6iCbTPA4oX5cpEtMtrlg4jYBnnAE4BTw5UwU_dY83ep5g.7wpc1IKv0rSRGsvqCG_q3g" alt="BrowserStack"></a>
+
+## License
+
+[MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE.md)

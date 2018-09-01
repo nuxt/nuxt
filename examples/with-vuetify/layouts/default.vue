@@ -1,27 +1,23 @@
 <template>
   <v-app>
-    <v-toolbar>
-      <v-toolbar-side-icon @click.native.stop="sidebar = !sidebar" />
-      <v-toolbar-logo>Toolbar</v-toolbar-logo>
+    <v-toolbar color="primary" dark>
+      <v-toolbar-side-icon @click.native.stop="drawer = !drawer" />
+      <v-toolbar-title>Toolbar</v-toolbar-title>
     </v-toolbar>
-    <v-sidebar left fixed drawer v-model="sidebar">
+    <v-navigation-drawer v-model="drawer" left fixed app>
       <v-list>
-        <v-list-item>
-          <v-list-tile router nuxt href="/">
-            <v-list-tile-title>Home</v-list-tile-title>
-          </v-list-tile>
-        </v-list-item>
-        <v-list-item>
-          <v-list-tile router nuxt href="/about">
-            <v-list-tile-title>About</v-list-tile-title>
-          </v-list-tile>
-        </v-list-item>
+        <v-list-tile router nuxt href="/">
+          <v-list-tile-title>Home</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile router nuxt href="/about">
+          <v-list-tile-title>About</v-list-tile-title>
+        </v-list-tile>
       </v-list>
-    </v-sidebar>
+    </v-navigation-drawer>
     <main>
       <v-content>
         <v-container fluid>
-          <nuxt/>
+          <nuxt />
         </v-container>
       </v-content>
     </main>
@@ -32,7 +28,7 @@
 export default {
   data() {
     return {
-      sidebar: false
+      drawer: false
     }
   }
 }

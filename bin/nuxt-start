@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
-
 const fs = require('fs')
-const parseArgs = require('minimist')
 const { resolve } = require('path')
-
-const { Nuxt, Utils } = require('..')
-const { loadNuxtConfig, getLatestHost } = require('./common/utils')
+const parseArgs = require('minimist')
+const consola = require('consola')
+const { Nuxt } = require('../dist/nuxt-start')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -26,11 +24,11 @@ const argv = parseArgs(process.argv.slice(2), {
 })
 
 if (argv.hostname === '') {
-  Utils.fatalError('Provided hostname argument has no value')
+  consola.fatal('Provided hostname argument has no value')
 }
 
 if (argv.help) {
-  console.log(`
+  process.stderr.write(`
     Description
       Starts the application in production mode.
       The application should be compiled with \`nuxt build\` first.
@@ -56,16 +54,17 @@ options.dev = false
 const nuxt = new Nuxt(options)
 
 // Setup hooks
-nuxt.hook('error', (_err, from) => Utils.fatalError(_err, from))
+nuxt.hook('error', err => consola.fatal(err))
 
 // Check if project is built for production
 const distDir = resolve(
   nuxt.options.rootDir,
   nuxt.options.buildDir || '.nuxt',
-  'dist'
+  'dist',
+  'server'
 )
 if (!fs.existsSync(distDir)) {
-  Utils.fatalError(
+  consola.fatal(
     'No build files found, please run `nuxt build` before launching `nuxt start`'
   )
 }
@@ -74,12 +73,14 @@ if (!fs.existsSync(distDir)) {
 if (nuxt.options.render.ssr === true) {
   const ssrBundlePath = resolve(distDir, 'server-bundle.json')
   if (!fs.existsSync(ssrBundlePath)) {
-    Utils.fatalError(
+    consola.fatal(
       'No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`'
     )
   }
 }
 
-const { port, host, unix } = getLatestHost(argv)
+const { port, host, socket } = getLatestHost(argv)
 
-nuxt.listen(port, host, unix)
+nuxt.listen(port, host, socket).then(() => {
+  nuxt.showReady(false)
+})

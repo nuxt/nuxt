@@ -1,5 +1,5 @@
 {
-  "name": "hello-nuxt-keep-alive",
+  "name": "example-with-keep-alive",
   "dependencies": {
     "nuxt": "latest"
   },

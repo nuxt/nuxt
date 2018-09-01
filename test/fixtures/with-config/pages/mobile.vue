@@ -9,4 +9,3 @@ export default {
   layout: 'mobile/default'
 }
 </script>
-

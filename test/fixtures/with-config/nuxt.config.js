@@ -1,7 +1,11 @@
-const path = require('path')
+import path from 'path'
 
-module.exports = {
+export default {
   srcDir: __dirname,
+  server: {
+    port: 8000,
+    host: '0.0.0.0'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
@@ -12,6 +16,13 @@ module.exports = {
           name: 'about-bis',
           path: '/about-bis',
           component: '~/pages/about.vue'
+        },
+        {
+          path: '/redirect/about-bis',
+          redirect: '/about-bis'
+        },
+        {
+          path: '/not-existed'
         }
       ]
     }
@@ -20,10 +31,9 @@ module.exports = {
   transition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
-  offline: true,
   extensions: 'ts',
   plugins: [
-    '~/plugins/test.js',
+    '~/plugins/test',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',
@@ -41,9 +51,9 @@ module.exports = {
     }
   },
   build: {
-    stats: false,
     publicPath: '/orion/',
-    maxChunkSize: 300000,
+    cssSourceMap: true,
+    parallel: true,
     analyze: {
       analyzerMode: 'disabled',
       generateStatsFile: true,
@@ -57,6 +67,7 @@ module.exports = {
         return null // Coverage: Return null, so defaults will be used.
       }
     },
+    transpile: 'vue-test',
     extend(config, options) {
       return Object.assign({}, config, {
         devtool: 'nosources-source-map'

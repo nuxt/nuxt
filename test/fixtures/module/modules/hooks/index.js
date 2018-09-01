@@ -1,4 +1,4 @@
-module.exports = function () {
+export default function () {
   let ctr = 1
 
   // Add hook for module
@@ -11,17 +11,17 @@ module.exports = function () {
     this.nuxt.__renderer_hook = renderer && ctr++
   })
 
+  // Get data before data sent to client
+  this.nuxt.hook('render:context', (data) => {
+    this.nuxt.__render_context = data
+  })
+
   // Add hook for build
   this.nuxt.hook('build:done', (builder) => {
     this.nuxt.__builder_hook = builder && ctr++
   })
 
-  // Note: Plugin is deprecated. Please use new hooks system.
-  this.nuxt.plugin('built', (builder) => {
+  this.nuxt.hook('build:done', (builder) => {
     this.nuxt.__builder_plugin = builder && ctr++
-  })
-
-  this.nuxt.hook('build:extendRoutes', (builder) => {
-    throw new Error('hook error testing')
   })
 }

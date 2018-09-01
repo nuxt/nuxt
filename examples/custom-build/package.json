@@ -1,8 +1,8 @@
 {
-  "name": "nuxt-custom-build",
+  "name": "example-custom-build",
   "description": "",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

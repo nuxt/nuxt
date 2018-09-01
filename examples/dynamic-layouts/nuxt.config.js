@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   head: {
     meta: [
       { content: 'width=device-width,initial-scale=1', name: 'viewport' }

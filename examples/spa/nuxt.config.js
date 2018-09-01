@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   /*
   ** Single Page Application mode
   ** Means no SSR

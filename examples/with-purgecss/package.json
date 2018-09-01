@@ -1,0 +1,18 @@
+{
+  "name": "example-with-purgecss",
+  "description": "Nuxt.js with Tailwind CSS",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "devDependencies": {
+    "autoprefixer": "^7.1.6",
+    "glob-all": "^3.1.0",
+    "purgecss-webpack-plugin": "^0.20.1",
+    "tailwindcss": "^0.1.3"
+  }
+}

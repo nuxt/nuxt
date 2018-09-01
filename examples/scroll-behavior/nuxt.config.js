@@ -1,6 +1,3 @@
-module.exports = {
-  build: {
-    vendor: ['axios']
-  },
+export default {
   css: ['~/assets/main.css']
 }

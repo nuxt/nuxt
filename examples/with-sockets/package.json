@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-socketio",
+  "name": "example-with-sockets",
   "scripts": {
     "dev": "nodemon -w server.js -w nuxt.config.js server.js",
     "build": "nuxt build",

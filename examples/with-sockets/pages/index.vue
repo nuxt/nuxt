@@ -3,13 +3,13 @@
     <ul class="pages">
       <li class="chat page">
         <div class="chatArea">
-          <ul class="messages" ref="messages">
-            <li class="message" v-for="(message, index) in messages" :key="index">
+          <ul ref="messages" class="messages">
+            <li v-for="(message, index) in messages" :key="index" class="message">
               <i :title="message.date">{{ message.date.split('T')[1].slice(0, -2) }}</i>: {{ message.text }}
             </li>
           </ul>
         </div>
-        <input class="inputMessage" type="text" v-model="message" @keyup.enter="sendMessage" placeholder="Type here..." />
+        <input v-model="message" class="inputMessage" type="text" placeholder="Type here..." @keyup.enter="sendMessage">
       </li>
     </ul>
   </div>
@@ -41,7 +41,7 @@ export default {
   methods: {
     sendMessage() {
       if (!this.message.trim()) return
-      let message = {
+      const message = {
         date: new Date().toJSON(),
         text: this.message.trim()
       }

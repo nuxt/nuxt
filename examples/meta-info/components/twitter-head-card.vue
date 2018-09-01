@@ -1,5 +1,5 @@
 <template>
-  <span v-if="false"></span>
+  <span v-if="false" />
 </template>
 
 <script>

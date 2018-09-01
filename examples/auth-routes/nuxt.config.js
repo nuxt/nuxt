@@ -1,7 +1,7 @@
-const bodyParser = require('body-parser')
-const session = require('express-session')
+import bodyParser from 'body-parser'
+import session from 'express-session'
 
-module.exports = {
+export default {
   head: {
     title: 'Auth Routes',
     meta: [
@@ -9,9 +9,6 @@ module.exports = {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', content: 'Auth Routes example' }
     ]
-  },
-  build: {
-    vendor: ['axios']
   },
   /*
   ** Add server middleware

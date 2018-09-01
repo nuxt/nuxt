@@ -4,7 +4,7 @@
       <span>Element Example</span>
     </div>
     <div>
-      <nuxt></nuxt>
+      <nuxt />
     </div>
   </el-card>
 </template>

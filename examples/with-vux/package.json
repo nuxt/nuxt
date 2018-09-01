@@ -1,0 +1,19 @@
+{
+  "name": "example-with-vux",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "nuxt": "latest",
+    "vux": "^2.8.0"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  },
+  "devDependencies": {
+    "less": "^2.7.3",
+    "less-loader": "^4.0.6",
+    "vux-loader": "^1.2.1"
+  }
+}

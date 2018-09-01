@@ -1,13 +1,11 @@
-'use strict'
-
-const assert = require('assert')
-const request = require('request')
-const app = require('../src/app')
+import assert from 'assert'
+import request from 'request'
+import app from '../src/app'
 
 describe('Feathers application tests', function () {
   before(function (done) {
     this.server = app.listen(3030)
-    this.server.once('listening', () => done())
+    this.server.once('listening', done)
   })
 
   after(function (done) {
@@ -29,7 +27,7 @@ describe('Feathers application tests', function () {
           'Accept': 'text/html'
         }
       }, function (err, res, body) {
-        assert.equal(res.statusCode, 404)
+        assert.strictEqual(res.statusCode, 404)
         assert.ok(body.indexOf('This page could not be found.') !== -1)
         done(err)
       })

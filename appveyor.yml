@@ -1,12 +1,17 @@
 # Test against the latest version of this Node.js version
 environment:
-  matrix:
-    - nodejs_version: "8"
-    - nodejs_version: "9"
+  nodejs_version: "Current"
+# environment:
+#   matrix:
+#     - nodejs_version: "Current"
 
 cache:
-  - "%LOCALAPPDATA%\\Yarn"
-  - node_modules
+  - 'node_modules -> yarn.lock'
+  - '%LOCALAPPDATA%\\Yarn -> yarn.lock'
+
+image: Visual Studio 2017
+
+shallow_clone: true
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -19,10 +24,14 @@ install:
 test_script:
   # Output useful info for debugging.
   - node --version
-  - npm --version
+  # - npm --version
   - yarn --version
   # run tests
-  - yarn test-appveyor
+  - yarn test:fixtures -w=2
+  - yarn test:unit -w=2
 
 # Don't actually build.
 build: off
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true

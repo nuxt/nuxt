@@ -1,9 +1,13 @@
 version: 2
+
+defaults: &defaults
+  working_directory: ~/project/nuxt
+  docker:
+    - image: banian/node-headless-chrome
+
 jobs:
-  build:
-    working_directory: /usr/src/app
-    docker:
-      - image: banian/node-headless-chrome
+  setup:
+    <<: *defaults
     steps:
       # Checkout repository
       - checkout
@@ -23,17 +27,102 @@ jobs:
           paths:
             - "node_modules"
 
-      # Test
-      - run:
-          name: Tests
-          command: NODE_ENV=test yarn test && yarn coverage
+      # Persist files
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt
 
-      # Release edge
+  lint:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
       - run:
-          name: Publish nuxt-edge
+          name: Lint and Security
+          command: yarn test:lint
+
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Build Fixtures
+          command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - nuxt/test/fixtures
+            - nuxt/dist
+    environment:
+      - NODE_ENV: "test"
+
+  test-unit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Unit Test
+          command: yarn test:unit -w=4 --coverage && yarn coverage
+    environment:
+      - NODE_ENV: "test"
+
+  test-e2e:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: E2E Test
+          command: yarn test:e2e && yarn coverage
+    environment:
+      - NODE_ENV: "test"
+
+  release:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: release
           command: |
-            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              ./scripts/release-edge
-            fi
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            BUILD_SUFFIX=edge yarn build
+            npm publish
+            for p in packages/*; do cd $p ; npm publish ; cd - ; done
+
+workflows:
+  version: 2
+  setup-and-parallel-test:
+    jobs:
+      - setup
+
+      - lint:
+          requires:
+            - setup
+
+      - build:
+          requires:
+            - setup
+
+      - test-unit:
+          requires:
+            - build
+
+      - test-e2e:
+          requires:
+            - build
+
+      - release:
+          requires:
+            - build
+            - lint
+            - test-unit
+            - test-e2e
+          filters:
+            branches:
+              only:
+                - dev

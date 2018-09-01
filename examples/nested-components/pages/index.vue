@@ -5,7 +5,7 @@
       <v-p>This is an example of a componentized blog post</v-p>
     </post>
 
-    <v-hr/>
+    <v-hr />
 
     <post title="My second blog post">
       <v-p>Hello there</v-p>
@@ -13,7 +13,7 @@
       <v-p>Wa-hoo!</v-p>
     </post>
 
-    <v-hr/>
+    <v-hr />
 
     <post title="The final blog post">
       <v-p>C'est la fin !</v-p>
@@ -24,13 +24,13 @@
 <script>
 import Post from '~/components/post'
 import vP from '~/components/paragraph'
-const vHr = { render: (h) => h('hr', { class: 'hr' }) }
+const vHr = { render: h => h('hr', { class: 'hr' }) }
 
 export default {
   components: {
     Post,
-    vP,
-    vHr
+    'v-p': vP,
+    'v-hr': vHr
   }
 }
 </script>

@@ -5,10 +5,10 @@
     <span>{{ page }}/{{ totalPages }}</span>
     <nuxt-link v-if="page < totalPages" :to="'?page=' + (page + 1)">Next &gt;</nuxt-link>
     <a v-else class="disabled">Next &gt;</a>
-    <transition mode="out-in" :name="transitionName">
+    <transition :name="transitionName" mode="out-in">
       <ul :key="page">
         <li v-for="user in users" :key="user.id">
-          <img :src="user.avatar" class="avatar" />
+          <img :src="user.avatar" class="avatar">
           <span>{{ user.first_name }} {{ user.last_name }}</span>
         </li>
       </ul>
@@ -21,6 +21,11 @@
 import axios from 'axios'
 
 export default {
+  data() {
+    return {
+      transitionName: this.getTransitionName(this.page)
+    }
+  },
   watch: {
     '$route.query.page': async function (page) {
       this.$nuxt.$loading.start()
@@ -39,11 +44,6 @@ export default {
       page,
       totalPages: data.total_pages,
       users: data.data
-    }
-  },
-  data() {
-    return {
-      transitionName: this.getTransitionName(this.page)
     }
   },
   methods: {

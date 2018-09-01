@@ -1,8 +1,5 @@
-module.exports = {
+export default {
   loading: { color: 'cyan' },
-  build: {
-    vendor: ['vue-i18n']
-  },
   router: {
     middleware: 'i18n'
   },

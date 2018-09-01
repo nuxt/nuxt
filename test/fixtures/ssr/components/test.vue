@@ -1,7 +1,7 @@
 <template>
-<foobar>
-    {{id}}
-</foobar>
+  <foobar>
+    {{ id }}
+  </foobar>
 </template>
 
 <script>

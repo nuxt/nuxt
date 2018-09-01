@@ -1,5 +1,5 @@
 {
-  "name": "with-amp",
+  "name": "example-with-amp",
   "version": "1.0.0",
   "dependencies": {
     "nuxt": "latest"
