@@ -37,7 +37,7 @@ if (argv.help) {
     Options
       --port, -p            A port number on which to start the application
       --hostname, -H        Hostname on which to start the application
-      --unix-socket, -u     Path to a UNIX socket
+      --unix-socket, -n     Path to a UNIX socket
       --spa                 Launch in SPA mode
       --universal           Launch in Universal mode (default)
       --config-file, -c     Path to Nuxt.js config file (default: nuxt.config.js)
