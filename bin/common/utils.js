@@ -53,7 +53,7 @@ exports.loadNuxtConfig = (argv) => {
   return options
 }
 
-exports.getLatestHost = argv => {
+exports.getLatestHost = (argv) => {
   const port =
     argv.port || process.env.PORT || process.env.npm_package_config_nuxt_port
   const host =
