@@ -138,6 +138,7 @@
     "babel-plugin-dynamic-import-node": "^2.0.0",
     "codecov": "^3.0.4",
     "cross-env": "^5.2.0",
+    "cross-spawn": "^6.0.5",
     "eslint": "^5.4.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-config-standard-jsx": "^6.0.2",
