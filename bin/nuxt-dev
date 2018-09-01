@@ -91,7 +91,7 @@ const errorHandler = (err, instance) => {
       })
       .then(() => oldInstance && oldInstance.nuxt.close())
       // Start listening
-      .then(() => nuxt.listen(port, host))
+      .then(() => nuxt.listen(port, host, socket))
       // Show ready message first time, others will be shown through WebpackBar
       .then(() => !oldInstance && nuxt.showReady(false))
       .then(() => builder.watchServer())
