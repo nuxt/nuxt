@@ -3,7 +3,7 @@ const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig } = require('./common/utils')
+const { loadNuxtConfig, getLatestHost } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -75,7 +75,7 @@ const errorHandler = (err, instance) => {
   }
 
   // Get latest environment variables
-  const { port, host } = nuxt.options.server
+  const { port, host, socket } = getLatestHost(argv)
 
   return (
     Promise.resolve()
