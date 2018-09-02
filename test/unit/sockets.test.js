@@ -1,5 +1,4 @@
-import consola from 'consola'
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
 
@@ -7,7 +6,6 @@ describe('basic sockets', () => {
   beforeAll(async () => {
     const options = await loadFixture('sockets')
     nuxt = new Nuxt(options)
-    const port = await getPort()
     await nuxt.listen()
   })
 

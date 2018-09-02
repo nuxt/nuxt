@@ -1,5 +1,4 @@
-import consola from 'consola'
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
 
