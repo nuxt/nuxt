@@ -51,7 +51,7 @@
     "build": "node -r esm ./build/build.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks build examples lib packages test",
-    "postinstall": "opencollective postinstall || exit 0",
+    "postinstall": "opencollective || exit 0",
     "security": "nsp check || true",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest test/fixtures",
@@ -67,6 +67,7 @@
     "@babel/core": "^7.0.0",
     "@nuxtjs/babel-preset-app": "^0.5.0",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
+    "@nuxtjs/opencollective": "^0.1.0",
     "@nuxtjs/youch": "^4.2.3",
     "babel-loader": "^8.0.0",
     "cache-loader": "^1.2.2",
@@ -95,7 +96,6 @@
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.4.2",
     "minimist": "^1.2.0",
-    "opencollective": "^1.0.3",
     "pify": "^4.0.0",
     "postcss": "^6.0.22",
     "postcss-import": "^11.1.0",
@@ -168,8 +168,7 @@
     "rollup-plugin-license": "^0.7.0"
   },
   "collective": {
-    "type": "opencollective",
     "url": "https://opencollective.com/nuxtjs",
-    "logo": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+    "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }
