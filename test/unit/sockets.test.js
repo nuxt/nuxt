@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt } from '../utils'
+import { loadFixture, Nuxt } from '../utils'
 
 let nuxt = null
 
