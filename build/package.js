@@ -1,6 +1,6 @@
 import { resolve } from 'path'
-import { spawnSync } from 'child_process'
 import EventEmitter from 'events'
+import { sync as spawnSync } from 'cross-spawn'
 import consola from 'consola'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import { builtinsMap } from './builtins'

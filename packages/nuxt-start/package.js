@@ -31,7 +31,10 @@ export default (pkg, { load }) => {
       dist: 'dist/nuxt-start.js',
       sources: [nuxt],
       extras: [
-        'minimist'
+        'minimist',
+        'vue-no-ssr',
+        'vue-router',
+        'vuex'
       ],
       exclude: [
         'jsdom'
