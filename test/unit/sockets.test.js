@@ -2,7 +2,7 @@ import { loadFixture, Nuxt } from '../utils'
 
 let nuxt = null
 
-describe('basic sockets', () => {
+describe.skip.appveyor('basic sockets', () => {
   beforeAll(async () => {
     const options = await loadFixture('sockets')
     nuxt = new Nuxt(options)
