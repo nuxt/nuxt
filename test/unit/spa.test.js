@@ -27,6 +27,14 @@ describe('spa', () => {
     consola.log.mockClear()
   })
 
+  test('/тест雨 (test non ascii route)', async () => {
+    const { html } = await renderRoute('/тест雨')
+    expect(html).toMatch('Hello SPA!')
+    expect(consola.log).not.toHaveBeenCalledWith('created')
+    expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
+  })
+
   test('/custom (custom layout)', async () => {
     const { html } = await renderRoute('/custom')
     expect(html).toMatch('Custom layout')
