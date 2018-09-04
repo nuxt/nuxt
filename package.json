@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/polyfill": "^7.0.0",
     "@nuxtjs/babel-preset-app": "^0.5.0",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/opencollective": "^0.1.0",
@@ -130,7 +131,6 @@
     "webpackbar": "^2.6.3"
   },
   "devDependencies": {
-    "@babel/polyfill": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-core": "^7.0.0-0",
     "babel-eslint": "^9.0.0",
