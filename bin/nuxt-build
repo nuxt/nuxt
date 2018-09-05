@@ -11,9 +11,10 @@ const argv = parseArgs(process.argv.slice(2), {
     a: 'analyze',
     s: 'spa',
     u: 'universal',
-    q: 'quiet'
+    q: 'quiet',
+    m: 'modern'
   },
-  boolean: ['h', 'a', 's', 'u', 'q'],
+  boolean: ['h', 'a', 's', 'u', 'q', 'm'],
   string: ['c'],
   default: {
     c: 'nuxt.config.js'
@@ -33,6 +34,7 @@ if (argv.help) {
       --no-generate        Don't generate static version for SPA mode (useful for nuxt start)
       --config-file, -c    Path to Nuxt.js config file (default: nuxt.config.js)
       --quiet, -q          Disable output except for errors
+      --modern, -m         Enable the modern build
       --help, -h           Displays this message
   `)
   process.exit(0)
@@ -52,6 +54,10 @@ if (argv.analyze && typeof options.build.analyze !== 'object') {
 // Silence output when using --quiet
 if (argv.quiet) {
   options.build.quiet = !!argv.quiet
+}
+
+if (argv.modern === true) {
+  options.build.mode = 'modern'
 }
 
 const nuxt = new Nuxt(options)
