@@ -66,7 +66,7 @@
   "dependencies": {
     "@babel/core": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
-    "@nuxtjs/babel-preset-app": "^0.5.0",
+    "@nuxtjs/babel-preset-app": "^0.6.1",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/opencollective": "^0.1.0",
     "@nuxtjs/youch": "^4.2.3",

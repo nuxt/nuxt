@@ -665,9 +665,9 @@
   version "1.4.0"
   resolved "https://registry.npmjs.org/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
 
-"@nuxtjs/babel-preset-app@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.npmjs.org/@nuxtjs/babel-preset-app/-/babel-preset-app-0.5.0.tgz#8adae70daf52050ea7cdc4e717c4532b429c6d9b"
+"@nuxtjs/babel-preset-app@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@nuxtjs/babel-preset-app/-/babel-preset-app-0.6.1.tgz#6657b5938331fb70ee9ffdd902e2e4ba939198a3"
   dependencies:
     "@babel/core" "^7.0.0"
     "@babel/plugin-proposal-class-properties" "^7.0.0"
