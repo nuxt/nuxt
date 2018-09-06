@@ -92,6 +92,7 @@ describe('with-config', () => {
     expect(html.includes('"string": "ok"')).toBe(true)
     expect(html.includes('"num2": 8.23')).toBe(true)
     expect(html.includes('"obj": {')).toBe(true)
+    expect(html).toContain('"NUXT_ENV_FOO": "manniL"')
   })
 
   test('/test/error', async () => {
