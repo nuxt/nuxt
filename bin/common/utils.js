@@ -11,7 +11,7 @@ const esm = require('esm')(module, {
   }
 })
 
-const getRootDir = argv => resolve(argv._[0] || '.')
+const getRootDir = argv => resolve(process.env.NUXT_ROOT_DIR || argv._[0] || '.')
 const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
 
 exports.nuxtConfigFile = getNuxtConfigFile
