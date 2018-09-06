@@ -97,6 +97,7 @@
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.4.2",
     "minimist": "^1.2.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.1",
     "pify": "^4.0.0",
     "postcss": "^6.0.22",
     "postcss-import": "^11.1.0",
