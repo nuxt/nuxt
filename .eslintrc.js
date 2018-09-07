@@ -52,12 +52,21 @@ module.exports = {
       'destructuring': 'any',
       'ignoreReadBeforeAssign': false
     }],
-    
+
+    // No single if in an "else" block
+    'no-lonely-if': 2,
+
+    // Force curly braces for control flow
+    curly: 2,
+
     // No async function without await
     'require-await': 2,
 
+    // Force dot notation when possible
     'dot-notation': 2,
-    
+
+    'no-var': 2,
+
     // Do not allow console.logs etc...
     'no-console': 2,
     'space-before-function-paren': [2, {

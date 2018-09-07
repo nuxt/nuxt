@@ -15,14 +15,10 @@ describe('basic config defaults', () => {
   })
 
   test('vendor has been deprecated', () => {
-    jest.spyOn(consola, 'warn')
-
     const options = Options.from({
       build: { vendor: 'vue' }
     })
     expect(options.build.vendor).toBeUndefined()
     expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
-
-    consola.warn.mockRestore()
   })
 })

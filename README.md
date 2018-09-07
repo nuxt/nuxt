@@ -1,17 +1,17 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
-  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js" alt="Build Status"></a>
-  <a href="https://travis-ci.org/nuxt/nuxt.js"><img src="https://badgen.net/travis/nuxt/nuxt.js" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js" alt="Windows Build Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
+  <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
+  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js/dev" alt="Windows Build Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/dev" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
   <a href="https://discord.gg/VApZF5W"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#backers" alt="sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
+  <a href="#partners" alt="Partner on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/partner/badge.svg" /></a>
   <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
+  <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
   <a href="https://opencollective.com/nuxtjs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
 </p>
@@ -45,86 +45,19 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
-<p>
-<a href="https://opencollective.com/nuxtjs/tiers/partner/0/website" target="_blank" rel="noopener noreferrer"><img height="100px" src="https://opencollective.com/nuxtjs/tiers/partner/0/avatar.svg">
-</a>
-<a href="https://opencollective.com/nuxtjs/tiers/partner/1/website" target="_blank" rel="noopener noreferrer"><img height="100px" src="https://opencollective.com/nuxtjs/tiers/partner/1/avatar.svg">
-</a>
-</p>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false" /></a>
 
 ## Sponsors
 
 Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<p>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/0/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/1/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/2/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/3/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/3/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/4/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/4/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/5/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/5/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/6/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/6/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/7/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/7/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/8/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/8/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/9/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/9/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/10/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/10/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/11/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/11/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/12/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/12/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/13/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/13/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/14/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/14/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/15/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/15/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/16/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/16/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/17/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/17/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/18/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/18/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/19/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/19/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/20/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/20/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/21/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/21/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/22/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/22/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/23/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/23/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/24/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/24/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/25/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/25/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/26/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/26/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/27/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/27/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/28/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/28/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/sponsors/29/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/29/avatar.svg"></a>
-</p>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false" /></a>
 
 ## Backers
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
 
-<p>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/0/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/1/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/2/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/3/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/3/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/4/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/4/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/5/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/5/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/6/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/6/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/7/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/7/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/8/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/8/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/9/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/9/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/10/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/10/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/11/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/11/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/12/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/12/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/13/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/13/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/14/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/14/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/15/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/15/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/16/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/16/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/17/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/17/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/18/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/18/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/19/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/19/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/20/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/20/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/21/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/21/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/22/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/22/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/23/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/23/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/24/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/24/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/25/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/25/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/26/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/26/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/27/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/27/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/28/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/28/avatar.svg"></a>
-<a href="https://opencollective.com/nuxtjs/tiers/backers/29/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/nuxtjs/tiers/backers/29/avatar.svg"></a>
-</p>
+<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" /></a>
 
 ## Getting started
 
@@ -264,17 +197,27 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 ## Core team
 
-| [Sebastien Chopin](https://github.com/Atinux) | [Alexandre Chopin](https://github.com/alexchopin) | [Pooya Parsa](https://github.com/pi0) | [Clark Du](https://github.com/clarkdo) |
-| --- | --- | --- | --- |
-| [![Atinux](https://avatars1.githubusercontent.com/u/904724?s=150&v=4)](https://github.com/Atinux) | [![alexchopin](https://avatars1.githubusercontent.com/u/4084277?s=150&v=4)](https://github.com/alexchopin) | [![pi0](https://avatars1.githubusercontent.com/u/5158436?s=150&v=4)](https://github.com/pi0) | [![clarkdo](https://avatars3.githubusercontent.com/u/4312154?s=150&v=4)](https://github.com/clarkdo) |
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+| [<img src="https://avatars2.githubusercontent.com/u/904724?v=4" width="150px;"/><br /><sub><b>Sébastien Chopin</b></sub>](https://github.com/atinux)<br />[📝](#blog-Atinux "Blogposts") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3AAtinux "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Code") [🎨](#design-Atinux "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Documentation") [💬](#question-Atinux "Answering Questions") [👀](#review-Atinux "Reviewed Pull Requests") [📢](#talk-Atinux "Talks") | [<img src="https://avatars2.githubusercontent.com/u/4084277?v=4" width="150px;"/><br /><sub><b>Alexandre Chopin</b></sub>](https://github.com/alexchopin)<br />[🎨](#design-alexchopin "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=alexchopin "Documentation") [📋](#eventOrganizing-alexchopin "Event Organizing") [📦](#platform-alexchopin "Packaging/porting to new platform") [💬](#question-alexchopin "Answering Questions") [📢](#talk-alexchopin "Talks") | [<img src="https://avatars0.githubusercontent.com/u/5158436?v=4" width="150px;"/><br /><sub><b>Pooya Parsa</b></sub>](https://github.com/pi0)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Api0 "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=pi0 "Code") [🔌](#plugin-pi0 "Plugin/utility libraries") [💬](#question-pi0 "Answering Questions") [👀](#review-pi0 "Reviewed Pull Requests") [🔧](#tool-pi0 "Tools") | [<img src="https://avatars3.githubusercontent.com/u/4312154?v=4" width="150px;"/><br /><sub><b>Clark Du</b></sub>](https://github.com/clarkdo)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Aclarkdo "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Code") [💡](#example-clarkdo "Examples") [👀](#review-clarkdo "Reviewed Pull Requests") [⚠️](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Tests") [🔧](#tool-clarkdo "Tools") |
+| :---: | :---: | :---: | :---: |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Contributors
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
+<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" /></a>
+
 ## Contributing
 
 Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+## Cross-browser testing
+
+Thanks to BrowserStack!
+
+<a href="http://browserstack.com"><img height="70" src="https://p3.zdusercontent.com/attachment/1015988/PWfFdN71Aung2evRkIVQuKJpE?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..aUrNFb8clSXsFwgw5BUTcg.IJr5piuCen7PmSSBHSrOnqM9K5YZfxX3lvbp-5LCqoKOi4CjjgdA419iqjofs0nLtm26FMURvZ8JRTuKB4iHer6lGu5f8dXHtIkYAHjP5fXDWkl044Yg2mSdrhF6uPy62GdlBYoYxwvgkNrac8nN_In8GY-qOC7bYmlZyJT7tsTZUTYbNMQiXS86YA5LgdCEWzWreMvc3C6cvZtVXIrcVgpkroIhvsTQPm4vQA-Uq6iCbTPA4oX5cpEtMtrlg4jYBnnAE4BTw5UwU_dY83ep5g.7wpc1IKv0rSRGsvqCG_q3g" alt="BrowserStack"></a>
 
 ## License
 

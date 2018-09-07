@@ -16,7 +16,7 @@
       </mu-list>
     </mu-drawer>
     <div class="content">
-      <mu-raised-button label="Primary" class="demo-raised-button" primary/>
+      <mu-raised-button label="Primary" class="demo-raised-button" primary />
     </div>
   </div>
 </template>

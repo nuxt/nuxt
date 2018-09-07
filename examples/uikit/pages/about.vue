@@ -1,8 +1,8 @@
 <template>
   <div class="uk-card uk-card-body">
     <p>Hi from {{ name }}</p>
-    <span class="uk-margin-small-right" uk-icon="icon: check"/>
-    <a href="#" uk-icon="icon: heart"/>
+    <span class="uk-margin-small-right" uk-icon="icon: check" />
+    <a href="#" uk-icon="icon: heart" />
     <hr class="uk-divider-icon">
     <nuxt-link to="/">Home page</nuxt-link>
   </div>

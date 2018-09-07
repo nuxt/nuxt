@@ -19,7 +19,7 @@
         </nav>
       </div>
     </header>
-    <nuxt/>
+    <nuxt />
   </div>
 </template>
 

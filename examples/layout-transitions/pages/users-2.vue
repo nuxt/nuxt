@@ -8,7 +8,7 @@
     <transition :name="transitionName" mode="out-in">
       <ul :key="page">
         <li v-for="user in users" :key="user.id">
-          <img :src="user.avatar" class="avatar" >
+          <img :src="user.avatar" class="avatar">
           <span>{{ user.first_name }} {{ user.last_name }}</span>
         </li>
       </ul>

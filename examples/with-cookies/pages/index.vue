@@ -4,7 +4,7 @@
     <table>
       <thead>
         <tr>
-          <th>Key</th><th>Value</th><th/>
+          <th>Key</th><th>Value</th><th />
         </tr>
       </thead>
       <tbody>
