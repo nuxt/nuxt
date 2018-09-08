@@ -92,6 +92,7 @@ describe('with-config', () => {
     expect(html.includes('"string": "ok"')).toBe(true)
     expect(html.includes('"num2": 8.23')).toBe(true)
     expect(html.includes('"obj": {')).toBe(true)
+    expect(html).toContain('"NUXT_ENV_FOO": "manniL"')
   })
 
   test('/test/error', async () => {
@@ -148,7 +149,7 @@ describe('with-config', () => {
         window.scrollTo = () => {}
         window._virtualConsole.emit('jsdomError', new Error('test'))
       }),
-      virtualConsole: new jsdom.VirtualConsole().sendTo({error: fakeErrorLog})
+      virtualConsole: new jsdom.VirtualConsole().sendTo({ error: fakeErrorLog })
     }
     try {
       await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)

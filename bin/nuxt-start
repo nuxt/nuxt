@@ -4,19 +4,20 @@ const { resolve } = require('path')
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { Nuxt } = require('../dist/nuxt-start')
-const { loadNuxtConfig } = require('./common/utils')
+const { loadNuxtConfig, getLatestHost } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
     h: 'help',
     H: 'hostname',
     p: 'port',
+    n: 'unix-socket',
     c: 'config-file',
     s: 'spa',
     u: 'universal'
   },
   boolean: ['h', 's', 'u'],
-  string: ['H', 'c'],
+  string: ['H', 'c', 'n'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -36,6 +37,7 @@ if (argv.help) {
     Options
       --port, -p            A port number on which to start the application
       --hostname, -H        Hostname on which to start the application
+      --unix-socket, -n     Path to a UNIX socket
       --spa                 Launch in SPA mode
       --universal           Launch in Universal mode (default)
       --config-file, -c     Path to Nuxt.js config file (default: nuxt.config.js)
@@ -77,8 +79,8 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
-const { port, host } = nuxt.options.server
+const { port, host, socket } = getLatestHost(argv)
 
-nuxt.listen(port, host).then(() => {
+nuxt.listen(port, host, socket).then(() => {
   nuxt.showReady(false)
 })
