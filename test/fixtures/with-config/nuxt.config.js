@@ -87,7 +87,7 @@ export default {
         return ['script', 'style', 'font'].includes(type)
       }
     },
-    customCompressionMiddleware: function damn(...args) { return compression({ threshold: 9 })(...args) },
+    compressor: function damn(...args) { return compression({ threshold: 9 })(...args) },
     static: {
       maxAge: '1y'
     }
