@@ -9,6 +9,7 @@ let builder = null
 let transpile = null
 let output = null
 let loadersOptions
+let vueLoader
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -38,6 +39,7 @@ describe('basic dev', () => {
             transpile = file => !babelLoader.exclude(file)
             output = wpOutput
             loadersOptions = loaders
+            vueLoader = rules.find(loader => loader.test.test('.vue'))
           }
         }
       }
@@ -75,8 +77,9 @@ describe('basic dev', () => {
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
       'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
     )
-    const { cssModules } = loadersOptions
+    const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')
+    expect(vueLoader.options).toBe(vue)
   })
 
   test('/stateless', async () => {
