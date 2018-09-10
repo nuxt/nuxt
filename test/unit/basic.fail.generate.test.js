@@ -18,27 +18,13 @@ describe('basic fail generate', () => {
     })
   })
 
-  test('Fails when generate.dir lower then root dir', async () => {
+  test('Fail when generate.dir equals rootDir', async () => {
     const options = await loadFixture('basic', {
-      generate: { dir: '.' }
+      generate: { dir: '../basic' }
     })
 
     expect(() => {
       new Nuxt(options) /* eslint-disable-line no-new */
-    }).toThrow(
-      'options.generate.dir cannot be a parent of or same as rootDir'
-    )
-  })
-
-  test('generate.dir can be on same level as root', async () => {
-    const options = await loadFixture('basic', {
-      generate: { dir: '../basic-dist' }
-    })
-
-    expect(() => {
-      new Nuxt(options) /* eslint-disable-line no-new */
-    }).not.toThrow(
-      'options.generate.dir cannot be a parent of or same as rootDir'
-    )
+    }).toThrow(/options.generate.dir cannot be/)
   })
 })
