@@ -8,6 +8,8 @@ let nuxt = null
 let builder = null
 let transpile = null
 let output = null
+let loadersOptions
+let vueLoader
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -26,11 +28,18 @@ describe('basic dev', () => {
           'vue\\.test\\.js',
           /vue-test/
         ],
-        extend({ module: { rules }, output: wpOutput }, { isClient }) {
+        loaders: {
+          cssModules: {
+            localIdentName: '[hash:base64:6]'
+          }
+        },
+        extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)
             output = wpOutput
+            loadersOptions = loaders
+            vueLoader = rules.find(loader => loader.test.test('.vue'))
           }
         }
       }
@@ -60,6 +69,17 @@ describe('basic dev', () => {
     expect(consola.warn).toBeCalledWith(
       'Notice: Please do not use contenthash in dev mode to prevent memory leak'
     )
+  })
+
+  test('Config: build.loaders', () => {
+    expect(Object.keys(loadersOptions)).toHaveLength(12)
+    expect(loadersOptions).toHaveProperty(
+      'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
+    )
+    const { cssModules, vue } = loadersOptions
+    expect(cssModules.localIdentName).toBe('[hash:base64:6]')
+    expect(vueLoader.options).toBe(vue)
   })
 
   test('/stateless', async () => {
