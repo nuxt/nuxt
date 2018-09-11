@@ -18,11 +18,11 @@ import Byline from '../components/Byline'
 
 export default {
   head: {
-    title: 'The Dog'
+    title: 'The Dog',
   },
   components: {
-    Byline
-  }
+    Byline,
+  },
 }
 </script>
 
