@@ -10,7 +10,7 @@ export default {
     author: {
       type: String,
       default: ''
-    },
-  },
+    }
+  }
 }
 </script>
