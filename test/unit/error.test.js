@@ -27,6 +27,25 @@ describe('error', () => {
     expect(error.message.includes('This page could not be found')).toBe(true)
   })
 
+  test('/async-data-rejection should not result in an unhandled rejection', async () => {
+    const unhandledRejectionHook = jest.fn()
+
+    process.on('unhandledRejection', unhandledRejectionHook)
+
+    await expect(nuxt.renderRoute('/async-data-rejection')).rejects.toMatchObject({
+      message: expect.stringContaining('Generic AsyncData Error')
+    })
+
+    // Important: Circa jest version: 23.6.0, the process never emits unhandledRejection,
+    //   even when it should, rendering this expectation completely meaningless. It's still
+    //   a valid test though--it's a bug for the people working on jest to work out.
+    // Ref: https://github.com/facebook/jest/issues/5620
+    //    > The `unhandledRejection` handler is not testable anymore. (#5620)
+    expect(unhandledRejectionHook).toHaveBeenCalledTimes(0)
+
+    process.removeListener('unhandledRejection', unhandledRejectionHook)
+  })
+
   test('/ with renderAndGetWindow()', async () => {
     await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
