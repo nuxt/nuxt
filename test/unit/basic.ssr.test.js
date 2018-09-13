@@ -224,7 +224,7 @@ describe('basic ssr', () => {
   test('/no-ssr', async () => {
     const { html } = await nuxt.renderRoute('/no-ssr')
     expect(html.includes(
-      '<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'
+      '<p class="no-ssr-placeholder">Loading...</p>'
     )).toBe(true)
   })
 
