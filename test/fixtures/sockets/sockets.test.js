@@ -1,3 +1,5 @@
 import { buildFixture } from '../../utils/build'
 
-buildFixture('sockets')
+describe.skip.win('unix socket', () => {
+  buildFixture('sockets')
+})
