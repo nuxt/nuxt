@@ -9,7 +9,7 @@ const modifyHtml = (html) => {
   return html
 }
 
-module.exports = {
+export default {
   head: {
     meta: [
       { charset: 'utf-8' },
