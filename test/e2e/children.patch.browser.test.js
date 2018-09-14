@@ -37,8 +37,6 @@ describe('children patch (browser)', () => {
 
   test('Navigate to /patch/1', async () => {
     const { hook } = await page.nuxt.navigate('/patch/1', false)
-    const loading = await page.nuxt.loadingData()
-    expect(loading.show).toBe(true)
     await hook
 
     const h2 = await page.$text('h2')
