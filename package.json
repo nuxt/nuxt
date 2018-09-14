@@ -52,11 +52,10 @@
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks build examples lib packages test",
     "postinstall": "opencollective || exit 0",
-    "security": "nsp check || true",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest test/fixtures",
     "test:e2e": "jest -i test/e2e",
-    "test:lint": "yarn lint && yarn security",
+    "test:lint": "yarn lint",
     "test:unit": "jest test/unit"
   },
   "engines": {
@@ -155,7 +154,6 @@
     "get-port": "^4.0.0",
     "jest": "^23.6.0",
     "jsdom": "^12.0.0",
-    "nsp": "^3.2.1",
     "pug": "^2.0.3",
     "pug-plain-loader": "^1.0.0",
     "puppeteer": "^1.8.0",

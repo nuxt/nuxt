@@ -39,8 +39,17 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Lint and Security
+          name: Lint
           command: yarn test:lint
+
+  audit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Security Audit
+          command: npm install --package-lock-only && npm audit --audit-level=moderate
 
   build:
     <<: *defaults
@@ -104,6 +113,10 @@ workflows:
           requires:
             - setup
 
+      - audit:
+          requires:
+            - setup
+
       - build:
           requires:
             - setup
@@ -120,6 +133,7 @@ workflows:
           requires:
             - build
             - lint
+            - audit
             - test-unit
             - test-e2e
           filters:
