@@ -236,6 +236,53 @@ describe('utils', () => {
         .toBe(Utils.wp(`loader1!loader2!..${path.sep}baz`))
     })
   })
+
+  describe('guardDir', () => {
+    test('Parent dir is guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root'
+        }, 'dir1', 'dir2')
+      }).toThrow()
+    })
+
+    test('Same dir is guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent'
+        }, 'dir1', 'dir2')
+      }).toThrow()
+    })
+
+    test('Same level dir is not guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent-next',
+          dir2: '/root/parent'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
+    })
+
+    test('Same level dir is not guarded 2', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent-next'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
+    })
+
+    test('Child dir is not guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent/child'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
+    })
+  })
 })
 
 test('createRoutes should allow snake case routes', () => {
