@@ -1,10 +1,10 @@
 import { existsSync, writeFile } from 'fs'
 import http from 'http'
-import { resolve, sep } from 'path'
+import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths } from '../utils'
+import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths, equalOrStartsWith } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -54,18 +54,18 @@ describe('basic generate', () => {
   })
 
   test('Check changed files', () => {
-    // When generating Nuxt we only expect files to changed
-    // within the nuxt.options.generate.dir
-    const generateDirMatch =
-      new RegExp(`^${generator.nuxt.options.generate.dir}(${sep}|$)`)
-    let changedFileFound = false
+    // When generating Nuxt we only expect files to change
+    // within nuxt.options.generate.dir, but also allow other
+    // .nuxt dirs for when tests are runInBand
+    const allowChangesDir = resolve(generator.nuxt.options.generate.dir, '..', '.nuxt')
 
+    let changedFileFound = false
     const paths = listPaths(generator.nuxt.options.rootDir, pathsBefore)
     paths.map((item) => {
       if (item.path === changedFileName) {
         changedFileFound = true
       } else {
-        expect(item.path).toMatch(generateDirMatch)
+        expect(equalOrStartsWith(allowChangesDir, item.path)).toBe(true)
       }
     })
     expect(changedFileFound).toBe(true)

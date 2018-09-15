@@ -68,3 +68,7 @@ export const listPaths = function listPaths(dir, pathsBefore = [], options = {})
 
   return klawSync(dir, options)
 }
+
+export const equalOrStartsWith = function equalOrStartsWith(string1, string2) {
+  return string1 === string2 || string2.startsWith(string1)
+}

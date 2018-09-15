@@ -1,5 +1,4 @@
-import { sep } from 'path'
-import { loadFixture, Nuxt, Builder, listPaths } from './index'
+import { loadFixture, Nuxt, Builder, listPaths, equalOrStartsWith } from './index'
 
 export const buildFixture = function (fixture, callback, hooks = []) {
   const pathsBefore = {}
@@ -31,12 +30,10 @@ export const buildFixture = function (fixture, callback, hooks = []) {
 
     // When building Nuxt we only expect files to changed
     // within the nuxt.options.buildDir
-    const buildDirMatch = new RegExp(`^${nuxt.options.buildDir}(${sep}|$)`)
-
     Object.keys(pathsBefore).forEach((key) => {
       const paths = listPaths(nuxt.options[`${key}Dir`], pathsBefore[key])
       paths.map((item) => {
-        expect(item.path).toMatch(buildDirMatch)
+        expect(equalOrStartsWith(nuxt.options.buildDir, item.path)).toBe(true)
       })
     })
   })
