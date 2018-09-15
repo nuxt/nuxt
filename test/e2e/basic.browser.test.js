@@ -231,6 +231,27 @@ describe('basic browser', () => {
     expect(p).toBe('Nuxt.js')
   })
 
+  test('/progressbar', async () => {
+    // We have added a named animation for the nuxt-progress class
+    // which triggers a js event when a nuxt-progress div is added
+    let nodeInserted = false
+    await page.exposeFunction('insertNodeTriggered', evt => {
+      nodeInserted = true
+    })
+    await page.evaluate(() => {
+      document.addEventListener('animationstart', evt => {
+        if (evt.animationName === 'nodeInserted') {
+          window.insertNodeTriggered(evt)
+        }
+      }, false)
+    })
+
+    expect(await page.$('.nuxt-progress')).toBeNull()
+    await page.nuxt.navigate('/progressbar')
+    expect(await page.$('.nuxt-progress')).toBeNull()
+    expect(nodeInserted).toBeTruthy()
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
