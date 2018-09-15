@@ -1,4 +1,4 @@
-import { existsSync, writeFile } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import http from 'http'
 import { resolve } from 'path'
 import { remove } from 'fs-extra'
@@ -26,7 +26,7 @@ describe('basic generate', () => {
     // Make sure our check for changed files is really working
     changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
     nuxt.hook('generate:done', () => {
-      writeFile(changedFileName, '')
+      writeFileSync(changedFileName, '')
     })
 
     const builder = new Builder(nuxt)
@@ -62,7 +62,6 @@ describe('basic generate', () => {
     let changedFileFound = false
     const paths = listPaths(generator.nuxt.options.rootDir, pathsBefore)
     paths.map((item) => {
-      console.log(changedFileName, item.path) // eslint-disable-line no-console
       if (item.path === changedFileName) {
         changedFileFound = true
       } else {
