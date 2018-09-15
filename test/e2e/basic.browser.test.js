@@ -235,11 +235,11 @@ describe('basic browser', () => {
     // We have added a named animation for the nuxt-progress class
     // which triggers a js event when a nuxt-progress div is added
     let nodeInserted = false
-    await page.exposeFunction('insertNodeTriggered', evt => {
+    await page.exposeFunction('insertNodeTriggered', (evt) => {
       nodeInserted = true
     })
     await page.evaluate(() => {
-      document.addEventListener('animationstart', evt => {
+      document.addEventListener('animationstart', (evt) => {
         if (evt.animationName === 'nodeInserted') {
           window.insertNodeTriggered(evt)
         }
