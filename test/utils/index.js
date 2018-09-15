@@ -1,8 +1,9 @@
 import path from 'path'
 import fs from 'fs'
+import klawSync from 'klaw-sync'
 
 import _getPort from 'get-port'
-import { defaultsDeep } from 'lodash'
+import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
 import pkg from '../../package.json'
 import _Nuxt from '../../lib/index.js'
@@ -50,4 +51,20 @@ export const waitUntil = async function waitUntil(condition, duration = 20, inte
     return true
   }
   return false
+}
+
+export const listPaths = function listPaths(dir, pathsBefore = [], options = {}) {
+  if (Array.isArray(pathsBefore) && pathsBefore.length) {
+    // only return files that didn't exist before building
+    // and files that have been changed
+    options.filter = (item) => {
+      const foundItem = find(pathsBefore, (itemBefore) => {
+        return item.path === itemBefore.path
+      })
+      return typeof foundItem === 'undefined' ||
+        item.stats.mtimeMs !== foundItem.stats.mtimeMs
+    }
+  }
+
+  return klawSync(dir, options)
 }

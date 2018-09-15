@@ -1,10 +1,10 @@
-import { existsSync } from 'fs'
+import { existsSync, writeFile } from 'fs'
 import http from 'http'
-import { resolve } from 'path'
+import { resolve, sep } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { Builder, Generator, getPort, loadFixture, Nuxt, rp } from '../utils'
+import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -13,14 +13,24 @@ const distDir = resolve(rootDir, '.nuxt-generate')
 
 let server = null
 let generator = null
+let pathsBefore
+let changedFileName
 
 describe('basic generate', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
+
+    pathsBefore = listPaths(nuxt.options.rootDir)
+
+    // Make sure our check for changed files is really working
+    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
+    nuxt.hook('generate:done', () => {
+      writeFile(changedFileName, '')
+    })
+
     const builder = new Builder(nuxt)
     builder.build = jest.fn()
-
     generator = new Generator(nuxt, builder)
 
     await generator.generate()
@@ -41,6 +51,24 @@ describe('basic generate', () => {
 
   test('Check ready hook called', () => {
     expect(generator.nuxt.__hook_ready_called__).toBe(true)
+  })
+
+  test('Check changed files', () => {
+    // When generating Nuxt we only expect files to changed
+    // within the nuxt.options.generate.dir
+    const generateDirMatch =
+      new RegExp(`^${generator.nuxt.options.generate.dir}(${sep}|$)`)
+    let changedFileFound = false
+
+    const paths = listPaths(generator.nuxt.options.rootDir, pathsBefore)
+    paths.map((item) => {
+      if (item.path === changedFileName) {
+        changedFileFound = true
+      } else {
+        expect(item.path).toMatch(generateDirMatch)
+      }
+    })
+    expect(changedFileFound).toBe(true)
   })
 
   test('Format errors', () => {
