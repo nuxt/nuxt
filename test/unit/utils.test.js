@@ -16,10 +16,11 @@ describe('utils', () => {
     expect(ctx.res.b).toBe(2)
   })
 
-  test.skip.appveyor('waitFor', async () => {
-    const s = Date.now()
+  test('waitFor', async () => {
+    const s = process.hrtime()
     await Utils.waitFor(100)
-    expect(Date.now() - s >= 100).toBe(true)
+    const t = process.hrtime(s)
+    expect(t[0] * 1e9 + t[1] >= 100 * 1e6).toBe(true)
     await Utils.waitFor()
   })
 

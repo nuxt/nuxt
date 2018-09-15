@@ -62,6 +62,7 @@ describe('basic generate', () => {
     let changedFileFound = false
     const paths = listPaths(generator.nuxt.options.rootDir, pathsBefore)
     paths.map((item) => {
+      console.log(changedFileName, item.path)
       if (item.path === changedFileName) {
         changedFileFound = true
       } else {
