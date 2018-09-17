@@ -1,5 +1,5 @@
 import path from 'path'
-import { Utils, waitUntil } from '../utils'
+import { Utils, waitUntil, isAppveyor } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {
@@ -20,7 +20,11 @@ describe('utils', () => {
     const s = process.hrtime()
     await Utils.waitFor(100)
     const t = process.hrtime(s)
-    expect(t[0] * 1e9 + t[1]).not.toBeLessThan(100 * 1e6)
+    let waitedFor = (t[0] * 1e9 + t[1]) / 1e6
+    if (isAppveyor) {
+      waitedFor = Math.round(waitedFor)
+    }
+    expect(waitedFor).not.toBeLessThan(100)
     await Utils.waitFor()
   })
 
