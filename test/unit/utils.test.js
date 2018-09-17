@@ -1,5 +1,5 @@
 import path from 'path'
-import { Utils, waitUntil, isAppveyor } from '../utils'
+import { Utils, waitUntil } from '../utils'
 
 describe('utils', () => {
   test('encodeHtml', () => {
@@ -17,14 +17,14 @@ describe('utils', () => {
   })
 
   test('waitFor', async () => {
+    const delay = 100
     const s = process.hrtime()
-    await Utils.waitFor(100)
+    await Utils.waitFor(delay)
     const t = process.hrtime(s)
-    let waitedFor = (t[0] * 1e9 + t[1]) / 1e6
-    if (isAppveyor) {
-      waitedFor = Math.round(waitedFor)
-    }
-    expect(waitedFor).not.toBeLessThan(100)
+    // Node.js makes no guarantees about the exact timing of when callbacks will fire
+    // HTML5 specifies a minimum delay of 4ms for timeouts
+    // although arbitrary, use this value to determine our lower limit
+    expect((t[0] * 1e9 + t[1]) / 1e6).not.toBeLessThan(delay - 4)
     await Utils.waitFor()
   })
 

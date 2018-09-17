@@ -18,8 +18,6 @@ export const Options = _Nuxt.Options
 export const Builder = _Nuxt.Builder
 export const Generator = _Nuxt.Generator
 
-export const isAppveyor = !!process.env.APPVEYOR
-
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')

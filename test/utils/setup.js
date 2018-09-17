@@ -1,5 +1,4 @@
-import { isAppveyor } from '.'
-
+const isAppveyor = !!process.env.APPVEYOR
 describe.skip.appveyor = isAppveyor ? describe.skip : describe
 test.skip.appveyor = isAppveyor ? test.skip : test
 
