@@ -41,6 +41,14 @@
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
 
+## Professional support with TideLift
+
+Professionally supported Nuxt.js is now available!
+
+Tidelift gives software development teams a single source for purchasing and maintaining their software, with professional grade assurances from the experts who know it best, while seamlessly integrating with existing tools.
+
+[Get supported Nuxt with the Tidelift Subscription](https://tidelift.com/subscription/pkg/npm-nuxt?utm_source=npm-nuxt&utm_medium=readme).
+
 ## Partners
 
 Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
