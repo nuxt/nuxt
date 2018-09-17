@@ -32,7 +32,7 @@ export const buildFixture = function (fixture, callback, hooks = []) {
     // within the nuxt.options.buildDir
     Object.keys(pathsBefore).forEach((key) => {
       const paths = listPaths(nuxt.options[`${key}Dir`], pathsBefore[key])
-      paths.map((item) => {
+      paths.forEach((item) => {
         expect(equalOrStartsWith(nuxt.options.buildDir, item.path)).toBe(true)
       })
     })

@@ -20,7 +20,7 @@ describe('utils', () => {
     const s = process.hrtime()
     await Utils.waitFor(100)
     const t = process.hrtime(s)
-    expect(t[0] * 1e9 + t[1] >= 100 * 1e6).toBe(true)
+    expect(t[0] * 1e9 + t[1]).not.toBeLessThan(100 * 1e6)
     await Utils.waitFor()
   })
 
