@@ -98,8 +98,9 @@ describe('ssr', () => {
   })
 
   test('store undefined variable response', async () => {
-    const { html } = await nuxt.renderRoute('/storeUndefVar')
-    expect(html.includes('<foobar>true</foobar>')).toBe(true)
+    const window = await nuxt.renderAndGetWindow(url('/store'))
+    expect('idUndefined' in window.__NUXT__.state).toBe(true)
+    expect(window.__NUXT__.state.idUndefined).toEqual(undefined)
   })
 
   test('stress test with asyncData', async () => {
