@@ -40,10 +40,12 @@ describe('components', () => {
     test('percentage changed after 1s', async () => {
       jest.useRealTimers()
       const component = new VueComponent().$mount()
+      component.duration = 2000
       component.throttle = 0
       component.start()
-      await Utils.waitFor(1000)
+      await Utils.waitFor(250)
       const str = await renderToString(component)
+      expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;"></div>')
       expect(component.$data.percent).not.toBe(0)
       component.clear()
@@ -70,6 +72,7 @@ describe('components', () => {
       str = await renderToString(component)
       expect(str).toBe('<!---->')
       expect(component.$data.percent).toBe(0)
+      component.clear()
       jest.useRealTimers()
     })
 
@@ -83,13 +86,36 @@ describe('components', () => {
 
     test('not shown until throttle', async () => {
       const component = new VueComponent().$mount()
-      component.throttle = 2000
+      component.duration = 2000
+      component.throttle = 1000
       component.start()
-      await Utils.waitFor(500)
-      const str = await renderToString(component)
+      await Utils.waitFor(300)
+      let str = await renderToString(component)
       expect(str).toBe('<!---->')
-      await Utils.waitFor(2000)
+      await Utils.waitFor(1000)
+      str = await renderToString(component)
+      expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;"></div>')
+      component.clear()
+    })
+
+    test('can pause and resume', async () => {
+      const component = new VueComponent().$mount()
+      component.duration = 2000
+      component.throttle = 0
+      component.start()
+      await Utils.waitFor(250)
+      let str = await renderToString(component)
+      expect(str).not.toBe('<!---->')
+      component.pause()
+      await Utils.waitFor(500)
+      const str2 = await renderToString(component)
+      expect(str2).toBe(str)
+      component.resume()
+      await Utils.waitFor(500)
+      str = await renderToString(component)
+      expect(str).not.toBe('<!---->')
+      expect(str).not.toBe(str2)
       component.clear()
     })
   })
