@@ -97,6 +97,11 @@ describe('ssr', () => {
     await uniqueTest('/fetch')
   })
 
+  test('store undefined variable response', async () => {
+    const { html } = await nuxt.renderRoute('/storeUndefVar')
+    expect(html.includes('<foobar>true</foobar>')).toBe(true)
+  })
+
   test('stress test with asyncData', async () => {
     await stressTest('/asyncData')
   })
