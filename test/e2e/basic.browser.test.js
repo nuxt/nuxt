@@ -50,6 +50,11 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('My component!')
   })
 
+  test('/store-module', async () => {
+    await page.nuxt.navigate('/store-module')
+    expect(await page.$text('h1')).toBe('mutated')
+  })
+
   test('/css', async () => {
     await page.nuxt.navigate('/css')
 

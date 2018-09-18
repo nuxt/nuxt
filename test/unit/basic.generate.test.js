@@ -61,6 +61,12 @@ describe('basic generate', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
+  test('/store-module', async () => {
+    const window = await generator.nuxt.renderAndGetWindow(url('/store-module'))
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>mutated</h1>')).toBe(true)
+  })
+
   test('/css', async () => {
     const window = await generator.nuxt.renderAndGetWindow(url('/css'))
 
