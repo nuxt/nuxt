@@ -61,6 +61,9 @@ export default {
     '': true
   },
   transition: false,
+  plugins: [
+    '~/plugins/dir-plugin'
+  ],
   build: {
     scopeHoisting: true,
     postcss: [
