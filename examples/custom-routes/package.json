@@ -2,7 +2,7 @@
   "name": "example-custom-routes",
   "dependencies": {
     "axios": "latest",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

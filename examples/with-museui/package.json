@@ -1,7 +1,7 @@
 {
 	"name": "example-with-museui",
 	"dependencies": {
-		"nuxt": "latest",
+		"nuxt-edge": "latest",
 		"muse-ui": "latest"
 	},
 	"scripts": {

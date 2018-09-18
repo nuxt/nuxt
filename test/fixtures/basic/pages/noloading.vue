@@ -13,7 +13,7 @@ export default {
       setTimeout(() => resolve({
         loaded: false,
         name: 'Nuxt.js'
-      }), 10)
+      }), 300)
     })
   },
   mounted() {
