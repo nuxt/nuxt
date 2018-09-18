@@ -21,18 +21,23 @@ export default {
       percent: 0,
       show: false,
       canSuccess: true,
+      throttle: 200,
       duration: <%= loading.duration %>,
     }
   },
   methods: {
     start () {
-      this.show = true
-      this.$nextTick(() => {
-        this.canSuccess = true
-        if (this._timer) {
-          clearInterval(this._timer)
-          this.percent = 0
-        }
+      this.canSuccess = true
+      if (this._throttle) {
+        clearTimeout(this._throttle)
+      }
+      if (this._timer) {
+        clearInterval(this._timer)
+        this._timer = null
+        this.percent = 0
+      }
+      this._throttle = setTimeout(() => {
+        this.show = true
         this._cut = 10000 / Math.floor(this.duration)
         this._timer = setInterval(() => {
           this.increase(this._cut * Math.random())
@@ -40,7 +45,7 @@ export default {
             this.finish()
           }
         }, 100)
-      })
+      }, this.throttle)
       return this
     },
     set (num) {
@@ -72,6 +77,8 @@ export default {
     hide () {
       clearInterval(this._timer)
       this._timer = null
+      clearTimeout(this._throttle)
+      this._throttle = null
       setTimeout(() => {
         this.show = false
         this.$nextTick(() => {

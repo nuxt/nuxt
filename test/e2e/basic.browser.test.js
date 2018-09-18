@@ -43,11 +43,14 @@ describe('basic browser', () => {
 
   test('/stateless', async () => {
     const { hook } = await page.nuxt.navigate('/stateless', false)
-    const loading = await page.nuxt.loadingData()
 
-    expect(loading.show).toBe(true)
     await hook
     expect(await page.$text('h1')).toBe('My component!')
+  })
+
+  test('/store-module', async () => {
+    await page.nuxt.navigate('/store-module')
+    expect(await page.$text('h1')).toBe('mutated')
   })
 
   test('/css', async () => {
