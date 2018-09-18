@@ -1,7 +1,7 @@
 {
   "name": "example-dynamic-layouts",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",
