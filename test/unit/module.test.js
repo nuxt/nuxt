@@ -10,7 +10,7 @@ let nuxt = null
 
 describe('module', () => {
   beforeAll(async () => {
-    const config = loadFixture('module')
+    const config = await loadFixture('module')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -29,6 +29,11 @@ describe('module', () => {
 
     const { html } = await nuxt.renderRoute('/layout')
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
+  })
+
+  test('/404 should display the module error layout', async () => {
+    const { html } = await nuxt.renderRoute('/404')
+    expect(html).toContain('You should see the error in a different Vue!')
   })
 
   test('Hooks', () => {
@@ -60,12 +65,8 @@ describe('module', () => {
   })
 
   test('AddVendor - deprecated', () => {
-    jest.spyOn(consola, 'warn')
-
     nuxt.moduleContainer.addVendor('nuxt-test')
     expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
-
-    consola.warn.mockRestore()
   })
 
   // Close server and ask nuxt to stop listening to file changes

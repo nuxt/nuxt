@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <p><img src="~/assets/nuxt.png" ></p>
+    <p><img src="~/assets/nuxt.png"></p>
     <p>This image is included as data:image/png;base64...</p>
     <p>In the source code, the files generated are based on the build.filenames data.</p>
   </div>

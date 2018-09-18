@@ -1,3 +1,3 @@
-const { buildFixture } = require('../../utils/build')
+import { buildFixture } from '../../utils/build'
 
 buildFixture('dynamic-routes')

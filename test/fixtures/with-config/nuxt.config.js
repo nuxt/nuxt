@@ -1,4 +1,5 @@
 import path from 'path'
+import compression from 'compression'
 
 export default {
   srcDir: __dirname,
@@ -86,6 +87,7 @@ export default {
         return ['script', 'style', 'font'].includes(type)
       }
     },
+    compressor: function damn(...args) { return compression({ threshold: 9 })(...args) },
     static: {
       maxAge: '1y'
     }

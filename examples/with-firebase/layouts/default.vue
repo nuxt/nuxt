@@ -5,7 +5,7 @@
         <h1 @click="$router.push('/')">Nuxt.js + Firebase</h1>
       </nav>
     </div>
-    <nuxt/>
+    <nuxt />
   </div>
 </template>
 

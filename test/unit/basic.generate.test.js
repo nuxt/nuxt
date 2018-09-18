@@ -1,10 +1,10 @@
-import { existsSync } from 'fs'
+import { existsSync, writeFileSync } from 'fs'
 import http from 'http'
 import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { Builder, Generator, getPort, loadFixture, Nuxt, rp } from '../utils'
+import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths, equalOrStartsWith } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -13,14 +13,24 @@ const distDir = resolve(rootDir, '.nuxt-generate')
 
 let server = null
 let generator = null
+let pathsBefore
+let changedFileName
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
+    const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
+
+    pathsBefore = listPaths(nuxt.options.rootDir)
+
+    // Make sure our check for changed files is really working
+    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
+    nuxt.hook('generate:done', () => {
+      writeFileSync(changedFileName, '')
+    })
+
     const builder = new Builder(nuxt)
     builder.build = jest.fn()
-
     generator = new Generator(nuxt, builder)
 
     await generator.generate()
@@ -40,7 +50,25 @@ describe('basic generate', () => {
   })
 
   test('Check ready hook called', () => {
-    expect(generator.nuxt.__hook_called__).toBe(true)
+    expect(generator.nuxt.__hook_ready_called__).toBe(true)
+  })
+
+  test('Check changed files', () => {
+    // When generating Nuxt we only expect files to change
+    // within nuxt.options.generate.dir, but also allow other
+    // .nuxt dirs for when tests are runInBand
+    const allowChangesDir = resolve(generator.nuxt.options.generate.dir, '..', '.nuxt')
+
+    let changedFileFound = false
+    const paths = listPaths(generator.nuxt.options.rootDir, pathsBefore)
+    paths.forEach((item) => {
+      if (item.path === changedFileName) {
+        changedFileFound = true
+      } else {
+        expect(equalOrStartsWith(allowChangesDir, item.path)).toBe(true)
+      }
+    })
+    expect(changedFileFound).toBe(true)
   })
 
   test('Format errors', () => {
@@ -59,6 +87,12 @@ describe('basic generate', () => {
     const window = await generator.nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
+  })
+
+  test('/store-module', async () => {
+    const window = await generator.nuxt.renderAndGetWindow(url('/store-module'))
+    const html = window.document.body.innerHTML
+    expect(html.includes('<h1>mutated</h1>')).toBe(true)
   })
 
   test('/css', async () => {
