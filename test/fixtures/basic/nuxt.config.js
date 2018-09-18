@@ -8,9 +8,6 @@ export default {
       maxAge: ((60 * 60 * 24 * 365) * 2)
     }
   },
-  plugins: [
-    '~/plugins/vuex-module'
-  ],
   router: {
     extendRoutes(routes, resolve) {
       return [{
@@ -65,6 +62,7 @@ export default {
   },
   transition: false,
   plugins: [
+    '~/plugins/vuex-module',
     '~/plugins/dir-plugin'
   ],
   build: {
