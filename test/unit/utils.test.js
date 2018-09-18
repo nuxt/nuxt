@@ -16,10 +16,15 @@ describe('utils', () => {
     expect(ctx.res.b).toBe(2)
   })
 
-  test.skip.appveyor('waitFor', async () => {
-    const s = Date.now()
-    await Utils.waitFor(100)
-    expect(Date.now() - s >= 100).toBe(true)
+  test('waitFor', async () => {
+    const delay = 100
+    const s = process.hrtime()
+    await Utils.waitFor(delay)
+    const t = process.hrtime(s)
+    // Node.js makes no guarantees about the exact timing of when callbacks will fire
+    // HTML5 specifies a minimum delay of 4ms for timeouts
+    // although arbitrary, use this value to determine our lower limit
+    expect((t[0] * 1e9 + t[1]) / 1e6).not.toBeLessThan(delay - 4)
     await Utils.waitFor()
   })
 
