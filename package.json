@@ -165,7 +165,8 @@
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-commonjs": "^9.1.5",
     "rollup-plugin-json": "^3.0.0",
-    "rollup-plugin-license": "^0.7.0"
+    "rollup-plugin-license": "^0.7.0",
+    "vue-jest": "^2.6.0"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

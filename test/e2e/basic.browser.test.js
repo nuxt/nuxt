@@ -1,5 +1,5 @@
 import Browser from '../utils/browser'
-import { loadFixture, getPort, Nuxt, Utils, waitUntil } from '../utils'
+import { loadFixture, getPort, Nuxt, Utils } from '../utils'
 
 let port
 const browser = new Browser()
@@ -29,9 +29,11 @@ describe('basic browser', () => {
 
   test('/noloading', async () => {
     const { hook } = await page.nuxt.navigate('/noloading', false)
-    const loading = await page.nuxt.loadingData()
+    await Utils.waitFor(nuxt.options.loading.throttle + 100)
+    let loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await hook
+    loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await page.waitForFunction(
       `$nuxt.$loading.$data.show === false`
@@ -232,34 +234,6 @@ describe('basic browser', () => {
 
     const p = await page.$text('p')
     expect(p).toBe('Nuxt.js')
-  })
-
-  test('/progressbar', async () => {
-    // Wait some time so DOM events from previous test can finish
-    await Utils.waitFor(100)
-
-    // We have added a named animation for the nuxt-progress class
-    // which triggers a js event when a nuxt-progress div is added
-    let nodeInserted = 0
-    await page.exposeFunction('insertNodeTriggered', () => {
-      nodeInserted++
-    })
-    await page.evaluate(() => {
-      document.addEventListener('animationstart', (evt) => {
-        if (evt.animationName === 'nodeInserted') {
-          window.insertNodeTriggered()
-        }
-      }, false)
-    })
-
-    expect(await page.$('.nuxt-progress')).toBeNull()
-    await page.nuxt.navigate('/progressbar')
-
-    // wait max 3s for all DOM events to finish
-    await waitUntil(() => (nodeInserted), 3)
-
-    expect(await page.$('.nuxt-progress')).toBeNull()
-    expect(nodeInserted).toBeTruthy()
   })
 
   // Close server and ask nuxt to stop listening to file changes

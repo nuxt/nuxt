@@ -8,7 +8,7 @@ describe('extract css', () => {
   test('Verify global.css has been extracted and minified', async () => {
     expect.assertions(2)
     let cssFilesFound = 0
-    
+
     const pathToDistClient = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client')
     const files = await readDir(pathToDistClient)
     files.forEach((fileName) => {

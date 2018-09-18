@@ -8,6 +8,10 @@ module.exports = {
   setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  transform: {
+    "^.+\\.js$": "babel-jest",
+    ".*\\.(vue)$": "vue-jest"
+  },
   moduleFileExtensions: ['js', 'mjs', 'json'],
   expand: true,
   forceExit: true
