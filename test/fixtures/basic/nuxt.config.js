@@ -8,6 +8,9 @@ export default {
       maxAge: ((60 * 60 * 24 * 365) * 2)
     }
   },
+  plugins: [
+    '~/plugins/vuex-module'
+  ],
   router: {
     extendRoutes(routes, resolve) {
       return [{
@@ -28,7 +31,7 @@ export default {
       '/async-data',
       '/validate',
       '/redirect',
-
+      '/store-module',
       '/users/1',
       '/users/2',
       { route: '/users/3', payload: { id: 3000 } }
