@@ -1,5 +1,4 @@
-<% if (loading && loading.css) { %>import "./nuxt-loading.css"<% } %>
-
+<script>
 export default {
   name: 'nuxt-loading',
   render(h) {
@@ -89,3 +88,25 @@ export default {
     }
   }
 }
+</script>
+
+<% if (loading && loading.css) { %>
+<style>
+.nuxt-progress {
+  position: fixed;
+  top: 0px;
+  left: <%= loading.rtl === true ? 'auto' : '0px' %>;
+  right: 0px;
+  height: <%= loading.height %>;
+  width: 0%;
+  transition: width 0.2s, opacity 0.4s;
+  opacity: 1;
+  background-color: <%= loading.color %>;
+  z-index: 999999;
+}
+
+.nuxt-progress-failed {
+  background-color: <%= loading.failedColor %>;
+}
+</style>
+<% } %>
