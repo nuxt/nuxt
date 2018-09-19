@@ -80,6 +80,11 @@ module.exports = {
       'singleline': 5,
     }]
   },
-
+  overrides: [{
+    files: [ 'test/fixtures/*/.nuxt*/**' ],
+    rules: {
+      'no-multiple-empty-lines': 1
+    }
+  }],
   globals: {}
 }

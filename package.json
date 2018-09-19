@@ -51,6 +51,7 @@
     "build": "node -r esm ./build/build.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks build examples lib packages test",
+    "lint:app": "eslint --ext .js,.mjs,.vue --ignore-path lib/app/.eslintignore test/fixtures/*/.nuxt*/",
     "postinstall": "opencollective || exit 0",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest test/fixtures",
