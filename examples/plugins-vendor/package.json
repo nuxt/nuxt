@@ -3,7 +3,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "mini-toastr": "^0.6.5",
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vue-notifications": "^0.8.0"
   },
   "scripts": {

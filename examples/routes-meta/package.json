@@ -1,7 +1,7 @@
 {
   "name": "examples-routes-meta",
   "dependencies": {
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "wingcss": "^1.0.0-beta"
   },
   "scripts": {
