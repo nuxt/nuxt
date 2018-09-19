@@ -77,7 +77,7 @@
     "compression": "^1.7.3",
     "connect": "^3.6.5",
     "consola": "^1.4.3",
-    "css-loader": "0.28.11",
+    "css-loader": "^1.0.0",
     "cssnano": "^4.0.5",
     "debug": "^4.0.1",
     "esm": "^3.0.82",
