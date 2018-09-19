@@ -9,7 +9,7 @@
         <input id="password" type="password" value="test">
       </label>
       <button @click="postLogin">login</button>
-      <p>The crendentials are not verified for the example purpose.</p>
+      <p>The credentials are not verified for the example purpose.</p>
     </div>
   </div>
 </template>
