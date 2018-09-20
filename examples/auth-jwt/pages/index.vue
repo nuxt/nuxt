@@ -13,7 +13,7 @@
 </template>
 
 <script>
-const Cookie = process.browser ? require('js-cookie') : undefined
+const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
   methods: {

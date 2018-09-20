@@ -7,7 +7,7 @@
     "start": "nuxt start"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.6",

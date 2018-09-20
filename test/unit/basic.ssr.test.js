@@ -19,6 +19,11 @@ describe('basic ssr', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
+  test('/store-module', async () => {
+    const { html } = await nuxt.renderRoute('/store-module')
+    expect(html.includes('<h1>mutated</h1>')).toBe(true)
+  })
+
   /*
   ** Example of testing via dom checking
   */
@@ -224,7 +229,7 @@ describe('basic ssr', () => {
   test('/no-ssr', async () => {
     const { html } = await nuxt.renderRoute('/no-ssr')
     expect(html.includes(
-      '<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'
+      '<p class="no-ssr-placeholder">Loading...</p>'
     )).toBe(true)
   })
 

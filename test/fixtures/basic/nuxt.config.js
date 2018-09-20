@@ -28,7 +28,7 @@ export default {
       '/async-data',
       '/validate',
       '/redirect',
-
+      '/store-module',
       '/users/1',
       '/users/2',
       { route: '/users/3', payload: { id: 3000 } }
@@ -61,6 +61,10 @@ export default {
     '': true
   },
   transition: false,
+  plugins: [
+    '~/plugins/vuex-module',
+    '~/plugins/dir-plugin'
+  ],
   build: {
     scopeHoisting: true,
     postcss: [

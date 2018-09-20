@@ -2,7 +2,7 @@
   "name": "example-layout-transitions",
   "dependencies": {
     "axios": "^0.15.3",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",
