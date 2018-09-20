@@ -5694,8 +5694,8 @@ postcss-custom-media@^7.0.2:
     postcss "^7.0.2"
 
 postcss-custom-properties@^8.0.3:
-  version "8.0.3"
-  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.3.tgz#5c8f398ed3296b782a087c72fc53bda9e8ef70fb"
+  version "8.0.4"
+  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.4.tgz#8d8bf5ae865b3e9b70daedd04509531d6ca3e485"
   dependencies:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
@@ -5739,8 +5739,8 @@ postcss-discard-overridden@^4.0.0:
     postcss "^6.0.0"
 
 postcss-env-function@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/postcss-env-function/-/postcss-env-function-2.0.1.tgz#d1f38482f79e3a9840ac4ec16da229bd3032b7c1"
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/postcss-env-function/-/postcss-env-function-2.0.2.tgz#0f3e3d3c57f094a92c2baf4b6241f0b0da5365d7"
   dependencies:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
