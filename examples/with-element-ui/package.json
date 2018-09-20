@@ -4,7 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "element-ui": "^2",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

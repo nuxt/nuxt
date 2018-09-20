@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nuxt/>
+    <nuxt />
     <ul>
       <li><nuxt-link data-test-id="patch" to="/patch">/patch</nuxt-link></li>
       <li><nuxt-link data-test-id="patch-id-1" to="/patch/1">/patch/1</nuxt-link></li>

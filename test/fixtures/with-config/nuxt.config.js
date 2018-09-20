@@ -1,7 +1,12 @@
 import path from 'path'
+import compression from 'compression'
 
 export default {
   srcDir: __dirname,
+  server: {
+    port: 8000,
+    host: '0.0.0.0'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
@@ -16,6 +21,9 @@ export default {
         {
           path: '/redirect/about-bis',
           redirect: '/about-bis'
+        },
+        {
+          path: '/not-existed'
         }
       ]
     }
@@ -26,7 +34,7 @@ export default {
   loadingIndicator: 'circle',
   extensions: 'ts',
   plugins: [
-    '~/plugins/test.js',
+    '~/plugins/test',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',
@@ -79,6 +87,7 @@ export default {
         return ['script', 'style', 'font'].includes(type)
       }
     },
+    compressor: function damn(...args) { return compression({ threshold: 9 })(...args) },
     static: {
       maxAge: '1y'
     }

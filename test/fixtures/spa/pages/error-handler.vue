@@ -2,7 +2,7 @@
 
 export default {
   fetch() {
-    throw Error('spa test error!')
+    throw Error('fetch error!')
   }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-toolbar>
+    <v-toolbar color="primary" dark>
       <v-toolbar-side-icon @click.native.stop="drawer = !drawer" />
       <v-toolbar-title>Toolbar</v-toolbar-title>
     </v-toolbar>
@@ -17,7 +17,7 @@
     <main>
       <v-content>
         <v-container fluid>
-          <nuxt/>
+          <nuxt />
         </v-container>
       </v-content>
     </main>

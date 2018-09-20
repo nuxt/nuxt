@@ -1,30 +1,28 @@
 import path from 'path'
 import fs from 'fs'
+import klawSync from 'klaw-sync'
 
 import _getPort from 'get-port'
-import { defaultsDeep } from 'lodash'
+import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
-import esm from 'esm'
 import pkg from '../../package.json'
-import Dist from '../../lib/nuxt'
+import _Nuxt from '../../lib/index.js'
 
 export const rp = _rp
 export const getPort = _getPort
 export const version = pkg.version
 
-export const Nuxt = Dist.Nuxt
-export const Utils = Dist.Utils
-export const Options = Dist.Options
-export const Builder = Dist.Builder
-export const Generator = Dist.Generator
+export const Nuxt = _Nuxt.Nuxt
+export const Utils = _Nuxt.Utils
+export const Options = _Nuxt.Options
+export const Builder = _Nuxt.Builder
+export const Generator = _Nuxt.Generator
 
-const requireModule = esm(module, {})
-
-export const loadFixture = function loadFixture(fixture, overrides) {
+export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 
-  const config = fs.existsSync(configFile) ? requireModule(configFile).default : {}
+  const config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
 
   config.rootDir = rootDir
   config.dev = false
@@ -53,4 +51,24 @@ export const waitUntil = async function waitUntil(condition, duration = 20, inte
     return true
   }
   return false
+}
+
+export const listPaths = function listPaths(dir, pathsBefore = [], options = {}) {
+  if (Array.isArray(pathsBefore) && pathsBefore.length) {
+    // only return files that didn't exist before building
+    // and files that have been changed
+    options.filter = (item) => {
+      const foundItem = find(pathsBefore, (itemBefore) => {
+        return item.path === itemBefore.path
+      })
+      return typeof foundItem === 'undefined' ||
+        item.stats.mtimeMs !== foundItem.stats.mtimeMs
+    }
+  }
+
+  return klawSync(dir, options)
+}
+
+export const equalOrStartsWith = function equalOrStartsWith(string1, string2) {
+  return string1 === string2 || string2.startsWith(string1)
 }

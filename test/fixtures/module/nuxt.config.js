@@ -3,6 +3,7 @@ export default {
   modules: [
     '~~/modules/basic',
     '~/modules/hooks',
+    '~/modules/layout',
     {
       src: '~/modules/middleware',
       options: {

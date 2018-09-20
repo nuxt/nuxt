@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <img :src="thumbnailUrl" >
+    <img :src="thumbnailUrl">
     <p><nuxt-link to="/">Home</nuxt-link> - About</p>
   </div>
 </template>

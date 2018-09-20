@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p/><h3>Index Module</h3>
+    <p /><h3>Index Module</h3>
     <button @click="increment">{{ counter }}</button>
     <br>
     <nuxt-link to="/about">About</nuxt-link>

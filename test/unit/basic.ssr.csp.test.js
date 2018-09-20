@@ -4,7 +4,7 @@ let port
 const url = route => 'http://localhost:' + port + route
 
 const startCspServer = async (csp, isProduction = true) => {
-  const options = loadFixture('basic', {
+  const options = await loadFixture('basic', {
     debug: !isProduction,
     render: { csp }
   })
@@ -55,7 +55,7 @@ describe('basic ssr csp', () => {
     test(
       'Contain Content-Security-Policy-Report-Only header, when explicitly asked for',
       async () => {
-        nuxt = await startCspDevServer({reportOnly: true})
+        nuxt = await startCspDevServer({ reportOnly: true })
         const { headers } = await rp(url('/stateless'), {
           resolveWithFullResponse: true
         })
@@ -186,7 +186,7 @@ describe('basic ssr csp', () => {
     test(
       'Contain Content-Security-Policy header, when explicitly asked for',
       async () => {
-        nuxt = await startCspDevServer({reportOnly: false})
+        nuxt = await startCspDevServer({ reportOnly: false })
         const { headers } = await rp(url('/stateless'), {
           resolveWithFullResponse: true
         })

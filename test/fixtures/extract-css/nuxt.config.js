@@ -5,6 +5,13 @@ export default {
       splitChunks: {
         name: true
       }
+    },
+    postcss: {
+      preset: {
+        autoprefixer: {
+          grid: true
+        }
+      }
     }
   },
   css: [

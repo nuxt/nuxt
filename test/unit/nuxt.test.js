@@ -7,7 +7,7 @@ describe('nuxt', () => {
   })
 
   test('Nuxt.js Instance', async () => {
-    const config = loadFixture('empty')
+    const config = await loadFixture('empty')
     const nuxt = new Nuxt(config)
 
     expect(typeof nuxt).toBe('object')
@@ -42,5 +42,17 @@ describe('nuxt', () => {
     expect(html.includes('Universal Vue.js Applications')).toBe(true)
 
     await nuxt.close()
+  })
+
+  test('Fail to build when specified plugin isn\'t found', () => {
+    const nuxt = new Nuxt({
+      dev: false,
+      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-plugin')
+    })
+
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
+      expect(s.includes('Plugin not found')).toBe(true)
+    })
   })
 })
