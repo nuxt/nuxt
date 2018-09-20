@@ -66,6 +66,34 @@
         "test",
         "tool"
       ]
+    },
+    {
+      "login": "manniL",
+      "name": "Alexander Lichter",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/640208?s=460&v=4",
+      "profile": "https://github.com/manniL",
+      "contributions": [
+        "question",
+        "bug",
+        "code",
+        "example",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "galvez",
+      "name": "Jonas Galvez",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/12291?s=460&v=4",
+      "profile": "https://github.com/galvez",
+      "contributions": [
+        "question",
+        "bug",
+        "code",
+        "example",
+        "review",
+        "test"
+      ]
     }
   ]
 }
