@@ -26,6 +26,9 @@ export default (pkg, { load }) => {
       'bin'
     ])
 
+    // Sort dependencies
+    pkg.sortDependencies()
+
     // Update package.json
     pkg.writePackage()
 
