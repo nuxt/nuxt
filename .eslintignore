@@ -1,4 +1,5 @@
 app
+!app/store.js
 node_modules
 dist
 .nuxt

@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { resolve, join } from 'path'
 import { writeFileSync } from 'fs-extra'
-import { getPort, rp, waitUntil } from '../utils'
+import { getPort, rp, waitUntil, Utils } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -9,17 +9,12 @@ const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
 
-const killNuxt = async (nuxtInt) => {
-  let exitCode
-  nuxtInt.on('close', (code) => { exitCode = code })
-  nuxtInt.kill()
+const close = async (nuxtInt) => {
+  nuxtInt.kill('SIGKILL')
   // Wait max 10s for the process to be killed
-  if (await waitUntil(() => exitCode !== undefined, 10)) {
-    console.warn( // eslint-disable-line no-console
-      `we were unable to automatically kill the child process with pid: ${
-        nuxtInt.pid
-      }`
-    )
+  if (await waitUntil(() => nuxtInt.killed, 10)) {
+    // eslint-disable-next-line no-console
+    console.warn(`Unable to close process with pid: ${nuxtInt.pid}`)
   }
 }
 
@@ -39,12 +34,16 @@ describe.skip.appveyor('cli', () => {
     const customFilePath = join(rootDir, 'custom.file')
     writeFileSync(customFilePath, 'This file is used to test custom chokidar watchers.')
 
-    // Must see two compilations in the log
-    expect(
-      stdout.indexOf('Compiled client') !==
-      stdout.lastIndexOf('Compiled client')
-    )
-    await killNuxt(nuxtDev)
+    // Change file specified in `serverMiddleware` (nuxt.config.js)
+    const serverMiddlewarePath = join(rootDir, 'middleware.js')
+    writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
+
+    // Wait 2s for picking up changes
+    await Utils.waitFor(2000)
+
+    // [Add actual test for changes here]
+
+    await close(nuxtDev)
   })
 
   test('nuxt start', async () => {
@@ -64,9 +63,9 @@ describe.skip.appveyor('cli', () => {
     nuxtStart.stdout.on('data', (data) => { stdout += data })
     nuxtStart.on('error', (err) => { error = err })
 
-    // Wait max 20s for the starting
-    if (await waitUntil(() => stdout.includes(`${port}`))) {
-      error = 'server failed to start successfully in 20 seconds'
+    // Wait max 40s for the starting
+    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
+      error = 'server failed to start successfully in 40 seconds'
     }
 
     expect(error).toBe(undefined)
@@ -75,6 +74,6 @@ describe.skip.appveyor('cli', () => {
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
 
-    await killNuxt(nuxtStart)
+    await close(nuxtStart)
   })
 })

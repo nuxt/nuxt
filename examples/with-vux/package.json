@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "dependencies": {
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vux": "^2.8.0"
   },
   "scripts": {

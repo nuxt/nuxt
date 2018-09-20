@@ -21,7 +21,7 @@ export default {
   }),
   methods: {
     addTodo(e) {
-      var text = e.target.value
+      const text = e.target.value
       if (text.trim()) {
         this.$store.commit('todos/add', { text })
       }

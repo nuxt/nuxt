@@ -1,5 +1,5 @@
 <template>
-  <button :style="{color: color, borderColor: color}" :class="{rounded: rounded}" class="wr-button" @click="handleClick"><slot/>!</button>
+  <button :style="{color: color, borderColor: color}" :class="{rounded: rounded}" class="wr-button" @click="handleClick"><slot />!</button>
 </template>
 
 <script>

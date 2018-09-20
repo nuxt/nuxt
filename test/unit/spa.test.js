@@ -1,10 +1,7 @@
 import consola from 'consola'
-import mockLog from '../utils/mock-log'
 import { loadFixture, getPort, Nuxt } from '../utils'
 
-let nuxt = null
-
-let port
+let nuxt, port
 const url = route => 'http://localhost:' + port + route
 
 const renderRoute = async (_url) => {
@@ -15,10 +12,8 @@ const renderRoute = async (_url) => {
 }
 
 describe('spa', () => {
-  mockLog(['log'], consola)
-
   beforeAll(async () => {
-    const config = loadFixture('spa')
+    const config = await loadFixture('spa')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -29,6 +24,7 @@ describe('spa', () => {
     expect(html).toMatch('Hello SPA!')
     expect(consola.log).not.toHaveBeenCalledWith('created')
     expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
   })
 
   test('/custom (custom layout)', async () => {
@@ -36,6 +32,7 @@ describe('spa', () => {
     expect(html).toMatch('Custom layout')
     expect(consola.log).toHaveBeenCalledWith('created')
     expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
   })
 
   test('/mounted', async () => {
@@ -46,7 +43,13 @@ describe('spa', () => {
   test('/error-handler', async () => {
     await renderRoute('/error-handler')
     const { html } = await renderRoute('/error-handler')
-    expect(html).toMatch('error handler triggered')
+    expect(html).toMatch('error handler triggered: fetch error!')
+  })
+
+  test('/error-handler-async', async () => {
+    await renderRoute('/error-handler-async')
+    const { html } = await renderRoute('/error-handler-async')
+    expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
   test('/_nuxt/ (access publicPath in spa mode)', async () => {

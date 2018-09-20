@@ -1,0 +1,11 @@
+{
+  "name": "example-custom-port-host",
+  "dependencies": {
+    "nuxt-edge": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}

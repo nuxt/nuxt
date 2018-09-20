@@ -7,7 +7,7 @@ let nuxt = null
 
 describe('custom-dirs', () => {
   beforeAll(async () => {
-    const config = loadFixture('custom-dirs')
+    const config = await loadFixture('custom-dirs')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

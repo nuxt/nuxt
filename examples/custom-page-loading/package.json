@@ -1,7 +1,7 @@
 {
   "name": "example-custom-page-loading",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

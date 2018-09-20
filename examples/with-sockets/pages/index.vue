@@ -9,7 +9,7 @@
             </li>
           </ul>
         </div>
-        <input v-model="message" class="inputMessage" type="text" placeholder="Type here..." @keyup.enter="sendMessage" >
+        <input v-model="message" class="inputMessage" type="text" placeholder="Type here..." @keyup.enter="sendMessage">
       </li>
     </ul>
   </div>
