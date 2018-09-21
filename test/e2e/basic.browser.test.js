@@ -236,6 +236,7 @@ describe('basic browser', () => {
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
+    await page.$nuxt.dispose()
     await nuxt.close()
   })
 
