@@ -1702,9 +1702,13 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000884, caniuse-lite@^1.0.30000885:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000884:
   version "1.0.30000885"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000885.tgz#e889e9f8e7e50e769f2a49634c932b8aee622984"
+
+caniuse-lite@^1.0.30000886, caniuse-lite@^1.0.30000887:
+  version "1.0.30000887"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000887.tgz#1769458c27bbdcf61b0cb6b5072bb6cd11fd9c23"
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -2760,9 +2764,9 @@ eslint-plugin-import@^2.14.0:
     read-pkg-up "^2.0.0"
     resolve "^1.6.0"
 
-eslint-plugin-jest@^21.21.0:
-  version "21.22.0"
-  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.22.0.tgz#1b9e49b3e5ce9a3d0a51af4579991d517f33726e"
+eslint-plugin-jest@^21.22.1:
+  version "21.22.1"
+  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.22.1.tgz#bc805e9b1c75c3bc92e47c44dd41370c1af7ebcc"
 
 eslint-plugin-node@^7.0.1:
   version "7.0.1"
@@ -5687,22 +5691,22 @@ postcss-convert-values@^4.0.0:
     postcss "^6.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-custom-media@^7.0.2:
-  version "7.0.2"
-  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.2.tgz#e55fcd3a5ffe0d42c1cf99fe4a716a24f5228248"
+postcss-custom-media@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.3.tgz#da0a3aa24831fcaa045e1231a517a15e0dcdfa1b"
   dependencies:
     postcss "^7.0.2"
 
-postcss-custom-properties@^8.0.3:
-  version "8.0.4"
-  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.4.tgz#8d8bf5ae865b3e9b70daedd04509531d6ca3e485"
+postcss-custom-properties@^8.0.5:
+  version "8.0.5"
+  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.5.tgz#e78a7bd813196332db9dface66a528ae5da8b98f"
   dependencies:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-custom-selectors@^5.1.1:
-  version "5.1.1"
-  resolved "https://registry.npmjs.org/postcss-custom-selectors/-/postcss-custom-selectors-5.1.1.tgz#2fc76266eeab537cb19a15c2f513b24d99529bce"
+postcss-custom-selectors@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.npmjs.org/postcss-custom-selectors/-/postcss-custom-selectors-5.1.2.tgz#64858c6eb2ecff2fb41d0b28c9dd7b3db4de7fba"
   dependencies:
     postcss "^7.0.2"
     postcss-selector-parser "^5.0.0-rc.3"
@@ -5738,7 +5742,7 @@ postcss-discard-overridden@^4.0.0:
   dependencies:
     postcss "^6.0.0"
 
-postcss-env-function@^2.0.1:
+postcss-env-function@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/postcss-env-function/-/postcss-env-function-2.0.2.tgz#0f3e3d3c57f094a92c2baf4b6241f0b0da5365d7"
   dependencies:
@@ -6020,13 +6024,13 @@ postcss-place@^4.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-preset-env@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.1.tgz#996184ead5ff09c0a2d3e3ab7609b91f711f88d5"
+postcss-preset-env@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.3.tgz#787b3c8c32d6b12ef98a2bf37dab65c90833da30"
   dependencies:
     autoprefixer "^9.1.5"
     browserslist "^4.1.1"
-    caniuse-lite "^1.0.30000885"
+    caniuse-lite "^1.0.30000886"
     cssdb "^3.2.1"
     postcss "^7.0.2"
     postcss-attribute-case-insensitive "^4.0.0"
@@ -6034,11 +6038,11 @@ postcss-preset-env@^6.0.1:
     postcss-color-hex-alpha "^5.0.2"
     postcss-color-mod-function "^3.0.1"
     postcss-color-rebeccapurple "^4.0.1"
-    postcss-custom-media "^7.0.2"
-    postcss-custom-properties "^8.0.3"
-    postcss-custom-selectors "^5.1.1"
+    postcss-custom-media "^7.0.3"
+    postcss-custom-properties "^8.0.5"
+    postcss-custom-selectors "^5.1.2"
     postcss-dir-pseudo-class "^5.0.0"
-    postcss-env-function "^2.0.1"
+    postcss-env-function "^2.0.2"
     postcss-focus-visible "^4.0.0"
     postcss-focus-within "^3.0.0"
     postcss-font-variant "^4.0.0"
@@ -6847,9 +6851,9 @@ rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.3.1:
     estree-walker "^0.5.2"
     micromatch "^2.3.11"
 
-rollup@^0.66.1:
-  version "0.66.1"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.1.tgz#4374a478a98ff075ee0e5bcafb9ab78ca968a301"
+rollup@^0.66.2:
+  version "0.66.2"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.2.tgz#77acdb9f4093f5f035ce75480577c40a81ea7999"
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
@@ -7958,9 +7962,9 @@ webpack-dev-middleware@^3.3.0:
     url-join "^4.0.0"
     webpack-log "^2.0.0"
 
-webpack-hot-middleware@^2.24.1:
-  version "2.24.1"
-  resolved "https://registry.npmjs.org/webpack-hot-middleware/-/webpack-hot-middleware-2.24.1.tgz#52fcc54fd4e5f962af2440ce8ed37717f1a5e81c"
+webpack-hot-middleware@^2.24.2:
+  version "2.24.2"
+  resolved "https://registry.npmjs.org/webpack-hot-middleware/-/webpack-hot-middleware-2.24.2.tgz#0d2deeb813f67693e2997b87c3a9d9be324575dd"
   dependencies:
     ansi-html "0.0.7"
     html-entities "^1.2.0"
