@@ -163,3 +163,16 @@ describe('with-config', () => {
     await nuxt.close()
   })
 })
+
+describe('server config', () => {
+  test('opens on port defined in server.port', async () => {
+    const config = await loadFixture('with-config')
+    config.server.port = port = await getPort()
+    nuxt = new Nuxt(config)
+    await nuxt.listen()
+    await nuxt.renderAndGetWindow(url('/test/'))
+  })
+  afterAll(async () => {
+    await nuxt.close()
+  })
+})
