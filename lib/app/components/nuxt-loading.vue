@@ -6,8 +6,12 @@ export default {
       percent: 0,
       show: false,
       canSucceed: true,
+      reversed: false,
+      skipTimerCount: 0,
+      rtl: <%= loading.rtl %>,
       throttle: <%= loading.throttle %>,
-      duration: <%= loading.duration %>
+      duration: <%= loading.duration %>,
+      continuous: <%= loading.continuous %>
     }
   },
   beforeDestroy() {
@@ -22,6 +26,8 @@ export default {
     start() {
       this.clear()
       this.percent = 0
+      this.reversed = false
+      this.skipTimerCount = 0
       this.canSucceed = true
 
       if (this.throttle) {
@@ -34,18 +40,18 @@ export default {
     set(num) {
       this.show = true
       this.canSucceed = true
-      this.percent = Math.floor(num)
+      this.percent = Math.min(100, Math.max(0, Math.floor(100 * num) / 100))
       return this
     },
     get() {
-      return Math.floor(this.percent)
+      return this.percent
     },
     increase(num) {
-      this.percent += Math.floor(num)
+      this.percent = Math.min(100, Math.floor(100 * (this.percent + num)) / 100)
       return this
     },
     decrease(num) {
-      this.percent -= Math.floor(num)
+      this.percent = Math.max(0, Math.floor(100 * (this.percent - num)) / 100)
       return this
     },
     pause() {
@@ -57,7 +63,7 @@ export default {
       return this
     },
     finish() {
-      this.percent = 100
+      this.percent = this.reversed ? 0 : 100
       this.hide()
       return this
     },
@@ -67,6 +73,7 @@ export default {
         this.show = false
         this.$nextTick(() => {
           this.percent = 0
+          this.reversed = false
         })
       }, 500)
       return this
@@ -80,12 +87,36 @@ export default {
         this.show = true
       }
       if (typeof this._cut === 'undefined') {
-        this._cut = 10000 / Math.floor(this.duration)
+        this._cut = 10 / ( Math.floor(this.duration) / 1000 )
       }
+
       this._timer = setInterval(() => {
-        this.increase(this._cut * Math.random())
-        if (this.percent > 95) {
-          this.finish()
+        /**
+         * When reversing direction skip one timers
+         * so 0, 100 are displayed for two iterations
+         * also disable css width transitioning
+         * which otherwise interferes and shows
+         * a jojo effect
+         */
+        if (this.skipTimerCount > 0) {
+          this.skipTimerCount--
+          return
+        }
+
+        if (this.reversed) {
+          this.decrease(this._cut)
+        } else {
+          this.increase(this._cut)
+        }
+
+        if (this.continuous) {
+          if (this.percent >= 100) {
+            this.skipTimerCount = 1
+            this.reversed = !this.reversed
+          } else if (this.percent <= 0) {
+            this.skipTimerCount = 1
+            this.reversed = !this.reversed
+          }
         }
       }, 100)
     }
@@ -96,10 +127,14 @@ export default {
       el = h('div', {
         staticClass: 'nuxt-progress',
         class: {
+          'nuxt-progress-notransition': this.skipTimerCount > 0,
           'nuxt-progress-failed': !this.canSucceed
         },
         style: {
-          'width': this.percent + '%'
+          'width': this.percent + '%',
+          'left': this.continuous && this.reversed
+            ? (this.rtl ? '0px' : 'auto')
+            : false
         }
       })
     }
@@ -116,10 +151,14 @@ export default {
   right: 0px;
   height: <%= loading.height %>;
   width: 0%;
-  transition: width 0.2s, opacity 0.4s;
   opacity: 1;
+  transition: width 0.1s, opacity 0.4s;
   background-color: <%= loading.color %>;
   z-index: 999999;
+}
+
+.nuxt-progress.nuxt-progress-notransition {
+  transition: none;
 }
 
 .nuxt-progress-failed {
