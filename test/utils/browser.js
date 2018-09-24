@@ -23,7 +23,8 @@ export default class Browser {
     if (!this.browser) throw new Error('Please call start() before page(url)')
     const page = await this.browser.newPage()
     await page.goto(url)
-    await page.waitForFunction(`!!window.$${globalName}`)
+    page.$nuxtGlobalHandle = `window.$${globalName}`
+    await page.waitForFunction(`!!${page.$nuxtGlobalHandle}`)
     page.html = () =>
       page.evaluate(() => window.document.documentElement.outerHTML)
     page.$text = selector => page.$eval(selector, el => el.textContent)
@@ -37,13 +38,14 @@ export default class Browser {
         (els, attr) => els.map(el => el.getAttribute(attr)),
         attr
       )
-    page.$nuxt = await page.evaluateHandle(`window.$${globalName}`)
+
+    page.$nuxt = await page.evaluateHandle(page.$nuxtGlobalHandle)
 
     page.nuxt = {
       async navigate(path, waitEnd = true) {
         const hook = page.evaluate(() => {
           return new Promise(resolve =>
-            window[`$${globalName}`].$once('routeChanged', resolve)
+            window[`$${page.$nuxtGlobalHandle}`].$once('routeChanged', resolve)
           ).then(() => new Promise(resolve => setTimeout(resolve, 50)))
         })
         await page.evaluate(
