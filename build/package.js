@@ -3,12 +3,15 @@ import EventEmitter from 'events'
 import { sync as spawnSync } from 'cross-spawn'
 import consola from 'consola'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
+import _ from 'lodash'
 import { builtinsMap } from './builtins'
 
 const DEFAULTS = {
   distDir: 'dist',
   buildSuffix: process.env.BUILD_SUFFIX
 }
+
+const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
 
 export default class Package extends EventEmitter {
   constructor(options) {
@@ -116,6 +119,16 @@ export default class Package extends EventEmitter {
       const src = resolve(source.rootDir, file)
       const dst = resolve(this.rootDir, file)
       copySync(src, dst)
+    }
+  }
+
+  sortDependencies() {
+    if (this.packageObj.dependencies) {
+      this.packageObj.dependencies = sortObjectKeys(this.packageObj.dependencies)
+    }
+
+    if (this.packageObj.devDependencies) {
+      this.packageObj.devDependencies = sortObjectKeys(this.packageObj.devDependencies)
     }
   }
 
