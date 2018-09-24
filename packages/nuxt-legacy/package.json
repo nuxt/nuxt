@@ -57,7 +57,7 @@
     "@nuxtjs/youch": "^4.2.3",
     "babel-loader": "^8.0.2",
     "cache-loader": "^1.2.2",
-    "caniuse-lite": "^1.0.30000885",
+    "caniuse-lite": "^1.0.30000887",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "compression": "^1.7.3",
@@ -88,7 +88,7 @@
     "postcss-import": "^12.0.0",
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^3.0.0",
-    "postcss-preset-env": "^6.0.1",
+    "postcss-preset-env": "^6.0.3",
     "postcss-url": "^8.0.0",
     "semver": "^5.5.1",
     "serialize-javascript": "^1.5.0",
@@ -112,7 +112,7 @@
     "webpack": "^4.19.1",
     "webpack-bundle-analyzer": "^3.0.1",
     "webpack-dev-middleware": "^3.3.0",
-    "webpack-hot-middleware": "^2.24.1",
+    "webpack-hot-middleware": "^2.24.2",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^2.6.3"
   }
