@@ -23,7 +23,7 @@ export default class Browser {
     if (!this.browser) throw new Error('Please call start() before page(url)')
     const page = await this.browser.newPage()
     await page.goto(url)
-    page.$nuxtGlobalHandle = `window.${globalName}`
+    page.$nuxtGlobalHandle = `window.$${globalName}`
     await page.waitForFunction(`!!${page.$nuxtGlobalHandle}`)
     page.html = () =>
       page.evaluate(() => window.document.documentElement.outerHTML)
