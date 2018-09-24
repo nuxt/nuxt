@@ -41,6 +41,9 @@ export default (pkg, { load }) => {
       ]
     })
 
+    // Sort dependencies
+    pkg.sortDependencies()
+
     // Update package.json
     pkg.writePackage()
 

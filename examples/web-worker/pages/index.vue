@@ -117,7 +117,7 @@ export default {
       worker.terminate()
     },
     createWorkers () {
-      if (process.browser) {
+      if (process.client) {
         for(let i = 0, len = navigator.hardwareConcurrency || 1; i < len; i++) {
           this.workers.push(this.$worker.createWorker())
         }

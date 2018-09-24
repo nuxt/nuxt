@@ -1,5 +1,5 @@
-import { spawn } from 'child_process'
 import { resolve, join } from 'path'
+import { spawn } from 'cross-spawn'
 import { writeFileSync } from 'fs-extra'
 import { getPort, rp, waitUntil, Utils } from '../utils'
 
