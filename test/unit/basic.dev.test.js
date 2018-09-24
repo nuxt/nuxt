@@ -1,10 +1,15 @@
+import consola from 'consola'
 import { Builder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
+let builder = null
 let transpile = null
+let output = null
+let loadersOptions
+let vueLoader
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -13,22 +18,41 @@ describe('basic dev', () => {
       debug: true,
       buildDir: '.nuxt-dev',
       build: {
+        filenames: {
+          app: ({ isDev }) => {
+            return isDev ? 'test-app.js' : 'test-app.[contenthash].js'
+          },
+          chunk: 'test-[name].[contenthash].js'
+        },
         transpile: [
           'vue\\.test\\.js',
           /vue-test/
         ],
-        extend({ module: { rules } }, { isClient }) {
+        loaders: {
+          cssModules: {
+            localIdentName: '[hash:base64:6]'
+          }
+        },
+        extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)
+            output = wpOutput
+            loadersOptions = loaders
+            vueLoader = rules.find(loader => loader.test.test('.vue'))
           }
         }
       }
     })
     nuxt = new Nuxt(config)
-    await new Builder(nuxt).build()
+    builder = new Builder(nuxt)
+    await builder.build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')
+  })
+
+  test('Check build:done hook called', () => {
+    expect(builder.__hook_built_called__).toBe(true)
   })
 
   test('Config: build.transpile', () => {
@@ -39,10 +63,33 @@ describe('basic dev', () => {
     expect(transpile('node_modules/test.vue.js')).toBe(true)
   })
 
+  test('Config: build.filenames', () => {
+    expect(output.filename).toBe('test-app.js')
+    expect(output.chunkFilename).toBe('test-[name].[contenthash].js')
+    expect(consola.warn).toBeCalledWith(
+      'Notice: Please do not use contenthash in dev mode to prevent memory leak'
+    )
+  })
+
+  test('Config: build.loaders', () => {
+    expect(Object.keys(loadersOptions)).toHaveLength(12)
+    expect(loadersOptions).toHaveProperty(
+      'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
+    )
+    const { cssModules, vue } = loadersOptions
+    expect(cssModules.localIdentName).toBe('[hash:base64:6]')
+    expect(vueLoader.options).toBe(vue)
+  })
+
   test('/stateless', async () => {
     const window = await nuxt.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
+  })
+
+  test('Check render:routeDone hook called', () => {
+    expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
 
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {

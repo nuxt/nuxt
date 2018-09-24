@@ -74,9 +74,6 @@ const errorHandler = (err, instance) => {
     return errorHandler(err, oldInstance)
   }
 
-  // Get latest environment variables
-  const { port, host } = nuxt.options.server
-
   return (
     Promise.resolve()
       .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))
@@ -91,11 +88,11 @@ const errorHandler = (err, instance) => {
       })
       .then(() => oldInstance && oldInstance.nuxt.close())
       // Start listening
-      .then(() => nuxt.listen(port, host))
+      .then(() => nuxt.listen())
       // Show ready message first time, others will be shown through WebpackBar
       .then(() => !oldInstance && nuxt.showReady(false))
       .then(() => builder.watchServer())
       // Handle errors
-      .catch(err => errorHandler(err, {builder, nuxt}))
+      .catch(err => errorHandler(err, { builder, nuxt }))
   )
 })()

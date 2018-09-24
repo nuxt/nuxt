@@ -4,7 +4,7 @@
     "axios": "^0.16.2",
     "chart.js": "^2.7.1",
     "moment": "^2.18.1",
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vue-chartjs": "^3.1.0"
   },
   "scripts": {

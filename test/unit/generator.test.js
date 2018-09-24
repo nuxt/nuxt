@@ -13,7 +13,7 @@ describe('generator', () => {
     const routes = await generator.initRoutes()
 
     expect(routes.length).toBe(array.length)
-    routes.map((route, index) => {
+    routes.forEach((route, index) => {
       expect(route.route).toBe(array[index])
     })
   })
@@ -32,7 +32,7 @@ describe('generator', () => {
     const routes = await generator.initRoutes()
 
     expect(routes.length).toBe(array.length)
-    routes.map((route, index) => {
+    routes.forEach((route, index) => {
       expect(route.route).toBe(array[index])
     })
   })
@@ -51,7 +51,7 @@ describe('generator', () => {
     const routes = await generator.initRoutes(array)
 
     expect(routes.length).toBe(array.length)
-    routes.map((route, index) => {
+    routes.forEach((route, index) => {
       expect(route.route).toBe(array[index])
     })
   })
@@ -70,7 +70,7 @@ describe('generator', () => {
     const routes = await generator.initRoutes(...array)
 
     expect(routes.length).toBe(array.length)
-    routes.map((route, index) => {
+    routes.forEach((route, index) => {
       expect(route.route).toBe(array[index])
     })
   })

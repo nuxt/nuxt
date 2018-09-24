@@ -1,7 +1,7 @@
 {
   "name": "example-static-images",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

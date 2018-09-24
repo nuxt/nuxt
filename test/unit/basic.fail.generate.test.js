@@ -17,4 +17,14 @@ describe('basic fail generate', () => {
       expect(e.message).toBe('Not today!')
     })
   })
+
+  test('Fail when generate.dir equals rootDir', async () => {
+    const options = await loadFixture('basic', {
+      generate: { dir: '../basic' }
+    })
+
+    expect(() => {
+      new Nuxt(options) /* eslint-disable-line no-new */
+    }).toThrow(/options.generate.dir cannot be/)
+  })
 })

@@ -1,8 +1,8 @@
 <template>
   <div>
     <h1>The Dog</h1>
-    <byline author="Meow Meow Fuzzyface"/>
-    <amp-img src="/dog.jpg" width="470" height="350" layout="responsive" alt="Woof"/>
+    <byline author="Meow Meow Fuzzyface" />
+    <amp-img src="/dog.jpg" width="470" height="350" layout="responsive" alt="Woof" />
     <p class="caption">Woooooooooooof</p>
     <p>Go to <a href="/">the cat</a>.</p>
     <p>Wafer donut candy soufflé lemon drops icing. Marzipan gummi bears pie danish lollipop pudding powder gummi bears sweet. Pie sweet roll sweet roll topping chocolate bar dragée pudding chocolate cake. Croissant sweet chocolate bar cheesecake candy canes. Tootsie roll icing macaroon bonbon cupcake apple pie candy canes biscuit candy canes. Jujubes jelly liquorice toffee gingerbread. Candy tootsie roll macaroon chocolate bar icing sugar plum pie. Icing gummies chocolate bar chocolate marzipan bonbon cookie chocolate tart. Caramels danish halvah croissant. Cheesecake cookie tootsie roll ice cream. Powder dessert carrot cake muffin tiramisu lemon drops liquorice topping brownie. Soufflé chocolate cake croissant cupcake jelly.</p>

@@ -19,6 +19,11 @@ describe('basic ssr', () => {
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
 
+  test('/store-module', async () => {
+    const { html } = await nuxt.renderRoute('/store-module')
+    expect(html.includes('<h1>mutated</h1>')).toBe(true)
+  })
+
   /*
   ** Example of testing via dom checking
   */
@@ -96,9 +101,36 @@ describe('basic ssr', () => {
     expect(html.includes('This page could not be found')).toBe(true)
   })
 
+  test('/validate-async should display a 404', async () => {
+    const { html } = await nuxt.renderRoute('/validate-async')
+    expect(html.includes('This page could not be found')).toBe(true)
+  })
+
   test('/validate?valid=true', async () => {
     const { html } = await nuxt.renderRoute('/validate?valid=true')
     expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/validate-async?valid=true', async () => {
+    const { html } = await nuxt.renderRoute('/validate-async?valid=true')
+    expect(html.includes('<h1>I am valid</h1>')).toBe(true)
+  })
+
+  test('/validate?error=403', async () => {
+    const { html, error } = await nuxt.renderRoute('/validate?error=403')
+    expect(error).toMatchObject({ statusCode: 403, message: 'Custom Error' })
+    expect(html.includes('Custom Error')).toBe(true)
+  })
+
+  test('/validate-async?error=503', async () => {
+    const { html, error } = await nuxt.renderRoute('/validate-async?error=503')
+    expect(error).toMatchObject({ statusCode: 503, message: 'Custom Error' })
+    expect(html.includes('Custom Error')).toBe(true)
+  })
+
+  test('/before-enter', async () => {
+    const { html } = await nuxt.renderRoute('/before-enter')
+    expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
 
   test('/redirect', async () => {
@@ -197,7 +229,7 @@ describe('basic ssr', () => {
   test('/no-ssr', async () => {
     const { html } = await nuxt.renderRoute('/no-ssr')
     expect(html.includes(
-      '<div class="no-ssr-placeholder">&lt;p&gt;Loading...&lt;/p&gt;</div>'
+      '<p class="no-ssr-placeholder">Loading...</p>'
     )).toBe(true)
   })
 

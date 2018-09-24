@@ -2,7 +2,7 @@
   "name": "example-dynamic-components",
   "dependencies": {
     "chart.js": "^2.7.0",
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vue-chartjs": "^2.8.7"
   },
   "scripts": {

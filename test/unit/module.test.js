@@ -31,6 +31,11 @@ describe('module', () => {
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
   })
 
+  test('/404 should display the module error layout', async () => {
+    const { html } = await nuxt.renderRoute('/404')
+    expect(html).toContain('You should see the error in a different Vue!')
+  })
+
   test('Hooks', () => {
     expect(nuxt.__module_hook).toBe(1)
     expect(nuxt.__renderer_hook).toBe(2)
