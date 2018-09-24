@@ -9,13 +9,13 @@
         <input id="password" type="password" value="test">
       </label>
       <button @click="postLogin">login</button>
-      <p>The crendentials are not verified for the example purpose.</p>
+      <p>The credentials are not verified for the example purpose.</p>
     </div>
   </div>
 </template>
 
 <script>
-const Cookie = process.browser ? require('js-cookie') : undefined
+const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
   middleware: 'notAuthenticated',

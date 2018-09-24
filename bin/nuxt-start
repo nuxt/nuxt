@@ -4,7 +4,7 @@ const { resolve } = require('path')
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { Nuxt } = require('../dist/nuxt-start')
-const { loadNuxtConfig, getLatestHost } = require('./common/utils')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -79,8 +79,6 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
-const { port, host, socket } = getLatestHost(argv)
-
-nuxt.listen(port, host, socket).then(() => {
+nuxt.listen().then(() => {
   nuxt.showReady(false)
 })
