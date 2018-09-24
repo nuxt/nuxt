@@ -43,17 +43,19 @@ export default class Browser {
 
     page.nuxt = {
       async navigate(path, waitEnd = true) {
-        const hook = page.evaluate(() => {
-          return new Promise(resolve =>
-            window[`$${page.$nuxtGlobalHandle}`].$once('routeChanged', resolve)
+        const hook = page.evaluate(`
+          new Promise(resolve =>
+            window[$${page.$nuxtGlobalHandle}].$once('routeChanged', resolve)
           ).then(() => new Promise(resolve => setTimeout(resolve, 50)))
-        })
+        `)
         await page.evaluate(
           ($nuxt, path) => $nuxt.$router.push(path),
           page.$nuxt,
           path
         )
-        if (waitEnd) await hook
+        if (waitEnd) {
+          await hook
+        }
         return { hook }
       },
       routeData() {
