@@ -19,7 +19,7 @@ export default class Browser {
     await this.browser.close()
   }
 
-  async page(url, globalName = '$nuxt') {
+  async page(url, globalName = 'nuxt') {
     if (!this.browser) throw new Error('Please call start() before page(url)')
     const page = await this.browser.newPage()
     await page.goto(url)
