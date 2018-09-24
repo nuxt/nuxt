@@ -17,7 +17,7 @@ export default {
       percent: 0,
       show: false,
       canSuccess: true,
-      throttle: 200,
+      throttle: <%= loading.throttle %>,
       duration: <%= loading.duration %>,
       height: '<%= loading.height %>',
       color: '<%= loading.color %>',
