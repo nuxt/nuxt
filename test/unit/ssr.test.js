@@ -97,6 +97,12 @@ describe('ssr', () => {
     await uniqueTest('/fetch')
   })
 
+  test('store undefined variable response', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/store'))
+    expect('idUndefined' in window.__NUXT__.state).toBe(true)
+    expect(window.__NUXT__.state.idUndefined).toEqual(undefined)
+  })
+
   test('stress test with asyncData', async () => {
     await stressTest('/asyncData')
   })

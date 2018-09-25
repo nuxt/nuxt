@@ -86,6 +86,7 @@
     "css-loader": "^1.0.0",
     "cssnano": "^4.0.5",
     "debug": "^4.0.1",
+    "devalue": "^1.0.4",
     "esm": "^3.0.84",
     "etag": "^1.8.1",
     "file-loader": "^2.0.0",
