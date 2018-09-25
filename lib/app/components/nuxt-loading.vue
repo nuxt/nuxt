@@ -87,7 +87,7 @@ export default {
         this.show = true
       }
       if (typeof this._cut === 'undefined') {
-        this._cut = 10 / ( Math.floor(this.duration) / 1000 )
+        this._cut = 10000 / Math.floor(this.duration)
       }
 
       this._timer = setInterval(() => {
