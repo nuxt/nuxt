@@ -160,7 +160,7 @@ describe('basic generate', () => {
   test('/validate should not be server-rendered', async () => {
     const html = await rp(url('/validate'))
     expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
-    expect(html.includes('serverRendered:!1')).toBe(true)
+    expect(html.includes('serverRendered:false')).toBe(true)
   })
 
   test('/validate -> should display a 404', async () => {
@@ -178,7 +178,7 @@ describe('basic generate', () => {
   test('/redirect should not be server-rendered', async () => {
     const html = await rp(url('/redirect'))
     expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
-    expect(html.includes('serverRendered:!1')).toBe(true)
+    expect(html.includes('serverRendered:false')).toBe(true)
   })
 
   test('/redirect -> check redirected source', async () => {
