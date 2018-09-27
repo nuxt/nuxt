@@ -1,5 +1,5 @@
 <style>
-#<%= globalName %>-loading {
+#nuxt-loading {
   visibility: hidden;
   opacity: 0;
   position: absolute;
@@ -47,14 +47,14 @@
   }
 }
 
-#<%= globalName %>-loading>div,
-#<%= globalName %>-loading>div:after {
+#nuxt-loading>div,
+#nuxt-loading>div:after {
   border-radius: 50%;
   width: 5rem;
   height: 5rem;
 }
 
-#<%= globalName %>-loading>div {
+#nuxt-loading>div {
   font-size: 10px;
   position: relative;
   text-indent: -9999em;
@@ -67,7 +67,7 @@
   animation: nuxtLoading 1.1s infinite linear;
 }
 
-#<%= globalName %>-loading.error>div {
+#nuxt-loading.error>div {
   border-left: .5rem solid #ff4500;
   animation-duration: 5s;
 }
@@ -97,11 +97,11 @@
 
 <script>
 window.addEventListener('error', function() {
-  var e = document.getElementById("<%= globalName %>-loading");
+  var e = document.getElementById("nuxt-loading");
   if (e) e.className += " error";
 });
 </script>
 
-<div id="<%= globalName %>-loading" aria-live="polite" role="status"><div><%= options.loading %></div></div>
+<div id="nuxt-loading" aria-live="polite" role="status"><div><%= options.loading %></div></div>
 
 <%= options.dev ? '<!-- https://projects.lukehaas.me/css-loaders -->' : '' %>
