@@ -260,7 +260,7 @@ describe('basic ssr', () => {
 
   test('/meta', async () => {
     const { html } = await nuxt.renderRoute('/meta')
-    expect(html.includes('"meta":[{"works":true}]')).toBe(true)
+    expect(/<pre>.*&quot;works&quot;: true.*<\/pre>/s.test(html)).toBe(true)
   })
 
   test('/fn-midd', async () => {

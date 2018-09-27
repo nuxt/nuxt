@@ -2484,6 +2484,10 @@ detect-newline@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/detect-newline/-/detect-newline-2.1.0.tgz#f41f1c10be4b00e87b5f13da680759f2c5bfd3e2"
 
+devalue@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/devalue/-/devalue-1.0.4.tgz#d1f1a0e5d3799b805e1ee2d67f5c741a5d7812a7"
+
 diff@^3.2.0:
   version "3.5.0"
   resolved "https://registry.npmjs.org/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
@@ -7848,7 +7852,7 @@ vue-loader@^15.4.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-meta@^1.5.3:
+vue-meta@^1.5.4:
   version "1.5.4"
   resolved "https://registry.npmjs.org/vue-meta/-/vue-meta-1.5.4.tgz#966e37a58c0eff43411eac5894ebc6836a451744"
   dependencies:

@@ -3,7 +3,8 @@ import { nextId } from '@/lib/db'
 export const state = () => {
   return {
     id: nextId(),
-    id2: 0
+    id2: 0,
+    idUndefined: undefined
   }
 }
 
