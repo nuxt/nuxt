@@ -1706,7 +1706,7 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000884:
   version "1.0.30000885"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000885.tgz#e889e9f8e7e50e769f2a49634c932b8aee622984"
 
-caniuse-lite@^1.0.30000886, caniuse-lite@^1.0.30000887:
+caniuse-lite@^1.0.30000887:
   version "1.0.30000887"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000887.tgz#1769458c27bbdcf61b0cb6b5072bb6cd11fd9c23"
 
@@ -5663,9 +5663,9 @@ postcss-color-hex-alpha@^5.0.2:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-color-mod-function@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/postcss-color-mod-function/-/postcss-color-mod-function-3.0.1.tgz#20d600e3014f38266261722ba9a36a2a9859efa7"
+postcss-color-mod-function@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.npmjs.org/postcss-color-mod-function/-/postcss-color-mod-function-3.0.3.tgz#816ba145ac11cc3cb6baa905a75a49f903e4d31d"
   dependencies:
     "@csstools/convert-colors" "^1.4.0"
     postcss "^7.0.2"
@@ -5695,17 +5695,17 @@ postcss-convert-values@^4.0.0:
     postcss "^6.0.0"
     postcss-value-parser "^3.0.0"
 
-postcss-custom-media@^7.0.3:
-  version "7.0.3"
-  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.3.tgz#da0a3aa24831fcaa045e1231a517a15e0dcdfa1b"
+postcss-custom-media@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.npmjs.org/postcss-custom-media/-/postcss-custom-media-7.0.4.tgz#98e593c4a9a38fefee848434131fa16d316ee165"
   dependencies:
     postcss "^7.0.2"
 
-postcss-custom-properties@^8.0.5:
-  version "8.0.5"
-  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.5.tgz#e78a7bd813196332db9dface66a528ae5da8b98f"
+postcss-custom-properties@^8.0.6:
+  version "8.0.6"
+  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.6.tgz#404d2f0848abef200807ac1587ab7758983416fa"
   dependencies:
-    postcss "^7.0.2"
+    postcss "^7.0.3"
     postcss-values-parser "^2.0.0"
 
 postcss-custom-selectors@^5.1.2:
@@ -6028,22 +6028,22 @@ postcss-place@^4.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-preset-env@^6.0.3:
-  version "6.0.3"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.3.tgz#787b3c8c32d6b12ef98a2bf37dab65c90833da30"
+postcss-preset-env@^6.0.7:
+  version "6.0.7"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.7.tgz#c1c48c58fdd8e8df6fe30a5b645a16266c653697"
   dependencies:
     autoprefixer "^9.1.5"
     browserslist "^4.1.1"
-    caniuse-lite "^1.0.30000886"
+    caniuse-lite "^1.0.30000887"
     cssdb "^3.2.1"
-    postcss "^7.0.2"
+    postcss "^7.0.3"
     postcss-attribute-case-insensitive "^4.0.0"
     postcss-color-functional-notation "^2.0.1"
     postcss-color-hex-alpha "^5.0.2"
-    postcss-color-mod-function "^3.0.1"
+    postcss-color-mod-function "^3.0.3"
     postcss-color-rebeccapurple "^4.0.1"
-    postcss-custom-media "^7.0.3"
-    postcss-custom-properties "^8.0.5"
+    postcss-custom-media "^7.0.4"
+    postcss-custom-properties "^8.0.6"
     postcss-custom-selectors "^5.1.2"
     postcss-dir-pseudo-class "^5.0.0"
     postcss-env-function "^2.0.2"
@@ -6189,6 +6189,14 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2:
     chalk "^2.4.1"
     source-map "^0.6.1"
     supports-color "^5.4.0"
+
+postcss@^7.0.3:
+  version "7.0.4"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.4.tgz#b5a059597d2c1a8a9916cb6efb0b294f70b4f309"
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.5.0"
 
 prelude-ls@~1.1.2:
   version "1.1.2"
@@ -7359,7 +7367,7 @@ supports-color@^3.1.2:
   dependencies:
     has-flag "^1.0.0"
 
-supports-color@^5.3.0, supports-color@^5.4.0:
+supports-color@^5.3.0, supports-color@^5.4.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   dependencies:
