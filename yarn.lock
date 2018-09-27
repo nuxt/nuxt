@@ -6190,6 +6190,14 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2:
     source-map "^0.6.1"
     supports-color "^5.4.0"
 
+postcss@^7.0.4:
+  version "7.0.4"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.4.tgz#b5a059597d2c1a8a9916cb6efb0b294f70b4f309"
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.5.0"
+
 prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
@@ -7359,7 +7367,7 @@ supports-color@^3.1.2:
   dependencies:
     has-flag "^1.0.0"
 
-supports-color@^5.3.0, supports-color@^5.4.0:
+supports-color@^5.3.0, supports-color@^5.4.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   dependencies:
