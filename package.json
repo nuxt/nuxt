@@ -81,7 +81,7 @@
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "compression": "^1.7.3",
-    "connect": "^3.6.5",
+    "connect": "^3.6.6",
     "consola": "^1.4.3",
     "css-loader": "^1.0.0",
     "cssnano": "^4.0.5",

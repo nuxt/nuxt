@@ -58,7 +58,7 @@
     "@nuxtjs/youch": "^4.2.3",
     "chalk": "^2.4.1",
     "compression": "^1.7.3",
-    "connect": "^3.6.5",
+    "connect": "^3.6.6",
     "consola": "^1.4.3",
     "devalue": "^1.0.4",
     "esm": "^3.0.84",
