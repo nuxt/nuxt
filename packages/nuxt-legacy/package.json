@@ -91,7 +91,7 @@
     "minimist": "^1.2.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "pify": "^4.0.0",
-    "postcss": "^7.0.2",
+    "postcss": "^7.0.4",
     "postcss-import": "^12.0.0",
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^3.0.0",
