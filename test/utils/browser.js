@@ -45,7 +45,7 @@ export default class Browser {
       async navigate(path, waitEnd = true) {
         const hook = page.evaluate(`
           new Promise(resolve =>
-            window[$${page.$nuxtGlobalHandle}].$once('routeChanged', resolve)
+            ${page.$nuxtGlobalHandle}.$once('routeChanged', resolve)
           ).then(() => new Promise(resolve => setTimeout(resolve, 50)))
         `)
         await page.evaluate(
