@@ -131,7 +131,7 @@
     "vue-template-compiler": "^2.5.17",
     "vuex": "^3.0.1",
     "webpack": "^4.19.1",
-    "webpack-bundle-analyzer": "^3.0.1",
+    "webpack-bundle-analyzer": "^3.0.2",
     "webpack-dev-middleware": "^3.3.0",
     "webpack-hot-middleware": "^2.24.2",
     "webpack-node-externals": "^1.7.2",
