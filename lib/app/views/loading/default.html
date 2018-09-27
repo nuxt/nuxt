@@ -97,11 +97,11 @@
 
 <script>
 window.addEventListener('error', function() {
-  var e = document.getElementById("nuxt-loading");
+  var e = document.getElementById("<%= globalName %>-loading");
   if (e) e.className += " error";
 });
 </script>
 
-<div id="nuxt-loading" aria-live="polite" role="status"><div><%= options.loading %></div></div>
+<div id="<%= globalName %>-loading" aria-live="polite" role="status"><div><%= options.loading %></div></div>
 
 <%= options.dev ? '<!-- https://projects.lukehaas.me/css-loaders -->' : '' %>
