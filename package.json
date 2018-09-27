@@ -156,7 +156,7 @@
     "eslint-plugin-react": "^7.11.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.0.0-beta.3",
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "finalhandler": "^1.1.1",
     "get-port": "^4.0.0",
     "jest": "^23.6.0",
