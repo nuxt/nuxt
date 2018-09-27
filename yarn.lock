@@ -4603,9 +4603,9 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   version "6.0.2"
   resolved "https://registry.npmjs.org/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
 
-klaw-sync@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/klaw-sync/-/klaw-sync-5.0.0.tgz#b8db1249f96a82751c311ee8a626a319db119904"
+klaw-sync@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmjs.org/klaw-sync/-/klaw-sync-6.0.0.tgz#1fd2cfd56ebb6250181114f0a581167099c2b28c"
   dependencies:
     graceful-fs "^4.1.11"
 
