@@ -2,8 +2,8 @@
 
 ## Types of changes
 <!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Bug fix (a non-breaking change which fixes an issue)
+- [ ] New feature (a non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to change)
 
 
@@ -13,7 +13,6 @@
 <!--- If it resolves an open issue, please link to the issue here. For example "Resolves: #1337" -->
 
 
-
 ## Checklist:
 <!--- Put an `x` in all the boxes that apply. -->
 <!--- If your change requires a documentation PR, please link it appropriately -->
@@ -21,5 +20,5 @@
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly. (PR: #)
 - [ ] I have added tests to cover my changes (if not applicable, please state why)
-- [ ] All new and existing tests passed.
+- [ ] All new and existing tests are passing.
 
