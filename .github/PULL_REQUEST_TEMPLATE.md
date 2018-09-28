@@ -20,5 +20,5 @@
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly. (PR: #)
 - [ ] I have added tests to cover my changes (if not applicable, please state why)
-- [ ] All new and existing tests pass.
+- [ ] All new and existing tests are passing.
 
