@@ -1,0 +1,4 @@
+dist
+_nuxt
+*.json
+*.html
