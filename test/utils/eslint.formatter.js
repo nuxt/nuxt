@@ -28,6 +28,8 @@ const occurenceThreshold = process.env.ESLINT_THRESHOLD || defaultThreshold
 // Dont print messages if they are below threshold
 const hideBelowThreshold = process.env.ESLINT_ONLYTHRES !== undefined
 
+const showSource = process.env.ESLINT_SHOWSRC !== undefined
+
 // ------------------------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------------------------
@@ -45,6 +47,7 @@ function pluralize(word, count) {
 // ------------------------------------------------------------------------------
 // Public Interface
 // ------------------------------------------------------------------------------
+const fs = require('fs')
 const chalk = require('chalk')
 const stripAnsi = require('strip-ansi')
 const table = require('text-table')
@@ -81,6 +84,7 @@ module.exports = function (results) {
         merged[filePath].messages[index].occurence++
       } else {
         message.occurence = 1
+        message.sourceFile = result.filePath
         merged[filePath].messages.push(message)
       }
     })
@@ -95,7 +99,7 @@ module.exports = function (results) {
   }
 
   results = Object.keys(merged).map((filePath) => {
-    const { messages, source, occurence } = merged[filePath]
+    const { messages, occurence } = merged[filePath]
 
     let errorCount = 0
     let warningCount = 0
@@ -122,7 +126,6 @@ module.exports = function (results) {
       filePath,
       occurence,
       messages: sortBy(messages, ['line', 'column', 'occurence']),
-      source,
       errorCount,
       warningCount,
       fixableErrorCount,
@@ -137,6 +140,7 @@ module.exports = function (results) {
   let fixableWarningCount = 0
   let summaryColor = 'yellow'
 
+  const fileCache = {}
   results.forEach((result) => {
     const messages = result.messages
 
@@ -151,7 +155,7 @@ module.exports = function (results) {
 
     output += `${chalk.underline(result.filePath)} (${result.occurence}x)\n`
 
-    output += `${table(
+    let fileTable = `${table(
       messages
         .filter(message => !hideBelowThreshold || message.occurence >= occurenceThreshold * result.occurence)
         .map((message) => {
@@ -191,6 +195,35 @@ module.exports = function (results) {
         }
       }
     ).split('\n').map(el => el.replace(/(\d+)\s+(\d+)/, (m, p1, p2) => chalk.dim(`${p1}:${p2}`))).join('\n')}\n\n`
+
+    if (!showSource) {
+      output += fileTable
+    } else {
+      fileTable = fileTable.split('\n')
+
+      messages
+        .filter(message => !hideBelowThreshold || message.occurence >= occurenceThreshold * result.occurence)
+        .map((message, index) => {
+          output += fileTable[index] + '\n'
+
+          if (message.sourceFile && message.line) {
+            if (!fileCache[message.sourceFile]) {
+              fileCache[message.sourceFile] = fs.readFileSync(message.sourceFile, 'utf8').split('\n')
+            }
+
+            output += '\n'
+            output += chalk.bgBlackBright(chalk.dim(fileCache[message.sourceFile].slice(message.line - 2, message.line + 1)
+              .map((line, index) => {
+                const l = `${message.line - 1 + index}: ${line}`
+                return l + ' '.repeat(Math.max(0, 80 - l.length))
+              })
+              .join('\n')))
+            output += '\n\n'
+          }
+        })
+
+      output += '\n'
+    }
   })
 
   const total = errorCount + warningCount
