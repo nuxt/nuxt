@@ -51,6 +51,10 @@ if (argv.analyze && typeof options.build.analyze !== 'object') {
   options.build.analyze = true
 }
 
+if (options.build.analyze) {
+  consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose')
+}
+
 // Silence output when using --quiet
 if (argv.quiet) {
   options.build.quiet = !!argv.quiet
