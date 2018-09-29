@@ -91,5 +91,6 @@ export default {
     static: {
       maxAge: '1y'
     }
-  }
+  },
+  globalName: 'noxxt'
 }
