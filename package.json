@@ -124,7 +124,7 @@
     "url-loader": "^1.1.1",
     "vue": "^2.5.17",
     "vue-loader": "^15.4.2",
-    "vue-meta": "1.5.5",
+    "vue-meta": "^1.5.5",
     "vue-no-ssr": "^1.0.0",
     "vue-router": "^3.0.1",
     "vue-server-renderer": "^2.5.17",
