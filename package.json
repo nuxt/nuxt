@@ -154,6 +154,7 @@
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-react": "^7.11.1",
+    "eslint-plugin-spellcheck": "^0.0.11",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.0.0-beta.3",
     "express": "^4.16.2",

@@ -27,7 +27,7 @@ export default {
     resourceHints: false
   },
   hooks: {
-    // This hook is called before generatic static html files for SPA mode
+    // This hook is called before generating static html files for SPA mode
     'generate:page': (page) => {
       page.html = modifyHtml(page.html)
     },
