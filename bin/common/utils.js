@@ -36,9 +36,8 @@ exports.runAsyncScript = async (fn) => {
     await fn()
     process.exit(0)
   } catch (err) {
-    consola.fatal('Failed to run async Nuxt script!')
-    consola.fatal(err)
-    process.exit(1)
+    consola.error(err)
+    consola.fatal(`Failed to run async Nuxt script!`)
   }
 }
 
@@ -64,8 +63,8 @@ exports.loadNuxtConfig = async (argv) => {
       try {
         options = await options()
       } catch (error) {
+        consola.error(error)
         consola.fatal('Error while fetching async configuration')
-        consola.fatal(error)
       }
     }
   } else if (argv['config-file'] !== 'nuxt.config.js') {
