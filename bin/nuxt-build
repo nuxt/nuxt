@@ -40,49 +40,51 @@ if (argv.help) {
   process.exit(0)
 }
 
-const options = loadNuxtConfig(argv)
+(async function build() {
+  const options = await loadNuxtConfig(argv)
 
-// Create production build when calling `nuxt build`
-options.dev = false
+  // Create production build when calling `nuxt build`
+  options.dev = false
 
-// Analyze option
-options.build = options.build || {}
-if (argv.analyze && typeof options.build.analyze !== 'object') {
-  options.build.analyze = true
-}
-
-// Silence output when using --quiet
-if (argv.quiet) {
-  options.build.quiet = !!argv.quiet
-}
-
-const nuxt = new Nuxt(options)
-const builder = new Builder(nuxt)
-
-// Setup hooks
-nuxt.hook('error', err => consola.fatal(err))
-
-// Close function
-const close = () => {
-  // In analyze mode wait for plugin
-  // emitting assets and opening browser
-  if (options.build.analyze === true || typeof options.build.analyze === 'object') {
-    return
+  // Analyze option
+  options.build = options.build || {}
+  if (argv.analyze && typeof options.build.analyze !== 'object') {
+    options.build.analyze = true
   }
 
-  process.exit(0)
-}
+  // Silence output when using --quiet
+  if (argv.quiet) {
+    options.build.quiet = !!argv.quiet
+  }
 
-if (options.mode !== 'spa' || argv.generate === false) {
-  // Build only
-  builder
-    .build()
-    .then(close)
-    .catch(err => consola.fatal(err))
-} else {
-  // Build + Generate for static deployment
-  new Generator(nuxt, builder)
-    .generate({ build: true })
-    .then(close)
-    .catch(err => consola.fatal(err))
-}
+  const nuxt = new Nuxt(options)
+  const builder = new Builder(nuxt)
+
+  // Setup hooks
+  nuxt.hook('error', err => consola.fatal(err))
+
+  // Close function
+  const close = () => {
+    // In analyze mode wait for plugin
+    // emitting assets and opening browser
+    if (options.build.analyze === true || typeof options.build.analyze === 'object') {
+      return
+    }
+
+    process.exit(0)
+  }
+
+  if (options.mode !== 'spa' || argv.generate === false) {
+    // Build only
+    builder
+      .build()
+      .then(close)
+      .catch(err => consola.fatal(err))
+  } else {
+    // Build + Generate for static deployment
+    new Generator(nuxt, builder)
+      .generate({ build: true })
+      .then(close)
+      .catch(err => consola.fatal(err))
+  }
+})()
