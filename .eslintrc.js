@@ -98,6 +98,12 @@ module.exports = {
     rules: {
       'no-console': [2, { allow: ['warn'] }]
     }
+  }, {
+    files: [ 'test/fixtures/*/.nuxt*/**/*.html' ],
+    rules: {
+      'semi': [2, 'always', { 'omitLastInOneLineBlock': true }],
+      'no-var': 1
+    }
   }],
   globals: {}
 }
