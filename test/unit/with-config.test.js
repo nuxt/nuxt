@@ -19,6 +19,11 @@ describe('with-config', () => {
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
+  test('/ (asset name for analyze mode)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html).toContain('<script src="/test/orion/app.js"')
+  })
+
   test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
     expect(html).toContain('.global-css-selector')
