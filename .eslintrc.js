@@ -1,4 +1,4 @@
-const skipWords = require('./.spellcheckignore.json')
+const skipWords = require('./.spellcheckignore')
 
 module.exports = {
   root: true,
