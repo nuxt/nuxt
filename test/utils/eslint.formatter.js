@@ -214,7 +214,7 @@ module.exports = function (results) {
               fileCache[message.sourceFile] = fs.readFileSync(message.sourceFile, 'utf8').split('\n')
             }
 
-            output += chalk.dim(message.sourceFile.replace(process.cwd()+'/', '')) + '\n'
+            output += chalk.dim(message.sourceFile.replace(process.cwd() + '/', '')) + '\n'
             output += chalk.bgBlackBright(chalk.dim(fileCache[message.sourceFile].slice(message.line - 2, message.line + 1)
               .map((line, index) => {
                 const l = `${message.line - 1 + index}: ${line}`
