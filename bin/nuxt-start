@@ -6,7 +6,7 @@ const { resolve } = require('path')
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { Nuxt } = require('../dist/nuxt-start')
-const { loadNuxtConfig } = require('./common/utils')
+const { runAsyncScript, loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -48,7 +48,7 @@ if (argv.help) {
   process.exit(0)
 }
 
-(async function start() {
+async function start() {
   const options = await loadNuxtConfig(argv)
 
   // Force production mode (no webpack middleware called)
@@ -85,4 +85,6 @@ if (argv.help) {
   nuxt.listen().then(() => {
     nuxt.showReady(false)
   })
-})()
+}
+
+runAsyncScript(start)

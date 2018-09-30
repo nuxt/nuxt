@@ -4,7 +4,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'production'
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { Nuxt, Builder, Generator } = require('..')
-const { loadNuxtConfig } = require('./common/utils')
+const { runAsyncScript, loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -40,7 +40,7 @@ if (argv.help) {
   process.exit(0)
 }
 
-(async function build() {
+async function build() {
   const options = await loadNuxtConfig(argv)
 
   // Create production build when calling `nuxt build`
@@ -87,4 +87,6 @@ if (argv.help) {
       .then(close)
       .catch(err => consola.fatal(err))
   }
-})()
+}
+
+runAsyncScript(build)

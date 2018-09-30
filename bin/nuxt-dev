@@ -5,7 +5,7 @@ const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig } = require('./common/utils')
+const { runAsyncScript, loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -62,7 +62,7 @@ const errorHandler = (err, instance) => {
 }
 
 // Start dev
-(async function startDev(oldInstance) {
+async function dev(oldInstance) {
   let nuxt, builder
 
   try {
@@ -71,7 +71,7 @@ const errorHandler = (err, instance) => {
     builder = new Builder(nuxt)
     nuxt.hook('watch:fileChanged', async (builder, fname) => {
       consola.debug(`[${fname}] changed, Rebuilding the app...`)
-      await startDev({ nuxt: builder.nuxt, builder })
+      await dev({ nuxt: builder.nuxt, builder })
     })
   } catch (err) {
     return errorHandler(err, oldInstance)
@@ -98,4 +98,6 @@ const errorHandler = (err, instance) => {
       // Handle errors
       .catch(err => errorHandler(err, { builder, nuxt }))
   )
-})()
+}
+
+runAsyncScript(dev)
