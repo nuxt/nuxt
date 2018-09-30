@@ -54,7 +54,9 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "node -r esm ./packages/nuxt-pack/build.js",
+    "build": "yarn build:packages && yarn build:transpile-legacy",
+    "build:packages": "node -r esm ./packages/nuxt-pack/build.js",
+    "build:transpile-legacy": "babel bin -x '.js,' -d packages/nuxt-legacy/bin",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks examples lib packages test",
     "postinstall": "opencollective || exit 0",
@@ -138,6 +140,7 @@
     "webpackbar": "^2.6.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge",
     "babel-eslint": "^10.0.1",
