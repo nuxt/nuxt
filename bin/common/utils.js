@@ -31,13 +31,15 @@ const getLatestHost = (argv) => {
   return { port, host, socket }
 }
 
-exports.runAsyncScript = (fn) => {
-  fn().then(() => { process.exit(0) })
-    .catch((err) => {
-      consola.fatal('Failed to run async Buxt script!')
-      consola.fatal(err)
-      process.exit(1)
-    })
+exports.runAsyncScript = async (fn) => {
+  try {
+    await fn()
+    process.exit(0)
+  } catch (err) {
+    consola.fatal('Failed to run async Buxt script!')
+    consola.fatal(err)
+    process.exit(1)
+  }
 }
 
 exports.nuxtConfigFile = getNuxtConfigFile
