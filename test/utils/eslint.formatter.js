@@ -1,7 +1,7 @@
 /**
  * Based on Stylish reporter by Sindre Sorhus
  *
- * @author pimlie
+ * adapted by pimlie
  *
  * Given the fileMatchPattern, this formatter combines all results for the
  * matched files into a single result. It adds occurences to each file and each
@@ -15,8 +15,8 @@
 // Config
 // ------------------------------------------------------------------------------
 
-const fileMatchPattern = /.*?\/test\/fixtures\/[^/]+\/.nuxt[^/]*\/(?:.build\/)?(.*?)$/
-const defaultThreshold = 0.6
+const fileMatchPattern = /.*?\/test\/fixtures\/[^/]+\/.nuxt[^/]*\/(?:build\/)?(.*?)$/
+const defaultThreshold = 0
 
 // ------------------------------------------------------------------------------
 // ENV Options
@@ -84,6 +84,7 @@ module.exports = function (results) {
         merged[filePath].messages[index].occurence++
       } else {
         message.occurence = 1
+        // Store the first source file where this error occured
         message.sourceFile = result.filePath
         merged[filePath].messages.push(message)
       }
@@ -91,6 +92,7 @@ module.exports = function (results) {
   })
 
   if (occurenceThreshold >= 1) {
+    // if threshold = 1, filter messages here so the totals are 'clean'
     Object.keys(merged).forEach((filePath) => {
       merged[filePath].messages = merged[filePath]
         .messages
@@ -172,6 +174,7 @@ module.exports = function (results) {
           let messageText = message.message.replace(/([^ ])\.$/, '$1')
           let messageOccurence = message.occurence + 'x'
 
+          // dim messages that are below our threshold
           if (isBelowThreshold) {
             messageType = chalk.dim(messageType)
             messageText = chalk.dim(messageText)
@@ -211,7 +214,7 @@ module.exports = function (results) {
               fileCache[message.sourceFile] = fs.readFileSync(message.sourceFile, 'utf8').split('\n')
             }
 
-            output += '\n'
+            output += chalk.dim(message.sourceFile.replace(process.cwd()+'/', '')) + '\n'
             output += chalk.bgBlackBright(chalk.dim(fileCache[message.sourceFile].slice(message.line - 2, message.line + 1)
               .map((line, index) => {
                 const l = `${message.line - 1 + index}: ${line}`
@@ -243,6 +246,18 @@ module.exports = function (results) {
       ].join(''))
     }
   }
+
+  output += chalk.dim([
+    '',
+    'This eslint formatter supports the following ENV options',
+    'ESLINT_THRESHOLD=[factor between 0 and 1]',
+    '  Change the threshold for messages (below are dimmed)',
+    'ESLINT_ONLYTHRES=1',
+    '  Ignore messages below the threshold',
+    'ESLINT_SHOWSRC=1',
+    '  Show the source code which triggered the message',
+    ''
+  ].join('\n'))
 
   return total > 0 ? output : ''
 }
