@@ -19,9 +19,6 @@ dist
 # Dist example generation
 examples/**/dist
 
-# Generated eslint-plugin-spellcheck lists
-.spellcheckignore/*ache.tsv
-
 # Coverage support
 coverage
 *.lcov
