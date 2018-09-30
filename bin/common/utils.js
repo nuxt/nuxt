@@ -36,7 +36,7 @@ exports.runAsyncScript = async (fn) => {
     await fn()
     process.exit(0)
   } catch (err) {
-    consola.fatal('Failed to run async Buxt script!')
+    consola.fatal('Failed to run async Nuxt script!')
     consola.fatal(err)
     process.exit(1)
   }
