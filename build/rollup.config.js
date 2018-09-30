@@ -22,7 +22,7 @@ export default function rollupConfigFactory({
       sourcemap: true
     },
     external: [
-      // Dependencies that will be installed alongise with the nuxt package
+      // Dependencies that will be installed alongside the nuxt package
       ...Object.keys(pkg.dependencies || {}),
       // Builtin node modules
       ...builtins,

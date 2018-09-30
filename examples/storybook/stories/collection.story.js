@@ -161,7 +161,7 @@ storiesOf('Features/Addon Notes', module)
     'Note with HTML',
     withNotes({
       text: `
-      <h2>My notes on emojies</h2>
+      <h2>My notes on emojis</h2>
 
       <em>It's not all that important to be honest, but..</em>
 

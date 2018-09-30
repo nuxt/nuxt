@@ -31,7 +31,7 @@ const vtmp = (cmp, cmpStr) => ({
     `
 })
 /**
- * Richer aLternative to storiesOf
+ * Richer alternative to storiesOf
  * @param {*} cmp
  * @param {*} name
  * @param {*} params

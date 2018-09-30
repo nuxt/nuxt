@@ -7,7 +7,7 @@ export default function () {
     loader: 'coffee-loader'
   }
   this.extendBuild((config) => {
-    // Add CoffeeScruot loader
+    // Add CoffeeScript loader
     config.module.rules.push(coffeeLoader)
     // Add .coffee extension in webpack resolve
     if (config.resolve.extensions.indexOf('.coffee') === -1) {
