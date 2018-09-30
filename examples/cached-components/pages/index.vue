@@ -10,7 +10,7 @@
 export default {
   name: 'Date',
   serverCacheKey() {
-    // Will change every 10 secondes
+    // Will change every 10 seconds
     return Math.floor(Date.now() / 10000)
   },
   data() {
