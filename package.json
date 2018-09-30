@@ -139,6 +139,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",
+    "@nuxtjs/spellcheck-config": "^0.1.0",
     "babel-core": "^7.0.0-0",
     "babel-eslint": "^10.0.0",
     "babel-jest": "^23.6.0",

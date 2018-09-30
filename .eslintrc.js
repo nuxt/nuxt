@@ -1,5 +1,3 @@
-const skipWords = require('./.spellcheckignore')
-
 module.exports = {
   root: true,
   parserOptions: {
@@ -83,24 +81,8 @@ module.exports = {
       'singleline': 5,
     }],
 
-    // https://github.com/aotaduy/eslint-plugin-spellcheck
-    "spellcheck/spell-checker": [1,
-      {
-        "comments": true,
-        "strings": true,
-        "identifiers": true,
-        "lang": "en_US",
-        // yarn `lint | grep -Eio ':\s\w+' | sed 's/: //' | sort | uniq | sed 's/.*/"&",/'`
-        "skipWords": skipWords,
-        "skipIfMatch": [
-          "http://[^s]*",
-          "[0-9]+(px|vw|vh|bd|xl)",
-          "#[0-9a-f]+"
-        ],
-        "skipWordIfMatch": [],
-        "minLength": 3
-      }
-    ]
+    // Spellchecker
+    "spellcheck/spell-checker": [1, require('@nuxtjs/spellcheck-config') ]
   },
 
   globals: {}
