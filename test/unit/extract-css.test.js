@@ -9,7 +9,7 @@ describe('extract css', () => {
   test('Verify global.css has been extracted and minified', async () => {
     const pathToMinifiedGlobalCss = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client/7dc53e76acc7df734a24.css') // eslint-disable-line spellcheck/spell-checker
     const content = await readFile(pathToMinifiedGlobalCss, 'utf-8')
-    const expectedContent = 'h1[data-v-180e2718]{color:red}.container[data-v-180e2718]{-ms-grid-columns:60px 60px 60px 60px 60px;-ms-grid-rows:30px 30px;display:-ms-grid;display:grid;grid-auto-flow:row;grid-template-columns:60px 60px 60px 60px 60px;grid-template-rows:30px 30px}'
+    const expectedContent = 'h1[data-v-180e2718]{color:red}.container[data-v-180e2718]{display:-ms-grid;display:grid;-ms-grid-columns:60px 60px 60px 60px 60px;grid-template-columns:60px 60px 60px 60px 60px;-ms-grid-rows:30px 30px;grid-template-rows:30px 30px;grid-auto-flow:row}'
     expect(content).toBe(expectedContent)
   })
 })
