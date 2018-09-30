@@ -34,7 +34,6 @@ const getLatestHost = (argv) => {
 exports.runAsyncScript = async (fn) => {
   try {
     await fn()
-    process.exit(0)
   } catch (err) {
     consola.error(err)
     consola.fatal(`Failed to run async Nuxt script!`)
