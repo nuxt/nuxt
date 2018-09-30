@@ -77,13 +77,26 @@ module.exports = {
       'x-invalid-end-tag': false
     }],
     'vue/max-attributes-per-line': [2, {
-      'singleline': 5,
+      'singleline': 5
     }]
   },
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
-      'no-multiple-empty-lines': 1
+      'import/order': 1,
+      'no-multiple-empty-lines': [1, { max: 2, maxEOF: 1 }],
+      'no-trailing-spaces': [2, { skipBlankLines: true }],
+      'padded-blocks': 1
+    }
+  }, {
+    files: [ 'test/fixtures/*/.nuxt*/**/client.js' ],
+    rules: {
+      'no-console': [2, { allow: ['error'] }]
+    }
+  }, {
+    files: [ 'test/fixtures/*/.nuxt*/**/router.js' ],
+    rules: {
+      'no-console': [2, { allow: ['warn'] }]
     }
   }],
   globals: {}
