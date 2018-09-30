@@ -37,7 +37,7 @@ if (argv.help) {
   process.exit(0)
 }
 
-(async function generate () {
+(async function generate() {
   const options = await loadNuxtConfig(argv)
 
   options.dev = false // Force production mode (no webpack middleware called)
