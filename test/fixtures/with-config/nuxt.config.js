@@ -92,5 +92,8 @@ export default {
       maxAge: '1y'
     }
   },
-  globalName: 'noxxt'
+  globalName: 'noxxt',
+  globals: {
+    id: '#custom-nuxt-id'
+  }
 }

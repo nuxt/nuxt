@@ -54,7 +54,7 @@ describe('with-config', () => {
   test('/test/ (custom globalName)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/'))
     const html = window.document.body.innerHTML
-    expect(html.includes('id="__noxxt">')).toBe(true)
+    expect(html.includes('id="custom-nuxt-id">')).toBe(true)
     expect(html.includes('id="__nuxt">')).toBe(false)
     expect(window.__NOXXT__).toBeDefined()
     expect(window.__NUXT__).toBeUndefined()
