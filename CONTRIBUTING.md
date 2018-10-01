@@ -83,7 +83,7 @@ This will help greatly in understanding changes and also help Nuxt users to unde
 ### Linting
 
 As you might have noticed already, we are using ESLint to enforce a code standard. Please run `yarn lint` before committing
-your changes to verify that the code style is correct. If not, you can use `yarn lint -- --fix` (no typo!) to fix most of the
+your changes to verify that the code style is correct. If not, you can use `yarn lint --fix` or `npm run lint -- --fix` (no typo!) to fix most of the
 style changes. If there are still errors left, you must correct them manually.
 
 ### Documentation
