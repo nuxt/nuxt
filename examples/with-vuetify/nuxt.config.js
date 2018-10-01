@@ -14,8 +14,7 @@ export default {
   },
 
   build: {
-    extractCSS: true,
-    transpile: [/^vuetify/]
+    extractCSS: true
   },
   /*
   ** Load Vuetify into the app

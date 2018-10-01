@@ -82,7 +82,7 @@ export default {
       if (worker) worker.postMessage({ hello: 'world' })
       else this.notification = 'No more test workers available'
     },
-    long (miliseconds) {
+    long (milliseconds) {
       let worker = this.workers.shift()
 
       if (worker) {
@@ -96,7 +96,7 @@ export default {
         worker = this.longRunningWorkers[ this.longIndex++ % this.longRunningWorkers.length]
       }
 
-      worker.postMessage({ action: 'expensive', time: miliseconds })
+      worker.postMessage({ action: 'expensive', time: milliseconds })
     },
     freeWorker () {
       // we can't really free a worker, we can only terminate it and create a new
