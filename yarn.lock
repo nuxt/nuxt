@@ -3165,10 +3165,10 @@ eslint-plugin-import@^2.14.0:
     read-pkg-up "^2.0.0"
     resolve "^1.6.0"
 
-eslint-plugin-jest@^21.22.1:
-  version "21.23.0"
-  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.23.0.tgz#bb2ac908e636ec7632527579d39cb136ab31b591"
-  integrity sha512-u8hnZxNHIXBlPVKusGA0LhARcOUP0/sDu+j7BU6G2Hfkx8BxetXV/UDqlw1yFhsghUOoKgxAXUr0+ORlB+KEdg==
+eslint-plugin-jest@^21.24.0:
+  version "21.24.0"
+  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.24.0.tgz#4d194e1b6b4c8e5042de17399850ceddf82e25a1"
+  integrity sha512-+sX3LymNWryxVG0kKhwdRCZo2FUHkC/hrhgFhoJ2phNzFNb3Kb4FGinXxkqQy16rUVVcZFhuXCaE8T5DtzPKNg==
 
 eslint-plugin-node@^7.0.1:
   version "7.0.1"
@@ -5131,7 +5131,7 @@ jsdom@^11.5.1:
     ws "^5.2.0"
     xml-name-validator "^3.0.0"
 
-jsdom@^12.0.0:
+jsdom@^12.1.0:
   version "12.1.0"
   resolved "https://registry.npmjs.org/jsdom/-/jsdom-12.1.0.tgz#2c8fbd12a2c690c8a8e14cce164afa11879e57f4"
   integrity sha512-1lrrgWhI5zN5B5p88xihrhfeAbdagMUXEN8Z+8l5f33k5IMZYDxIDJaPXKOOBF4xAt6hVyE/HrBbUYGjSrZlvg==
