@@ -94,6 +94,6 @@ export default {
   },
   globalName: 'noxxt',
   globals: {
-    id: '#custom-nuxt-id'
+    id: 'custom-nuxt-id'
   }
 }
