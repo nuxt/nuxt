@@ -54,7 +54,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "node -r esm ./build/build.js",
+    "build": "node -r esm ./packages/nuxt-build/build.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks build examples lib packages test",
     "postinstall": "opencollective || exit 0",
