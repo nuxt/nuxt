@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
 const { Nuxt, Builder } = require('..')
-const { loadNuxtConfig, getLatestHost } = require('./common/utils')
+const { loadNuxtConfig } = require('./common/utils')
 
 const argv = parseArgs(process.argv.slice(2), {
   alias: {
@@ -74,9 +76,6 @@ const errorHandler = (err, instance) => {
     return errorHandler(err, oldInstance)
   }
 
-  // Get latest environment variables
-  const { port, host, socket } = getLatestHost(argv)
-
   return (
     Promise.resolve()
       .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))
@@ -91,7 +90,7 @@ const errorHandler = (err, instance) => {
       })
       .then(() => oldInstance && oldInstance.nuxt.close())
       // Start listening
-      .then(() => nuxt.listen(port, host, socket))
+      .then(() => nuxt.listen())
       // Show ready message first time, others will be shown through WebpackBar
       .then(() => !oldInstance && nuxt.showReady(false))
       .then(() => builder.watchServer())

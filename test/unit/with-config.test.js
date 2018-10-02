@@ -19,6 +19,11 @@ describe('with-config', () => {
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
+  test('/ (asset name for analyze mode)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html).toContain('<script src="/test/orion/app.js"')
+  })
+
   test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
     expect(html).toContain('.global-css-selector')
@@ -159,6 +164,19 @@ describe('with-config', () => {
   })
 
   // Close server and ask nuxt to stop listening to file changes
+  afterAll(async () => {
+    await nuxt.close()
+  })
+})
+
+describe('server config', () => {
+  test('opens on port defined in server.port', async () => {
+    const config = await loadFixture('with-config')
+    config.server.port = port = await getPort()
+    nuxt = new Nuxt(config)
+    await nuxt.listen()
+    await nuxt.renderAndGetWindow(url('/test/'))
+  })
   afterAll(async () => {
     await nuxt.close()
   })

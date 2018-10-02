@@ -29,7 +29,7 @@ export interface Person {
   gender: string
   ip_address: string
   avatar: string
-  addres: PersonAddress
+  address: PersonAddress
 }
 
 export interface State {
