@@ -95,7 +95,7 @@
     "postcss-import": "^12.0.0",
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^3.0.0",
-    "postcss-preset-env": "^6.0.7",
+    "postcss-preset-env": "^6.0.8",
     "postcss-url": "^8.0.0",
     "semver": "^5.5.1",
     "serialize-javascript": "^1.5.0",
