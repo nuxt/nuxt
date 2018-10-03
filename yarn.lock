@@ -6923,10 +6923,10 @@ sax@^1.2.4, sax@~1.2.4:
   resolved "https://registry.npmjs.org/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
 saxes@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/saxes/-/saxes-3.1.2.tgz#f18440ea0fa6a625d3d1a7e13f4c3f10effc5f40"
+  version "3.1.3"
+  resolved "https://registry.npmjs.org/saxes/-/saxes-3.1.3.tgz#334ab3b802a465ccda96fff9bdefbd505546ffa8"
   dependencies:
-    xmlchars "^1.1.0"
+    xmlchars "^1.3.1"
 
 schema-utils@^0.4.2, schema-utils@^0.4.4, schema-utils@^0.4.5:
   version "0.4.7"
@@ -8157,9 +8157,9 @@ xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
 
-xmlchars@^1.1.0:
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/xmlchars/-/xmlchars-1.3.0.tgz#a3e2ed9dc13c6e57e404d2641eee62f0d1b49f92"
+xmlchars@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.npmjs.org/xmlchars/-/xmlchars-1.3.1.tgz#1dda035f833dbb4f86a0c28eaa6ca769214793cf"
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.1"
