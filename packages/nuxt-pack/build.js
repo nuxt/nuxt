@@ -2,7 +2,7 @@ import path from 'path'
 import Package from './package'
 
 // Commons
-const rootDir = path.resolve(__dirname, '..')
+const rootDir = path.resolve(__dirname, '..', '..')
 
 // Force NODE_ENV to production
 process.env.NODE_ENV = 'production'
