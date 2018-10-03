@@ -101,7 +101,13 @@ jobs:
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             BUILD_SUFFIX=edge yarn build
             npm publish
-            for p in packages/*; do cd $p ; npm publish ; cd - ; done
+            for p in packages/*; do
+              if [ -f "$p/package.json" ]; then
+                cd $p
+                npm publish
+                cd -
+              fi
+            done
 
 workflows:
   version: 2
