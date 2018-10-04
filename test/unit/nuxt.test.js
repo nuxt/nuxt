@@ -40,6 +40,7 @@ describe('nuxt', () => {
 
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('Universal Vue.js Applications')).toBe(true)
+    expect(html.includes('Please create <a href="https://nuxtjs.org/guide/directory-structure#the-pages-directory" target="_blank">the pages directory</a> to suppress this default page.')).toBe(true)
 
     await nuxt.close()
   })

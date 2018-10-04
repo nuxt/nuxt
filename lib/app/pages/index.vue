@@ -14,6 +14,7 @@
       <a href="https://nuxtjs.org/guide/installation#starting-from-scratch" target="_blank" class="button">
         Get Started
       </a>
+      <p class="Landscape__Page__Explanation">Please create <a href="https://nuxtjs.org/guide/directory-structure#the-pages-directory" target="_blank">the pages directory</a> to suppress this default page.</p>
     </section>
   </div>
 </template>
@@ -64,6 +65,18 @@
       margin: 30px 0;
       color: #526488;
       word-spacing: 5px;
+  }
+
+  .Landscape__Page__Explanation {
+      font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #35495e;
+      margin: 16px 0 0;
+      font-size: 16px;
+  }
+
+  .Landscape__Page__Explanation > a {
+      color: #3b8070;
+      text-decoration: underline;
   }
 
   @media (min-width: 992px) {
