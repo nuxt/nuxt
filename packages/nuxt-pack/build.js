@@ -9,7 +9,7 @@ process.env.NODE_ENV = 'production'
 
 // Packages
 const packages = [
-  '.',
+  'packages/nuxt-core',
   'packages/nuxt-start',
   'packages/nuxt-legacy'
 ]

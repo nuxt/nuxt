@@ -2,9 +2,9 @@ import '@babel/polyfill'
 
 import consola from 'consola'
 
-import core from '../../../lib/core'
-import builder from '../../../lib/builder'
-import * as Utils from '../../../lib/common/utils'
+import core from '../../nuxt-core/src/core'
+import builder from '../../nuxt-core/src/builder'
+import * as Utils from '../../nuxt-core/src/common/utils'
 
 consola.warn('You are using legacy build of Nuxt. Please consider upgrading your Node.js version to 8.x or later.')
 

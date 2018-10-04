@@ -12,7 +12,7 @@ export default class MetaRenderer {
     this.cache = LRU({})
 
     // Add VueMeta to Vue (this is only for SPA mode)
-    // See lib/app/index.js
+    // See src/app/index.js
     Vue.use(VueMeta, {
       keyName: 'head',
       attribute: 'data-n-head',

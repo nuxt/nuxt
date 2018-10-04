@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-parent",
+  "name": "nuxt",
   "version": "2.1.0",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "contributors": [
@@ -22,12 +22,18 @@
       "name": "Alexander Lichter (@manniL}"
     }
   ],
-  "main": "packages/nuxt-core",
+  "main": "index.js",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "dist",
+    "index.js"
+  ],
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -47,15 +53,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "node -r esm ./packages/nuxt-pack/build.js",
-    "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks examples packages test",
-    "postinstall": "opencollective || exit 0",
-    "test": "yarn test:fixtures && yarn test:unit",
-    "test:fixtures": "jest",
-    "test:e2e": "jest -i packages/nuxt-core/test/e2e",
-    "test:lint": "yarn lint",
-    "test:unit": "jest packages/nuxt-core/test/unit"
+    "postinstall": "opencollective || exit 0"
   },
   "engines": {
     "node": ">=8.0.0",

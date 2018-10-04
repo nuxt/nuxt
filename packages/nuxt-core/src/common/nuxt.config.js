@@ -2,9 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import env from 'std-env'
 
-const nuxtDir = fs.existsSync(path.resolve(__dirname, '..', 'package.json'))
-  ? path.resolve(__dirname, '..') // dist
-  : path.resolve(__dirname, '..', '..') // src
+const nuxtDir = fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
+  ? path.resolve(__dirname, '..', '..') // src
+  : path.resolve(__dirname, '..') // dist
 
 export default {
   // Information about running environment
@@ -29,7 +29,7 @@ export default {
   srcDir: undefined,
   buildDir: '.nuxt',
   nuxtDir,
-  nuxtAppDir: path.resolve(nuxtDir, 'lib', 'app'),
+  nuxtAppDir: path.resolve(nuxtDir, 'src', 'app'),
   modulesDir: ['node_modules'], // ~> relative to options.rootDir
 
   // Ignore

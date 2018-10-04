@@ -1,4 +1,4 @@
-import core from '../../../lib/core'
-import * as Utils from '../../../lib/common/utils'
+import core from '../../nuxt-core/src/core'
+import * as Utils from '../../nuxt-core/src/common/utils'
 
 export default Object.assign({ Utils }, core)

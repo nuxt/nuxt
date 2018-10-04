@@ -1,6 +1,7 @@
 export default (pkg, { load }) => {
   // Read nuxt package
-  const nuxt = load('../..')
+  const nuxt = load('../../')
+  const core = load('../nuxt-core')
 
   // Copy version before build for dist banner
   pkg.on('build:before', () => {
@@ -22,7 +23,11 @@ export default (pkg, { load }) => {
 
     // Copy files from nuxt package
     pkg.copyFilesFrom(nuxt, [
-      'LICENSE',
+      'LICENSE'
+    ])
+
+    // Copy files from nuxt-core package
+    pkg.copyFilesFrom(core, [
       'bin'
     ])
 

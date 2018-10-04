@@ -2,12 +2,15 @@ module.exports = {
   testEnvironment: 'node',
   coverageDirectory: './coverage/',
   collectCoverageFrom: [
-    'lib/!(app)/**',
-    '!lib/builder/webpack/plugins/vue/**'
+    'packages/*/src/**/*.js'
   ],
-  setupTestFrameworkScriptFile: './test/utils/setup',
+  coveragePathIgnorePatterns: [
+    '<rootDir>/packages/nuxt-core/src/app/**',
+    '<rootDir>/packages/nuxt-core/src/builder/webpack/plugins/vue/**'
+  ],
+  setupTestFrameworkScriptFile: './test/setup',
   testPathIgnorePatterns: ['test/fixtures/.*/.*?/'],
-  transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  transformIgnorePatterns: ['/node_modules/'],
   moduleFileExtensions: ['js', 'mjs', 'json'],
   expand: true,
   forceExit: true

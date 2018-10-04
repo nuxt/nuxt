@@ -33,7 +33,7 @@ export default {
     // name: 'folding-cube',
     /*
     ** You can give custom options given to the template
-    ** See https://github.com/nuxt/nuxt.js/blob/dev/lib/app/views/loading/folding-cube.html
+    ** See https://github.com/nuxt/nuxt.js/blob/dev/packages/nuxt-core/src/app/views/loading/folding-cube.html
     */
     // color: '#DBE1EC'
     // background: 'white'

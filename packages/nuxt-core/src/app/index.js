@@ -91,7 +91,7 @@ async function createApp (ssrContext) {
         const nuxt = this.nuxt || this.$options.nuxt
         nuxt.dateErr = Date.now()
         nuxt.err = err
-        // Used in lib/server.js
+        // Used in src/app/server.js
         if (ssrContext) ssrContext.nuxt.error = err
         return err
       }
