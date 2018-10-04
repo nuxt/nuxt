@@ -38,6 +38,6 @@ export default (pkg, { load }) => {
     pkg.writePackage()
 
     // Copy dist artifacts to nuxt
-    nuxt.copyFilesFrom(pkg, [ 'dist' ])
+    core.copyFilesFrom(pkg, [ 'dist' ])
   })
 }

@@ -62,8 +62,8 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/test/fixtures
-            - nuxt/dist
+            - nuxt/packages/nuxt-core/test/fixtures
+            - nuxt/packages/nuxt-core/dist
     environment:
       - NODE_ENV: "test"
 
@@ -100,7 +100,6 @@ jobs:
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             BUILD_SUFFIX=edge yarn build
-            npm publish
             for p in packages/*; do
               if [ -f "$p/package.json" ]; then
                 cd $p
