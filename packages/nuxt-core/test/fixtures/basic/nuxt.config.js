@@ -1,5 +1,3 @@
-import path from 'path'
-
 let _nuxt
 
 export default {
@@ -41,7 +39,6 @@ export default {
       return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
     }
   },
-  modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
     ready(nuxt) {
       _nuxt = nuxt

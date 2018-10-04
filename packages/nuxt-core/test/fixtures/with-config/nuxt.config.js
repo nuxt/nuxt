@@ -1,4 +1,3 @@
-import path from 'path'
 import compression from 'compression'
 
 export default {
@@ -28,7 +27,7 @@ export default {
       ]
     }
   },
-  modulesDir: [path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules')],
+  modulesDir: ['node_modules'],
   transition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
