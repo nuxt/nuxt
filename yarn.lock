@@ -6427,9 +6427,9 @@ punycode@^2.1.0:
   version "2.1.1"
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
 
-puppeteer@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.8.0.tgz#9e8bbd2f5448cc19cac220efc0512837104877ad"
+puppeteer@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.9.0.tgz#56dba79e7ea4faac807877bee3b23d63291fc59e"
   dependencies:
     debug "^3.1.0"
     extract-zip "^1.6.6"
@@ -6856,9 +6856,9 @@ rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.3.1:
     estree-walker "^0.5.2"
     micromatch "^2.3.11"
 
-rollup@^0.66.3:
-  version "0.66.3"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.3.tgz#42dfff885fa267262c45ad160979d862a5df1f42"
+rollup@^0.66.4:
+  version "0.66.4"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.4.tgz#8067b9638af82873b7fd644af9c3d72108ca4bab"
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
