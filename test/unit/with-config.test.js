@@ -59,7 +59,7 @@ describe('with-config', () => {
     expect(window.__NOXXT__).toBeDefined()
     expect(window.__NUXT__).toBeUndefined()
     expect(window.$noxxt).toBeDefined()
-    expect(window.$nuxt).toBeUndefined()
+    expect(window.$nuxt).toBeDefined() // for Vue Dev Tools detection
   })
 
   test('/test/ (router base)', async () => {
