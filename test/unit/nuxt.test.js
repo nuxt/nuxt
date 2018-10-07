@@ -6,8 +6,8 @@ describe('nuxt', () => {
     expect(typeof Nuxt).toBe('function')
   })
 
-  test('Nuxt.js Instance', () => {
-    const config = loadFixture('empty')
+  test('Nuxt.js Instance', async () => {
+    const config = await loadFixture('empty')
     const nuxt = new Nuxt(config)
 
     expect(typeof nuxt).toBe('object')
@@ -36,6 +36,7 @@ describe('nuxt', () => {
 
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('Universal Vue.js Applications')).toBe(true)
+    expect(/Landscape__Page__Explanation/.test(html)).toBe(true)
 
     await nuxt.close()
   })

@@ -63,7 +63,7 @@ const stressTest = async (_url, concurrency = 2, steps = 4) => {
 
 describe('ssr', () => {
   beforeAll(async () => {
-    const config = loadFixture('ssr')
+    const config = await loadFixture('ssr')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -95,6 +95,12 @@ describe('ssr', () => {
 
   test('unique responses with fetch', async () => {
     await uniqueTest('/fetch')
+  })
+
+  test('store undefined variable response', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/store'))
+    expect('idUndefined' in window.__NUXT__.state).toBe(true)
+    expect(window.__NUXT__.state.idUndefined).toEqual(undefined)
   })
 
   test('stress test with asyncData', async () => {

@@ -13,20 +13,21 @@
   },
   "dependencies": {
     "chart.js": "^2.7.1",
-    "nuxt": "latest",
+    "nuxt-edge": "latest",
     "vue-chartjs": "^3.1.1",
-    "vuetify": "1.0.0-beta.5"
+    "vuetify": "1.2.6"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^3.4.0-alpha.7",
-    "@storybook/addon-centered": "^3.4.0-alpha.7",
-    "@storybook/addon-knobs": "^3.4.0-alpha.7",
-    "@storybook/addon-links": "^3.4.0-alpha.7",
-    "@storybook/addon-notes": "^3.4.0-alpha.7",
-    "@storybook/addon-storyshots": "^3.4.0-alpha.7",
-    "@storybook/addon-viewport": "^3.4.0-alpha.7",
-    "@storybook/addons": "^3.4.0-alpha.7",
-    "@storybook/vue": "^3.4.0-alpha.7",
+    "@storybook/addon-actions": "^4.0.0-alpha.24",
+    "@storybook/addon-centered": "^4.0.0-alpha.24",
+    "@storybook/addon-knobs": "^4.0.0-alpha.24",
+    "@storybook/addon-links": "^4.0.0-alpha.24",
+    "@storybook/addon-notes": "^4.0.0-alpha.24",
+    "@storybook/addon-storyshots": "^4.0.0-alpha.24",
+    "@storybook/addon-viewport": "^4.0.0-alpha.24",
+    "@storybook/addons": "^4.0.0-alpha.24",
+    "@storybook/vue": "^4.0.0-alpha.24",
+    "babel-preset-vue": "^2.0.2",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1"
   }

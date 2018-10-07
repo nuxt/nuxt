@@ -12,7 +12,8 @@
             class="link"
             href="https://github.com/white-rabbit-japan/vuetify-storyboard-boilerplate"
             target="_blank"
-            rel="noopener noreferrer">
+            rel="noopener noreferrer"
+          >
             vuetify-storyboard-boilerplate
           </a>
         </p>

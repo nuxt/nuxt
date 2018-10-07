@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <div>
-      <app-logo/>
+      <app-logo />
       <h1 class="title">
         web-worker
       </h1>
@@ -18,21 +18,26 @@
         <a
           :class="needWorkerSetup ? 'hidden' : 'visible'"
           class="button button--green"
-          @click="test">Test Worker</a>
+          @click="test"
+        >Test Worker</a>
         <a
           :class="needWorkerSetup ? 'hidden' : 'visible'"
           class="button button--green"
-          @click="long(4000)">Execute long running Worker</a>
+          @click="long(4000)"
+        >Execute long running Worker</a>
         <a
           :class="needWorkerSetup || !longRunningWorkers.length ? 'hidden' : 'visible'"
           class="button button--green"
-          @click="freeWorker">Free long running Worker</a>
+          @click="freeWorker"
+        >Free long running Worker</a>
         <a
           class="button button--grey"
-          @click="removeWorker">Remove Web Worker</a>
+          @click="removeWorker"
+        >Remove Web Worker</a>
         <a
           class="button button--grey"
-          @click="createWorkers">Create more Workers</a>
+          @click="createWorkers"
+        >Create more Workers</a>
       </div>
     </div>
   </section>
@@ -77,7 +82,7 @@ export default {
       if (worker) worker.postMessage({ hello: 'world' })
       else this.notification = 'No more test workers available'
     },
-    long (miliseconds) {
+    long (milliseconds) {
       let worker = this.workers.shift()
 
       if (worker) {
@@ -91,7 +96,7 @@ export default {
         worker = this.longRunningWorkers[ this.longIndex++ % this.longRunningWorkers.length]
       }
 
-      worker.postMessage({ action: 'expensive', time: miliseconds })
+      worker.postMessage({ action: 'expensive', time: milliseconds })
     },
     freeWorker () {
       // we can't really free a worker, we can only terminate it and create a new
@@ -112,7 +117,7 @@ export default {
       worker.terminate()
     },
     createWorkers () {
-      if (process.browser) {
+      if (process.client) {
         for(let i = 0, len = navigator.hardwareConcurrency || 1; i < len; i++) {
           this.workers.push(this.$worker.createWorker())
         }

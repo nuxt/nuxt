@@ -39,8 +39,17 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Lint and Security
+          name: Lint
           command: yarn test:lint
+
+  audit:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Security Audit
+          command: npm install --package-lock-only && npm audit --audit-level=moderate
 
   build:
     <<: *defaults
@@ -90,7 +99,15 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            ./scripts/release-edge
+            BUILD_SUFFIX=edge yarn build
+            npm publish
+            for p in packages/*; do
+              if [ -f "$p/package.json" ]; then
+                cd $p
+                npm publish
+                cd -
+              fi
+            done
 
 workflows:
   version: 2
@@ -99,6 +116,10 @@ workflows:
       - setup
 
       - lint:
+          requires:
+            - setup
+
+      - audit:
           requires:
             - setup
 
@@ -118,6 +139,7 @@ workflows:
           requires:
             - build
             - lint
+            - audit
             - test-unit
             - test-e2e
           filters:

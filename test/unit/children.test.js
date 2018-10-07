@@ -7,7 +7,7 @@ let nuxt = null
 
 describe('children', () => {
   beforeAll(async () => {
-    const options = loadFixture('children')
+    const options = await loadFixture('children')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.listen(port, 'localhost')

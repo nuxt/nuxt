@@ -1,5 +1,3 @@
-import nodeExternals from 'webpack-node-externals'
-
 export default {
   /*
   ** Head elements
@@ -7,21 +5,16 @@ export default {
   */
   head: {
     link: [
-      { rel: 'stylesheet', type: 'text/css', href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' }
+      {
+        rel: 'stylesheet',
+        type: 'text/css',
+        href: 'https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons'
+      }
     ]
   },
 
   build: {
-    extractCSS: true,
-    extend(config, ctx) {
-      if (ctx.isServer) {
-        config.externals = [
-          nodeExternals({
-            whitelist: [/^vuetify/]
-          })
-        ]
-      }
-    }
+    extractCSS: true
   },
   /*
   ** Load Vuetify into the app

@@ -8,6 +8,7 @@ const modifyHtml = (html) => {
   html = html.replace('</head>', ampScript + '</head>')
   return html
 }
+
 export default {
   head: {
     meta: [

@@ -3,7 +3,7 @@
   "dependencies": {
     "cookie": "^0.3.1",
     "js-cookie": "^2.1.4",
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",

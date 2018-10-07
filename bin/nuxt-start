@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+process.env.NODE_ENV = process.env.NODE_ENV || 'production'
+
 const fs = require('fs')
 const { resolve } = require('path')
 const parseArgs = require('minimist')
@@ -11,12 +13,13 @@ const argv = parseArgs(process.argv.slice(2), {
     h: 'help',
     H: 'hostname',
     p: 'port',
+    n: 'unix-socket',
     c: 'config-file',
     s: 'spa',
     u: 'universal'
   },
   boolean: ['h', 's', 'u'],
-  string: ['H', 'c'],
+  string: ['H', 'c', 'n'],
   default: {
     c: 'nuxt.config.js'
   }
@@ -36,6 +39,7 @@ if (argv.help) {
     Options
       --port, -p            A port number on which to start the application
       --hostname, -H        Hostname on which to start the application
+      --unix-socket, -n     Path to a UNIX socket
       --spa                 Launch in SPA mode
       --universal           Launch in Universal mode (default)
       --config-file, -c     Path to Nuxt.js config file (default: nuxt.config.js)
@@ -58,7 +62,8 @@ nuxt.hook('error', err => consola.fatal(err))
 const distDir = resolve(
   nuxt.options.rootDir,
   nuxt.options.buildDir || '.nuxt',
-  'dist'
+  'dist',
+  'server'
 )
 if (!fs.existsSync(distDir)) {
   consola.fatal(
@@ -76,8 +81,6 @@ if (nuxt.options.render.ssr === true) {
   }
 }
 
-const { port, host } = nuxt.options.server
-
-nuxt.listen(port, host).then(() => {
+nuxt.listen().then(() => {
   nuxt.showReady(false)
 })

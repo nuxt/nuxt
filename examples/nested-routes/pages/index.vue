@@ -9,7 +9,7 @@
       </ul>
     </div>
     <div class="right">
-      <nuxt-child :key="$route.params.id"/>
+      <nuxt-child :key="$route.params.id" />
     </div>
   </div>
 </template>

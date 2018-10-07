@@ -1,3 +1,3 @@
 <template>
-  <nuxt keep-alive/>
+  <nuxt keep-alive />
 </template>

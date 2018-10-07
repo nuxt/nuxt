@@ -16,10 +16,15 @@ describe('utils', () => {
     expect(ctx.res.b).toBe(2)
   })
 
-  test.skip.appveyor('waitFor', async () => {
-    const s = Date.now()
-    await Utils.waitFor(100)
-    expect(Date.now() - s >= 100).toBe(true)
+  test('waitFor', async () => {
+    const delay = 100
+    const s = process.hrtime()
+    await Utils.waitFor(delay)
+    const t = process.hrtime(s)
+    // Node.js makes no guarantees about the exact timing of when callbacks will fire
+    // HTML5 specifies a minimum delay of 4ms for timeouts
+    // although arbitrary, use this value to determine our lower limit
+    expect((t[0] * 1e9 + t[1]) / 1e6).not.toBeLessThan(delay - 4)
     await Utils.waitFor()
   })
 
@@ -234,6 +239,53 @@ describe('utils', () => {
     test('keeps webpack inline loaders prepended', () => {
       expect(Utils.relativeTo(path1, `loader1!loader2!${path2}`))
         .toBe(Utils.wp(`loader1!loader2!..${path.sep}baz`))
+    })
+  })
+
+  describe('guardDir', () => {
+    test('Parent dir is guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root'
+        }, 'dir1', 'dir2')
+      }).toThrow()
+    })
+
+    test('Same dir is guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent'
+        }, 'dir1', 'dir2')
+      }).toThrow()
+    })
+
+    test('Same level dir is not guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent-next',
+          dir2: '/root/parent'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
+    })
+
+    test('Same level dir is not guarded 2', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent-next'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
+    })
+
+    test('Child dir is not guarded', () => {
+      expect(() => {
+        Utils.guardDir({
+          dir1: '/root/parent',
+          dir2: '/root/parent/child'
+        }, 'dir1', 'dir2')
+      }).not.toThrow()
     })
   })
 })

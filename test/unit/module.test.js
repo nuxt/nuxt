@@ -10,7 +10,7 @@ let nuxt = null
 
 describe('module', () => {
   beforeAll(async () => {
-    const config = loadFixture('module')
+    const config = await loadFixture('module')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -29,6 +29,11 @@ describe('module', () => {
 
     const { html } = await nuxt.renderRoute('/layout')
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
+  })
+
+  test('/404 should display the module error layout', async () => {
+    const { html } = await nuxt.renderRoute('/404')
+    expect(html).toContain('You should see the error in a different Vue!')
   })
 
   test('Hooks', () => {

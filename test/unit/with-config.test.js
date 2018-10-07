@@ -1,4 +1,5 @@
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import jsdom from 'jsdom'
+import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -7,7 +8,7 @@ let nuxt = null
 
 describe('with-config', () => {
   beforeAll(async () => {
-    const config = loadFixture('with-config')
+    const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.listen(port, 'localhost')
@@ -16,6 +17,11 @@ describe('with-config', () => {
   test('/', async () => {
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
+  })
+
+  test('/ (asset name for analyze mode)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html).toContain('<script src="/test/orion/app.js"')
   })
 
   test.skip('/ (global styles inlined)', async () => {
@@ -91,6 +97,7 @@ describe('with-config', () => {
     expect(html.includes('"string": "ok"')).toBe(true)
     expect(html.includes('"num2": 8.23')).toBe(true)
     expect(html.includes('"obj": {')).toBe(true)
+    expect(html).toContain('"NUXT_ENV_FOO": "manniL"')
   })
 
   test('/test/error', async () => {
@@ -139,7 +146,37 @@ describe('with-config', () => {
       .rejects.toMatchObject({ statusCode: 404 })
   })
 
+  test('renderAndGetWindow options', async () => {
+    const fakeErrorLog = jest.fn()
+    const mockOptions = {
+      beforeParse: jest.fn((window) => {
+        // Mock window.scrollTo
+        window.scrollTo = () => {}
+        window._virtualConsole.emit('jsdomError', new Error('test'))
+      }),
+      virtualConsole: new jsdom.VirtualConsole().sendTo({ error: fakeErrorLog })
+    }
+    try {
+      await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)
+    } catch (e) {}
+    expect(mockOptions.beforeParse).toHaveBeenCalled()
+    expect(fakeErrorLog).toHaveBeenCalled()
+  })
+
   // Close server and ask nuxt to stop listening to file changes
+  afterAll(async () => {
+    await nuxt.close()
+  })
+})
+
+describe('server config', () => {
+  test('opens on port defined in server.port', async () => {
+    const config = await loadFixture('with-config')
+    config.server.port = port = await getPort()
+    nuxt = new Nuxt(config)
+    await nuxt.listen()
+    await nuxt.renderAndGetWindow(url('/test/'))
+  })
   afterAll(async () => {
     await nuxt.close()
   })
