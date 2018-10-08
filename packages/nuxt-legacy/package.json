@@ -63,7 +63,7 @@
     "@nuxtjs/youch": "^4.2.3",
     "babel-loader": "^8.0.4",
     "cache-loader": "^1.2.2",
-    "caniuse-lite": "^1.0.30000889",
+    "caniuse-lite": "^1.0.30000890",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "compression": "^1.7.3",
@@ -119,7 +119,7 @@
     "webpack": "^4.20.2",
     "webpack-bundle-analyzer": "^3.0.2",
     "webpack-dev-middleware": "^3.4.0",
-    "webpack-hot-middleware": "^2.24.2",
+    "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^2.6.3"
   }
