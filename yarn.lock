@@ -897,7 +897,7 @@ acorn-globals@^3.0.0:
   dependencies:
     acorn "^4.0.4"
 
-acorn-globals@^4.1.0:
+acorn-globals@^4.1.0, acorn-globals@^4.3.0:
   version "4.3.0"
   resolved "https://registry.npmjs.org/acorn-globals/-/acorn-globals-4.3.0.tgz#e3b6f8da3c1552a95ae627571f7dd6923bb54103"
   dependencies:
@@ -922,11 +922,11 @@ acorn@^4.0.4, acorn@~4.0.2:
   version "4.0.13"
   resolved "https://registry.npmjs.org/acorn/-/acorn-4.0.13.tgz#105495ae5361d697bd195c825192e1ad7f253787"
 
-acorn@^5.0.0, acorn@^5.0.3, acorn@^5.5.3, acorn@^5.6.0, acorn@^5.6.2, acorn@^5.7.1, acorn@^5.7.3:
+acorn@^5.0.0, acorn@^5.0.3, acorn@^5.5.3, acorn@^5.6.0, acorn@^5.6.2, acorn@^5.7.3:
   version "5.7.3"
   resolved "https://registry.npmjs.org/acorn/-/acorn-5.7.3.tgz#67aa231bf8812974b85235a96771eb6bd07ea279"
 
-acorn@^6.0.1:
+acorn@^6.0.1, acorn@^6.0.2:
   version "6.0.2"
   resolved "https://registry.npmjs.org/acorn/-/acorn-6.0.2.tgz#6a459041c320ab17592c6317abbfdf4bbaa98ca4"
 
@@ -1067,13 +1067,6 @@ array-filter@~0.0.0:
 array-flatten@1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/array-flatten/-/array-flatten-1.1.1.tgz#9a5f699051b1e7073328f2a008968b64ea2955d2"
-
-array-includes@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/array-includes/-/array-includes-3.0.3.tgz#184b48f62d92d7452bb31b323165c7f8bd02266d"
-  dependencies:
-    define-properties "^1.1.2"
-    es-abstract "^1.7.0"
 
 array-map@~0.0.0:
   version "0.0.0"
@@ -1554,13 +1547,21 @@ browserify-zlib@^0.2.0:
   dependencies:
     pako "~1.0.5"
 
-browserslist@^4.0.0, browserslist@^4.1.0, browserslist@^4.1.1:
+browserslist@^4.0.0, browserslist@^4.1.0:
   version "4.1.1"
   resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.1.1.tgz#328eb4ff1215b12df6589e9ab82f8adaa4fc8cd6"
   dependencies:
     caniuse-lite "^1.0.30000884"
     electron-to-chromium "^1.3.62"
     node-releases "^1.0.0-alpha.11"
+
+browserslist@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.1.2.tgz#632feb46d1cbdd6bb1a6eb660eff68f2345ae7e7"
+  dependencies:
+    caniuse-lite "^1.0.30000888"
+    electron-to-chromium "^1.3.73"
+    node-releases "^1.0.0-alpha.12"
 
 bser@^2.0.0:
   version "2.0.0"
@@ -1698,6 +1699,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000884, caniuse-lite@^1.0.30000888:
   version "1.0.30000888"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000888.tgz#22edb50d91dd70612b5898e3b36f460600c6492f"
 
+caniuse-lite@^1.0.30000890:
+  version "1.0.30000890"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000890.tgz#86a18ffcc65d79ec6a437e985761b8bf1c4efeaf"
+
 capture-exit@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/capture-exit/-/capture-exit-1.2.0.tgz#1c5fcc489fd0ab00d4f1ac7ae1072e3173fbab6f"
@@ -1776,7 +1781,7 @@ chrome-trace-event@^1.0.0:
   dependencies:
     tslib "^1.9.0"
 
-ci-info@^1.5.0:
+ci-info@^1.5.0, ci-info@^1.6.0:
   version "1.6.0"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-1.6.0.tgz#2ca20dbb9ceb32d4524a683303313f0304b1e497"
 
@@ -2308,7 +2313,7 @@ csso@^3.5.0:
   dependencies:
     css-tree "1.0.0-alpha.29"
 
-cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
+cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0", cssom@^0.3.4:
   version "0.3.4"
   resolved "https://registry.npmjs.org/cssom/-/cssom-0.3.4.tgz#8cd52e8a3acfd68d3aed38ee0a640177d2f9d797"
 
@@ -2598,6 +2603,10 @@ electron-to-chromium@^1.3.62:
   version "1.3.72"
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.72.tgz#b69683081d5b7eee6e1ea07b2f5fa30b3c72252d"
 
+electron-to-chromium@^1.3.73:
+  version "1.3.73"
+  resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.73.tgz#aa67787067d58cc3920089368b3b8d6fe0fc12f6"
+
 elliptic@^6.0.0:
   version "6.4.1"
   resolved "https://registry.npmjs.org/elliptic/-/elliptic-6.4.1.tgz#c2d0b7776911b86722c632c3c06c60f2f819939a"
@@ -2663,7 +2672,7 @@ error-stack-parser@^2.0.0:
   dependencies:
     stackframe "^1.0.4"
 
-es-abstract@^1.5.1, es-abstract@^1.6.1, es-abstract@^1.7.0:
+es-abstract@^1.5.1, es-abstract@^1.6.1:
   version "1.12.0"
   resolved "https://registry.npmjs.org/es-abstract/-/es-abstract-1.12.0.tgz#9dbbdd27c6856f0001421ca18782d786bf8a6165"
   dependencies:
@@ -2710,10 +2719,6 @@ escodegen@^1.11.0, escodegen@^1.9.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-standard-jsx@^6.0.2:
-  version "6.0.2"
-  resolved "https://registry.npmjs.org/eslint-config-standard-jsx/-/eslint-config-standard-jsx-6.0.2.tgz#90c9aa16ac2c4f8970c13fc7efc608bacd02da70"
-
 eslint-config-standard@^12.0.0:
   version "12.0.0"
   resolved "https://registry.npmjs.org/eslint-config-standard/-/eslint-config-standard-12.0.0.tgz#638b4c65db0bd5a41319f96bba1f15ddad2107d9"
@@ -2754,9 +2759,9 @@ eslint-plugin-import@^2.14.0:
     read-pkg-up "^2.0.0"
     resolve "^1.6.0"
 
-eslint-plugin-jest@^21.24.0:
-  version "21.24.0"
-  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.24.0.tgz#4d194e1b6b4c8e5042de17399850ceddf82e25a1"
+eslint-plugin-jest@^21.24.1:
+  version "21.24.1"
+  resolved "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-21.24.1.tgz#aaf3c34e816f07add83d1e9c20696fdc31fac8dc"
 
 eslint-plugin-node@^7.0.1:
   version "7.0.1"
@@ -2772,16 +2777,6 @@ eslint-plugin-node@^7.0.1:
 eslint-plugin-promise@^4.0.1:
   version "4.0.1"
   resolved "https://registry.npmjs.org/eslint-plugin-promise/-/eslint-plugin-promise-4.0.1.tgz#2d074b653f35a23d1ba89d8e976a985117d1c6a2"
-
-eslint-plugin-react@^7.11.1:
-  version "7.11.1"
-  resolved "https://registry.npmjs.org/eslint-plugin-react/-/eslint-plugin-react-7.11.1.tgz#c01a7af6f17519457d6116aa94fc6d2ccad5443c"
-  dependencies:
-    array-includes "^3.0.3"
-    doctrine "^2.1.0"
-    has "^1.0.3"
-    jsx-ast-utils "^2.0.1"
-    prop-types "^15.6.2"
 
 eslint-plugin-standard@^4.0.0:
   version "4.0.0"
@@ -3493,7 +3488,7 @@ has-values@^1.0.0:
     is-number "^3.0.0"
     kind-of "^4.0.0"
 
-has@^1.0.0, has@^1.0.1, has@^1.0.3:
+has@^1.0.0, has@^1.0.1:
   version "1.0.3"
   resolved "https://registry.npmjs.org/has/-/has-1.0.3.tgz#722d7cbfc1f6aa8241f16dd814e011e1f41e8796"
   dependencies:
@@ -4467,34 +4462,34 @@ jsdom@^11.5.1:
     ws "^5.2.0"
     xml-name-validator "^3.0.0"
 
-jsdom@^12.1.0:
-  version "12.1.0"
-  resolved "https://registry.npmjs.org/jsdom/-/jsdom-12.1.0.tgz#2c8fbd12a2c690c8a8e14cce164afa11879e57f4"
+jsdom@^12.2.0:
+  version "12.2.0"
+  resolved "https://registry.npmjs.org/jsdom/-/jsdom-12.2.0.tgz#7cf3f5b5eafd47f8f09ca52315d367ff6e95de23"
   dependencies:
     abab "^2.0.0"
-    acorn "^5.7.1"
-    acorn-globals "^4.1.0"
+    acorn "^6.0.2"
+    acorn-globals "^4.3.0"
     array-equal "^1.0.0"
-    cssom ">= 0.3.2 < 0.4.0"
+    cssom "^0.3.4"
     cssstyle "^1.1.1"
     data-urls "^1.0.1"
     domexception "^1.0.1"
     escodegen "^1.11.0"
     html-encoding-sniffer "^1.0.2"
-    nwsapi "^2.0.8"
+    nwsapi "^2.0.9"
     parse5 "5.1.0"
     pn "^1.1.0"
     request "^2.88.0"
     request-promise-native "^1.0.5"
-    saxes "^3.1.2"
+    saxes "^3.1.3"
     symbol-tree "^3.2.2"
     tough-cookie "^2.4.3"
     w3c-hr-time "^1.0.1"
     webidl-conversions "^4.0.2"
-    whatwg-encoding "^1.0.4"
-    whatwg-mimetype "^2.1.0"
+    whatwg-encoding "^1.0.5"
+    whatwg-mimetype "^2.2.0"
     whatwg-url "^7.0.0"
-    ws "^6.0.0"
+    ws "^6.1.0"
     xml-name-validator "^3.0.0"
 
 jsesc@^1.3.0:
@@ -4562,12 +4557,6 @@ jstransformer@1.0.0:
   dependencies:
     is-promise "^2.0.0"
     promise "^7.0.1"
-
-jsx-ast-utils@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/jsx-ast-utils/-/jsx-ast-utils-2.0.1.tgz#e801b1b39985e20fffc87b40e3748080e2dcac7f"
-  dependencies:
-    array-includes "^3.0.3"
 
 kind-of@^3.0.2, kind-of@^3.0.3, kind-of@^3.2.0:
   version "3.2.2"
@@ -4759,7 +4748,7 @@ longest@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/longest/-/longest-1.0.1.tgz#30a0b2da38f73770e8294a0d22e6625ed77d0097"
 
-loose-envify@^1.0.0, loose-envify@^1.3.1:
+loose-envify@^1.0.0:
   version "1.4.0"
   resolved "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
   dependencies:
@@ -5162,7 +5151,7 @@ node-pre-gyp@^0.10.0:
     semver "^5.3.0"
     tar "^4"
 
-node-releases@^1.0.0-alpha.11:
+node-releases@^1.0.0-alpha.11, node-releases@^1.0.0-alpha.12:
   version "1.0.0-alpha.12"
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-1.0.0-alpha.12.tgz#32e461b879ea76ac674e511d9832cf29da345268"
   dependencies:
@@ -5238,7 +5227,7 @@ number-is-nan@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
 
-nwsapi@^2.0.7, nwsapi@^2.0.8:
+nwsapi@^2.0.7, nwsapi@^2.0.9:
   version "2.0.9"
   resolved "https://registry.npmjs.org/nwsapi/-/nwsapi-2.0.9.tgz#77ac0cdfdcad52b6a1151a84e73254edc33ed016"
 
@@ -5676,11 +5665,11 @@ postcss-custom-media@^7.0.4:
   dependencies:
     postcss "^7.0.2"
 
-postcss-custom-properties@^8.0.6:
-  version "8.0.6"
-  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.6.tgz#404d2f0848abef200807ac1587ab7758983416fa"
+postcss-custom-properties@^8.0.8:
+  version "8.0.8"
+  resolved "https://registry.npmjs.org/postcss-custom-properties/-/postcss-custom-properties-8.0.8.tgz#1812e2553805e1affce93164dd1709ef6b69c53e"
   dependencies:
-    postcss "^7.0.3"
+    postcss "^7.0.5"
     postcss-values-parser "^2.0.0"
 
 postcss-custom-selectors@^5.1.2:
@@ -6005,22 +5994,22 @@ postcss-place@^4.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-preset-env@^6.0.8:
-  version "6.0.8"
-  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.8.tgz#e41f72200100b6ec4f08a95ec5009ce05b98804a"
+postcss-preset-env@^6.0.10:
+  version "6.0.10"
+  resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.0.10.tgz#47b05afa6db121b8b0c160a2aed322fa629f5ec5"
   dependencies:
     autoprefixer "^9.1.5"
-    browserslist "^4.1.1"
+    browserslist "^4.1.2"
     caniuse-lite "^1.0.30000888"
     cssdb "^3.2.1"
-    postcss "^7.0.4"
+    postcss "^7.0.5"
     postcss-attribute-case-insensitive "^4.0.0"
     postcss-color-functional-notation "^2.0.1"
     postcss-color-hex-alpha "^5.0.2"
     postcss-color-mod-function "^3.0.3"
     postcss-color-rebeccapurple "^4.0.1"
     postcss-custom-media "^7.0.4"
-    postcss-custom-properties "^8.0.6"
+    postcss-custom-properties "^8.0.8"
     postcss-custom-selectors "^5.1.2"
     postcss-dir-pseudo-class "^5.0.0"
     postcss-env-function "^2.0.2"
@@ -6159,9 +6148,17 @@ postcss@^6.0.1, postcss@^6.0.20, postcss@^6.0.23:
     source-map "^0.6.1"
     supports-color "^5.4.0"
 
-postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2, postcss@^7.0.3, postcss@^7.0.4:
+postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2:
   version "7.0.4"
   resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.4.tgz#b5a059597d2c1a8a9916cb6efb0b294f70b4f309"
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.5.0"
+
+postcss@^7.0.5:
+  version "7.0.5"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.5.tgz#70e6443e36a6d520b0fd4e7593fcca3635ee9f55"
   dependencies:
     chalk "^2.4.1"
     source-map "^0.6.1"
@@ -6229,13 +6226,6 @@ prompts@^0.1.9:
   dependencies:
     kleur "^2.0.1"
     sisteransi "^0.1.1"
-
-prop-types@^15.6.2:
-  version "15.6.2"
-  resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
-  dependencies:
-    loose-envify "^1.3.1"
-    object-assign "^4.1.1"
 
 proxy-addr@~2.0.3:
   version "2.0.4"
@@ -6403,9 +6393,9 @@ punycode@^2.1.0:
   version "2.1.1"
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
 
-puppeteer@^1.8.0:
-  version "1.8.0"
-  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.8.0.tgz#9e8bbd2f5448cc19cac220efc0512837104877ad"
+puppeteer@^1.9.0:
+  version "1.9.0"
+  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.9.0.tgz#56dba79e7ea4faac807877bee3b23d63291fc59e"
   dependencies:
     debug "^3.1.0"
     extract-zip "^1.6.6"
@@ -6832,9 +6822,9 @@ rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.3.1:
     estree-walker "^0.5.2"
     micromatch "^2.3.11"
 
-rollup@^0.66.2:
-  version "0.66.2"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.2.tgz#77acdb9f4093f5f035ce75480577c40a81ea7999"
+rollup@^0.66.4:
+  version "0.66.4"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-0.66.4.tgz#8067b9638af82873b7fd644af9c3d72108ca4bab"
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
@@ -6898,11 +6888,11 @@ sax@^1.2.4, sax@~1.2.4:
   version "1.2.4"
   resolved "https://registry.npmjs.org/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
 
-saxes@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/saxes/-/saxes-3.1.2.tgz#f18440ea0fa6a625d3d1a7e13f4c3f10effc5f40"
+saxes@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.npmjs.org/saxes/-/saxes-3.1.3.tgz#334ab3b802a465ccda96fff9bdefbd505546ffa8"
   dependencies:
-    xmlchars "^1.1.0"
+    xmlchars "^1.3.1"
 
 schema-utils@^0.4.2, schema-utils@^0.4.4, schema-utils@^0.4.5:
   version "0.4.7"
@@ -7219,6 +7209,12 @@ std-env@^1.1.0, std-env@^1.3.1:
   resolved "https://registry.npmjs.org/std-env/-/std-env-1.3.1.tgz#4e1758412439e9ece1d437b1b098551911aa44ee"
   dependencies:
     is-ci "^1.1.0"
+
+std-env@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-2.0.2.tgz#290baa5c905cd4d54f970596923d3f3077adaf06"
+  dependencies:
+    ci-info "^1.6.0"
 
 stealthy-require@^1.1.0:
   version "1.1.1"
@@ -7943,9 +7939,9 @@ webpack-dev-middleware@^3.4.0:
     range-parser "^1.0.3"
     webpack-log "^2.0.0"
 
-webpack-hot-middleware@^2.24.2:
-  version "2.24.2"
-  resolved "https://registry.npmjs.org/webpack-hot-middleware/-/webpack-hot-middleware-2.24.2.tgz#0d2deeb813f67693e2997b87c3a9d9be324575dd"
+webpack-hot-middleware@^2.24.3:
+  version "2.24.3"
+  resolved "https://registry.npmjs.org/webpack-hot-middleware/-/webpack-hot-middleware-2.24.3.tgz#5bb76259a8fc0d97463ab517640ba91d3382d4a6"
   dependencies:
     ansi-html "0.0.7"
     html-entities "^1.2.0"
@@ -8014,13 +8010,13 @@ webpackbar@^2.6.3:
     std-env "^1.3.1"
     table "^4.0.3"
 
-whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3, whatwg-encoding@^1.0.4:
+whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3, whatwg-encoding@^1.0.5:
   version "1.0.5"
   resolved "https://registry.npmjs.org/whatwg-encoding/-/whatwg-encoding-1.0.5.tgz#5abacf777c32166a51d085d6b4f3e7d27113ddb0"
   dependencies:
     iconv-lite "0.4.24"
 
-whatwg-mimetype@^2.1.0:
+whatwg-mimetype@^2.1.0, whatwg-mimetype@^2.2.0:
   version "2.2.0"
   resolved "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-2.2.0.tgz#a3d58ef10b76009b042d03e25591ece89b88d171"
 
@@ -8129,13 +8125,19 @@ ws@^6.0.0:
   dependencies:
     async-limiter "~1.0.0"
 
+ws@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.npmjs.org/ws/-/ws-6.1.0.tgz#119a9dbf92c54e190ec18d10e871d55c95cf9373"
+  dependencies:
+    async-limiter "~1.0.0"
+
 xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
 
-xmlchars@^1.1.0:
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/xmlchars/-/xmlchars-1.3.0.tgz#a3e2ed9dc13c6e57e404d2641eee62f0d1b49f92"
+xmlchars@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.npmjs.org/xmlchars/-/xmlchars-1.3.1.tgz#1dda035f833dbb4f86a0c28eaa6ca769214793cf"
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.1"

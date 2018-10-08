@@ -11,7 +11,6 @@ module.exports = {
   },
   extends: [
     'standard',
-    'standard-jsx',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:vue/recommended'
