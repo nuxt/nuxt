@@ -12,7 +12,9 @@ export default {
   build: {
     extractCSS: true,
     postcss: {
-      plugins: [ require('tailwindcss')('./tailwind.js') ],
+      plugins: {
+        tailwindcss: path.resolve('./tailwind.js')
+      },
       preset: { autoprefixer: { grid: true } }
     },
     extend(config, { isDev }) {

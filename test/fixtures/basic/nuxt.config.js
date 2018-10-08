@@ -73,7 +73,9 @@ export default {
           'custom-selectors': true
         }
       },
-      plugins: [require('cssnano')]
+      plugins: {
+        cssnano: {}
+      }
     }
   }
 }
