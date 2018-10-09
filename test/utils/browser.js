@@ -19,11 +19,12 @@ export default class Browser {
     await this.browser.close()
   }
 
-  async page(url) {
+  async page(url, globalName = 'nuxt') {
     if (!this.browser) throw new Error('Please call start() before page(url)')
     const page = await this.browser.newPage()
     await page.goto(url)
-    await page.waitForFunction('!!window.$nuxt')
+    page.$nuxtGlobalHandle = `window.$${globalName}`
+    await page.waitForFunction(`!!${page.$nuxtGlobalHandle}`)
     page.html = () =>
       page.evaluate(() => window.document.documentElement.outerHTML)
     page.$text = selector => page.$eval(selector, el => el.textContent)
@@ -37,21 +38,24 @@ export default class Browser {
         (els, attr) => els.map(el => el.getAttribute(attr)),
         attr
       )
-    page.$nuxt = await page.evaluateHandle('window.$nuxt')
+
+    page.$nuxt = await page.evaluateHandle(page.$nuxtGlobalHandle)
 
     page.nuxt = {
       async navigate(path, waitEnd = true) {
-        const hook = page.evaluate(() => {
-          return new Promise(resolve =>
-            window.$nuxt.$once('routeChanged', resolve)
+        const hook = page.evaluate(`
+          new Promise(resolve =>
+            ${page.$nuxtGlobalHandle}.$once('routeChanged', resolve)
           ).then(() => new Promise(resolve => setTimeout(resolve, 50)))
-        })
+        `)
         await page.evaluate(
           ($nuxt, path) => $nuxt.$router.push(path),
           page.$nuxt,
           path
         )
-        if (waitEnd) await hook
+        if (waitEnd) {
+          await hook
+        }
         return { hook }
       },
       routeData() {
