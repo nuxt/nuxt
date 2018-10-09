@@ -21,4 +21,20 @@ describe('basic config defaults', () => {
     expect(options.build.vendor).toBeUndefined()
     expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
   })
+
+  test('globalName uses nuxt as default if not set', () => {
+    const options = Options.from({})
+    expect(options.globalName).toEqual('nuxt')
+  })
+
+  test('globalName uses nuxt as default if set to something other than only letters', () => {
+    let options = Options.from({ globalName: '12foo4' })
+    expect(options.globalName).toEqual('nuxt')
+
+    options = Options.from({ globalName: 'foo bar' })
+    expect(options.globalName).toEqual('nuxt')
+
+    options = Options.from({ globalName: 'foo?' })
+    expect(options.globalName).toEqual('nuxt')
+  })
 })
