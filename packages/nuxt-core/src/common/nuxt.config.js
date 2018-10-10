@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import _ from 'lodash'
 import env from 'std-env'
 
 const nuxtDir = fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
@@ -13,6 +14,17 @@ export default {
 
   // Mode
   mode: 'universal',
+
+  // Global name
+  globalName: `nuxt`,
+  globals: {
+    id: globalName => `__${globalName}`,
+    nuxt: globalName => `$${globalName}`,
+    context: globalName => `__${globalName.toUpperCase()}__`,
+    pluginPrefix: globalName => globalName,
+    readyCallback: globalName => `on${_.capitalize(globalName)}Ready`,
+    loadedCallback: globalName => `_on${_.capitalize(globalName)}Loaded`
+  },
 
   // Server options
   server: {

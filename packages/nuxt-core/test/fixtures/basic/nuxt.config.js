@@ -64,13 +64,15 @@ export default {
   ],
   build: {
     scopeHoisting: true,
-    postcss: [
-      require('postcss-preset-env')({
+    postcss: {
+      preset: {
         features: {
           'custom-selectors': true
         }
-      }),
-      require('cssnano')
-    ]
+      },
+      plugins: {
+        cssnano: {}
+      }
+    }
   }
 }
