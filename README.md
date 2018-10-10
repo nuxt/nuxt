@@ -26,7 +26,8 @@
 - 🐦 Twitter: [@nuxt_js](https://twitter.com/nuxt_js)
 - 💬 Chat: [Discord](https://discord.gg/VApZF5W)
 - 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
-- 👉 [Play with Nuxt.js online](https://glitch.com/edit/#!/nuxt-hello-world)
+- 👉 [Play with Nuxt.js online (CodeSandbox)](https://codesandbox.io/s/github/nuxt/codesandbox-nuxt)
+- 👉 [Play with Nuxt.js online (Glitch)](https://glitch.com/edit/#!/nuxt-hello-world)
 
 ## Features
 
