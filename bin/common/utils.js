@@ -1,4 +1,3 @@
-
 const { resolve } = require('path')
 const { existsSync } = require('fs')
 const consola = require('consola')
@@ -32,9 +31,18 @@ const getLatestHost = (argv) => {
   return { port, host, socket }
 }
 
+exports.runAsyncScript = async (fn) => {
+  try {
+    await fn()
+  } catch (err) {
+    consola.error(err)
+    consola.fatal(`Failed to run async Nuxt script!`)
+  }
+}
+
 exports.nuxtConfigFile = getNuxtConfigFile
 
-exports.loadNuxtConfig = (argv) => {
+exports.loadNuxtConfig = async (argv) => {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
 
@@ -48,6 +56,15 @@ exports.loadNuxtConfig = (argv) => {
     }
     if (options.default) {
       options = options.default
+    }
+
+    if (typeof options === 'function') {
+      try {
+        options = await options()
+      } catch (error) {
+        consola.error(error)
+        consola.fatal('Error while fetching async configuration')
+      }
     }
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     consola.fatal('Could not load config file: ' + argv['config-file'])

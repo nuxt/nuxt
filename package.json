@@ -138,6 +138,7 @@
     "webpackbar": "^2.6.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge",
     "babel-eslint": "^10.0.1",
