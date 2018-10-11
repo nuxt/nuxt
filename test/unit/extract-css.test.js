@@ -5,6 +5,7 @@ import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
 const readFile = promisify(fs.readFile)
+const isWindows = /^win/.test(process.platform)
 
 describe('extract css', () => {
   beforeAll(async () => {
@@ -14,7 +15,8 @@ describe('extract css', () => {
   })
 
   test('Verify global.css has been extracted and minified', async () => {
-    const extractedIndexCss = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client/pages_index.css')
+    const fileName = isWindows ? 'pages_index.css' : 'pages/index.css'
+    const extractedIndexCss = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client', fileName)
     const content = await readFile(extractedIndexCss, 'utf-8')
 
     const scopeCss = /^h1\[data-v-[a-zA-Z0-9]{8}\]\{color:red\}\.container\[data-v-[a-zA-Z0-9]{8}\]/
