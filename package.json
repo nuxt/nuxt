@@ -54,9 +54,7 @@
     "nuxt": "./bin/nuxt"
   },
   "scripts": {
-    "build": "yarn build:packages && yarn build:transpile-legacy",
-    "build:packages": "node -r esm ./packages/nuxt-pack/build.js",
-    "build:transpile-legacy": "babel bin -x '.js,' -d packages/nuxt-legacy/bin",
+    "build": "node -r esm ./packages/nuxt-pack/build.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue bin/** benchmarks examples lib packages test",
     "postinstall": "opencollective || exit 0",
