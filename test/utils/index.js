@@ -6,7 +6,7 @@ import _getPort from 'get-port'
 import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
 import pkg from '../../package.json'
-import _Nuxt from '../../src'
+import _Nuxt from '../../lib/index.js'
 
 export const rp = _rp
 export const getPort = _getPort
