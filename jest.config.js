@@ -7,8 +7,8 @@ module.exports = {
   coverageDirectory: './coverage/',
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    '<rootDir>/packages/nuxt-core/src/app/',
-    '<rootDir>/packages/nuxt-core/src/builder/webpack/plugins/vue/'
+    '<rootDir>/packages/core/src/app/',
+    '<rootDir>/packages/core/src/builder/webpack/plugins/vue/'
   ],
   setupTestFrameworkScriptFile: './test/setup',
   testPathIgnorePatterns: [
