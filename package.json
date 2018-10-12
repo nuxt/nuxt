@@ -8,7 +8,6 @@
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue benchmarks examples packages test",
     "lint:bin": "eslint packages/nuxt-core/bin/**",
-    "postinstall": "opencollective || exit 0",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest packages/nuxt-core/test/fixtures",
     "test:e2e": "jest -i packages/nuxt-core/test/e2e",
