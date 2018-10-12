@@ -2823,6 +2823,11 @@ detect-newline@^2.1.0:
   resolved "https://registry.npmjs.org/detect-newline/-/detect-newline-2.1.0.tgz#f41f1c10be4b00e87b5f13da680759f2c5bfd3e2"
   integrity sha1-9B8cEL5LAOh7XxPaaAdZ8sW/0+I=
 
+devalue@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/devalue/-/devalue-1.0.4.tgz#d1f1a0e5d3799b805e1ee2d67f5c741a5d7812a7"
+  integrity sha512-R3Jef4Cw075TqqvliJ6sAiN9Ygd2onyklpgOv2qdytRKcEN8X2lsW9y6JlD2cDgbEIBWP3wVWXKfAQ1a9vD9UA==
+
 diff@^3.2.0:
   version "3.5.0"
   resolved "https://registry.npmjs.org/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
@@ -5626,7 +5631,7 @@ mimic-fn@^1.0.0:
   resolved "https://registry.npmjs.org/mimic-fn/-/mimic-fn-1.2.0.tgz#820c86a39334640e99516928bd03fca88057d022"
   integrity sha512-jf84uxzwiuiIVKiOLpfYk7N46TSy8ubTonmneY9vrpHNAnp0QBt2BxWV9dO3/j+BoVAb+a5G6YDPW3M5HOdMWQ==
 
-mini-css-extract-plugin@^0.4.4:
+mini-css-extract-plugin@^0.4.3, mini-css-extract-plugin@^0.4.4:
   version "0.4.4"
   resolved "https://registry.npmjs.org/mini-css-extract-plugin/-/mini-css-extract-plugin-0.4.4.tgz#c10410a004951bd3cedac1da69053940fccb625d"
   integrity sha512-o+Jm+ocb0asEngdM6FsZWtZsRzA8koFUudIDwYUfl94M3PejPHG7Vopw5hN9V8WsMkSFpm3tZP3Fesz89EyrfQ==
@@ -6875,7 +6880,7 @@ postcss-place@^4.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-preset-env@^6.1.1:
+postcss-preset-env@^6.0.10, postcss-preset-env@^6.1.1:
   version "6.1.1"
   resolved "https://registry.npmjs.org/postcss-preset-env/-/postcss-preset-env-6.1.1.tgz#c2c8038c3bdedb6b80cfc10f05ba90ff4612972a"
   integrity sha512-+vf9llIUVtFNYG9FPMJrg6wyVbdR7q4pne8UmD81zLnBhyBdU2pio6Ao10IeiCPduX2q0MChsuqXB1Zv9ZJCgQ==
@@ -8841,7 +8846,7 @@ urix@^0.1.0:
   resolved "https://registry.npmjs.org/urix/-/urix-0.1.0.tgz#da937f7a62e21fec1fd18d49b35c2935067a6c72"
   integrity sha1-2pN/emLiH+wf0Y1Js1wpNQZ6bHI=
 
-url-loader@^1.1.2:
+url-loader@^1.1.1, url-loader@^1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/url-loader/-/url-loader-1.1.2.tgz#b971d191b83af693c5e3fea4064be9e1f2d7f8d8"
   integrity sha512-dXHkKmw8FhPqu8asTc1puBfe3TehOCo2+RmOOev5suNCIYBcT626kxiWg1NBVkwc4rO8BGa7gP70W7VXuqHrjg==
