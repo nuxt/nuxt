@@ -1,0 +1,67 @@
+{
+  "name": "nuxt",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "nuxt/nuxt.js",
+  "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
+  "contributors": [
+    {
+      "name": "Sebastien Chopin (@Atinux)"
+    },
+    {
+      "name": "Alexandre Chopin (@alexchopin)"
+    },
+    {
+      "name": "Pooya Parsa (@pi0)"
+    },
+    {
+      "name": "Clark Du (@clarkdo)"
+    },
+    {
+      "name": "Jonas Galvez (@galvez)"
+    },
+    {
+      "name": "Alexander Lichter (@manniL}"
+    }
+  ],
+  "files": [
+    "bin",
+    "src",
+    "dist",
+    "index.js"
+  ],
+  "keywords": [
+    "nuxt",
+    "nuxt.js",
+    "nuxtjs",
+    "vue",
+    "vue.js",
+    "vuejs",
+    "vue universal",
+    "vue ssr",
+    "vue server side",
+    "ssr",
+    "vue isomorphic",
+    "vue versatile"
+  ],
+  "collective": {
+    "url": "https://opencollective.com/nuxtjs",
+    "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+  },
+  "main": "index.js",
+  "bin": {
+    "nuxt": "./bin/nuxt"
+  },
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
+  },
+  "scripts": {
+    "postinstall": "opencollective || exit 0"
+  },
+  "dependencies": {
+    "@nuxtjs/builder": "0.0.0",
+    "@nuxtjs/common": "0.0.0",
+    "@nuxtjs/core": "0.0.0"
+  }
+}

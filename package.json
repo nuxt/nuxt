@@ -1,11 +1,12 @@
 {
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "distributions/*"
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "node -r esm ./packages/nuxt-pack/build.js",
+    "build": "build-distributions",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue benchmarks examples packages test",
     "lint:bin": "eslint packages/nuxt-core/bin/**",
@@ -16,6 +17,7 @@
     "test:unit": "jest packages/nuxt-core/test/unit"
   },
   "devDependencies": {
+    "@nuxtjs/internal": "0.0.0",
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge",
     "babel-eslint": "^10.0.1",

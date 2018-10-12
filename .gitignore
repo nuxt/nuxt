@@ -12,6 +12,9 @@ package-lock.json
 # Packages
 packages/*/LICENSE
 
+# Distributions
+distributions/*/LICENSE
+
 # Other
 .nuxt*
 .cache

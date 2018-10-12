@@ -1,0 +1,16 @@
+{
+  "name": "@nuxtjs/internal",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "nuxt/nuxt.js",
+  "bin": {
+    "build-distributions": "./bin/build-distributions"
+  },
+  "dependencies": {
+    "consola": "^1.4.3",
+    "cross-spawn": "^6.0.5",
+    "esm": "^3.0.84",
+    "fs-extra": "^7.0.0",
+    "lodash": "^4.17.11"
+  }
+}
