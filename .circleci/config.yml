@@ -19,7 +19,7 @@ jobs:
       # Install dependencies
       - run:
           name: Install Dependencies
-          command: NODE_ENV=dev yarn
+          command: NODE_ENV=dev yarn && yarn bootstrap
 
       # Keep cache
       - save_cache:
@@ -62,8 +62,8 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/packages/nuxt-core/test/fixtures
-            - nuxt/packages/nuxt-core/dist
+            - nuxt/test/fixtures
+            - nuxt/dist
     environment:
       - NODE_ENV: "test"
 
