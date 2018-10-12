@@ -21,7 +21,7 @@ const createNext = (ssrContext) => (opts) => {
   }
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
-  if (opts.path.indexOf('http') !== 0 && ('<%= router.base %>' !== '/' && opts.path.indexOf('<%= router.base %>') !== 0)) {
+  if (!opts.path.startsWith('http') && ('<%= router.base %>' !== '/' && !opts.path.startsWith('<%= router.base %>'))) {
     opts.path = urlJoin('<%= router.base %>', opts.path)
   }
   // Avoid loop redirect

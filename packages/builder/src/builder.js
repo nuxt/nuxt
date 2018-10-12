@@ -318,7 +318,6 @@ export default class Builder {
       templateVars.router.routes,
       r
     )
-
     // router.extendRoutes method
     if (typeof this.options.router.extendRoutes === 'function') {
       // let the user extend the routes
@@ -349,7 +348,7 @@ export default class Builder {
     templatesFiles = templatesFiles
       .map((file) => {
         // Skip if custom file was already provided in build.templates[]
-        if (customTemplateFiles.indexOf(file) !== -1) {
+        if (customTemplateFiles.includes(file)) {
           return
         }
         // Allow override templates using a file with same name in ${srcDir}/app

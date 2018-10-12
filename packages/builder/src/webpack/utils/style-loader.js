@@ -1,4 +1,5 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import { wrapArray } from '../../../common/utils'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
@@ -19,7 +20,7 @@ export default class StyleLoader {
   }
 
   normalize(loaders) {
-    loaders = Array.isArray(loaders) ? loaders : [loaders]
+    loaders = wrapArray(loaders)
     return loaders.map(loader => (typeof loader === 'string' ? { loader } : loader))
   }
 
@@ -28,9 +29,7 @@ export default class StyleLoader {
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
     if (extResource) {
-      const patterns = Array.isArray(extResource)
-        ? extResource
-        : [extResource]
+      const patterns = wrapArray(extResource)
 
       return {
         loader: 'style-resources-loader',

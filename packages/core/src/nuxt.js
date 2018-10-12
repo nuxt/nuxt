@@ -11,7 +11,7 @@ import esm from 'esm'
 import ip from 'ip'
 
 import Options from '@nuxtjs/common/src/options'
-import { sequence } from '@nuxtjs/common/src/utils'
+import { sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common/src/utils'
 import packageJSON from '../../package.json' // TODO
 
 import ModuleContainer from './module'
@@ -254,11 +254,11 @@ export default class Nuxt {
       return modulePath
     }
 
-    if (path.indexOf('@@') === 0 || path.indexOf('~~') === 0) {
+    if (startsWithRootAlias(path)) {
       return join(this.options.rootDir, path.substr(2))
     }
 
-    if (path.indexOf('@') === 0 || path.indexOf('~') === 0) {
+    if (startsWithSrcAlias(path)) {
       return join(this.options.srcDir, path.substr(1))
     }
 

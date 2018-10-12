@@ -97,18 +97,14 @@ Options.from = function (_options) {
   // Populate modulesDir
   options.modulesDir = []
     .concat(options.modulesDir)
-    .concat(path.join(options.nuxtDir, 'node_modules'))
-    .filter(hasValue)
+    .concat(path.join(options.nuxtDir, 'node_modules')).filter(hasValue)
     .map(dir => path.resolve(options.rootDir, dir))
 
-  // Sanitize extensions
-  if (options.extensions.indexOf('js') === -1) {
-    options.extensions.unshift('js')
-  }
+  const mandatoryExtensions = ['js', 'mjs']
 
-  if (options.extensions.indexOf('mjs') === -1) {
-    options.extensions.unshift('mjs')
-  }
+  options.extensions = mandatoryExtensions
+    .filter(ext => !options.extensions.includes(ext))
+    .concat(options.extensions)
 
   // If app.html is defined, set the template path to the user template
   if (options.appTemplatePath === undefined) {

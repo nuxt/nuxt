@@ -14,6 +14,15 @@ export const waitFor = function waitFor(ms) {
   return new Promise(resolve => setTimeout(resolve, ms || 0))
 }
 
+export const isString = function isString(obj) {
+  return typeof obj === 'string' || obj instanceof String
+}
+export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
+
+export const startsWithSrcAlias = startsWithAlias(['@', '~'])
+
+export const startsWithRootAlias = startsWithAlias(['@@', '~~'])
+
 async function promiseFinally(fn, finalFn) {
   let result
   try {
@@ -46,7 +55,7 @@ export const urlJoin = function urlJoin() {
 }
 
 export const isUrl = function isUrl(url) {
-  return url.indexOf('http') === 0 || url.indexOf('//') === 0
+  return ['http', '//'].some(str => url.startsWith(str))
 }
 
 export const promisifyRoute = function promisifyRoute(fn, ...args) {
@@ -139,11 +148,10 @@ const reqSep = /\//g
 const sysSep = _.escapeRegExp(path.sep)
 const normalize = string => string.replace(reqSep, sysSep)
 
-export const r = function r() {
-  const args = Array.prototype.slice.apply(arguments)
-  const lastArg = _.last(args)
+export const r = function r(...args) {
+  const lastArg = args[args.length - 1]
 
-  if (lastArg.indexOf('@') === 0 || lastArg.indexOf('~') === 0) {
+  if (startsWithSrcAlias(lastArg)) {
     return wp(lastArg)
   }
 
@@ -155,7 +163,7 @@ export const relativeTo = function relativeTo() {
   const dir = args.shift()
 
   // Keep webpack inline loader intact
-  if (args[0].indexOf('!') !== -1) {
+  if (args[0].includes('!')) {
     const loaders = args.shift().split('!')
 
     return loaders.concat(relativeTo(dir, loaders.pop(), ...args)).join('!')
@@ -165,7 +173,7 @@ export const relativeTo = function relativeTo() {
   const _path = r(...args)
 
   // Check if path is an alias
-  if (_path.indexOf('@') === 0 || _path.indexOf('~') === 0) {
+  if (startsWithSrcAlias(_path)) {
     return _path
   }
 
@@ -180,22 +188,22 @@ export const relativeTo = function relativeTo() {
 
 export const flatRoutes = function flatRoutes(router, _path = '', routes = []) {
   router.forEach((r) => {
-    if (!r.path.includes(':') && !r.path.includes('*')) {
-      /* istanbul ignore if */
-      if (r.children) {
-        if (_path === '' && r.path === '/') {
-          routes.push('/')
-        }
-        flatRoutes(r.children, _path + r.path + '/', routes)
-      } else {
-        _path = _path.replace(/^\/+$/, '/')
-        routes.push(
-          (r.path === '' && _path[_path.length - 1] === '/'
-            ? _path.slice(0, -1)
-            : _path) + r.path
-        )
-      }
+    if ([':', '*'].some(c => r.path.includes(c))) {
+      return
     }
+    /* istanbul ignore if */
+    if (r.children) {
+      if (_path === '' && r.path === '/') {
+        routes.push('/')
+      }
+      return flatRoutes(r.children, _path + r.path + '/', routes)
+    }
+    _path = _path.replace(/^\/+$/, '/')
+    routes.push(
+      (r.path === '' && _path[_path.length - 1] === '/'
+        ? _path.slice(0, -1)
+        : _path) + r.path
+    )
   })
   return routes
 }
@@ -214,7 +222,7 @@ function cleanChildrenRoutes(routes, isChild = false) {
   })
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
-    if (route.path.indexOf('?') > -1) {
+    if (route.path.includes('?')) {
       const names = route.name.split('-')
       const paths = route.path.split('/')
       if (!isChild) {
@@ -259,15 +267,15 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
     let parent = routes
     keys.forEach((key, i) => {
       // remove underscore only, if its the prefix
-      const sanitizedKey = key.indexOf('_') === 0
-        ? key.replace('_', '')
-        : key
+      const sanitizedKey = key.startsWith('_') ? key.substr(1) : key
+
       route.name = route.name
         ? route.name + '-' + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
       route.chunkName = file.replace(/\.(vue|js)$/, '')
-      const child = _.find(parent, { name: route.name })
+      const child = parent.find(parentRoute => parentRoute.name === route.name)
+
       if (child) {
         child.children = child.children || []
         parent = child.children
@@ -275,13 +283,9 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += '/' +
-            (key === '_'
-              ? '*'
-              : key.indexOf('_') === 0
-                ? key.replace('_', ':')
-                : key)
-        if (key !== '_' && key.indexOf('_') === 0) {
+        route.path += '/' + getRoutePathExtension(key)
+
+        if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
       }
@@ -298,12 +302,13 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
       // Order: /static, /index, /:dynamic
       // Match exact route before index: /login before /index/_slug
       if (a.path === '/') {
-        return /^\/(:|\*)/.test(b.path) ? -1 : 1
+        return DYNAMIC_ROUTE_REGEX.test(b.path) ? -1 : 1
       }
       if (b.path === '/') {
-        return /^\/(:|\*)/.test(a.path) ? 1 : -1
+        return DYNAMIC_ROUTE_REGEX.test(a.path) ? 1 : -1
       }
-      let i = 0
+
+      let i
       let res = 0
       let y = 0
       let z = 0
@@ -313,8 +318,8 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
         if (res !== 0) {
           break
         }
-        y = _a[i] === '*' ? 2 : _a[i].indexOf(':') > -1 ? 1 : 0
-        z = _b[i] === '*' ? 2 : _b[i].indexOf(':') > -1 ? 1 : 0
+        y = _a[i] === '*' ? 2 : _a[i].includes(':') ? 1 : 0
+        z = _b[i] === '*' ? 2 : _b[i].includes(':') ? 1 : 0
         res = y - z
         // If a.length >= b.length
         if (i === _b.length - 1 && res === 0) {
@@ -361,3 +366,25 @@ export const determineGlobals = function determineGlobals(globalName, globals) {
   }
   return _globals
 }
+
+const getRoutePathExtension = (key) => {
+  if (key === '_') {
+    return '*'
+  }
+
+  if (key.startsWith('_')) {
+    return `:${key.substr(1)}`
+  }
+
+  return key
+}
+
+const DYNAMIC_ROUTE_REGEX = /^\/(:|\*)/
+
+/**
+ * Wraps value in array if it is not already an array
+ *
+ * @param  {any} value
+ * @return {array}
+ */
+export const wrapArray = value => Array.isArray(value) ? value : [value]
