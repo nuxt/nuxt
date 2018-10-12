@@ -19,6 +19,8 @@ install:
   - ps: Install-Product node $env:nodejs_version
   # install modules
   - yarn install
+  # link dependencies
+  - yarn bootstrap
 
 # Post-install test scripts.
 test_script:
