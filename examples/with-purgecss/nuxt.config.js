@@ -11,10 +11,12 @@ class TailwindExtractor {
 export default {
   build: {
     extractCSS: true,
-    postcss: [
-      require('tailwindcss')('./tailwind.js'),
-      require('autoprefixer')
-    ],
+    postcss: {
+      plugins: {
+        tailwindcss: path.resolve('./tailwind.js')
+      },
+      preset: { autoprefixer: { grid: true } }
+    },
     extend(config, { isDev }) {
       if (!isDev) {
         config.plugins.push(

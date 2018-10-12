@@ -19,6 +19,11 @@ describe('with-config', () => {
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
+  test('/ (asset name for analyze mode)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html).toContain('<script src="/test/orion/app.js"')
+  })
+
   test.skip('/ (global styles inlined)', async () => {
     const { html } = await nuxt.renderRoute('/')
     expect(html).toContain('.global-css-selector')
@@ -46,11 +51,22 @@ describe('with-config', () => {
     expect(html.includes('::-webkit-input-placeholder')).toBe(true)
   })
 
+  test('/test/ (custom globalName)', async () => {
+    const window = await nuxt.renderAndGetWindow(url('/test/'))
+    const html = window.document.body.innerHTML
+    expect(html.includes('id="custom-nuxt-id">')).toBe(true)
+    expect(html.includes('id="__nuxt">')).toBe(false)
+    expect(window.__NOXXT__).toBeDefined()
+    expect(window.__NUXT__).toBeUndefined()
+    expect(window.$noxxt).toBeDefined()
+    expect(window.$nuxt).toBeDefined() // for Vue Dev Tools detection
+  })
+
   test('/test/ (router base)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('default')
+    expect(window.__NOXXT__.layout).toBe('default')
     expect(html.includes('<h1>Default layout</h1>')).toBe(true)
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
 
@@ -60,7 +76,7 @@ describe('with-config', () => {
   test('/test/about (custom layout)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/about'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('custom')
+    expect(window.__NOXXT__.layout).toBe('custom')
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
     expect(html.includes('<h1>About page</h1>')).toBe(true)
   })
@@ -68,7 +84,7 @@ describe('with-config', () => {
   test('/test/desktop (custom layout in desktop folder)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('desktop/default')
+    expect(window.__NOXXT__.layout).toBe('desktop/default')
     expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
     expect(html.includes('<h1>Desktop page</h1>')).toBe(true)
   })
@@ -76,7 +92,7 @@ describe('with-config', () => {
   test('/test/mobile (custom layout in mobile folder)', async () => {
     const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
     const html = window.document.body.innerHTML
-    expect(window.__NUXT__.layout).toBe('mobile/default')
+    expect(window.__NOXXT__.layout).toBe('mobile/default')
     expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
     expect(html.includes('<h1>Mobile page</h1>')).toBe(true)
   })

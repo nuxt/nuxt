@@ -40,6 +40,7 @@ describe('nuxt', () => {
 
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('Universal Vue.js Applications')).toBe(true)
+    expect(/Landscape__Page__Explanation/.test(html)).toBe(true)
 
     await nuxt.close()
   })

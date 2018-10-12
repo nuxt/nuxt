@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+
 const parseArgs = require('minimist')
 const consola = require('consola')
 const { version } = require('../package.json')
