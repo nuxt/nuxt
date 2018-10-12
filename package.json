@@ -4,6 +4,7 @@
     "packages/*"
   ],
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "build": "node -r esm ./packages/nuxt-pack/build.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue benchmarks examples packages test",
@@ -37,6 +38,7 @@
     "jest": "^23.6.0",
     "jsdom": "^12.2.0",
     "klaw-sync": "^6.0.0",
+    "lerna": "^3.4.3",
     "pug": "^2.0.3",
     "pug-plain-loader": "^1.0.0",
     "puppeteer": "^1.9.0",
