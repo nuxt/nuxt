@@ -28,7 +28,7 @@ export default class Package extends EventEmitter {
     super()
 
     // Assign options
-    Object.assign(this, DEFAULTS, options)
+    this.options = Object.assign({}, DEFAULTS, options)
 
     // Initialize
     this.init()
@@ -46,21 +46,21 @@ export default class Package extends EventEmitter {
   }
 
   resolvePath(...args) {
-    return resolve(this.rootDir, ...args)
+    return resolve(this.options.rootDir, ...args)
   }
 
   readPkg() {
-    this.pkg = readJSONSync(this.resolvePath(this.pkgPath))
+    this.pkg = readJSONSync(this.resolvePath(this.options.pkgPath))
   }
 
   loadConfig() {
-    const configPath = this.resolvePath(this.configPath)
+    const configPath = this.resolvePath(this.options.configPath)
 
     if (existsSync(configPath)) {
       let config = require(configPath)
       config = config.default || config
 
-      Object.assign(this, config)
+      Object.assign(this.options, config)
 
       if (typeof config.extend === 'function') {
         config.extend(this, {
@@ -73,8 +73,11 @@ export default class Package extends EventEmitter {
   }
 
   writePackage() {
-    this.logger.debug('Writing', this.pkgPath)
-    writeFileSync(this.pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
+    if (this.options.sortDependencies) {
+      this.sortDependencies()
+    }
+    this.logger.debug('Writing', this.options.pkgPath)
+    writeFileSync(this.options.pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
   }
 
   generateVersion() {
@@ -100,22 +103,22 @@ export default class Package extends EventEmitter {
   async build(options, outputOptions) {
     this.emit('build:before')
 
-    if (this.buildSuffix) {
-      this.convertTo(this.buildSuffix)
+    if (this.options.buildSuffix) {
+      this.convertTo(this.options.buildSuffix)
     }
 
     this.logger.info('Building')
 
     // https://rollupjs.org/guide/en#javascript-api
     const bundle = await rollup(rollupConfig({
-      rootDir: this.rootDir,
+      rootDir: this.options.rootDir,
       ...options
     }))
 
     // Write bundle to disk
     const _outputOptions = Object.assign({
       format: 'cjs',
-      dir: this.resolvePath(this.distDir),
+      dir: this.resolvePath(this.options.distDir),
       file: this.pkg.name + '.js'
     }, outputOptions)
 
@@ -133,14 +136,14 @@ export default class Package extends EventEmitter {
 
   copyFieldsFrom(source, fields = []) {
     for (const field of fields) {
-      this.pkg[field] = source.packageObj[field]
+      this.pkg[field] = source.pkg[field]
     }
   }
 
   copyFilesFrom(source, files) {
-    for (const file of files || source.packageObj.files || []) {
-      const src = resolve(source.rootDir, file)
-      const dst = resolve(this.rootDir, file)
+    for (const file of files || source.pkg.files || []) {
+      const src = resolve(source.options.rootDir, file)
+      const dst = resolve(this.options.rootDir, file)
       copySync(src, dst)
     }
   }
@@ -165,7 +168,7 @@ export default class Package extends EventEmitter {
     }
 
     // Scan require() calls inside dist
-    const distSource = readFileSync(resolve(this.rootDir, dist))
+    const distSource = readFileSync(resolve(this.options.rootDir, dist))
 
     let match = requireRegex.exec(distSource)
     while (match) {
@@ -189,7 +192,7 @@ export default class Package extends EventEmitter {
       }
       // Try sources
       for (const source of sources) {
-        const sourceDeps = source.packageObj.dependencies
+        const sourceDeps = source.pkg.dependencies
         if (sourceDeps && sourceDeps[name]) {
           dependencies[name] = sourceDeps[name]
           break
@@ -214,7 +217,7 @@ export default class Package extends EventEmitter {
   }
 
   exec(command, args, silent = false) {
-    const r = spawnSync(command, args.split(' '), { cwd: this.rootDir }, { env: process.env })
+    const r = spawnSync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
