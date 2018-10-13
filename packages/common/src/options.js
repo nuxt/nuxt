@@ -3,7 +3,7 @@ import fs from 'fs'
 
 import _ from 'lodash'
 import consola from 'consola'
-import { isPureObject, isUrl, guardDir } from '@nuxtjs/common/src/utils'
+import { isPureObject, isUrl, guardDir } from '@nuxtjs/common/lib/utils'
 
 import modes from './modes'
 import defaults from './nuxt.config'

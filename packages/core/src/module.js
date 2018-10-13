@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import hash from 'hash-sum'
 import consola from 'consola'
-import { chainFn, sequence } from '@nuxtjs/common/src/utils'
+import { chainFn, sequence } from '@nuxtjs/common/lib/utils'
 
 export default class ModuleContainer {
   constructor(nuxt) {
