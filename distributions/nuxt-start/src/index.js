@@ -1,4 +1,6 @@
-import core from '@nuxtjs/core'
-import * as Utils from '@nuxtjs/common/src/utils'
+import _Common from '@nuxtjs/common'
 
-export default Object.assign({ Utils }, core)
+export * from '@nuxtjs/core'
+
+export const Utils = _Common // Backward Compatibility
+export const Options = _Common.Options // Backward Compatibility

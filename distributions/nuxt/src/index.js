@@ -1,6 +1,7 @@
-import Core from '@nuxtjs/core'
-import Builder from '@nuxtjs/builder'
-import * as Utils from '@nuxtjs/common/src/utils'
-import Options from '@nuxtjs/common/src/options'
+import _Common from '@nuxtjs/common'
 
-export default Object.assign({ Utils, Options }, Core, Builder)
+export * from '@nuxtjs/core'
+export * from '@nuxtjs/builder'
+
+export const Utils = _Common // Backward Compatibility
+export const Options = _Common.Options // Backward Compatibility
