@@ -17,6 +17,7 @@
     "test:unit": "jest packages/nuxt-core/test/unit"
   },
   "devDependencies": {
+    "nuxt": "0.0.0",
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge",
     "babel-eslint": "^10.0.1",
