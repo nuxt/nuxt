@@ -1,5 +1,7 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import { wrapArray } from '../../../common/utils'
+
+import { wrapArray } from '@nuxtjs/common'
+
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {

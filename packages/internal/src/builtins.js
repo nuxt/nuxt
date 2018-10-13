@@ -2,13 +2,13 @@
 ** Core logic from https://github.com/sindresorhus/builtin-modules
 ** Many thanks to @sindresorhus
 */
-const { builtinModules } = require('module')
+import Module from 'module'
 
 const blacklist = [
   'sys'
 ]
 
-const builtins = (builtinModules || Object.keys(process.binding('natives')))
+export const builtins = (Module.builtinModules || Object.keys(process.binding('natives')))
   .filter(x => !/^_|^(internal|v8|node-inspect)\/|\//.test(x) && !blacklist.includes(x))
   .sort()
 
@@ -20,4 +20,3 @@ const convertToObj = () => builtins.reduce((obj, builtin) => {
 }, (builtinsObj = {}))
 
 export const builtinsMap = () => builtinsObj || convertToObj()
-export default builtins

@@ -1,6 +1,5 @@
 import path from 'path'
 import fs from 'fs'
-
 import webpack from 'webpack'
 import nodeExternals from 'webpack-node-externals'
 

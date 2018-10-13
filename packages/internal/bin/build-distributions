@@ -1,6 +1,6 @@
 #!/usr/bin/env node -r esm
 import path from 'path'
-import Package from '../src/package'
+import { Package } from '../src'
 
 // Commons
 const rootDir = path.resolve(__dirname, '../../..')

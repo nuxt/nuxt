@@ -2,5 +2,8 @@
   "name": "@nuxtjs/app",
   "version": "0.0.0",
   "license": "MIT",
-  "repository": "nuxt/nuxt.js"
+  "repository": "nuxt/nuxt.js",
+  "files": [
+    "template"
+  ]
 }

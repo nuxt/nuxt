@@ -5,9 +5,9 @@ import commonjs from 'rollup-plugin-commonjs'
 import license from 'rollup-plugin-license'
 import defaultsDeep from 'lodash/defaultsDeep'
 
-import builtins from './src/builtins'
+import { builtins } from './builtins'
 
-export default function rollupConfigFactory({
+export default function rollupConfig({
   rootDir = process.cwd(),
   plugins = [],
   input = 'src/index.js',

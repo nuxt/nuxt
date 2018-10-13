@@ -1,6 +1,5 @@
 import path from 'path'
 import fs from 'fs'
-
 import pify from 'pify'
 import _ from 'lodash'
 import chokidar from 'chokidar'
@@ -8,13 +7,14 @@ import fsExtra from 'fs-extra'
 import hash from 'hash-sum'
 import webpack from 'webpack'
 import serialize from 'serialize-javascript'
-import devalue from '@nuxtjs/devalue'
 import MFS from 'memory-fs'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import Glob from 'glob'
 import upath from 'upath'
 import consola from 'consola'
+
+import devalue from '@nuxtjs/devalue'
 
 import {
   r,

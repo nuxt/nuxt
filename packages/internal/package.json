@@ -2,9 +2,11 @@
   "name": "@nuxtjs/internal",
   "version": "0.0.0",
   "license": "MIT",
+  "private": true,
   "repository": "nuxt/nuxt.js",
+  "module": "./src/index.js",
   "bin": {
-    "build-distributions": "./bin/build-distributions"
+    "build-distributions": "bin/build-distributions"
   },
   "dependencies": {
     "consola": "^1.4.3",

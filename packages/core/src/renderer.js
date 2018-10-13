@@ -1,6 +1,5 @@
 import path from 'path'
 import crypto from 'crypto'
-
 import devalue from '@nuxtjs/devalue'
 import serveStatic from 'serve-static'
 import _ from 'lodash'
@@ -10,8 +9,7 @@ import connect from 'connect'
 import launchMiddleware from 'launch-editor-middleware'
 import consola from 'consola'
 
-import { isUrl, timeout, waitFor, determineGlobals } from '@nuxtjs/common/src/utils'
-import defaults from '@nuxtjs/common/src/nuxt.config'
+import { NuxtConfig, isUrl, timeout, waitFor, determineGlobals } from '@nuxtjs/common'
 
 import MetaRenderer from './meta'
 import errorMiddleware from './middleware/error'
@@ -193,7 +191,7 @@ export default class Renderer {
 
   get publicPath() {
     return isUrl(this.options.build.publicPath)
-      ? defaults.build.publicPath
+      ? NuxtConfig.build.publicPath
       : this.options.build.publicPath
   }
 

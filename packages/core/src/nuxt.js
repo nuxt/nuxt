@@ -1,7 +1,6 @@
 import Module from 'module'
 import { resolve, join } from 'path'
 import https from 'https'
-
 import enableDestroy from 'server-destroy'
 import _ from 'lodash'
 import fs from 'fs-extra'
@@ -10,10 +9,9 @@ import chalk from 'chalk'
 import esm from 'esm'
 import ip from 'ip'
 
-import Options from '@nuxtjs/common/src/options'
-import { sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common/src/utils'
-import packageJSON from '../../package.json' // TODO
+import { Options, sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common'
 
+import packageJSON from '../../package.json' // TODO
 import ModuleContainer from './module'
 import Renderer from './renderer'
 

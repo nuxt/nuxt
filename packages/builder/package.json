@@ -2,5 +2,11 @@
   "name": "@nuxtjs/builder",
   "version": "0.0.0",
   "license": "MIT",
-  "repository": "nuxt/nuxt.js"
+  "repository": "nuxt/nuxt.js",
+  "module": "src/index.js",
+  "dist": "dist/index.js",
+  "files": [
+    "src",
+    "dist"
+  ]
 }

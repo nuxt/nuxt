@@ -1,8 +1,8 @@
 import path from 'path'
+import fs from 'fs-extra'
 import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
-import fs from 'fs-extra'
 
 export default function errorMiddleware(err, req, res, next) {
   // ensure statusCode, message and name fields

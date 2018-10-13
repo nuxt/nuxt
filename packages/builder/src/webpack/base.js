@@ -1,13 +1,13 @@
 import path from 'path'
 import consola from 'consola'
-
 import TimeFixPlugin from 'time-fix-plugin'
 import _ from 'lodash'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
 
-import { isUrl, urlJoin } from '../@nuxtjs/common/src/utils'
+import { isUrl, urlJoin } from '@nuxtjs/common'
+
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'
 import StatsPlugin from './plugins/stats'

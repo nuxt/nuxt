@@ -1,12 +1,11 @@
 import path from 'path'
 import fs from 'fs'
-
 import _ from 'lodash'
 import consola from 'consola'
-import { isPureObject, isUrl, guardDir } from '@nuxtjs/common/src/utils'
 
-import modes from './modes'
-import defaults from './nuxt.config'
+import { isPureObject, isUrl, guardDir } from './utils'
+import Modes from './modes'
+import NuxtConfig from './nuxt.config'
 
 // hasValue utility
 const hasValue = v => typeof v === 'string' && v
@@ -59,7 +58,7 @@ Options.from = function (_options) {
   // }
 
   // Apply defaults
-  _.defaultsDeep(options, defaults)
+  _.defaultsDeep(options, NuxtConfig)
 
   // Check srcDir and generate.dir excistence
   const hasSrcDir = hasValue(options.srcDir)
@@ -119,7 +118,7 @@ Options.from = function (_options) {
   // Ignore publicPath on dev
   /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
-    options.build.publicPath = defaults.build.publicPath
+    options.build.publicPath = NuxtConfig.build.publicPath
   }
 
   // If store defined, update store options to true unless explicitly disabled
@@ -210,7 +209,7 @@ Options.from = function (_options) {
   }
 
   // Apply mode preset
-  const modePreset = modes[options.mode || 'universal'] || modes.universal
+  const modePreset = Modes[options.mode || 'universal'] || Modes.universal
   _.defaultsDeep(options, modePreset)
 
   // If no server-side rendering, add appear true transition

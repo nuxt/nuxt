@@ -1,10 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-
 import _ from 'lodash'
 import createResolver from 'postcss-import-resolver'
 
-import { isPureObject } from '../../@nuxtjs/common/src/utils'
+import { isPureObject } from '@nuxtjs/common'
 
 export default class PostcssConfig {
   constructor(options, nuxt) {
