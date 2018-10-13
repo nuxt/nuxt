@@ -1,15 +1,24 @@
 import { resolve } from 'path'
 import EventEmitter from 'events'
-import { sync as spawnSync } from 'cross-spawn'
 import consola from 'consola'
+import { sync as spawnSync } from 'cross-spawn'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import _ from 'lodash'
+import { rollup } from 'rollup'
 
 import { builtinsMap } from './builtins'
+import rollupConfig from './rollup.config'
 
 const DEFAULTS = {
+  rootDir: process.cwd(),
+
+  pkgPath: 'package.json',
+  configPath: 'package.js',
+
   distDir: 'dist',
-  buildSuffix: process.env.BUILD_SUFFIX
+  buildSuffix: process.env.BUILD_SUFFIX,
+
+  sortDependencies: true
 }
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
@@ -21,40 +30,40 @@ export default class Package extends EventEmitter {
     // Assign options
     Object.assign(this, DEFAULTS, options)
 
-    this.rootDir = this.rootDir || process.cwd()
-    this.distDir = this.resolvePath(this.distDir)
-    this.packageJS = this.resolvePath('package.js')
-    this.packageJSON = this.resolvePath('package.json')
-
     // Initialize
     this.init()
   }
 
   init() {
     // Try to read package.json
-    this._readPackage()
+    this.readPkg()
 
     // Init logger
-    this.logger = consola.withScope(this.packageObj.name)
+    this.logger = consola.withScope(this.pkg.name)
 
-    // Try to load package.js
-    this._loadPackageJS()
+    // Try to load config
+    this.loadConfig()
   }
 
   resolvePath(...args) {
     return resolve(this.rootDir, ...args)
   }
 
-  _readPackage() {
-    this.packageObj = readJSONSync(this.packageJSON)
+  readPkg() {
+    this.pkg = readJSONSync(this.resolvePath(this.pkgPath))
   }
 
-  _loadPackageJS() {
-    if (existsSync(this.packageJS)) {
-      let fn = require(this.packageJS)
-      fn = fn.default || fn
-      if (typeof fn === 'function') {
-        fn(this, {
+  loadConfig() {
+    const configPath = this.resolvePath(this.configPath)
+
+    if (existsSync(configPath)) {
+      let config = require(configPath)
+      config = config.default || config
+
+      Object.assign(this, config)
+
+      if (typeof config.extend === 'function') {
+        config.extend(this, {
           load: (relativePath, opts) => new Package(Object.assign({
             rootDir: this.resolvePath(relativePath)
           }, opts))
@@ -64,15 +73,15 @@ export default class Package extends EventEmitter {
   }
 
   writePackage() {
-    this.logger.debug('Writing', this.packageJSON)
-    writeFileSync(this.packageJSON, JSON.stringify(this.packageObj, null, 2) + '\n')
+    this.logger.debug('Writing', this.pkgPath)
+    writeFileSync(this.pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
   }
 
   generateVersion() {
     const date = Math.round(Date.now() / (1000 * 60))
     const gitCommit = this.gitShortCommit()
-    const baseVersion = this.packageObj.version.split('-')[0]
-    this.packageObj.version = `${baseVersion}-${date}.${gitCommit}`
+    const baseVersion = this.pkg.version.split('-')[0]
+    this.pkg.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
   convertTo(suffix) {
@@ -83,35 +92,48 @@ export default class Package extends EventEmitter {
   }
 
   addNameSuffix(suffix) {
-    if (!this.packageObj.name.includes(suffix)) {
-      this.packageObj.name += suffix
+    if (!this.pkg.name.includes(suffix)) {
+      this.pkg.name += suffix
     }
   }
 
-  build() {
+  async build(options, outputOptions) {
     this.emit('build:before')
 
     if (this.buildSuffix) {
       this.convertTo(this.buildSuffix)
     }
 
-    this.logger.info('Cleaning up')
-    removeSync(this.distDir)
-
     this.logger.info('Building')
-    this.exec('rollup', '-c')
+
+    // https://rollupjs.org/guide/en#javascript-api
+    const bundle = await rollup(rollupConfig({
+      rootDir: this.rootDir,
+      ...options
+    }))
+
+    // Write bundle to disk
+    const _outputOptions = Object.assign({
+      format: 'cjs',
+      dir: this.resolvePath(this.distDir),
+      file: this.pkg.name + '.js'
+    }, outputOptions)
+
+    this.logger.info('Writing bundle to the disk')
+    removeSync(_outputOptions.dir)
+    await bundle.write(_outputOptions)
 
     this.emit('build:done')
   }
 
   publish(tag = 'latest') {
-    this.logger.info(`publishing ${this.packageObj.name}@${this.packageObj.version} with tag ${tag}`)
+    this.logger.info(`publishing ${this.pkg.name}@${this.pkg.version} with tag ${tag}`)
     this.exec('npm', `publish --tag ${tag}`)
   }
 
   copyFieldsFrom(source, fields = []) {
     for (const field of fields) {
-      this.packageObj[field] = source.packageObj[field]
+      this.pkg[field] = source.packageObj[field]
     }
   }
 
@@ -124,12 +146,12 @@ export default class Package extends EventEmitter {
   }
 
   sortDependencies() {
-    if (this.packageObj.dependencies) {
-      this.packageObj.dependencies = sortObjectKeys(this.packageObj.dependencies)
+    if (this.pkg.dependencies) {
+      this.pkg.dependencies = sortObjectKeys(this.pkg.dependencies)
     }
 
-    if (this.packageObj.devDependencies) {
-      this.packageObj.devDependencies = sortObjectKeys(this.packageObj.devDependencies)
+    if (this.pkg.devDependencies) {
+      this.pkg.devDependencies = sortObjectKeys(this.pkg.devDependencies)
     }
   }
 
@@ -176,11 +198,11 @@ export default class Package extends EventEmitter {
       // Try to require package.json of dependency
       if (dependencies[name] === null) {
         try {
-          const _pkg = require(`${name}/package.json`)
-          if (!_pkg.version) {
+          const depPkg = require(`${name}/package.json`)
+          if (!depPkg) {
             throw Error('No version specified')
           }
-          dependencies[name] = `^${_pkg.version}`
+          dependencies[name] = `^${depPkg.version}`
         } catch (e) {
           this.logger.warn(e)
           delete dependencies[name]
@@ -188,7 +210,7 @@ export default class Package extends EventEmitter {
       }
     }
 
-    this.packageObj.dependencies = dependencies
+    this.pkg.dependencies = dependencies
   }
 
   exec(command, args, silent = false) {

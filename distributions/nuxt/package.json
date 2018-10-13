@@ -48,7 +48,8 @@
     "url": "https://opencollective.com/nuxtjs",
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   },
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./src/index.js",
   "bin": {
     "nuxt": "./bin/nuxt"
   },

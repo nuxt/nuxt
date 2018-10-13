@@ -1,16 +1,16 @@
-export default (pkg, { load }) => {
-  const mono = load('../..')
+export default {
+  extend(pkg, { load }) {
+    pkg.on('build:done', () => {
+      const mono = load('../..')
+      const core = load('../../packages/core')
 
-  pkg.on('build:done', () => {
-    // Copy files from mono package
-    pkg.copyFilesFrom(mono, [
-      'LICENSE'
-    ])
+      pkg.copyFilesFrom(mono, [
+        'LICENSE'
+      ])
 
-    // Sort dependencies
-    pkg.sortDependencies()
-
-    // Update package.json
-    pkg.writePackage()
-  })
+      pkg.copyFilesFrom(core, [
+        'bin'
+      ])
+    })
+  }
 }
