@@ -1,13 +1,13 @@
 import { shallowMount } from '@vue/test-utils'
-import Button from './Button'
+import Btn from './Btn'
 
-const factory = () => shallowMount(Button, {
+const factory = () => shallowMount(Btn, {
   propsData: {
     label: 'click me!'
   }
 })
 
-describe('Button', () => {
+describe('Btn', () => {
   test('mounts properly', () => {
     const wrapper = factory()
     expect(wrapper.isVueInstance()).toBeTruthy()

@@ -1,14 +1,14 @@
-import { shallowMount } from '@vue/test-utils';
-import index from './index';
+import { shallowMount } from '@vue/test-utils'
+import index from './index'
 
 describe('index', () => {
   test('mounts properly', () => {
-    const wrapper = shallowMount(index);
-    expect(wrapper.isVueInstance()).toBeTruthy();
-  });
+    const wrapper = shallowMount(index)
+    expect(wrapper.isVueInstance()).toBeTruthy()
+  })
 
   test('renders properly', () => {
-    const wrapper = shallowMount(index);
-    expect(wrapper.html()).toMatchSnapshot();
-  });
-});
+    const wrapper = shallowMount(index)
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+})

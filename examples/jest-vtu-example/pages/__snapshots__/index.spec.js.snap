@@ -6,7 +6,7 @@ exports[`index renders properly 1`] = `
     <h1 class="title">
       jest-vtu-example
     </h1>
-    <button-stub label="click me!"></button-stub>
+    <btn-stub label="click me!"></btn-stub>
   </div>
 </section>
 `;

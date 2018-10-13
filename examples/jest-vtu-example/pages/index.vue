@@ -4,17 +4,17 @@
       <h1 class="title">
         jest-vtu-example
       </h1>
-      <Button label="click me!" />
+      <Btn label="click me!" />
     </div>
   </section>
 </template>
 
 <script>
-import Button from '~/components/Button/Button.vue'
+import Btn from '~/components/Btn/Btn.vue'
 
 export default {
   components: {
-    Button
+    Btn
   }
 }
 </script>
