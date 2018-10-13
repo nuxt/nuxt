@@ -7,19 +7,19 @@
 <script>
 export default {
   name: 'Button',
-  data: () => ({
-    clicked: false,
-  }),
   props: {
     label: {
       type: String,
       required: true
     }
   },
+  data: () => ({
+    clicked: false
+  }),
   methods: {
-    handleClick () {
-      this.clicked = true;
-    },
-  },
-};
+    handleClick() {
+      this.clicked = true
+    }
+  }
+}
 </script>
