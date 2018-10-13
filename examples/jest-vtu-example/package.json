@@ -1,0 +1,46 @@
+{
+  "name": "example-jest-vtu",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "test": "jest ."
+  },
+  "dependencies": {
+    "nuxt-edge": "latest"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^1.0.0-beta.25",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-vue-app": "^2.0.0",
+    "jest": "^23.6.0",
+    "jest-serializer-vue": "^2.0.2",
+    "nodemon": "^1.11.0",
+    "vue-jest": "^2.6.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "watchman": false,
+    "moduleNameMapper": {
+      "^~/(.*)$": "<rootDir>/$1",
+      "^~~/(.*)$": "<rootDir>/$1"
+    },
+    "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
+      ".*\\.(vue)$": "<rootDir>/node_modules/vue-jest"
+    },
+    "snapshotSerializers": [
+      "<rootDir>/node_modules/jest-serializer-vue"
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "<rootDir>/components/**/*.vue",
+      "<rootDir>/pages/*.vue"
+    ]
+  }
+}

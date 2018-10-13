@@ -1,0 +1,7 @@
+{
+  "env": {
+    "test": {
+      "presets": ["env", "vue-app"]
+    }
+  }
+}

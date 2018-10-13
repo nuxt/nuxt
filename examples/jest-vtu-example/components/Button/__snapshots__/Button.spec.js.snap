@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Button renders properly 1`] = `
+<button>
+  click me!
+</button>
+`;
