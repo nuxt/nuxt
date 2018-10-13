@@ -5,12 +5,12 @@ import commonjs from 'rollup-plugin-commonjs'
 import license from 'rollup-plugin-license'
 import defaultsDeep from 'lodash/defaultsDeep'
 
-import builtins from './src/builtins'
+import builtins from './lib/builtins'
 
 export default function rollupConfigFactory({
   rootDir = process.cwd(),
   plugins = [],
-  input = 'src/index.js',
+  input = 'lib/index.js',
   ...options
 }) {
   const pkg = readJSONSync(path.resolve(rootDir, 'package.json'))

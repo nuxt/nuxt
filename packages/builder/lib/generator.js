@@ -3,7 +3,7 @@ import htmlMinifier from 'html-minifier'
 import Chalk from 'chalk'
 import fsExtra from 'fs-extra'
 import consola from 'consola'
-import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxtjs/common/src/utils'
+import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxtjs/common/lib/utils'
 
 export default class Generator {
   constructor(nuxt, builder) {

@@ -10,8 +10,8 @@ import chalk from 'chalk'
 import esm from 'esm'
 import ip from 'ip'
 
-import Options from '@nuxtjs/common/src/options'
-import { sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common/src/utils'
+import Options from '@nuxtjs/common/lib/options'
+import { sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common/lib/utils'
 import packageJSON from '../../package.json' // TODO
 
 import ModuleContainer from './module'
