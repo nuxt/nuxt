@@ -26,9 +26,8 @@
   ],
   "files": [
     "bin",
-    "src",
     "dist",
-    "index.js"
+    "src"
   ],
   "keywords": [
     "nuxt",
@@ -48,10 +47,10 @@
     "url": "https://opencollective.com/nuxtjs",
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   },
-  "main": "./dist/index.js",
-  "module": "./src/index.js",
+  "main": "dist/nuxt.js",
+  "module": "src/index.js",
   "bin": {
-    "nuxt": "./bin/nuxt"
+    "nuxt": "bin/nuxt"
   },
   "engines": {
     "node": ">=8.0.0",

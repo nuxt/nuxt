@@ -40,12 +40,14 @@
     "vue versatile"
   ],
   "main": "dist/nuxt-start.js",
+  "module": "src/index.js",
   "bin": {
-    "nuxt-start": "./bin/nuxt-start"
+    "nuxt-start": "bin/nuxt-start"
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "src"
   ],
   "engines": {
     "node": ">=8.0.0",
