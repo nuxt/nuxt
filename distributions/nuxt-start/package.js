@@ -10,7 +10,7 @@ export default {
       ])
 
       pkg.copyFilesFrom(core, [
-        'bin'
+        'bin/nuxt-start'
       ])
 
       pkg.copyFieldsFrom(nuxt, [
