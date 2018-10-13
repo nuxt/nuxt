@@ -14,20 +14,17 @@ export default {
       ])
 
       pkg.copyFieldsFrom(nuxt, [
-        'name',
         'version',
         'license',
         'repository',
-        'description',
         'contributors',
-        'files',
         'keywords',
         'collective',
-        'bin',
         'engines',
-        'scripts',
         'dependencies'
       ])
+
+      pkg.writePackage()
     })
   }
 }

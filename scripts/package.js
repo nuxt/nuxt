@@ -76,8 +76,9 @@ export default class Package extends EventEmitter {
     if (this.options.sortDependencies) {
       this.sortDependencies()
     }
-    this.logger.debug('Writing', this.options.pkgPath)
-    writeFileSync(this.options.pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
+    const pkgPath = this.resolvePath(this.options.pkgPath)
+    this.logger.debug('Writing', pkgPath)
+    writeFileSync(pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
   }
 
   generateVersion() {
