@@ -1,4 +1,3 @@
 {
-  debug: false,
   mainFields: ["module", "main"]
 }

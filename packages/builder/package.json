@@ -8,5 +8,8 @@
   "files": [
     "src",
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "@nuxtjs/common": "0.0.0"
+  }
 }
