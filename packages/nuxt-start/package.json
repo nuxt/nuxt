@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Starts Nuxt.js Application in production mode",
   "license": "MIT",
   "homepage": "https://github.com/nuxt/nuxt.js#readme",

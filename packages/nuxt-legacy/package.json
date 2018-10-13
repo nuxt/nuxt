@@ -1,6 +1,6 @@
 {
   "name": "nuxt-legacy",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Legacy build of Nuxt.js for Node.js < 8.0.0",
   "license": "MIT",
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
