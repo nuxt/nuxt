@@ -1,9 +1,6 @@
 # Test against the latest version of this Node.js version
 environment:
   nodejs_version: "Current"
-# environment:
-#   matrix:
-#     - nodejs_version: "Current"
 
 cache:
   - 'node_modules -> yarn.lock'
@@ -21,6 +18,8 @@ install:
   - yarn install
   # link dependencies
   - yarn bootstrap
+  # build packages
+  - yarn build
 
 # Post-install test scripts.
 test_script:
