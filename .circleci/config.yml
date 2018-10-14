@@ -19,7 +19,7 @@ jobs:
 
       # Restore cache
       - restore_cache:
-          key: yarn-{{ checksum yarn.lock }}
+          key: yarn-{{ checksum "yarn.lock" }}
 
       # Install dependencies
       - run:
@@ -33,19 +33,17 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: yarn-{{ checksum yarn.lock }}
+          key: yarn-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - distributions/*/node_modules
             - packages/*/node_modules
 
-      # Persist all node_modules
+      # Persist workspace
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/node_modules
-            - nuxt/distributions/*/node_modules
-            - nuxt/packages/*/node_modules
+            - nuxt
 
   # --------------------------------------------------------------------------
   # Phase 2: Lint + Audit + Build Nuxt and fixtures
