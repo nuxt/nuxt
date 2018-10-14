@@ -6,4 +6,4 @@ const _require = esm(module, {
   mainFields: ['module', 'main']
 })
 
-_require('nuxt/bin/nuxt')
+_require('../packages/cli/bin/nuxt.js')
