@@ -5,6 +5,7 @@ import { sync as spawnSync } from 'cross-spawn'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import _ from 'lodash'
 import { rollup } from 'rollup'
+import glob from 'glob'
 
 import { builtinsMap } from './builtins'
 import rollupConfig from './rollup.config'
@@ -17,6 +18,8 @@ const DEFAULTS = {
 
   distDir: 'dist',
   buildSuffix: process.env.BUILD_SUFFIX,
+
+  build: false,
 
   sortDependencies: true
 }
@@ -93,6 +96,22 @@ export default class Package extends EventEmitter {
     this.addNameSuffix(`-${suffix}`)
     this.generateVersion()
     this.writePackage()
+  }
+
+  getWorkspacePackages() {
+    const packages = []
+
+    for (const workspace of this.pkg.workspaces || []) {
+      const dirs = glob.sync(workspace)
+      for (const dir of dirs) {
+        const pkg = new Package({
+          rootDir: this.resolvePath(dir)
+        })
+        packages.push(pkg)
+      }
+    }
+
+    return packages
   }
 
   addNameSuffix(suffix) {
