@@ -1,7 +1,4 @@
 #!/usr/bin/env node -r esm
-
-import path from 'path'
-
 import Package from './package'
 
 async function main() {
@@ -19,5 +16,4 @@ async function main() {
   }
 }
 
-main()
-  .catch(console.error) // eslint-disable-line no-console
+main().catch(console.error) // eslint-disable-line no-console
