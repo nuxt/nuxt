@@ -8,6 +8,16 @@ process.on('unhandledRejection', (err) => {
   consola.error(err)
 })
 
+// Exit process on fatal errors
+consola.add({
+  log(logObj) {
+    if (logObj.type === 'fatal') {
+      process.stderr.write('Nuxt Fatal Error :(\n')
+      process.exit(1)
+    }
+  }
+})
+
 const defaultCommand = 'dev'
 const commands = new Set([
   defaultCommand,
