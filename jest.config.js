@@ -10,7 +10,7 @@ module.exports = {
     '<rootDir>/packages/core/src/app/',
     '<rootDir>/packages/core/src/builder/webpack/plugins/vue/'
   ],
-  setupTestFrameworkScriptFile: './test/setup',
+  setupTestFrameworkScriptFile: './test/utils/setup',
   testPathIgnorePatterns: [
     'node_modules',
     'test/fixtures/.*/.*?/'
