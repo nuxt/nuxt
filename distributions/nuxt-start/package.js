@@ -21,8 +21,7 @@ export default {
         'contributors',
         'keywords',
         'collective',
-        'engines',
-        'dependencies'
+        'engines'
       ])
 
       pkg.writePackage()

@@ -54,7 +54,6 @@
     "npm": ">=5.0.0"
   },
   "dependencies": {
-    "@nuxtjs/builder": "0.0.0",
     "@nuxtjs/common": "0.0.0",
     "@nuxtjs/core": "0.0.0",
     "consola": "^1.4.4"
