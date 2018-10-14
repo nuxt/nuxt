@@ -8,7 +8,7 @@
     "bootstrap": "lerna bootstrap",
     "build": "./scripts/build",
     "coverage": "codecov",
-    "lint": "eslint --ext .js,.mjs,.vue benchmarks examples packages test",
+    "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:bin": "eslint packages/nuxt-core/bin/**",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest packages/nuxt-core/test/fixtures",
