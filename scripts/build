@@ -10,6 +10,9 @@ async function main() {
   const workspacePackages = rootPackage.getWorkspacePackages()
 
   for (const pkg of workspacePackages) {
+    if (pkg.options.autoFix) {
+      pkg.autoFix()
+    }
     if (pkg.options.build) {
       await pkg.build()
     }

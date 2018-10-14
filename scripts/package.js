@@ -21,7 +21,7 @@ const DEFAULTS = {
 
   build: false,
 
-  sortDependencies: true
+  autoFix: true
 }
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
@@ -133,7 +133,7 @@ export default class Package extends EventEmitter {
     const bundle = await rollup(rollupConfig({
       rootDir: this.options.rootDir,
       ...options
-    }))
+    }, this.pkg))
 
     // Write bundle to disk
     const _outputOptions = Object.assign({
@@ -166,6 +166,11 @@ export default class Package extends EventEmitter {
       const dst = resolve(this.options.rootDir, file)
       copySync(src, dst)
     }
+  }
+
+  autoFix() {
+    this.sortDependencies()
+    this.writePackage()
   }
 
   sortDependencies() {
