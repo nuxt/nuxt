@@ -56,7 +56,8 @@
   "dependencies": {
     "@nuxtjs/builder": "0.0.0",
     "@nuxtjs/common": "0.0.0",
-    "@nuxtjs/core": "0.0.0"
+    "@nuxtjs/core": "0.0.0",
+    "consola": "^1.4.4"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",
