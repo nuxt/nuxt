@@ -4,7 +4,7 @@ import { promisify } from 'util'
 
 const execify = promisify(exec)
 const rootDir = __dirname
-const nuxtBin = resolve(__dirname, '..', '..', '..', 'bin', 'nuxt')
+const nuxtBin = resolve(__dirname, '../../../packages/cli/bin/nuxt.js')
 
 describe.skip.appveyor('cli generate', () => {
   test('nuxt generate', async () => {

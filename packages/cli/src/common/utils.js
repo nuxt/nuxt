@@ -1,9 +1,10 @@
 
-const { resolve } = require('path')
-const { existsSync } = require('fs')
-const consola = require('consola')
+import path from 'path'
+import { existsSync } from 'fs'
+import consola from 'consola'
+import esm from 'esm'
 
-const esm = require('esm')(module, {
+const _require = esm(module, {
   cache: false,
   cjs: {
     cache: true,
@@ -12,8 +13,8 @@ const esm = require('esm')(module, {
   }
 })
 
-const getRootDir = argv => resolve(argv._[0] || '.')
-const getNuxtConfigFile = argv => resolve(getRootDir(argv), argv['config-file'])
+const getRootDir = argv => path.resolve(argv._[0] || '.')
+const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
 const getLatestHost = (argv) => {
   const port =
     argv.port ||
@@ -33,9 +34,7 @@ const getLatestHost = (argv) => {
   return { port, host, socket }
 }
 
-exports.nuxtConfigFile = getNuxtConfigFile
-
-exports.loadNuxtConfig = (argv) => {
+export function loadNuxtConfig(argv) {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
 
@@ -43,7 +42,7 @@ exports.loadNuxtConfig = (argv) => {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = esm(nuxtConfigFile)
+    options = _require(nuxtConfigFile)
     if (!options) {
       options = {}
     }

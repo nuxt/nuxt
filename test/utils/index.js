@@ -6,17 +6,18 @@ import _getPort from 'get-port'
 import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
 import pkg from '../../package.json'
-import _Nuxt from '../../lib/index.js'
+
+import * as _Utils from '../../packages/common'
+
+export { Nuxt } from '../../packages/core'
+export { Builder, Generator } from '../../packages/builder'
 
 export const rp = _rp
 export const getPort = _getPort
 export const version = pkg.version
 
-export const Nuxt = _Nuxt.Nuxt
-export const Utils = _Nuxt.Utils
-export const Options = _Nuxt.Options
-export const Builder = _Nuxt.Builder
-export const Generator = _Nuxt.Generator
+export const Utils = _Utils
+export const Options = _Utils.Options
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)

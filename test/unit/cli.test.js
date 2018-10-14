@@ -7,7 +7,7 @@ let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
 const url = route => 'http://localhost:' + port + route
-const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
+const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
 
 const close = async (nuxtInt) => {
   nuxtInt.kill('SIGKILL')

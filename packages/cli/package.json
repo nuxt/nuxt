@@ -1,0 +1,20 @@
+{
+  "name": "@nuxtjs/cli",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": "nuxt/nuxt.js",
+  "module": "src/index.js",
+  "main": "dist/cli.js",
+  "files": [
+    "bin",
+    "src"
+  ],
+  "bin": {
+    "nuxt": "./bin/nuxt.js"
+  },
+  "dependencies": {
+    "consola": "^1.4.4",
+    "esm": "^3.0.84",
+    "minimist": "^1.2.0"
+  }
+}

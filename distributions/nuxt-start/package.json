@@ -41,9 +41,6 @@
   ],
   "main": "dist/nuxt-start.js",
   "module": "src/index.js",
-  "bin": {
-    "nuxt-start": "bin/nuxt-start"
-  },
   "files": [
     "bin",
     "dist",
@@ -54,6 +51,7 @@
     "npm": ">=5.0.0"
   },
   "dependencies": {
+    "@nuxtjs/cli": "0.0.0",
     "@nuxtjs/common": "0.0.0",
     "@nuxtjs/core": "0.0.0",
     "consola": "^1.4.4"

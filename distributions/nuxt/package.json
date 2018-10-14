@@ -49,9 +49,6 @@
   },
   "main": "dist/nuxt.js",
   "module": "src/index.js",
-  "bin": {
-    "nuxt": "bin/nuxt"
-  },
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=5.0.0"
@@ -61,6 +58,7 @@
   },
   "dependencies": {
     "@nuxtjs/builder": "0.0.0",
+    "@nuxtjs/cli": "0.0.0",
     "@nuxtjs/common": "0.0.0",
     "@nuxtjs/core": "0.0.0",
     "consola": "^1.4.4"
