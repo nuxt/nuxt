@@ -12,8 +12,10 @@ export default function rollupConfig({
   plugins = [],
   input = 'src/index.js',
   ...options
-}) {
-  const pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
+}, pkg) {
+  if (!pkg) {
+    pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
+  }
 
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
