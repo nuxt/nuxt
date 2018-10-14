@@ -34,6 +34,11 @@ if (commands.has(cmd)) {
   cmd = defaultCommand
 }
 
+// Apply default NODE_ENV if not provided
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = cmd === 'dev' ? 'development' : 'production'
+}
+
 cli[cmd]().then(m => m.default()).catch((error) => {
   consola.fatal(error)
 })
