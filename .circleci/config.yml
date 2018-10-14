@@ -4,8 +4,13 @@ defaults: &defaults
   working_directory: ~/project/nuxt
   docker:
     - image: banian/node-headless-chrome
+  environment:
+    - NODE_ENV: test
 
 jobs:
+  # --------------------------------------------------------------------------
+  # Phase 1: Setup
+  # --------------------------------------------------------------------------
   setup:
     <<: *defaults
     steps:
@@ -14,25 +19,37 @@ jobs:
 
       # Restore cache
       - restore_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: yarn-{{ checksum yarn.lock }}
 
       # Install dependencies
       - run:
           name: Install Dependencies
-          command: NODE_ENV=dev yarn && yarn bootstrap
+          command: yarn --frozen-lockfile --non-interactive
 
-      # Keep cache
+      # Bootstrap
+      - run:
+          name: ‌ Bootstrap
+          command: yarn bootstrap
+
+      # Save cache
       - save_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: yarn-{{ checksum yarn.lock }}
           paths:
-            - "node_modules"
+            - node_modules
+            - distributions/*/node_modules
+            - packages/*/node_modules
 
-      # Persist files
+      # Persist all node_modules
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt
+            - nuxt/node_modules
+            - nuxt/distributions/*/node_modules
+            - nuxt/packages/*/node_modules
 
+  # --------------------------------------------------------------------------
+  # Phase 2: Lint + Audit + Build Nuxt and fixtures
+  # --------------------------------------------------------------------------
   lint:
     <<: *defaults
     steps:
@@ -57,26 +74,29 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
+          name: Build Nuxt
+          command: yarn build
+      - run:
           name: Build Fixtures
           command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/test/fixtures
-            - nuxt/dist
-    environment:
-      - NODE_ENV: "test"
+            - nuxt/test/fixtures # TODO
+            - nuxt/distributions/**/dist
+            - nuxt/packages/**/dist
 
+  # --------------------------------------------------------------------------
+  # Phase 3: Unit and E2E tests
+  # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
     steps:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Unit Test
+          name: Unit Tests
           command: yarn test:unit -w=4 --coverage && yarn coverage
-    environment:
-      - NODE_ENV: "test"
 
   test-e2e:
     <<: *defaults
@@ -84,11 +104,12 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: E2E Test
+          name: E2E Tests
           command: yarn test:e2e && yarn coverage
-    environment:
-      - NODE_ENV: "test"
 
+  # --------------------------------------------------------------------------
+  # Phase 4: Release (dev branch only)
+  # --------------------------------------------------------------------------
   release:
     <<: *defaults
     steps:
@@ -108,9 +129,10 @@ jobs:
               fi
             done
 
+# Workflow definition
 workflows:
   version: 2
-  setup-and-parallel-test:
+  setup-and-test:
     jobs:
       - setup
 
