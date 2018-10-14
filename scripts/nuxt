@@ -1,0 +1,9 @@
+#!/usr/bin/env node -r esm
+
+const esm = require('esm')
+
+const _require = esm(module, {
+  mainFields: ['module', 'main']
+})
+
+_require('nuxt/bin/nuxt')
