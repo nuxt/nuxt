@@ -5,7 +5,7 @@ import klawSync from 'klaw-sync'
 import _getPort from 'get-port'
 import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
-import pkg from '../../package.json'
+import corePkg from '../../packages/core/package.json'
 
 import * as _Utils from '../../packages/common'
 
@@ -14,7 +14,7 @@ export { Builder, Generator } from '../../packages/builder'
 
 export const rp = _rp
 export const getPort = _getPort
-export const version = pkg.version
+export const version = corePkg.version
 
 export const Utils = _Utils
 export const Options = _Utils.Options

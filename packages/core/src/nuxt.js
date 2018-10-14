@@ -11,7 +11,7 @@ import ip from 'ip'
 
 import { Options, sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common'
 
-import packageJSON from '../package.json'
+import { version } from '../package.json'
 import ModuleContainer from './module'
 import Renderer from './renderer'
 
@@ -48,7 +48,7 @@ export default class Nuxt {
   }
 
   static get version() {
-    return packageJSON.version
+    return version
   }
 
   async ready() {
