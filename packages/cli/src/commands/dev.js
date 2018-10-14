@@ -24,7 +24,7 @@ export default async function dev() {
   })
 
   if (argv.version) {
-    process.stderr.write(version + '\n')
+    process.stderr.write('TODO' + '\n')
     process.exit(0)
   }
 
