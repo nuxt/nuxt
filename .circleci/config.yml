@@ -1,7 +1,7 @@
 version: 2
 
 defaults: &defaults
-  working_directory: ~/project/nuxt
+  working_directory: ~/project
   docker:
     - image: banian/node-headless-chrome
   environment:
@@ -43,7 +43,9 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt
+            - node_modules
+            - distributions/*/node_modules
+            - packages/*/node_modules
 
   # --------------------------------------------------------------------------
   # Phase 2: Lint + Audit + Build Nuxt and fixtures
@@ -51,6 +53,7 @@ jobs:
   lint:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -60,6 +63,7 @@ jobs:
   audit:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -69,6 +73,7 @@ jobs:
   build:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -80,9 +85,9 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/test/fixtures # TODO
-            - nuxt/distributions/**/dist
-            - nuxt/packages/**/dist
+            - test/fixtures # TODO
+            - distributions/**/dist
+            - packages/**/dist
 
   # --------------------------------------------------------------------------
   # Phase 3: Unit and E2E tests
@@ -90,6 +95,7 @@ jobs:
   test-unit:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -99,6 +105,7 @@ jobs:
   test-e2e:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -111,6 +118,7 @@ jobs:
   release:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
