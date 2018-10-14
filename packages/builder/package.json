@@ -10,6 +10,7 @@
     "dist"
   ],
   "dependencies": {
+    "@nuxtjs/app": "0.0.0",
     "@nuxtjs/common": "0.0.0"
   }
 }

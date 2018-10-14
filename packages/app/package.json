@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "repository": "nuxt/nuxt.js",
+  "main": "dist/app.js",
+  "module": "src/index.js",
   "files": [
     "template"
   ]

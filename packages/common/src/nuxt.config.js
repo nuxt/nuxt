@@ -41,8 +41,9 @@ export default {
   srcDir: undefined,
   buildDir: '.nuxt',
   nuxtDir,
-  nuxtAppDir: path.resolve(nuxtDir, 'src', 'app'),
-  modulesDir: ['node_modules'], // ~> relative to options.rootDir
+  modulesDir: [
+    'node_modules'
+  ],
 
   // Ignore
   ignorePrefix: '-',
@@ -142,10 +143,13 @@ export default {
       }
     },
 
+    template: '@nuxtjs/app',
     templates: [],
+
     watch: [],
     devMiddleware: {},
     hotMiddleware: {},
+
     stats: {
       chunks: false,
       children: false,

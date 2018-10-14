@@ -79,6 +79,12 @@ export default class Builder {
       })
     }
 
+    // Resolve template
+    this.template = this.options.build.template
+    if (typeof this.template === 'string') {
+      this.template = require(this.template) // TODO: prefer using this.nuxt.requireModule
+    }
+
     // if(!this.options.dev) {
     // TODO: enable again when unsafe concern resolved.(common/options.js:42)
     // this.nuxt.hook('build:done', () => this.generateConfig())
@@ -190,24 +196,8 @@ export default class Builder {
     this.plugins = this.normalizePlugins()
 
     // -- Templates --
-    let templatesFiles = [
-      'App.js',
-      'client.js',
-      'index.js',
-      'middleware.js',
-      'router.js',
-      'server.js',
-      'utils.js',
-      'empty.js',
-      'components/nuxt-error.vue',
-      'components/nuxt-loading.vue',
-      'components/nuxt-child.js',
-      'components/nuxt-link.js',
-      'components/nuxt.js',
-      'components/no-ssr.js',
-      'views/app.template.html',
-      'views/error.html'
-    ]
+    let templatesFiles = Array.from(this.template.templatesFiles)
+
     const templateVars = {
       options: this.options,
       extensions: this.options.extensions
@@ -288,7 +278,7 @@ export default class Builder {
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes(
         ['index.vue'],
-        this.options.nuxtAppDir + '/pages'
+        this.template.templatesDir + '/pages'
       )
     } else if (this._nuxtPages) { // If user defined a custom method to create routes
       // Use nuxt.js createRoutes bases on pages/
@@ -356,7 +346,7 @@ export default class Builder {
         const customFileExists = fsExtra.existsSync(customPath)
 
         return {
-          src: customFileExists ? customPath : r(this.options.nuxtAppDir, file),
+          src: customFileExists ? customPath : r(this.template.templatesDir, file),
           dst: file,
           custom: customFileExists
         }
@@ -381,7 +371,7 @@ export default class Builder {
     // -- Loading indicator --
     if (this.options.loadingIndicator.name) {
       const indicatorPath1 = path.resolve(
-        this.options.nuxtAppDir,
+        this.template.templatesDir,
         'views/loading',
         this.options.loadingIndicator.name + '.html'
       )
