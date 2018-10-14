@@ -1,7 +1,2 @@
-import Builder from './builder'
-import Generator from './generator'
-
-export default {
-  Builder,
-  Generator
-}
+export { default as Builder } from './builder'
+export { default as Generator } from './generator'
