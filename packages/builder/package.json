@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": "nuxt/nuxt.js",
   "module": "src/index.js",
-  "dist": "dist/index.js",
+  "main": "dist/builder.js",
   "files": [
     "src",
     "dist"

@@ -17,6 +17,7 @@ import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 
 import {
+  Options,
   r,
   wp,
   wChunk,
@@ -26,9 +27,8 @@ import {
   relativeTo,
   waitFor,
   determineGlobals
-} from '@nuxtjs/common/src/utils'
+} from '@nuxtjs/common'
 
-import Options from '@nuxtjs/common/src/options'
 import PerfLoader from './webpack/utils/perf-loader'
 import ClientWebpackConfig from './webpack/client'
 import ServerWebpackConfig from './webpack/server'

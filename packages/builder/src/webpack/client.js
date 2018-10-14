@@ -1,5 +1,5 @@
 import path from 'path'
-simport webpack from 'webpack'
+import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
 import TerserWebpackPlugin from 'terser-webpack-plugin'

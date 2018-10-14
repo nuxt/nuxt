@@ -11,7 +11,7 @@ import ip from 'ip'
 
 import { Options, sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common'
 
-import packageJSON from '../../package.json' // TODO
+import packageJSON from '../package.json'
 import ModuleContainer from './module'
 import Renderer from './renderer'
 

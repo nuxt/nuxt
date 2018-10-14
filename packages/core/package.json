@@ -5,17 +5,18 @@
   "repository": "nuxt/nuxt.js",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "module": "src/index.js",
-  "dist": "dist/index.js",
+  "main": "dist/core.js",
   "files": [
     "src",
     "dist"
   ],
   "dependencies": {
-    "@nuxtjs/common": "0.0.0",
-    "@nuxtjs/app": "0.0.0",
     "@babel/core": "^7.1.2",
     "@babel/polyfill": "^7.0.0",
+    "@nuxtjs/app": "0.0.0",
     "@nuxtjs/babel-preset-app": "^0.7.0",
+    "@nuxtjs/common": "0.0.0",
+    "@nuxtjs/devalue": "^1.0.0",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "@nuxtjs/opencollective": "^0.1.0",
     "@nuxtjs/youch": "^4.2.3",

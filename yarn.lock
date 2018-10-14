@@ -1336,6 +1336,13 @@
     babel-helper-vue-jsx-merge-props "^2.0.3"
     babel-plugin-transform-vue-jsx "^4.0.1"
 
+"@nuxtjs/devalue@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@nuxtjs/devalue/-/devalue-1.0.0.tgz#97c5cfbac0cd3eb7a7894a4e1bfe5c22eeee3ab3"
+  integrity sha512-2hL39RGEMaa3cGthmVPfS4+smKNVfy+v0gpRtgmW8esBtRhJoRMQQh6oiyCpdOoPnAMbJJjsKc9xgwXF7gb6Qw==
+  dependencies:
+    consola "^1.4.3"
+
 "@nuxtjs/friendly-errors-webpack-plugin@^2.0.2":
   version "2.0.2"
   resolved "http://registry.npmjs.org/@nuxtjs/friendly-errors-webpack-plugin/-/friendly-errors-webpack-plugin-2.0.2.tgz#80fd4c4276e87c09a9157a6f433724235eaaaf6e"

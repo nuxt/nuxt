@@ -1,23 +1,20 @@
 #!/usr/bin/env node -r esm
+
 import path from 'path'
 
 import Package from './package'
 
-// Commons
-const rootDir = path.resolve(__dirname, '..')
+async function main() {
+  // Read package at current directory
+  const rootPackage = new Package()
+  const workspacePackages = rootPackage.getWorkspacePackages()
 
-// Force NODE_ENV to production
-process.env.NODE_ENV = 'production'
+  for (const pkg of workspacePackages) {
+    if (pkg.options.build) {
+      await pkg.build()
+    }
+  }
+}
 
-// TODO
-const distributions = [
-  'distributions/nuxt',
-  'distributions/nuxt-start',
-  'distributions/nuxt-legacy'
-]
-
-// Build all distributions
-distributions
-  .map(p => path.resolve(rootDir, p))
-  .map(p => new Package({ rootDir: path.resolve(rootDir, p) }))
-  .forEach(pkg => pkg.build())
+main()
+  .catch(console.error) // eslint-disable-line no-console
