@@ -82,7 +82,7 @@ export default class Builder {
     // Resolve template
     this.template = this.options.build.template
     if (typeof this.template === 'string') {
-      this.template = require(this.template) // TODO: prefer using this.nuxt.requireModule
+      this.template = this.nuxt.resolver.requireModule(this.template)
     }
 
     // if(!this.options.dev) {
@@ -100,7 +100,7 @@ export default class Builder {
           ''
         )
         return {
-          src: this.nuxt.resolveAlias(p.src),
+          src: this.nuxt.resolver.resolveAlias(p.src),
           ssr: p.ssr !== false,
           name: 'nuxt_plugin_' + pluginBaseName + '_' + hash(p.src)
         }
@@ -375,7 +375,7 @@ export default class Builder {
         'views/loading',
         this.options.loadingIndicator.name + '.html'
       )
-      const indicatorPath2 = this.nuxt.resolveAlias(
+      const indicatorPath2 = this.nuxt.resolver.resolveAlias(
         this.options.loadingIndicator.name
       )
       const indicatorPath = fsExtra.existsSync(indicatorPath1)
@@ -421,8 +421,8 @@ export default class Builder {
               r,
               wp,
               wChunk,
-              resolvePath: this.nuxt.resolvePath,
-              resolveAlias: this.nuxt.resolveAlias,
+              resolvePath: this.nuxt.resolver.resolvePath,
+              resolveAlias: this.nuxt.resolver.resolveAlias,
               relativeToBuild: this.relativeToBuild
             },
             interpolate: /<%=([\s\S]+?)%>/g
@@ -664,8 +664,8 @@ export default class Builder {
     const nuxtRestartWatch = _.concat(
       this.options.serverMiddleware
         .filter(i => typeof i === 'string')
-        .map(this.nuxt.resolveAlias),
-      this.options.watch.map(this.nuxt.resolveAlias),
+        .map(this.nuxt.resolver.resolveAlias),
+      this.options.watch.map(this.nuxt.resolver.resolveAlias),
       path.join(this.options.rootDir, 'nuxt.config.js')
     )
 

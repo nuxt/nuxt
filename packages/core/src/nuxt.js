@@ -1,19 +1,17 @@
-import Module from 'module'
-import { resolve, join } from 'path'
 import https from 'https'
 import enableDestroy from 'server-destroy'
 import _ from 'lodash'
-import fs from 'fs-extra'
 import consola from 'consola'
 import chalk from 'chalk'
-import esm from 'esm'
+
 import ip from 'ip'
 
-import { Options, sequence, startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common'
+import { Options, sequence } from '@nuxtjs/common'
 
 import { version } from '../package.json'
 import ModuleContainer from './module'
 import Renderer from './renderer'
+import Resolver from './resolver'
 
 export default class Nuxt {
   constructor(options = {}) {
@@ -29,6 +27,7 @@ export default class Nuxt {
     // Create instance of core components
     this.moduleContainer = new ModuleContainer(this)
     this.renderer = new Renderer(this)
+    this.resolver = new Resolver(this)
 
     // Backward compatibility
     this.render = this.renderer.app
@@ -36,11 +35,6 @@ export default class Nuxt {
     this.renderAndGetWindow = this.renderer.renderAndGetWindow.bind(
       this.renderer
     )
-    this.resolvePath = this.resolvePath.bind(this)
-    this.resolveAlias = this.resolveAlias.bind(this)
-
-    // ESM Loader
-    this.esm = esm(module, {})
 
     this._ready = this.ready().catch((err) => {
       consola.fatal(err)
@@ -225,64 +219,6 @@ export default class Nuxt {
       // Add server.destroy(cb) method
       enableDestroy(server)
     }))
-  }
-
-  resolveModule(path) {
-    try {
-      const resolvedPath = Module._resolveFilename(path, {
-        paths: this.options.modulesDir
-      })
-
-      return resolvedPath
-    } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        return null
-      } else {
-        throw error
-      }
-    }
-  }
-
-  resolveAlias(path) {
-    const modulePath = this.resolveModule(path)
-
-    // Try to resolve it as if it were a regular node_module
-    // Package first. Fixes issue with @<org> scoped packages
-    if (modulePath != null) {
-      return modulePath
-    }
-
-    if (startsWithRootAlias(path)) {
-      return join(this.options.rootDir, path.substr(2))
-    }
-
-    if (startsWithSrcAlias(path)) {
-      return join(this.options.srcDir, path.substr(1))
-    }
-
-    return resolve(this.options.srcDir, path)
-  }
-
-  resolvePath(path) {
-    const _path = this.resolveAlias(path)
-
-    if (fs.existsSync(_path)) {
-      return _path
-    }
-
-    for (const ext of this.options.extensions) {
-      if (fs.existsSync(_path + '.' + ext)) {
-        return _path + '.' + ext
-      }
-    }
-
-    throw new Error(`Cannot resolve "${path}" from "${_path}"`)
-  }
-
-  requireModule(_path, opts = {}) {
-    const _resolvedPath = this.resolvePath(_path)
-    const m = opts.esm === false ? require(_resolvedPath) : this.esm(_resolvedPath)
-    return (m && m.default) || m
   }
 
   async close(callback) {

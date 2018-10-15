@@ -124,7 +124,7 @@ export default class ModuleContainer {
 
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.requireModule(src)
+      handler = this.nuxt.resolver.requireModule(src)
     }
 
     // Validate handler

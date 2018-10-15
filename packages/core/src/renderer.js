@@ -171,10 +171,10 @@ export default class Renderer {
     // Resolve
     const $m = m
     if (typeof m === 'string') {
-      m = this.nuxt.requireModule(m)
+      m = this.nuxt.resolver.requireModule(m)
     }
     if (typeof m.handler === 'string') {
-      m.handler = this.nuxt.requireModule(m.handler)
+      m.handler = this.nuxt.resolver.requireModule(m.handler)
     }
 
     const handler = m.handler || m
