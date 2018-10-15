@@ -138,6 +138,7 @@ export default class Package extends EventEmitter {
     // Write bundle to disk
     const _outputOptions = Object.assign({
       format: 'cjs',
+      sourcemap: true,
       dir: this.resolvePath(this.options.distDir),
       file: this.pkg.name + '.js'
     }, outputOptions)
