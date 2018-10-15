@@ -14,7 +14,6 @@ packages/*/LICENSE
 
 # Distributions
 distributions/*/LICENSE
-distributions/*/bin
 
 # Other
 .nuxt*

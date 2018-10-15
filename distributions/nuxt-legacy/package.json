@@ -39,15 +39,20 @@
     "vue isomorphic",
     "vue versatile"
   ],
-  "main": "dist/nuxt-legacy.js",
   "files": [
-    "dist"
+    "bin"
   ],
+  "bin": {
+    "nuxt-legacy": "bin/nuxt-legacy.js"
+  },
   "engines": {
-    "node": ">=8.0.0",
-    "npm": ">=5.0.0"
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/register": "^7.0.0",
     "@nuxtjs/builder": "0.0.0",
     "@nuxtjs/cli": "0.0.0",
     "@nuxtjs/common": "0.0.0",

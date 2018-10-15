@@ -1,5 +1,5 @@
 export default {
-  build: true,
+  build: false,
   extend(pkg, { load }) {
     pkg.on('build:done', () => {
       const mono = load('../..')
@@ -15,8 +15,7 @@ export default {
         'repository',
         'contributors',
         'keywords',
-        'collective',
-        'engines'
+        'collective'
       ])
 
       pkg.writePackage()
