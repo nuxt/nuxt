@@ -2,9 +2,23 @@
   "name": "nuxt-legacy",
   "version": "0.0.0",
   "description": "Legacy build of Nuxt.js for Node.js < 8.0.0",
-  "license": "MIT",
+  "keywords": [
+    "nuxt",
+    "nuxt.js",
+    "nuxtjs",
+    "ssr",
+    "vue",
+    "vue isomorphic",
+    "vue server side",
+    "vue ssr",
+    "vue universal",
+    "vue versatile",
+    "vue.js",
+    "vuejs"
+  ],
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
   "repository": "nuxt/nuxt.js",
+  "license": "MIT",
   "contributors": [
     {
       "name": "Sebastien Chopin (@Atinux)"
@@ -25,29 +39,11 @@
       "name": "Alexander Lichter (@manniL}"
     }
   ],
-  "keywords": [
-    "nuxt",
-    "nuxt.js",
-    "nuxtjs",
-    "vue",
-    "vue.js",
-    "vuejs",
-    "vue universal",
-    "vue ssr",
-    "vue server side",
-    "ssr",
-    "vue isomorphic",
-    "vue versatile"
-  ],
   "files": [
     "bin"
   ],
   "bin": {
     "nuxt-legacy": "bin/nuxt-legacy.js"
-  },
-  "engines": {
-    "node": ">=6.0.0",
-    "npm": ">=3.0.0"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
@@ -58,6 +54,10 @@
     "@nuxtjs/common": "0.0.0",
     "@nuxtjs/core": "0.0.0",
     "consola": "^1.4.4"
+  },
+  "engines": {
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

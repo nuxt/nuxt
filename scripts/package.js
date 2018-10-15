@@ -2,12 +2,12 @@ import { resolve } from 'path'
 import EventEmitter from 'events'
 import consola from 'consola'
 import { sync as spawnSync } from 'cross-spawn'
-import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
+import { existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
 import glob from 'glob'
+import sortPackageJson from 'sort-package-json'
 
-import { builtinsMap } from './builtins'
 import rollupConfig from './rollup.config'
 
 const DEFAULTS = {
@@ -204,6 +204,7 @@ export default class Package extends EventEmitter {
   }
 
   autoFix() {
+    this.pkg = sortPackageJson(this.pkg)
     this.sortDependencies()
     this.writePackage()
   }

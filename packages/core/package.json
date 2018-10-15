@@ -1,13 +1,13 @@
 {
   "name": "@nuxtjs/core",
   "version": "0.0.0",
-  "license": "MIT",
-  "repository": "nuxt/nuxt.js",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
-  "main": "dist/core.js",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
   "files": [
     "dist"
   ],
+  "main": "dist/core.js",
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@babel/polyfill": "^7.0.0",

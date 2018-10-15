@@ -1,13 +1,13 @@
 {
   "name": "@nuxtjs/cli",
   "version": "0.0.0",
-  "license": "MIT",
   "repository": "nuxt/nuxt.js",
-  "main": "dist/cli.js",
+  "license": "MIT",
   "files": [
     "bin",
     "dist"
   ],
+  "main": "dist/cli.js",
   "bin": {
     "nuxt": "bin/nuxt.js"
   },
