@@ -14,14 +14,14 @@ module.exports = {
   coverageDirectory: './coverage',
 
   collectCoverageFrom: [
-    'packages/*/src/**/*.mjs',
-    'packages/*/src/**/*.js'
+    'packages/*/src/**/*.js',
+    'packages/cli/bin/*'
   ],
 
   coveragePathIgnorePatterns: [
-    '/node_modules',
-    '<rootDir>/packages/app',
-    '<rootDir>/packages/builder/webpack/plugins/vue'
+    'node_modules',
+    'packages/app',
+    'packages/builder/webpack/plugins/vue'
   ],
 
   testPathIgnorePatterns: [
@@ -37,7 +37,6 @@ module.exports = {
 
   moduleFileExtensions: [
     'js',
-    'mjs',
     'json'
   ]
 }

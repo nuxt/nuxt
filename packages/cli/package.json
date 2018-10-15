@@ -10,7 +10,8 @@
     "src"
   ],
   "bin": {
-    "nuxt": "./bin/nuxt.js"
+    "nuxt": "bin/nuxt.js",
+    "nuxt-es": "bin/nuxt.es.js"
   },
   "dependencies": {
     "consola": "^1.4.4",
