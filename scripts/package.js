@@ -4,7 +4,7 @@ import consola from 'consola'
 import { sync as spawnSync } from 'cross-spawn'
 import { readFileSync, existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
 import _ from 'lodash'
-import { rollup } from 'rollup'
+import { rollup, watch } from 'rollup'
 import glob from 'glob'
 
 import { builtinsMap } from './builtins'
@@ -120,34 +120,68 @@ export default class Package extends EventEmitter {
     }
   }
 
-  async build(options, outputOptions) {
+  async build(options, _watch = false) {
     this.emit('build:before')
 
+    // Add build suiffix if needed
     if (this.options.buildSuffix) {
       this.convertTo(this.options.buildSuffix)
     }
 
-    this.logger.info('Building')
-
     // https://rollupjs.org/guide/en#javascript-api
-    const bundle = await rollup(rollupConfig({
+
+    const config = rollupConfig({
       rootDir: this.options.rootDir,
       ...options
-    }, this.pkg))
+    }, this.pkg)
 
-    // Write bundle to disk
-    const _outputOptions = Object.assign({
-      format: 'cjs',
-      sourcemap: false,
-      dir: this.resolvePath(this.options.distDir),
-      file: this.pkg.name + '.js'
-    }, outputOptions)
+    if (_watch) {
+      // Watch
+      const watcher = watch(config)
+      watcher.on('event', (event) => {
+        switch (event.code) {
+          // The watcher is (re)starting
+          case 'START': return this.logger.debug('Watching for changes')
 
-    this.logger.info('Writing bundle to the disk')
-    removeSync(_outputOptions.dir)
-    await bundle.write(_outputOptions)
+          // Building an individual bundle
+          case 'BUNDLE_START': return this.logger.debug('Building bundle')
 
-    this.emit('build:done')
+          // Finished building a bundle
+          case 'BUNDLE_END': return
+
+          // Finished building all bundles
+          case 'END':
+            this.emit('build:done')
+            return this.logger.success('Bundle built')
+
+          // Encountered an error while bundling
+          case 'ERROR': return this.logger.error(event.error)
+
+          // Eencountered an unrecoverable error
+          case 'FATAL': return this.logger.fatal(event.error)
+
+          // Unknown event
+          default: return this.logger.info(JSON.stringify(event))
+        }
+      })
+    } else {
+      // Build
+      this.logger.info('Building bundle')
+      try {
+        const bundle = await rollup(config)
+        removeSync(config.output.dir)
+        await bundle.write(config.output)
+        this.logger.success('Bundle built')
+        this.emit('build:done')
+      } catch (error) {
+        this.logger.error(error)
+        throw new Error('Error while building bundle')
+      }
+    }
+  }
+
+  watch(options) {
+    return this.build(options, true)
   }
 
   publish(tag = 'latest') {

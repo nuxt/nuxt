@@ -20,9 +20,10 @@ export default function rollupConfig({
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
     output: {
-      file: path.resolve(rootDir, 'dist', `${pkg.name.replace('-edge', '')}.js`),
       format: 'cjs',
-      sourcemap: true
+      sourcemap: false,
+      file: `${pkg.name.replace('-edge', '')}.js`,
+      dir: path.resolve(rootDir, 'dist')
     },
     external: [
       // Dependencies that will be installed alongise with the nuxt package

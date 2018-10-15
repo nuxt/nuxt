@@ -1,4 +1,7 @@
 #!/usr/bin/env node -r esm
+
+import consola from 'consola'
+
 import Package from './package'
 
 async function main() {
@@ -11,9 +14,16 @@ async function main() {
       pkg.autoFix()
     }
     if (pkg.options.build) {
-      await pkg.build()
+      if (process.argv.includes('--watch')) {
+        pkg.watch()
+      } else {
+        await pkg.build()
+      }
     }
   }
 }
 
-main().catch(console.error) // eslint-disable-line no-console
+main().catch((error) => {
+  consola.error(error + '')
+  process.exit(1)
+})
