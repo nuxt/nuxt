@@ -218,64 +218,6 @@ export default class Package extends EventEmitter {
     }
   }
 
-  updateDependencies({ dist, sources = [], extras = [], exclude = [] }) {
-    const dependencies = {}
-    const requireRegex = /require\('([-@/\w]+)'\)/g
-
-    // Extras
-    for (const name of extras) {
-      dependencies[name] = null
-    }
-
-    // Scan require() calls inside dist
-    const distSource = readFileSync(resolve(this.options.rootDir, dist))
-
-    let match = requireRegex.exec(distSource)
-    while (match) {
-      const name = match[1]
-      dependencies[name] = null
-      match = requireRegex.exec(distSource)
-    }
-
-    // Exclude
-    for (const name of exclude) {
-      delete dependencies[name]
-    }
-
-    const builtins = builtinsMap()
-    // Resolve dependency versions
-    for (const name in dependencies) {
-      // Ignore builtin modules
-      if (builtins[name]) {
-        delete dependencies[name]
-        continue
-      }
-      // Try sources
-      for (const source of sources) {
-        const sourceDeps = source.pkg.dependencies
-        if (sourceDeps && sourceDeps[name]) {
-          dependencies[name] = sourceDeps[name]
-          break
-        }
-      }
-      // Try to require package.json of dependency
-      if (dependencies[name] === null) {
-        try {
-          const depPkg = require(`${name}/package.json`)
-          if (!depPkg) {
-            throw Error('No version specified')
-          }
-          dependencies[name] = `^${depPkg.version}`
-        } catch (e) {
-          this.logger.warn(e)
-          delete dependencies[name]
-        }
-      }
-    }
-
-    this.pkg.dependencies = dependencies
-  }
-
   exec(command, args, silent = false) {
     const r = spawnSync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
 
