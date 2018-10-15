@@ -7,10 +7,10 @@ import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
 import corePkg from '../../packages/core/package.json'
 
-import * as _Utils from '../../packages/common'
+import * as _Utils from '../../packages/common/src/index'
 
-export { Nuxt } from '../../packages/core'
-export { Builder, Generator } from '../../packages/builder'
+export { Nuxt } from '../../packages/core/src/index'
+export { Builder, Generator } from '../../packages/builder/src/index'
 
 export const rp = _rp
 export const getPort = _getPort

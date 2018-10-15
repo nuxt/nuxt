@@ -1,25 +1,43 @@
 module.exports = {
   testEnvironment: 'node',
+
+  expand: true,
+
+  forceExit: true,
+
+  // https://github.com/facebook/jest/pull/6747 fix warning here
+  // But its performance overhead is pretty bad (30+%).
+  // detectOpenHandles: true
+
+  setupTestFrameworkScriptFile: './test/utils/setup',
+
+  coverageDirectory: './coverage',
+
   collectCoverageFrom: [
     'packages/*/src/**/*.mjs',
     'packages/*/src/**/*.js'
   ],
-  coverageDirectory: './coverage/',
+
   coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '<rootDir>/packages/core/src/app/',
-    '<rootDir>/packages/core/src/builder/webpack/plugins/vue/'
+    '/node_modules',
+    '<rootDir>/packages/app',
+    '<rootDir>/packages/builder/webpack/plugins/vue'
   ],
-  setupTestFrameworkScriptFile: './test/utils/setup',
+
   testPathIgnorePatterns: [
     'node_modules',
-    'test/fixtures/.*/.*?/'
+    'test/fixtures/.*/.*?/',
+    'examples/.*'
   ],
-  transformIgnorePatterns: ['/node_modules/'],
-  moduleFileExtensions: ['js', 'mjs', 'json'],
-  expand: true,
-  forceExit: true
-  // https://github.com/facebook/jest/pull/6747 fix warning here
-  // But its performance overhead is pretty bad (30+%).
-  // detectOpenHandles: true
+
+  transformIgnorePatterns: [
+    '/node_modules/',
+    '/dist/'
+  ],
+
+  moduleFileExtensions: [
+    'js',
+    'mjs',
+    'json'
+  ]
 }
