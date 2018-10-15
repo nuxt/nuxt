@@ -1,7 +1,0 @@
-{
-  "force": true,
-  "mainFields": [
-    "module",
-    "main"
-  ]
-}

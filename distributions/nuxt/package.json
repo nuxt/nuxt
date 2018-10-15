@@ -25,9 +25,7 @@
     }
   ],
   "files": [
-    "bin",
-    "dist",
-    "src"
+    "dist"
   ],
   "keywords": [
     "nuxt",
@@ -48,7 +46,6 @@
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   },
   "main": "dist/nuxt.js",
-  "module": "src/index.js",
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=5.0.0"

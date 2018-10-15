@@ -3,15 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "repository": "nuxt/nuxt.js",
-  "module": "src/index.js",
   "main": "dist/cli.js",
   "files": [
     "bin",
-    "src"
+    "dist"
   ],
   "bin": {
-    "nuxt": "bin/nuxt.js",
-    "nuxt-es": "bin/nuxt.es.js"
+    "nuxt": "bin/nuxt.js"
   },
   "dependencies": {
     "consola": "^1.4.4",

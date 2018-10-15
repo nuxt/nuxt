@@ -40,11 +40,8 @@
     "vue versatile"
   ],
   "main": "dist/nuxt-start.js",
-  "module": "src/index.js",
   "files": [
-    "bin",
-    "dist",
-    "src"
+    "dist"
   ],
   "engines": {
     "node": ">=8.0.0",
@@ -55,9 +52,5 @@
     "@nuxtjs/common": "0.0.0",
     "@nuxtjs/core": "0.0.0",
     "consola": "^1.4.4"
-  },
-  "collective": {
-    "url": "https://opencollective.com/nuxtjs",
-    "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
   }
 }

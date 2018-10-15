@@ -15,7 +15,6 @@ export default {
         'repository',
         'contributors',
         'keywords',
-        'collective',
         'engines'
       ])
 
