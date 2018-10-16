@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",
+    "@nuxtjs/eslint-config": "^0.0.1",
     "babel-core": "^7.0.0-bridge",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^23.6.0",
