@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxtjs/app": "0.0.0",
     "@nuxtjs/common": "0.0.0",
-    "@nuxtjs/devalue": "^1.0.0",
+    "@nuxtjs/devalue": "^1.0.1",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
@@ -35,7 +35,7 @@
     "style-resources-loader": "^1.2.1",
     "terser-webpack-plugin": "^1.1.0",
     "thread-loader": "^1.2.0",
-    "time-fix-plugin": "^2.0.3",
+    "time-fix-plugin": "^2.0.4",
     "upath": "^1.1.0",
     "url-loader": "^1.1.1",
     "vue-loader": "^15.4.2",
