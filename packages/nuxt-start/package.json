@@ -55,7 +55,7 @@
     "npm": ">=5.0.0"
   },
   "dependencies": {
-    "@nuxtjs/devalue": "^1.0.0",
+    "@nuxtjs/devalue": "^1.0.1",
     "@nuxtjs/youch": "^4.2.3",
     "chalk": "^2.4.1",
     "compression": "^1.7.3",
