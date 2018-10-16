@@ -143,7 +143,7 @@
     "jsdom": "^11.6.2",
     "json-loader": "^0.5.7",
     "nyc": "^11.4.1",
-    "puppeteer": "^1.0.0",
+    "puppeteer": "^1.9.0",
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "sinon": "^4.3.0",
