@@ -1,7 +1,7 @@
 import test from 'ava'
 import { resolve } from 'path'
 import { intercept, release } from './helpers/console'
-import { Nuxt, Builder } from '..'
+import { Nuxt, Builder, Utils } from '..'
 
 const port = 4001
 const url = route => 'http://localhost:' + port + route
@@ -46,6 +46,7 @@ test.serial('Init Nuxt.js', async t => {
 test.serial('/stateless', async t => {
   const spies = await intercept()
   const window = await nuxt.renderAndGetWindow(url('/stateless'))
+  await Utils.waitFor(5)
   const html = window.document.body.innerHTML
   t.true(html.includes('<h1>My component!</h1>'))
   t.true(spies.info.calledWithMatch('You are running Vue in development mode.'))
