@@ -218,6 +218,20 @@ export default class Package extends EventEmitter {
         await bundle.write(config.output)
         this.logger.success('Bundle built')
         this.emit('build:done')
+
+        // Analyze bundle imports against pkg
+        // if (this.pkg.dependencies) {
+        //   const dependencies = {}
+        //   for (const dep in this.pkg.dependencies) {
+        //     dependencies[dep] = this.pkg.dependencies[dep]
+        //   }
+        //   for (const imp of bundle.imports) {
+        //     delete dependencies[imp]
+        //   }
+        //   for (const dep in dependencies) {
+        //     this.logger.warn(`Unused dependency ${dep}@${dependencies[dep]}`)
+        //   }
+        }
       } catch (error) {
         this.logger.error(error)
         throw new Error('Error while building bundle')
