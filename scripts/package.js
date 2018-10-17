@@ -15,7 +15,8 @@ const DEFAULTS = {
   pkgPath: 'package.json',
   configPath: 'package.js',
   distDir: 'dist',
-  build: false
+  build: false,
+  suffix: process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : ''
 }
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
@@ -91,17 +92,17 @@ export default class Package extends EventEmitter {
     } catch (e) {}
   }
 
-  suffixAndVersion(suffix) {
-    this.logger.info(`Adding suffix ${suffix}`)
+  suffixAndVersion() {
+    this.logger.info(`Adding suffix ${this.options.suffix}`)
 
     // Add suffix to the package name
-    if (!this.pkg.name.includes(suffix)) {
-      this.pkg.name += suffix
+    if (!this.pkg.name.includes(this.options.suffix)) {
+      this.pkg.name += this.options.suffix
     }
 
     // Apply suffix to all linkedDependencies
     for (const oldName of (this.options.linkedDependencies || [])) {
-      const name = oldName + suffix
+      const name = oldName + this.options.suffix
       const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
 
       delete this.pkg.dependencies[oldName]
@@ -111,10 +112,10 @@ export default class Package extends EventEmitter {
     this.generateVersion()
   }
 
-  syncLinkedDependencies(suffix = '') {
+  syncLinkedDependencies() {
     // Apply suffix to all linkedDependencies
     for (const _name of (this.options.linkedDependencies || [])) {
-      const name = _name + suffix
+      const name = _name + (this.options.suffix || '')
 
       // Try to read pkg
       const pkg = this.tryRequire(`${name}/package.json`) ||

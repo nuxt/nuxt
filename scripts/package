@@ -15,12 +15,10 @@ async function main() {
     consola.info('Watch mode')
   }
 
-  const suffix = process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : ''
-
   // Step 1: Suffix an Build packages
   for (const pkg of workspacePackages) {
-    if (suffix.length) {
-      pkg.suffixAndVersion(suffix)
+    if (pkg.options.suffix && pkg.options.suffix.length) {
+      pkg.suffixAndVersion()
       pkg.writePackage()
     }
 
@@ -35,7 +33,7 @@ async function main() {
 
   // Step 2: Link dependencies and fix packages
   for (const pkg of workspacePackages) {
-    pkg.syncLinkedDependencies(suffix)
+    pkg.syncLinkedDependencies()
     pkg.autoFix()
     pkg.writePackage()
   }
