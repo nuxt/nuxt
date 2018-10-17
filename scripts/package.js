@@ -111,10 +111,10 @@ export default class Package extends EventEmitter {
     this.generateVersion()
   }
 
-  syncLinkedDependencies(packageSuffix) {
+  syncLinkedDependencies(suffix = '') {
     // Apply suffix to all linkedDependencies
     for (const _name of (this.options.linkedDependencies || [])) {
-      const name = _name + packageSuffix
+      const name = _name + suffix
 
       // Try to read pkg
       const pkg = this.tryRequire(`${name}/package.json`) ||
