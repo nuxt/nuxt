@@ -6,7 +6,7 @@ import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
 
-import { isUrl, urlJoin } from '@nuxtjs/common'
+import { isUrl, urlJoin } from '@nuxt/common'
 
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'

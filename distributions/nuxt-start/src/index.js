@@ -1,1 +1,1 @@
-export * from '@nuxtjs/core'
+export * from '@nuxt/core'

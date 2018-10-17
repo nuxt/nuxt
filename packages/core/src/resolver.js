@@ -3,7 +3,7 @@ import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import esm from 'esm'
 
-import { startsWithRootAlias, startsWithSrcAlias } from '@nuxtjs/common'
+import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/common'
 
 export default class Resolver {
   constructor(nuxt) {

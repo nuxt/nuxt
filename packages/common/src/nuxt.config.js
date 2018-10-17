@@ -143,7 +143,7 @@ export default {
       }
     },
 
-    template: '@nuxtjs/app',
+    template: '@nuxt/app',
     templates: [],
 
     watch: [],

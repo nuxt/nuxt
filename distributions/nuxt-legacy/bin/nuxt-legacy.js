@@ -10,13 +10,18 @@ register({
   ],
   ignore: [
     (path) => {
-      const isNodeModules = path.indexOf('node_modules') !== -1
-      if (!isNodeModules) {
+      // Transpile known packages
+      if (/(@nuxt|@nuxtjs)[\\/]/.test(path)) {
         return false
       }
-      return path.indexOf('@nuxtjs/') === -1
+      // Ignore everything else inside node_modules
+      if (/node_modules/.test(path)) {
+        return true
+      }
+      // Transpile project files
+      return false
     }
   ]
 })
 
-require('@nuxtjs/cli/bin/nuxt.js')
+require('@nuxt/cli/bin/nuxt.js')

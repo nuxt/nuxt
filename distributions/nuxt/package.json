@@ -46,10 +46,10 @@
     "postinstall": "opencollective || exit 0"
   },
   "dependencies": {
-    "@nuxtjs/builder": "0.0.0",
-    "@nuxtjs/cli": "0.0.0",
-    "@nuxtjs/common": "0.0.0",
-    "@nuxtjs/core": "0.0.0",
+    "@nuxt/builder": "0.0.0",
+    "@nuxt/cli": "0.0.0",
+    "@nuxt/common": "0.0.0",
+    "@nuxt/core": "0.0.0",
     "consola": "^1.4.4"
   },
   "engines": {

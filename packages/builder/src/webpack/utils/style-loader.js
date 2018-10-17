@@ -1,6 +1,6 @@
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 
-import { wrapArray } from '@nuxtjs/common'
+import { wrapArray } from '@nuxt/common'
 
 import PostcssConfig from './postcss'
 

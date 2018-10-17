@@ -4,7 +4,7 @@ import Chalk from 'chalk'
 import fsExtra from 'fs-extra'
 import consola from 'consola'
 
-import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxtjs/common'
+import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/common'
 
 export default class Generator {
   constructor(nuxt, builder) {

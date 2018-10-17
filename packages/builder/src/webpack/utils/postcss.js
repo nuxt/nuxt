@@ -3,7 +3,7 @@ import path from 'path'
 import _ from 'lodash'
 import createResolver from 'postcss-import-resolver'
 
-import { isPureObject } from '@nuxtjs/common'
+import { isPureObject } from '@nuxt/common'
 
 export default class PostcssConfig {
   constructor(options, nuxt) {

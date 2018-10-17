@@ -3,8 +3,8 @@ import consola from 'consola'
 import { loadNuxtConfig } from '../common/utils'
 
 export default async function dev() {
-  const { Nuxt } = await import('@nuxtjs/core')
-  const { Builder } = await import('@nuxtjs/builder')
+  const { Nuxt } = await import('@nuxt/core')
+  const { Builder } = await import('@nuxt/builder')
 
   const argv = parseArgs(process.argv.slice(2), {
     alias: {

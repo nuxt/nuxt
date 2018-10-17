@@ -27,7 +27,7 @@ import {
   relativeTo,
   waitFor,
   determineGlobals
-} from '@nuxtjs/common'
+} from '@nuxt/common'
 
 import PerfLoader from './webpack/utils/perf-loader'
 import ClientWebpackConfig from './webpack/client'

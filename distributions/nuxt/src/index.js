@@ -1,2 +1,2 @@
-export * from '@nuxtjs/core'
-export * from '@nuxtjs/builder'
+export * from '@nuxt/core'
+export * from '@nuxt/builder'

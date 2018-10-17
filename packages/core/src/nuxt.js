@@ -6,7 +6,7 @@ import chalk from 'chalk'
 
 import ip from 'ip'
 
-import { Options, sequence } from '@nuxtjs/common'
+import { Options, sequence } from '@nuxt/common'
 
 import { version } from '../package.json'
 import ModuleContainer from './module'

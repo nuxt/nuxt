@@ -6,7 +6,7 @@ import consola from 'consola'
 import { loadNuxtConfig } from '../common/utils'
 
 export default async function start() {
-  const { Nuxt } = await import('@nuxtjs/core')
+  const { Nuxt } = await import('@nuxt/core')
 
   const argv = parseArgs(process.argv.slice(2), {
     alias: {
