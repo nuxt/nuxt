@@ -155,14 +155,31 @@ export default class Package extends EventEmitter {
     return packages
   }
 
-  async build(options, _watch = false) {
+  async build(options = {}, _watch = false) {
     this.emit('build:before')
 
-    // https://rollupjs.org/guide/en#javascript-api
+    // Extend options
+    const replace = Object.assign({}, options.replace)
+    const alias = Object.assign({}, options.alias)
+
+    // Replace linkedDependencies with their suffixed version
+    if (this.options.suffix && this.options.suffix.length) {
+      for (const _name of (this.options.linkedDependencies || [])) {
+        const name = _name + this.options.suffix
+        if (replace[_name] === undefined) {
+          replace[_name] = name
+        }
+        if (alias[_name] === undefined) {
+          alias[_name] = name
+        }
+      }
+    }
 
     const config = rollupConfig({
       rootDir: this.options.rootDir,
-      ...options
+      ...options,
+      replace,
+      alias
     }, this.pkg)
 
     if (_watch) {

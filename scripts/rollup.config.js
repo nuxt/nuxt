@@ -1,8 +1,10 @@
 import path from 'path'
 import { readJSONSync } from 'fs-extra'
-import json from 'rollup-plugin-json'
-import commonjs from 'rollup-plugin-commonjs'
-import license from 'rollup-plugin-license'
+import jsonPlugin from 'rollup-plugin-json'
+import commonjsPlugin from 'rollup-plugin-commonjs'
+import licensePlugin from 'rollup-plugin-license'
+import replacePlugin from 'rollup-plugin-replace'
+import aliasPlugin from 'rollup-plugin-alias'
 import defaultsDeep from 'lodash/defaultsDeep'
 
 import { builtins } from './builtins'
@@ -11,6 +13,8 @@ export default function rollupConfig({
   rootDir = process.cwd(),
   plugins = [],
   input = 'src/index.js',
+  replace = {},
+  alias = {},
   ...options
 }, pkg) {
   if (!pkg) {
@@ -34,9 +38,15 @@ export default function rollupConfig({
       '@babel/polyfill'
     ],
     plugins: [
-      commonjs(),
-      json(),
-      license({
+      aliasPlugin(alias),
+      replacePlugin({
+        exclude: 'node_modules/**',
+        delimiters: ['<%', '%>'],
+        values: replace
+      }),
+      commonjsPlugin(),
+      jsonPlugin(),
+      licensePlugin({
         banner: [
           `/*!`,
           ` * ${pkg.name} v${pkg.version} (c) 2016-${new Date().getFullYear()}`,
