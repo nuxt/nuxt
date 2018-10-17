@@ -1,11 +1,16 @@
 version: 2
 
 defaults: &defaults
-  working_directory: ~/project/nuxt
+  working_directory: ~/project
   docker:
     - image: banian/node-headless-chrome
+  environment:
+    - NODE_ENV: test
 
 jobs:
+  # --------------------------------------------------------------------------
+  # Phase 1: Setup
+  # --------------------------------------------------------------------------
   setup:
     <<: *defaults
     steps:
@@ -19,23 +24,36 @@ jobs:
       # Install dependencies
       - run:
           name: Install Dependencies
-          command: NODE_ENV=dev yarn
+          command: yarn --frozen-lockfile --non-interactive
 
-      # Keep cache
+      # Link
+      - run:
+          name: ‌ Link
+          command: yarn lerna link
+
+      # Save cache
       - save_cache:
           key: yarn-{{ checksum "yarn.lock" }}
           paths:
-            - "node_modules"
+            - node_modules
+            - distributions/*/node_modules
+            - packages/*/node_modules
 
-      # Persist files
+      # Persist workspace
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt
+            - node_modules
+            - distributions/*/node_modules
+            - packages/*/node_modules
 
+  # --------------------------------------------------------------------------
+  # Phase 2: Lint + Audit + Build Nuxt and fixtures
+  # --------------------------------------------------------------------------
   lint:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -45,6 +63,7 @@ jobs:
   audit:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -54,44 +73,52 @@ jobs:
   build:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
+      - run:
+          name: Build Nuxt
+          command: yarn build
       - run:
           name: Build Fixtures
           command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
-            - nuxt/test/fixtures
-            - nuxt/dist
-    environment:
-      - NODE_ENV: "test"
+            - test/fixtures # TODO
+            - distributions/**/dist
+            - packages/**/dist
 
+  # --------------------------------------------------------------------------
+  # Phase 3: Unit and E2E tests
+  # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
-          name: Unit Test
+          name: Unit Tests
           command: yarn test:unit -w=4 --coverage && yarn coverage
-    environment:
-      - NODE_ENV: "test"
 
   test-e2e:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
-          name: E2E Test
+          name: E2E Tests
           command: yarn test:e2e && yarn coverage
-    environment:
-      - NODE_ENV: "test"
 
+  # --------------------------------------------------------------------------
+  # Phase 4: Release (dev branch only)
+  # --------------------------------------------------------------------------
   release:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/project
       - run:
@@ -99,19 +126,14 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            BUILD_SUFFIX=edge yarn build
-            npm publish
-            for p in packages/*; do
-              if [ -f "$p/package.json" ]; then
-                cd $p
-                npm publish
-                cd -
-              fi
-            done
+            yarn lerna version
+            PACKAGE_SUFFIX=edge yarn build
+            yarn lerna publish
 
+# Workflow definition
 workflows:
   version: 2
-  setup-and-parallel-test:
+  setup-and-test:
     jobs:
       - setup
 
