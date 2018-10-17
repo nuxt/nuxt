@@ -2,7 +2,7 @@
 node_modules
 jspm_packages
 
-# Any lock file instead of root yarn.lock
+# Only keep yarn.lock in the root
 package-lock.json
 **/yarn.lock
 
