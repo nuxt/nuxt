@@ -15,13 +15,16 @@ async function main() {
     consola.info('Watch mode')
   }
 
-  // Step 1: Suffix an Build packages
+  // Step 1: Apply suffixes
   for (const pkg of workspacePackages) {
     if (pkg.options.suffix && pkg.options.suffix.length) {
       pkg.suffixAndVersion()
       pkg.writePackage()
     }
+  }
 
+  // Step 2: Build packages
+  for (const pkg of workspacePackages) {
     if (pkg.options.build) {
       if (watch) {
         pkg.watch()
@@ -31,7 +34,7 @@ async function main() {
     }
   }
 
-  // Step 2: Link dependencies and fix packages
+  // Step 3: Link dependencies and Fix packages
   for (const pkg of workspacePackages) {
     pkg.syncLinkedDependencies()
     pkg.autoFix()
