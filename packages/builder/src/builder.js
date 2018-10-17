@@ -80,7 +80,7 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template
+    this.template = this.options.build.template || '@nuxt/app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }
