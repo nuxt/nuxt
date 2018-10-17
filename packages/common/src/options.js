@@ -44,7 +44,7 @@ Options.from = function (_options) {
 
   options.globalName = (_.isString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
-    : 'nuxt'
+    : `nuxt`
 
   // Resolve rootDir
   options.rootDir = hasValue(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
