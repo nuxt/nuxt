@@ -17,7 +17,7 @@ const DEFAULTS = {
   configPath: 'package.js',
 
   distDir: 'dist',
-  buildSuffix: process.env.BUILD_SUFFIX,
+  buildSuffix: process.env.PACKAGE_SUFFIX,
 
   build: false,
 
