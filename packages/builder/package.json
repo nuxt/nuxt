@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.3.0",
+  "version": "2.2.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -10,8 +10,8 @@
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@babel/polyfill": "^7.0.0",
-    "@nuxt/app": "^2.3.0",
-    "@nuxt/common": "^2.3.0",
+    "@nuxt/app": "^2.2.0",
+    "@nuxt/common": "^2.2.0",
     "@nuxtjs/babel-preset-app": "^0.7.0",
     "@nuxtjs/devalue": "^1.0.1",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
