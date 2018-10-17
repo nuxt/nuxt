@@ -8,4 +8,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-* Convert nuxt into monorepo
+* Migrate Nuxt into monorepo
