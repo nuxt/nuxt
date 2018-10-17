@@ -1,0 +1,15 @@
+{
+  "name": "@nuxt/common",
+  "version": "2.3.0",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/common.js",
+  "dependencies": {
+    "consola": "^1.4.4",
+    "lodash": "^4.17.11",
+    "std-env": "^2.0.2"
+  }
+}

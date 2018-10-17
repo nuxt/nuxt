@@ -5,18 +5,19 @@ import klawSync from 'klaw-sync'
 import _getPort from 'get-port'
 import { defaultsDeep, find } from 'lodash'
 import _rp from 'request-promise-native'
-import pkg from '../../package.json'
-import _Nuxt from '../../lib/index.js'
+import corePkg from '../../packages/core/package.json'
+
+import * as _Utils from '../../packages/common/src/index'
+
+export { Nuxt } from '../../packages/core/src/index'
+export { Builder, Generator } from '../../packages/builder/src/index'
 
 export const rp = _rp
 export const getPort = _getPort
-export const version = pkg.version
+export const version = corePkg.version
 
-export const Nuxt = _Nuxt.Nuxt
-export const Utils = _Nuxt.Utils
-export const Options = _Nuxt.Options
-export const Builder = _Nuxt.Builder
-export const Generator = _Nuxt.Generator
+export const Utils = _Utils
+export const Options = _Utils.Options
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
