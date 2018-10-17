@@ -16,7 +16,6 @@ export default {
       ])
 
       pkg.copyFieldsFrom(nuxt, [
-        'version',
         'license',
         'repository',
         'contributors',
