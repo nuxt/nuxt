@@ -26,10 +26,10 @@ jobs:
           name: Install Dependencies
           command: yarn --frozen-lockfile --non-interactive
 
-      # Bootstrap
+      # Link
       - run:
-          name: ‌ Bootstrap
-          command: yarn bootstrap
+          name: ‌ Link
+          command: yarn lerna link
 
       # Save cache
       - save_cache:

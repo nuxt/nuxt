@@ -5,7 +5,6 @@
     "distributions/*"
   ],
   "scripts": {
-    "bootstrap": "lerna bootstrap",
     "build": "node -r esm ./scripts/package",
     "dev": "yarn build --watch",
     "coverage": "codecov",
@@ -15,7 +14,8 @@
     "test:fixtures": "jest test/fixtures",
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
-    "test:unit": "jest test/unit"
+    "test:unit": "jest test/unit",
+    "postinstall": "lerna link"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",

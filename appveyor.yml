@@ -14,11 +14,11 @@ shallow_clone: true
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
-  # install modules
+  # Install modules
   - yarn install
-  # link dependencies
-  - yarn bootstrap
-  # build packages
+  # Link dependencies
+  - yarn lerna link
+  # Build packages
   - yarn build
 
 # Post-install test scripts.
