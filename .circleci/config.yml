@@ -128,7 +128,7 @@ jobs:
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             yarn lerna version
             PACKAGE_SUFFIX=edge yarn build
-            yarn lerna publish
+            #yarn lerna publish
 
 # Workflow definition
 workflows:
