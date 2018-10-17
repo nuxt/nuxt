@@ -41,8 +41,11 @@ export default function rollupConfig({
       aliasPlugin(alias),
       replacePlugin({
         exclude: 'node_modules/**',
-        delimiters: ['<%', '%>'],
-        values: replace
+        delimiters: ['', ''],
+        values: {
+          __NODE_ENV__: process.env.NODE_ENV,
+          ...replace
+        }
       }),
       commonjsPlugin(),
       jsonPlugin(),
