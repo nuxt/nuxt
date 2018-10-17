@@ -4,6 +4,7 @@
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
+    "dist",
     "template"
   ],
   "main": "dist/app.js"

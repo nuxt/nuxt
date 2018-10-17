@@ -18,6 +18,7 @@
     "postinstall": "lerna link"
   },
   "devDependencies": {
+    "@babel/core": "^7.1.2",
     "@babel/preset-env": "^7.1.0",
     "@nuxtjs/eslint-config": "^0.0.1",
     "babel-core": "^7.0.0-bridge",
@@ -47,7 +48,6 @@
     "klaw-sync": "^6.0.0",
     "lerna": "^3.4.3",
     "lodash": "^4.17.11",
-    "nuxt": "0.0.0",
     "pug": "^2.0.3",
     "pug-plain-loader": "^1.0.0",
     "puppeteer": "^1.9.0",
