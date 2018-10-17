@@ -12,16 +12,10 @@ import rollupConfig from './rollup.config'
 
 const DEFAULTS = {
   rootDir: process.cwd(),
-
   pkgPath: 'package.json',
   configPath: 'package.js',
-
   distDir: 'dist',
-  buildSuffix: process.env.PACKAGE_SUFFIX,
-
-  build: false,
-
-  autoFix: true
+  build: false
 }
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
@@ -94,9 +88,7 @@ export default class Package extends EventEmitter {
   tryRequire(id) {
     try {
       return require(id)
-    } catch (e) {
-      return null
-    }
+    } catch (e) {}
   }
 
   suffixAndVersion(suffix) {
@@ -108,7 +100,7 @@ export default class Package extends EventEmitter {
     }
 
     // Apply suffix to all linkedDependencies
-    for (const oldName of (this.pkg.linkedDependencies || [])) {
+    for (const oldName of (this.options.linkedDependencies || [])) {
       const name = oldName + suffix
       const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
 
@@ -117,19 +109,21 @@ export default class Package extends EventEmitter {
     }
 
     this.generateVersion()
-    this.writePackage()
   }
 
-  syncLinkedDependencies() {
+  syncLinkedDependencies(packageSuffix) {
     // Apply suffix to all linkedDependencies
-    for (const name of (this.options.linkedDependencies || [])) {
+    for (const _name of (this.options.linkedDependencies || [])) {
+      const name = _name + packageSuffix
+
       // Try to read pkg
-      const pkg = this.tryRequire(`${name}/package.json`)
+      const pkg = this.tryRequire(`${name}/package.json`) ||
+        this.tryRequire(`${_name}/package.json`)
 
       // Skip if pkg or dependency not found
       if (!pkg || !this.pkg.dependencies[name]) {
         this.logger.warn(
-          `Could not find linked dependency ${pkg}`,
+          `Could not find linked dependency ${name}`,
           'Did you forgot to removed it from linkedDependencies?'
         )
         continue
@@ -142,8 +136,6 @@ export default class Package extends EventEmitter {
       // Sync version
       this.pkg.dependencies[name] = caret ? `^${pkg.version}` : pkg.version
     }
-
-    this.writePackage()
   }
 
   getWorkspacePackages() {
@@ -164,11 +156,6 @@ export default class Package extends EventEmitter {
 
   async build(options, _watch = false) {
     this.emit('build:before')
-
-    // Add build suiffix if needed
-    if (this.options.buildSuffix) {
-      this.suffixAndVersion('-' + this.options.buildSuffix)
-    }
 
     // https://rollupjs.org/guide/en#javascript-api
 
@@ -248,8 +235,6 @@ export default class Package extends EventEmitter {
   autoFix() {
     this.pkg = sortPackageJson(this.pkg)
     this.sortDependencies()
-    this.syncLinkedDependencies()
-    this.writePackage()
   }
 
   sortDependencies() {
