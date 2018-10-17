@@ -33,9 +33,7 @@ export default function rollupConfig({
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
       // Builtin node modules
-      ...builtins,
-      // Dependencies of nuxt-legacy
-      '@babel/polyfill'
+      ...builtins
     ],
     plugins: [
       aliasPlugin(alias),

@@ -231,7 +231,7 @@ export default class Package extends EventEmitter {
         //   for (const dep in dependencies) {
         //     this.logger.warn(`Unused dependency ${dep}@${dependencies[dep]}`)
         //   }
-        }
+        // }
       } catch (error) {
         this.logger.error(error)
         throw new Error('Error while building bundle')
