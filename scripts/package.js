@@ -91,10 +91,58 @@ export default class Package extends EventEmitter {
     this.pkg.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
-  convertTo(suffix) {
-    this.logger.info(`Converting to ${suffix} package`)
-    this.addNameSuffix(`-${suffix}`)
+  tryRequire(id) {
+    try {
+      return require(id)
+    } catch (e) {
+      return null
+    }
+  }
+
+  suffixAndVersion(suffix) {
+    this.logger.info(`Adding suffix ${suffix}`)
+
+    // Add suffix to the package name
+    if (!this.pkg.name.includes(suffix)) {
+      this.pkg.name += suffix
+    }
+
+    // Apply suffix to all linkedDependencies
+    for (const oldName of (this.pkg.linkedDependencies || [])) {
+      const name = oldName + suffix
+      const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
+
+      delete this.pkg.dependencies[oldName]
+      this.pkg.dependencies[name] = version
+    }
+
     this.generateVersion()
+    this.writePackage()
+  }
+
+  syncLinkedDependencies() {
+    // Apply suffix to all linkedDependencies
+    for (const name of (this.pkg.linkedDependencies || [])) {
+      // Try to read pkg
+      const pkg = this.tryRequire(`${name}/package.json`)
+
+      // Skip if pkg or dependency not found
+      if (!pkg || !this.pkg.dependencies[name]) {
+        this.logger.warn(
+          `Could not found linked dependency ${pkg}`,
+          'Did you forgot to removed it from linkedDependencies ?'
+        )
+        continue
+      }
+
+      // Current version
+      const currentVersion = this.pkg.dependencies[name]
+      const caret = currentVersion[0] === '^'
+
+      // Sync version
+      this.pkg.dependencies[name] = caret ? `^${pkg.version}` : pkg.version
+    }
+
     this.writePackage()
   }
 
@@ -114,18 +162,12 @@ export default class Package extends EventEmitter {
     return packages
   }
 
-  addNameSuffix(suffix) {
-    if (!this.pkg.name.includes(suffix)) {
-      this.pkg.name += suffix
-    }
-  }
-
   async build(options, _watch = false) {
     this.emit('build:before')
 
     // Add build suiffix if needed
     if (this.options.buildSuffix) {
-      this.convertTo(this.options.buildSuffix)
+      this.suffixAndVersion('-' + this.options.buildSuffix)
     }
 
     // https://rollupjs.org/guide/en#javascript-api
@@ -206,6 +248,7 @@ export default class Package extends EventEmitter {
   autoFix() {
     this.pkg = sortPackageJson(this.pkg)
     this.sortDependencies()
+    this.syncLinkedDependencies()
     this.writePackage()
   }
 
