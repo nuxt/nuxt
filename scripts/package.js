@@ -122,15 +122,15 @@ export default class Package extends EventEmitter {
 
   syncLinkedDependencies() {
     // Apply suffix to all linkedDependencies
-    for (const name of (this.pkg.linkedDependencies || [])) {
+    for (const name of (this.options.linkedDependencies || [])) {
       // Try to read pkg
       const pkg = this.tryRequire(`${name}/package.json`)
 
       // Skip if pkg or dependency not found
       if (!pkg || !this.pkg.dependencies[name]) {
         this.logger.warn(
-          `Could not found linked dependency ${pkg}`,
-          'Did you forgot to removed it from linkedDependencies ?'
+          `Could not find linked dependency ${pkg}`,
+          'Did you forgot to removed it from linkedDependencies?'
         )
         continue
       }
