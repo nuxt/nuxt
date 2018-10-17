@@ -2,19 +2,25 @@
 
 import consola from 'consola'
 
-import Package from './package'
+import Package from './package.js'
 
 async function main() {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = rootPackage.getWorkspacePackages()
 
+  const watch = process.argv.includes('--watch')
+
+  if (watch) {
+    consola.info('Watch mode')
+  }
+
   for (const pkg of workspacePackages) {
     if (pkg.options.autoFix) {
       pkg.autoFix()
     }
     if (pkg.options.build) {
-      if (process.argv.includes('--watch')) {
+      if (watch) {
         pkg.watch()
       } else {
         await pkg.build()

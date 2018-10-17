@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "node -r esm ./scripts/build",
+    "build": "node -r esm ./scripts/package",
     "dev": "yarn build --watch",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
