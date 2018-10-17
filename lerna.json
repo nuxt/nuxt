@@ -3,7 +3,6 @@
   "npmClient": "yarn",
   "useWorkspaces": true,
   "conventionalCommits": true,
-  "skipGit": true,
   "yes": true,
   "noPush": true,
   "gitTagVersion": false,
