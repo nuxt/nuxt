@@ -15,6 +15,15 @@ async function main() {
     consola.info('Watch mode')
   }
 
+  // Universal linkedDependencies based on workspace
+  const linkedDependencies = workspacePackages
+    .map(p => p.pkg.name.replace(p.options.suffix, ''))
+
+  for (const pkg of workspacePackages) {
+    pkg.options.linkedDependencies = (pkg.options.linkedDependencies || [])
+      .concat(linkedDependencies)
+  }
+
   // Step 1: Apply suffixes
   for (const pkg of workspacePackages) {
     if (pkg.options.suffix && pkg.options.suffix.length) {
@@ -43,6 +52,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  consola.error(error + '')
+  consola.error(error)
   process.exit(1)
 })

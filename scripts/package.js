@@ -101,12 +101,14 @@ export default class Package extends EventEmitter {
     }
 
     // Apply suffix to all linkedDependencies
-    for (const oldName of (this.options.linkedDependencies || [])) {
-      const name = oldName + this.options.suffix
-      const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
+    if (this.pkg.dependencies) {
+      for (const oldName of (this.options.linkedDependencies || [])) {
+        const name = oldName + this.options.suffix
+        const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
 
-      delete this.pkg.dependencies[oldName]
-      this.pkg.dependencies[name] = version
+        delete this.pkg.dependencies[oldName]
+        this.pkg.dependencies[name] = version
+      }
     }
 
     this.generateVersion()
@@ -122,11 +124,7 @@ export default class Package extends EventEmitter {
         this.tryRequire(`${_name}/package.json`)
 
       // Skip if pkg or dependency not found
-      if (!pkg || !this.pkg.dependencies[name]) {
-        this.logger.warn(
-          `Could not find linked dependency ${name}`,
-          'Did you forgot to removed it from linkedDependencies?'
-        )
+      if (!pkg || !this.pkg.dependencies || !this.pkg.dependencies[name]) {
         continue
       }
 
@@ -166,8 +164,8 @@ export default class Package extends EventEmitter {
     if (this.options.suffix && this.options.suffix.length) {
       for (const _name of (this.options.linkedDependencies || [])) {
         const name = _name + this.options.suffix
-        if (replace[_name] === undefined) {
-          replace[_name] = name
+        if (replace[`'${_name}'`] === undefined) {
+          replace[`'${_name}'`] = `'${name}'`
         }
         if (alias[_name] === undefined) {
           alias[_name] = name

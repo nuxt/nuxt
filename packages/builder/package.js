@@ -1,7 +1,3 @@
 export default {
-  build: true,
-  linkedDependencies: [
-    '@nuxt/app',
-    '@nuxt/common'
-  ]
+  build: true
 }
