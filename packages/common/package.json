@@ -11,5 +11,8 @@
     "consola": "^1.4.4",
     "lodash": "^4.17.11",
     "std-env": "^2.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -54,5 +54,8 @@
     "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^2.6.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
