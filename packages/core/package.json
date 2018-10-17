@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/core",
-  "version": "0.0.0",
+  "version": "2.3.0",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
@@ -11,7 +11,7 @@
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@babel/polyfill": "^7.0.0",
-    "@nuxt/common": "0.0.0",
+    "@nuxt/common": "^2.3.0",
     "@nuxtjs/babel-preset-app": "^0.7.0",
     "@nuxtjs/devalue": "^1.0.1",
     "@nuxtjs/opencollective": "^0.1.0",

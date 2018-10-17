@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "0.0.0",
+  "version": "2.3.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,8 +8,8 @@
   ],
   "main": "dist/builder.js",
   "dependencies": {
-    "@nuxt/app": "0.0.0",
-    "@nuxt/common": "0.0.0",
+    "@nuxt/app": "^2.3.0",
+    "@nuxt/common": "^2.3.0",
     "@nuxtjs/devalue": "^1.0.1",
     "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
     "chalk": "^2.4.1",

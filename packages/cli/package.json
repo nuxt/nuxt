@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "0.0.0",
+  "version": "2.3.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
