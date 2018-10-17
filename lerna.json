@@ -2,6 +2,11 @@
   "version": "0.0.0",
   "npmClient": "yarn",
   "useWorkspaces": true,
+  "conventionalCommits": true,
+  "skipGit": true,
+  "yes": true,
+  "noPush": true,
+  "gitTagVersion": false,
   "packages": [
     "packages/*",
     "distributions/*"
