@@ -1,8 +1,12 @@
 import path from 'path'
 import fs from 'fs'
-import _ from 'lodash'
+import defaultsDeep from 'lodash/defaultsDeep'
+import defaults from 'lodash/defaults'
+import pick from 'lodash/pick'
+import isObject from 'lodash/isObject'
 import consola from 'consola'
 
+import { isString } from '@nuxt/common'
 import { isPureObject, isUrl, guardDir } from './utils'
 import Modes from './modes'
 import NuxtConfig from './nuxt.config'
@@ -42,7 +46,7 @@ Options.from = function (_options) {
     options.extensions = [options.extensions]
   }
 
-  options.globalName = (_.isString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
+  options.globalName = (isString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
     : `nuxt`
 
@@ -54,11 +58,11 @@ Options.from = function (_options) {
   // const buildDir = options.buildDir || defaults.buildDir
   // const buildConfig = resolve(options.rootDir, buildDir, 'build.config.js')
   // if (existsSync(buildConfig)) {
-  //   _.defaultsDeep(options, require(buildConfig))
+  //   defaultsDeep(options, require(buildConfig))
   // }
 
   // Apply defaults
-  _.defaultsDeep(options, NuxtConfig)
+  defaultsDeep(options, NuxtConfig)
 
   // Check srcDir and generate.dir excistence
   const hasSrcDir = hasValue(options.srcDir)
@@ -166,7 +170,7 @@ Options.from = function (_options) {
     reportOnly: options.debug
   }
   if (csp) {
-    options.render.csp = _.defaults(_.isObject(csp) ? csp : {}, cspDefaults)
+    options.render.csp = defaults(isObject(csp) ? csp : {}, cspDefaults)
   }
 
   // cssSourceMap
@@ -190,7 +194,7 @@ Options.from = function (_options) {
   }
 
   // merge custom env with variables
-  const eligibleEnvVariables = _.pick(process.env, Object.keys(process.env).filter(k => k.startsWith('NUXT_ENV_')))
+  const eligibleEnvVariables = pick(process.env, Object.keys(process.env).filter(k => k.startsWith('NUXT_ENV_')))
   Object.assign(options.env, eligibleEnvVariables)
 
   // Normalize ignore
@@ -218,7 +222,7 @@ Options.from = function (_options) {
 
   // Apply mode preset
   const modePreset = Modes[options.mode || 'universal'] || Modes.universal
-  _.defaultsDeep(options, modePreset)
+  defaultsDeep(options, modePreset)
 
   // If no server-side rendering, add appear true transition
   /* istanbul ignore if */

@@ -1,7 +1,14 @@
 import path from 'path'
 import fs from 'fs'
 import pify from 'pify'
-import _ from 'lodash'
+import uniqBy from 'lodash/uniqBy'
+import map from 'lodash/map'
+import debounce from 'lodash/debounce'
+import concat from 'lodash/concat'
+import omit from 'lodash/omit'
+import uniq from 'lodash/uniq'
+import template from 'lodash/template'
+import values from 'lodash/values'
 import chokidar from 'chokidar'
 import fsExtra from 'fs-extra'
 import hash from 'hash-sum'
@@ -92,7 +99,7 @@ export default class Builder {
   }
 
   normalizePlugins() {
-    return _.uniqBy(
+    return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') p = { src: p }
         const pluginBaseName = path.basename(p.src, path.extname(p.src)).replace(
@@ -205,7 +212,7 @@ export default class Builder {
         .join('|'),
       messages: this.options.messages,
       splitChunks: this.options.build.splitChunks,
-      uniqBy: _.uniqBy,
+      uniqBy,
       isDev: this.options.dev,
       debug: this.options.debug,
       vue: { config: this.options.vue.config },
@@ -411,7 +418,7 @@ export default class Builder {
         const fileContent = await fsExtra.readFile(src, 'utf8')
         let content
         try {
-          const template = _.template(fileContent, {
+          const templateFunction = template(fileContent, {
             imports: {
               serialize,
               devalue,
@@ -425,7 +432,7 @@ export default class Builder {
             },
             interpolate: /<%=([\s\S]+?)%>/g
           })
-          content = template(
+          content = templateFunction(
             Object.assign({}, templateVars, {
               options: options || {},
               custom,
@@ -635,11 +642,11 @@ export default class Builder {
         r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
       )
     }
-    patterns = _.map(patterns, upath.normalizeSafe)
+    patterns = map(patterns, upath.normalizeSafe)
 
     const options = this.options.watchers.chokidar
     /* istanbul ignore next */
-    const refreshFiles = _.debounce(() => this.generateRoutesAndFiles(), 200)
+    const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 
     // Watch for src Files
     this.watchers.files = chokidar
@@ -648,18 +655,18 @@ export default class Builder {
       .on('unlink', refreshFiles)
 
     // Watch for custom provided files
-    let customPatterns = _.concat(
+    let customPatterns = concat(
       this.options.build.watch,
-      ..._.values(_.omit(this.options.build.styleResources, ['options']))
+      ...values(omit(this.options.build.styleResources, ['options']))
     )
-    customPatterns = _.map(_.uniq(customPatterns), upath.normalizeSafe)
+    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
       .on('change', refreshFiles)
   }
 
   watchServer() {
-    const nuxtRestartWatch = _.concat(
+    const nuxtRestartWatch = concat(
       this.options.serverMiddleware
         .filter(i => typeof i === 'string')
         .map(this.nuxt.resolver.resolveAlias),
@@ -694,7 +701,7 @@ export default class Builder {
   // TODO: remove ignore when generateConfig enabled again
   async generateConfig() /* istanbul ignore next */ {
     const config = path.resolve(this.options.buildDir, 'build.config.js')
-    const options = _.omit(this.options, Options.unsafeKeys)
+    const options = omit(this.options, Options.unsafeKeys)
     await fsExtra.writeFile(
       config,
       `export default ${JSON.stringify(options, null, '  ')}`,

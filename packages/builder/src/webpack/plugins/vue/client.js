@@ -1,5 +1,5 @@
 import hash from 'hash-sum'
-import { uniq } from 'lodash'
+import uniq from 'lodash/uniq'
 
 import { isJS, isCSS, onEmit } from './util'
 

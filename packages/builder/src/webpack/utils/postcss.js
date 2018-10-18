@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
-import _ from 'lodash'
+import defaults from 'lodash/defaults'
+import merge from 'lodash/merge'
+import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
 import { isPureObject } from '@nuxt/common'
@@ -112,7 +114,7 @@ export default class PostcssConfig {
       return config
     }
 
-    config = this.normalize(_.cloneDeep(this.postcss))
+    config = this.normalize(cloneDeep(this.postcss))
 
     // Apply default plugins
     if (isPureObject(config)) {
@@ -121,10 +123,10 @@ export default class PostcssConfig {
         delete config.preset
       }
       if (Array.isArray(config.plugins)) {
-        _.defaults(config, this.defaultConfig)
+        defaults(config, this.defaultConfig)
       } else {
         // Keep the order of default plugins
-        config = _.merge({}, this.defaultConfig, config)
+        config = merge({}, this.defaultConfig, config)
         this.loadPlugins(config)
       }
       return config
