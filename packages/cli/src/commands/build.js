@@ -41,7 +41,7 @@ export default async function build() {
     process.exit(0)
   }
 
-  const options = loadNuxtConfig(argv)
+  const options = await loadNuxtConfig(argv)
 
   // Create production build when calling `nuxt build`
   options.dev = false

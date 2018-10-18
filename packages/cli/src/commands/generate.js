@@ -38,7 +38,7 @@ export default async function generate() {
     process.exit(0)
   }
 
-  const options = loadNuxtConfig(argv)
+  const options = await loadNuxtConfig(argv)
 
   options.dev = false // Force production mode (no webpack middleware called)
 
