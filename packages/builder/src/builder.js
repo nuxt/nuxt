@@ -398,7 +398,7 @@ export default class Builder {
         console.error(
           `Could not fetch loading indicator: ${
             this.options.loadingIndicator.name
-            }`
+          }`
         )
       }
     }
