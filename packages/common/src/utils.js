@@ -1,5 +1,6 @@
 import path from 'path'
-import _ from 'lodash'
+import escapeRegExp from 'lodash/escapeRegExp'
+import get from 'lodash/get'
 import consola from 'consola'
 
 export const encodeHtml = function encodeHtml(str) {
@@ -145,7 +146,7 @@ export const wChunk = function wChunk(p = '') {
 }
 
 const reqSep = /\//g
-const sysSep = _.escapeRegExp(path.sep)
+const sysSep = escapeRegExp(path.sep)
 const normalize = string => string.replace(reqSep, sysSep)
 
 export const r = function r(...args) {
@@ -335,8 +336,8 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
 
 // Guard dir1 from dir2 which can be indiscriminately removed
 export const guardDir = function guardDir(options, key1, key2) {
-  const dir1 = _.get(options, key1, false)
-  const dir2 = _.get(options, key2, false)
+  const dir1 = get(options, key1, false)
+  const dir2 = get(options, key2, false)
 
   if (
     dir1 &&
