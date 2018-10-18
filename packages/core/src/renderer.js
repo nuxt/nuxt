@@ -2,7 +2,7 @@ import path from 'path'
 import crypto from 'crypto'
 import devalue from '@nuxtjs/devalue'
 import serveStatic from 'serve-static'
-import _ from 'lodash'
+import template from 'lodash/template'
 import fs from 'fs-extra'
 import { createBundleRenderer } from 'vue-server-renderer'
 import connect from 'connect'
@@ -414,10 +414,13 @@ export default class Renderer {
       virtualConsole: true,
       beforeParse(window) {
         // Mock window.scrollTo
-        window.scrollTo = () => {}
+        window.scrollTo = () => {
+        }
       }
     }, opts)
-    const jsdomErrHandler = (err) => { throw err }
+    const jsdomErrHandler = (err) => {
+      throw err
+    }
     if (options.virtualConsole) {
       if (options.virtualConsole === true) {
         options.virtualConsole = new jsdom.VirtualConsole().sendTo(consola)
@@ -452,7 +455,7 @@ export default class Renderer {
 }
 
 const parseTemplate = templateStr =>
-  _.template(templateStr, {
+  template(templateStr, {
     interpolate: /{{([\s\S]+?)}}/g
   })
 

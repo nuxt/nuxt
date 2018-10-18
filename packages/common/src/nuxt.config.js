@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import _ from 'lodash'
+import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 
 const nuxtDir = fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
@@ -22,8 +22,8 @@ export default {
     nuxt: globalName => `$${globalName}`,
     context: globalName => `__${globalName.toUpperCase()}__`,
     pluginPrefix: globalName => globalName,
-    readyCallback: globalName => `on${_.capitalize(globalName)}Ready`,
-    loadedCallback: globalName => `_on${_.capitalize(globalName)}Loaded`
+    readyCallback: globalName => `on${capitalize(globalName)}Ready`,
+    loadedCallback: globalName => `_on${capitalize(globalName)}Loaded`
   },
 
   // Server options

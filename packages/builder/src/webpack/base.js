@@ -1,7 +1,8 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import _ from 'lodash'
+import clone from 'lodash/clone'
+import cloneDeep from 'lodash/cloneDeep'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
@@ -33,7 +34,7 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = _.clone(this.options.build.babel)
+    const options = clone(this.options.build.babel)
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets({ isServer: this.isServer })
@@ -233,7 +234,7 @@ export default class WebpackBaseConfig {
   }
 
   plugins() {
-    const plugins = [ new VueLoader.VueLoaderPlugin() ]
+    const plugins = [new VueLoader.VueLoaderPlugin()]
 
     Array.prototype.push.apply(plugins, this.options.build.plugins || [])
 
@@ -324,6 +325,6 @@ export default class WebpackBaseConfig {
     const extendedConfig = this.extendConfig(config)
 
     // Clone deep avoid leaking config between Client and Server
-    return _.cloneDeep(extendedConfig)
+    return cloneDeep(extendedConfig)
   }
 }

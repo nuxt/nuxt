@@ -1,6 +1,6 @@
 import https from 'https'
 import enableDestroy from 'server-destroy'
-import _ from 'lodash'
+import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import chalk from 'chalk'
 
@@ -51,7 +51,7 @@ export default class Nuxt {
     }
 
     // Add hooks
-    if (_.isPlainObject(this.options.hooks)) {
+    if (isPlainObject(this.options.hooks)) {
       this.addHooks(this.options.hooks)
     } else if (typeof this.options.hooks === 'function') {
       this.options.hooks(this.hook)
