@@ -1,6 +1,6 @@
 import parseArgs from 'minimist'
 import consola from 'consola'
-import { loadNuxtConfig } from '../common/utils'
+import { loadNuxtConfig, runAsyncScript } from '../common/utils'
 
 export default async function dev() {
   const { Nuxt } = await import('@nuxt/core')
@@ -50,9 +50,9 @@ export default async function dev() {
     process.exit(0)
   }
 
-  const config = () => {
+  const config = async () => {
     // Force development mode for add hot reloading and watching changes
-    return Object.assign(loadNuxtConfig(argv), { dev: true })
+    return Object.assign(await loadNuxtConfig(argv), { dev: true })
   }
 
   const errorHandler = (err, instance) => {
@@ -61,15 +61,15 @@ export default async function dev() {
   }
 
   // Start dev
-  (function startDev(oldInstance) {
+  async function startDev(oldInstance) {
     let nuxt, builder
 
     try {
-      nuxt = new Nuxt(config())
+      nuxt = new Nuxt(await config())
       builder = new Builder(nuxt)
-      nuxt.hook('watch:fileChanged', (builder, fname) => {
+      nuxt.hook('watch:fileChanged', async (builder, fname) => {
         consola.debug(`[${fname}] changed, Rebuilding the app...`)
-        startDev({ nuxt: builder.nuxt, builder })
+        await startDev({ nuxt: builder.nuxt, builder })
       })
     } catch (err) {
       return errorHandler(err, oldInstance)
@@ -96,5 +96,7 @@ export default async function dev() {
         // Handle errors
         .catch(err => errorHandler(err, { builder, nuxt }))
     )
-  })()
+  }
+
+  await runAsyncScript(startDev)
 }

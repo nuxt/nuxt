@@ -48,7 +48,7 @@ export default async function start() {
     process.exit(0)
   }
 
-  const options = loadNuxtConfig(argv)
+  const options = await loadNuxtConfig(argv)
 
   // Force production mode (no webpack middleware called)
   options.dev = false

@@ -23,7 +23,10 @@ export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
   const configFile = path.resolve(rootDir, 'nuxt.config.js')
 
-  const config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
+  let config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
+  if (typeof config === 'function') {
+    config = await config()
+  }
 
   config.rootDir = rootDir
   config.dev = false
