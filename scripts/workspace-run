@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 for dir in packages/* distributions/* ; do
  echo "$dir"
