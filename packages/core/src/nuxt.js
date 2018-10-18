@@ -35,6 +35,8 @@ export default class Nuxt {
     this.renderAndGetWindow = this.renderer.renderAndGetWindow.bind(
       this.renderer
     )
+    this.resolveAlias = this.resolver.resolveAlias.bind(this)
+    this.resolvePath = this.resolver.resolvePath.bind(this)
 
     this._ready = this.ready().catch((err) => {
       consola.fatal(err)
