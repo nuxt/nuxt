@@ -61,7 +61,7 @@ export default {
       logLevel: 'error'
     },
     styleResources: {
-      scss: '~/assets/pre-process.scss'
+      css: './assets/pre-process.css'
     },
     babel: {
       presets({ isServer }) {

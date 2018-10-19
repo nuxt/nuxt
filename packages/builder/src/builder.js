@@ -33,6 +33,7 @@ import {
   sequence,
   relativeTo,
   waitFor,
+  wrapArray,
   determineGlobals
 } from '@nuxt/common'
 
@@ -496,6 +497,18 @@ export default class Builder {
         serverConfig.resolve.alias[p.name] = p.ssr ? src : './empty.js'
       }
     }))
+
+    // Check styleResource exist
+    const styleResources = this.options.build.styleResources
+    Object.keys(styleResources).forEach(async (ext) => {
+      await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
+        const styleResourceFiles = await glob(path.resolve(this.options.rootDir, p))
+
+        if (!styleResourceFiles || styleResourceFiles.length === 0) {
+          throw new Error(`Style Resource not found: ${p}`)
+        }
+      }))
+    })
 
     // Configure compilers
     this.compilers = compilersOptions.map((compilersOption) => {

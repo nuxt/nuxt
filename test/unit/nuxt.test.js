@@ -56,4 +56,16 @@ describe('nuxt', () => {
       expect(s.includes('Plugin not found')).toBe(true)
     })
   })
+
+  test('Warn when styleResource isn\'t found', () => {
+    const nuxt = new Nuxt({
+      dev: false,
+      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-style-resource')
+    })
+
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
+      expect(s.includes('Style Resource not found')).toBe(true)
+    })
+  })
 })
