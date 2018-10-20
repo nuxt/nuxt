@@ -83,6 +83,9 @@ export default {
     <% } %>
     <% if (splitChunks.layouts) { %>
     setLayout (layout) {
+      <% if (debug) { %>
+      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      <% } %>
       if (!layout || !resolvedLayouts['_' + layout]) layout = 'default'
       this.layoutName = layout
       let _layout = '_' + layout
@@ -110,6 +113,9 @@ export default {
     }
     <% } else { %>
     setLayout(layout) {
+      <% if (debug) { %>
+      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      <% } %>
       if (!layout || !layouts['_' + layout]) {
         layout = 'default'
       }
