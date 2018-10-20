@@ -1,59 +1,21 @@
 import fs from 'fs'
 import path from 'path'
-import parseArgs from 'minimist'
 import consola from 'consola'
+import NuxtCommand from '../common/command'
 
-import { loadNuxtConfig } from '../common/utils'
-
-export default async function start() {
-  const { Nuxt } = await import('@nuxt/core')
-
-  const argv = parseArgs(process.argv.slice(2), {
-    alias: {
-      h: 'help',
-      H: 'hostname',
-      p: 'port',
-      n: 'unix-socket',
-      c: 'config-file',
-      s: 'spa',
-      u: 'universal'
-    },
-    boolean: ['h', 's', 'u'],
-    string: ['H', 'c', 'n'],
-    default: {
-      c: 'nuxt.config.js'
-    }
+export default async function build() {
+  const nuxtCmd = new NuxtCommand({
+    description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
+    usage: 'start <dir> -p <port number> -H <hostname>',
+    options: [ 'hostname', 'port', 'unix-socket' ]
   })
 
-  if (argv.hostname === '') {
-    consola.fatal('Provided hostname argument has no value')
-  }
+  const argv = nuxtCmd.getArgv()
 
-  if (argv.help) {
-    process.stderr.write(`
-    Description
-      Starts the application in production mode.
-      The application should be compiled with \`nuxt build\` first.
-    Usage
-      $ nuxt start <dir> -p <port number> -H <hostname>
-    Options
-      --port, -p            A port number on which to start the application
-      --hostname, -H        Hostname on which to start the application
-      --unix-socket, -n     Path to a UNIX socket
-      --spa                 Launch in SPA mode
-      --universal           Launch in Universal mode (default)
-      --config-file, -c     Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h            Displays this message
-  `)
-    process.exit(0)
-  }
-
-  const options = await loadNuxtConfig(argv)
-
-  // Force production mode (no webpack middleware called)
-  options.dev = false
-
-  const nuxt = new Nuxt(options)
+  // Create production build when calling `nuxt build`
+  const nuxt = await nuxtCmd.getNuxt(
+    await nuxtCmd.getNuxtConfig(argv, { dev: false })
+  )
 
   // Setup hooks
   nuxt.hook('error', err => consola.fatal(err))

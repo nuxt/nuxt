@@ -1,71 +1,29 @@
-import parseArgs from 'minimist'
 import consola from 'consola'
-import { loadNuxtConfig, runAsyncScript } from '../common/utils'
+import NuxtCommand from '../common/command'
 
 export default async function dev() {
-  const { Nuxt } = await import('@nuxt/core')
-  const { Builder } = await import('@nuxt/builder')
-
-  const argv = parseArgs(process.argv.slice(2), {
-    alias: {
-      h: 'help',
-      H: 'hostname',
-      p: 'port',
-      c: 'config-file',
-      s: 'spa',
-      u: 'universal',
-      v: 'version'
-    },
-    boolean: ['h', 's', 'u', 'v'],
-    string: ['H', 'c'],
-    default: {
-      c: 'nuxt.config.js'
-    }
+  const nuxtCmd = new NuxtCommand({
+    description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
+    usage: 'dev <dir> -p <port number> -H <hostname>',
+    options: [ 'hostname', 'port' ]
   })
 
-  if (argv.version) {
-    process.stderr.write('TODO' + '\n')
-    process.exit(0)
-  }
-
-  if (argv.hostname === '') {
-    consola.fatal('Provided hostname argument has no value')
-  }
-
-  if (argv.help) {
-    process.stderr.write(`
-    Description
-      Starts the application in development mode (hot-code reloading, error
-      reporting, etc)
-    Usage
-      $ nuxt dev <dir> -p <port number> -H <hostname>
-    Options
-      --port, -p          A port number on which to start the application
-      --hostname, -H      Hostname on which to start the application
-      --spa               Launch in SPA mode
-      --universal         Launch in Universal mode (default)
-      --config-file, -c   Path to Nuxt.js config file (default: nuxt.config.js)
-      --help, -h          Displays this message
-  `)
-    process.exit(0)
-  }
-
-  const config = async () => {
-    // Force development mode for add hot reloading and watching changes
-    return Object.assign(await loadNuxtConfig(argv), { dev: true })
-  }
+  const argv = nuxtCmd.getArgv()
 
   const errorHandler = (err, instance) => {
     instance && instance.builder.watchServer()
     consola.error(err)
   }
 
+  const { Nuxt } = await nuxtCmd.importCore()
+  const { Builder } = await nuxtCmd.importBuilder()
+
   // Start dev
   async function startDev(oldInstance) {
     let nuxt, builder
 
     try {
-      nuxt = new Nuxt(await config())
+      nuxt = new Nuxt(await nuxtCmd.getNuxtConfig(argv, { dev: true }))
       builder = new Builder(nuxt)
       nuxt.hook('watch:fileChanged', async (builder, fname) => {
         consola.debug(`[${fname}] changed, Rebuilding the app...`)
@@ -81,7 +39,7 @@ export default async function dev() {
         .then(() => oldInstance && oldInstance.builder.unwatch())
         // Start build
         .then(() => builder.build())
-        // Close old nuxt no mater if build successfully
+        // Close old nuxt no matter if build successfully
         .catch((err) => {
           oldInstance && oldInstance.nuxt.close()
           // Jump to eventHandler
@@ -98,5 +56,5 @@ export default async function dev() {
     )
   }
 
-  await runAsyncScript(startDev)
+  await startDev()
 }
