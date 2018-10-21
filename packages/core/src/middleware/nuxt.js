@@ -64,6 +64,11 @@ export default async function nuxtMiddleware(req, res, next) {
         pushAssets.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
       })
 
+      // Append existing Link header to end of list
+      if (res.getHeader('Link')) {
+        pushAssets.push(res.getHeader('Link'))
+      }
+
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
       // https://www.w3.org/Protocols/9707-link-header.html
