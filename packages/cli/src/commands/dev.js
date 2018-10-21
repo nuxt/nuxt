@@ -42,7 +42,7 @@ export default async function dev() {
         // Close old nuxt no matter if build successfully
         .catch((err) => {
           oldInstance && oldInstance.nuxt.close()
-          // Jump to eventHandler
+          // Jump to errorHandler
           throw err
         })
         .then(() => oldInstance && oldInstance.nuxt.close())

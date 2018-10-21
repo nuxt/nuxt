@@ -1,10 +1,9 @@
-import consola from 'consola'
 import * as CoreImport from '@nuxt/core'
 import * as BuilderImport from '@nuxt/builder'
-import Options from '../../src/common/options'
+import { consola } from '../utils'
 import Command from '../../src/common/command'
+import Options from '../../src/common/options'
 
-jest.mock('consola')
 jest.mock('@nuxt/core')
 jest.mock('@nuxt/builder')
 

@@ -55,7 +55,7 @@ describe('dev', () => {
     await dev()
     jest.resetAllMocks()
 
-    // Test error on second build so we cover oldInstance.close
+    // Test error on second build so we cover oldInstance stuff
     const builder = new Builder()
     builder.nuxt = new Nuxt()
     Builder.prototype.build = jest.fn().mockImplementationOnce(() => Promise.reject(new Error('Build Error')))
@@ -78,7 +78,7 @@ describe('dev', () => {
     await Nuxt.fileChangedHook(builder)
 
     expect(consola.error).toHaveBeenCalledWith(new Error('watchServer Error'))
-    expect(Builder.prototype.watchServer.mock.calls.length).toBe(2)
+    expect(Builder.prototype.watchServer).toHaveBeenCalledTimes(2)
   })
 
   test('catches error on hook error', async () => {
@@ -96,6 +96,19 @@ describe('dev', () => {
     await Nuxt.fileChangedHook(builder)
 
     expect(consola.error).toHaveBeenCalledWith(new Error('Config Error'))
-    expect(Builder.prototype.watchServer.mock.calls.length).toBe(1)
+    expect(Builder.prototype.watchServer).toHaveBeenCalledTimes(1)
+  })
+
+  test('catches error on startDev', async () => {
+    mockNuxt({
+      listen: jest.fn().mockImplementation(() => {
+        throw new Error('Listen Error')
+      })
+    })
+    mockBuilder()
+
+    await dev()
+
+    expect(consola.error).toHaveBeenCalledWith(new Error('Listen Error'))
   })
 })

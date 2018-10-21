@@ -1,9 +1,9 @@
 import { readdir } from 'fs'
 import { resolve } from 'path'
 import { promisify } from 'util'
-import * as commands from '../../src/commands'
-import { run } from '../../src'
 import { consola } from '../utils'
+import { run } from '../../src'
+import * as commands from '../../src/commands'
 
 const readDir = promisify(readdir)
 
@@ -28,10 +28,10 @@ describe('cli', () => {
     const cmds = await readDir(resolve(__dirname, '..', '..', 'src', 'commands'))
 
     for (let cmd of cmds) {
-      cmd = cmd.substring(0, cmd.length - 3)
-      if (cmd === 'index') {
+      if (cmd === 'index.js') {
         continue
       }
+      cmd = cmd.substring(0, cmd.length - 3)
 
       expect(commands[cmd]).toBeDefined() // eslint-disable-line import/namespace
       expect(typeof commands[cmd]).toBe('function') // eslint-disable-line import/namespace

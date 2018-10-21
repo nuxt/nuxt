@@ -1,10 +1,8 @@
-import consola from 'consola'
+import { consola } from '../utils'
 import * as utils from '../../src/common/utils'
 
-jest.mock('consola')
-
 describe('cli/utils', () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.resetAllMocks()
   })
 

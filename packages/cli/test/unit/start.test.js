@@ -1,6 +1,5 @@
 import fs from 'fs'
-import { consola } from '../utils'
-import { mockGetNuxtStart, mockGetNuxtConfig } from '../utils/mocking'
+import { consola, mockGetNuxtStart, mockGetNuxtConfig } from '../utils'
 
 describe('start', () => {
   let start

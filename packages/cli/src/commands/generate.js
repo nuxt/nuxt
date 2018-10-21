@@ -1,7 +1,7 @@
 import consola from 'consola'
 import NuxtCommand from '../common/command'
 
-export default async function build() {
+export default async function generate() {
   const nuxtCmd = new NuxtCommand({
     description: 'Generate a static web application (server-rendered)',
     usage: 'generate <dir>',
