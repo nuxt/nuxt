@@ -5,11 +5,10 @@ const BASE_URL = 'http://127.0.0.1:3000'
 
 describe('Index page', () => {
   let page
-  let response
   beforeAll(async () => {
     page = await browser.newPage()
     await page.emulate(iPhone)
-    response = await page.goto(BASE_URL)
+    await page.goto(BASE_URL)
   })
 
   afterAll(async () => {
