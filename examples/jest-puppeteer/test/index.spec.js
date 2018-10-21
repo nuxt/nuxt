@@ -17,18 +17,15 @@ describe('Index page', () => {
 
   it('test index title', async () => {
     expect.assertions(1)
-
     const title = await page.evaluate(() => document.title)
-    await page.click('a#about-link')
-    await page.waitForSelector('p#hello-msg')
-
     expect(title).toMatchSnapshot('index.title')
   })
 
   it('test navigation to about page', async () => {
     expect.assertions(1)
+    await page.click('a#about-link')
+    await page.waitForSelector('p#hello-msg')
     const msg = await page.$eval('p#hello-msg', e => e.textContent)
     expect(msg).toMatchSnapshot('about.msg')
   })
-
 })
