@@ -1,9 +1,6 @@
 # Test against the latest version of this Node.js version
 environment:
   nodejs_version: "Current"
-# environment:
-#   matrix:
-#     - nodejs_version: "Current"
 
 cache:
   - 'node_modules -> yarn.lock'
@@ -17,8 +14,12 @@ shallow_clone: true
 install:
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
-  # install modules
+  # Install modules
   - yarn install
+  # Link dependencies
+  - yarn lerna link
+  # Build packages
+  - yarn build
 
 # Post-install test scripts.
 test_script:

@@ -1,4 +1,7 @@
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { resolve } from 'path'
+import { promisify } from 'util'
+import fs from 'fs'
+import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -13,9 +16,13 @@ describe('custom-dirs', () => {
     await nuxt.listen(port, 'localhost')
   })
 
-  test.skip('custom assets directory', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html).toContain('.global-css-selector')
+  test('custom assets directory', async () => {
+    const readFile = promisify(fs.readFile)
+
+    const extractedIndexCss = resolve(__dirname, '..', 'fixtures/custom-dirs/.nuxt/dist/client/app.css')
+    const content = await readFile(extractedIndexCss, 'utf-8')
+
+    expect(content).toContain('.global-css-selector{color:red}')
   })
 
   test('custom layouts directory', async () => {
