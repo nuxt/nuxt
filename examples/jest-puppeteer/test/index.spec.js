@@ -21,7 +21,7 @@ describe('Index page', () => {
 
     const title = await page.evaluate(() => document.title)
     await page.click('a#about-link')
-    const overlay = await page.waitForSelector('p#hello-msg')
+    await page.waitForSelector('p#hello-msg')
 
     expect(title).toMatchSnapshot('index.title')
   })
