@@ -1,0 +1,18 @@
+{
+  "version": "independent",
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "conventionalCommits": true,
+  "yes": true,
+  "noPush": true,
+  "gitTagVersion": false,
+  "packages": [
+    "packages/*",
+    "distributions/*"
+  ],
+  "command": {
+    "publish": {
+      "npmClient": "npm"
+    }
+  }
+}
