@@ -40,6 +40,10 @@ export default async function generate() {
 
   const options = await loadNuxtConfig(argv)
 
+  if (options.mode === 'spa') {
+    consola.warn('SPA mode not currently supported in generate and might have unknown issues')
+  }
+
   options.dev = false // Force production mode (no webpack middleware called)
 
   const nuxt = new Nuxt(options)
