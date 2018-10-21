@@ -72,7 +72,7 @@ export default async function nuxtMiddleware(req, res, next) {
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
       // https://www.w3.org/Protocols/9707-link-header.html
-      res.setHeader('Link', pushAssets.join(','))
+      res.setHeader('Link', pushAssets.join(', '))
     }
 
     if (this.options.render.csp) {
