@@ -4004,6 +4004,15 @@ eslint-module-utils@^2.2.0:
     debug "^2.6.8"
     pkg-dir "^1.0.0"
 
+eslint-multiplexer@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/eslint-multiplexer/-/eslint-multiplexer-1.0.2.tgz#8cce47bbeac7f448617b714245860aa6e5c38941"
+  integrity sha512-H8fIwGwrydqyGs9n10VPr5zt2PPYsAiRrDKcWtE4aw1w+JGzj+DBYc4wvp+ptGwGi/4YCkjsmIkDZQrGgv5axg==
+  dependencies:
+    cross-spawn "^6.0.5"
+    minimist "^1.2.0"
+    minimist-options "^3.0.2"
+
 eslint-plugin-es@^1.3.1:
   version "1.3.1"
   resolved "https://registry.npmjs.org/eslint-plugin-es/-/eslint-plugin-es-1.3.1.tgz#5acb2565db4434803d1d46a9b4cbc94b345bd028"
@@ -6890,7 +6899,7 @@ minimatch@^3.0.0, minimatch@^3.0.2, minimatch@^3.0.3, minimatch@^3.0.4:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimist-options@^3.0.1:
+minimist-options@^3.0.1, minimist-options@^3.0.2:
   version "3.0.2"
   resolved "https://registry.npmjs.org/minimist-options/-/minimist-options-3.0.2.tgz#fba4c8191339e13ecf4d61beb03f070103f3d954"
   integrity sha512-FyBrT/d0d4+uiZRbqznPXqw3IpZZG3gl3wKWiX784FycUKVwBt0uLBFkQrtE4tZOrgo78nZp2jnKz3L65T5LdQ==
