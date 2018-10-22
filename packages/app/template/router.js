@@ -52,8 +52,11 @@ const scrollBehavior = function (to, from, savedPosition) {
   // will retain current scroll position.
   let position = false
 
-  // if no children detected
-  if (to.matched.length < 2) {
+  // if no children detected and scrollToTop is not explicitly disabled
+  if (
+    to.matched.length < 2 &&
+    to.matched[0].components.default.options.scrollToTop !== false
+  ) {
     // scroll to the top of the page
     position = { x: 0, y: 0 }
   } else if (to.matched.some((r) => r.components.default.options.scrollToTop)) {
