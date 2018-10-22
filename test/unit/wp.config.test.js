@@ -1,6 +1,6 @@
 
 import path from 'path'
-import PerfLoader from '../../packages/builder/src/webpack/utils/perf-loader'
+import PerfLoader from '../../packages/webpack/src/utils/perf-loader'
 
 describe('webpack configuration', () => {
   test('performance loader', () => {

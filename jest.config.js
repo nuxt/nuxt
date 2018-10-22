@@ -21,7 +21,7 @@ module.exports = {
   coveragePathIgnorePatterns: [
     'node_modules',
     'packages/app',
-    'packages/builder/webpack/plugins/vue'
+    'packages/webpack/plugins/vue'
   ],
 
   testPathIgnorePatterns: [

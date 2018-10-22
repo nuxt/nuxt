@@ -36,9 +36,7 @@ import {
   determineGlobals
 } from '@nuxt/common'
 
-import PerfLoader from './webpack/utils/perf-loader'
-import ClientWebpackConfig from './webpack/client'
-import ServerWebpackConfig from './webpack/server'
+import { ClientConfig, ServerConfig, PerfLoader } from '@nuxt/webpack'
 
 const glob = pify(Glob)
 
@@ -459,13 +457,13 @@ export default class Builder {
     const compilersOptions = []
 
     // Client
-    const clientConfig = new ClientWebpackConfig(this).config()
+    const clientConfig = new ClientConfig(this).config()
     compilersOptions.push(clientConfig)
 
     // Server
     let serverConfig = null
     if (this.options.build.ssr) {
-      serverConfig = new ServerWebpackConfig(this).config()
+      serverConfig = new ServerConfig(this).config()
       compilersOptions.push(serverConfig)
     }
 
