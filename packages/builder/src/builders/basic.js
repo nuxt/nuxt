@@ -1,24 +1,12 @@
 import path from 'path'
-import fs from 'fs'
 import pify from 'pify'
 import uniqBy from 'lodash/uniqBy'
-import map from 'lodash/map'
-import debounce from 'lodash/debounce'
-import concat from 'lodash/concat'
 import omit from 'lodash/omit'
-import uniq from 'lodash/uniq'
 import template from 'lodash/template'
-import values from 'lodash/values'
-import chokidar from 'chokidar'
 import fsExtra from 'fs-extra'
 import hash from 'hash-sum'
-import webpack from 'webpack'
 import serialize from 'serialize-javascript'
-import MFS from 'memory-fs'
-import webpackDevMiddleware from 'webpack-dev-middleware'
-import webpackHotMiddleware from 'webpack-hot-middleware'
 import Glob from 'glob'
-import upath from 'upath'
 import consola from 'consola'
 
 import devalue from '@nuxtjs/devalue'
@@ -29,35 +17,19 @@ import {
   wp,
   wChunk,
   createRoutes,
-  parallel,
-  sequence,
   relativeTo,
   waitFor,
   determineGlobals
 } from '@nuxt/common'
 
-import { ClientConfig, ServerConfig, PerfLoader } from '@nuxt/webpack'
-
 const glob = pify(Glob)
 
-export default class Builder {
+export default class BasicBuilder {
   constructor(nuxt) {
     this.nuxt = nuxt
     this.isStatic = false // Flag to know if the build is for a generated app
     this.options = nuxt.options
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
-
-    // Fields that set on build
-    this.compilers = []
-    this.compilersWatching = []
-    this.webpackDevMiddleware = null
-    this.webpackHotMiddleware = null
-    this.watchers = {
-      files: null,
-      custom: null,
-      restart: null
-    }
-    this.perfLoader = null
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
@@ -68,11 +40,6 @@ export default class Builder {
     // Stop watching on nuxt.close()
     if (this.options.dev) {
       this.nuxt.hook('close', () => this.unwatch())
-    }
-
-    // Initialize shared FS and Cache
-    if (this.options.dev) {
-      this.mfs = new MFS()
     }
 
     if (this.options.build.analyze) {
@@ -183,8 +150,8 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
-    // Start webpack build
-    await this.webpackBuild()
+    // Start bundle build: webpack, rollup, parcel...
+    await this.bundleBuild()
 
     // Flag to set that building is done
     this._buildStatus = STATUS.BUILD_DONE
@@ -451,249 +418,20 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  async webpackBuild() {
-    this.perfLoader = new PerfLoader(this.options)
-
-    const compilersOptions = []
-
-    // Client
-    const clientConfig = new ClientConfig(this).config()
-    compilersOptions.push(clientConfig)
-
-    // Server
-    let serverConfig = null
-    if (this.options.build.ssr) {
-      serverConfig = new ServerConfig(this).config()
-      compilersOptions.push(serverConfig)
-    }
-
-    // Check plugins exist then set alias to their real path
-    await Promise.all(this.plugins.map(async (p) => {
-      const ext = path.extname(p.src) ? '' : '{.+([^.]),/index.+([^.])}'
-      const pluginFiles = await glob(`${p.src}${ext}`)
-
-      if (!pluginFiles || pluginFiles.length === 0) {
-        throw new Error(`Plugin not found: ${p.src}`)
-      } else if (pluginFiles.length > 1) {
-        consola.warn({
-          message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
-        })
-      }
-
-      const src = this.relativeToBuild(p.src)
-      // Client config
-      if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = src
-      }
-
-      // Server config
-      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
-        // Alias to noop for ssr:false plugins
-        serverConfig.resolve.alias[p.name] = p.ssr ? src : './empty.js'
-      }
-    }))
-
-    // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
-
-      // In dev, write files in memory FS
-      if (this.options.dev) {
-        compiler.outputFileSystem = this.mfs
-      }
-
-      return compiler
-    })
-
-    // Warmup perfLoader before build
-    if (this.options.build.parallel) {
-      consola.info('Warming up worker pools')
-      this.perfLoader.warmupAll()
-      consola.success('Worker pools ready')
-    }
-
-    // Start Builds
-    const runner = this.options.dev ? parallel : sequence
-
-    await runner(this.compilers, (compiler) => {
-      return this.webpackCompile(compiler)
-    })
-  }
-
-  webpackCompile(compiler) {
-    return new Promise(async (resolve, reject) => {
-      const name = compiler.options.name
-
-      await this.nuxt.callHook('build:compile', { name, compiler })
-
-      // Load renderer resources after build
-      compiler.hooks.done.tap('load-resources', async (stats) => {
-        await this.nuxt.callHook('build:compiled', {
-          name,
-          compiler,
-          stats
-        })
-
-        // Reload renderer if available
-        this.nuxt.renderer.loadResources(this.mfs || fs)
-
-        // Resolve on next tick
-        process.nextTick(resolve)
-      })
-
-      if (this.options.dev) {
-        // --- Dev Build ---
-        // Client Build, watch is started by dev-middleware
-        if (compiler.options.name === 'client') {
-          return this.webpackDev(compiler)
-        }
-        // Server, build and watch for changes
-        this.compilersWatching.push(
-          compiler.watch(this.options.watchers.webpack, (err) => {
-            /* istanbul ignore if */
-            if (err) return reject(err)
-          })
-        )
-      } else {
-        // --- Production Build ---
-        compiler.run((err, stats) => {
-          /* istanbul ignore next */
-          if (err) {
-            return reject(err)
-          } else if (stats.hasErrors()) {
-            if (this.options.build.quiet === true) {
-              err = stats.toString(this.options.build.stats)
-            }
-            if (!err) {
-              // actual errors will be printed by webpack itself
-              err = 'Nuxt Build Error'
-            }
-
-            return reject(err)
-          }
-
-          resolve()
-        })
-      }
-    })
-  }
-
-  webpackDev(compiler) {
-    consola.debug('Adding webpack middleware...')
-
-    // Create webpack dev middleware
-    this.webpackDevMiddleware = pify(
-      webpackDevMiddleware(
-        compiler,
-        Object.assign(
-          {
-            publicPath: this.options.build.publicPath,
-            stats: false,
-            logLevel: 'silent',
-            watchOptions: this.options.watchers.webpack
-          },
-          this.options.build.devMiddleware
-        )
-      )
-    )
-
-    this.webpackDevMiddleware.close = pify(this.webpackDevMiddleware.close)
-
-    this.webpackHotMiddleware = pify(
-      webpackHotMiddleware(
-        compiler,
-        Object.assign(
-          {
-            log: false,
-            heartbeat: 10000
-          },
-          this.options.build.hotMiddleware
-        )
-      )
-    )
-
-    // Inject to renderer instance
-    if (this.nuxt.renderer) {
-      this.nuxt.renderer.webpackDevMiddleware = this.webpackDevMiddleware
-      this.nuxt.renderer.webpackHotMiddleware = this.webpackHotMiddleware
-    }
-
-    // Start watching client files
-    this.watchClient()
+  bundleBuild() {
+    throw new Error('Method:[bundleBuild] need to be implemented!')
   }
 
   watchClient() {
-    const src = this.options.srcDir
-    let patterns = [
-      r(src, this.options.dir.layouts),
-      r(src, this.options.dir.store),
-      r(src, this.options.dir.middleware),
-      r(src, `${this.options.dir.layouts}/*.{vue,js}`),
-      r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
-    ]
-    if (this._nuxtPages) {
-      patterns.push(
-        r(src, this.options.dir.pages),
-        r(src, `${this.options.dir.pages}/*.{vue,js}`),
-        r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
-      )
-    }
-    patterns = map(patterns, upath.normalizeSafe)
-
-    const options = this.options.watchers.chokidar
-    /* istanbul ignore next */
-    const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
-
-    // Watch for src Files
-    this.watchers.files = chokidar
-      .watch(patterns, options)
-      .on('add', refreshFiles)
-      .on('unlink', refreshFiles)
-
-    // Watch for custom provided files
-    let customPatterns = concat(
-      this.options.build.watch,
-      ...values(omit(this.options.build.styleResources, ['options']))
-    )
-    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
-    this.watchers.custom = chokidar
-      .watch(customPatterns, options)
-      .on('change', refreshFiles)
+    throw new Error('Method:[watchClient] need to be implemented!')
   }
 
   watchServer() {
-    const nuxtRestartWatch = concat(
-      this.options.serverMiddleware
-        .filter(i => typeof i === 'string')
-        .map(this.nuxt.resolver.resolveAlias),
-      this.options.watch.map(this.nuxt.resolver.resolveAlias),
-      path.join(this.options.rootDir, 'nuxt.config.js')
-    )
-
-    this.watchers.restart = chokidar
-      .watch(nuxtRestartWatch, this.options.watchers.chokidar)
-      .on('change', (_path) => {
-        this.watchers.restart.close()
-        const { name, ext } = path.parse(_path)
-        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`)
-      })
+    throw new Error('Method:[watchServer] need to be implemented!')
   }
 
-  async unwatch() {
-    for (const watcher in this.watchers) {
-      if (this.watchers[watcher]) {
-        this.watchers[watcher].close()
-      }
-    }
-
-    this.compilersWatching.forEach(watching => watching.close())
-
-    // Stop webpack middleware
-    if (this.webpackDevMiddleware) {
-      await this.webpackDevMiddleware.close()
-    }
+  unwatch() {
+    throw new Error('Method:[unwatch] need to be implemented!')
   }
 
   // TODO: remove ignore when generateConfig enabled again
