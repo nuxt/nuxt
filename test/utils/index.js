@@ -10,7 +10,8 @@ import corePkg from '../../packages/core/package.json'
 import * as _Utils from '../../packages/common/src/index'
 
 export { Nuxt } from '../../packages/core/src/index'
-export { Builder, Generator } from '../../packages/builder/src/index'
+export { Builder } from '../../packages/builder/src/index'
+export { Generator } from '../../packages/generator/src/index'
 
 export const rp = _rp
 export const getPort = _getPort
