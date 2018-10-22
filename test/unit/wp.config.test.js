@@ -1,6 +1,6 @@
 
 import path from 'path'
-import PerfLoader from '../../lib/builder/webpack/utils/perf-loader'
+import PerfLoader from '../../packages/builder/src/webpack/utils/perf-loader'
 
 describe('webpack configuration', () => {
   test('performance loader', () => {
@@ -18,7 +18,10 @@ describe('webpack configuration', () => {
     perfLoader.warmup = jest.fn()
     perfLoader.warmupAll()
     expect(perfLoader.warmup).toHaveBeenCalledTimes(2)
-    expect(perfLoader.warmup).toHaveBeenCalledWith(js, ['babel-loader', '@babel/preset-env'])
+    expect(perfLoader.warmup).toHaveBeenCalledWith(js, [
+      require.resolve('babel-loader'),
+      require.resolve('@babel/preset-env')
+    ])
     expect(perfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
     const loaders = perfLoader.pool('js', { loader: 'test-perf-loader' })

@@ -1,0 +1,16 @@
+os: windows
+language: node_js
+node_js:
+  - "node"
+cache:
+  yarn: true
+  directories:
+    - node_modules
+install:
+  - yarn install
+  - yarn lerna link
+  - yarn build
+script:
+  - node --version
+  - yarn --version
+  - yarn test

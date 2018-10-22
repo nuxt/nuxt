@@ -7,7 +7,9 @@ let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
 const url = route => 'http://localhost:' + port + route
-const nuxtBin = resolve(__dirname, '..', '..', 'bin', 'nuxt')
+
+const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
+const spawnNuxt = (command, opts) => spawn('node', ['-r', 'esm', nuxtBin, command, rootDir], opts)
 
 const close = async (nuxtInt) => {
   nuxtInt.kill('SIGKILL')
@@ -18,13 +20,13 @@ const close = async (nuxtInt) => {
   }
 }
 
-describe.skip.appveyor('cli', () => {
+describe('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
     const env = process.env
     env.PORT = port = await getPort()
 
-    const nuxtDev = spawn('node', [nuxtBin, 'dev', rootDir], { env })
+    const nuxtDev = spawnNuxt('dev', { env })
     nuxtDev.stdout.on('data', (data) => { stdout += data })
 
     // Wait max 20s for the starting
@@ -54,11 +56,11 @@ describe.skip.appveyor('cli', () => {
     env.PORT = port = await getPort()
 
     await new Promise((resolve) => {
-      const nuxtBuild = spawn('node', [nuxtBin, 'build', rootDir], { env })
+      const nuxtBuild = spawnNuxt('build', { env })
       nuxtBuild.on('close', () => { resolve() })
     })
 
-    const nuxtStart = spawn('node', [nuxtBin, 'start', rootDir], { env })
+    const nuxtStart = spawnNuxt('start', { env })
 
     nuxtStart.stdout.on('data', (data) => { stdout += data })
     nuxtStart.on('error', (err) => { error = err })

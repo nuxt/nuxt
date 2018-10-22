@@ -1,0 +1,56 @@
+{
+  "name": "nuxt-start",
+  "version": "2.2.0",
+  "description": "Starts Nuxt.js Application in production mode",
+  "keywords": [
+    "nuxt",
+    "nuxt.js",
+    "nuxtjs",
+    "ssr",
+    "vue",
+    "vue isomorphic",
+    "vue server side",
+    "vue ssr",
+    "vue universal",
+    "vue versatile",
+    "vue.js",
+    "vuejs"
+  ],
+  "homepage": "https://github.com/nuxt/nuxt.js#readme",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Sebastien Chopin (@Atinux)"
+    },
+    {
+      "name": "Alexandre Chopin (@alexchopin)"
+    },
+    {
+      "name": "Pooya Parsa (@pi0)"
+    },
+    {
+      "name": "Clark Du (@clarkdo)"
+    },
+    {
+      "name": "Jonas Galvez (@galvez)"
+    },
+    {
+      "name": "Alexander Lichter (@manniL}"
+    }
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "dist/nuxt-start.js",
+  "dependencies": {
+    "@nuxt/cli": "^2.2.0",
+    "@nuxt/common": "^2.2.0",
+    "@nuxt/core": "^2.2.0",
+    "consola": "^1.4.4"
+  },
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
+  }
+}

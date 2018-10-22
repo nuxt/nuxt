@@ -5,9 +5,9 @@ First of all, thank you for considering to contribute to Nuxt.js! :heart:
 ## Reporting Issues
 
 A great way to contribute to the project is to send a detailed report when you encounter an issue.
-To make things easier for contributors and maintainers, we use [CMTY](http://cmty.nuxt.xyz).
+To make things easier for contributors and maintainers, we use [CMTY](https://cmty.nuxtjs.org/).
 
-Please make sure to include a reproduction repository or [CodeSandBox](http://template.nuxt.xyz)
+Please make sure to include a reproduction repository or [CodeSandBox](https://template.nuxtjs.org/)
 so that bugs can be reproduced without great efforts. The better a bug can be reproduced, the faster we can start fixing it!
 
 ## Pull Requests
@@ -15,8 +15,8 @@ so that bugs can be reproduced without great efforts. The better a bug can be re
 We'd love to see your pull requests, even if it's just to fix a typo!
 
 However, any significant improvement should be associated to an existing
-[feature request](http://feature.nuxt.xyz/)
-or [bug report](http://bug.nuxt.xyz/).
+[feature request](https://feature.nuxtjs.org/)
+or [bug report](https://bug.nuxtjs.org/).
 
 ### Getting started
 

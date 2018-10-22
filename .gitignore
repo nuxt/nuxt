@@ -1,28 +1,33 @@
 # Dependencies
 node_modules
-examples/**/*/yarn.lock
 jspm_packages
+
+# Only keep yarn.lock in the root
 package-lock.json
+*/**/yarn.lock
 
 # Logs
 *.log
-npm-debug.log*
-yarn-error.log*
+
+# Packages
+packages/*/LICENSE
+
+# Distributions
+distributions/*/LICENSE
 
 # Other
 .nuxt*
 .cache
 
-# Dist folder
+# Dist folders
 dist
 
-# Dist example generation
-examples/**/dist
-
-# Coverage support
+# Coverage reports
 coverage
 *.lcov
 .nyc_output
+
+# VSCode
 .vscode
 
 # Intellij idea
@@ -30,7 +35,7 @@ coverage
 .idea
 
 # OSX
-*.DS_Store
+.DS_Store
 .AppleDouble
 .LSOverride
 

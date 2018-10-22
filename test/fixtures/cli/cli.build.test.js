@@ -4,9 +4,9 @@ import { promisify } from 'util'
 
 const execify = promisify(exec)
 const rootDir = __dirname
-const nuxtBin = resolve(__dirname, '..', '..', '..', 'bin', 'nuxt')
+const nuxtBin = resolve(__dirname, '../../../packages/cli/bin/nuxt.js')
 
-describe.skip.appveyor('cli build', () => {
+describe('cli build', () => {
   test('nuxt build', async () => {
     const { stdout } = await execify(`node ${nuxtBin} build ${rootDir} -c cli.build.config.js`)
 
@@ -14,7 +14,7 @@ describe.skip.appveyor('cli build', () => {
   }, 80000)
 
   test('nuxt build -> error config', async () => {
-    await expect(execify(`node ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
+    await expect(execify(`node -r esm ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
       stdout: expect.stringContaining('Could not load config file: config.js')
     })
   })
