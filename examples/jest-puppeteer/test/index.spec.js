@@ -6,6 +6,7 @@ const BASE_URL = 'http://127.0.0.1:3000'
 describe('Index page', () => {
   let page
   beforeAll(async () => {
+    // eslint-disable-next-line no-undef
     page = await browser.newPage()
     await page.emulate(iPhone)
     await page.goto(BASE_URL)
