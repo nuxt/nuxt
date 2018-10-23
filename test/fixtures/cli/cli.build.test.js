@@ -6,7 +6,7 @@ const execify = promisify(exec)
 const rootDir = __dirname
 const nuxtBin = resolve(__dirname, '../../../packages/cli/bin/nuxt.js')
 
-describe('cli build', () => {
+describe.skip.appveyor('cli build', () => {
   test('nuxt build', async () => {
     const { stdout } = await execify(`node ${nuxtBin} build ${rootDir} -c cli.build.config.js`)
 
