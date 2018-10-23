@@ -2,6 +2,7 @@
   <div>
     <p>Hi from {{ name }}</p>
     <nuxt-link to="/">Home page</nuxt-link>
+    extra
   </div>
 </template>
 
