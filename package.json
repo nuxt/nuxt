@@ -9,7 +9,7 @@
     "dev": "yarn build --watch",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
-    "lint:app": "eslint-multiplexer eslint --ignore-path lib/app/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
+    "lint:app": "eslint-multiplexer eslint --ignore-path packages/app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
     "nuxt": "node -r esm ./packages/cli/bin/nuxt.js",
     "test": "yarn test:fixtures && yarn test:unit",
     "test:fixtures": "jest test/fixtures",
