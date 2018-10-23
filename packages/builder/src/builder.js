@@ -19,15 +19,16 @@ import {
   createRoutes,
   relativeTo,
   waitFor,
-  determineGlobals
+  determineGlobals,
+  BuildContext
 } from '@nuxt/common'
 
 const glob = pify(Glob)
 
-export default class BasicBuilder {
-  constructor(nuxt) {
+export default class Builder {
+  constructor(nuxt, bundleBuilder) {
     this.nuxt = nuxt
-    this.isStatic = false // Flag to know if the build is for a generated app
+    this.plugins = []
     this.options = nuxt.options
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
@@ -61,6 +62,18 @@ export default class BasicBuilder {
     // TODO: enable again when unsafe concern resolved.(common/options.js:42)
     // this.nuxt.hook('build:done', () => this.generateConfig())
     // }
+
+    this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
+  }
+
+  getBundleBuilder(bundleBuilder) {
+    if (typeof bundleBuilder === 'object') {
+      return bundleBuilder
+    } else {
+      const context = new BuildContext(this)
+      const BundleBuilder = typeof bundleBuilder === 'function' ? bundleBuilder : require('@nuxt/webpack')
+      return new BundleBuilder(context)
+    }
   }
 
   normalizePlugins() {
@@ -81,8 +94,28 @@ export default class BasicBuilder {
     )
   }
 
+  resolvePlugins() {
+    // Check plugins exist then set alias to their real path
+    return Promise.all(this.plugins.map(async (p) => {
+      const ext = path.extname(p.src) ? '' : '{.+([^.]),/index.+([^.])}'
+      const pluginFiles = await glob(`${p.src}${ext}`)
+
+      if (!pluginFiles || pluginFiles.length === 0) {
+        throw new Error(`Plugin not found: ${p.src}`)
+      } else if (pluginFiles.length > 1) {
+        consola.warn({
+          message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
+          additional: `  ${pluginFiles.join('\n  ')}`,
+          badge: true
+        })
+      }
+
+      p.src = this.relativeToBuild(p.src)
+    }))
+  }
+
   forGenerate() {
-    this.isStatic = true
+    this.bundleBuilder.forGenerate()
   }
 
   async build() {
@@ -150,8 +183,10 @@ export default class BasicBuilder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
+    await this.resolvePlugins()
+
     // Start bundle build: webpack, rollup, parcel...
-    await this.bundleBuild()
+    await this.bundleBuilder.build()
 
     // Flag to set that building is done
     this._buildStatus = STATUS.BUILD_DONE
@@ -165,7 +200,7 @@ export default class BasicBuilder {
   async generateRoutesAndFiles() {
     consola.debug(`Generating nuxt files`)
 
-    this.plugins = this.normalizePlugins()
+    this.plugins.push.apply(this.plugins, this.normalizePlugins())
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)
@@ -416,22 +451,6 @@ export default class BasicBuilder {
     )
 
     consola.success('Nuxt files generated')
-  }
-
-  bundleBuild() {
-    throw new Error('Method:[bundleBuild] need to be implemented!')
-  }
-
-  watchClient() {
-    throw new Error('Method:[watchClient] need to be implemented!')
-  }
-
-  watchServer() {
-    throw new Error('Method:[watchServer] need to be implemented!')
-  }
-
-  unwatch() {
-    throw new Error('Method:[unwatch] need to be implemented!')
   }
 
   // TODO: remove ignore when generateConfig enabled again

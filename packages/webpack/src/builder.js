@@ -12,7 +12,6 @@ import webpack from 'webpack'
 import MFS from 'memory-fs'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
-import Glob from 'glob'
 import upath from 'upath'
 import consola from 'consola'
 
@@ -22,16 +21,15 @@ import {
   sequence
 } from '@nuxt/common'
 
-import { ClientConfig, ServerConfig, PerfLoader } from '@nuxt/webpack'
+import { ClientConfig, ServerConfig, PerfLoader } from './config'
 
-import BasicBuilder from './basic'
-
-const glob = pify(Glob)
-
-export default class WebpackBuilder extends BasicBuilder {
-  constructor(nuxt) {
-    super(nuxt)
-
+export default class WebpackBuilder {
+  constructor(context) {
+    this.context = context
+    this.nuxt = context.nuxt
+    this.options = context.nuxt.options
+    this.isStatic = context.isStatic
+    this.plugins = context.plugins
     // Fields that set on build
     this.compilers = []
     this.compilersWatching = []
@@ -50,7 +48,7 @@ export default class WebpackBuilder extends BasicBuilder {
     }
   }
 
-  async bundleBuild() {
+  async build() {
     this.perfLoader = new PerfLoader(this.options)
 
     const compilersOptions = []
@@ -66,33 +64,18 @@ export default class WebpackBuilder extends BasicBuilder {
       compilersOptions.push(serverConfig)
     }
 
-    // Check plugins exist then set alias to their real path
-    await Promise.all(this.plugins.map(async (p) => {
-      const ext = path.extname(p.src) ? '' : '{.+([^.]),/index.+([^.])}'
-      const pluginFiles = await glob(`${p.src}${ext}`)
-
-      if (!pluginFiles || pluginFiles.length === 0) {
-        throw new Error(`Plugin not found: ${p.src}`)
-      } else if (pluginFiles.length > 1) {
-        consola.warn({
-          message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
-        })
-      }
-
-      const src = this.relativeToBuild(p.src)
+    for (const p of this.plugins) {
       // Client config
       if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = src
+        clientConfig.resolve.alias[p.name] = p.src
       }
 
       // Server config
       if (serverConfig && !serverConfig.resolve.alias[p.name]) {
         // Alias to noop for ssr:false plugins
-        serverConfig.resolve.alias[p.name] = p.ssr ? src : './empty.js'
+        serverConfig.resolve.alias[p.name] = p.ssr ? p.src : './empty.js'
       }
-    }))
+    }
 
     // Configure compilers
     this.compilers = compilersOptions.map((compilersOption) => {
@@ -293,5 +276,9 @@ export default class WebpackBuilder extends BasicBuilder {
     if (this.webpackDevMiddleware) {
       await this.webpackDevMiddleware.close()
     }
+  }
+
+  forGenerate() {
+    this.isStatic = true
   }
 }
