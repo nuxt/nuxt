@@ -5,6 +5,10 @@ import { Store } from 'vuex'
 import { MetaInfo } from 'vue-meta'
 
 declare module 'vue/types/options' {
+  interface Error {
+    statusCode: number;
+    message: string;
+  }
   interface Context {
     app: Vue;
     isClient: boolean;
@@ -21,7 +25,7 @@ declare module 'vue/types/options' {
     res: Response;
     redirect(status: number, path: string, query?: object): void;
     redirect(path: string, query?: object): void;
-    error: Function;
+    error(params: Error): void;
     nuxtState: Object;
     beforeNuxtRender: Function;
   }
