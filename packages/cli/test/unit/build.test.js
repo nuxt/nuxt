@@ -7,7 +7,7 @@ describe('build', () => {
     build = await import('../../src/commands/build')
     build = build.default
 
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
+    jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
   afterAll(() => {

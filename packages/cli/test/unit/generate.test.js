@@ -8,7 +8,7 @@ describe('generate', () => {
     generate = await import('../../src/commands/generate')
     generate = generate.default
 
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
+    jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
   afterAll(() => {
