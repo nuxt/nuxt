@@ -6,6 +6,12 @@ describe('build', () => {
   beforeAll(async () => {
     build = await import('../../src/commands/build')
     build = build.default
+
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
+  })
+
+  afterAll(() => {
+    process.exit.mockRestore()
   })
 
   afterEach(() => {
@@ -31,8 +37,6 @@ describe('build', () => {
   })
 
   test('generates on spa mode', async () => {
-    process.exit = jest.fn()
-
     mockGetNuxt({
       mode: 'spa',
       build: {

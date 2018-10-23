@@ -20,6 +20,6 @@ export default async function generate() {
     init: true,
     build: argv.build
   }).then(() => {
-    process.exitCode = 0
+    process.exit(0)
   }).catch(err => consola.fatal(err))
 }

@@ -7,6 +7,12 @@ describe('generate', () => {
   beforeAll(async () => {
     generate = await import('../../src/commands/generate')
     generate = generate.default
+
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
+  })
+
+  afterAll(() => {
+    process.exit.mockRestore()
   })
 
   afterEach(() => {

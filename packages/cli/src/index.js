@@ -1,7 +1,7 @@
 import consola from 'consola'
 import * as commands from './commands'
 
-export const run = () => {
+export function run() {
   // Global error handler
   /* istanbul ignore next */
   process.on('unhandledRejection', (err) => {

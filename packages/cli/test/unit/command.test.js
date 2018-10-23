@@ -153,24 +153,30 @@ describe('cli/command', () => {
   })
 
   test('show version prints to stdout and exits', () => {
-    const cmd = new Command()
-    process.stdout.write = jest.fn()
-    process.exit = jest.fn()
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
 
+    const cmd = new Command()
     cmd.showVersion()
 
     expect(process.stdout.write).toHaveBeenCalled()
     expect(process.exit).toHaveBeenCalled()
+
+    process.stdout.write.mockRestore()
+    process.exit.mockRestore()
   })
 
   test('show help prints to stdout and exits', () => {
-    const cmd = new Command()
-    process.stdout.write = jest.fn()
-    process.exit = jest.fn()
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
 
+    const cmd = new Command()
     cmd.showHelp()
 
     expect(process.stdout.write).toHaveBeenCalled()
     expect(process.exit).toHaveBeenCalled()
+
+    process.stdout.write.mockRestore()
+    process.exit.mockRestore()
   })
 })
