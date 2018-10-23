@@ -6,7 +6,7 @@ const execify = promisify(exec)
 const rootDir = __dirname
 const nuxtBin = resolve(__dirname, '../../../packages/cli/bin/nuxt.js')
 
-describe('cli generate', () => {
+describe.skip.appveyor('cli generate', () => {
   test('nuxt generate', async () => {
     const { stdout } = await execify(`node -r esm ${nuxtBin} generate ${rootDir} -c cli.gen.config.js`)
 

@@ -19,10 +19,10 @@
     "hash-sum": "^1.0.2",
     "lodash": "^4.17.11",
     "memory-fs": "^0.4.1",
-    "pify": "^4.0.0",
+    "pify": "^4.0.1",
     "serialize-javascript": "^1.5.0",
     "upath": "^1.1.0",
-    "webpack": "^4.21.0",
+    "webpack": "^4.22.0",
     "webpack-dev-middleware": "^3.4.0",
     "webpack-hot-middleware": "^2.24.3"
   },
