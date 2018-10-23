@@ -1,7 +1,8 @@
 export default {
-  buildDir: '.nuxt-generate/.build',
+  test: true,
+  buildDir: '.nuxt-generate/build',
   generate: {
-    dir: '.nuxt-generate/.generate'
+    dir: '.nuxt-generate/generate'
   },
   hooks(hook) {
     hook('generate:done', (generator, errors) => {

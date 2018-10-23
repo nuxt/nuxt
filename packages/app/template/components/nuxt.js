@@ -1,5 +1,6 @@
+<%= isTest ? '// @vue/component' : '' %>
 import Vue from 'vue'
-import NuxtChild from './nuxt-child'
+import { compile } from '../utils'
 
 <% if (components.ErrorPage) { %>
   <% if (('~@').includes(components.ErrorPage.charAt(0))) { %>
@@ -10,12 +11,14 @@ import NuxtError from '<%= "../" + components.ErrorPage %>'
 <% } else { %>
 import NuxtError from './nuxt-error.vue'
 <% } %>
-
-import { compile } from '../utils'
+import NuxtChild from './nuxt-child'
 
 export default {
   name: 'nuxt',
-  props: ['nuxtChildKey', 'keepAlive'],
+  props: {
+    nuxtChildKey: String,
+    keepAlive: Boolean
+  },
   render(h) {
     // If there is some error
     if (this.nuxt.err) {
@@ -31,11 +34,11 @@ export default {
       props: this.$props
     })
   },
-  beforeCreate () {
+  beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options.nuxt)
   },
   computed: {
-    routerViewKey () {
+    routerViewKey() {
       // If nuxtChildKey prop is given or current route has children
       if (typeof this.nuxtChildKey !== 'undefined' || this.$route.matched.length > 1) {
         return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)

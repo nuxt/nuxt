@@ -1,10 +1,13 @@
 <template>
-  <div class="nuxt-progress" :style="{
-    'width': percent + '%',
-    'height': height,
-    'background-color': canSuccess ? color : failedColor,
-    'opacity': show ? 1 : 0
-  }"></div>
+  <div
+    class="nuxt-progress"
+    :style="{
+      'width': percent + '%',
+      'height': height,
+      'background-color': canSuccess ? color : failedColor,
+      'opacity': show ? 1 : 0
+    }"
+  />
 </template>
 
 <script>
@@ -12,20 +15,20 @@ import Vue from 'vue'
 
 export default {
   name: 'nuxt-loading',
-  data () {
+  data() {
     return {
       percent: 0,
       show: false,
       canSuccess: true,
-      throttle: <%= loading.throttle %>,
-      duration: <%= loading.duration %>,
+      throttle: <%= loading.throttle || 200 %>,
+      duration: <%= loading.duration || 1000 %>,
       height: '<%= loading.height %>',
       color: '<%= loading.color %>',
-      failedColor: '<%= loading.failedColor %>',
+      failedColor: '<%= loading.failedColor %>'
     }
   },
   methods: {
-    start () {
+    start() {
       this.canSuccess = true
       if (this._throttle) {
         clearTimeout(this._throttle)
@@ -47,33 +50,33 @@ export default {
       }, this.throttle)
       return this
     },
-    set (num) {
+    set(num) {
       this.show = true
       this.canSuccess = true
       this.percent = Math.floor(num)
       return this
     },
-    get () {
+    get() {
       return Math.floor(this.percent)
     },
-    increase (num) {
+    increase(num) {
       this.percent = this.percent + Math.floor(num)
       return this
     },
-    decrease (num) {
+    decrease(num) {
       this.percent = this.percent - Math.floor(num)
       return this
     },
-    finish () {
+    finish() {
       this.percent = 100
       this.hide()
       return this
     },
-    pause () {
+    pause() {
       clearInterval(this._timer)
       return this
     },
-    hide () {
+    hide() {
       clearInterval(this._timer)
       this._timer = null
       clearTimeout(this._throttle)
@@ -88,7 +91,7 @@ export default {
       }, 500)
       return this
     },
-    fail () {
+    fail() {
       this.canSuccess = false
       return this
     }

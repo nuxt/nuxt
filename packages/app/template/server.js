@@ -1,18 +1,18 @@
-import Vue from 'vue'
 import { stringify } from 'querystring'
+import Vue from 'vue'
 import omit from 'lodash/omit'
 import middleware from './middleware'
-import { createApp, NuxtError } from './index'
 import { applyAsyncData, sanitizeComponent, getMatchedComponents, getContext, middlewareSeries, promisify, urlJoin } from './utils'
+import { createApp, NuxtError } from './index'
 
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
 
 const isDev = <%= isDev %>
 
-const noopApp = () => new Vue({ render: (h) => h('div') })
+const noopApp = () => new Vue({ render: h => h('div') })
 
-const createNext = (ssrContext) => (opts) => {
+const createNext = ssrContext => (opts) => {
   ssrContext.redirected = opts
   // If nuxt generate
   if (!ssrContext.res) {
@@ -21,8 +21,9 @@ const createNext = (ssrContext) => (opts) => {
   }
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
-  if (!opts.path.startsWith('http') && ('<%= router.base %>' !== '/' && !opts.path.startsWith('<%= router.base %>'))) {
-    opts.path = urlJoin('<%= router.base %>', opts.path)
+  const routerBase = '<%= router.base %>'
+  if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {
+    opts.path = urlJoin(routerBase, opts.path)
   }
   // Avoid loop redirect
   if (opts.path === ssrContext.url) {
@@ -59,7 +60,7 @@ export default async (ssrContext) => {
 
   const beforeRender = async () => {
     // Call beforeNuxtRender() methods
-    await Promise.all(ssrContext.beforeRenderFns.map((fn) => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
+    await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
     <% if (store) { %>
     // Add the state from the vuex store
     ssrContext.nuxt.state = store.state
@@ -67,7 +68,7 @@ export default async (ssrContext) => {
   }
   const renderErrorPage = async () => {
     // Load layout for error page
-    let errLayout = (typeof NuxtError.layout === 'function' ? NuxtError.layout(app.context) : NuxtError.layout)
+    const errLayout = (typeof NuxtError.layout === 'function' ? NuxtError.layout(app.context) : NuxtError.layout)
     ssrContext.nuxt.layout = errLayout || 'default'
     await _app.loadLayout(errLayout)
     _app.setLayout(errLayout)
@@ -104,7 +105,7 @@ export default async (ssrContext) => {
   /*
   ** Call global middleware (nuxt.config.js)
   */
-  let midd = <%= serialize(router.middleware).replace('middleware(', 'function(') %>
+  let midd = <%= serialize(router.middleware).replace('middleware(', 'function(') %><%= isTest ? '// eslint-disable-line' : '' %>
   midd = midd.map((name) => {
     if (typeof name === 'function') return name
     if (typeof middleware[name] !== 'function') {
@@ -186,12 +187,12 @@ export default async (ssrContext) => {
   if (!Components.length) return render404Page()
 
   // Call asyncData & fetch hooks on components matched by the route.
-  let asyncDatas = await Promise.all(Components.map((Component) => {
-    let promises = []
+  const asyncDatas = await Promise.all(Components.map((Component) => {
+    const promises = []
 
     // Call asyncData(context)
     if (Component.options.asyncData && typeof Component.options.asyncData === 'function') {
-      let promise = promisify(Component.options.asyncData, app.context)
+      const promise = promisify(Component.options.asyncData, app.context)
       promise.then((asyncDataResult) => {
         ssrContext.asyncData[Component.cid] = asyncDataResult
         applyAsyncData(Component)
@@ -205,8 +206,7 @@ export default async (ssrContext) => {
     // Call fetch(context)
     if (Component.options.fetch) {
       promises.push(Component.options.fetch(app.context))
-    }
-    else {
+    } else {
       promises.push(null)
     }
 

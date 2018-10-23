@@ -30,6 +30,7 @@ export const loadFixture = async function (fixture, overrides) {
 
   config.rootDir = rootDir
   config.dev = false
+  config.test = true
 
   return defaultsDeep({}, overrides, config)
 }

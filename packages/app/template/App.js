@@ -12,12 +12,14 @@ import '<%= relativeToBuild(resolvePath(c.src || c)) %>'
   }
 }).join('\n') %>
 
-const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }
+const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 
 export default {
+  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
   head: <%= serialize(head).replace(/:\w+\(/gm, ':function(') %>,
+  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('nuxt-loading', { ref: 'loading' })<% } %>
     const layoutEl = h(this.layout || 'nuxt')
@@ -35,7 +37,7 @@ export default {
       }
     }, [ templateEl ])
 
-    return h('div',{
+    return h('div', {
       domProps: {
         id: '<%= globals.id %>'
       }
@@ -48,10 +50,10 @@ export default {
     layout: null,
     layoutName: ''
   }),
-  beforeCreate () {
+  beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
   },
-  created () {
+  created() {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
@@ -65,7 +67,7 @@ export default {
     this.error = this.nuxt.error
   },
   <% if (loading) { %>
-  mounted () {
+  mounted() {
     this.$loading = this.$refs.loading
   },
   watch: {
@@ -74,7 +76,7 @@ export default {
   <% } %>
   methods: {
     <% if (loading) { %>
-    errorChanged () {
+    errorChanged() {
       if (this.nuxt.err && this.$loading) {
         if (this.$loading.fail) this.$loading.fail()
         if (this.$loading.finish) this.$loading.finish()
@@ -82,7 +84,7 @@ export default {
     },
     <% } %>
     <% if (splitChunks.layouts) { %>
-    setLayout (layout) {
+    setLayout(layout) {
       <% if (debug) { %>
       if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
       <% } %>
@@ -92,7 +94,7 @@ export default {
       this.layout = resolvedLayouts[_layout]
       return this.layout
     },
-    loadLayout (layout) {
+    loadLayout(layout) {
       const undef = !layout
       const inexisting = !(layouts['_' + layout] || resolvedLayouts['_' + layout])
       let _layout = '_' + ((undef || inexisting) ? 'default' : layout)

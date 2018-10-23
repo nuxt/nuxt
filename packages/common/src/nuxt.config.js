@@ -10,6 +10,7 @@ const nuxtDir = fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
 export default {
   // Information about running environment
   dev: Boolean(env.dev),
+  test: Boolean(env.test),
   debug: undefined, // = dev
 
   // Mode
