@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "build": "node -r esm ./scripts/package",
+    "clean": "find . -type d \\( -name '.nuxt*' -o ! -path '*node_modules*' -name 'dist' \\) -exec rm -Rf {} \\; -prune",
     "dev": "yarn build --watch",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
