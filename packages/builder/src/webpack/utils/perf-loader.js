@@ -22,7 +22,10 @@ export default class PerfLoader {
   }
 
   warmupAll() {
-    this.warmup(this.workerPools.js, ['babel-loader', '@babel/preset-env'])
+    this.warmup(this.workerPools.js, [
+      require.resolve('babel-loader'),
+      require.resolve('@babel/preset-env')
+    ])
     this.warmup(this.workerPools.css, ['css-loader'])
   }
 
