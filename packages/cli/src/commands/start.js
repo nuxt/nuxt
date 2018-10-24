@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
-import NuxtCommand from '../common/command'
+import NuxtCommand from '../command'
 
 export default async function start() {
   const nuxtCmd = new NuxtCommand({

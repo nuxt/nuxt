@@ -1,25 +1,18 @@
 import parseArgs from 'minimist'
-
+import { name, version } from '../package.json'
 import { loadNuxtConfig, foldLines, indent } from './utils'
-import Options from './options'
+import { options as Options, defaultOptions as DefaultOptions } from './options'
+import * as imports from './imports'
 
 const startSpaces = 6
 const optionSpaces = 2
 const maxCharsPerLine = 80
 
-const defaultOptions = [
-  'spa',
-  'universal',
-  'config-file',
-  'version',
-  'help'
-]
-
 export default class NuxtCommand {
   constructor({ description, usage, options } = {}) {
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Array.from(new Set((options || []).concat(defaultOptions)))
+    this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
   }
 
   _getMinimistOptions() {
@@ -30,7 +23,7 @@ export default class NuxtCommand {
       default: {}
     }
 
-    this.options.forEach((name) => {
+    for (const name of this.options) {
       const option = Options[name]
 
       if (option.alias) {
@@ -42,7 +35,7 @@ export default class NuxtCommand {
       if (option.default) {
         minimistOptions.default[option.alias || name] = option.default
       }
-    })
+    }
 
     return minimistOptions
   }
@@ -73,30 +66,23 @@ export default class NuxtCommand {
     return options
   }
 
-  importCore() {
-    return import('@nuxt/core')
-  }
-
-  importBuilder() {
-    return import('@nuxt/builder')
-  }
-
   async getNuxt(options) {
-    const { Nuxt } = await this.importCore()
+    const { Nuxt } = await imports.core()
     return new Nuxt(options)
   }
 
   async getBuilder(nuxt) {
-    const { Builder } = await this.importBuilder()
+    const { Builder } = await imports.builder()
     return new Builder(nuxt)
   }
 
   async getGenerator(nuxt) {
-    const { Generator, Builder } = await this.importBuilder()
+    const { Generator } = await imports.generator()
+    const { Builder } = await imports.builder()
     return new Generator(nuxt, new Builder(nuxt))
   }
 
-  buildHelp() {
+  _getHelp() {
     const options = []
 
     let maxLength = 0
@@ -136,12 +122,12 @@ ${optionTexts}
   }
 
   showVersion() {
-    process.stdout.write('TODO' + '\n')
+    process.stdout.write(`${name} v${version}\n`)
     process.exit(0)
   }
 
   showHelp() {
-    process.stdout.write(this.buildHelp())
+    process.stdout.write(this._getHelp())
     process.exit(0)
   }
 }

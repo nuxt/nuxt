@@ -1,5 +1,6 @@
 import consola from 'consola'
-import NuxtCommand from '../common/command'
+import NuxtCommand from '../command'
+import * as imports from '../imports'
 
 export default async function dev() {
   const nuxtCmd = new NuxtCommand({
@@ -15,8 +16,8 @@ export default async function dev() {
     consola.error(err)
   }
 
-  const { Nuxt } = await nuxtCmd.importCore()
-  const { Builder } = await nuxtCmd.importBuilder()
+  const { Nuxt } = await imports.core()
+  const { Builder } = await imports.builder()
 
   // Start dev
   async function startDev(oldInstance) {

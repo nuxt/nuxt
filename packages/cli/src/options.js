@@ -1,6 +1,14 @@
 import consola from 'consola'
 
-export default {
+export const defaultOptions = [
+  'spa',
+  'universal',
+  'config-file',
+  'version',
+  'help'
+]
+
+export const options = {
   port: {
     alias: 'p',
     type: 'string',

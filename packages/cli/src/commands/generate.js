@@ -1,5 +1,5 @@
 import consola from 'consola'
-import NuxtCommand from '../common/command'
+import NuxtCommand from '../command'
 
 export default async function generate() {
   const nuxtCmd = new NuxtCommand({
