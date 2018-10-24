@@ -164,7 +164,7 @@ export default class WebpackBaseConfig {
           return !modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.pool('js', {
-          loader: 'babel-loader',
+          loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
       },
