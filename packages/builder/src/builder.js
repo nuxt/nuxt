@@ -29,6 +29,7 @@ import {
   waitFor,
   determineGlobals,
   BuildContext
+  stripWhitespace
 } from '@nuxt/common'
 
 const glob = pify(Glob)
@@ -228,6 +229,7 @@ export default class Builder {
       splitChunks: this.options.build.splitChunks,
       uniqBy,
       isDev: this.options.dev,
+      isTest: this.options.test,
       debug: this.options.debug,
       vue: { config: this.options.vue.config },
       mode: this.options.mode,
@@ -446,13 +448,15 @@ export default class Builder {
             },
             interpolate: /<%=([\s\S]+?)%>/g
           })
-          content = templateFunction(
-            Object.assign({}, templateVars, {
-              options: options || {},
-              custom,
-              src,
-              dst
-            })
+          content = stripWhitespace(
+            templateFunction(
+              Object.assign({}, templateVars, {
+                options: options || {},
+                custom,
+                src,
+                dst
+              })
+            )
           )
         } catch (err) {
           /* istanbul ignore next */
