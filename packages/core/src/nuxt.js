@@ -136,6 +136,15 @@ export default class Nuxt {
     this.readyMessage = null
   }
 
+  async isPortInUse(port) {
+    return await new Promise((resolve, reject) => {
+      const tester = require('net').createServer()
+        .once('error', err => (err.code == 'EADDRINUSE' ? resolve(true) : reject(err)))
+        .once('listening', () => tester.once('close', () => resolve(false)).close())
+        .listen(port)
+    })
+  }
+
   listen(port, host, socket) {
     return this.ready().then(() => new Promise((resolve, reject) => {
       if (!socket && typeof this.options.server.socket === 'string') {
@@ -176,10 +185,14 @@ export default class Nuxt {
             return reject(err)
           }
 
+          let { address: host, port } = server.address();
+
+          const isPortInUse = await this.isPortInUse(port);
+          if(isPortInUse) throw `Error: listen EADDRINUSE ${host}:${port}`;
+
           let listenURL
 
           if (!socket) {
-            ({ address: host, port } = server.address())
             if (host === '127.0.0.1') {
               host = 'localhost'
             } else if (host === '0.0.0.0') {
