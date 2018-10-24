@@ -58,7 +58,7 @@ async function createApp(ssrContext) {
     <% } %>
   <% } %>
 
-  // Create Root instance13:14:29: Error: can't open file '.eslintrc.js' (error 2: No such file or directory)
+  // Create Root instance
 
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
