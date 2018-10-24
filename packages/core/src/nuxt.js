@@ -136,8 +136,8 @@ export default class Nuxt {
     this.readyMessage = null
   }
 
-  async isPortInUse(port) {
-    return await new Promise((resolve, reject) => {
+  isPortInUse(port) {
+    return new Promise((resolve, reject) => {
       const tester = require('net').createServer()
         .once('error', err => (err.code == 'EADDRINUSE' ? resolve(true) : reject(err)))
         .once('listening', () => tester.once('close', () => resolve(false)).close())
