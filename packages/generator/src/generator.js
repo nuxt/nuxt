@@ -1,8 +1,8 @@
 import path from 'path'
-import htmlMinifier from 'html-minifier'
 import Chalk from 'chalk'
-import fsExtra from 'fs-extra'
 import consola from 'consola'
+import fsExtra from 'fs-extra'
+import htmlMinifier from 'html-minifier'
 
 import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/common'
 

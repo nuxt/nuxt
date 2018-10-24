@@ -5,7 +5,8 @@ import { loadNuxtConfig } from '../common/utils'
 
 export default async function build() {
   const { Nuxt } = await import('@nuxt/core')
-  const { Builder, Generator } = await import('@nuxt/builder')
+  const { Builder } = await import('@nuxt/builder')
+  const { Generator } = await import('@nuxt/generator')
 
   const argv = parseArgs(process.argv.slice(2), {
     alias: {
