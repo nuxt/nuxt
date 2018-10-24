@@ -189,7 +189,7 @@ export default class Nuxt {
           let { address: host } = server.address()
 
           const isPortInUse = await this.isPortInUse(port)
-          if(isPortInUse) return reject(`Error: listen EADDRINUSE ${host}:${port}`)
+          if (isPortInUse) return reject(`Error: listen EADDRINUSE ${host}:${port}`)
 
           let listenURL
 
