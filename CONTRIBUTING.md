@@ -38,11 +38,10 @@ Before running any tests, make sure all dependencies are met and build all packa
 
 ```sh
 yarn
-yarn build
-yarn test
+yarn dev
 ```
 
-You **must** use `yarn` to install dependencies as it'll properly resolve all dependencies from sub-packages as well, eliminating the need to `npm link` all required packages.
+`yarn` is the only supported package manager, as it will, among other things, properly resolve all dependencies from sub-packages and eliminate the need to `npm link` all required packages.
 
 #### Fixtures
 

@@ -21,6 +21,7 @@ import devalue from '@nuxtjs/devalue'
 
 import {
   Options,
+  BuildContext,
   r,
   wp,
   wChunk,
@@ -28,7 +29,6 @@ import {
   relativeTo,
   waitFor,
   determineGlobals,
-  BuildContext
   stripWhitespace
 } from '@nuxt/common'
 
