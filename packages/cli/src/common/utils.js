@@ -104,6 +104,16 @@ export function indent(count, chr = ' ') {
 //
 const lastSpaceRgx = /\s(?!.*\s)/
 
+function trimStart(character, string) {
+  let startIndex = 0
+
+  while (string[startIndex] === character) {
+    startIndex++
+  }
+
+  return string.substr(startIndex)
+}
+
 export function foldLines(s, n, iN, foldAny, a) {
   a = a || []
   iN = iN || 0
@@ -120,7 +130,7 @@ export function foldLines(s, n, iN, foldAny, a) {
   let line = s.substring(0, n - i + (foldAny ? 0 : 1))
   if (foldAny) { // insert newlines anywhere
     a.push(idt + line)
-    return foldLines(s.substring(n - i).trimStart(), n, iN, foldAny, a)
+    return foldLines(trimStart(s.substring(n - i)), n, iN, foldAny, a)
   } else { // attempt to insert newlines after whitespace
     const idx = line.search(lastSpaceRgx)
     let nextIdx = n - i
@@ -135,6 +145,6 @@ export function foldLines(s, n, iN, foldAny, a) {
       line = s.substring(0, nextIdx)
     }
     a.push(idt + line)
-    return foldLines(s.substring(nextIdx).trimStart(), n, iN, foldAny, a)
+    return foldLines(trimStart(s.substring(nextIdx)), n, iN, foldAny, a)
   }
 }
