@@ -1,4 +1,5 @@
 import parseArgs from 'minimist'
+
 import { loadNuxtConfig, foldLines, indent } from './utils'
 import Options from './options'
 
@@ -21,7 +22,7 @@ export default class NuxtCommand {
     this.options = Array.from(new Set((options || []).concat(defaultOptions)))
   }
 
-  buildMinimistOptions() {
+  _getMinimistOptions() {
     const minimistOptions = {
       alias: {},
       boolean: [],
@@ -47,17 +48,21 @@ export default class NuxtCommand {
   }
 
   getArgv(args) {
-    const minimistOptions = this.buildMinimistOptions()
+    const minimistOptions = this._getMinimistOptions()
     const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
 
-    argv.version && this.showVersion()
-    argv.help && this.showHelp()
+    if (argv.version) {
+      this.showVersion()
+    } else if (argv.help) {
+      this.showHelp()
+    }
 
     return argv
   }
 
   async getNuxtConfig(argv, extraOptions) {
-    const options = Object.assign(await loadNuxtConfig(argv), extraOptions || {})
+    const config = await loadNuxtConfig(argv)
+    const options = Object.assign(config, extraOptions || {})
 
     for (const name of this.options) {
       if (Options[name].handle) {
@@ -72,7 +77,7 @@ export default class NuxtCommand {
     return import('@nuxt/core')
   }
 
-  importBuilder(generator) {
+  importBuilder() {
     return import('@nuxt/builder')
   }
 
