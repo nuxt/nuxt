@@ -1,6 +1,7 @@
 import parseArgs from 'minimist'
+import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, foldLines } from './utils'
+import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
 import { options as Options, defaultOptions as DefaultOptions } from './options'
 import * as imports from './imports'
 
@@ -85,7 +86,7 @@ export default class NuxtCommand {
   _getHelp() {
     const options = []
 
-    let maxLength = 0
+    let maxOptionLength = 0
     // For consistency Options determines order
     for (const name in Options) {
       const option = Options[name]
@@ -97,14 +98,17 @@ export default class NuxtCommand {
           optionHelp += `, -${option.alias}`
         }
 
-        maxLength = Math.max(maxLength, optionHelp.length)
+        maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
         options.push([ optionHelp, option.description ])
       }
     }
 
-    const optionStr = foldLines(options.map(([option, description]) =>
-      option + indent(maxLength - option.length + optionSpaces) + description
-    ).join('\n'), maxCharsPerLine, startSpaces + optionSpaces)
+    const optionStr = options.map(([option, description]) => {
+      const line = option +
+        indent(maxOptionLength + optionSpaces - option.length) +
+        wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
+      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces)
+    }).join('\n')
 
     const description = foldLines(this.description, maxCharsPerLine, startSpaces)
 
@@ -112,8 +116,7 @@ export default class NuxtCommand {
     Description\n${description}
     Usage
       $ nuxt ${this.usage}
-    Options\n${optionStr}
-`
+    Options\n${optionStr}\n\n`
   }
 
   showVersion() {
