@@ -1,5 +1,5 @@
 import { consola } from '../utils'
-import * as utils from '../../src/common/utils'
+import * as utils from '../../src/utils'
 
 describe('cli/utils', () => {
   afterEach(() => {

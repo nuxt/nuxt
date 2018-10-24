@@ -1,4 +1,4 @@
-import Command from '../../src/common/command'
+import Command from '../../src/command'
 
 export const mockGetNuxt = (options, implementation) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {

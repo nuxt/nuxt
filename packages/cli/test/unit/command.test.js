@@ -1,5 +1,3 @@
-import * as CoreImport from '@nuxt/core'
-import * as BuilderImport from '@nuxt/builder'
 import { consola } from '../utils'
 import Command from '../../src/common/command'
 import Options from '../../src/common/options'
@@ -87,18 +85,6 @@ describe('cli/command', () => {
     expect(options.build.quiet).toBe(true)
     expect(options.build.analyze).toBe(true)
     expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
-  })
-
-  test('imports @nuxt/core', async () => {
-    const cmd = new Command()
-
-    expect(await cmd.importCore()).toBe(CoreImport)
-  })
-
-  test('imports @nuxt/builder', async () => {
-    const cmd = new Command()
-
-    expect(await cmd.importBuilder()).toBe(BuilderImport)
   })
 
   test('returns Nuxt instance', async () => {
