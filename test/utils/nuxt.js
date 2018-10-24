@@ -6,7 +6,6 @@ import { defaultsDeep } from 'lodash'
 export { version } from '../../packages/core/package.json'
 export { Nuxt } from '../../packages/core/src/index'
 export { Builder, Generator } from '../../packages/builder/src/index'
-// export Utils from '../../packages/common/src/utils'
 export * from '../../packages/common/src/index'
 
 export const loadFixture = async function (fixture, overrides) {
