@@ -19,7 +19,7 @@ steps:
 - script: |
     yarn build
   displayName: 'Build Nuxt'
-  
+
 - script: |
-    yarn test
+    yarn test:fixtures -w=4 && yarn test:unit -w=4
   displayName: 'Run tests'
