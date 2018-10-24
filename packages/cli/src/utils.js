@@ -85,6 +85,18 @@ export function indent(count, chr = ' ') {
   return chr.repeat(count)
 }
 
+const lastSpaceRgx = /\s(?!.*\s)/
+
+function trimStart(character, string = '') {
+  let startIndex = 0
+
+  while (string[startIndex] === character) {
+    startIndex++
+  }
+
+  return string.substr(startIndex)
+}
+
 //
 // Folds a string at a specified length, optionally attempting
 // to insert newlines after whitespace characters.
@@ -102,19 +114,7 @@ export function indent(count, chr = ' ') {
 // If s is huge and n is very small, this method will have
 // problems... StackOverflow.
 //
-const lastSpaceRgx = /\s(?!.*\s)/
-
-function trimStart(character, string) {
-  let startIndex = 0
-
-  while (string[startIndex] === character) {
-    startIndex++
-  }
-
-  return string.substr(startIndex)
-}
-
-export function foldLines(s, n, iN, foldAny, a) {
+export function foldLines(s = '', n, iN, foldAny, a) {
   a = a || []
   iN = iN || 0
   const i = a.length ? iN : 0 // first line no indent
