@@ -1,9 +1,10 @@
 import { consola } from '../utils'
-import Command from '../../src/common/command'
-import Options from '../../src/common/options'
+import Command from '../../src/command'
+import { options as Options } from '../../src/options'
 
 jest.mock('@nuxt/core')
 jest.mock('@nuxt/builder')
+jest.mock('@nuxt/generator')
 
 describe('cli/command', () => {
   beforeEach(() => {
@@ -21,7 +22,7 @@ describe('cli/command', () => {
       options: Object.keys(Options)
     })
 
-    const minimistOptions = cmd.buildMinimistOptions()
+    const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(4)
     expect(minimistOptions.boolean.length).toBe(9)
@@ -135,7 +136,7 @@ describe('cli/command', () => {
       --help, -h         Display this message
 
 `
-    expect(cmd.buildHelp()).toBe(expectedText)
+    expect(cmd._getHelp()).toBe(expectedText)
   })
 
   test('show version prints to stdout and exits', () => {
