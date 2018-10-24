@@ -14,7 +14,7 @@ const defaultOptions = [
   'help'
 ]
 
-export default class Command {
+export default class NuxtCommand {
   constructor({ description, usage, options } = {}) {
     this.description = description || ''
     this.usage = usage || ''
