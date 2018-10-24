@@ -11,6 +11,7 @@ const url = route => 'http://localhost:' + port + route
 const rootDir = resolve(__dirname, '..', 'fixtures/basic')
 const distDir = resolve(rootDir, '.nuxt-generate')
 
+let builder
 let server = null
 let generator = null
 let pathsBefore
@@ -29,7 +30,7 @@ describe('basic generate', () => {
       writeFileSync(changedFileName, '')
     })
 
-    const builder = new Builder(nuxt)
+    builder = new Builder(nuxt)
     builder.build = jest.fn()
     generator = new Generator(nuxt, builder)
 
@@ -45,8 +46,8 @@ describe('basic generate', () => {
   })
 
   test('Check builder', () => {
-    expect(generator.builder.bundleBuilder.isStatic).toBe(true)
-    expect(generator.builder.build).toHaveBeenCalledTimes(1)
+    expect(builder.bundleBuilder.context.isStatic).toBe(true)
+    expect(builder.build).toHaveBeenCalledTimes(1)
   })
 
   test('Check ready hook called', () => {

@@ -1,13 +1,21 @@
 import path from 'path'
+import chokidar from 'chokidar'
+import consola from 'consola'
+import fsExtra from 'fs-extra'
+import Glob from 'glob'
+import hash from 'hash-sum'
 import pify from 'pify'
-import uniqBy from 'lodash/uniqBy'
+import serialize from 'serialize-javascript'
+import upath from 'upath'
+
+import concat from 'lodash/concat'
+import debounce from 'lodash/debounce'
+import map from 'lodash/map'
 import omit from 'lodash/omit'
 import template from 'lodash/template'
-import fsExtra from 'fs-extra'
-import hash from 'hash-sum'
-import serialize from 'serialize-javascript'
-import Glob from 'glob'
-import consola from 'consola'
+import uniq from 'lodash/uniq'
+import uniqBy from 'lodash/uniqBy'
+import values from 'lodash/values'
 
 import devalue from '@nuxtjs/devalue'
 
@@ -31,6 +39,11 @@ export default class Builder {
     this.plugins = []
     this.options = nuxt.options
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
+    this.watchers = {
+      files: null,
+      custom: null,
+      restart: null
+    }
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
@@ -41,6 +54,7 @@ export default class Builder {
     // Stop watching on nuxt.close()
     if (this.options.dev) {
       this.nuxt.hook('close', () => this.unwatch())
+      this.nuxt.hook('build:done', () => this.watchClient())
     }
 
     if (this.options.build.analyze) {
@@ -462,6 +476,75 @@ export default class Builder {
       `export default ${JSON.stringify(options, null, '  ')}`,
       'utf8'
     )
+  }
+
+  watchClient() {
+    const src = this.options.srcDir
+    let patterns = [
+      r(src, this.options.dir.layouts),
+      r(src, this.options.dir.store),
+      r(src, this.options.dir.middleware),
+      r(src, `${this.options.dir.layouts}/*.{vue,js}`),
+      r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
+    ]
+    if (this._nuxtPages) {
+      patterns.push(
+        r(src, this.options.dir.pages),
+        r(src, `${this.options.dir.pages}/*.{vue,js}`),
+        r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
+      )
+    }
+    patterns = map(patterns, upath.normalizeSafe)
+
+    const options = this.options.watchers.chokidar
+    /* istanbul ignore next */
+    const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
+
+    // Watch for src Files
+    this.watchers.files = chokidar
+      .watch(patterns, options)
+      .on('add', refreshFiles)
+      .on('unlink', refreshFiles)
+
+    // Watch for custom provided files
+    let customPatterns = concat(
+      this.options.build.watch,
+      ...values(omit(this.options.build.styleResources, ['options']))
+    )
+    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
+    this.watchers.custom = chokidar
+      .watch(customPatterns, options)
+      .on('change', refreshFiles)
+  }
+
+  watchServer() {
+    const nuxtRestartWatch = concat(
+      this.options.serverMiddleware
+        .filter(i => typeof i === 'string')
+        .map(this.nuxt.resolver.resolveAlias),
+      this.options.watch.map(this.nuxt.resolver.resolveAlias),
+      path.join(this.options.rootDir, 'nuxt.config.js')
+    )
+
+    this.watchers.restart = chokidar
+      .watch(nuxtRestartWatch, this.options.watchers.chokidar)
+      .on('change', (_path) => {
+        this.watchers.restart.close()
+        const { name, ext } = path.parse(_path)
+        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`)
+      })
+  }
+
+  async unwatch() {
+    for (const watcher in this.watchers) {
+      if (this.watchers[watcher]) {
+        this.watchers[watcher].close()
+      }
+    }
+
+    if (this.bundleBuilder.unwatch) {
+      await this.bundleBuilder.unwatch()
+    }
   }
 }
 
