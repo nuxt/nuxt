@@ -179,7 +179,7 @@ export default class Nuxt {
 
       const server = appServer.listen(
         args,
-        (err) => {
+        async (err) => {
           /* istanbul ignore if */
           if (err) {
             return reject(err)
