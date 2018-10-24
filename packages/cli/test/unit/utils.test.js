@@ -108,40 +108,4 @@ describe('cli/utils', () => {
   test('indent custom char', () => {
     expect(utils.indent(4, '-')).toBe('----')
   })
-
-  test('foldLines', () => {
-    const str = 'word1 word2 word3'
-
-    expect(utils.foldLines(str, 3).join('|')).toBe('word1|word2|word3')
-    expect(utils.foldLines(str, 6).join('|')).toBe('word1|word2|word3')
-    expect(utils.foldLines(str, 12).join('|')).toBe('word1 word2|word3')
-    expect(utils.foldLines(str, str.length).join('|')).toBe(str)
-  })
-
-  test('foldLines with indent', () => {
-    const str = 'word1 word2 word3'
-
-    expect(utils.foldLines(str, 3, 2).join('|')).toBe('word1|  word2|  word3')
-    expect(utils.foldLines(str, 6, 2).join('|')).toBe('word1|  word2|  word3')
-    expect(utils.foldLines(str, 12, 2).join('|')).toBe('word1 word2|  word3')
-    expect(utils.foldLines(str, str.length, 2).join('|')).toBe(str)
-  })
-
-  test('foldLines anywhere', () => {
-    const str = 'word1 word2 word3'
-
-    expect(utils.foldLines(str, 3, 0, true).join('|')).toBe('wor|d1 |wor|d2 |wor|d3')
-    expect(utils.foldLines(str, 6, 0, true).join('|')).toBe('word1 |word2 |word3')
-    expect(utils.foldLines(str, 12, 0, true).join('|')).toBe('word1 word2 |word3')
-    expect(utils.foldLines(str, str.length, 0, true).join('|')).toBe(str)
-  })
-
-  test('foldLines anywhere with indent', () => {
-    const str = 'word1 word2 word3'
-
-    expect(utils.foldLines(str, 3, 1, true).join('|')).toBe('wor| d1| wo| rd| 2 | wo| rd| 3')
-    expect(utils.foldLines(str, 6, 1, true).join('|')).toBe('word1 | word2| word3')
-    expect(utils.foldLines(str, 12, 1, true).join('|')).toBe('word1 word2 | word3')
-    expect(utils.foldLines(str, str.length, 1, true).join('|')).toBe(str)
-  })
 })

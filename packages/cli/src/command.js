@@ -1,6 +1,6 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, foldLines, indent } from './utils'
+import { loadNuxtConfig, indent, foldLines } from './utils'
 import { options as Options, defaultOptions as DefaultOptions } from './options'
 import * as imports from './imports'
 
@@ -102,22 +102,17 @@ export default class NuxtCommand {
       }
     }
 
-    const optionTexts = options.reduce((acc, val) => {
-      const line = indent(startSpaces) + val[0] +
-        indent(maxLength - val[0].length + optionSpaces) + val[1]
+    const optionStr = foldLines(options.map(([option, description]) =>
+      option + indent(maxLength - option.length + optionSpaces) + description
+    ).join('\n'), maxCharsPerLine, startSpaces + optionSpaces)
 
-      const foldedLines = foldLines(line, maxCharsPerLine, maxLength + startSpaces + optionSpaces)
-      return acc + foldedLines.join('\n') + '\n'
-    }, '')
+    const description = foldLines(this.description, maxCharsPerLine, startSpaces)
 
-    const description = foldLines(this.description, maxCharsPerLine, startSpaces).join('\n')
     return `
-    Description
-      ${description}
+    Description\n${description}
     Usage
       $ nuxt ${this.usage}
-    Options
-${optionTexts}
+    Options\n${optionStr}
 `
   }
 
