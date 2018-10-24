@@ -32,6 +32,18 @@ or [bug report](https://bug.nuxtjs.org/).
 A great PR, whether it includes a bug fix or a new feature, will often include tests.
 To write great tests, let us explain our test structure:
 
+### Setup
+
+Before running any tests, make sure all dependencies are met and build all packages:
+
+```sh
+yarn
+yarn build
+yarn test
+```
+
+You **must** use `yarn` to install dependencies as it'll properly resolve all dependencies from sub-packages as well, eliminating the need to `npm link` all required packages.
+
 #### Fixtures
 
 The fixtures (found under `tests/fixtures`) contain several Nuxt applications. To keep build time as short as possible,

@@ -33,7 +33,8 @@ import {
   sequence,
   relativeTo,
   waitFor,
-  determineGlobals
+  determineGlobals,
+  stripWhitespace
 } from '@nuxt/common'
 
 import PerfLoader from './webpack/utils/perf-loader'
@@ -214,6 +215,7 @@ export default class Builder {
       splitChunks: this.options.build.splitChunks,
       uniqBy,
       isDev: this.options.dev,
+      isTest: this.options.test,
       debug: this.options.debug,
       vue: { config: this.options.vue.config },
       mode: this.options.mode,
@@ -432,13 +434,15 @@ export default class Builder {
             },
             interpolate: /<%=([\s\S]+?)%>/g
           })
-          content = templateFunction(
-            Object.assign({}, templateVars, {
-              options: options || {},
-              custom,
-              src,
-              dst
-            })
+          content = stripWhitespace(
+            templateFunction(
+              Object.assign({}, templateVars, {
+                options: options || {},
+                custom,
+                src,
+                dst
+              })
+            )
           )
         } catch (err) {
           /* istanbul ignore next */
