@@ -6,6 +6,9 @@
 pool:
   vmImage: 'win1803'
 
+trigger:
+- dev
+
 steps:
 - task: NodeTool@0
   inputs:
