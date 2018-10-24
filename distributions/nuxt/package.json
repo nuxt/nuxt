@@ -40,7 +40,8 @@
   ],
   "files": [
     "dist",
-    "types/index.d.ts"
+    "types/index.d.ts",
+    "types/vue.d.ts"
   ],
   "main": "dist/nuxt.js",
   "types": "types/index.d.ts",
