@@ -4,7 +4,13 @@ const noopData = () => ({})
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
-if (process.client) {
+if (process.client || process.browser) {
+  <% if (isDev) { %>
+  if (process.browser) {
+    console.warn('process.browser is deprecated, use process.client instead.')
+  }
+  <% } %>
+
   window.<%= globals.readyCallback %>Cbs = []
   window.<%= globals.readyCallback %> = (cb) => {
     window.<%= globals.readyCallback %>Cbs.push(cb)
@@ -165,7 +171,13 @@ export async function setContext(app, context) {
             status: status
           })
         }
-        if (process.client) {
+        if (process.client || process.browser) {
+          <% if (isDev) { %>
+          if (process.browser) {
+            console.warn('process.browser is deprecated, use process.client instead.')
+          }
+          <% } %>
+
           // https://developer.mozilla.org/en-US/docs/Web/API/Location/replace
           window.location.replace(path)
 
@@ -177,7 +189,12 @@ export async function setContext(app, context) {
     if (process.server) {
       app.context.beforeNuxtRender = fn => context.beforeRenderFns.push(fn)
     }
-    if (process.client) {
+    if (process.client || process.browser) {
+      <% if (isDev) { %>
+      if (process.browser) {
+        console.warn('process.browser is deprecated, use process.client instead.')
+      }
+      <% } %>
       app.context.nuxtState = window.<%= globals.context %>
     }
   }
