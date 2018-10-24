@@ -6,9 +6,6 @@
 pool:
   vmImage: 'win1803'
 
-strategy:
-  parallel: 10
-
 steps:
 - task: NodeTool@0
   inputs:
