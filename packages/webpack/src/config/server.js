@@ -3,10 +3,10 @@ import fs from 'fs'
 import webpack from 'webpack'
 import nodeExternals from 'webpack-node-externals'
 
-import BaseConfig from './base'
+import WebpackBaseConfig from './base'
 import VueSSRServerPlugin from './plugins/vue/server'
 
-export default class WebpackServerConfig extends BaseConfig {
+export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor(builder) {
     super(builder, { name: 'server', isServer: true })
   }
