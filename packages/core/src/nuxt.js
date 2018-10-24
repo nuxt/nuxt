@@ -139,7 +139,7 @@ export default class Nuxt {
   isPortInUse(port) {
     return new Promise((resolve, reject) => {
       const tester = require('net').createServer()
-        .once('error', err => (err.code == 'EADDRINUSE' ? resolve(true) : reject(err)))
+        .once('error', err => (err.code === 'EADDRINUSE' ? resolve(true) : reject(err)))
         .once('listening', () => tester.once('close', () => resolve(false)).close())
         .listen(port)
     })
@@ -185,10 +185,11 @@ export default class Nuxt {
             return reject(err)
           }
 
-          let { address: host, port } = server.address();
+          const { port } = server.address()
+          let { address: host } = server.address()
 
-          const isPortInUse = await this.isPortInUse(port);
-          if(isPortInUse) throw `Error: listen EADDRINUSE ${host}:${port}`;
+          const isPortInUse = await this.isPortInUse(port)
+          if (isPortInUse) throw new Error(`listen EADDRINUSE ${host}:${port}`)
 
           let listenURL
 
