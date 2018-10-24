@@ -1,10 +1,10 @@
 
 import path from 'path'
 import fs from 'fs'
+import { defaultsDeep } from 'lodash'
 
 export { version } from '../../packages/core/package.json'
-export { default as Utils } from '../../packages/common/src/index'
-export { Options } from '../../packages/common/src/index'
+export { Utils, Options } from '../../packages/common/src/index'
 export { Nuxt } from '../../packages/core/src/index'
 export { Builder, Generator } from '../../packages/builder/src/index'
 

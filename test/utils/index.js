@@ -1,7 +1,6 @@
 
 import klawSync from 'klaw-sync'
-import { waitFor } from '../../packages/common/src/index'
-import { defaultsDeep } from 'lodash'
+import { Utils } from '../../packages/common/src/index'
 
 export { default as getPort } from 'get-port'
 export { default as rp } from 'request-promise-native'
@@ -16,7 +15,7 @@ export const waitUntil = async function waitUntil(condition, duration = 20, inte
   const steps = Math.floor(duration * 1000 / interval)
 
   while (!condition() && iterator < steps) {
-    await waitFor(interval)
+    await Utils.waitFor(interval)
     iterator++
   }
 
