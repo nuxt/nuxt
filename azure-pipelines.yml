@@ -4,7 +4,10 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'win1803'
+
+strategy:
+  parallel: 10
 
 steps:
 - task: NodeTool@0
