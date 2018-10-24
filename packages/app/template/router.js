@@ -45,9 +45,11 @@ Vue.use(Router)
 const scrollBehavior = <%= serialize(router.scrollBehavior).replace(/scrollBehavior\s*\(/, 'function(').replace('function function', 'function') %>
 <% } else { %>
 if (process.client || process.browser) {
+  <% if (isDev) { %>
   if (process.browser) {
     console.warn('process.browser is deprecated, use process.client instead.')
   }
+  <% } %>
   window.history.scrollRestoration = 'manual'
 }
 const scrollBehavior = function (to, from, savedPosition) {
