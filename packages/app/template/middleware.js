@@ -2,7 +2,7 @@
 const files = require.context('@/<%= dir.middleware %>', false, /^\.\/(?!<%= ignorePrefix %>)[^.]+\.(<%= extensions %>)$/)
 const filenames = files.keys()
 
-function getModule (filename) {
+function getModule(filename) {
   const file = files(filename)
   return file.default || file
 }
