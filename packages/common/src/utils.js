@@ -404,3 +404,19 @@ export const stripWhitespace = function stripWhitespace(string) {
   })
   return string
 }
+
+export function defineDeprecateGetter(obj, prop, val, instead) {
+  let warned = false
+
+  Object.defineProperty(obj, prop, {
+    get: () => {
+      if (!warned) {
+        warned = true
+        consola.warn({
+          message: `${prop} is depricated. Please use ${instead}`
+        })
+      }
+      return val
+    }
+  })
+}
