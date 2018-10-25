@@ -11,8 +11,10 @@ import { setContext, getLocation, getRouteData } from './utils'
 <% if (store) { %>import { createStore } from './store.js'<% } %>
 
 /* Plugins */
+<%= isTest ? '/* eslint-disable camelcase */' : '' %>
 <% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %><%= (plugin.ssr===false) ? ' (ssr: false)' : '' %>
 <% }) %>
+<%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
 // Component: <no-ssr>
 Vue.component(NoSSR.name, NoSSR)
@@ -40,9 +42,9 @@ const defaultTransition = <%=
   .replace('enterCancelled(', 'function(').replace('beforeLeave(', 'function(').replace('leave(', 'function(')
   .replace('afterLeave(', 'function(').replace('leaveCancelled(', 'function(').replace('beforeAppear(', 'function(')
   .replace('appear(', 'function(').replace('afterAppear(', 'function(').replace('appearCancelled(', 'function(')
-%>
+%><%= isTest ? '// eslint-disable-line' : '' %>
 
-async function createApp (ssrContext) {
+async function createApp(ssrContext) {
   const router = await createRouter(ssrContext)
 
   <% if (store) { %>
@@ -50,13 +52,14 @@ async function createApp (ssrContext) {
   // Add this.$router into store actions/mutations
   store.$router = router
     <% if (mode === 'universal') { %>
-    // Fix SSR caveat https://github.com/nuxt/nuxt.js/issues/3757#issuecomment-414689141
-    const registerModule = store.registerModule
-    store.registerModule = (path, rawModule, options) => registerModule.call(store, path, rawModule, Object.assign({ preserveState: process.client }, options))
+  // Fix SSR caveat https://github.com/nuxt/nuxt.js/issues/3757#issuecomment-414689141
+  const registerModule = store.registerModule
+  store.registerModule = (path, rawModule, options) => registerModule.call(store, path, rawModule, Object.assign({ preserveState: process.client }, options))
     <% } %>
   <% } %>
 
   // Create Root instance
+
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
   const app = {
@@ -65,7 +68,7 @@ async function createApp (ssrContext) {
     nuxt: {
       defaultTransition,
       transitions: [ defaultTransition ],
-      setTransitions (transitions) {
+      setTransitions(transitions) {
         if (!Array.isArray(transitions)) {
           transitions = [ transitions ]
         }
@@ -84,7 +87,7 @@ async function createApp (ssrContext) {
       },
       err: null,
       dateErr: null,
-      error (err) {
+      error(err) {
         err = err || null
         app.context._errored = !!err
         if (typeof err === 'string') err = { statusCode: 500, message: err }
@@ -124,6 +127,7 @@ async function createApp (ssrContext) {
     beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined
   })
 
+  <% if (plugins.length) { %>
   const inject = function (key, value) {
     if (!key) throw new Error('inject(key, value) has no key provided')
     if (!value) throw new Error('inject(key, value) has no value provided')
@@ -142,16 +146,22 @@ async function createApp (ssrContext) {
     Vue.use(() => {
       if (!Vue.prototype.hasOwnProperty(key)) {
         Object.defineProperty(Vue.prototype, key, {
-          get () {
+          get() {
             return this.$root.$options[key]
           }
         })
       }
     })
   }
+  <% } %>
 
   <% if (store) { %>
-  if (process.client) {
+  if (process.client || process.browser) {
+    <% if (isDev) { %>
+    if (process.browser) {
+      console.warn('process.browser is deprecated, use process.client instead.')
+    }
+    <% } %>
     // Replace store state before plugins execution
     if (window.<%= globals.context %> && window.<%= globals.context %>.state) {
       store.replaceState(window.<%= globals.context %>.state)
@@ -160,12 +170,20 @@ async function createApp (ssrContext) {
   <% } %>
 
   // Plugin execution
+  <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.filter(p => p.ssr).forEach((plugin) => { %>
   if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   <% if (plugins.filter(p => !p.ssr).length) { %>
-  if (process.client) { <% plugins.filter((p) => !p.ssr).forEach((plugin) => { %>
+  if (process.client || process.browser) {
+    <% if (isDev) { %>
+    if (process.browser) {
+      console.warn('process.browser is deprecated, use process.client instead.')
+    }
+    <% } %>
+    <% plugins.filter((p) => !p.ssr).forEach((plugin) => { %>
     if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   }<% } %>
+  <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
@@ -186,8 +204,8 @@ async function createApp (ssrContext) {
 
   return {
     app,
-    router,
-    <% if(store) { %>store<%  } %>
+    <% if(store) { %>store,<%  } %>
+    router
   }
 }
 
