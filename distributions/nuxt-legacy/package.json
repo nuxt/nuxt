@@ -55,6 +55,7 @@
     "@nuxt/common": "^2.2.0",
     "@nuxt/core": "^2.2.0",
     "@nuxt/generator": "^2.2.0",
+    "@nuxt/webpack": "^2.2.0",
     "consola": "^1.4.4"
   },
   "engines": {

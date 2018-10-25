@@ -38,7 +38,6 @@ Before running any tests, make sure all dependencies are met and build all packa
 
 ```sh
 yarn
-yarn dev
 ```
 
 `yarn` is the only supported package manager, as it will, among other things, properly resolve all dependencies from sub-packages and eliminate the need to `npm link` all required packages.
