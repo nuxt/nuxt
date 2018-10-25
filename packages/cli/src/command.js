@@ -67,35 +67,19 @@ export default class NuxtCommand {
     return options
   }
 
-  importCore() {
-    return imports.core()
-  }
-
-  importBuilder() {
-    return imports.builder()
-  }
-
-  importGenerator() {
-    return imports.generator()
-  }
-
-  importWebpack() {
-    return imports.webpack()
-  }
-
   async getNuxt(options) {
-    const { Nuxt } = await this.importCore()
+    const { Nuxt } = await imports.core()
     return new Nuxt(options)
   }
 
   async getBuilder(nuxt) {
-    const { Builder } = await this.importBuilder()
-    const { BundleBuilder } = await this.importWebpack()
+    const { Builder } = await imports.builder()
+    const { BundleBuilder } = await imports.webpack()
     return new Builder(nuxt, BundleBuilder)
   }
 
   async getGenerator(nuxt) {
-    const { Generator } = await this.importGenerator()
+    const { Generator } = await imports.generator()
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
   }

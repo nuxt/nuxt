@@ -1,4 +1,22 @@
+import * as imports from '../../src/imports'
 import Command from '../../src/command'
+
+jest.mock('../../src/imports', () => {
+  return {
+    core: jest.fn().mockImplementation(() => ({
+      Nuxt: function () {}
+    })),
+    builder: jest.fn().mockImplementation(() => ({
+      Builder: function () {}
+    })),
+    generator: jest.fn().mockImplementation(() => ({
+      Generator: function () {}
+    })),
+    webpack: jest.fn().mockImplementation(() => ({
+      BundleBuilder: function () {}
+    }))
+  }
+})
 
 export const mockGetNuxt = (options, implementation) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {
@@ -75,9 +93,8 @@ export const mockNuxt = (implementation) => {
     showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
   }, implementation || {})
 
-  Command.prototype.importCore = jest.fn().mockImplementationOnce(() => {
-    return { Nuxt }
-  })
+  imports.core.mockImplementation(() => ({ Nuxt }))
+
   return Nuxt
 }
 
@@ -89,8 +106,7 @@ export const mockBuilder = (implementation) => {
     watchServer: jest.fn().mockImplementationOnce(() => Promise.resolve())
   }, implementation || {})
 
-  Command.prototype.importBuilder = jest.fn().mockImplementationOnce(() => {
-    return { Builder }
-  })
+  imports.builder.mockImplementation(() => ({ Builder }))
+
   return Builder
 }
