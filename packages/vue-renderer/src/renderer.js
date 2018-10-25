@@ -123,7 +123,7 @@ export default class VueRenderer {
     }
 
     // Create Meta Renderer
-    this.spaMetaRenderer = new SPAMetaRenderer(this.server.nuxt, this)
+    this.spaMetaRenderer = new SPAMetaRenderer(this)
 
     // Skip following steps if noSSR mode
     if (this.noSSR) {

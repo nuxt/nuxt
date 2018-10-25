@@ -4,10 +4,9 @@ import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
 
 export default class SPAMetaRenderer {
-  constructor(nuxt, renderer) {
-    this.nuxt = nuxt
+  constructor(renderer) {
     this.renderer = renderer
-    this.options = nuxt.options
+    this.options = this.renderer.server.options
     this.vueRenderer = createRenderer()
     this.cache = LRU({})
 
@@ -69,7 +68,7 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const clientManifest = this.renderer.resources.clientManifest
+    const clientManifest = this.renderer.server.resources.clientManifest
 
     const shouldPreload = this.options.render.bundleRenderer.shouldPreload || (() => true)
     const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch || (() => true)
