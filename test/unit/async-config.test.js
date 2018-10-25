@@ -13,7 +13,7 @@ describe('basic ssr', () => {
 
   test('/', async () => {
     expect(nuxt.options.head.title).toBe('Async Config!')
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>I am ALIVE!</h1>')).toBe(true)
   })
 })

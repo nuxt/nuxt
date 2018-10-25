@@ -15,44 +15,44 @@ describe('with-config', () => {
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
   test('/ (asset name for analyze mode)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/app.js"')
   })
 
   test.skip('/ (global styles inlined)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('.global-css-selector')
   })
 
   test.skip('/ (preload fonts)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes(
       '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
     )).toBe(true)
   })
 
   test('/ (styleResources styles inlined)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('.pre-process-selector')
   })
 
   test('/ (custom app.html)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<p>Made by Nuxt.js team</p>')).toBe(true)
   })
 
   test('/ (custom build.publicPath)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<script src="/test/orion/')).toBe(true)
   })
 
   test('/ (custom postcss.config.js)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('::-webkit-input-placeholder')).toBe(true)
   })
 

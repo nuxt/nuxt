@@ -160,7 +160,7 @@ export default class VueRenderer {
     /* istanbul ignore if */
     if (!this.isReady) {
       await waitFor(1000)
-      return this.renderRoute(url, context)
+      return this.server.renderRoute(url, context)
     }
 
     // Log rendered url

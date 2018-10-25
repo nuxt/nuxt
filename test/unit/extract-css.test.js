@@ -27,7 +27,7 @@ describe('extract css', () => {
   })
 
   test('/about should contain module style', async () => {
-    const { html } = await nuxt.renderRoute('/about')
+    const { html } = await nuxt.server.renderRoute('/about')
     expect(html).toMatch(/<h1 class="test_[a-zA-Z0-9]{5}">I'm BLUE<\/h1>/)
   })
 })

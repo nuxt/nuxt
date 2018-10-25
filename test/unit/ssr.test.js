@@ -23,7 +23,7 @@ const uniqueTest = async (url) => {
   const results = []
 
   await parallel(range(5), async () => {
-    const { html } = await nuxt.renderRoute(url)
+    const { html } = await nuxt.server.renderRoute(url)
     const foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))
   })

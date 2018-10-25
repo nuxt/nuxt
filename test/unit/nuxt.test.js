@@ -38,7 +38,7 @@ describe('nuxt', () => {
     const port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('Universal Vue.js Applications')).toBe(true)
     expect(/Landscape__Page__Explanation/.test(html)).toBe(true)
 

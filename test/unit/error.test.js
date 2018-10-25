@@ -17,13 +17,13 @@ describe('error', () => {
   })
 
   test('/ should display an error', async () => {
-    await expect(nuxt.renderRoute('/')).rejects.toMatchObject({
+    await expect(nuxt.server.renderRoute('/')).rejects.toMatchObject({
       message: expect.stringContaining('not_defined is not defined')
     })
   })
 
   test('/404 should display an error too', async () => {
-    const { error } = await nuxt.renderRoute('/404')
+    const { error } = await nuxt.server.renderRoute('/404')
     expect(error.message.includes('This page could not be found')).toBe(true)
   })
 

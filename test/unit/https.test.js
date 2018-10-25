@@ -11,7 +11,7 @@ describe('basic https', () => {
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>Served over HTTPS!</h1>')).toBe(true)
   })
 

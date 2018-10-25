@@ -10,7 +10,7 @@ describe.skip.win('basic sockets', () => {
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>Served over sockets!</h1>')).toBe(true)
   })
 

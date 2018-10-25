@@ -26,7 +26,7 @@ describe('custom-dirs', () => {
   })
 
   test('custom layouts directory', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<p>I have custom layouts directory</p>')).toBe(true)
   })
 
@@ -37,7 +37,7 @@ describe('custom-dirs', () => {
   })
 
   test('custom pages directory', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>I have custom pages directory</h1>')).toBe(true)
   })
 
