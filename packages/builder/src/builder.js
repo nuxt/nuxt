@@ -372,7 +372,7 @@ export default class Builder {
           custom: customFileExists
         }
       })
-      .filter(i => !!i)
+      .filter(Boolean)
 
     // -- Custom templates --
     // Add custom template files
