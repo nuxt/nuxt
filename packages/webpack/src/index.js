@@ -1,1 +1,1 @@
-export { WebpackBuilder } from './builder'
+export { WebpackBuilder as BundleBuilder } from './builder'
