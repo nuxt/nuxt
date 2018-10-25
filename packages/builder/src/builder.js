@@ -21,7 +21,6 @@ import devalue from '@nuxtjs/devalue'
 
 import {
   Options,
-  BuildContext,
   r,
   wp,
   wChunk,
@@ -32,6 +31,8 @@ import {
   stripWhitespace,
   isString
 } from '@nuxt/common'
+
+import BuildContext from './context'
 
 const glob = pify(Glob)
 
