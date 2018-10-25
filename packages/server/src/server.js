@@ -169,7 +169,7 @@ export default class Server {
   renderAndGetWindow(url, opts = {}) {
     return renderAndGetWindow(url, opts, {
       loadedCallback: this.globals.loadedCallback,
-      ssr: options.render.ssr,
+      ssr: this.options.render.ssr,
       globals: this.globals
     })
   }
