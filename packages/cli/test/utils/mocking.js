@@ -11,6 +11,9 @@ jest.mock('../../src/imports', () => {
     })),
     generator: jest.fn().mockImplementation(() => ({
       Generator: () => {}
+    })),
+    webpack: jest.fn().mockImplementation(() => ({
+      BundleBuilder: () => {}
     }))
   }
 })
