@@ -66,10 +66,10 @@ export default class WebpackBuilder {
     }
 
     // Check styleResource existence
-    const styleResources = this.options.build.styleResources
+    const styleResources = this.context.options.build.styleResources
     Object.keys(styleResources).forEach(async (ext) => {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-        const styleResourceFiles = await glob(path.resolve(this.options.rootDir, p))
+        const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
         if (!styleResourceFiles || styleResourceFiles.length === 0) {
           throw new Error(`Style Resource not found: ${p}`)
