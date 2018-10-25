@@ -5,7 +5,7 @@
     "distributions/*"
   ],
   "scripts": {
-    "build": "node -r esm ./scripts/package",
+    "build": "yarn clean && node -r esm ./scripts/package",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
@@ -20,7 +20,7 @@
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
-    "postinstall": "lerna link"
+    "postinstall": "lerna link && node -r esm ./scripts/dev"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
