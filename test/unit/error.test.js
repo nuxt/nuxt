@@ -28,7 +28,7 @@ describe('error', () => {
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
+    await expect(nuxt.server.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
     })
   })

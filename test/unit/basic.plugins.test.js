@@ -14,7 +14,7 @@ describe('with-config', () => {
   })
 
   test('/', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/'))
+    const window = await nuxt.server.renderAndGetWindow(url('/'))
     expect(window.__test_plugin).toBe(true)
   })
 

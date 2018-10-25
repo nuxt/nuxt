@@ -31,7 +31,7 @@ describe('custom-dirs', () => {
   })
 
   test('custom middleware directory', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/user-agent'))
+    const window = await nuxt.server.renderAndGetWindow(url('/user-agent'))
     const html = window.document.body.innerHTML
     expect(html.includes('<pre>Mozilla')).toBe(true)
   })

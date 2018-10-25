@@ -99,7 +99,7 @@ describe('ssr', () => {
   })
 
   test('store undefined variable response', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/store'))
+    const window = await nuxt.server.renderAndGetWindow(url('/store'))
     expect('idUndefined' in window.__NUXT__.state).toBe(true)
     expect(window.__NUXT__.state.idUndefined).toEqual(undefined)
   })

@@ -5,7 +5,7 @@ let nuxt, port
 const url = route => 'http://localhost:' + port + route
 
 const renderRoute = async (_url) => {
-  const window = await nuxt.renderAndGetWindow(url(_url))
+  const window = await nuxt.server.renderAndGetWindow(url(_url))
   const head = window.document.head.innerHTML
   const html = window.document.body.innerHTML
   return { window, head, html }

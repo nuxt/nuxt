@@ -28,7 +28,7 @@ describe('basic ssr', () => {
   ** Example of testing via dom checking
   */
   test('/css', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/css'))
+    const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
     expect(headHtml.includes('color:red')).toBe(true)
@@ -41,7 +41,7 @@ describe('basic ssr', () => {
   })
 
   test('/postcss', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/css'))
+    const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
     expect(headHtml.includes('background-color:#00f')).toBe(true)
@@ -62,7 +62,7 @@ describe('basic ssr', () => {
   })
 
   test('/head', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/head'))
+    const window = await nuxt.server.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
     const html = window.document.body.innerHTML
@@ -142,7 +142,7 @@ describe('basic ssr', () => {
 
   test('/redirect -> check redirected source', async () => {
     // there are no transition properties in jsdom, ignore the error log
-    const window = await nuxt.renderAndGetWindow(url('/redirect'))
+    const window = await nuxt.server.renderAndGetWindow(url('/redirect'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Index page</h1>')).toBe(true)
   })
@@ -164,7 +164,7 @@ describe('basic ssr', () => {
   })
 
   test('/special-state -> check window.__NUXT__.test = true', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/special-state'))
+    const window = await nuxt.server.renderAndGetWindow(url('/special-state'))
     expect(window.document.title).toBe('Nuxt.js')
     expect(window.__NUXT__.test).toBe(true)
   })
@@ -234,7 +234,7 @@ describe('basic ssr', () => {
   })
 
   test('/no-ssr (client-side)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/no-ssr'))
+    const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html.includes('Displayed only on client-side</h1>')).toBe(true)
   })
