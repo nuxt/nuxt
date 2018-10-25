@@ -3,7 +3,7 @@ import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
 
-export default class MetaRenderer {
+export default class SPAMetaRenderer {
   constructor(nuxt, renderer) {
     this.nuxt = nuxt
     this.renderer = renderer

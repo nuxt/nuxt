@@ -413,7 +413,7 @@ export function defineDeprecateGetter(obj, prop, val, instead) {
       if (!warned) {
         warned = true
         consola.warn({
-          message: `${prop} is depricated. Please use ${instead}`
+          message: `'${prop}' is deprecated.` + (instead ? ` Please use '${instead}'.` : '')
         })
       }
       return val

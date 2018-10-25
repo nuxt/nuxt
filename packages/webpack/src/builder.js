@@ -120,7 +120,7 @@ export class WebpackBuilder {
         })
 
         // Reload renderer if available
-        nuxt.renderer.loadResources(this.mfs || fs)
+        nuxt.server.loadResources(this.mfs || fs)
 
         // Resolve on next tick
         process.nextTick(resolve)

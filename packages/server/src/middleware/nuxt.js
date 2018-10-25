@@ -4,14 +4,14 @@ import consola from 'consola'
 
 import { getContext } from '@nuxt/common'
 
-export default async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
 
   res.statusCode = 200
   try {
-    const result = await this.renderRoute(req.url, context)
-    await this.nuxt.callHook('render:route', req.url, result, context)
+    const result = await renderRoute(req.url, context)
+    await nuxt.callHook('render:route', req.url, result, context)
     const {
       html,
       cspScriptSrcHashSet,
@@ -21,7 +21,7 @@ export default async function nuxtMiddleware(req, res, next) {
     } = result
 
     if (redirected) {
-      this.nuxt.callHook('render:routeDone', req.url, result, context)
+      nuxt.callHook('render:routeDone', req.url, result, context)
       return html
     }
     if (error) {
@@ -29,25 +29,25 @@ export default async function nuxtMiddleware(req, res, next) {
     }
 
     // Add ETag header
-    if (!error && this.options.render.etag) {
-      const etag = generateETag(html, this.options.render.etag)
+    if (!error && options.render.etag) {
+      const etag = generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
-        this.nuxt.callHook('render:routeDone', req.url, result, context)
+        nuxt.callHook('render:routeDone', req.url, result, context)
         return
       }
       res.setHeader('ETag', etag)
     }
 
     // HTTP2 push headers for preload assets
-    if (!error && this.options.render.http2.push) {
+    if (!error && options.render.http2.push) {
       // Parse resourceHints to extract HTTP.2 prefetch/push headers
       // https://w3c.github.io/preload/#server-push-http-2
       const pushAssets = []
       const preloadFiles = getPreloadFiles()
-      const { shouldPush } = this.options.render.http2
-      const { publicPath } = this.resources.clientManifest
+      const { shouldPush } = options.render.http2
+      const { publicPath } = resources.clientManifest
 
       preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
         // By default, we only preload scripts or css
@@ -70,18 +70,18 @@ export default async function nuxtMiddleware(req, res, next) {
       res.setHeader('Link', pushAssets.join(','))
     }
 
-    if (this.options.render.csp) {
-      const { allowedSources, policies } = this.options.render.csp
-      const cspHeader = this.options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+    if (options.render.csp) {
+      const { allowedSources, policies } = options.render.csp
+      const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashSet, allowedSources, policies, isDev: this.options.dev }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashSet, allowedSources, policies, isDev: options.dev }))
     }
 
     // Send response
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
-    this.nuxt.callHook('render:routeDone', req.url, result, context)
+    nuxt.callHook('render:routeDone', req.url, result, context)
     return html
   } catch (err) {
     /* istanbul ignore if */
