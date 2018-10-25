@@ -1,8 +1,15 @@
+<%= isTest ? '// @vue/component' : '' %>
 export default {
   name: 'nuxt-child',
   functional: true,
-  props: ['keepAlive', 'keepAliveProps'],
-  render (h, { parent, data, props }) {
+  props: {
+    nuxtChildKey: {
+      type: String,
+      default: ''
+    },
+    keepAlive: Boolean
+  },
+  render(h, { parent, data, props }) {
     data.nuxtChild = true
     const _parent = parent
     const transitions = parent.<%= globals.nuxt %>.nuxt.transitions
@@ -17,14 +24,14 @@ export default {
     }
     data.nuxtChildDepth = depth
     const transition = transitions[depth] || defaultTransition
-    let transitionProps = {}
+    const transitionProps = {}
     transitionsKeys.forEach((key) => {
       if (typeof transition[key] !== 'undefined') {
         transitionProps[key] = transition[key]
       }
     })
 
-    let listeners = {}
+    const listeners = {}
     listenersKeys.forEach((key) => {
       if (typeof transition[key] === 'function') {
         listeners[key] = transition[key].bind(_parent)
@@ -43,7 +50,7 @@ export default {
     let routerView = [
       h('router-view', data)
     ]
-    if (typeof props.keepAlive !== 'undefined') {
+    if (props.keepAlive) {
       routerView = [
         h('keep-alive', { props: props.keepAliveProps }, routerView)
       ]

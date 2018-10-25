@@ -1,4 +1,5 @@
 export default {
+  test: true,
   hooks(hook) {
     hook('build:done', () => {
       process.stdout.write('Compiled successfully')

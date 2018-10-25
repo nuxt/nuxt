@@ -1,5 +1,10 @@
-export const start = () => import('./commands/start')
-export const dev = () => import('./commands/dev')
+import * as _commands from './commands'
+import * as _imports from './imports'
 
-export const build = () => import('./commands/build')
-export const generate = () => import('./commands/generate')
+export const commands = _commands
+export const imports = _imports
+
+export { default as setup } from './setup'
+export { default as run } from './run'
+
+export { loadNuxtConfig } from './utils'
