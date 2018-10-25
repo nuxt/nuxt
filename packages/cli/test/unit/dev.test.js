@@ -1,7 +1,6 @@
-import { consola } from '../utils'
-import { mockNuxt, mockBuilder, mockGetNuxtConfig } from '../utils/mocking'
+import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig } from '../utils'
 
-describe.skip('dev', () => {
+describe('dev', () => {
   let dev
 
   beforeAll(async () => {
@@ -10,7 +9,7 @@ describe.skip('dev', () => {
   })
 
   afterEach(() => {
-    jest.resetAllMocks()
+    jest.clearAllMocks()
   })
 
   test('is function', () => {
@@ -30,7 +29,7 @@ describe.skip('dev', () => {
     expect(Nuxt.prototype.showReady).toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
@@ -53,7 +52,7 @@ describe.skip('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     // Test error on second build so we cover oldInstance stuff
     const builder = new Builder()
@@ -70,7 +69,7 @@ describe.skip('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
@@ -86,7 +85,7 @@ describe.skip('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     mockGetNuxtConfig().mockImplementationOnce(() => {
       throw new Error('Config Error')
