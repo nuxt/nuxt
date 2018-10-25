@@ -10,7 +10,7 @@ async function main() {
   const rootPackage = new Package()
   const workspacePackages = rootPackage.getWorkspacePackages()
 
-  // Create a dev-only entypoint to the src
+  // Create a dev-only entrypoint to the src
   for (const pkg of workspacePackages) {
     if (!pkg.pkg.main) {
       continue
