@@ -389,3 +389,18 @@ const DYNAMIC_ROUTE_REGEX = /^\/(:|\*)/
  * @return {array}
  */
 export const wrapArray = value => Array.isArray(value) ? value : [value]
+
+const WHITESPACE_REPLACEMENTS = [
+  [/[ \t\f\r]+\n/g, '\n'], // strip empty indents
+  [/{\n{2,}/g, '{\n'], // strip start padding from blocks
+  [/\n{2,}([ \t\f\r]*})/g, '\n$1'], // strip end padding from blocks
+  [/\n{3,}/g, '\n\n'], // strip multiple blank lines (1 allowed)
+  [/\n{2,}$/g, '\n'] // strip blank lines EOF (0 allowed)
+]
+
+export const stripWhitespace = function stripWhitespace(string) {
+  WHITESPACE_REPLACEMENTS.forEach(([regex, newSubstr]) => {
+    string = string.replace(regex, newSubstr)
+  })
+  return string
+}

@@ -5,6 +5,7 @@ import commonjsPlugin from 'rollup-plugin-commonjs'
 import licensePlugin from 'rollup-plugin-license'
 import replacePlugin from 'rollup-plugin-replace'
 import aliasPlugin from 'rollup-plugin-alias'
+import nodeResolvePlugin from 'rollup-plugin-node-resolve'
 import defaultsDeep from 'lodash/defaultsDeep'
 
 import { builtins } from './builtins'
@@ -29,6 +30,7 @@ export default function rollupConfig({
       file: `${pkg.name.replace('-edge', '')}.js`,
       dir: path.resolve(rootDir, 'dist')
     },
+    preferConst: true,
     external: [
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
@@ -44,6 +46,11 @@ export default function rollupConfig({
           __NODE_ENV__: process.env.NODE_ENV,
           ...replace
         }
+      }),
+      nodeResolvePlugin({
+        only: [
+          /lodash/
+        ]
       }),
       commonjsPlugin(),
       jsonPlugin(),
