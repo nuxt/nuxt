@@ -117,6 +117,7 @@ export default class Server {
     // Finally use nuxtMiddleware
     this.useMiddleware(nuxtMiddleware({
       options: this.options,
+      nuxt: this.nuxt,
       renderRoute: this.renderRoute.bind(this),
       resources: this.resources
     }))
@@ -182,7 +183,7 @@ export default class Server {
   }
 
   listen(port, host, socket) {
-    return this.ready().then(() => new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (!socket && typeof this.options.server.socket === 'string') {
         socket = this.options.server.socket
       }
@@ -265,6 +266,6 @@ export default class Server {
 
       // Add server.destroy(cb) method
       enableDestroy(server)
-    }))
+    })
   }
 }

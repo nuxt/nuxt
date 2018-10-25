@@ -72,11 +72,11 @@ export default class Nuxt extends Hookable {
   }
 
   listen() {
-    this.server.listen.apply(this.server, arguments)
+    return this.server.listen.apply(this.server, arguments)
   }
 
   showReady() {
-    this.server.showReady.apply(this.server, arguments)
+    return this.server.showReady.apply(this.server, arguments)
   }
 
   async close(callback) {
