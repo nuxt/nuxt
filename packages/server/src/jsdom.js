@@ -7,7 +7,7 @@ export default async function renderAndGetWindow(
   {
     loadedCallback,
     loadingTimeout = 2000,
-    options,
+    ssr,
     globals
   } = {}
 ) {
@@ -50,7 +50,7 @@ export default async function renderAndGetWindow(
 
   // If Nuxt could not be loaded (error from the server-side)
   const nuxtExists = window.document.body.innerHTML.includes(
-    options.render.ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
+    ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
   )
 
   /* istanbul ignore if */
