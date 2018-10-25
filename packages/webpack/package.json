@@ -28,6 +28,7 @@
     "memory-fs": "^0.4.1",
     "mini-css-extract-plugin": "^0.4.4",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "pify": "^4.0.1",
     "postcss": "^7.0.5",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.1.0",

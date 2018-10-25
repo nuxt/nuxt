@@ -15,16 +15,15 @@ export default async function dev() {
     consola.error(err)
   }
 
-  const { Nuxt } = await nuxtCmd.importCore()
-  const { Builder } = await nuxtCmd.importBuilder()
-
   // Start dev
   async function startDev(oldInstance) {
     let nuxt, builder
 
     try {
-      nuxt = new Nuxt(await nuxtCmd.getNuxtConfig(argv, { dev: true }))
-      builder = new Builder(nuxt)
+      nuxt = await nuxtCmd.getNuxt(
+        await nuxtCmd.getNuxtConfig(argv, { dev: true })
+      )
+      builder = await nuxtCmd.getBuilder(nuxt)
       nuxt.hook('watch:fileChanged', async (builder, fname) => {
         consola.debug(`[${fname}] changed, Rebuilding the app...`)
         await startDev({ nuxt: builder.nuxt, builder })
