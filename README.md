@@ -136,7 +136,7 @@ if (config.dev) {
   new Builder(nuxt).build()
 }
 
-// You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
+// You can use nuxt.server.app(req, res) or nuxt.server.renderRoute(route, context)
 ```
 
 Learn more: https://nuxtjs.org/api/nuxt
@@ -146,7 +146,7 @@ Learn more: https://nuxtjs.org/api/nuxt
 You might want to use your own server with your configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
 
 ```js
-app.use(nuxt.render)
+app.use(nuxt.server.app)
 ```
 
 Learn more: https://nuxtjs.org/api/nuxt-render
@@ -156,7 +156,7 @@ Learn more: https://nuxtjs.org/api/nuxt-render
 This is mostly used for `nuxt generate` and test purposes but you might find another utility!
 
 ```js
-nuxt.renderRoute('/about', context)
+nuxt.server.renderRoute('/about', context)
 .then(function ({ html, error }) {
   // You can check error to know if your app displayed the error page for this route
   // Useful to set the correct status code if an error appended:
