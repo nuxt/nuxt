@@ -1,7 +1,7 @@
 import { consola } from '../utils'
 import { mockNuxt, mockBuilder, mockGetNuxtConfig } from '../utils/mocking'
 
-describe('dev', () => {
+describe.skip('dev', () => {
   let dev
 
   beforeAll(async () => {
