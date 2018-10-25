@@ -1,3 +1,4 @@
+import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 
 import { wrapArray } from '@nuxt/common'
@@ -11,6 +12,7 @@ export default class StyleLoader {
     this.srcDir = options.srcDir
     this.assetsDir = options.dir.assets
     this.staticDir = options.dir.static
+    this.rootDir = options.rootDir
     this.loaders = options.build.loaders
     this.extractCSS = options.build.extractCSS
     this.resources = options.build.styleResources
@@ -31,7 +33,7 @@ export default class StyleLoader {
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
     if (extResource) {
-      const patterns = wrapArray(extResource)
+      const patterns = wrapArray(extResource).map(p => path.resolve(this.rootDir, p))
 
       return {
         loader: 'style-resources-loader',

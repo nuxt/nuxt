@@ -29,7 +29,8 @@ import {
   relativeTo,
   waitFor,
   determineGlobals,
-  stripWhitespace
+  stripWhitespace,
+  isString
 } from '@nuxt/common'
 
 const glob = pify(Glob)
@@ -304,7 +305,7 @@ export default class Builder {
     } else if (this._nuxtPages) { // If user defined a custom method to create routes
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-      ;(await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
+        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
@@ -372,7 +373,7 @@ export default class Builder {
           custom: customFileExists
         }
       })
-      .filter(i => !!i)
+      .filter(Boolean)
 
     // -- Custom templates --
     // Add custom template files
@@ -524,7 +525,7 @@ export default class Builder {
   watchServer() {
     const nuxtRestartWatch = concat(
       this.options.serverMiddleware
-        .filter(i => typeof i === 'string')
+        .filter(isString)
         .map(this.nuxt.resolver.resolveAlias),
       this.options.watch.map(this.nuxt.resolver.resolveAlias),
       path.join(this.options.rootDir, 'nuxt.config.js')
