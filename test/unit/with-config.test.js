@@ -36,6 +36,11 @@ describe('with-config', () => {
     )).toBe(true)
   })
 
+  test('/ (styleResources styles inlined)', async () => {
+    const { html } = await nuxt.renderRoute('/')
+    expect(html).toContain('.pre-process-selector')
+  })
+
   test('/ (custom app.html)', async () => {
     const { html } = await nuxt.renderRoute('/')
     expect(html.includes('<p>Made by Nuxt.js team</p>')).toBe(true)

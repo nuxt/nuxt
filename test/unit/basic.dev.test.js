@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { Builder, WebpackBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
+import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -45,7 +45,7 @@ describe('basic dev', () => {
       }
     })
     nuxt = new Nuxt(config)
-    builder = new Builder(nuxt, WebpackBuilder)
+    builder = new Builder(nuxt, BundleBuilder)
     await builder.build()
     port = await getPort()
     await nuxt.listen(port, 'localhost')

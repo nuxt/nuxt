@@ -6,8 +6,7 @@ import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
 
-import { isString } from '@nuxt/common'
-import { isPureObject, isUrl, guardDir } from './utils'
+import { isPureObject, isUrl, guardDir, isString } from './utils'
 import Modes from './modes'
 import NuxtConfig from './nuxt.config'
 
