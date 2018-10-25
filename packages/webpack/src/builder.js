@@ -1,17 +1,22 @@
 import fs from 'fs'
+import path from 'path'
 import pify from 'pify'
 import webpack from 'webpack'
 import MFS from 'memory-fs'
+import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
 import {
   parallel,
-  sequence
+  sequence,
+  wrapArray
 } from '@nuxt/common'
 
 import { ClientConfig, ServerConfig, PerfLoader } from './config'
+
+const glob = pify(Glob)
 
 export default class WebpackBuilder {
   constructor(context) {
@@ -59,6 +64,18 @@ export default class WebpackBuilder {
         serverConfig.resolve.alias[p.name] = p.ssr ? p.src : './empty.js'
       }
     }
+
+    // Check styleResource existence
+    const styleResources = this.context.options.build.styleResources
+    Object.keys(styleResources).forEach(async (ext) => {
+      await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
+        const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
+
+        if (!styleResourceFiles || styleResourceFiles.length === 0) {
+          throw new Error(`Style Resource not found: ${p}`)
+        }
+      }))
+    })
 
     // Configure compilers
     this.compilers = compilersOptions.map((compilersOption) => {

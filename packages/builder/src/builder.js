@@ -304,7 +304,7 @@ export default class Builder {
     } else if (this._nuxtPages) { // If user defined a custom method to create routes
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-      ;(await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
+        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
