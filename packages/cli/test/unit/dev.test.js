@@ -9,7 +9,7 @@ describe('dev', () => {
   })
 
   afterEach(() => {
-    jest.resetAllMocks()
+    jest.clearAllMocks()
   })
 
   test('is function', () => {
@@ -29,7 +29,7 @@ describe('dev', () => {
     expect(Nuxt.prototype.showReady).toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
@@ -52,7 +52,7 @@ describe('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     // Test error on second build so we cover oldInstance stuff
     const builder = new Builder()
@@ -69,7 +69,7 @@ describe('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
@@ -85,7 +85,7 @@ describe('dev', () => {
     const Builder = mockBuilder()
 
     await dev()
-    jest.resetAllMocks()
+    jest.clearAllMocks()
 
     mockGetNuxtConfig().mockImplementationOnce(() => {
       throw new Error('Config Error')

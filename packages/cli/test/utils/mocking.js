@@ -4,16 +4,16 @@ import Command from '../../src/command'
 jest.mock('../../src/imports', () => {
   return {
     core: jest.fn().mockImplementation(() => ({
-      Nuxt: () => {}
+      Nuxt: function () {}
     })),
     builder: jest.fn().mockImplementation(() => ({
-      Builder: () => {}
+      Builder: function () {}
     })),
     generator: jest.fn().mockImplementation(() => ({
-      Generator: () => {}
+      Generator: function () {}
     })),
     webpack: jest.fn().mockImplementation(() => ({
-      BundleBuilder: () => {}
+      BundleBuilder: function () {}
     }))
   }
 })
