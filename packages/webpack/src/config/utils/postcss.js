@@ -99,7 +99,7 @@ export default class PostcssConfig {
           const instance = plugin(opts)
           return instance
         })
-        .filter(e => e)
+        .filter(Boolean)
     }
   }
 
