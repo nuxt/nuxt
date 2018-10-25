@@ -2,6 +2,7 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
+import wrapAnsi from 'wrap-ansi'
 
 const _require = esm(module, {
   cache: false,
@@ -33,15 +34,6 @@ const getLatestHost = (argv) => {
   return { port, host, socket }
 }
 
-export async function runAsyncScript(fn) {
-  try {
-    await fn()
-  } catch (err) {
-    consola.error(err)
-    consola.fatal(`Failed to run async Nuxt script!`)
-  }
-}
-
 export async function loadNuxtConfig(argv) {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
@@ -50,16 +42,17 @@ export async function loadNuxtConfig(argv) {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = _require(nuxtConfigFile)
-    if (!options) {
-      options = {}
-    }
+    options = _require(nuxtConfigFile) || {}
     if (options.default) {
       options = options.default
     }
+
     if (typeof options === 'function') {
       try {
         options = await options()
+        if (options.default) {
+          options = options.default
+        }
       } catch (error) {
         consola.error(error)
         consola.fatal('Error while fetching async configuration')
@@ -68,7 +61,6 @@ export async function loadNuxtConfig(argv) {
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
-
   if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
   }
@@ -81,9 +73,33 @@ export async function loadNuxtConfig(argv) {
   if (!options.server) {
     options.server = {}
   }
+
   const { port, host, socket } = getLatestHost(argv)
   options.server.port = port || options.server.port || 3000
   options.server.host = host || options.server.host || 'localhost'
   options.server.socket = socket || options.server.socket
+
   return options
+}
+
+export function indent(count, chr = ' ') {
+  return chr.repeat(count)
+}
+
+export function indentLines(string, spaces, firstLineSpaces) {
+  const lines = Array.isArray(string) ? string : string.split('\n')
+  let s = ''
+  if (lines.length) {
+    const i0 = indent(firstLineSpaces === undefined ? spaces : firstLineSpaces)
+    s = i0 + lines.shift()
+  }
+  if (lines.length) {
+    const i = indent(spaces)
+    s += '\n' + lines.map(l => i + l.trim()).join('\n')
+  }
+  return s
+}
+
+export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
+  return indentLines(wrapAnsi(string, maxCharsPerLine), spaces, firstLineSpaces)
 }

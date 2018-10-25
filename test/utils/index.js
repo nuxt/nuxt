@@ -1,53 +1,19 @@
-import path from 'path'
-import fs from 'fs'
 import klawSync from 'klaw-sync'
+import { waitFor } from '../../packages/common/src/utils'
+export { default as getPort } from 'get-port'
+export { default as rp } from 'request-promise-native'
 
-import _getPort from 'get-port'
-import { defaultsDeep, find } from 'lodash'
-import _rp from 'request-promise-native'
-import corePkg from '../../packages/core/package.json'
+export * from './nuxt'
 
-import * as _Utils from '../../packages/common/src/index'
-
-export { Nuxt } from '../../packages/core/src/index'
-export { Builder, Generator } from '../../packages/builder/src/index'
-
-export const rp = _rp
-export const getPort = _getPort
-export const version = corePkg.version
-
-export const Utils = _Utils
-export const Options = _Utils.Options
-
-export const loadFixture = async function (fixture, overrides) {
-  const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
-  const configFile = path.resolve(rootDir, 'nuxt.config.js')
-
-  let config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
-  if (typeof config === 'function') {
-    config = await config()
-  }
-
-  config.rootDir = rootDir
-  config.dev = false
-
-  return defaultsDeep({}, overrides, config)
-}
-
-/**
- * Prepare an object to pass to the createSportsSelectionView function
- * @param {Function} condition return true to stop the waiting
- * @param {Number} duration seconds totally wait
- * @param {Number} interval milliseconds interval to check the condition
- *
- * @returns {Boolean} true: timeout, false: condition becomes true within total time
- */
+// Pauses execution for a determined amount of time (`duration`)
+// until `condition` is met. Also allows specifying the `interval`
+// at which the condition is checked during the waiting period.
 export const waitUntil = async function waitUntil(condition, duration = 20, interval = 250) {
   let iterator = 0
   const steps = Math.floor(duration * 1000 / interval)
 
   while (!condition() && iterator < steps) {
-    await Utils.waitFor(interval)
+    await waitFor(interval)
     iterator++
   }
 
@@ -59,10 +25,10 @@ export const waitUntil = async function waitUntil(condition, duration = 20, inte
 
 export const listPaths = function listPaths(dir, pathsBefore = [], options = {}) {
   if (Array.isArray(pathsBefore) && pathsBefore.length) {
-    // only return files that didn't exist before building
+    // Only return files that didn't exist before building
     // and files that have been changed
     options.filter = (item) => {
-      const foundItem = find(pathsBefore, (itemBefore) => {
+      const foundItem = pathsBefore.find((itemBefore) => {
         return item.path === itemBefore.path
       })
       return typeof foundItem === 'undefined' ||

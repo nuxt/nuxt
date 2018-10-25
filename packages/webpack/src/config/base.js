@@ -18,9 +18,9 @@ export default class WebpackBaseConfig {
     this.name = options.name
     this.isServer = options.isServer
     this.builder = builder
-    this.nuxt = this.builder.nuxt
-    this.isStatic = builder.isStatic
-    this.options = builder.options
+    this.nuxt = builder.context.nuxt
+    this.isStatic = builder.context.isStatic
+    this.options = builder.context.options
     this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
   }
@@ -117,7 +117,7 @@ export default class WebpackBaseConfig {
   rules() {
     const styleLoader = new StyleLoader(
       this.options,
-      this.builder.nuxt,
+      this.nuxt,
       { isServer: this.isServer }
     )
 
@@ -164,7 +164,7 @@ export default class WebpackBaseConfig {
           return !modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.pool('js', {
-          loader: 'babel-loader',
+          loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
       },

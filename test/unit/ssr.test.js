@@ -1,5 +1,6 @@
+
 import { uniq } from 'lodash'
-import { loadFixture, getPort, Nuxt, Utils, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, rp, sequence, parallel } from '../utils'
 
 let port
 let nuxt = null
@@ -21,7 +22,7 @@ const url = route => 'http://localhost:' + port + route
 const uniqueTest = async (url) => {
   const results = []
 
-  await Utils.parallel(range(5), async () => {
+  await parallel(range(5), async () => {
     const { html } = await nuxt.renderRoute(url)
     const foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))
@@ -46,8 +47,8 @@ const uniqueTest = async (url) => {
 const stressTest = async (_url, concurrency = 2, steps = 4) => {
   const statusCodes = {}
 
-  await Utils.sequence(range(steps), async () => {
-    await Utils.parallel(range(concurrency), async () => {
+  await sequence(range(steps), async () => {
+    await parallel(range(concurrency), async () => {
       const response = await rp(url(_url), { resolveWithFullResponse: true })
       // Status Code
       const code = response.statusCode

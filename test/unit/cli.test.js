@@ -1,7 +1,7 @@
 import { resolve, join } from 'path'
 import { spawn } from 'cross-spawn'
 import { writeFileSync } from 'fs-extra'
-import { getPort, rp, waitUntil, Utils } from '../utils'
+import { getPort, rp, waitUntil, waitFor } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -41,7 +41,7 @@ describe('cli', () => {
     writeFileSync(serverMiddlewarePath, '// This file is used to test custom chokidar watchers.\n')
 
     // Wait 2s for picking up changes
-    await Utils.waitFor(2000)
+    await waitFor(2000)
 
     // [Add actual test for changes here]
 
