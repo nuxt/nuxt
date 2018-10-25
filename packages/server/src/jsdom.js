@@ -6,7 +6,9 @@ export default async function renderAndGetWindow(
   jsdomOpts = {},
   {
     loadedCallback,
-    loadingTimeout = 2000
+    loadingTimeout = 2000,
+    options,
+    globals
   } = {}
 ) {
   const jsdom = await import('jsdom')
@@ -48,7 +50,7 @@ export default async function renderAndGetWindow(
 
   // If Nuxt could not be loaded (error from the server-side)
   const nuxtExists = window.document.body.innerHTML.includes(
-    this.options.render.ssr ? `window.${this.globals.context}` : `<div id="${this.globals.id}">`
+    options.render.ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
   )
 
   /* istanbul ignore if */
