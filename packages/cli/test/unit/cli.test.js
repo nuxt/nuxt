@@ -71,7 +71,7 @@ describe('cli', () => {
     process.env.NODE_ENV = nodeEnv
   })
 
-  test('sets ODE_ENV=production for build', async () => {
+  test('sets NODE_ENV=production for build', async () => {
     const argv = process.argv
     const nodeEnv = process.env.NODE_ENV
     process.argv = ['', '', 'build']
