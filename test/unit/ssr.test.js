@@ -67,7 +67,7 @@ describe('ssr', () => {
     const config = await loadFixture('ssr')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('unique responses with data()', async () => {

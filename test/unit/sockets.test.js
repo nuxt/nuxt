@@ -6,7 +6,7 @@ describe.skip.win('basic sockets', () => {
   beforeAll(async () => {
     const options = await loadFixture('sockets')
     nuxt = new Nuxt(options)
-    await nuxt.listen()
+    await nuxt.server.listen()
   })
 
   test('/', async () => {

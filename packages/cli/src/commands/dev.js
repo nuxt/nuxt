@@ -46,9 +46,9 @@ export default async function dev() {
         })
         .then(() => oldInstance && oldInstance.nuxt.close())
         // Start listening
-        .then(() => nuxt.listen())
+        .then(() => nuxt.server.listen())
         // Show ready message first time, others will be shown through WebpackBar
-        .then(() => !oldInstance && nuxt.showReady(false))
+        .then(() => !oldInstance && nuxt.server.showReady(false))
         .then(() => builder.watchServer())
         // Handle errors
         .catch(err => errorHandler(err, { builder, nuxt }))

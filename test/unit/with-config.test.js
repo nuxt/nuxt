@@ -11,7 +11,7 @@ describe('with-config', () => {
     const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/', async () => {
@@ -190,7 +190,7 @@ describe('server config', () => {
     const config = await loadFixture('with-config')
     config.server.port = port = await getPort()
     nuxt = new Nuxt(config)
-    await nuxt.listen()
+    await nuxt.server.listen()
     await nuxt.renderAndGetWindow(url('/test/'))
   })
   afterAll(async () => {

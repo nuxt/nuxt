@@ -13,7 +13,7 @@ describe('custom-dirs', () => {
     const config = await loadFixture('custom-dirs')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('custom assets directory', async () => {

@@ -48,7 +48,7 @@ describe('basic dev', () => {
     builder = new Builder(nuxt, BundleBuilder)
     await builder.build()
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Check build:done hook called', () => {

@@ -10,7 +10,7 @@ describe('with-config', () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/', async () => {

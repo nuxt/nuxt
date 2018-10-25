@@ -36,7 +36,7 @@ const config = require('./nuxt.config.js')
 const nuxt = new Nuxt(config)
 
 // Start nuxt.js server
-nuxt.listen(3000) // nuxt.listen(port, host)
+nuxt.server.listen(3000) // nuxt.server.listen(port, host)
 
 // Or use `nuxt.render` as an express middleware
 ```

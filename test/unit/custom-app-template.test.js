@@ -8,7 +8,7 @@ describe('custom-app-template', () => {
     const options = await loadFixture('custom-app-template')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
   test('/', async () => {
     const { html } = await nuxt.renderRoute('/')

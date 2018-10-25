@@ -11,7 +11,7 @@ describe('extract css', () => {
   beforeAll(async () => {
     const options = await loadFixture('extract-css')
     nuxt = new Nuxt(options)
-    await nuxt.listen(await getPort(), '0.0.0.0')
+    await nuxt.server.listen(await getPort(), '0.0.0.0')
   })
 
   test.skip('Verify global.css has been extracted and minified', async () => {

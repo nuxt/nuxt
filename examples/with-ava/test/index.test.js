@@ -15,7 +15,7 @@ test.before(async () => {
   }
   nuxt = new Nuxt(config)
   await new Builder(nuxt).build()
-  await nuxt.listen(4000, 'localhost')
+  await nuxt.server.listen(4000, 'localhost')
 }, 30000)
 
 // Example of testing only generated html

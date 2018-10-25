@@ -7,7 +7,7 @@ describe('basic https', () => {
     const options = await loadFixture('https')
     nuxt = new Nuxt(options)
     const port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
 
   test('/', async () => {

@@ -8,7 +8,7 @@ describe('basic ssr', () => {
     const options = await loadFixture('async-config')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
 
   test('/', async () => {

@@ -16,7 +16,7 @@ describe('spa', () => {
     const config = await loadFixture('spa')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/ (basic spa)', async () => {

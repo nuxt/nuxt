@@ -13,7 +13,7 @@ describe('error', () => {
     const config = await loadFixture('error')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/ should display an error', async () => {

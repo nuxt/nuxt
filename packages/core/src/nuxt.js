@@ -27,12 +27,14 @@ export default class Nuxt extends Hookable {
     }
 
     // Add Legacy aliases
-    defineDeprecateGetter(this, 'renderer', this.server, 'nuxt.searver')
-    defineDeprecateGetter(this, 'render', this.server.app, 'nuxt.searver.app')
-    defineDeprecateGetter(this, 'renderRoute', this.server.renderRoute.bind(this.server), 'nuxt.searver.renderRoute')
-    defineDeprecateGetter(this, 'renderAndGetWindow', this.server.renderAndGetWindow.bind(this.server), 'nuxt.searver.renderAndGetWindow')
-    defineDeprecateGetter(this, 'resolveAlias', this.resolver.resolveAlias, 'nuxt.resolver.resolveAlias')
-    defineDeprecateGetter(this, 'resolvePath', this.resolver.resolvePath, 'nuxt.resolver.resolvePath')
+    defineDeprecateGetter(this, 'nuxt.renderer', this.server, 'nuxt.searver')
+    defineDeprecateGetter(this, 'nuxt.render', this.server.app, 'nuxt.searver.app')
+    defineDeprecateGetter(this, 'nuxt.renderRoute', this.server.renderRoute.bind(this.server), 'nuxt.searver.renderRoute')
+    defineDeprecateGetter(this, 'nuxt.renderAndGetWindow', this.server.renderAndGetWindow.bind(this.server), 'nuxt.searver.renderAndGetWindow')
+    defineDeprecateGetter(this, 'nuxt.resolveAlias', this.resolver.resolveAlias, 'nuxt.resolver.resolveAlias')
+    defineDeprecateGetter(this, 'nuxt.resolvePath', this.resolver.resolvePath, 'nuxt.resolver.resolvePath')
+    defineDeprecateGetter(this, 'nuxt.listen', this.server.listen.bind(this.server), 'nuxt.server.listen')
+    defineDeprecateGetter(this, 'nuxt.showReady', this.server.showReady.bind(this.server), 'nuxt.server.showReady')
 
     // Wait for Nuxt to be ready
     this.initialized = false
@@ -69,14 +71,6 @@ export default class Nuxt extends Hookable {
     await this.callHook('ready', this)
 
     return this
-  }
-
-  listen() {
-    return this.server.listen.apply(this.server, arguments)
-  }
-
-  showReady() {
-    return this.server.showReady.apply(this.server, arguments)
   }
 
   async close(callback) {
