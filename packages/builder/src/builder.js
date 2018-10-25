@@ -81,14 +81,18 @@ export default class Builder {
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
   }
 
-  getBundleBuilder(bundleBuilder) {
-    if (typeof bundleBuilder === 'object') {
-      return bundleBuilder
-    } else {
-      const context = new BuildContext(this)
-      const BundleBuilder = typeof bundleBuilder === 'function' ? bundleBuilder : require('@nuxt/webpack')
-      return new BundleBuilder(context)
+  getBundleBuilder(BundleBuilder) {
+    if (typeof BundleBuilder === 'object') {
+      return BundleBuilder
     }
+
+    const context = new BuildContext(this)
+
+    if (typeof BundleBuilder !== 'function') {
+      BundleBuilder = require('@nuxt/webpack').BundleBuilder
+    }
+
+    return new BundleBuilder(context)
   }
 
   normalizePlugins() {

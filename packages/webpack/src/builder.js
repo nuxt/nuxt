@@ -13,7 +13,7 @@ import {
 
 import { ClientConfig, ServerConfig, PerfLoader } from './config'
 
-export default class WebpackBuilder {
+export class WebpackBuilder {
   constructor(context) {
     this.context = context
     // Fields that set on build
