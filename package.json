@@ -5,7 +5,7 @@
     "distributions/*"
   ],
   "scripts": {
-    "build": "node -r esm ./scripts/package",
+    "build": "yarn clean && node -r esm ./scripts/package",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
@@ -20,7 +20,7 @@
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
-    "postinstall": "lerna link"
+    "postinstall": "lerna link && node -r esm ./scripts/dev"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -66,6 +66,7 @@
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-license": "^0.7.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.16.0"
   }

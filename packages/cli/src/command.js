@@ -74,13 +74,14 @@ export default class NuxtCommand {
 
   async getBuilder(nuxt) {
     const { Builder } = await imports.builder()
-    return new Builder(nuxt)
+    const { BundleBuilder } = await imports.webpack()
+    return new Builder(nuxt, BundleBuilder)
   }
 
   async getGenerator(nuxt) {
     const { Generator } = await imports.generator()
-    const { Builder } = await imports.builder()
-    return new Generator(nuxt, new Builder(nuxt))
+    const builder = await this.getBuilder(nuxt)
+    return new Generator(nuxt, builder)
   }
 
   _getHelp() {
