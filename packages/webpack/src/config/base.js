@@ -43,7 +43,7 @@ export default class WebpackBaseConfig {
     if (!options.babelrc && !options.presets) {
       options.presets = [
         [
-          require.resolve('@nuxtjs/babel-preset-app'),
+          require.resolve('@nuxt/babel-preset-app'),
           {
             buildTarget: this.isServer ? 'server' : 'client'
           }
