@@ -20,5 +20,8 @@
     "@babel/runtime": "^7.1.2",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-plugin-transform-vue-jsx": "^4.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
