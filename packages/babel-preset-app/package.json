@@ -8,6 +8,7 @@
   "contributors": [
     "Clark Du"
   ],
+  "main": "src/index.js",
   "dependencies": {
     "@babel/core": "^7.1.0",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
