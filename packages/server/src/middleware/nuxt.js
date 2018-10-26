@@ -44,30 +44,19 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     if (!error && options.render.http2.push) {
       // Parse resourceHints to extract HTTP.2 prefetch/push headers
       // https://w3c.github.io/preload/#server-push-http-2
-      const pushAssets = []
       const preloadFiles = getPreloadFiles()
-      const { shouldPush } = options.render.http2
+
+      const { shouldPush, pushAssets } = options.render.http2
       const { publicPath } = resources.clientManifest
 
-      preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
-        // By default, we only preload scripts or css
-        /* istanbul ignore if */
-        if (!shouldPush && asType !== 'script' && asType !== 'style') {
-          return
-        }
-
-        // User wants to explicitly control what to preload
-        if (shouldPush && !shouldPush(fileWithoutQuery, asType)) {
-          return
-        }
-
-        pushAssets.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
-      })
+      const links = pushAssets ? pushAssets(req, res, publicPath, preloadFiles) : defaultPushAssets(preloadFiles, shouldPush, publicPath, this.options.dev)
 
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
       // https://www.w3.org/Protocols/9707-link-header.html
-      res.setHeader('Link', pushAssets.join(','))
+      if (links.length > 0) {
+        res.setHeader('Link', links.join(', '))
+      }
     }
 
     if (options.render.csp) {
@@ -92,6 +81,29 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     next(err)
   }
+}
+
+const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
+  if (shouldPush && isDev) {
+    consola.warn('http2.shouldPush is deprecated. User http2.pushAssets function')
+  }
+
+  const links = []
+  preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
+    // By default, we only preload scripts or css
+    /* istanbul ignore if */
+    if (!shouldPush && asType !== 'script' && asType !== 'style') {
+      return
+    }
+
+    // User wants to explicitly control what to preload
+    if (shouldPush && !shouldPush(fileWithoutQuery, asType)) {
+      return
+    }
+
+    links.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
+  })
+  return links
 }
 
 const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) => {
