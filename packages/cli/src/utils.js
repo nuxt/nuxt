@@ -75,8 +75,8 @@ export async function loadNuxtConfig(argv) {
   }
 
   const { port, host, socket } = getLatestHost(argv)
-  options.server.port = port || options.server.port || 3000
-  options.server.host = host || options.server.host || 'localhost'
+  options.server.port = port || options.server.port
+  options.server.host = host || options.server.host
   options.server.socket = socket || options.server.socket
 
   return options
