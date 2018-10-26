@@ -1,10 +1,14 @@
 import Vue from "vue";
 import { Route } from "vue-router";
-import { Dictionary } from "vue-router/types/router";
 import { Store } from "vuex";
 
 // augment typings of Vue.js
 import "./vue";
+
+type Dictionary<T> = { [key: string]: T };
+
+type Component = any; //TODO: TBD
+type NuxtState = Dictionary<any>;
 
 export interface Context {
   app: Vue;
@@ -15,7 +19,7 @@ export interface Context {
   isHMR: boolean;
   route: Route;
   store: Store<any>;
-  env: Object;
+  env: Dictionary<any>;
   params: Dictionary<string>;
   query: Dictionary<string>;
   req: Request;
@@ -23,8 +27,8 @@ export interface Context {
   redirect(status: number, path: string, query?: object): void;
   redirect(path: string, query?: object): void;
   error(params: Error): void;
-  nuxtState: Object;
-  beforeNuxtRender: Function; //TODO: Provide better type definition
+  nuxtState: NuxtState;
+  beforeNuxtRender(fn: (params: { Components: Array<Component>, nuxtState: NuxtState }) => void): void
 }
 
 export interface Transition {
@@ -43,5 +47,10 @@ export interface Transition {
 
 export interface Error {
   statusCode: number;
-  message : string;
+  message: string;
+}
+
+export interface LoadingObject {
+  start(): void;
+  finish(): void;
 }
