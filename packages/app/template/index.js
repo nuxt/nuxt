@@ -130,7 +130,7 @@ async function createApp(ssrContext) {
   <% if (plugins.length) { %>
   const inject = function (key, value) {
     if (!key) throw new Error('inject(key, value) has no key provided')
-    if (!value) throw new Error('inject(key, value) has no value provided')
+    if (typeof value === 'undefined') throw new Error('inject(key, value) has no value provided')
     key = '$' + key
     // Add into app
     app[key] = value
