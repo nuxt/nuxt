@@ -5,7 +5,7 @@
 import Vue, { ComponentOptions } from "vue";
 import { Route } from "vue-router";
 import { MetaInfo } from "vue-meta";
-import { Context, Transition } from "./index";
+import { Context, Transition, LoadingObject } from "./index";
 
 declare module "vue/types/options" {
   interface ComponentOptions<V extends Vue> {
@@ -23,6 +23,8 @@ declare module "vue/types/options" {
 
 declare module "vue/types/vue" {
   interface Vue {
-    $nuxt: any; //TODO: Provide better type definition
+    $nuxt: {
+      $loading: LoadingObject;
+    };
   }
 }
