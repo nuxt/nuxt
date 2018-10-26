@@ -405,19 +405,33 @@ export const stripWhitespace = function stripWhitespace(string) {
   return string
 }
 
-export function defineDeprecateGetter(obj, prop, val, instead) {
+export function defineAlias(src, target, prop, opts = {}) {
+  const { bind = true, warn = false } = opts
+
+  if (Array.isArray(prop)) {
+    for (const p of prop) {
+      defineAlias(src, target, p, opts)
+    }
+    return
+  }
+
+  let targetVal = target[prop]
+  if (bind && typeof targetVal === 'function') {
+    targetVal = targetVal.bind(target)
+  }
+
   let warned = false
 
-  Object.defineProperty(obj, prop, {
+  Object.defineProperty(src, prop, {
     get: () => {
-      if (!warned) {
+      if (warn && !warned) {
         warned = true
         consola.warn({
-          message: `'${prop}' is deprecated.` + (instead ? ` Please use '${instead}'.` : ''),
+          message: `'${prop}' is deprecated'`,
           additional: new Error().stack.split('\n').splice(2).join('\n')
         })
       }
-      return val
+      return targetVal
     }
   })
 }

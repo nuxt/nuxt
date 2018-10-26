@@ -2,7 +2,7 @@
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 
-import { Options, Hookable, defineDeprecateGetter } from '@nuxt/common'
+import { Options, Hookable, defineAlias } from '@nuxt/common'
 import { Server } from '@nuxt/server'
 
 import { version } from '../package.json'
@@ -27,14 +27,10 @@ export default class Nuxt extends Hookable {
     }
 
     // Add Legacy aliases
-    defineDeprecateGetter(this, 'renderer', this.server, 'nuxt.server')
-    defineDeprecateGetter(this, 'render', this.server.app, 'nuxt.server.app')
-    defineDeprecateGetter(this, 'renderRoute', this.server.renderRoute.bind(this.server), 'nuxt.server.renderRoute')
-    defineDeprecateGetter(this, 'renderAndGetWindow', this.server.renderAndGetWindow.bind(this.server), 'nuxt.server.renderAndGetWindow')
-    defineDeprecateGetter(this, 'resolveAlias', this.resolver.resolveAlias, 'nuxt.resolver.resolveAlias')
-    defineDeprecateGetter(this, 'resolvePath', this.resolver.resolvePath, 'nuxt.resolver.resolvePath')
-    defineDeprecateGetter(this, 'listen', this.server.listen.bind(this.server), 'nuxt.server.listen')
-    defineDeprecateGetter(this, 'showReady', this.server.showReady.bind(this.server), 'nuxt.server.showReady')
+    this.renderer = this.server
+    this.render = this.server.app
+    defineAlias(this, this.server, [ 'renderRoute', 'renderAndGetWindow', 'showReady', 'listen' ])
+    defineAlias(this, this.resolver, [ 'resolveAlias', 'resolvePath' ])
 
     // Wait for Nuxt to be ready
     this.initialized = false
