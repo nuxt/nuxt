@@ -1,8 +1,8 @@
 const defaultPolyfills = [
-  // promise polyfill alone doesn't work in IE,
-  // needs this as well. see: #1642
+  // Promise polyfill alone doesn't work in IE,
+  // Needs this as well. see: #1642
   'es6.array.iterator',
-  // this is required for webpack code splitting, vuex etc.
+  // This is required for webpack code splitting, vuex etc.
   'es6.promise',
   // #2012 es6.promise replaces native Promise in FF and causes missing finally
   'es7.promise.finally'
@@ -61,12 +61,12 @@ module.exports = (context, options = {}) => {
       ignoreBrowserslistConfig,
       configPath
     })
-    plugins.push([require('./polyfillsPlugin'), { polyfills }])
+    plugins.push([require('./polyfills-plugin'), { polyfills }])
   } else {
     polyfills = []
   }
 
-  // pass options along to babel-preset-env
+  // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
       loose,
@@ -85,7 +85,7 @@ module.exports = (context, options = {}) => {
     [require('@babel/plugin-proposal-class-properties'), { loose }]
   )
 
-  // transform runtime, but only for helpers
+  // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage'
   }])

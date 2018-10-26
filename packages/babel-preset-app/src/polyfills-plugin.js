@@ -1,8 +1,8 @@
-// add polyfill imports to the first file encountered.
+// Add polyfill imports to the first file encountered.
 module.exports = ({ types }) => {
   let entryFile
   return {
-    name: 'vue-cli-inject-polyfills',
+    name: 'inject-polyfills',
     visitor: {
       Program(path, state) {
         if (!entryFile) {
@@ -13,7 +13,8 @@ module.exports = ({ types }) => {
 
         const { polyfills } = state.opts
         const { createImport } = require('@babel/preset-env/lib/utils')
-        // imports are injected in reverse order
+
+        // Imports are injected in reverse order
         polyfills.slice().reverse().forEach((p) => {
           createImport(path, p)
         })
