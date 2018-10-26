@@ -25,8 +25,8 @@ describe('dev', () => {
     expect(consola.error).not.toHaveBeenCalled()
 
     expect(Builder.prototype.build).toHaveBeenCalled()
-    expect(Nuxt.prototype.listen).toHaveBeenCalled()
-    expect(Nuxt.prototype.showReady).toHaveBeenCalled()
+    expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
+    expect(Nuxt.prototype.server.showReady).toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
     jest.clearAllMocks()
@@ -40,8 +40,8 @@ describe('dev', () => {
     expect(Builder.prototype.unwatch).toHaveBeenCalled()
     expect(Builder.prototype.build).toHaveBeenCalled()
     expect(Nuxt.prototype.close).toHaveBeenCalled()
-    expect(Nuxt.prototype.listen).toHaveBeenCalled()
-    expect(Nuxt.prototype.showReady).not.toHaveBeenCalled()
+    expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
+    expect(Nuxt.prototype.server.showReady).not.toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
     expect(consola.error).not.toHaveBeenCalled()
@@ -100,9 +100,11 @@ describe('dev', () => {
 
   test('catches error on startDev', async () => {
     mockNuxt({
-      listen: jest.fn().mockImplementation(() => {
-        throw new Error('Listen Error')
-      })
+      server: {
+        listen: jest.fn().mockImplementation(() => {
+          throw new Error('Listen Error')
+        })
+      }
     })
     mockBuilder()
 
