@@ -10,14 +10,17 @@ const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options, external, sliceAt } = {}) {
+  constructor({ name, description, usage, options, external, sliceAt } = {}) {
     if (external) {
       this.setupExternal(external)
     } else {
       this.sliceAt = typeof sliceAt === 'undefined' ? 2 : sliceAt
       this.description = description || ''
       this.usage = usage || ''
-      this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+      this.options = name in options
+        ? Object.assign({}, options[name], options.common)
+        : options.common
+
     }
   }
 
