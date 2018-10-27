@@ -7,8 +7,7 @@ import isObject from 'lodash/isObject'
 import consola from 'consola'
 
 import { isPureObject, isUrl, guardDir, isString } from './utils'
-import Modes from './modes'
-import NuxtConfig from './nuxt.config'
+import { NuxtConfig, Modes } from '@nuxt/config'
 
 // hasValue utility
 const hasValue = v => typeof v === 'string' && v
