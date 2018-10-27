@@ -4,6 +4,7 @@ import consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
+import { NuxtConfig } from '@nuxt/common'
 
 const _require = esm(module, {
   cache: false,
@@ -51,9 +52,6 @@ export async function loadNuxtConfig(argv) {
   // Nuxt Mode
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
-
-  // Fresh defaults
-  const NuxtConfig = await import('@nuxt/common/src/nuxt.config.js')
 
   // Server options
   options.server = typeof options.server === 'object'
