@@ -65,10 +65,11 @@ export default class NuxtCommand {
     return minimistOptions
   }
 
-  setupExternal(externalCommands) {
+  setupExternal(external) {
     this.sliceAt = 3
-    this.description = externalCommands.description
-    this.usage = 'start <command>'
+    this.description = external.description
+    this.usage = `${this.name} ${this.external.name} <command>`
+    this._calcOptions(this.external.options)
     this.isExternal = true
   }
 
