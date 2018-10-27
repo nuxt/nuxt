@@ -10,10 +10,14 @@ const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options } = {}) {
-    this.description = description || ''
-    this.usage = usage || ''
-    this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+  constructor({ description, usage, options, external } = {}) {
+    if (external) {
+      this.setupExternal(external)
+    } else {
+      this.description = description || ''
+      this.usage = usage || ''
+      this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+    }
   }
 
   _getMinimistOptions() {
@@ -39,6 +43,10 @@ export default class NuxtCommand {
     }
 
     return minimistOptions
+  }
+
+  setupExternal(externalCommands) {
+    //
   }
 
   getArgv(args) {
