@@ -1,5 +1,4 @@
 import { nuxtServerConfig } from '@nuxt/common'
-import defaultsDeep from 'lodash/defaultsDeep'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
@@ -83,7 +82,7 @@ describe('cli/utils', () => {
     expect(consola.fatal).toHaveBeenCalledWith('Error while fetching async configuration')
   })
 
-  test('nuxtServerConfig: server env', async () => {
+  test('nuxtServerConfig: server env', () => {
     const options = {
       server: nuxtServerConfig({
         ...process.env,
