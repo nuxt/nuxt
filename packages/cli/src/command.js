@@ -17,10 +17,10 @@ export default class NuxtCommand {
       this.sliceAt = typeof sliceAt === 'undefined' ? 2 : sliceAt
       this.description = description || ''
       this.usage = usage || ''
-      this.options = name in options
+      const _options = name in options
         ? Object.assign({}, options[name], options.common)
         : options.common
-
+      this.options = Object.keys(_options)
     }
   }
 
@@ -32,17 +32,18 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (const name of this.options) {
-      const option = Options[name]
-
-      if (option.alias) {
-        minimistOptions.alias[option.alias] = name
-      }
-      if (option.type) {
-        minimistOptions[option.type].push(option.alias || name)
-      }
-      if (option.default) {
-        minimistOptions.default[option.alias || name] = option.default
+    for (let option of this.options) {
+      option = options[this.name][option] || options.common[option]
+      if (option) {
+        if (option.alias) {
+          minimistOptions.alias[option.alias] = name
+        }
+        if (option.type) {
+          minimistOptions[option.type].push(option.alias || name)
+        }
+        if (option.default) {
+          minimistOptions.default[option.alias || name] = option.default
+        }
       }
     }
 
