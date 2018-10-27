@@ -37,7 +37,9 @@ export default {
     host: process.env.NUXT_HOST ||
       process.env.HOST ||
       process.env.npm_package_config_nuxt_host ||
-      'localhost'
+      'localhost',
+    socket: process.env.UNIX_SOCKET ||
+      process.env.npm_package_config_unix_socket
   },
 
   // Dirs

@@ -15,24 +15,6 @@ const _require = esm(module, {
 
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
-const getLatestHost = (argv) => {
-  const port =
-    argv.port ||
-    process.env.NUXT_PORT ||
-    process.env.PORT ||
-    process.env.npm_package_config_nuxt_port
-  const host =
-    argv.hostname ||
-    process.env.NUXT_HOST ||
-    process.env.HOST ||
-    process.env.npm_package_config_nuxt_host
-  const socket =
-    argv['unix-socket'] ||
-    process.env.UNIX_SOCKET ||
-    process.env.npm_package_config_unix_socket
-
-  return { port, host, socket }
-}
 
 export async function loadNuxtConfig(argv) {
   const rootDir = getRootDir(argv)
@@ -73,11 +55,15 @@ export async function loadNuxtConfig(argv) {
   if (!options.server) {
     options.server = {}
   }
-
-  const { port, host, socket } = getLatestHost(argv)
-  options.server.port = port || options.server.port
-  options.server.host = host || options.server.host
-  options.server.socket = socket || options.server.socket
+  if (argv.port) {
+    options.server.port = port
+  }
+  if (argv.hostname) {
+    options.server.host = argv.hostname
+  }
+  if (argv['unix-socket']) {
+    options.server.socket = argv['unix-socket']
+  }
 
   return options
 }
