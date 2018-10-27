@@ -6,7 +6,6 @@ import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
 import { NuxtConfig, Modes } from '@nuxt/config'
-// eslint-disable-next-line
 import { isPureObject, isUrl, guardDir, isString } from './utils'
 
 // hasValue utility
