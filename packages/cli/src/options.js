@@ -1,11 +1,31 @@
 import consola from 'consola'
 
 export const defaultOptions = [
-  'spa',
-  'universal',
-  'config-file',
-  'version',
-  'help'
+  spa: {
+    alias: 's',
+    type: 'boolean',
+    description: 'Launch in SPA mode'
+  },
+  universal: {
+    alias: 'u',
+    type: 'boolean',
+    description: 'Launch in Universal mode (default)'
+  },
+  'config-file': {
+    alias: 'c',
+    type: 'string',
+    default: 'nuxt.config.js',
+    description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
+  },
+  version: {
+    type: 'boolean',
+    description: 'Display the Nuxt version'
+  },
+  help: {
+    alias: 'h',
+    type: 'boolean',
+    description: 'Display this message'
+  }
 ]
 
 export const options = {
@@ -56,22 +76,6 @@ export const options = {
     default: true,
     description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
   },
-  spa: {
-    alias: 's',
-    type: 'boolean',
-    description: 'Launch in SPA mode'
-  },
-  universal: {
-    alias: 'u',
-    type: 'boolean',
-    description: 'Launch in Universal mode (default)'
-  },
-  'config-file': {
-    alias: 'c',
-    type: 'string',
-    default: 'nuxt.config.js',
-    description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
-  },
   quiet: {
     alias: 'q',
     type: 'boolean',
@@ -88,14 +92,5 @@ export const options = {
     alias: 'v',
     type: 'boolean',
     description: 'Show debug information'
-  },
-  version: {
-    type: 'boolean',
-    description: 'Display the Nuxt version'
-  },
-  help: {
-    alias: 'h',
-    type: 'boolean',
-    description: 'Display this message'
   }
 }
