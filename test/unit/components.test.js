@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { promisify } from 'util'
 import Vue from 'vue'
-import { loadFixture, Utils } from '../utils'
+import { loadFixture, waitFor } from '../utils'
 
 const renderer = require('vue-server-renderer').createRenderer()
 const renderToString = promisify(renderer.renderToString)
@@ -43,7 +43,7 @@ describe('components', () => {
       component.duration = 2000
       component.throttle = 0
       component.start()
-      await Utils.waitFor(250)
+      await waitFor(250)
       const str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;left:false;"></div>')
@@ -89,10 +89,10 @@ describe('components', () => {
       component.duration = 2000
       component.throttle = 1000
       component.start()
-      await Utils.waitFor(300)
+      await waitFor(300)
       let str = await renderToString(component)
       expect(str).toBe('<!---->')
-      await Utils.waitFor(1000)
+      await waitFor(1000)
       str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;left:false;"></div>')
@@ -104,15 +104,15 @@ describe('components', () => {
       component.duration = 2000
       component.throttle = 0
       component.start()
-      await Utils.waitFor(250)
+      await waitFor(250)
       let str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       component.pause()
-      await Utils.waitFor(500)
+      await waitFor(500)
       const str2 = await renderToString(component)
       expect(str2).toBe(str)
       component.resume()
-      await Utils.waitFor(500)
+      await waitFor(500)
       str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       expect(str).not.toBe(str2)
@@ -125,7 +125,7 @@ describe('components', () => {
       component.duration = 500
       component.throttle = 0
       component.start()
-      await Utils.waitFor(750)
+      await waitFor(750)
       const str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;left:false;"></div>')
