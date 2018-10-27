@@ -5,7 +5,7 @@ export default async function build() {
   const nuxtCmd = new NuxtCommand({
     description: 'Compiles the application for production deployment',
     usage: 'build <dir>',
-    options: [ 'analyze', 'quiet' ]
+    options: [ 'analyze', 'quiet', 'generate' ]
   })
 
   const argv = nuxtCmd.getArgv()
