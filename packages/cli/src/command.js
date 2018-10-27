@@ -10,10 +10,11 @@ const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options, external } = {}) {
+  constructor({ description, usage, options, external, sliceAt } = {}) {
     if (external) {
       this.setupExternal(external)
     } else {
+      this.sliceAt = typeof sliceAt === 'undefined' ? 2 : sliceAt
       this.description = description || ''
       this.usage = usage || ''
       this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
@@ -46,14 +47,15 @@ export default class NuxtCommand {
   }
 
   setupExternal(externalCommands) {
+    this.sliceAt = 3
     this.description = externalCommands.description
     this.usage = 'start <command>'
-    this.external = true
+    this.isExternal = true
   }
 
   getArgv(args) {
     const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
+    const argv = parseArgs(args || process.argv.slice(this.slice), minimistOptions)
 
     if (argv.version) {
       this.showVersion()
