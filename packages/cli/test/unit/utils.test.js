@@ -1,7 +1,6 @@
+import { nuxtServerConfig } from '@nuxt/common'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
-import { nuxtServerConfig } from '@nuxt/common'
-import defaultsDeep from 'lodash/defaultsDeep'
 
 describe('cli/utils', () => {
   afterEach(() => {
@@ -83,24 +82,18 @@ describe('cli/utils', () => {
     expect(consola.fatal).toHaveBeenCalledWith('Error while fetching async configuration')
   })
 
-  test('loadNuxtConfig: server env', async () => {
-    const argv = {
-      _: [__dirname],
-      'config-file': '../fixtures/nuxt.config.js'
-    }
-
-    const options = defaultsDeep(
-      await utils.loadNuxtConfig(argv),
-      nuxtServerConfig({
+  test('nuxtServerConfig: server env', () => {
+    const options = {
+      server: nuxtServerConfig({
         ...process.env,
         HOST: 'env-host',
         PORT: 3003,
         UNIX_SOCKET: '/var/run/env.sock'
       })
-    )
-    
+    }
+
     expect(options.server.host).toBe('env-host')
-    expect(options.server.port).toBe('3003')
+    expect(options.server.port).toBe(3003)
     expect(options.server.socket).toBe('/var/run/env.sock')
   })
 
