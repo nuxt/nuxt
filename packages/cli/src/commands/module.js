@@ -1,12 +1,30 @@
 import consola from 'consola'
 import NuxtCommand from '../command'
 
-const loadModule = (command) => {
-  // TODO check for packages
-  return import(`@nuxt/${command}`)
+const moduleError = (name, err) => {
+  consola.error('Could not load any matching module.')
+  throw err
 }
 
-export default async function module() {
+const loadModule = async (name) => {
+  let module
+  try {
+    module = await import(`@nuxt/${name}`)
+  } catch (firstPass) {
+    try {
+      module = await import(`@nuxtjs/${name}`)
+    } catch (secondPass) {
+      try {
+        module = await import(name)  
+      } catch (thirdPass) {
+        moduleError(name, thirdPass)
+      }
+    }
+  }
+}
+
+export default async function module(name) {
+  const module = await loadModule(name)
   // const nuxtCmd = new NuxtCommand({
   //   description: 'Generate a static web application (server-rendered)',
   //   usage: 'generate <dir>',
