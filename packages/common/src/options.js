@@ -5,9 +5,8 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
-
-import { isPureObject, isUrl, guardDir, isString } from './utils'
 import { NuxtConfig, Modes } from '@nuxt/config'
+import { isPureObject, isUrl, guardDir, isString } from './utils'
 
 // hasValue utility
 const hasValue = v => typeof v === 'string' && v
