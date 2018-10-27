@@ -53,7 +53,7 @@ export async function loadNuxtConfig(argv) {
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   // Fresh defaults
-  const NuxtConfig = await import('@nuxt/common')
+  const { NuxtConfig } = await import('@nuxt/common')
 
   // Server options
   options.server = typeof options.server === 'object'
