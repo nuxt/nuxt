@@ -46,7 +46,9 @@ export default class NuxtCommand {
   }
 
   setupExternal(externalCommands) {
-    //
+    this.description = externalCommands.description
+    this.usage = 'start <command>'
+    this.external = true
   }
 
   getArgv(args) {

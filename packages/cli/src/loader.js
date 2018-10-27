@@ -1,26 +1,35 @@
 import consola from 'consola'
 import NuxtCommand from '../command'
 
-const moduleError = (name, err) => {
+const nuxtModuleError = (name, err) => {
   consola.error('Could not load any matching module.')
   throw err
 }
 
+const getModuleMetadata = (name)  => {
+  return { name, version } = require(`${name}/package.json`)
+}
+
 const loadModule = async (name) => {
-  let module
+  let nuxtModule
+  let nuxtModuleName
   try {
-    module = await import(`@nuxt/${name}`)
+    nuxtModuleName = `@nuxt/${name}`
+    nuxtModule = await import(nuxtModuleName)
   } catch (firstPass) {
     try {
-      module = await import(`@nuxtjs/${name}`)
+      nuxtModuleName = `@nuxtjs/${name}`
+      nuxtModule = await import(nuxtModuleName)
     } catch (secondPass) {
       try {
-        module = await import(name)  
+        nuxtModuleName = name
+        nuxtModule = await import(nuxtModuleName)
       } catch (thirdPass) {
-        moduleError(name, thirdPass)
+        nuxtModuleError(name, thirdPass)
       }
     }
   }
+  return { nuxtModule, ...getModuleMetadata(nuxtModuleName) }
 }
 
 export default async function loader(moduleName) {
