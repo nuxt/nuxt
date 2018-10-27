@@ -1,5 +1,6 @@
 import consola from 'consola'
 import * as commands from './commands'
+import loader from './loader'
 import setup from './setup'
 
 export default function run() {
@@ -18,8 +19,7 @@ export default function run() {
   if (cmds.has(cmd)) {
     process.argv.splice(2, 1)
   } else if (typeof cmd === 'string' && cmd.length) {
-    module = cmd
-    cmd = 'module'
+    loader(cmd)
   } else {
     cmd = defaultCommand
   }
