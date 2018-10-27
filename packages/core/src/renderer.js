@@ -10,7 +10,7 @@ import launchMiddleware from 'launch-editor-middleware'
 import consola from 'consola'
 
 import { isUrl, timeout, waitFor, determineGlobals } from '@nuxt/common'
-import NuxtConfig from '@nuxt/config'
+import { NuxtConfig } from '@nuxt/config'
 
 import MetaRenderer from './meta'
 import errorMiddleware from './middleware/error'
