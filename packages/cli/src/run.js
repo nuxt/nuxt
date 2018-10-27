@@ -13,9 +13,13 @@ export default function run() {
   ])
 
   let cmd = process.argv[2]
+  let module
 
   if (cmds.has(cmd)) {
     process.argv.splice(2, 1)
+  } else if (typeof cmd === 'string' && cmd.length) {
+    module = cmd
+    cmd = 'module'
   } else {
     cmd = defaultCommand
   }
@@ -26,7 +30,7 @@ export default function run() {
   })
 
   return commands[cmd]() // eslint-disable-line import/namespace
-    .then(m => m.default())
+    .then(m => m.default(module))
     .catch((error) => {
       consola.fatal(error)
     })
