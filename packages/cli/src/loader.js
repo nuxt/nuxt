@@ -35,7 +35,7 @@ const loadModule = async (name) => {
 export default async function loader(moduleName) {
   const nuxtModule = await loadModule(moduleName)
   const nuxtCmd = new NuxtCommand({ external: nuxtModule.cli })
-  nuxtCmd.run.then(() => {
+  nuxtCmd.run().then(() => {
     process.exit(0)
   }).catch(err => consola.fatal(err))
 }
