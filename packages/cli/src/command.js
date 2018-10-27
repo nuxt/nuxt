@@ -22,6 +22,13 @@ export default class NuxtCommand {
     }
   }
 
+  _calcCommands(commands) {
+    this.commands = commands.map((command) => {
+      command.sliceAt = this.sliceAt + 1
+      return command
+    }
+  }
+
   _calcOptions(options) {
     let _options = {}
     if (options) {
@@ -69,6 +76,7 @@ export default class NuxtCommand {
     this.sliceAt = 3
     this.description = external.description
     this.usage = `${this.name} ${this.external.name} <command>`
+    this._calcCommands()
     this._calcOptions(this.external.options)
     this.isExternal = true
   }
