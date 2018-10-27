@@ -3,6 +3,8 @@ import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
+import { NuxtConfig } from '@nuxt/common'
+import { defaultsDeep } from 'lodash'
 
 const _require = esm(module, {
   cache: false,
@@ -53,10 +55,10 @@ export async function loadNuxtConfig(argv) {
 
   // Server options
   if (!options.server) {
-    options.server = {}
+    options.server = defaultsDeep(NuxtConfig.server)
   }
   if (argv.port) {
-    options.server.port = port
+    options.server.port = argv.port
   }
   if (argv.hostname) {
     options.server.host = argv.hostname
