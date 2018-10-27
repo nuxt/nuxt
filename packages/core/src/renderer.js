@@ -9,7 +9,8 @@ import connect from 'connect'
 import launchMiddleware from 'launch-editor-middleware'
 import consola from 'consola'
 
-import { NuxtConfig, isUrl, timeout, waitFor, determineGlobals } from '@nuxt/common'
+import { isUrl, timeout, waitFor, determineGlobals } from '@nuxt/common'
+import NuxtConfig from '@nuxt/config'
 
 import MetaRenderer from './meta'
 import errorMiddleware from './middleware/error'
