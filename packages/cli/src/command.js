@@ -2,12 +2,13 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import * as options from './options'
+import * as Options from './options'
 import * as imports from './imports'
 
 const startSpaces = 6
 const optionSpaces = 2
 const maxCharsPerLine = 80
+const customOptions = {}
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, external, sliceAt } = {}) {
@@ -17,11 +18,25 @@ export default class NuxtCommand {
       this.sliceAt = typeof sliceAt === 'undefined' ? 2 : sliceAt
       this.description = description || ''
       this.usage = usage || ''
-      const _options = name in options
-        ? Object.assign({}, options[name], options.common)
-        : options.common
-      this.options = Object.keys(_options)
+      this._calcOptions()
     }
+  }
+
+  _calcOptions(options) {
+    let _options = {}
+    if (options) {
+      if (typeof options === 'object') {
+        customOptions = options
+        _options = options
+      } else if (Array.isArray(options)) {
+        _options = options
+      }
+    } else if (name in Options) {
+      _options = Object.assign({}, Options[name], Options.common)
+    } else {
+      _options = Object.assign({}, Options.common)
+    }
+    this.options = Object.keys(_options)
   }
 
   _getMinimistOptions() {
