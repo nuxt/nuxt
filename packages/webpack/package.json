@@ -12,7 +12,7 @@
     "@babel/polyfill": "^7.0.0",
     "@nuxt/babel-preset-app": "^2.2.0",
     "@nuxt/common": "^2.2.0",
-    "@nuxtjs/friendly-errors-webpack-plugin": "^2.0.2",
+    "@nuxtjs/friendly-errors-webpack-plugin": "^2.1.0",
     "babel-loader": "^8.0.4",
     "cache-loader": "^1.2.2",
     "caniuse-lite": "^1.0.30000899",
