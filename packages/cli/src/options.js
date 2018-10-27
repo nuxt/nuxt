@@ -1,6 +1,6 @@
 import consola from 'consola'
 
-export const defaultOptions = [
+export default [
   spa: {
     alias: 's',
     type: 'boolean',
@@ -29,16 +29,6 @@ export const defaultOptions = [
 ]
 
 export const options = {
-  port: {
-    alias: 'p',
-    type: 'string',
-    description: 'Port number on which to start the application',
-    handle(options, argv) {
-      if (argv.port) {
-        options.server.port = +argv.port
-      }
-    }
-  },
   hostname: {
     alias: 'H',
     type: 'string',
