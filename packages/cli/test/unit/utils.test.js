@@ -1,7 +1,7 @@
-import { consola } from '../utils'
-import * as utils from '../../src/utils'
 import { nuxtServerConfig } from '@nuxt/common'
 import defaultsDeep from 'lodash/defaultsDeep'
+import { consola } from '../utils'
+import * as utils from '../../src/utils'
 
 describe('cli/utils', () => {
   afterEach(() => {
@@ -98,7 +98,7 @@ describe('cli/utils', () => {
         UNIX_SOCKET: '/var/run/env.sock'
       })
     )
-    
+
     expect(options.server.host).toBe('env-host')
     expect(options.server.port).toBe('3003')
     expect(options.server.socket).toBe('/var/run/env.sock')
