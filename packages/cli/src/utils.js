@@ -54,9 +54,7 @@ export async function loadNuxtConfig(argv) {
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   // Server options
-  if (!options.server) {
-    options.server = defaultsDeep(NuxtConfig.server)
-  }
+  options.server = defaultsDeep({}, NuxtConfig.server, options.server)
   if (argv.port) {
     options.server.port = argv.port
   }
