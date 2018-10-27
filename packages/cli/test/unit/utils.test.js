@@ -1,4 +1,4 @@
-import { nuxtServerConfig } from '@nuxt/common'
+import { nuxtServerConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
