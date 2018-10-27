@@ -55,8 +55,8 @@ export async function loadNuxtConfig(argv) {
 
   // Server options
   options.server = defaultsDeep({
-    port: argv.port
-    host: argv.hostname
+    port: argv.port,
+    host: argv.hostname,
     socket: argv['unix-socket']
   }, options.server || {}, nuxtServerConfig())
 
