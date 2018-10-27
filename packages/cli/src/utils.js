@@ -4,7 +4,7 @@ import consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { nuxtServerConfig } from '@nuxt/config'
+import { server as nuxtServerConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
