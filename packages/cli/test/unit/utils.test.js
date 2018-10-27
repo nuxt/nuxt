@@ -81,6 +81,25 @@ describe('cli/utils', () => {
     expect(consola.fatal).toHaveBeenCalledWith('Error while fetching async configuration')
   })
 
+  test('loadNuxtConfig: server env', async () => {
+    const env = process.env
+
+    process.env.HOST = 'env-host'
+    process.env.PORT = 3003
+    process.env.UNIX_SOCKET = '/var/run/env.sock'
+
+    const argv = {
+      _: [__dirname],
+      'config-file': '../fixtures/nuxt.config.js'
+    }
+
+    const options = await utils.loadNuxtConfig(argv)
+    expect(options.server.host).toBe('env-host')
+    expect(options.server.port).toBe('3003')
+    expect(options.server.socket).toBe('/var/run/env.sock')
+    process.env = env
+  })
+
   test('indent', () => {
     expect(utils.indent(4)).toBe('    ')
   })
