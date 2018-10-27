@@ -63,7 +63,8 @@ export default {
   transition: false,
   plugins: [
     '~/plugins/vuex-module',
-    '~/plugins/dir-plugin'
+    '~/plugins/dir-plugin',
+    '~/plugins/inject'
   ],
   build: {
     scopeHoisting: true,
