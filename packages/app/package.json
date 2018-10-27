@@ -1,0 +1,14 @@
+{
+  "name": "@nuxt/app",
+  "version": "2.2.0",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "template"
+  ],
+  "main": "dist/app.js",
+  "publishConfig": {
+    "access": "public"
+  }
+}

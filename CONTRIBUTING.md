@@ -5,9 +5,9 @@ First of all, thank you for considering to contribute to Nuxt.js! :heart:
 ## Reporting Issues
 
 A great way to contribute to the project is to send a detailed report when you encounter an issue.
-To make things easier for contributors and maintainers, we use [CMTY](http://cmty.nuxt.xyz).
+To make things easier for contributors and maintainers, we use [CMTY](https://cmty.nuxtjs.org/).
 
-Please make sure to include a reproduction repository or [CodeSandBox](http://template.nuxt.xyz)
+Please make sure to include a reproduction repository or [CodeSandBox](https://template.nuxtjs.org/)
 so that bugs can be reproduced without great efforts. The better a bug can be reproduced, the faster we can start fixing it!
 
 ## Pull Requests
@@ -15,8 +15,8 @@ so that bugs can be reproduced without great efforts. The better a bug can be re
 We'd love to see your pull requests, even if it's just to fix a typo!
 
 However, any significant improvement should be associated to an existing
-[feature request](http://feature.nuxt.xyz/)
-or [bug report](http://bug.nuxt.xyz/).
+[feature request](https://feature.nuxtjs.org/)
+or [bug report](https://bug.nuxtjs.org/).
 
 ### Getting started
 
@@ -31,6 +31,16 @@ or [bug report](http://bug.nuxt.xyz/).
 
 A great PR, whether it includes a bug fix or a new feature, will often include tests.
 To write great tests, let us explain our test structure:
+
+### Setup
+
+Before running any tests, make sure all dependencies are met and build all packages:
+
+```sh
+yarn
+```
+
+`yarn` is the only supported package manager, as it will, among other things, properly resolve all dependencies from sub-packages and eliminate the need to `npm link` all required packages.
 
 #### Fixtures
 

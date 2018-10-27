@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`index renders properly 1`] = `
+<section class="container">
+  <div>
+    <h1 class="title">
+      jest-vtu-example
+    </h1>
+    <btn-stub label="click me!"></btn-stub>
+  </div>
+</section>
+`;

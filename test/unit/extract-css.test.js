@@ -14,7 +14,7 @@ describe('extract css', () => {
     await nuxt.listen(await getPort(), '0.0.0.0')
   })
 
-  test('Verify global.css has been extracted and minified', async () => {
+  test.skip('Verify global.css has been extracted and minified', async () => {
     const fileName = isWindows ? 'pages_index.css' : 'pages/index.css'
     const extractedIndexCss = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client', fileName)
     const content = await readFile(extractedIndexCss, 'utf-8')

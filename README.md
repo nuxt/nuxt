@@ -1,18 +1,18 @@
 <p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/nuxt/nuxt-js"><img src="https://badgen.net/appveyor/ci/nuxt/nuxt-js/dev" alt="Windows Build Status"></a>
+  <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/dev" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
-  <a href="http://discord.nuxt.xyz"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
+  <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
   <a href="#partners" alt="Partner on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/partner/badge.svg" /></a>
   <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
   <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
-  <a href="http://oc.nuxt.xyz/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
 </p>
 
@@ -23,10 +23,10 @@
 - 📘 Documentation: [https://nuxtjs.org](https://nuxtjs.org)
 - 👥 Community: [cmty.app/nuxt](https://cmty.app/nuxt)
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
-- 🐦 Twitter: [@nuxt_js](http://twitter.nuxt.xyz)
-- 💬 Chat: [Discord](http://discord.nuxt.xyz)
+- 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
+- 💬 Chat: [Discord](https://discord.nuxtjs.org/)
 - 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
-- 👉 [Play with Nuxt.js online](http://template.nuxt.xyz)
+- 👉 [Play with Nuxt.js online](https://template.nuxtjs.org)
 
 ## Features
 

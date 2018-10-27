@@ -34,8 +34,8 @@ describe('error', () => {
   })
 
   test('Error: resolvePath()', () => {
-    expect(() => nuxt.resolvePath()).toThrowError()
-    expect(() => nuxt.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
+    expect(() => nuxt.resolver.resolvePath()).toThrowError()
+    expect(() => nuxt.resolver.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
   })
 
   test('Error: callHook()', async () => {
