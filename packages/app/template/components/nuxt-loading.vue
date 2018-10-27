@@ -8,10 +8,10 @@ export default {
       canSucceed: true,
       reversed: false,
       skipTimerCount: 0,
-      rtl: <%= loading.rtl %>,
-      throttle: <%= loading.throttle %>,
-      duration: <%= loading.duration %>,
-      continuous: <%= loading.continuous %>
+      rtl: <%= loading.rtl || false %>,
+      throttle: <%= loading.throttle || 200 %>,
+      duration: <%= loading.duration || 3000 %>,
+      continuous: <%= loading.continuous || false %>
     }
   },
   beforeDestroy() {

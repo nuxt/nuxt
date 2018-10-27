@@ -1,5 +1,5 @@
 import Browser from '../utils/browser'
-import { loadFixture, getPort, Nuxt, Utils } from '../utils'
+import { loadFixture, getPort, Nuxt, waitFor } from '../utils'
 
 let port
 const browser = new Browser()
@@ -29,7 +29,7 @@ describe('basic browser', () => {
 
   test('/noloading', async () => {
     const { hook } = await page.nuxt.navigate('/noloading', false)
-    await Utils.waitFor(nuxt.options.loading.throttle + 100)
+    await waitFor(nuxt.options.loading.throttle + 100)
     let loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await hook
