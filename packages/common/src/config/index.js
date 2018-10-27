@@ -39,7 +39,7 @@ export default {
   messages,
 
   // Server options
-  server: server(),
+  server: server(process.env),
 
   // Dirs
   srcDir: undefined,

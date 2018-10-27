@@ -1,13 +1,13 @@
-export default () => ({
+export default (env) => ({
   https: false,
-  port: process.env.NUXT_PORT ||
-    process.env.PORT ||
-    process.env.npm_package_config_nuxt_port ||
+  port: env.NUXT_PORT ||
+    env.PORT ||
+    env.npm_package_config_nuxt_port ||
     3000,
-  host: process.env.NUXT_HOST ||
-    process.env.HOST ||
-    process.env.npm_package_config_nuxt_host ||
+  host: env.NUXT_HOST ||
+    env.HOST ||
+    env.npm_package_config_nuxt_host ||
     'localhost',
-  socket: process.env.UNIX_SOCKET ||
-    process.env.npm_package_config_unix_socket
+  socket: env.UNIX_SOCKET ||
+    env.npm_package_config_unix_socket
 })

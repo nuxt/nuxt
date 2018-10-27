@@ -1,5 +1,7 @@
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
+import { nuxtServerConfig } from '@nuxt/common'
+import defaultsDeep from 'lodash/defaultsDeep'
 
 describe('cli/utils', () => {
   afterEach(() => {
@@ -82,22 +84,24 @@ describe('cli/utils', () => {
   })
 
   test('loadNuxtConfig: server env', async () => {
-    const env = process.env
-
-    process.env.HOST = 'env-host'
-    process.env.PORT = 3003
-    process.env.UNIX_SOCKET = '/var/run/env.sock'
-
     const argv = {
       _: [__dirname],
       'config-file': '../fixtures/nuxt.config.js'
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = defaultsDeep(
+      await utils.loadNuxtConfig(argv),
+      nuxtServerConfig({
+        ...process.env,
+        HOST: 'env-host'
+        PORT: 3003
+        UNIX_SOCKET: '/var/run/env.sock'
+      })
+    )
+    
     expect(options.server.host).toBe('env-host')
     expect(options.server.port).toBe('3003')
     expect(options.server.socket).toBe('/var/run/env.sock')
-    process.env = env
   })
 
   test('indent', () => {
