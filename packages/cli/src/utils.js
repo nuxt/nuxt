@@ -53,20 +53,12 @@ export async function loadNuxtConfig(argv) {
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
-  const serverDefaults = nuxtServerConfig()
   // Server options
-  options.server = typeof options.server === 'object'
-    ? defaultsDeep(options.server, serverDefaults)
-    : defaultsDeep({}, serverDefaults)
-  if (argv.port) {
-    options.server.port = argv.port
-  }
-  if (argv.hostname) {
-    options.server.host = argv.hostname
-  }
-  if (argv['unix-socket']) {
-    options.server.socket = argv['unix-socket']
-  }
+  options.server = defaultsDeep({
+    port: argv.port
+    host: argv.hostname
+    socket: argv['unix-socket']
+  }, options.server || {}, nuxtServerConfig())
 
   return options
 }
