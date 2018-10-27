@@ -94,7 +94,7 @@ describe('cli/utils', () => {
       nuxtServerConfig({
         ...process.env,
         HOST: 'env-host',
-        PORT: 3003
+        PORT: 3003,
         UNIX_SOCKET: '/var/run/env.sock'
       })
     )
