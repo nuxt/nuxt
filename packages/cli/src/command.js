@@ -2,13 +2,14 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import * as Options from './options'
+import * as _Options from './options'
 import * as imports from './imports'
 
 const startSpaces = 6
 const optionSpaces = 2
 const maxCharsPerLine = 80
-const customOptions = {}
+const Options = { ..._Options }
+let customOptions = {}
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, external, sliceAt } = {}) {
@@ -26,7 +27,7 @@ export default class NuxtCommand {
     this.commands = commands.map((command) => {
       command.sliceAt = this.sliceAt + 1
       return command
-    }
+    })
   }
 
   _calcOptions(options) {

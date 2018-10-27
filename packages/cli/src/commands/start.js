@@ -5,7 +5,7 @@ import NuxtCommand from '../command'
 
 export default {
   name: 'start',
-  run: async function () {
+  async run() {
     const nuxtCmd = new NuxtCommand({
       description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
       usage: 'start <dir> -p <port number> -H <hostname>',

@@ -6,8 +6,9 @@ const nuxtModuleError = (name, err) => {
   throw err
 }
 
-const getModuleMetadata = (name)  => {
-  return { name, version } = require(`${name}/package.json`)
+const getModuleMetadata = (name) => {
+  const { name, version } = require(`${name}/package.json`)
+  return { name, version }
 }
 
 const loadModule = async (name) => {

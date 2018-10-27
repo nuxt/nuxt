@@ -2,8 +2,8 @@ import consola from 'consola'
 import NuxtCommand from '../command'
 
 export default {
-  name: 'build'
-  async function () {
+  name: 'build',
+  async run() {
     const nuxtCmd = new NuxtCommand({
       description: 'Compiles the application for production deployment',
       usage: 'build <dir>',

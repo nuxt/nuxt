@@ -3,7 +3,7 @@ import NuxtCommand from '../command'
 
 export default {
   name: 'dev',
-  async function() {
+  async run() {
     const nuxtCmd = new NuxtCommand({
       description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
       usage: 'dev <dir> -p <port number> -H <hostname>',

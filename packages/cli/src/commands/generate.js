@@ -3,7 +3,7 @@ import NuxtCommand from '../command'
 
 export default {
   name: 'generate',
-  async run () {
+  async run() {
     const nuxtCmd = new NuxtCommand({
       description: 'Generate a static web application (server-rendered)',
       usage: 'generate <dir>',
