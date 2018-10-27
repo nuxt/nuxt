@@ -58,7 +58,7 @@ export async function loadNuxtConfig(argv) {
     port: argv.port,
     host: argv.hostname,
     socket: argv['unix-socket']
-  }, options.server || {}, nuxtServerConfig())
+  }, options.server || {}, nuxtServerConfig(process.env))
 
   return options
 }
