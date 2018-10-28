@@ -5,7 +5,13 @@ export default async function generate() {
   const nuxtCmd = new NuxtCommand({
     description: 'Generate a static web application (server-rendered)',
     usage: 'generate <dir>',
-    options: [ 'build' ]
+    options: {
+      build: {
+        type: 'boolean',
+        default: true,
+        description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
+      }
+    }
   })
 
   const argv = nuxtCmd.getArgv()

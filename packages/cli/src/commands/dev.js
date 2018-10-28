@@ -1,8 +1,9 @@
 import networkOptions from '../options/network'
+
 export default {
   description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
   usage: 'dev <dir> -p <port number> -H <hostname>',
-  options: [ 'hostname', 'port' ],
+  options: { ...networkOptions },
   async run(nuxtCmd, consola) {
     const argv = nuxtCmd.getArgv()
 
