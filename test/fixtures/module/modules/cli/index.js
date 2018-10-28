@@ -17,7 +17,7 @@ export const cli = {
           handle(options, argv) {
             consola.info('argv ->', argv)
           }
-        },
+        }
       }
     }
   ]
