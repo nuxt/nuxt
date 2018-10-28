@@ -51,14 +51,6 @@ describe('components', () => {
       component.clear()
     })
 
-    test('percentage can be set with 1 decimal precision', async () => {
-      const component = new VueComponent().$mount()
-      component.set(50.5)
-      const str = await renderToString(component)
-      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:50.5%;left:false;"></div>')
-      expect(component.$data.percent).toBe(50.5)
-    })
-
     test('can be finished', async () => {
       jest.useFakeTimers()
       const component = new VueComponent().$mount()
