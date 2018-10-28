@@ -37,7 +37,7 @@ export default function run() {
 
   return commands[cmd]() // eslint-disable-line import/namespace
     .then(m => m.default)
-    .then(prepareAndRun)
+    .then(wrapAndRun)
     .catch((error) => {
       consola.fatal(error)
     })
