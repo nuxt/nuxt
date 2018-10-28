@@ -1,7 +1,7 @@
 import common from './common'
-import network from './network'
+import server from './server'
 
 export default {
   ...common,
-  ...network
+  ...server
 }
