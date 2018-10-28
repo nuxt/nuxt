@@ -1,3 +1,5 @@
+import consola from 'consola'
+
 export default {
   port: {
     alias: 'p',

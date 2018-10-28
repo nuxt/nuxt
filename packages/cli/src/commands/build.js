@@ -1,3 +1,4 @@
+import consola from 'consola'
 import commonOptions from '../options/common'
 
 export default {
@@ -35,7 +36,7 @@ export default {
       }
     }
   },
-  async run(NuxtCommand, consola) {
+  async run(nuxtCmd) {
     const argv = nuxtCmd.getArgv()
 
     // Create production build when calling `nuxt build` (dev: false)

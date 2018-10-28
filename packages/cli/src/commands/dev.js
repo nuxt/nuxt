@@ -1,10 +1,11 @@
+import consola from 'consola'
 import options from '../options'
 
 export default {
   options,
   description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
   usage: 'dev <dir> -p <port number> -H <hostname>',
-  async run(nuxtCmd, consola) {
+  async run(nuxtCmd) {
     const argv = nuxtCmd.getArgv()
 
     const errorHandler = (err, instance) => {

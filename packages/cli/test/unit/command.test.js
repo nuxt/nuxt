@@ -1,5 +1,5 @@
 import Command from '../../src/command'
-import { options as Options } from '../../src/options'
+import Options from '../../src/options'
 import { consola } from '../utils'
 
 jest.mock('@nuxt/core')

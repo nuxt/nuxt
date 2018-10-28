@@ -1,12 +1,13 @@
 import fs from 'fs'
 import path from 'path'
+import consola from 'consola'
 import options from '../options'
 
 export default {
   options,
   description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
   usage: 'start <dir> -p <port number> -H <hostname>',
-  async run(nuxtCmd, consola) {
+  async run(nuxtCmd) {
     const argv = nuxtCmd.getArgv()
 
     // Create production build when calling `nuxt build`
