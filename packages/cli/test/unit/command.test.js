@@ -11,12 +11,6 @@ describe('cli/command', () => {
     jest.restoreAllMocks()
   })
 
-  test('adds default options', () => {
-    const cmd = new Command()
-
-    expect(Object.keys(cmd.options).length).not.toBe(0)
-  })
-
   test('builds minimist options', () => {
     const cmd = new Command({ options: Options })
     const minimistOptions = cmd._getMinimistOptions()
