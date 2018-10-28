@@ -6,7 +6,7 @@ describe('start', () => {
 
   beforeAll(async () => {
     start = await import('../../src/commands/start')
-    start = start.default
+    start = start.default.run
   })
 
   afterEach(() => {
