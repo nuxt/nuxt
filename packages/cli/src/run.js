@@ -3,13 +3,13 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
-const wrapAndRun = async (commandModule) => {
+const wrapAndRun = (commandModule) => {
   const nuxtCmd = new NuxtCommand({
     usage: commandModule.usage,
     description: commandModule.description,
     options: commandModule.options
   })
-  await commandModule.run(nuxtCmd)
+  return commandModule.run(nuxtCmd)
 }
 
 export default function run() {
