@@ -82,9 +82,22 @@ export default class NuxtCommand {
     this.isExternal = true
   }
 
+  async run() {
+    const commandName = process.argv[this.sliceAt - 1]
+    const command = this.commands.find((c) => c.name === commandName)
+    const nuxtCommand = NuxtCommand({
+      name: command.name, 
+      description: command.description, 
+      command: command.usage, 
+      command: command.options
+      sliceAt: this.sliceAt + 1
+    })
+    return this.commands[command].run(nuxtCommand)
+  }
+
   getArgv(args) {
     const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(this.slice), minimistOptions)
+    const argv = parseArgs(args || process.argv.slice(this.sliceAt), minimistOptions)
 
     if (argv.version) {
       this.showVersion()
