@@ -60,8 +60,8 @@ export default class NuxtCommand {
     const options = Object.assign(config, extraOptions || {})
 
     for (const name of this.options) {
-      if (Options[name].handle) {
-        Options[name].handle(options, argv)
+      if (this.options[name].handle) {
+        this.options[name].handle(options, argv)
       }
     }
 
@@ -90,9 +90,10 @@ export default class NuxtCommand {
 
     let maxOptionLength = 0
     // For consistency Options determines order
+    const optionKeys = Object.keys(this.options)
     for (const name in Options) {
       const option = Options[name]
-      if (this.options.includes(name)) {
+      if (optionKeys.includes(name)) {
         let optionHelp = '--'
         optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
         optionHelp += name
