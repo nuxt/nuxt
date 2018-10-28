@@ -5,7 +5,7 @@ describe('start', () => {
   let start
 
   beforeAll(async () => {
-    start = await import('../../src/commands/start').then((m) => m.default.run)
+    start = await import('../../src/commands/start').then(m => m.default.run)
   })
 
   afterEach(() => {

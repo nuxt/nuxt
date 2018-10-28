@@ -4,7 +4,7 @@ describe('dev', () => {
   let dev
 
   beforeAll(async () => {
-    dev = await import('../../src/commands/dev').then((m) => m.default.run)
+    dev = await import('../../src/commands/dev').then(m => m.default.run)
   })
 
   afterEach(() => {
