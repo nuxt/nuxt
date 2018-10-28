@@ -5,8 +5,7 @@ describe('generate', () => {
   let generate
 
   beforeAll(async () => {
-    generate = await import('../../src/commands/generate')
-    generate = generate.default.run
+    generate = await import('../../src/commands/generate').then((m) => m.default.run)
 
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })

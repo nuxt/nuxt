@@ -4,9 +4,8 @@ describe('build', () => {
   let build
 
   beforeAll(async () => {
-    build = await import('../../src/commands/build')
-    build = build.default.run
-
+    build = await import('../../src/commands/build').then((m) => m.default.run)
+    
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
