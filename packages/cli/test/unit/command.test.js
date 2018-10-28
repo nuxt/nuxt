@@ -49,7 +49,7 @@ describe('cli/command', () => {
   })
 
   test('prints help automatically', () => {
-    const cmd = new Command({ options: commonOptions })
+    const cmd = new Command({ options: Options })
     cmd.showHelp = jest.fn()
 
     const args = ['-h']
@@ -59,7 +59,7 @@ describe('cli/command', () => {
   })
 
   test('returns nuxt config', async () => {
-    const cmd = new Command({ options: commonOptions })
+    const cmd = new Command({ options: Options })
 
     const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
     const argv = cmd.getArgv(args)
@@ -69,8 +69,6 @@ describe('cli/command', () => {
 
     expect(options.testOption).toBe(true)
     expect(options.server.port).toBe(3001)
-    expect(options.build.quiet).toBe(true)
-    expect(options.build.analyze).toBe(true)
     expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
   })
 
@@ -103,7 +101,7 @@ describe('cli/command', () => {
       description: 'a very long description that is longer than 80 chars and ' +
         'should wrap to the next line while keeping indentation',
       usage: 'this is how you do it',
-      options: { build: generate.options.build, ...commonOptions }
+      options: commonOptions
     })
 
     const expectedText = `
@@ -113,8 +111,6 @@ describe('cli/command', () => {
     Usage
       $ nuxt this is how you do it
     Options
-      --no-build         Only generate pages for dynamic routes. Nuxt has to be
-                         built once before using this option
       --spa, -s          Launch in SPA mode
       --universal, -u    Launch in Universal mode (default)
       --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
