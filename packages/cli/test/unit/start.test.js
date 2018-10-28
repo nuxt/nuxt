@@ -12,7 +12,6 @@ describe('start', () => {
     if (fs.existsSync.mockRestore) {
       fs.existsSync.mockRestore()
     }
-
     jest.resetAllMocks()
   })
 

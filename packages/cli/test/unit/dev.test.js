@@ -7,9 +7,7 @@ describe('dev', () => {
     dev = await import('../../src/commands/dev').then(m => m.default)
   })
 
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
+  afterEach(() => jest.clearAllMocks())
 
   test('has run function', () => {
     expect(typeof dev.run).toBe('function')

@@ -5,17 +5,11 @@ describe('build', () => {
 
   beforeAll(async () => {
     build = await import('../../src/commands/build').then(m => m.default)
-
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
-  afterAll(() => {
-    process.exit.mockRestore()
-  })
-
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterAll(() => process.exit.mockRestore())
+  afterEach(() => jest.resetAllMocks())
 
   test('has run function', () => {
     expect(typeof build.run).toBe('function')

@@ -1,7 +1,7 @@
 import { readdir } from 'fs'
 import { resolve } from 'path'
 import { promisify } from 'util'
-import { consola, wrapAndRun } from '../utils'
+import { consola } from '../utils'
 import { run } from '../../src'
 import * as commands from '../../src/commands'
 
@@ -10,9 +10,7 @@ const readDir = promisify(readdir)
 jest.mock('../../src/commands')
 
 describe('cli', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('exports for all commands defined', async () => {
     const cmds = await readDir(resolve(__dirname, '..', '..', 'src', 'commands'))

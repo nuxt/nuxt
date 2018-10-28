@@ -7,9 +7,7 @@ jest.mock('@nuxt/builder')
 jest.mock('@nuxt/generator')
 
 describe('cli/command', () => {
-  beforeEach(() => {
-    jest.restoreAllMocks()
-  })
+  beforeEach(() => jest.restoreAllMocks())
 
   test('builds minimist options', () => {
     const cmd = new Command({ options: Options })

@@ -6,17 +6,11 @@ describe('generate', () => {
 
   beforeAll(async () => {
     generate = await import('../../src/commands/generate').then(m => m.default)
-
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
-  afterAll(() => {
-    process.exit.mockRestore()
-  })
-
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterAll(() => process.exit.mockRestore())
+  afterEach(() => jest.resetAllMocks())
 
   test('is function', () => {
     expect(typeof generate).toBe('function')
