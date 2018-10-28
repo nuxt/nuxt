@@ -14,6 +14,16 @@ export default {
       continuous: <%= loading.continuous || false %>
     }
   },
+  computed: {
+    left() {
+      if (!this.continuous && !this.rtl) {
+        return false
+      }
+      return this.rtl
+        ? (this.reversed ? '0px' : 'auto')
+        : (!this.reversed ? '0px' : 'auto')
+    }
+  },
   beforeDestroy() {
     this.clear()
   },
@@ -40,18 +50,18 @@ export default {
     set(num) {
       this.show = true
       this.canSucceed = true
-      this.percent = Math.min(100, Math.max(0, Math.floor(100 * num) / 100))
+      this.percent = Math.min(100, Math.max(0, Math.floor(num)))
       return this
     },
     get() {
       return this.percent
     },
     increase(num) {
-      this.percent = Math.min(100, Math.floor(100 * (this.percent + num)) / 100)
+      this.percent = Math.min(100, Math.floor(this.percent + num))
       return this
     },
     decrease(num) {
-      this.percent = Math.max(0, Math.floor(100 * (this.percent - num)) / 100)
+      this.percent = Math.max(0, Math.floor(this.percent - num))
       return this
     },
     pause() {
@@ -112,9 +122,11 @@ export default {
         if (this.continuous) {
           if (this.percent >= 100) {
             this.skipTimerCount = 1
+
             this.reversed = !this.reversed
           } else if (this.percent <= 0) {
             this.skipTimerCount = 1
+
             this.reversed = !this.reversed
           }
         }
@@ -132,9 +144,7 @@ export default {
         },
         style: {
           'width': this.percent + '%',
-          'left': this.continuous && this.reversed
-            ? (this.rtl ? '0px' : 'auto')
-            : false
+          'left': this.left
         }
       })
     }
