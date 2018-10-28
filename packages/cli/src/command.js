@@ -32,6 +32,7 @@ export default class NuxtCommand {
   _calcOptions(options) {
     let _options = {}
     if (typeof options === 'object') {
+      this.customOptions = options
       _options = Object.assign({}, options)
     } else if (Array.isArray(options)) {
       _options = options
@@ -52,7 +53,7 @@ export default class NuxtCommand {
     }
 
     for (let option of this.options) {
-      option = options[this.name][option] || options.common[option]
+      option = Options[this.name][option] || Options.common[option] || this.customOptions
       if (option) {
         if (option.alias) {
           minimistOptions.alias[option.alias] = name
@@ -78,14 +79,14 @@ export default class NuxtCommand {
     this.isExternal = true
   }
 
-  async run() {
+  run() {
     const commandName = process.argv[this.sliceAt - 1]
-    const command = this.commands.find((c) => c.name === commandName)
+    const command = this.commands.find(c => c.name === commandName)
     const nuxtCommand = NuxtCommand({
-      name: command.name, 
-      description: command.description, 
-      command: command.usage, 
-      command: command.options
+      name: command.name,
+      description: command.description,
+      command: command.usage,
+      options: command.options,
       sliceAt: this.sliceAt + 1
     })
     return this.commands[command].run(nuxtCommand)
