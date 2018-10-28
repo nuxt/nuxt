@@ -1,10 +1,12 @@
 import consola from 'consola'
+import options from '../options'
 import NuxtCommand from '../command'
 
 export default {
   description: 'Generate a static web application (server-rendered)',
   usage: 'generate <dir>',
   options: {
+    ...options.common,
     build: {
       type: 'boolean',
       default: true,

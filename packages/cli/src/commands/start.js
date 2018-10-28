@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
-import networkOptions from '../options/network'
+import options from '../options'
 
 export default {
+  options,
   description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
   usage: 'start <dir> -p <port number> -H <hostname>',
-  options: { ...networkOptions },
   async run(nuxtCmd, consola) {
     const argv = nuxtCmd.getArgv()
 

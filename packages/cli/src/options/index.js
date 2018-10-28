@@ -1,2 +1,7 @@
-export { default as common } from './common'
-export { default as network } from './network'
+import common from './common'
+import network from './network'
+
+export default {
+  common,
+  network
+}
