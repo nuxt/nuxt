@@ -3,7 +3,7 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
-const wrapAndRun = (commandModule) => {
+function wrapAndRun(commandModule) {
   const nuxtCmd = new NuxtCommand({
     usage: commandModule.usage,
     description: commandModule.description,

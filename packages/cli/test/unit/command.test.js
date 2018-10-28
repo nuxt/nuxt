@@ -16,7 +16,7 @@ describe('cli/command', () => {
     const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(4)
-    expect(minimistOptions.boolean.length).toBe(9)
+    expect(minimistOptions.boolean.length).toBe(4)
     expect(minimistOptions.alias.c).toBe('config-file')
     expect(minimistOptions.default.c).toBe(Options['config-file'].default)
   })
