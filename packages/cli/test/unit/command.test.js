@@ -1,5 +1,6 @@
 import Command from '../../src/command'
 import generate from '../../src/commands/generate'
+import commonOptions from '../../src/options/common'
 import Options from '../../src/options'
 import { consola } from '../utils'
 
@@ -48,7 +49,7 @@ describe('cli/command', () => {
   })
 
   test('prints help automatically', () => {
-    const cmd = new Command()
+    const cmd = new Command({ options: commonOptions })
     cmd.showHelp = jest.fn()
 
     const args = ['-h']
@@ -58,9 +59,7 @@ describe('cli/command', () => {
   })
 
   test('returns nuxt config', async () => {
-    const cmd = new Command({
-      options: Object.keys(Options)
-    })
+    const cmd = new Command({ options: commonOptions })
 
     const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
     const argv = cmd.getArgv(args)
@@ -104,7 +103,7 @@ describe('cli/command', () => {
       description: 'a very long description that is longer than 80 chars and ' +
         'should wrap to the next line while keeping indentation',
       usage: 'this is how you do it',
-      options: { build: generate.options.build }
+      options: { build: generate.options.build, ...commonOptions }
     })
 
     const expectedText = `
