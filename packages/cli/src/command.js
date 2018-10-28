@@ -2,7 +2,7 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import { options as Options, defaultOptions as DefaultOptions } from './options'
+import options from './options'
 import * as imports from './imports'
 
 const startSpaces = 6

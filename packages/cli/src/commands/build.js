@@ -1,10 +1,10 @@
-import options from '../options'
+import commonOptions from '../options/common'
 
 export default {
   description: 'Compiles the application for production deployment',
   usage: 'build <dir>',
   options: {
-    ...options.common,
+    ...commonOptions,
     analyze: {
       alias: 'a',
       type: 'boolean',
