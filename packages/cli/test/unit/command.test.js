@@ -14,14 +14,11 @@ describe('cli/command', () => {
   test('adds default options', () => {
     const cmd = new Command()
 
-    expect(cmd.options.length).not.toBe(0)
+    expect(Object.keys(cmd.options).length).not.toBe(0)
   })
 
   test('builds minimist options', () => {
-    const cmd = new Command({
-      options: Object.keys(Options)
-    })
-
+    const cmd = new Command({ options: Options})
     const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(4)
@@ -31,9 +28,7 @@ describe('cli/command', () => {
   })
 
   test('parses args', () => {
-    const cmd = new Command({
-      options: Object.keys(Options)
-    })
+    const cmd = new Command({ options: Options})
 
     let args = ['-c', 'test-file', '-s', '-p', '3001']
     let argv = cmd.getArgv(args)
