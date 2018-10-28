@@ -1,7 +1,7 @@
 import { readdir } from 'fs'
 import { resolve } from 'path'
 import { promisify } from 'util'
-import { consola } from '../utils'
+import { consola, wrapAndRun } from '../utils'
 import { run } from '../../src'
 import * as commands from '../../src/commands'
 
@@ -37,7 +37,7 @@ describe('cli', () => {
 
     await run()
 
-    expect(defaultExport).toHaveBeenCalled()
+    expect(defaultExport.run).toHaveBeenCalled()
     process.argv = argv
   })
 
@@ -48,7 +48,7 @@ describe('cli', () => {
 
     await run()
 
-    expect(commands.dev).toHaveBeenCalled()
+    expect(commands.dev.run).toHaveBeenCalled()
     process.argv = argv
   })
 
