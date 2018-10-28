@@ -5,7 +5,7 @@ import setup from './setup'
 
 const prepareAndRun = async (commandModule) => {
   commandModule = commandModule.default
-  const nuxtCmd = NuxtCommand({
+  const nuxtCmd = new NuxtCommand({
     usage: commandModule.usage,
     description: commandModule.description,
     options: commandModule.options
