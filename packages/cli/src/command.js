@@ -2,7 +2,8 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import options from './options'
+import commonOptions from './options/common'
+import Options from './options'
 import * as imports from './imports'
 
 const startSpaces = 6
@@ -13,7 +14,9 @@ export default class NuxtCommand {
   constructor({ description, usage, options } = {}) {
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+    this.options = Array.from(
+      new Set((options || []).concat(commonOptions))
+    )
   }
 
   _getMinimistOptions() {
@@ -25,7 +28,7 @@ export default class NuxtCommand {
     }
 
     for (const name of this.options) {
-      const option = Options[name]
+      const option = this.options[name]
 
       if (option.alias) {
         minimistOptions.alias[option.alias] = name
