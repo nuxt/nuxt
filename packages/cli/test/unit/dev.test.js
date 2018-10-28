@@ -1,25 +1,25 @@
-import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig } from '../utils'
+import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig, wrapAndRun } from '../utils'
 
 describe('dev', () => {
   let dev
 
   beforeAll(async () => {
-    dev = await import('../../src/commands/dev').then(m => m.default.run)
+    dev = await import('../../src/commands/dev').then(m => m.default)
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  test('is function', () => {
-    expect(typeof dev).toBe('function')
+  test('has run function', () => {
+    expect(typeof dev.run).toBe('function')
   })
 
   test('reloads on fileChanged hook', async () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await dev()
+    await wrapAndRun(dev)
 
     expect(consola.error).not.toHaveBeenCalled()
 
@@ -50,7 +50,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await dev()
+    await wrapAndRun(dev)
     jest.clearAllMocks()
 
     // Test error on second build so we cover oldInstance stuff
@@ -67,7 +67,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await dev()
+    await wrapAndRun(dev)
     jest.clearAllMocks()
 
     const builder = new Builder()
@@ -83,7 +83,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await dev()
+    await wrapAndRun(dev)
     jest.clearAllMocks()
 
     mockGetNuxtConfig().mockImplementationOnce(() => {
@@ -105,7 +105,7 @@ describe('dev', () => {
     })
     mockBuilder()
 
-    await dev()
+    await wrapAndRun(dev)
 
     expect(consola.error).toHaveBeenCalledWith(new Error('Listen Error'))
   })
