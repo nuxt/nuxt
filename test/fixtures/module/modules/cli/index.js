@@ -1,3 +1,4 @@
+import consola from 'consola'
 
 export const cli = {
   name: 'custom-module-cli',
@@ -5,8 +6,8 @@ export const cli = {
   commands: [
     {
       name: 'command',
-      async run () {
-        console.log('dummy module command')
+      run() {
+        consola.info('dummy module command')
       },
       options: {
         dummy: {
@@ -14,7 +15,7 @@ export const cli = {
           type: 'boolean',
           description: 'Dummy option',
           handle(options, argv) {
-            console.log('argv ->', argv)
+            consola.info('argv ->', argv)
           }
         },
       }
@@ -23,5 +24,5 @@ export const cli = {
 }
 
 export default function () {
-  console.log('dummy module')
+  consola.info('dummy module')
 }
