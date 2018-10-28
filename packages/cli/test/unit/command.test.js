@@ -1,5 +1,4 @@
 import Command from '../../src/command'
-import generate from '../../src/commands/generate'
 import commonOptions from '../../src/options/common'
 import Options from '../../src/options'
 import { consola } from '../utils'
