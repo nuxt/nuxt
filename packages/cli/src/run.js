@@ -10,7 +10,7 @@ const prepareAndRun = async (commandModule) => {
     description: commandModule.description,
     options: commandModule.options
   })
-  await commandModule.run(nuxtCmd, consola)
+  await commandModule.run(nuxtCmd)
 }
 
 export default function run() {
