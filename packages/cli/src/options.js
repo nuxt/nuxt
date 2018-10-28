@@ -84,11 +84,6 @@ export const options = {
       }
     }
   },
-  verbose: {
-    alias: 'v',
-    type: 'boolean',
-    description: 'Show debug information'
-  },
   version: {
     type: 'boolean',
     description: 'Display the Nuxt version'
