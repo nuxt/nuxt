@@ -9,7 +9,6 @@ const startSpaces = 6
 const optionSpaces = 2
 const maxCharsPerLine = 80
 const Options = { ..._Options }
-let customOptions = {}
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, external, sliceAt } = {}) {
@@ -32,19 +31,16 @@ export default class NuxtCommand {
 
   _calcOptions(options) {
     let _options = {}
-    if (options) {
-      if (typeof options === 'object') {
-        customOptions = options
-        _options = options
-      } else if (Array.isArray(options)) {
-        _options = options
-      }
-    } else if (name in Options) {
-      _options = Object.assign({}, Options[name], Options.common)
-    } else {
-      _options = Object.assign({}, Options.common)
+    if (typeof options === 'object') {
+      _options = Object.assign({}, options)
+    } else if (Array.isArray(options)) {
+      _options = options
+    } else if (this.name in Options) {
+      _options = Object.assign({}, Options[name])
     }
-    this.options = Object.keys(_options)
+    this.options = Array.isArray(_options)
+      ? _options.concat(Object.keys(Options.common))
+      : Object.keys(Object.assign(_options, Options.common))
   }
 
   _getMinimistOptions() {
