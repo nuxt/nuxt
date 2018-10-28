@@ -28,7 +28,6 @@ describe('cli/command', () => {
     expect(argv['config-file']).toBe(args[1])
     expect(argv.spa).toBe(true)
     expect(argv.universal).toBe(false)
-    expect(argv.build).toBe(true)
     expect(argv.port).toBe('3001')
 
     args = ['--no-build']
