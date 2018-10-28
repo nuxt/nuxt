@@ -1,11 +1,11 @@
-import { consola, mockGetNuxt, mockGetGenerator } from '../utils'
+import { consola, mockGetNuxt, mockGetGenerator, wrapAndRun } from '../utils'
 import Command from '../../src/command'
 
 describe('generate', () => {
   let generate
 
   beforeAll(async () => {
-    generate = await import('../../src/commands/generate').then(m => m.default.run)
+    generate = await import('../../src/commands/generate').then(m => m.default)
 
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
@@ -26,7 +26,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await generate()
+    await wrapAndRun(generate)
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(true)
@@ -45,7 +45,7 @@ describe('generate', () => {
     })
     const generator = mockGetGenerator(Promise.resolve())
 
-    await generate()
+    await wrapAndRun(generate)
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
@@ -56,7 +56,7 @@ describe('generate', () => {
     mockGetNuxt()
     mockGetGenerator(Promise.reject(new Error('Generator Error')))
 
-    await generate()
+    await wrapAndRun(generate)
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Generator Error'))
   })
