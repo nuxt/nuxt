@@ -3,8 +3,7 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
-const prepareAndRun = async (commandModule) => {
-  commandModule = commandModule.default
+const wrapAndRun = async (commandModule) => {
   const nuxtCmd = new NuxtCommand({
     usage: commandModule.usage,
     description: commandModule.description,
@@ -37,6 +36,7 @@ export default function run() {
   })
 
   return commands[cmd]() // eslint-disable-line import/namespace
+    .then(m => m.default)
     .then(prepareAndRun)
     .catch((error) => {
       consola.fatal(error)
