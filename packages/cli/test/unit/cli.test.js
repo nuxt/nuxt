@@ -48,7 +48,7 @@ describe('cli', () => {
 
     await run()
 
-    expect(commands.dev.run).toHaveBeenCalled()
+    expect(commands.dev).toHaveBeenCalled()
     process.argv = argv
   })
 
