@@ -15,18 +15,18 @@ export default function run() {
 
   let cmd = process.argv[2]
 
-  if (cmds.has(cmd)) {
-    process.argv.splice(2, 1)
-  } else if (typeof cmd === 'string' && cmd.length) {
-    loader(cmd)
-  } else {
-    cmd = defaultCommand
-  }
-
   // Setup runtime
   setup({
     dev: cmd === 'dev'
   })
+
+  if (cmds.has(cmd)) {
+    process.argv.splice(2, 1)
+  } else if (typeof cmd === 'string' && cmd.length) {
+    return loader(cmd)
+  } else {
+    cmd = defaultCommand
+  }
 
   return commands[cmd]() // eslint-disable-line import/namespace
     .then(m => m.default.run())
