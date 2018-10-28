@@ -15,8 +15,8 @@ describe('start', () => {
     jest.resetAllMocks()
   })
 
-  test('is function', () => {
-    expect(typeof start).toBe('function')
+  test('has run function', () => {
+    expect(typeof start.run).toBe('function')
   })
 
   test('starts listening and calls showReady', async () => {

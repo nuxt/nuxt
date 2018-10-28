@@ -43,6 +43,7 @@ export default class NuxtCommand {
 
   getArgv(args) {
     const minimistOptions = this._getMinimistOptions()
+    console.log('minimistOptions', minimistOptions)
     const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
 
     if (argv.version) {

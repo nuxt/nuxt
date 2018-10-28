@@ -12,8 +12,8 @@ describe('generate', () => {
   afterAll(() => process.exit.mockRestore())
   afterEach(() => jest.resetAllMocks())
 
-  test('is function', () => {
-    expect(typeof generate).toBe('function')
+  test('has run function', () => {
+    expect(typeof generate.run).toBe('function')
   })
 
   test('builds by default', async () => {

@@ -1,4 +1,5 @@
 import Command from '../../src/command'
+import generate from '../../src/commands/generate'
 import Options from '../../src/options'
 import { consola } from '../utils'
 
@@ -103,7 +104,7 @@ describe('cli/command', () => {
       description: 'a very long description that is longer than 80 chars and ' +
         'should wrap to the next line while keeping indentation',
       usage: 'this is how you do it',
-      options: ['build']
+      options: { build: generate.options.build }
     })
 
     const expectedText = `
