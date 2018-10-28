@@ -14,9 +14,7 @@ export default class NuxtCommand {
   constructor({ description, usage, options } = {}) {
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Array.from(
-      new Set((options || []).concat(commonOptions))
-    )
+    this.options = Object.assign({}, options, commonOptions)
   }
 
   _getMinimistOptions() {
