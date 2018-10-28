@@ -25,7 +25,7 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (const name of this.options) {
+    for (const name of Object.keys(this.options)) {
       const option = this.options[name]
 
       if (option.alias) {
