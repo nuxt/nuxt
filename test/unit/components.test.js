@@ -117,7 +117,7 @@ describe('components', () => {
       component.duration = 500
       component.throttle = 0
       component.start()
-      await waitFor(750)
+      await waitFor(850)
       const str = await renderToString(component)
       expect(str).not.toBe('<!---->')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;left:false;"></div>')
