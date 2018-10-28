@@ -30,7 +30,9 @@ describe('cli', () => {
   test('calls expected method', async () => {
     const argv = process.argv
     process.argv = ['', '', 'dev']
-    const defaultExport = jest.fn().mockImplementation(() => Promise.resolve())
+    const defaultExport = {
+      run: jest.fn().mockImplementation(() => Promise.resolve())
+    }
     commands.dev.mockImplementationOnce(() => Promise.resolve({ default: defaultExport }))
 
     await run()
