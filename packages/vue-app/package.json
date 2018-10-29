@@ -7,7 +7,7 @@
     "dist",
     "template"
   ],
-  "main": "dist/app.js",
+  "main": "dist/vue-app.js",
   "publishConfig": {
     "access": "public"
   }
