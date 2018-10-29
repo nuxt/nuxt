@@ -2,12 +2,15 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import Options from './options'
+import * as AllOptions from './options'
 import * as imports from './imports'
 
 const startSpaces = 6
 const optionSpaces = 2
 const maxCharsPerLine = 80
+
+const _AllOptions = {}
+Object.values(AllOptions).forEach(group => Object.assign(_AllOptions, group))
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, run } = {}) {
@@ -103,8 +106,9 @@ export default class NuxtCommand {
     let maxOptionLength = 0
     // For consistency Options determines order
     const optionKeys = Object.keys(this.options)
-    for (const name in Options) {
-      const option = Options[name]
+
+    for (const name in _AllOptions) {
+      const option = _AllOptions[name]
       if (optionKeys.includes(name)) {
         let optionHelp = '--'
         optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
