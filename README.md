@@ -136,7 +136,7 @@ if (config.dev) {
   new Builder(nuxt).build()
 }
 
-// You can use nuxt.render(req, res) or nuxt.server.renderRoute(route, context)
+// You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
 
 Learn more: https://nuxtjs.org/api/nuxt
