@@ -26,3 +26,9 @@ steps:
 - script: |
     yarn test:unit -w=2
   displayName: 'Test: Run unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/test*.xml'
+  displayName: 'Publish test results to Azure Pipelines'
