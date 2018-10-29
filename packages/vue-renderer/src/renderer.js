@@ -11,8 +11,8 @@ import { waitFor } from '@nuxt/common'
 import SPAMetaRenderer from './spa-meta'
 
 export default class VueRenderer {
-  constructor(server) {
-    this.server = server
+  constructor(context) {
+    this.context = context
 
     // Will be set by createRenderer
     this.bundleRenderer = null
