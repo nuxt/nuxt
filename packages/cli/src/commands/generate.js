@@ -1,11 +1,12 @@
 import consola from 'consola'
-import commonOptions from '../options/common'
+import { common } from '../options'
 
 export default {
+  name: 'generate',
   description: 'Generate a static web application (server-rendered)',
   usage: 'generate <dir>',
   options: {
-    ...commonOptions,
+    ...common,
     build: {
       type: 'boolean',
       default: true,

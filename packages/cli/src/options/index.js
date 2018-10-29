@@ -1,7 +1,2 @@
-import common from './common'
-import server from './server'
-
-export default {
-  ...common,
-  ...server
-}
+export { default as common } from './common'
+export { default as server } from './server'

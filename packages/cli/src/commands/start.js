@@ -1,12 +1,16 @@
 import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
-import options from '../options'
+import { common, server } from '../options'
 
 export default {
-  options,
+  name: 'start',
   description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
   usage: 'start <dir> -p <port number> -H <hostname>',
+  options: {
+    ...common,
+    ...server
+  },
   async run(cmd) {
     const argv = cmd.getArgv()
 

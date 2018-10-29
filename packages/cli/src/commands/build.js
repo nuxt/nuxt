@@ -1,11 +1,12 @@
 import consola from 'consola'
-import commonOptions from '../options/common'
+import { common } from '../options'
 
 export default {
+  name: 'build',
   description: 'Compiles the application for production deployment',
   usage: 'build <dir>',
   options: {
-    ...commonOptions,
+    ...common,
     analyze: {
       alias: 'a',
       type: 'boolean',

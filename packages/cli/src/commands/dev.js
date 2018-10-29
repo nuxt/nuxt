@@ -1,10 +1,14 @@
 import consola from 'consola'
-import options from '../options'
+import { common, server } from '../options'
 
 export default {
-  options,
+  name: 'dev',
   description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
   usage: 'dev <dir> -p <port number> -H <hostname>',
+  options: {
+    ...common,
+    ...server
+  },
   async run(cmd) {
     const argv = cmd.getArgv()
 
