@@ -70,7 +70,7 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/app'
+    this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }

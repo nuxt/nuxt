@@ -1,5 +1,5 @@
 {
-  "name": "@nuxt/app",
+  "name": "@nuxt/vue-app",
   "version": "2.2.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
