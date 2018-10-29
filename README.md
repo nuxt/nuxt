@@ -219,7 +219,7 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 
 ## Contributing
 
-Please see our [CONTRIBUTING.md](./CONTRIBUTING.md)
+Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-guide#codefund_ad)
 
 ## Cross-browser testing
 
