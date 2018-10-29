@@ -10,10 +10,18 @@ const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options } = {}) {
+  constructor({ description, usage, options, run } = {}) {
     this.description = description || ''
     this.usage = usage || ''
     this.options = Object.assign({}, options)
+    this.run = run.bind(this)
+  }
+
+  static from(options) {
+    if (options instanceof NuxtCommand) {
+      return options
+    }
+    return new NuxtCommand(options)
   }
 
   _getMinimistOptions() {

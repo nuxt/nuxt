@@ -3,15 +3,6 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
-export function wrapAndRun(commandModule) {
-  const nuxtCmd = new NuxtCommand({
-    usage: commandModule.usage,
-    description: commandModule.description,
-    options: commandModule.options
-  })
-  return commandModule.run(nuxtCmd)
-}
-
 export default function run() {
   const defaultCommand = 'dev'
 
@@ -37,7 +28,8 @@ export default function run() {
 
   return commands[cmd]() // eslint-disable-line import/namespace
     .then(m => m.default)
-    .then(wrapAndRun)
+    .then(options => NuxtCommand.from(options))
+    .then(command => command.run())
     .catch((error) => {
       consola.fatal(error)
     })
