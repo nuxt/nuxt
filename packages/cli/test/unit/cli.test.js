@@ -10,9 +10,7 @@ const readDir = promisify(readdir)
 jest.mock('../../src/commands')
 
 describe('cli', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('exports for all commands defined', async () => {
     const cmds = await readDir(resolve(__dirname, '..', '..', 'src', 'commands'))
@@ -32,12 +30,14 @@ describe('cli', () => {
   test('calls expected method', async () => {
     const argv = process.argv
     process.argv = ['', '', 'dev']
-    const defaultExport = jest.fn().mockImplementation(() => Promise.resolve())
+    const defaultExport = {
+      run: jest.fn().mockImplementation(() => Promise.resolve())
+    }
     commands.dev.mockImplementationOnce(() => Promise.resolve({ default: defaultExport }))
 
     await run()
 
-    expect(defaultExport).toHaveBeenCalled()
+    expect(defaultExport.run).toHaveBeenCalled()
     process.argv = argv
   })
 

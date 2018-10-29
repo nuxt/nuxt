@@ -3,9 +3,7 @@ import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
 describe('cli/utils', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('loadNuxtConfig: defaults', async () => {
     const argv = {

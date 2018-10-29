@@ -1,25 +1,18 @@
-import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator } from '../utils'
+import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
   let build
 
   beforeAll(async () => {
-    build = await import('../../src/commands/build')
-    build = build.default
-
+    build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
-  afterAll(() => {
-    process.exit.mockRestore()
-  })
+  afterAll(() => process.exit.mockRestore())
+  afterEach(() => jest.resetAllMocks())
 
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  test('is function', () => {
-    expect(typeof build).toBe('function')
+  test('has run function', () => {
+    expect(typeof build.run).toBe('function')
   })
 
   test('builds on universal mode', async () => {
@@ -31,7 +24,7 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    await build()
+    await NuxtCommand.from(build).run()
 
     expect(builder).toHaveBeenCalled()
   })
@@ -45,7 +38,7 @@ describe('build', () => {
     })
     const generate = mockGetGenerator(Promise.resolve())
 
-    await build()
+    await NuxtCommand.from(build).run()
 
     expect(generate).toHaveBeenCalled()
     expect(process.exit).toHaveBeenCalled()
@@ -55,7 +48,7 @@ describe('build', () => {
     mockGetNuxt({ mode: 'universal' })
     mockGetBuilder(Promise.reject(new Error('Builder Error')))
 
-    await build()
+    await NuxtCommand.from(build).run()
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Builder Error'))
   })
