@@ -59,8 +59,8 @@ export default class NuxtCommand {
     const options = Object.assign(config, extraOptions || {})
 
     for (const name of Object.keys(this.options)) {
-      if (this.options[name].handle) {
-        this.options[name].handle(options, argv)
+      if (this.options[name].prepare) {
+        this.options[name].prepare(this, options, argv)
       }
     }
 

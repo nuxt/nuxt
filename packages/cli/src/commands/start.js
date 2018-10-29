@@ -7,12 +7,12 @@ export default {
   options,
   description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
   usage: 'start <dir> -p <port number> -H <hostname>',
-  async run(nuxtCmd) {
-    const argv = nuxtCmd.getArgv()
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
     // Create production build when calling `nuxt build`
-    const nuxt = await nuxtCmd.getNuxt(
-      await nuxtCmd.getNuxtConfig(argv, { dev: false })
+    const nuxt = await cmd.getNuxt(
+      await cmd.getNuxtConfig(argv, { dev: false })
     )
 
     // Setup hooks

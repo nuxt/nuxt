@@ -10,7 +10,7 @@ export default {
       alias: 'a',
       type: 'boolean',
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
-      handle(options, argv) {
+      prepare(cmd, options, argv) {
         // Analyze option
         options.build = options.build || {}
         if (argv.analyze && typeof options.build.analyze !== 'object') {

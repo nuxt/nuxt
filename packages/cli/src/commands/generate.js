@@ -12,12 +12,12 @@ export default {
       description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
     }
   },
-  async run(nuxtCmd) {
-    const argv = nuxtCmd.getArgv()
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
-    const generator = await nuxtCmd.getGenerator(
-      await nuxtCmd.getNuxt(
-        await nuxtCmd.getNuxtConfig(argv, { dev: false })
+    const generator = await cmd.getGenerator(
+      await cmd.getNuxt(
+        await cmd.getNuxtConfig(argv, { dev: false })
       )
     )
 

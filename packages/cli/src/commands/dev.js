@@ -5,8 +5,8 @@ export default {
   options,
   description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
   usage: 'dev <dir> -p <port number> -H <hostname>',
-  async run(nuxtCmd) {
-    const argv = nuxtCmd.getArgv()
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
     const errorHandler = (err, instance) => {
       instance && instance.builder.watchServer()
@@ -18,10 +18,10 @@ export default {
       let nuxt, builder
 
       try {
-        nuxt = await nuxtCmd.getNuxt(
-          await nuxtCmd.getNuxtConfig(argv, { dev: true })
+        nuxt = await cmd.getNuxt(
+          await cmd.getNuxtConfig(argv, { dev: true })
         )
-        builder = await nuxtCmd.getBuilder(nuxt)
+        builder = await cmd.getBuilder(nuxt)
         nuxt.hook('watch:fileChanged', async (builder, fname) => {
           consola.debug(`[${fname}] changed, Rebuilding the app...`)
           await startDev({ nuxt: builder.nuxt, builder })
