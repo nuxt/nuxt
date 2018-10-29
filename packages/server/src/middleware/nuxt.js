@@ -49,7 +49,9 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       const { shouldPush, pushAssets } = options.render.http2
       const { publicPath } = resources.clientManifest
 
-      const links = pushAssets ? pushAssets(req, res, publicPath, preloadFiles) : defaultPushAssets(preloadFiles, shouldPush, publicPath, this.options.dev)
+      const links = pushAssets
+        ? pushAssets(req, res, publicPath, preloadFiles)
+        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options.dev)
 
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
