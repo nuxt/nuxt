@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { consola, mockGetNuxtStart, mockGetNuxtConfig, wrapAndRun } from '../utils'
+import { consola, mockGetNuxtStart, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('start', () => {
   let start
@@ -21,7 +21,7 @@ describe('start', () => {
 
   test('starts listening and calls showReady', async () => {
     const { listen, showReady } = mockGetNuxtStart()
-    await wrapAndRun(start)
+    await NuxtCommand.from(start).run()
 
     expect(listen).toHaveBeenCalled()
     expect(showReady).toHaveBeenCalled()
@@ -32,7 +32,7 @@ describe('start', () => {
     mockGetNuxtConfig()
     jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => true)
 
-    await wrapAndRun(start)
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).not.toHaveBeenCalled()
   })
@@ -41,7 +41,7 @@ describe('start', () => {
     mockGetNuxtStart()
     jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => false)
 
-    await wrapAndRun(start)
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).toHaveBeenCalledWith('No build files found, please run `nuxt build` before launching `nuxt start`')
   })
@@ -51,7 +51,7 @@ describe('start', () => {
     mockGetNuxtConfig()
     jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-    await wrapAndRun(start)
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).not.toHaveBeenCalled()
   })
@@ -60,7 +60,7 @@ describe('start', () => {
     mockGetNuxtStart(true)
     jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
 
-    await wrapAndRun(start)
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).toHaveBeenCalledWith('No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`')
   })

@@ -1,4 +1,4 @@
-import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig, wrapAndRun } from '../utils'
+import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('dev', () => {
   let dev
@@ -17,7 +17,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await wrapAndRun(dev)
+    await NuxtCommand.from(dev).run()
 
     expect(consola.error).not.toHaveBeenCalled()
 
@@ -48,7 +48,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await wrapAndRun(dev)
+    await NuxtCommand.from(dev).run()
     jest.clearAllMocks()
 
     // Test error on second build so we cover oldInstance stuff
@@ -65,7 +65,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await wrapAndRun(dev)
+    await NuxtCommand.from(dev).run()
     jest.clearAllMocks()
 
     const builder = new Builder()
@@ -81,7 +81,7 @@ describe('dev', () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
-    await wrapAndRun(dev)
+    await NuxtCommand.from(dev).run()
     jest.clearAllMocks()
 
     mockGetNuxtConfig().mockImplementationOnce(() => {
@@ -103,7 +103,7 @@ describe('dev', () => {
     })
     mockBuilder()
 
-    await wrapAndRun(dev)
+    await NuxtCommand.from(dev).run()
 
     expect(consola.error).toHaveBeenCalledWith(new Error('Listen Error'))
   })

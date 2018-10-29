@@ -1,6 +1,6 @@
 import consola from 'consola'
 export * from './mocking'
-export { wrapAndRun } from '../../src/run'
+export { NuxtCommand } from '../../src'
 
 jest.mock('consola')
 

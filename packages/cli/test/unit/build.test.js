@@ -1,4 +1,4 @@
-import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator, wrapAndRun } from '../utils'
+import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
   let build
@@ -24,7 +24,7 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    await wrapAndRun(build)
+    await NuxtCommand.from(build).run()
 
     expect(builder).toHaveBeenCalled()
   })
@@ -38,7 +38,7 @@ describe('build', () => {
     })
     const generate = mockGetGenerator(Promise.resolve())
 
-    await wrapAndRun(build)
+    await NuxtCommand.from(build).run()
 
     expect(generate).toHaveBeenCalled()
     expect(process.exit).toHaveBeenCalled()
@@ -48,7 +48,7 @@ describe('build', () => {
     mockGetNuxt({ mode: 'universal' })
     mockGetBuilder(Promise.reject(new Error('Builder Error')))
 
-    await wrapAndRun(build)
+    await NuxtCommand.from(build).run()
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Builder Error'))
   })

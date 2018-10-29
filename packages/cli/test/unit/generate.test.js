@@ -1,4 +1,4 @@
-import { consola, mockGetNuxt, mockGetGenerator, wrapAndRun } from '../utils'
+import { consola, mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
 import Command from '../../src/command'
 
 describe('generate', () => {
@@ -20,7 +20,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await wrapAndRun(generate)
+    await NuxtCommand.from(generate).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(true)
@@ -39,7 +39,7 @@ describe('generate', () => {
     })
     const generator = mockGetGenerator(Promise.resolve())
 
-    await wrapAndRun(generate)
+    await NuxtCommand.from(generate).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
@@ -50,7 +50,7 @@ describe('generate', () => {
     mockGetNuxt()
     mockGetGenerator(Promise.reject(new Error('Generator Error')))
 
-    await wrapAndRun(generate)
+    await NuxtCommand.from(generate).run()
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Generator Error'))
   })
