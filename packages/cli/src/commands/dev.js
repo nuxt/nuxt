@@ -4,7 +4,7 @@ import { common, server } from '../options'
 export default {
   name: 'dev',
   description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
-  usage: 'dev <dir> -p <port number> -H <hostname>',
+  usage: 'dev <dir>',
   options: {
     ...common,
     ...server

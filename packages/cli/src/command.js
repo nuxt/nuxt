@@ -5,7 +5,7 @@ import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
 import * as AllOptions from './options'
 import * as imports from './imports'
 
-const startSpaces = 6
+const startSpaces = 2
 const optionSpaces = 2
 const maxCharsPerLine = 80
 
@@ -122,20 +122,18 @@ export default class NuxtCommand {
       }
     }
 
-    const optionStr = options.map(([option, description]) => {
+    const _opts = options.map(([option, description]) => {
       const line = option +
         indent(maxOptionLength + optionSpaces - option.length) +
         wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
-      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces)
+      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces + optionSpaces)
     }).join('\n')
 
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, maxCharsPerLine, startSpaces)
     const description = foldLines(this.description, maxCharsPerLine, startSpaces)
+    const opts = foldLines(`Options:`, maxCharsPerLine, startSpaces) + '\n\n' + _opts
 
-    return `
-    Description\n${description}
-    Usage
-      $ nuxt ${this.usage}
-    Options\n${optionStr}\n\n`
+    return `${usage}\n\n${description}\n\n${opts}\n\n`
   }
 
   showVersion() {

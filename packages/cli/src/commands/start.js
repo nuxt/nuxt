@@ -6,7 +6,7 @@ import { common, server } from '../options'
 export default {
   name: 'start',
   description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
-  usage: 'start <dir> -p <port number> -H <hostname>',
+  usage: 'start <dir>',
   options: {
     ...common,
     ...server
