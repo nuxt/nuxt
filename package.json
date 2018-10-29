@@ -69,6 +69,6 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.16.0",
-    "vue-jest": "^2.6.0"
+    "vue-jest": "^3.0.0"
   }
 }
