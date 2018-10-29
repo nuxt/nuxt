@@ -46,7 +46,7 @@ export default {
     }
 
     return nuxt.server.listen().then(() => {
-      nuxt.showReady(false)
+      nuxt.server.showReady(false)
     })
   }
 }
