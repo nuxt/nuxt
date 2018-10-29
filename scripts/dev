@@ -12,7 +12,7 @@ async function main() {
 
   // Create a dev-only entrypoint to the src
   for (const pkg of workspacePackages) {
-    if (!pkg.pkg.main) {
+    if (!pkg.pkg.main || !pkg.options.build) {
       continue
     }
     consola.info(pkg.pkg.main)

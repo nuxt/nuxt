@@ -1,16 +1,16 @@
 {
-  "name": "@nuxt/common",
+  "name": "@nuxt/config",
   "version": "2.2.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "main": "dist/common.js",
+  "main": "dist/config.js",
   "dependencies": {
-    "@nuxt/config": "^2.2.0",
     "consola": "^1.4.4",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "std-env": "^2.0.2"
   },
   "publishConfig": {
     "access": "public"

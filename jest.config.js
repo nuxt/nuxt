@@ -30,6 +30,11 @@ module.exports = {
     'examples/.*'
   ],
 
+  transform: {
+    '^.+\\.js$': 'babel-jest',
+    '.*\\.(vue)$': 'vue-jest'
+  },
+
   transformIgnorePatterns: [
     '/node_modules/',
     '/dist/'
