@@ -76,11 +76,11 @@ export function indentLines(string, spaces, firstLineSpaces) {
   }
   if (lines.length) {
     const i = indent(spaces)
-    s += '\n' + lines.map(l => i + l.trim()).join('\n')
+    s += '\n' + lines.map(l => i + l).join('\n')
   }
   return s
 }
 
 export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
-  return indentLines(wrapAnsi(string, maxCharsPerLine), spaces, firstLineSpaces)
+  return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
 }

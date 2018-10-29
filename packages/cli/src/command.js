@@ -115,10 +115,13 @@ export default class NuxtCommand {
     }
 
     const _opts = options.map(([option, description]) => {
-      const line = option +
-        indent(maxOptionLength + optionSpaces - option.length) +
-        wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
-      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces + optionSpaces)
+      const i = indent(maxOptionLength + optionSpaces - option.length)
+      return foldLines(
+        option + i + description,
+        maxCharsPerLine,
+        startSpaces + maxOptionLength + optionSpaces * 2,
+        startSpaces + optionSpaces
+      )
     }).join('\n')
 
     const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, maxCharsPerLine, startSpaces)
