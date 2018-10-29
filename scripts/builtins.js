@@ -8,7 +8,7 @@ const blacklist = [
   'sys'
 ]
 
-export const builtins = (Module.builtinModules || Object.keys(process.binding('natives')))
+export const builtins = Module.builtinModules
   .filter(x => !/^_|^(internal|v8|node-inspect)\/|\//.test(x) && !blacklist.includes(x))
   .sort()
 

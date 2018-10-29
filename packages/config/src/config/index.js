@@ -85,7 +85,9 @@ export default {
     height: '2px',
     throttle: 200,
     duration: 5000,
-    rtl: false
+    continuous: false,
+    rtl: false,
+    css: true
   },
   loadingIndicator: 'default',
   transition: {

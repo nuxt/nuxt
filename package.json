@@ -39,7 +39,7 @@
     "eslint-multiplexer": "^1.0.2",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jest": "^21.26.2",
-    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.0.0-beta.3",
@@ -68,6 +68,7 @@
     "rollup-plugin-license": "^0.7.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
-    "sort-package-json": "^1.16.0"
+    "sort-package-json": "^1.16.0",
+    "vue-jest": "^2.6.0"
   }
 }

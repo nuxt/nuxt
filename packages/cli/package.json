@@ -12,6 +12,7 @@
     "nuxt": "bin/nuxt.js"
   },
   "dependencies": {
+    "@nuxt/config": "^2.2.0",
     "consola": "^1.4.4",
     "esm": "^3.0.84",
     "minimist": "^1.2.0",
