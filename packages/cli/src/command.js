@@ -10,7 +10,8 @@ const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options, run } = {}) {
+  constructor({ name, description, usage, options, run } = {}) {
+    this.name = name || ''
     this.description = description || ''
     this.usage = usage || ''
     this.options = Object.assign({}, options)
