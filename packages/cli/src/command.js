@@ -2,15 +2,11 @@ import parseArgs from 'minimist'
 import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import * as AllOptions from './options'
 import * as imports from './imports'
 
 const startSpaces = 2
 const optionSpaces = 2
 const maxCharsPerLine = 80
-
-const _AllOptions = {}
-Object.values(AllOptions).forEach(group => Object.assign(_AllOptions, group))
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, run } = {}) {
@@ -102,24 +98,20 @@ export default class NuxtCommand {
 
   _getHelp() {
     const options = []
-
     let maxOptionLength = 0
-    // For consistency Options determines order
-    const optionKeys = Object.keys(this.options)
 
-    for (const name in _AllOptions) {
-      const option = _AllOptions[name]
-      if (optionKeys.includes(name)) {
-        let optionHelp = '--'
-        optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
-        optionHelp += name
-        if (option.alias) {
-          optionHelp += `, -${option.alias}`
-        }
+    for (const name in this.options) {
+      const option = this.options[name]
 
-        maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-        options.push([ optionHelp, option.description ])
+      let optionHelp = '--'
+      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += name
+      if (option.alias) {
+        optionHelp += `, -${option.alias}`
       }
+
+      maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
+      options.push([ optionHelp, option.description ])
     }
 
     const _opts = options.map(([option, description]) => {
