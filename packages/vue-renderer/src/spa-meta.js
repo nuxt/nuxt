@@ -6,7 +6,7 @@ import LRU from 'lru-cache'
 export default class SPAMetaRenderer {
   constructor(renderer) {
     this.renderer = renderer
-    this.options = this.renderer.server.options
+    this.options = this.renderer.context.options
     this.vueRenderer = createRenderer()
     this.cache = LRU({})
 
@@ -68,7 +68,7 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const clientManifest = this.renderer.server.resources.clientManifest
+    const clientManifest = this.renderer.context.resources.clientManifest
 
     const shouldPreload = this.options.render.bundleRenderer.shouldPreload || (() => true)
     const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch || (() => true)

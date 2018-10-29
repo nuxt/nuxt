@@ -10,6 +10,7 @@ import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 import { NuxtConfig } from '@nuxt/config'
 
+import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
@@ -41,7 +42,9 @@ export default class Server {
 
     // Initialize vue-renderer
     const { VueRenderer } = await import('@nuxt/vue-renderer')
-    this.renderer = new VueRenderer(this)
+
+    const context = new ServerContext(this)
+    this.renderer = new VueRenderer(context)
     await this.renderer.ready()
 
     // Setup nuxt middleware
