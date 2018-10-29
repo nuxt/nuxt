@@ -14,7 +14,7 @@ export default class NuxtCommand {
     this.description = description || ''
     this.usage = usage || ''
     this.options = Object.assign({}, options)
-    this.run = run.bind(this)
+    this._run = run
   }
 
   static from(options) {
@@ -60,6 +60,10 @@ export default class NuxtCommand {
     }
 
     return argv
+  }
+
+  run() {
+    return this._run(this)
   }
 
   async getNuxtConfig(argv, extraOptions) {
