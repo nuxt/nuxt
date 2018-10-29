@@ -1,19 +1,26 @@
 import parseArgs from 'minimist'
-import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import { options as Options, defaultOptions as DefaultOptions } from './options'
+import { loadNuxtConfig, indent, foldLines } from './utils'
 import * as imports from './imports'
 
-const startSpaces = 6
+const startSpaces = 2
 const optionSpaces = 2
 const maxCharsPerLine = 80
 
 export default class NuxtCommand {
-  constructor({ description, usage, options } = {}) {
+  constructor({ name, description, usage, options, run } = {}) {
+    this.name = name || ''
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+    this.options = Object.assign({}, options)
+    this._run = run
+  }
+
+  static from(options) {
+    if (options instanceof NuxtCommand) {
+      return options
+    }
+    return new NuxtCommand(options)
   }
 
   _getMinimistOptions() {
@@ -24,8 +31,8 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (const name of this.options) {
-      const option = Options[name]
+    for (const name of Object.keys(this.options)) {
+      const option = this.options[name]
 
       if (option.alias) {
         minimistOptions.alias[option.alias] = name
@@ -54,13 +61,17 @@ export default class NuxtCommand {
     return argv
   }
 
+  run() {
+    return this._run(this)
+  }
+
   async getNuxtConfig(argv, extraOptions) {
     const config = await loadNuxtConfig(argv)
     const options = Object.assign(config, extraOptions || {})
 
-    for (const name of this.options) {
-      if (Options[name].handle) {
-        Options[name].handle(options, argv)
+    for (const name of Object.keys(this.options)) {
+      if (this.options[name].prepare) {
+        this.options[name].prepare(this, options, argv)
       }
     }
 
@@ -86,38 +97,37 @@ export default class NuxtCommand {
 
   _getHelp() {
     const options = []
-
     let maxOptionLength = 0
-    // For consistency Options determines order
-    for (const name in Options) {
-      const option = Options[name]
-      if (this.options.includes(name)) {
-        let optionHelp = '--'
-        optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
-        optionHelp += name
-        if (option.alias) {
-          optionHelp += `, -${option.alias}`
-        }
 
-        maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-        options.push([ optionHelp, option.description ])
+    for (const name in this.options) {
+      const option = this.options[name]
+
+      let optionHelp = '--'
+      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += name
+      if (option.alias) {
+        optionHelp += `, -${option.alias}`
       }
+
+      maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
+      options.push([ optionHelp, option.description ])
     }
 
-    const optionStr = options.map(([option, description]) => {
-      const line = option +
-        indent(maxOptionLength + optionSpaces - option.length) +
-        wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
-      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces)
+    const _opts = options.map(([option, description]) => {
+      const i = indent(maxOptionLength + optionSpaces - option.length)
+      return foldLines(
+        option + i + description,
+        maxCharsPerLine,
+        startSpaces + maxOptionLength + optionSpaces * 2,
+        startSpaces + optionSpaces
+      )
     }).join('\n')
 
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, maxCharsPerLine, startSpaces)
     const description = foldLines(this.description, maxCharsPerLine, startSpaces)
+    const opts = foldLines(`Options:`, maxCharsPerLine, startSpaces) + '\n\n' + _opts
 
-    return `
-    Description\n${description}
-    Usage
-      $ nuxt ${this.usage}
-    Options\n${optionStr}\n\n`
+    return `${usage}\n\n${description}\n\n${opts}\n\n`
   }
 
   showVersion() {
