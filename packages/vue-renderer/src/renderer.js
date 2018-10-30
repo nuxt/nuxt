@@ -224,7 +224,8 @@ export default class VueRenderer {
       return { html, getPreloadFiles }
     }
 
-    const ua = context.req && context.req.headers['user-agent']
+    const { req } = context
+    const ua = req && req.headers && req.headers['user-agent']
     const isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
       allowHigherVersions: true,
       browsers: this.modernBrowsers
