@@ -19,8 +19,6 @@ module.exports = {
   ],
 
   coveragePathIgnorePatterns: [
-    'node_modules',
-    'packages/app',
     'packages/webpack/plugins/vue'
   ],
 
@@ -39,10 +37,6 @@ module.exports = {
     '/node_modules/',
     '/dist/'
   ],
-
-  moduleNameMapper: {
-    '@nuxt/(.*)$': '<rootDir>/packages/$1'
-  },
 
   moduleFileExtensions: [
     'js',
