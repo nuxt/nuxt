@@ -31,14 +31,16 @@ jobs:
           key: yarn-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
-            - "**/node_modules"
+            - packages/*/node_modules
+            - distributions/*/node_modules
 
       # Persist workspace
       - persist_to_workspace:
           root: ~/project
           paths:
             - node_modules
-            - "**/node_modules"
+            - packages/*/node_modules
+            - distributions/*/node_modules
             - packages/*/dist
 
   # --------------------------------------------------------------------------
