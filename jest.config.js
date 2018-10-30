@@ -40,6 +40,10 @@ module.exports = {
     '/dist/'
   ],
 
+  moduleNameMapper: {
+    '@nuxt/(.*)$': '<rootDir>/packages/$1'
+  },
+
   moduleFileExtensions: [
     'js',
     'json'
