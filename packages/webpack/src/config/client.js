@@ -105,7 +105,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     if (this.options.build.modern) {
       plugins.push(new ModernModePlugin({
-        targetDir: path.resolve(this.options.buildDir, 'dist', 'modern'),
+        targetDir: path.resolve(this.options.buildDir, 'dist', 'client'),
         isModernBuild: this.name === 'modern'
       }))
     }
