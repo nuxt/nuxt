@@ -5,7 +5,7 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
-import { NuxtConfig, Modes } from '@nuxt/config'
+import { getNuxtConfig } from '@nuxt/config'
 import { isPureObject, isUrl, guardDir, isString } from './utils'
 
 // hasValue utility
@@ -59,7 +59,7 @@ Options.from = function (_options) {
   // }
 
   // Apply defaults
-  defaultsDeep(options, NuxtConfig)
+  defaultsDeep(options, getNuxtConfig())
 
   // Check srcDir and generate.dir excistence
   const hasSrcDir = hasValue(options.srcDir)
@@ -218,7 +218,7 @@ Options.from = function (_options) {
   }
 
   // Apply mode preset
-  const modePreset = Modes[options.mode || 'universal'] || Modes.universal
+  const modePreset = options.modes[options.mode || 'universal']
   defaultsDeep(options, modePreset)
 
   // If no server-side rendering, add appear true transition
