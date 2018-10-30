@@ -81,16 +81,14 @@ describe('cli/utils', () => {
   })
 
   test('nuxtServerConfig: server env', () => {
-    const options = {
-      server: getNuxtConfig({
-        env: {
-          ...process.env,
-          HOST: 'env-host',
-          PORT: 3003,
-          UNIX_SOCKET: '/var/run/env.sock'
-        }
-      })
-    }
+    const options = getNuxtConfig({
+      env: {
+        ...process.env,
+        HOST: 'env-host',
+        PORT: 3003,
+        UNIX_SOCKET: '/var/run/env.sock'
+      }
+    })
 
     expect(options.server.host).toBe('env-host')
     expect(options.server.port).toBe(3003)
