@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import { resolve } from 'path'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
-import { loadFixture, getPort, Nuxt, Generator, Options, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, Generator, getNuxtConfig, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -76,7 +76,7 @@ describe('fallback generate', () => {
 
   test('generate.fallback = true is transformed to /404.html', () => {
     nuxt.options.generate.fallback = true
-    const options = Options.from(nuxt.options)
+    const options = getNuxtConfig(nuxt.options)
     expect(options.generate.fallback).toBe('404.html')
   })
 

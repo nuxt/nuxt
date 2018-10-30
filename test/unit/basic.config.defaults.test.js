@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import consola from 'consola'
 
-import { Nuxt, Options, version } from '../utils'
+import { Nuxt, getNuxtConfig, version } from '../utils'
 
 describe('basic config defaults', () => {
   test('Nuxt.version is same as package', () => {
@@ -9,13 +9,13 @@ describe('basic config defaults', () => {
   })
 
   test('modulesDir uses /node_modules as default if not set', () => {
-    const options = Options.from({})
+    const options = getNuxtConfig({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
     expect(options.modulesDir.includes(currentNodeModulesDir)).toBe(true)
   })
 
   test('vendor has been deprecated', () => {
-    const options = Options.from({
+    const options = getNuxtConfig({
       build: { vendor: 'vue' }
     })
     expect(options.build.vendor).toBeUndefined()
@@ -23,18 +23,18 @@ describe('basic config defaults', () => {
   })
 
   test('globalName uses nuxt as default if not set', () => {
-    const options = Options.from({})
+    const options = getNuxtConfig({})
     expect(options.globalName).toEqual('nuxt')
   })
 
   test('globalName uses nuxt as default if set to something other than only letters', () => {
-    let options = Options.from({ globalName: '12foo4' })
+    let options = getNuxtConfig({ globalName: '12foo4' })
     expect(options.globalName).toEqual('nuxt')
 
-    options = Options.from({ globalName: 'foo bar' })
+    options = getNuxtConfig({ globalName: 'foo bar' })
     expect(options.globalName).toEqual('nuxt')
 
-    options = Options.from({ globalName: 'foo?' })
+    options = getNuxtConfig({ globalName: 'foo?' })
     expect(options.globalName).toEqual('nuxt')
   })
 })
