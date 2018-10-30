@@ -1,4 +1,4 @@
-export default {
+export default () => ({
   universal: {
     build: {
       ssr: true
@@ -15,4 +15,4 @@ export default {
       ssr: false
     }
   }
-}
+})

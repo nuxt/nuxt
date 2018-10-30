@@ -3,11 +3,10 @@ import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
 
-export default class MetaRenderer {
-  constructor(nuxt, renderer) {
-    this.nuxt = nuxt
+export default class SPAMetaRenderer {
+  constructor(renderer) {
     this.renderer = renderer
-    this.options = nuxt.options
+    this.options = this.renderer.context.options
     this.vueRenderer = createRenderer()
     this.cache = LRU({})
 
@@ -69,7 +68,7 @@ export default class MetaRenderer {
 
     meta.resourceHints = ''
 
-    const clientManifest = this.renderer.resources.clientManifest
+    const clientManifest = this.renderer.context.resources.clientManifest
 
     const shouldPreload = this.options.render.bundleRenderer.shouldPreload || (() => true)
     const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch || (() => true)

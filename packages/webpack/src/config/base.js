@@ -267,7 +267,7 @@ export default class WebpackBaseConfig {
           const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
 
           if (!hasErrors) {
-            this.nuxt.showReady(false)
+            this.nuxt.server.showReady(false)
           }
         }
       }

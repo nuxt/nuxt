@@ -132,7 +132,7 @@ export class WebpackBuilder {
         })
 
         // Reload renderer if available
-        nuxt.renderer.loadResources(this.mfs || fs)
+        nuxt.server.loadResources(this.mfs || fs)
 
         // Resolve on next tick
         process.nextTick(resolve)
@@ -178,7 +178,7 @@ export class WebpackBuilder {
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
-    const { nuxt: { renderer }, options } = this.context
+    const { nuxt: { server }, options } = this.context
 
     // Create webpack dev middleware
     this.webpackDevMiddleware = pify(
@@ -212,9 +212,9 @@ export class WebpackBuilder {
     )
 
     // Inject to renderer instance
-    if (renderer) {
-      renderer.webpackDevMiddleware = this.webpackDevMiddleware
-      renderer.webpackHotMiddleware = this.webpackHotMiddleware
+    if (server) {
+      server.webpackDevMiddleware = this.webpackDevMiddleware
+      server.webpackHotMiddleware = this.webpackHotMiddleware
     }
   }
 

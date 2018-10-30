@@ -6,11 +6,11 @@ describe.skip.win('basic sockets', () => {
   beforeAll(async () => {
     const options = await loadFixture('sockets')
     nuxt = new Nuxt(options)
-    await nuxt.listen()
+    await nuxt.server.listen()
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>Served over sockets!</h1>')).toBe(true)
   })
 
