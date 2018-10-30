@@ -10,7 +10,7 @@
         </div>
         <h1 class="Landscape__Logo__Title">NUXT</h1>
       </div>
-      <h2 class="Landscape__Title">The Vue.js Developers Framework</h2>
+      <h2 class="Landscape__Title">The Vue Framework</h2>
       <a href="https://nuxtjs.org/guide/installation#starting-from-scratch" target="_blank" class="button">
         Get Started
       </a>
