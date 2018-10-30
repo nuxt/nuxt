@@ -26,7 +26,7 @@ export default function rollupConfig({
     input: path.resolve(rootDir, input),
     output: {
       format: 'cjs',
-      sourcemap: false,
+      sourcemap: process.env.NODE_ENV === 'test',
       file: `${pkg.name.replace('-edge', '')}.js`,
       dir: path.resolve(rootDir, 'dist')
     },
