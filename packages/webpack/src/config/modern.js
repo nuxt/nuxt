@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import clone from 'lodash/clone'
 import WebpackClientConfig from './client'
 
 export default class WebpackModernConfig extends WebpackClientConfig {
@@ -7,7 +7,7 @@ export default class WebpackModernConfig extends WebpackClientConfig {
   }
 
   getBabelOptions() {
-    const options = _.clone(this.options.build.babel)
+    const options = clone(this.options.build.babel)
 
     options.presets = [
       [
