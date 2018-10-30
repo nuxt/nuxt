@@ -1,4 +1,4 @@
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
@@ -82,11 +82,13 @@ describe('cli/utils', () => {
 
   test('nuxtServerConfig: server env', () => {
     const options = {
-      server: nuxtServerConfig({
-        ...process.env,
-        HOST: 'env-host',
-        PORT: 3003,
-        UNIX_SOCKET: '/var/run/env.sock'
+      server: getNuxtConfig({
+        env: {
+          ...process.env,
+          HOST: 'env-host',
+          PORT: 3003,
+          UNIX_SOCKET: '/var/run/env.sock'
+        }
       })
     }
 

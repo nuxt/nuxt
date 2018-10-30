@@ -8,7 +8,6 @@ import ip from 'ip'
 import consola from 'consola'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
-import { getNuxtConfig } from '@nuxt/config'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -23,7 +22,7 @@ export default class Server {
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
     this.publicPath = isUrl(this.options.build.publicPath)
-      ? getNuxtConfig().build.publicPath
+      ? this.options.build._publicPath
       : this.options.build.publicPath
 
     // Runtime shared resources

@@ -59,7 +59,9 @@ Options.from = function (_options) {
   // }
 
   // Apply defaults
-  defaultsDeep(options, getNuxtConfig())
+  const nuxtConfig = getNuxtConfig()
+  nuxtConfig.build._publicPath = nuxtConfig.build.publicPath
+  defaultsDeep(options, nuxtConfig)
 
   // Check srcDir and generate.dir excistence
   const hasSrcDir = hasValue(options.srcDir)
@@ -119,7 +121,7 @@ Options.from = function (_options) {
   // Ignore publicPath on dev
   /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
-    options.build.publicPath = NuxtConfig.build.publicPath
+    options.build.publicPath = options.build._publicPath
   }
 
   // If store defined, update store options to true unless explicitly disabled

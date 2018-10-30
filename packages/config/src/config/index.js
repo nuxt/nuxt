@@ -9,15 +9,19 @@ import render from './render'
 import router from './router'
 import server from './server'
 
-export function getNuxtConfig() {
+export function getNuxtConfig(options = {}) {
+  if (!options.env) {
+    options.env = process.env
+  }
+
   return {
-    ..._app(),
-    ..._common(),
-    build: build(),
-    messages: messages(),
-    modes: modes(),
-    render: render(),
-    router: router(),
-    server: server()
+    ..._app(options),
+    ..._common(options),
+    build: build(options),
+    messages: messages(options),
+    modes: modes(options),
+    render: render(options),
+    router: router(options),
+    server: server(options)
   }
 }
