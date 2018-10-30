@@ -1,3 +1,7 @@
+/*
+** This plugin is inspired by @vue/cli-service ModernModePlugin
+** https://github.com/vuejs/vue-cli/blob/dev/packages/@vue/cli-service/lib/webpack/ModernModePlugin.js
+*/
 import path from 'path'
 import fs from 'fs-extra'
 
@@ -19,7 +23,7 @@ class ModernModePlugin {
   }
 
   applyLegacy(compiler) {
-    const ID = `vue-cli-legacy-bundle`
+    const ID = `nuxt-legacy-bundle`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       // For html-webpack-plugin 4.0
       // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
@@ -38,7 +42,7 @@ class ModernModePlugin {
   }
 
   applyModern(compiler) {
-    const ID = `vue-cli-modern-bundle`
+    const ID = `nuxt-modern-bundle`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       // For html-webpack-plugin 4.0
       // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
