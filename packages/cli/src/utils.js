@@ -72,11 +72,11 @@ export function indentLines(string, spaces, firstLineSpaces) {
   let s = ''
   if (lines.length) {
     const i0 = indent(firstLineSpaces === undefined ? spaces : firstLineSpaces)
-    s = i0 + lines.shift()
+    s = i0 + lines.shift().trim()
   }
   if (lines.length) {
     const i = indent(spaces)
-    s += '\n' + lines.map(l => i + l).join('\n')
+    s += '\n' + lines.map(l => i + l.trim()).join('\n')
   }
   return s
 }
