@@ -467,6 +467,11 @@ export const resourceMap = [
     transform: JSON.parse
   },
   {
+    key: 'modernManifest',
+    fileName: 'vue-ssr-modern-manifest.json',
+    transform: JSON.parse
+  },
+  {
     key: 'serverBundle',
     fileName: 'server-bundle.json',
     transform: JSON.parse
