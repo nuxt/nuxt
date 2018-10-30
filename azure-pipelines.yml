@@ -19,9 +19,9 @@ steps:
     yarn
   displayName: 'Install dependencies'
 
-- script: |
-    yarn build
-  displayName: 'Build Nuxt'
+# - script: |
+#     yarn build
+#   displayName: 'Build Nuxt'
 
 - script: |
     yarn test:fixtures -w=2

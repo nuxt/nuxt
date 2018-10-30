@@ -76,9 +76,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/project
-      - run:
-          name: Build Nuxt
-          command: yarn build
+    #   - run:
+    #       name: Build Nuxt
+    #       command: yarn build
       - run:
           name: Build Fixtures
           command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
