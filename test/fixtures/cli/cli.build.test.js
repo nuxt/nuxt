@@ -8,7 +8,7 @@ const nuxtBin = resolve(__dirname, '../../../packages/cli/bin/nuxt.js')
 
 describe('cli build', () => {
   test('nuxt build', async () => {
-    const { stdout } = await execify(`node ${nuxtBin} build ${rootDir} -c cli.build.config.js`)
+    const { stdout } = await execify(`node -r esm ${nuxtBin} build ${rootDir} -c cli.build.config.js`)
 
     expect(stdout.includes('Compiled successfully')).toBe(true)
   }, 80000)
