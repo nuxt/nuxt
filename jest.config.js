@@ -14,13 +14,12 @@ module.exports = {
   coverageDirectory: './coverage',
 
   collectCoverageFrom: [
-    '**/packages/*/**/*.js'
+    '**/packages/*/src/**/*.js'
   ],
 
   coveragePathIgnorePatterns: [
     'node_modules/(?!(@nuxt|nuxt))',
-    'packages/vue-app',
-    'packages/webpack/plugins/vue'
+    'packages/webpack/src/config/plugins/vue'
   ],
 
   testPathIgnorePatterns: [
