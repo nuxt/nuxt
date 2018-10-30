@@ -1,1 +1,2 @@
-export { getNuxtConfig } from './config'
+export { getDefaultNuxtConfig } from './config'
+export { getNuxtConfig } from './options'

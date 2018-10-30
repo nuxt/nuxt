@@ -4,7 +4,7 @@ import consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { getNuxtConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
@@ -58,7 +58,7 @@ export async function loadNuxtConfig(argv) {
     port: argv.port || undefined,
     host: argv.hostname || undefined,
     socket: argv['unix-socket'] || undefined
-  }, options.server || {}, getNuxtConfig().server)
+  }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
 }

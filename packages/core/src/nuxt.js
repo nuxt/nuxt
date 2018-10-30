@@ -2,7 +2,8 @@
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 
-import { Options, Hookable, defineAlias } from '@nuxt/common'
+import { Hookable, defineAlias } from '@nuxt/common'
+import { getNuxtConfig } from '@nuxt/config'
 import { Server } from '@nuxt/server'
 
 import { version } from '../package.json'
@@ -14,7 +15,7 @@ export default class Nuxt extends Hookable {
     super()
 
     // Assign options and apply defaults
-    this.options = Options.from(options)
+    this.options = getNuxtConfig(options)
 
     // Create instance of core components
     this.resolver = new Resolver(this)

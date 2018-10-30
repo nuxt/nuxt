@@ -1,4 +1,4 @@
-import { getNuxtConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
@@ -81,7 +81,7 @@ describe('cli/utils', () => {
   })
 
   test('nuxtServerConfig: server env', () => {
-    const options = getNuxtConfig({
+    const options = getDefaultNuxtConfig({
       env: {
         ...process.env,
         HOST: 'env-host',

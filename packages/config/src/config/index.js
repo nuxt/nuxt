@@ -9,7 +9,7 @@ import render from './render'
 import router from './router'
 import server from './server'
 
-export function getNuxtConfig(options = {}) {
+export function getDefaultNuxtConfig(options = {}) {
   if (!options.env) {
     options.env = process.env
   }

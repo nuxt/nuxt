@@ -15,9 +15,10 @@ export const waitFor = function waitFor(ms) {
   return new Promise(resolve => setTimeout(resolve, ms || 0))
 }
 
-export const isString = function isString(obj) {
-  return typeof obj === 'string' || obj instanceof String
-}
+export const isString = obj => typeof obj === 'string' || obj instanceof String
+
+export const isNonEmptyString = obj => obj && isString(obj)
+
 export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
 
 export const startsWithSrcAlias = startsWithAlias(['@', '~'])
