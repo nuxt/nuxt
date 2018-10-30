@@ -66,8 +66,10 @@ export const mockGetNuxtStart = (ssr) => {
       ssr
     }
   }, {
-    listen,
-    showReady
+    server: {
+      listen,
+      showReady
+    }
   })
 
   return { listen, showReady }
@@ -89,8 +91,10 @@ export const mockNuxt = (implementation) => {
     },
     clearHook: jest.fn(),
     close: jest.fn(),
-    listen: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-    showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    server: {
+      listen: jest.fn().mockImplementationOnce(() => Promise.resolve()),
+      showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    }
   }, implementation || {})
 
   imports.core.mockImplementation(() => ({ Nuxt }))

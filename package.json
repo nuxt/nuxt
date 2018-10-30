@@ -10,7 +10,7 @@
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*",
-    "dev": "yarn build --watch",
+    "dev": "node -r esm ./scripts/dev",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
@@ -20,7 +20,7 @@
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
-    "postinstall": "lerna link && node -r esm ./scripts/dev"
+    "postinstall": "lerna link && yarn dev"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",

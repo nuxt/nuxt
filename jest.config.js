@@ -14,31 +14,28 @@ module.exports = {
   coverageDirectory: './coverage',
 
   collectCoverageFrom: [
-    'packages/*/src/**/*.js',
-    'packages/cli/bin/*'
+    '**/packages/*/src/**/*.js'
   ],
 
   coveragePathIgnorePatterns: [
-    'node_modules',
-    'packages/app',
-    'packages/webpack/plugins/vue'
+    'node_modules/(?!(@nuxt|nuxt))',
+    'packages/webpack/src/config/plugins/vue'
   ],
 
   testPathIgnorePatterns: [
-    'node_modules',
+    'node_modules/(?!(@nuxt|nuxt))',
     'test/fixtures/.*/.*?/',
     'examples/.*'
+  ],
+
+  transformIgnorePatterns: [
+    'node_modules/(?!(@nuxt|nuxt))'
   ],
 
   transform: {
     '^.+\\.js$': 'babel-jest',
     '.*\\.(vue)$': 'vue-jest'
   },
-
-  transformIgnorePatterns: [
-    '/node_modules/',
-    '/dist/'
-  ],
 
   moduleFileExtensions: [
     'js',

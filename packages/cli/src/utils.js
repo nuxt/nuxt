@@ -4,7 +4,7 @@ import consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
@@ -58,7 +58,7 @@ export async function loadNuxtConfig(argv) {
     port: argv.port || undefined,
     host: argv.hostname || undefined,
     socket: argv['unix-socket'] || undefined
-  }, options.server || {}, nuxtServerConfig(process.env))
+  }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
 }
@@ -72,11 +72,11 @@ export function indentLines(string, spaces, firstLineSpaces) {
   let s = ''
   if (lines.length) {
     const i0 = indent(firstLineSpaces === undefined ? spaces : firstLineSpaces)
-    s = i0 + lines.shift()
+    s = i0 + lines.shift().trim()
   }
   if (lines.length) {
     const i = indent(spaces)
-    s += '\n' + lines.map(l => i + l).join('\n')
+    s += '\n' + lines.map(l => i + l.trim()).join('\n')
   }
   return s
 }

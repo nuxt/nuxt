@@ -20,8 +20,6 @@ import values from 'lodash/values'
 import devalue from '@nuxtjs/devalue'
 
 import {
-  Options,
-  BuildContext,
   r,
   wp,
   wChunk,
@@ -32,6 +30,8 @@ import {
   stripWhitespace,
   isString
 } from '@nuxt/common'
+
+import BuildContext from './context'
 
 const glob = pify(Glob)
 
@@ -69,7 +69,7 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/app'
+    this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }
@@ -476,16 +476,16 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  // TODO: remove ignore when generateConfig enabled again
-  async generateConfig() /* istanbul ignore next */ {
-    const config = path.resolve(this.options.buildDir, 'build.config.js')
-    const options = omit(this.options, Options.unsafeKeys)
-    await fsExtra.writeFile(
-      config,
-      `export default ${JSON.stringify(options, null, '  ')}`,
-      'utf8'
-    )
-  }
+  // TODO: Uncomment when generateConfig enabled again
+  // async generateConfig() /* istanbul ignore next */ {
+  //   const config = path.resolve(this.options.buildDir, 'build.config.js')
+  //   const options = omit(this.options, Options.unsafeKeys)
+  //   await fsExtra.writeFile(
+  //     config,
+  //     `export default ${JSON.stringify(options, null, '  ')}`,
+  //     'utf8'
+  //   )
+  // }
 
   watchClient() {
     const src = this.options.srcDir

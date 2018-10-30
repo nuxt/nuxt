@@ -1,6 +1,6 @@
 import env from 'std-env'
 
-export default {
+export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
   profile: process.argv.includes('--profile'),
@@ -109,4 +109,4 @@ export default {
       /vue-ssr-client-manifest.json/
     ]
   }
-}
+})

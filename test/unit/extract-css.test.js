@@ -11,7 +11,7 @@ describe('extract css', () => {
   beforeAll(async () => {
     const options = await loadFixture('extract-css')
     nuxt = new Nuxt(options)
-    await nuxt.listen(await getPort(), '0.0.0.0')
+    await nuxt.server.listen(await getPort(), '0.0.0.0')
   })
 
   test.skip('Verify global.css has been extracted and minified', async () => {
@@ -27,7 +27,7 @@ describe('extract css', () => {
   })
 
   test('/about should contain module style', async () => {
-    const { html } = await nuxt.renderRoute('/about')
+    const { html } = await nuxt.server.renderRoute('/about')
     expect(html).toMatch(/<h1 class="test_[a-zA-Z0-9]{5}">I'm BLUE<\/h1>/)
   })
 })

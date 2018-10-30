@@ -10,7 +10,7 @@ describe('dist options', () => {
     const options = await loadFixture('basic')
     nuxt = new Nuxt(Object.assign(options, { dev: false }))
     port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
 
   test('Specify maxAge/index in render.dist options', async () => {

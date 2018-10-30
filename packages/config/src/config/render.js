@@ -1,4 +1,4 @@
-export default {
+export default () => ({
   bundleRenderer: {
     shouldPrefetch: () => false
   },
@@ -24,4 +24,4 @@ export default {
     // 1 year in production
     maxAge: '1y'
   }
-}
+})
