@@ -8,6 +8,7 @@ export default function run() {
 
   const cmds = new Set([
     defaultCommand,
+    'ui',
     'build',
     'start',
     'generate'
@@ -23,7 +24,7 @@ export default function run() {
 
   // Setup runtime
   setup({
-    dev: cmd === 'dev'
+    dev: ['dev', 'ui'].includes(cmd)
   })
 
   return commands[cmd]() // eslint-disable-line import/namespace
