@@ -24,11 +24,22 @@ export default {
       default: true,
       description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
     },
+    modern: {
+      alias: 'm',
+      type: 'boolean',
+      description: 'Build app for modern browsers',
+      prepare(cmd, options, argv) {
+        options.build = options.build || {}
+        if (argv.modern) {
+          options.build.modern = !!argv.modern
+        }
+      }
+    },
     quiet: {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      handle(options, argv) {
+      prepare(cmd, options, argv) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
@@ -37,12 +48,12 @@ export default {
       }
     }
   },
-  async run(nuxtCmd) {
-    const argv = nuxtCmd.getArgv()
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
     // Create production build when calling `nuxt build` (dev: false)
-    const nuxt = await nuxtCmd.getNuxt(
-      await nuxtCmd.getNuxtConfig(argv, { dev: false })
+    const nuxt = await cmd.getNuxt(
+      await cmd.getNuxtConfig(argv, { dev: false })
     )
 
     // Setup hooks
@@ -51,10 +62,10 @@ export default {
     let builderOrGenerator
     if (nuxt.options.mode !== 'spa' || argv.generate === false) {
       // Build only
-      builderOrGenerator = (await nuxtCmd.getBuilder(nuxt)).build()
+      builderOrGenerator = (await cmd.getBuilder(nuxt)).build()
     } else {
       // Build + Generate for static deployment
-      builderOrGenerator = (await nuxtCmd.getGenerator(nuxt)).generate({
+      builderOrGenerator = (await cmd.getGenerator(nuxt)).generate({
         build: true
       })
     }
