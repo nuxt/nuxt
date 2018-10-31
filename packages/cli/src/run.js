@@ -3,6 +3,12 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
+function listCommands() {
+  for (const command in commands) {
+    consola.info('command: ', command)
+  }
+}
+
 export default function run() {
   const defaultCommand = 'dev'
 
@@ -18,6 +24,10 @@ export default function run() {
   if (cmds.has(cmd)) {
     process.argv.splice(2, 1)
   } else {
+    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+      listCommands()
+      process.exit(0) 
+    }
     cmd = defaultCommand
   }
 
