@@ -2,7 +2,6 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
-import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { server as nuxtServerConfig } from '@nuxt/config'
 

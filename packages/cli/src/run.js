@@ -3,7 +3,7 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 import { loadNuxtConfig } from './utils'
-import * from './formatting'
+import * as fmt from './formatting'
 
 function listCommands() {
   const options = []
@@ -14,8 +14,8 @@ function listCommands() {
   }, [])
 
   const _cmmds = options.map(([cmd, description]) => {
-    const i = indent(maxLength + optionSpaces - cmd.length)
-    return foldLines(
+    const i = fmt.indent(maxLength + optionSpaces - cmd.length)
+    return fmt.foldLines(
       cmd + i + description,
       maxCharsPerLine,
       startSpaces + maxLength + optionSpaces * 2,
@@ -23,8 +23,8 @@ function listCommands() {
     )
   }).join('\n')
 
-  const usage = foldLines(`Usage: nuxt <command>`, maxCharsPerLine, startSpaces)
-  const cmmds = foldLines(`Commands:`, maxCharsPerLine, startSpaces) + '\n\n' + _cmmds
+  const usage = fmt.foldLines(`Usage: nuxt <command>`, fmt.maxCharsPerLine, fmt.startSpaces)
+  const cmmds = fmt.foldLines(`Commands:`, fmt.maxCharsPerLine, fmt.startSpaces) + '\n\n' + _cmmds
   return `${usage}\n\n${cmmds}\n\n`
 }
 
