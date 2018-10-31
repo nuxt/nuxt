@@ -17,18 +17,19 @@ async function listCommands(_commands) {
     maxLength = Math.max(maxLength, _commands[name].usage.length)
   }
 
+  const maxCharsPerLine = process.stdout.columns * 80 / 100
   const _cmmds = commandsHelp.map(([cmd, description]) => {
     const i = fmt.indent(maxLength + fmt.optionSpaces - cmd.length)
     return fmt.foldLines(
       cmd + i + description,
-      fmt.maxCharsPerLine,
+      maxCharsPerLine,
       fmt.startSpaces + maxLength + fmt.optionSpaces * 2,
       fmt.startSpaces + fmt.optionSpaces
     )
   }).join('\n')
 
-  const usage = fmt.foldLines(`Usage: nuxt <command>`, fmt.maxCharsPerLine, fmt.startSpaces)
-  const cmmds = fmt.foldLines(`Commands:`, fmt.maxCharsPerLine, fmt.startSpaces) + '\n\n' + _cmmds
+  const usage = fmt.foldLines(`Usage: nuxt <command>`, maxCharsPerLine, fmt.startSpaces)
+  const cmmds = fmt.foldLines(`Commands:`, maxCharsPerLine, fmt.startSpaces) + '\n\n' + _cmmds
   process.stdout.write(`${usage}\n\n${cmmds}\n\n`)
 }
 
