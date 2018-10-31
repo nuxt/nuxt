@@ -20,12 +20,4 @@ export default class WebpackModernConfig extends WebpackClientConfig {
 
     return options
   }
-
-  output() {
-    const output = super.output()
-    const nameInAnalyze = this.options.build.analyze && 'modern-[name].js'
-    output.filename = nameInAnalyze || this.getFileName('modern')
-    output.chunkFilename = nameInAnalyze || this.getFileName('modernChunk')
-    return output
-  }
 }

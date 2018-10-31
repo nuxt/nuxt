@@ -19,7 +19,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.options.build.analyze) {
       const key = args[0]
       if (['app', 'chunk'].includes(key)) {
-        return '[name].js'
+        return `${this.name === 'modern' ? 'modern-' : ''}[name].js`
       }
     }
     return super.getFileName(...args)
