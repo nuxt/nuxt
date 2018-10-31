@@ -7,13 +7,14 @@ export default () => ({
   extractCSS: false,
   cssSourceMap: undefined,
   ssr: undefined,
+  modern: undefined,
   parallel: false,
   cache: false,
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev }) => isDev ? '[name].js' : '[chunkhash].js',
-    chunk: ({ isDev }) => isDev ? '[name].js' : '[chunkhash].js',
+    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
+    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
     css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
     img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[hash:7].[ext]',
     font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[hash:7].[ext]',
@@ -106,7 +107,7 @@ export default () => ({
     excludeAssets: [
       /.map$/,
       /index\..+\.html$/,
-      /vue-ssr-client-manifest.json/
+      /vue-ssr-(client|modern)-manifest.json/
     ]
   }
 })
