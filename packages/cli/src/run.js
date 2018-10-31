@@ -4,12 +4,18 @@ import * as commands from './commands'
 import setup from './setup'
 import * as fmt from './formatting'
 
-function listCommands() {
-  const maxLength = 0
-  const _commands = Object.assign({}, commands)
-  const commandsHelp = Object.keys(_commands).reduce((name, arr) => {
-    return arr.concat([[_commands[name].usage, _commands[name].description]])
-  }, [])
+async function listCommands(_commands) {
+  _commands = await Promise.all(
+    Object.keys(_commands).map((cmd) => {
+      return _commands[cmd]().then((m) => m.default)
+    })
+  )
+  let maxLength = 0
+  const commandsHelp = []
+  for (const name in _commands) {
+    commandsHelp.push([_commands[name].usage, _commands[name].description])
+    maxLength = Math.max(maxLength, _commands[name].usage.length)
+  }
 
   const _cmmds = commandsHelp.map(([cmd, description]) => {
     const i = fmt.indent(maxLength + fmt.optionSpaces - cmd.length)
@@ -23,7 +29,7 @@ function listCommands() {
 
   const usage = fmt.foldLines(`Usage: nuxt <command>`, fmt.maxCharsPerLine, fmt.startSpaces)
   const cmmds = fmt.foldLines(`Commands:`, fmt.maxCharsPerLine, fmt.startSpaces) + '\n\n' + _cmmds
-  return `${usage}\n\n${cmmds}\n\n`
+  process.stdout.write(`${usage}\n\n${cmmds}\n\n`)
 }
 
 export default function run() {
@@ -42,8 +48,8 @@ export default function run() {
     process.argv.splice(2, 1)
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands()
-      process.exit(0)
+      listCommands({ ...commands }).then(() => process.exit(0))
+      return
     }
     cmd = defaultCommand
   }
