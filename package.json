@@ -5,11 +5,12 @@
     "distributions/*"
   ],
   "scripts": {
-    "build": "yarn clean && node -r esm ./scripts/package",
+    "build": "yarn clean && yarn pkg",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*",
+    "pkg": "node -r esm ./scripts/package",
     "dev": "yarn build --watch",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
