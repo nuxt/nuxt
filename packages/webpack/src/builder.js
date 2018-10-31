@@ -67,7 +67,7 @@ export class WebpackBuilder {
 
     // Check styleResource existence
     const styleResources = this.context.options.build.styleResources
-    Object.keys(styleResources).forEach(async (ext) => {
+    await Promise.all(Object.keys(styleResources).map(async (ext) => {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
         const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
@@ -75,11 +75,11 @@ export class WebpackBuilder {
           throw new Error(`Style Resource not found: ${p}`)
         }
       }))
-    })
+    }))
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
+    this.compilers = compilersOptions.map((compilerOptions) => {
+      const compiler = webpack(compilerOptions)
 
       // In dev, write files in memory FS
       if (options.dev) {
