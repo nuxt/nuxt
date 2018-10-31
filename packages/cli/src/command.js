@@ -1,7 +1,7 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, foldLines } from './utils'
-import { startSpaces, optionSpaces, maxCharsPerLine } from './formatting'
+import { loadNuxtConfig } from './utils'
+import * from './formatting'
 import * as imports from './imports'
 
 export default class NuxtCommand {
