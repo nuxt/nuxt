@@ -1,4 +1,5 @@
 import consola from 'consola'
+import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 
@@ -26,7 +27,9 @@ export default function run() {
   })
 
   return commands[cmd]() // eslint-disable-line import/namespace
-    .then(m => m.default())
+    .then(m => m.default)
+    .then(options => NuxtCommand.from(options))
+    .then(command => command.run())
     .catch((error) => {
       consola.fatal(error)
     })

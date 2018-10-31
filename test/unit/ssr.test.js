@@ -23,7 +23,7 @@ const uniqueTest = async (url) => {
   const results = []
 
   await parallel(range(5), async () => {
-    const { html } = await nuxt.renderRoute(url)
+    const { html } = await nuxt.server.renderRoute(url)
     const foobar = match(FOOBAR_REGEX, html)
     results.push(parseInt(foobar))
   })
@@ -67,7 +67,7 @@ describe('ssr', () => {
     const config = await loadFixture('ssr')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('unique responses with data()', async () => {
@@ -99,7 +99,7 @@ describe('ssr', () => {
   })
 
   test('store undefined variable response', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/store'))
+    const window = await nuxt.server.renderAndGetWindow(url('/store'))
     expect('idUndefined' in window.__NUXT__.state).toBe(true)
     expect(window.__NUXT__.state.idUndefined).toEqual(undefined)
   })

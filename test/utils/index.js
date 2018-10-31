@@ -1,5 +1,7 @@
 import klawSync from 'klaw-sync'
-import { waitFor } from '../../packages/common/src/utils'
+import { waitFor } from '../../packages/common'
+
+export { getNuxtConfig } from '../../packages/config'
 export { default as getPort } from 'get-port'
 export { default as rp } from 'request-promise-native'
 

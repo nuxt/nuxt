@@ -14,7 +14,7 @@ import {
   wrapArray
 } from '@nuxt/common'
 
-import { ClientConfig, ServerConfig, PerfLoader } from './config'
+import { ClientConfig, ModernConfig, ServerConfig, PerfLoader } from './config'
 
 const glob = pify(Glob)
 
@@ -45,6 +45,13 @@ export class WebpackBuilder {
     const clientConfig = new ClientConfig(this).config()
     compilersOptions.push(clientConfig)
 
+    // Modern
+    let modernConfig
+    if (options.build.modern) {
+      modernConfig = new ModernConfig(this).config()
+      compilersOptions.push(modernConfig)
+    }
+
     // Server
     let serverConfig = null
     if (options.build.ssr) {
@@ -62,6 +69,11 @@ export class WebpackBuilder {
       if (serverConfig && !serverConfig.resolve.alias[p.name]) {
         // Alias to noop for ssr:false plugins
         serverConfig.resolve.alias[p.name] = p.ssr ? p.src : './empty.js'
+      }
+
+      // Modern config
+      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
+        modernConfig.resolve.alias[p.name] = p.src
       }
     }
 
@@ -120,7 +132,7 @@ export class WebpackBuilder {
         })
 
         // Reload renderer if available
-        nuxt.renderer.loadResources(this.mfs || fs)
+        nuxt.server.loadResources(this.mfs || fs)
 
         // Resolve on next tick
         process.nextTick(resolve)
@@ -166,7 +178,7 @@ export class WebpackBuilder {
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
-    const { nuxt: { renderer }, options } = this.context
+    const { nuxt: { server }, options } = this.context
 
     // Create webpack dev middleware
     this.webpackDevMiddleware = pify(
@@ -200,9 +212,9 @@ export class WebpackBuilder {
     )
 
     // Inject to renderer instance
-    if (renderer) {
-      renderer.webpackDevMiddleware = this.webpackDevMiddleware
-      renderer.webpackHotMiddleware = this.webpackHotMiddleware
+    if (server) {
+      server.webpackDevMiddleware = this.webpackDevMiddleware
+      server.webpackHotMiddleware = this.webpackHotMiddleware
     }
   }
 

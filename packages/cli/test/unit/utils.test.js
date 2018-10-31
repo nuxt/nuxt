@@ -1,11 +1,9 @@
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
 
 describe('cli/utils', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('loadNuxtConfig: defaults', async () => {
     const argv = {
@@ -83,14 +81,14 @@ describe('cli/utils', () => {
   })
 
   test('nuxtServerConfig: server env', () => {
-    const options = {
-      server: nuxtServerConfig({
+    const options = getDefaultNuxtConfig({
+      env: {
         ...process.env,
         HOST: 'env-host',
         PORT: 3003,
         UNIX_SOCKET: '/var/run/env.sock'
-      })
-    }
+      }
+    })
 
     expect(options.server.host).toBe('env-host')
     expect(options.server.port).toBe(3003)

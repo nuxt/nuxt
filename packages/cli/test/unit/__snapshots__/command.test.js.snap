@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`cli/command builds help text 1`] = `
+"  Usage: nuxt this is how you do it [options]
+
+  a very long description that is longer than 80 chars and should wrap to the next
+  line while keeping indentation
+
+  Options:
+
+    --spa, -s          Launch in SPA mode
+    --universal, -u    Launch in Universal mode (default)
+    --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+    --version          Display the Nuxt version
+    --help, -h         Display this message
+    --port, -p         Port number on which to start the application
+    --hostname, -H     Hostname on which to start the application
+    --unix-socket, -n  Path to a UNIX socket
+    --foo              very long option that is longer than 80 chars and should wrap
+                       to the next line while keeping indentation
+
+"
+`;

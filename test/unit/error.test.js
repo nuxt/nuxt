@@ -13,22 +13,22 @@ describe('error', () => {
     const config = await loadFixture('error')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/ should display an error', async () => {
-    await expect(nuxt.renderRoute('/')).rejects.toMatchObject({
+    await expect(nuxt.server.renderRoute('/')).rejects.toMatchObject({
       message: expect.stringContaining('not_defined is not defined')
     })
   })
 
   test('/404 should display an error too', async () => {
-    const { error } = await nuxt.renderRoute('/404')
+    const { error } = await nuxt.server.renderRoute('/404')
     expect(error.message.includes('This page could not be found')).toBe(true)
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    await expect(nuxt.renderAndGetWindow(url('/'))).rejects.toMatchObject({
+    await expect(nuxt.server.renderAndGetWindow(url('/'))).rejects.toMatchObject({
       statusCode: 500
     })
   })
