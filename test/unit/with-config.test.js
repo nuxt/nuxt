@@ -29,11 +29,11 @@ describe('with-config', () => {
     expect(html).toContain('.global-css-selector')
   })
 
-  test.skip('/ (preload fonts)', async () => {
+  test('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html.includes(
-      '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
-    )).toBe(true)
+    expect(html).toContain(
+      '<link rel="preload" href="/test/orion/fonts/7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
+    )
   })
 
   test('/ (styleResources styles inlined)', async () => {
