@@ -28,7 +28,7 @@ export default {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      prepare(build, options, argv) {
+      prepare(cmd, options, argv) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
