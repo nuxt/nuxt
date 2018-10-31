@@ -24,8 +24,9 @@ describe('with-config', () => {
     expect(html).toContain('<script src="/test/orion/app.js"')
   })
 
-  test.skip('/ (global styles inlined)', async () => {
-    const { html } = await nuxt.server.renderRoute('/')
+  test('/ (global styles inlined)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
+    const html = window.document.head.innerHTML
     expect(html).toContain('.global-css-selector')
   })
 
