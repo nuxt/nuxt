@@ -1,9 +1,11 @@
 #!/usr/bin/env node -r esm
 import path from 'path'
 import fs from 'fs-extra'
-import consola from 'consola'
+import Consola from 'consola'
 
 import Package from './package.js'
+
+const consola = Consola.withTag('nuxt:dev')
 
 async function main() {
   // Read package at current directory
@@ -15,7 +17,7 @@ async function main() {
     if (!pkg.pkg.main || !pkg.options.build) {
       continue
     }
-    consola.info(pkg.pkg.main)
+    consola.info(`src-link '${pkg.pkg.main}'`)
     const distMain = pkg.resolvePath(pkg.pkg.main)
     await fs.mkdirp(path.dirname(distMain))
     await fs.writeFile(distMain, `export * from '../src/index'`)

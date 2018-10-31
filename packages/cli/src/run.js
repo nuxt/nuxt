@@ -1,7 +1,9 @@
-import consola from 'consola'
+import Consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
+
+const consola = Consola.withTag('nuxt:cli:run')
 
 export default function run() {
   const defaultCommand = 'dev'

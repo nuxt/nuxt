@@ -1,10 +1,12 @@
 import path from 'path'
 import { existsSync } from 'fs'
-import consola from 'consola'
+import Consola from 'consola'
 import esm from 'esm'
 import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { getDefaultNuxtConfig } from '@nuxt/config'
+
+const consola = Consola.withTag('nuxt:cli')
 
 const _require = esm(module, {
   cache: false,

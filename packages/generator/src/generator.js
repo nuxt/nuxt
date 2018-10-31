@@ -1,10 +1,12 @@
 import path from 'path'
 import Chalk from 'chalk'
-import consola from 'consola'
+import Consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
 import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/common'
+
+const consola = Consola.withTag('nuxt:generator')
 
 export default class Generator {
   constructor(nuxt, builder) {
@@ -31,11 +33,7 @@ export default class Generator {
 
     const routes = await this.initRoutes()
 
-    consola.info({
-      message: 'Generating pages',
-      badge: true,
-      clear: true
-    })
+    consola.info('Generating pages')
 
     const errors = await this.generateRoutes(routes)
 

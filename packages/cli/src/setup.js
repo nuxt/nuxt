@@ -1,6 +1,8 @@
-import consola from 'consola'
+import Consola from 'consola'
 
 let _setup = false
+
+const consola = Consola.withTag('nuxt:cli:setup')
 
 export default function setup({ dev }) {
   // Apply default NODE_ENV if not provided
@@ -21,7 +23,7 @@ export default function setup({ dev }) {
 
   // Exit process on fatal errors
   /* istanbul ignore next */
-  consola.add({
+  consola.addReporter({
     log(logObj) {
       if (logObj.type === 'fatal') {
         process.stderr.write('Nuxt Fatal Error :(\n')

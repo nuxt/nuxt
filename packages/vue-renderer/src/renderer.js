@@ -1,7 +1,7 @@
 import path from 'path'
 import crypto from 'crypto'
 import fs from 'fs-extra'
-import consola from 'consola'
+import Consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import template from 'lodash/template'
 import { waitFor } from '@nuxt/common'
@@ -10,6 +10,8 @@ import { createBundleRenderer } from 'vue-server-renderer'
 
 import ModernBrowsers from '../data/modern-browsers.json'
 import SPAMetaRenderer from './spa-meta'
+
+const consola = Consola.withTag('nuxt:vue-renderer')
 
 export default class VueRenderer {
   constructor(context) {

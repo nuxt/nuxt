@@ -1,9 +1,11 @@
 import path from 'path'
 import fs from 'fs'
 import hash from 'hash-sum'
-import consola from 'consola'
+import Consola from 'consola'
 
 import { chainFn, sequence } from '@nuxt/common'
+
+const consola = Consola.withTag('nuxt:module')
 
 export default class ModuleContainer {
   constructor(nuxt) {

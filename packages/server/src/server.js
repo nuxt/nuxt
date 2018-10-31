@@ -5,7 +5,7 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import chalk from 'chalk'
 import ip from 'ip'
-import consola from 'consola'
+import Consola from 'consola'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 
@@ -13,6 +13,8 @@ import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
+
+const consola = Consola.withTag('nuxt:server')
 
 export default class Server {
   constructor(nuxt) {
@@ -177,12 +179,11 @@ export default class Server {
     })
   }
 
-  showReady(clear = true) {
+  showReady() {
     if (this.readyMessage) {
-      consola.ready({
+      consola.log({
         message: this.readyMessage,
-        badge: true,
-        clear
+        color: 'green'
       })
     }
   }

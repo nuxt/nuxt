@@ -1,5 +1,5 @@
 import path from 'path'
-import consola from 'consola'
+import Consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
@@ -12,6 +12,8 @@ import { isUrl, urlJoin } from '@nuxt/common'
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'
 import StatsPlugin from './plugins/stats'
+
+const consola = Consola.withTag('nuxt:webpack')
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {

@@ -4,9 +4,11 @@ import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
-import consola from 'consola'
+import Consola from 'consola'
 import { isPureObject, isUrl, guardDir, isNonEmptyString } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
+
+const consola = Consola.withTag('nuxt:config')
 
 export function getNuxtConfig(_options) {
   // Clone options to prevent unwanted side-effects

@@ -1,6 +1,6 @@
 
 import isPlainObject from 'lodash/isPlainObject'
-import consola from 'consola'
+import Consola from 'consola'
 
 import { Hookable, defineAlias } from '@nuxt/common'
 import { getNuxtConfig } from '@nuxt/config'
@@ -9,6 +9,8 @@ import { Server } from '@nuxt/server'
 import { version } from '../package.json'
 import ModuleContainer from './module'
 import Resolver from './resolver'
+
+const consola = Consola.withTag('nuxt')
 
 export default class Nuxt extends Hookable {
   constructor(options = {}) {

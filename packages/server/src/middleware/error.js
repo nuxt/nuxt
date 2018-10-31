@@ -1,8 +1,10 @@
 import path from 'path'
 import fs from 'fs-extra'
-import consola from 'consola'
+import Consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
+
+const consola = Consola.withTag('nuxt:server:error')
 
 export default ({ resources, options }) => function errorMiddleware(err, req, res, next) {
   // ensure statusCode, message and name fields

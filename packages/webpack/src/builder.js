@@ -6,7 +6,7 @@ import MFS from 'memory-fs'
 import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
-import consola from 'consola'
+import Consola from 'consola'
 
 import {
   parallel,
@@ -15,6 +15,8 @@ import {
 } from '@nuxt/common'
 
 import { ClientConfig, ModernConfig, ServerConfig, PerfLoader } from './config'
+
+const consola = Consola.withTag('nuxt:webpack')
 
 const glob = pify(Glob)
 

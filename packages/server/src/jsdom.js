@@ -1,5 +1,7 @@
-import consola from 'consola'
+import Consola from 'consola'
 import { timeout } from '@nuxt/common'
+
+const consola = Consola.withTag('nuxt:server:jsdom')
 
 export default async function renderAndGetWindow(
   url = 'http://localhost:3000',

@@ -1,8 +1,10 @@
 import generateETag from 'etag'
 import fresh from 'fresh'
-import consola from 'consola'
+import Consola from 'consola'
 
 import { getContext } from '@nuxt/common'
+
+const consola = Consola.withTag('nuxt:server')
 
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context

@@ -1,6 +1,6 @@
 import path from 'path'
 import chokidar from 'chokidar'
-import consola from 'consola'
+import Consola from 'consola'
 import fsExtra from 'fs-extra'
 import Glob from 'glob'
 import hash from 'hash-sum'
@@ -32,6 +32,8 @@ import {
 } from '@nuxt/common'
 
 import BuildContext from './context'
+
+const consola = Consola.withTag('nuxt:builder')
 
 const glob = pify(Glob)
 
@@ -152,11 +154,7 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info({
-      message: 'Building project',
-      badge: true,
-      clear: !this.options.dev
-    })
+    consola.info('Building project')
 
     // Wait for nuxt ready
     await this.nuxt.ready()

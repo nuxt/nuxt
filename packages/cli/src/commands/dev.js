@@ -1,5 +1,7 @@
-import consola from 'consola'
+import Consola from 'consola'
 import { common, server } from '../options'
+
+const consola = Consola.withTag('nuxt:cli:dev')
 
 export default {
   name: 'dev',

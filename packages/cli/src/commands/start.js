@@ -1,7 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import consola from 'consola'
+import Consola from 'consola'
 import { common, server } from '../options'
+
+const consola = Consola.withTag('nuxt:cli:start')
 
 export default {
   name: 'start',

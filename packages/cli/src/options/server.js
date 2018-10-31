@@ -1,4 +1,6 @@
-import consola from 'consola'
+import Consola from 'consola'
+
+const consola = Consola.withTag('nuxt:cli:server')
 
 export default {
   port: {
