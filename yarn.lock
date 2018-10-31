@@ -3020,14 +3020,16 @@ consola@^1.4.3:
     lodash "^4.17.5"
     std-env "^1.1.0"
 
-consola@^2.0.0-0:
-  version "2.0.0-0"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.0.0-0.tgz#a7bb7cd98e64a4a1f1b6a686f342f44d9a42a1c0"
-  integrity sha512-1vSuoKMnNw6fKEBECG2lJ2RDr/7q18Xfm9ofGECDMIxcMgq8yigIn0Iv1j3q45ddLRAF16B9gJlvmeEE+Itr+Q==
+consola@^2.0.0-1:
+  version "2.0.0-1"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.0.0-1.tgz#4883f5c19ae07b63226f27311c4e54a42e18714a"
+  integrity sha512-X4sDWc37AbZFXVHT55I0SWKilv1qClu3fPDzakcnEKUENJZXrHaJwpSUDDXOrp0KBsdUBx6ji6DpuSZm6/QUVQ==
   dependencies:
     chalk "^2.4.1"
     dayjs "^1.7.7"
+    figures "^2.0.0"
     std-env "^2.0.2"
+    string-width "^2.1.1"
 
 console-browserify@^1.1.0:
   version "1.1.0"
