@@ -1,0 +1,8 @@
+# Configuration for lock-threads - https://github.com/dessant/lock-threads
+daysUntilLock: 30
+exemptLabels: []
+lockLabel: false
+lockComment: >
+  This thread has been automatically locked since there has not been
+  any recent activity after it was closed. Please open a new issue for
+  related bugs.
