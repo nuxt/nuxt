@@ -1,11 +1,8 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, indent, foldLines } from './utils'
+import { startSpaces, optionSpaces, maxCharsPerLine } from './formatting'
 import * as imports from './imports'
-
-const startSpaces = 2
-const optionSpaces = 2
-const maxCharsPerLine = 80
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, run } = {}) {

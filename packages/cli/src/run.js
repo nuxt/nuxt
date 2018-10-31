@@ -2,11 +2,29 @@ import consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
+import { startSpaces, optionSpaces, maxCharsPerLine } from './formatting'
 
 function listCommands() {
-  for (const command in commands) {
-    consola.info('command: ', command)
-  }
+  const options = []
+  let maxLength = 0
+
+  const commandsHelp = Object.keys(commands).reduce((name, arr) => {
+    return arr.concat([[commands[name].usage, commands[name].description]])
+  }, [])
+
+  const _cmmds = options.map(([cmd, description]) => {
+    const i = indent(maxLength + optionSpaces - cmd.length)
+    return foldLines(
+      cmd + i + description,
+      maxCharsPerLine,
+      startSpaces + maxLength + optionSpaces * 2,
+      startSpaces + optionSpaces
+    )
+  }).join('\n')
+
+  const usage = foldLines(`Usage: nuxt <command>`, maxCharsPerLine, startSpaces)
+  const cmmds = foldLines(`Commands:`, maxCharsPerLine, startSpaces) + '\n\n' + _cmmds
+  return `${usage}\n\n${cmmds}\n\n`
 }
 
 export default function run() {
