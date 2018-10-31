@@ -71,5 +71,9 @@
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.16.0",
     "vue-jest": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
   }
 }

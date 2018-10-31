@@ -1,13 +1,14 @@
 import path from 'path'
 import crypto from 'crypto'
+import fs from 'fs-extra'
+import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import template from 'lodash/template'
-import fs from 'fs-extra'
-import { createBundleRenderer } from 'vue-server-renderer'
-import consola from 'consola'
-
 import { waitFor } from '@nuxt/common'
+import { matchesUA } from 'browserslist-useragent'
+import { createBundleRenderer } from 'vue-server-renderer'
 
+import ModernBrowsers from '../data/modern-browsers.json'
 import SPAMetaRenderer from './spa-meta'
 
 export default class VueRenderer {
@@ -15,12 +16,19 @@ export default class VueRenderer {
     this.context = context
 
     // Will be set by createRenderer
-    this.bundleRenderer = null
-    this.spaMetaRenderer = null
+    this.renderer = {
+      ssr: null,
+      modern: null,
+      spa: null
+    }
+
+    this.modernBrowsers = Object.keys(ModernBrowsers)
+      .map(browser => `${browser} >= ${ModernBrowsers[browser]}`)
 
     // Renderer runtime resources
     Object.assign(this.context.resources, {
       clientManifest: null,
+      modernManifest: null,
       serverBundle: null,
       ssrTemplate: null,
       spaTemplate: null,
@@ -95,7 +103,7 @@ export default class VueRenderer {
       return Boolean(this.context.resources.spaTemplate)
     }
 
-    return Boolean(this.bundleRenderer && this.context.resources.ssrTemplate)
+    return Boolean(this.renderer.ssr && this.context.resources.ssrTemplate)
   }
 
   get isResourcesAvailable() {
@@ -121,7 +129,7 @@ export default class VueRenderer {
     }
 
     // Create Meta Renderer
-    this.spaMetaRenderer = new SPAMetaRenderer(this)
+    this.renderer.spa = new SPAMetaRenderer(this)
 
     // Skip following steps if noSSR mode
     if (this.noSSR) {
@@ -129,19 +137,29 @@ export default class VueRenderer {
     }
 
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+    const rendererOptions = {
+      runInNewContext: false,
+      clientManifest: this.context.resources.clientManifest,
+      // for globally installed nuxt command, search dependencies in global dir
+      basedir: hasModules ? this.context.options.rootDir : __dirname,
+      ...this.context.options.render.bundleRenderer
+    }
+
     // Create bundle renderer for SSR
-    this.bundleRenderer = createBundleRenderer(
+    this.renderer.ssr = createBundleRenderer(
       this.context.resources.serverBundle,
-      Object.assign(
-        {
-          clientManifest: this.context.resources.clientManifest,
-          runInNewContext: false,
-          // for globally installed nuxt command, search dependencies in global dir
-          basedir: hasModules ? this.context.options.rootDir : __dirname
-        },
-        this.context.options.render.bundleRenderer
-      )
+      rendererOptions
     )
+
+    if (this.context.options.build.modern) {
+      this.renderer.modern = createBundleRenderer(
+        this.context.resources.serverBundle,
+        {
+          ...rendererOptions,
+          clientManifest: this.context.resources.modernManifest
+        }
+      )
+    }
   }
 
   renderTemplate(ssr, opts) {
@@ -178,7 +196,7 @@ export default class VueRenderer {
         HEAD,
         BODY_SCRIPTS,
         getPreloadFiles
-      } = await this.spaMetaRenderer.render(context)
+      } = await this.renderer.spa.render(context)
       const APP =
         `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
 
@@ -206,8 +224,20 @@ export default class VueRenderer {
       return { html, getPreloadFiles }
     }
 
+    const { req } = context
+    const ua = req && req.headers && req.headers['user-agent']
+    const isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
+      allowHigherVersions: true,
+      browsers: this.modernBrowsers
+    })
+
+    let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    let APP = await this.bundleRenderer.renderToString(context)
+    if (isModernBrowser) {
+      APP = await this.renderer.modern.renderToString(context)
+    } else {
+      APP = await this.renderer.ssr.renderToString(context)
+    }
 
     if (!context.nuxt.serverRendered) {
       APP = `<div id="${this.context.globals.id}"></div>`
@@ -275,6 +305,11 @@ export default class VueRenderer {
       {
         key: 'clientManifest',
         fileName: 'vue-ssr-client-manifest.json',
+        transform: JSON.parse
+      },
+      {
+        key: 'modernManifest',
+        fileName: 'vue-ssr-modern-manifest.json',
         transform: JSON.parse
       },
       {
