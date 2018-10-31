@@ -9,26 +9,36 @@ export default {
     ...common,
     ...server
   },
-  async run(cmd) {
-    const argv = cmd.getArgv()
+  async run() {
+    this.disableForceExit()
+
+    const argv = this.getArgv()
+
+    const getConfig = () => {
+      return this.getNuxtConfig(argv, { dev: true })
+    }
 
     const errorHandler = (err, instance) => {
       instance && instance.builder.watchServer()
       consola.error(err)
     }
 
+    const config = await getConfig()
+
+    if (argv.lock) {
+      await this.lock(config.srcDir || config.rootDir, { autoUnlock: false })
+    }
+
     // Start dev
-    async function startDev(oldInstance) {
+    const startDev = async (config, oldInstance) => {
       let nuxt, builder
 
       try {
-        nuxt = await cmd.getNuxt(
-          await cmd.getNuxtConfig(argv, { dev: true })
-        )
-        builder = await cmd.getBuilder(nuxt)
+        nuxt = await this.getNuxt(config)
+        builder = await this.getBuilder(nuxt)
         nuxt.hook('watch:fileChanged', async (builder, fname) => {
           consola.debug(`[${fname}] changed, Rebuilding the app...`)
-          await startDev({ nuxt: builder.nuxt, builder })
+          await startDev(await getConfig(), { nuxt: builder.nuxt, builder })
         })
       } catch (err) {
         return errorHandler(err, oldInstance)
@@ -57,6 +67,6 @@ export default {
       )
     }
 
-    await startDev()
+    await startDev(config)
   }
 }

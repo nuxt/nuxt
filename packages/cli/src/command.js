@@ -1,19 +1,23 @@
 import parseArgs from 'minimist'
+import locker from 'proper-lockfile'
+import consola from 'consola'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, foldLines } from './utils'
+import { loadNuxtConfig, getLockPath, defaultLockOptions, indent, foldLines, isPromise } from './utils'
 import * as imports from './imports'
 
 const startSpaces = 2
 const optionSpaces = 2
 const maxCharsPerLine = 80
+const forceExitAfterSeconds = 5
 
 export default class NuxtCommand {
-  constructor({ name, description, usage, options, run } = {}) {
+  constructor({ name, description, usage, options, run, forceExit } = {}) {
     this.name = name || ''
     this.description = description || ''
     this.usage = usage || ''
     this.options = Object.assign({}, options)
     this._run = run
+    this.forceExit = typeof forceExit === 'undefined' ? true : forceExit
   }
 
   static from(options) {
@@ -21,6 +25,10 @@ export default class NuxtCommand {
       return options
     }
     return new NuxtCommand(options)
+  }
+
+  disableForceExit() {
+    this.forceExit = false
   }
 
   _getMinimistOptions() {
@@ -61,8 +69,54 @@ export default class NuxtCommand {
     return argv
   }
 
+  async lock(lockPath, options) {
+    const locked = await locker.check(getLockPath(lockPath))
+    if (locked) {
+      consola.fatal(`A lock already exists on ${lockPath}, cannot continue`)
+    }
+
+    options = Object.assign(defaultLockOptions, options || {})
+    const lockRelease = await locker.lock(lockPath, options)
+
+    if (!lockRelease) {
+      consola.warn(`Unable to get a lock on ${lockPath} (but will continue)`)
+    } else if (options.autoUnlock) {
+      this.lockRelease = lockRelease
+    }
+
+    return lockRelease
+  }
+
   run() {
-    return this._run(this)
+    let run = this._run(this)
+
+    if (!isPromise(run)) {
+      run = Promise.resolve()
+    }
+
+    return run
+      .then(() => {
+        if (this.lockRelease) {
+          return this.lockRelease()
+        } else {
+          return Promise.resolve()
+        }
+      })
+      .then(() => {
+        if (this.forceExit) {
+          const exitTimeout = setTimeout(() => {
+            let msg = `The command 'nuxt ${this.name}' finished but Nuxt did not exit after ${forceExitAfterSeconds}s\n`
+            msg += 'This is most likely not caused by a bug in Nuxt\n'
+            msg += 'Make sure to wait for all timers you set and stop all listeners, also check any plugin, module, etc you import\n'
+            msg += 'If you are developping a custom Nuxt command, call this.disableForceExit() in your run method to prevent this\n'
+            msg += 'Force exiting'
+            foldLines(msg, maxCharsPerLine).split('\n').forEach(line => consola.warn(line))
+            process.exit(0)
+          }, forceExitAfterSeconds * 1000)
+          exitTimeout.unref()
+        }
+      })
+      .catch(err => consola.fatal(err))
   }
 
   async getNuxtConfig(argv, extraOptions) {

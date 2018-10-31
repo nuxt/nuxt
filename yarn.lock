@@ -8787,6 +8787,14 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
+proper-lockfile@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/proper-lockfile/-/proper-lockfile-3.0.2.tgz#d30b3b83ecb157e08fe0d411f2393bc384b77ad1"
+  integrity sha512-SDrSRyuKE1jM9b2kdpL6SA78wgG+M+fZKe2zbWkURsshOzUmoOornXQcasKQRP9hGhMoEILNpSbWcYoymoB5cA==
+  dependencies:
+    graceful-fs "^4.1.11"
+    retry "^0.10.1"
+
 proto-list@~1.2.1:
   version "1.2.4"
   resolved "https://registry.npmjs.org/proto-list/-/proto-list-1.2.4.tgz#212d5bfe1318306a420f6402b8e26ff39647a849"
@@ -9488,7 +9496,7 @@ ret@~0.1.10:
   resolved "https://registry.npmjs.org/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
   integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
-retry@^0.10.0:
+retry@^0.10.0, retry@^0.10.1:
   version "0.10.1"
   resolved "https://registry.npmjs.org/retry/-/retry-0.10.1.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
   integrity sha1-52OI0heZLCUnUCQdPTlW/tmNj/Q=

@@ -37,13 +37,23 @@ export default {
       }
     }
   },
-  async run(nuxtCmd) {
-    const argv = nuxtCmd.getArgv()
+  async run() {
+    const argv = this.getArgv()
+
+    const config = await this.getNuxtConfig(argv, { dev: false })
+
+    if (argv.lock) {
+      await this.lock(config.srcDir || config.rootDir)
+    }
 
     // Create production build when calling `nuxt build` (dev: false)
-    const nuxt = await nuxtCmd.getNuxt(
-      await nuxtCmd.getNuxtConfig(argv, { dev: false })
-    )
+    const nuxt = await this.getNuxt(config)
+
+    // In analyze mode wait for plugin
+    // emitting assets and opening browser
+    const analyzeMode = nuxt.options.build.analyze === true ||
+          typeof nuxt.options.build.analyze === 'object'
+    this.forceExit = !analyzeMode
 
     // Setup hooks
     nuxt.hook('error', err => consola.fatal(err))
@@ -51,27 +61,14 @@ export default {
     let builderOrGenerator
     if (nuxt.options.mode !== 'spa' || argv.generate === false) {
       // Build only
-      builderOrGenerator = (await nuxtCmd.getBuilder(nuxt)).build()
+      builderOrGenerator = (await this.getBuilder(nuxt)).build()
     } else {
       // Build + Generate for static deployment
-      builderOrGenerator = (await nuxtCmd.getGenerator(nuxt)).generate({
+      builderOrGenerator = (await this.getGenerator(nuxt)).generate({
         build: true
       })
     }
 
     return builderOrGenerator
-      .then(() => {
-        // In analyze mode wait for plugin
-        // emitting assets and opening browser
-        if (
-          nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object'
-        ) {
-          return
-        }
-
-        process.exit(0)
-      })
-      .catch(err => consola.fatal(err))
   }
 }

@@ -15,6 +15,11 @@ export default {
     default: 'nuxt.config.js',
     description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
   },
+  lock: {
+    type: 'boolean',
+    default: true,
+    description: 'Do not set a lock on the project src path when building'
+  },
   version: {
     type: 'boolean',
     description: 'Display the Nuxt version'

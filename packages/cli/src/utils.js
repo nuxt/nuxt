@@ -18,6 +18,16 @@ const _require = esm(module, {
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
 
+export function getLockPath(dir) {
+  return path.resolve(dir || process.cwd())
+}
+
+export const defaultLockOptions = {
+  autoUnlock: true,
+  stale: 30000,
+  onCompromised: err => consola.fatal(err)
+}
+
 export async function loadNuxtConfig(argv) {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
@@ -83,4 +93,8 @@ export function indentLines(string, spaces, firstLineSpaces) {
 
 export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
   return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
+}
+
+export function isPromise(target) {
+  return target && target.then && typeof target.then === 'function'
 }

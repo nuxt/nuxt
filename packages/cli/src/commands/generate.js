@@ -1,4 +1,3 @@
-import consola from 'consola'
 import { common } from '../options'
 
 export default {
@@ -13,20 +12,23 @@ export default {
       description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
     }
   },
-  async run(cmd) {
-    const argv = cmd.getArgv()
+  async run() {
+    const argv = this.getArgv()
+    const config = await this.getNuxtConfig(argv, { dev: false })
+    const nuxt = await this.getNuxt(config)
 
-    const generator = await cmd.getGenerator(
-      await cmd.getNuxt(
-        await cmd.getNuxtConfig(argv, { dev: false })
-      )
-    )
+    if (argv.build && argv.lock) {
+      const lockRelease = await this.lock(config.srcDir || config.rootDir, { autoUnlock: false })
+      if (lockRelease) {
+        nuxt.hook('build:done', () => lockRelease())
+      }
+    }
+
+    const generator = await this.getGenerator(nuxt)
 
     return generator.generate({
       init: true,
       build: argv.build
-    }).then(() => {
-      process.exit(0)
-    }).catch(err => consola.fatal(err))
+    })
   }
 }

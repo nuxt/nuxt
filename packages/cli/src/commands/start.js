@@ -11,12 +11,14 @@ export default {
     ...common,
     ...server
   },
-  async run(cmd) {
-    const argv = cmd.getArgv()
+  async run() {
+    this.disableForceExit()
+
+    const argv = this.getArgv()
 
     // Create production build when calling `nuxt build`
-    const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false })
+    const nuxt = await this.getNuxt(
+      await this.getNuxtConfig(argv, { dev: false })
     )
 
     // Setup hooks
