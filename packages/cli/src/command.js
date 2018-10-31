@@ -108,7 +108,7 @@ export default class NuxtCommand {
             let msg = `The command 'nuxt ${this.name}' finished but Nuxt did not exit after ${forceExitAfterSeconds}s\n`
             msg += 'This is most likely not caused by a bug in Nuxt\n'
             msg += 'Make sure to wait for all timers you set and stop all listeners, also check any plugin, module, etc you import\n'
-            msg += 'If you are developping a custom Nuxt command, call this.disableForceExit() in your run method to prevent this\n'
+            msg += 'If you are developping a custom Nuxt command, call this.disableForceExit() in your run method to prevent the forced exit\n'
             msg += 'Force exiting'
             foldLines(msg, maxCharsPerLine).split('\n').forEach(line => consola.warn(line))
             process.exit(0)

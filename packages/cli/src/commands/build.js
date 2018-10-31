@@ -40,20 +40,21 @@ export default {
   async run() {
     const argv = this.getArgv()
 
+    // Create production build when calling `nuxt build` (dev: false)
     const config = await this.getNuxtConfig(argv, { dev: false })
 
     if (argv.lock) {
       await this.lock(config.srcDir || config.rootDir)
     }
 
-    // Create production build when calling `nuxt build` (dev: false)
     const nuxt = await this.getNuxt(config)
 
     // In analyze mode wait for plugin
     // emitting assets and opening browser
-    const analyzeMode = nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object'
-    this.forceExit = !analyzeMode
+    if (nuxt.options.build.analyze === true ||
+          typeof nuxt.options.build.analyze === 'object') {
+      this.disableForceExit()
+    }
 
     // Setup hooks
     nuxt.hook('error', err => consola.fatal(err))
