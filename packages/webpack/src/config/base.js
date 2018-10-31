@@ -247,21 +247,23 @@ export default class WebpackBaseConfig {
     plugins.push(new WarnFixPlugin())
 
     // Build progress indicator
-    plugins.push(new WebpackBar({
-      profile: this.options.build.profile,
-      name: this.isServer ? 'server' : 'client',
-      color: this.isServer ? 'orange' : 'green',
-      compiledIn: false,
-      done: (states) => {
-        if (this.options.dev) {
-          const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
+    if (!this.options.ui) {
+      plugins.push(new WebpackBar({
+        profile: this.options.build.profile,
+        name: this.isServer ? 'server' : 'client',
+        color: this.isServer ? 'orange' : 'green',
+        compiledIn: false,
+        done: (states) => {
+          if (this.options.dev) {
+            const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
 
-          if (!hasErrors) {
-            this.nuxt.showReady(false)
+            if (!hasErrors) {
+              this.nuxt.showReady(false)
+            }
           }
         }
-      }
-    }))
+      }))
+    }
 
     // Add stats plugin
     if (!this.options.dev && this.options.build.stats) {
