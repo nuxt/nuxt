@@ -179,11 +179,7 @@ export default class Server {
 
   showReady(clear = true) {
     if (this.readyMessage) {
-      consola.ready({
-        message: this.readyMessage,
-        badge: true,
-        clear
-      })
+      consola.success(this.readyMessage)
     }
   }
 

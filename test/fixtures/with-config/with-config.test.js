@@ -19,13 +19,11 @@ describe('with-config', () => {
     expect(consola.warn.mock.calls).toMatchObject([
       [{
         message: 'Found 2 plugins that match the configuration, suggest to specify extension:',
-        additional: expect.stringContaining('plugins/test.json'),
-        badge: true
+        additional: expect.stringContaining('plugins/test.json')
       }],
-      [{
-        message: 'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.',
-        badge: true
-      }]
+      [
+        'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.'
+      ]
     ])
     expect(customCompressionMiddlewareFunctionName).toBe('damn')
   }, hooks)
