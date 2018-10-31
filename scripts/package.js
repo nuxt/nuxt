@@ -37,7 +37,7 @@ export default class Package extends EventEmitter {
     this.readPkg()
 
     // Init logger
-    this.logger = consola.withScope(this.pkg.name)
+    this.logger = consola.withTag(this.pkg.name)
 
     // Try to load config
     this.loadConfig()
