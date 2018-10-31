@@ -9,7 +9,7 @@ const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 const url = route => 'http://localhost:' + port + route
 
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
-const spawnNuxt = (command, opts) => spawn('node', ['-r', 'esm', nuxtBin, command, rootDir], opts)
+const spawnNuxt = (command, opts) => spawn('node', [nuxtBin, command, rootDir], opts)
 
 const close = async (nuxtInt) => {
   nuxtInt.kill('SIGKILL')
