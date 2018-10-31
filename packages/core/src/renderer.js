@@ -286,6 +286,9 @@ export default class Renderer {
   }
 
   async renderRoute(url, context = {}) {
+    if (!this.isReady && this.options.ui) {
+      return { html: 'Building...' }
+    }
     /* istanbul ignore if */
     if (!this.isReady) {
       await waitFor(1000)
