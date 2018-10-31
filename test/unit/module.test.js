@@ -13,26 +13,26 @@ describe('module', () => {
     const config = await loadFixture('module')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Plugin', async () => {
     expect(normalize(nuxt.options.plugins[0].src).includes(
       normalize('fixtures/module/.nuxt/basic.reverse.')
     )).toBe(true)
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>TXUN</h1>')).toBe(true)
   })
 
   test('Layout', async () => {
     expect(nuxt.options.layouts.layout.includes('layout')).toBe(true)
 
-    const { html } = await nuxt.renderRoute('/layout')
+    const { html } = await nuxt.server.renderRoute('/layout')
     expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
   })
 
   test('/404 should display the module error layout', async () => {
-    const { html } = await nuxt.renderRoute('/404')
+    const { html } = await nuxt.server.renderRoute('/404')
     expect(html).toContain('You should see the error in a different Vue!')
   })
 
@@ -60,7 +60,7 @@ describe('module', () => {
   })
 
   test('Hooks - render context', async () => {
-    await nuxt.renderRoute('/render-context')
+    await nuxt.server.renderRoute('/render-context')
     expect(nuxt.__render_context).toBeTruthy()
   })
 

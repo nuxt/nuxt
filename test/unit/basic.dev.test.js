@@ -48,7 +48,7 @@ describe('basic dev', () => {
     builder = new Builder(nuxt, BundleBuilder)
     await builder.build()
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Check build:done hook called', () => {
@@ -83,7 +83,7 @@ describe('basic dev', () => {
   })
 
   test('/stateless', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/stateless'))
+    const window = await nuxt.server.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>My component!</h1>')).toBe(true)
   })
@@ -117,7 +117,7 @@ describe('basic dev', () => {
   })
 
   test('/error should return error stack trace (Youch)', async () => {
-    await expect(nuxt.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
+    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
   })
@@ -126,7 +126,7 @@ describe('basic dev', () => {
     const sourceMaps = nuxt.renderer.resources.serverBundle.maps
     nuxt.renderer.resources.serverBundle.maps = {}
 
-    await expect(nuxt.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
+    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
 

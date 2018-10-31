@@ -10,7 +10,7 @@
         </div>
         <h1 class="Landscape__Logo__Title">NUXT</h1>
       </div>
-      <h2 class="Landscape__Title">Universal Vue.js Applications</h2>
+      <h2 class="Landscape__Title">The Vue Framework</h2>
       <a href="https://nuxtjs.org/guide/installation#starting-from-scratch" target="_blank" class="button">
         Get Started
       </a>
@@ -21,17 +21,17 @@
 
 <style>
   .Landscape {
-    min-height: calc(100vh - 50px);
+    min-height: calc(100vh - 200px);
     background-color: #fff;
     padding: 70px 15px;
-    padding-top: 100px;
+    padding-top: 80px;
     text-align: center;
   }
 
   @media (min-width: 992px) {
     .Landscape {
-      padding: 140px 30px;
-      padding-top: 200px;
+      padding: 0 30px;
+      padding-top: 140px;
     }
   }
 
@@ -39,13 +39,12 @@
     margin:0;
     padding:0;
     font-family: "Quicksand", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 20px;
     display: block;
     font-weight: 300;
     font-size: 100px;
     color: #35495e;
     letter-spacing: 1px;
-    padding: 25px 15px;
+    padding: 0 15px;
   }
 
   @media (min-width: 992px) {
@@ -62,7 +61,8 @@
       font-size: 45px;
       font-weight: 300;
       line-height: normal;
-      margin: 30px 0;
+      margin: 0;
+      margin-top: 10px;
       color: #526488;
       word-spacing: 5px;
   }
@@ -171,5 +171,6 @@
     border-radius: 4px;
     letter-spacing: 1px;
     border: 1px solid #3b8070;
+    margin-top: 40px;
   }
 </style>

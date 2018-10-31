@@ -6,19 +6,20 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxtjs/friendly-errors-webpack-plugin'
 
+import ModernModePlugin from './plugins/vue/modern'
 import VueSSRClientPlugin from './plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
-  constructor(builder) {
-    super(builder, { name: 'client', isServer: false })
+  constructor(builder, options) {
+    super(builder, options || { name: 'client', isServer: false })
   }
 
   getFileName(...args) {
     if (this.options.build.analyze) {
       const key = args[0]
       if (['app', 'chunk'].includes(key)) {
-        return '[name].js'
+        return `${this.name === 'modern' ? 'modern-' : ''}[name].js`
       }
     }
     return super.getFileName(...args)
@@ -77,7 +78,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         chunksSortMode: 'dependency'
       }),
       new VueSSRClientPlugin({
-        filename: '../server/vue-ssr-client-manifest.json'
+        filename: `../server/vue-ssr-${this.name}-manifest.json`
       }),
       new webpack.DefinePlugin(this.env())
     )
@@ -97,9 +98,16 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         defaultSizes: 'gzip',
         generateStatsFile: true,
         openAnalyzer: !this.options.build.quiet,
-        reportFilename: path.resolve(statsDir, 'client.html'),
-        statsFilename: path.resolve(statsDir, 'client.json')
+        reportFilename: path.resolve(statsDir, `${this.name}.html`),
+        statsFilename: path.resolve(statsDir, `${this.name}.json`)
       }, this.options.build.analyze)))
+    }
+
+    if (this.options.build.modern) {
+      plugins.push(new ModernModePlugin({
+        targetDir: path.resolve(this.options.buildDir, 'dist', 'client'),
+        isModernBuild: this.name === 'modern'
+      }))
     }
 
     return plugins

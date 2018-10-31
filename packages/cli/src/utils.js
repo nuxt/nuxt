@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
@@ -57,7 +57,7 @@ export async function loadNuxtConfig(argv) {
     port: argv.port || undefined,
     host: argv.hostname || undefined,
     socket: argv['unix-socket'] || undefined
-  }, options.server || {}, nuxtServerConfig(process.env))
+  }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
 }

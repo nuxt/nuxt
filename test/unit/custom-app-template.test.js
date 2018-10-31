@@ -8,10 +8,10 @@ describe('custom-app-template', () => {
     const options = await loadFixture('custom-app-template')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<p>My Template</p>')).toBe(true)
     expect(html.includes('<h1>Custom!</h1>')).toBe(true)
   })
