@@ -7,7 +7,7 @@ import * as fmt from './formatting'
 async function listCommands(_commands) {
   _commands = await Promise.all(
     Object.keys(_commands).map((cmd) => {
-      return _commands[cmd]().then((m) => m.default)
+      return _commands[cmd]().then(m => m.default)
     })
   )
   let maxLength = 0
