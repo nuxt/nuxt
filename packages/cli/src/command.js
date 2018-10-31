@@ -114,9 +114,9 @@ export default class NuxtCommand {
       const i = fmt.indent(maxOptionLength + fmt.optionSpaces - option.length)
       return fmt.foldLines(
         option + i + description,
-        maxCharsPerLine,
-        startSpaces + maxOptionLength + fmt.optionSpaces * 2,
-        startSpaces + fmt.optionSpaces
+        fmt.maxCharsPerLine,
+        fmt.startSpaces + maxOptionLength + fmt.optionSpaces * 2,
+        fmt.startSpaces + fmt.optionSpaces
       )
     }).join('\n')
 

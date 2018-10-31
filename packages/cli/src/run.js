@@ -2,24 +2,22 @@ import consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
-import { loadNuxtConfig } from './utils'
 import * as fmt from './formatting'
 
 function listCommands() {
-  const options = []
-  let maxLength = 0
-
-  const commandsHelp = Object.keys(commands).reduce((name, arr) => {
-    return arr.concat([[commands[name].usage, commands[name].description]])
+  const maxLength = 0
+  const _commands = Object.assign({}, commands)
+  const commandsHelp = Object.keys(_commands).reduce((name, arr) => {
+    return arr.concat([[_commands[name].usage, _commands[name].description]])
   }, [])
 
-  const _cmmds = options.map(([cmd, description]) => {
-    const i = fmt.indent(maxLength + optionSpaces - cmd.length)
+  const _cmmds = commandsHelp.map(([cmd, description]) => {
+    const i = fmt.indent(maxLength + fmt.optionSpaces - cmd.length)
     return fmt.foldLines(
       cmd + i + description,
-      maxCharsPerLine,
-      startSpaces + maxLength + optionSpaces * 2,
-      startSpaces + optionSpaces
+      fmt.maxCharsPerLine,
+      fmt.startSpaces + maxLength + fmt.optionSpaces * 2,
+      fmt.startSpaces + fmt.optionSpaces
     )
   }).join('\n')
 
@@ -45,7 +43,7 @@ export default function run() {
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       listCommands()
-      process.exit(0) 
+      process.exit(0)
     }
     cmd = defaultCommand
   }
