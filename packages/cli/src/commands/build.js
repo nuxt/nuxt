@@ -24,6 +24,17 @@ export default {
       default: true,
       description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
     },
+    modern: {
+      alias: 'm',
+      type: 'boolean',
+      description: 'Build app for modern browsers',
+      prepare(cmd, options, argv) {
+        options.build = options.build || {}
+        if (argv.modern) {
+          options.build.modern = !!argv.modern
+        }
+      }
+    },
     quiet: {
       alias: 'q',
       type: 'boolean',
