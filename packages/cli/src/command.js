@@ -2,7 +2,7 @@ import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
 import * as fmt from './formatting'
-import * from './imports'
+import * as imports from './imports'
 
 export default class NuxtCommand {
   constructor({ name, description, usage, options, run } = {}) {
