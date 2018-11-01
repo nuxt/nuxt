@@ -33,10 +33,9 @@ async function listCommands(_commands) {
 
 export default function run() {
   const defaultCommand = 'dev'
-  const cmds = new Set(Object.keys(commands))
   let cmd = process.argv[2]
 
-  if (cmds.has(cmd)) {
+  if (commands[cmd]) {
     process.argv.splice(2, 1)
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
