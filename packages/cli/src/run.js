@@ -50,9 +50,7 @@ export default function run() {
     dev: cmd === 'dev'
   })
 
-  return commands[cmd]() // eslint-disable-line import/namespace
-    .then(m => m.default)
-    .then(options => NuxtCommand.from(options))
+  return NuxtCommand.load(cmd)
     .then(command => command.run())
     .catch((error) => {
       consola.fatal(error)

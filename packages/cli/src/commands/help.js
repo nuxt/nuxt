@@ -9,11 +9,8 @@ export default {
   async run(cmd) {
     const argv = cmd.getArgv()._
     const name = argv[0] || null
-    const _commands = { ...commands }
-    if (name in _commands) {
-      const command = NuxtCommand.from(
-        await _commands[name]().then(m => m.default)
-      )
+    const command = NuxtCommand.load(name)
+    if (command) {
       command.showHelp()
     } else if (name === null) {
       consola.info(`Please specify a command`)
