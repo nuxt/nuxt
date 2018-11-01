@@ -55,17 +55,17 @@ export default {
     const config = await this.getNuxtConfig(argv, { dev: false })
 
     if (argv.lock) {
-      await this.lock(config.srcDir || config.rootDir)
+      await this.lock(config.buildDir)
     }
-
-    const nuxt = await this.getNuxt(config)
 
     // In analyze mode wait for plugin
     // emitting assets and opening browser
-    if (nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object') {
+    if (config.build.analyze === true ||
+          typeof config.build.analyze === 'object') {
       this.disableForceExit()
     }
+
+    const nuxt = await this.getNuxt(config)
 
     // Setup hooks
     nuxt.hook('error', err => consola.fatal(err))

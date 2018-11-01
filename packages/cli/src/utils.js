@@ -1,9 +1,7 @@
 import path from 'path'
-import { existsSync } from 'fs'
+import fsExtra from 'fs-extra'
 import consola from 'consola'
 import esm from 'esm'
-import defaultsDeep from 'lodash/defaultsDeep'
-import { getDefaultNuxtConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
@@ -17,8 +15,16 @@ const _require = esm(module, {
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
 
-export function getLockPath(dir) {
-  return path.resolve(dir || process.cwd())
+export async function getLockPath(lockPath) {
+  if (lockPath) {
+    if (!fsExtra.existsSync(lockPath)) {
+      await fsExtra.mkdirp(lockPath)
+    }
+
+    return path.resolve(lockPath)
+  } else {
+    return path.resolve(process.cwd(), '.nuxt')
+  }
 }
 
 export const defaultLockOptions = {
@@ -33,7 +39,7 @@ export async function loadNuxtConfig(argv) {
 
   let options = {}
 
-  if (existsSync(nuxtConfigFile)) {
+  if (fsExtra.existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
     options = _require(nuxtConfigFile) || {}
     if (options.default) {
@@ -61,13 +67,6 @@ export async function loadNuxtConfig(argv) {
   // Nuxt Mode
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
-
-  // Server options
-  options.server = defaultsDeep({
-    port: argv.port || undefined,
-    host: argv.hostname || undefined,
-    socket: argv['unix-socket'] || undefined
-  }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
 }

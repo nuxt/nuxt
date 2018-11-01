@@ -18,7 +18,7 @@ export default {
     const nuxt = await this.getNuxt(config)
 
     if (argv.build && argv.lock) {
-      const lockRelease = await this.lock(config.srcDir || config.rootDir, { autoUnlock: false })
+      const lockRelease = await this.lock(config.buildDir, { autoUnlock: false })
       if (lockRelease) {
         nuxt.hook('build:done', () => lockRelease())
       }

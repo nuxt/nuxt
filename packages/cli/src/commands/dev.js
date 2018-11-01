@@ -16,7 +16,7 @@ export default {
     const config = await this.getConfig()
 
     if (this.argv.lock) {
-      await this.lock(config.srcDir || config.rootDir, { autoUnlock: false })
+      await this.lock(config.buildDir, { autoUnlock: false })
     }
 
     this.startDev(config)

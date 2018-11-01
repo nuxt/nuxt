@@ -1,6 +1,7 @@
 import parseArgs from 'minimist'
 import locker from 'proper-lockfile'
 import consola from 'consola'
+import { getNuxtConfig } from '@nuxt/config'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, getLockPath, defaultLockOptions, isPromise } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, maxCharsPerLine } from './formatting'
@@ -76,7 +77,7 @@ export default class NuxtCommand {
   }
 
   async lock(lockPath, options) {
-    const locked = await locker.check(getLockPath(lockPath))
+    const locked = await locker.check(await getLockPath(lockPath))
     if (locked) {
       consola.fatal(`A lock already exists on ${lockPath}, cannot continue`)
     }
@@ -135,7 +136,7 @@ export default class NuxtCommand {
       }
     }
 
-    return options
+    return getNuxtConfig(options)
   }
 
   async getNuxt(options) {
