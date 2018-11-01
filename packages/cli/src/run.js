@@ -34,13 +34,7 @@ async function listCommands(_commands) {
 export default function run() {
   const defaultCommand = 'dev'
 
-  const cmds = new Set([
-    defaultCommand,
-    'build',
-    'start',
-    'generate'
-  ])
-
+  const cmds = Object.keys(commands)
   let cmd = process.argv[2]
 
   if (cmds.has(cmd)) {

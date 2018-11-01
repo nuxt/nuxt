@@ -1,4 +1,5 @@
 import consola from 'consola'
+import commands from '../commands'
 import { common, server } from '../options'
 
 export default {
@@ -6,6 +7,7 @@ export default {
   description: 'Shows help for <command>',
   usage: 'help <command>',
   async run(cmd) {
-    // todo
+    const argv = cmd.getArgv()
+    console.log('argv', argv)
   }
 }
