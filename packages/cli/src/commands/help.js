@@ -3,7 +3,7 @@ import * as commands from '../commands'
 import NuxtCommand from '../command'
 
 export default {
-  name: 'dev',
+  name: 'help',
   description: 'Shows help for <command>',
   usage: 'help <command>',
   async run(cmd) {
