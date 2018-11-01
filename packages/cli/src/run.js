@@ -2,7 +2,7 @@ import consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
-import * as fmt from './formatting'
+import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
 
 async function listCommands(_commands) {
   _commands = await Promise.all(
@@ -19,17 +19,17 @@ async function listCommands(_commands) {
 
   const maxCharsPerLine = process.stdout.columns * 80 / 100
   const _cmmds = commandsHelp.map(([cmd, description]) => {
-    const i = fmt.indent(maxLength + fmt.optionSpaces - cmd.length)
-    return fmt.foldLines(
+    const i = indent(maxLength + optionSpaces - cmd.length)
+    return foldLines(
       cmd + i + description,
       maxCharsPerLine,
-      fmt.startSpaces + maxLength + fmt.optionSpaces * 2,
-      fmt.startSpaces + fmt.optionSpaces
+      startSpaces + maxLength + optionSpaces * 2,
+      startSpaces + optionSpaces
     )
   }).join('\n')
 
-  const usage = fmt.foldLines(`Usage: nuxt <command>`, maxCharsPerLine, fmt.startSpaces)
-  const cmmds = fmt.foldLines(`Commands:`, maxCharsPerLine, fmt.startSpaces) + '\n\n' + _cmmds
+  const usage = foldLines(`Usage: nuxt <command>`, maxCharsPerLine, startSpaces)
+  const cmmds = foldLines(`Commands:`, maxCharsPerLine, startSpaces) + '\n\n' + _cmmds
   process.stdout.write(`${usage}\n\n${cmmds}\n\n`)
 }
 
