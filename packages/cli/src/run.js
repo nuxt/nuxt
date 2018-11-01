@@ -33,7 +33,6 @@ async function listCommands(_commands) {
 
 export default function run() {
   const defaultCommand = 'dev'
-
   const cmds = Object.keys(commands)
   let cmd = process.argv[2]
 
