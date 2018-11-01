@@ -101,15 +101,15 @@ describe('cli/command', () => {
 
   test('builds help text', () => {
     const cmd = new Command({
-      description: 'a very long description that should wrap to the next line because is longer ' +
+      description: 'a very long description that should not wrap to the next line because is not longer ' +
         'than the terminal width',
       usage: 'this is how you do it',
       options: {
         ...allOptions,
         foo: {
           type: 'boolean',
-          description: 'very long option that is longer than the terminal width and ' +
-        'should wrap to the next line while keeping indentation'
+          description: 'very long option that is not longer than the terminal width and ' +
+        'should not wrap to the next line'
         }
       }
     })
