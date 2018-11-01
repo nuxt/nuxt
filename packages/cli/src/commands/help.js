@@ -8,13 +8,19 @@ export default {
   usage: 'help <command>',
   async run(cmd) {
     const argv = cmd.getArgv()._
-    if (argv.length) {
-      const name = argv[0]
+    const name = argv[0] || null
+    if (commands[name]) {
       // eslint-disable-next-line
       const command = NuxtCommand.from(
         await commands[name]().then(m => m.default)
       )
       command.showHelp()
+    } else {
+      if (name === null) {
+        consola.fatal(`Please specify a command`)
+      } else {
+        consola.fatal(`Unknown command: ${name}`)
+      }
     }
   }
 }
