@@ -1,6 +1,6 @@
 import consola from 'consola'
 import * as commands from '../commands'
-// import { common, server } from '../options'
+import NuxtCommand from '../command'
 
 export default {
   name: 'dev',
@@ -9,18 +9,16 @@ export default {
   async run(cmd) {
     const argv = cmd.getArgv()._
     const name = argv[0] || null
-    if (commands[name]) {
-      // eslint-disable-next-line
+    const _commands = { ...commands }
+    if (name in _commands) {
       const command = NuxtCommand.from(
-        await commands[name]().then(m => m.default)
+        await _commands[name]().then(m => m.default)
       )
       command.showHelp()
+    } else if (name === null) {
+      consola.info(`Please specify a command`)
     } else {
-      if (name === null) {
-        consola.fatal(`Please specify a command`)
-      } else {
-        consola.fatal(`Unknown command: ${name}`)
-      }
+      consola.info(`Unknown command: ${name}`)
     }
   }
 }
