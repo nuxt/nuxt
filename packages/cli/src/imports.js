@@ -1,4 +1,23 @@
-export const builder = () => import('@nuxt/builder')
-export const webpack = () => import('@nuxt/webpack')
-export const generator = () => import('@nuxt/generator')
-export const core = () => import('@nuxt/core')
+import consola from 'consola'
+
+function nuxtImport(module, useEdge) {
+  if (useEdge) {
+    const edgeModule = `${module}-edge`
+    try {
+      const modulePath = require.resolve(edgeModule)
+      if (modulePath) {
+        return import(edgeModule)
+      }
+    } catch (err) {}
+
+    consola.warn(`${edgeModule} not found, please install manually\n` +
+      `falling back to ${module}`)
+  }
+
+  return import(module)
+}
+
+export const builder = useEdge => nuxtImport('@nuxt/builder', useEdge)
+export const webpack = useEdge => nuxtImport('@nuxt/webpack', useEdge)
+export const generator = useEdge => nuxtImport('@nuxt/generator', useEdge)
+export const core = useEdge => nuxtImport('@nuxt/core', useEdge)

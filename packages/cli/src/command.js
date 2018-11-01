@@ -55,6 +55,8 @@ export default class NuxtCommand {
       this.showHelp()
     }
 
+    this.useEdge = argv.edge
+
     return argv
   }
 
@@ -76,18 +78,18 @@ export default class NuxtCommand {
   }
 
   async getNuxt(options) {
-    const { Nuxt } = await imports.core()
+    const { Nuxt } = await imports.core(this.useEdge)
     return new Nuxt(options)
   }
 
   async getBuilder(nuxt) {
-    const { Builder } = await imports.builder()
-    const { BundleBuilder } = await imports.webpack()
+    const { Builder } = await imports.builder(this.useEdge)
+    const { BundleBuilder } = await imports.webpack(this.useEdge)
     return new Builder(nuxt, BundleBuilder)
   }
 
   async getGenerator(nuxt) {
-    const { Generator } = await imports.generator()
+    const { Generator } = await imports.generator(this.useEdge)
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
   }

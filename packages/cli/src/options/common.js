@@ -15,6 +15,10 @@ export default {
     default: 'nuxt.config.js',
     description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
   },
+  edge: {
+    type: 'boolean',
+    description: 'Use nuxt-edge packages (not recommended for production use)'
+  },
   version: {
     type: 'boolean',
     description: 'Display the Nuxt version'
