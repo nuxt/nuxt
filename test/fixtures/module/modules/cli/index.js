@@ -1,6 +1,10 @@
 import consola from 'consola'
 
-export const cli = {
+const moduleFunction = function () {
+  consola.info('dummy module')
+}
+
+moduleFunction.cli = {
   name: 'custom-module-cli',
   description: 'CLI commands for custom-module',
   usage: 'nuxt custom-module-cli',
@@ -24,8 +28,4 @@ export const cli = {
       }
     }
   ]
-}
-
-export default function () {
-  consola.info('dummy module')
 }
