@@ -18,8 +18,8 @@ export default class NuxtCommand {
     // So eslint doesn't complain about lookups 
     const _commands = { ...commands }
     if (name in _commands) {
-      await _commands[name]().then(m => m.default)
-      return NuxtCommand.from(_commands[name])
+      const cmd = await _commands[name]().then(m => m.default)
+      return NuxtCommand.from(cmd)
     } else {
       // TODO dynamic module loading
     }

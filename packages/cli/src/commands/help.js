@@ -9,7 +9,7 @@ export default {
   async run(cmd) {
     const argv = cmd.getArgv()._
     const name = argv[0] || null
-    const command = NuxtCommand.load(name)
+    const command = await NuxtCommand.load(name)
     if (command) {
       command.showHelp()
     } else if (name === null) {
