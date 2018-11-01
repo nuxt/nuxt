@@ -9,8 +9,13 @@ import { isPureObject, isUrl, guardDir, isNonEmptyString } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
+  if (_options.__defaultsApplied) {
+    return _options
+  }
+
   // Clone options to prevent unwanted side-effects
   const options = Object.assign({}, _options)
+  options.__defaultsApplied = true
 
   // Normalize options
   if (options.loading === true) {
