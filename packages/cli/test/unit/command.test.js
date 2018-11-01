@@ -4,6 +4,7 @@ import { consola } from '../utils'
 
 jest.mock('@nuxt/core')
 jest.mock('@nuxt/builder')
+jest.mock('@nuxt/webpack')
 jest.mock('@nuxt/generator')
 
 const allOptions = {
@@ -19,7 +20,7 @@ describe('cli/command', () => {
     const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(4)
-    expect(minimistOptions.boolean.length).toBe(4)
+    expect(minimistOptions.boolean.length).toBe(5)
     expect(minimistOptions.alias.c).toBe('config-file')
     expect(minimistOptions.default.c).toBe(common['config-file'].default)
   })
@@ -95,6 +96,36 @@ describe('cli/command', () => {
     const cmd = new Command()
     const generator = await cmd.getGenerator()
 
+    expect(generator.constructor.name).toBe('Generator')
+    expect(typeof generator.generate).toBe('function')
+  })
+
+  test('warns not installed Edge Nuxt instance', async () => {
+    const cmd = new Command()
+    cmd.useEdge = true
+    const nuxt = await cmd.getNuxt()
+
+    expect(consola.warn).toHaveBeenCalled()
+    expect(nuxt.constructor.name).toBe('Nuxt')
+    expect(typeof nuxt.ready).toBe('function')
+  })
+
+  test('warns not installed Edge Builder instance', async () => {
+    const cmd = new Command()
+    cmd.useEdge = true
+    const builder = await cmd.getBuilder()
+
+    expect(consola.warn).toHaveBeenCalled()
+    expect(builder.constructor.name).toBe('Builder')
+    expect(typeof builder.build).toBe('function')
+  })
+
+  test('warns not installed Edge Generator instance', async () => {
+    const cmd = new Command()
+    cmd.useEdge = true
+    const generator = await cmd.getGenerator()
+
+    expect(consola.warn).toHaveBeenCalled()
     expect(generator.constructor.name).toBe('Generator')
     expect(typeof generator.generate).toBe('function')
   })
