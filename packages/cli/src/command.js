@@ -9,7 +9,7 @@ export default class NuxtCommand {
     this.name = name || ''
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Object.assign({}, options)
+    this.options = Object.assign({}, options || {})
     this._run = run
   }
 
