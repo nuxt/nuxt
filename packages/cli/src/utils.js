@@ -2,7 +2,6 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
-import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { getDefaultNuxtConfig } from '@nuxt/config'
 
@@ -61,26 +60,4 @@ export async function loadNuxtConfig(argv) {
   }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
-}
-
-export function indent(count, chr = ' ') {
-  return chr.repeat(count)
-}
-
-export function indentLines(string, spaces, firstLineSpaces) {
-  const lines = Array.isArray(string) ? string : string.split('\n')
-  let s = ''
-  if (lines.length) {
-    const i0 = indent(firstLineSpaces === undefined ? spaces : firstLineSpaces)
-    s = i0 + lines.shift().trim()
-  }
-  if (lines.length) {
-    const i = indent(spaces)
-    s += '\n' + lines.map(l => i + l.trim()).join('\n')
-  }
-  return s
-}
-
-export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
-  return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
 }
