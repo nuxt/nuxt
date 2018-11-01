@@ -2,7 +2,6 @@ import wrapAnsi from 'wrap-ansi'
 
 export const startSpaces = 2
 export const optionSpaces = 2
-export const maxCharsPerLine = 80
 
 // 80% of terminal column width
 export const maxCharsPerLine = (process.stdout.columns || 100) * 80 / 100
