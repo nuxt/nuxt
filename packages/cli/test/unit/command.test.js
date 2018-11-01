@@ -101,8 +101,8 @@ describe('cli/command', () => {
 
   test('builds help text', () => {
     const cmd = new Command({
-      description: 'a very long description that should not wrap to the next ' +
-        'line because is not longer than the terminal width',
+      description: 'a very long description that should wrap to the next line because is longer ' +
+        'than the terminal width',
       usage: 'this is how you do it',
       options: {
         ...allOptions,
