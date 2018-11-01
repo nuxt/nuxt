@@ -11,7 +11,7 @@ describe('basic config defaults', () => {
   test('modulesDir uses /node_modules as default if not set', () => {
     const options = getNuxtConfig({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
-    expect(options.modulesDir.includes(currentNodeModulesDir)).toBe(true)
+    expect(options.modulesDir).toContain(currentNodeModulesDir)
   })
 
   test('vendor has been deprecated', () => {

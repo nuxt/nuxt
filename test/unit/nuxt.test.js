@@ -27,8 +27,8 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('No `pages` directory found')).toBe(true)
-      expect(s.includes('Did you mean to run `nuxt` in the parent (`../`) directory?')).toBe(true)
+      expect(s).toContain('No `pages` directory found')
+      expect(s).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
     })
   })
 
@@ -39,7 +39,7 @@ describe('nuxt', () => {
     await nuxt.server.listen(port, 'localhost')
 
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html.includes('<h2 class="Landscape__Title">')).toBe(true)
+    expect(html).toContain('<h2 class="Landscape__Title">')
     expect(/Landscape__Page__Explanation/.test(html)).toBe(true)
 
     await nuxt.close()
@@ -53,7 +53,7 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('Plugin not found')).toBe(true)
+      expect(s).toContain('Plugin not found')
     })
   })
 
@@ -65,7 +65,7 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('Style Resource not found')).toBe(true)
+      expect(s).toContain('Style Resource not found')
     })
   })
 })

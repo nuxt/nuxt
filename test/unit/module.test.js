@@ -21,14 +21,14 @@ describe('module', () => {
       normalize('fixtures/module/.nuxt/basic.reverse.')
     )).toBe(true)
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html.includes('<h1>TXUN</h1>')).toBe(true)
+    expect(html).toContain('<h1>TXUN</h1>')
   })
 
   test('Layout', async () => {
-    expect(nuxt.options.layouts.layout.includes('layout')).toBe(true)
+    expect(nuxt.options.layouts.layout).toContain('layout')
 
     const { html } = await nuxt.server.renderRoute('/layout')
-    expect(html.includes('<h1>Module Layouts</h1>')).toBe(true)
+    expect(html).toContain('<h1>Module Layouts</h1>')
   })
 
   test('/404 should display the module error layout', async () => {
