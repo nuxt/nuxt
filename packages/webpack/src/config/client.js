@@ -19,7 +19,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.options.build.analyze) {
       const key = args[0]
       if (['app', 'chunk'].includes(key)) {
-        return `${this.name === 'modern' ? 'modern-' : ''}[name].js`
+        return `${this.isModern ? 'modern-' : ''}[name].js`
       }
     }
     return super.getFileName(...args)
@@ -106,7 +106,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.options.build.modern) {
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(this.options.buildDir, 'dist', 'client'),
-        isModernBuild: this.name === 'modern'
+        isModernBuild: this.isModern
       }))
     }
 
@@ -131,6 +131,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
               filename: 'LICENSES'
             },
             terserOptions: {
+              compress: {
+                ecma: this.isModern ? 6 : undefined
+              },
               output: {
                 comments: /^\**!|@preserve|@license|@cc_on/
               }

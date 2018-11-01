@@ -1,6 +1,7 @@
 import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
+import * as fmt from '../../src/formatting'
 
 describe('cli/utils', () => {
   afterEach(() => jest.resetAllMocks())
@@ -96,10 +97,10 @@ describe('cli/utils', () => {
   })
 
   test('indent', () => {
-    expect(utils.indent(4)).toBe('    ')
+    expect(fmt.indent(4)).toBe('    ')
   })
 
   test('indent custom char', () => {
-    expect(utils.indent(4, '-')).toBe('----')
+    expect(fmt.indent(4, '-')).toBe('----')
   })
 })

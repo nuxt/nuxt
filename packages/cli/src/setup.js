@@ -32,7 +32,7 @@ export default function setup({ dev }) {
 
   // Exit process on fatal errors
   /* istanbul ignore next */
-  consola.add({
+  consola.addReporter({
     log(logObj) {
       if (logObj.type === 'fatal') {
         process.stderr.write('Nuxt Fatal Error :(\n')

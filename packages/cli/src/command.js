@@ -2,12 +2,10 @@ import parseArgs from 'minimist'
 import locker from 'proper-lockfile'
 import consola from 'consola'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, getLockPath, defaultLockOptions, indent, foldLines, isPromise } from './utils'
+import { loadNuxtConfig, getLockPath, defaultLockOptions, isPromise } from './utils'
+import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
 import * as imports from './imports'
 
-const startSpaces = 2
-const optionSpaces = 2
-const maxCharsPerLine = 80
 const forceExitAfterSeconds = 5
 
 export default class NuxtCommand {
@@ -171,15 +169,14 @@ export default class NuxtCommand {
       const i = indent(maxOptionLength + optionSpaces - option.length)
       return foldLines(
         option + i + description,
-        maxCharsPerLine,
         startSpaces + maxOptionLength + optionSpaces * 2,
         startSpaces + optionSpaces
       )
     }).join('\n')
 
-    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, maxCharsPerLine, startSpaces)
-    const description = foldLines(this.description, maxCharsPerLine, startSpaces)
-    const opts = foldLines(`Options:`, maxCharsPerLine, startSpaces) + '\n\n' + _opts
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
+    const description = foldLines(this.description, startSpaces)
+    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
     return `${usage}\n\n${description}\n\n${opts}\n\n`
   }
