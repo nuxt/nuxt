@@ -5,10 +5,6 @@ describe('missing-pages-dir', () => {
   buildFixture('missing-pages-dir', (builder) => {
     const options = builder.nuxt.options
     expect(consola.warn).toHaveBeenCalledTimes(1)
-    expect(consola.warn.mock.calls).toMatchObject([
-      [
-        `No \`${options.dir.pages}\` directory found in ${options.srcDir}. Using the default built-in page.\n`
-      ]
-    ])
+    expect(consola.warn).toHaveBeenCalledWith(`No \`${options.dir.pages}\` directory found in ${options.srcDir}. Using the default built-in page.`)
   })
 })

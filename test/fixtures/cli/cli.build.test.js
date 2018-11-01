@@ -15,7 +15,7 @@ describe('cli build', () => {
 
   test('nuxt build -> error config', async () => {
     await expect(execify(`node -r esm ${nuxtBin} build ${rootDir} -c config.js`)).rejects.toMatchObject({
-      stdout: expect.stringContaining('Could not load config file: config.js')
+      stderr: expect.stringContaining('Could not load config file: config.js')
     })
   })
 })
