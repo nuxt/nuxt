@@ -5,6 +5,26 @@ import consola from 'consola'
 
 import Package from './package.js'
 
+const useCjs = new Set([
+  '@nuxt/cli'
+])
+
+const stub = {
+  es: `export * from '../src/index'`,
+  cjs: `const esm = require('esm')
+
+const _require = esm(module, {
+  cache: false,
+  cjs: {
+    cache: true,
+    vars: true,
+    namedExports: true
+  }
+})
+
+module.exports = _require('../src/index')
+`}
+
 async function main() {
   // Read package at current directory
   const rootPackage = new Package()
@@ -18,7 +38,7 @@ async function main() {
     consola.info(pkg.pkg.main)
     const distMain = pkg.resolvePath(pkg.pkg.main)
     await fs.mkdirp(path.dirname(distMain))
-    await fs.writeFile(distMain, `export * from '../src/index'`)
+    await fs.writeFile(distMain, useCjs.has(pkg.pkg.name) ? stub.cjs : stub.es)
   }
 }
 
