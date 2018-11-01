@@ -1,6 +1,9 @@
 import consola from 'consola'
+import { interactiveEdgeInstall } from './utils'
 
-function nuxtImport(module, useEdge) {
+let askedForInstall = false
+
+async function nuxtImport(module, useEdge) {
   if (useEdge) {
     const edgeModule = `${module}-edge`
     try {
@@ -9,6 +12,14 @@ function nuxtImport(module, useEdge) {
         return import(edgeModule)
       }
     } catch (err) {}
+
+    if (!askedForInstall) {
+      askedForInstall = true
+
+      await interactiveEdgeInstall()
+
+      return nuxtImport(module, useEdge)
+    }
 
     consola.warn(`${edgeModule} not found, please install manually\n` +
       `falling back to ${module}`)
