@@ -26,7 +26,7 @@ async function listCommands(_commands) {
     )
   }).join('\n')
 
-  const usage = foldLines(`Usage: nuxt <command>`, startSpaces)
+  const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
   const cmmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmmds
   process.stdout.write(`${usage}\n\n${cmmds}\n\n`)
 }
