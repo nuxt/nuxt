@@ -11,9 +11,8 @@ export default {
     ...common,
     ...server
   },
+  forceExit: false,
   async run() {
-    this.disableForceExit()
-
     const argv = this.getArgv()
 
     // Create production build when calling `nuxt build`

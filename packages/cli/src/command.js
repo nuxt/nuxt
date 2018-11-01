@@ -3,19 +3,27 @@ import locker from 'proper-lockfile'
 import consola from 'consola'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, getLockPath, defaultLockOptions, isPromise } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
+import { indent, foldLines, startSpaces, optionSpaces, maxCharsPerLine } from './formatting'
 import * as imports from './imports'
 
 const forceExitAfterSeconds = 5
 
 export default class NuxtCommand {
-  constructor({ name, description, usage, options, run, forceExit } = {}) {
-    this.name = name || ''
-    this.description = description || ''
-    this.usage = usage || ''
-    this.options = Object.assign({}, options)
-    this._run = run
-    this.forceExit = typeof forceExit === 'undefined' ? true : forceExit
+  constructor(cmd = {}) {
+    if (!cmd.run) {
+      consola.fatal(`Run method not found, a command should at least export a run method`)
+    }
+
+    this._run = cmd.run
+    delete cmd.run
+
+    Object.assign(this, {
+      name: '',
+      description: '',
+      usage: '',
+      options: {},
+      forceExit: true
+    }, cmd)
   }
 
   static from(options) {
@@ -106,7 +114,7 @@ export default class NuxtCommand {
             let msg = `The command 'nuxt ${this.name}' finished but Nuxt did not exit after ${forceExitAfterSeconds}s\n`
             msg += 'This is most likely not caused by a bug in Nuxt\n'
             msg += 'Make sure to wait for all timers you set and stop all listeners, also check any plugin, module, etc you import\n'
-            msg += 'If you are developping a custom Nuxt command, call this.disableForceExit() in your run method to prevent the forced exit\n'
+            msg += 'If you are developping a custom Nuxt command, set forceExit: false in your command export to prevent the forced exit\n'
             msg += 'Force exiting'
             foldLines(msg, maxCharsPerLine).split('\n').forEach(line => consola.warn(line))
             process.exit(0)
