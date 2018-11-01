@@ -25,6 +25,6 @@ export function indentLines(string, spaces, firstLineSpaces) {
 }
 
 export function foldLines(string, spaces, firstLineSpaces) {
-  const maxCharsPerLine = process.stdout.columns * terminalWidthPercentage / 100
+  const maxCharsPerLine = (process.stdout.columns || 80) * terminalWidthPercentage / 100
   return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
 }
