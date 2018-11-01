@@ -61,10 +61,7 @@ export default class Builder {
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn({
-          message: 'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.',
-          badge: true
-        })
+        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
       })
     }
 
@@ -125,8 +122,7 @@ export default class Builder {
       } else if (pluginFiles.length > 1) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
+          additional: pluginFiles.join('\n')
         })
       }
 
@@ -152,11 +148,7 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info({
-      message: 'Building project',
-      badge: true,
-      clear: !this.options.dev
-    })
+    consola.info('Building project')
 
     // Wait for nuxt ready
     await this.nuxt.ready()
@@ -175,12 +167,7 @@ export default class Builder {
           )
         } else {
           this._defaultPage = true
-          consola.warn({
-            message: `No \`${this.options.dir.pages}\` directory found in ${dir}.`,
-            additional: 'Using the default built-in page.\n',
-            additionalStyle: 'yellowBright',
-            badge: true
-          })
+          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
         }
       }
     }

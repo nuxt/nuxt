@@ -9,7 +9,7 @@
   "main": "dist/common.js",
   "dependencies": {
     "@nuxt/config": "^2.2.0",
-    "consola": "^1.4.4",
+    "consola": "^2.0.0-1",
     "lodash": "^4.17.11"
   },
   "publishConfig": {
