@@ -4,6 +4,8 @@ export const startSpaces = 2
 export const optionSpaces = 2
 export const maxCharsPerLine = 80
 
+const terminalWidthPercentage = 80
+
 export function indent(count, chr = ' ') {
   return chr.repeat(count)
 }
@@ -22,6 +24,7 @@ export function indentLines(string, spaces, firstLineSpaces) {
   return s
 }
 
-export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
+export function foldLines(string, spaces, firstLineSpaces) {
+  const maxCharsPerLine = process.stdout.columns * terminalWidthPercentage / 100
   return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
 }

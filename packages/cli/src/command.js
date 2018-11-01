@@ -1,7 +1,7 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
-import * as fmt from './formatting'
+import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -111,18 +111,17 @@ export default class NuxtCommand {
     }
 
     const _opts = options.map(([option, description]) => {
-      const i = fmt.indent(maxOptionLength + fmt.optionSpaces - option.length)
-      return fmt.foldLines(
+      const i = indent(maxOptionLength + optionSpaces - option.length)
+      return foldLines(
         option + i + description,
-        fmt.maxCharsPerLine,
-        fmt.startSpaces + maxOptionLength + fmt.optionSpaces * 2,
-        fmt.startSpaces + fmt.optionSpaces
+        startSpaces + maxOptionLength + optionSpaces * 2,
+        startSpaces + optionSpaces
       )
     }).join('\n')
 
-    const usage = fmt.foldLines(`Usage: nuxt ${this.usage} [options]`, fmt.maxCharsPerLine, fmt.startSpaces)
-    const description = fmt.foldLines(this.description, fmt.maxCharsPerLine, fmt.startSpaces)
-    const opts = fmt.foldLines(`Options:`, fmt.maxCharsPerLine, fmt.startSpaces) + '\n\n' + _opts
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
+    const description = foldLines(this.description, startSpaces)
+    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
     return `${usage}\n\n${description}\n\n${opts}\n\n`
   }
