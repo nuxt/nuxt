@@ -29,3 +29,5 @@ moduleFunction.cli = {
     }
   ]
 }
+
+export default moduleFunction
