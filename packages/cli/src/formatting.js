@@ -24,6 +24,6 @@ export function indentLines(string, spaces, firstLineSpaces) {
   return s
 }
 
-export function foldLines(string, spaces, firstLineSpaces) {
+export function foldLines(string, spaces, firstLineSpaces, maxCharsPerLine) {
   return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
 }
