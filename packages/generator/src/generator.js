@@ -31,11 +31,7 @@ export default class Generator {
 
     const routes = await this.initRoutes()
 
-    consola.info({
-      message: 'Generating pages',
-      badge: true,
-      clear: true
-    })
+    consola.info('Generating pages')
 
     const errors = await this.generateRoutes(routes)
 

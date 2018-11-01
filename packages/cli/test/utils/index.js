@@ -4,7 +4,7 @@ export { NuxtCommand } from '../../src'
 
 jest.mock('consola')
 
-consola.add = jest.fn()
+consola.addReporter = jest.fn()
 
 export {
   consola
