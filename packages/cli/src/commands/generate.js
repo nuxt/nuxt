@@ -1,20 +1,24 @@
 import consola from 'consola'
-import NuxtCommand from '../command'
+import { common } from '../options'
 
 export default {
   name: 'generate',
-  async run() {
-    const nuxtCmd = new NuxtCommand({
-      description: 'Generate a static web application (server-rendered)',
-      usage: 'generate <dir>',
-      options: [ 'build' ]
-    })
+  description: 'Generate a static web application (server-rendered)',
+  usage: 'generate <dir>',
+  options: {
+    ...common,
+    build: {
+      type: 'boolean',
+      default: true,
+      description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
+    }
+  },
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
-    const argv = nuxtCmd.getArgv()
-
-    const generator = await nuxtCmd.getGenerator(
-      await nuxtCmd.getNuxt(
-        await nuxtCmd.getNuxtConfig(argv, { dev: false })
+    const generator = await cmd.getGenerator(
+      await cmd.getNuxt(
+        await cmd.getNuxtConfig(argv, { dev: false })
       )
     )
 

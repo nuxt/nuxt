@@ -10,7 +10,7 @@
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*",
-    "dev": "yarn build --watch",
+    "dev": "node -r esm ./scripts/dev",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
@@ -20,7 +20,7 @@
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
-    "postinstall": "lerna link && node -r esm ./scripts/dev"
+    "postinstall": "lerna link && yarn dev"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -31,7 +31,7 @@
     "babel-jest": "^23.6.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "codecov": "^3.1.0",
-    "consola": "^1.4.4",
+    "consola": "^2.0.0-1",
     "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.8.0",
@@ -39,7 +39,7 @@
     "eslint-multiplexer": "^1.0.2",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jest": "^21.26.2",
-    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.0.0-beta.3",
@@ -50,7 +50,8 @@
     "get-port": "^4.0.0",
     "glob": "^7.1.3",
     "jest": "^23.6.0",
-    "jsdom": "^12.2.0",
+    "jest-junit": "^5.2.0",
+    "jsdom": "^13.0.0",
     "klaw-sync": "^6.0.0",
     "lerna": "^3.4.3",
     "lodash": "^4.17.11",
@@ -68,6 +69,11 @@
     "rollup-plugin-license": "^0.7.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
-    "sort-package-json": "^1.16.0"
+    "sort-package-json": "^1.16.0",
+    "vue-jest": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
   }
 }

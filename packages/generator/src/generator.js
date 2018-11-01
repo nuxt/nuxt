@@ -31,11 +31,7 @@ export default class Generator {
 
     const routes = await this.initRoutes()
 
-    consola.info({
-      message: 'Generating pages',
-      badge: true,
-      clear: true
-    })
+    consola.info('Generating pages')
 
     const errors = await this.generateRoutes(routes)
 
@@ -153,7 +149,7 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    const { html } = await this.nuxt.renderRoute('/', { spa: true })
+    const { html } = await this.nuxt.server.renderRoute('/', { spa: true })
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
   }
 
@@ -201,7 +197,7 @@ export default class Generator {
     const pageErrors = []
 
     try {
-      const res = await this.nuxt.renderer.renderRoute(route, {
+      const res = await this.nuxt.server.renderRoute(route, {
         _generate: true,
         payload
       })

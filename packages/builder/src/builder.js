@@ -20,8 +20,6 @@ import values from 'lodash/values'
 import devalue from '@nuxtjs/devalue'
 
 import {
-  Options,
-  BuildContext,
   r,
   wp,
   wChunk,
@@ -32,6 +30,8 @@ import {
   stripWhitespace,
   isString
 } from '@nuxt/common'
+
+import BuildContext from './context'
 
 const glob = pify(Glob)
 
@@ -61,15 +61,12 @@ export default class Builder {
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn({
-          message: 'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.',
-          badge: true
-        })
+        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
       })
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/app'
+    this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }
@@ -125,8 +122,7 @@ export default class Builder {
       } else if (pluginFiles.length > 1) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
+          additional: pluginFiles.join('\n')
         })
       }
 
@@ -152,11 +148,7 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info({
-      message: 'Building project',
-      badge: true,
-      clear: !this.options.dev
-    })
+    consola.info('Building project')
 
     // Wait for nuxt ready
     await this.nuxt.ready()
@@ -175,12 +167,7 @@ export default class Builder {
           )
         } else {
           this._defaultPage = true
-          consola.warn({
-            message: `No \`${this.options.dir.pages}\` directory found in ${dir}.`,
-            additional: 'Using the default built-in page.\n',
-            additionalStyle: 'yellowBright',
-            badge: true
-          })
+          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
         }
       }
     }
@@ -476,16 +463,16 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  // TODO: remove ignore when generateConfig enabled again
-  async generateConfig() /* istanbul ignore next */ {
-    const config = path.resolve(this.options.buildDir, 'build.config.js')
-    const options = omit(this.options, Options.unsafeKeys)
-    await fsExtra.writeFile(
-      config,
-      `export default ${JSON.stringify(options, null, '  ')}`,
-      'utf8'
-    )
-  }
+  // TODO: Uncomment when generateConfig enabled again
+  // async generateConfig() /* istanbul ignore next */ {
+  //   const config = path.resolve(this.options.buildDir, 'build.config.js')
+  //   const options = omit(this.options, Options.unsafeKeys)
+  //   await fsExtra.writeFile(
+  //     config,
+  //     `export default ${JSON.stringify(options, null, '  ')}`,
+  //     'utf8'
+  //   )
+  // }
 
   watchClient() {
     const src = this.options.srcDir

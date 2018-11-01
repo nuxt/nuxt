@@ -17,6 +17,7 @@ export default class WebpackBaseConfig {
   constructor(builder, options) {
     this.name = options.name
     this.isServer = options.isServer
+    this.isModern = options.isModern
     this.builder = builder
     this.nuxt = builder.context.nuxt
     this.isStatic = builder.context.isStatic
@@ -25,11 +26,20 @@ export default class WebpackBaseConfig {
     this.loaders = this.options.build.loaders
   }
 
+  get colors() {
+    return {
+      client: 'green',
+      server: 'orange',
+      modern: 'blue'
+    }
+  }
+
   get nuxtEnv() {
     return {
       isDev: this.options.dev,
       isServer: this.isServer,
-      isClient: !this.isServer
+      isClient: !this.isServer,
+      isModern: !!this.isModern
     }
   }
 
@@ -249,15 +259,15 @@ export default class WebpackBaseConfig {
     // Build progress indicator
     plugins.push(new WebpackBar({
       profile: this.options.build.profile,
-      name: this.isServer ? 'server' : 'client',
-      color: this.isServer ? 'orange' : 'green',
+      name: this.name,
+      color: this.colors[this.name],
       compiledIn: false,
       done: (states) => {
         if (this.options.dev) {
           const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
 
           if (!hasErrors) {
-            this.nuxt.showReady(false)
+            this.nuxt.server.showReady(false)
           }
         }
       }

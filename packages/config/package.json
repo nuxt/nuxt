@@ -8,7 +8,8 @@
   ],
   "main": "dist/config.js",
   "dependencies": {
-    "consola": "^1.4.4",
+    "@nuxt/common": "^2.2.0",
+    "consola": "^2.0.0-1",
     "lodash": "^4.17.11",
     "std-env": "^2.0.2"
   },

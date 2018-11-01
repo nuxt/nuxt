@@ -2,9 +2,8 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
-import wrapAnsi from 'wrap-ansi'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 
 const _require = esm(module, {
   cache: false,
@@ -58,29 +57,7 @@ export async function loadNuxtConfig(argv) {
     port: argv.port || undefined,
     host: argv.hostname || undefined,
     socket: argv['unix-socket'] || undefined
-  }, options.server || {}, nuxtServerConfig(process.env))
+  }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
-}
-
-export function indent(count, chr = ' ') {
-  return chr.repeat(count)
-}
-
-export function indentLines(string, spaces, firstLineSpaces) {
-  const lines = Array.isArray(string) ? string : string.split('\n')
-  let s = ''
-  if (lines.length) {
-    const i0 = indent(firstLineSpaces === undefined ? spaces : firstLineSpaces)
-    s = i0 + lines.shift()
-  }
-  if (lines.length) {
-    const i = indent(spaces)
-    s += '\n' + lines.map(l => i + l.trim()).join('\n')
-  }
-  return s
-}
-
-export function foldLines(string, maxCharsPerLine, spaces, firstLineSpaces) {
-  return indentLines(wrapAnsi(string, maxCharsPerLine), spaces, firstLineSpaces)
 }

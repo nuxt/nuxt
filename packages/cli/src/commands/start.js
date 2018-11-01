@@ -1,22 +1,22 @@
 import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
-import NuxtCommand from '../command'
+import { common, server } from '../options'
 
 export default {
   name: 'start',
-  async run() {
-    const nuxtCmd = new NuxtCommand({
-      description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
-      usage: 'start <dir> -p <port number> -H <hostname>',
-      options: [ 'hostname', 'port', 'unix-socket' ]
-    })
-
-    const argv = nuxtCmd.getArgv()
+  description: 'Start the application in production mode (the application should be compiled with `nuxt build` first)',
+  usage: 'start <dir>',
+  options: {
+    ...common,
+    ...server
+  },
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
     // Create production build when calling `nuxt build`
-    const nuxt = await nuxtCmd.getNuxt(
-      await nuxtCmd.getNuxtConfig(argv, { dev: false })
+    const nuxt = await cmd.getNuxt(
+      await cmd.getNuxtConfig(argv, { dev: false })
     )
 
     // Setup hooks
@@ -45,8 +45,8 @@ export default {
       }
     }
 
-    return nuxt.listen().then(() => {
-      nuxt.showReady(false)
+    return nuxt.server.listen().then(() => {
+      nuxt.server.showReady(false)
     })
   }
 }

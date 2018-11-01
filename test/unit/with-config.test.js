@@ -11,53 +11,53 @@ describe('with-config', () => {
     const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
   test('/ (asset name for analyze mode)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/app.js"')
   })
 
   test.skip('/ (global styles inlined)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('.global-css-selector')
   })
 
   test.skip('/ (preload fonts)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes(
       '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
     )).toBe(true)
   })
 
   test('/ (styleResources styles inlined)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('.pre-process-selector')
   })
 
   test('/ (custom app.html)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<p>Made by Nuxt.js team</p>')).toBe(true)
   })
 
   test('/ (custom build.publicPath)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('<script src="/test/orion/')).toBe(true)
   })
 
   test('/ (custom postcss.config.js)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html.includes('::-webkit-input-placeholder')).toBe(true)
   })
 
   test('/test/ (custom globalName)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
     const html = window.document.body.innerHTML
     expect(html.includes('id="custom-nuxt-id">')).toBe(true)
     expect(html.includes('id="__nuxt">')).toBe(false)
@@ -68,7 +68,7 @@ describe('with-config', () => {
   })
 
   test('/test/ (router base)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('default')
@@ -79,7 +79,7 @@ describe('with-config', () => {
   })
 
   test('/test/about (custom layout)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/about'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/about'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('custom')
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
@@ -87,7 +87,7 @@ describe('with-config', () => {
   })
 
   test('/test/desktop (custom layout in desktop folder)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/desktop'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('desktop/default')
     expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
@@ -95,7 +95,7 @@ describe('with-config', () => {
   })
 
   test('/test/mobile (custom layout in mobile folder)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/mobile'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('mobile/default')
     expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
@@ -103,7 +103,7 @@ describe('with-config', () => {
   })
 
   test('/test/env', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/env'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/env'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Custom env layout</h1>')).toBe(true)
     expect(html.includes('"bool": true')).toBe(true)
@@ -117,19 +117,19 @@ describe('with-config', () => {
   })
 
   test('/test/error', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/error'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/error'))
     const html = window.document.body.innerHTML
     expect(html.includes('Error page')).toBe(true)
   })
 
   test('/test/user-agent', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/user-agent'))
     const html = window.document.body.innerHTML
     expect(html.includes('<pre>Mozilla')).toBe(true)
   })
 
   test('/test/about-bis (added with extendRoutes)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/about-bis'))
     const html = window.document.body.innerHTML
     expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
     expect(html.includes('<h1>About page</h1>')).toBe(true)
@@ -141,7 +141,7 @@ describe('with-config', () => {
   })
 
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/redirect/about-bis'))
     const windowHref = window.location.href
     expect(windowHref.includes('/test/about-bis')).toBe(true)
 
@@ -173,7 +173,7 @@ describe('with-config', () => {
       virtualConsole: new jsdom.VirtualConsole().sendTo({ error: fakeErrorLog })
     }
     try {
-      await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)
+      await nuxt.server.renderAndGetWindow(url('/test/error'), mockOptions)
     } catch (e) {}
     expect(mockOptions.beforeParse).toHaveBeenCalled()
     expect(fakeErrorLog).toHaveBeenCalled()
@@ -190,8 +190,8 @@ describe('server config', () => {
     const config = await loadFixture('with-config')
     config.server.port = port = await getPort()
     nuxt = new Nuxt(config)
-    await nuxt.listen()
-    await nuxt.renderAndGetWindow(url('/test/'))
+    await nuxt.server.listen()
+    await nuxt.server.renderAndGetWindow(url('/test/'))
   })
   afterAll(async () => {
     await nuxt.close()

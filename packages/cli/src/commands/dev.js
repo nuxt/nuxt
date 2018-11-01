@@ -1,16 +1,16 @@
 import consola from 'consola'
-import NuxtCommand from '../command'
+import { common, server } from '../options'
 
 export default {
   name: 'dev',
-  async run() {
-    const nuxtCmd = new NuxtCommand({
-      description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
-      usage: 'dev <dir> -p <port number> -H <hostname>',
-      options: [ 'hostname', 'port' ]
-    })
-
-    const argv = nuxtCmd.getArgv()
+  description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
+  usage: 'dev <dir>',
+  options: {
+    ...common,
+    ...server
+  },
+  async run(cmd) {
+    const argv = cmd.getArgv()
 
     const errorHandler = (err, instance) => {
       instance && instance.builder.watchServer()
@@ -22,10 +22,10 @@ export default {
       let nuxt, builder
 
       try {
-        nuxt = await nuxtCmd.getNuxt(
-          await nuxtCmd.getNuxtConfig(argv, { dev: true })
+        nuxt = await cmd.getNuxt(
+          await cmd.getNuxtConfig(argv, { dev: true })
         )
-        builder = await nuxtCmd.getBuilder(nuxt)
+        builder = await cmd.getBuilder(nuxt)
         nuxt.hook('watch:fileChanged', async (builder, fname) => {
           consola.debug(`[${fname}] changed, Rebuilding the app...`)
           await startDev({ nuxt: builder.nuxt, builder })
@@ -48,9 +48,9 @@ export default {
           })
           .then(() => oldInstance && oldInstance.nuxt.close())
           // Start listening
-          .then(() => nuxt.listen())
+          .then(() => nuxt.server.listen())
           // Show ready message first time, others will be shown through WebpackBar
-          .then(() => !oldInstance && nuxt.showReady(false))
+          .then(() => !oldInstance && nuxt.server.showReady(false))
           .then(() => builder.watchServer())
           // Handle errors
           .catch(err => errorHandler(err, { builder, nuxt }))

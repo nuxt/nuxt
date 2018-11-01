@@ -1,47 +1,23 @@
 import parseArgs from 'minimist'
-import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import * as _Options from './options'
+import { loadNuxtConfig } from './utils'
+import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
 import * as imports from './imports'
 
-const startSpaces = 6
-const optionSpaces = 2
-const maxCharsPerLine = 80
-const Options = { ..._Options }
-
 export default class NuxtCommand {
-  constructor({ name, description, usage, options, external, sliceAt } = {}) {
-    if (external) {
-      this.setupExternal(external)
-    } else {
-      this.sliceAt = typeof sliceAt === 'undefined' ? 2 : sliceAt
-      this.description = description || ''
-      this.usage = usage || ''
-      this._calcOptions()
-    }
+  constructor({ name, description, usage, options, run } = {}) {
+    this.name = name || ''
+    this.description = description || ''
+    this.usage = usage || ''
+    this.options = Object.assign({}, options)
+    this._run = run
   }
 
-  _calcCommands(commands) {
-    this.commands = commands.map((command) => {
-      command.sliceAt = this.sliceAt + 1
-      return command
-    })
-  }
-
-  _calcOptions(options) {
-    let _options = {}
-    if (typeof options === 'object') {
-      this.customOptions = options
-      _options = Object.assign({}, options)
-    } else if (Array.isArray(options)) {
-      _options = options
-    } else if (this.name in Options) {
-      _options = Object.assign({}, Options[name])
+  static from(options) {
+    if (options instanceof NuxtCommand) {
+      return options
     }
-    this.options = Array.isArray(_options)
-      ? _options.concat(Object.keys(Options.common))
-      : Object.keys(Object.assign(_options, Options.common))
+    return new NuxtCommand(options)
   }
 
   _getMinimistOptions() {
@@ -52,49 +28,26 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (let option of this.options) {
-      option = Options[this.name][option] || Options.common[option] || this.customOptions
-      if (option) {
-        if (option.alias) {
-          minimistOptions.alias[option.alias] = name
-        }
-        if (option.type) {
-          minimistOptions[option.type].push(option.alias || name)
-        }
-        if (option.default) {
-          minimistOptions.default[option.alias || name] = option.default
-        }
+    for (const name of Object.keys(this.options)) {
+      const option = this.options[name]
+
+      if (option.alias) {
+        minimistOptions.alias[option.alias] = name
+      }
+      if (option.type) {
+        minimistOptions[option.type].push(option.alias || name)
+      }
+      if (option.default) {
+        minimistOptions.default[option.alias || name] = option.default
       }
     }
 
     return minimistOptions
   }
 
-  setupExternal(external) {
-    this.sliceAt = 3
-    this.description = external.description
-    this.usage = `${this.name} ${this.external.name} <command>`
-    this._calcCommands()
-    this._calcOptions(this.external.options)
-    this.isExternal = true
-  }
-
-  run() {
-    const commandName = process.argv[this.sliceAt - 1]
-    const command = this.commands.find(c => c.name === commandName)
-    const nuxtCommand = NuxtCommand({
-      name: command.name,
-      description: command.description,
-      command: command.usage,
-      options: command.options,
-      sliceAt: this.sliceAt + 1
-    })
-    return this.commands[command].run(nuxtCommand)
-  }
-
   getArgv(args) {
     const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(this.sliceAt), minimistOptions)
+    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
 
     if (argv.version) {
       this.showVersion()
@@ -105,13 +58,17 @@ export default class NuxtCommand {
     return argv
   }
 
+  run() {
+    return this._run(this)
+  }
+
   async getNuxtConfig(argv, extraOptions) {
     const config = await loadNuxtConfig(argv)
     const options = Object.assign(config, extraOptions || {})
 
-    for (const name of this.options) {
-      if (Options[name].handle) {
-        Options[name].handle(options, argv)
+    for (const name of Object.keys(this.options)) {
+      if (this.options[name].prepare) {
+        this.options[name].prepare(this, options, argv)
       }
     }
 
@@ -137,38 +94,36 @@ export default class NuxtCommand {
 
   _getHelp() {
     const options = []
-
     let maxOptionLength = 0
-    // For consistency Options determines order
-    for (const name in Options) {
-      const option = Options[name]
-      if (this.options.includes(name)) {
-        let optionHelp = '--'
-        optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
-        optionHelp += name
-        if (option.alias) {
-          optionHelp += `, -${option.alias}`
-        }
 
-        maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-        options.push([ optionHelp, option.description ])
+    for (const name in this.options) {
+      const option = this.options[name]
+
+      let optionHelp = '--'
+      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += name
+      if (option.alias) {
+        optionHelp += `, -${option.alias}`
       }
+
+      maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
+      options.push([ optionHelp, option.description ])
     }
 
-    const optionStr = options.map(([option, description]) => {
-      const line = option +
-        indent(maxOptionLength + optionSpaces - option.length) +
-        wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
-      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces)
+    const _opts = options.map(([option, description]) => {
+      const i = indent(maxOptionLength + optionSpaces - option.length)
+      return foldLines(
+        option + i + description,
+        startSpaces + maxOptionLength + optionSpaces * 2,
+        startSpaces + optionSpaces
+      )
     }).join('\n')
 
-    const description = foldLines(this.description, maxCharsPerLine, startSpaces)
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
+    const description = foldLines(this.description, startSpaces)
+    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
-    return `
-    Description\n${description}
-    Usage
-      $ nuxt ${this.usage}
-    Options\n${optionStr}\n\n`
+    return `${usage}\n\n${description}\n\n${opts}\n\n`
   }
 
   showVersion() {

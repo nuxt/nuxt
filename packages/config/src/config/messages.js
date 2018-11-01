@@ -1,4 +1,4 @@
-export default {
+export default () => ({
   loading: 'Loading...',
   error_404: 'This page could not be found',
   server_error: 'Server error',
@@ -9,4 +9,4 @@ export default {
   client_error: 'Error',
   client_error_details:
     'An error occurred while rendering the page. Check developer tools console for details.'
-}
+})

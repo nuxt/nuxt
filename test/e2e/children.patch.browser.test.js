@@ -14,7 +14,7 @@ describe('children patch (browser)', () => {
     const options = await loadFixture('children')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Start browser', async () => {

@@ -5,17 +5,10 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
-import { NuxtConfig, Modes } from '@nuxt/config'
-import { isPureObject, isUrl, guardDir, isString } from './utils'
+import { isPureObject, isUrl, guardDir, isNonEmptyString } from '@nuxt/common'
+import { getDefaultNuxtConfig } from './config'
 
-// hasValue utility
-const hasValue = v => typeof v === 'string' && v
-
-const Options = {}
-
-export default Options
-
-Options.from = function (_options) {
+export function getNuxtConfig(_options) {
   // Clone options to prevent unwanted side-effects
   const options = Object.assign({}, _options)
 
@@ -43,12 +36,12 @@ Options.from = function (_options) {
     options.extensions = [options.extensions]
   }
 
-  options.globalName = (isString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
+  options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
     : `nuxt`
 
   // Resolve rootDir
-  options.rootDir = hasValue(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
+  options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
 
   // Apply defaults by ${buildDir}/dist/build.config.js
   // TODO: Unsafe operation.
@@ -59,11 +52,13 @@ Options.from = function (_options) {
   // }
 
   // Apply defaults
-  defaultsDeep(options, NuxtConfig)
+  const nuxtConfig = getDefaultNuxtConfig()
+  nuxtConfig.build._publicPath = nuxtConfig.build.publicPath
+  defaultsDeep(options, nuxtConfig)
 
   // Check srcDir and generate.dir excistence
-  const hasSrcDir = hasValue(options.srcDir)
-  const hasGenerateDir = hasValue(options.generate.dir)
+  const hasSrcDir = isNonEmptyString(options.srcDir)
+  const hasGenerateDir = isNonEmptyString(options.generate.dir)
 
   // Resolve srcDir
   options.srcDir = hasSrcDir
@@ -97,7 +92,7 @@ Options.from = function (_options) {
   // Populate modulesDir
   options.modulesDir = []
     .concat(options.modulesDir)
-    .concat(path.join(options.nuxtDir, 'node_modules')).filter(hasValue)
+    .concat(path.join(options.nuxtDir, 'node_modules')).filter(isNonEmptyString)
     .map(dir => path.resolve(options.rootDir, dir))
 
   const mandatoryExtensions = ['js', 'mjs']
@@ -119,7 +114,7 @@ Options.from = function (_options) {
   // Ignore publicPath on dev
   /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
-    options.build.publicPath = NuxtConfig.build.publicPath
+    options.build.publicPath = options.build._publicPath
   }
 
   // If store defined, update store options to true unless explicitly disabled
@@ -218,7 +213,7 @@ Options.from = function (_options) {
   }
 
   // Apply mode preset
-  const modePreset = Modes[options.mode || 'universal'] || Modes.universal
+  const modePreset = options.modes[options.mode || 'universal']
   defaultsDeep(options, modePreset)
 
   // If no server-side rendering, add appear true transition

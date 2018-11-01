@@ -25,10 +25,9 @@ export default function rollupConfig({
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
     output: {
-      format: 'cjs',
-      sourcemap: false,
       file: `${pkg.name.replace('-edge', '')}.js`,
-      dir: path.resolve(rootDir, 'dist')
+      dir: path.resolve(rootDir, 'dist'),
+      format: 'cjs'
     },
     preferConst: true,
     external: [

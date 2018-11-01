@@ -1,169 +1,147 @@
-// import Command from '../../src/command'
-// import options from '../../src/options'
-// import { consola } from '../utils'
+import Command from '../../src/command'
+import { common, server } from '../../src/options'
+import { consola } from '../utils'
 
-// jest.mock('@nuxt/core')
-// jest.mock('@nuxt/builder')
-// jest.mock('@nuxt/generator')
+jest.mock('@nuxt/core')
+jest.mock('@nuxt/builder')
+jest.mock('@nuxt/generator')
 
-// describe('cli/command', () => {
-//   beforeEach(() => {
-//     jest.restoreAllMocks()
-//   })
+const allOptions = {
+  ...common,
+  ...server
+}
 
-//   test('adds default options', () => {
-//     const cmd = new Command()
+describe('cli/command', () => {
+  beforeEach(() => jest.restoreAllMocks())
 
-//     expect(cmd.options.length).not.toBe(0)
-//   })
+  test('builds minimist options', () => {
+    const cmd = new Command({ options: allOptions })
+    const minimistOptions = cmd._getMinimistOptions()
 
-//   test('builds minimist options', () => {
-//     const cmd = new Command({
-//       options: Object.keys(Options)
-//     })
+    expect(minimistOptions.string.length).toBe(4)
+    expect(minimistOptions.boolean.length).toBe(4)
+    expect(minimistOptions.alias.c).toBe('config-file')
+    expect(minimistOptions.default.c).toBe(common['config-file'].default)
+  })
 
-//     const minimistOptions = cmd._getMinimistOptions()
+  test('parses args', () => {
+    const cmd = new Command({ options: { ...common, ...server } })
 
-//     expect(minimistOptions.string.length).toBe(4)
-//     expect(minimistOptions.boolean.length).toBe(9)
-//     expect(minimistOptions.alias.c).toBe('config-file')
-//     expect(minimistOptions.default.c).toBe(Options['config-file'].default)
-//   })
+    let args = ['-c', 'test-file', '-s', '-p', '3001']
+    let argv = cmd.getArgv(args)
 
-//   test('parses args', () => {
-//     const cmd = new Command({
-//       options: Object.keys(Options)
-//     })
+    expect(argv['config-file']).toBe(args[1])
+    expect(argv.spa).toBe(true)
+    expect(argv.universal).toBe(false)
+    expect(argv.port).toBe('3001')
 
-//     let args = ['-c', 'test-file', '-s', '-p', '3001']
-//     let argv = cmd.getArgv(args)
+    args = ['--no-build']
+    argv = cmd.getArgv(args)
 
-//     expect(argv['config-file']).toBe(args[1])
-//     expect(argv.spa).toBe(true)
-//     expect(argv.universal).toBe(false)
-//     expect(argv.build).toBe(true)
-//     expect(argv.port).toBe('3001')
+    expect(argv.build).toBe(false)
+  })
 
-//     args = ['--no-build']
-//     argv = cmd.getArgv(args)
+  test('prints version automatically', () => {
+    const cmd = new Command()
+    cmd.showVersion = jest.fn()
 
-//     expect(argv.build).toBe(false)
-//   })
+    const args = ['--version']
+    cmd.getArgv(args)
 
-//   test('prints version automatically', () => {
-//     const cmd = new Command()
-//     cmd.showVersion = jest.fn()
+    expect(cmd.showVersion).toHaveBeenCalledTimes(1)
+  })
 
-//     const args = ['--version']
-//     cmd.getArgv(args)
+  test('prints help automatically', () => {
+    const cmd = new Command({ options: allOptions })
+    cmd.showHelp = jest.fn()
 
-//     expect(cmd.showVersion).toHaveBeenCalledTimes(1)
-//   })
+    const args = ['-h']
+    cmd.getArgv(args)
 
-//   test('prints help automatically', () => {
-//     const cmd = new Command()
-//     cmd.showHelp = jest.fn()
+    expect(cmd.showHelp).toHaveBeenCalledTimes(1)
+  })
 
-//     const args = ['-h']
-//     cmd.getArgv(args)
+  test('returns nuxt config', async () => {
+    const cmd = new Command({ options: allOptions })
 
-//     expect(cmd.showHelp).toHaveBeenCalledTimes(1)
-//   })
+    const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
+    const argv = cmd.getArgv(args)
+    argv._ = ['.']
 
-//   test('returns nuxt config', async () => {
-//     const cmd = new Command({
-//       options: Object.keys(Options)
-//     })
+    const options = await cmd.getNuxtConfig(argv, { testOption: true })
 
-//     const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
-//     const argv = cmd.getArgv(args)
-//     argv._ = ['.']
+    expect(options.testOption).toBe(true)
+    expect(options.server.port).toBe(3001)
+    expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
+  })
 
-//     const options = await cmd.getNuxtConfig(argv, { testOption: true })
+  test('returns Nuxt instance', async () => {
+    const cmd = new Command()
+    const nuxt = await cmd.getNuxt()
 
-//     expect(options.testOption).toBe(true)
-//     expect(options.server.port).toBe(3001)
-//     expect(options.build.quiet).toBe(true)
-//     expect(options.build.analyze).toBe(true)
-//     expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
-//   })
+    expect(nuxt.constructor.name).toBe('Nuxt')
+    expect(typeof nuxt.ready).toBe('function')
+  })
 
-//   test('returns Nuxt instance', async () => {
-//     const cmd = new Command()
-//     const nuxt = await cmd.getNuxt()
+  test('returns Builder instance', async () => {
+    const cmd = new Command()
+    const builder = await cmd.getBuilder()
 
-//     expect(nuxt.constructor.name).toBe('Nuxt')
-//     expect(typeof nuxt.ready).toBe('function')
-//   })
+    expect(builder.constructor.name).toBe('Builder')
+    expect(typeof builder.build).toBe('function')
+  })
 
-//   test('returns Builder instance', async () => {
-//     const cmd = new Command()
-//     const builder = await cmd.getBuilder()
+  test('returns Generator instance', async () => {
+    const cmd = new Command()
+    const generator = await cmd.getGenerator()
 
-//     expect(builder.constructor.name).toBe('Builder')
-//     expect(typeof builder.build).toBe('function')
-//   })
+    expect(generator.constructor.name).toBe('Generator')
+    expect(typeof generator.generate).toBe('function')
+  })
 
-//   test('returns Generator instance', async () => {
-//     const cmd = new Command()
-//     const generator = await cmd.getGenerator()
+  test('builds help text', () => {
+    const cmd = new Command({
+      description: 'a very long description that should not wrap to the next line because is not longer ' +
+        'than the terminal width',
+      usage: 'this is how you do it',
+      options: {
+        ...allOptions,
+        foo: {
+          type: 'boolean',
+          description: 'very long option that is not longer than the terminal width and ' +
+        'should not wrap to the next line'
+        }
+      }
+    })
 
-//     expect(generator.constructor.name).toBe('Generator')
-//     expect(typeof generator.generate).toBe('function')
-//   })
+    expect(cmd._getHelp()).toMatchSnapshot()
+  })
 
-//   test('builds help text', () => {
-//     const cmd = new Command({
-//       description: 'a very long description that is longer than 80 chars and ' +
-//         'should wrap to the next line while keeping indentation',
-//       usage: 'this is how you do it',
-//       options: ['build']
-//     })
+  test('show version prints to stdout and exits', () => {
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
 
-//     const expectedText = `
-//     Description
-//       a very long description that is longer than 80 chars and should wrap to the next
-//       line while keeping indentation
-//     Usage
-//       $ nuxt this is how you do it
-//     Options
-//       --no-build         Only generate pages for dynamic routes. Nuxt has to be
-//                          built once before using this option
-//       --spa, -s          Launch in SPA mode
-//       --universal, -u    Launch in Universal mode (default)
-//       --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
-//       --version          Display the Nuxt version
-//       --help, -h         Display this message
+    const cmd = new Command()
+    cmd.showVersion()
 
-// `
-//     expect(cmd._getHelp()).toBe(expectedText)
-//   })
+    expect(process.stdout.write).toHaveBeenCalled()
+    expect(process.exit).toHaveBeenCalled()
 
-//   test('show version prints to stdout and exits', () => {
-//     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-//     jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
+    process.stdout.write.mockRestore()
+    process.exit.mockRestore()
+  })
 
-//     const cmd = new Command()
-//     cmd.showVersion()
+  test('show help prints to stdout and exits', () => {
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
 
-//     expect(process.stdout.write).toHaveBeenCalled()
-//     expect(process.exit).toHaveBeenCalled()
+    const cmd = new Command()
+    cmd.showHelp()
 
-//     process.stdout.write.mockRestore()
-//     process.exit.mockRestore()
-//   })
+    expect(process.stdout.write).toHaveBeenCalled()
+    expect(process.exit).toHaveBeenCalled()
 
-//   test('show help prints to stdout and exits', () => {
-//     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-//     jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
-
-//     const cmd = new Command()
-//     cmd.showHelp()
-
-//     expect(process.stdout.write).toHaveBeenCalled()
-//     expect(process.exit).toHaveBeenCalled()
-
-//     process.stdout.write.mockRestore()
-//     process.exit.mockRestore()
-//   })
-// })
+    process.stdout.write.mockRestore()
+    process.exit.mockRestore()
+  })
+})

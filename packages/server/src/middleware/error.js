@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default function errorMiddleware(err, req, res, next) {
+export default ({ resources, options }) => function errorMiddleware(err, req, res, next) {
   // ensure statusCode, message and name fields
   err.statusCode = err.statusCode || 500
   err.message = err.message || 'Nuxt Server Error'
@@ -35,7 +35,7 @@ export default function errorMiddleware(err, req, res, next) {
     hasReqHeader('user-agent', 'curl/')
 
   // Use basic errors when debug mode is disabled
-  if (!this.options.debug) {
+  if (!options.debug) {
     // Json format is compatible with Youch json responses
     const json = {
       status: err.statusCode,
@@ -46,7 +46,7 @@ export default function errorMiddleware(err, req, res, next) {
       sendResponse(JSON.stringify(json, undefined, 2), 'text/json')
       return
     }
-    const html = this.resources.errorTemplate(json)
+    const html = resources.errorTemplate(json)
     sendResponse(html)
     return
   }
@@ -55,8 +55,13 @@ export default function errorMiddleware(err, req, res, next) {
   const youch = new Youch(
     err,
     req,
-    readSource.bind(this),
-    this.options.router.base,
+    readSourceFactory({
+      srcDir: options.srcDir,
+      rootDir: options.rootDir,
+      buildDir: options.buildDir,
+      resources
+    }),
+    options.router.base,
     true
   )
   if (isJson) {
@@ -68,7 +73,7 @@ export default function errorMiddleware(err, req, res, next) {
   }
 }
 
-async function readSource(frame) {
+const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async function readSource(frame) {
   // Remove webpack:/// & query string from the end
   const sanitizeName = name =>
     name ? name.replace('webpack:///', '').split('?')[0] : null
@@ -82,10 +87,10 @@ async function readSource(frame) {
 
   // Possible paths for file
   const searchPath = [
-    this.options.srcDir,
-    this.options.rootDir,
-    path.join(this.options.buildDir, 'dist', 'server'),
-    this.options.buildDir,
+    srcDir,
+    rootDir,
+    path.join(buildDir, 'dist', 'server'),
+    buildDir,
     process.cwd()
   ]
 
@@ -97,7 +102,7 @@ async function readSource(frame) {
       frame.contents = source
       frame.fullPath = fullPath
       if (path.isAbsolute(frame.fileName)) {
-        frame.fileName = path.relative(this.options.rootDir, fullPath)
+        frame.fileName = path.relative(rootDir, fullPath)
       }
       return
     }
@@ -107,6 +112,6 @@ async function readSource(frame) {
   // TODO: restore to if after https://github.com/istanbuljs/nyc/issues/595 fixed
   /* istanbul ignore next */
   if (!frame.contents) {
-    frame.contents = this.resources.serverBundle.files[frame.fileName]
+    frame.contents = resources.serverBundle.files[frame.fileName]
   }
 }

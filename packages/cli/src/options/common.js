@@ -1,10 +1,10 @@
-export default [
-  'spa': {
+export default {
+  spa: {
     alias: 's',
     type: 'boolean',
     description: 'Launch in SPA mode'
   },
-  'universal': {
+  universal: {
     alias: 'u',
     type: 'boolean',
     description: 'Launch in Universal mode (default)'
@@ -15,13 +15,13 @@ export default [
     default: 'nuxt.config.js',
     description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
   },
-  'version': {
+  version: {
     type: 'boolean',
     description: 'Display the Nuxt version'
   },
-  'help': {
+  help: {
     alias: 'h',
     type: 'boolean',
     description: 'Display this message'
   }
-]
+}
