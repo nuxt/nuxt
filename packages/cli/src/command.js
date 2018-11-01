@@ -15,7 +15,7 @@ export default class NuxtCommand {
   }
 
   static async load(name) {
-    // So eslint doesn't complain about lookups 
+    // So eslint doesn't complain about lookups
     const _commands = { ...commands }
     if (name in _commands) {
       const cmd = await _commands[name]().then(m => m.default)

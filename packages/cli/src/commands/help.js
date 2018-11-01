@@ -1,5 +1,4 @@
 import consola from 'consola'
-import * as commands from '../commands'
 import NuxtCommand from '../command'
 
 export default {

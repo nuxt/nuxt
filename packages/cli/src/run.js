@@ -6,9 +6,7 @@ import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
 
 async function listCommands(_commands) {
   _commands = await Promise.all(
-    Object.keys(_commands).map((cmd) => {
-      return _commands[cmd]().then(m => m.default)
-    })
+    Object.keys(_commands).map(cmd => NuxtCommand.load(cmd))
   )
   let maxLength = 0
   const commandsHelp = []
@@ -35,11 +33,12 @@ export default function run() {
   const defaultCommand = 'dev'
   let cmd = process.argv[2]
 
-  if (commands[cmd]) {
+  const _commands = { ...commands }
+  if (_commands[cmd]) {
     process.argv.splice(2, 1)
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands({ ...commands }).then(() => process.exit(0))
+      listCommands(_commands).then(() => process.exit(0))
       return
     }
     cmd = defaultCommand
