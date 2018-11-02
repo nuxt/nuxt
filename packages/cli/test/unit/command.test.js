@@ -117,6 +117,11 @@ describe('cli/command', () => {
     expect(cmd._getHelp()).toMatchSnapshot()
   })
 
+  test('loads command from name', async () => {
+    const cmd = await Command.load('dev')
+    expect(cmd._getHelp()).toMatchSnapshot()
+  })
+
   test('show version prints to stdout and exits', () => {
     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
     jest.spyOn(process, 'exit').mockImplementationOnce(code => code)

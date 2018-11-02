@@ -2,6 +2,7 @@ import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
+import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -11,6 +12,17 @@ export default class NuxtCommand {
     this.usage = usage || ''
     this.options = Object.assign({}, options)
     this._run = run
+  }
+
+  static async load(name) {
+    // So eslint doesn't complain about lookups
+    const _commands = { ...commands }
+    if (name in _commands) {
+      const cmd = await _commands[name]().then(m => m.default)
+      return NuxtCommand.from(cmd)
+    } else {
+      // TODO dynamic module loading
+    }
   }
 
   static from(options) {
