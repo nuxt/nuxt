@@ -56,9 +56,6 @@ export default {
       await cmd.getNuxtConfig(argv, { dev: false })
     )
 
-    // Setup hooks
-    nuxt.hook('error', err => consola.fatal(err))
-
     let builderOrGenerator
     if (nuxt.options.mode !== 'spa' || argv.generate === false) {
       // Build only
