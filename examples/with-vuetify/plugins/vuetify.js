@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Vuetify from 'vuetify'
+import Vuetify from 'vuetify/lib'
 import colors from 'vuetify/es5/util/colors'
 
 // You can also specify those components you are going to use for "a la carte" build:

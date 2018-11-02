@@ -1,3 +1,5 @@
+import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
+
 export default {
   /*
   ** Head elements
@@ -14,7 +16,9 @@ export default {
   },
 
   build: {
-    extractCSS: true
+    plugins: [new VuetifyLoaderPlugin()],
+    extractCSS: true,
+    transpile: ['vuetify/lib']
   },
   /*
   ** Load Vuetify into the app
