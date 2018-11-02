@@ -15,7 +15,7 @@ export default class Listener {
 
     // After listen
     this.listening = false
-    this.appServer = null
+    this._server = null
     this.server = null
     this.protocol = null
     this.address = null
@@ -36,16 +36,13 @@ export default class Listener {
       return
     }
 
-    // Initialize appserver
+    // Initialize undelying http(s) server
     if (this.https) {
       const httpsOptions = this.https === true ? {} : Object.assign({}, this.https)
-      this.appserver = https.createServer(httpsOptions, this.app)
+      this._server = https.createServer(httpsOptions, this.app)
     } else {
-      this.appserver = this.app
+      this._server = this.app
     }
-
-    // Promisify appserver
-    pify(this.appserver.listen)
 
     // Prepare listenArgs
     const listenArgs = { exclusive: false }
@@ -56,13 +53,13 @@ export default class Listener {
       listenArgs.host = this.host
     }
 
-    // Call appserver.listen
-    this.server = await this.appserver.listen(listenArgs)
+    // Call server.listen
+    this.server = await new Promise((resolve, reject) => {
+      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+    })
 
-    // Enable destroy support for enableDestroy(this.server)
+    // Enable destroy support
     enableDestroy(this.server)
-
-    // Promisify server
     pify(this.server.destroy)
 
     // Compute protocol, address and url
