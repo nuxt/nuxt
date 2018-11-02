@@ -30,9 +30,6 @@ export default {
       await cmd.getNuxtConfig(argv, { dev: false })
     )
 
-    // Setup hooks
-    nuxt.hook('error', err => consola.fatal(err))
-
     // Check if project is built for production
     const distDir = path.resolve(
       nuxt.options.rootDir,
