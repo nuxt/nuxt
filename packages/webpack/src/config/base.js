@@ -261,13 +261,12 @@ export default class WebpackBaseConfig {
       profile: this.options.build.profile,
       name: this.name,
       color: this.colors[this.name],
-      compiledIn: false,
-      done: (states) => {
-        if (this.options.dev) {
-          const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
-
-          if (!hasErrors) {
-            this.nuxt.server.showReady(false)
+      reporter: {
+        done: (context) => {
+          if (!context.hasErrors()) {
+            this.nuxt.callHook('webpack:done')
+          } else {
+            this.nuxt.callHook('webpack:error')
           }
         }
       }
