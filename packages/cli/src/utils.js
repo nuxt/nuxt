@@ -1,9 +1,13 @@
 import path from 'path'
+import os from 'os'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { getDefaultNuxtConfig } from '@nuxt/config'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import prettyBytes from 'pretty-bytes'
 
 const _require = esm(module, {
   cache: false,
@@ -60,4 +64,33 @@ export async function loadNuxtConfig(argv) {
   }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options
+}
+
+export function showBanner(nuxt) {
+  const lines = []
+
+  // Name and version
+  lines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
+
+  // Running mode
+  lines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+
+  // https://nodejs.org/api/process.html#process_process_memoryusage
+  const { heapUsed, rss } = process.memoryUsage()
+  lines.push(`Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`)
+
+  // Listeners
+  lines.push('')
+  for (const listener of nuxt.server.listeners) {
+    lines.push(chalk.bold('Listening on: ') + chalk.underline.blue(listener.url))
+  }
+
+  const box = boxen(lines.join('\n'), {
+    borderColor: 'green',
+    borderStyle: 'round',
+    padding: 1,
+    margin: 1
+  })
+
+  process.stdout.write('\n' + box + '\n')
 }

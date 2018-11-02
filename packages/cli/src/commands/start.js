@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
 import { common, server } from '../options'
+import { showBanner } from '../utils'
 
 export default {
   name: 'start',
@@ -46,7 +47,7 @@ export default {
     }
 
     return nuxt.server.listen().then(() => {
-      nuxt.server.showReady(false)
+      showBanner(nuxt)
     })
   }
 }
