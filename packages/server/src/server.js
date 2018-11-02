@@ -1,11 +1,7 @@
-import https from 'https'
 import path from 'path'
-import enableDestroy from 'server-destroy'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import chalk from 'chalk'
-import ip from 'ip'
-import consola from 'consola'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 
@@ -13,6 +9,7 @@ import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
+import Listener from './listener'
 
 export default class Server {
   constructor(nuxt) {
@@ -31,6 +28,9 @@ export default class Server {
     // Will be available on dev
     this.webpackDevMiddleware = null
     this.webpackHotMiddleware = null
+
+    // Will be set after listen
+    this.listeners = []
 
     // Create new connect instance
     this.app = connect()
@@ -51,6 +51,14 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
+
+    // Close all listeners after nuxt close
+    this.nuxt.hook('close', async () => {
+      for (const listener of this.listeners) {
+        await listener.close()
+      }
+      this.listeners = []
+    })
   }
 
   async setupMiddleware() {
@@ -177,96 +185,23 @@ export default class Server {
     })
   }
 
-  showReady(clear = true) {
-    if (this.readyMessage) {
-      consola.success(this.readyMessage)
-    }
-  }
-
-  listen(port, host, socket) {
-    return new Promise((resolve, reject) => {
-      if (!socket && typeof this.options.server.socket === 'string') {
-        socket = this.options.server.socket
-      }
-
-      const args = { exclusive: false }
-
-      if (socket) {
-        args.path = socket
-      } else {
-        args.port = port || this.options.server.port
-        args.host = host || this.options.server.host
-      }
-
-      let appServer
-      const isHttps = Boolean(this.options.server.https)
-
-      if (isHttps) {
-        let httpsOptions
-
-        if (this.options.server.https === true) {
-          httpsOptions = {}
-        } else {
-          httpsOptions = this.options.server.https
-        }
-
-        appServer = https.createServer(httpsOptions, this.app)
-      } else {
-        appServer = this.app
-      }
-
-      const server = appServer.listen(
-        args,
-        (err) => {
-          /* istanbul ignore if */
-          if (err) {
-            return reject(err)
-          }
-
-          let listenURL
-
-          if (!socket) {
-            ({ address: host, port } = server.address())
-            if (host === '127.0.0.1') {
-              host = 'localhost'
-            } else if (host === '0.0.0.0') {
-              host = ip.address()
-            }
-
-            listenURL = chalk.underline.blue(`http${isHttps ? 's' : ''}://${host}:${port}`)
-            this.readyMessage = `Listening on ${listenURL}`
-          } else {
-            listenURL = chalk.underline.blue(`unix+http://${socket}`)
-            this.readyMessage = `Listening on ${listenURL}`
-          }
-
-          // Close server on nuxt close
-          this.nuxt.hook(
-            'close',
-            () =>
-              new Promise((resolve, reject) => {
-                // Destroy server by forcing every connection to be closed
-                server.listening && server.destroy((err) => {
-                  consola.debug('server closed')
-                  /* istanbul ignore if */
-                  if (err) {
-                    return reject(err)
-                  }
-                  resolve()
-                })
-              })
-          )
-
-          if (socket) {
-            this.nuxt.callHook('listen', server, { path: socket }).then(resolve)
-          } else {
-            this.nuxt.callHook('listen', server, { port, host }).then(resolve)
-          }
-        }
-      )
-
-      // Add server.destroy(cb) method
-      enableDestroy(server)
+  async listen(port, host, socket) {
+    // Create a new listener
+    const listener = new Listener({
+      port: port || this.options.server.port,
+      host: host || this.options.server.host,
+      socket: socket || this.options.server.socket,
+      https: this.options.server.https,
+      app: this.app
     })
+
+    // Push listener to this.listeners
+    this.listeners.push(listener)
+
+    if (socket) {
+      await this.nuxt.callHook('listen', listener.server, listener)
+    } else {
+      await this.nuxt.callHook('listen', listener.server, listener)
+    }
   }
 }
