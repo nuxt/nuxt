@@ -88,9 +88,11 @@ export const mockNuxt = (implementation) => {
         Nuxt.fileChangedHook = fn
       }
     },
+    options: {},
     clearHook: jest.fn(),
     close: jest.fn(),
     server: {
+      listeners: [],
       listen: jest.fn().mockImplementationOnce(() => Promise.resolve())
     }
   }, implementation || {})
