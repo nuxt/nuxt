@@ -226,6 +226,11 @@ export function middlewareSeries(promises, appContext) {
 export function promisify(fn, context) {
   let promise
   if (fn.length === 2) {
+    <% if (isDev) { %>
+      console.warn('Callback-based asyncData, fetch or middleware calls are deprecated. ' +
+        'Please switch to promises or async/await syntax')
+    <% } %>
+
     // fn(context, callback)
     promise = new Promise((resolve) => {
       fn(context, function (err, data) {
