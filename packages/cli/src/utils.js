@@ -7,6 +7,7 @@ import { getDefaultNuxtConfig } from '@nuxt/config'
 import boxen from 'boxen'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
+import env from 'std-env'
 
 const _require = esm(module, {
   cache: false,
@@ -66,6 +67,17 @@ export async function loadNuxtConfig(argv) {
 }
 
 export function showBanner(nuxt) {
+  if (env.test) {
+    return
+  }
+
+  if (env.minimalCLI) {
+    for (const listener of nuxt.server.listeners) {
+      consola.info('Listening on: ' + listener.url)
+    }
+    return
+  }
+
   const lines = []
 
   // Name and version
