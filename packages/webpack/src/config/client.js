@@ -178,6 +178,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       config.plugins.push(
         new FriendlyErrorsWebpackPlugin({
           clearConsole: false,
+          reporter: 'consola',
           logLevel: 'WARNING'
         })
       )
