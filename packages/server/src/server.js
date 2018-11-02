@@ -200,10 +200,6 @@ export default class Server {
     // Push listener to this.listeners
     this.listeners.push(listener)
 
-    if (socket) {
-      await this.nuxt.callHook('listen', listener.server, listener)
-    } else {
-      await this.nuxt.callHook('listen', listener.server, listener)
-    }
+    await this.nuxt.callHook('listen', listener.server, listener)
   }
 }
