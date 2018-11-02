@@ -1,7 +1,6 @@
 import path from 'path'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
-import chalk from 'chalk'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 
@@ -194,6 +193,9 @@ export default class Server {
       https: this.options.server.https,
       app: this.app
     })
+
+    // Listen
+    await listener.listen()
 
     // Push listener to this.listeners
     this.listeners.push(listener)
