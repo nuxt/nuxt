@@ -191,7 +191,7 @@ export default class Server {
         case '127.0.0.1': options.host = 'localhost'; break
         case '0.0.0.0': options.host = ip.address(); break
       }
-      return `http://${host}:${options.port}}`
+      return `http://${options.host}:${options.port}}`
     }
     return `unix+http://${address}`
   }
