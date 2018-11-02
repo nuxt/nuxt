@@ -29,4 +29,7 @@ export default function setup({ dev }) {
       }
     }
   })
+
+  // Wrap all console logs with consola for better DX
+  consola.wrapConsole()
 }
