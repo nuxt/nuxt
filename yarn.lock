@@ -1678,7 +1678,7 @@ ajv-errors@^1.0.0:
   resolved "https://registry.npmjs.org/ajv-errors/-/ajv-errors-1.0.0.tgz#ecf021fa108fd17dfb5e6b383f2dd233e31ffc59"
   integrity sha1-7PAh+hCP0X37Xms4Py3SM+Mf/Fk=
 
-ajv-keywords@^3.0.0, ajv-keywords@^3.1.0:
+ajv-keywords@^3.1.0:
   version "3.2.0"
   resolved "https://registry.npmjs.org/ajv-keywords/-/ajv-keywords-3.2.0.tgz#e86b819c602cf8821ad637413698f1dec021847a"
   integrity sha1-6GuBnGAs+IIa1jdBNpjx3sAhhHo=
@@ -1693,7 +1693,7 @@ ajv@^5.3.0:
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.3.0"
 
-ajv@^6.0.1, ajv@^6.1.0, ajv@^6.5.3:
+ajv@^6.1.0, ajv@^6.5.3:
   version "6.5.4"
   resolved "https://registry.npmjs.org/ajv/-/ajv-6.5.4.tgz#247d5274110db653706b550fcc2b797ca28cfc59"
   integrity sha512-4Wyjt8+t6YszqaXnLDfMmG/8AlO5Zbcsy3ATHncCzjW/NoPzAId8AK6749Ybjmdt+kUY1gP60fCu46oDxPv/mg==
@@ -2817,7 +2817,7 @@ cli-boxes@^1.0.0:
   resolved "https://registry.npmjs.org/cli-boxes/-/cli-boxes-1.0.0.tgz#4fa917c3e59c94a004cd61f8ee509da651687143"
   integrity sha1-T6kXw+WclKAEzWH47lCdplFocUM=
 
-cli-cursor@^2.0.0, cli-cursor@^2.1.0:
+cli-cursor@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/cli-cursor/-/cli-cursor-2.1.0.tgz#b35dac376479facc3e94747d41d0d0f5238ffcb5"
   integrity sha1-s12sN2R5+sw+lHR9QdDQ9SOP/LU=
@@ -3055,15 +3055,26 @@ consola@^1.4.3:
     lodash "^4.17.5"
     std-env "^1.1.0"
 
-consola@^2.0.0-1:
-  version "2.0.0-1"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.0.0-1.tgz#4883f5c19ae07b63226f27311c4e54a42e18714a"
-  integrity sha512-X4sDWc37AbZFXVHT55I0SWKilv1qClu3fPDzakcnEKUENJZXrHaJwpSUDDXOrp0KBsdUBx6ji6DpuSZm6/QUVQ==
+consola@^2.0.0-2:
+  version "2.0.0-2"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.0.0-2.tgz#daf643b1df3af35181bf475671623c1b32e463c8"
+  integrity sha512-2OgR8mmPQ+bNOsQXrAlfNDjKFXPJFtWCD8nsQEA8CC0Z/IQ4yPuzHb9gkuoo60nE0I51fWY3SBEM2G4T7jAE7Q==
   dependencies:
     chalk "^2.4.1"
     dayjs "^1.7.7"
     figures "^2.0.0"
-    std-env "^2.0.2"
+    std-env "^2.1.0"
+    string-width "^2.1.1"
+
+consola@^2.0.7:
+  version "2.0.7"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.0.7.tgz#658707b6ddc96b8e60e012430c2bafaa9d8dd8d4"
+  integrity sha512-wugpvF6aWVQtC9aUH3q476rdTjW3+VmXQedYr7FX50jxkzNjCt2qRybvZXiP8d5FEAHxCDhqjzKzb9mdQPwfKQ==
+  dependencies:
+    chalk "^2.4.1"
+    dayjs "^1.7.7"
+    figures "^2.0.0"
+    std-env "^2.1.0"
     string-width "^2.1.1"
 
 console-browserify@^1.1.0:
@@ -3965,6 +3976,11 @@ dot-prop@^4.1.1, dot-prop@^4.2.0:
   integrity sha512-tUMXrxlExSW6U2EXiiKGSBVdYgtV8qlHL+C10TsW4PURY/ic+eaysnSkwB4kA/mBlCyy/IKDJ+Lc3wbWeaXtuQ==
   dependencies:
     is-obj "^1.0.0"
+
+draftlog@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.npmjs.org/draftlog/-/draftlog-1.0.12.tgz#7db6a3c5b62106bb32dd4a35d67bcccb6c7d9da0"
+  integrity sha1-fbajxbYhBrsy3Uo11nvMy2x9naA=
 
 duplexer@^0.1.1:
   version "0.1.1"
@@ -6804,15 +6820,6 @@ lodash@4.x, lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.3, lo
   version "4.17.11"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
-
-log-update@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.npmjs.org/log-update/-/log-update-2.3.0.tgz#88328fd7d1ce7938b29283746f0b1bc126b24708"
-  integrity sha1-iDKP19HOeTiykoN0bwsbwSayRwg=
-  dependencies:
-    ansi-escapes "^3.0.0"
-    cli-cursor "^2.0.0"
-    wrap-ansi "^3.0.1"
 
 longest@^1.0.1:
   version "1.0.1"
@@ -10175,19 +10182,12 @@ statuses@~1.4.0:
   resolved "https://registry.npmjs.org/statuses/-/statuses-1.4.0.tgz#bb73d446da2796106efcc1b601a253d6c46bd087"
   integrity sha512-zhSCtt8v2NDrRlPQpCNtw/heZLtfUDqxBM1udqikb/Hbk52LK4nQSwr10u77iopCW5LsyHpuXS0GnEc48mLeew==
 
-std-env@^1.1.0, std-env@^1.3.1:
+std-env@^1.1.0:
   version "1.3.1"
   resolved "https://registry.npmjs.org/std-env/-/std-env-1.3.1.tgz#4e1758412439e9ece1d437b1b098551911aa44ee"
   integrity sha512-KI2F2pPJpd3lHjng+QLezu0eq+QDtXcv1um016mhOPAJFHKL+09ykK5PUBWta2pZDC8BVV0VPya08A15bUXSLQ==
   dependencies:
     is-ci "^1.1.0"
-
-std-env@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/std-env/-/std-env-2.0.2.tgz#290baa5c905cd4d54f970596923d3f3077adaf06"
-  integrity sha512-c5ighQ15FdLEXYfeed0Zf2qA+YIIW3NcqsoohqaZvBLRhgSiqq+650JDGLAxu3NmdNU/VlWNTnb9sSZg5Xthgw==
-  dependencies:
-    ci-info "^1.6.0"
 
 std-env@^2.1.0:
   version "2.1.0"
@@ -10391,18 +10391,6 @@ symbol-tree@^3.2.2:
   version "3.2.2"
   resolved "https://registry.npmjs.org/symbol-tree/-/symbol-tree-3.2.2.tgz#ae27db38f660a7ae2e1c3b7d1bc290819b8519e6"
   integrity sha1-rifbOPZgp64uHDt9G8KQgZuFGeY=
-
-table@^4.0.3:
-  version "4.0.3"
-  resolved "http://registry.npmjs.org/table/-/table-4.0.3.tgz#00b5e2b602f1794b9acaf9ca908a76386a7813bc"
-  integrity sha512-S7rnFITmBH1EnyKcvxBh1LjYeQMmnZtCXSEbHcH6S0NoKit24ZuFO/T1vDcLdYsLQkM188PVVhQmzKIuThNkKg==
-  dependencies:
-    ajv "^6.0.1"
-    ajv-keywords "^3.0.0"
-    chalk "^2.1.0"
-    lodash "^4.17.4"
-    slice-ansi "1.0.0"
-    string-width "^2.1.1"
 
 table@^5.0.2:
   version "5.1.0"
@@ -11241,21 +11229,18 @@ webpack@^4.23.1:
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 
-webpackbar@^2.6.3:
-  version "2.6.3"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-2.6.3.tgz#4f2d0078375acfe95c0e55227771a2ed98ecc5c9"
-  integrity sha512-UlTm7Yz4meJV0THhZMrgRTE9v/vZ0xfUoJ/eOig98TvzsqNiW+FLSv5WaZeML3uJUPrMQ6K5jo1FJJFXNCc8+g==
+webpackbar@^3.0.0-0:
+  version "3.0.0-0"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.0-0.tgz#261b1ed95ad5c667fad6082301765d6993977d5f"
+  integrity sha512-uPTeOZUJu3IXKXcsAQksm4GIBd/uqUlLydIVSD1+m+fZTTZh1uKO7jAIvf0DMHJhtQTx+qFM2oqQmN/a8HJKZA==
   dependencies:
     chalk "^2.4.1"
-    consola "^1.4.3"
+    consola "^2.0.0-2"
+    draftlog "^1.0.12"
     figures "^2.0.0"
-    loader-utils "^1.1.0"
-    lodash "^4.17.10"
-    log-update "^2.3.0"
     pretty-time "^1.1.0"
-    schema-utils "^1.0.0"
-    std-env "^1.3.1"
-    table "^4.0.3"
+    std-env "^2.1.0"
+    text-table "^0.2.0"
 
 whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.3, whatwg-encoding@^1.0.5:
   version "1.0.5"
@@ -11355,14 +11340,6 @@ wrap-ansi@^2.0.0:
   dependencies:
     string-width "^1.0.1"
     strip-ansi "^3.0.1"
-
-wrap-ansi@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-3.0.1.tgz#288a04d87eda5c286e060dfe8f135ce8d007f8ba"
-  integrity sha1-KIoE2H7aXChuBg3+jxNc6NAH+Lo=
-  dependencies:
-    string-width "^2.1.1"
-    strip-ansi "^4.0.0"
 
 wrap-ansi@^4.0.0:
   version "4.0.0"
