@@ -1,3 +1,4 @@
+import http from 'http'
 import https from 'https'
 import path from 'path'
 import enableDestroy from 'server-destroy'
@@ -183,62 +184,43 @@ export default class Server {
     }
   }
 
-  listen(port, host, socket) {
+  normalizeURL(options, server) {
+    const address = server.address()
+    if (options.protocol !== 'socket') {
+      switch (address.address) {
+        case '127.0.0.1': options.host = 'localhost'; break
+        case '0.0.0.0': options.host = ip.address(); break
+      }
+      return `http://${host}:${options.port}}`
+    }
+    return `unix+http://${address}`
+  }
+
+  listen(
+    port = this.options.server.port,
+    host = this.options.server.host,
+    socket = this.options.server.socket
+  ) {
     return new Promise((resolve, reject) => {
-      if (!socket && typeof this.options.server.socket === 'string') {
-        socket = this.options.server.socket
-      }
+      const httpsOpts = this.options.server.https
+      const address = socket ? { path: socket } : { host, port }
 
-      const args = { exclusive: false }
+      const protocol = httpsOpts ? https : http
+      const protocolOpts = typeof httpsOpts === 'object' ? [ httpsOpts ] : []
 
-      if (socket) {
-        args.path = socket
-      } else {
-        args.port = port || this.options.server.port
-        args.host = host || this.options.server.host
-      }
-
-      let appServer
-      const isHttps = Boolean(this.options.server.https)
-
-      if (isHttps) {
-        let httpsOptions
-
-        if (this.options.server.https === true) {
-          httpsOptions = {}
-        } else {
-          httpsOptions = this.options.server.https
-        }
-
-        appServer = https.createServer(httpsOptions, this.app)
-      } else {
-        appServer = this.app
-      }
-
-      const server = appServer.listen(
-        args,
+      const app = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
+      const server = app.listen(
+        { exclusive: false, ...address },
         (err) => {
           /* istanbul ignore if */
           if (err) {
             return reject(err)
           }
 
-          let listenURL
+          address.protocol = socket ? 'socket' : `http${httpsOpts ? 's' : ''}`
+          const listenURL = this.normalizeURL(address, server)
 
-          if (!socket) {
-            ({ address: host, port } = server.address())
-            if (host === '127.0.0.1') {
-              host = 'localhost'
-            } else if (host === '0.0.0.0') {
-              host = ip.address()
-            }
-
-            listenURL = chalk.underline.blue(`http${isHttps ? 's' : ''}://${host}:${port}`)
-            this.readyMessage = `Listening on ${listenURL}`
-          } else {
-            listenURL = chalk.underline.blue(`unix+http://${socket}`)
-            this.readyMessage = `Listening on ${listenURL}`
-          }
+          this.readyMessage = `Listening on ${chalk.underline.blue(listenURL)}`
 
           // Close server on nuxt close
           this.nuxt.hook(
@@ -257,11 +239,7 @@ export default class Server {
               })
           )
 
-          if (socket) {
-            this.nuxt.callHook('listen', server, { path: socket }).then(resolve)
-          } else {
-            this.nuxt.callHook('listen', server, { port, host }).then(resolve)
-          }
+          this.nuxt.callHook('listen', server, address).then(resolve)
         }
       )
 
