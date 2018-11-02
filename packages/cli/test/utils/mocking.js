@@ -66,7 +66,8 @@ export const mockGetNuxtStart = (ssr) => {
     }
   }, {
     server: {
-      listen
+      listen,
+      listeners: []
     }
   })
 
