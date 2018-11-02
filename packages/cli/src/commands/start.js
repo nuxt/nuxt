@@ -10,7 +10,18 @@ export default {
   usage: 'start <dir>',
   options: {
     ...common,
-    ...server
+    ...server,
+    modern: {
+      alias: 'm',
+      type: 'boolean',
+      description: 'Build app for modern browsers',
+      prepare(cmd, options, argv) {
+        options.build = options.build || {}
+        if (argv.modern) {
+          options.build.modern = !!argv.modern
+        }
+      }
+    }
   },
   async run(cmd) {
     const argv = cmd.getArgv()
@@ -19,9 +30,6 @@ export default {
     const nuxt = await cmd.getNuxt(
       await cmd.getNuxtConfig(argv, { dev: false })
     )
-
-    // Setup hooks
-    nuxt.hook('error', err => consola.fatal(err))
 
     // Check if project is built for production
     const distDir = path.resolve(

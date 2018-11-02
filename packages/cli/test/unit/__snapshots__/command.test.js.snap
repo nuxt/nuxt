@@ -19,3 +19,22 @@ exports[`cli/command builds help text 1`] = `
 
 "
 `;
+
+exports[`cli/command loads command from name 1`] = `
+"  Usage: nuxt dev <dir> [options]
+
+  Start the application in development mode (e.g. hot-code reloading, error reporting)
+
+  Options:
+
+    --spa, -s          Launch in SPA mode
+    --universal, -u    Launch in Universal mode (default)
+    --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+    --version          Display the Nuxt version
+    --help, -h         Display this message
+    --port, -p         Port number on which to start the application
+    --hostname, -H     Hostname on which to start the application
+    --unix-socket, -n  Path to a UNIX socket
+
+"
+`;
