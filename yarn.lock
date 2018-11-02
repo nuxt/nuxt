@@ -10189,6 +10189,13 @@ std-env@^2.0.2:
   dependencies:
     ci-info "^1.6.0"
 
+std-env@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-2.1.0.tgz#0eab8ddabf6a27c055cc23120d131b4ae90c9b8f"
+  integrity sha512-Jb0FHRwR0Ca1IZVPjHI8nRBQngzuza8GYp/Gv02PKBrJ3M+Yrj5exDzVIb8Xwf3x/6P/69XNQAMaed65OyiBzw==
+  dependencies:
+    ci-info "^1.6.0"
+
 stealthy-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.npmjs.org/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
