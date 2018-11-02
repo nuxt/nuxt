@@ -19,14 +19,6 @@ describe('start', () => {
     expect(typeof start.run).toBe('function')
   })
 
-  test('starts listening and calls showReady', async () => {
-    const { listen, showReady } = mockGetNuxtStart()
-    await NuxtCommand.from(start).run()
-
-    expect(listen).toHaveBeenCalled()
-    expect(showReady).toHaveBeenCalled()
-  })
-
   test('no error if dist dir exists', async () => {
     mockGetNuxtStart()
     mockGetNuxtConfig()

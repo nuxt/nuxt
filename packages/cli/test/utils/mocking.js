@@ -58,7 +58,6 @@ export const mockGetNuxtStart = (ssr) => {
   const listen = jest.fn().mockImplementationOnce(() => {
     return Promise.resolve()
   })
-  const showReady = jest.fn()
 
   mockGetNuxt({
     rootDir: '.',
@@ -67,12 +66,11 @@ export const mockGetNuxtStart = (ssr) => {
     }
   }, {
     server: {
-      listen,
-      showReady
+      listen
     }
   })
 
-  return { listen, showReady }
+  return { listen }
 }
 
 export const mockGetNuxtConfig = () => {
@@ -92,8 +90,7 @@ export const mockNuxt = (implementation) => {
     clearHook: jest.fn(),
     close: jest.fn(),
     server: {
-      listen: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-      showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
+      listen: jest.fn().mockImplementationOnce(() => Promise.resolve())
     }
   }, implementation || {})
 
