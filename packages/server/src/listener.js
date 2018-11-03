@@ -1,3 +1,4 @@
+import http from 'http'
 import https from 'https'
 import enableDestroy from 'server-destroy'
 import ip from 'ip'
@@ -17,7 +18,6 @@ export default class Listener {
     this.listening = false
     this._server = null
     this.server = null
-    this.protocol = null
     this.address = null
     this.url = null
   }
@@ -30,6 +30,18 @@ export default class Listener {
     }
   }
 
+  computeURL() {
+    const address = this.server.address()
+    if (!this.socket) {
+      switch (address.address) {
+        case '127.0.0.1': this.host = 'localhost'; break
+        case '0.0.0.0': this.host = ip.address(); break
+      }
+      this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}}`
+    }
+    this.url = `unix+http://${address}`
+  }
+
   async listen() {
     // Prevent multi calls
     if (this.listenning) {
@@ -37,21 +49,13 @@ export default class Listener {
     }
 
     // Initialize undelying http(s) server
-    if (this.https) {
-      const httpsOptions = this.https === true ? {} : Object.assign({}, this.https)
-      this._server = https.createServer(httpsOptions, this.app)
-    } else {
-      this._server = this.app
-    }
+    const protocol = this.https ? https : http
+    const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
+    this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
     // Prepare listenArgs
-    const listenArgs = { exclusive: false }
-    if (this.socket) {
-      listenArgs.path = this.socket
-    } else {
-      listenArgs.port = this.port
-      listenArgs.host = this.host
-    }
+    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    listenArgs.exclusive = false
 
     // Call server.listen
     this.server = await new Promise((resolve, reject) => {
@@ -62,21 +66,7 @@ export default class Listener {
     enableDestroy(this.server)
     pify(this.server.destroy)
 
-    // Compute protocol, address and url
-    if (!listenArgs.path) {
-      const { address, port } = this.server.address()
-      this.protocol = 'http' + (this.https ? 's' : '')
-      if (address === '127.0.0.1') {
-        this.address = 'localhost'
-      } else if (address === '0.0.0.0') {
-        this.address = ip.address()
-      }
-      this.address += ':' + port
-    } else {
-      this.protocol = 'unix+http'
-      this.address = listenArgs.path
-    }
-    this.url = this.protocol + '://' + this.address
+    this.computeURL()
 
     // Set this.listening to true
     this.listening = true
