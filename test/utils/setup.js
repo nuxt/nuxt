@@ -9,6 +9,4 @@ chalk.enabled = false
 
 jest.setTimeout(60000)
 
-for (const type in consola._types) {
-  consola[type] = jest.fn()
-}
+consola.mockTypes(() => jest.fn())
