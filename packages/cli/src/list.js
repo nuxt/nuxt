@@ -18,7 +18,7 @@ export default async function listCommands(commands) {
   const _cmmds = commandsHelp.map(([cmd, description]) => {
     const i = indent(maxLength + optionSpaces - cmd.length)
     return foldLines(
-      chalk.bold(cmd) + i + description,
+      chalk.green(cmd) + i + description,
       startSpaces + maxLength + optionSpaces * 2,
       startSpaces + optionSpaces
     )
