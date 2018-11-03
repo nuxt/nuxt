@@ -2,10 +2,9 @@ import consola from 'consola'
 export * from './mocking'
 export { NuxtCommand } from '../../src'
 
-jest.mock('consola')
-
-consola.addReporter = jest.fn()
-consola.withTag = jest.fn()
+for (const type in consola._types) {
+  consola[type] = jest.fn()
+}
 
 export {
   consola
