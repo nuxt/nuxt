@@ -3066,6 +3066,17 @@ consola@^2.0.0-1, consola@^2.0.7:
     std-env "^2.1.0"
     string-width "^2.1.1"
 
+consola@^2.0.9:
+  version "2.0.9"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.0.9.tgz#1cd391b549bf984875becaf4bbb78fd8e93e581b"
+  integrity sha512-NYX2IdA8hw1N/V1KPWvi3rlTBfuvfm9M69R+psQLqorkUewR3pe1PIkRuWpSnL89Hiurz3tHnNNtfqKqM11QvA==
+  dependencies:
+    chalk "^2.4.1"
+    dayjs "^1.7.7"
+    figures "^2.0.0"
+    std-env "^2.1.0"
+    string-width "^2.1.1"
+
 console-browserify@^1.1.0:
   version "1.1.0"
   resolved "https://registry.npmjs.org/console-browserify/-/console-browserify-1.1.0.tgz#f0241c45730a9fc6323b206dbf38edc741d0bb10"
