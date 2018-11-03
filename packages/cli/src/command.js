@@ -15,13 +15,13 @@ export default class NuxtCommand {
   }
 
   static async load(name) {
-    // So eslint doesn't complain about lookups
-    const _commands = { ...commands }
-    if (name in _commands) {
-      const cmd = await _commands[name]().then(m => m.default)
+    if (name in commands) {
+      const cmd = await commands[name]() // eslint-disable-line import/namespace
+        .then(m => m.default)
       return NuxtCommand.from(cmd)
     } else {
       // TODO dynamic module loading
+      throw new Error('Command ' + name + ' could not be loaded!')
     }
   }
 

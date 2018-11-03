@@ -1,10 +1,12 @@
 import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces } from './utils/formatting'
 
-export default async function listCommands(_commands) {
-  _commands = await Promise.all(
-    Object.keys(_commands).map(cmd => NuxtCommand.load(cmd))
+export default async function listCommands(commands) {
+  // Load all commands
+  const _commands = await Promise.all(
+    Object.keys(commands).map(cmd => NuxtCommand.load(cmd))
   )
+
   let maxLength = 0
   const commandsHelp = []
   for (const name in _commands) {

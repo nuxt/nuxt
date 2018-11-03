@@ -8,12 +8,11 @@ export default function run() {
   const defaultCommand = 'dev'
   let cmd = process.argv[2]
 
-  const _commands = { ...commands }
-  if (_commands[cmd]) {
+  if (commands[cmd]) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands(_commands).then(() => process.exit(0))
+      listCommands(commands).then(() => process.exit(0))
       return
     }
     cmd = defaultCommand
