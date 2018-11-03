@@ -96,6 +96,11 @@ export function showBanner(nuxt) {
     lines.push(chalk.bold('Listening on: ') + chalk.underline.blue(listener.url))
   }
 
+  // Add custom badge messages
+  if (nuxt.options.cli.badgeMessages.length) {
+    lines.push('', ...nuxt.options.cli.badgeMessages)
+  }
+
   const box = boxen(lines.join('\n'), {
     borderColor: 'green',
     borderStyle: 'round',
