@@ -38,6 +38,7 @@ export default class Listener {
         case '0.0.0.0': this.host = ip.address(); break
       }
       this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}}`
+      return
     }
     this.url = `unix+http://${address}`
   }
