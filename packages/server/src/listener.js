@@ -45,7 +45,7 @@ export default class Listener {
 
   async listen() {
     // Prevent multi calls
-    if (this.listenning) {
+    if (this.listening) {
       return
     }
 
