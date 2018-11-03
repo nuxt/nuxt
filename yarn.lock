@@ -3066,10 +3066,10 @@ consola@^2.0.0-1, consola@^2.0.7:
     std-env "^2.1.0"
     string-width "^2.1.1"
 
-consola@^2.0.9:
-  version "2.0.9"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.0.9.tgz#1cd391b549bf984875becaf4bbb78fd8e93e581b"
-  integrity sha512-NYX2IdA8hw1N/V1KPWvi3rlTBfuvfm9M69R+psQLqorkUewR3pe1PIkRuWpSnL89Hiurz3tHnNNtfqKqM11QvA==
+consola@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.1.0.tgz#cf2b762ce1c982e61c3f9da3b9e7f0bccb0c1fc0"
+  integrity sha512-x+VdZSXUCVdnYLNqZV7fAtPB88rPGNNbAtf00aCD/l75uvMcp7Qh0UaSkkCQ33n/+nkoLS+V2DPT4F+GssUKDw==
   dependencies:
     chalk "^2.4.1"
     dayjs "^1.7.7"
