@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 
@@ -17,7 +18,7 @@ export default async function listCommands(commands) {
   const _cmmds = commandsHelp.map(([cmd, description]) => {
     const i = indent(maxLength + optionSpaces - cmd.length)
     return foldLines(
-      cmd + i + description,
+      chalk.bold(cmd) + i + description,
       startSpaces + maxLength + optionSpaces * 2,
       startSpaces + optionSpaces
     )
