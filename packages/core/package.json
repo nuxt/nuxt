@@ -12,15 +12,15 @@
     "@nuxt/config": "^2.2.0",
     "@nuxt/server": "^2.2.0",
     "@nuxt/vue-renderer": "^2.2.0",
-    "@nuxtjs/devalue": "^1.0.1",
+    "@nuxtjs/devalue": "^1.1.0",
     "@nuxtjs/opencollective": "^0.1.0",
-    "consola": "^2.0.0-1",
+    "consola": "^2.1.1",
     "debug": "^4.1.0",
     "esm": "^3.0.84",
     "fs-extra": "^7.0.0",
     "hash-sum": "^1.0.2",
     "lodash": "^4.17.11",
-    "std-env": "^2.0.2"
+    "std-env": "^2.1.0"
   },
   "publishConfig": {
     "access": "public"
