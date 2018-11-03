@@ -49,7 +49,7 @@ export default class Listener {
       return
     }
 
-    // Initialize undelying http(s) server
+    // Initialize underlying http(s) server
     const protocol = this.https ? https : http
     const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
