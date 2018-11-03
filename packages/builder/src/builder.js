@@ -293,7 +293,7 @@ export default class Builder {
         ['index.vue'],
         this.template.templatesDir + '/pages'
       )
-    } else if (this._nuxtPages) { // If user defined a custom method to create routes
+    } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
         ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
@@ -310,7 +310,7 @@ export default class Builder {
         this.options.srcDir,
         this.options.dir.pages
       )
-    } else {
+    } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
         this.options.srcDir
       )
