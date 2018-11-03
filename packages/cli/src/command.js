@@ -1,7 +1,7 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces } from './utils/formatting'
+import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as commands from './commands'
 import * as imports from './imports'
 
@@ -135,7 +135,7 @@ export default class NuxtCommand {
     const description = foldLines(this.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
-    return `${usage}\n\n${description}\n\n${opts}\n\n`
+    return colorize(`${usage}\n\n${description}\n\n${opts}\n\n`)
   }
 
   showVersion() {

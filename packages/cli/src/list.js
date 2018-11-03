@@ -1,5 +1,5 @@
 import NuxtCommand from './command'
-import { indent, foldLines, startSpaces, optionSpaces } from './utils/formatting'
+import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 
 export default async function listCommands(commands) {
   // Load all commands
@@ -26,5 +26,5 @@ export default async function listCommands(commands) {
   const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
   const cmmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmmds
 
-  process.stderr.write(`${usage}\n\n${cmmds}\n\n`)
+  process.stderr.write(colorize(`${usage}\n\n${cmmds}\n\n`))
 }

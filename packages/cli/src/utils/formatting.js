@@ -1,4 +1,5 @@
 import wrapAnsi from 'wrap-ansi'
+import chalk from 'chalk'
 
 export const startSpaces = 2
 export const optionSpaces = 2
@@ -26,4 +27,11 @@ export function indentLines(string, spaces, firstLineSpaces) {
 
 export function foldLines(string, spaces, firstLineSpaces, maxCharsPerLine) {
   return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
+}
+
+export function colorize(text) {
+  return text
+    .replace(/\[[^ ]+\]/g, m => chalk.grey(m))
+    .replace(/<[^ ]+>/g, m => chalk.green(m))
+    .replace(/ (-[-\w,]+)/g, m => chalk.bold(m))
 }
