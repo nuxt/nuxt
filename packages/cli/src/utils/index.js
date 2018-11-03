@@ -108,5 +108,5 @@ export function showBanner(nuxt) {
     margin: 1
   })
 
-  process.stdout.write('\n' + box + '\n')
+  process.stdout.write(box + '\n')
 }

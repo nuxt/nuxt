@@ -41,8 +41,6 @@ export default {
         showBanner(nuxt)
       }, 300)
 
-      nuxt.hook('webpack:done', () => showNuxtBanner())
-
       return (
         Promise.resolve()
           .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))

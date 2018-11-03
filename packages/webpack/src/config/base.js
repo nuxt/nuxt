@@ -262,8 +262,8 @@ export default class WebpackBaseConfig {
       name: this.name,
       color: this.colors[this.name],
       reporter: {
-        done: (context) => {
-          if (!context.hasErrors()) {
+        allDone: (context) => {
+          if (!context.hasErrors) {
             this.nuxt.callHook('webpack:done')
           } else {
             this.nuxt.callHook('webpack:error')
