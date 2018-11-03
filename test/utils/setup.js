@@ -12,5 +12,6 @@ jest.mock('consola', () => {
     consola[level] = jest.fn()
   }
   consola.withTag = () => consola
+  consola.wrapConsole = () => {}
   return consola
 })
