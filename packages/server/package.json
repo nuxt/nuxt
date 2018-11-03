@@ -20,6 +20,7 @@
     "fs-extra": "^7.0.0",
     "ip": "^1.1.5",
     "launch-editor-middleware": "^2.2.1",
+    "pify": "^4.0.1",
     "serve-static": "^1.13.2",
     "server-destroy": "^1.0.1"
   },
