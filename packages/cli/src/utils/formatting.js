@@ -34,5 +34,5 @@ export function colorize(text) {
     .replace(/\[[^ ]+\]/g, m => chalk.grey(m))
     .replace(/<[^ ]+>/g, m => chalk.green(m))
     .replace(/ (-[-\w,]+)/g, m => chalk.bold(m))
-    .replace(/`(.+)`/g, (_, m) => chalk.bold.red(m))
+    .replace(/`(.+)`/g, (_, m) => chalk.bold.cyan(m))
 }
