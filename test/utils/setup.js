@@ -6,6 +6,6 @@ test.skip.win = isWin ? test.skip : test
 
 jest.setTimeout(60000)
 
-consola.setReporters([{
-  log: jest.fn()
-}])
+for (const type in consola._types) {
+  consola[type] = jest.fn()
+}
