@@ -109,7 +109,7 @@ export class WebpackBuilder {
     }
 
     // Start Builds
-    const runner = options.dev ? parallel : sequence
+    const runner = options.dev && !options.build.modern ? parallel : sequence
 
     await runner(this.compilers, (compiler) => {
       return this.webpackCompile(compiler)
