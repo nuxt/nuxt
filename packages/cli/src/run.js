@@ -2,7 +2,7 @@ import consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
-import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
+import { indent, foldLines, startSpaces, optionSpaces } from './utils/formatting'
 
 async function listCommands(_commands) {
   _commands = await Promise.all(
