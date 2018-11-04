@@ -224,16 +224,18 @@ export default class VueRenderer {
       return { html, getPreloadFiles }
     }
 
-    const { req } = context
-    const ua = req && req.headers && req.headers['user-agent']
-    const isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
-      allowHigherVersions: true,
-      browsers: this.modernBrowsers
-    })
+    const { req: { socket = {}, headers } = {} } = context
+    if (socket.isModernBrowser === undefined) {
+      const ua = headers && headers['user-agent']
+      socket.isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
+        allowHigherVersions: true,
+        browsers: this.modernBrowsers
+      })
+    }
 
     let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (isModernBrowser) {
+    if (socket.isModernBrowser) {
       APP = await this.renderer.modern.renderToString(context)
     } else {
       APP = await this.renderer.ssr.renderToString(context)
