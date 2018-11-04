@@ -82,7 +82,7 @@ export default class Server {
         if (this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }
-        if (this.hotMiddleware) {
+        if (this.hotMiddleware[name]) {
           await this.hotMiddleware[name](req, res)
         }
         next()
