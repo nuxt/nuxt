@@ -17,7 +17,7 @@
     "cache-loader": "^1.2.5",
     "caniuse-lite": "^1.0.30000904",
     "chalk": "^2.4.1",
-    "consola": "^2.1.1",
+    "consola": "^2.2.1",
     "css-loader": "^1.0.1",
     "cssnano": "^4.1.7",
     "file-loader": "^2.0.0",
@@ -47,7 +47,7 @@
     "webpack-dev-middleware": "^3.4.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
-    "webpackbar": "^3.0.0-1"
+    "webpackbar": "^3.0.0-2"
   },
   "publishConfig": {
     "access": "public"
