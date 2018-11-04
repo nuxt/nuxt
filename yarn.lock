@@ -3025,10 +3025,21 @@ consola@^1.4.3:
     lodash "^4.17.5"
     std-env "^1.1.0"
 
-consola@^2.0.7, consola@^2.1.1:
+consola@^2.0.7:
   version "2.1.1"
   resolved "https://registry.npmjs.org/consola/-/consola-2.1.1.tgz#2be8bf537145d5adc47726024c84cf38e85b48e4"
   integrity sha512-6CFUwEF1Scd7xPjdaN20VF8BV0RF2Fkc5nehvusfh/3ymDnn96K+sj+AM8wmWgCdMjglyo3vd+zszaS5MlhuCQ==
+  dependencies:
+    chalk "^2.4.1"
+    dayjs "^1.7.7"
+    figures "^2.0.0"
+    std-env "^2.1.0"
+    string-width "^2.1.1"
+
+consola@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.2.0.tgz#88d947de0a4b49987e08c5fbd0f290663f1af6f6"
+  integrity sha512-gRFiX/IBKriTBg2LNVozgwCOnBOWwlid6wEWshyjP1erBRPgzS7Fz+0Yvu4kd7jksAWGDvMr4ZnxztOd7NJeCg==
   dependencies:
     chalk "^2.4.1"
     dayjs "^1.7.7"

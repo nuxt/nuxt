@@ -31,7 +31,7 @@
     "babel-jest": "^23.6.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "codecov": "^3.1.0",
-    "consola": "^2.1.1",
+    "consola": "^2.2.0",
     "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.8.0",
