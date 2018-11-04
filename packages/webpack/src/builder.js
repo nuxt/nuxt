@@ -24,8 +24,8 @@ export class WebpackBuilder {
     // Fields that set on build
     this.compilers = []
     this.compilersWatching = []
-    this.webpackDevMiddleware = null
-    this.webpackHotMiddleware = null
+    this.devMiddleware = {}
+    this.hotMiddleware = {}
     this.perfLoader = null
 
     // Initialize shared FS and Cache
@@ -141,7 +141,7 @@ export class WebpackBuilder {
       if (options.dev) {
         // --- Dev Build ---
         // Client Build, watch is started by dev-middleware
-        if (compiler.options.name === 'client') {
+        if (['client', 'modern'].includes(compiler.options.name)) {
           return this.webpackDev(compiler)
         }
         // Server, build and watch for changes
@@ -178,10 +178,11 @@ export class WebpackBuilder {
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
+    const name = [compiler.options.name]
     const { nuxt: { server }, options } = this.context
 
     // Create webpack dev middleware
-    this.webpackDevMiddleware = pify(
+    this.devMiddleware[name] = pify(
       webpackDevMiddleware(
         compiler,
         Object.assign(
@@ -196,9 +197,9 @@ export class WebpackBuilder {
       )
     )
 
-    this.webpackDevMiddleware.close = pify(this.webpackDevMiddleware.close)
+    this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
-    this.webpackHotMiddleware = pify(
+    this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
         compiler,
         Object.assign(
@@ -206,15 +207,18 @@ export class WebpackBuilder {
             log: false,
             heartbeat: 10000
           },
-          options.build.hotMiddleware
+          options.build.hotMiddleware,
+          {
+            path: `/__webpack_hmr/${name}`
+          }
         )
       )
     )
 
     // Inject to renderer instance
     if (server) {
-      server.webpackDevMiddleware = this.webpackDevMiddleware
-      server.webpackHotMiddleware = this.webpackHotMiddleware
+      server.devMiddleware = this.devMiddleware
+      server.hotMiddleware = this.hotMiddleware
     }
   }
 
@@ -223,8 +227,8 @@ export class WebpackBuilder {
       watching.close()
     }
     // Stop webpack middleware
-    if (this.webpackDevMiddleware) {
-      await this.webpackDevMiddleware.close()
+    for (const devMiddleware of Object.values(this.devMiddleware)) {
+      await devMiddleware.close()
     }
   }
 

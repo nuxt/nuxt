@@ -5,10 +5,8 @@ import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import template from 'lodash/template'
 import { waitFor } from '@nuxt/common'
-import { matchesUA } from 'browserslist-useragent'
 import { createBundleRenderer } from 'vue-server-renderer'
 
-import ModernBrowsers from '../data/modern-browsers.json'
 import SPAMetaRenderer from './spa-meta'
 
 export default class VueRenderer {
@@ -21,9 +19,6 @@ export default class VueRenderer {
       modern: null,
       spa: null
     }
-
-    this.modernBrowsers = Object.keys(ModernBrowsers)
-      .map(browser => `${browser} >= ${ModernBrowsers[browser]}`)
 
     // Renderer runtime resources
     Object.assign(this.context.resources, {
@@ -224,16 +219,9 @@ export default class VueRenderer {
       return { html, getPreloadFiles }
     }
 
-    const { req } = context
-    const ua = req && req.headers && req.headers['user-agent']
-    const isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
-      allowHigherVersions: true,
-      browsers: this.modernBrowsers
-    })
-
     let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (isModernBrowser) {
+    if (context.req.isModernBrowser) {
       APP = await this.renderer.modern.renderToString(context)
     } else {
       APP = await this.renderer.ssr.renderToString(context)
