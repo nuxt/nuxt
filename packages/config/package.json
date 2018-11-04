@@ -9,9 +9,9 @@
   "main": "dist/config.js",
   "dependencies": {
     "@nuxt/common": "^2.2.0",
-    "consola": "^2.0.0-1",
+    "consola": "^2.1.1",
     "lodash": "^4.17.11",
-    "std-env": "^2.0.2"
+    "std-env": "^2.1.0"
   },
   "publishConfig": {
     "access": "public"
