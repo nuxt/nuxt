@@ -14,13 +14,13 @@
     "@nuxt/vue-renderer": "^2.2.0",
     "@nuxtjs/devalue": "^1.1.0",
     "@nuxtjs/opencollective": "^0.1.0",
-    "consola": "^2.2.0",
+    "consola": "^2.2.2",
     "debug": "^4.1.0",
     "esm": "^3.0.84",
     "fs-extra": "^7.0.0",
     "hash-sum": "^1.0.2",
     "lodash": "^4.17.11",
-    "std-env": "^2.1.0"
+    "std-env": "^2.1.1"
   },
   "publishConfig": {
     "access": "public"
