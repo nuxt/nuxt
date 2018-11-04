@@ -36,6 +36,7 @@
     "postcss-loader": "^3.0.0",
     "postcss-preset-env": "^6.3.0",
     "postcss-url": "^8.0.0",
+    "std-env": "^2.1.1",
     "style-resources-loader": "^1.2.1",
     "terser-webpack-plugin": "^1.1.0",
     "thread-loader": "^1.2.0",
