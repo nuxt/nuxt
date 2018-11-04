@@ -98,12 +98,6 @@ export default () => ({
   hotMiddleware: {},
 
   stats: {
-    chunks: false,
-    children: false,
-    modules: false,
-    colors: true,
-    warnings: true,
-    errors: true,
     excludeAssets: [
       /.map$/,
       /index\..+\.html$/,
