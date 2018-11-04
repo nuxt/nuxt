@@ -181,7 +181,8 @@ export default class VueRenderer {
     context.url = url
 
     // Basic response if SSR is disabled or spa data provided
-    const spa = context.spa || (context.res && context.res.spa)
+    const { req, res } = context
+    const spa = context.spa || (res && res.spa)
     const ENV = this.context.options.env
 
     if (this.noSSR || spa) {
@@ -221,7 +222,7 @@ export default class VueRenderer {
 
     let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (context.req.isModernBrowser) {
+    if (req && req.isModernBrowser) {
       APP = await this.renderer.modern.renderToString(context)
     } else {
       APP = await this.renderer.ssr.renderToString(context)
