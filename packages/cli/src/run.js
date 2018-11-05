@@ -12,7 +12,7 @@ export default function run() {
     process.argv.splice(2, 1)
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands(commands).then(() => process.exit(0))
+      listCommands().then(() => process.exit(0))
       return
     }
     cmd = defaultCommand
