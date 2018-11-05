@@ -33,7 +33,7 @@ export default class Nuxt extends Hookable {
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
     this.renderer = this.server
     this.render = this.server.app
-    this.showReady = () => { this.callHook('showReady') }
+    this.showReady = () => { this.callHook('webpack:done') }
 
     // Wait for Nuxt to be ready
     this.initialized = false
