@@ -47,7 +47,7 @@ export class WebpackBuilder {
 
     // Modern
     let modernConfig
-    if (options.build.modern) {
+    if (options.modern) {
       modernConfig = new ModernConfig(this).config()
       compilersOptions.push(modernConfig)
     }

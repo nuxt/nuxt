@@ -31,7 +31,7 @@ export default {
       prepare(cmd, options, argv) {
         options.build = options.build || {}
         if (argv.modern) {
-          options.build.modern = !!argv.modern
+          options.modern = argv.modern
         }
       }
     },

@@ -71,7 +71,7 @@ export default class Server {
       }
     }
 
-    if (this.options.build.modern) {
+    if (this.options.modern === 'server') {
       this.useMiddleware(modernMiddleware)
     }
 
