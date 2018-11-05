@@ -141,7 +141,7 @@ export class WebpackBuilder {
       if (options.dev) {
         // --- Dev Build ---
         // Client Build, watch is started by dev-middleware
-        if (['client', 'modern'].includes(compiler.options.name)) {
+        if (['client', 'modern'].includes(name)) {
           return this.webpackDev(compiler)
         }
         // Server, build and watch for changes
