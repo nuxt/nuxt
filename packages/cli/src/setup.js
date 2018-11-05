@@ -27,9 +27,9 @@ export default function setup({ dev }) {
     log(logObj) {
       if (logObj.type === 'fatal') {
         process.stderr.write(boxen([
-          chalk.red('✖ Nuxt Fatal Error!'),
+          chalk.red('✖ Nuxt Fatal Error'),
           '',
-          chalk.grey(String(logObj.args[0]))
+          chalk.white(String(logObj.args[0]))
         ].join('\n'), {
           borderColor: 'red',
           borderStyle: 'round',
