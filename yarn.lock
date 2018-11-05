@@ -3036,15 +3036,15 @@ consola@^2.0.7:
     std-env "^2.1.0"
     string-width "^2.1.1"
 
-consola@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.2.0.tgz#88d947de0a4b49987e08c5fbd0f290663f1af6f6"
-  integrity sha512-gRFiX/IBKriTBg2LNVozgwCOnBOWwlid6wEWshyjP1erBRPgzS7Fz+0Yvu4kd7jksAWGDvMr4ZnxztOd7NJeCg==
+consola@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.2.2.tgz#02a1df59b63746211d5cff1df436a1b2321cc716"
+  integrity sha512-lrJmVXiQ3LD2unImvgfhcjXRqg81sKjfzPVoQNrl/17BNc5Z1RGFYpexlBavXUMdFfBZlVJgjhosQa6aCHNOVg==
   dependencies:
     chalk "^2.4.1"
     dayjs "^1.7.7"
     figures "^2.0.0"
-    std-env "^2.1.0"
+    std-env "^2.1.1"
     string-width "^2.1.1"
 
 console-browserify@^1.1.0:
@@ -10162,6 +10162,13 @@ std-env@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/std-env/-/std-env-2.1.0.tgz#0eab8ddabf6a27c055cc23120d131b4ae90c9b8f"
   integrity sha512-Jb0FHRwR0Ca1IZVPjHI8nRBQngzuza8GYp/Gv02PKBrJ3M+Yrj5exDzVIb8Xwf3x/6P/69XNQAMaed65OyiBzw==
+  dependencies:
+    ci-info "^1.6.0"
+
+std-env@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/std-env/-/std-env-2.1.1.tgz#b7429cee321390faf39a07f10f0747eec736a78b"
+  integrity sha512-EPOQ97Zg5xlQj322LohFaGoUXFSr9VY30mjL5hKXWMcRUf5o6bOF1S1dkbFH1vOXTD3PcUePr3v4oj1RTeXgHw==
   dependencies:
     ci-info "^1.6.0"
 
