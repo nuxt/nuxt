@@ -50,10 +50,13 @@ describe('start', () => {
 
   test('fatal error on ssr and server bundle doesnt exist', async () => {
     mockGetNuxtStart(true)
-    jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
+    let i = 0
+    jest.spyOn(fs, 'existsSync').mockImplementation(() => {
+      return ++i === 1 ? true : false
+    })
 
     await NuxtCommand.from(start).run()
 
-    expect(consola.fatal).toHaveBeenCalledWith('No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`')
+    expect(consola.fatal).toHaveBeenCalledWith('No SSR build found.\nPlease start with `nuxt start --spa` or build using `nuxt build --universal`')
   })
 })
