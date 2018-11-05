@@ -52,6 +52,9 @@ export default class VueRenderer {
       const _path = path.join(distPath, fileName)
 
       if (!_fs.existsSync(_path)) {
+        if ((!this.noSSR && key === 'serverBundle') || (this.noSSR && key === 'spaTemplate')) {
+          consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option to false.`)
+        }
         return // Resource not exists
       }
       const rawData = _fs.readFileSync(_path, 'utf8')
