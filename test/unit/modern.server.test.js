@@ -3,9 +3,9 @@ import { loadFixture, getPort, Nuxt, rp } from '../utils'
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
 
-describe('modern build', () => {
+describe('modern server mode', () => {
   beforeAll(async () => {
-    const options = await loadFixture('modern')
+    const options = await loadFixture('modern', { modern: 'server' })
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
@@ -35,5 +35,10 @@ describe('modern build', () => {
   test('should not include es6 syntax in normal resources', async () => {
     const response = await rp(url('/_nuxt/app.js'))
     expect(response).not.toContain('arrow:()=>"build test"')
+  })
+
+  // Close server and ask nuxt to stop listening to file changes
+  afterAll(async () => {
+    await nuxt.close()
   })
 })
