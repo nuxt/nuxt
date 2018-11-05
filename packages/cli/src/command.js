@@ -32,6 +32,61 @@ export default class NuxtCommand {
     return new NuxtCommand(options)
   }
 
+  run() {
+    return this._run(this)
+  }
+
+  showVersion() {
+    process.stdout.write(`${name} v${version}\n`)
+    process.exit(0)
+  }
+
+  showHelp() {
+    process.stdout.write(this._getHelp())
+    process.exit(0)
+  }
+
+  getArgv(args) {
+    const minimistOptions = this._getMinimistOptions()
+    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
+
+    if (argv.version) {
+      this.showVersion()
+    } else if (argv.help) {
+      this.showHelp()
+    }
+
+    return argv
+  }
+
+  async getNuxtConfig(argv, extraOptions) {
+    const config = await loadNuxtConfig(argv)
+    const options = Object.assign(config, extraOptions || {})
+
+    for (const name of Object.keys(this.options)) {
+      this.options[name].prepare && this.options[name].prepare(this, options, argv)
+    }
+
+    return options
+  }
+
+  async getNuxt(options) {
+    const { Nuxt } = await imports.core()
+    return new Nuxt(options)
+  }
+
+  async getBuilder(nuxt) {
+    const { Builder } = await imports.builder()
+    const { BundleBuilder } = await imports.webpack()
+    return new Builder(nuxt, BundleBuilder)
+  }
+
+  async getGenerator(nuxt) {
+    const { Generator } = await imports.generator()
+    const builder = await this.getBuilder(nuxt)
+    return new Generator(nuxt, builder)
+  }
+
   _getMinimistOptions() {
     const minimistOptions = {
       alias: {},
@@ -55,53 +110,6 @@ export default class NuxtCommand {
     }
 
     return minimistOptions
-  }
-
-  getArgv(args) {
-    const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-
-    if (argv.version) {
-      this.showVersion()
-    } else if (argv.help) {
-      this.showHelp()
-    }
-
-    return argv
-  }
-
-  run() {
-    return this._run(this)
-  }
-
-  async getNuxtConfig(argv, extraOptions) {
-    const config = await loadNuxtConfig(argv)
-    const options = Object.assign(config, extraOptions || {})
-
-    for (const name of Object.keys(this.options)) {
-      if (this.options[name].prepare) {
-        this.options[name].prepare(this, options, argv)
-      }
-    }
-
-    return options
-  }
-
-  async getNuxt(options) {
-    const { Nuxt } = await imports.core()
-    return new Nuxt(options)
-  }
-
-  async getBuilder(nuxt) {
-    const { Builder } = await imports.builder()
-    const { BundleBuilder } = await imports.webpack()
-    return new Builder(nuxt, BundleBuilder)
-  }
-
-  async getGenerator(nuxt) {
-    const { Generator } = await imports.generator()
-    const builder = await this.getBuilder(nuxt)
-    return new Generator(nuxt, builder)
   }
 
   _getHelp() {
@@ -135,16 +143,11 @@ export default class NuxtCommand {
     const description = foldLines(this.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
-    return colorize(`${usage}\n\n${description}\n\n${opts}\n\n`)
+    let helpText = colorize(`${usage}\n\n`)
+    if (this.description) helpText += colorize(`${description}\n\n`)
+    if (options.length) helpText += colorize(`${opts}\n\n`)
+
+    return helpText
   }
 
-  showVersion() {
-    process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
-  }
-
-  showHelp() {
-    process.stdout.write(this._getHelp())
-    process.exit(0)
-  }
 }
