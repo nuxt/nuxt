@@ -207,8 +207,8 @@ export default class Builder {
   async generateRoutesAndFiles() {
     consola.debug(`Generating nuxt files`)
 
-    this.plugins.length = 0
-    this.plugins.push.apply(this.plugins, this.normalizePlugins())
+    // Plugins
+    this.plugins = Array.from(this.normalizePlugins())
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)
