@@ -19,6 +19,11 @@ describe('with-config', () => {
     expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
   })
 
+  test('/ (no duplicate SSR tags', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).not.toContain('<meta data-n-head="true" property="og:url" content="og-url-a" data-hid="metaogurl"/>')
+  })
+
   test('/ (asset name for analyze mode)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/app.js"')

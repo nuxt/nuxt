@@ -28,6 +28,20 @@ export default {
       ]
     }
   },
+  head: {
+    meta: [
+      {
+        property: 'og:url',
+        content: 'og-url-a',
+        hid: 'metaogurl'
+      },
+      {
+        property: 'og:url',
+        content: 'og-url-b',
+        hid: 'metaogurl'
+      }
+    ]
+  },
   modulesDir: [path.join(__dirname, '..', '..', '..', 'node_modules')],
   transition: 'test',
   layoutTransition: 'test',
