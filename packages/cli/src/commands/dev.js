@@ -32,13 +32,21 @@ export default {
         return errorHandler(err, oldInstance)
       }
 
+      const logChanged = (name) => {
+        consola.log({
+          type: 'change',
+          icon: chalk.blue.bold('↻'),
+          message: chalk.blue(name)
+        })
+      }
+
       nuxt.hook('watch:fileChanged', async (builder, name) => {
-        consola.info(`%s changed, Rebuilding the app...`, chalk.blue(name))
+        logChanged(name)
         await startDev({ nuxt: builder.nuxt, builder })
       })
 
       nuxt.hook('bundler:change', (name) => {
-        consola.info(`%s changed...`, chalk.blue(name))
+        logChanged(name)
       })
 
       return (
