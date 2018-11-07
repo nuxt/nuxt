@@ -128,7 +128,7 @@ export default class Builder {
       } else if (pluginFiles.length > 1) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: pluginFiles.join('\n')
+          additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
 

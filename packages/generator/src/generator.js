@@ -108,6 +108,7 @@ export default class Generator {
     }
 
     // Improve string representation for errors
+    // TODO: Use consola for more consistency
     errors.toString = () => this._formatErrors(errors)
 
     return errors
@@ -117,11 +118,9 @@ export default class Generator {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
-        const bgColor = isHandled ? 'bgYellow' : 'bgRed'
         const color = isHandled ? 'yellow' : 'red'
 
-        let line =
-          Chalk.black[bgColor](' GEN ERR ') + Chalk[color](` ${route}\n\n`)
+        let line = Chalk[color](` ${route}\n\n`)
 
         if (isHandled) {
           line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
