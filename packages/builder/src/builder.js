@@ -53,10 +53,16 @@ export default class Builder {
 
     this._buildStatus = STATUS.INITIAL
 
-    // Stop watching on nuxt.close()
+    // Hooks for watch lifecycle
     if (this.options.dev) {
+      // Start watching after initial render
+      this.nuxt.hook('build:done', () => {
+        consola.info('Waiting for file changes')
+        this.watchClient()
+      })
+
+      // Stop watching on nuxt.close()
       this.nuxt.hook('close', () => this.unwatch())
-      this.nuxt.hook('build:done', () => this.watchClient())
     }
 
     if (this.options.build.analyze) {
@@ -148,7 +154,12 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info('Building project')
+    if (this.options.dev) {
+      consola.info('Preparing project for development')
+      consola.info('Initial build may take a while')
+    } else {
+      consola.info('Production build')
+    }
 
     // Wait for nuxt ready
     await this.nuxt.ready()
