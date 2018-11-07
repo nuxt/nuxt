@@ -35,7 +35,7 @@
       "name": "Jonas Galvez (@galvez)"
     },
     {
-      "name": "Alexander Lichter (@manniL}"
+      "name": "Alexander Lichter (@manniL)"
     }
   ],
   "files": [
@@ -52,7 +52,7 @@
     "@nuxt/core": "^2.2.0",
     "@nuxt/generator": "^2.2.0",
     "@nuxt/webpack": "^2.2.0",
-    "consola": "^2.1.1"
+    "consola": "^2.2.2"
   },
   "engines": {
     "node": ">=8.0.0",

@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@nuxt/config": "^2.2.0",
-    "consola": "^2.1.1",
+    "consola": "^2.2.2",
     "esm": "^3.0.84",
     "minimist": "^1.2.0",
     "wrap-ansi": "^4.0.0"
