@@ -15,6 +15,16 @@ export default {
     default: 'nuxt.config.js',
     description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
   },
+  modern: {
+    alias: 'm',
+    type: 'boolean',
+    description: 'Build/Start app for modern browsers',
+    prepare(cmd, options, argv) {
+      if (argv.modern) {
+        options.modern = argv.modern
+      }
+    }
+  },
   version: {
     type: 'boolean',
     description: 'Display the Nuxt version'
