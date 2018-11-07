@@ -48,7 +48,7 @@ describe('start', () => {
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test('fatal error on ssr and server bundle doesnt exist', async () => {
+  test.skip('fatal error on ssr and server bundle doesnt exist', async () => {
     mockGetNuxtStart(true)
     let i = 0
     jest.spyOn(fs, 'existsSync').mockImplementation(() => {
