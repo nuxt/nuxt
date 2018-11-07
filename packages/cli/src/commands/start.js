@@ -9,18 +9,7 @@ export default {
   usage: 'start <dir>',
   options: {
     ...common,
-    ...server,
-    modern: {
-      alias: 'm',
-      type: 'boolean',
-      description: 'Build app for modern browsers',
-      prepare(cmd, options, argv) {
-        options.build = options.build || {}
-        if (argv.modern) {
-          options.build.modern = !!argv.modern
-        }
-      }
-    }
+    ...server
   },
   async run(cmd) {
     const argv = cmd.getArgv()

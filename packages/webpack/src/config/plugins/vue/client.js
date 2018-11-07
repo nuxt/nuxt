@@ -26,12 +26,20 @@ export default class VueSSRClientPlugin {
         .filter(file => isJS(file) || isCSS(file))
         .filter(file => !initialFiles.includes(file))
 
+      const assetsMapping = {}
+      stats.assets
+        .filter(({ name }) => isJS(name))
+        .forEach(({ name, chunkNames }) => {
+          assetsMapping[name] = hash(chunkNames.join('|'))
+        })
+
       const manifest = {
         publicPath: stats.publicPath,
         all: allFiles,
         initial: initialFiles,
         async: asyncFiles,
-        modules: { /* [identifier: string]: Array<index: number> */ }
+        modules: { /* [identifier: string]: Array<index: number> */ },
+        assetsMapping
       }
 
       const assetModules = stats.modules.filter(m => m.assets.length)

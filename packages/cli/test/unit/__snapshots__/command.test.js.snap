@@ -10,6 +10,7 @@ exports[`cli/command builds help text 1`] = `
     --spa, -s          Launch in SPA mode
     --universal, -u    Launch in Universal mode (default)
     --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+    --modern, -m       Build/Start app for modern browsers, e.g. server, client and false
     --version          Display the Nuxt version
     --help, -h         Display this message
     --port, -p         Port number on which to start the application
@@ -30,6 +31,7 @@ exports[`cli/command loads command from name 1`] = `
     --spa, -s          Launch in SPA mode
     --universal, -u    Launch in Universal mode (default)
     --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
+    --modern, -m       Build/Start app for modern browsers, e.g. server, client and false
     --version          Display the Nuxt version
     --help, -h         Display this message
     --port, -p         Port number on which to start the application

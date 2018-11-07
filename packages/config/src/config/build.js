@@ -7,7 +7,6 @@ export default () => ({
   extractCSS: false,
   cssSourceMap: undefined,
   ssr: undefined,
-  modern: undefined,
   parallel: false,
   cache: false,
   publicPath: '/_nuxt/',

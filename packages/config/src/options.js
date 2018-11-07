@@ -216,6 +216,10 @@ export function getNuxtConfig(_options) {
   const modePreset = options.modes[options.mode || 'universal']
   defaultsDeep(options, modePreset)
 
+  if (options.modern === true) {
+    options.modern = 'server'
+  }
+
   // If no server-side rendering, add appear true transition
   /* istanbul ignore if */
   if (options.render.ssr === false && options.transition) {
