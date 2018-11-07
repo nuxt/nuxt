@@ -3088,7 +3088,7 @@ consola@^2.1.0:
     std-env "^2.1.0"
     string-width "^2.1.1"
 
-consola@^2.2.2:
+consola@^2.2.3:
   version "2.2.2"
   resolved "https://registry.npmjs.org/consola/-/consola-2.2.2.tgz#02a1df59b63746211d5cff1df436a1b2321cc716"
   integrity sha512-lrJmVXiQ3LD2unImvgfhcjXRqg81sKjfzPVoQNrl/17BNc5Z1RGFYpexlBavXUMdFfBZlVJgjhosQa6aCHNOVg==
@@ -11253,7 +11253,7 @@ webpack@^4.24.0:
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 
-webpackbar@^3.0.0-2:
+webpackbar@^3.0.0-3:
   version "3.0.0-2"
   resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.0-2.tgz#b0f37bd6c9fb408b121ac750a1ab891e2be97286"
   integrity sha512-f6BRJ9oJ2rx+vTWb/ejFTuUV9NThTlZWSl0vDy7G/1RHE5I3LN6MiCk5qmJt1DjO/aa9znLMt3qCGyV62n64oQ==
