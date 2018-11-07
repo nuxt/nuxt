@@ -17,8 +17,8 @@ export default {
   },
   modern: {
     alias: 'm',
-    type: 'boolean',
-    description: 'Build/Start app for modern browsers',
+    type: 'string',
+    description: 'Build/Start app for modern browsers, e.g. server, client and false',
     prepare(cmd, options, argv) {
       if (argv.modern) {
         options.modern = argv.modern
