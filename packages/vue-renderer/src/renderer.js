@@ -269,7 +269,7 @@ export default class VueRenderer {
 
     let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (req && req.isModernBrowser) {
+    if (req && req.modernMode) {
       APP = await this.renderer.modern.renderToString(context)
     } else {
       APP = await this.renderer.ssr.renderToString(context)

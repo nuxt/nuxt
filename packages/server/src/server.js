@@ -78,7 +78,7 @@ export default class Server {
     // Add webpack middleware support only for development
     if (this.options.dev) {
       this.useMiddleware(async (req, res, next) => {
-        const name = req.isModernBrowser ? 'modern' : 'client'
+        const name = req.modernMode ? 'modern' : 'client'
         if (this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }

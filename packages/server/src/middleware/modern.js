@@ -13,10 +13,10 @@ const isModernBrowser = (ua) => {
 
 export default function (req, res, next) {
   const { socket = {}, headers } = req
-  if (socket.isModernBrowser === undefined) {
+  if (socket.modernMode === undefined) {
     const ua = headers && headers['user-agent']
-    socket.isModernBrowser = isModernBrowser(ua)
+    socket.modernMode = isModernBrowser(ua)
   }
-  req.isModernBrowser = socket.isModernBrowser
+  req.modernMode = socket.modernMode
   next()
 }
