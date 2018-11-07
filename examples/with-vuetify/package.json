@@ -2,7 +2,8 @@
   "name": "example-with-vuetify",
   "dependencies": {
     "nuxt-edge": "latest",
-    "vuetify": "latest"
+    "vuetify": "latest",
+    "vuetify-loader": "latest"
   },
   "scripts": {
     "dev": "nuxt",
