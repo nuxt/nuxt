@@ -1,5 +1,5 @@
 import consola from 'consola'
-import debounce from 'lodash/debounce'
+import chalk from 'chalk'
 import { common, server } from '../options'
 import { showBanner } from '../utils'
 
@@ -32,14 +32,14 @@ export default {
         return errorHandler(err, oldInstance)
       }
 
-      nuxt.hook('watch:fileChanged', async (builder, fname) => {
-        consola.debug(`[${fname}] changed, Rebuilding the app...`)
+      nuxt.hook('watch:fileChanged', async (builder, name) => {
+        consola.info(`%s changed, Rebuilding the app...`, chalk.blue(name))
         await startDev({ nuxt: builder.nuxt, builder })
       })
 
-      const showNuxtBanner = debounce(() => {
-        showBanner(nuxt)
-      }, 300)
+      nuxt.hook('bundler:change', (name) => {
+        consola.info(`%s changed...`, chalk.blue(name))
+      })
 
       return (
         Promise.resolve()
@@ -57,7 +57,7 @@ export default {
           // Start listening
           .then(() => nuxt.server.listen())
           // Show banner
-          .then(() => showNuxtBanner())
+          .then(() => showBanner(nuxt))
           // Start watching serverMiddleware changes
           .then(() => builder.watchServer())
           // Handle errors

@@ -271,11 +271,16 @@ export default class WebpackBaseConfig {
       profile: !this.options.build.quiet && this.options.build.profile,
       stats: !this.options.build.quiet && !this.options.dev && this.options.build.stats,
       reporter: {
+        change: (_, { shortPath }) => {
+          if (!this.isServer) {
+            this.nuxt.callHook('bundler:change', shortPath)
+          }
+        },
         allDone: (context) => {
           if (!context.hasErrors) {
-            this.nuxt.callHook('webpack:done')
+            this.nuxt.callHook('bundler:done')
           } else {
-            this.nuxt.callHook('webpack:error')
+            this.nuxt.callHook('bundler:error')
           }
         }
       }
