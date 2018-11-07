@@ -1,8 +1,6 @@
 import chalk from 'chalk'
-import * as commands from './commands'
 import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
-
 
 export default async function listCommands() {
   const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']

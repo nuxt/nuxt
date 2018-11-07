@@ -52,7 +52,7 @@ describe('start', () => {
     mockGetNuxtStart(true)
     let i = 0
     jest.spyOn(fs, 'existsSync').mockImplementation(() => {
-      return ++i === 1 ? true : false
+      return ++i === 1
     })
 
     await NuxtCommand.from(start).run()
