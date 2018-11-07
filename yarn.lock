@@ -3129,17 +3129,6 @@ consola@^2.0.7:
     std-env "^2.1.0"
     string-width "^2.1.1"
 
-consola@^2.1.0:
-  version "2.2.1"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.2.1.tgz#60c9800513e729a23f6d0b4e15599ab1d129bbf2"
-  integrity sha512-pjIU0YUXWdp1jir7NEh8MYyG1geOcJkdSi8JG3fJUkqTiQPxnhoceFPeo1PnlfmXKIzSSBIc+s0oiVkUe9ItKA==
-  dependencies:
-    chalk "^2.4.1"
-    dayjs "^1.7.7"
-    figures "^2.0.0"
-    std-env "^2.1.0"
-    string-width "^2.1.1"
-
 consola@^2.2.2, consola@^2.2.3:
   version "2.2.3"
   resolved "https://registry.npmjs.org/consola/-/consola-2.2.3.tgz#567e59fe80a0d0330747e649e3e8405c1d007369"
@@ -11367,17 +11356,17 @@ webpack@^4.25.1:
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 
-webpackbar@^3.0.0-3:
-  version "3.0.0-2"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.0-2.tgz#b0f37bd6c9fb408b121ac750a1ab891e2be97286"
-  integrity sha512-f6BRJ9oJ2rx+vTWb/ejFTuUV9NThTlZWSl0vDy7G/1RHE5I3LN6MiCk5qmJt1DjO/aa9znLMt3qCGyV62n64oQ==
+webpackbar@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.0.tgz#8f9c3596ce7a3bc156feb97a59e6e3fc07f88104"
+  integrity sha512-OmGaVK6kogveo1FK56zHdVbzrCcoain8CJ2TvbK9YptjlBsDQ28wHCaOvgap7LMDv7L/iKtZv9gufOI3YhFmeg==
   dependencies:
     ansi-escapes "^3.1.0"
     chalk "^2.4.1"
-    consola "^2.1.0"
+    consola "^2.2.3"
     figures "^2.0.0"
     pretty-time "^1.1.0"
-    std-env "^2.1.0"
+    std-env "^2.1.1"
     text-table "^0.2.0"
     wrap-ansi "^4.0.0"
 
