@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { Route } from "vue-router";
+import VueRouter, { Route } from "vue-router";
 import { Store } from "vuex";
 
 // augment typings of Vue.js
@@ -7,7 +7,6 @@ import "./vue";
 
 type Dictionary<T> = { [key: string]: T };
 
-type Component = any; //TODO: TBD
 type NuxtState = Dictionary<any>;
 
 export interface Context {
@@ -20,15 +19,15 @@ export interface Context {
   route: Route;
   store: Store<any>;
   env: Dictionary<any>;
-  params: Dictionary<string>;
-  query: Dictionary<string>;
+  params: Route['params'];
+  query: Route['query'];
   req: Request;
   res: Response;
-  redirect(status: number, path: string, query?: object): void;
-  redirect(path: string, query?: object): void;
-  error(params: Error): void;
+  redirect(status: number, path: string, query?: Route['query']): void;
+  redirect(path: string, query?: Route['query']): void;
+  error(params: ErrorParams): void;
   nuxtState: NuxtState;
-  beforeNuxtRender(fn: (params: { Components: Array<Component>, nuxtState: NuxtState }) => void): void
+  beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
 }
 
 export interface Transition {
@@ -45,9 +44,9 @@ export interface Transition {
   leaveActiveClass?: string;
 }
 
-export interface Error {
-  statusCode: number;
-  message: string;
+export interface ErrorParams {
+  statusCode?: number;
+  message?: string;
 }
 
 export interface LoadingObject {
