@@ -6,8 +6,9 @@ import { wrapArray } from '@nuxt/common'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor(options, nuxt, { isServer }) {
+  constructor(options, nuxt, { isServer, perfLoader }) {
     this.isServer = isServer
+    this.perfLoader = perfLoader
     this.dev = options.dev
     this.srcDir = options.srcDir
     this.assetsDir = options.dir.assets
@@ -104,7 +105,7 @@ export default class StyleLoader {
       // This matches <style module>
       {
         resourceQuery: /module/,
-        use: [].concat(
+        use: this.perfLoader.css().concat(
           styleLoader,
           this.cssModules(cssModulesOptions),
           customLoaders
@@ -112,7 +113,7 @@ export default class StyleLoader {
       },
       // This matches plain <style> or <style scoped>
       {
-        use: [].concat(
+        use: this.perfLoader.css().concat(
           styleLoader,
           this.css(cssOptions),
           customLoaders

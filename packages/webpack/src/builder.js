@@ -26,7 +26,6 @@ export class WebpackBundler {
     this.compilersWatching = []
     this.devMiddleware = {}
     this.hotMiddleware = {}
-    this.perfLoader = null
 
     // Initialize shared FS and Cache
     if (this.context.options.dev) {
@@ -36,8 +35,6 @@ export class WebpackBundler {
 
   async build() {
     const options = this.context.options
-
-    this.perfLoader = new PerfLoader(options)
 
     const compilersOptions = []
 
@@ -104,7 +101,7 @@ export class WebpackBundler {
     // Warmup perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
-      this.perfLoader.warmupAll()
+      PerfLoader.warmupAll({ dev: options.dev })
       consola.success('Worker pools ready')
     }
 
