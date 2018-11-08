@@ -2943,7 +2943,7 @@ consola@^1.4.3:
     lodash "^4.17.5"
     std-env "^1.1.0"
 
-consola@^2.0.0-1, consola@^2.0.7, consola@^2.2.2, consola@^2.2.3:
+consola@^2.0.0-1, consola@^2.0.7, consola@^2.2.3:
   version "2.2.3"
   resolved "https://registry.npmjs.org/consola/-/consola-2.2.3.tgz#567e59fe80a0d0330747e649e3e8405c1d007369"
   integrity sha512-4xJ3/9xxZhiBpihl1yzVxKFnii5RPaBmcPgBfGh3nc95DhpAym2VRJi3EpgMLvoLWHds7qV6ViVCoI8Nw4khWA==
