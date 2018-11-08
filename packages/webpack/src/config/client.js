@@ -103,7 +103,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }, this.options.build.analyze)))
     }
 
-    if (this.options.build.modern) {
+    if (this.options.modern) {
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(this.options.buildDir, 'dist', 'client'),
         isModernBuild: this.isModern
@@ -167,9 +167,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.options.dev) {
       config.entry.app.unshift(
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?name=client&reload=true&timeout=30000&path=${
+        `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
           this.options.router.base
-        }/__webpack_hmr`.replace(/\/\//g, '/')
+        }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
       )
     }
 

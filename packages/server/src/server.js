@@ -9,6 +9,7 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
+import modernMiddleware from './middleware/modern'
 
 export default class Server {
   constructor(nuxt) {
@@ -25,8 +26,8 @@ export default class Server {
     this.resources = {}
 
     // Will be available on dev
-    this.webpackDevMiddleware = null
-    this.webpackHotMiddleware = null
+    this.devMiddleware = null
+    this.hotMiddleware = null
 
     // Will be set after listen
     this.listeners = []
@@ -77,14 +78,19 @@ export default class Server {
       }
     }
 
+    if (this.options.modern === 'server') {
+      this.useMiddleware(modernMiddleware)
+    }
+
     // Add webpack middleware support only for development
     if (this.options.dev) {
       this.useMiddleware(async (req, res, next) => {
-        if (this.webpackDevMiddleware) {
-          await this.webpackDevMiddleware(req, res)
+        const name = req.modernMode ? 'modern' : 'client'
+        if (this.devMiddleware[name]) {
+          await this.devMiddleware[name](req, res)
         }
-        if (this.webpackHotMiddleware) {
-          await this.webpackHotMiddleware(req, res)
+        if (this.hotMiddleware[name]) {
+          await this.hotMiddleware[name](req, res)
         }
         next()
       })

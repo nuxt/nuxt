@@ -11,6 +11,15 @@ export default {
       type: 'boolean',
       default: true,
       description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
+    },
+    modern: {
+      ...common.modern,
+      description: 'Generate app in modern build (modern mode can be only client)',
+      prepare(cmd, options, argv) {
+        if (argv.modern) {
+          options.modern = 'client'
+        }
+      }
     }
   },
   async run(cmd) {

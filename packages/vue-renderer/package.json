@@ -10,7 +10,6 @@
   "dependencies": {
     "@nuxt/common": "^2.2.0",
     "@nuxtjs/devalue": "^1.1.0",
-    "browserslist-useragent": "^2.0.1",
     "consola": "^2.2.2",
     "fs-extra": "^7.0.1",
     "lru-cache": "^4.1.3",

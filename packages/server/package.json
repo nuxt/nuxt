@@ -11,6 +11,7 @@
     "@nuxt/common": "^2.2.0",
     "@nuxt/config": "^2.2.0",
     "@nuxtjs/youch": "^4.2.3",
+    "browserslist-useragent": "^2.0.1",
     "chalk": "^2.4.1",
     "compression": "^1.7.3",
     "connect": "^3.6.6",
