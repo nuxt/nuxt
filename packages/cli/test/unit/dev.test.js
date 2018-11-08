@@ -30,7 +30,7 @@ describe('dev', () => {
     const builder = new Builder()
     builder.nuxt = new Nuxt()
     await Nuxt.fileChangedHook(builder)
-    expect(consola.debug).toHaveBeenCalled()
+    expect(consola.log).toHaveBeenCalled()
 
     expect(Nuxt.prototype.clearHook).toHaveBeenCalled()
     expect(Builder.prototype.unwatch).toHaveBeenCalled()
