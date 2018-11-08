@@ -24,7 +24,7 @@ describe('error', () => {
 
   test('/404 should display an error too', async () => {
     const { error } = await nuxt.server.renderRoute('/404')
-    expect(error.message.includes('This page could not be found')).toBe(true)
+    expect(error.message).toContain('This page could not be found')
   })
 
   test('/ with renderAndGetWindow()', async () => {
