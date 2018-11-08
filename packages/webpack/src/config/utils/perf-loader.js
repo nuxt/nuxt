@@ -6,58 +6,58 @@ import { warmup } from 'thread-loader'
 // https://github.com/webpack-contrib/cache-loader
 
 export default class PerfLoader {
-  constructor(options) {
-    this.options = options
-    this.warmup = warmup
-    this.workerPools = {
-      js: {
-        name: 'js',
-        poolTimeout: this.options.dev ? Infinity : 2000
-      },
-      css: {
-        name: 'css',
-        poolTimeout: this.options.dev ? Infinity : 2000
+  constructor(config) {
+    this.name = config.name
+    this.options = config.options
+    this.workerPools = PerfLoader.defaultPools(this.options)
+    return new Proxy(this, {
+      get(target, name) {
+        return target[name] ? target[name] : target.use.bind(target, name)
       }
+    })
+  }
+
+  static defaultPools({ dev }) {
+    const poolTimeout = dev ? Infinity : 2000
+    return {
+      js: { name: 'js', poolTimeout },
+      css: { name: 'css', poolTimeout }
     }
   }
 
-  warmupAll() {
-    this.warmup(this.workerPools.js, [
+  static warmupAll(options) {
+    options = PerfLoader.defaultPools(options)
+    PerfLoader.warmup(options.js, [
       require.resolve('babel-loader'),
       require.resolve('@babel/preset-env')
     ])
-    this.warmup(this.workerPools.css, ['css-loader'])
+    PerfLoader.warmup(options.css, ['css-loader'])
   }
 
-  pool(poolName, _loaders) {
-    const loaders = [].concat(_loaders)
+  use(poolName) {
+    const loaders = []
+
+    if (this.options.build.cache) {
+      loaders.push({
+        loader: 'cache-loader',
+        options: {
+          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.name}`)
+        }
+      })
+    }
 
     if (this.options.build.parallel) {
       const pool = this.workerPools[poolName]
-
       if (pool) {
-        loaders.unshift({
+        loaders.push({
           loader: 'thread-loader',
           options: pool
         })
       }
     }
 
-    if (this.options.build.cache) {
-      loaders.unshift({
-        loader: 'cache-loader',
-        options: {
-          cacheDirectory: path.resolve('node_modules/.cache/cache-loader')
-        }
-      })
-    }
-
     return loaders
   }
-
-  poolOneOf(poolName, oneOfRules) {
-    return oneOfRules.map(rule => Object.assign({}, rule, {
-      use: this.pool(poolName, rule.use)
-    }))
-  }
 }
+
+PerfLoader.warmup = warmup
