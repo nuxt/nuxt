@@ -17,7 +17,7 @@
     "cache-loader": "^1.2.5",
     "caniuse-lite": "^1.0.30000907",
     "chalk": "^2.4.1",
-    "consola": "^2.2.3",
+    "consola": "^2.2.4",
     "css-loader": "^1.0.1",
     "cssnano": "^4.1.7",
     "file-loader": "^2.0.0",
@@ -36,7 +36,7 @@
     "postcss-loader": "^3.0.0",
     "postcss-preset-env": "^6.4.0",
     "postcss-url": "^8.0.0",
-    "std-env": "^2.1.1",
+    "std-env": "^2.2.1",
     "style-resources-loader": "^1.2.1",
     "terser-webpack-plugin": "^1.1.0",
     "thread-loader": "^1.2.0",
@@ -48,7 +48,7 @@
     "webpack-dev-middleware": "^3.4.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
-    "webpackbar": "^3.0.2"
+    "webpackbar": "^3.0.3"
   },
   "publishConfig": {
     "access": "public"
