@@ -37,4 +37,28 @@ describe('basic config defaults', () => {
     options = getNuxtConfig({ globalName: 'foo?' })
     expect(options.globalName).toEqual('nuxt')
   })
+
+  test('@nuxtjs/babel-preset-app has been deprecated', () => {
+    let options = getNuxtConfig({
+      build: {
+        babel: {
+          presets: ['@nuxtjs/babel-preset-app']
+        }
+      }
+    })
+    expect(options.build.babel.presets).toEqual(['@nuxt/babel-preset-app'])
+    expect(consola.warn).toHaveBeenCalledWith('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
+
+    consola.warn.mockClear()
+
+    options = getNuxtConfig({
+      build: {
+        babel: {
+          presets: [['@nuxtjs/babel-preset-app']]
+        }
+      }
+    })
+    expect(options.build.babel.presets).toEqual([['@nuxt/babel-preset-app']])
+    expect(consola.warn).toHaveBeenCalledWith('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
+  })
 })
