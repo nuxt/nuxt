@@ -70,6 +70,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     // Send response
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
     nuxt.callHook('render:routeDone', req.url, result, context)
