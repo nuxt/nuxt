@@ -42,6 +42,14 @@ export interface Transition {
   leaveClass?: string;
   leaveToClass?: string;
   leaveActiveClass?: string;
+  beforeEnter?(el: HTMLElement): void;
+  enter?(el: HTMLElement, done: Function): void;
+  afterEnter?(el: HTMLElement): void;
+  enterCancelled?(el: HTMLElement): void;
+  beforeLeave?(el: HTMLElement): void;
+  leave?(el: HTMLElement, done: Function): void;
+  afterLeave?(el: HTMLElement): void;
+  leaveCancelled?(el: HTMLElement): void;
 }
 
 export interface ErrorParams {
