@@ -11061,10 +11061,10 @@ webpack@^4.25.1:
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 
-webpackbar@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.0.tgz#8f9c3596ce7a3bc156feb97a59e6e3fc07f88104"
-  integrity sha512-OmGaVK6kogveo1FK56zHdVbzrCcoain8CJ2TvbK9YptjlBsDQ28wHCaOvgap7LMDv7L/iKtZv9gufOI3YhFmeg==
+webpackbar@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.2.tgz#188a92d804c0e3709dbe9749acdb19a6c87b3580"
+  integrity sha512-7hfO38c6nQxx6JFTCegWOQvu2TZUrlVafBoZHgnHH9+eiUaKIy9N2FvijIe5M/clfjN60CMG4iuQKGFGJbkgwg==
   dependencies:
     ansi-escapes "^3.1.0"
     chalk "^2.4.1"
