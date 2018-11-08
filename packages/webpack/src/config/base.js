@@ -276,12 +276,13 @@ export default class WebpackBaseConfig {
             this.nuxt.callHook('bundler:change', shortPath)
           }
         },
-        allDone: (context) => {
-          if (!context.hasErrors) {
-            this.nuxt.callHook('bundler:done')
-          } else {
+        done: (context) => {
+          if (context.hasErrors) {
             this.nuxt.callHook('bundler:error')
           }
+        },
+        allDone: () => {
+          this.nuxt.callHook('bundler:done')
         }
       }
     }))
