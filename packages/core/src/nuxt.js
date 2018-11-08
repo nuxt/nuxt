@@ -24,14 +24,16 @@ export default class Nuxt extends Hookable {
 
     // Deprecated hooks
     this._deprecatedHooks = {
-      'render:context': 'render:routeContext' // #3773
+      'render:context': 'render:routeContext', // #3773
+      'showReady': 'webpack:done' // Workaround to deprecate showReady
     }
 
     // Add Legacy aliases
+    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
+    defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
     this.renderer = this.server
     this.render = this.server.app
-    defineAlias(this, this.server, [ 'renderRoute', 'renderAndGetWindow', 'showReady', 'listen' ])
-    defineAlias(this, this.resolver, [ 'resolveAlias', 'resolvePath' ])
+    this.showReady = () => { this.callHook('webpack:done') }
 
     // Wait for Nuxt to be ready
     this.initialized = false

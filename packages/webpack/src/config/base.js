@@ -6,12 +6,12 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
+import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'
-import StatsPlugin from './plugins/stats'
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {
@@ -258,25 +258,33 @@ export default class WebpackBaseConfig {
 
     // Build progress indicator
     plugins.push(new WebpackBar({
-      profile: this.options.build.profile,
       name: this.name,
       color: this.colors[this.name],
-      compiledIn: false,
-      done: (states) => {
-        if (this.options.dev) {
-          const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
-
-          if (!hasErrors) {
-            this.nuxt.server.showReady(false)
+      reporters: [
+        'basic',
+        'fancy',
+        'profile',
+        'stats'
+      ],
+      basic: !this.options.build.quiet && env.ci,
+      fancy: !this.options.build.quiet && !env.ci,
+      profile: !this.options.build.quiet && this.options.build.profile,
+      stats: !this.options.build.quiet && !this.options.dev && this.options.build.stats,
+      reporter: {
+        change: (_, { shortPath }) => {
+          if (!this.isServer) {
+            this.nuxt.callHook('bundler:change', shortPath)
+          }
+        },
+        allDone: (context) => {
+          if (!context.hasErrors) {
+            this.nuxt.callHook('bundler:done')
+          } else {
+            this.nuxt.callHook('bundler:error')
           }
         }
       }
     }))
-
-    // Add stats plugin
-    if (!this.options.dev && this.options.build.stats) {
-      plugins.push(new StatsPlugin(this.options.build.stats))
-    }
 
     // CSS extraction
     // MiniCssExtractPlugin does not currently supports SSR

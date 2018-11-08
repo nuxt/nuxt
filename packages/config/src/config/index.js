@@ -8,6 +8,7 @@ import modes from './modes'
 import render from './render'
 import router from './router'
 import server from './server'
+import cli from './cli'
 
 export function getDefaultNuxtConfig(options = {}) {
   if (!options.env) {
@@ -22,6 +23,7 @@ export function getDefaultNuxtConfig(options = {}) {
     modes: modes(options),
     render: render(options),
     router: router(options),
-    server: server(options)
+    server: server(options),
+    cli: cli(options)
   }
 }

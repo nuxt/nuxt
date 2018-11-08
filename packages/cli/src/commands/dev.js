@@ -1,5 +1,7 @@
 import consola from 'consola'
+import chalk from 'chalk'
 import { common, server } from '../options'
+import { showBanner } from '../utils'
 
 export default {
   name: 'dev',
@@ -26,13 +28,26 @@ export default {
           await cmd.getNuxtConfig(argv, { dev: true })
         )
         builder = await cmd.getBuilder(nuxt)
-        nuxt.hook('watch:fileChanged', async (builder, fname) => {
-          consola.debug(`[${fname}] changed, Rebuilding the app...`)
-          await startDev({ nuxt: builder.nuxt, builder })
-        })
       } catch (err) {
         return errorHandler(err, oldInstance)
       }
+
+      const logChanged = (name) => {
+        consola.log({
+          type: 'change',
+          icon: chalk.blue.bold('↻'),
+          message: chalk.blue(name)
+        })
+      }
+
+      nuxt.hook('watch:fileChanged', async (builder, name) => {
+        logChanged(name)
+        await startDev({ nuxt: builder.nuxt, builder })
+      })
+
+      nuxt.hook('bundler:change', (name) => {
+        logChanged(name)
+      })
 
       return (
         Promise.resolve()
@@ -49,8 +64,9 @@ export default {
           .then(() => oldInstance && oldInstance.nuxt.close())
           // Start listening
           .then(() => nuxt.server.listen())
-          // Show ready message first time, others will be shown through WebpackBar
-          .then(() => !oldInstance && nuxt.server.showReady(false))
+          // Show banner
+          .then(() => showBanner(nuxt))
+          // Start watching serverMiddleware changes
           .then(() => builder.watchServer())
           // Handle errors
           .catch(err => errorHandler(err, { builder, nuxt }))

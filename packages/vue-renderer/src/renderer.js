@@ -93,9 +93,20 @@ export default class VueRenderer {
       const rawKey = '$$' + key
       const _path = path.join(distPath, fileName)
 
+      // Fail when no build found and using programmatic usage
       if (!_fs.existsSync(_path)) {
+        // TODO: Enable baack when renderer initialzation was disabled for build only scripts
+        // Currently this breaks normal nuxt build for first time
+        // if (!this.context.options.dev) {
+        //   const invalidSSR = !this.noSSR && key === 'serverBundle'
+        //   const invalidSPA = this.noSSR && key === 'spaTemplate'
+        //   if (invalidSPA || invalidSSR) {
+        //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
+        //   }
+        // }
         return // Resource not exists
       }
+
       const rawData = _fs.readFileSync(_path, 'utf8')
       if (!rawData || rawData === this.context.resources[rawKey]) {
         return // No changes

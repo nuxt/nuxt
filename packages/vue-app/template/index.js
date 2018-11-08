@@ -156,12 +156,7 @@ async function createApp(ssrContext) {
   <% } %>
 
   <% if (store) { %>
-  if (process.client || process.browser) {
-    <% if (isDev) { %>
-    if (process.browser) {
-      console.warn('process.browser is deprecated, use process.client instead.')
-    }
-    <% } %>
+  if (process.client) {
     // Replace store state before plugins execution
     if (window.<%= globals.context %> && window.<%= globals.context %>.state) {
       store.replaceState(window.<%= globals.context %>.state)
@@ -174,12 +169,7 @@ async function createApp(ssrContext) {
   <% plugins.filter(p => p.ssr).forEach((plugin) => { %>
   if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   <% if (plugins.filter(p => !p.ssr).length) { %>
-  if (process.client || process.browser) {
-    <% if (isDev) { %>
-    if (process.browser) {
-      console.warn('process.browser is deprecated, use process.client instead.')
-    }
-    <% } %>
+  if (process.client) {
     <% plugins.filter((p) => !p.ssr).forEach((plugin) => { %>
     if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   }<% } %>

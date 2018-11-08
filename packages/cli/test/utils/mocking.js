@@ -58,7 +58,6 @@ export const mockGetNuxtStart = (ssr) => {
   const listen = jest.fn().mockImplementationOnce(() => {
     return Promise.resolve()
   })
-  const showReady = jest.fn()
 
   mockGetNuxt({
     rootDir: '.',
@@ -68,11 +67,11 @@ export const mockGetNuxtStart = (ssr) => {
   }, {
     server: {
       listen,
-      showReady
+      listeners: []
     }
   })
 
-  return { listen, showReady }
+  return { listen }
 }
 
 export const mockGetNuxtConfig = () => {
@@ -89,11 +88,12 @@ export const mockNuxt = (implementation) => {
         Nuxt.fileChangedHook = fn
       }
     },
+    options: {},
     clearHook: jest.fn(),
     close: jest.fn(),
     server: {
-      listen: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-      showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
+      listeners: [],
+      listen: jest.fn().mockImplementationOnce(() => Promise.resolve())
     }
   }, implementation || {})
 

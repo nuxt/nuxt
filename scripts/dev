@@ -23,7 +23,7 @@ const _require = esm(module, {
 })
 
 module.exports = _require('../src/index')
-` }
+`}
 
 async function main() {
   // Read package at current directory

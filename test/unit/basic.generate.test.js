@@ -77,7 +77,6 @@ describe('basic generate', () => {
       { type: 'handled', route: '/h1', error: 'page not found' },
       { type: 'unhandled', route: '/h2', error: { stack: 'unhandled error stack' } }
     ])
-    expect(error).toMatch(' GEN ERR ')
     expect(error).toMatch(' /h1')
     expect(error).toMatch(' /h2')
     expect(error).toMatch('"page not found"')

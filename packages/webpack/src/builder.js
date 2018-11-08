@@ -18,7 +18,7 @@ import { ClientConfig, ModernConfig, ServerConfig, PerfLoader } from './config'
 
 const glob = pify(Glob)
 
-export class WebpackBuilder {
+export class WebpackBundler {
   constructor(context) {
     this.context = context
     // Fields that set on build

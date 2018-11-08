@@ -14,7 +14,7 @@
     "@nuxt/vue-renderer": "^2.2.0",
     "@nuxtjs/devalue": "^1.1.0",
     "@nuxtjs/opencollective": "^0.1.0",
-    "consola": "^2.2.2",
+    "consola": "^2.2.3",
     "debug": "^4.1.0",
     "esm": "^3.0.84",
     "fs-extra": "^7.0.1",

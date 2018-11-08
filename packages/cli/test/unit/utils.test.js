@@ -1,7 +1,7 @@
 import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
-import * as fmt from '../../src/formatting'
+import * as fmt from '../../src/utils/formatting'
 
 describe('cli/utils', () => {
   afterEach(() => jest.resetAllMocks())

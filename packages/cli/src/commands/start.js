@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
 import { common, server } from '../options'
+import { showBanner } from '../utils'
 
 export default {
   name: 'start',
@@ -37,13 +38,13 @@ export default {
       const ssrBundlePath = path.resolve(distDir, 'server-bundle.json')
       if (!fs.existsSync(ssrBundlePath)) {
         consola.fatal(
-          'No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`'
+          'No SSR build found.\nPlease start with `nuxt start --spa` or build using `nuxt build --universal`'
         )
       }
     }
 
     return nuxt.server.listen().then(() => {
-      nuxt.server.showReady(false)
+      showBanner(nuxt)
     })
   }
 }

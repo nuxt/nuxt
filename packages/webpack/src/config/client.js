@@ -4,7 +4,7 @@ import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
-import FriendlyErrorsWebpackPlugin from '@nuxtjs/friendly-errors-webpack-plugin'
+import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
 import ModernModePlugin from './plugins/vue/modern'
 import VueSSRClientPlugin from './plugins/vue/client'
@@ -177,7 +177,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.options.dev && !this.options.build.quiet) {
       config.plugins.push(
         new FriendlyErrorsWebpackPlugin({
-          clearConsole: true,
+          clearConsole: false,
+          reporter: 'consola',
           logLevel: 'WARNING'
         })
       )
