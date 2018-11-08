@@ -16,7 +16,7 @@ export default {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',
       prepare(cmd, options, argv) {
-        if (argv.modern) {
+        if (argv.modern !== undefined) {
           options.modern = 'client'
         }
       }
