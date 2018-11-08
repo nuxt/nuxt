@@ -1,6 +1,6 @@
 import env from 'std-env'
 
-export default {
+export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
   profile: process.argv.includes('--profile'),
@@ -12,8 +12,8 @@ export default {
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev }) => isDev ? '[name].js' : '[chunkhash].js',
-    chunk: ({ isDev }) => isDev ? '[name].js' : '[chunkhash].js',
+    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
+    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
     css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
     img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[hash:7].[ext]',
     font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[hash:7].[ext]',
@@ -97,16 +97,10 @@ export default {
   hotMiddleware: {},
 
   stats: {
-    chunks: false,
-    children: false,
-    modules: false,
-    colors: true,
-    warnings: true,
-    errors: true,
     excludeAssets: [
       /.map$/,
       /index\..+\.html$/,
-      /vue-ssr-client-manifest.json/
+      /vue-ssr-(client|modern)-manifest.json/
     ]
   }
-}
+})

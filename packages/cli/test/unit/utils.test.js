@@ -1,11 +1,10 @@
-import { server as nuxtServerConfig } from '@nuxt/config'
+import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
+import * as fmt from '../../src/utils/formatting'
 
 describe('cli/utils', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('loadNuxtConfig: defaults', async () => {
     const argv = {
@@ -83,14 +82,14 @@ describe('cli/utils', () => {
   })
 
   test('nuxtServerConfig: server env', () => {
-    const options = {
-      server: nuxtServerConfig({
+    const options = getDefaultNuxtConfig({
+      env: {
         ...process.env,
         HOST: 'env-host',
         PORT: 3003,
         UNIX_SOCKET: '/var/run/env.sock'
-      })
-    }
+      }
+    })
 
     expect(options.server.host).toBe('env-host')
     expect(options.server.port).toBe(3003)
@@ -98,10 +97,10 @@ describe('cli/utils', () => {
   })
 
   test('indent', () => {
-    expect(utils.indent(4)).toBe('    ')
+    expect(fmt.indent(4)).toBe('    ')
   })
 
   test('indent custom char', () => {
-    expect(utils.indent(4, '-')).toBe('----')
+    expect(fmt.indent(4, '-')).toBe('----')
   })
 })

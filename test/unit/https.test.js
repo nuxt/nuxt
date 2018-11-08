@@ -7,12 +7,12 @@ describe('basic https', () => {
     const options = await loadFixture('https')
     nuxt = new Nuxt(options)
     const port = await getPort()
-    await nuxt.listen(port, '0.0.0.0')
+    await nuxt.server.listen(port, '0.0.0.0')
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<h1>Served over HTTPS!</h1>')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<h1>Served over HTTPS!</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

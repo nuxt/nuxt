@@ -36,7 +36,7 @@
       "name": "Jonas Galvez (@galvez)"
     },
     {
-      "name": "Alexander Lichter (@manniL}"
+      "name": "Alexander Lichter (@manniL)"
     }
   ],
   "files": [
@@ -46,8 +46,7 @@
   "dependencies": {
     "@nuxt/cli": "^2.2.0",
     "@nuxt/common": "^2.2.0",
-    "@nuxt/core": "^2.2.0",
-    "consola": "^1.4.4"
+    "@nuxt/core": "^2.2.0"
   },
   "engines": {
     "node": ">=8.0.0",

@@ -1,4 +1,4 @@
-export default {
+export default () => ({
   mode: 'history',
   base: '/',
   routes: [],
@@ -10,4 +10,4 @@ export default {
   parseQuery: false,
   stringifyQuery: false,
   fallback: false
-}
+})

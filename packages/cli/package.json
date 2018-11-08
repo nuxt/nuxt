@@ -12,9 +12,14 @@
     "nuxt": "bin/nuxt.js"
   },
   "dependencies": {
-    "consola": "^1.4.4",
+    "@nuxt/config": "^2.2.0",
+    "boxen": "^2.0.0",
+    "chalk": "^2.4.1",
+    "consola": "^2.2.3",
     "esm": "^3.0.84",
     "minimist": "^1.2.0",
+    "pretty-bytes": "^5.1.0",
+    "std-env": "^2.1.1",
     "wrap-ansi": "^4.0.0"
   },
   "publishConfig": {

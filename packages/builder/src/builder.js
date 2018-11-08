@@ -20,8 +20,6 @@ import values from 'lodash/values'
 import devalue from '@nuxtjs/devalue'
 
 import {
-  Options,
-  BuildContext,
   r,
   wp,
   wChunk,
@@ -32,6 +30,8 @@ import {
   stripWhitespace,
   isString
 } from '@nuxt/common'
+
+import BuildContext from './context'
 
 const glob = pify(Glob)
 
@@ -53,23 +53,26 @@ export default class Builder {
 
     this._buildStatus = STATUS.INITIAL
 
-    // Stop watching on nuxt.close()
+    // Hooks for watch lifecycle
     if (this.options.dev) {
+      // Start watching after initial render
+      this.nuxt.hook('build:done', () => {
+        consola.info('Waiting for file changes')
+        this.watchClient()
+      })
+
+      // Stop watching on nuxt.close()
       this.nuxt.hook('close', () => this.unwatch())
-      this.nuxt.hook('build:done', () => this.watchClient())
     }
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn({
-          message: 'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.',
-          badge: true
-        })
+        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
       })
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/app'
+    this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }
@@ -125,8 +128,7 @@ export default class Builder {
       } else if (pluginFiles.length > 1) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
+          additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
 
@@ -152,11 +154,12 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info({
-      message: 'Building project',
-      badge: true,
-      clear: !this.options.dev
-    })
+    if (this.options.dev) {
+      consola.info('Preparing project for development')
+      consola.info('Initial build may take a while')
+    } else {
+      consola.info('Production build')
+    }
 
     // Wait for nuxt ready
     await this.nuxt.ready()
@@ -175,12 +178,7 @@ export default class Builder {
           )
         } else {
           this._defaultPage = true
-          consola.warn({
-            message: `No \`${this.options.dir.pages}\` directory found in ${dir}.`,
-            additional: 'Using the default built-in page.\n',
-            additionalStyle: 'yellowBright',
-            badge: true
-          })
+          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
         }
       }
     }
@@ -220,7 +218,8 @@ export default class Builder {
   async generateRoutesAndFiles() {
     consola.debug(`Generating nuxt files`)
 
-    this.plugins.push.apply(this.plugins, this.normalizePlugins())
+    // Plugins
+    this.plugins = Array.from(this.normalizePlugins())
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)
@@ -306,7 +305,7 @@ export default class Builder {
         ['index.vue'],
         this.template.templatesDir + '/pages'
       )
-    } else if (this._nuxtPages) { // If user defined a custom method to create routes
+    } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
         ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
@@ -323,7 +322,7 @@ export default class Builder {
         this.options.srcDir,
         this.options.dir.pages
       )
-    } else {
+    } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
         this.options.srcDir
       )
@@ -476,16 +475,16 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  // TODO: remove ignore when generateConfig enabled again
-  async generateConfig() /* istanbul ignore next */ {
-    const config = path.resolve(this.options.buildDir, 'build.config.js')
-    const options = omit(this.options, Options.unsafeKeys)
-    await fsExtra.writeFile(
-      config,
-      `export default ${JSON.stringify(options, null, '  ')}`,
-      'utf8'
-    )
-  }
+  // TODO: Uncomment when generateConfig enabled again
+  // async generateConfig() /* istanbul ignore next */ {
+  //   const config = path.resolve(this.options.buildDir, 'build.config.js')
+  //   const options = omit(this.options, Options.unsafeKeys)
+  //   await fsExtra.writeFile(
+  //     config,
+  //     `export default ${JSON.stringify(options, null, '  ')}`,
+  //     'utf8'
+  //   )
+  // }
 
   watchClient() {
     const src = this.options.srcDir

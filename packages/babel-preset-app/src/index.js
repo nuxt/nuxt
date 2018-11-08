@@ -39,7 +39,7 @@ module.exports = (context, options = {}) => {
   const {
     buildTarget,
     loose = false,
-    useBuiltIns = 'usage',
+    useBuiltIns = (modern ? false : 'usage'),
     modules = false,
     polyfills: userPolyfills,
     ignoreBrowserslistConfig = modern,

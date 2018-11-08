@@ -1,44 +1,49 @@
 import parseArgs from 'minimist'
-import wrapAnsi from 'wrap-ansi'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, indent, indentLines, foldLines } from './utils'
-import { options as Options, defaultOptions as DefaultOptions } from './options'
+import { loadNuxtConfig } from './utils'
+import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import * as commands from './commands'
 import * as imports from './imports'
 
-const startSpaces = 6
-const optionSpaces = 2
-const maxCharsPerLine = 80
-
 export default class NuxtCommand {
-  constructor({ description, usage, options } = {}) {
+  constructor({ name, description, usage, options, run } = {}) {
+    this.name = name || ''
     this.description = description || ''
     this.usage = usage || ''
-    this.options = Array.from(new Set((options || []).concat(DefaultOptions)))
+    this.options = Object.assign({}, options)
+    this._run = run
   }
 
-  _getMinimistOptions() {
-    const minimistOptions = {
-      alias: {},
-      boolean: [],
-      string: [],
-      default: {}
+  static async load(name) {
+    if (name in commands) {
+      const cmd = await commands[name]() // eslint-disable-line import/namespace
+        .then(m => m.default)
+      return NuxtCommand.from(cmd)
+    } else {
+      // TODO dynamic module loading
+      throw new Error('Command ' + name + ' could not be loaded!')
     }
+  }
 
-    for (const name of this.options) {
-      const option = Options[name]
-
-      if (option.alias) {
-        minimistOptions.alias[option.alias] = name
-      }
-      if (option.type) {
-        minimistOptions[option.type].push(option.alias || name)
-      }
-      if (option.default) {
-        minimistOptions.default[option.alias || name] = option.default
-      }
+  static from(options) {
+    if (options instanceof NuxtCommand) {
+      return options
     }
+    return new NuxtCommand(options)
+  }
 
-    return minimistOptions
+  run() {
+    return this._run(this)
+  }
+
+  showVersion() {
+    process.stdout.write(`${name} v${version}\n`)
+    process.exit(0)
+  }
+
+  showHelp() {
+    process.stdout.write(this._getHelp())
+    process.exit(0)
   }
 
   getArgv(args) {
@@ -58,10 +63,8 @@ export default class NuxtCommand {
     const config = await loadNuxtConfig(argv)
     const options = Object.assign(config, extraOptions || {})
 
-    for (const name of this.options) {
-      if (Options[name].handle) {
-        Options[name].handle(options, argv)
-      }
+    for (const name of Object.keys(this.options)) {
+      this.options[name].prepare && this.options[name].prepare(this, options, argv)
     }
 
     return options
@@ -84,49 +87,66 @@ export default class NuxtCommand {
     return new Generator(nuxt, builder)
   }
 
-  _getHelp() {
-    const options = []
+  _getMinimistOptions() {
+    const minimistOptions = {
+      alias: {},
+      boolean: [],
+      string: [],
+      default: {}
+    }
 
-    let maxOptionLength = 0
-    // For consistency Options determines order
-    for (const name in Options) {
-      const option = Options[name]
-      if (this.options.includes(name)) {
-        let optionHelp = '--'
-        optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
-        optionHelp += name
-        if (option.alias) {
-          optionHelp += `, -${option.alias}`
-        }
+    for (const name of Object.keys(this.options)) {
+      const option = this.options[name]
 
-        maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-        options.push([ optionHelp, option.description ])
+      if (option.alias) {
+        minimistOptions.alias[option.alias] = name
+      }
+      if (option.type) {
+        minimistOptions[option.type].push(option.alias || name)
+      }
+      if (option.default) {
+        minimistOptions.default[option.alias || name] = option.default
       }
     }
 
-    const optionStr = options.map(([option, description]) => {
-      const line = option +
-        indent(maxOptionLength + optionSpaces - option.length) +
-        wrapAnsi(description, maxCharsPerLine - startSpaces - maxOptionLength - optionSpaces)
-      return indentLines(line, startSpaces + maxOptionLength + optionSpaces, startSpaces)
+    return minimistOptions
+  }
+
+  _getHelp() {
+    const options = []
+    let maxOptionLength = 0
+
+    for (const name in this.options) {
+      const option = this.options[name]
+
+      let optionHelp = '--'
+      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += name
+      if (option.alias) {
+        optionHelp += `, -${option.alias}`
+      }
+
+      maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
+      options.push([ optionHelp, option.description ])
+    }
+
+    const _opts = options.map(([option, description]) => {
+      const i = indent(maxOptionLength + optionSpaces - option.length)
+      return foldLines(
+        option + i + description,
+        startSpaces + maxOptionLength + optionSpaces * 2,
+        startSpaces + optionSpaces
+      )
     }).join('\n')
 
-    const description = foldLines(this.description, maxCharsPerLine, startSpaces)
+    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
+    const description = foldLines(this.description, startSpaces)
+    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
-    return `
-    Description\n${description}
-    Usage
-      $ nuxt ${this.usage}
-    Options\n${optionStr}\n\n`
-  }
+    let helpText = colorize(`${usage}\n\n`)
+    if (this.description) helpText += colorize(`${description}\n\n`)
+    if (options.length) helpText += colorize(`${opts}\n\n`)
 
-  showVersion() {
-    process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
-  }
-
-  showHelp() {
-    process.stdout.write(this._getHelp())
-    process.exit(0)
+    return helpText
   }
 }

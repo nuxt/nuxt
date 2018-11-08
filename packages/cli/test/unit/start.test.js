@@ -1,32 +1,22 @@
 import fs from 'fs'
-import { consola, mockGetNuxtStart, mockGetNuxtConfig } from '../utils'
+import { consola, mockGetNuxtStart, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('start', () => {
   let start
 
   beforeAll(async () => {
-    start = await import('../../src/commands/start')
-    start = start.default
+    start = await import('../../src/commands/start').then(m => m.default)
   })
 
   afterEach(() => {
     if (fs.existsSync.mockRestore) {
       fs.existsSync.mockRestore()
     }
-
     jest.resetAllMocks()
   })
 
-  test('is function', () => {
-    expect(typeof start).toBe('function')
-  })
-
-  test('starts listening and calls showReady', async () => {
-    const { listen, showReady } = mockGetNuxtStart()
-    await start()
-
-    expect(listen).toHaveBeenCalled()
-    expect(showReady).toHaveBeenCalled()
+  test('has run function', () => {
+    expect(typeof start.run).toBe('function')
   })
 
   test('no error if dist dir exists', async () => {
@@ -34,7 +24,7 @@ describe('start', () => {
     mockGetNuxtConfig()
     jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => true)
 
-    await start()
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).not.toHaveBeenCalled()
   })
@@ -43,7 +33,7 @@ describe('start', () => {
     mockGetNuxtStart()
     jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => false)
 
-    await start()
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).toHaveBeenCalledWith('No build files found, please run `nuxt build` before launching `nuxt start`')
   })
@@ -53,17 +43,20 @@ describe('start', () => {
     mockGetNuxtConfig()
     jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-    await start()
+    await NuxtCommand.from(start).run()
 
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test('fatal error on ssr and server bundle doesnt exist', async () => {
+  test.skip('fatal error on ssr and server bundle doesnt exist', async () => {
     mockGetNuxtStart(true)
-    jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
+    let i = 0
+    jest.spyOn(fs, 'existsSync').mockImplementation(() => {
+      return ++i === 1
+    })
 
-    await start()
+    await NuxtCommand.from(start).run()
 
-    expect(consola.fatal).toHaveBeenCalledWith('No SSR build! Please start with `nuxt start --spa` or build using `nuxt build --universal`')
+    expect(consola.fatal).toHaveBeenCalledWith('No SSR build found.\nPlease start with `nuxt start --spa` or build using `nuxt build --universal`')
   })
 })

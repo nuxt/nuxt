@@ -1,4 +1,6 @@
 import consola from 'consola'
+import chalk from 'chalk'
+import boxen from 'boxen'
 
 let _setup = false
 
@@ -21,12 +23,24 @@ export default function setup({ dev }) {
 
   // Exit process on fatal errors
   /* istanbul ignore next */
-  consola.add({
+  consola.addReporter({
     log(logObj) {
       if (logObj.type === 'fatal') {
-        process.stderr.write('Nuxt Fatal Error :(\n')
+        process.stderr.write(boxen([
+          chalk.red('✖ Nuxt Fatal Error'),
+          '',
+          chalk.white(String(logObj.args[0]))
+        ].join('\n'), {
+          borderColor: 'red',
+          borderStyle: 'round',
+          padding: 1,
+          margin: 1
+        }) + '\n')
         process.exit(1)
       }
     }
   })
+
+  // Wrap all console logs with consola for better DX
+  consola.wrapConsole()
 }

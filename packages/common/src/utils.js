@@ -15,9 +15,10 @@ export const waitFor = function waitFor(ms) {
   return new Promise(resolve => setTimeout(resolve, ms || 0))
 }
 
-export const isString = function isString(obj) {
-  return typeof obj === 'string' || obj instanceof String
-}
+export const isString = obj => typeof obj === 'string' || obj instanceof String
+
+export const isNonEmptyString = obj => obj && isString(obj)
+
 export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
 
 export const startsWithSrcAlias = startsWithAlias(['@', '~'])
@@ -403,4 +404,35 @@ export const stripWhitespace = function stripWhitespace(string) {
     string = string.replace(regex, newSubstr)
   })
   return string
+}
+
+export function defineAlias(src, target, prop, opts = {}) {
+  const { bind = true, warn = false } = opts
+
+  if (Array.isArray(prop)) {
+    for (const p of prop) {
+      defineAlias(src, target, p, opts)
+    }
+    return
+  }
+
+  let targetVal = target[prop]
+  if (bind && typeof targetVal === 'function') {
+    targetVal = targetVal.bind(target)
+  }
+
+  let warned = false
+
+  Object.defineProperty(src, prop, {
+    get: () => {
+      if (warn && !warned) {
+        warned = true
+        consola.warn({
+          message: `'${prop}' is deprecated'`,
+          additional: new Error().stack.split('\n').splice(2).join('\n')
+        })
+      }
+      return targetVal
+    }
+  })
 }
