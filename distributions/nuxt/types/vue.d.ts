@@ -16,6 +16,7 @@ declare module "vue/types/options" {
     middleware?: string | string[];
     scrollToTop?: boolean;
     transition?: string | Transition | ((to: Route, from: Route) => string);
+    key?: string | ((to: Route) => string);
     validate?(ctx: Context): Promise<boolean> | boolean;
     watchQuery?: boolean | string[];
   }
