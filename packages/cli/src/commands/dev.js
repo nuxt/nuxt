@@ -1,5 +1,6 @@
 import consola from 'consola'
 import chalk from 'chalk'
+import env from 'std-env'
 import { common, server } from '../options'
 import { showBanner } from '../utils'
 
@@ -35,7 +36,7 @@ export default {
       const logChanged = (name) => {
         consola.log({
           type: 'change',
-          icon: chalk.blue.bold('↻'),
+          icon: chalk.blue.bold(env.windows ? '»' : '↻'),
           message: chalk.blue(name)
         })
       }
