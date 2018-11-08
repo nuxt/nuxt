@@ -170,9 +170,32 @@ export function getNuxtConfig(_options) {
     options.build.cssSourceMap = options.dev
   }
 
+  const babelConfig = options.build.babel
   // babel cacheDirectory
-  if (options.build.babel.cacheDirectory === undefined) {
-    options.build.babel.cacheDirectory = options.dev
+  if (babelConfig.cacheDirectory === undefined) {
+    babelConfig.cacheDirectory = options.dev
+  }
+
+  // TODO: remove this warn in Nuxt 3
+  if (Array.isArray(babelConfig.presets)) {
+    const warnPreset = (presetName) => {
+      const oldPreset = '@nuxtjs/babel-preset-app'
+      const newPreset = '@nuxt/babel-preset-app'
+      if (presetName.includes(oldPreset)) {
+        presetName = presetName.replace(oldPreset, newPreset)
+        consola.warn('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
+      }
+      return presetName
+    }
+    babelConfig.presets = babelConfig.presets.map((preset) => {
+      const hasOptions = Array.isArray(preset)
+      if (hasOptions) {
+        preset[0] = warnPreset(preset[0])
+      } else if (typeof preset === 'string') {
+        preset = warnPreset(preset)
+      }
+      return preset
+    })
   }
 
   // vue config
