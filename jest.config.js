@@ -43,7 +43,6 @@ module.exports = {
   ],
 
   reporters: [
-    'default',
-    'jest-junit'
-  ]
+    'default'
+  ].concat(process.env.JEST_JUNIT_OUTPUT ? ['jest-junit'] : [])
 }
