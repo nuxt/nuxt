@@ -56,7 +56,7 @@ export async function loadNuxtConfig(argv) {
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
-  if (!['spa', 'universal'].includes(options.mode.toLowerCase())) {
+  if (options.mode && !['spa', 'universal'].includes(options.mode)) {
     consola.warn(`Unknown mode: ${options.mode}`)
   }
 
