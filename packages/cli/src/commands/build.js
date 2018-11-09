@@ -21,8 +21,8 @@ export default {
     },
     generate: {
       type: 'boolean',
-      default: true,
-      description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
+      default: false,
+      description: 'Generate static version for SPA mode (useful for nuxt start)'
     },
     quiet: {
       alias: 'q',
