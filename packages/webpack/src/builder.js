@@ -77,8 +77,10 @@ export class WebpackBundler {
     // Check styleResource existence
     const styleResources = this.context.options.build.styleResources
     if (styleResources && Object.keys(styleResources).length) {
-      consola.warn('Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues')
-      consola.warn('Please use https://github.com/nuxt-community/style-resources-module')
+      consola.warn(
+        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
+        'Please use https://github.com/nuxt-community/style-resources-module'
+      )
     }
     Object.keys(styleResources).forEach(async (ext) => {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
