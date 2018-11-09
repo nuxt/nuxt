@@ -22,6 +22,12 @@ describe('with-config', () => {
         additional: expect.stringContaining('plugins/test.json')
       }],
       [
+        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues'
+      ],
+      [
+        'Please use https://github.com/nuxt-community/style-resources-module'
+      ],
+      [
         'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.'
       ]
     ])
