@@ -30,6 +30,8 @@ describe('build', () => {
   })
 
   test('generates on spa mode', async () => {
+    const argv = process.argv
+    process.argv = ['', '', '--generate']
     mockGetNuxt({
       mode: 'spa',
       build: {
@@ -42,6 +44,7 @@ describe('build', () => {
 
     expect(generate).toHaveBeenCalled()
     expect(process.exit).toHaveBeenCalled()
+    process.argv = argv
   })
 
   test('catches error', async () => {
