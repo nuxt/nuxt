@@ -236,10 +236,11 @@ export function getNuxtConfig(_options) {
   }
 
   // Apply mode preset
-  const modePreset = options.modes[options.mode || 'universal']
-  defaultsDeep(options, modePreset)
+  const modePreset = options.modes[options.mode || 'universal'] || {}
 
-  if (!modePreset || !['spa', 'universal'].includes(options.mode)) {
+  if (modePreset) {
+    defaultsDeep(options, modePreset)  
+  } else {
     consola.warn(`Unknown mode: ${options.mode}`)
   }
 
