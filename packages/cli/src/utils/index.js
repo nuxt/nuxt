@@ -56,6 +56,10 @@ export async function loadNuxtConfig(argv) {
   options.mode =
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
+  if (!['spa', 'universal'].includes(options.mode.toLowerCase())) {
+    consola.warn(`Unknown mode: ${options.mode}`)
+  }
+
   // Server options
   options.server = defaultsDeep({
     port: argv.port || undefined,
