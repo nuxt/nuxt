@@ -14,7 +14,7 @@ const hooks = [
 
 describe('with-config', () => {
   buildFixture('with-config', () => {
-    expect(consola.warn).toHaveBeenCalledTimes(3)
+    expect(consola.warn).toHaveBeenCalledTimes(4)
     expect(consola.fatal).toHaveBeenCalledTimes(0)
     expect(consola.warn.mock.calls).toMatchObject([
       [
