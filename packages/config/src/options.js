@@ -238,11 +238,10 @@ export function getNuxtConfig(_options) {
   // Apply mode preset
   const modePreset = options.modes[options.mode || 'universal']
 
-  if (modePreset) {
-    defaultsDeep(options, modePreset)
-  } else {
-    consola.warn(`Unknown mode: ${options.mode}`)
+  if (!modePreset) {
+    consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
   }
+  defaultsDeep(options, modePreset || options.modes.universal)
 
   if (options.modern === true) {
     options.modern = 'server'

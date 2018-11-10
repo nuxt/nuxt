@@ -18,7 +18,7 @@ describe('with-config', () => {
     expect(consola.fatal).toHaveBeenCalledTimes(0)
     expect(consola.warn.mock.calls).toMatchObject([
       [
-        'Unknown mode: unknown'
+        'Unknown mode: unknown. Falling back to universal'
       ],
       [{
         message: 'Found 2 plugins that match the configuration, suggest to specify extension:',
