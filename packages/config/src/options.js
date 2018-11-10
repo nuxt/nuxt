@@ -239,7 +239,7 @@ export function getNuxtConfig(_options) {
   const modePreset = options.modes[options.mode || 'universal']
 
   if (modePreset) {
-    defaultsDeep(options, modePreset)  
+    defaultsDeep(options, modePreset)
   } else {
     consola.warn(`Unknown mode: ${options.mode}`)
   }
