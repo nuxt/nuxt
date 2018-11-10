@@ -35,7 +35,7 @@
     "consola": "^2.2.4",
     "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
-    "eslint": "^5.8.0",
+    "eslint": "^5.9.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-multiplexer": "^1.0.2",
     "eslint-plugin-import": "^2.14.0",

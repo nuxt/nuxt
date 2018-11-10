@@ -4143,10 +4143,10 @@ eslint-visitor-keys@^1.0.0:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
   integrity sha512-qzm/XxIbxm/FHyH341ZrbnMUpe+5Bocte9xkmFMzPMjRaZMcXww+MpBptFvtU+79L362nqiLhekCxCxDPaUMBQ==
 
-eslint@^5.8.0:
-  version "5.8.0"
-  resolved "https://registry.npmjs.org/eslint/-/eslint-5.8.0.tgz#91fbf24f6e0471e8fdf681a4d9dd1b2c9f28309b"
-  integrity sha512-Zok6Bru3y2JprqTNm14mgQ15YQu/SMDkWdnmHfFg770DIUlmMFd/gqqzCHekxzjHZJxXv3tmTpH0C1icaYJsRQ==
+eslint@^5.9.0:
+  version "5.9.0"
+  resolved "https://registry.npmjs.org/eslint/-/eslint-5.9.0.tgz#b234b6d15ef84b5849c6de2af43195a2d59d408e"
+  integrity sha512-g4KWpPdqN0nth+goDNICNXGfJF7nNnepthp46CAlJoJtC5K/cLu3NgCM3AHu1CkJ5Hzt9V0Y0PBAO6Ay/gGb+w==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     ajv "^6.5.3"
@@ -11079,10 +11079,10 @@ webpack@^4.25.1:
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 
-webpackbar@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.0.3.tgz#fad6032308c0dc871c707e45172646a6f56e499b"
-  integrity sha512-glcT90q25QnA0uSgQbU+l6AxcTiCPNr9+Ao3Dz8MHqluE3h6X8JfY8czlMDzTjkRLY7RtD2j37lEw0hNJvhjVA==
+webpackbar@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.npmjs.org/webpackbar/-/webpackbar-3.1.2.tgz#eee47195b1309604c363e0dc52d13d7846da5078"
+  integrity sha512-Wk7VwbUl6RwWAnPL5d0/rKlrBNSwiE+Xr+3aC2Paq3rQxIleNDFshnVyM2YFL/9J0VRfmIg6C6DOqDzYN5CU9w==
   dependencies:
     ansi-escapes "^3.1.0"
     chalk "^2.4.1"
