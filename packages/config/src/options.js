@@ -236,7 +236,7 @@ export function getNuxtConfig(_options) {
   }
 
   // Apply mode preset
-  const modePreset = options.modes[options.mode || 'universal'] || {}
+  const modePreset = options.modes[options.mode || 'universal']
 
   if (modePreset) {
     defaultsDeep(options, modePreset)  
