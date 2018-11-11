@@ -14,9 +14,12 @@ const hooks = [
 
 describe('with-config', () => {
   buildFixture('with-config', () => {
-    expect(consola.warn).toHaveBeenCalledTimes(3)
+    expect(consola.warn).toHaveBeenCalledTimes(4)
     expect(consola.fatal).toHaveBeenCalledTimes(0)
     expect(consola.warn.mock.calls).toMatchObject([
+      [
+        'Unknown mode: unknown. Falling back to universal'
+      ],
       [{
         message: 'Found 2 plugins that match the configuration, suggest to specify extension:',
         additional: expect.stringContaining('plugins/test.json')
