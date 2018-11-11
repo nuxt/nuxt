@@ -129,6 +129,11 @@ export default class PostcssConfig {
         config = merge({}, this.defaultConfig, config)
         this.loadPlugins(config)
       }
+      if (config.options && config.options.pushCssNano) {
+        const cssnanoIndex = config.plugins.findIndex(p => p.postcssPlugin.toString() === 'cssnano')
+        const cssnanoPlugin = config.plugins.splice(cssnanoIndex, 1)
+        config.plugins.push(cssnanoPlugin[0])
+      }
       return config
     }
   }
