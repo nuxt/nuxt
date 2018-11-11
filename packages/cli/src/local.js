@@ -1,4 +1,5 @@
-import { resolve, join, readdirSync, existsSync, parse } from 'path'
+import { resolve, join, parse } from 'path'
+import { readdirSync, existsSync } from 'fs'
 import NuxtCommand from './command'
 
 const filterCommands = (dir) => {
