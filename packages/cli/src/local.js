@@ -16,18 +16,18 @@ export function getLocalCommands() {
 }
 
 export function localCommandExists(cmd) {
-  const cmdsRoot =  resolve('.', 'commands')
+  const cmdsRoot = resolve('.', 'commands')
   if (existsSync(cmdsRoot)) {
     return filterCommands(cmdsRoot).includes(`${cmd}.js`)
   }
 }
 
-export async function localCommandLoad (cmd) {
-  const cmdsRoot =  resolve('.', 'commands')
+export async function localCommandLoad(cmd) {
+  const cmdsRoot = resolve('.', 'commands')
   const file = filterCommands(cmdsRoot).find((c) => {
     return parse(c).name === cmd
   })
-  const command = await import(path.join(cmdsRoot, command))
+  const command = await import(join(cmdsRoot, file))
     .then(m => m.default)
   return NuxtCommand.from(command)
 }
