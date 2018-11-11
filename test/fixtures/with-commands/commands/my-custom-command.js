@@ -14,7 +14,7 @@ export default {
   run(cmd) {
     try {
       const argv = cmd.getArgv()
-      consola.info('argv: ', argv)
+      consola.info(argv._[1])
       process.exit(0)
     } catch (err) {
       consola.fatal(err)
