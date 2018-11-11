@@ -1,5 +1,6 @@
 import { resolve, join, parse } from 'path'
 import { readdirSync, existsSync } from 'fs'
+import { requireModule } from './utils'
 import NuxtCommand from './command'
 
 const filterCommands = (dir) => {
@@ -11,7 +12,7 @@ export function getLocalCommands() {
   const cmds = filterCommands(cmdsRoot)
   return cmds.reduce((hash, cmd) => {
     return Object.assign(hash, {
-      [parse(cmd).name]: import(join(cmdsRoot, cmd))
+      [parse(cmd).name]: importCommand(join(cmdsRoot, cmd))
     })
   }, {})
 }
@@ -28,7 +29,6 @@ export async function localCommandLoad(cmd) {
   const file = filterCommands(cmdsRoot).find((c) => {
     return parse(c).name === cmd
   })
-  const command = await import(join(cmdsRoot, file))
-    .then(m => m.default)
-  return NuxtCommand.from(command)
+  const command = requireModule(join(cmdsRoot, file))
+  return NuxtCommand.from(command.default)
 }

@@ -9,7 +9,7 @@ import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 
-const _require = esm(module, {
+export const requireModule = esm(module, {
   cache: false,
   cjs: {
     cache: true,
@@ -29,7 +29,7 @@ export async function loadNuxtConfig(argv) {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = _require(nuxtConfigFile) || {}
+    options = requireModule(nuxtConfigFile) || {}
     if (options.default) {
       options = options.default
     }
