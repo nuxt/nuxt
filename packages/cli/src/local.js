@@ -1,18 +1,11 @@
 import { existsSync, readdirSync, parse } from 'path'
+import NuxtCommand from './command'
 
 const filterCommands = (dir) => readdirSync(dir)
   .filter(c => c.endsWith('.js'))
 
 export default {
-  exists(cmd) {
-    const cmdsHash = {}
-    const cmdsRoot =  path.resolve('.', 'commands')
-    if (existsSync(cmdsRoot)) {
-      const cmds = 
-      return cmds.includes(`${cmd}.js`)
-    }
-  },
-  load (cmd) {
+  hash() {
     const cmdsRoot =  path.resolve('.', 'commands')
     const cmds = filterCommands(cmdsRoot)
     return cmds.reduce((hash, cmd) => {
@@ -20,5 +13,21 @@ export default {
         [parse(cmd).name]: import(path.join(cmdsRoot, cmd))
       })
     }, {})
+  }
+  exists(cmd) {
+    const cmdsHash = {}
+    const cmdsRoot =  path.resolve('.', 'commands')
+    if (existsSync(cmdsRoot)) {
+      return filterCommands(cmdsRoot).includes(`${cmd}.js`)
+    }
+  },
+  load (cmd) {
+    const cmdsRoot =  path.resolve('.', 'commands')
+    const file = filterCommands(cmdsRoot).find((c) => {
+      return parse(c).name === cmd
+    })
+    const command = await import(path.join(cmdsRoot, command))
+      .then(m => m.default)
+    return NuxtCommand.from(command)
   }
 }
