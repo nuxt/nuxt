@@ -11,7 +11,7 @@ export default {
       description: 'Simple test string'
     }
   },
-  async run(cmd) {
+  run(cmd) {
     try {
       const argv = cmd.getArgv()
       consola.info('argv: ', argv)
