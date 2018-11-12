@@ -3,7 +3,7 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 import listCommands from './list'
-import { localCommandExists, localCommandLoad } from './local'
+import { existsLocalCommand, loadLocalCommand } from './local'
 
 export default function run() {
   const defaultCommand = 'dev'
@@ -11,8 +11,8 @@ export default function run() {
 
   if (commands[cmd]) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
-  } else if (localCommandExists(cmd)) {
-    return localCommandLoad(cmd)
+  } else if (existsLocalCommand(cmd)) {
+    return loadLocalCommand(cmd)
       .then(command => command.run())
       .catch(error => consola.fatal(error))
   } else {

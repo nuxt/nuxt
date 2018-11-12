@@ -10,21 +10,17 @@ const filterCommands = (dir) => {
 export function getLocalCommands() {
   const cmdsRoot = resolve('.', 'commands')
   const cmds = filterCommands(cmdsRoot)
-  return cmds.reduce((hash, cmd) => {
-    return Object.assign(hash, {
-      [parse(cmd).name]: () => requireModule(join(cmdsRoot, cmd))
-    })
-  }, {})
+  return cmds.map(cmd => parse(cmd).name)
 }
 
-export function localCommandExists(cmd) {
+export function existsLocalCommand(cmd) {
   const cmdsRoot = resolve('.', 'commands')
   if (existsSync(cmdsRoot)) {
     return filterCommands(cmdsRoot).includes(`${cmd}.js`)
   }
 }
 
-export async function localCommandLoad(cmd) {
+export async function loadLocalCommand(cmd) {
   const cmdsRoot = resolve('.', 'commands')
   const file = filterCommands(cmdsRoot).find((c) => {
     return parse(c).name === cmd
