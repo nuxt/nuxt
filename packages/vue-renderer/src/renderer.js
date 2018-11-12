@@ -3,12 +3,11 @@ import crypto from 'crypto'
 import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
+import invert from 'lodash/invert'
 import template from 'lodash/template'
 import { waitFor } from '@nuxt/common'
-import { matchesUA } from 'browserslist-useragent'
 import { createBundleRenderer } from 'vue-server-renderer'
 
-import ModernBrowsers from '../data/modern-browsers.json'
 import SPAMetaRenderer from './spa-meta'
 
 export default class VueRenderer {
@@ -22,9 +21,6 @@ export default class VueRenderer {
       spa: null
     }
 
-    this.modernBrowsers = Object.keys(ModernBrowsers)
-      .map(browser => `${browser} >= ${ModernBrowsers[browser]}`)
-
     // Renderer runtime resources
     Object.assign(this.context.resources, {
       clientManifest: null,
@@ -34,6 +30,52 @@ export default class VueRenderer {
       spaTemplate: null,
       errorTemplate: this.constructor.parseTemplate('Nuxt.js Internal Server Error')
     })
+  }
+
+  get assetsMapping() {
+    if (this._assetsMapping) return this._assetsMapping
+
+    const legacyAssets = this.context.resources.clientManifest.assetsMapping
+    const modernAssets = invert(this.context.resources.modernManifest.assetsMapping)
+    const mapping = {}
+    for (const legacyJsFile in legacyAssets) {
+      const chunkNamesHash = legacyAssets[legacyJsFile]
+      mapping[legacyJsFile] = modernAssets[chunkNamesHash]
+    }
+    delete this.context.resources.clientManifest.assetsMapping
+    delete this.context.resources.modernManifest.assetsMapping
+    this._assetsMapping = mapping
+    return mapping
+  }
+
+  renderScripts(context) {
+    if (this.context.options.modern === 'client') {
+      const publicPath = this.context.options.build.publicPath
+      const scriptPattern = /<script[^>]*?src="([^"]*)"[^>]*>[^<]*<\/script>/g
+      return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
+        const legacyJsFile = jsFile.replace(publicPath, '')
+        const modernJsFile = this.assetsMapping[legacyJsFile]
+        const moduleTag = scriptTag.replace('<script', '<script type="module"').replace(legacyJsFile, modernJsFile)
+        const noModuleTag = scriptTag.replace('<script', '<script nomodule')
+        return noModuleTag + moduleTag
+      })
+    }
+    return context.renderScripts()
+  }
+
+  renderResourceHints(context) {
+    if (this.context.options.modern === 'client') {
+      const modulePreloadTags = []
+      for (const legacyJsFile of context.getPreloadFiles()) {
+        if (legacyJsFile.asType === 'script') {
+          const publicPath = this.context.options.build.publicPath
+          const modernJsFile = this.assetsMapping[legacyJsFile.file]
+          modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${modernJsFile}" as="script">`)
+        }
+      }
+      return modulePreloadTags.join('')
+    }
+    return context.renderResourceHints()
   }
 
   async ready() {
@@ -51,9 +93,20 @@ export default class VueRenderer {
       const rawKey = '$$' + key
       const _path = path.join(distPath, fileName)
 
+      // Fail when no build found and using programmatic usage
       if (!_fs.existsSync(_path)) {
+        // TODO: Enable baack when renderer initialzation was disabled for build only scripts
+        // Currently this breaks normal nuxt build for first time
+        // if (!this.context.options.dev) {
+        //   const invalidSSR = !this.noSSR && key === 'serverBundle'
+        //   const invalidSPA = this.noSSR && key === 'spaTemplate'
+        //   if (invalidSPA || invalidSSR) {
+        //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
+        //   }
+        // }
         return // Resource not exists
       }
+
       const rawData = _fs.readFileSync(_path, 'utf8')
       if (!rawData || rawData === this.context.resources[rawKey]) {
         return // No changes
@@ -151,7 +204,7 @@ export default class VueRenderer {
       rendererOptions
     )
 
-    if (this.context.options.build.modern) {
+    if (this.context.options.modern === 'server') {
       this.renderer.modern = createBundleRenderer(
         this.context.resources.serverBundle,
         {
@@ -186,7 +239,8 @@ export default class VueRenderer {
     context.url = url
 
     // Basic response if SSR is disabled or spa data provided
-    const spa = context.spa || (context.res && context.res.spa)
+    const { req, res } = context
+    const spa = context.spa || (res && res.spa)
     const ENV = this.context.options.env
 
     if (this.noSSR || spa) {
@@ -224,18 +278,9 @@ export default class VueRenderer {
       return { html, getPreloadFiles }
     }
 
-    const { req: { socket = {}, headers } = {} } = context
-    if (socket.isModernBrowser === undefined) {
-      const ua = headers && headers['user-agent']
-      socket.isModernBrowser = this.renderer.modern && ua && matchesUA(ua, {
-        allowHigherVersions: true,
-        browsers: this.modernBrowsers
-      })
-    }
-
     let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (socket.isModernBrowser) {
+    if (req && req.modernMode) {
       APP = await this.renderer.modern.renderToString(context)
     } else {
       APP = await this.renderer.ssr.renderToString(context)
@@ -257,7 +302,7 @@ export default class VueRenderer {
     }
 
     if (this.context.options.render.resourceHints) {
-      HEAD += context.renderResourceHints()
+      HEAD += this.renderResourceHints(context)
     }
 
     await this.context.nuxt.callHook('render:routeContext', context.nuxt)
@@ -273,7 +318,7 @@ export default class VueRenderer {
     }
 
     APP += `<script>${serializedSession}</script>`
-    APP += context.renderScripts()
+    APP += this.renderScripts(context)
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 

@@ -13,7 +13,17 @@ export default {
     alias: 'c',
     type: 'string',
     default: 'nuxt.config.js',
-    description: 'Path to Nuxt.js config file (default: nuxt.config.js)'
+    description: 'Path to Nuxt.js config file (default: `nuxt.config.js`)'
+  },
+  modern: {
+    alias: 'm',
+    type: 'string',
+    description: 'Build/Start app for modern browsers, e.g. server, client and false',
+    prepare(cmd, options, argv) {
+      if (argv.modern !== undefined) {
+        options.modern = argv.modern || true
+      }
+    }
   },
   version: {
     type: 'boolean',

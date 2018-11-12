@@ -18,7 +18,7 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 
 export default {
   <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
-  head: <%= serialize(head).replace(/:\w+\(/gm, ':function(') %>,
+  head: <%= serialize(head).replace(/:\w+\(/gm, ':function(').replace('head(', 'function(') %>,
   <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('nuxt-loading', { ref: 'loading' })<% } %>
@@ -60,7 +60,7 @@ export default {
     if (typeof window !== 'undefined') {
       window.<%= globals.nuxt %> = this
       <% if (globals.nuxt !== '$nuxt') { %>
-      window.$nuxt = true
+      window.$nuxt = { $root: { constructor: this.$root.constructor } }
       <% } %>
     }
     // Add $nuxt.error()

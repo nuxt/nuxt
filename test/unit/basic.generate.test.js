@@ -77,7 +77,6 @@ describe('basic generate', () => {
       { type: 'handled', route: '/h1', error: 'page not found' },
       { type: 'unhandled', route: '/h2', error: { stack: 'unhandled error stack' } }
     ])
-    expect(error).toMatch(' GEN ERR ')
     expect(error).toMatch(' /h1')
     expect(error).toMatch(' /h2')
     expect(error).toMatch('"page not found"')
@@ -87,20 +86,20 @@ describe('basic generate', () => {
   test('/stateless', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>My component!</h1>')).toBe(true)
+    expect(html).toContain('<h1>My component!</h1>')
   })
 
   test('/store-module', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/store-module'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>mutated</h1>')).toBe(true)
+    expect(html).toContain('<h1>mutated</h1>')
   })
 
   test('/css', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
-    expect(headHtml.includes('.red{color:red')).toBe(true)
+    expect(headHtml).toContain('.red{color:red')
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)
@@ -112,7 +111,7 @@ describe('basic generate', () => {
   test('/stateful', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/stateful'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<div><p>The answer is 42</p></div>')).toBe(true)
+    expect(html).toContain('<div><p>The answer is 42</p></div>')
   })
 
   test('/head', async () => {
@@ -121,18 +120,18 @@ describe('basic generate', () => {
     const metas = window.document.getElementsByTagName('meta')
     expect(window.document.title).toBe('My title - Nuxt.js')
     expect(metas[0].getAttribute('content')).toBe('my meta')
-    expect(html.includes('<div><h1>I can haz meta tags</h1></div>')).toBe(true)
+    expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
   })
 
   test('/async-data', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/async-data'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<p>Nuxt.js</p>')).toBe(true)
+    expect(html).toContain('<p>Nuxt.js</p>')
   })
 
   test('/users/1/index.html', async () => {
     const html = await rp(url('/users/1/index.html'))
-    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+    expect(html).toContain('<h1>User: 1</h1>')
     expect(
       existsSync(resolve(distDir, 'users/1/index.html'))
     ).toBe(true)
@@ -141,12 +140,12 @@ describe('basic generate', () => {
 
   test('/users/2', async () => {
     const html = await rp(url('/users/2'))
-    expect(html.includes('<h1>User: 2</h1>')).toBe(true)
+    expect(html).toContain('<h1>User: 2</h1>')
   })
 
   test('/users/3 (payload given)', async () => {
     const html = await rp(url('/users/3'))
-    expect(html.includes('<h1>User: 3000</h1>')).toBe(true)
+    expect(html).toContain('<h1>User: 3000</h1>')
   })
 
   test('/users/4 -> Not found', async () => {
@@ -160,32 +159,32 @@ describe('basic generate', () => {
 
   test('/validate should not be server-rendered', async () => {
     const html = await rp(url('/validate'))
-    expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
-    expect(html.includes('serverRendered:!1')).toBe(true)
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('serverRendered:!1')
   })
 
   test('/validate -> should display a 404', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/validate'))
     const html = window.document.body.innerHTML
-    expect(html.includes('This page could not be found')).toBe(true)
+    expect(html).toContain('This page could not be found')
   })
 
   test('/validate?valid=true', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/validate?valid=true'))
     const html = window.document.body.innerHTML
-    expect(html.includes('I am valid</h1>')).toBe(true)
+    expect(html).toContain('I am valid</h1>')
   })
 
   test('/redirect should not be server-rendered', async () => {
     const html = await rp(url('/redirect'))
-    expect(html.includes('<div id="__nuxt"></div>')).toBe(true)
-    expect(html.includes('serverRendered:!1')).toBe(true)
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('serverRendered:!1')
   })
 
   test('/redirect -> check redirected source', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/redirect'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>Index page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Index page</h1>')
   })
 
   test('/users/1 not found', async () => {
@@ -205,7 +204,7 @@ describe('basic generate', () => {
 
   test('/users/1.html', async () => {
     const html = await rp(url('/users/1.html'))
-    expect(html.includes('<h1>User: 1</h1>')).toBe(true)
+    expect(html).toContain('<h1>User: 1</h1>')
     expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
     expect(
       existsSync(resolve(distDir, 'users/1/index.html'))

@@ -85,7 +85,7 @@ describe('basic dev', () => {
   test('/stateless', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>My component!</h1>')).toBe(true)
+    expect(html).toContain('<h1>My component!</h1>')
   })
 
   test('Check render:routeDone hook called', () => {

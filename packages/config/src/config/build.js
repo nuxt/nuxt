@@ -7,7 +7,6 @@ export default () => ({
   extractCSS: false,
   cssSourceMap: undefined,
   ssr: undefined,
-  modern: undefined,
   parallel: false,
   cache: false,
   publicPath: '/_nuxt/',
@@ -98,12 +97,6 @@ export default () => ({
   hotMiddleware: {},
 
   stats: {
-    chunks: false,
-    children: false,
-    modules: false,
-    colors: true,
-    warnings: true,
-    errors: true,
     excludeAssets: [
       /.map$/,
       /index\..+\.html$/,

@@ -23,7 +23,6 @@ describe('dev', () => {
 
     expect(Builder.prototype.build).toHaveBeenCalled()
     expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
-    expect(Nuxt.prototype.server.showReady).toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
     jest.clearAllMocks()
@@ -31,14 +30,13 @@ describe('dev', () => {
     const builder = new Builder()
     builder.nuxt = new Nuxt()
     await Nuxt.fileChangedHook(builder)
-    expect(consola.debug).toHaveBeenCalled()
+    expect(consola.log).toHaveBeenCalled()
 
     expect(Nuxt.prototype.clearHook).toHaveBeenCalled()
     expect(Builder.prototype.unwatch).toHaveBeenCalled()
     expect(Builder.prototype.build).toHaveBeenCalled()
     expect(Nuxt.prototype.close).toHaveBeenCalled()
     expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
-    expect(Nuxt.prototype.server.showReady).not.toHaveBeenCalled()
     expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
     expect(consola.error).not.toHaveBeenCalled()

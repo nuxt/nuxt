@@ -71,7 +71,7 @@ describe('cli', () => {
     }
 
     expect(error).toBe(undefined)
-    expect(stdout.includes('Listening on')).toBe(true)
+    expect(stdout).toContain('Listening on')
 
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))

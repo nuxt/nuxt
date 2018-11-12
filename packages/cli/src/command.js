@@ -1,7 +1,7 @@
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces } from './formatting'
+import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as commands from './commands'
 import * as imports from './imports'
 
@@ -15,13 +15,13 @@ export default class NuxtCommand {
   }
 
   static async load(name) {
-    // So eslint doesn't complain about lookups
-    const _commands = { ...commands }
-    if (name in _commands) {
-      const cmd = await _commands[name]().then(m => m.default)
+    if (name in commands) {
+      const cmd = await commands[name]() // eslint-disable-line import/namespace
+        .then(m => m.default)
       return NuxtCommand.from(cmd)
     } else {
       // TODO dynamic module loading
+      throw new Error('Command ' + name + ' could not be loaded!')
     }
   }
 
@@ -30,6 +30,61 @@ export default class NuxtCommand {
       return options
     }
     return new NuxtCommand(options)
+  }
+
+  run() {
+    return this._run(this)
+  }
+
+  showVersion() {
+    process.stdout.write(`${name} v${version}\n`)
+    process.exit(0)
+  }
+
+  showHelp() {
+    process.stdout.write(this._getHelp())
+    process.exit(0)
+  }
+
+  getArgv(args) {
+    const minimistOptions = this._getMinimistOptions()
+    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
+
+    if (argv.version) {
+      this.showVersion()
+    } else if (argv.help) {
+      this.showHelp()
+    }
+
+    return argv
+  }
+
+  async getNuxtConfig(argv, extraOptions) {
+    const config = await loadNuxtConfig(argv)
+    const options = Object.assign(config, extraOptions || {})
+
+    for (const name of Object.keys(this.options)) {
+      this.options[name].prepare && this.options[name].prepare(this, options, argv)
+    }
+
+    return options
+  }
+
+  async getNuxt(options) {
+    const { Nuxt } = await imports.core()
+    return new Nuxt(options)
+  }
+
+  async getBuilder(nuxt) {
+    const { Builder } = await imports.builder()
+    const { BundleBuilder } = await imports.webpack()
+    return new Builder(nuxt, BundleBuilder)
+  }
+
+  async getGenerator(nuxt) {
+    const { Generator } = await imports.generator()
+    const builder = await this.getBuilder(nuxt)
+    return new Generator(nuxt, builder)
   }
 
   _getMinimistOptions() {
@@ -55,53 +110,6 @@ export default class NuxtCommand {
     }
 
     return minimistOptions
-  }
-
-  getArgv(args) {
-    const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-
-    if (argv.version) {
-      this.showVersion()
-    } else if (argv.help) {
-      this.showHelp()
-    }
-
-    return argv
-  }
-
-  run() {
-    return this._run(this)
-  }
-
-  async getNuxtConfig(argv, extraOptions) {
-    const config = await loadNuxtConfig(argv)
-    const options = Object.assign(config, extraOptions || {})
-
-    for (const name of Object.keys(this.options)) {
-      if (this.options[name].prepare) {
-        this.options[name].prepare(this, options, argv)
-      }
-    }
-
-    return options
-  }
-
-  async getNuxt(options) {
-    const { Nuxt } = await imports.core()
-    return new Nuxt(options)
-  }
-
-  async getBuilder(nuxt) {
-    const { Builder } = await imports.builder()
-    const { BundleBuilder } = await imports.webpack()
-    return new Builder(nuxt, BundleBuilder)
-  }
-
-  async getGenerator(nuxt) {
-    const { Generator } = await imports.generator()
-    const builder = await this.getBuilder(nuxt)
-    return new Generator(nuxt, builder)
   }
 
   _getHelp() {
@@ -135,16 +143,10 @@ export default class NuxtCommand {
     const description = foldLines(this.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
-    return `${usage}\n\n${description}\n\n${opts}\n\n`
-  }
+    let helpText = colorize(`${usage}\n\n`)
+    if (this.description) helpText += colorize(`${description}\n\n`)
+    if (options.length) helpText += colorize(`${opts}\n\n`)
 
-  showVersion() {
-    process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
-  }
-
-  showHelp() {
-    process.stdout.write(this._getHelp())
-    process.exit(0)
+    return helpText
   }
 }

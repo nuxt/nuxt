@@ -12,8 +12,8 @@ describe('custom-app-template', () => {
   })
   test('/', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html.includes('<p>My Template</p>')).toBe(true)
-    expect(html.includes('<h1>Custom!</h1>')).toBe(true)
+    expect(html).toContain('<p>My Template</p>')
+    expect(html).toContain('<h1>Custom!</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

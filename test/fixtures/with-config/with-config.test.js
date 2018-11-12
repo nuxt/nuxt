@@ -14,13 +14,20 @@ const hooks = [
 
 describe('with-config', () => {
   buildFixture('with-config', () => {
-    expect(consola.warn).toHaveBeenCalledTimes(2)
+    expect(consola.warn).toHaveBeenCalledTimes(4)
     expect(consola.fatal).toHaveBeenCalledTimes(0)
     expect(consola.warn.mock.calls).toMatchObject([
+      [
+        'Unknown mode: unknown. Falling back to universal'
+      ],
       [{
         message: 'Found 2 plugins that match the configuration, suggest to specify extension:',
         additional: expect.stringContaining('plugins/test.json')
       }],
+      [
+        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
+        'Please use https://github.com/nuxt-community/style-resources-module'
+      ],
       [
         'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.'
       ]

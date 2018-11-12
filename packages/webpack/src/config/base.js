@@ -6,12 +6,13 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
+import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
+import PerfLoader from './utils/perf-loader'
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'
-import StatsPlugin from './plugins/stats'
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {
@@ -125,13 +126,12 @@ export default class WebpackBaseConfig {
   }
 
   rules() {
+    const perfLoader = new PerfLoader(this)
     const styleLoader = new StyleLoader(
       this.options,
       this.nuxt,
-      { isServer: this.isServer }
+      { isServer: this.isServer, perfLoader }
     )
-
-    const perfLoader = this.builder.perfLoader
 
     return [
       {
@@ -173,46 +173,46 @@ export default class WebpackBaseConfig {
 
           return !modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.pool('js', {
+        use: perfLoader.js().concat({
           loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
       },
       {
         test: /\.css$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('css'))
+        oneOf: styleLoader.apply('css')
       },
       {
         test: /\.less$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('less', {
+        oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
           options: this.loaders.less
-        }))
+        })
       },
       {
         test: /\.sass$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('sass', {
+        oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
           options: this.loaders.sass
-        }))
+        })
       },
       {
         test: /\.scss$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('scss', {
+        oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
           options: this.loaders.scss
-        }))
+        })
       },
       {
         test: /\.styl(us)?$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('stylus', {
+        oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
           options: this.loaders.stylus
-        }))
+        })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.imgUrl,
@@ -222,7 +222,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.fontUrl,
@@ -232,7 +232,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(webm|mp4|ogv)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'file-loader',
           options: Object.assign(
             this.loaders.file,
@@ -258,25 +258,34 @@ export default class WebpackBaseConfig {
 
     // Build progress indicator
     plugins.push(new WebpackBar({
-      profile: this.options.build.profile,
       name: this.name,
       color: this.colors[this.name],
-      compiledIn: false,
-      done: (states) => {
-        if (this.options.dev) {
-          const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
-
-          if (!hasErrors) {
-            this.nuxt.server.showReady(false)
+      reporters: [
+        'basic',
+        'fancy',
+        'profile',
+        'stats'
+      ],
+      basic: !this.options.build.quiet && env.minimalCLI,
+      fancy: !this.options.build.quiet && !env.minimalCLI,
+      profile: !this.options.build.quiet && this.options.build.profile,
+      stats: !this.options.build.quiet && !this.options.dev && this.options.build.stats,
+      reporter: {
+        change: (_, { shortPath }) => {
+          if (!this.isServer) {
+            this.nuxt.callHook('bundler:change', shortPath)
           }
+        },
+        done: (context) => {
+          if (context.hasErrors) {
+            this.nuxt.callHook('bundler:error')
+          }
+        },
+        allDone: () => {
+          this.nuxt.callHook('bundler:done')
         }
       }
     }))
-
-    // Add stats plugin
-    if (!this.options.dev && this.options.build.stats) {
-      plugins.push(new StatsPlugin(this.options.build.stats))
-    }
 
     // CSS extraction
     // MiniCssExtractPlugin does not currently supports SSR

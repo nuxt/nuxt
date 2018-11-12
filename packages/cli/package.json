@@ -13,9 +13,13 @@
   },
   "dependencies": {
     "@nuxt/config": "^2.2.0",
-    "consola": "^2.2.2",
+    "boxen": "^2.0.0",
+    "chalk": "^2.4.1",
+    "consola": "^2.2.4",
     "esm": "^3.0.84",
     "minimist": "^1.2.0",
+    "pretty-bytes": "^5.1.0",
+    "std-env": "^2.2.1",
     "wrap-ansi": "^4.0.0"
   },
   "publishConfig": {

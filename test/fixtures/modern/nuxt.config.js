@@ -1,6 +1,6 @@
 export default {
+  modern: true,
   build: {
-    modern: true,
     filenames: {
       app: ({ isModern }) => {
         return `${isModern ? 'modern-' : ''}[name].js`
