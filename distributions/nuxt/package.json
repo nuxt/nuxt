@@ -39,12 +39,9 @@
     }
   ],
   "files": [
-    "dist",
-    "types/index.d.ts",
-    "types/vue.d.ts"
+    "dist"
   ],
   "main": "dist/nuxt.js",
-  "types": "types/index.d.ts",
   "scripts": {
     "postinstall": "opencollective || exit 0"
   },
