@@ -70,22 +70,14 @@ Support us with a monthly donation and help us continue our activities. [[Become
 ## Getting started
 
 ```
-$ npm install nuxt
+$ npm install -g nuxt
+$ cd your-project-dir
+$ nuxt
 ```
 
-Add a script to your package.json like this:
+Nuxt will run and make its default page available at [http://localhost:3000](http://localhost:3000). 
 
-```json
-{
-  "scripts": {
-    "start": "nuxt"
-  }
-}
-```
-
-After that, the file-system is the main API. Every .vue file becomes a route that gets automatically processed and rendered.
-
-Populate `./pages/index.vue` inside your project:
+Next you can create a `pages` directory and add an `index.vue` file:
 
 ```html
 <template>
@@ -94,19 +86,16 @@ Populate `./pages/index.vue` inside your project:
 
 <script>
 export default {
-  data: () => {
-    return { name: 'world' }
-  }
+  data: () => ({ name: 'world' })
 }
 </script>
 ```
 
-And then run:
-```bash
-npm start
-```
+And see it get picked up and the page reloaded automatically.
 
-Go to [http://localhost:3000](http://localhost:3000)
+In a Nuxt project directory, the file system is the main API. Every .vue file under `pages/`, for example, becomes a route that gets automatically processed and rendered.
+
+Having `nuxt` installed globally (`npm install -g`) allows you to use it in any directory, without `package.json`, for the convenience of getting up and running quickly. However as your project grows you'll want to install it locally in your project (`npm install`) and run it through the `scripts` section of your project's `package.json` file.
 
 ## Templates
 
