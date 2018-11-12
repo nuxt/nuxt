@@ -41,7 +41,6 @@ describe('spa', () => {
   })
 
   test('/error-handler', async () => {
-    await renderRoute('/error-handler')
     const { html } = await renderRoute('/error-handler')
     expect(html).toMatch('error handler triggered: fetch error!')
   })
