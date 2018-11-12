@@ -20,7 +20,7 @@ export function existsLocalCommand(cmd) {
   }
 }
 
-export async function loadLocalCommand(cmd) {
+export function loadLocalCommand(cmd) {
   const cmdsRoot = resolve('.', 'commands')
   const file = filterCommands(cmdsRoot).find((c) => {
     return parse(c).name === cmd
