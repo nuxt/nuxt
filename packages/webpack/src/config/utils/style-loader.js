@@ -94,7 +94,7 @@ export default class StyleLoader {
 
   apply(ext, loaders = []) {
     const customLoaders = [].concat(
-      this.postcss(loaders),
+      this.postcss(),
       this.normalize(loaders),
       this.styleResource(ext)
     ).filter(Boolean)
