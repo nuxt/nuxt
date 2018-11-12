@@ -46,8 +46,17 @@ describe('spa', () => {
     expect(html).toMatch('error handler triggered: fetch error!')
   })
 
+  test('/error-handler-object', async () => {
+    const { html } = await renderRoute('/error-handler')
+    expect(html).toMatch('error handler triggered: fetch error!')
+  })
+
+  test('/error-handler-string', async () => {
+    const { html } = await renderRoute('/error-handler-string')
+    expect(html).toMatch('error handler triggered: fetch error!')
+  })
+
   test('/error-handler-async', async () => {
-    await renderRoute('/error-handler-async')
     const { html } = await renderRoute('/error-handler-async')
     expect(html).toMatch('error handler triggered: asyncData error!')
   })

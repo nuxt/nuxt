@@ -273,6 +273,13 @@ export function getQueryDiff(toQuery, fromQuery) {
   return diff
 }
 
+export function normalizeError(err) {
+  return {
+    message: err.message || (typeof err === 'string' ? err : JSON.stringify(err)),
+    statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
+  }
+}
+
 /**
  * The main path matching regexp utility.
  *
@@ -548,3 +555,4 @@ function formatQuery(query) {
     return key + '=' + val
   }).filter(Boolean).join('&')
 }
+
