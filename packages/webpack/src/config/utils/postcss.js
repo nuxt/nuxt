@@ -104,7 +104,7 @@ export default class PostcssConfig {
     if (typeof order === 'string') {
       order = orderPresets[order]
     }
-    return typeof order === 'function' ? order(names) : (order || names)
+    return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
   loadPlugins(config) {
