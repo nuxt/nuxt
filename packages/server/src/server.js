@@ -1,6 +1,7 @@
 import path from 'path'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
+import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 
@@ -125,9 +126,21 @@ export default class Server {
       })
     }
 
-    // Add User provided middleware
+    // Add user provided middleware
     this.options.serverMiddleware.forEach((m) => {
       this.useMiddleware(m)
+    })
+
+    // Graceful 404 errors for dist files
+    this.useMiddleware({
+      path: this.publicPath,
+      handler: servePlaceholder(this.options.render.distPlaceholder)
+    })
+
+    // Graceful 404 errors for other paths
+    this.useMiddleware({
+      path: '/',
+      handler: servePlaceholder(this.options.render.placeholder)
     })
 
     // Finally use nuxtMiddleware
