@@ -12,8 +12,7 @@ export default function run() {
   if (commands[cmd]) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
   } else if (existsLocalCommand(cmd)) {
-    return loadLocalCommand(cmd)
-      .then(command => command.run())
+    return loadLocalCommand(cmd).run()
       .catch(error => consola.fatal(error))
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
