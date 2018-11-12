@@ -12,7 +12,7 @@ export function getLocalCommands() {
   const cmds = filterCommands(cmdsRoot)
   return cmds.reduce((hash, cmd) => {
     return Object.assign(hash, {
-      [parse(cmd).name]: importCommand(join(cmdsRoot, cmd))
+      [parse(cmd).name]: () => requireModule(join(cmdsRoot, cmd))
     })
   }, {})
 }
