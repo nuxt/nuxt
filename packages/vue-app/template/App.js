@@ -60,7 +60,7 @@ export default {
     if (typeof window !== 'undefined') {
       window.<%= globals.nuxt %> = this
       <% if (globals.nuxt !== '$nuxt') { %>
-      window.$nuxt = true
+      window.$nuxt = { $root: { constructor: this.$root.constructor } }
       <% } %>
     }
     // Add $nuxt.error()
