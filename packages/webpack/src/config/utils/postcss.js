@@ -45,6 +45,13 @@ export default class PostcssConfig {
         // https://github.com/csstools/postcss-preset-env
         'postcss-preset-env': this.preset || {},
         'cssnano': this.dev ? false : { preset: 'default' }
+      },
+      order(names) {
+        const nanoIndex = names.indexOf('cssnano')
+        if (nanoIndex !== names.length - 1) {
+          names.push(names.splice(nanoIndex, 1)[0])
+        }
+        return names
       }
     }
   }
@@ -87,11 +94,16 @@ export default class PostcssConfig {
     return config
   }
 
+  sortPlugins({ plugins, order }) {
+    const names = Object.keys(plugins)
+    return typeof order === 'function' ? order(names) : (order || names)
+  }
+
   loadPlugins(config) {
     const plugins = config.plugins
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
-      config.plugins = Object.keys(plugins)
+      config.plugins = this.sortPlugins(config)
         .map((p) => {
           const plugin = require(p)
           const opts = plugins[p]
