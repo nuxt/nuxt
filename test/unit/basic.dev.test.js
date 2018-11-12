@@ -10,6 +10,7 @@ let transpile = null
 let output = null
 let loadersOptions
 let vueLoader
+let postcssLoader
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -40,6 +41,8 @@ describe('basic dev', () => {
             output = wpOutput
             loadersOptions = loaders
             vueLoader = rules.find(loader => loader.test.test('.vue'))
+            const cssLoaders = rules.find(loader => loader.test.test('.css')).oneOf[0].use
+            postcssLoader = cssLoaders[cssLoaders.length - 1]
           }
         }
       }
@@ -80,6 +83,19 @@ describe('basic dev', () => {
     const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')
     expect(vueLoader.options).toBe(vue)
+  })
+
+  test('Config: cssnano is at then end of postcss plugins', () => {
+    const plugins = postcssLoader.options.plugins.map((plugin) => {
+      return plugin.postcssPlugin
+    })
+    expect(plugins).toEqual([
+      'postcss-import',
+      'postcss-url',
+      'postcss-preset-env',
+      'nuxt-test',
+      'cssnano'
+    ])
   })
 
   test('/stateless', async () => {
