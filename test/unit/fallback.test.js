@@ -5,7 +5,7 @@ const url = route => 'http://localhost:' + port + route
 
 let nuxt = null
 
-describe('placeholder', () => {
+describe('fallback', () => {
   beforeAll(async () => {
     const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)

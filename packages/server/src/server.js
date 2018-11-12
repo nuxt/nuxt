@@ -131,17 +131,24 @@ export default class Server {
       this.useMiddleware(m)
     })
 
-    // Graceful 404 errors for dist files
-    this.useMiddleware({
-      path: this.publicPath,
-      handler: servePlaceholder(this.options.render.distPlaceholder)
-    })
+    const { fallback } = this.options.render
+    if (fallback) {
+      // Graceful 404 errors for dist files
+      if (fallback.dist) {
+        this.useMiddleware({
+          path: this.publicPath,
+          handler: servePlaceholder(fallback.dist)
+        })
+      }
 
-    // Graceful 404 errors for other paths
-    this.useMiddleware({
-      path: '/',
-      handler: servePlaceholder(this.options.render.placeholder)
-    })
+      // Graceful 404 errors for other paths
+      if (fallback.static) {
+        this.useMiddleware({
+          path: '/',
+          handler: servePlaceholder(fallback.static)
+        })
+      }
+    }
 
     // Finally use nuxtMiddleware
     this.useMiddleware(nuxtMiddleware({

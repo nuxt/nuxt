@@ -27,14 +27,14 @@ export default () => ({
     maxAge: '1y'
   },
   // https://github.com/nuxt/serve-placeholder
-  // Options for /_nuxt/*
-  distPlaceholder: {},
-  // Options for other routes
-  placeholder: {
-    skipUnknown: true,
-    handlers: {
-      '.htm': false,
-      '.html': false
+  fallback: {
+    dist: {},
+    static: {
+      skipUnknown: true,
+      handlers: {
+        '.htm': false,
+        '.html': false
+      }
     }
   }
 })
