@@ -5,7 +5,7 @@ import { waitUntil } from '../utils'
 const rootDir = resolve(__dirname, '..', 'fixtures/with-commands')
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
 const spawnNuxt = (command, args) => {
-  return spawn(nuxtBin, [command, ...args], { cwd: rootDir })
+  return spawn(nuxtBin, ['run', command, ...args], { cwd: rootDir })
 }
 
 describe('custom commands', () => {
