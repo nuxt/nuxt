@@ -7,6 +7,16 @@ import createResolver from 'postcss-import-resolver'
 
 import { isPureObject } from '@nuxt/common'
 
+export const orderPresets = {
+  cssnanoLast: (names) => {
+    const nanoIndex = names.indexOf('cssnano')
+    if (nanoIndex !== names.length - 1) {
+      names.push(names.splice(nanoIndex, 1)[0])
+    }
+    return names
+  }
+}
+
 export default class PostcssConfig {
   constructor(options, nuxt) {
     this.nuxt = nuxt
@@ -45,7 +55,9 @@ export default class PostcssConfig {
         // https://github.com/csstools/postcss-preset-env
         'postcss-preset-env': this.preset || {},
         'cssnano': this.dev ? false : { preset: 'default' }
-      }
+      },
+      // Array, String or Function
+      order: 'cssnanoLast'
     }
   }
 
@@ -87,11 +99,19 @@ export default class PostcssConfig {
     return config
   }
 
+  sortPlugins({ plugins, order }) {
+    const names = Object.keys(plugins)
+    if (typeof order === 'string') {
+      order = orderPresets[order]
+    }
+    return typeof order === 'function' ? order(names, orderPresets) : (order || names)
+  }
+
   loadPlugins(config) {
     const plugins = config.plugins
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
-      config.plugins = Object.keys(plugins)
+      config.plugins = this.sortPlugins(config)
         .map((p) => {
           const plugin = require(p)
           const opts = plugins[p]
