@@ -5,24 +5,17 @@ import setup from './setup'
 import listCommands from './list'
 
 export default function run() {
-  const defaultCommand = 'dev'
-  let cmd = process.argv[2]
-
-  if (NuxtCommand.exists(cmd)) { // eslint-disable-line import/namespace
-    process.argv.splice(2, 1)
-  } else {
+  const cmd = process.argv[2] || 'dev'
+  try { 
+    NuxtCommand.ensure(cmd)
+  } catch (notFoundError) {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       listCommands().then(() => process.exit(0))
       return
+    } else {
+      throw notFoundError
     }
-    cmd = defaultCommand
   }
-
-  // Setup runtime
-  setup({
-    dev: cmd === 'dev'
-  })
-
   return NuxtCommand.load(cmd)
     .then(command => command.run())
     .catch(error => consola.fatal(error))

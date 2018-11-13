@@ -17,29 +17,31 @@ export default class NuxtCommand {
     this._run = run
   }
 
-  static exists(cmd, dir = null) {
-    if (dir === null) {
-      return cmd in commands
+  static ensure(name, dir = null) {
+    if (typeof name === 'undefined') {
+      return
+    } else if (dir === null) {
+      if (!(name in commands)) {
+        throw new Error(`Command ${name} could not be loaded!`)
+      }
     }
     const cmdsRoot = resolve(dir, 'commands')
     if (existsSync(cmdsRoot)) {
-      return readdirSync(cmdsRoot)
+      if (
+        !readdirSync(cmdsRoot)
         .filter(c => c.endsWith('.js'))
         .includes(`${cmd}.js`)
+      ) {
+        throw new Error(`Command ${name} could not be loaded!`)
+      }
     }
   }
 
   static async load(name, dir = null) {
     if (dir !== null) {
       const cmdPath = resolve(dir, 'commands', `${name}.js`)
-      if (!existsSync(cmdPath)) {
-        throw new Error(`Command ${name} could not be loaded!`)
-      }
       return NuxtCommand.from(requireModule(cmdPath).default)
     }
-    if (!(name in commands)) {
-      throw new Error(`Command ${name} could not be loaded!`)
-    } 
     const cmd = await commands[name]().then(m => m.default)
     return NuxtCommand.from(cmd)
   }
