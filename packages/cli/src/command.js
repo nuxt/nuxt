@@ -5,6 +5,7 @@ import parseArgs from 'minimist'
 import { name, version } from '../package.json'
 import { requireModule, loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import setup from './setup'
 import * as commands from './commands'
 import * as imports from './imports'
 
@@ -14,7 +15,11 @@ export default class NuxtCommand {
     this.description = description || ''
     this.usage = usage || ''
     this.options = Object.assign({}, options)
-    this._run = run
+    this._run = function () {
+      setup({ dev: name === 'dev'})
+      process.argv.splice(2, 1)
+      run.call(this)
+    }
   }
 
   static ensure(name, dir = null) {

@@ -1,7 +1,6 @@
 import consola from 'consola'
 import NuxtCommand from './command'
 import * as commands from './commands'
-import setup from './setup'
 import listCommands from './list'
 
 export default function run() {

@@ -13,6 +13,7 @@ export default {
     const customCmd = argv._[0]
     
     NuxtCommand.ensure(cmd, '.')
+    process.argv.splice(2, 1)
     
     return NuxtCommand.load(cmd, '.')
       .then(command => command.run())
