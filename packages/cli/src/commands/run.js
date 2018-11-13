@@ -7,7 +7,7 @@ export default {
   run(cmd) {
     const argv = cmd.getArgv()
     const customCmd = argv._[0]
-    
+
     NuxtCommand.ensure(customCmd, '.')
     process.argv.splice(2, 1)
 
