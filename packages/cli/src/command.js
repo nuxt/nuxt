@@ -41,7 +41,7 @@ export default class NuxtCommand {
     }
     const cmdsRoot = resolve(dir, 'commands')
     if (
-      !existsSync(cmdsRoot) || 
+      !existsSync(cmdsRoot) ||
       !readdirSync(cmdsRoot)
         .filter(c => c.endsWith('.js'))
         .includes(`${name}.js`)
