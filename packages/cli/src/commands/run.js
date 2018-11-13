@@ -11,8 +11,16 @@ export default {
   async run(cmd) {
     const argv = cmd.getArgv()
     const customCmd = argv._[0]
-    if (!NuxtCommand.exists(customCmd, '.')) {
-      
+    try { 
+      NuxtCommand.ensure(cmd, '.')
+    } catch (notFoundError) {
+      if (process.argv.includes('--help') || process.argv.includes('-h')) {
+        return listCommands('.').then(process.exit)
+      } else {
+        throw notFoundError
+      }
     }
+    return NuxtCommand.load(cmd, '.')
+      .then(command => command.run())
   }
 }
