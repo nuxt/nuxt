@@ -18,7 +18,7 @@ export default class NuxtCommand {
     this._run = function () {
       setup({ dev: name === 'dev' })
       process.argv.splice(2, 1)
-      return run.call(this)
+      return run(this)
     }
   }
 
