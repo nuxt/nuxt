@@ -32,9 +32,7 @@ export default class NuxtCommand {
   }
 
   static ensure(name, dir = null) {
-    if (typeof name === 'undefined') {
-      return
-    } else if (dir === null) {
+    if (dir === null) {
       if (!(name in commands)) {
         throw new Error(`Command ${name} could not be loaded!`)
       }
