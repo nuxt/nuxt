@@ -1,6 +1,7 @@
 import consola from 'consola'
 import NuxtCommand from './command'
 import listCommands from './list'
+import setup from './setup'
 
 export default function run() {
   const cmd = process.argv[2] || 'dev'
@@ -13,6 +14,8 @@ export default function run() {
       throw notFoundError
     }
   }
+  setup({ cmd: name === 'dev' })
+  
   return NuxtCommand.load(cmd)
     .then(command => command.run())
     .catch(error => consola.fatal(error))
