@@ -41,17 +41,6 @@ describe('cli', () => {
     process.argv = argv
   })
 
-  test('unknown calls default method', async () => {
-    const argv = process.argv
-    process.argv = ['', '', 'test']
-    commands.dev.mockImplementationOnce(() => Promise.resolve())
-
-    await run()
-
-    expect(commands.dev).toHaveBeenCalled()
-    process.argv = argv
-  })
-
   test('sets NODE_ENV=development for dev', async () => {
     const nodeEnv = process.env.NODE_ENV
     process.env.NODE_ENV = ''
