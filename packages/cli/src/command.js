@@ -22,6 +22,15 @@ export default class NuxtCommand {
     }
   }
 
+  static list(dir = '.') {
+    const cmdsRoot = resolve(dir, 'commands')
+    return existsSync(cmdsRoot)
+      ? readdirSync(cmdsRoot)
+        .filter(c => c.endsWith('.js'))
+        .map(c => parse(c).name)
+      : []
+  }
+
   static ensure(name, dir = null) {
     if (typeof name === 'undefined') {
       return
