@@ -28,13 +28,13 @@ describe('modern server mode', () => {
   })
 
   test('should include es6 syntax in modern resources', async () => {
-    const response = await rp(url('/_nuxt/modern-app.js'))
+    const response = await rp(url('/_nuxt/modern-pages_index.js'))
     expect(response).toContain('arrow:()=>"build test"')
   })
 
   test('should not include es6 syntax in normal resources', async () => {
-    const response = await rp(url('/_nuxt/app.js'))
-    expect(response).not.toContain('arrow:()=>"build test"')
+    const response = await rp(url('/_nuxt/pages_index.js'))
+    expect(response).toContain('arrow:function(){return"build test"}')
   })
 
   // Close server and ask nuxt to stop listening to file changes
