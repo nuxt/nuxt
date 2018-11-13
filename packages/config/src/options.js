@@ -293,6 +293,20 @@ export function getNuxtConfig(_options) {
   if (vueLoader.productionMode === undefined) {
     vueLoader.productionMode = !options.dev
   }
+  // TODO: Remove when new release of Vue (https://github.com/nuxt/nuxt.js/issues/4312)
+  const staticClassHotfix = function (el) {
+    el.staticClass = el.staticClass && el.staticClass.replace(/\\[a-z]\b/g, '')
+    if (Array.isArray(el.children)) {
+      el.children.map(staticClassHotfix)
+    }
+  }
+  vueLoader.compilerOptions = vueLoader.compilerOptions || {}
+  vueLoader.compilerOptions.modules = [
+    ...(vueLoader.compilerOptions.modules || []),
+    {
+      postTransformNode: staticClassHotfix
+    }
+  ]
   const styleLoaders = [
     'css', 'cssModules', 'less',
     'sass', 'scss', 'stylus', 'vueStyle'

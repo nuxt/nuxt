@@ -77,7 +77,8 @@ export default {
         }
       },
       plugins: {
-        cssnano: {}
+        cssnano: {},
+        [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
       }
     }
   }
