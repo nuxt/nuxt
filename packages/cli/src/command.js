@@ -39,7 +39,7 @@ export default class NuxtCommand {
         throw new Error(`Command ${name} could not be loaded!`)
       }
     }
-    const cmdsRoot = resolve(dir, 'commands')
+    const cmdsRoot = resolve(dir || '.', 'commands')
     if (
       !existsSync(cmdsRoot) ||
       !readdirSync(cmdsRoot)
