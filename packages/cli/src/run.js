@@ -10,8 +10,7 @@ export default function run() {
     NuxtCommand.ensure(cmd)
   } catch (notFoundError) {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands().then(() => process.exit(0))
-      return
+      return listCommands().then(process.exit)
     } else {
       throw notFoundError
     }
