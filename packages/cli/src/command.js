@@ -18,7 +18,7 @@ export default class NuxtCommand {
     this._run = function () {
       setup({ dev: name === 'dev' })
       process.argv.splice(2, 1)
-      run.call(this)
+      return run.call(this)
     }
   }
 
@@ -40,14 +40,13 @@ export default class NuxtCommand {
       }
     }
     const cmdsRoot = resolve(dir, 'commands')
-    if (existsSync(cmdsRoot)) {
-      if (
-        !readdirSync(cmdsRoot)
-          .filter(c => c.endsWith('.js'))
-          .includes(`${name}.js`)
-      ) {
-        throw new Error(`Command ${name} could not be loaded!`)
-      }
+    if (
+      !existsSync(cmdsRoot) || 
+      !readdirSync(cmdsRoot)
+        .filter(c => c.endsWith('.js'))
+        .includes(`${name}.js`)
+    ) {
+      throw new Error(`Command ${name} could not be loaded!`)
     }
   }
 
