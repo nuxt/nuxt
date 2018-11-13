@@ -1,14 +1,6 @@
 import consola from 'consola'
 import chalk from 'chalk'
 
-process.env.NODE_ENV = 'production'
-jest.mock('std-env', () => {
-  return {
-    ...require.requireActual('std-env'),
-    test: true
-  }
-})
-
 const isWin = process.platform === 'win32'
 describe.skip.win = isWin ? describe.skip : describe
 test.skip.win = isWin ? test.skip : test
