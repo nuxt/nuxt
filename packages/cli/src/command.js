@@ -1,5 +1,5 @@
 
-import { resolve, join, parse } from 'path'
+import { resolve, parse } from 'path'
 import { readdirSync, existsSync } from 'fs'
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
@@ -16,7 +16,7 @@ export default class NuxtCommand {
     this.usage = usage || ''
     this.options = Object.assign({}, options)
     this._run = function () {
-      setup({ dev: name === 'dev'})
+      setup({ dev: name === 'dev' })
       process.argv.splice(2, 1)
       run.call(this)
     }
@@ -43,8 +43,8 @@ export default class NuxtCommand {
     if (existsSync(cmdsRoot)) {
       if (
         !readdirSync(cmdsRoot)
-        .filter(c => c.endsWith('.js'))
-        .includes(`${cmd}.js`)
+          .filter(c => c.endsWith('.js'))
+          .includes(`${name}.js`)
       ) {
         throw new Error(`Command ${name} could not be loaded!`)
       }
@@ -56,6 +56,7 @@ export default class NuxtCommand {
       const cmdPath = resolve(dir, 'commands', `${name}.js`)
       return NuxtCommand.from(requireModule(cmdPath).default)
     }
+    // eslint-disable-next-line import/namespace
     const cmd = await commands[name]().then(m => m.default)
     return NuxtCommand.from(cmd)
   }
