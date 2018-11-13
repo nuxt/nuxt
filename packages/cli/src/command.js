@@ -1,6 +1,9 @@
+
+import { resolve, join, parse } from 'path'
+import { readdirSync, existsSync } from 'fs'
 import parseArgs from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig } from './utils'
+import { requireModule, loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as commands from './commands'
 import * as imports from './imports'
@@ -14,15 +17,31 @@ export default class NuxtCommand {
     this._run = run
   }
 
-  static async load(name) {
-    if (name in commands) {
-      const cmd = await commands[name]() // eslint-disable-line import/namespace
-        .then(m => m.default)
-      return NuxtCommand.from(cmd)
-    } else {
-      // TODO dynamic module loading
-      throw new Error('Command ' + name + ' could not be loaded!')
+  static exists(cmd, dir = null) {
+    if (dir === null) {
+      return cmd in commands
     }
+    const cmdsRoot = resolve(dir, 'commands')
+    if (existsSync(cmdsRoot)) {
+      return readdirSync(cmdsRoot)
+        .filter(c => c.endsWith('.js'))
+        .includes(`${cmd}.js`)
+    }
+  }
+
+  static async load(name, dir = null) {
+    if (dir !== null) {
+      const cmdPath = resolve(dir, 'commands', `${name}.js`)
+      if (!existsSync(cmdPath)) {
+        throw new Error(`Command ${name} could not be loaded!`)
+      }
+      return NuxtCommand.from(requireModule(cmdPath).default)
+    }
+    if (!(name in commands)) {
+      throw new Error(`Command ${name} could not be loaded!`)
+    } 
+    const cmd = await commands[name]().then(m => m.default)
+    return NuxtCommand.from(cmd)
   }
 
   static from(options) {

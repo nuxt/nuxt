@@ -3,17 +3,16 @@ import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
 import listCommands from './list'
-import { existsLocalCommand, loadLocalCommand } from './local'
 
 export default function run() {
   const defaultCommand = 'dev'
   let cmd = process.argv[2]
+  let dir = null
 
-  if (commands[cmd]) { // eslint-disable-line import/namespace
+  if (NuxtCommand.exists(cmd)) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
-  } else if (existsLocalCommand(cmd)) {
-    return loadLocalCommand(cmd).run()
-      .catch(error => consola.fatal(error))
+  } else if (NuxtCommand.exists(cmd, '.')) {
+    dir = '.'
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       listCommands().then(() => process.exit(0))
@@ -27,7 +26,7 @@ export default function run() {
     dev: cmd === 'dev'
   })
 
-  return NuxtCommand.load(cmd)
+  return NuxtCommand.load(cmd, dir)
     .then(command => command.run())
     .catch(error => consola.fatal(error))
 }
