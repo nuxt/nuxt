@@ -279,7 +279,7 @@ export function normalizeError(err) {
     try {
       message = JSON.stringify(err, null, 2)
     } catch (e) {
-      message = `Non stringified object ${err.constructor.name} `
+      message = `[${err.constructor.name}]`
     }
   } else {
     message = err.message || err
