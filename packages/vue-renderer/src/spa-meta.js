@@ -87,7 +87,7 @@ export default class SPAMetaRenderer {
             if (asType === 'font') {
               extra = ` type="font/${extension}" crossorigin`
             }
-            return `<link rel="preload" href="${publicPath}/${file}"${
+            return `<link rel="preload" href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
@@ -98,7 +98,7 @@ export default class SPAMetaRenderer {
         meta.resourceHints += clientManifest.async
           .map(SPAMetaRenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPrefetch(fileWithoutQuery, asType))
-          .map(r => `<link rel="prefetch" href="${publicPath}${r}" />`)
+          .map(({ file }) => `<link rel="prefetch" href="${publicPath}${file}">`)
           .join('')
       }
 
