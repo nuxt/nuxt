@@ -3,8 +3,8 @@ function isBabelLoader(caller) {
 }
 
 module.exports = function (api) {
-  if (api.env('test')) {
-    const config = {
+  if (api.env('test') && !api.caller(isBabelLoader)) {
+    return {
       presets: [
         ['@babel/env', {
           targets: {
@@ -12,12 +12,8 @@ module.exports = function (api) {
           }
         }]
       ],
-      plugins: []
+      plugins: ['dynamic-import-node']
     }
-    if (!api.caller(isBabelLoader)) {
-      config.plugins.push('dynamic-import-node')
-    }
-    return config
   }
   return {}
 }
