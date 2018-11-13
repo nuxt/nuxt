@@ -38,6 +38,7 @@ export default class NuxtCommand {
       if (!(name in commands)) {
         throw new Error(`Command ${name} could not be loaded!`)
       }
+      return
     }
     const cmdsRoot = resolve(dir || '.', 'commands')
     if (
