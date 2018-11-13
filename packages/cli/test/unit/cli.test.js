@@ -34,7 +34,6 @@ describe('cli', () => {
       run: jest.fn().mockImplementation(() => Promise.resolve())
     }
     commands.dev.mockImplementationOnce(() => Promise.resolve({ default: defaultExport }))
-
     await run()
 
     expect(defaultExport.run).toHaveBeenCalled()
@@ -43,9 +42,9 @@ describe('cli', () => {
 
   test('sets NODE_ENV=development for dev', async () => {
     const nodeEnv = process.env.NODE_ENV
+    process.argv = ['', '', 'dev']
     process.env.NODE_ENV = ''
     commands.dev.mockImplementationOnce(() => Promise.resolve())
-
     await run()
 
     expect(process.env.NODE_ENV).toBe('development')
@@ -58,7 +57,6 @@ describe('cli', () => {
     process.argv = ['', '', 'build']
     process.env.NODE_ENV = ''
     commands.build.mockImplementationOnce(() => Promise.resolve())
-
     await run()
 
     expect(process.env.NODE_ENV).toBe('production')
@@ -68,7 +66,6 @@ describe('cli', () => {
 
   test('catches fatal error', async () => {
     commands.dev.mockImplementationOnce(() => Promise.reject(new Error('Command Error')))
-
     await run()
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Command Error'))
