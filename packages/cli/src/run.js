@@ -7,12 +7,9 @@ import listCommands from './list'
 export default function run() {
   const defaultCommand = 'dev'
   let cmd = process.argv[2]
-  let dir = null
 
   if (NuxtCommand.exists(cmd)) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
-  } else if (NuxtCommand.exists(cmd, '.')) {
-    dir = '.'
   } else {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       listCommands().then(() => process.exit(0))
@@ -26,7 +23,7 @@ export default function run() {
     dev: cmd === 'dev'
   })
 
-  return NuxtCommand.load(cmd, dir)
+  return NuxtCommand.load(cmd)
     .then(command => command.run())
     .catch(error => consola.fatal(error))
 }
