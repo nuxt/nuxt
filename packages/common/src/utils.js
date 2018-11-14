@@ -290,11 +290,20 @@ const sortRoutes = function sortRoutes(routes) {
       res = y - z
       // If a.length >= b.length
       if (i === _b.length - 1 && res === 0) {
-        // sort alphabetically unless * found
-        res = _a[i] === '*' ? -1 : a.path.localeCompare(b.path)
+        // unless * found sort by level, then alphabetically
+        res = _a[i] === '*' ? -1 : (
+          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+        )
       }
     }
-    return res === 0 ? (_a[i - 1] === '*' && _b[i] ? 1 : -1) : res
+
+    if (res === 0) {
+      // unless * found sort by level, then alphabetically
+      res = _a[i - 1] === '*' && _b[i] ? 1 : (
+        _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+      )
+    }
+    return res
   })
 
   routes.forEach((route) => {
