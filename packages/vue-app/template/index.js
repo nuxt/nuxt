@@ -7,7 +7,7 @@ import NuxtLink from './components/nuxt-link.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 import Nuxt from './components/nuxt.js'
 import App from '<%= appPath %>'
-import { setContext, getLocation, getRouteData } from './utils'
+import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% if (store) { %>import { createStore } from './store.js'<% } %>
 
 /* Plugins */
@@ -90,7 +90,7 @@ async function createApp(ssrContext) {
       error(err) {
         err = err || null
         app.context._errored = !!err
-        if (typeof err === 'string') err = { statusCode: 500, message: err }
+        err = err ? normalizeError(err) : null
         const nuxt = this.nuxt || this.$options.nuxt
         nuxt.dateErr = Date.now()
         nuxt.err = err

@@ -6,7 +6,7 @@
   meta: {
     theme: 'dark'
   }
-}</pre>
+}</pre> <!-- eslint-disable-line --> <!-- TODO remove disable lint after https://github.com/vuejs/eslint-plugin-vue/pull/659 -->
   </div>
 </template>
 
