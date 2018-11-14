@@ -2,7 +2,7 @@ import NuxtCommand from '../command'
 
 export default {
   name: 'run',
-  description: 'Run locally defined commands in the root Nuxt project directory',
+  description: 'Run <customCmd> if available in this directory',
   usage: 'run <customCmd>',
   run(cmd) {
     const argv = cmd.getArgv()

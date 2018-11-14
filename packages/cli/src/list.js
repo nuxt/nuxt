@@ -2,14 +2,13 @@ import chalk from 'chalk'
 import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 
-const getFormattedCommands = (cmmds, prefix = '') => {
+const getFormattedCommands = (cmmds) => {
   let maxLength = 0
   const commandsHelp = []
 
   cmmds.forEach((cmd) => {
-    const usage = prefix ? `${prefix} ${cmd.usage}` : cmd.usage
-    commandsHelp.push([usage, cmd.description])
-    maxLength = Math.max(maxLength, usage.length)
+    commandsHelp.push([cmd.usage, cmd.description])
+    maxLength = Math.max(maxLength, cmd.usage.length)
   })
 
   return commandsHelp.map(([cmd, description]) => {
@@ -23,7 +22,7 @@ const getFormattedCommands = (cmmds, prefix = '') => {
 }
 
 export default async function listCommands() {
-  const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
+  const commandsOrder = ['dev', 'build', 'generate', 'start', 'run', 'help']
   const localCommands = NuxtCommand.list('.')
 
   const coreCmmds = await Promise.all(
@@ -36,8 +35,8 @@ export default async function listCommands() {
   const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
   const coreCmmdsHelp = foldLines(`Commands:`, startSpaces) +
     '\n\n' + getFormattedCommands(coreCmmds)
-  const customCmmdsHelp = foldLines(`Commands in this project:`, startSpaces) +
-    '\n\n' + getFormattedCommands(customCmmds, 'run')
+  const customCmmdsHelp = foldLines(`Custom commands found in this project:`, startSpaces) +
+    '\n\n' + getFormattedCommands(customCmmds)
 
   process.stderr.write(colorize(`${usage}\n\n${coreCmmdsHelp}\n\n${customCmmdsHelp}\n\n`))
 }
