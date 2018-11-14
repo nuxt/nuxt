@@ -46,9 +46,9 @@
     "nuxt-legacy": "bin/nuxt-legacy.js"
   },
   "dependencies": {
-    "@babel/core": "^7.1.5",
+    "@babel/core": "^7.1.6",
     "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.1.5",
+    "@babel/preset-env": "^7.1.6",
     "@babel/register": "^7.0.0",
     "@nuxt/builder": "^2.2.0",
     "@nuxt/cli": "^2.2.0",
