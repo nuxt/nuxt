@@ -2,25 +2,16 @@ import chalk from 'chalk'
 import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 
-export default async function listCommands() {
-  const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
-  const localCommands = NuxtCommand.list('.')
-
-  // Load all commands
-  const _commands = await Promise.all(
-    commandsOrder.map(cmd => NuxtCommand.load(cmd))
-      .concat(localCommands.map(cmd => NuxtCommand.load(cmd, '.')))
-  )
-
+const getFormattedCommands = (cmmdHash) => {
   let maxLength = 0
   const commandsHelp = []
 
-  for (const name in _commands) {
-    commandsHelp.push([_commands[name].usage, _commands[name].description])
-    maxLength = Math.max(maxLength, _commands[name].usage.length)
+  for (const name in cmmdHash) {
+    commandsHelp.push([cmmdHash[name].usage, cmmdHash[name].description])
+    maxLength = Math.max(maxLength, cmmdHash[name].usage.length)
   }
 
-  const _cmmds = commandsHelp.map(([cmd, description]) => {
+  return commandsHelp.map(([cmd, description]) => {
     const i = indent(maxLength + optionSpaces - cmd.length)
     return foldLines(
       chalk.green(cmd) + i + description,
@@ -28,9 +19,22 @@ export default async function listCommands() {
       startSpaces + optionSpaces
     )
   }).join('\n')
+}
+
+export default async function listCommands() {
+  const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
+  const localCommands = NuxtCommand.list('.')
+
+  const coreCmmds = await Promise.all(
+    commandsOrder.map(cmd => NuxtCommand.load(cmd))
+  )
+  const customCmmds = localCommands.map(cmd => NuxtCommand.load(cmd, '.'))
 
   const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
-  const cmmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmmds
+  const coreCmmdsHelp = foldLines(`Commands:`, startSpaces) +
+    '\n\n' + getFormattedCommands(coreCmmds)
+  const customCmmdsHelp = foldLines(`Commands in this project:`, startSpaces) +
+    '\n\n' + getFormattedCommands(customCmmds)
 
-  process.stderr.write(colorize(`${usage}\n\n${cmmds}\n\n`))
+  process.stderr.write(colorize(`${usage}\n\n${coreCmmdsHelp}\n\n${customCmmdsHelp}`))
 }
