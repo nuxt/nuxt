@@ -42,7 +42,6 @@ describe('cli', () => {
 
   test('sets NODE_ENV=development for dev', async () => {
     const nodeEnv = process.env.NODE_ENV
-    process.argv = ['', '', 'dev']
     process.env.NODE_ENV = ''
     commands.dev.mockImplementationOnce(() => Promise.resolve())
     await run()
