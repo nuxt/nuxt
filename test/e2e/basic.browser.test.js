@@ -158,7 +158,7 @@ describe('basic browser', () => {
   test('/error', async () => {
     await page.nuxt.navigate('/error')
 
-    expect(await page.nuxt.errorData()).toEqual({ statusCode: 500 })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Error mouahahah', statusCode: 500 })
     expect(await page.$text('.title')).toBe('Error mouahahah')
   })
 
@@ -166,7 +166,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/error2')
 
     expect(await page.$text('.title')).toBe('Custom error')
-    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error' })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500 })
   })
 
   test('/redirect-middleware', async () => {

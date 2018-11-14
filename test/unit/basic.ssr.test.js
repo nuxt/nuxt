@@ -174,6 +174,26 @@ describe('basic ssr', () => {
       .rejects.toThrow('Error mouahahah')
   })
 
+  test('/error-string', async () => {
+    let error
+    try {
+      await nuxt.server.renderRoute('/error-string', { req: {}, res: {} })
+    } catch (e) {
+      error = e
+    }
+    await expect(error).toEqual('fetch error!')
+  })
+
+  test('/error-object', async () => {
+    let error
+    try {
+      await nuxt.server.renderRoute('/error-object', { req: {}, res: {} })
+    } catch (e) {
+      error = e
+    }
+    await expect(error).toEqual({ error: 'fetch error!' })
+  })
+
   test('/error status code', async () => {
     await expect(rp(url('/error'))).rejects.toMatchObject({
       statusCode: 500
@@ -201,7 +221,7 @@ describe('basic ssr', () => {
     const { html, error } = await nuxt.server.renderRoute('/error2')
     expect(html).toContain('Custom error')
     expect(error.message).toContain('Custom error')
-    expect(error.statusCode === undefined).toBe(true)
+    expect(error.statusCode).toBe(500)
   })
 
   test('/error2 status code', async () => {
