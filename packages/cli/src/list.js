@@ -39,6 +39,6 @@ export default async function listCommands() {
     helpText += foldLines(`Custom commands found in this project:`, startSpaces) +
       '\n\n' + getFormattedCommands(customCmmds) + '\n\n'
   }
-  
+
   process.stderr.write(colorize(`${usage}\n\n${helpText}`))
 }
