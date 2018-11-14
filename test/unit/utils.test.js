@@ -303,16 +303,16 @@ test('createRoutes should allow snake case routes', () => {
   const routesResult = Utils.createRoutes(files, srcDir, pagesDir)
   const expectedResult = [
     {
-      name: 'snake_case_route',
-      path: '/snake_case_route',
-      component: Utils.r('/some/nuxt/app/pages/snake_case_route.vue'),
-      chunkName: 'pages/snake_case_route'
-    },
-    {
       name: 'another_route-id',
       path: '/another_route/:id?',
       component: Utils.r('/some/nuxt/app/pages/another_route/_id.vue'),
       chunkName: 'pages/another_route/_id'
+    },
+    {
+      name: 'snake_case_route',
+      path: '/snake_case_route',
+      component: Utils.r('/some/nuxt/app/pages/snake_case_route.vue'),
+      chunkName: 'pages/snake_case_route'
     },
     {
       name: 'subpage-param',
