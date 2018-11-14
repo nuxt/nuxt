@@ -10,7 +10,7 @@ export default {
 
     NuxtCommand.ensure(customCmd, '.')
     process.argv.splice(2, 1)
-    
+
     return NuxtCommand.load(customCmd, '.')
       .then(command => command.run())
   }
