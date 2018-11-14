@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
@@ -28,12 +28,12 @@ describe('modern server mode', () => {
   })
 
   test('should include es6 syntax in modern resources', async () => {
-    const response = await rp(url('/_nuxt/modern-pages_index.js'))
+    const response = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
     expect(response).toContain('arrow:()=>"build test"')
   })
 
   test('should not include es6 syntax in normal resources', async () => {
-    const response = await rp(url('/_nuxt/pages_index.js'))
+    const response = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
     expect(response).toContain('arrow:function(){return"build test"}')
   })
 
