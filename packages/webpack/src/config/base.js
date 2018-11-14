@@ -25,6 +25,7 @@ export default class WebpackBaseConfig {
     this.options = builder.context.options
     this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
+    this.buildMode = this.options.dev ? 'development' : 'production'
   }
 
   get colors() {
@@ -85,6 +86,7 @@ export default class WebpackBaseConfig {
 
   env() {
     const env = {
+      'process.env.NODE_ENV': JSON.stringify(this.buildMode),
       'process.mode': JSON.stringify(this.options.mode),
       'process.static': this.isStatic
     }
@@ -319,7 +321,7 @@ export default class WebpackBaseConfig {
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
     const config = {
       name: this.name,
-      mode: this.options.dev ? 'development' : 'production',
+      mode: this.buildMode,
       devtool: this.devtool(),
       optimization: this.optimization(),
       output: this.output(),
