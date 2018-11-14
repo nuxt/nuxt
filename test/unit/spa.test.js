@@ -60,15 +60,6 @@ describe('spa', () => {
     expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
-  test('/_nuxt/ (access publicPath in spa mode)', async () => {
-    await expect(renderRoute('/_nuxt/')).rejects.toMatchObject({
-      response: {
-        statusCode: 404,
-        statusMessage: 'ResourceNotFound'
-      }
-    })
-  })
-
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
