@@ -15,7 +15,7 @@ export default function run() {
     }
   }
   process.argv.splice(2, 1)
-  setup({ cmd: cmd === 'dev' })
+  setup({ dev: cmd === 'dev' })
 
   return NuxtCommand.load(cmd)
     .then(command => command.run())
