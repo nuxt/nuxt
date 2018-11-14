@@ -33,10 +33,12 @@ export default async function listCommands() {
   )
 
   const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
-  const coreCmmdsHelp = foldLines(`Commands:`, startSpaces) +
-    '\n\n' + getFormattedCommands(coreCmmds)
-  const customCmmdsHelp = foldLines(`Custom commands found in this project:`, startSpaces) +
-    '\n\n' + getFormattedCommands(customCmmds)
-
-  process.stderr.write(colorize(`${usage}\n\n${coreCmmdsHelp}\n\n${customCmmdsHelp}\n\n`))
+  let helpText = foldLines(`Commands:`, startSpaces) +
+    '\n\n' + getFormattedCommands(coreCmmds) + '\n\n'
+  if (customCmmds.length) {
+    helpText += foldLines(`Custom commands found in this project:`, startSpaces) +
+      '\n\n' + getFormattedCommands(customCmmds) + '\n\n'
+  }
+  process.stderr.write(colorize(`${usage}\n\n${helpText}`))
+  
 }
