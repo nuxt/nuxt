@@ -14,6 +14,7 @@ export default function run() {
       throw notFoundError
     }
   }
+  process.argv.splice(2, 1)
   setup({ cmd: cmd === 'dev' })
 
   return NuxtCommand.load(cmd)

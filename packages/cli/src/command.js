@@ -15,7 +15,6 @@ export default class NuxtCommand {
     this.usage = usage || ''
     this.options = Object.assign({}, options)
     this._run = function () {
-      process.argv.splice(2, 1)
       return run(this)
     }
   }
