@@ -14,8 +14,8 @@ export default function run() {
       throw notFoundError
     }
   }
-  setup({ cmd: name === 'dev' })
-  
+  setup({ cmd: cmd === 'dev' })
+
   return NuxtCommand.load(cmd)
     .then(command => command.run())
     .catch(error => consola.fatal(error))
