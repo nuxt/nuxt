@@ -10,9 +10,10 @@ import VueSSRServerPlugin from './plugins/vue/server'
 export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor(builder) {
     super(builder, { name: 'server', isServer: true })
+    this.whitelist = this.normalizeWhitelist()
   }
 
-  get whitelist() {
+  normalizeWhitelist() {
     const whitelist = [
       /\.css$/,
       /\?vue&type=style/
