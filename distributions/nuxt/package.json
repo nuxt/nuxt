@@ -39,9 +39,11 @@
     }
   ],
   "files": [
+    "bin",
     "dist"
   ],
   "main": "dist/nuxt.js",
+  "bin": "bin/nuxt.js",
   "scripts": {
     "postinstall": "opencollective || exit 0"
   },
