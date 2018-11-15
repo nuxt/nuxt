@@ -27,6 +27,7 @@ describe('basic dev', () => {
           chunk: 'test-[name].[contenthash].js'
         },
         transpile: [
+          '@scoped/packageA',
           'vue\\.test\\.js',
           /vue-test/
         ],
@@ -65,6 +66,7 @@ describe('basic dev', () => {
     expect(transpile(path.join('node_modules/vue-test'))).toBe(true)
     expect(transpile(path.join('node_modules/vue.test.js'))).toBe(true)
     expect(transpile(path.join('node_modules/test.vue.js'))).toBe(true)
+    expect(transpile(path.join('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
