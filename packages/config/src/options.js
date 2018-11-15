@@ -324,7 +324,11 @@ export function getNuxtConfig(_options) {
     .map(module => (module instanceof RegExp)
       ? module
       : new RegExp(
-        escapeRegExp(path.normalize(module))
+        escapeRegExp(
+          path.normalize(
+            module.replace(/\\/g, '/')
+          )
+        )
       )
     )
 
