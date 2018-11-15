@@ -1,3 +1,5 @@
+// TODO: Refactor @nuxt/server related options into `server.js`
+
 export default () => ({
   bundleRenderer: {
     shouldPrefetch: () => false,
@@ -24,5 +26,16 @@ export default () => ({
     index: false,
     // 1 year in production
     maxAge: '1y'
+  },
+  // https://github.com/nuxt/serve-placeholder
+  fallback: {
+    dist: {},
+    static: {
+      skipUnknown: true,
+      handlers: {
+        '.htm': false,
+        '.html': false
+      }
+    }
   }
 })
