@@ -42,9 +42,7 @@
   "files": [
     "bin"
   ],
-  "bin": {
-    "nuxt-legacy": "bin/nuxt-legacy.js"
-  },
+  "bin": "bin/nuxt-legacy.js",
   "dependencies": {
     "@babel/core": "^7.1.6",
     "@babel/polyfill": "^7.0.0",
