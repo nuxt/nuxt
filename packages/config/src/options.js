@@ -333,7 +333,7 @@ export function getNuxtConfig(_options) {
       whitelist.push(new RegExp(escapeRegExp(posixModule)))
     }
   }
-  options.build.transpile = { include, whitelist }
+  Object.assign(options.build.transpile, { include, whitelist })
 
   if (options.build.quiet === true) {
     consola.level = 0
