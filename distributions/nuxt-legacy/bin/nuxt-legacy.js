@@ -24,4 +24,4 @@ register({
   ]
 })
 
-require('@nuxt/cli/bin/nuxt.js')
+require('@nuxt/cli').run()

@@ -9,10 +9,10 @@
   ],
   "main": "dist/cli.js",
   "bin": {
-    "nuxt": "bin/nuxt.js"
+    "nuxt-cli": "bin/nuxt-cli.js"
   },
   "dependencies": {
-    "@nuxt/config": "^2.2.0",
+    "@nuxt/config": "2.2.0",
     "boxen": "^2.0.0",
     "chalk": "^2.4.1",
     "consola": "^2.2.6",
