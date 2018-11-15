@@ -320,10 +320,10 @@ export function getNuxtConfig(_options) {
   }
 
   // include SFCs in node_modules
-  const transpile = [].concat(options.build.transpile || [])
+  options.build.transpile = [].concat(options.build.transpile || [])
   const include = []
   const whitelist = []
-  for (const module of transpile) {
+  for (const module of options.build.transpile) {
     if (module instanceof RegExp) {
       include.push(module)
       whitelist.push(module)
