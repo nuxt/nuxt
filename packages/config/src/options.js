@@ -324,7 +324,7 @@ export function getNuxtConfig(_options) {
     .map(module => (module instanceof RegExp)
       ? module
       : new RegExp(
-        escapeRegExp(path.join(module))
+        escapeRegExp(path.normalize(module))
       )
     )
 
