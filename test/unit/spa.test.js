@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { loadFixture, getPort, Nuxt } from '../utils'
+import { loadFixture, getPort, Nuxt, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
@@ -32,13 +32,13 @@ describe('spa', () => {
     expect(head).toMatch(`<link rel="preload" href="/_nuxt/runtime.js" as="script">`)
     expect(head).toMatch(`<link rel="preload" href="/_nuxt/commons.app.js" as="script">`)
     expect(head).toMatch(`<link rel="preload" href="/_nuxt/app.js" as="script">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_custom.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-async.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-object.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-string.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_index.js">`)
-    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_mounted.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/custom.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-async.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-object.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-string.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/index.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/mounted.js')}">`)
     consola.log.mockClear()
   })
 
