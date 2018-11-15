@@ -27,6 +27,21 @@ describe('spa', () => {
     consola.log.mockClear()
   })
 
+  test('/ (include preload and prefetch resources)', async () => {
+    const { head } = await renderRoute('/')
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/runtime.js" as="script">`)
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/commons.app.js" as="script">`)
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/app.js" as="script">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_custom.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-async.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-object.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler-string.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_error-handler.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_index.js">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/pages_mounted.js">`)
+    consola.log.mockClear()
+  })
+
   test('/custom (custom layout)', async () => {
     const { html } = await renderRoute('/custom')
     expect(html).toMatch('Custom layout')
