@@ -72,7 +72,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
             whitelist: [
               /\.css$/,
               /\?vue&type=style/,
-              ...this.options.build.transpile
+              ...this.options.build.transpile.whitelist
             ],
             modulesDir: dir
           })

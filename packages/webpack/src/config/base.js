@@ -171,7 +171,7 @@ export default class WebpackBaseConfig {
           }
 
           // item in transpile can be string or regex object
-          const modulesToTranspile = [/\.vue\.js/].concat(this.options.build.transpile)
+          const modulesToTranspile = [/\.vue\.js/].concat(this.options.build.transpile.include)
 
           return !modulesToTranspile.some(module => module.test(file))
         },
