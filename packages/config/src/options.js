@@ -2,6 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
+import escapeRegExp from 'lodash/escapeRegExp'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
@@ -320,7 +321,16 @@ export function getNuxtConfig(_options) {
 
   // include SFCs in node_modules
   options.build.transpile = [].concat(options.build.transpile || [])
-    .map(module => module instanceof RegExp ? module : new RegExp(module))
+    .map(module => (module instanceof RegExp)
+      ? module
+      : new RegExp(
+        escapeRegExp(
+          path.normalize(
+            module.replace(/\\/g, '/')
+          )
+        )
+      )
+    )
 
   if (options.build.quiet === true) {
     consola.level = 0

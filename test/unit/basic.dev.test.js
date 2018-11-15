@@ -1,3 +1,4 @@
+import path from 'path'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
@@ -26,7 +27,9 @@ describe('basic dev', () => {
           chunk: 'test-[name].[contenthash].js'
         },
         transpile: [
-          'vue\\.test\\.js',
+          '@scoped/packageA',
+          '@scoped\\packageB',
+          'vue.test.js',
           /vue-test/
         ],
         loaders: {
@@ -60,10 +63,12 @@ describe('basic dev', () => {
 
   test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
-    expect(transpile('node_modules/test.js')).toBe(false)
-    expect(transpile('node_modules/vue-test')).toBe(true)
-    expect(transpile('node_modules/vue.test.js')).toBe(true)
-    expect(transpile('node_modules/test.vue.js')).toBe(true)
+    expect(transpile(path.normalize('node_modules/test.js'))).toBe(false)
+    expect(transpile(path.normalize('node_modules/vue-test'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/vue.test.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
