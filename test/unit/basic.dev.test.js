@@ -28,7 +28,7 @@ describe('basic dev', () => {
         },
         transpile: [
           '@scoped/packageA',
-          'vue\\.test\\.js',
+          'vue.test.js',
           /vue-test/
         ],
         loaders: {
