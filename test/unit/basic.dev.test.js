@@ -28,6 +28,7 @@ describe('basic dev', () => {
         },
         transpile: [
           '@scoped/packageA',
+          '@scoped\\packageB',
           'vue.test.js',
           /vue-test/
         ],
@@ -67,6 +68,7 @@ describe('basic dev', () => {
     expect(transpile(path.normalize('node_modules/vue.test.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
