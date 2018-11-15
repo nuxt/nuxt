@@ -9,7 +9,7 @@
   ],
   "main": "dist/cli.js",
   "bin": {
-    "nuxt": "bin/nuxt.js"
+    "nuxt-cli": "bin/nuxt-cli.js"
   },
   "dependencies": {
     "@nuxt/config": "^2.2.0",
