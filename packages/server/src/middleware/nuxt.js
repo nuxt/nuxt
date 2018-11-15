@@ -88,7 +88,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
 const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
   if (shouldPush && isDev) {
-    consola.warn('http2.shouldPush is deprecated. User http2.pushAssets function')
+    consola.warn('http2.shouldPush is deprecated. Use http2.pushAssets function')
   }
 
   const links = []
