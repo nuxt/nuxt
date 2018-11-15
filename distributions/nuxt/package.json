@@ -48,12 +48,12 @@
     "postinstall": "opencollective || exit 0"
   },
   "dependencies": {
-    "@nuxt/builder": "^2.2.0",
-    "@nuxt/cli": "^2.2.0",
-    "@nuxt/common": "^2.2.0",
-    "@nuxt/core": "^2.2.0",
-    "@nuxt/generator": "^2.2.0",
-    "@nuxt/webpack": "^2.2.0"
+    "@nuxt/builder": "2.2.0",
+    "@nuxt/cli": "2.2.0",
+    "@nuxt/common": "2.2.0",
+    "@nuxt/core": "2.2.0",
+    "@nuxt/generator": "2.2.0",
+    "@nuxt/webpack": "2.2.0"
   },
   "engines": {
     "node": ">=8.0.0",

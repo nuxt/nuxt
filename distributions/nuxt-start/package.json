@@ -46,9 +46,9 @@
   "main": "dist/nuxt-start.js",
   "bin": "bin/nuxt-start.js",
   "dependencies": {
-    "@nuxt/cli": "^2.2.0",
-    "@nuxt/common": "^2.2.0",
-    "@nuxt/core": "^2.2.0"
+    "@nuxt/cli": "2.2.0",
+    "@nuxt/common": "2.2.0",
+    "@nuxt/core": "2.2.0"
   },
   "engines": {
     "node": ">=8.0.0",
