@@ -1,3 +1,4 @@
+import path from 'path'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
@@ -60,10 +61,10 @@ describe('basic dev', () => {
 
   test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
-    expect(transpile('node_modules/test.js')).toBe(false)
-    expect(transpile('node_modules/vue-test')).toBe(true)
-    expect(transpile('node_modules/vue.test.js')).toBe(true)
-    expect(transpile('node_modules/test.vue.js')).toBe(true)
+    expect(transpile(path.join('node_modules/test.js'))).toBe(false)
+    expect(transpile(path.join('node_modules/vue-test'))).toBe(true)
+    expect(transpile(path.join('node_modules/vue.test.js'))).toBe(true)
+    expect(transpile(path.join('node_modules/test.vue.js'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
