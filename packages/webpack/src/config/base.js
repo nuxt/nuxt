@@ -3,6 +3,7 @@ import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
+import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
@@ -26,6 +27,7 @@ export default class WebpackBaseConfig {
     this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
     this.buildMode = this.options.dev ? 'development' : 'production'
+    this.modulesToTranspile = this.normalizeTranspile()
   }
 
   get colors() {
@@ -43,6 +45,20 @@ export default class WebpackBaseConfig {
       isClient: !this.isServer,
       isModern: !!this.isModern
     }
+  }
+
+  normalizeTranspile() {
+    // include SFCs in node_modules
+    const items = [/\.vue\.js/]
+    for (const pattern of this.options.build.transpile) {
+      if (pattern instanceof RegExp) {
+        items.push(pattern)
+      } else {
+        const posixModule = pattern.replace(/\\/g, '/')
+        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
+      }
+    }
+    return items
   }
 
   getBabelOptions() {
@@ -171,9 +187,7 @@ export default class WebpackBaseConfig {
           }
 
           // item in transpile can be string or regex object
-          const modulesToTranspile = [/\.vue\.js/].concat(this.options.build.transpile.include)
-
-          return !modulesToTranspile.some(module => module.test(file))
+          return !this.modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.js().concat({
           loader: require.resolve('babel-loader'),

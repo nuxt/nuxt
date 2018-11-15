@@ -2,7 +2,6 @@ import path from 'path'
 import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
-import escapeRegExp from 'lodash/escapeRegExp'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
@@ -319,21 +318,7 @@ export function getNuxtConfig(_options) {
     }
   }
 
-  // include SFCs in node_modules
   options.build.transpile = [].concat(options.build.transpile || [])
-  const include = []
-  const whitelist = []
-  for (const module of options.build.transpile) {
-    if (module instanceof RegExp) {
-      include.push(module)
-      whitelist.push(module)
-    } else {
-      const posixModule = module.replace(/\\/g, '/')
-      include.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
-      whitelist.push(new RegExp(escapeRegExp(posixModule)))
-    }
-  }
-  Object.assign(options.build.transpile, { include, whitelist })
 
   if (options.build.quiet === true) {
     consola.level = 0
