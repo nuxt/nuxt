@@ -1,0 +1,34 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+pool:
+  vmImage: 'vs2017-win2016'
+
+trigger:
+- dev
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '^10.10.0'
+  displayName: 'Install Node.js'
+
+- script: |
+    yarn
+  displayName: 'Install dependencies'
+
+- script: |
+    set JEST_JUNIT_OUTPUT=test-fixtures-junit.xml&& yarn test:fixtures -w=2
+  displayName: 'Test: Build Fixtures'
+
+- script: |
+    set JEST_JUNIT_OUTPUT=test-unit-junit.xml&& yarn test:unit -w=2
+  displayName: 'Test: Run unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'test-*.xml'
+  displayName: 'Publish test results to Azure Pipelines'

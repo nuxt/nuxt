@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Index page test index title: index.title 1`] = `"Home page"`;
+
+exports[`Index page test navigation to about page: about.msg 1`] = `"Hi from client"`;

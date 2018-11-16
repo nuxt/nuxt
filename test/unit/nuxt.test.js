@@ -27,8 +27,8 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('No `pages` directory found')).toBe(true)
-      expect(s.includes('Did you mean to run `nuxt` in the parent (`../`) directory?')).toBe(true)
+      expect(s).toContain('No `pages` directory found')
+      expect(s).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
     })
   })
 
@@ -36,10 +36,10 @@ describe('nuxt', () => {
     const nuxt = new Nuxt()
     new Builder(nuxt).build()
     const port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
 
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('Universal Vue.js Applications')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<h2 class="Landscape__Title">')
     expect(/Landscape__Page__Explanation/.test(html)).toBe(true)
 
     await nuxt.close()
@@ -53,7 +53,19 @@ describe('nuxt', () => {
 
     return new Builder(nuxt).build().catch((err) => {
       const s = String(err)
-      expect(s.includes('Plugin not found')).toBe(true)
+      expect(s).toContain('Plugin not found')
+    })
+  })
+
+  test('Warn when styleResource isn\'t found', () => {
+    const nuxt = new Nuxt({
+      dev: false,
+      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-style-resource')
+    })
+
+    return new Builder(nuxt).build().catch((err) => {
+      const s = String(err)
+      expect(s).toContain('Style Resource not found')
     })
   })
 })

@@ -1,0 +1,14 @@
+{
+  "name": "@nuxt/vue-app",
+  "version": "2.3.1",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "template"
+  ],
+  "main": "dist/vue-app.js",
+  "publishConfig": {
+    "access": "public"
+  }
+}

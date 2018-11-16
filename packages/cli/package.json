@@ -1,0 +1,28 @@
+{
+  "name": "@nuxt/cli",
+  "version": "2.3.1",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "main": "dist/cli.js",
+  "bin": {
+    "nuxt-cli": "bin/nuxt-cli.js"
+  },
+  "dependencies": {
+    "@nuxt/config": "^2.3.1",
+    "boxen": "^2.0.0",
+    "chalk": "^2.4.1",
+    "consola": "^2.2.6",
+    "esm": "^3.0.84",
+    "minimist": "^1.2.0",
+    "pretty-bytes": "^5.1.0",
+    "std-env": "^2.2.1",
+    "wrap-ansi": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

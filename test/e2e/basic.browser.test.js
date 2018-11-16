@@ -1,5 +1,5 @@
 import Browser from '../utils/browser'
-import { loadFixture, getPort, Nuxt } from '../utils'
+import { loadFixture, getPort, Nuxt, waitFor } from '../utils'
 
 let port
 const browser = new Browser()
@@ -13,7 +13,7 @@ describe('basic browser', () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
 
     await browser.start({
       // slowMo: 50,
@@ -28,10 +28,12 @@ describe('basic browser', () => {
   })
 
   test('/noloading', async () => {
-    const { hook } = await page.nuxt.navigate('/noloading')
-    const loading = await page.nuxt.loadingData()
+    const { hook } = await page.nuxt.navigate('/noloading', false)
+    await waitFor(nuxt.options.loading.throttle + 100)
+    let loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await hook
+    loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await page.waitForFunction(
       `$nuxt.$loading.$data.show === false`
@@ -156,7 +158,7 @@ describe('basic browser', () => {
   test('/error', async () => {
     await page.nuxt.navigate('/error')
 
-    expect(await page.nuxt.errorData()).toEqual({ statusCode: 500 })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Error mouahahah', statusCode: 500 })
     expect(await page.$text('.title')).toBe('Error mouahahah')
   })
 
@@ -164,7 +166,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/error2')
 
     expect(await page.$text('.title')).toBe('Custom error')
-    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error' })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500 })
   })
 
   test('/redirect-middleware', async () => {

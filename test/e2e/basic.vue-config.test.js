@@ -12,7 +12,7 @@ const startServer = async (type = 'basic') => {
   const config = await loadFixture(type)
   nuxt = new Nuxt(config)
   port = await getPort()
-  await nuxt.listen(port, 'localhost')
+  await nuxt.server.listen(port, 'localhost')
 
   return nuxt
 }

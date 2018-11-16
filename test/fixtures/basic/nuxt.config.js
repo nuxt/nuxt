@@ -36,9 +36,11 @@ export default {
     interval: 200,
     subFolders: true
   },
-  head: {
-    titleTemplate: (titleChunk) => {
-      return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+  head() {
+    return {
+      titleTemplate: (titleChunk) => {
+        return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+      }
     }
   },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
@@ -63,7 +65,8 @@ export default {
   transition: false,
   plugins: [
     '~/plugins/vuex-module',
-    '~/plugins/dir-plugin'
+    '~/plugins/dir-plugin',
+    '~/plugins/inject'
   ],
   build: {
     scopeHoisting: true,
@@ -74,7 +77,8 @@ export default {
         }
       },
       plugins: {
-        cssnano: {}
+        cssnano: {},
+        [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
       }
     }
   }

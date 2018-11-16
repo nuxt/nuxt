@@ -1,5 +1,5 @@
 import Browser from '../utils/browser'
-import { loadFixture, getPort, Nuxt, Utils } from '../utils'
+import { loadFixture, getPort, Nuxt, waitFor } from '../utils'
 
 let port
 const browser = new Browser()
@@ -14,7 +14,7 @@ describe('children patch (browser)', () => {
     const options = await loadFixture('children')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Start browser', async () => {
@@ -105,7 +105,7 @@ describe('children patch (browser)', () => {
 
     await page.type('[data-test-search-input]', 'gu')
 
-    await Utils.waitFor(250)
+    await waitFor(250)
     const newCountries = await page.$$text('[data-test-search-result]')
     expect(newCountries.length).toBe(1)
     expect(newCountries).toEqual(['Guinea'])

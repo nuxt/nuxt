@@ -1,0 +1,28 @@
+{
+  "name": "@nuxt/core",
+  "version": "2.3.1",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/core.js",
+  "dependencies": {
+    "@nuxt/common": "^2.3.1",
+    "@nuxt/config": "^2.3.1",
+    "@nuxt/server": "^2.3.1",
+    "@nuxt/vue-renderer": "^2.3.1",
+    "@nuxtjs/devalue": "^1.1.0",
+    "@nuxtjs/opencollective": "^0.1.0",
+    "consola": "^2.2.6",
+    "debug": "^4.1.0",
+    "esm": "^3.0.84",
+    "fs-extra": "^7.0.1",
+    "hash-sum": "^1.0.2",
+    "lodash": "^4.17.11",
+    "std-env": "^2.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
