@@ -5,7 +5,8 @@ export default {
       const mono = load('../..')
 
       pkg.copyFilesFrom(mono, [
-        'LICENSE'
+        'LICENSE',
+        'README.md'
       ])
     })
   }
