@@ -20,7 +20,8 @@
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
-    "postinstall": "lerna link && yarn dev"
+    "postinstall": "lerna link && yarn dev",
+    "release": "lerna version --exact"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
