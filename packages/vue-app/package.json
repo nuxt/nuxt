@@ -3,14 +3,13 @@
   "version": "2.2.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "typings": "types/index.d.ts",
   "files": [
     "dist",
     "template",
-    "types/index.d.ts",
-    "types/vue.d.ts"
+    "types/*.d.ts"
   ],
   "main": "dist/vue-app.js",
-  "types": "types/index.d.ts",
   "publishConfig": {
     "access": "public"
   }

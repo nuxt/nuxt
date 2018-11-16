@@ -9,14 +9,14 @@ import { Context, Transition, LoadingObject } from "./index";
 
 declare module "vue/types/options" {
   interface ComponentOptions<V extends Vue> {
-    asyncData?(ctx: Context): object;
+    asyncData?(ctx: Context): object | undefined;
     fetch?(ctx: Context): Promise<void> | void;
     head?: MetaInfo | (() => MetaInfo);
+    key?: string | ((to: Route) => string);
     layout?: string | ((ctx: Context) => string);
     middleware?: string | string[];
     scrollToTop?: boolean;
     transition?: string | Transition | ((to: Route, from: Route) => string);
-    key?: string | ((to: Route) => string);
     validate?(ctx: Context): Promise<boolean> | boolean;
     watchQuery?: boolean | string[];
   }
