@@ -3,9 +3,8 @@
   "npmClient": "yarn",
   "useWorkspaces": true,
   "conventionalCommits": true,
-  "yes": true,
+  "exact": true,
   "noPush": true,
-  "gitTagVersion": false,
   "packages": [
     "packages/*",
     "distributions/*"

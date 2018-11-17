@@ -117,7 +117,7 @@ jobs:
           command: |
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn release
+            yarn release --yes
             PACKAGE_SUFFIX=edge yarn build
             ./scripts/workspace-run npm publish
 
