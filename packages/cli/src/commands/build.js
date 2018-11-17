@@ -19,6 +19,18 @@ export default {
         }
       }
     },
+    devtools: {
+      type: 'boolean',
+      default: false,
+      description: 'Enable devtool.',
+      prepare(cmd, options, argv) {
+        options.vue = options.vue || {}
+        options.vue.config = options.vue.config || {}
+        if (argv.devtools) {
+          options.vue.config.devtools = true
+        }
+      }
+    },
     generate: {
       type: 'boolean',
       default: true,
