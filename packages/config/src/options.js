@@ -237,7 +237,11 @@ export function getNuxtConfig(_options) {
 
   // Apply mode preset
   const modePreset = options.modes[options.mode || 'universal']
-  defaultsDeep(options, modePreset)
+
+  if (!modePreset) {
+    consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
+  }
+  defaultsDeep(options, modePreset || options.modes.universal)
 
   if (options.modern === true) {
     options.modern = 'server'
@@ -289,6 +293,20 @@ export function getNuxtConfig(_options) {
   if (vueLoader.productionMode === undefined) {
     vueLoader.productionMode = !options.dev
   }
+  // TODO: Remove when new release of Vue (https://github.com/nuxt/nuxt.js/issues/4312)
+  const staticClassHotfix = function (el) {
+    el.staticClass = el.staticClass && el.staticClass.replace(/\\[a-z]\b/g, '')
+    if (Array.isArray(el.children)) {
+      el.children.map(staticClassHotfix)
+    }
+  }
+  vueLoader.compilerOptions = vueLoader.compilerOptions || {}
+  vueLoader.compilerOptions.modules = [
+    ...(vueLoader.compilerOptions.modules || []),
+    {
+      postTransformNode: staticClassHotfix
+    }
+  ]
   const styleLoaders = [
     'css', 'cssModules', 'less',
     'sass', 'scss', 'stylus', 'vueStyle'
@@ -300,9 +318,7 @@ export function getNuxtConfig(_options) {
     }
   }
 
-  // include SFCs in node_modules
   options.build.transpile = [].concat(options.build.transpile || [])
-    .map(module => module instanceof RegExp ? module : new RegExp(module))
 
   if (options.build.quiet === true) {
     consola.level = 0

@@ -3,6 +3,7 @@ import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
+import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackBar from 'webpackbar'
@@ -10,6 +11,7 @@ import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
+import PerfLoader from './utils/perf-loader'
 import StyleLoader from './utils/style-loader'
 import WarnFixPlugin from './plugins/warnfix'
 
@@ -24,6 +26,8 @@ export default class WebpackBaseConfig {
     this.options = builder.context.options
     this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
+    this.buildMode = this.options.dev ? 'development' : 'production'
+    this.modulesToTranspile = this.normalizeTranspile()
   }
 
   get colors() {
@@ -41,6 +45,20 @@ export default class WebpackBaseConfig {
       isClient: !this.isServer,
       isModern: !!this.isModern
     }
+  }
+
+  normalizeTranspile() {
+    // include SFCs in node_modules
+    const items = [/\.vue\.js/]
+    for (const pattern of this.options.build.transpile) {
+      if (pattern instanceof RegExp) {
+        items.push(pattern)
+      } else {
+        const posixModule = pattern.replace(/\\/g, '/')
+        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
+      }
+    }
+    return items
   }
 
   getBabelOptions() {
@@ -84,6 +102,7 @@ export default class WebpackBaseConfig {
 
   env() {
     const env = {
+      'process.env.NODE_ENV': JSON.stringify(this.buildMode),
       'process.mode': JSON.stringify(this.options.mode),
       'process.static': this.isStatic
     }
@@ -125,13 +144,12 @@ export default class WebpackBaseConfig {
   }
 
   rules() {
+    const perfLoader = new PerfLoader(this)
     const styleLoader = new StyleLoader(
       this.options,
       this.nuxt,
-      { isServer: this.isServer }
+      { isServer: this.isServer, perfLoader }
     )
-
-    const perfLoader = this.builder.perfLoader
 
     return [
       {
@@ -169,50 +187,48 @@ export default class WebpackBaseConfig {
           }
 
           // item in transpile can be string or regex object
-          const modulesToTranspile = [/\.vue\.js/].concat(this.options.build.transpile)
-
-          return !modulesToTranspile.some(module => module.test(file))
+          return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.pool('js', {
+        use: perfLoader.js().concat({
           loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
       },
       {
         test: /\.css$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('css'))
+        oneOf: styleLoader.apply('css')
       },
       {
         test: /\.less$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('less', {
+        oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
           options: this.loaders.less
-        }))
+        })
       },
       {
         test: /\.sass$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('sass', {
+        oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
           options: this.loaders.sass
-        }))
+        })
       },
       {
         test: /\.scss$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('scss', {
+        oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
           options: this.loaders.scss
-        }))
+        })
       },
       {
         test: /\.styl(us)?$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('stylus', {
+        oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
           options: this.loaders.stylus
-        }))
+        })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.imgUrl,
@@ -222,7 +238,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.fontUrl,
@@ -232,7 +248,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(webm|mp4|ogv)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'file-loader',
           options: Object.assign(
             this.loaders.file,
@@ -266,8 +282,8 @@ export default class WebpackBaseConfig {
         'profile',
         'stats'
       ],
-      basic: !this.options.build.quiet && env.ci,
-      fancy: !this.options.build.quiet && !env.ci,
+      basic: !this.options.build.quiet && env.minimalCLI,
+      fancy: !this.options.build.quiet && !env.minimalCLI,
       profile: !this.options.build.quiet && this.options.build.profile,
       stats: !this.options.build.quiet && !this.options.dev && this.options.build.stats,
       reporter: {
@@ -319,7 +335,7 @@ export default class WebpackBaseConfig {
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
     const config = {
       name: this.name,
-      mode: this.options.dev ? 'development' : 'production',
+      mode: this.buildMode,
       devtool: this.devtool(),
       optimization: this.optimization(),
       output: this.output(),

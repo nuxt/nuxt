@@ -6,14 +6,18 @@ import { wrapArray } from '@nuxt/common'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor(options, nuxt, { isServer }) {
+  constructor(options, nuxt, { isServer, perfLoader }) {
     this.isServer = isServer
+    this.perfLoader = perfLoader
     this.dev = options.dev
     this.srcDir = options.srcDir
     this.assetsDir = options.dir.assets
     this.staticDir = options.dir.static
     this.rootDir = options.rootDir
-    this.loaders = options.build.loaders
+    this.loaders = {
+      css: options.build.loaders.css,
+      cssModules: options.build.loaders.cssModules
+    }
     this.extractCSS = options.build.extractCSS
     this.resources = options.build.styleResources
     this.sourceMap = Boolean(options.build.cssSourceMap)
@@ -90,13 +94,12 @@ export default class StyleLoader {
 
   apply(ext, loaders = []) {
     const customLoaders = [].concat(
-      this.postcss(loaders),
+      this.postcss(),
       this.normalize(loaders),
       this.styleResource(ext)
     ).filter(Boolean)
 
-    const { css: cssOptions, cssModules: cssModulesOptions } = this.loaders
-    cssOptions.importLoaders = cssModulesOptions.importLoaders = customLoaders.length
+    this.loaders.css.importLoaders = this.loaders.cssModules.importLoaders = customLoaders.length
 
     const styleLoader = this.extract() || this.vueStyle()
 
@@ -104,17 +107,17 @@ export default class StyleLoader {
       // This matches <style module>
       {
         resourceQuery: /module/,
-        use: [].concat(
+        use: this.perfLoader.css().concat(
           styleLoader,
-          this.cssModules(cssModulesOptions),
+          this.cssModules(this.loaders.cssModules),
           customLoaders
         )
       },
       // This matches plain <style> or <style scoped>
       {
-        use: [].concat(
+        use: this.perfLoader.css().concat(
           styleLoader,
-          this.css(cssOptions),
+          this.css(this.loaders.css),
           customLoaders
         )
       }

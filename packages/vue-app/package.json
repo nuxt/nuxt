@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "typings": "types/index.d.ts",

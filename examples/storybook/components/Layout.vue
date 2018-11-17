@@ -43,7 +43,8 @@
               <v-card-text class="px-0"><slot /></v-card-text>
             </v-card>
           </v-flex>
-      </v-layout></v-container>
+        </v-layout>
+      </v-container>
 
       <v-container fluid fill-height>
         <v-layout justify-center align-center>

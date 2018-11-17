@@ -254,19 +254,6 @@ export default class VueRenderer {
       const APP =
         `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
 
-      // Detect 404 errors
-      if (
-        url.includes(this.context.options.build.publicPath) ||
-        url.includes('__webpack')
-      ) {
-        const err = {
-          statusCode: 404,
-          message: this.context.options.messages.error_404,
-          name: 'ResourceNotFound'
-        }
-        throw err
-      }
-
       const html = this.renderTemplate(false, {
         HTML_ATTRS,
         BODY_ATTRS,

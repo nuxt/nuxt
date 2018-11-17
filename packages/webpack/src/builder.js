@@ -26,7 +26,6 @@ export class WebpackBundler {
     this.compilersWatching = []
     this.devMiddleware = {}
     this.hotMiddleware = {}
-    this.perfLoader = null
 
     // Initialize shared FS and Cache
     if (this.context.options.dev) {
@@ -36,8 +35,6 @@ export class WebpackBundler {
 
   async build() {
     const options = this.context.options
-
-    this.perfLoader = new PerfLoader(options)
 
     const compilersOptions = []
 
@@ -79,6 +76,12 @@ export class WebpackBundler {
 
     // Check styleResource existence
     const styleResources = this.context.options.build.styleResources
+    if (styleResources && Object.keys(styleResources).length) {
+      consola.warn(
+        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
+        'Please use https://github.com/nuxt-community/style-resources-module'
+      )
+    }
     Object.keys(styleResources).forEach(async (ext) => {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
         const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
@@ -104,7 +107,7 @@ export class WebpackBundler {
     // Warmup perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
-      this.perfLoader.warmupAll()
+      PerfLoader.warmupAll({ dev: options.dev })
       consola.success('Worker pools ready')
     }
 

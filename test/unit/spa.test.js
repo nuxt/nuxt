@@ -41,24 +41,23 @@ describe('spa', () => {
   })
 
   test('/error-handler', async () => {
-    await renderRoute('/error-handler')
     const { html } = await renderRoute('/error-handler')
     expect(html).toMatch('error handler triggered: fetch error!')
   })
 
-  test('/error-handler-async', async () => {
-    await renderRoute('/error-handler-async')
-    const { html } = await renderRoute('/error-handler-async')
-    expect(html).toMatch('error handler triggered: asyncData error!')
+  test('/error-handler-object', async () => {
+    const { html } = await renderRoute('/error-handler')
+    expect(html).toMatch('error handler triggered: fetch error!')
   })
 
-  test('/_nuxt/ (access publicPath in spa mode)', async () => {
-    await expect(renderRoute('/_nuxt/')).rejects.toMatchObject({
-      response: {
-        statusCode: 404,
-        statusMessage: 'ResourceNotFound'
-      }
-    })
+  test('/error-handler-string', async () => {
+    const { html } = await renderRoute('/error-handler-string')
+    expect(html).toMatch('error handler triggered: fetch error!')
+  })
+
+  test('/error-handler-async', async () => {
+    const { html } = await renderRoute('/error-handler-async')
+    expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
   // Close server and ask nuxt to stop listening to file changes
