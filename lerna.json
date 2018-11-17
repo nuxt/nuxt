@@ -5,6 +5,7 @@
   "conventionalCommits": true,
   "exact": true,
   "noPush": true,
+  "gitTagVersion": false,
   "packages": [
     "packages/*",
     "distributions/*"
