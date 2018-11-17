@@ -64,7 +64,7 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "rimraf": "^2.6.2",
-    "rollup": "^0.67.1",
+    "rollup": "^0.67.3",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-commonjs": "^9.2.0",
