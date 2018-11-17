@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.2.0",
+  "version": "2.3.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -12,7 +12,7 @@
     "nuxt-cli": "bin/nuxt-cli.js"
   },
   "dependencies": {
-    "@nuxt/config": "2.2.0",
+    "@nuxt/config": "^2.3.1",
     "boxen": "^2.0.0",
     "chalk": "^2.4.1",
     "consola": "^2.2.6",
