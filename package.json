@@ -15,11 +15,12 @@
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
     "nuxt": "node -r esm ./packages/cli/bin/nuxt-cli.js",
-    "test": "yarn test:fixtures && yarn test:unit",
+    "test": "yarn test:fixtures && yarn test:unit && yarn test:types",
     "test:fixtures": "jest test/fixtures",
     "test:e2e": "jest -i test/e2e",
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
+    "test:types": "tsc -p test/types",
     "postinstall": "lerna link && yarn dev",
     "release": "lerna version --exact"
   },
@@ -73,6 +74,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.16.0",
+    "typescript": "^3.1.6",
     "vue-jest": "^3.0.0"
   },
   "repository": {
