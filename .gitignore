@@ -57,3 +57,6 @@ Temporary Items
 
 # Junit report from jest-junit
 *junit.xml
+
+# Don't version control changelogs for now
+**/CHANGELOG.md
