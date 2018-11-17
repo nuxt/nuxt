@@ -15,7 +15,7 @@ export default {
     devtools: {
       type: 'boolean',
       default: false,
-      description: 'Enable devtool.',
+      description: 'Enable Vue devtools',
       prepare(cmd, options, argv) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
