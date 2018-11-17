@@ -12,14 +12,14 @@ export default {
       default: true,
       description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
     },
-    development: {
+    devtools: {
       type: 'boolean',
       default: false,
       description: 'Enable devtool.',
       prepare(cmd, options, argv) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
-        if (argv.development) {
+        if (argv.devtools) {
           options.vue.config.devtools = true
         }
       }

@@ -46,12 +46,12 @@ describe('generate', () => {
     Command.prototype.getArgv = getArgv
   })
 
-  test('build with development', async () => {
+  test('build with devtools', async () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
     const cmd = NuxtCommand.from(generate)
-    const args = ['generate', '.', '--development']
+    const args = ['generate', '.', '--devtools']
     const argv = cmd.getArgv(args)
     argv._ = ['.']
 
