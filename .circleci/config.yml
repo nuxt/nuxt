@@ -119,7 +119,7 @@ jobs:
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             yarn release --yes
             PACKAGE_SUFFIX=edge yarn build
-            ./scripts/workspace-run npm publish
+            ./scripts/workspace-run npm publish -q
 
 # Workflow definition
 workflows:
