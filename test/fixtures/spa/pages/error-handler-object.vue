@@ -2,7 +2,7 @@
 
 export default {
   fetch() {
-    throw { error: 'fetch error!' } // eslint-disable-line
+    throw { message: 'fetch error!' } // eslint-disable-line
   }
 }
 </script>
