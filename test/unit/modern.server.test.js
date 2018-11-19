@@ -2,6 +2,7 @@ import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
+const modernUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 
 describe('modern server mode', () => {
   beforeAll(async () => {
@@ -18,11 +19,7 @@ describe('modern server mode', () => {
   })
 
   test('should use modern resources for modern resources', async () => {
-    const response = await rp(url('/'), {
-      headers: {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
-      }
-    })
+    const response = await rp(url('/'), { headers: { 'user-agent': modernUA } })
     expect(response).toContain('/_nuxt/modern-app.js')
     expect(response).toContain('/_nuxt/modern-commons.app.js')
   })
@@ -35,6 +32,31 @@ describe('modern server mode', () => {
   test('should not include es6 syntax in normal resources', async () => {
     const response = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
     expect(response).toContain('arrow:function(){return"build test"}')
+  })
+
+  test('should contain legacy http2 pushed resources', async () => {
+    const { headers: { link } } = await rp(url('/'), {
+      resolveWithFullResponse: true
+    })
+    expect(link).toEqual(
+      `</_nuxt/runtime.js>; rel=preload; as=script${
+        ''}, </_nuxt/commons.app.js>; rel=preload; as=script${
+        ''}, </_nuxt/app.js>; rel=preload; as=script${
+        ''}, </_nuxt/pages_index.js>; rel=preload; as=script`
+    )
+  })
+
+  test('should contain module http2 pushed resources', async () => {
+    const { headers: { link } } = await rp(url('/'), {
+      headers: { 'user-agent': modernUA },
+      resolveWithFullResponse: true
+    })
+    expect(link).toEqual(
+      `</_nuxt/modern-runtime.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-commons.app.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-app.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-pages_index.js>; rel=preload; as=script`
+    )
   })
 
   // Close server and ask nuxt to stop listening to file changes

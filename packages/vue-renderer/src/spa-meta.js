@@ -29,7 +29,8 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/' }) {
+  async render(context) {
+    const { url = '/' } = context
     let meta = this.cache.get(url)
 
     if (meta) {
@@ -101,7 +102,7 @@ export default class SPAMetaRenderer {
     }
 
     // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
-    meta.getPreloadFiles = () =>
+    context.getPreloadFiles = meta.getPreloadFiles = () =>
       clientManifest.initial
         .filter(file => shouldPreload(file))
         .map(r => ({

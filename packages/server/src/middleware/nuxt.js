@@ -44,7 +44,8 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     if (!error && options.render.http2.push) {
       // Parse resourceHints to extract HTTP.2 prefetch/push headers
       // https://w3c.github.io/preload/#server-push-http-2
-      const preloadFiles = getPreloadFiles()
+      const { legacy, modern } = getPreloadFiles()
+      const preloadFiles = options.modern === 'client' ? modern : legacy
 
       const { shouldPush, pushAssets } = options.render.http2
       const { publicPath } = resources.clientManifest

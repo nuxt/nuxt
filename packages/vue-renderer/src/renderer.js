@@ -63,14 +63,30 @@ export default class VueRenderer {
     return context.renderScripts()
   }
 
+  getPreloadFiles(context) {
+    const legacyFiles = context.getPreloadFiles()
+    const modernFiles = []
+    if (this.context.options.modern === 'client') {
+      for (const legacyJsFile of legacyFiles) {
+        const modernFile = { ...legacyJsFile }
+        if (modernFile.asType === 'script') {
+          const file = this.assetsMapping[legacyJsFile.file]
+          modernFile.file = this.assetsMapping[legacyJsFile.file]
+          modernFile.fileWithoutQuery = file.replace(/\?.*/, '')
+        }
+        modernFiles.push(modernFile)
+      }
+    }
+    return { legacy: legacyFiles, modern: modernFiles }
+  }
+
   renderResourceHints(context) {
     if (this.context.options.modern === 'client') {
       const modulePreloadTags = []
-      for (const legacyJsFile of context.getPreloadFiles()) {
-        if (legacyJsFile.asType === 'script') {
-          const publicPath = this.context.options.build.publicPath
-          const modernJsFile = this.assetsMapping[legacyJsFile.file]
-          modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${modernJsFile}" as="script">`)
+      const publicPath = this.context.options.build.publicPath
+      for (const { file, asType } of this.getPreloadFiles(context).modern) {
+        if (asType === 'script') {
+          modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${file}" as="script">`)
         }
       }
       return modulePreloadTags.join('')
@@ -248,8 +264,7 @@ export default class VueRenderer {
         HTML_ATTRS,
         BODY_ATTRS,
         HEAD,
-        BODY_SCRIPTS,
-        getPreloadFiles
+        BODY_SCRIPTS
       } = await this.renderer.spa.render(context)
       const APP =
         `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
@@ -262,7 +277,7 @@ export default class VueRenderer {
         ENV
       })
 
-      return { html, getPreloadFiles }
+      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, context) }
     }
 
     let APP
@@ -322,7 +337,7 @@ export default class VueRenderer {
     return {
       html,
       cspScriptSrcHashSet,
-      getPreloadFiles: context.getPreloadFiles,
+      getPreloadFiles: this.getPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected
     }

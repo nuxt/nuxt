@@ -29,6 +29,16 @@ describe('modern client mode', () => {
     expect(response).toContain('<link rel="modulepreload" href="/_nuxt/modern-commons.app.js" as="script">')
   })
 
+  test('should contain module http2 pushed resources', async () => {
+    const { headers } = await rp(url('/'), { resolveWithFullResponse: true })
+    expect(headers.link).toEqual(
+      `</_nuxt/modern-runtime.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-commons.app.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-app.js>; rel=preload; as=script${
+        ''}, </_nuxt/modern-pages_index.js>; rel=preload; as=script`
+    )
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
