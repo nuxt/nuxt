@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
@@ -35,7 +35,7 @@ describe('modern client mode', () => {
       `</_nuxt/modern-runtime.js>; rel=preload; as=script${
         ''}, </_nuxt/modern-commons.app.js>; rel=preload; as=script${
         ''}, </_nuxt/modern-app.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-pages_index.js>; rel=preload; as=script`
+        ''}, </_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
     )
   })
 
