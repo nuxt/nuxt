@@ -12,6 +12,11 @@ export default {
           grid: true
         }
       }
+    },
+    filenames: {
+      css: () => {
+        return '[name].css'
+      }
     }
   },
   css: [

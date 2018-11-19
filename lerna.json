@@ -1,0 +1,27 @@
+{
+  "version": "2.3.1",
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "conventionalCommits": true,
+  "exact": true,
+  "noPush": true,
+  "gitTagVersion": false,
+  "packages": [
+    "packages/*",
+    "distributions/*"
+  ],
+  "command": {
+    "publish": {
+      "npmClient": "npm"
+    }
+  },
+  "changelog": {
+    "labels": {
+      "feat": "New Feature",
+      "fix": "Bug Fix",
+      "docs": "Documentation",
+      "perf": "Performance",
+      "refactor": "Code Refactoring"
+    }
+  }
+}

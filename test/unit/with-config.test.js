@@ -11,50 +11,56 @@ describe('with-config', () => {
     const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('/', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<h1>I have custom configurations</h1>')
   })
 
   test('/ (asset name for analyze mode)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+    const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/app.js"')
   })
 
-  test.skip('/ (global styles inlined)', async () => {
-    const { html } = await nuxt.renderRoute('/')
+  test('/ (global styles inlined)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
+    const html = window.document.head.innerHTML
     expect(html).toContain('.global-css-selector')
   })
 
-  test.skip('/ (preload fonts)', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes(
-      '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
-    )).toBe(true)
+  test('/ (preload fonts)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain(
+      '<link rel="preload" href="/test/orion/fonts/7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
+    )
+  })
+
+  test('/ (styleResources styles inlined)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('.pre-process-selector')
   })
 
   test('/ (custom app.html)', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<p>Made by Nuxt.js team</p>')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<p>Made by Nuxt.js team</p>')
   })
 
   test('/ (custom build.publicPath)', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<script src="/test/orion/')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<script src="/test/orion/')
   })
 
   test('/ (custom postcss.config.js)', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('::-webkit-input-placeholder')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('::-webkit-input-placeholder')
   })
 
   test('/test/ (custom globalName)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
     const html = window.document.body.innerHTML
-    expect(html.includes('id="custom-nuxt-id">')).toBe(true)
+    expect(html).toContain('id="custom-nuxt-id">')
     expect(html.includes('id="__nuxt">')).toBe(false)
     expect(window.__NOXXT__).toBeDefined()
     expect(window.__NUXT__).toBeUndefined()
@@ -63,71 +69,71 @@ describe('with-config', () => {
   })
 
   test('/test/ (router base)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/'))
 
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('default')
-    expect(html.includes('<h1>Default layout</h1>')).toBe(true)
-    expect(html.includes('<h1>I have custom configurations</h1>')).toBe(true)
+    expect(html).toContain('<h1>Default layout</h1>')
+    expect(html).toContain('<h1>I have custom configurations</h1>')
 
     expect(window.__test_plugin).toBe(true)
   })
 
   test('/test/about (custom layout)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/about'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/about'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('custom')
-    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
-    expect(html.includes('<h1>About page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Custom layout</h1>')
+    expect(html).toContain('<h1>About page</h1>')
   })
 
   test('/test/desktop (custom layout in desktop folder)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/desktop'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/desktop'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('desktop/default')
-    expect(html.includes('<h1>Default desktop layout</h1>')).toBe(true)
-    expect(html.includes('<h1>Desktop page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Default desktop layout</h1>')
+    expect(html).toContain('<h1>Desktop page</h1>')
   })
 
   test('/test/mobile (custom layout in mobile folder)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/mobile'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/mobile'))
     const html = window.document.body.innerHTML
     expect(window.__NOXXT__.layout).toBe('mobile/default')
-    expect(html.includes('<h1>Default mobile layout</h1>')).toBe(true)
-    expect(html.includes('<h1>Mobile page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Default mobile layout</h1>')
+    expect(html).toContain('<h1>Mobile page</h1>')
   })
 
   test('/test/env', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/env'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/env'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>Custom env layout</h1>')).toBe(true)
-    expect(html.includes('"bool": true')).toBe(true)
-    expect(html.includes('"num": 23')).toBe(true)
-    expect(html.includes('"string": "Nuxt.js"')).toBe(true)
-    expect(html.includes('"bool": false')).toBe(true)
-    expect(html.includes('"string": "ok"')).toBe(true)
-    expect(html.includes('"num2": 8.23')).toBe(true)
-    expect(html.includes('"obj": {')).toBe(true)
+    expect(html).toContain('<h1>Custom env layout</h1>')
+    expect(html).toContain('"bool": true')
+    expect(html).toContain('"num": 23')
+    expect(html).toContain('"string": "Nuxt.js"')
+    expect(html).toContain('"bool": false')
+    expect(html).toContain('"string": "ok"')
+    expect(html).toContain('"num2": 8.23')
+    expect(html).toContain('"obj": {')
     expect(html).toContain('"NUXT_ENV_FOO": "manniL"')
   })
 
   test('/test/error', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/error'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/error'))
     const html = window.document.body.innerHTML
-    expect(html.includes('Error page')).toBe(true)
+    expect(html).toContain('Error page')
   })
 
   test('/test/user-agent', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/user-agent'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/user-agent'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<pre>Mozilla')).toBe(true)
+    expect(html).toContain('<pre>Mozilla')
   })
 
   test('/test/about-bis (added with extendRoutes)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/about-bis'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/about-bis'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
-    expect(html.includes('<h1>About page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Custom layout</h1>')
+    expect(html).toContain('<h1>About page</h1>')
   })
 
   test('/test/not-existed should return 404', async () => {
@@ -136,13 +142,13 @@ describe('with-config', () => {
   })
 
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/test/redirect/about-bis'))
+    const window = await nuxt.server.renderAndGetWindow(url('/test/redirect/about-bis'))
     const windowHref = window.location.href
-    expect(windowHref.includes('/test/about-bis')).toBe(true)
+    expect(windowHref).toContain('/test/about-bis')
 
     const html = window.document.body.innerHTML
-    expect(html.includes('<h1>Custom layout</h1>')).toBe(true)
-    expect(html.includes('<h1>About page</h1>')).toBe(true)
+    expect(html).toContain('<h1>Custom layout</h1>')
+    expect(html).toContain('<h1>About page</h1>')
   })
 
   test('Check /test/test.txt with custom serve-static options', async () => {
@@ -168,7 +174,7 @@ describe('with-config', () => {
       virtualConsole: new jsdom.VirtualConsole().sendTo({ error: fakeErrorLog })
     }
     try {
-      await nuxt.renderAndGetWindow(url('/test/error'), mockOptions)
+      await nuxt.server.renderAndGetWindow(url('/test/error'), mockOptions)
     } catch (e) {}
     expect(mockOptions.beforeParse).toHaveBeenCalled()
     expect(fakeErrorLog).toHaveBeenCalled()
@@ -185,8 +191,8 @@ describe('server config', () => {
     const config = await loadFixture('with-config')
     config.server.port = port = await getPort()
     nuxt = new Nuxt(config)
-    await nuxt.listen()
-    await nuxt.renderAndGetWindow(url('/test/'))
+    await nuxt.server.listen()
+    await nuxt.server.renderAndGetWindow(url('/test/'))
   })
   afterAll(async () => {
     await nuxt.close()

@@ -10,7 +10,7 @@ const startCspServer = async (csp, isProduction = true) => {
   })
   const nuxt = new Nuxt(options)
   port = await getPort()
-  await nuxt.listen(port, '0.0.0.0')
+  await nuxt.server.listen(port, '0.0.0.0')
   return nuxt
 }
 
@@ -92,8 +92,8 @@ describe('basic ssr csp', () => {
         })
 
         expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
-        expect(headers[cspHeader].includes('https://example.com')).toBe(true)
-        expect(headers[cspHeader].includes('https://example.io')).toBe(true)
+        expect(headers[cspHeader]).toContain('https://example.com')
+        expect(headers[cspHeader]).toContain('https://example.io')
       }
     )
 
@@ -115,8 +115,8 @@ describe('basic ssr csp', () => {
 
         expect(headers[cspHeader]).toMatch(/default-src 'none'/)
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-(.*)?' 'self'/)
-        expect(headers[cspHeader].includes('https://example.com')).toBe(true)
-        expect(headers[cspHeader].includes('https://example.io')).toBe(true)
+        expect(headers[cspHeader]).toContain('https://example.com')
+        expect(headers[cspHeader]).toContain('https://example.io')
       }
     )
 
@@ -235,8 +235,8 @@ describe('basic ssr csp', () => {
         })
 
         expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
-        expect(headers[reportOnlyHeader].includes('https://example.com')).toBe(true)
-        expect(headers[reportOnlyHeader].includes('https://example.io')).toBe(true)
+        expect(headers[reportOnlyHeader]).toContain('https://example.com')
+        expect(headers[reportOnlyHeader]).toContain('https://example.io')
       }
     )
 
@@ -258,8 +258,8 @@ describe('basic ssr csp', () => {
 
         expect(headers[reportOnlyHeader]).toMatch(/default-src 'none'/)
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-(.*)?' 'self'/)
-        expect(headers[reportOnlyHeader].includes('https://example.com')).toBe(true)
-        expect(headers[reportOnlyHeader].includes('https://example.io')).toBe(true)
+        expect(headers[reportOnlyHeader]).toContain('https://example.com')
+        expect(headers[reportOnlyHeader]).toContain('https://example.io')
       }
     )
 

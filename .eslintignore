@@ -1,7 +1,16 @@
-app
-!app/store.js
+# Common
 node_modules
 dist
 .nuxt
+coverage
+
+# Examples
+
+## cofeescript
 examples/coffeescript/pages/index.vue
-!examples/storybook/.storybook
+
+# Packages
+
+# vue-app
+packages/vue-app/template
+!packages/vue-app/template/store.js

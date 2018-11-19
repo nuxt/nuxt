@@ -2,6 +2,7 @@ import path from 'path'
 import compression from 'compression'
 
 export default {
+  mode: 'unknown',
   srcDir: __dirname,
   server: {
     port: 8000,
@@ -61,7 +62,7 @@ export default {
       logLevel: 'error'
     },
     styleResources: {
-      scss: '~/assets/pre-process.scss'
+      css: './assets/pre-process.css'
     },
     babel: {
       presets({ isServer }) {
