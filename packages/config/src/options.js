@@ -5,7 +5,7 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import consola from 'consola'
-import { isPureObject, isUrl, guardDir, isNonEmptyString } from '@nuxt/common'
+import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
@@ -53,7 +53,14 @@ export function getNuxtConfig(_options) {
 
   // Apply defaults
   const nuxtConfig = getDefaultNuxtConfig()
+
   nuxtConfig.build._publicPath = nuxtConfig.build.publicPath
+
+  // Fall back to default if publicPath is falsy
+  if (options.build && !options.build.publicPath) {
+    options.build.publicPath = undefined
+  }
+
   defaultsDeep(options, nuxtConfig)
 
   // Check srcDir and generate.dir excistence
