@@ -55,7 +55,7 @@ describe('modern server mode', () => {
       '</_nuxt/modern-runtime.js>; rel=preload; as=script',
       '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
       '</_nuxt/modern-app.js>; rel=preload; as=script',
-      `</_nuxt/modern-/${wChunk('pages/index.js')}>; rel=preload; as=script`
+      `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
     ]).join(', ')
   })
 
