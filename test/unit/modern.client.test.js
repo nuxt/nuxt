@@ -36,7 +36,7 @@ describe('modern client mode', () => {
       '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
       '</_nuxt/modern-app.js>; rel=preload; as=script',
       `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
-    ]).join(', ')
+    ].join(', '))
   })
 
   // Close server and ask nuxt to stop listening to file changes

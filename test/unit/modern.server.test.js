@@ -43,7 +43,7 @@ describe('modern server mode', () => {
       '</_nuxt/commons.app.js>; rel=preload; as=script',
       '</_nuxt/app.js>; rel=preload; as=script',
       `</_nuxt/${wChunk('pages/index.js')}>; rel=preload; as=script`
-    ]).join(', ')
+    ].join(', '))
   })
 
   test('should contain module http2 pushed resources', async () => {
@@ -56,7 +56,7 @@ describe('modern server mode', () => {
       '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
       '</_nuxt/modern-app.js>; rel=preload; as=script',
       `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
-    ]).join(', ')
+    ].join(', '))
   })
 
   // Close server and ask nuxt to stop listening to file changes
