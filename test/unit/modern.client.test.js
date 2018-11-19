@@ -30,13 +30,13 @@ describe('modern client mode', () => {
   })
 
   test('should contain module http2 pushed resources', async () => {
-    const { headers } = await rp(url('/'), { resolveWithFullResponse: true })
-    expect(headers.link).toEqual(
-      `</_nuxt/modern-runtime.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-commons.app.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-app.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
-    )
+    const { headers: { link } } = await rp(url('/'), { resolveWithFullResponse: true })
+    expect(link).toEqual([
+      '</_nuxt/modern-runtime.js>; rel=preload; as=script',
+      '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
+      '</_nuxt/modern-app.js>; rel=preload; as=script',
+      `</_nuxt/modern-/${wChunk('pages/index.js')}>; rel=preload; as=script`
+    ]).join(', ')
   })
 
   // Close server and ask nuxt to stop listening to file changes

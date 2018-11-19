@@ -38,12 +38,12 @@ describe('modern server mode', () => {
     const { headers: { link } } = await rp(url('/'), {
       resolveWithFullResponse: true
     })
-    expect(link).toEqual(
-      `</_nuxt/runtime.js>; rel=preload; as=script${
-        ''}, </_nuxt/commons.app.js>; rel=preload; as=script${
-        ''}, </_nuxt/app.js>; rel=preload; as=script${
-        ''}, </_nuxt/${wChunk('pages/index.js')}>; rel=preload; as=script`
-    )
+    expect(link).toEqual([
+      '</_nuxt/runtime.js>; rel=preload; as=script',
+      '</_nuxt/commons.app.js>; rel=preload; as=script',
+      '</_nuxt/app.js>; rel=preload; as=script',
+      `</_nuxt/${wChunk('pages/index.js')}>; rel=preload; as=script`
+    ]).join(', ')
   })
 
   test('should contain module http2 pushed resources', async () => {
@@ -51,12 +51,12 @@ describe('modern server mode', () => {
       headers: { 'user-agent': modernUA },
       resolveWithFullResponse: true
     })
-    expect(link).toEqual(
-      `</_nuxt/modern-runtime.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-commons.app.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-app.js>; rel=preload; as=script${
-        ''}, </_nuxt/modern-/${wChunk('pages/index.js')}>; rel=preload; as=script`
-    )
+    expect(link).toEqual([
+      '</_nuxt/modern-runtime.js>; rel=preload; as=script',
+      '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
+      '</_nuxt/modern-app.js>; rel=preload; as=script',
+      `</_nuxt/modern-/${wChunk('pages/index.js')}>; rel=preload; as=script`
+    ]).join(', ')
   })
 
   // Close server and ask nuxt to stop listening to file changes
