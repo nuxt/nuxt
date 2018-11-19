@@ -8,7 +8,8 @@ export default () => ({
   ssr: undefined,
   http2: {
     push: false,
-    shouldPush: null
+    shouldPush: null,
+    pushAssets: null
   },
   static: {
     prefix: true

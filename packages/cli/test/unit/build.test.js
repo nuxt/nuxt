@@ -44,6 +44,25 @@ describe('build', () => {
     expect(process.exit).toHaveBeenCalled()
   })
 
+  test('build with devtools', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    const builder = mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build)
+    const args = ['build', '.', '--devtools']
+    const argv = cmd.getArgv(args)
+    argv._ = ['.']
+
+    const options = await cmd.getNuxtConfig(argv)
+
+    await cmd.run()
+
+    expect(options.vue.config.devtools).toBe(true)
+    expect(builder).toHaveBeenCalled()
+  })
+
   test('catches error', async () => {
     mockGetNuxt({ mode: 'universal' })
     mockGetBuilder(Promise.reject(new Error('Builder Error')))

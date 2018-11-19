@@ -95,8 +95,10 @@ export default class Package extends EventEmitter {
   suffixAndVersion() {
     this.logger.info(`Adding suffix ${this.options.suffix}`)
 
+    const oldPkgName = this.pkg.name
+
     // Add suffix to the package name
-    if (!this.pkg.name.includes(this.options.suffix)) {
+    if (!oldPkgName.includes(this.options.suffix)) {
       this.pkg.name += this.options.suffix
     }
 
@@ -108,6 +110,14 @@ export default class Package extends EventEmitter {
 
         delete this.pkg.dependencies[oldName]
         this.pkg.dependencies[name] = version
+      }
+    }
+
+    if (typeof this.pkg.bin === 'string') {
+      const bin = this.pkg.bin
+      this.pkg.bin = {
+        [oldPkgName]: bin,
+        [this.pkg.name]: bin
       }
     }
 
