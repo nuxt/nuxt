@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -10,5 +10,6 @@
   "main": "dist/vue-app.js",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
 }
