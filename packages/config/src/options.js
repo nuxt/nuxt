@@ -118,6 +118,10 @@ export function getNuxtConfig(_options) {
     options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
   }
 
+  // Add trailing slash to path if not already present
+  if (!/\/$/.test(options.build.publicPath)) {
+    options.build.publicPath += '/'
+  }
   // Ignore publicPath on dev
   /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
