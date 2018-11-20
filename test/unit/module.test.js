@@ -1,6 +1,6 @@
 import { normalize } from 'path'
 import consola from 'consola'
-import { loadFixture, getPort, Nuxt, rp } from '../utils'
+import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -67,6 +67,12 @@ describe('module', () => {
   test('AddVendor - deprecated', () => {
     nuxt.moduleContainer.addVendor('nuxt-test')
     expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
+  })
+
+  test('Lodash - deprecated', async () => {
+    const builder = new Builder(nuxt)
+    await builder.generateRoutesAndFiles()
+    expect(consola.warn).toHaveBeenCalledWith('Avoid using _ inside templates')
   })
 
   // Close server and ask nuxt to stop listening to file changes
