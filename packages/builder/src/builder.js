@@ -429,6 +429,31 @@ export default class Builder {
       resolve: r
     })
 
+    // Prepare template options
+    let lodash = null
+    const templateOptions = {
+      imports: {
+        serialize,
+        devalue,
+        hash,
+        r,
+        wp,
+        wChunk,
+        resolvePath: this.nuxt.resolver.resolvePath,
+        resolveAlias: this.nuxt.resolver.resolveAlias,
+        relativeToBuild: this.relativeToBuild,
+        // Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
+        get _() {
+          if (!lodash) {
+            consola.warn('Avoid using _ inside templates')
+            lodash = require('lodash')
+          }
+          return lodash
+        }
+      },
+      interpolate: /<%=([\s\S]+?)%>/g
+    }
+
     // Interpret and move template files to .nuxt/
     await Promise.all(
       templatesFiles.map(async ({ src, dst, options, custom }) => {
@@ -438,20 +463,7 @@ export default class Builder {
         const fileContent = await fsExtra.readFile(src, 'utf8')
         let content
         try {
-          const templateFunction = template(fileContent, {
-            imports: {
-              serialize,
-              devalue,
-              hash,
-              r,
-              wp,
-              wChunk,
-              resolvePath: this.nuxt.resolver.resolvePath,
-              resolveAlias: this.nuxt.resolver.resolveAlias,
-              relativeToBuild: this.relativeToBuild
-            },
-            interpolate: /<%=([\s\S]+?)%>/g
-          })
+          const templateFunction = template(fileContent, templateOptions)
           content = stripWhitespace(
             templateFunction(
               Object.assign({}, templateVars, {
