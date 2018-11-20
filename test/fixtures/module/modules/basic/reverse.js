@@ -9,3 +9,6 @@ function $reverseStr(str) {
 Vue.prototype.$reverseStr = $reverseStr
 
 export default undefined
+
+// Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
+// <%= _.toUpper('foo') %>
