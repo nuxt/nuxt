@@ -9,7 +9,7 @@
   "main": "dist/config.js",
   "dependencies": {
     "@nuxt/common": "^2.3.1",
-    "consola": "^2.2.6",
+    "consola": "^2.3.0",
     "lodash": "^4.17.11",
     "std-env": "^2.2.1"
   },
