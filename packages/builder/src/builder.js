@@ -443,13 +443,15 @@ export default class Builder {
         resolveAlias: this.nuxt.resolver.resolveAlias,
         relativeToBuild: this.relativeToBuild,
         // Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
-        get _() {
-          if (!lodash) {
-            consola.warn('Avoid using _ inside templates')
-            lodash = require('lodash')
+        _: new Proxy({}, {
+          get(target, prop) {
+            if (!lodash) {
+              consola.warn('Avoid using _ inside templates')
+              lodash = require('lodash')
+            }
+            return lodash[prop]
           }
-          return lodash
-        }
+        })
       },
       interpolate: /<%=([\s\S]+?)%>/g
     }
