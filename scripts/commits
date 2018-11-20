@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# https://git-scm.com/docs/pretty-formats
+
+latestTag=`git describe | grep -oE "^[^-]+"`
+
+diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
+
+echo
+echo "# Features"
+echo "$diff" | awk '/feat/'
+echo "$diff" | awk '/feat/' | grep -oE "[0-9a-f]{8}" > .git/feat.txt
+
+echo
+echo "# Fixes"
+echo "$diff" | awk '!/feat/'
+echo "$diff" | awk '!/feat/' | grep -oE "[0-9a-f]{8}" > .git/fix.txt
