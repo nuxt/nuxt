@@ -70,6 +70,7 @@ export default {
   ],
   build: {
     scopeHoisting: true,
+    publicPath: '',
     postcss: {
       preset: {
         features: {
