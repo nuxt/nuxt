@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,14 +8,14 @@
   ],
   "main": "dist/server.js",
   "dependencies": {
-    "@nuxt/common": "^2.3.1",
-    "@nuxt/config": "^2.3.1",
+    "@nuxt/common": "2.3.2",
+    "@nuxt/config": "2.3.2",
     "@nuxtjs/youch": "^4.2.3",
     "browserslist-useragent": "^2.0.1",
     "chalk": "^2.4.1",
     "compression": "^1.7.3",
     "connect": "^3.6.6",
-    "consola": "^2.2.6",
+    "consola": "^2.3.0",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
     "fs-extra": "^7.0.1",
@@ -28,5 +28,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
 }
