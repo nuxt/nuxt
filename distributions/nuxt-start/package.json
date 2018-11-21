@@ -48,7 +48,8 @@
   "dependencies": {
     "@nuxt/cli": "2.3.2",
     "@nuxt/common": "2.3.2",
-    "@nuxt/core": "2.3.2"
+    "@nuxt/core": "2.3.2",
+    "core-js": "2.5.7"
   },
   "engines": {
     "node": ">=8.0.0",
