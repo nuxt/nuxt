@@ -1,5 +1,5 @@
-import consola from 'consola'
 import { common } from '../options'
+import { normalizeOption } from '../utils'
 
 export default {
   name: 'generate',
@@ -28,7 +28,7 @@ export default {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',
       prepare(cmd, options, argv) {
-        if (argv.modern !== undefined) {
+        if (normalizeOption(argv.modern)) {
           options.modern = 'client'
         }
       }
