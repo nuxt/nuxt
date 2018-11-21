@@ -264,7 +264,8 @@ export default class VueRenderer {
         HTML_ATTRS,
         BODY_ATTRS,
         HEAD,
-        BODY_SCRIPTS
+        BODY_SCRIPTS,
+        getPreloadFiles
       } = await this.renderer.spa.render(context)
       const APP =
         `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
@@ -277,7 +278,7 @@ export default class VueRenderer {
         ENV
       })
 
-      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, context) }
+      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, { getPreloadFiles }) }
     }
 
     let APP
