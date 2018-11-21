@@ -112,19 +112,19 @@ export function showBanner(nuxt) {
 }
 
 /**
- * Normalize string option in command
+ * Normalize string argument in command
  *
  * @export
- * @param {String} option
+ * @param {String} argument
  * @param {*} defaultValue
- * @returns formatted option
+ * @returns formatted argument
  */
-export function normalizeOption(option, defaultValue) {
-  switch (option) {
-    case 'true': option = true; break
-    case '': option = true; break
-    case 'false': option = false; break
-    case undefined: option = defaultValue; break
+export function normalizeArg(arg, defaultValue) {
+  switch (arg) {
+    case 'true': arg = true; break
+    case '': arg = true; break
+    case 'false': arg = false; break
+    case undefined: arg = defaultValue; break
   }
-  return option
+  return arg
 }
