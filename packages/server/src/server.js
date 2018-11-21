@@ -73,8 +73,8 @@ export default class Server {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
         this.useMiddleware(compression(compressor))
-      } else {
-        // Else, require own compression middleware
+      } else if (compressor) {
+        // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
     }
