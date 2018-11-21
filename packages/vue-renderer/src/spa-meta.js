@@ -9,7 +9,7 @@ export default class SPAMetaRenderer {
     this.renderer = renderer
     this.options = this.renderer.context.options
     this.vueRenderer = createRenderer()
-    this.cache = LRU({})
+    this.cache = new LRU()
 
     // Add VueMeta to Vue (this is only for SPA mode)
     // See app/index.js
