@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/common",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,11 +8,11 @@
   ],
   "main": "dist/common.js",
   "dependencies": {
-    "@nuxt/config": "^2.3.1",
-    "consola": "^2.2.6",
+    "consola": "^2.3.0",
     "lodash": "^4.17.11"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
 }
