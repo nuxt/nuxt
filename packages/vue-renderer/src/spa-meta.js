@@ -30,8 +30,7 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render(context) {
-    const { url = '/' } = context
+  async render({ url = '/' }) {
     let meta = this.cache.get(url)
 
     if (meta) {
