@@ -63,21 +63,25 @@ export default class VueRenderer {
     return context.renderScripts()
   }
 
-  getPreloadFiles(context) {
-    const legacyFiles = context.getPreloadFiles()
+  getModernFiles(legacyFiles = []) {
     const modernFiles = []
-    if (this.context.options.modern === 'client') {
-      for (const legacyJsFile of legacyFiles) {
-        const modernFile = { ...legacyJsFile }
-        if (modernFile.asType === 'script') {
-          const file = this.assetsMapping[legacyJsFile.file]
-          modernFile.file = this.assetsMapping[legacyJsFile.file]
-          modernFile.fileWithoutQuery = file.replace(/\?.*/, '')
-        }
-        modernFiles.push(modernFile)
+    for (const legacyJsFile of legacyFiles) {
+      const modernFile = { ...legacyJsFile }
+      if (modernFile.asType === 'script') {
+        const file = this.assetsMapping[legacyJsFile.file]
+        modernFile.file = file
+        modernFile.fileWithoutQuery = file.replace(/\?.*/, '')
       }
+      modernFiles.push(modernFile)
     }
-    return { legacy: legacyFiles, modern: modernFiles }
+    return modernFiles
+  }
+
+  getPreloadFiles(context) {
+    const preloadFiles = context.getPreloadFiles()
+    const modernMode = this.context.options.modern
+    // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
+    return modernMode === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
   }
 
   renderResourceHints(context) {
