@@ -51,7 +51,7 @@ export default class VueRenderer {
   renderScripts(context) {
     if (this.context.options.modern === 'client') {
       const publicPath = this.context.options.build.publicPath
-      const scriptPattern = /<script[^>]*?src="([^"]*)"[^>]*>[^<]*<\/script>/g
+      const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
@@ -86,14 +86,13 @@ export default class VueRenderer {
 
   renderResourceHints(context) {
     if (this.context.options.modern === 'client') {
-      const modulePreloadTags = []
       const publicPath = this.context.options.build.publicPath
-      for (const { file, asType } of this.getPreloadFiles(context)) {
-        if (asType === 'script') {
-          modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${file}" as="script">`)
-        }
-      }
-      return modulePreloadTags.join('')
+      const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
+      return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
+        const legacyJsFile = jsFile.replace(publicPath, '')
+        const modernJsFile = this.assetsMapping[legacyJsFile]
+        return linkTag.replace('rel="preload"', 'rel="modulepreload"').replace(legacyJsFile, modernJsFile)
+      })
     }
     return context.renderResourceHints()
   }
