@@ -88,7 +88,7 @@ export default class VueRenderer {
     if (this.context.options.modern === 'client') {
       const modulePreloadTags = []
       const publicPath = this.context.options.build.publicPath
-      for (const { file, asType } of this.getPreloadFiles(context).modern) {
+      for (const { file, asType } of this.getPreloadFiles(context)) {
         if (asType === 'script') {
           modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${file}" as="script">`)
         }
