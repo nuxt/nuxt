@@ -81,6 +81,16 @@ describe('cli/utils', () => {
     expect(consola.fatal).toHaveBeenCalledWith('Error while fetching async configuration')
   })
 
+  test('normalizeArg: normalize string argument in command', () => {
+    expect(utils.normalizeArg('true')).toBe(true)
+    expect(utils.normalizeArg('false')).toBe(false)
+    expect(utils.normalizeArg(true)).toBe(true)
+    expect(utils.normalizeArg(false)).toBe(false)
+    expect(utils.normalizeArg('')).toBe(true)
+    expect(utils.normalizeArg(undefined, 'default')).toBe('default')
+    expect(utils.normalizeArg('text')).toBe('text')
+  })
+
   test('nuxtServerConfig: server env', () => {
     const options = getDefaultNuxtConfig({
       env: {

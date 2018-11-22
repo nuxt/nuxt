@@ -63,6 +63,22 @@ describe('build', () => {
     expect(builder).toHaveBeenCalled()
   })
 
+  test('build with modern mode', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build)
+    const args = ['build', '.', '--m']
+
+    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+
+    await cmd.run()
+
+    expect(options.modern).toBe(true)
+  })
+
   test('catches error', async () => {
     mockGetNuxt({ mode: 'universal' })
     mockGetBuilder(Promise.reject(new Error('Builder Error')))

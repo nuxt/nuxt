@@ -64,6 +64,20 @@ describe('generate', () => {
     expect(generator.mock.calls[0][0].build).toBe(true)
   })
 
+  test('generate with modern mode', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate)
+    const args = ['generate', '.', '--m']
+
+    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+
+    await cmd.run()
+
+    expect(options.modern).toBe('client')
+  })
+
   test('catches error', async () => {
     mockGetNuxt()
     mockGetGenerator(Promise.reject(new Error('Generator Error')))
