@@ -23,7 +23,7 @@ module.exports = {
       'examples/with-vux/**',
     ],
     rules: {
-      'vue/component-name-in-template-casing': 'off'
+      'vue/component-name-in-template-casing': ['warn', 'kebab-case']
     }
   }, {
     files: [ 'test/fixtures/*/.nuxt*/**/+(App|index).js' ],
