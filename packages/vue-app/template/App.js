@@ -34,6 +34,14 @@ export default {
       props: {
         name: '<%= layoutTransition.name %>',
         mode: '<%= layoutTransition.mode %>'
+      },
+      on: {
+        beforeEnter(el) {
+          // Ensure to trigger scroll event after calling scrollBehavior
+          window.<%= globals.nuxt %>.$nextTick(() => {
+            window.<%= globals.nuxt %>.$emit('triggerScroll')
+          })
+        }
       }
     }, [ templateEl ])
 
