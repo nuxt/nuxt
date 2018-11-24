@@ -1,7 +1,7 @@
 {
   "name": "example-scroll-behavior",
   "dependencies": {
-    "axios": "^0.15.3",
+    "@nuxtjs/axios": "^5.3.6",
     "nuxt-edge": "latest",
     "vue-router": "https://github.com/homerjam/vue-router#dist"
   },

@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
   // Watch for $route.query.page to call Component methods (asyncData, fetch, validate, layout, etc.)
@@ -28,9 +27,9 @@ export default {
     if (!from) return 'slide-left'
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  async asyncData({ query }) {
+  async asyncData({ query, $axios }) {
     const page = +query.page || 1
-    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+    const data = await $axios.$get(`https://reqres.in/api/users?page=${page}`)
     return {
       page: +data.page,
       totalPages: data.total_pages,
