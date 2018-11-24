@@ -75,6 +75,13 @@ describe('spa', () => {
     expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
+  test('/тест雨 (test non ascii route)', async () => {
+    const { html } = await renderRoute('/тест雨')
+    expect(html).toMatch('Hello unicode SPA!')
+    expect(consola.log).not.toHaveBeenCalledWith('created')
+    expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
+  })
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
