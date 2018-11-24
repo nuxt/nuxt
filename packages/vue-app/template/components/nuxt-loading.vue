@@ -8,10 +8,10 @@ export default {
       canSucceed: true,
       reversed: false,
       skipTimerCount: 0,
-      rtl: <%= loading.rtl || false %>,
-      throttle: <%= loading.throttle || 200 %>,
-      duration: <%= loading.duration || 3000 %>,
-      continuous: <%= loading.continuous || false %>
+      rtl: <%= Boolean(loading.rtl) %>,
+      throttle: <%= Number(loading.throttle) ? loading.throttle : 200 %>,
+      duration: <%= Number(loading.duration) ? loading.duration : 3000 %>,
+      continuous: <%= Boolean(loading.continuous) %>
     }
   },
   computed: {
