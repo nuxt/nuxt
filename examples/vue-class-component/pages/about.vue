@@ -1,6 +1,10 @@
 <template>
   <div>
     <h1>About</h1>
-    <p><nuxt-link to="/">Home page</nuxt-link></p>
+    <p>
+      <NuxtLink to="/">
+        Home page
+      </NuxtLink>
+    </p>
   </div>
 </template>

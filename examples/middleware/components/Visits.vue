@@ -1,6 +1,8 @@
 <template>
   <ul>
-    <li v-for="(visit, index) in visits" :key="index"><i>{{ visit.date | hours }}</i> - {{ visit.path }}</li>
+    <li v-for="(visit, index) in visits" :key="index">
+      <i>{{ visit.date | hours }}</i> - {{ visit.path }}
+    </li>
   </ul>
 </template>
 

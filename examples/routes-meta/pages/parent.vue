@@ -2,8 +2,10 @@
   <div>
     <h1>Parent</h1>
     Checkout
-    <nuxt-link to="/parent/blue">Blue page</nuxt-link>
-    <nuxt-child />
+    <NuxtLink to="/parent/blue">
+      Blue page
+    </NuxtLink>
+    <NuxtChild />
   </div>
 </template>
 

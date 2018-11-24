@@ -1,7 +1,11 @@
 <template>
   <div class="main">
     <p>Page with LESS</p>
-    <p><nuxt-link to="/">SCSS</nuxt-link></p>
+    <p>
+      <NuxtLink to="/">
+        SCSS
+      </NuxtLink>
+    </p>
   </div>
 </template>
 

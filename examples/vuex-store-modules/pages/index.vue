@@ -1,17 +1,25 @@
 <template>
   <div>
     <p /><h3>Index Module</h3>
-    <button @click="increment">{{ counter }}</button>
+    <button @click="increment">
+      {{ counter }}
+    </button>
     <br>
-    <nuxt-link to="/about">About</nuxt-link>
+    <NuxtLink to="/about">
+      About
+    </NuxtLink>
     <br>
     <br>
     <h3>Todo Module</h3>
-    <nuxt-link to="/todos">Todos</nuxt-link>
+    <NuxtLink to="/todos">
+      Todos
+    </NuxtLink>
     <br>
     <br>
     <h3>Nested Modules</h3>
-    <nuxt-link to="/website">Website</nuxt-link>
+    <NuxtLink to="/website">
+      Website
+    </NuxtLink>
     </p>
   </div>
 </template>

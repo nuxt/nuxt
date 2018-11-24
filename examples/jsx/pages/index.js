@@ -14,7 +14,7 @@ export default {
   render() {
     return <div class='container'>
       <h1>Home page 🚀</h1>
-      <nuxt-link to='/about'>About page</nuxt-link>
+      <NuxtLink to='/about'>About page</NuxtLink>
     </div>
   }
 }

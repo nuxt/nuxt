@@ -2,14 +2,18 @@
   <nav class="navbar has-shadow is-light">
     <div class="container">
       <div class="navbar-brand">
-        <nuxt-link to="/" class="navbar-item">
+        <NuxtLink to="/" class="navbar-item">
           <img src="~/assets/logo.png">
-        </nuxt-link>
+        </NuxtLink>
       </div>
       <div class="navbar-menu">
         <div class="navbar-start">
-          <nuxt-link to="/" class="navbar-item is-tab" exact>Home</nuxt-link>
-          <nuxt-link to="/about" class="navbar-item is-tab" exact>About</nuxt-link>
+          <NuxtLink to="/" class="navbar-item is-tab" exact>
+            Home
+          </NuxtLink>
+          <NuxtLink to="/about" class="navbar-item is-tab" exact>
+            About
+          </NuxtLink>
         </div>
       </div>
     </div>

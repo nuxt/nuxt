@@ -41,7 +41,7 @@ Then in your pages, you can use directly:
 <template>
   <div class="main">
     <p>Page with SCSS</p>
-    <p><nuxt-link to="/less">LESS</nuxt-link></p>
+    <p><NuxtLink to="/less">LESS</NuxtLink></p>
   </div>
 </template>
 

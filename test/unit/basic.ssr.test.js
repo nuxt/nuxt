@@ -35,7 +35,7 @@ describe('basic ssr', () => {
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)
-    expect(element.textContent).toBe('This is red')
+    expect(element.textContent).toContain('This is red')
     expect(element.className).toBe('red')
     // t.is(window.getComputedStyle(element).color, 'red')
   })

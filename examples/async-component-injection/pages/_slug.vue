@@ -1,6 +1,6 @@
 <template>
   <div class="post">
-    <component :is="component" />
+    <Component :is="component" />
   </div>
 </template>
 

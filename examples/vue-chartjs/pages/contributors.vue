@@ -1,6 +1,6 @@
 <template>
   <div class="doughnut-chart">
-    <doughnut-chart :data="doughnutChartData" :options="{ legend: { display: false }, maintainAspectRatio: false }" />
+    <DoughnutChart :data="doughnutChartData" :options="{ legend: { display: false }, maintainAspectRatio: false }" />
   </div>
 </template>
 

@@ -15,7 +15,7 @@ export default {
     return <div class='container'>
       <h1>About page</h1>
       <test data='I am test component' />
-      <p><nuxt-link to='/'>Home page</nuxt-link></p>
+      <p><NuxtLink to='/'>Home page</NuxtLink></p>
     </div>
   }
 }
