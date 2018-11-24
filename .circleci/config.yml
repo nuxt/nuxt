@@ -115,7 +115,7 @@ jobs:
       - run:
           name: release
           command: |
-            if [[ $GIT_COMMIT_MSG == *"\[skip release\]"* ]]; then
+            if [[ $GIT_COMMIT_MSG != *"\[skip release\]"* ]]; then
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               yarn release --yes
