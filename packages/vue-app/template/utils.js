@@ -434,7 +434,7 @@ function tokensToFunction(tokens) {
         continue
       }
 
-      const value = data[token.name]
+      const value = data[token.name || 'pathMatch']
       let segment
 
       if (value == null) {
