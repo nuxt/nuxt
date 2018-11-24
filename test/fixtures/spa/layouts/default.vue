@@ -2,6 +2,6 @@
   <div>
     Default layout
     <br>
-    <nuxt />
+    <Nuxt />
   </div>
 </template>

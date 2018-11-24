@@ -3,7 +3,11 @@
   <div class="container">
     <h1>User Agent</h1>
     <p>{{ userAgent }}</p>
-    <p><nuxt-link to="/posts">Blog</nuxt-link></p>
+    <p>
+      <NuxtLink to="/posts">
+        Blog
+      </NuxtLink>
+    </p>
   </div>
 </template>
 

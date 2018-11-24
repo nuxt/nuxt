@@ -4,8 +4,14 @@
     <p>msg: {{ msg }}</p>
     <p>env: {{ env }}</p>
     <p>computed msg: {{ computedMsg }}</p>
-    <button @click="greet">Greet</button>
-    <p><nuxt-link to="/about">About page</nuxt-link></p>
+    <button @click="greet">
+      Greet
+    </button>
+    <p>
+      <NuxtLink to="/about">
+        About page
+      </NuxtLink>
+    </p>
   </div>
 </template>
 

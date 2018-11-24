@@ -1,7 +1,11 @@
 <template>
   <div>
-    <h2>_id: <i data-date-id>{{ date }}</i></h2>
-    <nuxt-child />
+    <h2>
+      _id: <i data-date-id>
+        {{ date }}
+      </i>
+    </h2>
+    <NuxtChild />
   </div>
 </template>
 

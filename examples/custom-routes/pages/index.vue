@@ -3,7 +3,9 @@
     <h2>Users</h2>
     <ul class="users">
       <li v-for="user in users" :key="user.id">
-        <nuxt-link :to="'/users/'+user.id">{{ user.name }}</nuxt-link>
+        <NuxtLink :to="'/users/'+user.id">
+          {{ user.name }}
+        </NuxtLink>
       </li>
     </ul>
   </div>

@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <div>
-      <app-logo />
+      <AppLogo />
       <h1 class="title">
         web-worker
       </h1>
@@ -19,25 +19,35 @@
           :class="needWorkerSetup ? 'hidden' : 'visible'"
           class="button button--green"
           @click="test"
-        >Test Worker</a>
+        >
+          Test Worker
+        </a>
         <a
           :class="needWorkerSetup ? 'hidden' : 'visible'"
           class="button button--green"
           @click="long(4000)"
-        >Execute long running Worker</a>
+        >
+          Execute long running Worker
+        </a>
         <a
           :class="needWorkerSetup || !longRunningWorkers.length ? 'hidden' : 'visible'"
           class="button button--green"
           @click="freeWorker"
-        >Free long running Worker</a>
+        >
+          Free long running Worker
+        </a>
         <a
           class="button button--grey"
           @click="removeWorker"
-        >Remove Web Worker</a>
+        >
+          Remove Web Worker
+        </a>
         <a
           class="button button--grey"
           @click="createWorkers"
-        >Create more Workers</a>
+        >
+          Create more Workers
+        </a>
       </div>
     </div>
   </section>

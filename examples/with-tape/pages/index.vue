@@ -1,7 +1,11 @@
 <template>
   <div>
-    <h1 :class="className">Hello {{ name }}!</h1>
-    <button @click="changeColor()"> Change h1 Color </button>
+    <h1 :class="className">
+      Hello {{ name }}!
+    </h1>
+    <button @click="changeColor()">
+      Change h1 Color
+    </button>
   </div>
 </template>
 

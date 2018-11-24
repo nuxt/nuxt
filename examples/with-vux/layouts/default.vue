@@ -1,5 +1,5 @@
 <template>
-  <nuxt />
+  <Nuxt />
 </template>
 
 <style>

@@ -1,11 +1,11 @@
 <template>
   <div>
     <h1>Nuxt Chat</h1>
-    <transition-group name="list" tag="ul">
+    <TransitionGroup name="list" tag="ul">
       <li v-for="(message, index) in messages" :key="index">
-        <component :is="message.component" :data="message.data" />
+        <Component :is="message.component" :data="message.data" />
       </li>
-    </transition-group>
+    </TransitionGroup>
   </div>
 </template>
 

@@ -3,14 +3,20 @@
     <h1>About page</h1>
     <ul>
       <li>
-        <nuxt-link to="/about/profile">Profile</nuxt-link>
+        <NuxtLink to="/about/profile">
+          Profile
+        </NuxtLink>
       </li>
       <li>
-        <nuxt-link to="/about/contact">Contact</nuxt-link>
+        <NuxtLink to="/about/contact">
+          Contact
+        </NuxtLink>
       </li>
     </ul>
-    <nuxt-child />
-    <nuxt-link to="/">Home page</nuxt-link>
+    <NuxtChild />
+    <NuxtLink to="/">
+      Home page
+    </NuxtLink>
   </div>
 </template>
 

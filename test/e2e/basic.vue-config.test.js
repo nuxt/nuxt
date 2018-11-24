@@ -30,8 +30,8 @@ describe('basic vue-config', () => {
     expect(nuxt.options.vue.config).toEqual({ silent: true, performance: false })
     page = await browser.page(url('/config'))
 
-    expect(await page.$text('#silent')).toBe('true')
-    expect(await page.$text('#performance')).toBe('false')
+    expect(await page.$text('#silent', true)).toBe('true')
+    expect(await page.$text('#performance', true)).toBe('false')
   })
 
   test('explicit', async () => {
@@ -40,9 +40,9 @@ describe('basic vue-config', () => {
 
     expect(nuxt.options.vue.config).toEqual({ silent: false, performance: true, devtools: true })
 
-    expect(await page.$text('#silent')).toBe('false')
-    expect(await page.$text('#performance')).toBe('true')
-    expect(await page.$text('#devtools')).toBe('true')
+    expect(await page.$text('#silent', true)).toBe('false')
+    expect(await page.$text('#performance', true)).toBe('true')
+    expect(await page.$text('#devtools', true)).toBe('true')
   })
 
   afterEach(async () => {

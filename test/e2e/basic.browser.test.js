@@ -58,7 +58,7 @@ describe('basic browser', () => {
   test('/css', async () => {
     await page.nuxt.navigate('/css')
 
-    expect(await page.$text('.red')).toBe('This is red')
+    expect(await page.$text('.red', true)).toEqual('This is red')
     expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
