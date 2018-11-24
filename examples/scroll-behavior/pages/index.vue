@@ -22,5 +22,6 @@
       </NuxtLink>
     </p>
     <div class="spacer" style="width: 100%; height: 3000px; background: grey" />
+    <p><nuxt-link to="/another-long">Another long page</nuxt-link></p>
   </div>
 </template>
