@@ -115,17 +115,16 @@ jobs:
       - run:
           name: release
           command: |
-            if [[ $GIT_COMMIT_MSG != *"\[skip release\]"* ]]; then
+            GIT_COMMIT_MSG=`git --no-pager log --pretty=full -n1 $CIRCLE_SHA1`
+            if echo "$GIT_COMMIT_MSG" | grep -o "\[skip release\]"; then
+              echo "Release phase is skiped since [skip release] exists in commit message or body."
+            else
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               yarn release --yes
               PACKAGE_SUFFIX=edge yarn build
               ./scripts/workspace-run npm publish -q
-            else
-               echo "Release phase is skiped since [skip release] in commit message."
             fi
-          environment:
-            GIT_COMMIT_MSG: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
 
 # Workflow definition
 workflows:
