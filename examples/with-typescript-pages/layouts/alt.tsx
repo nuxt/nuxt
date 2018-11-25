@@ -1,6 +1,7 @@
 import Vue from 'vue';
 
 export default Vue.extend({
+  name: 'AltLayout',
   render() {
     return (
       <div>

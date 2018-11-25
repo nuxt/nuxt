@@ -1,7 +1,13 @@
-import Vue from 'vue'
+import Vue, { VNode } from 'vue'
 
 export default Vue.extend({
-  render(h) {
-    return h('div', 'Default Page')
+  name: 'Index',
+  data() {
+    return {
+      message: 'Default Page'
+    }
+  },
+  render(h): VNode {
+    return h('div', this.message)
   }
 })
