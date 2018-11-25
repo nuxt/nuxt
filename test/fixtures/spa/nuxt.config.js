@@ -10,9 +10,6 @@ export default {
     }
   },
   build: {
-    optimization: {
-      minimize: false
-    },
     filenames: {
       app: '[name].js',
       chunk: '[name].js'
