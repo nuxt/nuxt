@@ -1,0 +1,11 @@
+{
+  "name": "example-pug",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start"
+  }
+}
