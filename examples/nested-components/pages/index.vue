@@ -1,36 +1,36 @@
 <template lang="html">
   <div class="main">
-    <post title="My first blog post">
-      <v-p>Hello there</v-p>
-      <v-p>This is an example of a componentized blog post</v-p>
-    </post>
+    <Post title="My first blog post">
+      <VP>Hello there</VP>
+      <VP>This is an example of a componentized blog post</VP>
+    </Post>
 
-    <v-hr />
+    <VHr />
 
-    <post title="My second blog post">
-      <v-p>Hello there</v-p>
-      <v-p>This is another example.</v-p>
-      <v-p>Wa-hoo!</v-p>
-    </post>
+    <Post title="My second blog post">
+      <VP>Hello there</VP>
+      <VP>This is another example.</VP>
+      <VP>Wa-hoo!</VP>
+    </Post>
 
-    <v-hr />
+    <VHr />
 
-    <post title="The final blog post">
-      <v-p>C'est la fin !</v-p>
-    </post>
+    <Post title="The final blog post">
+      <VP>C'est la fin !</VP>
+    </Post>
   </div>
 </template>
 
 <script>
 import Post from '~/components/post'
-import vP from '~/components/paragraph'
-const vHr = { render: h => h('hr', { class: 'hr' }) }
+import VP from '~/components/paragraph'
+const VHr = { render: h => h('hr', { class: 'hr' }) }
 
 export default {
   components: {
     Post,
-    'v-p': vP,
-    'v-hr': vHr
+    VP,
+    VHr
   }
 }
 </script>

@@ -117,8 +117,8 @@ export default class VueRenderer {
         // TODO: Enable baack when renderer initialzation was disabled for build only scripts
         // Currently this breaks normal nuxt build for first time
         // if (!this.context.options.dev) {
-        //   const invalidSSR = !this.noSSR && key === 'serverBundle'
-        //   const invalidSPA = this.noSSR && key === 'spaTemplate'
+        //   const invalidSSR = !this.NoSsr && key === 'serverBundle'
+        //   const invalidSPA = this.NoSsr && key === 'spaTemplate'
         //   if (invalidSPA || invalidSSR) {
         //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
         //   }
@@ -166,12 +166,12 @@ export default class VueRenderer {
     }
   }
 
-  get noSSR() {
+  get NoSsr() {
     return this.context.options.render.ssr === false
   }
 
   get isReady() {
-    if (this.noSSR) {
+    if (this.NoSsr) {
       return Boolean(this.context.resources.spaTemplate)
     }
 
@@ -186,7 +186,7 @@ export default class VueRenderer {
     }
 
     // Required for SPA rendering
-    if (this.noSSR) {
+    if (this.NoSsr) {
       return Boolean(this.context.resources.spaTemplate)
     }
 
@@ -203,8 +203,8 @@ export default class VueRenderer {
     // Create Meta Renderer
     this.renderer.spa = new SPAMetaRenderer(this)
 
-    // Skip following steps if noSSR mode
-    if (this.noSSR) {
+    // Skip following steps if NoSsr mode
+    if (this.NoSsr) {
       return
     }
 
@@ -262,7 +262,7 @@ export default class VueRenderer {
     const spa = context.spa || (res && res.spa)
     const ENV = this.context.options.env
 
-    if (this.noSSR || spa) {
+    if (this.NoSsr || spa) {
       const {
         HTML_ATTRS,
         BODY_ATTRS,

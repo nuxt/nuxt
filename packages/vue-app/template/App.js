@@ -21,7 +21,7 @@ export default {
   head: <%= serialize(head).replace(/:\w+\(/gm, ':function(').replace('head(', 'function(') %>,
   <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
   render(h, props) {
-    <% if (loading) { %>const loadingEl = h('nuxt-loading', { ref: 'loading' })<% } %>
+    <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
@@ -34,6 +34,14 @@ export default {
       props: {
         name: '<%= layoutTransition.name %>',
         mode: '<%= layoutTransition.mode %>'
+      },
+      on: {
+        beforeEnter(el) {
+          // Ensure to trigger scroll event after calling scrollBehavior
+          window.<%= globals.nuxt %>.$nextTick(() => {
+            window.<%= globals.nuxt %>.$emit('triggerScroll')
+          })
+        }
       }
     }, [ templateEl ])
 

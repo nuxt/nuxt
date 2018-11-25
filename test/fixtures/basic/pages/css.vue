@@ -1,5 +1,7 @@
 <template>
-  <div class="red">This is red</div>
+  <div class="red">
+    This is red
+  </div>
 </template>
 
 <style>

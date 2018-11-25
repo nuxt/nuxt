@@ -35,7 +35,7 @@ describe('basic ssr', () => {
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)
-    expect(element.textContent).toBe('This is red')
+    expect(element.textContent).toContain('This is red')
     expect(element.className).toBe('red')
     // t.is(window.getComputedStyle(element).color, 'red')
   })
@@ -312,6 +312,11 @@ describe('basic ssr', () => {
   test('/js-link', async () => {
     const { html } = await nuxt.server.renderRoute('/js-link')
     expect(html).toContain('<h1>vue file is first-class</h1>')
+  })
+
+  test('/тест雨 (test non ascii route)', async () => {
+    const { html } = await nuxt.server.renderRoute('/тест雨')
+    expect(html).toMatch('Hello unicode')
   })
 
   // Close server and ask nuxt to stop listening to file changes

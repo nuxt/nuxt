@@ -1,6 +1,6 @@
 <template>
   <div class="bar-chart">
-    <bar-chart :data="barChartData" :options="{ maintainAspectRatio: false }" />
+    <BarChart :data="barChartData" :options="{ maintainAspectRatio: false }" />
   </div>
 </template>
 

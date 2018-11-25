@@ -31,6 +31,7 @@ export default {
       '/store-module',
       '/users/1',
       '/users/2',
+      '/тест雨',
       { route: '/users/3', payload: { id: 3000 } }
     ],
     interval: 200,

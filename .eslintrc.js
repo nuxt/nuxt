@@ -12,6 +12,19 @@ module.exports = {
     rules: {
       'vue/name-property-casing': ['error', 'kebab-case']
     }
+  },{
+    files: [
+      'examples/storybook/**',
+      'examples/with-element-ui/**',
+      'examples/with-museui/**',
+      'examples/with-vue-material/**',
+      'examples/with-vuetify/**',
+      'examples/with-vuikit/**',
+      'examples/with-vux/**',
+    ],
+    rules: {
+      'vue/component-name-in-template-casing': ['warn', 'kebab-case']
+    }
   }, {
     files: [ 'test/fixtures/*/.nuxt*/**/+(App|index).js' ],
     rules: {
