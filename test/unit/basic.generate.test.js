@@ -129,6 +129,12 @@ describe('basic generate', () => {
     expect(html).toContain('<p>Nuxt.js</p>')
   })
 
+  test('/тест雨 (test non ascii route)', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/тест雨'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Hello unicode')
+  })
+
   test('/users/1/index.html', async () => {
     const html = await rp(url('/users/1/index.html'))
     expect(html).toContain('<h1>User: 1</h1>')
