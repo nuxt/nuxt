@@ -6,9 +6,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'section',
-  };
+export default {
+  name: 'section'
+}
 </script>
 
 <style scoped>

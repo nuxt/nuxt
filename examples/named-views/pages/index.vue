@@ -4,35 +4,43 @@
     <p>This is an example of a named views</p>
     <ul>
       <li>
-        <nuxt-link to="/">Main</nuxt-link>
+        <nuxt-link to="/">
+          Main
+        </nuxt-link>
       </li>
       <li>
-        <nuxt-link to="/section">Section</nuxt-link>
+        <nuxt-link to="/section">
+          Section
+        </nuxt-link>
       </li>
       <li>
-        <nuxt-link to="/child/123">Child 123</nuxt-link>
+        <nuxt-link to="/child/123">
+          Child 123
+        </nuxt-link>
       </li>
       <li>
-        <nuxt-link to="/child/234">Child 234</nuxt-link>
+        <nuxt-link to="/child/234">
+          Child 234
+        </nuxt-link>
       </li>
     </ul>
 
-    <hr/>
+    <hr>
     <div>
       <div class="left">
-        <router-view name="left"/>
+        <router-view name="left" />
       </div>
       <div class="content">
-        <nuxt-child/>
+        <nuxt-child />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  export default {
-    name: 'Stage',
-  };
+export default {
+  name: 'Stage'
+}
 </script>
 
 <style scoped>
