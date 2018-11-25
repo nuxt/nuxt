@@ -67,17 +67,20 @@ module.exports = (context, options = {}) => {
   }
 
   // Pass options along to babel-preset-env
-  presets.push([
-    require('@babel/preset-env'), {
-      loose,
-      modules,
-      targets,
-      useBuiltIns,
-      forceAllTransforms,
-      ignoreBrowserslistConfig,
-      exclude: polyfills
-    }
-  ])
+  presets.push(
+    [
+      require('@babel/preset-env'), {
+        loose,
+        modules,
+        targets,
+        useBuiltIns,
+        forceAllTransforms,
+        ignoreBrowserslistConfig,
+        exclude: polyfills
+      }
+    ],
+    require('@babel/preset-typescript')
+  )
 
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),

@@ -179,7 +179,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.jsx?$/,
+        test: /\.(j|t)sx?$/,
         exclude: (file) => {
           // not exclude files outside node_modules
           if (!/node_modules/.test(file)) {
@@ -189,10 +189,13 @@ export default class WebpackBaseConfig {
           // item in transpile can be string or regex object
           return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.js().concat({
-          loader: require.resolve('babel-loader'),
-          options: this.getBabelOptions()
-        })
+        use: perfLoader.js().concat(
+          {
+            loader: require.resolve('babel-loader'),
+            options: this.getBabelOptions()
+          },
+          'vue-jsx-hot-loader'
+        )
       },
       {
         test: /\.css$/,
@@ -344,7 +347,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },

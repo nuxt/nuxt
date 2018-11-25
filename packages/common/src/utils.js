@@ -320,7 +320,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
   files.forEach((file) => {
     const keys = file
       .replace(RegExp(`^${pagesDir}`), '')
-      .replace(/\.(vue|js)$/, '')
+      .replace(/\.(vue|js|ts|tsx)$/, '')
       .replace(/\/{2,}/g, '/')
       .split('/')
       .slice(1)
@@ -334,7 +334,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
         ? route.name + '-' + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
-      route.chunkName = file.replace(/\.(vue|js)$/, '')
+      route.chunkName = file.replace(/\.(vue|js|ts|tsx)$/, '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
 
       if (child) {

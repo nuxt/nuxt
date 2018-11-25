@@ -102,7 +102,7 @@ export function getNuxtConfig(_options) {
     .concat(path.join(options.nuxtDir, 'node_modules')).filter(isNonEmptyString)
     .map(dir => path.resolve(options.rootDir, dir))
 
-  const mandatoryExtensions = ['js', 'mjs']
+  const mandatoryExtensions = ['js', 'mjs', 'ts']
 
   options.extensions = mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))

@@ -42,6 +42,7 @@
     "thread-loader": "^1.2.0",
     "time-fix-plugin": "^2.0.5",
     "url-loader": "^1.1.2",
+    "vue-jsx-hot-loader": "^1.4.0",
     "vue-loader": "^15.4.2",
     "webpack": "^4.26.0",
     "webpack-bundle-analyzer": "^3.0.3",

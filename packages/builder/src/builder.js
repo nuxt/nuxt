@@ -265,14 +265,14 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{vue,js}`, {
+      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{vue,js,ts,tsx}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
-          .replace(/\.(vue|js)$/, '')
+          .replace(/\.(vue|js|ts|tsx)$/, '')
         if (name === 'error') {
           if (!templateVars.components.ErrorPage) {
             templateVars.components.ErrorPage = this.relativeToBuild(
@@ -308,11 +308,11 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
+        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js,ts,tsx}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
-        const key = f.replace(/\.(js|vue)$/, '')
+        const key = f.replace(/\.(vue|js|ts|tsx)$/, '')
         if (/\.vue$/.test(f) || !files[key]) {
           files[key] = f.replace(/('|")/g, '\\$1')
         }
@@ -506,14 +506,14 @@ export default class Builder {
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
       r(src, this.options.dir.middleware),
-      r(src, `${this.options.dir.layouts}/*.{vue,js}`),
-      r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
+      r(src, `${this.options.dir.layouts}/*.{vue,js,ts,tsx}`),
+      r(src, `${this.options.dir.layouts}/**/*.{vue,js,ts,tsx}`)
     ]
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
-        r(src, `${this.options.dir.pages}/*.{vue,js}`),
-        r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
+        r(src, `${this.options.dir.pages}/*.{vue,js,ts,tsx}`),
+        r(src, `${this.options.dir.pages}/**/*.{vue,js,ts,tsx}`)
       )
     }
     patterns = map(patterns, upath.normalizeSafe)
