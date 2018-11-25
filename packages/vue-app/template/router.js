@@ -3,16 +3,32 @@ import Router from 'vue-router'
 import { interopDefault } from './utils'
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
-  let res = ''
+  let res = '', resMap = ''
   const baseIndent = tab.repeat(indentCount)
   const firstIndent = '\n' + tab.repeat(indentCount + 1)
   const nextIndent = ',' + firstIndent
   routes.forEach((route, i) => {
-    route._name = '_' + hash(route.component)
-    components.push({ _name: route._name, component: route.component, name: route.name, chunkName: route.chunkName })
+    if(route.components) {
+      let _name = '_' + hash(route.components.default)
+      resMap += firstIndent + tab + 'default: ' + (splitChunks.pages ? _name : `() => ${_name}.default || ${_name}`)
+      Object.keys(route.components).map(function(k){
+        _name = '_' + hash(route.components[k])
+        if (k === 'default') {
+          components.push({_name: _name, component: route.components[k], name: route.name, chunkName: route.chunkName})
+        } else {
+          components.push({_name: _name, component: route.components[k], name: route.name + '-' + k, chunkName: route.chunkNames[k]})
+          resMap += nextIndent + tab + k + ': ' + (splitChunks.pages ? _name : `() => ${_name}.default || ${_name}`)
+        }
+      });
+      route.component = false
+    } else {
+      route._name = '_' + hash(route.component)
+      components.push({_name: route._name, component: route.component, name: route.name, chunkName: route.chunkName})
+    }
     // @see: https://router.vuejs.org/api/#router-construction-options
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
+    res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + (splitChunks.pages ? route._name : `() => ${route._name}.default || ${route._name}`) : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
