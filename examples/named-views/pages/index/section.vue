@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'section'
+  name: 'Section'
 }
 </script>
 
