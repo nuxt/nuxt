@@ -10,7 +10,11 @@
   "dependencies": {
     "@nuxt/common": "2.3.2",
     "consola": "^2.3.0",
-    "lodash": "^4.17.11",
+    "lodash.capitalize": "^4.2.1",
+    "lodash.defaults": "^4.2.0",
+    "lodash.defaultsdeep": "^4.6.0",
+    "lodash.isobject": "^3.0.2",
+    "lodash.pick": "^4.4.0",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

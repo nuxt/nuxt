@@ -1,6 +1,6 @@
 import path from 'path'
-import escapeRegExp from 'lodash/escapeRegExp'
-import get from 'lodash/get'
+import escapeRegExp from 'lodash.escaperegexp'
+import get from 'lodash.get'
 import consola from 'consola'
 
 export const encodeHtml = function encodeHtml(str) {

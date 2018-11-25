@@ -17,6 +17,7 @@
     "chalk": "^2.4.1",
     "consola": "^2.3.0",
     "esm": "^3.0.84",
+    "lodash.defaultsdeep": "^4.6.0",
     "minimist": "^1.2.0",
     "pretty-bytes": "^5.1.0",
     "std-env": "^2.2.1",

@@ -1,5 +1,5 @@
 
-import isPlainObject from 'lodash/isPlainObject'
+import isPlainObject from 'lodash.isplainobject'
 import consola from 'consola'
 
 import { Hookable, defineAlias } from '@nuxt/common'
