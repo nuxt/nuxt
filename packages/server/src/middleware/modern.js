@@ -9,12 +9,12 @@ const modernBrowsers = Object.keys(ModernBrowsers)
   }, {})
 
 const isModernBrowser = (ua) => {
-  if (!Boolean(ua)) {
-    return false;
+  if (!ua) {
+    return false
   }
   const { browser } = UAParser(ua)
   const browserVersion = semver.coerce(browser.version)
-  return semver.gte(browserVersion, modernBrowsers[browser.name])
+  return modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name])
 }
 
 export default function (req, res, next) {
