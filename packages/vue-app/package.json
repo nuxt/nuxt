@@ -8,7 +8,6 @@
     "template"
   ],
   "main": "dist/vue-app.js",
-  "typings": "types/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
