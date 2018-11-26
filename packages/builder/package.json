@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.3.2",
+  "version": "2.3.4",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,8 +8,8 @@
   ],
   "main": "dist/builder.js",
   "dependencies": {
-    "@nuxt/common": "2.3.2",
-    "@nuxt/vue-app": "2.3.2",
+    "@nuxt/common": "2.3.4",
+    "@nuxt/vue-app": "2.3.4",
     "@nuxtjs/devalue": "^1.1.0",
     "chokidar": "^2.0.4",
     "consola": "^2.3.0",
@@ -23,6 +23,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
+  }
 }
