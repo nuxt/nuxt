@@ -12,7 +12,7 @@ export default () => ({
 
   // Mode
   mode: 'universal',
-  modern: false,
+  modern: undefined,
 
   // Globals
   globalName: `nuxt`,
