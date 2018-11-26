@@ -16,7 +16,7 @@
     "vue": "^2.5.17",
     "vue-meta": "^1.5.5",
     "vue-no-ssr": "^1.1.0",
-    "vue-router": "^3.0.1",
+    "vue-router": "^3.0.2",
     "vue-server-renderer": "^2.5.17",
     "vue-template-compiler": "^2.5.17",
     "vuex": "^3.0.1"
