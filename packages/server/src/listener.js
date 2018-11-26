@@ -55,6 +55,7 @@ export default class Listener {
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
     // Listen server error
+    /* istanbul ignore next */
     this._server.on('error', (e) => {
       consola.fatal(e.message)
     })
