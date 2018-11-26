@@ -1,14 +1,20 @@
 import { ModernBrowsers } from '@nuxt/common'
-import { matchesUA } from 'browserslist-useragent'
+import UAParser from 'ua-parser-js'
+import semver from 'semver'
 
 const modernBrowsers = Object.keys(ModernBrowsers)
-  .map(browser => `${browser} >= ${ModernBrowsers[browser]}`)
+  .reduce((allBrowsers, browser) => {
+    allBrowsers[browser] = semver.coerce(ModernBrowsers[browser])
+    return allBrowsers
+  }, {})
 
 const isModernBrowser = (ua) => {
-  return Boolean(ua) && matchesUA(ua, {
-    allowHigherVersions: true,
-    browsers: modernBrowsers
-  })
+  if (!Boolean(ua)) {
+    return false;
+  }
+  const { browser } = UAParser(ua)
+  const browserVersion = semver.coerce(browser.version)
+  return semver.gte(browserVersion, modernBrowsers[browser.name])
 }
 
 export default function (req, res, next) {
