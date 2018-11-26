@@ -21,8 +21,7 @@
     "test:lint": "yarn lint",
     "test:unit": "jest test/unit",
     "postinstall": "lerna link && yarn dev",
-    "prepublish": "yarn build",
-    "release": "lerna version"
+    "release": "./scripts/release"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

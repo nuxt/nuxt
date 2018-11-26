@@ -4,7 +4,6 @@
   "useWorkspaces": true,
   "conventionalCommits": true,
   "exact": true,
-  "noPush": true,
   "packages": [
     "packages/*",
     "distributions/*"
