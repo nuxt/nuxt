@@ -51,7 +51,7 @@ export default class VueRenderer {
   renderScripts(context) {
     if (this.context.options.modern === 'client') {
       const publicPath = this.context.options.build.publicPath
-      const scriptPattern = /<script[^>]*?src="([^"]*)"[^>]*>[^<]*<\/script>/g
+      const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
@@ -63,17 +63,36 @@ export default class VueRenderer {
     return context.renderScripts()
   }
 
+  getModernFiles(legacyFiles = []) {
+    const modernFiles = []
+    for (const legacyJsFile of legacyFiles) {
+      const modernFile = { ...legacyJsFile }
+      if (modernFile.asType === 'script') {
+        const file = this.assetsMapping[legacyJsFile.file]
+        modernFile.file = file
+        modernFile.fileWithoutQuery = file.replace(/\?.*/, '')
+      }
+      modernFiles.push(modernFile)
+    }
+    return modernFiles
+  }
+
+  getPreloadFiles(context) {
+    const preloadFiles = context.getPreloadFiles()
+    const modernMode = this.context.options.modern
+    // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
+    return modernMode === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
+  }
+
   renderResourceHints(context) {
     if (this.context.options.modern === 'client') {
-      const modulePreloadTags = []
-      for (const legacyJsFile of context.getPreloadFiles()) {
-        if (legacyJsFile.asType === 'script') {
-          const publicPath = this.context.options.build.publicPath
-          const modernJsFile = this.assetsMapping[legacyJsFile.file]
-          modulePreloadTags.push(`<link rel="modulepreload" href="${publicPath}${modernJsFile}" as="script">`)
-        }
-      }
-      return modulePreloadTags.join('')
+      const publicPath = this.context.options.build.publicPath
+      const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
+      return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
+        const legacyJsFile = jsFile.replace(publicPath, '')
+        const modernJsFile = this.assetsMapping[legacyJsFile]
+        return linkTag.replace('rel="preload"', 'rel="modulepreload"').replace(legacyJsFile, modernJsFile)
+      })
     }
     return context.renderResourceHints()
   }
@@ -262,7 +281,7 @@ export default class VueRenderer {
         ENV
       })
 
-      return { html, getPreloadFiles }
+      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, { getPreloadFiles }) }
     }
 
     let APP
@@ -322,7 +341,7 @@ export default class VueRenderer {
     return {
       html,
       cspScriptSrcHashSet,
-      getPreloadFiles: context.getPreloadFiles,
+      getPreloadFiles: this.getPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected
     }

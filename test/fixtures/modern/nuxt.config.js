@@ -9,5 +9,10 @@ export default {
         return `${isModern ? 'modern-' : ''}[name].js`
       }
     }
+  },
+  render: {
+    http2: {
+      push: true
+    }
   }
 }
