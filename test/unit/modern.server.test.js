@@ -1,15 +1,23 @@
+import chalk from 'chalk'
+import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
 const modernUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
+const modernInfo = mode => `Modern bundles are detected. Modern mode (${chalk.green.bold(mode)}) is enabled now.`
 
 describe('modern server mode', () => {
   beforeAll(async () => {
-    const options = await loadFixture('modern', { modern: 'server' })
+    const options = await loadFixture('modern')
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
+  })
+
+  test('should detect server modern mode', async () => {
+    await nuxt.server.renderAndGetWindow(url('/'))
+    expect(consola.info).toHaveBeenCalledWith(modernInfo('server'))
   })
 
   test('should use legacy resources by default', async () => {

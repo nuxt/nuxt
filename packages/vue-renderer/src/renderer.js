@@ -223,7 +223,8 @@ export default class VueRenderer {
       rendererOptions
     )
 
-    if (this.context.options.modern === 'server') {
+    if (this.context.resources.modernManifest &&
+      !['client', false].includes(this.context.options.modern)) {
       this.renderer.modern = createBundleRenderer(
         this.context.resources.serverBundle,
         {

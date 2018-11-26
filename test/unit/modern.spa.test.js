@@ -1,20 +1,28 @@
-import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
+import chalk from 'chalk'
+import consola from 'consola'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
-let nuxt, port
+let nuxt, port, options
 const url = route => 'http://localhost:' + port + route
+const modernInfo = mode => `Modern bundles are detected. Modern mode (${chalk.green.bold(mode)}) is enabled now.`
 
-describe('modern client mode (SSR)', () => {
+describe('modern client mode (SPA)', () => {
   beforeAll(async () => {
-    const options = await loadFixture('modern', { modern: 'client' })
+    options = await loadFixture('modern', { render: { ssr: false } })
     nuxt = new Nuxt(options)
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })
 
+  test('should detect client modern mode', async () => {
+    await nuxt.server.renderAndGetWindow(url('/'))
+    expect(consola.info).toHaveBeenCalledWith(modernInfo('client'))
+  })
+
   test('should contain nomodule legacy resources', async () => {
     const response = await rp(url('/'))
-    expect(response).toContain('script nomodule src="/_nuxt/app.js')
-    expect(response).toContain('script nomodule src="/_nuxt/commons.app.js')
+    expect(response).toContain('src="/_nuxt/app.js" nomodule')
+    expect(response).toContain('src="/_nuxt/commons.app.js" nomodule')
   })
 
   test('should contain module modern resources', async () => {
@@ -23,7 +31,7 @@ describe('modern client mode (SSR)', () => {
     expect(response).toContain('<script type="module" src="/_nuxt/modern-commons.app.js"')
   })
 
-  test('should contain module preload resources', async () => {
+  test.skip('should contain module preload resources', async () => {
     const response = await rp(url('/'))
     expect(response).toContain('<link rel="modulepreload" href="/_nuxt/modern-app.js" as="script">')
     expect(response).toContain('<link rel="modulepreload" href="/_nuxt/modern-commons.app.js" as="script">')
@@ -34,8 +42,7 @@ describe('modern client mode (SSR)', () => {
     expect(link).toEqual([
       '</_nuxt/modern-runtime.js>; rel=preload; as=script',
       '</_nuxt/modern-commons.app.js>; rel=preload; as=script',
-      '</_nuxt/modern-app.js>; rel=preload; as=script',
-      `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; as=script`
+      '</_nuxt/modern-app.js>; rel=preload; as=script'
     ].join(', '))
   })
 
