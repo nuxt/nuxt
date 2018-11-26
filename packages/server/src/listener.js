@@ -54,6 +54,11 @@ export default class Listener {
     const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
+    // Listen server error
+    this._server.on('error', (e) => {
+      consola.fatal(e.message);
+    });
+
     // Prepare listenArgs
     const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
     listenArgs.exclusive = false
