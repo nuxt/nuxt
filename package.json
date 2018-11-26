@@ -22,7 +22,7 @@
     "test:unit": "jest test/unit",
     "test:types": "tsc -p test/types",
     "postinstall": "lerna link && yarn dev",
-    "release": "lerna version"
+    "release": "./scripts/release"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
