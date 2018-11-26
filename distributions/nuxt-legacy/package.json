@@ -63,6 +63,5 @@
   "collective": {
     "url": "https://opencollective.com/nuxtjs",
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
-  },
-  "gitHead": "2e90166f2a87271dedaf7072c2f7d9457bff5d34"
+  }
 }
