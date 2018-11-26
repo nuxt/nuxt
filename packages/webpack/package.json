@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -11,7 +11,7 @@
     "@babel/core": "^7.1.6",
     "@babel/polyfill": "^7.0.0",
     "@nuxt/babel-preset-app": "2.3.2",
-    "@nuxt/common": "2.3.2",
+    "@nuxt/common": "2.3.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.3.2",
     "babel-loader": "^8.0.4",
     "cache-loader": "^1.2.5",
@@ -52,5 +52,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
+  "gitHead": "2e90166f2a87271dedaf7072c2f7d9457bff5d34"
 }
