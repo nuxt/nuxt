@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,8 +8,8 @@
   ],
   "main": "dist/builder.js",
   "dependencies": {
-    "@nuxt/common": "2.3.3",
-    "@nuxt/vue-app": "2.3.3",
+    "@nuxt/common": "2.3.4",
+    "@nuxt/vue-app": "2.3.4",
     "@nuxtjs/devalue": "^1.1.0",
     "chokidar": "^2.0.4",
     "consola": "^2.3.0",
