@@ -195,7 +195,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.css$/,
+        test: /\.(post)?css$/,
         oneOf: styleLoader.apply('css')
       },
       {
