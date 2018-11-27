@@ -12,7 +12,8 @@
     "@nuxtjs/devalue": "^1.1.0",
     "consola": "^2.3.0",
     "fs-extra": "^7.0.1",
-    "lru-cache": "^5.1.1"
+    "lru-cache": "^5.1.1",
+    "vue-server-renderer": "^2.5.17"
   },
   "publishConfig": {
     "access": "public"
