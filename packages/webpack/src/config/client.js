@@ -78,7 +78,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         chunksSortMode: 'dependency'
       }),
       new VueSSRClientPlugin({
-        filename: `../server/vue-ssr-${this.name}-manifest.json`
+        filename: `../server/server-${this.name}-manifest.js`
       }),
       new webpack.DefinePlugin(this.env())
     )

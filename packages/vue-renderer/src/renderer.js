@@ -25,10 +25,10 @@ export default class VueRenderer {
     Object.assign(this.context.resources, {
       clientManifest: null,
       modernManifest: null,
-      serverBundle: null,
+      server: null,
       ssrTemplate: null,
       spaTemplate: null,
-      errorTemplate: this.constructor.parseTemplate('Nuxt.js Internal Server Error')
+      errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
   }
 
@@ -107,43 +107,53 @@ export default class VueRenderer {
   async loadResources(_fs = fs) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
+    const resourceMap = this.resourceMap
 
-    this.constructor.resourceMap.forEach(({ key, fileName, transform }) => {
-      const rawKey = '$$' + key
-      const _path = path.join(distPath, fileName)
+    for (const key in resourceMap) {
+      const meta = resourceMap[key]
+      const filePath = path.join(distPath, meta.fileName)
 
-      // Fail when no build found and using programmatic usage
-      if (!_fs.existsSync(_path)) {
+      // Resource not exists
+      if (!_fs.existsSync(filePath)) {
         // TODO: Enable baack when renderer initialzation was disabled for build only scripts
+        // Fail when no build found and using programmatic usage
         // Currently this breaks normal nuxt build for first time
         // if (!this.context.options.dev) {
-        //   const invalidSSR = !this.noSSR && key === 'serverBundle'
+        //   const invalidSSR = !this.noSSR && key === 'server'
         //   const invalidSPA = this.noSSR && key === 'spaTemplate'
         //   if (invalidSPA || invalidSSR) {
         //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
         //   }
         // }
-        return // Resource not exists
+        consola.debug('Resource not available:', key)
+        continue // No changes
       }
 
-      const rawData = _fs.readFileSync(_path, 'utf8')
-      if (!rawData || rawData === this.context.resources[rawKey]) {
-        return // No changes
+      // Load resource
+      let resource = null
+
+      if (meta.require) {
+        resource = require.resolve(filePath)
+      } else {
+        // Read file
+        resource = _fs.readFileSync(filePath, 'utf8')
       }
-      this.context.resources[rawKey] = rawData
-      const data = transform(rawData)
-      /* istanbul ignore if */
-      if (!data) {
-        return // Invalid data ?
+
+      // Apply transforms
+      if (typeof meta.transform === 'function') {
+        resource = meta.transform(resource)
       }
-      this.context.resources[key] = data
+
+      // Update resource
+      consola.debug('Resource loaded:', key, resource)
+      this.context.resources[key] = resource
       updated.push(key)
-    })
+    }
 
     // Reload error template
     const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
     if (fs.existsSync(errorTemplatePath)) {
-      this.context.resources.errorTemplate = this.constructor.parseTemplate(
+      this.context.resources.errorTemplate = this.parseTemplate(
         fs.readFileSync(errorTemplatePath, 'utf8')
       )
     }
@@ -158,7 +168,7 @@ export default class VueRenderer {
       this.context.resources.loadingHTML = ''
     }
 
-    // Call resourcesLoaded plugin
+    // Call resourcesLoaded hook
     await this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
 
     if (updated.length > 0) {
@@ -191,7 +201,7 @@ export default class VueRenderer {
     }
 
     // Required for bundle renderer
-    return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverBundle)
+    return Boolean(this.context.resources.ssrTemplate && this.context.resources.server)
   }
 
   createRenderer() {
@@ -248,6 +258,7 @@ export default class VueRenderer {
   async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      consola.info('Waiting for server resources...')
       await waitFor(1000)
       return this.renderRoute(url, context)
     }
@@ -348,39 +359,34 @@ export default class VueRenderer {
     }
   }
 
-  static parseTemplate(templateStr) {
-    return template(templateStr, {
-      interpolate: /{{([\s\S]+?)}}/g
-    })
-  }
-
-  static get resourceMap() {
-    return [
-      {
-        key: 'clientManifest',
-        fileName: 'vue-ssr-client-manifest.json',
-        transform: JSON.parse
+  get resourceMap() {
+    return {
+      clientManifest: {
+        fileName: 'server-client-manifest.js',
+        require: true
       },
-      {
-        key: 'modernManifest',
-        fileName: 'vue-ssr-modern-manifest.json',
-        transform: JSON.parse
+      modernManifest: {
+        fileName: 'server-modern-manifest.js',
+        require: true
       },
-      {
-        key: 'serverBundle',
-        fileName: 'server-bundle.json',
-        transform: JSON.parse
+      server: {
+        fileName: 'server.js',
+        require: true
       },
-      {
-        key: 'ssrTemplate',
+      ssrTemplate: {
         fileName: 'index.ssr.html',
         transform: this.parseTemplate
       },
-      {
-        key: 'spaTemplate',
+      spaTemplate: {
         fileName: 'index.spa.html',
         transform: this.parseTemplate
       }
-    ]
+    }
+  }
+
+  parseTemplate(templateStr) {
+    return template(templateStr, {
+      interpolate: /{{([\s\S]+?)}}/g
+    })
   }
 }

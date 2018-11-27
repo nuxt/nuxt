@@ -268,11 +268,6 @@ describe('basic ssr', () => {
       .rejects.toMatchObject({ statusCode: 304 })
   })
 
-  test('/_nuxt/server-bundle.json should return 404', async () => {
-    await expect(rp(url('/_nuxt/server-bundle.json')))
-      .rejects.toMatchObject({ statusCode: 404 })
-  })
-
   test('/_nuxt/ should return 404', async () => {
     await expect(rp(url('/_nuxt/')))
       .rejects.toMatchObject({ statusCode: 404 })

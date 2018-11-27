@@ -66,11 +66,12 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         app: [path.resolve(this.options.buildDir, 'server.js')]
       },
       output: Object.assign({}, config.output, {
-        filename: 'server-bundle.js',
+        filename: 'server.js',
         libraryTarget: 'commonjs2'
       }),
       performance: {
         hints: false,
+        maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
       externals: []
