@@ -11,9 +11,9 @@ import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
-import PerfLoader from './utils/perf-loader'
-import StyleLoader from './utils/style-loader'
-import WarnFixPlugin from './plugins/warnfix'
+import PerfLoader from '../utils/perf-loader'
+import StyleLoader from '../utils/style-loader'
+import WarnFixPlugin from '../plugins/warnfix'
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {

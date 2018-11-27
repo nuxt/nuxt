@@ -6,8 +6,8 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
-import ModernModePlugin from './plugins/vue/modern'
-import VueSSRClientPlugin from './plugins/vue/client'
+import ModernModePlugin from '../plugins/vue/modern'
+import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {

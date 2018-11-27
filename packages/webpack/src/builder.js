@@ -14,7 +14,8 @@ import {
   wrapArray
 } from '@nuxt/common'
 
-import { ClientConfig, ModernConfig, ServerConfig, PerfLoader } from './config'
+import { ClientConfig, ModernConfig, ServerConfig } from './config'
+import PerfLoader from './utils/perf-loader'
 
 const glob = pify(Glob)
 
