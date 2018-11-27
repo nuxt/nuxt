@@ -17,16 +17,16 @@ import { interopDefault } from './utils'
       }
       for (const k in route.components) {
         _name = '_' + hash(route.components[k])
-        const cmpnnt = { _name, component: route.components[k] }
+        const component = { _name, component: route.components[k] }
         if (k === 'default') {
           components.push({
-            ...cmpnnt,
+            ...component,
             name: route.name,
             chunkName: route.chunkName
           })
         } else {
           components.push({
-            ...cmpnnt,
+            ...component,
             name: `${route.name}-${k}`,
             chunkName: route.chunkNames[k]
           })
