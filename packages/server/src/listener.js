@@ -75,14 +75,14 @@ export default class Listener {
     // Set this.listening to true
     this.listening = true
   }
-  
+
   errorHandler(e) {
     const errors = {
       EACCES: 'Permission denied. Does your user have permission?',
       EADDRINUSE: `Address \`${this.host}:${this.port}\` is already in use. Do you run another service on the same port?`,
       EDQUOT: 'Disk quota exceeded. Do you have space in disk?'
-    };
-    
-    consola.error(errors[e.code] || e);
+    }
+
+    consola.error(errors[e.code] || e)
   }
 }
