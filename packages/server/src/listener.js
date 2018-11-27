@@ -4,6 +4,7 @@ import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'
 import pify from 'pify'
+import getPort from 'get-port'
 
 export default class Listener {
   constructor({ port, host, socket, https, app }) {
@@ -55,16 +56,10 @@ export default class Listener {
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
     // Listen server error
-    this._server.on('error', this.errorHandler)
-
-    // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
-    listenArgs.exclusive = false
+    this._server.on('error', this.serverErrorHandler.bind(this))
 
     // Call server.listen
-    this.server = await new Promise((resolve, reject) => {
-      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
-    })
+    await this.serverListen()
 
     // Enable destroy support
     enableDestroy(this.server)
@@ -76,13 +71,29 @@ export default class Listener {
     this.listening = true
   }
 
-  errorHandler(e) {
-    const errors = {
-      EACCES: 'Permission denied. Does your user have permission?',
-      EADDRINUSE: `Address \`${this.host}:${this.port}\` is already in use. Do you run another service on the same port?`,
-      EDQUOT: 'Disk quota exceeded. Do you have space in disk?'
+  async serverErrorHandler(e) {
+    if(e.code === 'EADDRINUSE') {
+      consola.warn(`Address \`${this.host}:${this.port}\` is already in use.`)
+
+      this._server.close()
+      this.port = await getPort()
+
+      await this.serverListen()
+
+      return
     }
 
-    consola.error(errors[e.code] || e)
+    consola.error(e)
+  }
+
+  async serverListen() {
+    // Prepare listenArgs
+    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    listenArgs.exclusive = false
+
+    // Call server.listen
+    this.server = await new Promise((resolve, reject) => {
+      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+    })
   }
 }
