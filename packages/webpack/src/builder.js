@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import pify from 'pify'
 import webpack from 'webpack'
@@ -28,9 +27,11 @@ export class WebpackBundler {
     this.devMiddleware = {}
     this.hotMiddleware = {}
 
-    // Initialize shared FS and Cache
+    // Initialize shared MFS for dev
     if (this.context.options.dev) {
       this.mfs = new MFS()
+      this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
+      this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
   }
 
@@ -136,7 +137,7 @@ export class WebpackBundler {
         })
 
         // Reload renderer if available
-        nuxt.server.loadResources(this.mfs || fs)
+        nuxt.server.loadResources(this.mfs)
 
         // Resolve on next tick
         process.nextTick(resolve)

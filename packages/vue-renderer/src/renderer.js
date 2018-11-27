@@ -1,6 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs from 'fs-extra'
+import fs, { readFile, exists } from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import invert from 'lodash/invert'
@@ -109,19 +109,24 @@ export default class VueRenderer {
     const updated = []
     const resourceMap = this.resourceMap
 
-    const readResource = (fileName) => {
-      const fullPath = path.resolve(distPath, fileName)
-      if (!_fs.existsSync(fullPath)) {
-        return
+    const readResource = async (fileName) => {
+      try {
+        const fullPath = path.resolve(distPath, fileName)
+        if (!await _fs.exists(fullPath)) {
+          return
+        }
+        const contents = await _fs.readFile(fullPath, 'utf-8')
+        return contents
+      } catch (err) {
+        consola.error('Unable to load resource:', fileName, err)
       }
-      return _fs.readFileSync(fullPath, 'utf-8')
     }
 
     for (const resourceName in resourceMap) {
       const { fileName, transform } = resourceMap[resourceName]
 
       // Load resource
-      let resource = readResource(fileName)
+      let resource = await readResource(fileName)
 
       // TODO: Enable baack when renderer initialzation was disabled for build only scripts
       // Fail when no build found and using programmatic usage
@@ -140,27 +145,26 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof transform === 'function') {
-        resource = await transform(resource, { distPath, _fs })
+        resource = await transform(resource, { readResource })
       }
 
       // Update resource
-      consola.debug('Resource loaded:', resourceName)
       this.context.resources[resourceName] = resource
       updated.push(resourceName)
     }
 
     // Reload error template
     const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
-    if (fs.existsSync(errorTemplatePath)) {
+    if (await exists(errorTemplatePath)) {
       this.context.resources.errorTemplate = this.parseTemplate(
-        fs.readFileSync(errorTemplatePath, 'utf8')
+        await readFile(errorTemplatePath, 'utf8')
       )
     }
 
     // Load loading template
     const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
-    if (fs.existsSync(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
+    if (await exists(loadingHTMLPath)) {
+      this.context.resources.loadingHTML = await readFile(loadingHTMLPath, 'utf8')
       this.context.resources.loadingHTML = this.context.resources.loadingHTML
         .replace(/\r|\n|[\t\s]{3,}/g, '')
     } else {
@@ -168,10 +172,11 @@ export default class VueRenderer {
     }
 
     // Call resourcesLoaded hook
+    consola.debug('Resources loaded:', updated)
     await this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
 
     if (updated.length > 0) {
-      this.createRenderer()
+      await this.createRenderer()
     }
   }
 
@@ -203,7 +208,7 @@ export default class VueRenderer {
     return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverManifest)
   }
 
-  createRenderer() {
+  async createRenderer() {
     // Ensure resources are available
     if (!this.isResourcesAvailable) {
       return
@@ -217,7 +222,7 @@ export default class VueRenderer {
       return
     }
 
-    const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+    const hasModules = await exists(path.resolve(this.context.options.rootDir, 'node_modules'))
     const rendererOptions = {
       runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
@@ -371,13 +376,12 @@ export default class VueRenderer {
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        async transform(src, { distPath, _fs }) {
+        async transform(src, { readResource }) {
           const serverManifest = JSON.parse(src)
 
           const resolveAssets = async (m) => {
             await Promise.all(Object.keys(m).map(async (name) => {
-              const contents = await _fs.readFileSync(path.resolve(distPath, m[name]), 'utf-8')
-              m[name] = contents
+              m[name] = await readResource(m[name])
             }))
             return m
           }
