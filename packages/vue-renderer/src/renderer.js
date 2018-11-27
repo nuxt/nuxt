@@ -25,7 +25,7 @@ export default class VueRenderer {
     Object.assign(this.context.resources, {
       clientManifest: null,
       modernManifest: null,
-      server: null,
+      serverManifest: null,
       ssrTemplate: null,
       spaTemplate: null,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
@@ -126,14 +126,14 @@ export default class VueRenderer {
         //   }
         // }
         consola.debug('Resource not available:', key)
-        continue // No changes
+        continue
       }
 
       // Load resource
       let resource = null
 
       if (meta.require) {
-        resource = require.resolve(filePath)
+        resource = require(filePath)
       } else {
         // Read file
         resource = _fs.readFileSync(filePath, 'utf8')
@@ -141,11 +141,11 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof meta.transform === 'function') {
-        resource = meta.transform(resource)
+        resource = await meta.transform(resource, { distPath, _fs })
       }
 
       // Update resource
-      consola.debug('Resource loaded:', key, resource)
+      consola.debug('Resource loaded:', key)
       this.context.resources[key] = resource
       updated.push(key)
     }
@@ -201,7 +201,7 @@ export default class VueRenderer {
     }
 
     // Required for bundle renderer
-    return Boolean(this.context.resources.ssrTemplate && this.context.resources.server)
+    return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverManifest)
   }
 
   createRenderer() {
@@ -229,14 +229,14 @@ export default class VueRenderer {
 
     // Create bundle renderer for SSR
     this.renderer.ssr = createBundleRenderer(
-      this.context.resources.serverBundle,
+      this.context.resources.serverManifest,
       rendererOptions
     )
 
     if (this.context.resources.modernManifest &&
       !['client', false].includes(this.context.options.modern)) {
       this.renderer.modern = createBundleRenderer(
-        this.context.resources.serverBundle,
+        this.context.resources.serverManifest,
         {
           ...rendererOptions,
           clientManifest: this.context.resources.modernManifest
@@ -369,9 +369,31 @@ export default class VueRenderer {
         fileName: 'server-modern-manifest.js',
         require: true
       },
-      server: {
-        fileName: 'server.js',
-        require: true
+      serverManifest: {
+        fileName: 'server-manifest.js',
+        require: true,
+        // BundleRenderer needs resolved contents
+        async transform(serverManifest, { distPath, _fs }) {
+          const resolveAssets = async (m) => {
+            m = Object.assign({}, m)
+            await Promise.all(Object.keys(m).map(async (name) => {
+              const contents = await _fs.readFileSync(path.resolve(distPath, m[name]), 'utf-8')
+              m[name] = contents
+            }))
+            return m
+          }
+
+          const [files, maps] = await Promise.all([
+            resolveAssets(serverManifest.files),
+            resolveAssets(serverManifest.maps)
+          ])
+
+          return {
+            ...serverManifest,
+            files,
+            maps
+          }
+        }
       },
       ssrTemplate: {
         fileName: 'index.ssr.html',

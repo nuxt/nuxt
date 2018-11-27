@@ -4,6 +4,8 @@ import webpack from 'webpack'
 import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
+import VueSSRServerPlugin from '../plugins/vue/server'
+
 import WebpackBaseConfig from './base'
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
@@ -51,6 +53,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   plugins() {
     const plugins = super.plugins()
     plugins.push(
+      new VueSSRServerPlugin({
+        filename: 'server-manifest.js'
+      }),
       new webpack.DefinePlugin(this.env())
     )
     return plugins

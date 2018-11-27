@@ -118,6 +118,6 @@ const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async fu
   // TODO: restore to if after https://github.com/istanbuljs/nyc/issues/595 fixed
   /* istanbul ignore next */
   if (!frame.contents) {
-    frame.contents = resources.serverBundle.files[frame.fileName]
+    frame.contents = resources.serverManifest.files[frame.fileName]
   }
 }
