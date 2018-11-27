@@ -57,7 +57,7 @@ export default class Listener {
     // Listen server error
     /* istanbul ignore next */
     this._server.on('error', (e) => {
-      consola.fatal(e.message)
+      consola.error(e)
     })
 
     // Prepare listenArgs
