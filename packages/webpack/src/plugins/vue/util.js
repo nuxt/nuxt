@@ -1,3 +1,8 @@
+/**
+ * This file is based on Vue.js (MIT) webpack plugins
+ * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
+ */
+
 import consola from 'consola'
 
 export const validate = (compiler) => {

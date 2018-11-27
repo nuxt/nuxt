@@ -1,3 +1,8 @@
+/**
+ * This file is based on Vue.js (MIT) webpack plugins
+ * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
+ */
+
 import hash from 'hash-sum'
 import uniq from 'lodash/uniq'
 
@@ -62,12 +67,6 @@ export default class VueSSRClientPlugin {
           })
         }
       })
-
-      // const debug = (file, obj) => {
-      //   require('fs').writeFileSync(__dirname + '/' + file, JSON.stringify(obj, null, 2))
-      // }
-      // debug('stats.json', stats)
-      // debug('client-manifest.json', manifest)
 
       const json = JSON.stringify(manifest, null, 2)
       compilation.assets[this.options.filename] = {
