@@ -111,8 +111,8 @@ export default class SPAMetaRenderer {
     // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
     meta.getPreloadFiles = () =>
       clientManifest.initial
-        .filter(file => shouldPreload(file))
         .map(SPAMetaRenderer.normalizeFile)
+        .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
 
     // Set meta tags inside cache
     this.cache.set(url, meta)
