@@ -9,7 +9,7 @@ export default {
         'LICENSE'
       ])
 
-      await pkg.copyFieldsFrom(nuxt, [
+      pkg.copyFieldsFrom(nuxt, [
         'license',
         'repository',
         'contributors',
