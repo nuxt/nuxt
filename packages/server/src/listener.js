@@ -78,9 +78,7 @@ export default class Listener {
       this._server.close()
       this.port = await getPort()
 
-      await this.serverListen()
-
-      return
+      return await this.serverListen()
     }
 
     consola.error(e)
