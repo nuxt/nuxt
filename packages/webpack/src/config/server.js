@@ -54,7 +54,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const plugins = super.plugins()
     plugins.push(
       new VueSSRServerPlugin({
-        filename: 'server-manifest.js'
+        filename: `${this.name}.manifest.json`
       }),
       new webpack.DefinePlugin(this.env())
     )

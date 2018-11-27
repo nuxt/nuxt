@@ -69,7 +69,7 @@ export default class VueSSRClientPlugin {
         }
       })
 
-      const src = `module.exports = ${JSON.stringify(manifest, null, 2)}`
+      const src = JSON.stringify(manifest, null, 2)
 
       compilation.assets[this.options.filename] = {
         source: () => src,

@@ -50,10 +50,9 @@ export default class VueSSRServerPlugin {
         }
       })
 
-      const src = `module.exports = ${JSON.stringify(bundle, null, 2)}`
-      const filename = this.options.filename
+      const src = JSON.stringify(bundle, null, 2)
 
-      compilation.assets[filename] = {
+      compilation.assets[this.options.filename] = {
         source: () => src,
         size: () => src.length
       }

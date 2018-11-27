@@ -109,15 +109,24 @@ export default class VueRenderer {
     const updated = []
     const resourceMap = this.resourceMap
 
-    for (const key in resourceMap) {
-      const meta = resourceMap[key]
-      const filePath = path.join(distPath, meta.fileName)
+    const readResource = (fileName) => {
+      const fullPath = path.resolve(distPath, fileName)
+      if (!_fs.existsSync(fullPath)) {
+        return
+      }
+      return _fs.readFileSync(fullPath, 'utf-8')
+    }
 
-      // Resource not exists
-      if (!_fs.existsSync(filePath)) {
-        // TODO: Enable baack when renderer initialzation was disabled for build only scripts
-        // Fail when no build found and using programmatic usage
-        // Currently this breaks normal nuxt build for first time
+    for (const resourceName in resourceMap) {
+      const { fileName, transform } = resourceMap[resourceName]
+
+      // Load resource
+      let resource = readResource(fileName)
+
+      // TODO: Enable baack when renderer initialzation was disabled for build only scripts
+      // Fail when no build found and using programmatic usage
+      // Currently this breaks normal nuxt build for first time
+      if (!resource) {
         // if (!this.context.options.dev) {
         //   const invalidSSR = !this.noSSR && key === 'server'
         //   const invalidSPA = this.noSSR && key === 'spaTemplate'
@@ -125,29 +134,19 @@ export default class VueRenderer {
         //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
         //   }
         // }
-        consola.debug('Resource not available:', key)
+        consola.debug('Resource not available:', resourceName)
         continue
       }
 
-      // Load resource
-      let resource = null
-
-      if (meta.require) {
-        resource = require(filePath)
-      } else {
-        // Read file
-        resource = _fs.readFileSync(filePath, 'utf8')
-      }
-
       // Apply transforms
-      if (typeof meta.transform === 'function') {
-        resource = await meta.transform(resource, { distPath, _fs })
+      if (typeof transform === 'function') {
+        resource = await transform(resource, { distPath, _fs })
       }
 
       // Update resource
-      consola.debug('Resource loaded:', key)
-      this.context.resources[key] = resource
-      updated.push(key)
+      consola.debug('Resource loaded:', resourceName)
+      this.context.resources[resourceName] = resource
+      updated.push(resourceName)
     }
 
     // Reload error template
@@ -362,20 +361,20 @@ export default class VueRenderer {
   get resourceMap() {
     return {
       clientManifest: {
-        fileName: 'server-client-manifest.js',
-        require: true
+        fileName: 'client.manifest.json',
+        transform: src => JSON.parse(src)
       },
       modernManifest: {
-        fileName: 'server-modern-manifest.js',
-        require: true
+        fileName: 'modern.manifest.json',
+        transform: src => JSON.parse(src)
       },
       serverManifest: {
-        fileName: 'server-manifest.js',
-        require: true,
+        fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        async transform(serverManifest, { distPath, _fs }) {
+        async transform(src, { distPath, _fs }) {
+          const serverManifest = JSON.parse(src)
+
           const resolveAssets = async (m) => {
-            m = Object.assign({}, m)
             await Promise.all(Object.keys(m).map(async (name) => {
               const contents = await _fs.readFileSync(path.resolve(distPath, m[name]), 'utf-8')
               m[name] = contents
@@ -397,11 +396,11 @@ export default class VueRenderer {
       },
       ssrTemplate: {
         fileName: 'index.ssr.html',
-        transform: this.parseTemplate
+        transform: src => this.parseTemplate(src)
       },
       spaTemplate: {
         fileName: 'index.spa.html',
-        transform: this.parseTemplate
+        transform: src => this.parseTemplate(src)
       }
     }
   }
