@@ -18,16 +18,15 @@
 import Vue from 'vue'
 import Component from 'nuxt-class-component'
 import { Prop } from 'vue-property-decorator'
-import { Action, namespace } from 'vuex-class'
+import { namespace } from 'vuex-class'
 
 import * as people from '~/store/modules/people'
 
-const PeopleAction = namespace(people.name, Action)
+const People = namespace(people.name)
 
-export default
 @Component({})
-class Card extends Vue {
+export default class Card extends Vue {
   @Prop() person
-  @PeopleAction select
+  @People.Action select
 }
 </script>
