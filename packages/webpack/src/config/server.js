@@ -29,7 +29,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   devtool() {
-    return 'cheap-module-inline-source-map'
+    return 'cheap-module-source-map'
   }
 
   env() {
