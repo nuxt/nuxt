@@ -10,16 +10,33 @@ import { interopDefault } from './utils'
   routes.forEach((route, i) => {
     if(route.components) {
       let _name = '_' + hash(route.components.default)
-      resMap += firstIndent + tab + 'default: ' + (splitChunks.pages ? _name : `() => ${_name}.default || ${_name}`)
-      Object.keys(route.components).map(function(k){
+      if (splitChunks.pages) {
+        resMap += `${firstIndent}${tab}default: ${_name}`
+      } else {
+        resMap += `${firstIndent}${tab}default: () => ${_name}.default || ${_name}`
+      }
+      for (const k in route.components) {
         _name = '_' + hash(route.components[k])
+        const cmpnnt = { _name, component: route.components[k] }
         if (k === 'default') {
-          components.push({_name: _name, component: route.components[k], name: route.name, chunkName: route.chunkName})
+          components.push({
+            ...cmpnnt,
+            name: route.name,
+            chunkName: route.chunkName
+          })
         } else {
-          components.push({_name: _name, component: route.components[k], name: route.name + '-' + k, chunkName: route.chunkNames[k]})
-          resMap += nextIndent + tab + k + ': ' + (splitChunks.pages ? _name : `() => ${_name}.default || ${_name}`)
+          components.push({
+            ...cmpnnt,
+            name: `${route.name}-${k}`,
+            chunkName: route.chunkNames[k]
+          })
+          if (splitChunks.pages) {
+            resMap += `${nextIndent}${tab}${k}: ${_name}`
+          } else {
+            resMap += `${nextIndent}${tab}${k}: () => ${_name}.default || ${_name}`
+          }
         }
-      });
+      }
       route.component = false
     } else {
       route._name = '_' + hash(route.component)
