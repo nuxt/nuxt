@@ -72,7 +72,7 @@ export default class Listener {
   }
 
   async serverErrorHandler(e) {
-    if (e.code === 'EADDRINUSE') {
+    if(e.code === 'EADDRINUSE') {
       consola.warn(`Address \`${this.host}:${this.port}\` is already in use.`)
 
       this._server.close()
