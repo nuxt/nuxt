@@ -5,7 +5,6 @@ import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
 import WebpackBaseConfig from './base'
-import VueSSRServerPlugin from './plugins/vue/server'
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor(builder) {
@@ -52,9 +51,6 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   plugins() {
     const plugins = super.plugins()
     plugins.push(
-      new VueSSRServerPlugin({
-        filename: 'server-bundle.json'
-      }),
       new webpack.DefinePlugin(this.env())
     )
     return plugins
