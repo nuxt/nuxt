@@ -1,6 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs, { readFile, exists } from 'fs-extra'
+import fs, { readFileSync, existsSync } from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import invert from 'lodash/invert'
@@ -102,20 +102,21 @@ export default class VueRenderer {
     if (!this.context.options.dev) {
       await this.loadResources()
     }
+    this._ready = true
   }
 
-  async loadResources(_fs = fs) {
+  loadResources(_fs = fs) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
     const resourceMap = this.resourceMap
 
-    const readResource = async (fileName) => {
+    const readResource = (fileName) => {
       try {
         const fullPath = path.resolve(distPath, fileName)
-        if (!await _fs.exists(fullPath)) {
+        if (!_fs.existsSync(fullPath)) {
           return
         }
-        const contents = await _fs.readFile(fullPath, 'utf-8')
+        const contents = _fs.readFileSync(fullPath, 'utf-8')
         return contents
       } catch (err) {
         consola.error('Unable to load resource:', fileName, err)
@@ -126,7 +127,7 @@ export default class VueRenderer {
       const { fileName, transform } = resourceMap[resourceName]
 
       // Load resource
-      let resource = await readResource(fileName)
+      let resource = readResource(fileName)
 
       // TODO: Enable baack when renderer initialzation was disabled for build only scripts
       // Fail when no build found and using programmatic usage
@@ -145,7 +146,7 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof transform === 'function') {
-        resource = await transform(resource, { readResource })
+        resource = transform(resource, { readResource })
       }
 
       // Update resource
@@ -155,29 +156,29 @@ export default class VueRenderer {
 
     // Reload error template
     const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
-    if (await exists(errorTemplatePath)) {
+    if (existsSync(errorTemplatePath)) {
       this.context.resources.errorTemplate = this.parseTemplate(
-        await readFile(errorTemplatePath, 'utf8')
+        readFileSync(errorTemplatePath, 'utf8')
       )
     }
 
     // Load loading template
     const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
-    if (await exists(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = await readFile(loadingHTMLPath, 'utf8')
+    if (existsSync(loadingHTMLPath)) {
+      this.context.resources.loadingHTML = readFileSync(loadingHTMLPath, 'utf8')
       this.context.resources.loadingHTML = this.context.resources.loadingHTML
         .replace(/\r|\n|[\t\s]{3,}/g, '')
     } else {
       this.context.resources.loadingHTML = ''
     }
 
+    if (updated.length > 0) {
+      this.createRenderer()
+    }
+
     // Call resourcesLoaded hook
     consola.debug('Resources loaded:', updated)
-    await this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
-
-    if (updated.length > 0) {
-      await this.createRenderer()
-    }
+    return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
   get noSSR() {
@@ -185,6 +186,10 @@ export default class VueRenderer {
   }
 
   get isReady() {
+    if (!this._ready) {
+      return false
+    }
+
     if (this.noSSR) {
       return Boolean(this.context.resources.spaTemplate)
     }
@@ -208,7 +213,7 @@ export default class VueRenderer {
     return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverManifest)
   }
 
-  async createRenderer() {
+  createRenderer() {
     // Ensure resources are available
     if (!this.isResourcesAvailable) {
       return
@@ -222,7 +227,7 @@ export default class VueRenderer {
       return
     }
 
-    const hasModules = await exists(path.resolve(this.context.options.rootDir, 'node_modules'))
+    const hasModules = existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
     const rendererOptions = {
       runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
@@ -376,20 +381,18 @@ export default class VueRenderer {
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        async transform(src, { readResource }) {
+        transform(src, { readResource }) {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = async (m) => {
-            await Promise.all(Object.keys(m).map(async (name) => {
-              m[name] = await readResource(m[name])
-            }))
+          const resolveAssets = (m) => {
+            Object.keys(m).forEach((name) => {
+              m[name] = readResource(m[name])
+            })
             return m
           }
 
-          const [files, maps] = await Promise.all([
-            resolveAssets(serverManifest.files),
-            resolveAssets(serverManifest.maps)
-          ])
+          const files = resolveAssets(serverManifest.files)
+          const maps = resolveAssets(serverManifest.maps)
 
           return {
             ...serverManifest,
