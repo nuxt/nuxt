@@ -35,7 +35,7 @@ export default {
 
     // Check if SSR Bundle is required
     if (nuxt.options.render.ssr === true) {
-      const ssrBundlePath = path.resolve(distDir, 'server.js')
+      const ssrBundlePath = path.resolve(distDir, 'server.manifest.json')
       if (!fs.existsSync(ssrBundlePath)) {
         consola.fatal(
           'No SSR build found.\nPlease start with `nuxt start --spa` or build using `nuxt build --universal`'
