@@ -55,10 +55,7 @@ export default class Listener {
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
     // Listen server error
-    /* istanbul ignore next */
-    this._server.on('error', (e) => {
-      consola.error(e)
-    })
+    this._server.on('error', this.errorHandler)
 
     // Prepare listenArgs
     const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
@@ -77,5 +74,15 @@ export default class Listener {
 
     // Set this.listening to true
     this.listening = true
+  }
+  
+  errorHandler(e) {
+    const errors = {
+      EACCES: 'Permission denied. Does your user have permission?',
+      EADDRINUSE: `Address \`${this.host}:${this.port}\` is already in use. Do you run another service on the same port?`,
+      EDQUOT: 'Disk quota exceeded. Do you have space in disk?'
+    };
+    
+    consola.error(errors[e.code] || e);
   }
 }
