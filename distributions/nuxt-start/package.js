@@ -1,15 +1,15 @@
 export default {
   build: true,
-  extend(pkg, { load }) {
-    pkg.on('build:done', () => {
-      const mono = load('../..')
-      const nuxt = load('../nuxt')
+  hooks: {
+    async 'build:done'(pkg) {
+      const mono = pkg.load('../..')
+      const nuxt = pkg.load('../nuxt')
 
-      pkg.copyFilesFrom(mono, [
+      await pkg.copyFilesFrom(mono, [
         'LICENSE'
       ])
 
-      pkg.copyFieldsFrom(nuxt, [
+      await pkg.copyFieldsFrom(nuxt, [
         'license',
         'repository',
         'contributors',
@@ -17,7 +17,7 @@ export default {
         'engines'
       ])
 
-      pkg.writePackage()
-    })
+      await pkg.writePackage()
+    }
   }
 }
