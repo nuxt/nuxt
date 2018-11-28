@@ -99,10 +99,8 @@ export function getNuxtConfig(_options) {
 
   // Populate modulesDir
   options.modulesDir = uniq([]
-    .concat(options.modulesDir)
-    .concat((require.main || require).paths)
-    .filter(isNonEmptyString)
-    .map(dir => path.resolve(options.rootDir, dir))
+    .concat(options.modulesDir.map(dir => path.resolve(options.rootDir, dir)))
+    .concat(require.main.paths)
   )
 
   const mandatoryExtensions = ['js', 'mjs']
