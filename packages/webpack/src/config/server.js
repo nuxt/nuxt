@@ -3,6 +3,7 @@ import fs from 'fs'
 import webpack from 'webpack'
 import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
+import TerserWebpackPlugin from 'terser-webpack-plugin'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
 
@@ -45,8 +46,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
   optimization() {
     return {
-      splitChunks: false,
-      minimizer: []
+      splitChunks: false
     }
   }
 
@@ -59,6 +59,27 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       new webpack.DefinePlugin(this.env())
     )
     return plugins
+  }
+
+  extendConfig() {
+    const config = super.extendConfig(...arguments)
+
+    // Add minimizer plugins
+    if (config.optimization.minimize && config.optimization.minimizer === undefined) {
+      config.optimization.minimizer = []
+      // https://github.com/webpack-contrib/terser-webpack-plugin
+      if (this.options.build.terser) {
+        config.optimization.minimizer.push(
+          new TerserWebpackPlugin(Object.assign({
+            parallel: true,
+            cache: this.options.build.cache,
+            sourceMap: config.devtool && /source-?map/.test(config.devtool)
+          }, this.options.build.terser))
+        )
+      }
+    }
+
+    return config
   }
 
   config() {
