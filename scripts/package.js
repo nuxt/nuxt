@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import consola from 'consola'
-import { spawn } from 'cross-spawn'
+import spawn from 'cross-spawn'
 import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
@@ -307,8 +307,8 @@ export default class Package {
     }
   }
 
-  async exec(command, args, silent = false) {
-    const r = await spawn(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
+  exec(command, args, silent = false) {
+    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
@@ -333,13 +333,13 @@ export default class Package {
     }
   }
 
-  async gitShortCommit() {
-    const { stdout } = await this.exec('git', 'rev-parse --short HEAD', true)
+  gitShortCommit() {
+    const { stdout } = this.exec('git', 'rev-parse --short HEAD', true)
     return stdout
   }
 
-  async gitBranch() {
-    const { stdout } = await this.exec('git', 'rev-parse --abbrev-ref HEAD', true)
+  gitBranch() {
+    const { stdout } = this.exec('git', 'rev-parse --abbrev-ref HEAD', true)
     return stdout
   }
 }
