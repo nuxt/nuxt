@@ -4,7 +4,6 @@ import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'
 import pify from 'pify'
-import getPort from 'get-port'
 
 export default class Listener {
   constructor({ port, host, socket, https, app }) {
@@ -76,7 +75,7 @@ export default class Listener {
       consola.warn(`Address \`${this.host}:${this.port}\` is already in use.`)
 
       this._server.close()
-      this.port = await getPort()
+      this.port = '0'
 
       await this.serverListen()
 
