@@ -137,7 +137,7 @@ export class WebpackBundler {
         })
 
         // Reload renderer if available
-        await nuxt.server.loadResources(this.mfs)
+        await nuxt.callHook('build:resources', this.mfs)
 
         // Resolve on next tick
         process.nextTick(resolve)

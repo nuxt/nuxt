@@ -1,6 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs, { readFileSync, existsSync } from 'fs-extra'
+import fs from 'fs'
 import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import invert from 'lodash/invert'
@@ -16,18 +16,18 @@ export default class VueRenderer {
 
     // Will be set by createRenderer
     this.renderer = {
-      ssr: null,
-      modern: null,
-      spa: null
+      ssr: undefined,
+      modern: undefined,
+      spa: undefined
     }
 
     // Renderer runtime resources
     Object.assign(this.context.resources, {
-      clientManifest: null,
-      modernManifest: null,
-      serverManifest: null,
-      ssrTemplate: null,
-      spaTemplate: null,
+      clientManifest: undefined,
+      modernManifest: undefined,
+      serverManifest: undefined,
+      ssrTemplate: undefined,
+      spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
   }
@@ -98,14 +98,17 @@ export default class VueRenderer {
   }
 
   async ready() {
-    // Production: Load SSR resources from fs
     if (!this.context.options.dev) {
-      await this.loadResources()
+      // Production: Load SSR resources from fs
+      await this.loadResources(fs)
+    } else {
+      // Development: Listen on build:resources hook
+      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
     }
     this._ready = true
   }
 
-  loadResources(_fs = fs) {
+  loadResources(_fs, isMFS = false) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
     const resourceMap = this.resourceMap
@@ -117,6 +120,10 @@ export default class VueRenderer {
           return
         }
         const contents = _fs.readFileSync(fullPath, 'utf-8')
+        if (isMFS) {
+          // Cleanup MFS as soon as possible to save memory
+          _fs.unlinkSync(fullPath)
+        }
         return contents
       } catch (err) {
         consola.error('Unable to load resource:', fileName, err)
@@ -146,7 +153,10 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof transform === 'function') {
-        resource = transform(resource, { readResource })
+        resource = transform(resource, {
+          readResource,
+          oldValue: this.context.resources[resourceName]
+        })
       }
 
       // Update resource
@@ -156,16 +166,16 @@ export default class VueRenderer {
 
     // Reload error template
     const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
-    if (existsSync(errorTemplatePath)) {
+    if (fs.existsSync(errorTemplatePath)) {
       this.context.resources.errorTemplate = this.parseTemplate(
-        readFileSync(errorTemplatePath, 'utf8')
+        fs.readFileSync(errorTemplatePath, 'utf8')
       )
     }
 
     // Load loading template
     const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
-    if (existsSync(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = readFileSync(loadingHTMLPath, 'utf8')
+    if (fs.existsSync(loadingHTMLPath)) {
+      this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
       this.context.resources.loadingHTML = this.context.resources.loadingHTML
         .replace(/\r|\n|[\t\s]{3,}/g, '')
     } else {
@@ -227,7 +237,7 @@ export default class VueRenderer {
       return
     }
 
-    const hasModules = existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+    const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
     const rendererOptions = {
       runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
@@ -381,18 +391,22 @@ export default class VueRenderer {
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        transform(src, { readResource }) {
+        transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = (m) => {
-            Object.keys(m).forEach((name) => {
-              m[name] = readResource(m[name])
+          const resolveAssets = (obj, oldObj) => {
+            Object.keys(obj).forEach((name) => {
+              obj[name] = readResource(obj[name])
+              // Try to reuse deleted MFS files if no new version exists
+              if (!obj[name]) {
+                obj[name] = oldObj[name]
+              }
             })
-            return m
+            return obj
           }
 
-          const files = resolveAssets(serverManifest.files)
-          const maps = resolveAssets(serverManifest.maps)
+          const files = resolveAssets(serverManifest.files, oldValue.files)
+          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
 
           return {
             ...serverManifest,
