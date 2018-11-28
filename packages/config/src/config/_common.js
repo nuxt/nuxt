@@ -1,5 +1,3 @@
-import path from 'path'
-import fs from 'fs'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 
