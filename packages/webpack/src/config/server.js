@@ -45,8 +45,12 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   optimization() {
+    const optimization = super.optimization()
+
     return {
-      splitChunks: false
+      splitChunks: false,
+      minimize: optimization.minimize,
+      minimizer: optimization.minimizer
     }
   }
 
