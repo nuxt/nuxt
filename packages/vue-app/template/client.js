@@ -145,7 +145,7 @@ async function loadAsyncComponents(to, from, next) {
     // Call next()
     next()
   } catch (err) {
-    this.error(err)
+    const error = this.error(err)
     this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
     next(false)
   }
