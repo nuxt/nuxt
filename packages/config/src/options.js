@@ -100,7 +100,7 @@ export function getNuxtConfig(_options) {
   // Populate modulesDir
   options.modulesDir = uniq([]
     .concat(options.modulesDir)
-    .concat(path.join(process.cwd(), 'node_modules'))
+    .concat(module.paths)
     .filter(isNonEmptyString)
     .map(dir => path.resolve(options.rootDir, dir))
   )
