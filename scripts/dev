@@ -23,12 +23,12 @@ const _require = esm(module, {
 })
 
 module.exports = _require('../src/index')
-`}
+` }
 
 async function main() {
   // Read package at current directory
   const rootPackage = new Package()
-  const workspacePackages = rootPackage.getWorkspacePackages()
+  const workspacePackages = await rootPackage.getWorkspacePackages()
 
   // Create a dev-only entrypoint to the src
   for (const pkg of workspacePackages) {

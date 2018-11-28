@@ -2,12 +2,12 @@
   "version": "1.0.1",
   "private": true,
   "dependencies": {
-    "axios": "^0.17.1",
-    "nuxt-edge": "latest",
+    "axios": "^0.18.0",
     "nuxt-class-component": "^1.1.3",
+    "nuxt-edge": "latest",
     "tachyons": "^4.9.1",
-    "vue-property-decorator": "^6.0.0",
-    "vuex-class": "^0.3.0"
+    "vue-property-decorator": "^7.2.0",
+    "vuex-class": "^0.3.1"
   },
   "scripts": {
     "dev": "nuxt",
@@ -16,7 +16,7 @@
     "generate": "nuxt generate"
   },
   "devDependencies": {
-    "ts-loader": "^3.2.0",
-    "typescript": "^2.6.2"
+    "ts-loader": "^5.3.1",
+    "typescript": "^3.1.6"
   }
 }

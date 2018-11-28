@@ -10,7 +10,7 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import modernMiddleware from './middleware/modern'
+import createModernMiddleware from './middleware/modern'
 
 export default class Server {
   constructor(nuxt) {
@@ -79,12 +79,13 @@ export default class Server {
       }
     }
 
-    if (this.options.modern === 'server') {
-      this.useMiddleware(modernMiddleware)
-    }
+    const modernMiddleware = createModernMiddleware({
+      context: this.renderer.context
+    })
 
     // Add webpack middleware support only for development
     if (this.options.dev) {
+      this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
         const name = req.modernMode ? 'modern' : 'client'
         if (this.devMiddleware[name]) {
@@ -124,6 +125,7 @@ export default class Server {
           this.options.render.dist
         )
       })
+      this.useMiddleware(modernMiddleware)
     }
 
     // Add user provided middleware
