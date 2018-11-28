@@ -121,7 +121,7 @@ jobs:
             else
               echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              yarn lerna version --yes --skip-git
+              yarn lerna version --yes --no-git-tag-version --no-push
               PACKAGE_SUFFIX=edge yarn build
               ./scripts/workspace-run npm publish -q
             fi
