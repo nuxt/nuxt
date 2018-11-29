@@ -102,9 +102,8 @@ export default class Listener {
     if (addressInUse && this.dev && this.port !== '0') {
       consola.warn(error.message)
       consola.info('Trying a random port...')
-      this._server.close()
       this.port = '0'
-      return this.listen()
+      return this.close().then(() => this.listen())
     }
 
     // Throw error
