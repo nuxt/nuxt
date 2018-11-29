@@ -6,13 +6,14 @@ import consola from 'consola'
 import pify from 'pify'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app }) {
+  constructor({ port, host, socket, https, app, dev }) {
     // Options
     this.port = port
     this.host = host
     this.socket = socket
     this.https = https
     this.app = app
+    this.dev = dev
 
     // After listen
     this.listening = false
@@ -72,7 +73,7 @@ export default class Listener {
   }
 
   async serverErrorHandler(e) {
-    if (process.env.NODE_ENV === 'production') {
+    if (!this.dev) {
       return consola.fatal(e)
     }
 
