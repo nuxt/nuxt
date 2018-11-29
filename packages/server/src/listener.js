@@ -6,14 +6,13 @@ import consola from 'consola'
 import pify from 'pify'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app, dev }) {
+  constructor({ port, host, socket, https, app }) {
     // Options
     this.port = port
     this.host = host
     this.socket = socket
     this.https = https
     this.app = app
-    this.dev = dev
 
     // After listen
     this.listening = false
@@ -25,10 +24,17 @@ export default class Listener {
 
   async close() {
     // Destroy server by forcing every connection to be closed
-    if (this.server.listening) {
+    if (this.server && this.server.listening) {
       await this.server.destroy()
       consola.debug('server closed')
     }
+
+    // Delete references
+    this.listening = false
+    this._server = null
+    this.server = null
+    this.address = null
+    this.url = null
   }
 
   computeURL() {
@@ -38,7 +44,6 @@ export default class Listener {
         case '127.0.0.1': this.host = 'localhost'; break
         case '0.0.0.0': this.host = ip.address(); break
       }
-      this.port = address.port
       this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}`
       return
     }
@@ -56,11 +61,14 @@ export default class Listener {
     const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
-    // Listen server error
-    this._server.on('error', this.serverErrorHandler.bind(this))
+    // Prepare listenArgs
+    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    listenArgs.exclusive = false
 
     // Call server.listen
-    await this.serverListen()
+    this.server = await new Promise((resolve, reject) => {
+      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+    })
 
     // Enable destroy support
     enableDestroy(this.server)
@@ -70,35 +78,5 @@ export default class Listener {
 
     // Set this.listening to true
     this.listening = true
-  }
-
-  async serverErrorHandler(e) {
-    if (!this.dev) {
-      return consola.fatal(e)
-    }
-
-    if (e.code === 'EADDRINUSE') {
-      consola.warn(`Address \`${this.host}:${this.port}\` is already in use.`)
-
-      this._server.close()
-      this.port = '0'
-
-      await this.serverListen()
-
-      return
-    }
-
-    consola.error(e)
-  }
-
-  async serverListen() {
-    // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
-    listenArgs.exclusive = false
-
-    // Call server.listen
-    this.server = await new Promise((resolve, reject) => {
-      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
-    })
   }
 }
