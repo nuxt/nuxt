@@ -72,6 +72,10 @@ export default class Listener {
   }
 
   async serverErrorHandler(e) {
+    if (process.env.NODE_ENV === 'production') {
+      return consola.fatal(e)
+    }
+
     if (e.code === 'EADDRINUSE') {
       consola.warn(`Address \`${this.host}:${this.port}\` is already in use.`)
 
