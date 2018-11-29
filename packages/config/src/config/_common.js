@@ -1,5 +1,3 @@
-import path from 'path'
-import fs from 'fs'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 
@@ -31,9 +29,6 @@ export default () => ({
   // Dirs and extensions
   srcDir: undefined,
   buildDir: '.nuxt',
-  nuxtDir: fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
-    ? path.resolve(__dirname, '..', '..') // src
-    : path.resolve(__dirname, '..'), // dist
   modulesDir: [
     'node_modules'
   ],
