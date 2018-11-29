@@ -104,7 +104,7 @@ export default class Listener {
       consola.info('Trying a random port...')
       this._server.close()
       this.port = '0'
-      return this.serverListen()
+      return this.listen()
     }
 
     // Throw error
