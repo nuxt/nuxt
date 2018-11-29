@@ -98,17 +98,15 @@ export default class Listener {
     }
 
     // Listen to a random port on dev as a fallback
-    if (this.dev && this.port !== '0') {
+    if (addressInUse && this.dev && this.port !== '0') {
+      consola.warn(error.message)
+      consola.info('Trying a random port...')
       this._server.close()
       this.port = '0'
       return this.serverListen()
     }
 
-    // Report error to the user
-    if (this.dev) {
-      consola.warn(error)
-    } else {
-      consola.fatal(error)
-    }
+    // Throw error
+    throw error
   }
 }
