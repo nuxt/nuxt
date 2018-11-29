@@ -6,13 +6,14 @@ import consola from 'consola'
 import pify from 'pify'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app }) {
+  constructor({ port, host, socket, https, app, dev }) {
     // Options
     this.port = port
     this.host = host
     this.socket = socket
     this.https = https
     this.app = app
+    this.dev = dev
 
     // After listen
     this.listening = false
@@ -59,33 +60,33 @@ export default class Listener {
 
     // Initialize underlying http(s) server
     const protocol = this.https ? https : http
-    const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
+    const protocolOpts = typeof this.https === 'object' ? [this.https] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
-    // Listen server error
-    this._server.on('error', this.serverErrorHandler.bind(this))
+    // Call server.listen
+    // Prepare listenArgs
+    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    listenArgs.exclusive = false
 
     // Call server.listen
-    await this.serverListen()
+    try {
+      this.server = await new Promise((resolve, reject) => {
+        this._server.on('error', error => reject(error))
+        const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+      })
+    } catch (error) {
+      return this.serverErrorHandler(error)
+    }
 
     // Enable destroy support
     enableDestroy(this.server)
     pify(this.server.destroy)
 
+    // Compute listen URL
     this.computeURL()
 
     // Set this.listening to true
     this.listening = true
-  }
-
-  async serverListen() {
-    // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
-    listenArgs.exclusive = false
-    // Call server.listen
-    this.server = await new Promise((resolve, reject) => {
-      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
-    })
   }
 
   serverErrorHandler(error) {
