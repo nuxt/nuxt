@@ -44,6 +44,7 @@ export default class Listener {
         case '127.0.0.1': this.host = 'localhost'; break
         case '0.0.0.0': this.host = ip.address(); break
       }
+      this.port = address.port
       this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}`
       return
     }
@@ -61,14 +62,11 @@ export default class Listener {
     const protocolOpts = typeof this.https === 'object' ? [ this.https ] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
-    // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
-    listenArgs.exclusive = false
+    // Listen server error
+    this._server.on('error', this.serverErrorHandler.bind(this))
 
     // Call server.listen
-    this.server = await new Promise((resolve, reject) => {
-      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
-    })
+    await this.serverListen()
 
     // Enable destroy support
     enableDestroy(this.server)
@@ -78,5 +76,39 @@ export default class Listener {
 
     // Set this.listening to true
     this.listening = true
+  }
+
+  async serverListen() {
+    // Prepare listenArgs
+    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    listenArgs.exclusive = false
+    // Call server.listen
+    this.server = await new Promise((resolve, reject) => {
+      const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+    })
+  }
+
+  serverErrorHandler(error) {
+    // Detect if port is not available
+    const addressInUse = error.code === 'EADDRINUSE'
+
+    // Use better error message
+    if (addressInUse) {
+      error.message = `Address \`${this.host}:${this.port}\` is already in use.`
+    }
+
+    // Listen to a random port on dev as a fallback
+    if (this.dev && this.port !== '0') {
+      this._server.close()
+      this.port = '0'
+      return this.serverListen()
+    }
+
+    // Report error to the user
+    if (this.dev) {
+      consola.warn(error)
+    } else {
+      consola.fatal(error)
+    }
   }
 }
