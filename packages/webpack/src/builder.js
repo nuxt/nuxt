@@ -84,7 +84,7 @@ export class WebpackBundler {
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
     }
-    Object.keys(styleResources).forEach(async (ext) => {
+    for (const ext of Object.keys(styleResources)) {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
         const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
@@ -92,7 +92,7 @@ export class WebpackBundler {
           throw new Error(`Style Resource not found: ${p}`)
         }
       }))
-    })
+    }
 
     // Configure compilers
     this.compilers = compilersOptions.map((compilersOption) => {

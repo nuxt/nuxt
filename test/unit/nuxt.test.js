@@ -52,15 +52,10 @@ describe('nuxt', () => {
     await expect(new Builder(nuxt).build()).rejects.toThrow('Plugin not found')
   })
 
-  test('Warn when styleResource isn\'t found', () => {
-    const nuxt = new Nuxt({
-      dev: false,
-      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-style-resource')
-    })
+  test('Warn when styleResource isn\'t found', async () => {
+    const config = await loadFixture('missing-style-resource')
+    const nuxt = new Nuxt(config)
 
-    return new Builder(nuxt).build().catch((err) => {
-      const s = String(err)
-      expect(s).toContain('Style Resource not found')
-    })
+    await expect(new Builder(nuxt).build()).rejects.toThrow('Style Resource not found')
   })
 })
