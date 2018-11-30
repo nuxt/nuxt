@@ -6,6 +6,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
@@ -96,7 +97,7 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  devtool() {
+  get devtool() {
     return false
   }
 
@@ -127,7 +128,44 @@ export default class WebpackBaseConfig {
   }
 
   optimization() {
-    return this.options.build.optimization
+    let optimization = this.options.build.optimization
+
+    if (optimization.minimize && optimization.minimizer === undefined) {
+      optimization = {
+        ...optimization,
+        minimizer: this.minimizer()
+      }
+    }
+
+    return optimization
+  }
+
+  minimizer() {
+    const minimizer = []
+
+    // https://github.com/webpack-contrib/terser-webpack-plugin
+    if (this.options.build.terser) {
+      minimizer.push(
+        new TerserWebpackPlugin(Object.assign({
+          parallel: true,
+          cache: this.options.build.cache,
+          sourceMap: this.devtool && /source-?map/.test(this.devtool),
+          extractComments: {
+            filename: 'LICENSES'
+          },
+          terserOptions: {
+            compress: {
+              ecma: this.isModern ? 6 : undefined
+            },
+            output: {
+              comments: /^\**!|@preserve|@license|@cc_on/
+            }
+          }
+        }, this.options.build.terser))
+      )
+    }
+
+    return minimizer
   }
 
   alias() {
@@ -337,10 +375,11 @@ export default class WebpackBaseConfig {
   config() {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
+
     const config = {
       name: this.name,
       mode: this.buildMode,
-      devtool: this.devtool(),
+      devtool: this.devtool,
       optimization: this.optimization(),
       output: this.output(),
       performance: {

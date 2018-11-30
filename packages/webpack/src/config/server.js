@@ -31,7 +31,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return whitelist
   }
 
-  devtool() {
+  get devtool() {
     return 'cheap-module-source-map'
   }
 
@@ -63,27 +63,6 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       new webpack.DefinePlugin(this.env())
     )
     return plugins
-  }
-
-  extendConfig() {
-    const config = super.extendConfig(...arguments)
-
-    // Add minimizer plugins
-    if (config.optimization.minimize && config.optimization.minimizer === undefined) {
-      config.optimization.minimizer = []
-      // https://github.com/webpack-contrib/terser-webpack-plugin
-      if (this.options.build.terser) {
-        config.optimization.minimizer.push(
-          new TerserWebpackPlugin(Object.assign({
-            parallel: true,
-            cache: this.options.build.cache,
-            sourceMap: config.devtool && /source-?map/.test(config.devtool)
-          }, this.options.build.terser))
-        )
-      }
-    }
-
-    return config
   }
 
   config() {
