@@ -1087,10 +1087,10 @@
     inquirer "^6.2.0"
     npmlog "^4.1.2"
 
-"@lerna/publish@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.npmjs.org/@lerna/publish/-/publish-3.5.0.tgz#e6543375457846557f3cb803f7795a577333a941"
-  integrity sha512-CoK+wzPP/0xG54Iwf9WEbB3VgwayoiVYsubhYpC072Ue7V6mGXQh97KZMm8NzCoMDg35ZGqa85Kxpeqd5hqQlw==
+"@lerna/publish@^3.5.1":
+  version "3.5.1"
+  resolved "https://registry.npmjs.org/@lerna/publish/-/publish-3.5.1.tgz#20ea36e05a76755760b67c78719d424fc129f777"
+  integrity sha512-ltw2YdWWzev9cZRAzons5ywZh9NJARPX67meeA95oMDVMrhD4Y9VHQNJ3T8ueec/W78/4sKlMSr3ecWyPNp5bg==
   dependencies:
     "@lerna/batch-packages" "^3.1.2"
     "@lerna/check-working-tree" "^3.5.0"
@@ -6447,10 +6447,10 @@ left-pad@^1.3.0:
   resolved "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz#5b8a3a7765dfe001261dde915589e782f8c94d1e"
   integrity sha512-XI5MPzVNApjAyhQzphX8BkmKsKUxD4LdyK24iZeQGinBN9yTQT3bFlCBy/aVx2HrNcqQGsdot8ghrjyrvMCoEA==
 
-lerna@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.npmjs.org/lerna/-/lerna-3.5.0.tgz#fd989b8992701e90e10aa5b3970d6f7a3512ba64"
-  integrity sha512-12kZb2yCJtx3rhLycepzHTbR6suqLaqky2hSldGQh9+B7FXFgvbQJXwzoi+Y7+1cstmKHHyockdRYFLiLmiEYA==
+lerna@^3.5.1:
+  version "3.5.1"
+  resolved "https://registry.npmjs.org/lerna/-/lerna-3.5.1.tgz#350b24b58fc2d7bc2c1e1f4ef3058afe827cfa68"
+  integrity sha512-0AyxMr2UpR3RAJsyrfNtYvfcI01YVSSnbRdzum7frZAtb7S+8NSY2ip7aDbN6/YsQK2K/zOCQ4shu/nwgub8aw==
   dependencies:
     "@lerna/add" "^3.5.0"
     "@lerna/bootstrap" "^3.5.0"
@@ -6464,7 +6464,7 @@ lerna@^3.5.0:
     "@lerna/init" "^3.5.0"
     "@lerna/link" "^3.5.0"
     "@lerna/list" "^3.5.0"
-    "@lerna/publish" "^3.5.0"
+    "@lerna/publish" "^3.5.1"
     "@lerna/run" "^3.5.0"
     "@lerna/version" "^3.5.0"
     import-local "^1.0.0"
