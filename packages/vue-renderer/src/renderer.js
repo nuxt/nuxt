@@ -113,13 +113,13 @@ export default class VueRenderer {
     const updated = []
     const resourceMap = this.resourceMap
 
-    const readResource = (fileName) => {
+    const readResource = (fileName, encoding) => {
       try {
         const fullPath = path.resolve(distPath, fileName)
         if (!_fs.existsSync(fullPath)) {
           return
         }
-        const contents = _fs.readFileSync(fullPath, 'utf-8')
+        const contents = _fs.readFileSync(fullPath, encoding)
         if (isMFS) {
           // Cleanup MFS as soon as possible to save memory
           _fs.unlinkSync(fullPath)
@@ -131,10 +131,10 @@ export default class VueRenderer {
     }
 
     for (const resourceName in resourceMap) {
-      const { fileName, transform } = resourceMap[resourceName]
+      const { fileName, transform, encoding } = resourceMap[resourceName]
 
       // Load resource
-      let resource = readResource(fileName)
+      let resource = readResource(fileName, encoding)
 
       // TODO: Enable baack when renderer initialzation was disabled for build only scripts
       // Fail when no build found and using programmatic usage
@@ -394,9 +394,9 @@ export default class VueRenderer {
         transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = (obj, oldObj) => {
+          const resolveAssets = (obj, oldObj, encoding) => {
             Object.keys(obj).forEach((name) => {
-              obj[name] = readResource(obj[name])
+              obj[name] = readResource(obj[name], encoding)
               // Try to reuse deleted MFS files if no new version exists
               if (!obj[name]) {
                 obj[name] = oldObj[name]
@@ -406,7 +406,7 @@ export default class VueRenderer {
           }
 
           const files = resolveAssets(serverManifest.files, oldValue.files)
-          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
+          const maps = resolveAssets(serverManifest.maps, oldValue.maps, 'utf-8')
 
           return {
             ...serverManifest,
