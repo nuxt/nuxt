@@ -44,6 +44,19 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
+    expect(headHtml).toContain('color:red')
+
+    const element = window.document.querySelector('.red')
+    expect(element).not.toBe(null)
+    expect(element.textContent).toContain('This is red')
+    expect(element.className).toBe('red')
+    // t.is(window.getComputedStyle(element).color, 'red')
+  })
+
+  test('/postcss', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/css'))
+
+    const headHtml = window.document.head.innerHTML
     expect(headHtml).toContain('background-color:#00f')
 
     // const element = window.document.querySelector('div.red')
