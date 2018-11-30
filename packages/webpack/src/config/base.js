@@ -128,13 +128,10 @@ export default class WebpackBaseConfig {
   }
 
   optimization() {
-    let optimization = this.options.build.optimization
+    const optimization = cloneDeep(this.options.build.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
-      optimization = {
-        ...optimization,
-        minimizer: this.minimizer()
-      }
+      optimization.minimizer = this.minimizer()
     }
 
     return optimization
