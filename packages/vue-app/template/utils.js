@@ -284,10 +284,9 @@ export function normalizeError(err) {
   } else {
     message = err.message || err
   }
-  return Object.assign({},  err, {
-    message: message,
+  return {...err,  message: message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
-  })
+  }
 }
 
 /**
