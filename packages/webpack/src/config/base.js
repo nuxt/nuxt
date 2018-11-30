@@ -361,7 +361,9 @@ export default class WebpackBaseConfig {
       plugins: this.plugins()
     }
 
+    const extendedConfig = this.extendConfig(config)
+
     // Clone deep avoid leaking config between Client and Server
-    return this.extendConfig(cloneDeep(config))
+    return cloneDeep(extendedConfig)
   }
 }
