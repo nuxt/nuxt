@@ -36,8 +36,8 @@ describe('nuxt', () => {
   })
 
   test('Build with default page when no pages/ directory', async () => {
-    const nuxt = new Nuxt()
-    await new Builder(nuxt).build()
+    const config = await loadFixture('missing-pages-dir')
+    const nuxt = new Nuxt(config)
     const port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
