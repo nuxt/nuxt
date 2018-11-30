@@ -285,6 +285,7 @@ export function normalizeError(err) {
     message = err.message || err
   }
   return {
+    ...err,
     message: message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
   }

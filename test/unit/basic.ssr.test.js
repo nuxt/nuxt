@@ -235,6 +235,7 @@ describe('basic ssr', () => {
     expect(html).toContain('Custom error')
     expect(error.message).toContain('Custom error')
     expect(error.statusCode).toBe(500)
+    expect(error.customProp).toBe('ezpz')
   })
 
   test('/error2 status code', async () => {
