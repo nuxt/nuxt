@@ -199,6 +199,10 @@ export default class WebpackBaseConfig {
         oneOf: styleLoader.apply('css')
       },
       {
+        test: /\.postcss$/,
+        oneOf: styleLoader.apply('postcss')
+      },
+      {
         test: /\.less$/,
         oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
