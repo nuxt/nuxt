@@ -19,17 +19,20 @@ describe('nuxt', () => {
     expect(nuxt.initialized).toBe(true)
   })
 
-  test('Fail to build when no pages/ directory but is in the parent', () => {
+  test('Fail to build when no pages/ directory but is in the parent', async () => {
+    const config = await loadFixture('empty')
     const nuxt = new Nuxt({
-      dev: false,
+      ...config,
       rootDir: resolve(__dirname, '..', 'fixtures', 'empty', 'pages')
     })
 
-    return new Builder(nuxt).build().catch((err) => {
-      const s = String(err)
-      expect(s).toContain('No `pages` directory found')
-      expect(s).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
-    })
+    try {
+      await new Builder(nuxt).build()
+    } catch (err) {
+      expect(err.message).toContain('No `pages` directory found')
+      expect(err.message).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
+    }
+    expect.hasAssertions()
   })
 
   test('Build with default page when no pages/ directory', async () => {
