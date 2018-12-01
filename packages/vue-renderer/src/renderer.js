@@ -389,23 +389,31 @@ export default class VueRenderer {
         transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = (obj, oldObj, isJSON) => {
+          const resolveAssets = (obj, oldObj) => {
             Object.keys(obj).forEach((name) => {
               obj[name] = readResource(obj[name])
               // Try to reuse deleted MFS files if no new version exists
               if (!obj[name]) {
                 obj[name] = oldObj[name]
               }
-              // Parse JSON
-              if (isJSON) {
-                obj[name] = JSON.parse(obj[name])
-              }
             })
             return obj
           }
 
           const files = resolveAssets(serverManifest.files, oldValue.files)
-          const maps = resolveAssets(serverManifest.maps, oldValue.maps, true)
+          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
+
+          // Try to parse sourcemaps
+          for (const map in maps) {
+            if (maps[map] && maps[map].version) {
+              continue
+            }
+            try {
+              maps[map] = JSON.parse(maps[map])
+            } catch (e) {
+              maps[map] = { version: 3, sources: [], mappings: '' }
+            }
+          }
 
           return {
             ...serverManifest,
