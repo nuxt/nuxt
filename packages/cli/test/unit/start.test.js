@@ -1,7 +1,5 @@
-import fs from 'fs'
+import fs from 'fs-extra'
 import { consola, mockGetNuxtStart, mockGetNuxtConfig, NuxtCommand } from '../utils'
-
-const NO_BUILD_MSG = 'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
 
 describe('start', () => {
   let start
@@ -33,17 +31,5 @@ describe('start', () => {
     mockGetNuxtConfig()
     await NuxtCommand.from(start).run()
     expect(consola.fatal).not.toHaveBeenCalled()
-  })
-
-  test.skip('fatal error when dist does not exist (SSR)', async () => {
-    mockGetNuxtStart(true)
-    await NuxtCommand.from(start).run()
-    expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
-  })
-
-  test.skip('fatal error when dist does not exist (SPA)', async () => {
-    mockGetNuxtStart(false)
-    await NuxtCommand.from(start).run()
-    expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
   })
 })
