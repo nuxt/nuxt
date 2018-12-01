@@ -27,6 +27,7 @@ export default () => ({
   serverMiddleware: [],
 
   // Dirs and extensions
+  _nuxtConfig: undefined,
   srcDir: undefined,
   buildDir: '.nuxt',
   modulesDir: [
