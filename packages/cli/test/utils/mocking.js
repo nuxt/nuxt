@@ -84,12 +84,13 @@ export const mockNuxt = (implementation) => {
   const Nuxt = function () {}
   Object.assign(Nuxt.prototype, {
     hook(type, fn) {
-      if (type === 'watch:fileChanged') {
-        Nuxt.fileChangedHook = fn
+      if (type === 'watch:restart') {
+        Nuxt.fileRestartHook = fn
       }
     },
     options: {},
     clearHook: jest.fn(),
+    clearHooks: jest.fn(),
     close: jest.fn(),
     ready: jest.fn(),
     server: {
@@ -108,7 +109,7 @@ export const mockBuilder = (implementation) => {
   Object.assign(Builder.prototype, {
     build: jest.fn().mockImplementationOnce(() => Promise.resolve()),
     unwatch: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-    watchServer: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    watchRestart: jest.fn().mockImplementationOnce(() => Promise.resolve())
   }, implementation || {})
 
   imports.builder.mockImplementation(() => ({ Builder }))
