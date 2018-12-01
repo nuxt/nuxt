@@ -79,5 +79,7 @@ export default class Nuxt extends Hookable {
     if (typeof callback === 'function') {
       await callback()
     }
+
+    this.clearHooks()
   }
 }
