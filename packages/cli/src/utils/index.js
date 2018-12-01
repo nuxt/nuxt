@@ -45,6 +45,9 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
+
+    // Keep _nuxtConfigFile for watching
+    options._nuxtConfigFile = nuxtConfigFile
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
