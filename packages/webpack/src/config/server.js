@@ -4,8 +4,9 @@ import webpack from 'webpack'
 import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
+import VueSSRServerPlugin from '../plugins/vue/server'
+
 import WebpackBaseConfig from './base'
-import VueSSRServerPlugin from './plugins/vue/server'
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor(builder) {
@@ -29,8 +30,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return whitelist
   }
 
-  devtool() {
-    return 'cheap-module-inline-source-map'
+  get devtool() {
+    return 'cheap-module-source-map'
   }
 
   env() {
@@ -45,7 +46,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   optimization() {
     return {
       splitChunks: false,
-      minimizer: []
+      minimizer: this.minimizer()
     }
   }
 
@@ -53,7 +54,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const plugins = super.plugins()
     plugins.push(
       new VueSSRServerPlugin({
-        filename: 'server-bundle.json'
+        filename: `${this.name}.manifest.json`
       }),
       new webpack.DefinePlugin(this.env())
     )
@@ -70,11 +71,12 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         app: [path.resolve(this.options.buildDir, 'server.js')]
       },
       output: Object.assign({}, config.output, {
-        filename: 'server-bundle.js',
+        filename: 'server.js',
         libraryTarget: 'commonjs2'
       }),
       performance: {
         hints: false,
+        maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
       externals: []

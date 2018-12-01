@@ -143,17 +143,6 @@ describe('basic dev', () => {
     })
   })
 
-  test('/error no source-map (Youch)', async () => {
-    const sourceMaps = nuxt.renderer.resources.serverBundle.maps
-    nuxt.renderer.resources.serverBundle.maps = {}
-
-    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
-    })
-
-    nuxt.renderer.resources.serverBundle.maps = sourceMaps
-  })
-
   test('/error should return json format error (Youch)', async () => {
     const opts = {
       headers: {
