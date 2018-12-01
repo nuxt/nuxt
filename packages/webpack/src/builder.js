@@ -225,15 +225,15 @@ export class WebpackBundler {
     }
   }
 
-  unwatch() {
+  async unwatch() {
     for (const watching of this.compilersWatching) {
-      watching.close()
+      await watching.close()
     }
   }
 
   async close() {
     // Unwatch
-    this.unwatch()
+    await this.unwatch()
 
     // Stop webpack middleware
     for (const devMiddleware of Object.values(this.devMiddleware)) {
