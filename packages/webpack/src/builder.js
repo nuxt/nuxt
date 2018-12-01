@@ -30,8 +30,10 @@ export class WebpackBundler {
     // Initialize shared MFS for dev
     if (this.context.options.dev) {
       this.mfs = new MFS()
-      this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
-      this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
+
+      // TODO: Enable when async FS rquired
+      // this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
+      // this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
   }
 
