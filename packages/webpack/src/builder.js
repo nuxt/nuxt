@@ -123,63 +123,59 @@ export class WebpackBundler {
     })
   }
 
-  webpackCompile(compiler) {
-    return new Promise(async (resolve, reject) => {
-      const name = compiler.options.name
-      const { nuxt, options } = this.context
+  async webpackCompile(compiler) {
+    const name = compiler.options.name
+    const { nuxt, options } = this.context
 
-      await nuxt.callHook('build:compile', { name, compiler })
+    await nuxt.callHook('build:compile', { name, compiler })
 
-      // Load renderer resources after build
-      compiler.hooks.done.tap('load-resources', async (stats) => {
-        await nuxt.callHook('build:compiled', {
-          name,
-          compiler,
-          stats
-        })
-
-        // Reload renderer if available
-        await nuxt.callHook('build:resources', this.mfs)
-
-        // Resolve on next tick
-        process.nextTick(resolve)
+    // Load renderer resources after build
+    compiler.hooks.done.tap('load-resources', async (stats) => {
+      await nuxt.callHook('build:compiled', {
+        name,
+        compiler,
+        stats
       })
 
-      if (options.dev) {
-        // --- Dev Build ---
-        // Client Build, watch is started by dev-middleware
-        if (['client', 'modern'].includes(name)) {
-          return this.webpackDev(compiler)
-        }
-        // Server, build and watch for changes
-        this.compilersWatching.push(
-          compiler.watch(options.watchers.webpack, (err) => {
-            /* istanbul ignore if */
-            if (err) return reject(err)
-          })
-        )
-      } else {
-        // --- Production Build ---
-        compiler.run((err, stats) => {
-          /* istanbul ignore next */
-          if (err) {
-            return reject(err)
-          } else if (stats.hasErrors()) {
-            if (options.build.quiet === true) {
-              err = stats.toString(options.build.stats)
-            }
-            if (!err) {
-              // actual errors will be printed by webpack itself
-              err = 'Nuxt Build Error'
-            }
+      // Reload renderer if available
+      await nuxt.callHook('build:resources', this.mfs)
+    })
 
-            return reject(err)
-          }
-
-          resolve()
+    // --- Dev Build ---
+    if (options.dev) {
+      // Client Build, watch is started by dev-middleware
+      if (['client', 'modern'].includes(name)) {
+        this.webpackDev(compiler)
+        return new Promise((resolve, reject) => {
+          compiler.hooks.done.tap('nuxt-dev', stats => stats.hasErrors() ? reject(stats) : resolve())
         })
       }
-    })
+
+      // Server, build and watch for changes
+      return new Promise((resolve, reject) => {
+        const watching = compiler.watch(options.watchers.webpack, (err) => {
+          if (err) {
+            return reject(err)
+          }
+          watching.close = pify(watching.close)
+          this.compilersWatching.push(watching)
+          resolve()
+        })
+      })
+    }
+
+    // --- Production Build ---
+    compiler.run = pify(compiler.run)
+    const stats = await compiler.run()
+
+    if (stats.hasErrors()) {
+      if (options.build.quiet === true) {
+        return Promise.reject(stats.toString(options.build.stats))
+      } else {
+        // Actual error will be printet by webpack
+        throw new Error('Nuxt Build Error')
+      }
+    }
   }
 
   webpackDev(compiler) {
