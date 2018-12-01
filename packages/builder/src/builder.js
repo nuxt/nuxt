@@ -530,12 +530,10 @@ export default class Builder {
       .on('unlink', refreshFiles)
 
     // Watch for custom provided files
-    let customPatterns = [
+    const customPatterns = uniq([
       ...this.options.build.watch,
       ...Object.values(omit(this.options.build.styleResources, ['options']))
-    ]
-
-    customPatterns = uniq(customPatterns).map(upath.normalizeSafe)
+    ]).map(upath.normalizeSafe)
 
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
@@ -553,32 +551,26 @@ export default class Builder {
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
       .on('change', (_path) => {
-        this.watchers.restart.close()
         const { name, ext } = path.parse(_path)
         this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`) // Legacy
-        this.nuxt.callHook('watch:restart', this, `${name}${ext}`)
+        this.nuxt.callHook('watch:restart', `${name}${ext}`)
       })
   }
 
   unwatch() {
     for (const watcher in this.watchers) {
-      if (this.watchers[watcher]) {
-        this.watchers[watcher].close()
-      }
+      this.watchers[watcher].close()
     }
-    this.watchers = {}
   }
 
   async close() {
+    // Unwatch
     this.unwatch()
 
+    // Close bundleBuilder
     if (typeof this.bundleBuilder.close === 'function') {
       await this.bundleBuilder.close()
     }
-
-    this.template = null
-    this.plugins = null
-    this.bundleBuilder = null
   }
 }
 
