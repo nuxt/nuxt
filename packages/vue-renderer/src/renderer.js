@@ -101,11 +101,17 @@ export default class VueRenderer {
     if (!this.context.options.dev) {
       // Production: Load SSR resources from fs
       await this.loadResources(fs)
+
+      // Verify
+      if (!this.isReady && this.context.options._start) {
+        throw new Error(
+          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+        )
+      }
     } else {
       // Development: Listen on build:resources hook
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
     }
-    this._ready = true
   }
 
   loadResources(_fs, isMFS = false) {
@@ -136,17 +142,8 @@ export default class VueRenderer {
       // Load resource
       let resource = readResource(fileName, encoding)
 
-      // TODO: Enable baack when renderer initialzation was disabled for build only scripts
-      // Fail when no build found and using programmatic usage
-      // Currently this breaks normal nuxt build for first time
+      // Skip unavailable resources
       if (!resource) {
-        // if (!this.context.options.dev) {
-        //   const invalidSSR = !this.noSSR && key === 'server'
-        //   const invalidSPA = this.noSSR && key === 'spaTemplate'
-        //   if (invalidSPA || invalidSSR) {
-        //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
-        //   }
-        // }
         consola.debug('Resource not available:', resourceName)
         continue
       }
@@ -172,7 +169,7 @@ export default class VueRenderer {
       )
     }
 
-    // Load loading template
+    // Reload loading template
     const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
     if (fs.existsSync(loadingHTMLPath)) {
       this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
@@ -182,62 +179,60 @@ export default class VueRenderer {
       this.context.resources.loadingHTML = ''
     }
 
+    // Call createRenderer if any resource changed
     if (updated.length > 0) {
       this.createRenderer()
     }
 
     // Call resourcesLoaded hook
-    consola.debug('Resources loaded:', updated)
+    consola.debug('Resources loaded:', updated.join(','))
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
-  get noSSR() {
+  get noSSR() { /* Backward compatibility */
     return this.context.options.render.ssr === false
   }
 
-  get isReady() {
-    if (!this._ready) {
-      return false
-    }
-
-    if (this.noSSR) {
-      return Boolean(this.context.resources.spaTemplate)
-    }
-
-    return Boolean(this.renderer.ssr && this.context.resources.ssrTemplate)
+  get SSR() {
+    return this.context.options.render.ssr === true
   }
 
-  get isResourcesAvailable() {
-    // Required for both
-    /* istanbul ignore if */
-    if (!this.context.resources.clientManifest) {
+  get isReady() {
+    // SPA
+    if (!this.context.resources.spaTemplate || !this.renderer.spa) {
       return false
     }
 
-    // Required for SPA rendering
-    if (this.noSSR) {
-      return Boolean(this.context.resources.spaTemplate)
+    // SSR
+    if (this.SSR && (!this.context.resources.ssrTemplate || !this.renderer.ssr)) {
+      return false
     }
 
-    // Required for bundle renderer
-    return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverManifest)
+    return true
+  }
+
+  get isResourcesAvailable() { /* Backward compatibility */
+    return this.isReady
   }
 
   createRenderer() {
-    // Ensure resources are available
-    if (!this.isResourcesAvailable) {
+    // Resource clientManifest is always required
+    if (!this.context.resources.clientManifest) {
       return
     }
 
-    // Create Meta Renderer
-    this.renderer.spa = new SPAMetaRenderer(this)
+    // Create SPA renderer
+    if (this.context.resources.spaTemplate) {
+      this.renderer.spa = new SPAMetaRenderer(this)
+    }
 
-    // Skip following steps if noSSR mode
-    if (this.noSSR) {
+    // Skip the rest if SSR resources are not available
+    if (!this.context.resources.ssrTemplate || !this.context.resources.serverManifest) {
       return
     }
 
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+
     const rendererOptions = {
       runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
@@ -288,12 +283,12 @@ export default class VueRenderer {
     // Add url and isSever to the context
     context.url = url
 
-    // Basic response if SSR is disabled or spa data provided
+    // Basic response if SSR is disabled or SPA data provided
     const { req, res } = context
     const spa = context.spa || (res && res.spa)
     const ENV = this.context.options.env
 
-    if (this.noSSR || spa) {
+    if (!this.SSR || spa) {
       const {
         HTML_ATTRS,
         BODY_ATTRS,
