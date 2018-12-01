@@ -47,6 +47,9 @@ export default class VueSSRServerPlugin {
           bundle.files[asset.name] = asset.name
         } else if (asset.name.match(/\.js\.map$/)) {
           bundle.maps[asset.name.replace(/\.map$/, '')] = asset.name
+        } else {
+          // Do not emit non-js assets for server
+          delete compilation.assets[asset.name]
         }
       })
 
