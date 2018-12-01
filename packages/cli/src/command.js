@@ -6,12 +6,8 @@ import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor({ name, description, usage, options, run } = {}) {
-    this.name = name || ''
-    this.description = description || ''
-    this.usage = usage || ''
-    this.options = Object.assign({}, options)
-    this._run = run
+  constructor(cmd) {
+    this.cmd = cmd
   }
 
   static async load(name) {
@@ -33,7 +29,7 @@ export default class NuxtCommand {
   }
 
   run() {
-    return this._run(this)
+    return this.cmd.run(this)
   }
 
   showVersion() {
@@ -63,8 +59,8 @@ export default class NuxtCommand {
     const config = await loadNuxtConfig(argv)
     const options = Object.assign(config, extraOptions || {})
 
-    for (const name of Object.keys(this.options)) {
-      this.options[name].prepare && this.options[name].prepare(this, options, argv)
+    for (const name of Object.keys(this.cmd.options)) {
+      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, argv)
     }
 
     return options
@@ -97,8 +93,8 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (const name of Object.keys(this.options)) {
-      const option = this.options[name]
+    for (const name of Object.keys(this.cmd.options)) {
+      const option = this.cmd.options[name]
 
       if (option.alias) {
         minimistOptions.alias[option.alias] = name
@@ -118,8 +114,8 @@ export default class NuxtCommand {
     const options = []
     let maxOptionLength = 0
 
-    for (const name in this.options) {
-      const option = this.options[name]
+    for (const name in this.cmd.options) {
+      const option = this.cmd.options[name]
 
       let optionHelp = '--'
       optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
@@ -142,11 +138,11 @@ export default class NuxtCommand {
     }).join('\n')
 
     const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
-    const description = foldLines(this.description, startSpaces)
+    const description = foldLines(this.cmd.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
     let helpText = colorize(`${usage}\n\n`)
-    if (this.description) helpText += colorize(`${description}\n\n`)
+    if (this.cmd.description) helpText += colorize(`${description}\n\n`)
     if (options.length) helpText += colorize(`${opts}\n\n`)
 
     return helpText
