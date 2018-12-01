@@ -59,10 +59,11 @@ export default class Builder {
       this.nuxt.hook('build:done', () => {
         consola.info('Waiting for file changes')
         this.watchClient()
+        this.watchServerMiddleware()
       })
 
-      // Stop watching on nuxt.close()
-      this.nuxt.hook('close', () => this.unwatch())
+      // Close hook
+      this.nuxt.hook('close', () => this.close())
     }
 
     if (this.options.build.analyze) {
@@ -539,7 +540,7 @@ export default class Builder {
       .on('change', refreshFiles)
   }
 
-  watchServer() {
+  watchServerMiddleware() {
     const nuxtRestartWatch = concat(
       this.options.serverMiddleware
         .filter(isString)
@@ -557,16 +558,25 @@ export default class Builder {
       })
   }
 
-  async unwatch() {
+  unwatch() {
     for (const watcher in this.watchers) {
       if (this.watchers[watcher]) {
         this.watchers[watcher].close()
       }
     }
+    this.watchers = {}
+  }
 
-    if (this.bundleBuilder.unwatch) {
-      await this.bundleBuilder.unwatch()
+  async close() {
+    this.unwatch()
+
+    if (typeof this.bundleBuilder.close === 'function') {
+      await this.bundleBuilder.close()
     }
+
+    this.template = null
+    this.plugins = null
+    this.bundleBuilder = null
   }
 }
 
