@@ -35,8 +35,14 @@ describe('start', () => {
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test.skip('fatal error when dist does not exist', async () => {
+  test.skip('fatal error when dist does not exist (SSR)', async () => {
     mockGetNuxtStart(true)
+    await NuxtCommand.from(start).run()
+    expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
+  })
+
+  test.skip('fatal error when dist does not exist (SPA)', async () => {
+    mockGetNuxtStart(false)
     await NuxtCommand.from(start).run()
     expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
   })
