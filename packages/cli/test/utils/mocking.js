@@ -91,6 +91,7 @@ export const mockNuxt = (implementation) => {
     options: {},
     clearHook: jest.fn(),
     close: jest.fn(),
+    ready: jest.fn(),
     server: {
       listeners: [],
       listen: jest.fn().mockImplementationOnce(() => Promise.resolve())

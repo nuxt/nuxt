@@ -24,41 +24,20 @@ describe('start', () => {
   test('no error if dist dir exists', async () => {
     mockGetNuxtStart()
     mockGetNuxtConfig()
-    jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => true)
-
     await NuxtCommand.from(start).run()
-
     expect(consola.fatal).not.toHaveBeenCalled()
-  })
-
-  test('fatal error if dist dir doesnt exist', async () => {
-    mockGetNuxtStart()
-    jest.spyOn(fs, 'existsSync').mockImplementationOnce(() => false)
-
-    await NuxtCommand.from(start).run()
-
-    expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
   })
 
   test('no error on ssr and server bundle exists', async () => {
     mockGetNuxtStart(true)
     mockGetNuxtConfig()
-    jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
-
     await NuxtCommand.from(start).run()
-
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test.skip('fatal error on ssr and server bundle doesnt exist', async () => {
+  test.skip('fatal error when dist does not exist', async () => {
     mockGetNuxtStart(true)
-    let i = 0
-    jest.spyOn(fs, 'existsSync').mockImplementation(() => {
-      return ++i === 1
-    })
-
     await NuxtCommand.from(start).run()
-
     expect(consola.fatal).toHaveBeenCalledWith(NO_BUILD_MSG)
   })
 })
