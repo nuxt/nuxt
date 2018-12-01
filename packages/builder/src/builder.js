@@ -8,14 +8,11 @@ import pify from 'pify'
 import serialize from 'serialize-javascript'
 import upath from 'upath'
 
-import concat from 'lodash/concat'
 import debounce from 'lodash/debounce'
-import map from 'lodash/map'
 import omit from 'lodash/omit'
 import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
-import values from 'lodash/values'
 
 import devalue from '@nuxtjs/devalue'
 
@@ -59,7 +56,7 @@ export default class Builder {
       this.nuxt.hook('build:done', () => {
         consola.info('Waiting for file changes')
         this.watchClient()
-        this.watchServerMiddleware()
+        this.watchRestart()
       })
 
       // Close hook
@@ -503,6 +500,7 @@ export default class Builder {
 
   watchClient() {
     const src = this.options.srcDir
+
     let patterns = [
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
@@ -510,6 +508,7 @@ export default class Builder {
       r(src, `${this.options.dir.layouts}/*.{vue,js}`),
       r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
     ]
+
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
@@ -517,7 +516,8 @@ export default class Builder {
         r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
       )
     }
-    patterns = map(patterns, upath.normalizeSafe)
+
+    patterns = patterns.map(upath.normalizeSafe)
 
     const options = this.options.watchers.chokidar
     /* istanbul ignore next */
@@ -530,31 +530,33 @@ export default class Builder {
       .on('unlink', refreshFiles)
 
     // Watch for custom provided files
-    let customPatterns = concat(
-      this.options.build.watch,
-      ...values(omit(this.options.build.styleResources, ['options']))
-    )
-    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
+    let customPatterns = [
+      ...this.options.build.watch,
+      ...Object.values(omit(this.options.build.styleResources, ['options']))
+    ]
+
+    customPatterns = uniq(customPatterns).map(upath.normalizeSafe)
+
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
       .on('change', refreshFiles)
   }
 
-  watchServerMiddleware() {
-    const nuxtRestartWatch = concat(
-      this.options.serverMiddleware
-        .filter(isString)
-        .map(this.nuxt.resolver.resolveAlias),
-      this.options.watch.map(this.nuxt.resolver.resolveAlias),
-      path.join(this.options.rootDir, 'nuxt.config.js')
-    )
+  watchRestart() {
+    const nuxtRestartWatch = [
+      // Server middleware
+      ...this.options.serverMiddleware.filter(isString),
+      // Custom watchers
+      ...this.options.watch
+    ].map(this.nuxt.resolver.resolveAlias)
 
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
       .on('change', (_path) => {
         this.watchers.restart.close()
         const { name, ext } = path.parse(_path)
-        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`)
+        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`) // Legacy
+        this.nuxt.callHook('watch:restart', this, `${name}${ext}`)
       })
   }
 
