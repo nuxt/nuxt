@@ -237,6 +237,10 @@ export class WebpackBundler {
     }
   }
 
+  async close() {
+    await this.unwatch()
+  }
+
   forGenerate() {
     this.context.isStatic = true
   }
