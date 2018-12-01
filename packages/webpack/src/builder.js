@@ -227,18 +227,25 @@ export class WebpackBundler {
     }
   }
 
-  async unwatch() {
+  unwatch() {
     for (const watching of this.compilersWatching) {
       watching.close()
-    }
-    // Stop webpack middleware
-    for (const devMiddleware of Object.values(this.devMiddleware)) {
-      await devMiddleware.close()
     }
   }
 
   async close() {
-    await this.unwatch()
+    this.unwatch()
+
+    // Stop webpack middleware
+    for (const devMiddleware of Object.values(this.devMiddleware)) {
+      await devMiddleware.close()
+    }
+
+    // Destroy MFS
+    if (this.mfs) {
+      delete this.mfs.data
+      delete this.mfs
+    }
   }
 
   forGenerate() {
