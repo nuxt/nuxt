@@ -6,7 +6,7 @@ import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd) {
+  constructor(cmd = { name: '', usage: '', description: '', options: {} }) {
     this.cmd = cmd
   }
 
@@ -137,7 +137,7 @@ export default class NuxtCommand {
       )
     }).join('\n')
 
-    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
+    const usage = foldLines(`Usage: nuxt ${this.cmd.usage} [options]`, startSpaces)
     const description = foldLines(this.cmd.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
