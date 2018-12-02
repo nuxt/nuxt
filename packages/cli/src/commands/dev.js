@@ -16,7 +16,7 @@ export default {
     const argv = cmd.getArgv()
 
     const errorHandler = (err, instance) => {
-      instance && instance.builder.watchServer()
+      instance && instance.builder.watchRestart()
       consola.error(err)
     }
 
@@ -67,8 +67,8 @@ export default {
           .then(() => nuxt.server.listen())
           // Show banner
           .then(() => showBanner(nuxt))
-          // Start watching serverMiddleware changes
-          .then(() => builder.watchServer())
+          // Start watching for changed that require full nuxt restart
+          .then(() => builder.watchRestart())
           // Handle errors
           .catch(err => errorHandler(err, { builder, nuxt }))
       )
