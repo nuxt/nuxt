@@ -438,4 +438,10 @@ export default class VueRenderer {
       interpolate: /{{([\s\S]+?)}}/g
     })
   }
+
+  close() {
+    for (const key in this.renderer) {
+      delete this.renderer[key]
+    }
+  }
 }

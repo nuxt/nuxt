@@ -35,6 +35,9 @@ export default class Server {
 
     // Create new connect instance
     this.app = connect()
+
+    // Close hook
+    this.nuxt.hook('close', () => this.close())
   }
 
   async ready() {
@@ -52,9 +55,6 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
-
-    // Close all listeners after nuxt close
-    this.nuxt.hook('close', () => this.close)
   }
 
   async setupMiddleware() {
@@ -228,10 +228,17 @@ export default class Server {
   }
 
   async close() {
+    this.app.removeAllListeners()
+    this.app = null
+
     for (const listener of this.listeners) {
       await listener.close()
     }
     this.listeners = []
+
+    if (typeof this.renderer.close === 'function') {
+      await this.renderer.close()
+    }
 
     for (const key in this.resources) {
       delete this.resources[key]
