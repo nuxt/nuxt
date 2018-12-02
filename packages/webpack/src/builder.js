@@ -242,6 +242,18 @@ export class WebpackBundler {
     for (const devMiddleware of Object.values(this.devMiddleware)) {
       await devMiddleware.close()
     }
+
+    // Cleanup MFS
+    if (this.mfs) {
+      delete this.mfs.data
+      delete this.mfs
+    }
+
+    // Cleanup more resources
+    delete this.compilers
+    delete this.compilersWatching
+    delete this.devMiddleware
+    delete this.hotMiddleware
   }
 
   forGenerate() {
