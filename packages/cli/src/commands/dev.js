@@ -12,66 +12,68 @@ export default {
     ...common,
     ...server
   },
-
   async run(cmd) {
     const argv = cmd.getArgv()
-    await this.startDev(cmd, argv)
-  },
 
-  async startDev(cmd, argv) {
-    try {
-      await this._startDev(cmd, argv)
-    } catch (error) {
-      consola.error(error)
+    const errorHandler = (err, instance) => {
+      instance && instance.builder.watchServer()
+      consola.error(err)
     }
-  },
 
-  async _startDev(cmd, argv) {
-    // Load config
-    const config = await cmd.getNuxtConfig(argv, { dev: true })
+    // Start dev
+    async function startDev(oldInstance) {
+      let nuxt, builder
 
-    // Initialize nuxt instance
-    const nuxt = await cmd.getNuxt(config)
+      try {
+        nuxt = await cmd.getNuxt(
+          await cmd.getNuxtConfig(argv, { dev: true })
+        )
+        builder = await cmd.getBuilder(nuxt)
+      } catch (err) {
+        return errorHandler(err, oldInstance)
+      }
 
-    // Setup hooks
-    nuxt.hook('watch:restart', changedFileName => this.onWatchRestart(changedFileName, { nuxt, builder, cmd, argv }))
-    nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
+      const logChanged = (name) => {
+        consola.log({
+          type: 'change',
+          icon: chalk.blue.bold(env.windows ? '»' : '↻'),
+          message: chalk.blue(name)
+        })
+      }
 
-    // Start listening
-    await nuxt.server.listen()
+      nuxt.hook('watch:fileChanged', async (builder, name) => {
+        logChanged(name)
+        await startDev({ nuxt: builder.nuxt, builder })
+      })
 
-    // Create builder instance
-    const builder = await cmd.getBuilder(nuxt)
+      nuxt.hook('bundler:change', (name) => {
+        logChanged(name)
+      })
 
-    // Start Build
-    await builder.build()
+      return (
+        Promise.resolve()
+          .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))
+          .then(() => oldInstance && oldInstance.builder.unwatch())
+          // Start build
+          .then(() => builder.build())
+          // Close old nuxt no matter if build successfully
+          .catch((err) => {
+            oldInstance && oldInstance.nuxt.close()
+            // Jump to errorHandler
+            throw err
+          })
+          .then(() => oldInstance && oldInstance.nuxt.close())
+          // Start listening
+          .then(() => nuxt.server.listen())
+          // Show banner
+          .then(() => showBanner(nuxt))
+          // Start watching serverMiddleware changes
+          .then(() => builder.watchServer())
+          // Handle errors
+          .catch(err => errorHandler(err, { builder, nuxt }))
+      )
+    }
 
-    // setTimeout(() => this.onWatchRestart('Timer', { nuxt, builder, cmd, argv }), 1000)
-
-    // Show banner after build
-    showBanner(nuxt)
-
-    // Return instance
-    return nuxt
-  },
-
-  logChanged(changedFileName) {
-    consola.log({
-      type: 'change',
-      icon: chalk.blue.bold(env.windows ? '»' : '↻'),
-      message: chalk.blue(changedFileName)
-    })
-  },
-
-  async onWatchRestart(changedFileName, { nuxt, builder, cmd, argv }) {
-    this.logChanged(changedFileName)
-
-    await nuxt.close()
-
-    await this.startDev(cmd, argv)
-  },
-
-  onBundlerChange(changedFileName) {
-    this.logChanged(changedFileName)
+    await startDev()
   }
 }
