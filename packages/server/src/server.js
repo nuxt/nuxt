@@ -231,9 +231,6 @@ export default class Server {
     if (this.__closed) return
     this.__closed = true
 
-    this.app.removeAllListeners()
-    this.app = null
-
     for (const listener of this.listeners) {
       await listener.close()
     }
@@ -242,6 +239,9 @@ export default class Server {
     if (typeof this.renderer.close === 'function') {
       await this.renderer.close()
     }
+
+    this.app.removeAllListeners()
+    this.app = null
 
     for (const key in this.resources) {
       delete this.resources[key]
