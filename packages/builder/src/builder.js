@@ -564,6 +564,9 @@ export default class Builder {
   }
 
   async close() {
+    if (this.__closed) return
+    this.__closed = true
+
     // Unwatch
     this.unwatch()
 

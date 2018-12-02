@@ -228,6 +228,9 @@ export default class Server {
   }
 
   async close() {
+    if (this.__closed) return
+    this.__closed = true
+
     this.app.removeAllListeners()
     this.app = null
 
