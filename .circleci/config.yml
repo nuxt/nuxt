@@ -123,7 +123,7 @@ jobs:
               echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
               yarn lerna version --yes --no-git-tag-version --no-push
               PACKAGE_SUFFIX=edge yarn build
-              ./scripts/workspace-run npm publish -q
+              ./scripts/workspace-run npm publish --tag next -q
             fi
 
 # Workflow definition
