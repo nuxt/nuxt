@@ -54,12 +54,7 @@ export default class Server {
     await this.nuxt.callHook('render:done', this)
 
     // Close all listeners after nuxt close
-    this.nuxt.hook('close', async () => {
-      for (const listener of this.listeners) {
-        await listener.close()
-      }
-      this.listeners = []
-    })
+    this.nuxt.hook('close', () => this.close)
   }
 
   async setupMiddleware() {
@@ -230,5 +225,16 @@ export default class Server {
     this.listeners.push(listener)
 
     await this.nuxt.callHook('listen', listener.server, listener)
+  }
+
+  async close() {
+    for (const listener of this.listeners) {
+      await listener.close()
+    }
+    this.listeners = []
+
+    for (const key in this.resources) {
+      delete this.resources[key]
+    }
   }
 }
