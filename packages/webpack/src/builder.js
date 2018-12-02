@@ -137,7 +137,7 @@ export class WebpackBundler {
         stats
       })
 
-      // Reload renderer if available
+      // Reload renderer
       await nuxt.callHook('build:resources', this.mfs)
     })
 
@@ -146,7 +146,7 @@ export class WebpackBundler {
       // Client Build, watch is started by dev-middleware
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
-          compiler.hooks.done.tap('nuxt-dev', stats => stats.hasErrors() ? reject(stats) : resolve())
+          compiler.hooks.done.tap('nuxt-dev', () => resolve())
           this.webpackDev(compiler)
         })
       }
