@@ -1,4 +1,5 @@
 import path from 'path'
+import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'

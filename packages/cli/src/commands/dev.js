@@ -34,7 +34,7 @@ export default {
     const nuxt = await cmd.getNuxt(config)
 
     // Setup hooks
-    nuxt.hook('watch:restart', (payload) => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
+    nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
 
     // Start listening
@@ -59,7 +59,7 @@ export default {
       change: { icon: env.windows ? '»' : '↻', color: 'blue', suffix: 'updated' },
       unlink: { icon: '-', color: 'yellow', suffix: 'removed' }
     }
-    let filename = path
+    const filename = path
       .replace(nuxt.options.srcDir, '~')
       .replace(nuxt.options.rootDir, '~~')
     const logParams = eventsMapping[event] || eventsMapping.change
