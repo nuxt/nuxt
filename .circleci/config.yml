@@ -165,3 +165,4 @@ workflows:
             branches:
               only:
                 - dev
+                - next
