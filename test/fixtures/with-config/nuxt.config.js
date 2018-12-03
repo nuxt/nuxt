@@ -17,7 +17,8 @@ export default {
         {
           name: 'about-bis',
           path: '/about-bis',
-          component: '~/pages/about.vue'
+          component: '~/pages/about.vue',
+          meta: { text: 'test-meta' }
         },
         {
           path: '/redirect/about-bis',
