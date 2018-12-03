@@ -550,10 +550,11 @@ export default class Builder {
 
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
-      .on('change', (_path) => {
-        const { name, ext } = path.parse(_path)
-        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`) // Legacy
-        this.nuxt.callHook('watch:restart', `${name}${ext}`)
+      .on('all', (event, _path) => {
+        if (['add', 'change', 'unlink'].includes(event) === false) return
+        let filename = _path.replace(this.options.srcDir, '~').replace(this.options.rootDir, '~~')
+        this.nuxt.callHook('watch:fileChanged', this, filename) // Legacy
+        this.nuxt.callHook('watch:restart', filename)
       })
   }
 
