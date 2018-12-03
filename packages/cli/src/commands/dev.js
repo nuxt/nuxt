@@ -57,7 +57,7 @@ export default {
     const eventsMapping = {
       add: { icon: '+', color: 'green', suffix: 'added' },
       change: { icon: env.windows ? '»' : '↻', color: 'blue', suffix: 'updated' },
-      unlink: { icon: '-', color: 'yellow', suffix: 'removed' }
+      unlink: { icon: '-', color: 'red', suffix: 'removed' }
     }
     const filename = path
       .replace(nuxt.options.srcDir, '~')
