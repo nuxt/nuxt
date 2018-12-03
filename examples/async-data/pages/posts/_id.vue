@@ -4,9 +4,9 @@
     <h1>{{ post.title }}</h1>
     <pre>{{ post.body }}</pre>
     <p>
-      <NuxtLink to="/posts">
+      <nuxt-link to="/posts">
         Back to the list
-      </NuxtLink>
+      </nuxt-link>
     </p>
   </div>
 </template>
