@@ -4,6 +4,7 @@ import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
+import uniq from 'lodash/uniq'
 import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
@@ -97,10 +98,11 @@ export function getNuxtConfig(_options) {
   }
 
   // Populate modulesDir
-  options.modulesDir = []
-    .concat(options.modulesDir)
-    .concat(path.join(options.nuxtDir, 'node_modules')).filter(isNonEmptyString)
-    .map(dir => path.resolve(options.rootDir, dir))
+  options.modulesDir = uniq(
+    require.main.paths.concat(
+      [].concat(options.modulesDir).map(dir => path.resolve(options.rootDir, dir))
+    )
+  )
 
   const mandatoryExtensions = ['js', 'mjs']
 
@@ -252,10 +254,6 @@ export function getNuxtConfig(_options) {
     consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
   }
   defaultsDeep(options, modePreset || options.modes.universal)
-
-  if (options.modern === true) {
-    options.modern = 'server'
-  }
 
   // If no server-side rendering, add appear true transition
   /* istanbul ignore if */

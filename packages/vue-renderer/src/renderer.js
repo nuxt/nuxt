@@ -1,6 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs from 'fs-extra'
+import fs from 'fs'
 import consola from 'consola'
 import devalue from '@nuxtjs/devalue'
 import invert from 'lodash/invert'
@@ -16,19 +16,19 @@ export default class VueRenderer {
 
     // Will be set by createRenderer
     this.renderer = {
-      ssr: null,
-      modern: null,
-      spa: null
+      ssr: undefined,
+      modern: undefined,
+      spa: undefined
     }
 
     // Renderer runtime resources
     Object.assign(this.context.resources, {
-      clientManifest: null,
-      modernManifest: null,
-      serverBundle: null,
-      ssrTemplate: null,
-      spaTemplate: null,
-      errorTemplate: this.constructor.parseTemplate('Nuxt.js Internal Server Error')
+      clientManifest: undefined,
+      modernManifest: undefined,
+      serverManifest: undefined,
+      ssrTemplate: undefined,
+      spaTemplate: undefined,
+      errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
   }
 
@@ -98,57 +98,78 @@ export default class VueRenderer {
   }
 
   async ready() {
-    // Production: Load SSR resources from fs
     if (!this.context.options.dev) {
-      await this.loadResources()
+      // Production: Load SSR resources from fs
+      await this.loadResources(fs)
+
+      // Verify
+      if (!this.isReady && this.context.options._start) {
+        throw new Error(
+          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+        )
+      }
+    } else {
+      // Development: Listen on build:resources hook
+      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
     }
   }
 
-  async loadResources(_fs = fs) {
+  loadResources(_fs, isMFS = false) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
+    const resourceMap = this.resourceMap
 
-    this.constructor.resourceMap.forEach(({ key, fileName, transform }) => {
-      const rawKey = '$$' + key
-      const _path = path.join(distPath, fileName)
+    const readResource = (fileName, encoding) => {
+      try {
+        const fullPath = path.resolve(distPath, fileName)
+        if (!_fs.existsSync(fullPath)) {
+          return
+        }
+        const contents = _fs.readFileSync(fullPath, encoding)
+        if (isMFS) {
+          // Cleanup MFS as soon as possible to save memory
+          _fs.unlinkSync(fullPath)
+        }
+        return contents
+      } catch (err) {
+        consola.error('Unable to load resource:', fileName, err)
+      }
+    }
 
-      // Fail when no build found and using programmatic usage
-      if (!_fs.existsSync(_path)) {
-        // TODO: Enable baack when renderer initialzation was disabled for build only scripts
-        // Currently this breaks normal nuxt build for first time
-        // if (!this.context.options.dev) {
-        //   const invalidSSR = !this.NoSsr && key === 'serverBundle'
-        //   const invalidSPA = this.NoSsr && key === 'spaTemplate'
-        //   if (invalidSPA || invalidSSR) {
-        //     consola.fatal(`Could not load Nuxt renderer, make sure to build for production: builder.build() with dev option set to false.`)
-        //   }
-        // }
-        return // Resource not exists
+    for (const resourceName in resourceMap) {
+      const { fileName, transform, encoding } = resourceMap[resourceName]
+
+      // Load resource
+      let resource = readResource(fileName, encoding)
+
+      // Skip unavailable resources
+      if (!resource) {
+        consola.debug('Resource not available:', resourceName)
+        continue
       }
 
-      const rawData = _fs.readFileSync(_path, 'utf8')
-      if (!rawData || rawData === this.context.resources[rawKey]) {
-        return // No changes
+      // Apply transforms
+      if (typeof transform === 'function') {
+        resource = transform(resource, {
+          readResource,
+          oldValue: this.context.resources[resourceName]
+        })
       }
-      this.context.resources[rawKey] = rawData
-      const data = transform(rawData)
-      /* istanbul ignore if */
-      if (!data) {
-        return // Invalid data ?
-      }
-      this.context.resources[key] = data
-      updated.push(key)
-    })
+
+      // Update resource
+      this.context.resources[resourceName] = resource
+      updated.push(resourceName)
+    }
 
     // Reload error template
     const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
     if (fs.existsSync(errorTemplatePath)) {
-      this.context.resources.errorTemplate = this.constructor.parseTemplate(
+      this.context.resources.errorTemplate = this.parseTemplate(
         fs.readFileSync(errorTemplatePath, 'utf8')
       )
     }
 
-    // Load loading template
+    // Reload loading template
     const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
     if (fs.existsSync(loadingHTMLPath)) {
       this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
@@ -158,57 +179,60 @@ export default class VueRenderer {
       this.context.resources.loadingHTML = ''
     }
 
-    // Call resourcesLoaded plugin
-    await this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
-
+    // Call createRenderer if any resource changed
     if (updated.length > 0) {
       this.createRenderer()
     }
+
+    // Call resourcesLoaded hook
+    consola.debug('Resources loaded:', updated.join(','))
+    return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
-  get NoSsr() {
+  get noSSR() { /* Backward compatibility */
     return this.context.options.render.ssr === false
   }
 
-  get isReady() {
-    if (this.NoSsr) {
-      return Boolean(this.context.resources.spaTemplate)
-    }
-
-    return Boolean(this.renderer.ssr && this.context.resources.ssrTemplate)
+  get SSR() {
+    return this.context.options.render.ssr === true
   }
 
-  get isResourcesAvailable() {
-    // Required for both
-    /* istanbul ignore if */
-    if (!this.context.resources.clientManifest) {
+  get isReady() {
+    // SPA
+    if (!this.context.resources.spaTemplate || !this.renderer.spa) {
       return false
     }
 
-    // Required for SPA rendering
-    if (this.NoSsr) {
-      return Boolean(this.context.resources.spaTemplate)
+    // SSR
+    if (this.SSR && (!this.context.resources.ssrTemplate || !this.renderer.ssr)) {
+      return false
     }
 
-    // Required for bundle renderer
-    return Boolean(this.context.resources.ssrTemplate && this.context.resources.serverBundle)
+    return true
+  }
+
+  get isResourcesAvailable() { /* Backward compatibility */
+    return this.isReady
   }
 
   createRenderer() {
-    // Ensure resources are available
-    if (!this.isResourcesAvailable) {
+    // Resource clientManifest is always required
+    if (!this.context.resources.clientManifest) {
       return
     }
 
-    // Create Meta Renderer
-    this.renderer.spa = new SPAMetaRenderer(this)
+    // Create SPA renderer
+    if (this.context.resources.spaTemplate) {
+      this.renderer.spa = new SPAMetaRenderer(this)
+    }
 
-    // Skip following steps if NoSsr mode
-    if (this.NoSsr) {
+    // Skip the rest if SSR resources are not available
+    if (!this.context.resources.ssrTemplate || !this.context.resources.serverManifest) {
       return
     }
 
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+
     const rendererOptions = {
       runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
@@ -219,13 +243,14 @@ export default class VueRenderer {
 
     // Create bundle renderer for SSR
     this.renderer.ssr = createBundleRenderer(
-      this.context.resources.serverBundle,
+      this.context.resources.serverManifest,
       rendererOptions
     )
 
-    if (this.context.options.modern === 'server') {
+    if (this.context.resources.modernManifest &&
+      !['client', false].includes(this.context.options.modern)) {
       this.renderer.modern = createBundleRenderer(
-        this.context.resources.serverBundle,
+        this.context.resources.serverManifest,
         {
           ...rendererOptions,
           clientManifest: this.context.resources.modernManifest
@@ -247,6 +272,7 @@ export default class VueRenderer {
   async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      consola.info('Waiting for server resources...')
       await waitFor(1000)
       return this.renderRoute(url, context)
     }
@@ -257,12 +283,12 @@ export default class VueRenderer {
     // Add url and isSever to the context
     context.url = url
 
-    // Basic response if SSR is disabled or spa data provided
+    // Basic response if SSR is disabled or SPA data provided
     const { req, res } = context
     const spa = context.spa || (res && res.spa)
     const ENV = this.context.options.env
 
-    if (this.NoSsr || spa) {
+    if (!this.SSR || spa) {
       const {
         HTML_ATTRS,
         BODY_ATTRS,
@@ -347,39 +373,69 @@ export default class VueRenderer {
     }
   }
 
-  static parseTemplate(templateStr) {
+  get resourceMap() {
+    return {
+      clientManifest: {
+        fileName: 'client.manifest.json',
+        transform: src => JSON.parse(src)
+      },
+      modernManifest: {
+        fileName: 'modern.manifest.json',
+        transform: src => JSON.parse(src)
+      },
+      serverManifest: {
+        fileName: 'server.manifest.json',
+        // BundleRenderer needs resolved contents
+        transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
+          const serverManifest = JSON.parse(src)
+
+          const resolveAssets = (obj, oldObj) => {
+            Object.keys(obj).forEach((name) => {
+              obj[name] = readResource(obj[name])
+              // Try to reuse deleted MFS files if no new version exists
+              if (!obj[name]) {
+                obj[name] = oldObj[name]
+              }
+            })
+            return obj
+          }
+
+          const files = resolveAssets(serverManifest.files, oldValue.files)
+          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
+
+          // Try to parse sourcemaps
+          for (const map in maps) {
+            if (maps[map] && maps[map].version) {
+              continue
+            }
+            try {
+              maps[map] = JSON.parse(maps[map])
+            } catch (e) {
+              maps[map] = { version: 3, sources: [], mappings: '' }
+            }
+          }
+
+          return {
+            ...serverManifest,
+            files,
+            maps
+          }
+        }
+      },
+      ssrTemplate: {
+        fileName: 'index.ssr.html',
+        transform: src => this.parseTemplate(src)
+      },
+      spaTemplate: {
+        fileName: 'index.spa.html',
+        transform: src => this.parseTemplate(src)
+      }
+    }
+  }
+
+  parseTemplate(templateStr) {
     return template(templateStr, {
       interpolate: /{{([\s\S]+?)}}/g
     })
-  }
-
-  static get resourceMap() {
-    return [
-      {
-        key: 'clientManifest',
-        fileName: 'vue-ssr-client-manifest.json',
-        transform: JSON.parse
-      },
-      {
-        key: 'modernManifest',
-        fileName: 'vue-ssr-modern-manifest.json',
-        transform: JSON.parse
-      },
-      {
-        key: 'serverBundle',
-        fileName: 'server-bundle.json',
-        transform: JSON.parse
-      },
-      {
-        key: 'ssrTemplate',
-        fileName: 'index.ssr.html',
-        transform: this.parseTemplate
-      },
-      {
-        key: 'spaTemplate',
-        fileName: 'index.spa.html',
-        transform: this.parseTemplate
-      }
-    ]
   }
 }

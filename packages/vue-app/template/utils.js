@@ -112,7 +112,7 @@ export async function getRouteData(route) {
   return {
     ...route,
     meta: getMatchedComponents(route).map((Component) => {
-      return Component.options.meta || {}
+      return Component.options.meta || route.meta || {}
     })
   }
 }
@@ -285,6 +285,7 @@ export function normalizeError(err) {
     message = err.message || err
   }
   return {
+    ...err,
     message: message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
   }

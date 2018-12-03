@@ -166,7 +166,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/error2')
 
     expect(await page.$text('.title')).toBe('Custom error')
-    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500 })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500, customProp: 'ezpz' })
   })
 
   test('/redirect-middleware', async () => {

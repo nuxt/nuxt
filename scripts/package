@@ -7,7 +7,7 @@ import Package from './package.js'
 async function main() {
   // Read package at current directory
   const rootPackage = new Package()
-  const workspacePackages = rootPackage.getWorkspacePackages()
+  const workspacePackages = await rootPackage.getWorkspacePackages()
 
   const watch = process.argv.includes('--watch')
 
@@ -27,8 +27,8 @@ async function main() {
   // Step 1: Apply suffixes
   for (const pkg of workspacePackages) {
     if (pkg.options.suffix && pkg.options.suffix.length) {
-      pkg.suffixAndVersion()
-      pkg.writePackage()
+      await pkg.suffixAndVersion()
+      await pkg.writePackage()
     }
   }
 

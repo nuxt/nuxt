@@ -16,6 +16,11 @@ export default function rollupConfig({
   input = 'src/index.js',
   replace = {},
   alias = {},
+  resolve = {
+    only: [
+      /lodash/
+    ]
+  },
   ...options
 }, pkg) {
   if (!pkg) {
@@ -46,11 +51,7 @@ export default function rollupConfig({
           ...replace
         }
       }),
-      nodeResolvePlugin({
-        only: [
-          /lodash/
-        ]
-      }),
+      nodeResolvePlugin(resolve),
       commonjsPlugin(),
       jsonPlugin(),
       licensePlugin({

@@ -3,7 +3,7 @@ import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
 
-describe('modern client mode', () => {
+describe('modern client mode (SSR)', () => {
   beforeAll(async () => {
     const options = await loadFixture('modern', { modern: 'client' })
     nuxt = new Nuxt(options)

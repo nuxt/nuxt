@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/common",
-  "version": "2.3.2",
+  "version": "2.3.4",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -12,6 +12,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
+  }
 }
