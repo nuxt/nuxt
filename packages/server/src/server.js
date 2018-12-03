@@ -170,16 +170,18 @@ export default class Server {
   }
 
   useMiddleware(middleware) {
-    // Resolve middleware
-    if (typeof middleware === 'string') {
-      middleware = this.nuxt.resolver.requireModule(middleware)
-    }
+    let handler = middleware.handler || middleware
 
-    // Resolve handler
-    if (typeof middleware.handler === 'string') {
-      middleware.handler = this.nuxt.resolver.requireModule(middleware.handler)
+    // Resolve handler setup as string (path)
+    if (typeof handler === 'string') {
+      try {
+        handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
+      } catch (err) {
+        if (!this.options.dev) throw err[0]
+        // Only warn missing file in development
+        consola.warn(err[0])
+      }
     }
-    const handler = middleware.handler || middleware
 
     // Resolve path
     const path = (
