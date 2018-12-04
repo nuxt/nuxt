@@ -134,6 +134,7 @@ describe('with-config', () => {
     const html = window.document.body.innerHTML
     expect(html).toContain('<h1>Custom layout</h1>')
     expect(html).toContain('<h1>About page</h1>')
+    expect(html).toContain('<h2>test-meta</h2>')
   })
 
   test('/test/not-existed should return 404', async () => {
