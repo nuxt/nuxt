@@ -111,8 +111,8 @@ export async function getRouteData(route) {
   // Send back a copy of route with meta based on Component definition
   return {
     ...route,
-    meta: getMatchedComponents(route).map((Component) => {
-      return Component.options.meta || route.meta || {}
+    meta: getMatchedComponents(route).map((Component, index) => {
+      return { ...Component.options.meta, ...(index ? {} : route.meta) }
     })
   }
 }

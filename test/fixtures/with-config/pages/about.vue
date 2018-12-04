@@ -7,6 +7,9 @@
 
 <script>
 export default {
-  layout: 'custom'
+  layout: 'custom',
+  asyncData({ route }) {
+    return { meta: route.meta || 'empty-meta' }
+  }
 }
 </script>
