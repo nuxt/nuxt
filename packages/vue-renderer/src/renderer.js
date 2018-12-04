@@ -107,10 +107,16 @@ export default class VueRenderer {
       await this.loadResources(fs)
 
       // Verify
-      if (!this.isReady && this.context.options._start) {
-        throw new Error(
-          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-        )
+      if (this.context.options._start) {
+        if (!this.isReady) {
+          throw new Error(
+            'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+          )
+        } else if (this.context.options.modern && !this.context.resources.modernManifest) {
+          throw new Error(
+            'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+          )
+        }
       }
     } else {
       // Development: Listen on build:resources hook
