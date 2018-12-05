@@ -103,6 +103,18 @@ export default async (ssrContext) => {
   <% } %>
 
   /*
+  ** Call components nuxtServerInit hooks on components matched by the route.
+  */
+  const pageInitStatus = await Promise.all(
+    Components.map(Component => {
+      if (Component.options.nuxtServerInit && typeof Component.options.nuxtServerInit === 'function') {
+        return Component.options.nuxtServerInit(app.context)
+      }
+      return null
+    })
+  )
+
+  /*
   ** Call global middleware (nuxt.config.js)
   */
   let midd = <%= serialize(router.middleware).replace('middleware(', 'function(') %><%= isTest ? '// eslint-disable-line' : '' %>
