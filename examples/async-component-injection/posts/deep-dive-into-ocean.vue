@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h3 class="date">Jul 10, 2017</h3>
+    <h3 class="date">
+      Jul 10, 2017
+    </h3>
     <h1>Deep dive into the Ocean</h1>
     <div class="content">
       <img src="~/assets/img/swimmer.jpg">

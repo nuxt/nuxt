@@ -111,8 +111,8 @@ export async function getRouteData(route) {
   // Send back a copy of route with meta based on Component definition
   return {
     ...route,
-    meta: getMatchedComponents(route).map((Component) => {
-      return Component.options.meta || {}
+    meta: getMatchedComponents(route).map((Component, index) => {
+      return { ...Component.options.meta, ...(index ? {} : route.meta) }
     })
   }
 }
@@ -242,7 +242,7 @@ export function getLocation(base, mode) {
   if (base && path.indexOf(base) === 0) {
     path = path.slice(base.length)
   }
-  return (path || '/') + window.location.search + window.location.hash
+  return decodeURI(path || '/') + window.location.search + window.location.hash
 }
 
 export function urlJoin() {
@@ -271,6 +271,24 @@ export function getQueryDiff(toQuery, fromQuery) {
     }
   }
   return diff
+}
+
+export function normalizeError(err) {
+  let message
+  if (!(err.message || typeof err === 'string')) {
+    try {
+      message = JSON.stringify(err, null, 2)
+    } catch (e) {
+      message = `[${err.constructor.name}]`
+    }
+  } else {
+    message = err.message || err
+  }
+  return {
+    ...err,
+    message: message,
+    statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
+  }
 }
 
 /**
@@ -417,7 +435,7 @@ function tokensToFunction(tokens) {
         continue
       }
 
-      const value = data[token.name]
+      const value = data[token.name || 'pathMatch']
       let segment
 
       if (value == null) {
@@ -548,3 +566,4 @@ function formatQuery(query) {
     return key + '=' + val
   }).filter(Boolean).join('&')
 }
+

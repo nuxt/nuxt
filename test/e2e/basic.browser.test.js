@@ -58,7 +58,7 @@ describe('basic browser', () => {
   test('/css', async () => {
     await page.nuxt.navigate('/css')
 
-    expect(await page.$text('.red')).toBe('This is red')
+    expect(await page.$text('.red', true)).toEqual('This is red')
     expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
@@ -158,7 +158,7 @@ describe('basic browser', () => {
   test('/error', async () => {
     await page.nuxt.navigate('/error')
 
-    expect(await page.nuxt.errorData()).toEqual({ statusCode: 500 })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Error mouahahah', statusCode: 500 })
     expect(await page.$text('.title')).toBe('Error mouahahah')
   })
 
@@ -166,7 +166,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/error2')
 
     expect(await page.$text('.title')).toBe('Custom error')
-    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error' })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500, customProp: 'ezpz' })
   })
 
   test('/redirect-middleware', async () => {

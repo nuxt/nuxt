@@ -3,9 +3,15 @@
     <h1>{{ $route.params.slug || 'Home' }}</h1>
     <pre>{{ userAgent }}</pre>
     <ul>
-      <li><nuxt-link to="/">Home</nuxt-link></li>
+      <li>
+        <NuxtLink to="/">
+          Home
+        </NuxtLink>
+      </li>
       <li v-for="(slug, index) in slugs" :key="index">
-        <nuxt-link :to="{ name: 'slug', params: { slug } }">{{ slug }}</nuxt-link>
+        <NuxtLink :to="{ name: 'slug', params: { slug } }">
+          {{ slug }}
+        </NuxtLink>
       </li>
     </ul>
   </div>

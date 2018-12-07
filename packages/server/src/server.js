@@ -1,6 +1,7 @@
 import path from 'path'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
+import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/common'
 
@@ -9,7 +10,7 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import modernMiddleware from './middleware/modern'
+import createModernMiddleware from './middleware/modern'
 
 export default class Server {
   constructor(nuxt) {
@@ -72,18 +73,19 @@ export default class Server {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
         this.useMiddleware(compression(compressor))
-      } else {
-        // Else, require own compression middleware
+      } else if (compressor) {
+        // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
     }
 
-    if (this.options.modern === 'server') {
-      this.useMiddleware(modernMiddleware)
-    }
+    const modernMiddleware = createModernMiddleware({
+      context: this.renderer.context
+    })
 
     // Add webpack middleware support only for development
     if (this.options.dev) {
+      this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
         const name = req.modernMode ? 'modern' : 'client'
         if (this.devMiddleware[name]) {
@@ -123,12 +125,32 @@ export default class Server {
           this.options.render.dist
         )
       })
+      this.useMiddleware(modernMiddleware)
     }
 
-    // Add User provided middleware
+    // Add user provided middleware
     this.options.serverMiddleware.forEach((m) => {
       this.useMiddleware(m)
     })
+
+    const { fallback } = this.options.render
+    if (fallback) {
+      // Graceful 404 errors for dist files
+      if (fallback.dist) {
+        this.useMiddleware({
+          path: this.publicPath,
+          handler: servePlaceholder(fallback.dist)
+        })
+      }
+
+      // Graceful 404 errors for other paths
+      if (fallback.static) {
+        this.useMiddleware({
+          path: '/',
+          handler: servePlaceholder(fallback.static)
+        })
+      }
+    }
 
     // Finally use nuxtMiddleware
     this.useMiddleware(nuxtMiddleware({
@@ -197,7 +219,8 @@ export default class Server {
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,
-      app: this.app
+      app: this.app,
+      dev: this.options.dev
     })
 
     // Listen

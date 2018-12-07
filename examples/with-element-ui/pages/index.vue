@@ -29,15 +29,23 @@
         <el-col :xs="24" :sm="{span: 10, offset: 2}">
           <el-form-item label="Priority" prop="priority">
             <el-radio-group v-model="account.priority">
-              <el-radio label="m">Medium</el-radio>
-              <el-radio label="h">High</el-radio>
+              <el-radio label="m">
+                Medium
+              </el-radio>
+              <el-radio label="h">
+                High
+              </el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
       </el-row>
       <el-row type="flex" justify="center">
-        <el-button type="primary" @click="submit('elm-demo')">Create</el-button>
-        <el-button @click="reset('elm-demo')">Reset</el-button>
+        <el-button type="primary" @click="submit('elm-demo')">
+          Create
+        </el-button>
+        <el-button @click="reset('elm-demo')">
+          Reset
+        </el-button>
       </el-row>
     </el-form>
   </div>

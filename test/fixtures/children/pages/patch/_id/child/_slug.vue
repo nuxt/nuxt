@@ -1,8 +1,16 @@
 <template>
   <div>
-    <h4>_slug: <i data-date-child-slug>{{ date }}</i></h4>
+    <h4>
+      _slug: <i data-date-child-slug>
+        {{ date }}
+      </i>
+    </h4>
     <input ref="search" v-model="q" data-test-search-input type="text" @input="update">
-    <ul><li v-for="s in searchResults" :key="s" data-test-search-result>{{ s }}</li></ul>
+    <ul>
+      <li v-for="s in searchResults" :key="s" data-test-search-result>
+        {{ s }}
+      </li>
+    </ul>
   </div>
 </template>
 

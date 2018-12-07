@@ -6,19 +6,21 @@ import Youch from '@nuxtjs/youch'
 
 export default ({ resources, options }) => function errorMiddleware(err, req, res, next) {
   // ensure statusCode, message and name fields
-  err.statusCode = err.statusCode || 500
-  err.message = err.message || 'Nuxt Server Error'
-  err.name = !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
 
-  // We hide actual errors from end users, so show them on server logs
-  if (err.statusCode !== 404) {
-    consola.error(err)
+  const error = {
+    statusCode: err.statusCode || 500,
+    message: err.message || 'Nuxt Server Error',
+    name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
   }
+  const errorFull = err instanceof Error ? err : typeof err === 'string'
+    ? new Error(err) : new Error(err.message || JSON.stringify(err))
+  errorFull.name = error.name
+  errorFull.statusCode = error.statusCode
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
-    res.statusCode = err.statusCode
-    res.statusMessage = err.name
+    res.statusCode = error.statusCode
+    res.statusMessage = error.name
     res.setHeader('Content-Type', type + '; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(content))
     res.setHeader('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
@@ -36,11 +38,15 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
 
   // Use basic errors when debug mode is disabled
   if (!options.debug) {
+    // We hide actual errors from end users, so show them on server logs
+    if (err.statusCode !== 404) {
+      consola.error(err)
+    }
     // Json format is compatible with Youch json responses
     const json = {
-      status: err.statusCode,
-      message: err.message,
-      name: err.name
+      status: error.statusCode,
+      message: error.message,
+      name: error.name
     }
     if (isJson) {
       sendResponse(JSON.stringify(json, undefined, 2), 'text/json')
@@ -53,13 +59,12 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
 
   // Show stack trace
   const youch = new Youch(
-    err,
+    errorFull,
     req,
     readSourceFactory({
       srcDir: options.srcDir,
       rootDir: options.rootDir,
-      buildDir: options.buildDir,
-      resources
+      buildDir: options.buildDir
     }),
     options.router.base,
     true
@@ -73,7 +78,7 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
   }
 }
 
-const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async function readSource(frame) {
+const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource(frame) {
   // Remove webpack:/// & query string from the end
   const sanitizeName = name =>
     name ? name.replace('webpack:///', '').split('?')[0] : null
@@ -106,12 +111,5 @@ const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async fu
       }
       return
     }
-  }
-
-  // Fallback: use server bundle
-  // TODO: restore to if after https://github.com/istanbuljs/nyc/issues/595 fixed
-  /* istanbul ignore next */
-  if (!frame.contents) {
-    frame.contents = resources.serverBundle.files[frame.fileName]
   }
 }

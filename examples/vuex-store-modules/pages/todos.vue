@@ -4,11 +4,15 @@
     <ul>
       <li v-for="(todo, index) in todos" :key="index">
         <input :checked="todo.done" type="checkbox" @change="toggle(todo)">
-        <span :class="{ done: todo.done }">{{ todo.text }}</span>
+        <span :class="{ done: todo.done }">
+          {{ todo.text }}
+        </span>
       </li>
       <li><input placeholder="What needs to be done?" @keyup.enter="addTodo"></li>
     </ul>
-    <nuxt-link to="/">Home</nuxt-link>
+    <NuxtLink to="/">
+      Home
+    </NuxtLink>
   </div>
 </template>
 

@@ -2,8 +2,12 @@
   <div class="ba b--black-20 mw5 ma2">
     <img :src="'https://robots.johnlindquist.com/' + person.first_name + '_' + person.last_name">
     <div class="flex flex-column items-center pa2 b--black-20">
-      <div class="f4">{{ person.first_name }} {{ person.last_name }}</div>
-      <button class="w-100 bg-blue dim mv2 pv2 bn pointer" @click="select(person.id)">Select</button>
+      <div class="f4">
+        {{ person.first_name }} {{ person.last_name }}
+      </div>
+      <button class="w-100 bg-blue dim mv2 pv2 bn pointer" @click="select(person.id)">
+        Select
+      </button>
     </div>
   </div>
 </template>
@@ -14,16 +18,15 @@
 import Vue from 'vue'
 import Component from 'nuxt-class-component'
 import { Prop } from 'vue-property-decorator'
-import { Action, namespace } from 'vuex-class'
+import { namespace } from 'vuex-class'
 
 import * as people from '~/store/modules/people'
 
-const PeopleAction = namespace(people.name, Action)
+const People = namespace(people.name)
 
-export default
 @Component({})
-class Card extends Vue {
+export default class Card extends Vue {
   @Prop() person
-  @PeopleAction select
+  @People.Action select
 }
 </script>

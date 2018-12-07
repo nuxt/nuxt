@@ -7,7 +7,7 @@ let nuxt = null
 
 // Utils
 const range = n => [...Array(n).keys()]
-const FOOBAR_REGEX = /<foobar>([\s\S]*)<\/foobar>/
+const FOOBAR_REGEX = /<Foobar>([\s\S]*)<\/Foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
 
 const url = route => 'http://localhost:' + port + route

@@ -1,15 +1,21 @@
 <template>
   <div class="container">
     <div class="left">
-      <h2><nuxt-link to="/">Players</nuxt-link></h2>
+      <h2>
+        <NuxtLink to="/">
+          Players
+        </NuxtLink>
+      </h2>
       <ul class="players">
         <li v-for="user in users" :key="user.id">
-          <nuxt-link :to="'/'+user.id">{{ user.name }}</nuxt-link>
+          <NuxtLink :to="'/'+user.id">
+            {{ user.name }}
+          </NuxtLink>
         </li>
       </ul>
     </div>
     <div class="right">
-      <nuxt-child :key="$route.params.id" />
+      <NuxtChild :key="$route.params.id" />
     </div>
   </div>
 </template>

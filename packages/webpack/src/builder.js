@@ -1,4 +1,3 @@
-import fs from 'fs'
 import path from 'path'
 import pify from 'pify'
 import webpack from 'webpack'
@@ -14,7 +13,8 @@ import {
   wrapArray
 } from '@nuxt/common'
 
-import { ClientConfig, ModernConfig, ServerConfig, PerfLoader } from './config'
+import { ClientConfig, ModernConfig, ServerConfig } from './config'
+import PerfLoader from './utils/perf-loader'
 
 const glob = pify(Glob)
 
@@ -27,9 +27,11 @@ export class WebpackBundler {
     this.devMiddleware = {}
     this.hotMiddleware = {}
 
-    // Initialize shared FS and Cache
+    // Initialize shared MFS for dev
     if (this.context.options.dev) {
       this.mfs = new MFS()
+      this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
+      this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
   }
 
@@ -82,7 +84,7 @@ export class WebpackBundler {
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
     }
-    Object.keys(styleResources).forEach(async (ext) => {
+    for (const ext of Object.keys(styleResources)) {
       await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
         const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
@@ -90,7 +92,7 @@ export class WebpackBundler {
           throw new Error(`Style Resource not found: ${p}`)
         }
       }))
-    })
+    }
 
     // Configure compilers
     this.compilers = compilersOptions.map((compilersOption) => {
@@ -135,7 +137,7 @@ export class WebpackBundler {
         })
 
         // Reload renderer if available
-        nuxt.server.loadResources(this.mfs || fs)
+        await nuxt.callHook('build:resources', this.mfs)
 
         // Resolve on next tick
         process.nextTick(resolve)

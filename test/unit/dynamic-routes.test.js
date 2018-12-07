@@ -20,8 +20,16 @@ describe('dynamic routes', () => {
       )
       const routes = eval('( ' + routerFile + ')') // eslint-disable-line no-eval
       // pages/test/index.vue
-      expect(routes[0].path).toBe('/test')
-      expect(routes[0].name).toBe('test')
+      expect(routes[0].path).toBe('/parent')
+      expect(routes[0].name).toBeFalsy() // parent route has no name
+      // pages/parent/*.vue
+      expect(routes[0].children.length).toBe(3) // parent has 3 children
+      expect(routes[0].children.map(r => r.path)).toEqual(['', 'child', 'teub'])
+      expect(routes[0].children.map(r => r.name)).toEqual([
+        'parent',
+        'parent-child',
+        'parent-teub'
+      ])
       // pages/posts.vue
       expect(routes[1].path).toBe('/posts')
       expect(routes[1].name).toBe('posts')
@@ -30,16 +38,8 @@ describe('dynamic routes', () => {
       expect(routes[1].children[0].path).toBe(':id?')
       expect(routes[1].children[0].name).toBe('posts-id')
       // pages/parent.vue
-      expect(routes[2].path).toBe('/parent')
-      expect(routes[2].name).toBeFalsy() // parent route has no name
-      // pages/parent/*.vue
-      expect(routes[2].children.length).toBe(3) // parent has 3 children
-      expect(routes[2].children.map(r => r.path)).toEqual(['', 'teub', 'child'])
-      expect(routes[2].children.map(r => r.name)).toEqual([
-        'parent',
-        'parent-teub',
-        'parent-child'
-      ])
+      expect(routes[2].path).toBe('/test')
+      expect(routes[2].name).toBe('test')
       // pages/test/projects/index.vue
       expect(routes[3].path).toBe('/test/projects')
       expect(routes[3].name).toBe('test-projects')

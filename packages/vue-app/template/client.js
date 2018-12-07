@@ -36,11 +36,6 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 if (!Vue.config.$nuxt) {
   const defaultErrorHandler = Vue.config.errorHandler
   Vue.config.errorHandler = (err, vm, info, ...rest) => {
-    const nuxtError = {
-      statusCode: err.statusCode || err.name || 'Whoops!',
-      message: err.message || err.toString()
-    }
-
     // Call other handler if exist
     let handled = null
     if (typeof defaultErrorHandler === 'function') {
@@ -53,10 +48,10 @@ if (!Vue.config.$nuxt) {
     if (vm && vm.$root) {
       const nuxtApp = Object.keys(Vue.config.$nuxt)
         .find(nuxtInstance => vm.$root[nuxtInstance])
-    
+
       // Show Nuxt Error Page
       if (nuxtApp && vm.$root[nuxtApp].error && info !== 'render function') {
-        vm.$root[nuxtApp].error(nuxtError)
+        vm.$root[nuxtApp].error(err)
       }
     }
 
@@ -68,7 +63,7 @@ if (!Vue.config.$nuxt) {
     if (process.env.NODE_ENV !== 'production') {
       console.error(err)
     } else {
-      console.error(err.message || nuxtError.message)
+      console.error(err.message || err)
     }
   }
   Vue.config.$nuxt = {}
@@ -150,9 +145,7 @@ async function loadAsyncComponents(to, from, next) {
     // Call next()
     next()
   } catch (err) {
-    const error = err || {}
-    const statusCode = (error.statusCode || error.status || (error.response && error.response.status) || 500)
-    this.error({ statusCode, message: error.message })
+    const error = this.error(err)
     this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
     next(false)
   }
@@ -414,8 +407,6 @@ async function render(to, from, next) {
       return this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
     }
     _lastPaths = []
-    const errorResponseStatus = (error.response && error.response.status)
-    error.statusCode = error.statusCode || error.status || errorResponseStatus || 500
 
     globalHandleError(error)
 

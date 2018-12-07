@@ -1,5 +1,6 @@
 import consola from 'consola'
 import { common } from '../options'
+import { normalizeArg } from '../utils'
 
 export default {
   name: 'generate',
@@ -12,11 +13,23 @@ export default {
       default: true,
       description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
     },
+    devtools: {
+      type: 'boolean',
+      default: false,
+      description: 'Enable Vue devtools',
+      prepare(cmd, options, argv) {
+        options.vue = options.vue || {}
+        options.vue.config = options.vue.config || {}
+        if (argv.devtools) {
+          options.vue.config.devtools = true
+        }
+      }
+    },
     modern: {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',
       prepare(cmd, options, argv) {
-        if (argv.modern !== undefined) {
+        if (normalizeArg(argv.modern)) {
           options.modern = 'client'
         }
       }

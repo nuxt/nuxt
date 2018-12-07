@@ -4,8 +4,9 @@ import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
+import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { isPureObject, isUrl, guardDir, isNonEmptyString } from '@nuxt/common'
+import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
@@ -53,7 +54,14 @@ export function getNuxtConfig(_options) {
 
   // Apply defaults
   const nuxtConfig = getDefaultNuxtConfig()
+
   nuxtConfig.build._publicPath = nuxtConfig.build.publicPath
+
+  // Fall back to default if publicPath is falsy
+  if (options.build && !options.build.publicPath) {
+    options.build.publicPath = undefined
+  }
+
   defaultsDeep(options, nuxtConfig)
 
   // Check srcDir and generate.dir excistence
@@ -90,10 +98,11 @@ export function getNuxtConfig(_options) {
   }
 
   // Populate modulesDir
-  options.modulesDir = []
-    .concat(options.modulesDir)
-    .concat(path.join(options.nuxtDir, 'node_modules')).filter(isNonEmptyString)
-    .map(dir => path.resolve(options.rootDir, dir))
+  options.modulesDir = uniq(
+    require.main.paths.concat(
+      [].concat(options.modulesDir).map(dir => path.resolve(options.rootDir, dir))
+    )
+  )
 
   const mandatoryExtensions = ['js', 'mjs']
 
@@ -110,6 +119,9 @@ export function getNuxtConfig(_options) {
   } else {
     options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
   }
+
+  options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
+  options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
 
   // Ignore publicPath on dev
   /* istanbul ignore if */
@@ -243,10 +255,6 @@ export function getNuxtConfig(_options) {
   }
   defaultsDeep(options, modePreset || options.modes.universal)
 
-  if (options.modern === true) {
-    options.modern = 'server'
-  }
-
   // If no server-side rendering, add appear true transition
   /* istanbul ignore if */
   if (options.render.ssr === false && options.transition) {
@@ -293,6 +301,20 @@ export function getNuxtConfig(_options) {
   if (vueLoader.productionMode === undefined) {
     vueLoader.productionMode = !options.dev
   }
+  // TODO: Remove when new release of Vue (https://github.com/nuxt/nuxt.js/issues/4312)
+  const staticClassHotfix = function (el) {
+    el.staticClass = el.staticClass && el.staticClass.replace(/\\[a-z]\b/g, '')
+    if (Array.isArray(el.children)) {
+      el.children.map(staticClassHotfix)
+    }
+  }
+  vueLoader.compilerOptions = vueLoader.compilerOptions || {}
+  vueLoader.compilerOptions.modules = [
+    ...(vueLoader.compilerOptions.modules || []),
+    {
+      postTransformNode: staticClassHotfix
+    }
+  ]
   const styleLoaders = [
     'css', 'cssModules', 'less',
     'sass', 'scss', 'stylus', 'vueStyle'
@@ -304,9 +326,7 @@ export function getNuxtConfig(_options) {
     }
   }
 
-  // include SFCs in node_modules
   options.build.transpile = [].concat(options.build.transpile || [])
-    .map(module => module instanceof RegExp ? module : new RegExp(module))
 
   if (options.build.quiet === true) {
     consola.level = 0

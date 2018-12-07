@@ -1,7 +1,9 @@
 <template>
   <div>
     <h1>This is secret page.</h1>
-    <nuxt-link to="/">Back home</nuxt-link>
+    <NuxtLink to="/">
+      Back home
+    </NuxtLink>
   </div>
 </template>
 

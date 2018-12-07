@@ -31,6 +31,7 @@ export default {
       '/store-module',
       '/users/1',
       '/users/2',
+      '/тест雨',
       { route: '/users/3', payload: { id: 3000 } }
     ],
     interval: 200,
@@ -70,6 +71,7 @@ export default {
   ],
   build: {
     scopeHoisting: true,
+    publicPath: '',
     postcss: {
       preset: {
         features: {
@@ -77,7 +79,8 @@ export default {
         }
       },
       plugins: {
-        cssnano: {}
+        cssnano: {},
+        [path.resolve(__dirname, 'plugins', 'tailwind.js')]: {}
       }
     }
   }

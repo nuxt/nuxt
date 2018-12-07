@@ -1,3 +1,4 @@
+import path from 'path'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
 
@@ -10,6 +11,7 @@ let transpile = null
 let output = null
 let loadersOptions
 let vueLoader
+let postcssLoader
 
 describe('basic dev', () => {
   beforeAll(async () => {
@@ -25,7 +27,9 @@ describe('basic dev', () => {
           chunk: 'test-[name].[contenthash].js'
         },
         transpile: [
-          'vue\\.test\\.js',
+          '@scoped/packageA',
+          '@scoped\\packageB',
+          'vue.test.js',
           /vue-test/
         ],
         loaders: {
@@ -40,6 +44,8 @@ describe('basic dev', () => {
             output = wpOutput
             loadersOptions = loaders
             vueLoader = rules.find(loader => loader.test.test('.vue'))
+            const cssLoaders = rules.find(loader => loader.test.test('.css')).oneOf[0].use
+            postcssLoader = cssLoaders[cssLoaders.length - 1]
           }
         }
       }
@@ -57,10 +63,12 @@ describe('basic dev', () => {
 
   test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
-    expect(transpile('node_modules/test.js')).toBe(false)
-    expect(transpile('node_modules/vue-test')).toBe(true)
-    expect(transpile('node_modules/vue.test.js')).toBe(true)
-    expect(transpile('node_modules/test.vue.js')).toBe(true)
+    expect(transpile(path.normalize('node_modules/test.js'))).toBe(false)
+    expect(transpile(path.normalize('node_modules/vue-test'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/vue.test.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
@@ -79,7 +87,20 @@ describe('basic dev', () => {
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')
-    expect(vueLoader.options).toBe(vue)
+    expect(vueLoader.options).toEqual(vue)
+  })
+
+  test('Config: cssnano is at then end of postcss plugins', () => {
+    const plugins = postcssLoader.options.plugins.map((plugin) => {
+      return plugin.postcssPlugin
+    })
+    expect(plugins).toEqual([
+      'postcss-import',
+      'postcss-url',
+      'postcss-preset-env',
+      'nuxt-test',
+      'cssnano'
+    ])
   })
 
   test('/stateless', async () => {
@@ -120,17 +141,6 @@ describe('basic dev', () => {
     await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
-  })
-
-  test('/error no source-map (Youch)', async () => {
-    const sourceMaps = nuxt.renderer.resources.serverBundle.maps
-    nuxt.renderer.resources.serverBundle.maps = {}
-
-    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
-    })
-
-    nuxt.renderer.resources.serverBundle.maps = sourceMaps
   })
 
   test('/error should return json format error (Youch)', async () => {

@@ -2,11 +2,21 @@
   <div>
     <h1>I'm RED</h1>
     <section class="container">
-      <div class="item-a">item-a</div>
-      <div class="item-b">item-b</div>
-      <div class="item-c">item-c</div>
-      <div class="item-d">item-d</div>
-      <div class="item-e">item-e</div>
+      <div class="item-a">
+        item-a
+      </div>
+      <div class="item-b">
+        item-b
+      </div>
+      <div class="item-c">
+        item-c
+      </div>
+      <div class="item-d">
+        item-d
+      </div>
+      <div class="item-e">
+        item-e
+      </div>
     </section>
   </div>
 </template>

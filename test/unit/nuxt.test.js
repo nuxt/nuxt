@@ -19,22 +19,25 @@ describe('nuxt', () => {
     expect(nuxt.initialized).toBe(true)
   })
 
-  test('Fail to build when no pages/ directory but is in the parent', () => {
+  test('Fail to build when no pages/ directory but is in the parent', async () => {
+    const config = await loadFixture('empty')
     const nuxt = new Nuxt({
-      dev: false,
+      ...config,
       rootDir: resolve(__dirname, '..', 'fixtures', 'empty', 'pages')
     })
 
-    return new Builder(nuxt).build().catch((err) => {
-      const s = String(err)
-      expect(s).toContain('No `pages` directory found')
-      expect(s).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
-    })
+    try {
+      await new Builder(nuxt).build()
+    } catch (err) {
+      expect(err.message).toContain('No `pages` directory found')
+      expect(err.message).toContain('Did you mean to run `nuxt` in the parent (`../`) directory?')
+    }
+    expect.hasAssertions()
   })
 
   test('Build with default page when no pages/ directory', async () => {
-    const nuxt = new Nuxt()
-    new Builder(nuxt).build()
+    const config = await loadFixture('missing-pages-dir')
+    const nuxt = new Nuxt(config)
     const port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
@@ -45,27 +48,17 @@ describe('nuxt', () => {
     await nuxt.close()
   })
 
-  test('Fail to build when specified plugin isn\'t found', () => {
-    const nuxt = new Nuxt({
-      dev: false,
-      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-plugin')
-    })
+  test('Fail to build when specified plugin isn\'t found', async () => {
+    const config = await loadFixture('missing-plugin')
+    const nuxt = new Nuxt(config)
 
-    return new Builder(nuxt).build().catch((err) => {
-      const s = String(err)
-      expect(s).toContain('Plugin not found')
-    })
+    await expect(new Builder(nuxt).build()).rejects.toThrow('Plugin not found')
   })
 
-  test('Warn when styleResource isn\'t found', () => {
-    const nuxt = new Nuxt({
-      dev: false,
-      rootDir: resolve(__dirname, '..', 'fixtures', 'missing-style-resource')
-    })
+  test('Warn when styleResource isn\'t found', async () => {
+    const config = await loadFixture('missing-style-resource')
+    const nuxt = new Nuxt(config)
 
-    return new Builder(nuxt).build().catch((err) => {
-      const s = String(err)
-      expect(s).toContain('Style Resource not found')
-    })
+    await expect(new Builder(nuxt).build()).rejects.toThrow('Style Resource not found')
   })
 })

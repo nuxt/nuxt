@@ -103,7 +103,7 @@ describe('basic generate', () => {
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)
-    expect(element.textContent).toBe('This is red')
+    expect(element.textContent).toContain('This is red')
     expect(element.className).toBe('red')
     // t.is(window.getComputedStyle(element), 'red')
   })
@@ -127,6 +127,12 @@ describe('basic generate', () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/async-data'))
     const html = window.document.body.innerHTML
     expect(html).toContain('<p>Nuxt.js</p>')
+  })
+
+  test('/тест雨 (test non ascii route)', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/тест雨'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Hello unicode')
   })
 
   test('/users/1/index.html', async () => {
