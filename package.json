@@ -74,7 +74,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.17.0",
-    "typescript": "^3.2.1",
+    "typescript": "^3.2.2",
     "vue-jest": "^3.0.1"
   },
   "repository": {
