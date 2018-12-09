@@ -64,7 +64,7 @@ export default {
   async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
     this.logChanged({
       event,
-      path: nuxt.resolver.formatPath(path)
+      path: nuxt ? nuxt.resolver.formatPath(path) : path
     })
 
     await nuxt.close()
