@@ -1,5 +1,5 @@
 import Module from 'module'
-import { resolve, join, sep } from 'path'
+import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import esm from 'esm'
 
