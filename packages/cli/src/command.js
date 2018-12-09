@@ -142,8 +142,12 @@ export default class NuxtCommand {
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
     let helpText = colorize(`${usage}\n\n`)
-    if (this.cmd.description) { helpText += colorize(`${description}\n\n`) }
-    if (options.length) { helpText += colorize(`${opts}\n\n`) }
+    if (this.cmd.description) {
+      helpText += colorize(`${description}\n\n`)
+    }
+    if (options.length) {
+      helpText += colorize(`${opts}\n\n`)
+    }
 
     return helpText
   }
