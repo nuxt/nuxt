@@ -2,7 +2,7 @@ import consola from 'consola'
 import chalk from 'chalk'
 import env from 'std-env'
 import { common, server } from '../options'
-import { showBanner } from '../utils'
+import { showBanner, eventsMapping } from '../utils'
 
 export default {
   name: 'dev',
@@ -53,26 +53,20 @@ export default {
     return nuxt
   },
 
-  logChanged({ event, path, nuxt }) {
-    const eventsMapping = {
-      add: { icon: '+', color: 'green', suffix: 'added' },
-      change: { icon: env.windows ? '»' : '↻', color: 'blue', suffix: 'updated' },
-      unlink: { icon: '-', color: 'red', suffix: 'removed' }
-    }
-    const filename = path
-      .replace(nuxt.options.srcDir, '~')
-      .replace(nuxt.options.rootDir, '~~')
-    const logParams = eventsMapping[event] || eventsMapping.change
-
+  logChanged({ event, path }) {
+    const { icon, color, action } = eventsMapping[event] || eventsMapping.change
     consola.log({
-      type: 'change',
-      icon: chalk[logParams.color].bold(logParams.icon),
-      message: chalk[logParams.color](filename + ' ' + logParams.suffix)
+      type: event,
+      icon: chalk[color].bold(icon),
+      message: `${action} ${chalk.cyan(path)}`
     })
   },
 
   async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
-    this.logChanged({ event, path, nuxt })
+    this.logChanged({
+      event,
+      path: nuxt.resolver.formatPath(path)
+    })
 
     await nuxt.close()
 

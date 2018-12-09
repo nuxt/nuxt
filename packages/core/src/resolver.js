@@ -1,5 +1,5 @@
 import Module from 'module'
-import { resolve, join } from 'path'
+import { resolve, join, sep } from 'path'
 import fs from 'fs-extra'
 import esm from 'esm'
 
@@ -18,6 +18,17 @@ export default class Resolver {
 
     // ESM Loader
     this.esm = esm(module, {})
+  }
+
+  formatPath(path) {
+    if (!path) {
+      return
+    }
+
+    return path
+      .replace(process.cwd() + sep, '')
+      .replace(this.options.srcDir, '~')
+      .replace(this.options.rootDir, '~~')
   }
 
   resolveModule(path) {

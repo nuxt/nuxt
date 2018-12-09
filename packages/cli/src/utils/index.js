@@ -18,6 +18,12 @@ const _require = esm(module, {
   }
 })
 
+export const eventsMapping = {
+  add: { icon: '+', color: 'green', action: 'Created' },
+  change: { icon: env.windows ? '»' : '↻', color: 'blue', action: 'Updated' },
+  unlink: { icon: '-', color: 'red', action: 'Removed' }
+}
+
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
 
