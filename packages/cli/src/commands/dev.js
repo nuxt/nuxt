@@ -54,25 +54,23 @@ export default {
 
   logChanged({ event, path }) {
     const { icon, color, action } = eventsMapping[event] || eventsMapping.change
+
     consola.log({
       type: event,
       icon: chalk[color].bold(icon),
-      message: `${action} ${chalk.cyan(path)}`
+      message: `${action} ${chalk.cyan(formatPath(path))}`
     })
   },
 
   async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
-    this.logChanged({
-      event,
-      path: formatPath(path)
-    })
+    this.logChanged({ event, path })
 
     await nuxt.close()
 
     await this.startDev(cmd, argv)
   },
 
-  onBundlerChange(changedFileName) {
-    this.logChanged(changedFileName)
+  onBundlerChange(path) {
+    this.logChanged({ event: 'change', path })
   }
 }
