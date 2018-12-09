@@ -104,5 +104,5 @@ export default () => ({
       /vue-ssr-(client|modern)-manifest.json/
     ]
   },
-  friendlyErrorsPlugin: true
+  friendlyErrors: true
 })
