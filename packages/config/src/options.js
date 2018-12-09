@@ -281,11 +281,6 @@ export function getNuxtConfig(_options) {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
   }
 
-  // TODO: remove when mini-css-extract-plugin supports HMR
-  if (options.dev) {
-    options.build.extractCSS = false
-  }
-
   // Enable minimize for production builds
   if (options.build.optimization.minimize === undefined) {
     options.build.optimization.minimize = !options.dev

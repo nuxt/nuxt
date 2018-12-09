@@ -1,5 +1,5 @@
 import path from 'path'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
 
 import { wrapArray } from '@nuxt/common'
 
@@ -83,7 +83,7 @@ export default class StyleLoader {
 
   extract() {
     if (this.extractCSS && !this.isServer) {
-      return MiniCssExtractPlugin.loader
+      return ExtractCssChunks.loader
     }
   }
 
