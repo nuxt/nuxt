@@ -1,6 +1,7 @@
 <template>
   <div>
     <h1>About page</h1>
+    <h2>{{ meta[0].text }}</h2>
     <NuxtLink to="/">
       Home page
     </NuxtLink>
@@ -9,6 +10,9 @@
 
 <script>
 export default {
-  layout: 'custom'
+  layout: 'custom',
+  asyncData({ route }) {
+    return { meta: route.meta || 'empty-meta' }
+  }
 }
 </script>

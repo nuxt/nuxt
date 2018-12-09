@@ -55,8 +55,10 @@ export default class VueRenderer {
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
-        const moduleTag = scriptTag.replace('<script', '<script type="module"').replace(legacyJsFile, modernJsFile)
-        const noModuleTag = scriptTag.replace('<script', '<script nomodule')
+        const crossorigin = this.context.options.build.crossorigin
+        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
+        const moduleTag = scriptTag.replace('<script', `<script type="module"${cors}`).replace(legacyJsFile, modernJsFile)
+        const noModuleTag = scriptTag.replace('<script', `<script nomodule${cors}`)
         return noModuleTag + moduleTag
       })
     }
@@ -66,7 +68,7 @@ export default class VueRenderer {
   getModernFiles(legacyFiles = []) {
     const modernFiles = []
     for (const legacyJsFile of legacyFiles) {
-      const modernFile = { ...legacyJsFile }
+      const modernFile = { ...legacyJsFile, modern: true }
       if (modernFile.asType === 'script') {
         const file = this.assetsMapping[legacyJsFile.file]
         modernFile.file = file
@@ -91,7 +93,9 @@ export default class VueRenderer {
       return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
-        return linkTag.replace('rel="preload"', 'rel="modulepreload"').replace(legacyJsFile, modernJsFile)
+        const crossorigin = this.context.options.build.crossorigin
+        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
+        return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
       })
     }
     return context.renderResourceHints()
@@ -103,10 +107,16 @@ export default class VueRenderer {
       await this.loadResources(fs)
 
       // Verify
-      if (!this.isReady && this.context.options._start) {
-        throw new Error(
-          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-        )
+      if (this.context.options._start) {
+        if (!this.isReady) {
+          throw new Error(
+            'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+          )
+        } else if (this.context.options.modern && !this.context.resources.modernManifest) {
+          throw new Error(
+            'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+          )
+        }
       }
     } else {
       // Development: Listen on build:resources hook

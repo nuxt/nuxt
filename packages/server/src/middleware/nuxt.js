@@ -52,7 +52,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
       const links = pushAssets
         ? pushAssets(req, res, publicPath, preloadFiles)
-        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options.dev)
+        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options)
 
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
@@ -87,13 +87,13 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
   }
 }
 
-const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
-  if (shouldPush && isDev) {
+const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
+  if (shouldPush && options.dev) {
     consola.warn('http2.shouldPush is deprecated. Use http2.pushAssets function')
   }
 
   const links = []
-  preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
+  preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
     /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
@@ -105,7 +105,11 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
       return
     }
 
-    links.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
+    const crossorigin = options.build.crossorigin
+    const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
+    const ref = modern ? 'modulepreload' : 'preload'
+
+    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
   })
   return links
 }

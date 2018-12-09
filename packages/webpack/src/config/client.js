@@ -5,6 +5,7 @@ import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
+import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
@@ -121,6 +122,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(this.options.buildDir, 'dist', 'client'),
         isModernBuild: this.isModern
+      }))
+    }
+
+    if (this.options.build.crossorigin) {
+      plugins.push(new CorsPlugin({
+        crossorigin: this.options.build.crossorigin
       }))
     }
 
