@@ -64,8 +64,11 @@ export default class StyleLoader {
   }
 
   css(options) {
+    if (this.isServer && this.extractCSS) {
+      options.exportOnlyLocals = true
+    }
     return {
-      loader: (this.isServer && this.extractCSS) ? 'css-loader/locals' : 'css-loader',
+      loader: 'css-loader',
       options
     }
   }
