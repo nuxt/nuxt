@@ -10,8 +10,14 @@ import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
+  // Prevent duplicate calls
+  if (_options.__normalized__) {
+    return _options
+  }
+
   // Clone options to prevent unwanted side-effects
   const options = Object.assign({}, _options)
+  options.__normalized__ = true
 
   // Normalize options
   if (options.loading === true) {
@@ -75,6 +81,14 @@ export function getNuxtConfig(_options) {
 
   // Resolve buildDir
   options.buildDir = path.resolve(options.rootDir, options.buildDir)
+
+  // Default value for _nuxtConfigFile
+  if (!options._nuxtConfigFile) {
+    options._nuxtConfigFile = path.resolve(options.rootDir, 'nuxt.config.js')
+  }
+
+  // Watch for _nuxtConfigFile changes
+  options.watch.push(options._nuxtConfigFile)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')

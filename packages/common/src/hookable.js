@@ -45,6 +45,10 @@ export default class Hookable {
     }
   }
 
+  clearHooks() {
+    this._hooks = {}
+  }
+
   flatHooks(configHooks, hooks = {}, parentName) {
     Object.keys(configHooks).forEach((key) => {
       const subHook = configHooks[key]

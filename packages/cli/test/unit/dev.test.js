@@ -13,7 +13,7 @@ describe('dev', () => {
     expect(typeof dev.run).toBe('function')
   })
 
-  test('reloads on fileChanged hook', async () => {
+  test('reloads on fileRestartHook', async () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
@@ -23,21 +23,18 @@ describe('dev', () => {
 
     expect(Builder.prototype.build).toHaveBeenCalled()
     expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
-    expect(Builder.prototype.watchServer).toHaveBeenCalled()
+    // expect(Builder.prototype.watchRestart).toHaveBeenCalled()
 
     jest.clearAllMocks()
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
-    await Nuxt.fileChangedHook(builder)
+    await Nuxt.fileRestartHook(builder)
     expect(consola.log).toHaveBeenCalled()
 
-    expect(Nuxt.prototype.clearHook).toHaveBeenCalled()
-    expect(Builder.prototype.unwatch).toHaveBeenCalled()
     expect(Builder.prototype.build).toHaveBeenCalled()
     expect(Nuxt.prototype.close).toHaveBeenCalled()
     expect(Nuxt.prototype.server.listen).toHaveBeenCalled()
-    expect(Builder.prototype.watchServer).toHaveBeenCalled()
 
     expect(consola.error).not.toHaveBeenCalled()
   })
@@ -53,13 +50,13 @@ describe('dev', () => {
     const builder = new Builder()
     builder.nuxt = new Nuxt()
     Builder.prototype.build = jest.fn().mockImplementationOnce(() => Promise.reject(new Error('Build Error')))
-    await Nuxt.fileChangedHook(builder)
+    await Nuxt.fileRestartHook(builder)
 
     expect(Nuxt.prototype.close).toHaveBeenCalled()
     expect(consola.error).toHaveBeenCalledWith(new Error('Build Error'))
   })
 
-  test('catches watchServer error', async () => {
+  test.skip('catches watchRestart error', async () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
@@ -68,11 +65,11 @@ describe('dev', () => {
 
     const builder = new Builder()
     builder.nuxt = new Nuxt()
-    Builder.prototype.watchServer = jest.fn().mockImplementationOnce(() => Promise.reject(new Error('watchServer Error')))
-    await Nuxt.fileChangedHook(builder)
+    Builder.prototype.watchRestart = jest.fn().mockImplementationOnce(() => Promise.reject(new Error('watchRestart Error')))
+    await Nuxt.fileRestartHook(builder)
 
-    expect(consola.error).toHaveBeenCalledWith(new Error('watchServer Error'))
-    expect(Builder.prototype.watchServer).toHaveBeenCalledTimes(2)
+    expect(consola.error).toHaveBeenCalledWith(new Error('watchRestart Error'))
+    expect(Builder.prototype.watchRestart).toHaveBeenCalledTimes(2)
   })
 
   test('catches error on hook error', async () => {
@@ -87,10 +84,10 @@ describe('dev', () => {
     })
     const builder = new Builder()
     builder.nuxt = new Nuxt()
-    await Nuxt.fileChangedHook(builder)
+    await Nuxt.fileRestartHook(builder)
 
     expect(consola.error).toHaveBeenCalledWith(new Error('Config Error'))
-    expect(Builder.prototype.watchServer).toHaveBeenCalledTimes(1)
+    // expect(Builder.prototype.watchRestart).toHaveBeenCalledTimes(1)
   })
 
   test('catches error on startDev', async () => {
