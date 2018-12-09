@@ -18,7 +18,7 @@
     "caniuse-lite": "^1.0.30000916",
     "chalk": "^2.4.1",
     "consola": "^2.3.0",
-    "css-loader": "^1.0.1",
+    "css-loader": "^2.0.0",
     "cssnano": "^4.1.7",
     "file-loader": "^2.0.0",
     "fs-extra": "^7.0.1",
