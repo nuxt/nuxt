@@ -12,6 +12,7 @@ module.exports = {
     rules: {
       // until nuxt/eslint-config gets updated
       curly: [2, 'all']
+    }
   },{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
