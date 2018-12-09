@@ -100,7 +100,9 @@ export default class Builder {
   normalizePlugins() {
     return uniqBy(
       this.options.plugins.map((p) => {
-        if (typeof p === 'string') { p = { src: p } }
+        if (typeof p === 'string') {
+          p = { src: p }
+        }
         const pluginBaseName = path.basename(p.src, path.extname(p.src)).replace(
           /[^a-zA-Z?\d\s:]/g,
           ''
