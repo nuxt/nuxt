@@ -244,7 +244,6 @@ export default class VueRenderer {
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
 
     const rendererOptions = {
-      runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
       // for globally installed nuxt command, search dependencies in global dir
       basedir: hasModules ? this.context.options.rootDir : __dirname,
