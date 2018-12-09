@@ -1,6 +1,5 @@
 import consola from 'consola'
 import chalk from 'chalk'
-import env from 'std-env'
 import { common, server } from '../options'
 import { showBanner, eventsMapping } from '../utils'
 
