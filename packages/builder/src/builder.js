@@ -553,7 +553,9 @@ export default class Builder {
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
       .on('all', (event, _path) => {
-        if (['add', 'change', 'unlink'].includes(event) === false) { return }
+        if (['add', 'change', 'unlink'].includes(event) === false) {
+          return
+        }
         this.nuxt.callHook('watch:fileChanged', this, _path) // Legacy
         this.nuxt.callHook('watch:restart', { event, path: _path })
       })
@@ -566,7 +568,9 @@ export default class Builder {
   }
 
   async close() {
-    if (this.__closed) { return }
+    if (this.__closed) {
+      return
+    }
     this.__closed = true
 
     // Unwatch
