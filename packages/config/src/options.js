@@ -10,8 +10,14 @@ import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
+  // Prevent duplicate calls
+  if (_options.__normalized__) {
+    return _options
+  }
+
   // Clone options to prevent unwanted side-effects
   const options = Object.assign({}, _options)
+  options.__normalized__ = true
 
   // Normalize options
   if (options.loading === true) {
@@ -75,6 +81,14 @@ export function getNuxtConfig(_options) {
 
   // Resolve buildDir
   options.buildDir = path.resolve(options.rootDir, options.buildDir)
+
+  // Default value for _nuxtConfigFile
+  if (!options._nuxtConfigFile) {
+    options._nuxtConfigFile = path.resolve(options.rootDir, 'nuxt.config.js')
+  }
+
+  // Watch for _nuxtConfigFile changes
+  options.watch.push(options._nuxtConfigFile)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
@@ -281,11 +295,6 @@ export function getNuxtConfig(_options) {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
   }
 
-  // TODO: remove when mini-css-extract-plugin supports HMR
-  if (options.dev) {
-    options.build.extractCSS = false
-  }
-
   // Enable minimize for production builds
   if (options.build.optimization.minimize === undefined) {
     options.build.optimization.minimize = !options.dev
@@ -330,6 +339,12 @@ export function getNuxtConfig(_options) {
 
   if (options.build.quiet === true) {
     consola.level = 0
+  }
+
+  // Use runInNewContext for dev mode by default
+  const { bundleRenderer } = options.render
+  if (typeof bundleRenderer.runInNewContext === 'undefined') {
+    bundleRenderer.runInNewContext = options.dev
   }
 
   return options

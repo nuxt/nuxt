@@ -75,8 +75,11 @@ describe('fallback generate', () => {
   })
 
   test('generate.fallback = true is transformed to /404.html', () => {
-    nuxt.options.generate.fallback = true
-    const options = getNuxtConfig(nuxt.options)
+    const options = getNuxtConfig({
+      generate: {
+        fallback: true
+      }
+    })
     expect(options.generate.fallback).toBe('404.html')
   })
 

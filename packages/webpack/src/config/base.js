@@ -5,7 +5,7 @@ import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
@@ -342,14 +342,13 @@ export default class WebpackBaseConfig {
       }
     }))
 
-    // CSS extraction
-    // MiniCssExtractPlugin does not currently supports SSR
-    // https://github.com/webpack-contrib/mini-css-extract-plugin/issues/48
-    // So we use css-loader/locals as a fallback (utils/style-loader)
-    if (this.options.build.extractCSS && !this.isServer) {
-      plugins.push(new MiniCssExtractPlugin(Object.assign({
+    // CSS extraction)
+    if (this.options.build.extractCSS) {
+      plugins.push(new ExtractCssChunks(Object.assign({
         filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css')
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
       }, this.options.build.extractCSS)))
     }
 

@@ -112,7 +112,7 @@ export async function getRouteData(route) {
   return {
     ...route,
     meta: getMatchedComponents(route).map((Component, index) => {
-      return { ...Component.options.meta, ...(index ? {} : route.meta) }
+      return { ...Component.options.meta, ...(route.matched[index] || {}).meta }
     })
   }
 }

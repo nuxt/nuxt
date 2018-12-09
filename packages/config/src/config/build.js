@@ -103,5 +103,6 @@ export default () => ({
       /index\..+\.html$/,
       /vue-ssr-(client|modern)-manifest.json/
     ]
-  }
+  },
+  friendlyErrors: true
 })

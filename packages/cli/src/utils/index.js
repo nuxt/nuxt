@@ -18,6 +18,12 @@ export const requireModule = esm(module, {
   }
 })
 
+export const eventsMapping = {
+  add: { icon: '+', color: 'green', action: 'Created' },
+  change: { icon: env.windows ? '»' : '↻', color: 'blue', action: 'Updated' },
+  unlink: { icon: '-', color: 'red', action: 'Removed' }
+}
+
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
 
@@ -45,6 +51,9 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
+
+    // Keep _nuxtConfigFile for watching
+    options._nuxtConfigFile = nuxtConfigFile
   } else if (argv['config-file'] !== 'nuxt.config.js') {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
@@ -127,4 +136,11 @@ export function normalizeArg(arg, defaultValue) {
     case undefined: arg = defaultValue; break
   }
   return arg
+}
+
+export function formatPath(filePath) {
+  if (!filePath) {
+    return
+  }
+  return filePath.replace(process.cwd() + path.sep, '')
 }
