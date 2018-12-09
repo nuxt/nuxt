@@ -1,7 +1,7 @@
 import consola from 'consola'
 import chalk from 'chalk'
 import { common, server } from '../options'
-import { showBanner, eventsMapping } from '../utils'
+import { showBanner, eventsMapping, formatPath } from '../utils'
 
 export default {
   name: 'dev',
@@ -64,7 +64,7 @@ export default {
   async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
     this.logChanged({
       event,
-      path: nuxt ? nuxt.resolver.formatPath(path) : path
+      path: formatPath(path)
     })
 
     await nuxt.close()

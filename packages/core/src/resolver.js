@@ -20,17 +20,6 @@ export default class Resolver {
     this.esm = esm(module, {})
   }
 
-  formatPath(path) {
-    if (!path) {
-      return
-    }
-
-    return path
-      .replace(process.cwd() + sep, '')
-      .replace(this.options.srcDir, '~')
-      .replace(this.options.rootDir, '~~')
-  }
-
   resolveModule(path) {
     try {
       const resolvedPath = Module._resolveFilename(path, {

@@ -137,3 +137,10 @@ export function normalizeArg(arg, defaultValue) {
   }
   return arg
 }
+
+export function formatPath(filePath) {
+  if (!filePath) {
+    return
+  }
+  return filePath.replace(process.cwd() + path.sep, '')
+}
