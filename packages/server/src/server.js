@@ -178,7 +178,9 @@ export default class Server {
       try {
         handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
       } catch (err) {
-        if (!this.options.dev) { throw err[0] }
+        if (!this.options.dev) {
+          throw err[0]
+        }
         // Only warn missing file in development
         consola.warn(err[0])
       }
@@ -231,7 +233,9 @@ export default class Server {
   }
 
   async close() {
-    if (this.__closed) { return }
+    if (this.__closed) {
+      return
+    }
     this.__closed = true
 
     for (const listener of this.listeners) {
