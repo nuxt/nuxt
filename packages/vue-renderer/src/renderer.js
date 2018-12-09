@@ -33,7 +33,7 @@ export default class VueRenderer {
   }
 
   get assetsMapping() {
-    if (this._assetsMapping) return this._assetsMapping
+    if (this._assetsMapping) { return this._assetsMapping }
 
     const legacyAssets = this.context.resources.clientManifest.assetsMapping
     const modernAssets = invert(this.context.resources.modernManifest.assetsMapping)
@@ -450,7 +450,7 @@ export default class VueRenderer {
   }
 
   close() {
-    if (this.__closed) return
+    if (this.__closed) { return }
     this.__closed = true
 
     for (const key in this.renderer) {
