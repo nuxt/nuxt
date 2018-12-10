@@ -397,6 +397,15 @@ export default class WebpackBaseConfig {
     }
 
     // Clone deep avoid leaking config between Client and Server
-    return this.extendConfig(cloneDeep(config))
+    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const optimization = extendedConfig.optimization
+    if (optimization.minimizer && extendedConfig.devtool) {
+      const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
+      if (terser) {
+        terser.options.sourceMap = extendedConfig.devtool && /source-?map/.test(extendedConfig.devtool)
+      }
+    }
+
+    return extendedConfig
   }
 }
