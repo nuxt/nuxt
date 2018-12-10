@@ -33,7 +33,9 @@ export default class VueRenderer {
   }
 
   get assetsMapping() {
-    if (this._assetsMapping) return this._assetsMapping
+    if (this._assetsMapping) {
+      return this._assetsMapping
+    }
 
     const legacyAssets = this.context.resources.clientManifest.assetsMapping
     const modernAssets = invert(this.context.resources.modernManifest.assetsMapping)
@@ -244,7 +246,6 @@ export default class VueRenderer {
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
 
     const rendererOptions = {
-      runInNewContext: false,
       clientManifest: this.context.resources.clientManifest,
       // for globally installed nuxt command, search dependencies in global dir
       basedir: hasModules ? this.context.options.rootDir : __dirname,
@@ -450,7 +451,9 @@ export default class VueRenderer {
   }
 
   close() {
-    if (this.__closed) return
+    if (this.__closed) {
+      return
+    }
     this.__closed = true
 
     for (const key in this.renderer) {

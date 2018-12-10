@@ -232,7 +232,9 @@ export class WebpackBundler {
   }
 
   async close() {
-    if (this.__closed) return
+    if (this.__closed) {
+      return
+    }
     this.__closed = true
 
     // Unwatch
