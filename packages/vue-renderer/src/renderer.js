@@ -104,25 +104,34 @@ export default class VueRenderer {
   }
 
   async ready() {
-    if (!this.context.options.dev) {
-      // Production: Load SSR resources from fs
-      await this.loadResources(fs)
+    // -- Development mode --
 
-      // Verify
-      if (this.context.options._start) {
-        if (!this.isReady) {
-          throw new Error(
-            'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-          )
-        } else if (this.context.options.modern && !this.context.resources.modernManifest) {
-          throw new Error(
-            'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
-          )
-        }
-      }
-    } else {
-      // Development: Listen on build:resources hook
+    if (this.context.options.dev) {
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
+      return
+    }
+
+    // -- Production mode --
+
+    // Try once to load SSR resources from fs
+    await this.loadResources(fs)
+
+    // Without using`nuxt start` (Programatic, Tests and Generate)
+    if (!this.context.options._start) {
+      this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
+    }
+
+    // Verify resources
+    if (this.context.options._start) {
+      if (!this.isReady) {
+        throw new Error(
+          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+        )
+      } else if (this.context.options.modern && !this.context.resources.modernManifest) {
+        throw new Error(
+          'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+        )
+      }
     }
   }
 
@@ -280,12 +289,16 @@ export default class VueRenderer {
     return fn(opts)
   }
 
-  async renderRoute(url, context = {}) {
+  async renderRoute(url, context = {}, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      consola.info('Waiting for server resources...')
-      await waitFor(1000)
-      return this.renderRoute(url, context)
+      if (this.context.options.dev && retries > 0) {
+        consola.info('Waiting for server resources...')
+        await waitFor(1000)
+        return this.renderRoute(url, context, retries - 1)
+      } else {
+        throw new Error('Server resources are not available!')
+      }
     }
 
     // Log rendered url
