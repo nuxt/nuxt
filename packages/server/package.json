@@ -11,7 +11,6 @@
     "@nuxt/common": "2.3.4",
     "@nuxt/config": "2.3.4",
     "@nuxtjs/youch": "^4.2.3",
-    "browserslist-useragent": "^2.0.1",
     "chalk": "^2.4.1",
     "compression": "^1.7.3",
     "connect": "^3.6.6",
@@ -22,9 +21,11 @@
     "ip": "^1.1.5",
     "launch-editor-middleware": "^2.2.1",
     "pify": "^4.0.1",
+    "semver": "^5.6.0",
     "serve-placeholder": "^1.1.0",
     "serve-static": "^1.13.2",
-    "server-destroy": "^1.0.1"
+    "server-destroy": "^1.0.1",
+    "ua-parser-js": "^0.7.19"
   },
   "publishConfig": {
     "access": "public"
