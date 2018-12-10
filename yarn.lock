@@ -2581,10 +2581,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000898, caniuse-lite@^1.0.30000899, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000907.tgz#0b9899bde53fb1c30e214fb12402361e02ff5c42"
   integrity sha512-No5sQ/OB2Nmka8MNOOM6nJx+Hxt6MQ6h7t7kgJFu9oTuwjykyKRSBP/+i/QAyFHxeHB+ddE0Da1CG5ihx9oehQ==
 
-caniuse-lite@^1.0.30000916:
-  version "1.0.30000916"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000916.tgz#3428d3f529f0a7b2bfaaec65e796037bdd433aab"
-  integrity sha512-D6J9jloPm2MPkg0PXcODLMQAJKkeixKO9xhqTUMvtd44MtTYMyyDXPQ2Lk9IgBq5FH0frwiPa/N/w8ncQf7kIQ==
+caniuse-lite@^1.0.30000918:
+  version "1.0.30000918"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000918.tgz#6288f79da3c5c8b45e502f47ad8f3eb91f1379a9"
+  integrity sha512-CAZ9QXGViBvhHnmIHhsTPSWFBujDaelKnUj7wwImbyQRxmXynYqKGi3UaZTSz9MoVh+1EVxOS/DFIkrJYgR3aw==
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -11040,7 +11040,7 @@ vue-router@^3.0.2:
   resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
   integrity sha512-opKtsxjp9eOcFWdp6xLQPLmRGgfM932Tl56U9chYTnoWqKxQ8M20N7AkdEbM5beUh6wICoFGYugAX9vQjyJLFg==
 
-vue-server-renderer@2.5.19:
+vue-server-renderer@^2.5.19:
   version "2.5.19"
   resolved "https://registry.npmjs.org/vue-server-renderer/-/vue-server-renderer-2.5.19.tgz#f420552bde912e8b1d66f99dbead0e535d2fecf2"
   integrity sha512-JZ96eorrH/X29MjidX21l50ybYSZtCywkAK4G7Gyjq4qbm0c/B75332XplVN4ngq/c737Mx28sTXqs6DDfVfDQ==
@@ -11062,7 +11062,7 @@ vue-style-loader@^4.1.0:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue-template-compiler@2.5.19:
+vue-template-compiler@^2.5.19:
   version "2.5.19"
   resolved "https://registry.npmjs.org/vue-template-compiler/-/vue-template-compiler-2.5.19.tgz#c23fcbea22fe6c116814141d2e6680023d6456f2"
   integrity sha512-SIoE8gvl0UjZ/wccwHhj0HUqL+kLkJNy/8v7TXElz6rqxqKOKLoAynVV4L78qHZOHhLoyRl5BOmUFQPPdcD5qw==
@@ -11075,7 +11075,7 @@ vue-template-es2015-compiler@^1.6.0:
   resolved "https://registry.npmjs.org/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.6.0.tgz#dc42697133302ce3017524356a6c61b7b69b4a18"
   integrity sha512-x3LV3wdmmERhVCYy3quqA57NJW7F3i6faas++pJQWtknWT+n7k30F4TVdHvCLn48peTJFRvCpxs3UuFPqgeELg==
 
-vue@2.5.19:
+vue@^2.5.19:
   version "2.5.19"
   resolved "https://registry.npmjs.org/vue/-/vue-2.5.19.tgz#c4c9ba01a97a23ea24018d4702e994c15785e025"
   integrity sha512-zs7w/dy/yMTCcUunUl05UHhYEI2bt67R7G2jD42HnJ28JxCtC1FY8zZ9GU4PF2SJP8Ff/B9HyojWk/NztqKfFA==
