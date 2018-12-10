@@ -287,13 +287,13 @@ export default class VueRenderer {
     return fn(opts)
   }
 
-  async renderRoute(url, context = {}) {
+  async renderRoute(url, context = {}, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      if (this.context.options.dev) {
+      if (this.context.options.dev && retries > 0) {
         consola.info('Waiting for server resources...')
         await waitFor(1000)
-        return this.renderRoute(url, context)
+        return this.renderRoute(url, context, retries - 1)
       } else {
         throw new Error('Server resources are not available!')
       }
