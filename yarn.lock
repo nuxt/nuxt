@@ -11040,10 +11040,10 @@ vue-router@^3.0.2:
   resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
   integrity sha512-opKtsxjp9eOcFWdp6xLQPLmRGgfM932Tl56U9chYTnoWqKxQ8M20N7AkdEbM5beUh6wICoFGYugAX9vQjyJLFg==
 
-vue-server-renderer@^2.5.19:
-  version "2.5.19"
-  resolved "https://registry.npmjs.org/vue-server-renderer/-/vue-server-renderer-2.5.19.tgz#f420552bde912e8b1d66f99dbead0e535d2fecf2"
-  integrity sha512-JZ96eorrH/X29MjidX21l50ybYSZtCywkAK4G7Gyjq4qbm0c/B75332XplVN4ngq/c737Mx28sTXqs6DDfVfDQ==
+vue-server-renderer@^2.5.20:
+  version "2.5.20"
+  resolved "https://registry.npmjs.org/vue-server-renderer/-/vue-server-renderer-2.5.20.tgz#b4d4718949592f7138d7fa2b370f2a00b967af37"
+  integrity sha512-q3ulfGr3a8UUbLs2tQWEBeQfl8HwUWoXF5N7H1ZGo+eL4y+xIpjpV1z14Hx8tQGoY64xja7QdSyjNWVuGmLjXg==
   dependencies:
     chalk "^1.1.3"
     hash-sum "^1.0.2"
@@ -11062,10 +11062,10 @@ vue-style-loader@^4.1.0:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue-template-compiler@^2.5.19:
-  version "2.5.19"
-  resolved "https://registry.npmjs.org/vue-template-compiler/-/vue-template-compiler-2.5.19.tgz#c23fcbea22fe6c116814141d2e6680023d6456f2"
-  integrity sha512-SIoE8gvl0UjZ/wccwHhj0HUqL+kLkJNy/8v7TXElz6rqxqKOKLoAynVV4L78qHZOHhLoyRl5BOmUFQPPdcD5qw==
+vue-template-compiler@^2.5.20:
+  version "2.5.20"
+  resolved "https://registry.npmjs.org/vue-template-compiler/-/vue-template-compiler-2.5.20.tgz#b9c01741b7e0261d1c5aac5937c93bde98f880f0"
+  integrity sha512-aGJRLd1bJZi6oerGwCQVaDqvQ1T3dhCbNg9C2gNwzoKnyA3BmYfAWy8OQ3OhOebTri8o4YcLeXfwOOxtOKFfmA==
   dependencies:
     de-indent "^1.0.2"
     he "^1.1.0"
@@ -11075,10 +11075,10 @@ vue-template-es2015-compiler@^1.6.0:
   resolved "https://registry.npmjs.org/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.6.0.tgz#dc42697133302ce3017524356a6c61b7b69b4a18"
   integrity sha512-x3LV3wdmmERhVCYy3quqA57NJW7F3i6faas++pJQWtknWT+n7k30F4TVdHvCLn48peTJFRvCpxs3UuFPqgeELg==
 
-vue@^2.5.19:
-  version "2.5.19"
-  resolved "https://registry.npmjs.org/vue/-/vue-2.5.19.tgz#c4c9ba01a97a23ea24018d4702e994c15785e025"
-  integrity sha512-zs7w/dy/yMTCcUunUl05UHhYEI2bt67R7G2jD42HnJ28JxCtC1FY8zZ9GU4PF2SJP8Ff/B9HyojWk/NztqKfFA==
+vue@^2.5.20:
+  version "2.5.20"
+  resolved "https://registry.npmjs.org/vue/-/vue-2.5.20.tgz#79fff9ccaa10cc37e7a7239b4c7adfac94df81ba"
+  integrity sha512-kVLZi8RWOk8qwAt+a0bVDy9VV5Zzcnj0fLCMyKLx1dmEBjqmYJYRWHvPwiypiJBtJkdmROy5NP5hyDqTdfBcvQ==
 
 vuex@^3.0.1:
   version "3.0.1"

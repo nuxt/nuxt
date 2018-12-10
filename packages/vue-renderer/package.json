@@ -13,9 +13,9 @@
     "consola": "^2.3.0",
     "fs-extra": "^7.0.1",
     "lru-cache": "^5.1.1",
-    "vue": "^2.5.19",
+    "vue": "^2.5.20",
     "vue-meta": "^1.5.6",
-    "vue-server-renderer": "^2.5.19"
+    "vue-server-renderer": "^2.5.20"
   },
   "publishConfig": {
     "access": "public"
