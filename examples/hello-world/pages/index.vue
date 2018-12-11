@@ -1,9 +1,7 @@
 <template>
   <div>
     <h1>Welcome!</h1>
-    <NuxtLink to="/about">
-      About page
-    </NuxtLink>
+    <n-link to="/about">About Page</n-link>
   </div>
 </template>
 
