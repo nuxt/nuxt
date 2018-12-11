@@ -14,7 +14,7 @@ declare module "vue/types/options" {
     head?: MetaInfo | (() => MetaInfo);
     key?: string | ((to: Route) => string);
     layout?: string | ((ctx: Context) => string);
-    middleware?: string | string[];
+    middleware?: string | string[] | ((ctx: Context, cb: Function) => Promise<void>| void);
     scrollToTop?: boolean;
     transition?: string | Transition | ((to: Route, from: Route) => string);
     validate?(ctx: Context): Promise<boolean> | boolean;

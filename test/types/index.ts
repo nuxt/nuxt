@@ -53,6 +53,20 @@ options.layout = (context) => 'foo'
 options.middleware = 'foo'
 options.middleware = ['foo', 'bar']
 
+options.middleware = (ctx) => {}
+options.middleware = (ctx, cb) => { cb() }
+options.middleware = async (ctx) => {}
+
+options.middleware = async (ctx) => {
+  let res = await Promise.resolve('bar')
+}
+
+options.middleware = (ctx, cb) => {
+  return Promise.resolve('bar').then(res => {
+    cb()
+  })
+}
+
 // scrollToTop
 
 options.scrollToTop = true
