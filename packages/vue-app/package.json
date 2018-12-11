@@ -18,6 +18,10 @@
     "vue-template-compiler": "^2.5.20",
     "vuex": "^3.0.1"
   },
+  "vetur": {
+    "tags": "helpers/vetur/nuxt-tags.json",
+    "attributes": "helpers/vetur/nuxt-attributes.json"
+  },
   "publishConfig": {
     "access": "public"
   }
