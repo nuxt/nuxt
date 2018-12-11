@@ -7,7 +7,8 @@ export default {
       type: String,
       default: ''
     },
-    keepAlive: Boolean
+    keepAlive: Boolean,
+    keepAliveProps: Object
   },
   render(h, { parent, data, props }) {
     data.nuxtChild = true
