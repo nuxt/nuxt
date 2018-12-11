@@ -28,7 +28,7 @@
     <hr>
     <div>
       <div class="left">
-        <router-view name="left" />
+        <nuxt-child name="left" />
       </div>
       <div class="content">
         <nuxt-child />
