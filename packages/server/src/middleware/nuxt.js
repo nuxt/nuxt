@@ -15,7 +15,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     await nuxt.callHook('render:route', url, result, context)
     const {
       html,
-      cspScriptSrcHashSet,
+      cspScriptSrcHashes,
       error,
       redirected,
       getPreloadFiles
@@ -66,7 +66,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       const { allowedSources, policies } = options.render.csp
       const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashSet, allowedSources, policies, isDev: options.dev }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev }))
     }
 
     // Send response
@@ -114,9 +114,9 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) => {
-  const joinedHashSet = Array.from(cspScriptSrcHashSet).join(' ')
-  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashSet}`
+const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
+  const joinedHashes = cspScriptSrcHashes.join(' ')
+  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashes}`
 
   if (Array.isArray(allowedSources)) {
     return `${baseCspStr} ${allowedSources.join(' ')}`
@@ -125,7 +125,7 @@ const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) 
   const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
 
   if (policyObjectAvailable) {
-    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashSet)
+    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes)
 
     return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${v.join(' ')}`).join('; ')
   }
@@ -133,17 +133,13 @@ const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) 
   return baseCspStr
 }
 
-const transformPolicyObject = (policies, cspScriptSrcHashSet) => {
+const transformPolicyObject = (policies, cspScriptSrcHashes) => {
   const userHasDefinedScriptSrc = policies['script-src'] && Array.isArray(policies['script-src'])
 
+  const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
+
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
+  const hashAndPolicyList = cspScriptSrcHashes.concat(`'self'`, additionalPolicies)
 
-  const hashAndPolicySet = cspScriptSrcHashSet
-  hashAndPolicySet.add(`'self'`)
-
-  if (userHasDefinedScriptSrc) {
-    new Set(policies['script-src']).forEach(src => hashAndPolicySet.add(src))
-  }
-
-  return { ...policies, 'script-src': Array.from(hashAndPolicySet) }
+  return { ...policies, 'script-src': hashAndPolicyList }
 }
