@@ -25,7 +25,6 @@ export default {
           top: 'components/mainTop'
         }
       }
-
     }
   }
 }

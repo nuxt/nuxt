@@ -1,7 +1,7 @@
 <template lang="html">
   <div class="main">
-    LEFT:<nuxt-child name="left" />:LEFT
-    CHILD:<nuxt-child />:CHILD
+    LEFT:<NuxtChild name="left" />:LEFT
+    CHILD:<NuxtChild />:CHILD
   </div>
 </template>
 

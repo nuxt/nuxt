@@ -4,29 +4,29 @@
     <p>This is an example of a named views</p>
     <ul>
       <li>
-        <nuxt-link to="/">
+        <NuxtLink to="/">
           Root
-        </nuxt-link>
+        </NuxtLink>
       </li>
       <li>
-        <nuxt-link to="/section">
+        <NuxtLink to="/section">
           Section
-        </nuxt-link>
+        </NuxtLink>
       </li>
       <li>
-        <nuxt-link to="/child/123">
+        <NuxtLink to="/child/123">
           Child 123
-        </nuxt-link>
+        </NuxtLink>
       </li>
       <li>
-        <nuxt-link to="/child/234">
+        <NuxtLink to="/child/234">
           Child 234
-        </nuxt-link>
+        </NuxtLink>
       </li>
       <li>
-        <nuxt-link to="/main">
+        <NuxtLink to="/main">
           Main page with named view in layout
-        </nuxt-link>
+        </NuxtLink>
       </li>
     </ul>
 
