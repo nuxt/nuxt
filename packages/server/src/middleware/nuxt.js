@@ -141,14 +141,9 @@ const transformPolicyObject = (policies, cspScriptSrcHashSet) => {
   const hashAndPolicySet = cspScriptSrcHashSet
   hashAndPolicySet.add(`'self'`)
 
-  if (!userHasDefinedScriptSrc) {
-    policies['script-src'] = Array.from(hashAndPolicySet)
-    return policies
+  if (userHasDefinedScriptSrc) {
+    new Set(policies['script-src']).forEach(src => hashAndPolicySet.add(src))
   }
 
-  new Set(policies['script-src']).forEach(src => hashAndPolicySet.add(src))
-
-  policies['script-src'] = Array.from(hashAndPolicySet)
-
-  return policies
+  return { ...policies, 'script-src': Array.from(hashAndPolicySet) }
 }
