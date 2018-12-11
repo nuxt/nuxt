@@ -8,7 +8,8 @@ import { interopDefault } from './utils'
   const firstIndent = '\n' + tab.repeat(indentCount + 1)
   const nextIndent = ',' + firstIndent
   routes.forEach((route, i) => {
-    if(route.components) {
+    // If need to handle named views
+    if (route.components) {
       let _name = '_' + hash(route.components.default)
       if (splitChunks.pages) {
         resMap += `${firstIndent}${tab}default: ${_name}`
@@ -40,7 +41,7 @@ import { interopDefault } from './utils'
       route.component = false
     } else {
       route._name = '_' + hash(route.component)
-      components.push({_name: route._name, component: route.component, name: route.name, chunkName: route.chunkName})
+      components.push({ _name: route._name, component: route.component, name: route.name, chunkName: route.chunkName })
     }
     // @see: https://router.vuejs.org/api/#router-construction-options
     res += '{'
