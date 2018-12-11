@@ -5,7 +5,7 @@ import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
+import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
@@ -345,7 +345,7 @@ export default class WebpackBaseConfig {
 
     // CSS extraction)
     if (this.options.build.extractCSS) {
-      plugins.push(new ExtractCssChunks(Object.assign({
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
