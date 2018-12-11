@@ -2,5 +2,5 @@
   # About Page!
   Current route is: {{ $route.name }}
 
-  <nuxt-link to="/">Back home</nuxt-link>
+  <NuxtLink to="/">Back home</NuxtLink>
 </template>

@@ -63,7 +63,7 @@ export default async function renderAndGetWindow(
   // Used by Nuxt.js to say when the components are loaded and the app ready
   await timeout(new Promise((resolve) => {
     window[loadedCallback] = () => resolve(window)
-  }), loadingTimeout, `Components loading in renderAndGetWindow was not completed in ${timeout / 1000}s`)
+  }), loadingTimeout, `Components loading in renderAndGetWindow was not completed in ${loadingTimeout / 1000}s`)
 
   if (options.virtualConsole) {
     // After window initialized successfully

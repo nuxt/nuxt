@@ -5,7 +5,9 @@
         <div class="chatArea">
           <ul ref="messages" class="messages">
             <li v-for="(message, index) in messages" :key="index" class="message">
-              <i :title="message.date">{{ message.date.split('T')[1].slice(0, -2) }}</i>: {{ message.text }}
+              <i :title="message.date">
+                {{ message.date.split('T')[1].slice(0, -2) }}
+              </i>: {{ message.text }}
             </li>
           </ul>
         </div>

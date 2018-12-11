@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# https://git-scm.com/docs/pretty-formats
+
+latestTag=`git describe | grep -oE "^[^-]+"`
+
+echo "Comaparing $latestTag...dev"
+
+diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
+
+echo
+echo "# Features"
+echo "$diff" | awk '/feat/'
+echo "$diff" | awk '/feat/' | grep -oE "[0-9a-f]{8}" > .git/feat.txt
+
+echo
+echo "# Fixes"
+echo "$diff" | awk '!/feat/'
+echo "$diff" | awk '!/feat/' | grep -oE "[0-9a-f]{8}" > .git/fix.txt
+
+echo
+echo "To apply diff into target banch:"
+echo "$ git cherry-pick \`tac .git/fix.txt\`"
+echo "In case of conflicts:"
+echo "$ yarn"
+echo "$ git cherry-pick --continue"

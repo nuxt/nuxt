@@ -7,11 +7,12 @@ import { getContext } from '@nuxt/common'
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
+  const url = decodeURI(req.url)
 
   res.statusCode = 200
   try {
-    const result = await renderRoute(req.url, context)
-    await nuxt.callHook('render:route', req.url, result, context)
+    const result = await renderRoute(url, context)
+    await nuxt.callHook('render:route', url, result, context)
     const {
       html,
       cspScriptSrcHashSet,
@@ -21,7 +22,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     } = result
 
     if (redirected) {
-      nuxt.callHook('render:routeDone', req.url, result, context)
+      nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
     if (error) {
@@ -34,7 +35,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
-        nuxt.callHook('render:routeDone', req.url, result, context)
+        nuxt.callHook('render:routeDone', url, result, context)
         return
       }
       res.setHeader('ETag', etag)
@@ -51,7 +52,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
       const links = pushAssets
         ? pushAssets(req, res, publicPath, preloadFiles)
-        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options.dev)
+        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options)
 
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
@@ -73,7 +74,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
-    nuxt.callHook('render:routeDone', req.url, result, context)
+    nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
     /* istanbul ignore if */
@@ -86,13 +87,13 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
   }
 }
 
-const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
-  if (shouldPush && isDev) {
+const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
+  if (shouldPush && options.dev) {
     consola.warn('http2.shouldPush is deprecated. Use http2.pushAssets function')
   }
 
   const links = []
-  preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
+  preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
     /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
@@ -104,7 +105,11 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
       return
     }
 
-    links.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
+    const crossorigin = options.build.crossorigin
+    const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
+    const ref = modern ? 'modulepreload' : 'preload'
+
+    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
   })
   return links
 }

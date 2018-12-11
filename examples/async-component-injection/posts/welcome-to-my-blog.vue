@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h3 class="date">Jul 08, 2017</h3>
+    <h3 class="date">
+      Jul 08, 2017
+    </h3>
     <h1>Welcome to my blog</h1>
     <div class="content">
       <h2>What is Lorem Ipsum?</h2>

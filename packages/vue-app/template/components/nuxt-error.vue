@@ -5,7 +5,7 @@
 
       <div class="title">{{ message }}</div>
       <p v-if="statusCode === 404" class="description">
-        <nuxt-link class="error-link" to="/"><%= messages.back_to_home %></nuxt-link>
+        <NuxtLink class="error-link" to="/"><%= messages.back_to_home %></NuxtLink>
       </p>
       <% if(debug) { %>
       <p class="description" v-else><%= messages.client_error_details %></p>
@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  name: 'nuxt-error',
+  name: 'NuxtError',
   props: {
     error: {
       type: Object,

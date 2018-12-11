@@ -5,9 +5,9 @@
 
   Data model is: {{ model }}
 
-  <nuxt-link to="/about">Goto About</nuxt-link>
+  <NuxtLink to="/about">Goto About</NuxtLink>
 
-  <nuxt-link to="/pug">Goto Pug</nuxt-link>
+  <NuxtLink to="/pug">Goto Pug</NuxtLink>
 </template>
 
 <script>

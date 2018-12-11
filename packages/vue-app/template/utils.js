@@ -111,8 +111,8 @@ export async function getRouteData(route) {
   // Send back a copy of route with meta based on Component definition
   return {
     ...route,
-    meta: getMatchedComponents(route).map((Component) => {
-      return Component.options.meta || {}
+    meta: getMatchedComponents(route).map((Component, index) => {
+      return { ...Component.options.meta, ...(route.matched[index] || {}).meta }
     })
   }
 }
@@ -242,7 +242,7 @@ export function getLocation(base, mode) {
   if (base && path.indexOf(base) === 0) {
     path = path.slice(base.length)
   }
-  return (path || '/') + window.location.search + window.location.hash
+  return decodeURI(path || '/') + window.location.search + window.location.hash
 }
 
 export function urlJoin() {
@@ -285,6 +285,7 @@ export function normalizeError(err) {
     message = err.message || err
   }
   return {
+    ...err,
     message: message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
   }
@@ -434,7 +435,7 @@ function tokensToFunction(tokens) {
         continue
       }
 
-      const value = data[token.name]
+      const value = data[token.name || 'pathMatch']
       let segment
 
       if (value == null) {

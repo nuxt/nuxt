@@ -1,7 +1,7 @@
 <template>
   <!-- See https://tailwindcss.com/docs/container -->
   <div class="container mx-auto">
-    <nuxt />
+    <Nuxt />
     <a href="https://github.com/nuxt/nuxt.js/tree/dev/examples/tailwindcss" class="inline-flex items-center no-underline mt-4 rounded-full border border-grey-light bg-grey-lightest text-xs text-grey-darkest font-semibold p-2">
       <span class="inline-flex rounded-full mr-1">
         <svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

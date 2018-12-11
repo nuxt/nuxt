@@ -16,7 +16,9 @@
               <v-list-tile-title>{{ item.title }}</v-list-tile-title>
             </v-list-tile-content>
             <v-list-tile-action>
-              <v-icon v-if="item.items">keyboard_arrow_down</v-icon>
+              <v-icon v-if="item.items">
+                keyboard_arrow_down
+              </v-icon>
             </v-list-tile-action>
           </v-list-tile>
           <v-list-tile v-for="subItem in item.items" :key="subItem.title">
@@ -29,7 +31,6 @@
           </v-list-tile>
         </v-list-group>
       </v-list>
-
     </v-navigation-drawer>
     <v-toolbar app fixed clipped-left>
       <v-toolbar-side-icon @click.stop="drawer = !drawer" />
@@ -40,7 +41,9 @@
         <v-layout row wrap>
           <v-flex xs12>
             <v-card dark color="primary">
-              <v-card-text class="px-0"><slot /></v-card-text>
+              <v-card-text class="px-0">
+                <slot />
+              </v-card-text>
             </v-card>
           </v-flex>
         </v-layout>
@@ -50,12 +53,13 @@
         <v-layout justify-center align-center>
           <v-tooltip right>
             <v-btn slot="activator" :href="source" icon large target="_blank">
-              <v-icon large>code</v-icon>
+              <v-icon large>
+                code
+              </v-icon>
             </v-btn>
             <span>Source</span>
           </v-tooltip>
         </v-layout>
-
       </v-container>
     </v-content>
     <v-footer app fixed>

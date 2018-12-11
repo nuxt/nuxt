@@ -4,6 +4,17 @@ daysUntilClose: 7
 staleLabel: stale
 exemptLabels:
   - "cmty:feature-request"
+  - "WIP"
+  - ":clock1:PR Pending"
 markComment: >
+  Thanks for your contribution to Nuxt.js!
+
   This issue has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs.
+
+  If you would like this issue to remain open:
+
+   1. Verify that you can still reproduce the issue in the latest version of nuxt-edge
+   1. Comment the steps to reproduce it
+
+  Issues that are labeled as `🕐Pending` will not be automatically marked as stale.

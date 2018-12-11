@@ -2,7 +2,9 @@
 
 export default () => ({
   bundleRenderer: {
-    shouldPrefetch: () => false
+    shouldPrefetch: () => false,
+    shouldPreload: (fileWithoutQuery, asType) => ['script', 'style'].includes(asType),
+    runInNewContext: undefined
   },
   resourceHints: true,
   ssr: undefined,

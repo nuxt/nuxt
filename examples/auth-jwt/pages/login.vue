@@ -8,7 +8,9 @@
       <label for="password">
         <input id="password" type="password" value="test">
       </label>
-      <button @click="postLogin">login</button>
+      <button @click="postLogin">
+        login
+      </button>
       <p>The credentials are not verified for the example purpose.</p>
     </div>
   </div>

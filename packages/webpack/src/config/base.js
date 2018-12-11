@@ -5,15 +5,16 @@ import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
+import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
-import PerfLoader from './utils/perf-loader'
-import StyleLoader from './utils/style-loader'
-import WarnFixPlugin from './plugins/warnfix'
+import PerfLoader from '../utils/perf-loader'
+import StyleLoader from '../utils/style-loader'
+import WarnFixPlugin from '../plugins/warnfix'
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {
@@ -96,7 +97,7 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  devtool() {
+  get devtool() {
     return false
   }
 
@@ -127,7 +128,41 @@ export default class WebpackBaseConfig {
   }
 
   optimization() {
-    return this.options.build.optimization
+    const optimization = cloneDeep(this.options.build.optimization)
+
+    if (optimization.minimize && optimization.minimizer === undefined) {
+      optimization.minimizer = this.minimizer()
+    }
+
+    return optimization
+  }
+
+  minimizer() {
+    const minimizer = []
+
+    // https://github.com/webpack-contrib/terser-webpack-plugin
+    if (this.options.build.terser) {
+      minimizer.push(
+        new TerserWebpackPlugin(Object.assign({
+          parallel: true,
+          cache: this.options.build.cache,
+          sourceMap: this.devtool && /source-?map/.test(this.devtool),
+          extractComments: {
+            filename: 'LICENSES'
+          },
+          terserOptions: {
+            compress: {
+              ecma: this.isModern ? 6 : undefined
+            },
+            output: {
+              comments: /^\**!|@preserve|@license|@cc_on/
+            }
+          }
+        }, this.options.build.terser))
+      )
+    }
+
+    return minimizer
   }
 
   alias() {
@@ -197,6 +232,10 @@ export default class WebpackBaseConfig {
       {
         test: /\.css$/,
         oneOf: styleLoader.apply('css')
+      },
+      {
+        test: /\.postcss$/,
+        oneOf: styleLoader.apply('postcss')
       },
       {
         test: /\.less$/,
@@ -303,14 +342,13 @@ export default class WebpackBaseConfig {
       }
     }))
 
-    // CSS extraction
-    // MiniCssExtractPlugin does not currently supports SSR
-    // https://github.com/webpack-contrib/mini-css-extract-plugin/issues/48
-    // So we use css-loader/locals as a fallback (utils/style-loader)
-    if (this.options.build.extractCSS && !this.isServer) {
-      plugins.push(new MiniCssExtractPlugin(Object.assign({
+    // CSS extraction)
+    if (this.options.build.extractCSS) {
+      plugins.push(new ExtractCssChunks(Object.assign({
         filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css')
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
       }, this.options.build.extractCSS)))
     }
 
@@ -333,10 +371,11 @@ export default class WebpackBaseConfig {
   config() {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
+
     const config = {
       name: this.name,
       mode: this.buildMode,
-      devtool: this.devtool(),
+      devtool: this.devtool,
       optimization: this.optimization(),
       output: this.output(),
       performance: {
@@ -357,9 +396,17 @@ export default class WebpackBaseConfig {
       plugins: this.plugins()
     }
 
-    const extendedConfig = this.extendConfig(config)
-
     // Clone deep avoid leaking config between Client and Server
-    return cloneDeep(extendedConfig)
+    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const { optimization } = extendedConfig
+    // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
+    if (optimization && optimization.minimizer && extendedConfig.devtool) {
+      const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
+      if (terser) {
+        terser.options.sourceMap = extendedConfig.devtool && /source-?map/.test(extendedConfig.devtool)
+      }
+    }
+
+    return extendedConfig
   }
 }

@@ -12,14 +12,16 @@
       <tbody>
         <tr v-for="(user, key) in users" :key="key">
           <td>
-            <nuxt-link :to="{ path: `/users/${key}`}">
+            <NuxtLink :to="{ path: `/users/${key}`}">
               <img :src="user.avatar" class="rounded" alt="avatar">
-            </nuxt-link>
+            </NuxtLink>
           </td>
           <td>{{ user.name }}</td>
           <td>{{ user.title }}</td>
           <td>
-            <nuxt-link :to="{ path: `/users/${key}`}">View profile &rarr;</nuxt-link>
+            <NuxtLink :to="{ path: `/users/${key}`}">
+              View profile &rarr;
+            </NuxtLink>
           </td>
         </tr>
       </tbody>

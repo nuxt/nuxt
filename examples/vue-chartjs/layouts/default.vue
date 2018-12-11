@@ -1,10 +1,18 @@
 <template>
   <div>
     <ul>
-      <li><nuxt-link to="/">Activity</nuxt-link></li>
-      <li><nuxt-link to="/contributors">Contributors</nuxt-link></li>
+      <li>
+        <NuxtLink to="/">
+          Activity
+        </NuxtLink>
+      </li>
+      <li>
+        <NuxtLink to="/contributors">
+          Contributors
+        </NuxtLink>
+      </li>
     </ul>
-    <nuxt />
+    <Nuxt />
   </div>
 </template>
 
