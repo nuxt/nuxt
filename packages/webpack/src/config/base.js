@@ -6,7 +6,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
-import HardSource from 'hard-source-webpack-plugin'
+import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
@@ -354,7 +354,7 @@ export default class WebpackBaseConfig {
     }
 
     if (this.options.build.hardSource) {
-      plugins.push(new HardSource(Object.assign({}, this.options.build.hardSource)))
+      plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
     }
 
     return plugins
