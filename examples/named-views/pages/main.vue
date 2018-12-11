@@ -1,6 +1,6 @@
 <template lang="html">
   <div class="main">
-    <h1>Hello there</h1>
+    <h1>Main page</h1>
     <p>This is an example of a named views</p>
     <ul>
       <li>
@@ -31,20 +31,13 @@
     </ul>
 
     <hr>
-    <div>
-      <div class="left">
-        <nuxt-child name="left" />
-      </div>
-      <div class="content">
-        <nuxt-child />
-      </div>
-    </div>
+    <p>At top of this page there is named view from layout!</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Stage'
+  name: 'Main'
 }
 </script>
 
@@ -54,20 +47,4 @@ export default {
     max-width: 420px;
     padding: 10px;
   }
-
-  .left {
-    max-width: 150px;
-    display: inline-block;
-    vertical-align: top;
-    border: 1px;
-  }
-
-  .left:empty {
-    display: none;
-  }
-
-  .content {
-    display: inline-block;
-  }
-
 </style>
