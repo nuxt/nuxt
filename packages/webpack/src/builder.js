@@ -85,15 +85,15 @@ export class WebpackBundler {
         'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
-    }
-    for (const ext of Object.keys(styleResources)) {
-      await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-        const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
+      for (const ext of Object.keys(styleResources)) {
+        await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
+          const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
-        if (!styleResourceFiles || styleResourceFiles.length === 0) {
-          throw new Error(`Style Resource not found: ${p}`)
-        }
-      }))
+          if (!styleResourceFiles || styleResourceFiles.length === 0) {
+            throw new Error(`Style Resource not found: ${p}`)
+          }
+        }))
+      }
     }
 
     // Configure compilers
