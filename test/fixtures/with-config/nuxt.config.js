@@ -77,7 +77,7 @@ export default {
       })
     }
   },
-  css: [{ src: '~/assets/app.css' }],
+  css: [{ src: '~/assets/app.pcss' }],
   render: {
     csp: true,
     http2: {
