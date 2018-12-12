@@ -50,22 +50,18 @@ options.layout = (context) => 'foo'
 
 // middleware
 
-options.middleware = 'foo'
-options.middleware = ['foo', 'bar']
+const middlewares: types.Middleware[] = [
+  'foo',
+  (ctx) => {},
+  (ctx, cb) => {},
+  async (ctx) => {},
+  async (ctx, cb) => {} // unlikely
+]
 
-options.middleware = (ctx) => {}
-options.middleware = (ctx, cb) => { cb() }
-options.middleware = async (ctx) => {}
-
-options.middleware = async (ctx) => {
-  let res = await Promise.resolve('bar')
-}
-
-options.middleware = (ctx, cb) => {
-  return Promise.resolve('bar').then(res => {
-    cb()
-  })
-}
+options.middleware = middlewares
+options.middleware = middlewares[0]
+options.middleware = middlewares[1]
+options.middleware = middlewares[2]
 
 // scrollToTop
 
