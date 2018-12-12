@@ -408,7 +408,7 @@ export default class WebpackBaseConfig {
     if (optimization && optimization.minimizer && extendedConfig.devtool) {
       const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
       if (terser) {
-        terser.options.sourceMap = extendedConfig.devtool && /source-?map/.test(extendedConfig.devtool)
+        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
       }
     }
 
