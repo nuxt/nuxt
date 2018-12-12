@@ -6,6 +6,16 @@ export default class WebpackModernConfig extends WebpackClientConfig {
     super(builder, { name: 'modern', isServer: false, isModern: true })
   }
 
+  env() {
+    return Object.assign(super.env(), {
+      'process.env.VUE_ENV': JSON.stringify('client'),
+      'process.browser': true,
+      'process.client': true,
+      'process.server': false,
+      'process.modern': true
+    })
+  }
+
   getBabelOptions() {
     const options = clone(this.options.build.babel)
 
