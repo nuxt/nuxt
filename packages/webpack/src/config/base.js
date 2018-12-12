@@ -90,7 +90,7 @@ export default class WebpackBaseConfig {
       fileName = fileName(this.nuxtEnv)
     }
     if (this.options.dev) {
-      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?\]/.exec(fileName)
+      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
@@ -235,7 +235,7 @@ export default class WebpackBaseConfig {
         oneOf: styleLoader.apply('css')
       },
       {
-        test: /\.postcss$/,
+        test: /\.p(ost)?css$/,
         oneOf: styleLoader.apply('postcss')
       },
       {
@@ -408,7 +408,7 @@ export default class WebpackBaseConfig {
     if (optimization && optimization.minimizer && extendedConfig.devtool) {
       const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
       if (terser) {
-        terser.options.sourceMap = extendedConfig.devtool && /source-?map/.test(extendedConfig.devtool)
+        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
       }
     }
 

@@ -1,7 +1,9 @@
 <template>
   <div>
     <h1>Welcome!</h1>
-    <n-link to="/about">About Page</n-link>
+    <NLink to="/about">
+      About Page
+    </NLink>
   </div>
 </template>
 

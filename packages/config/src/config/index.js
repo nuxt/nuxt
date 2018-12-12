@@ -16,14 +16,14 @@ export function getDefaultNuxtConfig(options = {}) {
   }
 
   return {
-    ..._app(options),
-    ..._common(options),
-    build: build(options),
-    messages: messages(options),
-    modes: modes(options),
-    render: render(options),
-    router: router(options),
+    ..._app(),
+    ..._common(),
+    build: build(),
+    messages: messages(),
+    modes: modes(),
+    render: render(),
+    router: router(),
     server: server(options),
-    cli: cli(options)
+    cli: cli()
   }
 }

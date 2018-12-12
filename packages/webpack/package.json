@@ -34,7 +34,7 @@
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^3.0.0",
-    "postcss-preset-env": "^6.4.0",
+    "postcss-preset-env": "^6.5.0",
     "postcss-url": "^8.0.0",
     "std-env": "^2.2.1",
     "style-resources-loader": "^1.2.1",
@@ -48,7 +48,7 @@
     "webpack-dev-middleware": "^3.4.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
-    "webpackbar": "^3.1.3"
+    "webpackbar": "^3.1.4"
   },
   "publishConfig": {
     "access": "public"

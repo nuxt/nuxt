@@ -11,11 +11,11 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
-    "vue": "^2.5.20",
+    "vue": "^2.5.21",
     "vue-meta": "^1.5.6",
     "vue-no-ssr": "^1.1.0",
     "vue-router": "^3.0.2",
-    "vue-template-compiler": "^2.5.20",
+    "vue-template-compiler": "^2.5.21",
     "vuex": "^3.0.1"
   },
   "publishConfig": {

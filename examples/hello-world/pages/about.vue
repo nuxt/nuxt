@@ -1,7 +1,9 @@
 <template>
   <div>
     <p>Hi from {{ name }}</p>
-    <n-link to="/">Home page</n-link>
+    <NLink to="/">
+      Home page
+    </NLink>
   </div>
 </template>
 
