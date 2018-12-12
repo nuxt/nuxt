@@ -31,7 +31,7 @@ export class WebpackBundler {
     if (this.context.options.dev) {
       this.mfs = new MFS()
 
-      // TODO: Enable when async FS rquired
+      // TODO: Enable when async FS required
       // this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
       // this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
@@ -108,7 +108,7 @@ export class WebpackBundler {
       return compiler
     })
 
-    // Warmup perfLoader before build
+    // Warm up perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
       PerfLoader.warmupAll({ dev: options.dev })
@@ -172,7 +172,7 @@ export class WebpackBundler {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
       } else {
-        // Actual error will be printet by webpack
+        // Actual error will be printed by webpack
         throw new Error('Nuxt Build Error')
       }
     }

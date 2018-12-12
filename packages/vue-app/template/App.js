@@ -104,8 +104,8 @@ export default {
     },
     loadLayout(layout) {
       const undef = !layout
-      const inexisting = !(layouts['_' + layout] || resolvedLayouts['_' + layout])
-      let _layout = '_' + ((undef || inexisting) ? 'default' : layout)
+      const nonexistent = !(layouts['_' + layout] || resolvedLayouts['_' + layout])
+      let _layout = '_' + ((undef || nonexistent) ? 'default' : layout)
       if (resolvedLayouts[_layout]) {
         return Promise.resolve(resolvedLayouts[_layout])
       }

@@ -90,7 +90,7 @@ export default class WebpackBaseConfig {
       fileName = fileName(this.nuxtEnv)
     }
     if (this.options.dev) {
-      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?\]/.exec(fileName)
+      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
