@@ -70,7 +70,7 @@ export function getNuxtConfig(_options) {
 
   defaultsDeep(options, nuxtConfig)
 
-  // Check srcDir and generate.dir excistence
+  // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
   const hasGenerateDir = isNonEmptyString(options.generate.dir)
 

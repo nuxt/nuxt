@@ -90,7 +90,7 @@ export default class Package {
 
   async writePackage() {
     if (this.options.sortDependencies) {
-      await this.sortDependencies()
+      this.sortDependencies()
     }
     const pkgPath = this.resolvePath(this.options.pkgPath)
     this.logger.debug('Writing', pkgPath)

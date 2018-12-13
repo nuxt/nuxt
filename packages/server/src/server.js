@@ -84,10 +84,10 @@ export default class Server {
       this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
         const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware[name]) {
+        if (this.devMiddleware && this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }
-        if (this.hotMiddleware[name]) {
+        if (this.hotMiddleware && this.hotMiddleware[name]) {
           await this.hotMiddleware[name](req, res)
         }
         next()
@@ -178,7 +178,9 @@ export default class Server {
       try {
         handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
       } catch (err) {
-        if (!this.options.dev) throw err[0]
+        if (!this.options.dev) {
+          throw err[0]
+        }
         // Only warn missing file in development
         consola.warn(err[0])
       }
@@ -231,7 +233,9 @@ export default class Server {
   }
 
   async close() {
-    if (this.__closed) return
+    if (this.__closed) {
+      return
+    }
     this.__closed = true
 
     for (const listener of this.listeners) {

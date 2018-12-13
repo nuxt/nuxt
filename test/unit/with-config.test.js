@@ -1,5 +1,11 @@
+import { resolve } from 'path'
+import { existsSync } from 'fs'
 import jsdom from 'jsdom'
+import Glob from 'glob'
+import pify from 'pify'
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
+
+const glob = pify(Glob)
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -12,6 +18,13 @@ describe('with-config', () => {
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
+  })
+
+  test('client source map generated', async () => {
+    const jsFiles = await glob(resolve(__dirname, '..', 'fixtures/with-config/.nuxt/dist/client/*.js'))
+    for (const file of jsFiles) {
+      expect(existsSync(`${file}.map`)).toBe(true)
+    }
   })
 
   test('/', async () => {

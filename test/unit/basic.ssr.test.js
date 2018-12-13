@@ -324,7 +324,8 @@ describe('basic ssr', () => {
   })
 
   test('/тест雨 (test non ascii route)', async () => {
-    const { html } = await nuxt.server.renderRoute('/тест雨')
+    const window = await nuxt.server.renderAndGetWindow(url('/тест雨'))
+    const html = window.document.body.innerHTML
     expect(html).toMatch('Hello unicode')
   })
 
