@@ -69,15 +69,19 @@ export default class Resolver {
       resolvedPath = path
     }
 
-    // Check if resolvedPath exits
-    if (fs.existsSync(resolvedPath)) {
+    // Check if resolvedPath exits and is not a directory
+    if (fs.existsSync(resolvedPath) && !fs.lstatSync(resolvedPath).isDirectory()) {
       return resolvedPath
     }
 
-    // Check if any resolvedPath.[ext] exists
+    // Check if any resolvedPath.[ext] or resolvedPath/index.[ext] exists
     for (const ext of this.options.extensions) {
       if (fs.existsSync(resolvedPath + '.' + ext)) {
         return resolvedPath + '.' + ext
+      }
+
+      if (fs.existsSync(resolvedPath + '/index.' + ext)) {
+        return resolvedPath + '/index.' + ext
       }
     }
 
