@@ -118,8 +118,7 @@ export default class PostcssConfig {
           if (opts === false) {
             return // Disabled
           }
-          const instance = plugin(opts)
-          return instance
+          return plugin(opts)
         })
         .filter(Boolean)
     }

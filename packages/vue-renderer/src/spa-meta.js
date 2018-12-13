@@ -21,7 +21,7 @@ export default class SPAMetaRenderer {
     })
   }
 
-  async getMeta(url) {
+  async getMeta() {
     const vm = new Vue({
       render: h => h(), // Render empty html tag
       head: this.options.head || {}
@@ -45,7 +45,7 @@ export default class SPAMetaRenderer {
     }
 
     // Get vue-meta context
-    const m = await this.getMeta(url)
+    const m = await this.getMeta()
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()

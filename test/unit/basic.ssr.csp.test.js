@@ -312,5 +312,30 @@ describe('basic ssr csp', () => {
         expect(uniqueHashes.length).toBe(hashes.length)
       }
     )
+    test(
+      'Not contain old hashes when loading new page',
+      async () => {
+        const cspOption = {
+          enabled: true,
+          policies: {
+            'default-src': [`'self'`],
+            'script-src': ['https://example.com', 'https://example.io']
+          }
+        }
+        nuxt = await startCspDevServer(cspOption)
+        const { headers: user1Header } = await rp(url('/users/1'), {
+          resolveWithFullResponse: true
+        })
+        const user1Hashes = user1Header[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
+
+        const { headers: user2Header } = await rp(url('/users/2'), {
+          resolveWithFullResponse: true
+        })
+        const user2Hashes = new Set(user2Header[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-')))
+
+        const intersection = new Set(user1Hashes.filter(x => user2Hashes.has(x)))
+        expect(intersection.size).toBe(0)
+      }
+    )
   })
 })

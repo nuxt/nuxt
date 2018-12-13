@@ -39,7 +39,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       'process.env.VUE_ENV': JSON.stringify('server'),
       'process.browser': false,
       'process.client': false,
-      'process.server': true
+      'process.server': true,
+      'process.modern': false
     })
   }
 

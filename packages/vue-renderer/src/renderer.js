@@ -365,12 +365,12 @@ export default class VueRenderer {
 
     const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
 
-    const cspScriptSrcHashSet = new Set()
+    const cspScriptSrcHashes = []
     if (this.context.options.render.csp) {
       const { hashAlgorithm } = this.context.options.render.csp
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
-      cspScriptSrcHashSet.add(`'${hashAlgorithm}-${hash.digest('base64')}'`)
+      cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
     }
 
     APP += `<script>${serializedSession}</script>`
@@ -390,7 +390,7 @@ export default class VueRenderer {
 
     return {
       html,
-      cspScriptSrcHashSet,
+      cspScriptSrcHashes,
       getPreloadFiles: this.getPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected
