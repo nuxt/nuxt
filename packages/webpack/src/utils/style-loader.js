@@ -1,5 +1,5 @@
 import path from 'path'
-import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
+import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 
 import { wrapArray } from '@nuxt/common'
 
@@ -81,7 +81,7 @@ export default class StyleLoader {
 
   extract() {
     if (this.extractCSS) {
-      return ExtractCssChunks.loader
+      return ExtractCssChunksPlugin.loader
     }
   }
 
