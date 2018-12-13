@@ -78,18 +78,18 @@ module.exports = (context, options = {}) => {
   presets.push(
     [
       require('@babel/preset-env'), {
-      spec,
-      loose,
-      debug,
-      modules,
-      targets,
-      useBuiltIns,
-      ignoreBrowserslistConfig,
-      configPath,
-      include,
-      exclude: polyfills.concat(exclude || []),
-      shippedProposals,
-      forceAllTransforms
+        spec,
+        loose,
+        debug,
+        modules,
+        targets,
+        useBuiltIns,
+        ignoreBrowserslistConfig,
+        configPath,
+        include,
+        exclude: polyfills.concat(exclude || []),
+        shippedProposals,
+        forceAllTransforms
       }
     ],
     require('@babel/preset-typescript')
