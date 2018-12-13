@@ -44,6 +44,19 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/css'))
 
     const headHtml = window.document.head.innerHTML
+    expect(headHtml).toContain('color:red')
+
+    const element = window.document.querySelector('.red')
+    expect(element).not.toBe(null)
+    expect(element.textContent).toContain('This is red')
+    expect(element.className).toBe('red')
+    // t.is(window.getComputedStyle(element).color, 'red')
+  })
+
+  test('/postcss', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/css'))
+
+    const headHtml = window.document.head.innerHTML
     expect(headHtml).toContain('background-color:#00f')
 
     // const element = window.document.querySelector('div.red')
@@ -222,6 +235,7 @@ describe('basic ssr', () => {
     expect(html).toContain('Custom error')
     expect(error.message).toContain('Custom error')
     expect(error.statusCode).toBe(500)
+    expect(error.customProp).toBe('ezpz')
   })
 
   test('/error2 status code', async () => {
@@ -268,11 +282,6 @@ describe('basic ssr', () => {
       .rejects.toMatchObject({ statusCode: 304 })
   })
 
-  test('/_nuxt/server-bundle.json should return 404', async () => {
-    await expect(rp(url('/_nuxt/server-bundle.json')))
-      .rejects.toMatchObject({ statusCode: 404 })
-  })
-
   test('/_nuxt/ should return 404', async () => {
     await expect(rp(url('/_nuxt/')))
       .rejects.toMatchObject({ statusCode: 404 })
@@ -312,6 +321,12 @@ describe('basic ssr', () => {
   test('/js-link', async () => {
     const { html } = await nuxt.server.renderRoute('/js-link')
     expect(html).toContain('<h1>vue file is first-class</h1>')
+  })
+
+  test('/тест雨 (test non ascii route)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/тест雨'))
+    const html = window.document.body.innerHTML
+    expect(html).toMatch('Hello unicode')
   })
 
   // Close server and ask nuxt to stop listening to file changes

@@ -22,10 +22,9 @@ export default class Resolver {
 
   resolveModule(path) {
     try {
-      const resolvedPath = Module._resolveFilename(path, {
+      return Module._resolveFilename(path, {
         paths: this.options.modulesDir
       })
-      return resolvedPath
     } catch (error) {
       if (error.code === 'MODULE_NOT_FOUND') {
         return undefined

@@ -1,4 +1,5 @@
 import path from 'path'
+import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
@@ -10,7 +11,7 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import modernMiddleware from './middleware/modern'
+import createModernMiddleware from './middleware/modern'
 
 export default class Server {
   constructor(nuxt) {
@@ -35,6 +36,9 @@ export default class Server {
 
     // Create new connect instance
     this.app = connect()
+
+    // Close hook
+    this.nuxt.hook('close', () => this.close())
   }
 
   async ready() {
@@ -52,14 +56,6 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
-
-    // Close all listeners after nuxt close
-    this.nuxt.hook('close', async () => {
-      for (const listener of this.listeners) {
-        await listener.close()
-      }
-      this.listeners = []
-    })
   }
 
   async setupMiddleware() {
@@ -79,18 +75,19 @@ export default class Server {
       }
     }
 
-    if (this.options.modern === 'server') {
-      this.useMiddleware(modernMiddleware)
-    }
+    const modernMiddleware = createModernMiddleware({
+      context: this.renderer.context
+    })
 
     // Add webpack middleware support only for development
     if (this.options.dev) {
+      this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
         const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware[name]) {
+        if (this.devMiddleware && this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }
-        if (this.hotMiddleware[name]) {
+        if (this.hotMiddleware && this.hotMiddleware[name]) {
           await this.hotMiddleware[name](req, res)
         }
         next()
@@ -124,6 +121,7 @@ export default class Server {
           this.options.render.dist
         )
       })
+      this.useMiddleware(modernMiddleware)
     }
 
     // Add user provided middleware
@@ -173,16 +171,20 @@ export default class Server {
   }
 
   useMiddleware(middleware) {
-    // Resolve middleware
-    if (typeof middleware === 'string') {
-      middleware = this.nuxt.resolver.requireModule(middleware)
-    }
+    let handler = middleware.handler || middleware
 
-    // Resolve handler
-    if (typeof middleware.handler === 'string') {
-      middleware.handler = this.nuxt.resolver.requireModule(middleware.handler)
+    // Resolve handler setup as string (path)
+    if (typeof handler === 'string') {
+      try {
+        handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
+      } catch (err) {
+        if (!this.options.dev) {
+          throw err[0]
+        }
+        // Only warn missing file in development
+        consola.warn(err[0])
+      }
     }
-    const handler = middleware.handler || middleware
 
     // Resolve path
     const path = (
@@ -217,7 +219,8 @@ export default class Server {
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,
-      app: this.app
+      app: this.app,
+      dev: this.options.dev
     })
 
     // Listen
@@ -227,5 +230,28 @@ export default class Server {
     this.listeners.push(listener)
 
     await this.nuxt.callHook('listen', listener.server, listener)
+  }
+
+  async close() {
+    if (this.__closed) {
+      return
+    }
+    this.__closed = true
+
+    for (const listener of this.listeners) {
+      await listener.close()
+    }
+    this.listeners = []
+
+    if (typeof this.renderer.close === 'function') {
+      await this.renderer.close()
+    }
+
+    this.app.removeAllListeners()
+    this.app = null
+
+    for (const key in this.resources) {
+      delete this.resources[key]
+    }
   }
 }

@@ -115,9 +115,10 @@ export default class PostcssConfig {
         .map((p) => {
           const plugin = require(p)
           const opts = plugins[p]
-          if (opts === false) return // Disabled
-          const instance = plugin(opts)
-          return instance
+          if (opts === false) {
+            return // Disabled
+          }
+          return plugin(opts)
         })
         .filter(Boolean)
     }

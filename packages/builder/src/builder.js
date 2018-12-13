@@ -8,14 +8,11 @@ import pify from 'pify'
 import serialize from 'serialize-javascript'
 import upath from 'upath'
 
-import concat from 'lodash/concat'
 import debounce from 'lodash/debounce'
-import map from 'lodash/map'
 import omit from 'lodash/omit'
 import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
-import values from 'lodash/values'
 
 import devalue from '@nuxtjs/devalue'
 
@@ -59,10 +56,11 @@ export default class Builder {
       this.nuxt.hook('build:done', () => {
         consola.info('Waiting for file changes')
         this.watchClient()
+        this.watchRestart()
       })
 
-      // Stop watching on nuxt.close()
-      this.nuxt.hook('close', () => this.unwatch())
+      // Close hook
+      this.nuxt.hook('close', () => this.close())
     }
 
     if (this.options.build.analyze) {
@@ -102,7 +100,9 @@ export default class Builder {
   normalizePlugins() {
     return uniqBy(
       this.options.plugins.map((p) => {
-        if (typeof p === 'string') p = { src: p }
+        if (typeof p === 'string') {
+          p = { src: p }
+        }
         const pluginBaseName = path.basename(p.src, path.extname(p.src)).replace(
           /[^a-zA-Z?\d\s:]/g,
           ''
@@ -314,7 +314,7 @@ export default class Builder {
       })).forEach((f) => {
         const key = f.replace(/\.(vue|js|ts|tsx)$/, '')
         if (/\.vue$/.test(f) || !files[key]) {
-          files[key] = f.replace(/('|")/g, '\\$1')
+          files[key] = f.replace(/(['"])/g, '\\$1')
         }
       })
       templateVars.router.routes = createRoutes(
@@ -502,6 +502,7 @@ export default class Builder {
 
   watchClient() {
     const src = this.options.srcDir
+
     let patterns = [
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
@@ -509,6 +510,7 @@ export default class Builder {
       r(src, `${this.options.dir.layouts}/*.{vue,js,ts,tsx}`),
       r(src, `${this.options.dir.layouts}/**/*.{vue,js,ts,tsx}`)
     ]
+
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
@@ -516,7 +518,8 @@ export default class Builder {
         r(src, `${this.options.dir.pages}/**/*.{vue,js,ts,tsx}`)
       )
     }
-    patterns = map(patterns, upath.normalizeSafe)
+
+    patterns = patterns.map(upath.normalizeSafe)
 
     const options = this.options.watchers.chokidar
     /* istanbul ignore next */
@@ -529,43 +532,53 @@ export default class Builder {
       .on('unlink', refreshFiles)
 
     // Watch for custom provided files
-    let customPatterns = concat(
-      this.options.build.watch,
-      ...values(omit(this.options.build.styleResources, ['options']))
-    )
-    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
+    const customPatterns = uniq([
+      ...this.options.build.watch,
+      ...Object.values(omit(this.options.build.styleResources, ['options']))
+    ]).map(upath.normalizeSafe)
+
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
       .on('change', refreshFiles)
   }
 
-  watchServer() {
-    const nuxtRestartWatch = concat(
-      this.options.serverMiddleware
-        .filter(isString)
-        .map(this.nuxt.resolver.resolveAlias),
-      this.options.watch.map(this.nuxt.resolver.resolveAlias),
-      path.join(this.options.rootDir, 'nuxt.config.js')
-    )
+  watchRestart() {
+    const nuxtRestartWatch = [
+      // Server middleware
+      ...this.options.serverMiddleware.filter(isString),
+      // Custom watchers
+      ...this.options.watch
+    ].map(this.nuxt.resolver.resolveAlias)
 
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
-      .on('change', (_path) => {
-        this.watchers.restart.close()
-        const { name, ext } = path.parse(_path)
-        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`)
+      .on('all', (event, _path) => {
+        if (['add', 'change', 'unlink'].includes(event) === false) {
+          return
+        }
+        this.nuxt.callHook('watch:fileChanged', this, _path) // Legacy
+        this.nuxt.callHook('watch:restart', { event, path: _path })
       })
   }
 
-  async unwatch() {
+  unwatch() {
     for (const watcher in this.watchers) {
-      if (this.watchers[watcher]) {
-        this.watchers[watcher].close()
-      }
+      this.watchers[watcher].close()
     }
+  }
 
-    if (this.bundleBuilder.unwatch) {
-      await this.bundleBuilder.unwatch()
+  async close() {
+    if (this.__closed) {
+      return
+    }
+    this.__closed = true
+
+    // Unwatch
+    this.unwatch()
+
+    // Close bundleBuilder
+    if (typeof this.bundleBuilder.close === 'function') {
+      await this.bundleBuilder.close()
     }
   }
 }

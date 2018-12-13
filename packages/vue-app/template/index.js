@@ -21,9 +21,11 @@ Vue.component(NoSsr.name, NoSsr)
 
 // Component: <NuxtChild>
 Vue.component(NuxtChild.name, NuxtChild)
+Vue.component('NChild', NuxtChild)
 
 // Component: <NuxtLink
 Vue.component(NuxtLink.name, NuxtLink)
+Vue.component('NLink', NuxtLink)
 
 // Component: <Nuxt>`
 Vue.component(Nuxt.name, Nuxt)
