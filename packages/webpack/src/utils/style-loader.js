@@ -27,6 +27,10 @@ export default class StyleLoader {
     }
   }
 
+  get exportOnlyLocals() {
+    return Boolean(this.isServer && this.extractCSS)
+  }
+
   normalize(loaders) {
     loaders = wrapArray(loaders)
     return loaders.map(loader => (typeof loader === 'string' ? { loader } : loader))
@@ -64,32 +68,25 @@ export default class StyleLoader {
   }
 
   css(options) {
-    if (this.isServer && this.extractCSS) {
-      options.exportOnlyLocals = true
-    }
-    return {
-      loader: 'css-loader',
-      options
-    }
+    options.exportOnlyLocals = this.exportOnlyLocals
+    return [
+      ...options.exportOnlyLocals ? [] : [this.styleLoader()],
+      { loader: 'css-loader', options }
+    ]
   }
 
   cssModules(options) {
-    options.modules = true
-    return {
-      loader: 'css-loader',
-      options
-    }
+    return this.css(Object.assign(options, { modules: true }))
   }
 
   extract() {
-    if (this.extractCSS && !this.isServer) {
+    if (this.extractCSS) {
       return ExtractCssChunks.loader
     }
   }
 
-  vueStyle() {
-    // https://github.com/vuejs/vue-style-loader
-    return {
+  styleLoader() {
+    return this.extract() || {
       loader: 'vue-style-loader',
       options: this.loaders.vueStyle
     }
@@ -104,14 +101,11 @@ export default class StyleLoader {
 
     this.loaders.css.importLoaders = this.loaders.cssModules.importLoaders = customLoaders.length
 
-    const styleLoader = this.extract() || this.vueStyle()
-
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          styleLoader,
           this.cssModules(this.loaders.cssModules),
           customLoaders
         )
@@ -119,7 +113,6 @@ export default class StyleLoader {
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          styleLoader,
           this.css(this.loaders.css),
           customLoaders
         )
