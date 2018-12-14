@@ -30,6 +30,11 @@ export default class NuxtCommand {
     }
   }
 
+  static async run (name) {
+    const cmd = await NuxtCommand.load(name)
+    await cmd.run()
+  }
+
   static async load(name) {
     // eslint-disable-next-line import/namespace
     const cmd = await commands[name]().then(m => m.default)

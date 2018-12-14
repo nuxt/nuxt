@@ -7,7 +7,11 @@ import setup from './setup'
 
 export default async function run(custom = null) {
   if (custom) {
-    custom.run().catch(error => consola.fatal(error))
+    try {
+      custom.run()
+    } catch (error) {
+      consola.fatal(error)
+    }
     return
   }
 
@@ -17,12 +21,16 @@ export default async function run(custom = null) {
 
     if (isExternal) {
       process.argv.splice(2, 1)
-      spawn(process.argv[0], process.argv.slice(1))
+      try {
+        spawn(process.argv[0], process.argv.slice(1))
+      } catch (error) {
+        consola.fatal(error)
+      }
       return
     }
   } catch (notFoundError) {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      return listCommands().then(process.exit)
+      return listCommands().then(() => process.exit(0))
     } else {
       throw notFoundError
     }
@@ -31,7 +39,9 @@ export default async function run(custom = null) {
   process.argv.splice(2, 1)
   setup({ dev: cmd === 'dev' })
 
-  return NuxtCommand.load(cmd)
-    .then(command => command.run())
-    .catch(error => consola.fatal(error))
+  try {
+    await NuxtCommand.run(cmd)
+  } catch (error) {
+    consola.fatal(error)
+  }
 }
