@@ -277,7 +277,7 @@ export default class Builder {
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
-          .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`, ''))
+          .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (name === 'error') {
           if (!templateVars.components.ErrorPage) {
             templateVars.components.ErrorPage = this.relativeToBuild(
@@ -317,7 +317,7 @@ export default class Builder {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
-        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`, ''))
+        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (/\.vue$/.test(f) || !files[key]) {
           files[key] = f.replace(/(['"])/g, '\\$1')
         }
