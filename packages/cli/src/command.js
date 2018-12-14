@@ -14,15 +14,21 @@ export default class NuxtCommand {
     this.cmd = cmd
   }
 
-  static ensure(name, module = null) {
-    if (module === null) {
-      if (!(name in commands)) {
+  static ensureExternal() {
+    const command = process.argv.slice(0, 3).join('-')
+    if (!await commandExists(command)) {
+      throw new Error(`Module command \`${module} ${cmd}\` failed to load!`)
+    }
+    return 
+  }
+
+  static ensure(name) {
+    if (!(name in commands)) {
+      if (process.argv.length > 2) {
+        NuxtCommand.ensureExternal()
+      } else {
         throw new Error(`Command ${name} could not be loaded!`)
       }
-      return
-    }
-    if (!await commandExists(`${module}-${name}`)) {
-      throw new Error(`Command ${name} could not be loaded!`)
     }
   }
 

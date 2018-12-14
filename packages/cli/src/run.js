@@ -3,12 +3,24 @@ import NuxtCommand from './command'
 import listCommands from './list'
 import setup from './setup'
 
-export default function run() {
+export default function run(custom = null) {
+  if (NuxtCommand.isExternal() {
+    spawn(process.argv[0], process.argv.slice(1))
+    return
+  }
+  if (custom) {
+    custom.run().catch(error => consola.fatal(error))
+  }
+
   const cmd = process.argv[2] || 'dev'
   const subCommand = process.argv[3]
-  
+
   try {
-    NuxtCommand.ensure(cmd, subCommand)
+    const isExternal = NuxtCommand.ensure(cmd, subCommand)
+    if (isExternal) {
+      
+      return
+    }
   } catch (notFoundError) {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       return listCommands().then(process.exit)
