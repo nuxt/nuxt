@@ -8,6 +8,7 @@ import setup from './setup'
 export default async function run(custom = null) {
   if (custom) {
     custom.run().catch(error => consola.fatal(error))
+    return
   }
 
   const cmd = process.argv[2] || 'dev'
