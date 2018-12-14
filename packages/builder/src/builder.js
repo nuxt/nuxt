@@ -45,7 +45,7 @@ export default class Builder {
     }
 
     this.supportedExtensions = ['vue', 'js']
-    if (this.options.typescript) {
+    if (this.options.build.typescript) {
       this.supportedExtensions = this.supportedExtensions.concat(['ts', 'tsx'])
     }
 
@@ -326,7 +326,7 @@ export default class Builder {
         Object.values(files),
         this.options.srcDir,
         this.options.dir.pages,
-        this.options.typescript
+        this.options.build.typescript
       )
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(

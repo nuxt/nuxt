@@ -76,7 +76,7 @@ export default class WebpackBaseConfig {
           require.resolve('@nuxt/babel-preset-app'),
           {
             buildTarget: this.isServer ? 'server' : 'client',
-            typescript: this.options.typescript
+            typescript: this.options.build.typescript
           }
         ]
       ]
@@ -216,7 +216,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: this.options.typescript ? /\.(j|t)sx?$/ : /\.jsx?$/,
+        test: this.options.build.typescript ? /\.(j|t)sx?$/ : /\.jsx?$/,
         exclude: (file) => {
           // not exclude files outside node_modules
           if (!/node_modules/.test(file)) {
@@ -378,7 +378,7 @@ export default class WebpackBaseConfig {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
     let extensionsToResolve = ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx']
-    if (this.options.typescript) {
+    if (this.options.build.typescript) {
       extensionsToResolve = extensionsToResolve.concat(['.ts', '.tsx'])
     }
 
