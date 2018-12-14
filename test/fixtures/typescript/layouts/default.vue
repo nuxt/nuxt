@@ -1,14 +1,13 @@
 <template>
-  <div>{{ message }}</div>
+  <Nuxt />
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component({
-  name: 'Index'
+  name: 'DefaultLayout',
+  middleware: 'test'
 })
-export default class extends Vue {
-  message = 'Index Page'
-}
+export default class extends Vue {}
 </script>

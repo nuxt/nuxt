@@ -1,9 +1,8 @@
 import { resolve } from 'path'
 
 export default {
-  srcDir: resolve(__dirname),
   plugins: [
-    '~/plugins/test.ts'
+    '~/plugins/plugin.ts'
   ],
   build: {
     typescript: true
