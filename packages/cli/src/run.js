@@ -11,10 +11,8 @@ export default async function run(custom = null) {
   }
 
   const cmd = process.argv[2] || 'dev'
-  const subCommand = process.argv[3]
-
   try {
-    const isExternal = await NuxtCommand.ensure(cmd, subCommand)
+    const isExternal = await NuxtCommand.ensure(cmd)
 
     if (isExternal) {
       process.argv.splice(2, 1)
