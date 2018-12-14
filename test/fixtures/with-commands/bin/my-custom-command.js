@@ -1,5 +1,6 @@
 #!/bin/env node -r esm
 
+import consola from 'consola'
 import { NuxtCommand, run } from '@nuxt/cli'
 
 const cmd = NuxtCommand.from({
