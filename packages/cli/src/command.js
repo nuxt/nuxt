@@ -2,6 +2,7 @@
 import { resolve, parse } from 'path'
 import { readdirSync, existsSync } from 'fs'
 import parseArgs from 'minimist'
+import commandExists from 'command-exists'
 import { name, version } from '../package.json'
 import { requireModule, loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
@@ -13,29 +14,14 @@ export default class NuxtCommand {
     this.cmd = cmd
   }
 
-  static list(dir = '.') {
-    const cmdsRoot = resolve(dir, 'commands')
-    return existsSync(cmdsRoot)
-      ? readdirSync(cmdsRoot)
-        .filter(c => c.endsWith('.js'))
-        .map(c => parse(c).name)
-      : []
-  }
-
-  static ensure(name, dir = null) {
-    if (dir === null) {
+  static ensure(name, module = null) {
+    if (module === null) {
       if (!(name in commands)) {
         throw new Error(`Command ${name} could not be loaded!`)
       }
       return
     }
-    const cmdsRoot = resolve(dir || '.', 'commands')
-    if (
-      !existsSync(cmdsRoot) ||
-      !readdirSync(cmdsRoot)
-        .filter(c => c.endsWith('.js'))
-        .includes(`${name}.js`)
-    ) {
+    if (!await commandExists(`${module}-${name}`)) {
       throw new Error(`Command ${name} could not be loaded!`)
     }
   }
