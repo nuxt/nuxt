@@ -32,11 +32,7 @@ export default class NuxtCommand {
     }
   }
 
-  static async load(name, dir = null) {
-    if (dir !== null) {
-      const cmdPath = resolve(dir, 'commands', `${name}.js`)
-      return NuxtCommand.from(requireModule(cmdPath).default)
-    }
+  static async load(name) {
     // eslint-disable-next-line import/namespace
     const cmd = await commands[name]().then(m => m.default)
     return NuxtCommand.from(cmd)
