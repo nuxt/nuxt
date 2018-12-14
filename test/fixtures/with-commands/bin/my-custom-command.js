@@ -1,6 +1,8 @@
-import consola from 'consola'
+#!/bin/env node -r esm
 
-export default {
+import { NuxtCommand, run } from '@nuxt/cli'
+
+const cmd = NuxtCommand.from{
   name: 'my-custom-command',
   description: 'My Custom Command',
   usage: 'my-custom-command <foobar>',
@@ -21,3 +23,5 @@ export default {
     }
   }
 }
+
+run(cmd)
