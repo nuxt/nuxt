@@ -2,7 +2,7 @@
 
 import { NuxtCommand, run } from '@nuxt/cli'
 
-const cmd = NuxtCommand.from{
+const cmd = NuxtCommand.from({
   name: 'my-custom-command',
   description: 'My Custom Command',
   usage: 'my-custom-command <foobar>',
@@ -22,6 +22,6 @@ const cmd = NuxtCommand.from{
       consola.fatal(err)
     }
   }
-}
+})
 
 run(cmd)
