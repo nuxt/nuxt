@@ -4,10 +4,6 @@ import listCommands from './list'
 import setup from './setup'
 
 export default function run(custom = null) {
-  if (NuxtCommand.isExternal() {
-    spawn(process.argv[0], process.argv.slice(1))
-    return
-  }
   if (custom) {
     custom.run().catch(error => consola.fatal(error))
   }
@@ -18,7 +14,8 @@ export default function run(custom = null) {
   try {
     const isExternal = NuxtCommand.ensure(cmd, subCommand)
     if (isExternal) {
-      
+      process.argv.splice(2, 1)
+      spawn(process.argv[0], process.argv.slice(1))
       return
     }
   } catch (notFoundError) {

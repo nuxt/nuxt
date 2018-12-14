@@ -19,13 +19,13 @@ export default class NuxtCommand {
     if (!await commandExists(command)) {
       throw new Error(`Module command \`${module} ${cmd}\` failed to load!`)
     }
-    return 
+    return true
   }
 
   static ensure(name) {
     if (!(name in commands)) {
       if (process.argv.length > 2) {
-        NuxtCommand.ensureExternal()
+        return NuxtCommand.ensureExternal()
       } else {
         throw new Error(`Command ${name} could not be loaded!`)
       }
