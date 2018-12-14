@@ -5,8 +5,10 @@ import setup from './setup'
 
 export default function run() {
   const cmd = process.argv[2] || 'dev'
+  const subCommand = process.argv[3]
+  
   try {
-    NuxtCommand.ensure(cmd)
+    NuxtCommand.ensure(cmd, subCommand)
   } catch (notFoundError) {
     if (process.argv.includes('--help') || process.argv.includes('-h')) {
       return listCommands().then(process.exit)
@@ -14,6 +16,7 @@ export default function run() {
       throw notFoundError
     }
   }
+
   process.argv.splice(2, 1)
   setup({ dev: cmd === 'dev' })
 
