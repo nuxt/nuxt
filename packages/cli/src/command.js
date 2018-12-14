@@ -1,10 +1,8 @@
 
-import { resolve, parse } from 'path'
-import { readdirSync, existsSync } from 'fs'
 import parseArgs from 'minimist'
 import commandExists from 'command-exists'
 import { name, version } from '../package.json'
-import { requireModule, loadNuxtConfig } from './utils'
+import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as commands from './commands'
 import * as imports from './imports'
@@ -14,10 +12,10 @@ export default class NuxtCommand {
     this.cmd = cmd
   }
 
-  static ensureExternal() {
+  static async ensureExternal() {
     const command = process.argv.slice(0, 3).join('-')
     if (!await commandExists(command)) {
-      throw new Error(`Module command \`${module} ${cmd}\` failed to load!`)
+      throw new Error(`Module command ${command} failed to load!`)
     }
     return true
   }
