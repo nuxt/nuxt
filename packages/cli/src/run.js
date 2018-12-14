@@ -1,6 +1,7 @@
 
-import consola from 'consola'
+
 import { spawn } from 'child_process'
+import consola from 'consola'
 import NuxtCommand from './command'
 import listCommands from './list'
 import setup from './setup'
