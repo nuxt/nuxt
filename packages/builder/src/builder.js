@@ -49,7 +49,7 @@ export default class Builder {
       relativeTo(this.options.buildDir, ...args)
 
     this.serializeHead = (obj) => {
-      const serialized = Object.assign({}, obj)
+      obj = Object.assign({}, obj)
       let body
       Object.keys(obj).forEach((member) => {
         if (typeof obj[member] === 'function') {
