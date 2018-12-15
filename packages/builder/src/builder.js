@@ -56,7 +56,7 @@ export default class Builder {
         })
         .replace(/^(\s*)(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
           if (open) {
-            return `${spaces}${name}:function (${args})`
+            return `${spaces}${name}:function (${args}) {`
           } else {
             open = true
             return _
