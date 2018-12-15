@@ -50,8 +50,18 @@ options.layout = (context) => 'foo'
 
 // middleware
 
-options.middleware = 'foo'
-options.middleware = ['foo', 'bar']
+const middlewares: types.Middleware[] = [
+  'foo',
+  (ctx) => {},
+  (ctx, cb) => {},
+  async (ctx) => {},
+  async (ctx, cb) => {} // unlikely
+]
+
+options.middleware = middlewares
+options.middleware = middlewares[0]
+options.middleware = middlewares[1]
+options.middleware = middlewares[2]
 
 // scrollToTop
 
