@@ -23,7 +23,7 @@ import {
   createRoutes,
   relativeTo,
   waitFor,
-  serializeWithMethods,
+  serializeFunction,
   determineGlobals,
   stripWhitespace,
   isString
@@ -435,7 +435,7 @@ export default class Builder {
     const templateOptions = {
       imports: {
         serialize,
-        serializeWithMethods,
+        serializeFunction,
         devalue,
         hash,
         r,

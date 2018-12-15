@@ -459,9 +459,9 @@ export function defineAlias(src, target, prop, opts = {}) {
   })
 }
 
-export function serializeWithMethods(obj, name) {
+export function serializeFunction(func) {
   let open = false
-  return serialize(obj)
+  return serialize(func)
     .replace(/^(\s*):(\w+)\(/gm, (_, spaces) => {
       return `${spaces}:function(`
     })
@@ -473,5 +473,5 @@ export function serializeWithMethods(obj, name) {
         return _
       }
     })
-    .replace(`${name}(`, 'function(')
+    .replace(`${func.name}(`, 'function(')
 }
