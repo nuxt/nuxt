@@ -60,7 +60,7 @@ export default class Builder {
           serialized[member] = eval(`(function${body})`)
         }
       })
-      return serialize(obj).replace('head(', 'function(')
+      return serialize(obj).replace(/^\s*head\(/, 'function(')
     }
 
     this._buildStatus = STATUS.INITIAL
