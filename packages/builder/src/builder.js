@@ -429,11 +429,22 @@ export default class Builder {
       resolve: r
     })
 
+    const serializeHead = (obj) => {
+      obj = Object.assign({}, obj)
+      for (const member in obj) {
+        if (typeof obj[member] === 'function') {
+          obj[member] = (...args) => obj[member](...args)
+        }
+      }
+      return serialize(obj)
+    }
+
     // Prepare template options
     let lodash = null
     const templateOptions = {
       imports: {
         serialize,
+        serializeHead,
         devalue,
         hash,
         r,
