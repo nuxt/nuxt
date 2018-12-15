@@ -1,4 +1,22 @@
+import * as imports from '../../src/imports'
 import Command from '../../src/command'
+
+jest.mock('../../src/imports', () => {
+  return {
+    core: jest.fn().mockImplementation(() => ({
+      Nuxt: function () {}
+    })),
+    builder: jest.fn().mockImplementation(() => ({
+      Builder: function () {}
+    })),
+    generator: jest.fn().mockImplementation(() => ({
+      Generator: function () {}
+    })),
+    webpack: jest.fn().mockImplementation(() => ({
+      BundleBuilder: function () {}
+    }))
+  }
+})
 
 export const mockGetNuxt = (options, implementation) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {
@@ -40,7 +58,6 @@ export const mockGetNuxtStart = (ssr) => {
   const listen = jest.fn().mockImplementationOnce(() => {
     return Promise.resolve()
   })
-  const showReady = jest.fn()
 
   mockGetNuxt({
     rootDir: '.',
@@ -48,11 +65,13 @@ export const mockGetNuxtStart = (ssr) => {
       ssr
     }
   }, {
-    listen,
-    showReady
+    server: {
+      listen,
+      listeners: []
+    }
   })
 
-  return { listen, showReady }
+  return { listen }
 }
 
 export const mockGetNuxtConfig = () => {
@@ -65,19 +84,23 @@ export const mockNuxt = (implementation) => {
   const Nuxt = function () {}
   Object.assign(Nuxt.prototype, {
     hook(type, fn) {
-      if (type === 'watch:fileChanged') {
-        Nuxt.fileChangedHook = fn
+      if (type === 'watch:restart') {
+        Nuxt.fileRestartHook = fn
       }
     },
+    options: {},
     clearHook: jest.fn(),
+    clearHooks: jest.fn(),
     close: jest.fn(),
-    listen: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-    showReady: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    ready: jest.fn(),
+    server: {
+      listeners: [],
+      listen: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    }
   }, implementation || {})
 
-  Command.prototype.importCore = jest.fn().mockImplementationOnce(() => {
-    return { Nuxt }
-  })
+  imports.core.mockImplementation(() => ({ Nuxt }))
+
   return Nuxt
 }
 
@@ -86,11 +109,10 @@ export const mockBuilder = (implementation) => {
   Object.assign(Builder.prototype, {
     build: jest.fn().mockImplementationOnce(() => Promise.resolve()),
     unwatch: jest.fn().mockImplementationOnce(() => Promise.resolve()),
-    watchServer: jest.fn().mockImplementationOnce(() => Promise.resolve())
+    watchRestart: jest.fn().mockImplementationOnce(() => Promise.resolve())
   }, implementation || {})
 
-  Command.prototype.importBuilder = jest.fn().mockImplementationOnce(() => {
-    return { Builder }
-  })
+  imports.builder.mockImplementation(() => ({ Builder }))
+
   return Builder
 }

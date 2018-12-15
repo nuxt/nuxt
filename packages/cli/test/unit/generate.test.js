@@ -1,33 +1,26 @@
-import { consola, mockGetNuxt, mockGetGenerator } from '../utils'
+import { consola, mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
 import Command from '../../src/command'
 
 describe('generate', () => {
   let generate
 
   beforeAll(async () => {
-    generate = await import('../../src/commands/generate')
-    generate = generate.default
-
+    generate = await import('../../src/commands/generate').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
-  afterAll(() => {
-    process.exit.mockRestore()
-  })
+  afterAll(() => process.exit.mockRestore())
+  afterEach(() => jest.resetAllMocks())
 
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
-  test('is function', () => {
-    expect(typeof generate).toBe('function')
+  test('has run function', () => {
+    expect(typeof generate.run).toBe('function')
   })
 
   test('builds by default', async () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await generate()
+    await NuxtCommand.from(generate).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(true)
@@ -46,18 +39,50 @@ describe('generate', () => {
     })
     const generator = mockGetGenerator(Promise.resolve())
 
-    await generate()
+    await NuxtCommand.from(generate).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
     Command.prototype.getArgv = getArgv
   })
 
+  test('build with devtools', async () => {
+    mockGetNuxt()
+    const generator = mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate)
+    const args = ['generate', '.', '--devtools']
+    const argv = cmd.getArgv(args)
+    argv._ = ['.']
+
+    const options = await cmd.getNuxtConfig(argv)
+
+    await cmd.run()
+
+    expect(options.vue.config.devtools).toBe(true)
+    expect(generator).toHaveBeenCalled()
+    expect(generator.mock.calls[0][0].build).toBe(true)
+  })
+
+  test('generate with modern mode', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate)
+    const args = ['generate', '.', '--m']
+
+    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+
+    await cmd.run()
+
+    expect(options.modern).toBe('client')
+  })
+
   test('catches error', async () => {
     mockGetNuxt()
     mockGetGenerator(Promise.reject(new Error('Generator Error')))
 
-    await generate()
+    await NuxtCommand.from(generate).run()
 
     expect(consola.fatal).toHaveBeenCalledWith(new Error('Generator Error'))
   })

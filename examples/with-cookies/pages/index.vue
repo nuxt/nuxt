@@ -11,7 +11,11 @@
         <tr v-for="(value, key) in cookies" :key="key">
           <td>{{ key }}</td>
           <td>{{ value }}</td>
-          <td><button @click="removeCookie(key)">Remove</button></td>
+          <td>
+            <button @click="removeCookie(key)">
+              Remove
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -19,7 +23,9 @@
     <form @submit.prevent="addCookie">
       <input v-model="newCookie.key" type="text" placeholder="Key" class="key">:
       <input v-model="newCookie.value" type="text" placeholder="Value" class="value">
-      <button type="submit">Add</button>
+      <button type="submit">
+        Add
+      </button>
     </form>
   </div>
 </template>

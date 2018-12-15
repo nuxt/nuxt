@@ -3,34 +3,64 @@ import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
+import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import HardSourcePlugin from 'hard-source-webpack-plugin'
+import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
+import env from 'std-env'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
-import StyleLoader from './utils/style-loader'
-import WarnFixPlugin from './plugins/warnfix'
-import StatsPlugin from './plugins/stats'
+import PerfLoader from '../utils/perf-loader'
+import StyleLoader from '../utils/style-loader'
+import WarnFixPlugin from '../plugins/warnfix'
 
 export default class WebpackBaseConfig {
   constructor(builder, options) {
     this.name = options.name
     this.isServer = options.isServer
+    this.isModern = options.isModern
     this.builder = builder
     this.nuxt = builder.context.nuxt
     this.isStatic = builder.context.isStatic
     this.options = builder.context.options
     this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
+    this.buildMode = this.options.dev ? 'development' : 'production'
+    this.modulesToTranspile = this.normalizeTranspile()
+  }
+
+  get colors() {
+    return {
+      client: 'green',
+      server: 'orange',
+      modern: 'blue'
+    }
   }
 
   get nuxtEnv() {
     return {
       isDev: this.options.dev,
       isServer: this.isServer,
-      isClient: !this.isServer
+      isClient: !this.isServer,
+      isModern: !!this.isModern
     }
+  }
+
+  normalizeTranspile() {
+    // include SFCs in node_modules
+    const items = [/\.vue\.js/]
+    for (const pattern of this.options.build.transpile) {
+      if (pattern instanceof RegExp) {
+        items.push(pattern)
+      } else {
+        const posixModule = pattern.replace(/\\/g, '/')
+        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
+      }
+    }
+    return items
   }
 
   getBabelOptions() {
@@ -43,9 +73,10 @@ export default class WebpackBaseConfig {
     if (!options.babelrc && !options.presets) {
       options.presets = [
         [
-          require.resolve('@nuxtjs/babel-preset-app'),
+          require.resolve('@nuxt/babel-preset-app'),
           {
-            buildTarget: this.isServer ? 'server' : 'client'
+            buildTarget: this.isServer ? 'server' : 'client',
+            typescript: this.options.build.typescript
           }
         ]
       ]
@@ -60,7 +91,7 @@ export default class WebpackBaseConfig {
       fileName = fileName(this.nuxtEnv)
     }
     if (this.options.dev) {
-      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?\]/.exec(fileName)
+      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
@@ -68,12 +99,13 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  devtool() {
+  get devtool() {
     return false
   }
 
   env() {
     const env = {
+      'process.env.NODE_ENV': JSON.stringify(this.buildMode),
       'process.mode': JSON.stringify(this.options.mode),
       'process.static': this.isStatic
     }
@@ -98,7 +130,41 @@ export default class WebpackBaseConfig {
   }
 
   optimization() {
-    return this.options.build.optimization
+    const optimization = cloneDeep(this.options.build.optimization)
+
+    if (optimization.minimize && optimization.minimizer === undefined) {
+      optimization.minimizer = this.minimizer()
+    }
+
+    return optimization
+  }
+
+  minimizer() {
+    const minimizer = []
+
+    // https://github.com/webpack-contrib/terser-webpack-plugin
+    if (this.options.build.terser) {
+      minimizer.push(
+        new TerserWebpackPlugin(Object.assign({
+          parallel: true,
+          cache: this.options.build.cache,
+          sourceMap: this.devtool && /source-?map/.test(this.devtool),
+          extractComments: {
+            filename: 'LICENSES'
+          },
+          terserOptions: {
+            compress: {
+              ecma: this.isModern ? 6 : undefined
+            },
+            output: {
+              comments: /^\**!|@preserve|@license|@cc_on/
+            }
+          }
+        }, this.options.build.terser))
+      )
+    }
+
+    return minimizer
   }
 
   alias() {
@@ -115,13 +181,12 @@ export default class WebpackBaseConfig {
   }
 
   rules() {
+    const perfLoader = new PerfLoader(this)
     const styleLoader = new StyleLoader(
       this.options,
       this.nuxt,
-      { isServer: this.isServer }
+      { isServer: this.isServer, perfLoader }
     )
-
-    const perfLoader = this.builder.perfLoader
 
     return [
       {
@@ -151,7 +216,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.jsx?$/,
+        test: this.options.build.typescript ? /\.(j|t)sx?$/ : /\.jsx?$/,
         exclude: (file) => {
           // not exclude files outside node_modules
           if (!/node_modules/.test(file)) {
@@ -159,50 +224,52 @@ export default class WebpackBaseConfig {
           }
 
           // item in transpile can be string or regex object
-          const modulesToTranspile = [/\.vue\.js/].concat(this.options.build.transpile)
-
-          return !modulesToTranspile.some(module => module.test(file))
+          return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.pool('js', {
+        use: perfLoader.js().concat({
           loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
       },
       {
         test: /\.css$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('css'))
+        oneOf: styleLoader.apply('css')
+      },
+      {
+        test: /\.p(ost)?css$/,
+        oneOf: styleLoader.apply('postcss')
       },
       {
         test: /\.less$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('less', {
+        oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
           options: this.loaders.less
-        }))
+        })
       },
       {
         test: /\.sass$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('sass', {
+        oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
           options: this.loaders.sass
-        }))
+        })
       },
       {
         test: /\.scss$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('scss', {
+        oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
           options: this.loaders.scss
-        }))
+        })
       },
       {
         test: /\.styl(us)?$/,
-        oneOf: perfLoader.poolOneOf('css', styleLoader.apply('stylus', {
+        oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
           options: this.loaders.stylus
-        }))
+        })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.imgUrl,
@@ -212,7 +279,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.fontUrl,
@@ -222,7 +289,7 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(webm|mp4|ogv)$/,
-        use: perfLoader.pool('assets', {
+        use: perfLoader.asset().concat({
           loader: 'file-loader',
           options: Object.assign(
             this.loaders.file,
@@ -248,35 +315,47 @@ export default class WebpackBaseConfig {
 
     // Build progress indicator
     plugins.push(new WebpackBar({
-      profile: this.options.build.profile,
-      name: this.isServer ? 'server' : 'client',
-      color: this.isServer ? 'orange' : 'green',
-      compiledIn: false,
-      done: (states) => {
-        if (this.options.dev) {
-          const hasErrors = Object.values(states).some(state => state.stats.hasErrors())
-
-          if (!hasErrors) {
-            this.nuxt.showReady(false)
+      name: this.name,
+      color: this.colors[this.name],
+      reporters: [
+        'basic',
+        'fancy',
+        'profile',
+        'stats'
+      ],
+      basic: !this.options.build.quiet && env.minimalCLI,
+      fancy: !this.options.build.quiet && !env.minimalCLI,
+      profile: !this.options.build.quiet && this.options.build.profile,
+      stats: !this.options.build.quiet && !this.options.dev && this.options.build.stats,
+      reporter: {
+        change: (_, { shortPath }) => {
+          if (!this.isServer) {
+            this.nuxt.callHook('bundler:change', shortPath)
           }
+        },
+        done: (context) => {
+          if (context.hasErrors) {
+            this.nuxt.callHook('bundler:error')
+          }
+        },
+        allDone: () => {
+          this.nuxt.callHook('bundler:done')
         }
       }
     }))
 
-    // Add stats plugin
-    if (!this.options.dev && this.options.build.stats) {
-      plugins.push(new StatsPlugin(this.options.build.stats))
+    // CSS extraction)
+    if (this.options.build.extractCSS) {
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+        filename: this.getFileName('css'),
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
+      }, this.options.build.extractCSS)))
     }
 
-    // CSS extraction
-    // MiniCssExtractPlugin does not currently supports SSR
-    // https://github.com/webpack-contrib/mini-css-extract-plugin/issues/48
-    // So we use css-loader/locals as a fallback (utils/style-loader)
-    if (this.options.build.extractCSS && !this.isServer) {
-      plugins.push(new MiniCssExtractPlugin(Object.assign({
-        filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css')
-      }, this.options.build.extractCSS)))
+    if (this.options.build.hardSource) {
+      plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
     }
 
     return plugins
@@ -298,10 +377,15 @@ export default class WebpackBaseConfig {
   config() {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
+    let extensionsToResolve = ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx']
+    if (this.options.build.typescript) {
+      extensionsToResolve = extensionsToResolve.concat(['.ts', '.tsx'])
+    }
+
     const config = {
       name: this.name,
-      mode: this.options.dev ? 'development' : 'production',
-      devtool: this.devtool(),
+      mode: this.buildMode,
+      devtool: this.devtool,
       optimization: this.optimization(),
       output: this.output(),
       performance: {
@@ -309,7 +393,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: extensionsToResolve,
         alias: this.alias(),
         modules: webpackModulesDir
       },
@@ -322,9 +406,17 @@ export default class WebpackBaseConfig {
       plugins: this.plugins()
     }
 
-    const extendedConfig = this.extendConfig(config)
-
     // Clone deep avoid leaking config between Client and Server
-    return cloneDeep(extendedConfig)
+    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const { optimization } = extendedConfig
+    // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
+    if (optimization && optimization.minimizer && extendedConfig.devtool) {
+      const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
+      if (terser) {
+        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
+      }
+    }
+
+    return extendedConfig
   }
 }

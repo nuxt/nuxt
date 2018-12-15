@@ -26,26 +26,22 @@ jobs:
           name: Install Dependencies
           command: yarn --frozen-lockfile --non-interactive
 
-      # Link
-      - run:
-          name: ‌ Link
-          command: yarn lerna link
-
       # Save cache
       - save_cache:
           key: yarn-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
-            - distributions/*/node_modules
             - packages/*/node_modules
+            - distributions/*/node_modules
 
       # Persist workspace
       - persist_to_workspace:
           root: ~/project
           paths:
             - node_modules
-            - distributions/*/node_modules
             - packages/*/node_modules
+            - distributions/*/node_modules
+            - packages/*/dist
 
   # --------------------------------------------------------------------------
   # Phase 2: Lint + Audit + Build Nuxt and fixtures
@@ -77,17 +73,12 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Build Nuxt
-          command: yarn build
-      - run:
           name: Build Fixtures
-          command: yarn build && yarn test:fixtures -w=4 --coverage && yarn coverage
+          command: yarn test:fixtures -w=4 --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
-            - test/fixtures # TODO
-            - distributions/**/dist
-            - packages/**/dist
+            - test/fixtures
 
   # --------------------------------------------------------------------------
   # Phase 3: Unit and E2E tests
@@ -124,11 +115,17 @@ jobs:
       - run:
           name: release
           command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn lerna version
-            PACKAGE_SUFFIX=edge yarn build
-            ./scripts/workspace-run npm publish
+            GIT_COMMIT_MSG=`git --no-pager log --pretty=full -n1 $CIRCLE_SHA1`
+            if echo "$GIT_COMMIT_MSG" | grep -o "\[skip release\]"; then
+              echo "Release phase is skipped since [skip release] exists in commit message or body."
+            else
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              yarn lerna version --yes --no-git-tag-version --no-push
+              PACKAGE_SUFFIX=edge yarn build
+              if [ "$CIRCLE_BRANCH" = "next" ]; then tag="-t next"; fi
+              ./scripts/workspace-run npm publish $tag -q
+            fi
 
 # Workflow definition
 workflows:
@@ -168,3 +165,4 @@ workflows:
             branches:
               only:
                 - dev
+                - next

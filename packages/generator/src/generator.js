@@ -31,11 +31,7 @@ export default class Generator {
 
     const routes = await this.initRoutes()
 
-    consola.info({
-      message: 'Generating pages',
-      badge: true,
-      clear: true
-    })
+    consola.info('Generating pages')
 
     const errors = await this.generateRoutes(routes)
 
@@ -112,6 +108,7 @@ export default class Generator {
     }
 
     // Improve string representation for errors
+    // TODO: Use consola for more consistency
     errors.toString = () => this._formatErrors(errors)
 
     return errors
@@ -121,11 +118,9 @@ export default class Generator {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
-        const bgColor = isHandled ? 'bgYellow' : 'bgRed'
         const color = isHandled ? 'yellow' : 'red'
 
-        let line =
-          Chalk.black[bgColor](' GEN ERR ') + Chalk[color](` ${route}\n\n`)
+        let line = Chalk[color](` ${route}\n\n`)
 
         if (isHandled) {
           line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
@@ -142,7 +137,9 @@ export default class Generator {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
-    if (typeof fallback !== 'string' || !fallback) return
+    if (typeof fallback !== 'string' || !fallback) {
+      return
+    }
 
     const fallbackPath = path.join(this.distPath, fallback)
 
@@ -153,7 +150,7 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    const { html } = await this.nuxt.renderRoute('/', { spa: true })
+    const { html } = await this.nuxt.server.renderRoute('/', { spa: true })
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
   }
 
@@ -201,7 +198,7 @@ export default class Generator {
     const pageErrors = []
 
     try {
-      const res = await this.nuxt.renderer.renderRoute(route, {
+      const res = await this.nuxt.server.renderRoute(route, {
         _generate: true,
         payload
       })

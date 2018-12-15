@@ -8,30 +8,28 @@ import pify from 'pify'
 import serialize from 'serialize-javascript'
 import upath from 'upath'
 
-import concat from 'lodash/concat'
 import debounce from 'lodash/debounce'
-import map from 'lodash/map'
 import omit from 'lodash/omit'
 import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
-import values from 'lodash/values'
 
 import devalue from '@nuxtjs/devalue'
 
 import {
-  Options,
-  BuildContext,
   r,
   wp,
   wChunk,
   createRoutes,
   relativeTo,
   waitFor,
+  serializeFunction,
   determineGlobals,
   stripWhitespace,
   isString
 } from '@nuxt/common'
+
+import BuildContext from './context'
 
 const glob = pify(Glob)
 
@@ -47,29 +45,38 @@ export default class Builder {
       restart: null
     }
 
+    this.supportedExtensions = ['vue', 'js']
+    if (this.options.build.typescript) {
+      this.supportedExtensions.push('ts', 'tsx')
+    }
+
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
       relativeTo(this.options.buildDir, ...args)
 
     this._buildStatus = STATUS.INITIAL
 
-    // Stop watching on nuxt.close()
+    // Hooks for watch lifecycle
     if (this.options.dev) {
-      this.nuxt.hook('close', () => this.unwatch())
-      this.nuxt.hook('build:done', () => this.watchClient())
+      // Start watching after initial render
+      this.nuxt.hook('build:done', () => {
+        consola.info('Waiting for file changes')
+        this.watchClient()
+        this.watchRestart()
+      })
+
+      // Close hook
+      this.nuxt.hook('close', () => this.close())
     }
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn({
-          message: 'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.',
-          badge: true
-        })
+        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
       })
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/app'
+    this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template)
     }
@@ -99,7 +106,9 @@ export default class Builder {
   normalizePlugins() {
     return uniqBy(
       this.options.plugins.map((p) => {
-        if (typeof p === 'string') p = { src: p }
+        if (typeof p === 'string') {
+          p = { src: p }
+        }
         const pluginBaseName = path.basename(p.src, path.extname(p.src)).replace(
           /[^a-zA-Z?\d\s:]/g,
           ''
@@ -125,8 +134,7 @@ export default class Builder {
       } else if (pluginFiles.length > 1) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
-          additional: `  ${pluginFiles.join('\n  ')}`,
-          badge: true
+          additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
 
@@ -152,11 +160,12 @@ export default class Builder {
     }
     this._buildStatus = STATUS.BUILDING
 
-    consola.info({
-      message: 'Building project',
-      badge: true,
-      clear: !this.options.dev
-    })
+    if (this.options.dev) {
+      consola.info('Preparing project for development')
+      consola.info('Initial build may take a while')
+    } else {
+      consola.info('Production build')
+    }
 
     // Wait for nuxt ready
     await this.nuxt.ready()
@@ -175,12 +184,7 @@ export default class Builder {
           )
         } else {
           this._defaultPage = true
-          consola.warn({
-            message: `No \`${this.options.dir.pages}\` directory found in ${dir}.`,
-            additional: 'Using the default built-in page.\n',
-            additionalStyle: 'yellowBright',
-            badge: true
-          })
+          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
         }
       }
     }
@@ -220,7 +224,8 @@ export default class Builder {
   async generateRoutesAndFiles() {
     consola.debug(`Generating nuxt files`)
 
-    this.plugins.push.apply(this.plugins, this.normalizePlugins())
+    // Plugins
+    this.plugins = Array.from(this.normalizePlugins())
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)
@@ -266,14 +271,14 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{vue,js}`, {
+      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
-          .replace(/\.(vue|js)$/, '')
+          .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (name === 'error') {
           if (!templateVars.components.ErrorPage) {
             templateVars.components.ErrorPage = this.relativeToBuild(
@@ -306,24 +311,25 @@ export default class Builder {
         ['index.vue'],
         this.template.templatesDir + '/pages'
       )
-    } else if (this._nuxtPages) { // If user defined a custom method to create routes
+    } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
+        ; (await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
-        const key = f.replace(/\.(js|vue)$/, '')
+        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (/\.vue$/.test(f) || !files[key]) {
-          files[key] = f.replace(/('|")/g, '\\$1')
+          files[key] = f.replace(/(['"])/g, '\\$1')
         }
       })
       templateVars.router.routes = createRoutes(
         Object.values(files),
         this.options.srcDir,
-        this.options.dir.pages
+        this.options.dir.pages,
+        this.supportedExtensions
       )
-    } else {
+    } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
         this.options.srcDir
       )
@@ -430,6 +436,34 @@ export default class Builder {
       resolve: r
     })
 
+    // Prepare template options
+    let lodash = null
+    const templateOptions = {
+      imports: {
+        serialize,
+        serializeFunction,
+        devalue,
+        hash,
+        r,
+        wp,
+        wChunk,
+        resolvePath: this.nuxt.resolver.resolvePath,
+        resolveAlias: this.nuxt.resolver.resolveAlias,
+        relativeToBuild: this.relativeToBuild,
+        // Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
+        _: new Proxy({}, {
+          get(target, prop) {
+            if (!lodash) {
+              consola.warn('Avoid using _ inside templates')
+              lodash = require('lodash')
+            }
+            return lodash[prop]
+          }
+        })
+      },
+      interpolate: /<%=([\s\S]+?)%>/g
+    }
+
     // Interpret and move template files to .nuxt/
     await Promise.all(
       templatesFiles.map(async ({ src, dst, options, custom }) => {
@@ -439,20 +473,7 @@ export default class Builder {
         const fileContent = await fsExtra.readFile(src, 'utf8')
         let content
         try {
-          const templateFunction = template(fileContent, {
-            imports: {
-              serialize,
-              devalue,
-              hash,
-              r,
-              wp,
-              wChunk,
-              resolvePath: this.nuxt.resolver.resolvePath,
-              resolveAlias: this.nuxt.resolver.resolveAlias,
-              relativeToBuild: this.relativeToBuild
-            },
-            interpolate: /<%=([\s\S]+?)%>/g
-          })
+          const templateFunction = template(fileContent, templateOptions)
           content = stripWhitespace(
             templateFunction(
               Object.assign({}, templateVars, {
@@ -476,34 +497,36 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  // TODO: remove ignore when generateConfig enabled again
-  async generateConfig() /* istanbul ignore next */ {
-    const config = path.resolve(this.options.buildDir, 'build.config.js')
-    const options = omit(this.options, Options.unsafeKeys)
-    await fsExtra.writeFile(
-      config,
-      `export default ${JSON.stringify(options, null, '  ')}`,
-      'utf8'
-    )
-  }
+  // TODO: Uncomment when generateConfig enabled again
+  // async generateConfig() /* istanbul ignore next */ {
+  //   const config = path.resolve(this.options.buildDir, 'build.config.js')
+  //   const options = omit(this.options, Options.unsafeKeys)
+  //   await fsExtra.writeFile(
+  //     config,
+  //     `export default ${JSON.stringify(options, null, '  ')}`,
+  //     'utf8'
+  //   )
+  // }
 
   watchClient() {
     const src = this.options.srcDir
+    const rGlob = dir => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
+
     let patterns = [
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
       r(src, this.options.dir.middleware),
-      r(src, `${this.options.dir.layouts}/*.{vue,js}`),
-      r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
+      ...rGlob(this.options.dir.layouts)
     ]
+
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
-        r(src, `${this.options.dir.pages}/*.{vue,js}`),
-        r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
+        ...rGlob(this.options.dir.pages)
       )
     }
-    patterns = map(patterns, upath.normalizeSafe)
+
+    patterns = patterns.map(upath.normalizeSafe)
 
     const options = this.options.watchers.chokidar
     /* istanbul ignore next */
@@ -516,43 +539,53 @@ export default class Builder {
       .on('unlink', refreshFiles)
 
     // Watch for custom provided files
-    let customPatterns = concat(
-      this.options.build.watch,
-      ...values(omit(this.options.build.styleResources, ['options']))
-    )
-    customPatterns = map(uniq(customPatterns), upath.normalizeSafe)
+    const customPatterns = uniq([
+      ...this.options.build.watch,
+      ...Object.values(omit(this.options.build.styleResources, ['options']))
+    ]).map(upath.normalizeSafe)
+
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
       .on('change', refreshFiles)
   }
 
-  watchServer() {
-    const nuxtRestartWatch = concat(
-      this.options.serverMiddleware
-        .filter(isString)
-        .map(this.nuxt.resolver.resolveAlias),
-      this.options.watch.map(this.nuxt.resolver.resolveAlias),
-      path.join(this.options.rootDir, 'nuxt.config.js')
-    )
+  watchRestart() {
+    const nuxtRestartWatch = [
+      // Server middleware
+      ...this.options.serverMiddleware.filter(isString),
+      // Custom watchers
+      ...this.options.watch
+    ].map(this.nuxt.resolver.resolveAlias)
 
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
-      .on('change', (_path) => {
-        this.watchers.restart.close()
-        const { name, ext } = path.parse(_path)
-        this.nuxt.callHook('watch:fileChanged', this, `${name}${ext}`)
+      .on('all', (event, _path) => {
+        if (['add', 'change', 'unlink'].includes(event) === false) {
+          return
+        }
+        this.nuxt.callHook('watch:fileChanged', this, _path) // Legacy
+        this.nuxt.callHook('watch:restart', { event, path: _path })
       })
   }
 
-  async unwatch() {
+  unwatch() {
     for (const watcher in this.watchers) {
-      if (this.watchers[watcher]) {
-        this.watchers[watcher].close()
-      }
+      this.watchers[watcher].close()
     }
+  }
 
-    if (this.bundleBuilder.unwatch) {
-      await this.bundleBuilder.unwatch()
+  async close() {
+    if (this.__closed) {
+      return
+    }
+    this.__closed = true
+
+    // Unwatch
+    this.unwatch()
+
+    // Close bundleBuilder
+    if (typeof this.bundleBuilder.close === 'function') {
+      await this.bundleBuilder.close()
     }
   }
 }

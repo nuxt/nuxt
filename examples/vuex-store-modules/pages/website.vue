@@ -12,7 +12,9 @@
         <span>{{ comment }}</span>
       </li>
     </ul>
-    <nuxt-link to="/">Home</nuxt-link>
+    <NuxtLink to="/">
+      Home
+    </NuxtLink>
   </div>
 </template>
 

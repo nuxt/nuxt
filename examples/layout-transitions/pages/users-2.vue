@@ -1,19 +1,31 @@
 <template>
   <div class="container">
-    <nuxt-link v-if="page > 1" :to="'?page=' + (page - 1)">&lt; Prev</nuxt-link>
-    <a v-else class="disabled">&lt; Prev</a>
+    <NuxtLink v-if="page > 1" :to="'?page=' + (page - 1)">
+      &lt; Prev
+    </NuxtLink>
+    <a v-else class="disabled">
+      &lt; Prev
+    </a>
     <span>{{ page }}/{{ totalPages }}</span>
-    <nuxt-link v-if="page < totalPages" :to="'?page=' + (page + 1)">Next &gt;</nuxt-link>
-    <a v-else class="disabled">Next &gt;</a>
-    <transition :name="transitionName" mode="out-in">
+    <NuxtLink v-if="page < totalPages" :to="'?page=' + (page + 1)">
+      Next &gt;
+    </NuxtLink>
+    <a v-else class="disabled">
+      Next &gt;
+    </a>
+    <Transition :name="transitionName" mode="out-in">
       <ul :key="page">
         <li v-for="user in users" :key="user.id">
           <img :src="user.avatar" class="avatar">
           <span>{{ user.first_name }} {{ user.last_name }}</span>
         </li>
       </ul>
-    </transition>
-    <p><nuxt-link to="/">Back home</nuxt-link></p>
+    </Transition>
+    <p>
+      <NuxtLink to="/">
+        Back home
+      </NuxtLink>
+    </p>
   </div>
 </template>
 

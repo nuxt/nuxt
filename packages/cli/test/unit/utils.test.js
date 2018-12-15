@@ -1,10 +1,10 @@
+import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
 import * as utils from '../../src/utils'
+import * as fmt from '../../src/utils/formatting'
 
 describe('cli/utils', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
+  afterEach(() => jest.resetAllMocks())
 
   test('loadNuxtConfig: defaults', async () => {
     const argv = {
@@ -81,31 +81,36 @@ describe('cli/utils', () => {
     expect(consola.fatal).toHaveBeenCalledWith('Error while fetching async configuration')
   })
 
-  test('loadNuxtConfig: server env', async () => {
-    const env = process.env
+  test('normalizeArg: normalize string argument in command', () => {
+    expect(utils.normalizeArg('true')).toBe(true)
+    expect(utils.normalizeArg('false')).toBe(false)
+    expect(utils.normalizeArg(true)).toBe(true)
+    expect(utils.normalizeArg(false)).toBe(false)
+    expect(utils.normalizeArg('')).toBe(true)
+    expect(utils.normalizeArg(undefined, 'default')).toBe('default')
+    expect(utils.normalizeArg('text')).toBe('text')
+  })
 
-    process.env.HOST = 'env-host'
-    process.env.PORT = 3003
-    process.env.UNIX_SOCKET = '/var/run/env.sock'
+  test('nuxtServerConfig: server env', () => {
+    const options = getDefaultNuxtConfig({
+      env: {
+        ...process.env,
+        HOST: 'env-host',
+        PORT: 3003,
+        UNIX_SOCKET: '/var/run/env.sock'
+      }
+    })
 
-    const argv = {
-      _: [__dirname],
-      'config-file': '../fixtures/nuxt.config.js'
-    }
-
-    const options = await utils.loadNuxtConfig(argv)
     expect(options.server.host).toBe('env-host')
-    expect(options.server.port).toBe('3003')
+    expect(options.server.port).toBe(3003)
     expect(options.server.socket).toBe('/var/run/env.sock')
-
-    process.env = env
   })
 
   test('indent', () => {
-    expect(utils.indent(4)).toBe('    ')
+    expect(fmt.indent(4)).toBe('    ')
   })
 
   test('indent custom char', () => {
-    expect(utils.indent(4, '-')).toBe('----')
+    expect(fmt.indent(4, '-')).toBe('----')
   })
 })

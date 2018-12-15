@@ -2,6 +2,7 @@ import path from 'path'
 import compression from 'compression'
 
 export default {
+  mode: 'unknown',
   srcDir: __dirname,
   server: {
     port: 8000,
@@ -16,7 +17,8 @@ export default {
         {
           name: 'about-bis',
           path: '/about-bis',
-          component: '~/pages/about.vue'
+          component: '~/pages/about.vue',
+          meta: { text: 'test-meta' }
         },
         {
           path: '/redirect/about-bis',
@@ -71,11 +73,11 @@ export default {
     transpile: 'vue-test',
     extend(config, options) {
       return Object.assign({}, config, {
-        devtool: 'nosources-source-map'
+        devtool: '#source-map'
       })
     }
   },
-  css: [{ src: '~/assets/app.css' }],
+  css: [{ src: '~/assets/app.pcss' }],
   render: {
     csp: true,
     http2: {

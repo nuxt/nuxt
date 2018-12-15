@@ -1,5 +1,3 @@
-export { default as Modes } from './modes'
-export { default as NuxtConfig } from './nuxt.config'
-export { default as Options } from './options'
-export { default as BuildContext } from './build/context'
+export { default as Hookable } from './hookable'
+export { default as ModernBrowsers } from '../data/modern-browsers.json'
 export * from './utils'

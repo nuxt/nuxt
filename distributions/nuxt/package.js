@@ -1,12 +1,13 @@
 export default {
   build: true,
-  extend(pkg, { load }) {
-    pkg.on('build:done', () => {
-      const mono = load('../..')
+  hooks: {
+    async 'build:done'(pkg) {
+      const mono = pkg.load('../..')
 
-      pkg.copyFilesFrom(mono, [
-        'LICENSE'
+      await pkg.copyFilesFrom(mono, [
+        'LICENSE',
+        'README.md'
       ])
-    })
+    }
   }
 }

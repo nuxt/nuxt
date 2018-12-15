@@ -13,7 +13,7 @@ describe('custom-dirs', () => {
     const config = await loadFixture('custom-dirs')
     nuxt = new Nuxt(config)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('custom assets directory', async () => {
@@ -26,19 +26,19 @@ describe('custom-dirs', () => {
   })
 
   test('custom layouts directory', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<p>I have custom layouts directory</p>')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<p>I have custom layouts directory</p>')
   })
 
   test('custom middleware directory', async () => {
-    const window = await nuxt.renderAndGetWindow(url('/user-agent'))
+    const window = await nuxt.server.renderAndGetWindow(url('/user-agent'))
     const html = window.document.body.innerHTML
-    expect(html.includes('<pre>Mozilla')).toBe(true)
+    expect(html).toContain('<pre>Mozilla')
   })
 
   test('custom pages directory', async () => {
-    const { html } = await nuxt.renderRoute('/')
-    expect(html.includes('<h1>I have custom pages directory</h1>')).toBe(true)
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('<h1>I have custom pages directory</h1>')
   })
 
   test('custom static directory', async () => {

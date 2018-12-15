@@ -1,7 +1,9 @@
 <template>
   <div class="dark">
-    <div class="mobile-banner">Mobile website</div>
-    <nuxt />
+    <div class="mobile-banner">
+      Mobile website
+    </div>
+    <Nuxt />
   </div>
 </template>
 

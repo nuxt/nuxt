@@ -20,13 +20,15 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    yarn build
-  displayName: 'Build Nuxt'
-
-- script: |
-    yarn test:fixtures -w=2
+    set JEST_JUNIT_OUTPUT=test-fixtures-junit.xml&& yarn test:fixtures -w=2
   displayName: 'Test: Build Fixtures'
 
 - script: |
-    yarn test:unit -w=2
+    set JEST_JUNIT_OUTPUT=test-unit-junit.xml&& yarn test:unit -w=2
   displayName: 'Test: Run unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'test-*.xml'
+  displayName: 'Publish test results to Azure Pipelines'

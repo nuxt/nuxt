@@ -1,22 +1,20 @@
 import consola from 'consola'
+import NuxtCommand from './command'
 import * as commands from './commands'
 import setup from './setup'
+import listCommands from './list'
 
 export default function run() {
   const defaultCommand = 'dev'
-
-  const cmds = new Set([
-    defaultCommand,
-    'build',
-    'start',
-    'generate'
-  ])
-
   let cmd = process.argv[2]
 
-  if (cmds.has(cmd)) {
+  if (commands[cmd]) { // eslint-disable-line import/namespace
     process.argv.splice(2, 1)
   } else {
+    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+      listCommands().then(() => process.exit(0))
+      return
+    }
     cmd = defaultCommand
   }
 
@@ -25,8 +23,8 @@ export default function run() {
     dev: cmd === 'dev'
   })
 
-  return commands[cmd]() // eslint-disable-line import/namespace
-    .then(m => m.default())
+  return NuxtCommand.load(cmd)
+    .then(command => command.run())
     .catch((error) => {
       consola.fatal(error)
     })

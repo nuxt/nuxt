@@ -16,6 +16,11 @@ export default function rollupConfig({
   input = 'src/index.js',
   replace = {},
   alias = {},
+  resolve = {
+    only: [
+      /lodash/
+    ]
+  },
   ...options
 }, pkg) {
   if (!pkg) {
@@ -25,10 +30,9 @@ export default function rollupConfig({
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
     output: {
-      format: 'cjs',
-      sourcemap: false,
       file: `${pkg.name.replace('-edge', '')}.js`,
-      dir: path.resolve(rootDir, 'dist')
+      dir: path.resolve(rootDir, 'dist'),
+      format: 'cjs'
     },
     preferConst: true,
     external: [
@@ -47,11 +51,7 @@ export default function rollupConfig({
           ...replace
         }
       }),
-      nodeResolvePlugin({
-        only: [
-          /lodash/
-        ]
-      }),
+      nodeResolvePlugin(resolve),
       commonjsPlugin(),
       jsonPlugin(),
       licensePlugin({

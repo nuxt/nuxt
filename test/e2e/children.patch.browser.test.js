@@ -14,7 +14,7 @@ describe('children patch (browser)', () => {
     const options = await loadFixture('children')
     nuxt = new Nuxt(options)
     port = await getPort()
-    await nuxt.listen(port, 'localhost')
+    await nuxt.server.listen(port, 'localhost')
   })
 
   test('Start browser', async () => {
@@ -106,7 +106,7 @@ describe('children patch (browser)', () => {
     await page.type('[data-test-search-input]', 'gu')
 
     await waitFor(250)
-    const newCountries = await page.$$text('[data-test-search-result]')
+    const newCountries = await page.$$text('[data-test-search-result]', true)
     expect(newCountries.length).toBe(1)
     expect(newCountries).toEqual(['Guinea'])
     expect(await page.nuxt.routeData()).toEqual({

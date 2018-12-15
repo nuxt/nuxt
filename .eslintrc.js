@@ -2,7 +2,10 @@ module.exports = {
   root: true,
   parserOptions: {
     parser: 'babel-eslint',
-    sourceType: 'module'
+    sourceType: 'module',
+    ecmaFeatures: {
+      legacyDecorators: true
+    }
   },
   extends: [
     '@nuxtjs'
@@ -11,6 +14,19 @@ module.exports = {
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
       'vue/name-property-casing': ['error', 'kebab-case']
+    }
+  },{
+    files: [
+      'examples/storybook/**',
+      'examples/with-element-ui/**',
+      'examples/with-museui/**',
+      'examples/with-vue-material/**',
+      'examples/with-vuetify/**',
+      'examples/with-vuikit/**',
+      'examples/with-vux/**',
+    ],
+    rules: {
+      'vue/component-name-in-template-casing': ['warn', 'kebab-case']
     }
   }, {
     files: [ 'test/fixtures/*/.nuxt*/**/+(App|index).js' ],

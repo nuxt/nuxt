@@ -1,59 +1,76 @@
 import consola from 'consola'
-import NuxtCommand from '../command'
+import chalk from 'chalk'
+import { common, server } from '../options'
+import { showBanner, eventsMapping, formatPath } from '../utils'
 
-export default async function dev() {
-  const nuxtCmd = new NuxtCommand({
-    description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
-    usage: 'dev <dir> -p <port number> -H <hostname>',
-    options: [ 'hostname', 'port' ]
-  })
+export default {
+  name: 'dev',
+  description: 'Start the application in development mode (e.g. hot-code reloading, error reporting)',
+  usage: 'dev <dir>',
+  options: {
+    ...common,
+    ...server
+  },
 
-  const argv = nuxtCmd.getArgv()
+  async run(cmd) {
+    const argv = cmd.getArgv()
+    await this.startDev(cmd, argv)
+  },
 
-  const errorHandler = (err, instance) => {
-    instance && instance.builder.watchServer()
-    consola.error(err)
-  }
-
-  // Start dev
-  async function startDev(oldInstance) {
-    let nuxt, builder
-
+  async startDev(cmd, argv) {
     try {
-      nuxt = await nuxtCmd.getNuxt(
-        await nuxtCmd.getNuxtConfig(argv, { dev: true })
-      )
-      builder = await nuxtCmd.getBuilder(nuxt)
-      nuxt.hook('watch:fileChanged', async (builder, fname) => {
-        consola.debug(`[${fname}] changed, Rebuilding the app...`)
-        await startDev({ nuxt: builder.nuxt, builder })
-      })
-    } catch (err) {
-      return errorHandler(err, oldInstance)
+      await this._startDev(cmd, argv)
+    } catch (error) {
+      consola.error(error)
     }
+  },
 
-    return (
-      Promise.resolve()
-        .then(() => oldInstance && oldInstance.nuxt.clearHook('watch:fileChanged'))
-        .then(() => oldInstance && oldInstance.builder.unwatch())
-        // Start build
-        .then(() => builder.build())
-        // Close old nuxt no matter if build successfully
-        .catch((err) => {
-          oldInstance && oldInstance.nuxt.close()
-          // Jump to errorHandler
-          throw err
-        })
-        .then(() => oldInstance && oldInstance.nuxt.close())
-        // Start listening
-        .then(() => nuxt.listen())
-        // Show ready message first time, others will be shown through WebpackBar
-        .then(() => !oldInstance && nuxt.showReady(false))
-        .then(() => builder.watchServer())
-        // Handle errors
-        .catch(err => errorHandler(err, { builder, nuxt }))
-    )
+  async _startDev(cmd, argv) {
+    // Load config
+    const config = await cmd.getNuxtConfig(argv, { dev: true })
+
+    // Initialize nuxt instance
+    const nuxt = await cmd.getNuxt(config)
+
+    // Setup hooks
+    nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
+    nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
+
+    // Start listening
+    await nuxt.server.listen()
+
+    // Create builder instance
+    const builder = await cmd.getBuilder(nuxt)
+
+    // Start Build
+    await builder.build()
+
+    // Show banner after build
+    showBanner(nuxt)
+
+    // Return instance
+    return nuxt
+  },
+
+  logChanged({ event, path }) {
+    const { icon, color, action } = eventsMapping[event] || eventsMapping.change
+
+    consola.log({
+      type: event,
+      icon: chalk[color].bold(icon),
+      message: `${action} ${chalk.cyan(formatPath(path))}`
+    })
+  },
+
+  async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
+    this.logChanged({ event, path })
+
+    await nuxt.close()
+
+    await this.startDev(cmd, argv)
+  },
+
+  onBundlerChange(path) {
+    this.logChanged({ event: 'change', path })
   }
-
-  await startDev()
 }
