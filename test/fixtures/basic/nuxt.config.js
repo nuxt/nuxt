@@ -41,9 +41,6 @@ export default {
     return {
       titleTemplate(titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
-      },
-      dummyInlineFunction: () => {
-        return 'dummy'
       }
     }
   },
