@@ -9,6 +9,6 @@ import { Component, Vue } from 'vue-property-decorator'
   name: 'Index'
 })
 export default class extends Vue {
-  message = 'Index Page'
+  message: string = 'Index Page'
 }
 </script>
