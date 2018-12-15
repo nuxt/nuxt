@@ -49,18 +49,20 @@ export default class Builder {
       relativeTo(this.options.buildDir, ...args)
 
     this.serializeHead = (obj) => {
-      obj = Object.assign({}, obj)
-      let body
-      Object.keys(obj).forEach((member) => {
-        if (typeof obj[member] === 'function') {
-          body = obj[member].toString()
-          body = body.slice(body.indexOf('('))
-          body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
-          // eslint-disable-next-line no-eval
-          obj[member] = eval(`(function${body})`)
-        }
-      })
-      return serialize(obj).replace(/^\s*head\(/, 'function(')
+      let open = false
+      return serialize(obj)
+        .replace(/^(\s*):(\w+)\(/gm, (_, spaces) => {
+          return `${spaces}:function(`
+        })
+        .replace(/^(\s*)(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
+          if (open) {
+            return `${spaces}${name}:function (${args})`
+          } else {
+            open = true
+            return _
+          }
+        })
+        .replace('head(', 'function(')
     }
 
     this._buildStatus = STATUS.INITIAL
