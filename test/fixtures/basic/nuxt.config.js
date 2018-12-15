@@ -39,7 +39,7 @@ export default {
   },
   head() {
     return {
-      titleTemplate (titleChunk) {
+      titleTemplate(titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
       },
       dummyInlineFunction: () => {
