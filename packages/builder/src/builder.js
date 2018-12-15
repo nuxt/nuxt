@@ -57,7 +57,7 @@ export default class Builder {
           body = body.slice(body.indexOf('('))
           body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
           // eslint-disable-next-line no-eval
-          serialized[member] = eval(`(function${body})`)
+          obj[member] = eval(`(function${body})`)
         }
       })
       return serialize(obj).replace(/^\s*head\(/, 'function(')
