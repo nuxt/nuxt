@@ -46,7 +46,7 @@ export default class Builder {
 
     this.supportedExtensions = ['vue', 'js']
     if (this.options.build.typescript) {
-      this.supportedExtensions = this.supportedExtensions.concat(['ts', 'tsx'])
+      this.supportedExtensions.push('ts', 'tsx')
     }
 
     // Helper to resolve build paths
@@ -326,7 +326,7 @@ export default class Builder {
         Object.values(files),
         this.options.srcDir,
         this.options.dir.pages,
-        this.options.build.typescript
+        this.supportedExtensions
       )
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
@@ -508,20 +508,19 @@ export default class Builder {
 
   watchClient() {
     const src = this.options.srcDir
+    let rGlob = (dir) => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
 
     let patterns = [
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
       r(src, this.options.dir.middleware),
-      r(src, `${this.options.dir.layouts}/*.{${this.supportedExtensions.join(',')}}`),
-      r(src, `${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`)
+      ...rGlob(this.options.dir.layouts)
     ]
 
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
-        r(src, `${this.options.dir.pages}/*.{${this.supportedExtensions.join(',')}}`),
-        r(src, `${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`)
+        ...rGlob(this.options.dir.pages)
       )
     }
 
