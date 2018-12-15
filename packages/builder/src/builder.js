@@ -437,7 +437,7 @@ export default class Builder {
           body = obj[member].toString()
           body = body.slice(body.indexOf('('))
           body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
-          obj[member] = `function${body}`
+          obj[member] = eval(`(function${body})`) // eslint-disable-line no-eval
         }
       }
       return serialize(obj)
