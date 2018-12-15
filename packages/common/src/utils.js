@@ -2,6 +2,7 @@ import path from 'path'
 import escapeRegExp from 'lodash/escapeRegExp'
 import get from 'lodash/get'
 import consola from 'consola'
+import serialize from 'serialize-javascript'
 
 export const encodeHtml = function encodeHtml(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -456,4 +457,21 @@ export function defineAlias(src, target, prop, opts = {}) {
       return targetVal
     }
   })
+}
+
+export function serializeWithMethods(obj, name) {
+  let open = false
+  return serialize(obj)
+    .replace(/^(\s*):(\w+)\(/gm, (_, spaces) => {
+      return `${spaces}:function(`
+    })
+    .replace(/^(\s*)(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
+      if (open) {
+        return `${spaces}${name}:function(${args}) {`
+      } else {
+        open = true
+        return _
+      }
+    })
+    .replace(`${name}(`, 'function(')
 }

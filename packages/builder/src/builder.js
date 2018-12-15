@@ -23,6 +23,7 @@ import {
   createRoutes,
   relativeTo,
   waitFor,
+  serializeWithMethods,
   determineGlobals,
   stripWhitespace,
   isString
@@ -47,23 +48,6 @@ export default class Builder {
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
       relativeTo(this.options.buildDir, ...args)
-
-    this.serializeHead = (obj) => {
-      let open = false
-      return serialize(obj)
-        .replace(/^(\s*):(\w+)\(/gm, (_, spaces) => {
-          return `${spaces}:function(`
-        })
-        .replace(/^(\s*)(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
-          if (open) {
-            return `${spaces}${name}:function (${args}) {`
-          } else {
-            open = true
-            return _
-          }
-        })
-        .replace('head(', 'function(')
-    }
 
     this._buildStatus = STATUS.INITIAL
 
@@ -451,7 +435,7 @@ export default class Builder {
     const templateOptions = {
       imports: {
         serialize,
-        serializeHead: this.serializeHead,
+        serializeWithMethods,
         devalue,
         hash,
         r,
