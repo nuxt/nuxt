@@ -5,6 +5,7 @@ export default () => ({
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
+  typescript: false,
   crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
