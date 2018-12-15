@@ -3,7 +3,9 @@
     <pre>{{ env }}</pre>
     <p>object:</p>
     <pre>{{ processEnv }}</pre>
-    <nuxt-link to="/">Home</nuxt-link>
+    <NuxtLink to="/">
+      Home
+    </NuxtLink>
   </div>
 </template>
 

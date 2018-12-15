@@ -64,8 +64,7 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
     readSourceFactory({
       srcDir: options.srcDir,
       rootDir: options.rootDir,
-      buildDir: options.buildDir,
-      resources
+      buildDir: options.buildDir
     }),
     options.router.base,
     true
@@ -79,7 +78,7 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
   }
 }
 
-const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async function readSource(frame) {
+const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource(frame) {
   // Remove webpack:/// & query string from the end
   const sanitizeName = name =>
     name ? name.replace('webpack:///', '').split('?')[0] : null
@@ -112,12 +111,5 @@ const readSourceFactory = ({ srcDir, rootDir, buildDir, resources }) => async fu
       }
       return
     }
-  }
-
-  // Fallback: use server bundle
-  // TODO: restore to if after https://github.com/istanbuljs/nyc/issues/595 fixed
-  /* istanbul ignore next */
-  if (!frame.contents) {
-    frame.contents = resources.serverBundle.files[frame.fileName]
   }
 }

@@ -1,5 +1,5 @@
 import path from 'path'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 
 import { wrapArray } from '@nuxt/common'
 
@@ -25,6 +25,10 @@ export default class StyleLoader {
     if (options.build.postcss) {
       this.postcssConfig = new PostcssConfig(options, nuxt)
     }
+  }
+
+  get exportOnlyLocals() {
+    return Boolean(this.isServer && this.extractCSS)
   }
 
   normalize(loaders) {
@@ -64,29 +68,25 @@ export default class StyleLoader {
   }
 
   css(options) {
-    return {
-      loader: (this.isServer && this.extractCSS) ? 'css-loader/locals' : 'css-loader',
-      options
-    }
+    options.exportOnlyLocals = this.exportOnlyLocals
+    return [
+      ...options.exportOnlyLocals ? [] : [this.styleLoader()],
+      { loader: 'css-loader', options }
+    ]
   }
 
   cssModules(options) {
-    options.modules = true
-    return {
-      loader: 'css-loader',
-      options
-    }
+    return this.css(Object.assign(options, { modules: true }))
   }
 
   extract() {
-    if (this.extractCSS && !this.isServer) {
-      return MiniCssExtractPlugin.loader
+    if (this.extractCSS) {
+      return ExtractCssChunksPlugin.loader
     }
   }
 
-  vueStyle() {
-    // https://github.com/vuejs/vue-style-loader
-    return {
+  styleLoader() {
+    return this.extract() || {
       loader: 'vue-style-loader',
       options: this.loaders.vueStyle
     }
@@ -101,14 +101,11 @@ export default class StyleLoader {
 
     this.loaders.css.importLoaders = this.loaders.cssModules.importLoaders = customLoaders.length
 
-    const styleLoader = this.extract() || this.vueStyle()
-
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          styleLoader,
           this.cssModules(this.loaders.cssModules),
           customLoaders
         )
@@ -116,7 +113,6 @@ export default class StyleLoader {
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          styleLoader,
           this.css(this.loaders.css),
           customLoaders
         )

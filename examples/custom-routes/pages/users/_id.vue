@@ -3,7 +3,11 @@
     <h3>{{ name }}</h3>
     <h4>@{{ username }}</h4>
     <p>Email : {{ email }}</p>
-    <p><nuxt-link to="/">List of users</nuxt-link></p>
+    <p>
+      <NuxtLink to="/">
+        List of users
+      </NuxtLink>
+    </p>
   </div>
 </template>
 

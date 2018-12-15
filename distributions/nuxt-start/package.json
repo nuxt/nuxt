@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "2.3.2",
+  "version": "2.3.4",
   "description": "Starts Nuxt.js Application in production mode",
   "keywords": [
     "nuxt",
@@ -46,13 +46,12 @@
   "main": "dist/nuxt-start.js",
   "bin": "bin/nuxt-start.js",
   "dependencies": {
-    "@nuxt/cli": "2.3.2",
-    "@nuxt/common": "2.3.2",
-    "@nuxt/core": "2.3.2"
+    "@nuxt/cli": "2.3.4",
+    "@nuxt/common": "2.3.4",
+    "@nuxt/core": "2.3.4"
   },
   "engines": {
     "node": ">=8.0.0",
     "npm": ">=5.0.0"
-  },
-  "gitHead": "6b4a5db7f69bc82099a667be78330b9114e9cb22"
+  }
 }

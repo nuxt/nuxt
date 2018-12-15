@@ -2,10 +2,12 @@
   <div class="container">
     <div class="header">
       <nav>
-        <h1 @click="$router.push('/')">Nuxt.js + Firebase</h1>
+        <h1 @click="$router.push('/')">
+          Nuxt.js + Firebase
+        </h1>
       </nav>
     </div>
-    <nuxt />
+    <Nuxt />
   </div>
 </template>
 

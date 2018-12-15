@@ -1,9 +1,12 @@
 {
-  "edge": "16",
-  "firefox": "60",
-  "chrome": "61",
-  "safari": "10.1",
-  "opera": "48",
-  "ios_saf": "10.3",
-  "and_ff": "60"
+  "Edge": "16",
+  "Firefox": "60",
+  "Chrome": "61",
+  "Chrome Headless": "61",
+  "Chromium": "61",
+  "Safari": "10.1",
+  "Opera": "48",
+  "Yandex": "18",
+  "Vivaldi": "1.14",
+  "Mobile Safari": "10.3"
 }

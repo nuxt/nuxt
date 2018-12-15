@@ -1,3 +1,5 @@
+import { normalizeArg } from '../utils'
+
 export default {
   spa: {
     alias: 's',
@@ -21,7 +23,7 @@ export default {
     description: 'Build/Start app for modern browsers, e.g. server, client and false',
     prepare(cmd, options, argv) {
       if (argv.modern !== undefined) {
-        options.modern = argv.modern || true
+        options.modern = normalizeArg(argv.modern)
       }
     }
   },

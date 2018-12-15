@@ -5,6 +5,7 @@ export default () => ({
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
+  crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
   parallel: false,
@@ -47,6 +48,7 @@ export default () => ({
   styleResources: {},
   plugins: [],
   terser: {},
+  hardSource: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',
@@ -102,5 +104,6 @@ export default () => ({
       /index\..+\.html$/,
       /vue-ssr-(client|modern)-manifest.json/
     ]
-  }
+  },
+  friendlyErrors: true
 })

@@ -1,3 +1,4 @@
+import { extname } from 'path'
 import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
@@ -8,7 +9,7 @@ export default class SPAMetaRenderer {
     this.renderer = renderer
     this.options = this.renderer.context.options
     this.vueRenderer = createRenderer()
-    this.cache = LRU({})
+    this.cache = new LRU()
 
     // Add VueMeta to Vue (this is only for SPA mode)
     // See app/index.js
@@ -20,7 +21,7 @@ export default class SPAMetaRenderer {
     })
   }
 
-  async getMeta(url) {
+  async getMeta() {
     const vm = new Vue({
       render: h => h(), // Render empty html tag
       head: this.options.head || {}
@@ -38,16 +39,20 @@ export default class SPAMetaRenderer {
 
     meta = {
       HTML_ATTRS: '',
+      HEAD_ATTRS: '',
       BODY_ATTRS: '',
       HEAD: '',
       BODY_SCRIPTS: ''
     }
 
     // Get vue-meta context
-    const m = await this.getMeta(url)
+    const m = await this.getMeta()
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
+
+    // HEAD_ATTRS
+    meta.HEAD_ATTRS = m.headAttrs.text()
 
     // BODY_ATTRS
     meta.BODY_ATTRS = m.bodyAttrs.text()
@@ -70,8 +75,8 @@ export default class SPAMetaRenderer {
 
     const clientManifest = this.renderer.context.resources.clientManifest
 
-    const shouldPreload = this.options.render.bundleRenderer.shouldPreload || (() => true)
-    const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch || (() => true)
+    const shouldPreload = this.options.render.bundleRenderer.shouldPreload
+    const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch
 
     if (this.options.render.resourceHints && clientManifest) {
       const publicPath = clientManifest.publicPath || '/_nuxt/'
@@ -79,18 +84,25 @@ export default class SPAMetaRenderer {
       // Preload initial resources
       if (Array.isArray(clientManifest.initial)) {
         meta.resourceHints += clientManifest.initial
-          .filter(file => shouldPreload(file))
-          .map(
-            r => `<link rel="preload" href="${publicPath}${r}" as="script" />`
-          )
+          .map(SPAMetaRenderer.normalizeFile)
+          .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
+          .map(({ file, extension, fileWithoutQuery, asType }) => {
+            let extra = ''
+            if (asType === 'font') {
+              extra = ` type="font/${extension}" crossorigin`
+            }
+            return `<link rel="preload" href="${publicPath}${file}"${
+              asType !== '' ? ` as="${asType}"` : ''}${extra}>`
+          })
           .join('')
       }
 
       // Prefetch async resources
       if (Array.isArray(clientManifest.async)) {
         meta.resourceHints += clientManifest.async
-          .filter(file => shouldPrefetch(file))
-          .map(r => `<link rel="prefetch" href="${publicPath}${r}" />`)
+          .map(SPAMetaRenderer.normalizeFile)
+          .filter(({ fileWithoutQuery, asType }) => shouldPrefetch(fileWithoutQuery, asType))
+          .map(({ file }) => `<link rel="prefetch" href="${publicPath}${file}">`)
           .join('')
       }
 
@@ -103,17 +115,37 @@ export default class SPAMetaRenderer {
     // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
     meta.getPreloadFiles = () =>
       clientManifest.initial
-        .filter(file => shouldPreload(file))
-        .map(r => ({
-          file: r,
-          fileWithoutQuery: r,
-          asType: 'script',
-          extension: 'js'
-        }))
+        .map(SPAMetaRenderer.normalizeFile)
+        .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
 
     // Set meta tags inside cache
     this.cache.set(url, meta)
 
     return meta
+  }
+
+  static normalizeFile(file) {
+    const withoutQuery = file.replace(/\?.*/, '')
+    const extension = extname(withoutQuery).slice(1)
+    return {
+      file,
+      extension,
+      fileWithoutQuery: withoutQuery,
+      asType: SPAMetaRenderer.getPreloadType(extension)
+    }
+  }
+
+  static getPreloadType(ext) {
+    if (ext === 'js') {
+      return 'script'
+    } else if (ext === 'css') {
+      return 'style'
+    } else if (/jpe?g|png|svg|gif|webp|ico/.test(ext)) {
+      return 'image'
+    } else if (/woff2?|ttf|otf|eot/.test(ext)) {
+      return 'font'
+    } else {
+      return ''
+    }
   }
 }

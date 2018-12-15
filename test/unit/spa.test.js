@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { loadFixture, getPort, Nuxt } from '../utils'
+import { loadFixture, getPort, Nuxt, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
@@ -24,6 +24,21 @@ describe('spa', () => {
     expect(html).toMatch('Hello SPA!')
     expect(consola.log).not.toHaveBeenCalledWith('created')
     expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
+  })
+
+  test('/ (include preload and prefetch resources)', async () => {
+    const { head } = await renderRoute('/')
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/runtime.js" as="script">`)
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/commons.app.js" as="script">`)
+    expect(head).toMatch(`<link rel="preload" href="/_nuxt/app.js" as="script">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/custom.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-async.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-object.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-string.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/index.js')}">`)
+    expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/mounted.js')}">`)
     consola.log.mockClear()
   })
 
@@ -60,6 +75,13 @@ describe('spa', () => {
     expect(html).toMatch('error handler triggered: asyncData error!')
   })
 
+  test('/тест雨 (test non ascii route)', async () => {
+    const { html } = await renderRoute('/тест雨')
+    expect(html).toMatch('Hello unicode SPA!')
+    expect(consola.log).not.toHaveBeenCalledWith('created')
+    expect(consola.log).toHaveBeenCalledWith('mounted')
+    consola.log.mockClear()
+  })
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

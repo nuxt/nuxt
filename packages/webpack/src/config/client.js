@@ -2,12 +2,12 @@ import path from 'path'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
-import TerserWebpackPlugin from 'terser-webpack-plugin'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
-import ModernModePlugin from './plugins/vue/modern'
-import VueSSRClientPlugin from './plugins/vue/client'
+import CorsPlugin from '../plugins/vue/cors'
+import ModernModePlugin from '../plugins/vue/modern'
+import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
@@ -30,7 +30,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       'process.env.VUE_ENV': JSON.stringify('client'),
       'process.browser': true,
       'process.client': true,
-      'process.server': false
+      'process.server': false,
+      'process.modern': false
     })
   }
 
@@ -52,6 +53,21 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     return optimization
+  }
+
+  minimizer() {
+    const minimizer = super.minimizer()
+
+    // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+    // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
+    // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
+    if (this.options.build.optimizeCSS) {
+      minimizer.push(
+        new OptimizeCSSAssetsPlugin(Object.assign({}, this.options.build.optimizeCSS))
+      )
+    }
+
+    return minimizer
   }
 
   plugins() {
@@ -78,7 +94,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         chunksSortMode: 'dependency'
       }),
       new VueSSRClientPlugin({
-        filename: `../server/vue-ssr-${this.name}-manifest.json`
+        filename: `../server/${this.name}.manifest.json`
       }),
       new webpack.DefinePlugin(this.env())
     )
@@ -110,49 +126,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
-    return plugins
-  }
-
-  extendConfig() {
-    const config = super.extendConfig(...arguments)
-
-    // Add minimizer plugins
-    if (config.optimization.minimize && config.optimization.minimizer === undefined) {
-      config.optimization.minimizer = []
-
-      // https://github.com/webpack-contrib/terser-webpack-plugin
-      if (this.options.build.terser) {
-        config.optimization.minimizer.push(
-          new TerserWebpackPlugin(Object.assign({
-            parallel: true,
-            cache: this.options.build.cache,
-            sourceMap: config.devtool && /source-?map/.test(config.devtool),
-            extractComments: {
-              filename: 'LICENSES'
-            },
-            terserOptions: {
-              compress: {
-                ecma: this.isModern ? 6 : undefined
-              },
-              output: {
-                comments: /^\**!|@preserve|@license|@cc_on/
-              }
-            }
-          }, this.options.build.terser))
-        )
-      }
-
-      // https://github.com/NMFR/optimize-css-assets-webpack-plugin
-      // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
-      // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
-      if (this.options.build.optimizeCSS) {
-        config.optimization.minimizer.push(
-          new OptimizeCSSAssetsPlugin(Object.assign({}, this.options.build.optimizeCSS))
-        )
-      }
+    if (this.options.build.crossorigin) {
+      plugins.push(new CorsPlugin({
+        crossorigin: this.options.build.crossorigin
+      }))
     }
 
-    return config
+    return plugins
   }
 
   config() {
@@ -174,7 +154,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     // Add friendly error plugin
-    if (this.options.dev && !this.options.build.quiet) {
+    if (this.options.dev && !this.options.build.quiet && !this.options.build.friendlyErrors) {
       config.plugins.push(
         new FriendlyErrorsWebpackPlugin({
           clearConsole: false,

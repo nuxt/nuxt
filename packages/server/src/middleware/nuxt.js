@@ -7,21 +7,22 @@ import { getContext } from '@nuxt/common'
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
+  const url = decodeURI(req.url)
 
   res.statusCode = 200
   try {
-    const result = await renderRoute(req.url, context)
-    await nuxt.callHook('render:route', req.url, result, context)
+    const result = await renderRoute(url, context)
+    await nuxt.callHook('render:route', url, result, context)
     const {
       html,
-      cspScriptSrcHashSet,
+      cspScriptSrcHashes,
       error,
       redirected,
       getPreloadFiles
     } = result
 
     if (redirected) {
-      nuxt.callHook('render:routeDone', req.url, result, context)
+      nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
     if (error) {
@@ -34,7 +35,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
-        nuxt.callHook('render:routeDone', req.url, result, context)
+        nuxt.callHook('render:routeDone', url, result, context)
         return
       }
       res.setHeader('ETag', etag)
@@ -51,7 +52,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
       const links = pushAssets
         ? pushAssets(req, res, publicPath, preloadFiles)
-        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options.dev)
+        : defaultPushAssets(preloadFiles, shouldPush, publicPath, options)
 
       // Pass with single Link header
       // https://blog.cloudflare.com/http-2-server-push-with-multiple-assets-per-link-header
@@ -65,7 +66,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       const { allowedSources, policies } = options.render.csp
       const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashSet, allowedSources, policies, isDev: options.dev }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev }))
     }
 
     // Send response
@@ -73,7 +74,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
-    nuxt.callHook('render:routeDone', req.url, result, context)
+    nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
     /* istanbul ignore if */
@@ -86,13 +87,13 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
   }
 }
 
-const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
-  if (shouldPush && isDev) {
+const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
+  if (shouldPush && options.dev) {
     consola.warn('http2.shouldPush is deprecated. Use http2.pushAssets function')
   }
 
   const links = []
-  preloadFiles.forEach(({ file, asType, fileWithoutQuery }) => {
+  preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
     /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
@@ -104,14 +105,18 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, isDev) => {
       return
     }
 
-    links.push(`<${publicPath}${file}>; rel=preload; as=${asType}`)
+    const crossorigin = options.build.crossorigin
+    const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
+    const ref = modern ? 'modulepreload' : 'preload'
+
+    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
   })
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) => {
-  const joinedHashSet = Array.from(cspScriptSrcHashSet).join(' ')
-  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashSet}`
+const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
+  const joinedHashes = cspScriptSrcHashes.join(' ')
+  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashes}`
 
   if (Array.isArray(allowedSources)) {
     return `${baseCspStr} ${allowedSources.join(' ')}`
@@ -120,7 +125,7 @@ const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) 
   const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
 
   if (policyObjectAvailable) {
-    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashSet)
+    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes)
 
     return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${v.join(' ')}`).join('; ')
   }
@@ -128,22 +133,13 @@ const getCspString = ({ cspScriptSrcHashSet, allowedSources, policies, isDev }) 
   return baseCspStr
 }
 
-const transformPolicyObject = (policies, cspScriptSrcHashSet) => {
+const transformPolicyObject = (policies, cspScriptSrcHashes) => {
   const userHasDefinedScriptSrc = policies['script-src'] && Array.isArray(policies['script-src'])
 
+  const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
+
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
+  const hashAndPolicyList = cspScriptSrcHashes.concat(`'self'`, additionalPolicies)
 
-  const hashAndPolicySet = cspScriptSrcHashSet
-  hashAndPolicySet.add(`'self'`)
-
-  if (!userHasDefinedScriptSrc) {
-    policies['script-src'] = Array.from(hashAndPolicySet)
-    return policies
-  }
-
-  new Set(policies['script-src']).forEach(src => hashAndPolicySet.add(src))
-
-  policies['script-src'] = Array.from(hashAndPolicySet)
-
-  return policies
+  return { ...policies, 'script-src': hashAndPolicyList }
 }

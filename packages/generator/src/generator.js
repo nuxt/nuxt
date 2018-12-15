@@ -137,7 +137,9 @@ export default class Generator {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
-    if (typeof fallback !== 'string' || !fallback) return
+    if (typeof fallback !== 'string' || !fallback) {
+      return
+    }
 
     const fallbackPath = path.join(this.distPath, fallback)
 

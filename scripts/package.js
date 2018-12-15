@@ -1,11 +1,11 @@
 import { resolve } from 'path'
-import EventEmitter from 'events'
 import consola from 'consola'
-import { sync as spawnSync } from 'cross-spawn'
-import { existsSync, readJSONSync, writeFileSync, copySync, removeSync } from 'fs-extra'
+import spawn from 'cross-spawn'
+import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
-import glob from 'glob'
+import { glob as _glob } from 'glob'
+import pify from 'pify'
 import sortPackageJson from 'sort-package-json'
 
 import rollupConfig from './rollup.config'
@@ -16,27 +16,31 @@ const DEFAULTS = {
   configPath: 'package.js',
   distDir: 'dist',
   build: false,
-  suffix: process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : ''
+  suffix: process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : '',
+  hooks: {}
 }
+
+const glob = pify(_glob)
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
 
-export default class Package extends EventEmitter {
+export default class Package {
   constructor(options) {
-    super()
-
     // Assign options
     this.options = Object.assign({}, DEFAULTS, options)
 
-    // Initialize
-    this.init()
+    // Basic logger
+    this.logger = consola
+
+    // Init (sync)
+    this._init()
   }
 
-  init() {
+  _init() {
     // Try to read package.json
     this.readPkg()
 
-    // Init logger
+    // Use tagged logger
     this.logger = consola.withTag(this.pkg.name)
 
     // Try to load config
@@ -59,24 +63,38 @@ export default class Package extends EventEmitter {
       config = config.default || config
 
       Object.assign(this.options, config)
-
-      if (typeof config.extend === 'function') {
-        config.extend(this, {
-          load: (relativePath, opts) => new Package(Object.assign({
-            rootDir: this.resolvePath(relativePath)
-          }, opts))
-        })
-      }
     }
   }
 
-  writePackage() {
+  async callHook(name, ...args) {
+    let fns = this.options.hooks[name]
+
+    if (!fns) {
+      return
+    }
+
+    if (!Array.isArray(fns)) {
+      fns = [fns]
+    }
+
+    for (const fn of fns) {
+      await fn(this, ...args)
+    }
+  }
+
+  load(relativePath, opts) {
+    return new Package(Object.assign({
+      rootDir: this.resolvePath(relativePath)
+    }, opts))
+  }
+
+  async writePackage() {
     if (this.options.sortDependencies) {
       this.sortDependencies()
     }
     const pkgPath = this.resolvePath(this.options.pkgPath)
     this.logger.debug('Writing', pkgPath)
-    writeFileSync(pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
+    await writeFile(pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
   }
 
   generateVersion() {
@@ -147,11 +165,11 @@ export default class Package extends EventEmitter {
     }
   }
 
-  getWorkspacePackages() {
+  async getWorkspacePackages() {
     const packages = []
 
     for (const workspace of this.pkg.workspaces || []) {
-      const dirs = glob.sync(workspace)
+      const dirs = await glob(workspace)
       for (const dir of dirs) {
         const pkg = new Package({
           rootDir: this.resolvePath(dir)
@@ -163,36 +181,37 @@ export default class Package extends EventEmitter {
     return packages
   }
 
-  async build(options = {}, _watch = false) {
-    this.emit('build:before')
-
-    // Extend options
-    const replace = Object.assign({}, options.replace)
-    const alias = Object.assign({}, options.alias)
+  async build(_watch = false) {
+    // Prepare rollup config
+    const config = {
+      rootDir: this.options.rootDir,
+      alias: {},
+      replace: {}
+    }
 
     // Replace linkedDependencies with their suffixed version
     if (this.options.suffix && this.options.suffix.length) {
       for (const _name of (this.options.linkedDependencies || [])) {
         const name = _name + this.options.suffix
-        if (replace[`'${_name}'`] === undefined) {
-          replace[`'${_name}'`] = `'${name}'`
-        }
-        if (alias[_name] === undefined) {
-          alias[_name] = name
-        }
+        config.replace[`'${_name}'`] = `'${name}'`
+        config.alias[_name] = name
       }
     }
 
-    const config = rollupConfig({
-      rootDir: this.options.rootDir,
-      ...options,
-      replace,
-      alias
-    }, this.pkg)
+    // Allow extending config
+    await this.callHook('build:extend', { config })
+
+    // Create rollup config
+    const _rollupConfig = rollupConfig(config, this.pkg)
+
+    // Allow extending rollup config
+    await this.callHook('build:extendRollup', {
+      rollupConfig: _rollupConfig
+    })
 
     if (_watch) {
       // Watch
-      const watcher = watch(config)
+      const watcher = watch(_rollupConfig)
       watcher.on('event', (event) => {
         switch (event.code) {
           // The watcher is (re)starting
@@ -223,11 +242,12 @@ export default class Package extends EventEmitter {
       // Build
       this.logger.info('Building bundle')
       try {
-        const bundle = await rollup(config)
-        removeSync(config.output.dir)
-        await bundle.write(config.output)
+        const bundle = await rollup(_rollupConfig)
+        await remove(_rollupConfig.output.dir)
+        await bundle.write(_rollupConfig.output)
+
         this.logger.success('Bundle built')
-        this.emit('build:done')
+        await this.callHook('build:done', { bundle })
 
         // Analyze bundle imports against pkg
         // if (this.pkg.dependencies) {
@@ -249,13 +269,13 @@ export default class Package extends EventEmitter {
     }
   }
 
-  watch(options) {
-    return this.build(options, true)
+  watch() {
+    return this.build(true)
   }
 
-  publish(tag = 'latest') {
+  async publish(tag = 'latest') {
     this.logger.info(`publishing ${this.pkg.name}@${this.pkg.version} with tag ${tag}`)
-    this.exec('npm', `publish --tag ${tag}`)
+    await this.exec('npm', `publish --tag ${tag}`)
   }
 
   copyFieldsFrom(source, fields = []) {
@@ -264,11 +284,11 @@ export default class Package extends EventEmitter {
     }
   }
 
-  copyFilesFrom(source, files) {
+  async copyFilesFrom(source, files) {
     for (const file of files || source.pkg.files || []) {
       const src = resolve(source.options.rootDir, file)
       const dst = resolve(this.options.rootDir, file)
-      copySync(src, dst)
+      await copy(src, dst)
     }
   }
 
@@ -288,7 +308,7 @@ export default class Package extends EventEmitter {
   }
 
   exec(command, args, silent = false) {
-    const r = spawnSync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
+    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
@@ -314,10 +334,12 @@ export default class Package extends EventEmitter {
   }
 
   gitShortCommit() {
-    return this.exec('git', 'rev-parse --short HEAD', true).stdout
+    const { stdout } = this.exec('git', 'rev-parse --short HEAD', true)
+    return stdout
   }
 
   gitBranch() {
-    return this.exec('git', 'rev-parse --abbrev-ref HEAD', true).stdout
+    const { stdout } = this.exec('git', 'rev-parse --abbrev-ref HEAD', true)
+    return stdout
   }
 }

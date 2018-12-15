@@ -14,7 +14,7 @@ describe('extract css', () => {
     await nuxt.server.listen(await getPort(), '0.0.0.0')
   })
 
-  test.skip('Verify global.css has been extracted and minified', async () => {
+  test('Verify global.css has been extracted and minified', async () => {
     const fileName = isWindows ? 'pages_index.css' : 'pages/index.css'
     const extractedIndexCss = resolve(__dirname, '..', 'fixtures/extract-css/.nuxt/dist/client', fileName)
     const content = await readFile(extractedIndexCss, 'utf-8')
@@ -28,6 +28,8 @@ describe('extract css', () => {
 
   test('/about should contain module style', async () => {
     const { html } = await nuxt.server.renderRoute('/about')
-    expect(html).toMatch(/<h1 class="test_[a-zA-Z0-9]{5}">I'm BLUE<\/h1>/)
+    expect(html).toMatch(/<h1 class="test_[a-zA-Z0-9]{5}">\s*I'm BLUE\s*<\/h1>/)
+    // no duplicate inlined style
+    expect(html).not.toContain('{color:#00f}')
   })
 })
