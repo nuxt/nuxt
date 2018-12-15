@@ -508,7 +508,7 @@ export default class Builder {
 
   watchClient() {
     const src = this.options.srcDir
-    let rGlob = (dir) => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
+    const rGlob = dir => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
 
     let patterns = [
       r(src, this.options.dir.layouts),
