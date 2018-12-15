@@ -315,12 +315,12 @@ const sortRoutes = function sortRoutes(routes) {
   return routes
 }
 
-export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
+export const createRoutes = function createRoutes(files, srcDir, pagesDir, supportedExtensions = ['vue', 'js']) {
   const routes = []
   files.forEach((file) => {
     const keys = file
-      .replace(RegExp(`^${pagesDir}`), '')
-      .replace(/\.(vue|js)$/, '')
+      .replace(new RegExp(`^${pagesDir}`), '')
+      .replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       .replace(/\/{2,}/g, '/')
       .split('/')
       .slice(1)
@@ -334,7 +334,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
         ? route.name + '-' + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
-      route.chunkName = file.replace(/\.(vue|js)$/, '')
+      route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
 
       if (child) {

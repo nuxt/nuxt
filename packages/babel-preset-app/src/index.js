@@ -92,6 +92,11 @@ module.exports = (context, options = {}) => {
     }
   ])
 
+  // TypeScript preset
+  if (options.typescript) {
+    presets.push(require('@babel/preset-typescript'))
+  }
+
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),
     [require('@babel/plugin-proposal-decorators'), {
