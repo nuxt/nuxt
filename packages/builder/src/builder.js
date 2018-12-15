@@ -431,9 +431,13 @@ export default class Builder {
 
     const serializeHead = (obj) => {
       obj = Object.assign({}, obj)
+      let body
       for (const member in obj) {
         if (typeof obj[member] === 'function') {
-          obj[member] = (...args) => obj[member](...args)
+          body = obj[member].toString()
+          body = body.slice(body.indexOf('('))
+          body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
+          obj[member] = `function${body}`
         }
       }
       return serialize(obj)
