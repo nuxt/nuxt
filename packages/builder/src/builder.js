@@ -48,6 +48,21 @@ export default class Builder {
     this.relativeToBuild = (...args) =>
       relativeTo(this.options.buildDir, ...args)
 
+    this.serializeHead = (obj) => {
+      const serialized = Object.assign({}, obj)
+      let body
+      Object.keys(obj).forEach((member) => {
+        if (typeof obj[member] === 'function') {
+          body = obj[member].toString()
+          body = body.slice(body.indexOf('('))
+          body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
+          // eslint-disable-next-line no-eval
+          serialized[member] = eval(`(function${body})`)
+        }
+      })
+      return serialize(obj)
+    }
+
     this._buildStatus = STATUS.INITIAL
 
     // Hooks for watch lifecycle
@@ -429,26 +444,12 @@ export default class Builder {
       resolve: r
     })
 
-    const serializeHead = (obj) => {
-      obj = Object.assign({}, obj)
-      let body
-      for (const member in obj) {
-        if (typeof obj[member] === 'function') {
-          body = obj[member].toString()
-          body = body.slice(body.indexOf('('))
-          body = body.replace(/^(\(.*?\))\s+(=>)/, (_, args) => args)
-          obj[member] = eval(`(function${body})`) // eslint-disable-line no-eval
-        }
-      }
-      return serialize(obj)
-    }
-
     // Prepare template options
     let lodash = null
     const templateOptions = {
       imports: {
         serialize,
-        serializeHead,
+        serializeHead: this.serializeHead,
         devalue,
         hash,
         r,
