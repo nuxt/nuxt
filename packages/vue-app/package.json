@@ -13,7 +13,7 @@
   "dependencies": {
     "vue": "^2.5.21",
     "vue-meta": "^1.5.6",
-    "vue-no-ssr": "^1.1.0",
+    "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.2",
     "vue-template-compiler": "^2.5.21",
     "vuex": "^3.0.1"
