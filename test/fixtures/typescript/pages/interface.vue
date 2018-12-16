@@ -11,10 +11,8 @@ interface Test {
   }
 }
 
-@Component({
-  name: 'Interface'
-})
-export default class extends Vue {
+@Component
+export default class Interface extends Vue {
   test: Test = {
     attributes: {
       message: 'Interface Page'
