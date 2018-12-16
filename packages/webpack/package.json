@@ -8,7 +8,7 @@
   ],
   "main": "dist/webpack.js",
   "dependencies": {
-    "@babel/core": "^7.2.0",
+    "@babel/core": "^7.2.2",
     "@babel/polyfill": "^7.0.0",
     "@nuxt/babel-preset-app": "2.3.4",
     "@nuxt/common": "2.3.4",
