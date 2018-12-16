@@ -121,6 +121,7 @@ describe('basic browser', () => {
 
   test('/scroll-to-top', async () => {
     const page = await browser.page(url('/scroll-to-top'))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
     await page.nuxt.navigate('/scroll-to-top/other')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
