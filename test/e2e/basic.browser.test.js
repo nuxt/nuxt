@@ -119,6 +119,15 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('User: 1')
   })
 
+  test('/scroll-to-top', async () => {
+    const page = await browser.page(url('/scroll-to-top'))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.nuxt.navigate('/scroll-to-top/other')
+    const pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBeGreaterThan(0)
+    page.close()
+  })
+
   test('/validate should display a 404', async () => {
     await page.nuxt.navigate('/validate')
 
