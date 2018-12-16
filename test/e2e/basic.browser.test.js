@@ -123,7 +123,7 @@ describe('basic browser', () => {
     const page = await browser.page(url('/scroll-to-top'))
     await page.nuxt.navigate('/scroll-to-top/other')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
-    expect(pageYOffset).to.be.above(0)
+    expect(pageYOffset).toBeGreaterThan(0)
     page.close()
   })
 
