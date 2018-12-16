@@ -17,7 +17,6 @@
     "@babel/plugin-syntax-jsx": "^7.2.0",
     "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.2.0",
-    "@babel/preset-typescript": "^7.1.0",
     "@babel/runtime": "^7.2.0",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-plugin-transform-vue-jsx": "^4.0.1"
