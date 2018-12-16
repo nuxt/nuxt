@@ -69,9 +69,15 @@ export default class Resolver {
       resolvedPath = path
     }
 
+    let isDirectory
+
     // Check if resolvedPath exits and is not a directory
-    if (fs.existsSync(resolvedPath) && !fs.lstatSync(resolvedPath).isDirectory()) {
-      return resolvedPath
+    if (fs.existsSync(resolvedPath)) {
+      isDirectory = fs.lstatSync(resolvedPath).isDirectory()
+
+      if (!isDirectory) {
+        return resolvedPath
+      }
     }
 
     // Check if any resolvedPath.[ext] or resolvedPath/index.[ext] exists
@@ -83,6 +89,11 @@ export default class Resolver {
       if (fs.existsSync(resolvedPath + '/index.' + ext)) {
         return resolvedPath + '/index.' + ext
       }
+    }
+
+    // If there's no index.[ext] we just return the dierctory path
+    if (isDirectory) {
+      return resolvedPath
     }
 
     // Give up
