@@ -1,3 +1,3 @@
 export default {
-  plugins: ['~/plugins/plugin.ts']
+  plugins: ['~/plugins/plugin']
 }
