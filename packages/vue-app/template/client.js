@@ -206,15 +206,16 @@ function callMiddleware(Components, context, layout) {
 }
 
 async function render(to, from, next) {
+
   if (this._pathChanged === false && this._queryChanged === false) {
     return next()
   }
   // Handle first render on SPA mode
   if (to === from) {
-    _lastPaths = []
     <% if (store) { %>
     await nuxtClientInit(app)
     <% } %>
+    _lastPaths = []
   } else {
     const fromMatches = []
     _lastPaths = getMatchedComponents(from, fromMatches).map((Component, i) => {
@@ -645,7 +646,7 @@ async function mountApp(__app) {
 
     // Listen for first Vue update
     Vue.nextTick(async () => {
-      <% if (store) { %>
+      <% if (store && mode === 'universal') { %>
       await nuxtClientInit(_app)
       <% } %>
       // Call window.{{globals.readyCallback}} callbacks
