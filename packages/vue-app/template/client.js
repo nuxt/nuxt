@@ -495,6 +495,15 @@ function nuxtReady(_app) {
       cb(_app)
     }
   })
+  <% if (store) { %>
+  if (_app.store._actions && store._actions.nuxtClientInit) {
+    store.dispatch('nuxtClientInit', _app.context)
+      .catch((err) => {
+        console.error('[nuxt] Error while dispatching nuxtServerInit', err)
+      })
+    }
+  }
+  <% } %>
   // Special JSDOM
   if (typeof window.<%= globals.loadedCallback %> === 'function') {
     window.<%= globals.loadedCallback %>(_app)
