@@ -57,7 +57,7 @@ describe('spa', () => {
 
   test('/client-init', async () => {
     const { html } = await renderRoute('/client-init?onClientInit=1')
-    expect(html).toInclude('true')
+    expect(html).toContain('true')
   })
 
   test('/error-handler', async () => {
