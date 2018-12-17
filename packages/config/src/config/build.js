@@ -5,7 +5,6 @@ export default () => ({
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
-  typescript: false,
   crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
@@ -44,6 +43,10 @@ export default () => ({
     },
     scss: {},
     stylus: {},
+    ts: {
+      transpileOnly: true,
+      appendTsSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
   styleResources: {},
