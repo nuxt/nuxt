@@ -233,10 +233,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.ts$/,
         loader: 'ts-loader',
-        options: {
-          transpileOnly: true,
-          appendTsSuffixTo: [/\.vue$/]
-        }
+        options: this.loaders.ts
       },
       {
         test: /\.css$/,
