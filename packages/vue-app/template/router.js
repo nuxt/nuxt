@@ -49,7 +49,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 Vue.use(Router)
 
 <% if (router.scrollBehavior) { %>
-const scrollBehavior = <%= serialize(router.scrollBehavior).replace(/scrollBehavior\s*\(/, 'function(').replace('function function', 'function') %>
+const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>
 <% } else { %>
 if (process.client) {
   window.history.scrollRestoration = 'manual'
