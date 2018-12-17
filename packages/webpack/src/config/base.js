@@ -75,8 +75,7 @@ export default class WebpackBaseConfig {
         [
           require.resolve('@nuxt/babel-preset-app'),
           {
-            buildTarget: this.isServer ? 'server' : 'client',
-            typescript: this.options.build.typescript
+            buildTarget: this.isServer ? 'server' : 'client'
           }
         ]
       ]
@@ -216,7 +215,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: this.options.build.typescript ? /\.(j|t)sx?$/ : /\.jsx?$/,
+        test: /\.jsx?$/,
         exclude: (file) => {
           // not exclude files outside node_modules
           if (!/node_modules/.test(file)) {
@@ -230,6 +229,14 @@ export default class WebpackBaseConfig {
           loader: require.resolve('babel-loader'),
           options: this.getBabelOptions()
         })
+      },
+      {
+        test: /\.ts$/,
+        loader: 'ts-loader',
+        options: {
+          transpileOnly: true,
+          appendTsSuffixTo: [/\.vue$/]
+        }
       },
       {
         test: /\.css$/,
@@ -377,10 +384,6 @@ export default class WebpackBaseConfig {
   config() {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
-    let extensionsToResolve = ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx']
-    if (this.options.build.typescript) {
-      extensionsToResolve = extensionsToResolve.concat(['.ts', '.tsx'])
-    }
 
     const config = {
       name: this.name,
@@ -393,7 +396,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: extensionsToResolve,
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts'],
         alias: this.alias(),
         modules: webpackModulesDir
       },

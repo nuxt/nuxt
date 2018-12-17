@@ -45,10 +45,7 @@ export default class Builder {
       restart: null
     }
 
-    this.supportedExtensions = ['vue', 'js']
-    if (this.options.build.typescript) {
-      this.supportedExtensions.push('ts', 'tsx')
-    }
+    this.supportedExtensions = ['vue', 'js', 'ts']
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
@@ -326,8 +323,7 @@ export default class Builder {
       templateVars.router.routes = createRoutes(
         Object.values(files),
         this.options.srcDir,
-        this.options.dir.pages,
-        this.supportedExtensions
+        this.options.dir.pages
       )
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
