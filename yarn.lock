@@ -8857,6 +8857,15 @@ postcss@^7.0.6:
     source-map "^0.6.1"
     supports-color "^5.5.0"
 
+postcss@^7.0.7:
+  version "7.0.7"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.7.tgz#2754d073f77acb4ef08f1235c36c5721a7201614"
+  integrity sha512-HThWSJEPkupqew2fnuQMEI2YcTj/8gMV3n80cMdJsKxfIh5tHf7nM5JigNX6LxVMqo6zkgQNAI88hyFvBk41Pg==
+  dependencies:
+    chalk "^2.4.1"
+    source-map "^0.6.1"
+    supports-color "^5.5.0"
+
 prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
@@ -9787,10 +9796,10 @@ rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.3.1,
     estree-walker "^0.5.2"
     micromatch "^2.3.11"
 
-rollup@^0.67.4:
-  version "0.67.4"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-0.67.4.tgz#8ed6b0993337f84ec8a0387f824fa6c197e833ec"
-  integrity sha512-AVuP73mkb4BBMUmksQ3Jw0jTrBTU1i7rLiUYjFxLZGb3xiFmtVEg40oByphkZAsiL0bJC3hRAJUQos/e5EBd+w==
+rollup@^0.68.0:
+  version "0.68.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-0.68.0.tgz#e4fbde2e6278354962be530b498fc485298c0fc3"
+  integrity sha512-UbmntCf8QBlOqJnwsNWQCI0oonHOgs9y1OLoO8BHf2r8gCyRLp3JzLHXARJpsNDAS08Qm3LDjzyWma5sqnCxDQ==
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
@@ -10123,10 +10132,10 @@ sort-object-keys@^1.1.2:
   resolved "https://registry.npmjs.org/sort-object-keys/-/sort-object-keys-1.1.2.tgz#d3a6c48dc2ac97e6bc94367696e03f6d09d37952"
   integrity sha1-06bEjcKsl+a8lDZ2luA/bQnTeVI=
 
-sort-package-json@^1.17.0:
-  version "1.17.0"
-  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.17.0.tgz#1dfe40b5632e28919a09e80f3da555090ec30cd7"
-  integrity sha512-pVEdEI3w5dlXVJ1N0W/SwSfdrUFWVeB/zcRruQVf999TlCAZ1fS+Aw+EPZpdoHjoALPx6jNNtU9batTrbeVlYg==
+sort-package-json@^1.17.1:
+  version "1.17.1"
+  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.17.1.tgz#ab8d7ba8c8e2bbe1805e0650829256f64191c203"
+  integrity sha512-IxcHMpJF2ksT2cTtY3scXErmxbpp79bA7nlToENHCn0ZhoX7fMJk97z9sHDyubRoKzbwzq4r6TZz9DHL5V0LXA==
   dependencies:
     detect-indent "^5.0.0"
     sort-object-keys "^1.1.2"
