@@ -491,7 +491,7 @@ function fixPrepatch(to, ___) {
 
 <% if (store) { %>
 async function nuxtClientInit(_app) {
-  if (app.store._actions && app.store._actions.nuxtClientInit) {
+  if (process.browser && app.store._actions && app.store._actions.nuxtClientInit) {
     await app.store.dispatch('nuxtClientInit', app.context)
       .catch((err) => {
         console.error('[nuxt] Error while dispatching nuxtClientInit', err)
@@ -638,13 +638,12 @@ async function mountApp(__app) {
     _app.$mount('#<%= globals.id %>')
 
     // Listen for first Vue update
-    Vue.nextTick(() => {
+    Vue.nextTick(async () => {
       // Call window.{{globals.readyCallback}} callbacks
       <% if (store) { %>
-      nuxtClientInit(_app).then(() => nuxtReady(_app))
-      <% } else { %>
-      nuxtReady(_app)
+      await nuxtClientInit(_app)
       <% } %>
+      nuxtReady(_app)
       <% if (isDev) { %>
       // Enable hot reloading
       hotReloadAPI(_app)
