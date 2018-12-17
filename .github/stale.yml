@@ -5,7 +5,7 @@ staleLabel: stale
 exemptLabels:
   - "cmty:feature-request"
   - "WIP"
-  - ":clock1:PR Pending"
+  - ":clock1:Pending"
 markComment: >
   Thanks for your contribution to Nuxt.js!
 
