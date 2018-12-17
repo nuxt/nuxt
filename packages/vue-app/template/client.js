@@ -491,7 +491,7 @@ function fixPrepatch(to, ___) {
 
 <% if (store) { %>
 async function nuxtClientInit(_app) {
-  if (process.browser && app.store._actions && app.store._actions.nuxtClientInit) {
+  if (process.client && app.store._actions && app.store._actions.nuxtClientInit) {
     await app.store.dispatch('nuxtClientInit', app.context)
       .catch((err) => {
         console.error('[nuxt] Error while dispatching nuxtClientInit', err)
