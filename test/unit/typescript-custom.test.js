@@ -2,9 +2,9 @@ import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
 
-describe('typescript', () => {
+describe('typescript-custom', () => {
   beforeAll(async () => {
-    const options = await loadFixture('typescript')
+    const options = await loadFixture('typescript-custom')
     nuxt = new Nuxt(options)
     const port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
@@ -18,11 +18,6 @@ describe('typescript', () => {
   test('/about', async () => {
     const { html } = await nuxt.server.renderRoute('/about')
     expect(html).toContain('<div>About Page</div>')
-  })
-
-  test('/interface', async () => {
-    const { html } = await nuxt.server.renderRoute('/interface')
-    expect(html).toContain('<div>Interface Page</div>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

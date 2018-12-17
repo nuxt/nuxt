@@ -316,7 +316,8 @@ const sortRoutes = function sortRoutes(routes) {
   return routes
 }
 
-export const createRoutes = function createRoutes(files, srcDir, pagesDir, supportedExtensions = ['vue', 'js']) {
+export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
+  const supportedExtensions = ['vue', 'js', 'ts']
   const routes = []
   files.forEach((file) => {
     const keys = file
