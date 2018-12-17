@@ -43,6 +43,10 @@ export default () => ({
     },
     scss: {},
     stylus: {},
+    ts: {
+      transpileOnly: true,
+      appendTsSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
   styleResources: {},
