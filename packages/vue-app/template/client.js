@@ -210,8 +210,12 @@ async function render(to, from, next) {
     return next()
   }
   // Handle first render on SPA mode
-  if (to === from) _lastPaths = []
-  else {
+  if (to === from) {
+    _lastPaths = []
+    <% if (store) { %>
+    await nuxtClientInit(app)
+    <% } %>
+  } else {
     const fromMatches = []
     _lastPaths = getMatchedComponents(from, fromMatches).map((Component, i) => {
       return compile(from.matched[fromMatches[i]].path)(from.params)
@@ -266,10 +270,6 @@ async function render(to, from, next) {
     app.context.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
     return next()
   }
-
-  <% if (store) { %>
-  await nuxtClientInit(app)
-  <% } %>
 
   // Update ._data and other properties if hot reloaded
   Components.forEach((Component) => {
