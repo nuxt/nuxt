@@ -112,8 +112,8 @@ export function createRouter() {
     <%= isTest ? '/* eslint-disable quotes */' : '' %>
     routes: [<%= _routes %>],
     <%= isTest ? '/* eslint-enable quotes */' : '' %>
-    <% if (router.parseQuery) { %>parseQuery: <%= serialize(router.parseQuery).replace('parseQuery(', 'function(') %>,<% } %>
-    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serialize(router.stringifyQuery).replace('stringifyQuery(', 'function(') %>,<% } %>
+    <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
+    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>
   })
 }
