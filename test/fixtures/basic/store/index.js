@@ -1,6 +1,7 @@
 export const state = () => ({
   counter: 1,
-  meta: []
+  meta: [],
+  initialized: false
 })
 
 export const mutations = {
@@ -9,5 +10,16 @@ export const mutations = {
   },
   setMeta(state, meta) {
     state.meta = meta
+  },
+  initClient(state) {
+    state.initialized = true
+  }
+}
+
+export const actions = {
+  nuxtClientInit({ commit, state }, { route }) {
+    if (route.query.onClientInit === '1') {
+      commit('initClient')
+    }
   }
 }

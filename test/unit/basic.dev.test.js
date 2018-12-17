@@ -109,6 +109,13 @@ describe('basic dev', () => {
     expect(html).toContain('<h1>My component!</h1>')
   })
 
+
+  test('/client-init', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/client-init?onClientInit=1'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('true')
+  })
+
   test('Check render:routeDone hook called', () => {
     expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
