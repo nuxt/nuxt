@@ -489,15 +489,18 @@ function fixPrepatch(to, ___) {
   })
 }
 
-function nuxtReady(_app) {
-  <% if (store) { %>
+<% if (store) { %>
+async function nuxtClientInit(_app) {
   if (app.store._actions && app.store._actions.nuxtClientInit) {
-    app.store.dispatch('nuxtClientInit', app.context)
+    await app.store.dispatch('nuxtClientInit', app.context)
       .catch((err) => {
         console.error('[nuxt] Error while dispatching nuxtClientInit', err)
       })
   }
-  <% } %>
+}
+<% } %>
+
+function nuxtReady(_app) {
   window.<%= globals.readyCallback %>Cbs.forEach((cb) => {
     if (typeof cb === 'function') {
       cb(_app)
@@ -637,7 +640,11 @@ async function mountApp(__app) {
     // Listen for first Vue update
     Vue.nextTick(() => {
       // Call window.{{globals.readyCallback}} callbacks
+      <% if (store) { %>
+      nuxtClientInit(_app).then(() => nuxtReady(_app))
+      <% } else { %>
       nuxtReady(_app)
+      <% } %>
       <% if (isDev) { %>
       // Enable hot reloading
       hotReloadAPI(_app)
