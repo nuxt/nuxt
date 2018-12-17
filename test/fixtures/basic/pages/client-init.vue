@@ -9,7 +9,7 @@ import { mapState } from 'vuex'
 
 export default {
   computed: mapState({
-    initialized: (state) => state.initialized
+    initialized: state => state.initialized
   })
 }
 </script>
