@@ -1,5 +1,10 @@
 <template>
-  <div>Hello SPA!</div>
+  <div>
+    <h1>Hello SPA!</h1>
+    <NuxtLink to="/client-init?onClientInit=1">
+      go to client-init
+    </NuxtLink>
+  </div>
 </template>
 
 <script>

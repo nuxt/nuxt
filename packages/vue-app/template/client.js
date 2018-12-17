@@ -267,6 +267,10 @@ async function render(to, from, next) {
     return next()
   }
 
+  <% if (store) { %>
+  await nuxtClientInit(app)
+  <% } %>
+
   // Update ._data and other properties if hot reloaded
   Components.forEach((Component) => {
     if (Component._Ctor && Component._Ctor.options) {
@@ -641,7 +645,6 @@ async function mountApp(__app) {
 
     // Listen for first Vue update
     Vue.nextTick(async () => {
-      // Call nuxtClientInit
       <% if (store) { %>
       await nuxtClientInit(_app)
       <% } %>

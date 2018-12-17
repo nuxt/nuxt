@@ -55,6 +55,11 @@ describe('spa', () => {
     expect(html).toMatch('<h1>Test: updated</h1>')
   })
 
+  test('/client-init', async () => {
+    const { html } = await renderRoute('/client-init?onClientInit=1')
+    expect(html).toInclude('true')
+  })
+
   test('/error-handler', async () => {
     const { html } = await renderRoute('/error-handler')
     expect(html).toMatch('error handler triggered: fetch error!')
