@@ -206,7 +206,9 @@ function callMiddleware(Components, context, layout) {
 }
 
 async function render(to, from, next) {
-  if (this._pathChanged === false && this._queryChanged === false) return next()
+  if (this._pathChanged === false && this._queryChanged === false) {
+    return next()
+  }
   // Handle first render on SPA mode
   if (to === from) _lastPaths = []
   else {
@@ -639,10 +641,11 @@ async function mountApp(__app) {
 
     // Listen for first Vue update
     Vue.nextTick(async () => {
-      // Call window.{{globals.readyCallback}} callbacks
+      // Call nuxtClientInit
       <% if (store) { %>
       await nuxtClientInit(_app)
       <% } %>
+      // Call window.{{globals.readyCallback}} callbacks
       nuxtReady(_app)
       <% if (isDev) { %>
       // Enable hot reloading
