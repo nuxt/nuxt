@@ -91,7 +91,7 @@ export default class Resolver {
       }
     }
 
-    // If there's no index.[ext] we just return the dierctory path
+    // If there's no index.[ext] we just return the directory path
     if (isDirectory) {
       return resolvedPath
     }
