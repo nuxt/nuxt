@@ -39,7 +39,7 @@
     "std-env": "^2.2.1",
     "style-resources-loader": "^1.2.1",
     "terser-webpack-plugin": "^1.1.0",
-    "thread-loader": "^1.2.0",
+    "thread-loader": "^2.0.0",
     "time-fix-plugin": "^2.0.5",
     "url-loader": "^1.1.2",
     "vue-loader": "^15.4.2",
