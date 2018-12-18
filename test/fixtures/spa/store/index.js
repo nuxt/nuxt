@@ -9,7 +9,7 @@ export const mutations = {
 }
 
 export const actions = {
-  nuxtClientInit({ commit, state }, { route }) {
+  nuxtInit({ commit, state }, { route }) {
     if (route.query.onClientInit === '1') {
       commit('initClient')
     }

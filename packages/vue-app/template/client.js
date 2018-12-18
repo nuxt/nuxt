@@ -213,7 +213,7 @@ async function render(to, from, next) {
   // Handle first render on SPA mode
   if (to === from) {
     <% if (store) { %>
-    await nuxtClientInit(app)
+    await nuxtInit(app)
     <% } %>
     _lastPaths = []
   } else {
@@ -497,11 +497,11 @@ function fixPrepatch(to, ___) {
 }
 
 <% if (store) { %>
-async function nuxtClientInit(_app) {
-  if (process.client && app.store._actions && app.store._actions.nuxtClientInit) {
-    await app.store.dispatch('nuxtClientInit', app.context)
+async function nuxtInit(_app) {
+  if (process.client && app.store._actions && app.store._actions.nuxtInit) {
+    await app.store.dispatch('nuxtInit', app.context)
       .catch((err) => {
-        console.error('[nuxt] Error while dispatching nuxtClientInit', err)
+        console.error('[nuxt] Error while dispatching nuxtInit', err)
       })
   }
 }
@@ -647,7 +647,7 @@ async function mountApp(__app) {
     // Listen for first Vue update
     Vue.nextTick(async () => {
       <% if (store && mode === 'universal') { %>
-      await nuxtClientInit(_app)
+      await nuxtInit(_app)
       <% } %>
       // Call window.{{globals.readyCallback}} callbacks
       nuxtReady(_app)
