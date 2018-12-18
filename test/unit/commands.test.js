@@ -6,7 +6,7 @@ import { waitUntil } from '../utils'
 
 const execAsync = promisify(exec)
 const rootDir = resolve(__dirname, '..', 'fixtures/with-commands')
-const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
+const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt-cli.js')
 
 function spawnNuxt(command, args) {
   return spawn(nuxtBin, [command, ...args], { cwd: rootDir })
