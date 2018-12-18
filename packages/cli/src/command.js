@@ -14,7 +14,7 @@ export default class NuxtCommand {
 
   static async ensureExternal() {
     const nuxtIndex = process.argv
-      .findIndex((arg, i) => arg.match(/nuxt(?:\.js)?$/)) + 1
+      .findIndex((arg, i) => arg.match(/nuxt(?:-cli)?(?:\.js)?$/)) + 1
     const parts = process.argv.slice(nuxtIndex, nuxtIndex + 2)
     const command = ['nuxt', ...parts].join('-')
     if (!await commandExists(command)) {
