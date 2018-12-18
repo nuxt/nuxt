@@ -1,3 +1,6 @@
 {
-  "name": "nuxt-module-example-with-commands"
+  "name": "nuxt-module-example-with-commands",
+  "bin": {
+    "nuxt-foobar-command": "./bin/command"
+  }
 }
