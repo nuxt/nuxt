@@ -1,10 +1,8 @@
 
 import parseArgs from 'minimist'
-import commandExists from 'command-exists'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
-import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -12,36 +10,8 @@ export default class NuxtCommand {
     this.cmd = cmd
   }
 
-  static async ensureExternal() {
-    const nuxtIndex = process.argv
-      .findIndex((arg, i) => arg.match(/nuxt(?:-cli)?(?:\.js)?$/)) + 1
-    const parts = process.argv.slice(nuxtIndex, nuxtIndex + 2)
-    const command = ['nuxt', ...parts].join('-')
-    if (!await commandExists(command)) {
-      throw new Error(`Module command ${command} failed to load!`)
-    }
-    return [command, ...process.argv.slice(nuxtIndex + 2)].join(' ')
-  }
-
-  static ensure(name) {
-    if (!(name in commands)) {
-      if (process.argv.length > 2) {
-        return NuxtCommand.ensureExternal()
-      } else {
-        throw new Error(`Command ${name} could not be loaded!`)
-      }
-    }
-  }
-
-  static async run(name) {
-    const cmd = await NuxtCommand.load(name)
-    return cmd.run()
-  }
-
-  static async load(name) {
-    // eslint-disable-next-line import/namespace
-    const cmd = await commands[name]().then(m => m.default)
-    return NuxtCommand.from(cmd)
+  static run(cmd) {
+    return NuxtCommand.from(cmd).run()
   }
 
   static from(options) {
