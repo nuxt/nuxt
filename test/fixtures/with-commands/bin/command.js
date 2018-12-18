@@ -1,12 +1,12 @@
-#!/bin/env node -r esm
+#!/usr/local/bin/node -r esm
 
 import consola from 'consola'
 import { NuxtCommand, run } from '@nuxt/cli'
 
 const cmd = NuxtCommand.from({
-  name: 'my-custom-command',
+  name: 'command',
   description: 'My Custom Command',
-  usage: 'my-custom-command <foobar>',
+  usage: 'command <foobar>',
   options: {
     foobar: {
       alias: 'fb',
