@@ -13,12 +13,14 @@ export default class NuxtCommand {
   }
 
   static async ensureExternal() {
-    const parts = process.argv.slice(2, 4)
+    const nuxtIndex = process.argv
+      .findIndex((arg, i) => arg.match(/nuxt(?:\.js)?$/)) + 1
+    const parts = process.argv.slice(nuxtIndex, nuxtIndex + 2)
     const command = ['nuxt', ...parts].join('-')
     if (!await commandExists(command)) {
       throw new Error(`Module command ${command} failed to load!`)
     }
-    return command
+    return [command, ...process.argv.slice(nuxtIndex + 2)].join(' ')
   }
 
   static ensure(name) {
@@ -64,9 +66,11 @@ export default class NuxtCommand {
   }
 
   getArgv(args) {
+    console.log('--process.argv', process.argv)
     const minimistOptions = this._getMinimistOptions()
+    console.log('minimistOptions', minimistOptions)
     const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-
+    console.log(argv)
     if (argv.version) {
       this.showVersion()
     } else if (argv.help) {
