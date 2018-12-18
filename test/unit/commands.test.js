@@ -1,13 +1,14 @@
 import { resolve } from 'path'
+import { promisify } from 'util'
+import { exec } from 'child_process'
 import { spawn } from 'cross-spawn'
 import { waitUntil } from '../utils'
-import { exec } from 'child_process'
 
 const execAsync = promisify(exec)
 const rootDir = resolve(__dirname, '..', 'fixtures/with-commands')
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt.js')
 
-function spawnNuxt(command, args)  {
+function spawnNuxt(command, args) {
   return spawn(nuxtBin, [command, ...args], { cwd: rootDir })
 }
 
