@@ -1,35 +1,32 @@
 import consola from 'consola'
 import execa from 'execa'
 import NuxtCommand from './command'
-import listCommands from './list'
 import setup from './setup'
 import getCommand from './commands'
 import { normalizeArgv, parseArgv, plainError } from './utils'
 
 async function _run(customCommand) {
+  // Read from process.argv
   const argv = normalizeArgv(process.argv)
 
-  // isHelp, isDev
-  const help = argv.includes('--help') || argv.includes('-h')
-  const dev = !argv[0] || argv[0] === 'dev'
-
   // Setup env
-  setup({ dev })
+  setup({
+    dev: argv[0] === 'dev' || argv[0] === 'default'
+  })
 
-  // Execute customCommand if provided
+  // Run customCommand if provided
   if (customCommand) {
-    return customCommand.run({ argv, help })
+    if (typeof customCommand === 'string') {
+      argv[0] = customCommand
+    } else {
+      return NuxtCommand.run(customCommand)
+    }
   }
 
   // Try internal command
-  const cmd = await getCommand(argv[0] || 'dev')
+  const cmd = await getCommand(argv[0])
   if (cmd) {
     return NuxtCommand.run(cmd)
-  }
-
-  // Show help
-  if (help) {
-    return listCommands()
   }
 
   // Try external command

@@ -1,13 +1,19 @@
 
-import parseArgs from 'minimist'
+import minimist from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig } from './utils'
+import { loadNuxtConfig, normalizeArgv } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd = { name: '', usage: '', description: '', options: {} }) {
+  constructor(cmd = { name: '', usage: '', description: '', options: {} }, argv) {
+    if (!cmd.options) {
+      cmd.options = {}
+    }
     this.cmd = cmd
+
+    this._argv = argv ? Array.from(argv) : normalizeArgv(process.argv)
+    this._parsedArgv = null // Lazy evaluate
   }
 
   static run(cmd) {
@@ -22,6 +28,11 @@ export default class NuxtCommand {
   }
 
   run() {
+    if (this.argv.help || this.argv.h) {
+      this.showHelp()
+    } else if (this.argv.version || this.argv.v) {
+      this.showVersion()
+    }
     return this.cmd.run(this)
   }
 
@@ -35,16 +46,16 @@ export default class NuxtCommand {
     process.exit(0)
   }
 
-  getArgv(args) {
-    const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-    if (argv.version) {
-      this.showVersion()
-    } else if (argv.help) {
-      this.showHelp()
+  get argv() {
+    if (!this._parsedArgv) {
+      const minimistOptions = this._getMinimistOptions()
+      this._parsedArgv = minimist(this._argv, minimistOptions)
     }
+    return this._parsedArgv
+  }
 
-    return argv
+  getArgv() {
+    return this.argv // Backward compatibility
   }
 
   async getNuxtConfig(argv, extraOptions) {
