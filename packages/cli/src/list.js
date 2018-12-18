@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import getCommand from './commands'
 
