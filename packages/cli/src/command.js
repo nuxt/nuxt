@@ -13,11 +13,8 @@ export default class NuxtCommand {
   }
 
   static async ensureExternal() {
-    const parts = process.argv.slice(1, 4)
-    if (parts[0] !== 'nuxt') {
-      parts[0] = 'nuxt'
-    }
-    const command = parts.join('-')
+    const parts = process.argv.slice(2, 4)
+    const command = ['nuxt', ...parts].join('-')
     if (!await commandExists(command)) {
       throw new Error(`Module command ${command} failed to load!`)
     }

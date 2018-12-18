@@ -20,7 +20,6 @@ export default async function run(custom = null) {
     const external = await NuxtCommand.ensure(cmd)
 
     if (external) {
-      console.log('external', external)
       const stdio = [
         process.stdin,
         process.stdout,
