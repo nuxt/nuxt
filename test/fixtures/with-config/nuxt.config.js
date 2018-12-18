@@ -38,6 +38,8 @@ export default {
   plugins: [
     '~/plugins/test',
     '~/plugins/test.plugin',
+    '~/plugins/test.client',
+    '~/plugins/test.server',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',

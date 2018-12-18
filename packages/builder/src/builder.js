@@ -110,9 +110,18 @@ export default class Builder {
           /[^a-zA-Z?\d\s:]/g,
           ''
         )
+
+        // TODO: remove deprecated check in Nuxt 3
+        if (p.ssr === false) {
+          p.mode = 'client'
+          consola.warn(`ssr in plugin options has been deprecated, please use mode instead`)
+        } else if (!['client', 'server'].includes(p.mode)) {
+          p.mode = 'all'
+        }
+
         return {
           src: this.nuxt.resolver.resolveAlias(p.src),
-          ssr: p.ssr !== false,
+          mode: p.mode,
           name: 'nuxt_plugin_' + pluginBaseName + '_' + hash(p.src)
         }
       }),
@@ -134,6 +143,15 @@ export default class Builder {
           additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
+
+      const modes = ['client', 'server']
+      const modernPattern = new RegExp(`\\.(${modes.join('|')})\\.\\w+$`)
+      pluginFiles[0].replace(modernPattern, (_, mode) => {
+        // mode in nuxt.config has higher priority
+        if (p.mode === 'all' && modes.includes(mode)) {
+          p.mode = mode
+        }
+      })
 
       p.src = this.relativeToBuild(p.src)
     }))
@@ -204,8 +222,6 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
-    await this.resolvePlugins()
-
     // Start bundle build: webpack, rollup, parcel...
     await this.bundleBuilder.build()
 
@@ -223,6 +239,8 @@ export default class Builder {
 
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
+
+    await this.resolvePlugins()
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)
