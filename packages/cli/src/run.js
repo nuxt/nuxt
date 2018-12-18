@@ -1,47 +1,60 @@
-
-import { execSync } from 'child_process'
 import consola from 'consola'
+import execa from 'execa'
 import NuxtCommand from './command'
 import listCommands from './list'
 import setup from './setup'
+import getCommand from './commands'
+import { normalizeArgv, parseArgv, plainError } from './utils'
 
-export default async function run(custom = null) {
-  if (custom) {
-    try {
-      await custom.run()
-    } catch (error) {
-      consola.fatal(error)
-    }
-    return
+async function _run(customCommand) {
+  const argv = normalizeArgv(process.argv)
+
+  // isHelp, isDev
+  const help = argv.includes('--help') || argv.includes('-h')
+  const dev = !argv[0] || argv[0] === 'dev'
+
+  // Setup env
+  setup({ dev })
+
+  // Execute customCommand if provided
+  if (customCommand) {
+    return customCommand.run({ argv, help })
   }
 
-  const cmd = process.argv[2] || 'dev'
-  try {
-    const external = await NuxtCommand.ensure(cmd)
+  // Try internal command
+  const cmd = await getCommand(argv[0] || 'dev')
+  if (cmd) {
+    return NuxtCommand.run(cmd)
+  }
 
-    if (external) {
-      const stdio = [
-        process.stdin,
-        process.stdout,
-        process.stderr
-      ]
-      execSync(external, { stdio })
-      return
-    }
-  } catch (notFoundError) {
-    if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      return listCommands().then(() => process.exit(0))
+  // Show help
+  if (help) {
+    return listCommands()
+  }
+
+  // Try external command
+  const external = parseArgv(argv)
+  try {
+    await execa(`nuxt-${external.command}`, external.opts, {
+      stdout: process.stdout,
+      stderr: process.stderr,
+      stdin: process.stdin
+    })
+    process.exit(0)
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw plainError(`Command not found: ${argv[0]}`)
     } else {
-      throw notFoundError
+      throw plainError(`Failed to run command \`${argv[0]}\`:\n${error}`)
     }
   }
+}
 
-  process.argv.splice(2, 1)
-  setup({ dev: cmd === 'dev' })
-
+export default async function run(...args) {
   try {
-    await NuxtCommand.run(cmd)
+    await _run(...args)
   } catch (error) {
     consola.fatal(error)
+    process.exit(1)
   }
 }
