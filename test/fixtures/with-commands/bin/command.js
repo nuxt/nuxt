@@ -16,9 +16,7 @@ const cmd = NuxtCommand.from({
   },
   run(cmd) {
     try {
-      console.log('process.argv', process.argv)
       const argv = cmd.getArgv()
-      consola.info(argv._)
       process.exit(0)
     } catch (err) {
       consola.fatal(err)
