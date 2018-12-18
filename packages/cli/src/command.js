@@ -18,11 +18,10 @@ export default class NuxtCommand {
       parts[0] = 'nuxt'
     }
     const command = parts.join('-')
-    console.log('command', command)
     if (!await commandExists(command)) {
       throw new Error(`Module command ${command} failed to load!`)
     }
-    return true
+    return command
   }
 
   static ensure(name) {
