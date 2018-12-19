@@ -69,14 +69,14 @@ if (!Vue.config.$nuxt) {
   Vue.config.$nuxt = {}
 }
 Vue.config.$nuxt.<%= globals.nuxt %> = true
-
 <% } %>
 
 // Create and mount App
 createApp()
   .then(mountApp)
   .catch((err) => {
-    console.error('[nuxt] Error while initializing app', err)
+    err.message = '[nuxt] Error while mounting app: ' + err.message
+    Vue.config.errorHandler(err)
   })
 
 function componentOption(component, key, ...args) {
@@ -145,8 +145,19 @@ async function loadAsyncComponents(to, from, next) {
     // Call next()
     next()
   } catch (err) {
-    const error = this.error(err)
-    this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
+    err = err || {}
+    const statusCode = err.statusCode || err.status || (err.response && err.response.status) || 500
+    const message = err.message || ''
+
+    // Handle chunk loading errors
+    // This may be due to a new deployment or a network problem
+    if (/^Loading chunk (\d)+ failed\./.test(message)) {
+      window.location.reload(true /* skip cache */)
+      return // prevent error page blinking for user
+    }
+
+    this.error({ statusCode, message })
+    this.$nuxt.$emit('routeChanged', to, from, err)
     next(false)
   }
 }
@@ -674,7 +685,7 @@ async function mountApp(__app) {
     // Push the path and then mount app
     router.push(path, () => mount(), (err) => {
       if (!err) return mount()
-      console.error(err)
+      Vue.config.errorHandler(err)
     })
   })
 }
