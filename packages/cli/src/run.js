@@ -6,7 +6,7 @@ import getCommand from './commands'
 
 export default async function run(_argv) {
   // Read from process.argv
-  const argv = _argv || Array.from(process.argv.slice(2))
+  const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
   // Check for internal command
   let cmd = await getCommand(argv[0])
