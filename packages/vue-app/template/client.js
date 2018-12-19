@@ -69,14 +69,14 @@ if (!Vue.config.$nuxt) {
   Vue.config.$nuxt = {}
 }
 Vue.config.$nuxt.<%= globals.nuxt %> = true
-
 <% } %>
 
 // Create and mount App
 createApp()
   .then(mountApp)
   .catch((err) => {
-    console.error('[nuxt] Error while initializing app', err)
+    err.message = '[nuxt] Error while mounting app: ' + err.message
+    Vue.config.errorHandler(err)
   })
 
 function componentOption(component, key, ...args) {
@@ -674,7 +674,7 @@ async function mountApp(__app) {
     // Push the path and then mount app
     router.push(path, () => mount(), (err) => {
       if (!err) return mount()
-      console.error(err)
+      Vue.config.errorHandler(err)
     })
   })
 }
