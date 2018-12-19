@@ -9,9 +9,11 @@
 
 <script>
 export default {
-  title: {
-    type: String,
-    default: ''
+  props: {
+    title: {
+      type: String,
+      default: ''
+    }
   }
 }
 </script>

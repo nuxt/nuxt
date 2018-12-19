@@ -49,7 +49,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 Vue.use(Router)
 
 <% if (router.scrollBehavior) { %>
-const scrollBehavior = <%= serialize(router.scrollBehavior).replace(/scrollBehavior\s*\(/, 'function(').replace('function function', 'function') %>
+const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>
 <% } else { %>
 if (process.client) {
   window.history.scrollRestoration = 'manual'
@@ -59,8 +59,11 @@ const scrollBehavior = function (to, from, savedPosition) {
   // will retain current scroll position.
   let position = false
 
-  // if no children detected
-  if (to.matched.length < 2) {
+  // if no children detected and scrollToTop is not explicitly disabled
+  if (
+    to.matched.length < 2 &&
+    to.matched.every(r => r.components.default.options.scrollToTop !== false)
+  ) {
     // scroll to the top of the page
     position = { x: 0, y: 0 }
   } else if (to.matched.some(r => r.components.default.options.scrollToTop)) {
@@ -109,8 +112,8 @@ export function createRouter() {
     <%= isTest ? '/* eslint-disable quotes */' : '' %>
     routes: [<%= _routes %>],
     <%= isTest ? '/* eslint-enable quotes */' : '' %>
-    <% if (router.parseQuery) { %>parseQuery: <%= serialize(router.parseQuery).replace('parseQuery(', 'function(') %>,<% } %>
-    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serialize(router.stringifyQuery).replace('stringifyQuery(', 'function(') %>,<% } %>
+    <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
+    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>
   })
 }

@@ -8,7 +8,8 @@
   ],
   "main": "dist/common.js",
   "dependencies": {
-    "consola": "^2.3.0"
+    "consola": "^2.3.0",
+    "serialize-javascript": "^1.5.0"
   },
   "publishConfig": {
     "access": "public"
