@@ -114,7 +114,10 @@ export default class Builder {
         // TODO: remove deprecated check in Nuxt 3
         if (p.ssr === false) {
           p.mode = 'client'
+        } else if (p.mode === undefined) {
+          p.mode = 'all'
         } else if (!['client', 'server'].includes(p.mode)) {
+          consola.warn(`Invalid plugin mode (server/client): ${p.mode}. Falling back to default`)
           p.mode = 'all'
         }
 
