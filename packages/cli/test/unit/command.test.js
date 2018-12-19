@@ -41,22 +41,18 @@ describe('cli/command', () => {
     expect(argv.build).toBe(false)
   })
 
-  test('prints version automatically', () => {
-    const cmd = new Command()
+  test('prints version automatically', async () => {
+    const cmd = new Command({}, ['--version'])
     cmd.showVersion = jest.fn()
-
-    const args = ['--version']
-    cmd.getArgv(args)
+    await cmd.run()
 
     expect(cmd.showVersion).toHaveBeenCalledTimes(1)
   })
 
-  test('prints help automatically', () => {
-    const cmd = new Command({ options: allOptions })
+  test('prints help automatically', async () => {
+    const cmd = new Command({ options: allOptions }, ['-h'])
     cmd.showHelp = jest.fn()
-
-    const args = ['-h']
-    cmd.getArgv(args)
+    await cmd.run()
 
     expect(cmd.showHelp).toHaveBeenCalledTimes(1)
   })
