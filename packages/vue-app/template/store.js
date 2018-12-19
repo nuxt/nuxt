@@ -79,9 +79,13 @@ void function updateModules() {
         // Update `root.modules` with the latest definitions.
         updateModules()
         // Trigger a hot update in the store.
-        window.<%= globals.nuxt %>.$store.hotUpdate({ modules: storeData.modules })
+        window.<%= globals.nuxt %>.$store.hotUpdate(storeData)
       })
     }<% } %>
+  }
+  else {
+    const log = (process.server ? require('consola') : console)
+    log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }
 }()
 
