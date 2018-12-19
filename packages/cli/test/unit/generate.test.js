@@ -1,5 +1,4 @@
-import { consola, mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
-import Command from '../../src/command'
+import { mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('generate', () => {
   let generate

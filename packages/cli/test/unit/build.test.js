@@ -1,4 +1,4 @@
-import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
+import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
   let build
