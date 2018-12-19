@@ -30,20 +30,27 @@ export default class NuxtCommand {
   run() {
     if (this.argv.help || this.argv.h) {
       this.showHelp()
-    } else if (this.argv.version || this.argv.v) {
-      this.showVersion()
+      return Promise.resolve()
     }
-    return this.cmd.run(this)
+
+    if (this.argv.version || this.argv.v) {
+      this.showVersion()
+      return Promise.resolve()
+    }
+
+    if (typeof this.cmd.run !== 'function') {
+      return Promise.resolve()
+    }
+
+    return Promise.resolve(this.cmd.run(this))
   }
 
   showVersion() {
     process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
   }
 
   showHelp() {
     process.stdout.write(this._getHelp())
-    process.exit(0)
   }
 
   get argv() {
