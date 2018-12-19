@@ -10672,10 +10672,10 @@ text-table@^0.2.0:
   resolved "https://registry.npmjs.org/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-thread-loader@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/thread-loader/-/thread-loader-2.0.0.tgz#4092745360b4a8d35587c304967193475716e64f"
-  integrity sha512-HFBk9C5QdD2VZZRogctrvY4k4a0dFfXdlpQVDMSBN7UjFmaJe08AXma5F6lQChckWDrq24cMLKfIWYtnCBjlyg==
+thread-loader@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/thread-loader/-/thread-loader-2.0.1.tgz#027e07a4adbc7c684c9c21eaedf937edd0897924"
+  integrity sha512-kO0nJOwxOVx6VFc498PDBWS+e4DEa2EwBUrFrBe5Ii7JUUL63W84gDj+0YR9mxtuJcYwQH8Z02g7xG+4/FdqwQ==
   dependencies:
     async "^2.6.1"
     loader-runner "^2.3.1"
