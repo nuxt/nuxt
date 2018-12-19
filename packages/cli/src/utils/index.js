@@ -127,8 +127,20 @@ export function formatPath(filePath) {
   return filePath.replace(process.cwd() + path.sep, '')
 }
 
-export function plainError(msg) {
-  return msg
+/**
+ * Normalize string argument in command
+ *
+ * @export
+ * @param {String} argument
+ * @param {*} defaultValue
+ * @returns formatted argument
+ */
+export function normalizeArg(arg, defaultValue) {
+  switch (arg) {
+    case 'true': arg = true; break
+    case '': arg = true; break
+    case 'false': arg = false; break
+    case undefined: arg = defaultValue; break
+  }
+  return arg
 }
-
-export * from './argv'
