@@ -28,7 +28,7 @@ describe('cli/command', () => {
     const argv = ['-c', 'test-file', '-s', '-p', '3001']
     const cmd = new Command({ options: { ...common, ...server } }, argv)
 
-    expect(cmd.argv['config-file']).toBe(args[1])
+    expect(cmd.argv['config-file']).toBe(argv[1])
     expect(cmd.argv.spa).toBe(true)
     expect(cmd.argv.universal).toBe(false)
     expect(cmd.argv.port).toBe('3001')
