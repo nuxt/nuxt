@@ -2,6 +2,7 @@ import path from 'path'
 import escapeRegExp from 'lodash/escapeRegExp'
 import get from 'lodash/get'
 import consola from 'consola'
+import serialize from 'serialize-javascript'
 
 export const encodeHtml = function encodeHtml(str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -256,7 +257,7 @@ function cleanChildrenRoutes(routes, isChild = false) {
   return routes
 }
 
-const DYNAMIC_ROUTE_REGEX = /^\/(:|\*)/
+const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
 
 const sortRoutes = function sortRoutes(routes) {
   routes.sort((a, b) => {
@@ -316,11 +317,12 @@ const sortRoutes = function sortRoutes(routes) {
 }
 
 export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
+  const supportedExtensions = ['vue', 'js', 'ts']
   const routes = []
   files.forEach((file) => {
     const keys = file
-      .replace(RegExp(`^${pagesDir}`), '')
-      .replace(/\.(vue|js)$/, '')
+      .replace(new RegExp(`^${pagesDir}`), '')
+      .replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       .replace(/\/{2,}/g, '/')
       .split('/')
       .slice(1)
@@ -334,7 +336,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
         ? route.name + '-' + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
-      route.chunkName = file.replace(/\.(vue|js)$/, '')
+      route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
 
       if (child) {
@@ -457,3 +459,23 @@ export function defineAlias(src, target, prop, opts = {}) {
     }
   })
 }
+
+export function serializeFunction(func) {
+  let open = false
+  return serialize(func)
+    .replace(serializeFunction.assignmentRE, (_, spaces) => {
+      return `${spaces}:function(`
+    })
+    .replace(serializeFunction.internalFunctionRE, (_, spaces, name, args) => {
+      if (open) {
+        return `${spaces}${name}:function(${args}) {`
+      } else {
+        open = true
+        return _
+      }
+    })
+    .replace(`${func.name}(`, 'function(')
+}
+
+serializeFunction.internalFunctionRE = /^(\s*)(?!(?:if)|(?:for)|(?:while)|(?:switch))(\w+)\s*\((.*?)\)\s*\{/gm
+serializeFunction.assignmentRE = /^(\s*):(\w+)\(/gm

@@ -31,7 +31,7 @@ export function foldLines(string, spaces, firstLineSpaces, maxCharsPerLine) {
 
 export function colorize(text) {
   return text
-    .replace(/\[[^ ]+\]/g, m => chalk.grey(m))
+    .replace(/\[[^ ]+]/g, m => chalk.grey(m))
     .replace(/<[^ ]+>/g, m => chalk.green(m))
     .replace(/ (-[-\w,]+)/g, m => chalk.bold(m))
     .replace(/`(.+)`/g, (_, m) => chalk.bold.cyan(m))

@@ -30,6 +30,8 @@ export interface Context {
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
 }
 
+export type Middleware = string | ((ctx: Context, cb: Function) => Promise<void> | void)
+
 export interface Transition {
   name?: string;
   mode?: string;

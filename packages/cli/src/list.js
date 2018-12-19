@@ -18,7 +18,7 @@ export default async function listCommands() {
     maxLength = Math.max(maxLength, _commands[name].usage.length)
   }
 
-  const _cmmds = commandsHelp.map(([cmd, description]) => {
+  const _cmds = commandsHelp.map(([cmd, description]) => {
     const i = indent(maxLength + optionSpaces - cmd.length)
     return foldLines(
       chalk.green(cmd) + i + description,
@@ -28,7 +28,7 @@ export default async function listCommands() {
   }).join('\n')
 
   const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
-  const cmmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmmds
+  const cmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmds
 
-  process.stderr.write(colorize(`${usage}\n\n${cmmds}\n\n`))
+  process.stderr.write(colorize(`${usage}\n\n${cmds}\n\n`))
 }

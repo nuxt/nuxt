@@ -5,7 +5,7 @@
 import Vue, { ComponentOptions } from "vue";
 import { Route } from "vue-router";
 import { MetaInfo } from "vue-meta";
-import { Context, Transition, LoadingObject } from "./index";
+import { Context, Middleware, Transition, LoadingObject } from "./index";
 
 declare module "vue/types/options" {
   interface ComponentOptions<V extends Vue> {
@@ -14,7 +14,7 @@ declare module "vue/types/options" {
     head?: MetaInfo | (() => MetaInfo);
     key?: string | ((to: Route) => string);
     layout?: string | ((ctx: Context) => string);
-    middleware?: string | string[];
+    middleware?: Middleware | Middleware[];
     scrollToTop?: boolean;
     transition?: string | Transition | ((to: Route, from: Route) => string);
     validate?(ctx: Context): Promise<boolean> | boolean;

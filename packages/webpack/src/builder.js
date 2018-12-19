@@ -31,7 +31,7 @@ export class WebpackBundler {
     if (this.context.options.dev) {
       this.mfs = new MFS()
 
-      // TODO: Enable when async FS rquired
+      // TODO: Enable when async FS required
       // this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
       // this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
@@ -85,15 +85,15 @@ export class WebpackBundler {
         'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
-    }
-    for (const ext of Object.keys(styleResources)) {
-      await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-        const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
+      for (const ext of Object.keys(styleResources)) {
+        await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
+          const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
 
-        if (!styleResourceFiles || styleResourceFiles.length === 0) {
-          throw new Error(`Style Resource not found: ${p}`)
-        }
-      }))
+          if (!styleResourceFiles || styleResourceFiles.length === 0) {
+            throw new Error(`Style Resource not found: ${p}`)
+          }
+        }))
+      }
     }
 
     // Configure compilers
@@ -108,7 +108,7 @@ export class WebpackBundler {
       return compiler
     })
 
-    // Warmup perfLoader before build
+    // Warm up perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
       PerfLoader.warmupAll({ dev: options.dev })
@@ -172,7 +172,7 @@ export class WebpackBundler {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
       } else {
-        // Actual error will be printet by webpack
+        // Actual error will be printed by webpack
         throw new Error('Nuxt Build Error')
       }
     }

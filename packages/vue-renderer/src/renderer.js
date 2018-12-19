@@ -282,6 +282,7 @@ export default class VueRenderer {
   renderTemplate(ssr, opts) {
     // Fix problem with HTMLPlugin's minify option (#3392)
     opts.html_attrs = opts.HTML_ATTRS
+    opts.head_attrs = opts.HEAD_ATTRS
     opts.body_attrs = opts.BODY_ATTRS
 
     const fn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
@@ -315,6 +316,7 @@ export default class VueRenderer {
     if (!this.SSR || spa) {
       const {
         HTML_ATTRS,
+        HEAD_ATTRS,
         BODY_ATTRS,
         HEAD,
         BODY_SCRIPTS,
@@ -325,6 +327,7 @@ export default class VueRenderer {
 
       const html = this.renderTemplate(false, {
         HTML_ATTRS,
+        HEAD_ATTRS,
         BODY_ATTRS,
         HEAD,
         APP,
@@ -365,12 +368,12 @@ export default class VueRenderer {
 
     const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
 
-    const cspScriptSrcHashSet = new Set()
+    const cspScriptSrcHashes = []
     if (this.context.options.render.csp) {
       const { hashAlgorithm } = this.context.options.render.csp
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
-      cspScriptSrcHashSet.add(`'${hashAlgorithm}-${hash.digest('base64')}'`)
+      cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
     }
 
     APP += `<script>${serializedSession}</script>`
@@ -382,6 +385,7 @@ export default class VueRenderer {
 
     const html = this.renderTemplate(true, {
       HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
+      HEAD_ATTRS: m.headAttrs.text(),
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,
       APP,
@@ -390,7 +394,7 @@ export default class VueRenderer {
 
     return {
       html,
-      cspScriptSrcHashSet,
+      cspScriptSrcHashes,
       getPreloadFiles: this.getPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected

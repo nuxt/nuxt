@@ -43,11 +43,16 @@ export default () => ({
     },
     scss: {},
     stylus: {},
+    ts: {
+      transpileOnly: true,
+      appendTsSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
   styleResources: {},
   plugins: [],
   terser: {},
+  hardSource: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',

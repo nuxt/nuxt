@@ -5,7 +5,8 @@ import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import ExtractCssChunks from 'extract-css-chunks-webpack-plugin'
+import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
@@ -89,7 +90,7 @@ export default class WebpackBaseConfig {
       fileName = fileName(this.nuxtEnv)
     }
     if (this.options.dev) {
-      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?\]/.exec(fileName)
+      const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
@@ -230,11 +231,16 @@ export default class WebpackBaseConfig {
         })
       },
       {
+        test: /\.ts$/,
+        loader: 'ts-loader',
+        options: this.loaders.ts
+      },
+      {
         test: /\.css$/,
         oneOf: styleLoader.apply('css')
       },
       {
-        test: /\.postcss$/,
+        test: /\.p(ost)?css$/,
         oneOf: styleLoader.apply('postcss')
       },
       {
@@ -344,12 +350,16 @@ export default class WebpackBaseConfig {
 
     // CSS extraction)
     if (this.options.build.extractCSS) {
-      plugins.push(new ExtractCssChunks(Object.assign({
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
         reloadAll: true
       }, this.options.build.extractCSS)))
+    }
+
+    if (this.options.build.hardSource) {
+      plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
     }
 
     return plugins
@@ -383,7 +393,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
@@ -403,7 +413,7 @@ export default class WebpackBaseConfig {
     if (optimization && optimization.minimizer && extendedConfig.devtool) {
       const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
       if (terser) {
-        terser.options.sourceMap = extendedConfig.devtool && /source-?map/.test(extendedConfig.devtool)
+        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
       }
     }
 

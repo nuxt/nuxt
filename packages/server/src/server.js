@@ -84,10 +84,10 @@ export default class Server {
       this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
         const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware[name]) {
+        if (this.devMiddleware && this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }
-        if (this.hotMiddleware[name]) {
+        if (this.hotMiddleware && this.hotMiddleware[name]) {
           await this.hotMiddleware[name](req, res)
         }
         next()

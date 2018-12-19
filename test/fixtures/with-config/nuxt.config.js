@@ -37,6 +37,7 @@ export default {
   extensions: 'ts',
   plugins: [
     '~/plugins/test',
+    '~/plugins/test.plugin',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',
@@ -77,7 +78,7 @@ export default {
       })
     }
   },
-  css: [{ src: '~/assets/app.css' }],
+  css: [{ src: '~/assets/app.pcss' }],
   render: {
     csp: true,
     http2: {

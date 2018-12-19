@@ -22,10 +22,9 @@ export default class Resolver {
 
   resolveModule(path) {
     try {
-      const resolvedPath = Module._resolveFilename(path, {
+      return Module._resolveFilename(path, {
         paths: this.options.modulesDir
       })
-      return resolvedPath
     } catch (error) {
       if (error.code === 'MODULE_NOT_FOUND') {
         return undefined
@@ -70,16 +69,31 @@ export default class Resolver {
       resolvedPath = path
     }
 
-    // Check if resolvedPath exits
+    let isDirectory
+
+    // Check if resolvedPath exits and is not a directory
     if (fs.existsSync(resolvedPath)) {
-      return resolvedPath
+      isDirectory = fs.lstatSync(resolvedPath).isDirectory()
+
+      if (!isDirectory) {
+        return resolvedPath
+      }
     }
 
-    // Check if any resolvedPath.[ext] exists
+    // Check if any resolvedPath.[ext] or resolvedPath/index.[ext] exists
     for (const ext of this.options.extensions) {
-      if (fs.existsSync(resolvedPath + '.' + ext)) {
+      if (!isDirectory && fs.existsSync(resolvedPath + '.' + ext)) {
         return resolvedPath + '.' + ext
       }
+
+      if (isDirectory && fs.existsSync(resolvedPath + '/index.' + ext)) {
+        return resolvedPath + '/index.' + ext
+      }
+    }
+
+    // If there's no index.[ext] we just return the directory path
+    if (isDirectory) {
+      return resolvedPath
     }
 
     // Give up
