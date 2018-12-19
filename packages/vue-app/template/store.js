@@ -7,7 +7,7 @@ let storeData = {}
 
 let files;
 
-(function updateModules() {
+void function updateModules() {
   files = require.context('@/<%= dir.store %>', true, /^\.\/(?!<%= ignorePrefix %>)[^.]+\.(<%= extensions %>)$/)
   const filenames = files.keys()
 
@@ -83,7 +83,7 @@ let files;
       })
     }<% } %>
   }
-})()
+}()
 
 // createStore
 export const createStore = storeData instanceof Function ? storeData : () => {
