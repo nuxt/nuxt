@@ -1,18 +1,18 @@
 
 import minimist from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, normalizeArgv } from './utils'
+import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd = { name: '', usage: '', description: '', options: {} }, argv) {
+  constructor(cmd = { name: '', usage: '', description: '', options: {} }, argv = []) {
     if (!cmd.options) {
       cmd.options = {}
     }
     this.cmd = cmd
 
-    this._argv = argv ? Array.from(argv) : normalizeArgv(process.argv)
+    this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
   }
 
