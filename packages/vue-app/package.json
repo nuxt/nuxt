@@ -6,7 +6,8 @@
   "files": [
     "dist",
     "template",
-    "types/*.d.ts"
+    "types/*.d.ts",
+    "vetur"
   ],
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",

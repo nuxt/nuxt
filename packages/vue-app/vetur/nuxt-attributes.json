@@ -1,0 +1,34 @@
+{
+  "nuxtChildKey": {
+    "description": "This prop will be set to <router-view/>, useful to make transitions inside a dynamic page and different route. Default: `$route.fullPath`"
+  },
+  "to": {
+    "description": "Denotes the target route of the link. When clicked, the value of the to prop will be passed to router.push() internally, so the value can be either a string or a location descriptor object."
+  },
+  "no-prefetch": {
+    "description": "Avoid prefetching route target."
+  },
+  "replace": {
+    "type": "boolean",
+    "description": "Setting replace prop will call router.replace() instead of router.push() when clicked, so the navigation will not leave a history record."
+  },
+  "append": {
+    "type": "boolean",
+    "description": "Setting append prop always appends the relative path to the current path. For example, assuming we are navigating from /a to a relative link b, without append we will end up at /b, but with append we will end up at /a/b."
+  },
+  "tag": {
+    "description": "Specify which tag to render to, and it will still listen to click events for navigation."
+  },
+  "active-class": {
+    "description": "Configure the active CSS class applied when the link is active."
+  },
+  "exact": {
+    "description": "The default active class matching behavior is inclusive match. For example, <router-link to=\"/a\"> will get this class applied as long as the current path starts with /a/ or is /a.\nOne consequence of this is that <router-link to=\"/\"> will be active for every route! To force the link into \"exact match mode\", use the exact prop: <router-link to=\"/\" exact>"
+  },
+  "event": {
+    "description": "Specify the event(s) that can trigger the link navigation."
+  },
+  "exact-active-class": {
+    "description": "Configure the active CSS class applied when the link is active with exact match. Note the default value can also be configured globally via the linkExactActiveClass router constructor option."
+  }
+}
