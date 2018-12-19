@@ -20,7 +20,8 @@
       "active-class",
       "exact",
       "event",
-      "exact-active-class"
+      "exact-active-class",
+      "no-prefetch"
     ],
     "description": "Component for routing. Same as <router-link> now."
   },
@@ -33,7 +34,8 @@
       "active-class",
       "exact",
       "event",
-      "exact-active-class"
+      "exact-active-class",
+      "no-prefetch"
     ],
     "description": "Component for routing. Same as <router-link> now."
   },
