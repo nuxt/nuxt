@@ -22,8 +22,7 @@ export default async function run(_argv) {
 
   // Try internal command
   if (cmd) {
-    argv.splice(0, 1)
-    return NuxtCommand.run(cmd, argv)
+    return NuxtCommand.run(cmd, argv.slice(1))
   }
 
   // Try external command
