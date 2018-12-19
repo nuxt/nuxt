@@ -5,6 +5,9 @@
   "to": {
     "description": "Denotes the target route of the link. When clicked, the value of the to prop will be passed to router.push() internally, so the value can be either a string or a location descriptor object."
   },
+  "no-prefetch": {
+    "description": "Avoid prefetching route target."
+  },
   "replace": {
     "type": "boolean",
     "description": "Setting replace prop will call router.replace() instead of router.push() when clicked, so the navigation will not leave a history record."
