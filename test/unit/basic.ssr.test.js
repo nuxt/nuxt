@@ -70,8 +70,10 @@ describe('basic ssr', () => {
 
   test('/store', async () => {
     const { html } = await nuxt.server.renderRoute('/store')
-    expect(html).toContain('<h1>Vuex Nested Modules</h1>')
-    expect(html).toContain('<p>1</p>')
+    expect(html).toContain('<h1>foo/bar/baz: Vuex Nested Modules</h1>')
+    expect(html).toContain('<h2>index/counter: 1</h2>')
+    expect(html).toContain('<h3>foo/blarg/getVal: 4</h3>')
+    expect(html).toContain('<h4>foo/bab/getBabVal: 10</h4>')
   })
 
   test('/head', async () => {
