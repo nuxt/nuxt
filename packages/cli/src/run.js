@@ -1,48 +1,43 @@
-import consola from 'consola'
+import fs from 'fs'
 import execa from 'execa'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
-import { normalizeArgv, parseArgv, plainError } from './utils'
 
-export default async function run(customCommand) {
+export default async function run(_argv) {
   // Read from process.argv
-  const argv = normalizeArgv(process.argv)
+  const argv = _argv || Array.from(process.argv.slice(2))
 
-  // Setup env
-  setup({
-    dev: argv[0] === 'dev' || argv[0] === 'default'
-  })
+  // Check for internal command
+  let cmd = await getCommand(argv[0])
 
-  // Run customCommand if provided
-  if (customCommand) {
-    if (typeof customCommand === 'string') {
-      argv[0] = customCommand
-    } else {
-      return NuxtCommand.run(customCommand)
-    }
+  // Matching `nuxt` or `nuxt [dir]` or `nuxt -*` for `nuxt dev` shortcut
+  if (!cmd && (!argv[0] || argv[0][0] === '-' || fs.existsSync(argv[0]))) {
+    argv.unshift('dev')
+    cmd = await getCommand('dev')
   }
 
+  // Setup env
+  setup({ dev: argv[0] === 'dev' })
+
   // Try internal command
-  const cmd = await getCommand(argv[0])
   if (cmd) {
-    return NuxtCommand.run(cmd)
+    argv.splice(0, 1)
+    return NuxtCommand.run(cmd, argv)
   }
 
   // Try external command
-  const external = parseArgv(argv)
   try {
-    await execa(`nuxt-${external.command}`, external.opts, {
+    await execa(`nuxt-${argv[0]}`, argv.slice(1), {
       stdout: process.stdout,
       stderr: process.stderr,
       stdin: process.stdin
     })
-    process.exit(0)
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw plainError(`Command not found: ${argv[0]}`)
+      throw String(`Command not found: nuxt-${argv[0]}`)
     } else {
-      throw plainError(`Failed to run command \`${argv[0]}\`:\n${error}`)
+      throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)
     }
   }
 }
