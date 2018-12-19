@@ -222,6 +222,8 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
+    await this.resolvePlugins()
+
     // Start bundle build: webpack, rollup, parcel...
     await this.bundleBuilder.build()
 
@@ -239,8 +241,6 @@ export default class Builder {
 
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
-
-    await this.resolvePlugins()
 
     // -- Templates --
     let templatesFiles = Array.from(this.template.templatesFiles)

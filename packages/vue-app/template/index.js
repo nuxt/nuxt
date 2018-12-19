@@ -12,7 +12,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 
 /* Plugins */
 <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= plugin.src %> (mode: '<%= plugin.mode %>')
+<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %> (mode: '<%= plugin.mode %>')
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
