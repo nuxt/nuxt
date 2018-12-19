@@ -1,5 +1,4 @@
 const commands = {
-  default: () => import('./dev'),
   start: () => import('./start'),
   dev: () => import('./dev'),
   build: () => import('./build'),
