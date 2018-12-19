@@ -42,11 +42,4 @@ describe('cli', () => {
     process.argv = argv
     process.env.NODE_ENV = nodeEnv
   })
-
-  test('catches fatal error', async () => {
-    getCommand.mockImplementationOnce(() => Promise.reject(new Error('Command Error')))
-    await run()
-
-    expect(consola.fatal).toHaveBeenCalledWith(new Error('Command Error'))
-  })
 })
