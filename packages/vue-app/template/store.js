@@ -72,8 +72,6 @@ let files;
       module[name].namespaced = true
     }
     // If the environment supports hot reloading...
-    console.log("BEFORE", storeData.modules)
-    console.log('-------------'.repeat(50))
     <% if (isDev) { %>
     if (process.client && module.hot) {
       // Whenever any Vuex module is updated...
@@ -81,7 +79,6 @@ let files;
         // Update `root.modules` with the latest definitions.
         updateModules()
         // Trigger a hot update in the store.
-        console.log("HMR", storeData.modules)
         window.<%= globals.nuxt %>.$store.hotUpdate({ modules: storeData.modules })
       })
     }<% } %>
