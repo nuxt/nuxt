@@ -6,7 +6,7 @@ import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd = { name: '', usage: '', description: '', options: {} }, argv = []) {
+  constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
     if (!cmd.options) {
       cmd.options = {}
     }
