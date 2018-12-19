@@ -1,4 +1,3 @@
-import { consola } from '../utils'
 import { run } from '../../src'
 import getCommand from '../../src/commands'
 
