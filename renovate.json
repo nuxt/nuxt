@@ -4,5 +4,8 @@
   ],
   "baseBranches": [
     "dev"
+  ],
+  "ignoreDeps": [
+    "thread-loader"
   ]
 }
