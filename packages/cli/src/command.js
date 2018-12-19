@@ -28,12 +28,12 @@ export default class NuxtCommand {
   }
 
   run() {
-    if (this.argv.help || this.argv.h) {
+    if (this.argv.help) {
       this.showHelp()
       return Promise.resolve()
     }
 
-    if (this.argv.version || this.argv.v) {
+    if (this.argv.version) {
       this.showVersion()
       return Promise.resolve()
     }
