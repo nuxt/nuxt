@@ -72,7 +72,9 @@ let files;
       module[name].namespaced = true
     }
     // If the environment supports hot reloading...
-    if (module.hot) {
+
+    <% if (isDev) { %>
+    if (process.client && module.hot) {
       // Whenever any Vuex module is updated...
       module.hot.accept(files.id, () => {
         // Update `root.modules` with the latest definitions.
@@ -80,7 +82,7 @@ let files;
         // Trigger a hot update in the store.
         window.<%= globals.nuxt %>.$store.hotUpdate({ modules: storeData.modules })
       })
-    }
+    }<% } %>
   }
 })()
 
