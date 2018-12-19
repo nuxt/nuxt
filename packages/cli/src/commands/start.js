@@ -10,8 +10,6 @@ export default {
     ...server
   },
   async run(cmd) {
-    const argv = cmd.getArgv()
-
     // Create production build when calling `nuxt build`
     const nuxt = await cmd.getNuxt(
       await cmd.getNuxtConfig({ dev: false, _start: true })
