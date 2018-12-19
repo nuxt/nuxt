@@ -463,10 +463,10 @@ export function defineAlias(src, target, prop, opts = {}) {
 export function serializeFunction(func) {
   let open = false
   return serialize(func)
-    .replace(/^(\s*):(\w+)\(/gm, (_, spaces) => {
+    .replace(/^(\s*):(?!(?:if|for|while|switch)\s*\()\w+)\(/gm, (_, spaces) => {
       return `${spaces}:function(`
     })
-    .replace(/^(\s*)(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
+    .replace(/^(\s*)(?!(if)|(for)|(while)|(switch))(\w+)\s*\((.*?)\)\s*\{/gm, (_, spaces, name, args) => {
       if (open) {
         return `${spaces}${name}:function(${args}) {`
       } else {
