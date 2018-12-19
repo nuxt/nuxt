@@ -21,7 +21,7 @@ void function updateModules() {
   // If store is not an exported method = modules store
   if (typeof storeData !== 'function') {
     // Store modules
-    if (!storeData.modules || module.hot) {
+    if (!storeData.modules) {
       storeData.modules = {}
     }
 
@@ -79,7 +79,7 @@ void function updateModules() {
         // Update `root.modules` with the latest definitions.
         updateModules()
         // Trigger a hot update in the store.
-        window.<%= globals.nuxt %>.$store.hotUpdate({ modules: storeData.modules })
+        window.<%= globals.nuxt %>.$store.hotUpdate(storeData)
       })
     }<% } %>
   }
