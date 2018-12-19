@@ -21,7 +21,7 @@ void function updateModules() {
   // If store is not an exported method = modules store
   if (typeof storeData !== 'function') {
     // Store modules
-    if (!storeData.modules || module.hot) {
+    if (!storeData.modules) {
       storeData.modules = {}
     }
 
