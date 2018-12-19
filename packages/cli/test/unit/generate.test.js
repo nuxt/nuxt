@@ -8,7 +8,6 @@ describe('generate', () => {
     jest.spyOn(process, 'exit').mockImplementation(code => code)
   })
 
-  afterAll(() => process.exit.mockRestore())
   afterEach(() => jest.resetAllMocks())
 
   test('has run function', () => {
