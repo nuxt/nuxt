@@ -1,4 +1,7 @@
 #!/usr/bin/env node
 
 require('../dist/cli.js').run()
-  .catch(() => process.exit(1))
+  .catch((error) => {
+    require('consola').fatal(error)
+    process.exit(1)
+  })

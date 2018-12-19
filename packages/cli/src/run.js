@@ -5,7 +5,7 @@ import setup from './setup'
 import getCommand from './commands'
 import { normalizeArgv, parseArgv, plainError } from './utils'
 
-async function _run(customCommand) {
+export default async function run(customCommand) {
   // Read from process.argv
   const argv = normalizeArgv(process.argv)
 
@@ -44,14 +44,5 @@ async function _run(customCommand) {
     } else {
       throw plainError(`Failed to run command \`${argv[0]}\`:\n${error}`)
     }
-  }
-}
-
-export default async function run(...args) {
-  try {
-    await _run(...args)
-  } catch (error) {
-    consola.fatal(error)
-    process.exit(1)
   }
 }
