@@ -50,12 +50,9 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate)
-    const args = ['generate', '.', '--devtools']
-    const argv = cmd.getArgv(args)
-    argv._ = ['.']
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools'])
 
-    const options = await cmd.getNuxtConfig(argv)
+    const options = await cmd.getNuxtConfig()
 
     await cmd.run()
 
@@ -68,10 +65,9 @@ describe('generate', () => {
     mockGetNuxt()
     mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate)
-    const args = ['generate', '.', '--m']
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
 
-    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+    const options = await cmd.getNuxtConfig()
 
     await cmd.run()
 

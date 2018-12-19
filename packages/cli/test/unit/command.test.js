@@ -25,20 +25,16 @@ describe('cli/command', () => {
   })
 
   test('parses args', () => {
-    const cmd = new Command({ options: { ...common, ...server } })
+    const argv = ['-c', 'test-file', '-s', '-p', '3001']
+    const cmd = new Command({ options: { ...common, ...server } }, argv)
 
-    let args = ['-c', 'test-file', '-s', '-p', '3001']
-    let argv = cmd.getArgv(args)
+    expect(cmd.argv['config-file']).toBe(args[1])
+    expect(cmd.argv.spa).toBe(true)
+    expect(cmd.argv.universal).toBe(false)
+    expect(cmd.argv.port).toBe('3001')
 
-    expect(argv['config-file']).toBe(args[1])
-    expect(argv.spa).toBe(true)
-    expect(argv.universal).toBe(false)
-    expect(argv.port).toBe('3001')
-
-    args = ['--no-build']
-    argv = cmd.getArgv(args)
-
-    expect(argv.build).toBe(false)
+    const cmd2 = new Command({ options: { ...common, ...server } }, ['--no-build'])
+    expect(cmd2.argv.build).toBe(false)
   })
 
   test('prints version automatically', async () => {
@@ -58,13 +54,9 @@ describe('cli/command', () => {
   })
 
   test('returns nuxt config', async () => {
-    const cmd = new Command({ options: allOptions })
+    const cmd = new Command({ options: allOptions }, ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H'])
 
-    const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
-    const argv = cmd.getArgv(args)
-    argv._ = ['.']
-
-    const options = await cmd.getNuxtConfig(argv, { testOption: true })
+    const options = await cmd.getNuxtConfig({ testOption: true })
 
     expect(options.testOption).toBe(true)
     expect(options.server.port).toBe(3001)
@@ -115,29 +107,17 @@ describe('cli/command', () => {
 
   test('show version prints to stdout and exits', () => {
     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
-
     const cmd = new Command()
     cmd.showVersion()
-
     expect(process.stdout.write).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
-
     process.stdout.write.mockRestore()
-    process.exit.mockRestore()
   })
 
   test('show help prints to stdout and exits', () => {
     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
-
     const cmd = new Command()
     cmd.showHelp()
-
     expect(process.stdout.write).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
-
     process.stdout.write.mockRestore()
-    process.exit.mockRestore()
   })
 })

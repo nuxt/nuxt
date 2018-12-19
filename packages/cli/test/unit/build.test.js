@@ -50,12 +50,9 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build)
-    const args = ['build', '.', '--devtools']
-    const argv = cmd.getArgv(args)
-    argv._ = ['.']
+    const cmd = NuxtCommand.from(build, ['build', '.', '--devtools'])
 
-    const options = await cmd.getNuxtConfig(argv)
+    const options = await cmd.getNuxtConfig(cmd.argv)
 
     await cmd.run()
 
@@ -69,10 +66,9 @@ describe('build', () => {
     })
     mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build)
-    const args = ['build', '.', '--m']
+    const cmd = NuxtCommand.from(build, ['build', '.', '--m'])
 
-    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+    const options = await cmd.getNuxtConfig()
 
     await cmd.run()
 
