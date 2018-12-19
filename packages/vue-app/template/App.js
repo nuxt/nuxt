@@ -66,10 +66,7 @@ export default {
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
     if (typeof window !== 'undefined') {
-      window.<%= globals.nuxt %> = this
-      <% if (globals.nuxt !== '$nuxt') { %>
-      window.$nuxt = { $root: { constructor: this.$root.constructor } }
-      <% } %>
+      window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
