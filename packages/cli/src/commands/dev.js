@@ -27,7 +27,7 @@ export default {
 
   async _startDev(cmd, argv) {
     // Load config
-    const config = await cmd.getNuxtConfig(argv, { dev: true })
+    const config = await cmd.getNuxtConfig({ dev: true })
 
     // Initialize nuxt instance
     const nuxt = await cmd.getNuxt(config)

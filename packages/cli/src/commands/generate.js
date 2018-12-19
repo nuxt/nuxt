@@ -40,7 +40,7 @@ export default {
 
     const generator = await cmd.getGenerator(
       await cmd.getNuxt(
-        await cmd.getNuxtConfig(argv, { dev: false })
+        await cmd.getNuxtConfig({ dev: false })
       )
     )
 

@@ -16,15 +16,15 @@ export default class NuxtCommand {
     this._parsedArgv = null // Lazy evaluate
   }
 
-  static run(cmd) {
-    return NuxtCommand.from(cmd).run()
+  static run(cmd, argv) {
+    return NuxtCommand.from(cmd, argv).run()
   }
 
-  static from(options) {
+  static from(options, argv) {
     if (options instanceof NuxtCommand) {
       return options
     }
-    return new NuxtCommand(options)
+    return new NuxtCommand(options, argv)
   }
 
   run() {
@@ -65,12 +65,12 @@ export default class NuxtCommand {
     return this.argv // Backward compatibility
   }
 
-  async getNuxtConfig(argv, extraOptions) {
-    const config = await loadNuxtConfig(argv)
+  async getNuxtConfig(extraOptions) {
+    const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions || {})
 
     for (const name of Object.keys(this.cmd.options)) {
-      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, argv)
+      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
 
     return options

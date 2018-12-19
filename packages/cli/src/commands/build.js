@@ -54,7 +54,7 @@ export default {
 
     // Create production build when calling `nuxt build` (dev: false)
     const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false })
+      await cmd.getNuxtConfig({ dev: false })
     )
 
     let builderOrGenerator

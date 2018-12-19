@@ -14,7 +14,7 @@ export default {
 
     // Create production build when calling `nuxt build`
     const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false, _start: true })
+      await cmd.getNuxtConfig({ dev: false, _start: true })
     )
 
     // Listen and show ready banner
