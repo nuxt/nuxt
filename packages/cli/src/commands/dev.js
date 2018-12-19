@@ -13,7 +13,7 @@ export default {
   },
 
   async run(cmd) {
-    const argv = cmd.getArgv()
+    const argv = cmd.argv
     await this.startDev(cmd, argv)
   },
 

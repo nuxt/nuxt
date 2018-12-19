@@ -61,10 +61,6 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  getArgv() {
-    return this.argv // Backward compatibility
-  }
-
   async getNuxtConfig(extraOptions) {
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions || {})
