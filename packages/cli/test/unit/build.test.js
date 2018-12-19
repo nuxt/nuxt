@@ -41,7 +41,6 @@ describe('build', () => {
     await NuxtCommand.from(build).run()
 
     expect(generate).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
   })
 
   test('build with devtools', async () => {
@@ -73,14 +72,5 @@ describe('build', () => {
     await cmd.run()
 
     expect(options.modern).toBe(true)
-  })
-
-  test('catches error', async () => {
-    mockGetNuxt({ mode: 'universal' })
-    mockGetBuilder(Promise.reject(new Error('Builder Error')))
-
-    await NuxtCommand.from(build).run()
-
-    expect(consola.fatal).toHaveBeenCalledWith(new Error('Builder Error'))
   })
 })

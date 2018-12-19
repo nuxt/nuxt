@@ -20,11 +20,11 @@ export default class NuxtCommand {
     return NuxtCommand.from(cmd, argv).run()
   }
 
-  static from(options, argv) {
-    if (options instanceof NuxtCommand) {
-      return options
+  static from(cmd, argv) {
+    if (cmd instanceof NuxtCommand) {
+      return cmd
     }
-    return new NuxtCommand(options, argv)
+    return new NuxtCommand(cmd, argv)
   }
 
   run() {

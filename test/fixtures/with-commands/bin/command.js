@@ -1,9 +1,9 @@
 #!/usr/local/bin/node -r esm
 
 import consola from 'consola'
-import { NuxtCommand, run } from '@nuxt/cli'
+import { NuxtCommand } from '@nuxt/cli'
 
-const cmd = NuxtCommand.from({
+NuxtCommand.run({
   name: 'command',
   description: 'My Custom Command',
   usage: 'command <foobar>',
@@ -15,14 +15,6 @@ const cmd = NuxtCommand.from({
     }
   },
   run(cmd) {
-    try {
-      const argv = cmd.getArgv()
-      consola.info(argv._)
-      process.exit(0)
-    } catch (err) {
-      consola.fatal(err)
-    }
+    consola.info(cmd.argv)
   }
 })
-
-run(cmd)

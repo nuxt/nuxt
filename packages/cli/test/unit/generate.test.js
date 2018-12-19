@@ -28,22 +28,12 @@ describe('generate', () => {
 
   test('doesnt build with no-build', async () => {
     mockGetNuxt()
-    const getArgv = Command.prototype.getArgv
-    Command.prototype.getArgv = jest.fn().mockImplementationOnce(() => {
-      return {
-        '_': ['.'],
-        rootDir: '.',
-        'config-file': 'nuxt.config.js',
-        build: false
-      }
-    })
     const generator = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.from(generate).run()
+    await NuxtCommand.run(generate, ['generate', '.', '--no-build'])
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
-    Command.prototype.getArgv = getArgv
   })
 
   test('build with devtools', async () => {
@@ -72,14 +62,5 @@ describe('generate', () => {
     await cmd.run()
 
     expect(options.modern).toBe('client')
-  })
-
-  test('catches error', async () => {
-    mockGetNuxt()
-    mockGetGenerator(Promise.reject(new Error('Generator Error')))
-
-    await NuxtCommand.from(generate).run()
-
-    expect(consola.fatal).toHaveBeenCalledWith(new Error('Generator Error'))
   })
 })
