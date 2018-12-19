@@ -78,8 +78,10 @@ describe('basic browser', () => {
   test('/store', async () => {
     await page.nuxt.navigate('/store')
 
-    expect(await page.$text('h1')).toBe('Vuex Nested Modules')
-    expect(await page.$text('p')).toBe('1')
+    expect(await page.$text('h1')).toBe('foo/bar/baz: Vuex Nested Modules')
+    expect(await page.$text('h2')).toBe('index/counter: 1')
+    expect(await page.$text('h3')).toBe('foo/blarg/getVal: 4')
+    expect(await page.$text('h4')).toBe('foo/bab/getBabVal: 10')
   })
 
   test('/head', async () => {
