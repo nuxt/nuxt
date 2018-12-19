@@ -37,6 +37,7 @@ export default {
   extensions: 'ts',
   plugins: [
     '~/plugins/test',
+    '~/plugins/test.plugin',
     { src: '~/plugins/only-client.js', ssr: false }
   ],
   loading: '~/components/loading',
