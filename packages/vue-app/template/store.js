@@ -78,7 +78,7 @@ let files;
         // Update `root.modules` with the latest definitions.
         updateModules()
         // Trigger a hot update in the store.
-        require('./client.js').store.hotUpdate({ modules: storeData.modules })
+        window.<%= globals.nuxt %>.$store.hotUpdate({ modules: storeData.modules })
       })
     }
   }
