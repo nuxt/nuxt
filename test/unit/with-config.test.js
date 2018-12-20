@@ -90,6 +90,9 @@ describe('with-config', () => {
     expect(html).toContain('<h1>I have custom configurations</h1>')
 
     expect(window.__test_plugin).toBe(true)
+    expect(window.__test_plugin_ext).toBe(true)
+    expect(window.__test_plugin_client).toBe('test_plugin_client')
+    expect(window.__test_plugin_server).toBeUndefined()
   })
 
   test('/test/about (custom layout)', async () => {

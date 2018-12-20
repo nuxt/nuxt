@@ -1,4 +1,3 @@
-import consola from 'consola'
 import { common } from '../options'
 
 export default {
@@ -50,37 +49,17 @@ export default {
     }
   },
   async run(cmd) {
-    const argv = cmd.getArgv()
+    const config = await cmd.getNuxtConfig({ dev: false })
+    const nuxt = await cmd.getNuxt(config)
 
-    // Create production build when calling `nuxt build` (dev: false)
-    const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false })
-    )
-
-    let builderOrGenerator
-    if (nuxt.options.mode !== 'spa' || argv.generate === false) {
+    if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
       // Build only
-      builderOrGenerator = (await cmd.getBuilder(nuxt)).build()
+      const builder = await cmd.getBuilder(nuxt)
+      await builder.build()
     } else {
       // Build + Generate for static deployment
-      builderOrGenerator = (await cmd.getGenerator(nuxt)).generate({
-        build: true
-      })
+      const generator = await cmd.getGenerator(nuxt)
+      await generator.generate({ build: true })
     }
-
-    return builderOrGenerator
-      .then(() => {
-        // In analyze mode wait for plugin
-        // emitting assets and opening browser
-        if (
-          nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object'
-        ) {
-          return
-        }
-
-        process.exit(0)
-      })
-      .catch(err => consola.fatal(err))
   }
 }

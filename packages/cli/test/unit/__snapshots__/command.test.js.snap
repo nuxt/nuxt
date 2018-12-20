@@ -11,32 +11,12 @@ exports[`cli/command builds help text 1`] = `
     --universal, -u    Launch in Universal mode (default)
     --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
     --modern, -m       Build/Start app for modern browsers, e.g. server, client and false
-    --version          Display the Nuxt version
+    --version, -v      Display the Nuxt version
     --help, -h         Display this message
     --port, -p         Port number on which to start the application
     --hostname, -H     Hostname on which to start the application
     --unix-socket, -n  Path to a UNIX socket
     --foo              very long option that is not longer than the terminal width and should not wrap to the next line
-
-"
-`;
-
-exports[`cli/command loads command from name 1`] = `
-"  Usage: nuxt dev <dir> [options]
-
-  Start the application in development mode (e.g. hot-code reloading, error reporting)
-
-  Options:
-
-    --spa, -s          Launch in SPA mode
-    --universal, -u    Launch in Universal mode (default)
-    --config-file, -c  Path to Nuxt.js config file (default: nuxt.config.js)
-    --modern, -m       Build/Start app for modern browsers, e.g. server, client and false
-    --version          Display the Nuxt version
-    --help, -h         Display this message
-    --port, -p         Port number on which to start the application
-    --hostname, -H     Hostname on which to start the application
-    --unix-socket, -n  Path to a UNIX socket
 
 "
 `;

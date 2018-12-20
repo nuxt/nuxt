@@ -39,6 +39,7 @@ export default class SPAMetaRenderer {
 
     meta = {
       HTML_ATTRS: '',
+      HEAD_ATTRS: '',
       BODY_ATTRS: '',
       HEAD: '',
       BODY_SCRIPTS: ''
@@ -49,6 +50,9 @@ export default class SPAMetaRenderer {
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
+
+    // HEAD_ATTRS
+    meta.HEAD_ATTRS = m.headAttrs.text()
 
     // BODY_ATTRS
     meta.BODY_ATTRS = m.bodyAttrs.text()

@@ -28,6 +28,7 @@ export default {
     }
   },
   version: {
+    alias: 'v',
     type: 'boolean',
     description: 'Display the Nuxt version'
   },

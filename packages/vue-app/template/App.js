@@ -18,7 +18,7 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 
 export default {
   <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
-  head: <%= serialize(head).replace(/:\w+\(/gm, ':function(').replace('head(', 'function(') %>,
+  head: <%= serializeFunction(head) %>,
   <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
@@ -66,10 +66,7 @@ export default {
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
     if (typeof window !== 'undefined') {
-      window.<%= globals.nuxt %> = this
-      <% if (globals.nuxt !== '$nuxt') { %>
-      window.$nuxt = { $root: { constructor: this.$root.constructor } }
-      <% } %>
+      window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error

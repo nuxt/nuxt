@@ -14,7 +14,7 @@ import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 
-import devalue from '@nuxtjs/devalue'
+import devalue from '@nuxt/devalue'
 
 import {
   r,
@@ -23,6 +23,7 @@ import {
   createRoutes,
   relativeTo,
   waitFor,
+  serializeFunction,
   determineGlobals,
   stripWhitespace,
   isString
@@ -43,6 +44,8 @@ export default class Builder {
       custom: null,
       restart: null
     }
+
+    this.supportedExtensions = ['vue', 'js', 'ts']
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>
@@ -107,9 +110,19 @@ export default class Builder {
           /[^a-zA-Z?\d\s:]/g,
           ''
         )
+
+        if (p.ssr === false) {
+          p.mode = 'client'
+        } else if (p.mode === undefined) {
+          p.mode = 'all'
+        } else if (!['client', 'server'].includes(p.mode)) {
+          consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'`)
+          p.mode = 'all'
+        }
+
         return {
           src: this.nuxt.resolver.resolveAlias(p.src),
-          ssr: p.ssr !== false,
+          mode: p.mode,
           name: 'nuxt_plugin_' + pluginBaseName + '_' + hash(p.src)
         }
       }),
@@ -120,7 +133,7 @@ export default class Builder {
   resolvePlugins() {
     // Check plugins exist then set alias to their real path
     return Promise.all(this.plugins.map(async (p) => {
-      const ext = path.extname(p.src) ? '' : '{.+([^.]),/index.+([^.])}'
+      const ext = '{?(.+([^.])),/index.+([^.])}'
       const pluginFiles = await glob(`${p.src}${ext}`)
 
       if (!pluginFiles || pluginFiles.length === 0) {
@@ -131,6 +144,15 @@ export default class Builder {
           additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
+
+      const modes = ['client', 'server']
+      const modernPattern = new RegExp(`\\.(${modes.join('|')})\\.\\w+$`)
+      pluginFiles[0].replace(modernPattern, (_, mode) => {
+        // mode in nuxt.config has higher priority
+        if (p.mode === 'all' && modes.includes(mode)) {
+          p.mode = mode
+        }
+      })
 
       p.src = this.relativeToBuild(p.src)
     }))
@@ -265,14 +287,14 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{vue,js}`, {
+      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
-          .replace(/\.(vue|js)$/, '')
+          .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (name === 'error') {
           if (!templateVars.components.ErrorPage) {
             templateVars.components.ErrorPage = this.relativeToBuild(
@@ -303,16 +325,18 @@ export default class Builder {
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes(
         ['index.vue'],
-        this.template.templatesDir + '/pages'
+        this.template.templatesDir + '/pages',
+        '',
+        this.options.router.routeNameSplitter
       )
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-        ; (await glob(`${this.options.dir.pages}/**/*.{vue,js}`, {
+        ; (await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
-        const key = f.replace(/\.(js|vue)$/, '')
+        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (/\.vue$/.test(f) || !files[key]) {
           files[key] = f.replace(/(['"])/g, '\\$1')
         }
@@ -320,7 +344,8 @@ export default class Builder {
       templateVars.router.routes = createRoutes(
         Object.values(files),
         this.options.srcDir,
-        this.options.dir.pages
+        this.options.dir.pages,
+        this.options.router.routeNameSplitter
       )
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
@@ -434,6 +459,7 @@ export default class Builder {
     const templateOptions = {
       imports: {
         serialize,
+        serializeFunction,
         devalue,
         hash,
         r,
@@ -502,20 +528,19 @@ export default class Builder {
 
   watchClient() {
     const src = this.options.srcDir
+    const rGlob = dir => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
 
     let patterns = [
       r(src, this.options.dir.layouts),
       r(src, this.options.dir.store),
       r(src, this.options.dir.middleware),
-      r(src, `${this.options.dir.layouts}/*.{vue,js}`),
-      r(src, `${this.options.dir.layouts}/**/*.{vue,js}`)
+      ...rGlob(this.options.dir.layouts)
     ]
 
     if (this._nuxtPages) {
       patterns.push(
         r(src, this.options.dir.pages),
-        r(src, `${this.options.dir.pages}/*.{vue,js}`),
-        r(src, `${this.options.dir.pages}/**/*.{vue,js}`)
+        ...rGlob(this.options.dir.pages)
       )
     }
 

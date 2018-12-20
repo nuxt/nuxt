@@ -3,16 +3,50 @@ import Router from 'vue-router'
 import { interopDefault } from './utils'
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
-  let res = ''
+  let res = '', resMap = ''
   const baseIndent = tab.repeat(indentCount)
   const firstIndent = '\n' + tab.repeat(indentCount + 1)
   const nextIndent = ',' + firstIndent
   routes.forEach((route, i) => {
-    route._name = '_' + hash(route.component)
-    components.push({ _name: route._name, component: route.component, name: route.name, chunkName: route.chunkName })
+    // If need to handle named views
+    if (route.components) {
+      let _name = '_' + hash(route.components.default)
+      if (splitChunks.pages) {
+        resMap += `${firstIndent}${tab}default: ${_name}`
+      } else {
+        resMap += `${firstIndent}${tab}default: () => ${_name}.default || ${_name}`
+      }
+      for (const k in route.components) {
+        _name = '_' + hash(route.components[k])
+        const component = { _name, component: route.components[k] }
+        if (k === 'default') {
+          components.push({
+            ...component,
+            name: route.name,
+            chunkName: route.chunkName
+          })
+        } else {
+          components.push({
+            ...component,
+            name: `${route.name}-${k}`,
+            chunkName: route.chunkNames[k]
+          })
+          if (splitChunks.pages) {
+            resMap += `${nextIndent}${tab}${k}: ${_name}`
+          } else {
+            resMap += `${nextIndent}${tab}${k}: () => ${_name}.default || ${_name}`
+          }
+        }
+      }
+      route.component = false
+    } else {
+      route._name = '_' + hash(route.component)
+      components.push({ _name: route._name, component: route.component, name: route.name, chunkName: route.chunkName })
+    }
     // @see: https://router.vuejs.org/api/#router-construction-options
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
+    res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + (splitChunks.pages ? route._name : `() => ${route._name}.default || ${route._name}`) : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
@@ -49,7 +83,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 Vue.use(Router)
 
 <% if (router.scrollBehavior) { %>
-const scrollBehavior = <%= serialize(router.scrollBehavior).replace(/scrollBehavior\s*\(/, 'function(').replace('function function', 'function') %>
+const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>
 <% } else { %>
 if (process.client) {
   window.history.scrollRestoration = 'manual'
@@ -59,8 +93,11 @@ const scrollBehavior = function (to, from, savedPosition) {
   // will retain current scroll position.
   let position = false
 
-  // if no children detected
-  if (to.matched.length < 2) {
+  // if no children detected and scrollToTop is not explicitly disabled
+  if (
+    to.matched.length < 2 &&
+    to.matched.every(r => r.components.default.options.scrollToTop !== false)
+  ) {
     // scroll to the top of the page
     position = { x: 0, y: 0 }
   } else if (to.matched.some(r => r.components.default.options.scrollToTop)) {
@@ -109,8 +146,8 @@ export function createRouter() {
     <%= isTest ? '/* eslint-disable quotes */' : '' %>
     routes: [<%= _routes %>],
     <%= isTest ? '/* eslint-enable quotes */' : '' %>
-    <% if (router.parseQuery) { %>parseQuery: <%= serialize(router.parseQuery).replace('parseQuery(', 'function(') %>,<% } %>
-    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serialize(router.stringifyQuery).replace('stringifyQuery(', 'function(') %>,<% } %>
+    <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
+    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>
   })
 }

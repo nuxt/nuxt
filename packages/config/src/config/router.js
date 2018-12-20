@@ -2,6 +2,7 @@ export default () => ({
   mode: 'history',
   base: '/',
   routes: [],
+  routeNameSplitter: '-',
   middleware: [],
   linkActiveClass: 'nuxt-link-active',
   linkExactActiveClass: 'nuxt-link-exact-active',

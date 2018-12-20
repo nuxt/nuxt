@@ -231,6 +231,11 @@ export default class WebpackBaseConfig {
         })
       },
       {
+        test: /\.ts$/,
+        loader: 'ts-loader',
+        options: this.loaders.ts
+      },
+      {
         test: /\.css$/,
         oneOf: styleLoader.apply('css')
       },
@@ -388,7 +393,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
