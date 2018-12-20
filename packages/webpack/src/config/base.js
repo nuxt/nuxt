@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
@@ -10,7 +11,6 @@ import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
-import fs from 'fs'
 
 import { isUrl, urlJoin, tryRequire } from '@nuxt/common'
 
@@ -365,7 +365,7 @@ export default class WebpackBaseConfig {
 
     if (!this.isServer && this.options.build.useForkTsChecker) {
       const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin'
-      , 'You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+        , 'You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       if (ForkTsCheckerWebpackPlugin) {
         plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
           vue: true,

@@ -1,5 +1,5 @@
-import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import path from 'path'
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 export default function typeScriptModule() {
   // Add .ts extension for store, middleware and more

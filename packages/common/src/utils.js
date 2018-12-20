@@ -483,9 +483,9 @@ serializeFunction.assignmentRE = /^(\s*):(\w+)\(/gm
 export function tryRequire(pkg, notFoundMessage) {
   try {
     return require(pkg)
-  }
-  catch (error) {
+  } catch (error) {
     if (error.code === 'MODULE_NOT_FOUND') {
+      // eslint-disable-next-line no-console
       console.warn(notFoundMessage)
       return undefined
     } else {
