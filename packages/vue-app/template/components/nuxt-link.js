@@ -11,7 +11,9 @@ export default {
     }
   },
   mounted() {
-    if (!this.noPrefetch) this.$nextTick(this.prefetch)
+    if (!this.noPrefetch){
+      this.$nextTick(this.prefetch)
+    }
   },
   methods: {
     prefetch() {
