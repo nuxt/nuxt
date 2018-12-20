@@ -12,7 +12,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 
 /* Plugins */
 <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %><%= (plugin.ssr===false) ? ' (ssr: false)' : '' %>
+<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %> (mode: '<%= plugin.mode %>')
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
@@ -168,11 +168,18 @@ async function createApp(ssrContext) {
 
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-  <% plugins.filter(p => p.ssr).forEach((plugin) => { %>
+  <% plugins.filter(p => p.mode === 'all').forEach((plugin) => { %>
   if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
-  <% if (plugins.filter(p => !p.ssr).length) { %>
+
+  <% if (plugins.filter(p => p.mode === 'client').length) { %>
   if (process.client) {
-    <% plugins.filter((p) => !p.ssr).forEach((plugin) => { %>
+    <% plugins.filter(p => p.mode === 'client').forEach((plugin) => { %>
+    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
+  }<% } %>
+
+  <% if (plugins.filter(p => p.mode === 'server').length) { %>
+  if (process.server) {
+    <% plugins.filter(p => p.mode === 'server').forEach((plugin) => { %>
     if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   }<% } %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>

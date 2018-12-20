@@ -63,7 +63,9 @@ export default class ModuleContainer {
     // Add to nuxt plugins
     this.options.plugins.unshift({
       src: path.join(this.options.buildDir, dst),
-      ssr: template.ssr
+      // TODO: remove deprecated option in Nuxt 3
+      ssr: template.ssr,
+      mode: template.mode
     })
   }
 

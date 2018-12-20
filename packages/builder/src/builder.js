@@ -110,9 +110,19 @@ export default class Builder {
           /[^a-zA-Z?\d\s:]/g,
           ''
         )
+
+        if (p.ssr === false) {
+          p.mode = 'client'
+        } else if (p.mode === undefined) {
+          p.mode = 'all'
+        } else if (!['client', 'server'].includes(p.mode)) {
+          consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'`)
+          p.mode = 'all'
+        }
+
         return {
           src: this.nuxt.resolver.resolveAlias(p.src),
-          ssr: p.ssr !== false,
+          mode: p.mode,
           name: 'nuxt_plugin_' + pluginBaseName + '_' + hash(p.src)
         }
       }),
@@ -134,6 +144,15 @@ export default class Builder {
           additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
         })
       }
+
+      const modes = ['client', 'server']
+      const modernPattern = new RegExp(`\\.(${modes.join('|')})\\.\\w+$`)
+      pluginFiles[0].replace(modernPattern, (_, mode) => {
+        // mode in nuxt.config has higher priority
+        if (p.mode === 'all' && modes.includes(mode)) {
+          p.mode = mode
+        }
+      })
 
       p.src = this.relativeToBuild(p.src)
     }))
