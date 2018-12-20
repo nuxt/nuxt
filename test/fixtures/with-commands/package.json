@@ -1,7 +1,0 @@
-{
-  "name": "nuxt-module-example-with-commands",
-  "main": "index.js",
-  "bin": {
-    "nuxt-foobar-command": "./bin/command.js"
-  }
-}
