@@ -14,7 +14,7 @@ import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 
-import devalue from '@nuxtjs/devalue'
+import devalue from '@nuxt/devalue'
 
 import {
   r,
