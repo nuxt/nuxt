@@ -5,48 +5,47 @@ workflow "Nuxt.js Actions" {
 
 action "nuxt/actions-yarn@master" {
   uses = "nuxt/actions-yarn@master"
-  runs = "install"
+  args = "install"
 }
 
 action "Lint" {
   uses = "nuxt/actions-yarn@master"
   needs = ["nuxt/actions-yarn@master"]
-  runs = "lint"
+  args = "lint"
 }
 
 action "Build" {
   uses = "nuxt/actions-yarn@master"
   needs = ["nuxt/actions-yarn@master"]
-  runs = "test:fixtures"
+  args = "test:fixtures"
 }
 
 action "Npm Audit" {
   uses = "actions/npm@e7aaefe"
   needs = ["nuxt/actions-yarn@master"]
-  runs = "audit"
-  args = " --audit-level=moderate"
+  args = "audit --audit-level=moderate"
 }
 
 action "Coverage: Build" {
   uses = "nuxt/actions-yarn@master"
   needs = ["Build"]
-  runs = "coverage"
+  args = "coverage"
 }
 
 action "Test: Unit" {
   uses = "nuxt/actions-yarn@master"
-  runs = "test:unit"
+  args = "test:unit"
   needs = ["Coverage: Build"]
 }
 
 action "Test: E2E" {
   uses = "nuxt/actions-yarn@master"
-  runs = "test:e2e"
+  args = "test:e2e"
   needs = ["Coverage: Build"]
 }
 
 action "Coverage: Unit" {
   uses = "nuxt/actions-yarn@master"
   needs = ["Test: Unit"]
-  runs = "coverage"
+  args = "coverage"
 }
