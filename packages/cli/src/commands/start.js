@@ -10,16 +10,11 @@ export default {
     ...server
   },
   async run(cmd) {
-    const argv = cmd.getArgv()
-
-    // Create production build when calling `nuxt build`
-    const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false, _start: true })
-    )
+    const config = await cmd.getNuxtConfig({ dev: false, _start: true })
+    const nuxt = await cmd.getNuxt(config)
 
     // Listen and show ready banner
-    return nuxt.server.listen().then(() => {
-      showBanner(nuxt)
-    })
+    await nuxt.server.listen()
+    showBanner(nuxt)
   }
 }

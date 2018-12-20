@@ -13,7 +13,7 @@ export default {
   },
 
   async run(cmd) {
-    const argv = cmd.getArgv()
+    const argv = cmd.argv
     await this.startDev(cmd, argv)
   },
 
@@ -26,10 +26,7 @@ export default {
   },
 
   async _startDev(cmd, argv) {
-    // Load config
-    const config = await cmd.getNuxtConfig(argv, { dev: true })
-
-    // Initialize nuxt instance
+    const config = await cmd.getNuxtConfig({ dev: true })
     const nuxt = await cmd.getNuxt(config)
 
     // Setup hooks
