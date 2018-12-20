@@ -17,7 +17,11 @@ export default {
   name: 'Nuxt',
   props: {
     nuxtChildKey: String,
-    keepAlive: Boolean
+    keepAlive: Boolean,
+    name: {
+      type: String,
+      default: 'default'
+    }
   },
   render(h) {
     // If there is some error
