@@ -10,6 +10,7 @@ import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
+import fs from 'fs'
 
 import { isUrl, urlJoin } from '@nuxt/common'
 
@@ -360,6 +361,24 @@ export default class WebpackBaseConfig {
 
     if (this.options.build.hardSource) {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
+    }
+
+    if (!this.isServer && this.loaders.ts.transpileOnly) {
+      try {
+        const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+        plugins.push(new ForkTsCheckerWebpackPlugin({
+          vue: true,
+          tsconfig: path.resolve(this.options.srcDir, 'tsconfig.json'),
+          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.srcDir, 'tslint.json'))
+        }))
+      } catch (error) {
+        if (error.code === 'MODULE_NOT_FOUND') {
+          console.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+        } else {
+          throw error
+        }
+      }
     }
 
     return plugins

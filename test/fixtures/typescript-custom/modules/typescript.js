@@ -1,3 +1,6 @@
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import path from 'path'
+
 export default function typeScriptModule() {
   // Add .ts extension for store, middleware and more
   this.nuxt.options.extensions.push('ts')
@@ -15,5 +18,11 @@ export default function typeScriptModule() {
     })
     // Add .ts extension in webpack resolve
     config.resolve.extensions.push('.ts')
+
+    config.plugins.push(new ForkTsCheckerWebpackPlugin({
+      vue: true,
+      tsconfig: path.resolve(this.options.srcDir, 'tsconfig.json'),
+      tslint: false
+    }))
   })
 }
