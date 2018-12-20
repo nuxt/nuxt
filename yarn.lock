@@ -1350,7 +1350,7 @@
   resolved "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@nuxt/devalue@^1.1.0":
+"@nuxt/devalue@^1.2.0":
   version "1.2.0"
   resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.0.tgz#a76f12fbabf43fbfde6823942338674ba7ae3265"
   integrity sha512-t4HOJiCc4uqjgDIFjLpVBom/071SroKiJW6fXMg1Tga1ahnSPHBvo7YIPjPzpVSzDJhwKHaio7t0J/trH4+43g==
@@ -1375,13 +1375,6 @@
     chalk "^2.4.1"
     consola "^2.3.0"
     node-fetch "^2.3.0"
-
-"@nuxtjs/devalue@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/@nuxtjs/devalue/-/devalue-1.1.0.tgz#4dcdf33d914f6ea71b09da365452dd1016390d64"
-  integrity sha512-q0c6OY+NgIs0whENpQtGOdnxy95e357aBtX8ix4koMtqijjUuWO+SjFE/s3Apg7F+YfBWMuDJ0wj9ZWktzDnhg==
-  dependencies:
-    consola "^2.0.7"
 
 "@nuxtjs/eslint-config@^0.0.1":
   version "0.0.1"
@@ -3043,7 +3036,7 @@ connect@^3.6.6:
     parseurl "~1.3.2"
     utils-merge "1.0.1"
 
-consola@^2.0.0-1, consola@^2.0.7:
+consola@^2.0.0-1:
   version "2.2.6"
   resolved "https://registry.npmjs.org/consola/-/consola-2.2.6.tgz#01360c5b3a3a9e49bbd497ad4e04037c05e772fd"
   integrity sha512-3ixQ51Pj8GN3p/BQs3d5a5hXdQVfCwr0tyAT9pkUAvR/22wdq1T1QSBLCLL9mpBdybc7WC/5bnNvIb0zuHRJOQ==
