@@ -1350,6 +1350,13 @@
   resolved "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
+"@nuxt/devalue@^1.1.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.0.tgz#a76f12fbabf43fbfde6823942338674ba7ae3265"
+  integrity sha512-t4HOJiCc4uqjgDIFjLpVBom/071SroKiJW6fXMg1Tga1ahnSPHBvo7YIPjPzpVSzDJhwKHaio7t0J/trH4+43g==
+  dependencies:
+    consola "^2.3.0"
+
 "@nuxt/friendly-errors-webpack-plugin@^2.4.0":
   version "2.4.0"
   resolved "https://registry.npmjs.org/@nuxt/friendly-errors-webpack-plugin/-/friendly-errors-webpack-plugin-2.4.0.tgz#525ad27dca736f5b0554b4d3675c586e8f6d3959"
@@ -1359,6 +1366,15 @@
     consola "^2.0.0-1"
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
+
+"@nuxt/opencollective@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/@nuxt/opencollective/-/opencollective-0.2.1.tgz#8290f1220072637e575c3935733719a78ad2d056"
+  integrity sha512-NP2VSUKRFGutbhWeKgIU0MnY4fmpH8UWxxwTJNPurCQ5BeWhOxp+Gp5ltO39P/Et/J2GYGb3+ALNqZJ+5cGBBw==
+  dependencies:
+    chalk "^2.4.1"
+    consola "^2.3.0"
+    node-fetch "^2.3.0"
 
 "@nuxtjs/devalue@^1.1.0":
   version "1.1.0"
@@ -1371,15 +1387,6 @@
   version "0.0.1"
   resolved "https://registry.npmjs.org/@nuxtjs/eslint-config/-/eslint-config-0.0.1.tgz#3aeed1cc6a2e01331c7e6b56bfa7152ce8bb2d90"
   integrity sha512-Scz5oYNtVwePF1ebXcWPrFxBpNF5wAkYh8L++6f2ZdLyUb1mCOwzE2+oVZxS25hGCYUyecFEshbqeSwkC+ktqA==
-
-"@nuxtjs/opencollective@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.npmjs.org/@nuxtjs/opencollective/-/opencollective-0.2.1.tgz#ddf3e6a22990997322bc2b82e2455a7fbffc518d"
-  integrity sha512-pzSib8NKquaTt/ns5Cc2G0BGRVJXaD+p1qfF6q7vNIMvRysorn/VF3y7gAuQpcxfF7wBbGE+dXjhIieWOUsWSw==
-  dependencies:
-    chalk "^2.4.1"
-    consola "^2.3.0"
-    node-fetch "^2.3.0"
 
 "@nuxtjs/youch@^4.2.3":
   version "4.2.3"
