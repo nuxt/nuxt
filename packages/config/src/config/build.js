@@ -49,6 +49,7 @@ export default () => ({
     },
     vueStyle: {}
   },
+  useForkTsChecker: false,
   styleResources: {},
   plugins: [],
   terser: {},

@@ -479,3 +479,17 @@ export function serializeFunction(func) {
 
 serializeFunction.internalFunctionRE = /^(\s*)(?!(?:if)|(?:for)|(?:while)|(?:switch))(\w+)\s*\((.*?)\)\s*\{/gm
 serializeFunction.assignmentRE = /^(\s*):(\w+)\(/gm
+
+export function tryRequire(pkg, notFoundMessage) {
+  try {
+    return require(pkg)
+  }
+  catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      console.warn(notFoundMessage)
+      return undefined
+    } else {
+      throw error
+    }
+  }
+}
