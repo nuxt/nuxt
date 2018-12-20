@@ -64,7 +64,7 @@ jobs:
           at: ~/project
       - run:
           name: Security Audit
-          command: npm install --package-lock-only && npm audit --audit-level=moderate
+          command: yarn audit
 
   build:
     <<: *defaults
