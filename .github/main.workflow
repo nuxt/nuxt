@@ -3,26 +3,26 @@ workflow "Nuxt.js Actions" {
   resolves = ["Npm Audit", "Lint", "Test: E2E", "Coverage: Unit"]
 }
 
-action "nuxt/actions-yarn@master" {
+action "Install" {
   uses = "nuxt/actions-yarn@master"
   args = "install"
 }
 
 action "Lint" {
   uses = "nuxt/actions-yarn@master"
-  needs = ["nuxt/actions-yarn@master"]
+  needs = ["Install"]
   args = "lint"
 }
 
 action "Build" {
   uses = "nuxt/actions-yarn@master"
-  needs = ["nuxt/actions-yarn@master"]
+  needs = ["Install"]
   args = "test:fixtures"
 }
 
 action "Npm Audit" {
   uses = "actions/npm@e7aaefe"
-  needs = ["nuxt/actions-yarn@master"]
+  needs = ["Install"]
   args = "audit --audit-level=moderate"
 }
 
