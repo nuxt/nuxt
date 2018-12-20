@@ -8,7 +8,9 @@
     <br>
     <h4>foo/bab/getBabVal: {{ getBabVal }}</h4>
     <br>
-    <button @click="$store.commit('increment')">+1</button>
+    <button @click="$store.commit('increment')">
+      +1
+    </button>
   </div>
 </template>
 

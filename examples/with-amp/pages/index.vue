@@ -2,7 +2,8 @@
   <div>
     <h1>The Cat</h1>
     <Byline author="Dan Zajdband" />
-    <AmpImg src="/cat.jpg" width="470" height="350" layout="responsive" alt="Meow" />
+    <!-- eslint-disable-next-line vue/component-name-in-template-casing -->
+    <amp-img src="/cat.jpg" width="470" height="350" layout="responsive" alt="Meow" />
     <p class="caption">
       Meowwwwwwww
     </p>

@@ -211,13 +211,14 @@ export const flatRoutes = function flatRoutes(router, _path = '', routes = []) {
   return routes
 }
 
-function cleanChildrenRoutes(routes, isChild = false) {
+function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
   let start = -1
+  const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const routesIndex = []
   routes.forEach((route) => {
-    if (/-index$/.test(route.name) || route.name === 'index') {
+    if (regExpIndex.test(route.name) || route.name === 'index') {
       // Save indexOf 'index' key in name
-      const res = route.name.split('-')
+      const res = route.name.split(routeNameSplitter)
       const s = res.indexOf('index')
       start = start === -1 || s < start ? s : start
       routesIndex.push(res)
@@ -226,7 +227,7 @@ function cleanChildrenRoutes(routes, isChild = false) {
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = route.name.split('-')
+      const names = route.name.split(routeNameSplitter)
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()
@@ -246,12 +247,12 @@ function cleanChildrenRoutes(routes, isChild = false) {
       })
       route.path = (isChild ? '' : '/') + paths.join('/')
     }
-    route.name = route.name.replace(/-index$/, '')
+    route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
       if (route.children.find(child => child.path === '')) {
         delete route.name
       }
-      route.children = cleanChildrenRoutes(route.children, true)
+      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter)
     }
   })
   return routes
@@ -316,7 +317,7 @@ const sortRoutes = function sortRoutes(routes) {
   return routes
 }
 
-export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
+export const createRoutes = function createRoutes(files, srcDir, pagesDir = '', routeNameSplitter = '-') {
   const supportedExtensions = ['vue', 'js', 'ts']
   const routes = []
   files.forEach((file) => {
@@ -333,7 +334,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
       const sanitizedKey = key.startsWith('_') ? key.substr(1) : key
 
       route.name = route.name
-        ? route.name + '-' + sanitizedKey
+        ? route.name + routeNameSplitter + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
       route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
@@ -357,7 +358,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir) {
   })
 
   sortRoutes(routes)
-  return cleanChildrenRoutes(routes)
+  return cleanChildrenRoutes(routes, false, routeNameSplitter)
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed

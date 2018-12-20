@@ -9,7 +9,7 @@ import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 
-const _require = esm(module, {
+export const requireModule = esm(module, {
   cache: false,
   cjs: {
     cache: true,
@@ -35,7 +35,7 @@ export async function loadNuxtConfig(argv) {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = _require(nuxtConfigFile) || {}
+    options = requireModule(nuxtConfigFile) || {}
     if (options.default) {
       options = options.default
     }
@@ -120,6 +120,13 @@ export function showBanner(nuxt) {
   process.stdout.write(box + '\n')
 }
 
+export function formatPath(filePath) {
+  if (!filePath) {
+    return
+  }
+  return filePath.replace(process.cwd() + path.sep, '')
+}
+
 /**
  * Normalize string argument in command
  *
@@ -136,11 +143,4 @@ export function normalizeArg(arg, defaultValue) {
     case undefined: arg = defaultValue; break
   }
   return arg
-}
-
-export function formatPath(filePath) {
-  if (!filePath) {
-    return
-  }
-  return filePath.replace(process.cwd() + path.sep, '')
 }

@@ -1,66 +1,72 @@
-import parseArgs from 'minimist'
+
+import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
-import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd = { name: '', usage: '', description: '', options: {} }) {
+  constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
+    if (!cmd.options) {
+      cmd.options = {}
+    }
     this.cmd = cmd
+
+    this._argv = Array.from(argv)
+    this._parsedArgv = null // Lazy evaluate
   }
 
-  static async load(name) {
-    if (name in commands) {
-      const cmd = await commands[name]() // eslint-disable-line import/namespace
-        .then(m => m.default)
-      return NuxtCommand.from(cmd)
-    } else {
-      // TODO dynamic module loading
-      throw new Error('Command ' + name + ' could not be loaded!')
-    }
+  static run(cmd, argv) {
+    return NuxtCommand.from(cmd, argv).run()
   }
 
-  static from(options) {
-    if (options instanceof NuxtCommand) {
-      return options
+  static from(cmd, argv) {
+    if (cmd instanceof NuxtCommand) {
+      return cmd
     }
-    return new NuxtCommand(options)
+    return new NuxtCommand(cmd, argv)
   }
 
   run() {
-    return this.cmd.run(this)
+    if (this.argv.help) {
+      this.showHelp()
+      return Promise.resolve()
+    }
+
+    if (this.argv.version) {
+      this.showVersion()
+      return Promise.resolve()
+    }
+
+    if (typeof this.cmd.run !== 'function') {
+      return Promise.resolve()
+    }
+
+    return Promise.resolve(this.cmd.run(this))
   }
 
   showVersion() {
     process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
   }
 
   showHelp() {
     process.stdout.write(this._getHelp())
-    process.exit(0)
   }
 
-  getArgv(args) {
-    const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-
-    if (argv.version) {
-      this.showVersion()
-    } else if (argv.help) {
-      this.showHelp()
+  get argv() {
+    if (!this._parsedArgv) {
+      const minimistOptions = this._getMinimistOptions()
+      this._parsedArgv = minimist(this._argv, minimistOptions)
     }
-
-    return argv
+    return this._parsedArgv
   }
 
-  async getNuxtConfig(argv, extraOptions) {
-    const config = await loadNuxtConfig(argv)
+  async getNuxtConfig(extraOptions) {
+    const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions || {})
 
     for (const name of Object.keys(this.cmd.options)) {
-      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, argv)
+      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
 
     return options

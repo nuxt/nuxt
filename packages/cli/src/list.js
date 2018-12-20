@@ -1,13 +1,13 @@
 import chalk from 'chalk'
-import NuxtCommand from './command'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import getCommand from './commands'
 
 export default async function listCommands() {
   const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
 
   // Load all commands
   const _commands = await Promise.all(
-    commandsOrder.map(cmd => NuxtCommand.load(cmd))
+    commandsOrder.map(cmd => getCommand(cmd))
   )
 
   let maxLength = 0
