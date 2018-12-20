@@ -54,7 +54,7 @@
     "@nuxt/core": "2.3.4",
     "@nuxt/generator": "2.3.4",
     "@nuxt/webpack": "2.3.4",
-    "@nuxtjs/opencollective": "^0.2.1"
+    "@nuxt/opencollective": "^0.2.1"
   },
   "engines": {
     "node": ">=6.0.0",

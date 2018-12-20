@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxt/common": "2.3.4",
     "@nuxt/vue-app": "2.3.4",
-    "@nuxtjs/devalue": "^1.1.0",
+    "@nuxt/devalue": "^1.1.0",
     "chokidar": "^2.0.4",
     "consola": "^2.3.0",
     "fs-extra": "^7.0.1",
