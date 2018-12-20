@@ -3,20 +3,25 @@ workflow "Nuxt.js Actions" {
   resolves = ["Audit", "Lint", "Test: Unit", "Test: E2E"]
 }
 
+action "branch-filter" {
+  uses = "actions/bin/filter@master"
+  args = ["branch dev"]
+}
+
 action "Install" {
   uses = "nuxt/actions-yarn@master"
   args = "install --frozen-lockfile --non-interactive"
 }
 
-action "Lint" {
-  uses = "nuxt/actions-yarn@master"
-  args = "lint"
-}
-
 action "Audit" {
   uses = "nuxt/actions-yarn@master"
-  needs = ["Install"]
   args = "audit"
+}
+
+action "Lint" {
+  uses = "nuxt/actions-yarn@master"
+  needs = ["Install"]
+  args = "lint"
 }
 
 action "Build" {
