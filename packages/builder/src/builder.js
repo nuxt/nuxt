@@ -116,7 +116,7 @@ export default class Builder {
         } else if (p.mode === undefined) {
           p.mode = 'all'
         } else if (!['client', 'server'].includes(p.mode)) {
-          consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'.`)
+          consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'`)
           p.mode = 'all'
         }
 

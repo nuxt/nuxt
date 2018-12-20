@@ -21,7 +21,7 @@ describe('with-config', () => {
         'Unknown mode: unknown. Falling back to universal'
       ],
       [
-        'Invalid plugin mode (server/client): abc. Falling back to default'
+        `Invalid plugin mode (server/client/all): 'abc'. Falling back to 'all'`
       ],
       [{
         message: 'Found 2 plugins that match the configuration, suggest to specify extension:',
