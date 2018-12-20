@@ -12,7 +12,7 @@
     "@nuxt/config": "2.3.4",
     "@nuxt/server": "2.3.4",
     "@nuxt/vue-renderer": "2.3.4",
-    "@nuxtjs/devalue": "^1.2.0",
+    "@nuxt/devalue": "^1.2.0",
     "consola": "^2.3.0",
     "debug": "^4.1.0",
     "esm": "^3.0.84",
