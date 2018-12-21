@@ -27,7 +27,6 @@ export default class WebpackBaseConfig {
     this.nuxt = builder.context.nuxt
     this.isStatic = builder.context.isStatic
     this.options = builder.context.options
-    this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
     this.buildMode = this.options.dev ? 'development' : 'production'
     this.modulesToTranspile = this.normalizeTranspile()
