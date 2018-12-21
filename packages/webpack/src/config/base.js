@@ -363,7 +363,7 @@ export default class WebpackBaseConfig {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
     }
 
-    if (!this.isServer && this.options.build.useForkTsChecker) {
+    if (!this.isServer && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
       const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin'
         , 'You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       if (ForkTsCheckerWebpackPlugin) {
