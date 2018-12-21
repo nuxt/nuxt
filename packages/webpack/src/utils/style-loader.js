@@ -9,10 +9,6 @@ export default class StyleLoader {
   constructor(options, nuxt, { isServer, perfLoader }) {
     this.isServer = isServer
     this.perfLoader = perfLoader
-    this.dev = options.dev
-    this.srcDir = options.srcDir
-    this.assetsDir = options.dir.assets
-    this.staticDir = options.dir.static
     this.rootDir = options.rootDir
     this.loaders = {
       css: options.build.loaders.css,
