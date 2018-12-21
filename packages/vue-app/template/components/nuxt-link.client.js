@@ -25,7 +25,6 @@ const observer = window.IntersectionObserver && new window.IntersectionObserver(
   })
 })
 
-
 export default {
   extends: Vue.component('RouterLink'),
   name: 'NuxtLink',
@@ -37,14 +36,7 @@ export default {
   },
   mounted() {
     if (!this.noPrefetch) {
-      // If no IntersectionObserver, prefetch directly
-      if (!observer) return this.prefetch()
-      // Add to observer
-      if (this.shouldPrefetch()) {
-        this.$el.__prefetch = () => this.prefetch()
-        observer.observe(this.$el)
-        this.__observed = true
-      }
+      requestIdleCallback(this.observe, { timeout: 2e3 })
     }
   },
   beforeDestroy() {
@@ -54,6 +46,18 @@ export default {
     }
   },
   methods: {
+    observe() {
+      // If no IntersectionObserver, prefetch directly
+      if (!observer) {
+        return this.prefetch()
+      }
+      // Add to observer
+      if (this.shouldPrefetch()) {
+        this.$el.__prefetch = () => this.prefetch()
+        observer.observe(this.$el)
+        this.__observed = true
+      }
+    },
     shouldPrefetch() {
       return this.getPrefetchComponents().length > 0
     },
