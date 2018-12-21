@@ -11,7 +11,7 @@ import {
   parallel,
   sequence,
   wrapArray
-} from '@nuxt/common'
+} from '@nuxt/utils'
 
 import { ClientConfig, ModernConfig, ServerConfig } from './config'
 import PerfLoader from './utils/perf-loader'

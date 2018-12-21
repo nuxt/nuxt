@@ -1,18 +1,15 @@
 {
-  "name": "@nuxt/generator",
+  "name": "@nuxt/utils",
   "version": "2.3.4",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "main": "dist/generator.js",
+  "main": "dist/utils.js",
   "dependencies": {
-    "@nuxt/utils": "2.3.4",
-    "chalk": "^2.4.1",
     "consola": "^2.3.0",
-    "fs-extra": "^7.0.1",
-    "html-minifier": "^3.5.21"
+    "serialize-javascript": "^1.5.0"
   },
   "publishConfig": {
     "access": "public"
