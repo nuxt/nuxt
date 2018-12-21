@@ -12,7 +12,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
-import { isUrl, urlJoin, tryRequire } from '@nuxt/common'
+import { isUrl, urlJoin } from '@nuxt/common'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -365,8 +365,9 @@ export default class WebpackBaseConfig {
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
     if (!this.isServer && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
-      const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin')
-      if (ForkTsCheckerWebpackPlugin) {
+      const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
+      if (forkTsCheckerResolvedPath) {
+        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
         plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
           vue: true,
           tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
