@@ -1,6 +1,10 @@
+import consola from 'consola'
+
 export default {
   build: {
-    useForkTsChecker: true
+    useForkTsChecker: {
+      logger: consola
+    }
   },
   plugins: ['~/plugins/plugin']
 }

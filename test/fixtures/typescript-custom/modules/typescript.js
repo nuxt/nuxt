@@ -1,4 +1,5 @@
 import path from 'path'
+import consola from 'consola'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 export default function typeScriptModule() {
@@ -23,7 +24,8 @@ export default function typeScriptModule() {
       config.plugins.push(new ForkTsCheckerWebpackPlugin({
         vue: true,
         tsconfig: path.resolve(this.options.srcDir, 'tsconfig.json'),
-        tslint: false
+        tslint: false,
+        logger: consola
       }))
     }
   })
