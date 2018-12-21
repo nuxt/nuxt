@@ -8,7 +8,6 @@
   ],
   "main": "dist/server.js",
   "dependencies": {
-    "@nuxt/common": "2.3.4",
     "@nuxt/config": "2.3.4",
     "@nuxt/utils": "2.3.4",
     "@nuxtjs/youch": "^4.2.3",
