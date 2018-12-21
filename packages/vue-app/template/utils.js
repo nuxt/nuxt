@@ -566,4 +566,3 @@ function formatQuery(query) {
     return key + '=' + val
   }).filter(Boolean).join('&')
 }
-

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import middleware from './middleware'
+import middleware from './middleware.js'
 import {
   applyAsyncData,
   sanitizeComponent,
@@ -14,8 +14,13 @@ import {
   compile,
   getQueryDiff,
   globalHandleError
-} from './utils'
-import { createApp, NuxtError } from './index'
+} from './utils.js'
+import { createApp, NuxtError } from './index.js'
+import NuxtLink from './components/nuxt-link.client.js' // should be included after ./index.js
+
+// Component: <NuxtLink>
+Vue.component(NuxtLink.name, NuxtLink)
+Vue.component('NLink', NuxtLink)
 
 const noopData = () => { return {} }
 const noopFetch = () => {}
