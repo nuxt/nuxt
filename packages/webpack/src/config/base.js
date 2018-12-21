@@ -362,6 +362,8 @@ export default class WebpackBaseConfig {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
     }
 
+    // TypeScript type checker
+    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
     if (!this.isServer && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
       const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin')
       if (ForkTsCheckerWebpackPlugin) {
@@ -373,8 +375,7 @@ export default class WebpackBaseConfig {
           formatter: 'codeframe'
         }, this.options.build.useForkTsChecker)))
       } else {
-        // eslint-disable-next-line no-console
-        console.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       }
     }
 
