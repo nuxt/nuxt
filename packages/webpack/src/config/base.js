@@ -369,9 +369,9 @@ export default class WebpackBaseConfig {
       if (ForkTsCheckerWebpackPlugin) {
         plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
           vue: true,
-          tsconfig: path.resolve(this.options.srcDir, 'tsconfig.json'),
+          tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
           // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.srcDir, 'tslint.json')),
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
           formatter: 'codeframe'
         }, this.options.build.useForkTsChecker)))
       } else {
