@@ -363,8 +363,7 @@ export default class WebpackBaseConfig {
     }
 
     if (!this.isServer && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
-      const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin'
-        , 'You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+      const ForkTsCheckerWebpackPlugin = tryRequire('fork-ts-checker-webpack-plugin')
       if (ForkTsCheckerWebpackPlugin) {
         plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
           vue: true,
@@ -373,6 +372,9 @@ export default class WebpackBaseConfig {
           tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.srcDir, 'tslint.json')),
           formatter: 'codeframe'
         }, this.options.build.useForkTsChecker)))
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       }
     }
 

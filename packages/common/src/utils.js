@@ -481,13 +481,11 @@ export function serializeFunction(func) {
 serializeFunction.internalFunctionRE = /^(\s*)(?!(?:if)|(?:for)|(?:while)|(?:switch))(\w+)\s*\((.*?)\)\s*\{/gm
 serializeFunction.assignmentRE = /^(\s*):(\w+)\(/gm
 
-export function tryRequire(pkg, notFoundMessage) {
+export function tryRequire(pkg) {
   try {
     return require(pkg)
   } catch (error) {
     if (error.code === 'MODULE_NOT_FOUND') {
-      // eslint-disable-next-line no-console
-      console.warn(notFoundMessage)
       return undefined
     } else {
       throw error
