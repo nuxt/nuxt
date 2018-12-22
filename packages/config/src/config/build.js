@@ -16,9 +16,9 @@ export default () => ({
     app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
     chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
     css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
-    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[hash:7].[ext]',
-    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[hash:7].[ext]',
-    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[hash:7].[ext]'
+    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[fullhash:7].[ext]',
+    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[fullhash:7].[ext]',
+    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[fullhash:7].[ext]'
   },
   loaders: {
     file: {},
@@ -35,7 +35,7 @@ export default () => ({
     },
     css: {},
     cssModules: {
-      localIdentName: '[local]_[hash:base64:5]'
+      localIdentName: '[local]_[fullhash:base64:5]'
     },
     less: {},
     sass: {
