@@ -11,7 +11,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
-import { isUrl, urlJoin } from '@nuxt/common'
+import { isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -26,7 +26,6 @@ export default class WebpackBaseConfig {
     this.nuxt = builder.context.nuxt
     this.isStatic = builder.context.isStatic
     this.options = builder.context.options
-    this.spinner = builder.spinner
     this.loaders = this.options.build.loaders
     this.buildMode = this.options.dev ? 'development' : 'production'
     this.modulesToTranspile = this.normalizeTranspile()
