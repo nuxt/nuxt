@@ -14,7 +14,7 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.4.0",
     "@nuxt/utils": "2.3.4",
     "babel-loader": "^8.0.4",
-    "cache-loader": "^1.2.5",
+    "cache-loader": "^2.0.0",
     "caniuse-lite": "^1.0.30000923",
     "chalk": "^2.4.1",
     "consola": "^2.3.0",
