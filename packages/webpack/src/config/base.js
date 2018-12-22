@@ -1,5 +1,4 @@
 import path from 'path'
-import fs from 'fs'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
@@ -373,24 +372,6 @@ export default class WebpackBaseConfig {
 
     if (this.options.build.hardSource) {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
-    }
-
-    // TypeScript type checker
-    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isServer && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
-      const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
-      if (forkTsCheckerResolvedPath) {
-        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
-        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
-          vue: true,
-          tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
-          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
-          formatter: 'codeframe'
-        }, this.options.build.useForkTsChecker)))
-      } else {
-        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
-      }
     }
 
     return plugins
