@@ -4,7 +4,7 @@ import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
-import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/common'
+import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/utils'
 
 export default class Generator {
   constructor(nuxt, builder) {
