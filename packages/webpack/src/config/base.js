@@ -236,6 +236,19 @@ export default class WebpackBaseConfig {
         options: this.loaders.ts
       },
       {
+        test: /\.tsx$/,
+        use: [
+          {
+            loader: require.resolve('babel-loader'),
+            options: this.getBabelOptions()
+          },
+          {
+            loader: 'ts-loader',
+            options: this.loaders.tsx
+          }
+        ]
+      },
+      {
         test: /\.css$/,
         oneOf: styleLoader.apply('css')
       },
@@ -411,7 +424,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },

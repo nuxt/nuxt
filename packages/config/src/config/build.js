@@ -47,6 +47,10 @@ export default () => ({
       transpileOnly: true,
       appendTsSuffixTo: [/\.vue$/]
     },
+    tsx: {
+      transpileOnly: true,
+      appendTsxSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
   useForkTsChecker: false,
