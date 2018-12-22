@@ -1,7 +1,7 @@
 
 import consola from 'consola'
 
-import { sequence } from './utils'
+import { sequence } from '@nuxt/utils'
 
 export default class Hookable {
   constructor() {

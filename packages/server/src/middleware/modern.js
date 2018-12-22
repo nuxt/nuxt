@@ -1,8 +1,9 @@
 import chalk from 'chalk'
 import consola from 'consola'
-import { ModernBrowsers } from '@nuxt/common'
 import UAParser from 'ua-parser-js'
 import semver from 'semver'
+
+import ModernBrowsers from './modern-browsers'
 
 const modernBrowsers = Object.keys(ModernBrowsers)
   .reduce((allBrowsers, browser) => {

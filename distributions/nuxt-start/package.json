@@ -47,7 +47,6 @@
   "bin": "bin/nuxt-start.js",
   "dependencies": {
     "@nuxt/cli": "2.3.4",
-    "@nuxt/common": "2.3.4",
     "@nuxt/core": "2.3.4"
   },
   "engines": {

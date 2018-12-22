@@ -27,7 +27,7 @@ import {
   determineGlobals,
   stripWhitespace,
   isString
-} from '@nuxt/common'
+} from '@nuxt/utils'
 
 import BuildContext from './context'
 

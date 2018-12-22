@@ -8,7 +8,7 @@
   ],
   "main": "dist/config.js",
   "dependencies": {
-    "@nuxt/common": "2.3.4",
+    "@nuxt/utils": "2.3.4",
     "consola": "^2.3.0",
     "std-env": "^2.2.1"
   },
