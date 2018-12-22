@@ -24,6 +24,9 @@
     "postinstall": "lerna link && yarn dev",
     "release": "./scripts/release"
   },
+  "resolutions": {
+    "webpack": "5.0.0-alpha.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
