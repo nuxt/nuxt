@@ -5,7 +5,7 @@ import consola from 'consola'
 import devalue from '@nuxt/devalue'
 import invert from 'lodash/invert'
 import template from 'lodash/template'
-import { waitFor } from '@nuxt/common'
+import { waitFor } from '@nuxt/utils'
 import { createBundleRenderer } from 'vue-server-renderer'
 
 import SPAMetaRenderer from './spa-meta'

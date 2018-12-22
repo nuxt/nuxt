@@ -2,12 +2,14 @@
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 
-import { Hookable, defineAlias } from '@nuxt/common'
+import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
 import { Server } from '@nuxt/server'
 
 import { version } from '../package.json'
+
 import ModuleContainer from './module'
+import Hookable from './hookable'
 import Resolver from './resolver'
 
 export default class Nuxt extends Hookable {

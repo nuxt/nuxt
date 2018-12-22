@@ -8,7 +8,7 @@ export { Nuxt } from '../../packages/core/src/index'
 export { Builder } from '../../packages/builder/src/index'
 export { Generator } from '../../packages/generator/src/index'
 export { BundleBuilder } from '../../packages/webpack/src/index'
-export * from '../../packages/common/src/index'
+export * from '../../packages/utils/src/index'
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
