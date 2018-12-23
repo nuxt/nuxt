@@ -1,4 +1,6 @@
 import path from 'path'
+import fs from 'fs'
+import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
@@ -130,6 +132,24 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       plugins.push(new CorsPlugin({
         crossorigin: this.options.build.crossorigin
       }))
+    }
+
+    // TypeScript type checker
+    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
+    if (this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
+      const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
+      if (forkTsCheckerResolvedPath) {
+        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
+        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
+          vue: true,
+          tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
+          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
+          formatter: 'codeframe'
+        }, this.options.build.useForkTsChecker)))
+      } else {
+        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+      }
     }
 
     return plugins
