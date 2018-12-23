@@ -1,5 +1,5 @@
 import path from 'path'
-import pify from 'pify'
+import { promisify } from 'util'
 import webpack from 'webpack'
 import MFS from 'memory-fs'
 import Glob from 'glob'
@@ -16,7 +16,7 @@ import {
 import { ClientConfig, ModernConfig, ServerConfig } from './config'
 import PerfLoader from './utils/perf-loader'
 
-const glob = pify(Glob)
+const glob = promisify(Glob)
 
 export class WebpackBundler {
   constructor(context) {
@@ -156,7 +156,7 @@ export class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          watching.close = pify(watching.close)
+          watching.close = promisify(watching.close)
           this.compilersWatching.push(watching)
           resolve()
         })
@@ -164,7 +164,7 @@ export class WebpackBundler {
     }
 
     // --- Production Build ---
-    compiler.run = pify(compiler.run)
+    compiler.run = promisify(compiler.run)
     const stats = await compiler.run()
 
     if (stats.hasErrors()) {
@@ -184,7 +184,7 @@ export class WebpackBundler {
     const { nuxt: { server }, options } = this.context
 
     // Create webpack dev middleware
-    this.devMiddleware[name] = pify(
+    this.devMiddleware[name] = promisify(
       webpackDevMiddleware(
         compiler,
         Object.assign(
@@ -199,9 +199,9 @@ export class WebpackBundler {
       )
     )
 
-    this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
+    this.devMiddleware[name].close = promisify(this.devMiddleware[name].close)
 
-    this.hotMiddleware[name] = pify(
+    this.hotMiddleware[name] = promisify(
       webpackHotMiddleware(
         compiler,
         Object.assign(

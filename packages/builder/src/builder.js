@@ -1,10 +1,10 @@
 import path from 'path'
+import { promisify } from 'util'
 import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import Glob from 'glob'
 import hash from 'hash-sum'
-import pify from 'pify'
 import serialize from 'serialize-javascript'
 import upath from 'upath'
 
@@ -31,7 +31,7 @@ import {
 
 import BuildContext from './context'
 
-const glob = pify(Glob)
+const glob = promisify(Glob)
 
 export default class Builder {
   constructor(nuxt, bundleBuilder) {

@@ -1,11 +1,11 @@
 import { resolve } from 'path'
+import { promisify } from 'util'
 import consola from 'consola'
 import spawn from 'cross-spawn'
 import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
 import { glob as _glob } from 'glob'
-import pify from 'pify'
 import sortPackageJson from 'sort-package-json'
 
 import rollupConfig from './rollup.config'
@@ -20,7 +20,7 @@ const DEFAULTS = {
   hooks: {}
 }
 
-const glob = pify(_glob)
+const glob = promisify(_glob)
 
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
 

@@ -1,11 +1,11 @@
 import { resolve } from 'path'
 import { existsSync } from 'fs'
+import { promisify } from 'util'
 import jsdom from 'jsdom'
 import Glob from 'glob'
-import pify from 'pify'
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
-const glob = pify(Glob)
+const glob = promisify(Glob)
 
 let port
 const url = route => 'http://localhost:' + port + route

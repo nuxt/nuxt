@@ -1,11 +1,11 @@
 import { resolve } from 'path'
+import { promisify } from 'util'
 import consola from 'consola'
 import Glob from 'glob'
-import pify from 'pify'
 
 import { Nuxt, getNuxtConfig, version } from '../utils'
 
-const glob = pify(Glob)
+const glob = promisify(Glob)
 
 describe('basic config defaults', () => {
   test('Nuxt.version is same as package', () => {

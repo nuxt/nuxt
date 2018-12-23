@@ -1,9 +1,9 @@
 import http from 'http'
 import https from 'https'
+import { promisify } from 'util'
 import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'
-import pify from 'pify'
 
 export default class Listener {
   constructor({ port, host, socket, https, app, dev }) {
@@ -80,7 +80,7 @@ export default class Listener {
 
     // Enable destroy support
     enableDestroy(this.server)
-    pify(this.server.destroy)
+    promisify(this.server.destroy)
 
     // Compute listen URL
     this.computeURL()
