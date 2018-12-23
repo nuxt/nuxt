@@ -166,6 +166,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // Add HMR support
     if (this.options.dev) {
       config.entry.app.unshift(
+        // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
+        'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
         `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
           this.options.router.base
