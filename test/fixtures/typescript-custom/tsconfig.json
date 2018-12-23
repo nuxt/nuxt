@@ -9,7 +9,7 @@
     "allowJs": true,
     "sourceMap": true,
     "strict": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
