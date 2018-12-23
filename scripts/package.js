@@ -171,10 +171,12 @@ export default class Package {
     for (const workspace of this.pkg.workspaces || []) {
       const dirs = await glob(workspace)
       for (const dir of dirs) {
-        const pkg = new Package({
-          rootDir: this.resolvePath(dir)
-        })
-        packages.push(pkg)
+        if (existsSync(this.resolvePath(dir, 'package.json'))) {
+          const pkg = new Package({ rootDir: this.resolvePath(dir) })
+          packages.push(pkg)
+        } else {
+          consola.warn('Invalid workspace package:', dir)
+        }
       }
     }
 
