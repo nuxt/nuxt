@@ -6,7 +6,7 @@ import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/common'
+import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/utils'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {

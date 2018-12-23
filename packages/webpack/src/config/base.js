@@ -11,7 +11,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
-import { isUrl, urlJoin } from '@nuxt/common'
+import { isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -235,6 +235,19 @@ export default class WebpackBaseConfig {
         options: this.loaders.ts
       },
       {
+        test: /\.tsx$/,
+        use: [
+          {
+            loader: require.resolve('babel-loader'),
+            options: this.getBabelOptions()
+          },
+          {
+            loader: 'ts-loader',
+            options: this.loaders.tsx
+          }
+        ]
+      },
+      {
         test: /\.css$/,
         oneOf: styleLoader.apply('css')
       },
@@ -392,7 +405,7 @@ export default class WebpackBaseConfig {
         hints: this.options.dev ? false : 'warning'
       },
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },

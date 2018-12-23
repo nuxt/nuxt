@@ -1,5 +1,5 @@
 import klawSync from 'klaw-sync'
-import { waitFor } from '../../packages/common'
+import { waitFor } from '../../packages/utils'
 
 export { getNuxtConfig } from '../../packages/config'
 export { default as getPort } from 'get-port'

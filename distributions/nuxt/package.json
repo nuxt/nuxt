@@ -50,7 +50,6 @@
   "dependencies": {
     "@nuxt/builder": "2.3.4",
     "@nuxt/cli": "2.3.4",
-    "@nuxt/common": "2.3.4",
     "@nuxt/core": "2.3.4",
     "@nuxt/generator": "2.3.4",
     "@nuxt/opencollective": "^0.2.1",
