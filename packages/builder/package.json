@@ -18,7 +18,7 @@
     "hash-sum": "^1.0.2",
     "lodash": "^4.17.11",
     "pify": "^4.0.1",
-    "serialize-javascript": "^1.5.0",
+    "serialize-javascript": "^1.6.0",
     "upath": "^1.1.0"
   },
   "publishConfig": {

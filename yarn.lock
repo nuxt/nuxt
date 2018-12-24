@@ -10068,10 +10068,15 @@ send@0.16.2:
     range-parser "~1.2.0"
     statuses "~1.4.0"
 
-serialize-javascript@^1.3.0, serialize-javascript@^1.4.0, serialize-javascript@^1.5.0:
+serialize-javascript@^1.3.0, serialize-javascript@^1.4.0:
   version "1.5.0"
   resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-1.5.0.tgz#1aa336162c88a890ddad5384baebc93a655161fe"
   integrity sha512-Ga8c8NjAAp46Br4+0oZ2WxJCwIzwP60Gq1YPgU+39PiTVxyed/iKE/zyZI6+UlVYH5Q4PaQdHhcegIFPZTUfoQ==
+
+serialize-javascript@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-1.6.0.tgz#b30ce5ddd6517f2c445e129ff5834a399fb5861e"
+  integrity sha512-AQxrNqu4EXWt03dJdgKXI+Au9+pvEuM5+Nk5g6+TmuxMCkEL03VhZ31HM+VKeaaZbFpDHaoSruiHq4PW9AIrOQ==
 
 serve-placeholder@^1.1.0:
   version "1.1.0"
