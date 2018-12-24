@@ -150,6 +150,7 @@ export default class VueRenderer {
         if (isMFS) {
           // Cleanup MFS as soon as possible to save memory
           _fs.unlinkSync(fullPath)
+          delete this._assetsMapping
         }
         return contents
       } catch (err) {

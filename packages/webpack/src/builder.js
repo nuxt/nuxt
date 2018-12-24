@@ -180,7 +180,7 @@ export class WebpackBundler {
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
-    const name = [compiler.options.name]
+    const name = compiler.options.name
     const { nuxt: { server }, options } = this.context
 
     // Create webpack dev middleware
