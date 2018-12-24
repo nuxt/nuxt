@@ -16,7 +16,7 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
-import NuxtLink from './components/nuxt-link.client.js' // should be included after ./index.js
+import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)

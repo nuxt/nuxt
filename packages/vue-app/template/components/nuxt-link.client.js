@@ -3,24 +3,21 @@ import Vue from 'vue'
 
 const requestIdleCallback = window.requestIdleCallback ||
   function (cb) {
-    const start = Date.now();
+    const start = Date.now()
     return setTimeout(function () {
       cb({
         didTimeout: false,
         timeRemaining: function () {
-          return Math.max(0, 50 - (Date.now() - start));
+          return Math.max(0, 50 - (Date.now() - start))
         },
-      });
-    }, 1);
+      })
+    }, 1)
   }
 const observer = window.IntersectionObserver && new window.IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) {
+  entries.forEach(({ isIntersecting, target: link }) => {
+    if (!isIntersecting) {
       return
     }
-    const link = entry.target
-
-    observer.unobserve(link)
     link.__prefetch()
   })
 })
@@ -53,7 +50,7 @@ export default {
       }
       // Add to observer
       if (this.shouldPrefetch()) {
-        this.$el.__prefetch = () => this.prefetch()
+        this.$el.__prefetch = this.prefetch.bind(this)
         observer.observe(this.$el)
         this.__observed = true
       }
@@ -61,23 +58,33 @@ export default {
     shouldPrefetch() {
       return this.getPrefetchComponents().length > 0
     },
+    canPrefetch() {
+      const conn = navigator.connection
+
+      // Don't prefetch if the user is on 2G. or if Save-Data is enabled..
+      if (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData)) {
+        return false
+      }
+      return true
+    },
     getPrefetchComponents() {
-      var ref = this.$router.resolve(this.to, this.$route, this.append)
+      const ref = this.$router.resolve(this.to, this.$route, this.append)
       const Components = ref.resolved.matched.map((r) => r.components.default)
 
       return Components.filter((Component) => typeof Component === 'function' && !Component.options && !Component.__prefetched)
     },
     prefetch() {
-      const Components = this.getPrefetchComponents()
-
-      if (!Components.length) {
+      if (!this.canPrefetch()) {
         return
       }
+      // Stop obersing this link (in case of internet connection changes)
+      observer.unobserve(this.$el)
+      const Components = this.getPrefetchComponents()
 
-      for (let i = 0; i < Components.length; i++) {
+      for (const Component of Components) {
         try {
-          Components[i]()
-          Components[i].__prefetched = true
+          Component()
+          Component.__prefetched = true
         } catch (e) {}
       }
     }

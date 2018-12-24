@@ -10,5 +10,6 @@ export default () => ({
   scrollBehavior: null,
   parseQuery: false,
   stringifyQuery: false,
-  fallback: false
+  fallback: false,
+  prefetchLinks: true
 })
