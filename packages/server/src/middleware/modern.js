@@ -34,19 +34,28 @@ const detectModernBuild = ({ options, resources }) => {
   }
 }
 
+const detectConnBrowser = (req) => {
+  const { socket = {}, headers } = req
+  if (socket.isModernBrowser === undefined) {
+    const ua = headers && headers['user-agent']
+    socket.isModernBrowser = isModernBrowser(ua)
+  }
+}
+
 const detectModernBrowser = (req, options) => {
+  const { socket = {} } = req
+  const isModernBrowser = socket.isModernBrowser
   if (options.modern === 'server') {
-    const { socket = {}, headers } = req
-    if (socket.modernMode === undefined) {
-      const ua = headers && headers['user-agent']
-      socket.modernMode = isModernBrowser(ua)
-    }
-    req.modernMode = socket.modernMode
+    req.modernMode = isModernBrowser
+  }
+  if (options.dev) {
+    req.devModernMode = isModernBrowser
   }
 }
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
+  detectConnBrowser(req)
   detectModernBrowser(req, context.options)
   next()
 }
