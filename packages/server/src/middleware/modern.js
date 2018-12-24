@@ -34,8 +34,7 @@ const detectModernBuild = ({ options, resources }) => {
   }
 }
 
-const detectModernBrowser = (req) => {
-  const { socket = {}, headers } = req
+const detectModernBrowser = ({ socket = {}, headers }) => {
   if (socket.isModernBrowser === undefined) {
     const ua = headers && headers['user-agent']
     socket.isModernBrowser = isModernBrowser(ua)
