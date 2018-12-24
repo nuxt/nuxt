@@ -9,7 +9,7 @@
   "main": "dist/utils.js",
   "dependencies": {
     "consola": "^2.3.0",
-    "serialize-javascript": "^1.5.0"
+    "serialize-javascript": "^1.6.0"
   },
   "publishConfig": {
     "access": "public"
