@@ -18,7 +18,7 @@
     "caniuse-lite": "^1.0.30000923",
     "chalk": "^2.4.1",
     "consola": "^2.3.0",
-    "css-loader": "^2.0.2",
+    "css-loader": "^2.1.0",
     "cssnano": "^4.1.8",
     "eventsource-polyfill": "^0.9.6",
     "extract-css-chunks-webpack-plugin": "^3.2.1",
