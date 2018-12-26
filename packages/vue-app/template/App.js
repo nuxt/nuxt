@@ -56,7 +56,8 @@ export default {
   },
   data: () => ({
     layout: null,
-    layoutName: ''
+    layoutName: '',
+    isOnline: true
   }),
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -65,8 +66,12 @@ export default {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
-    if (typeof window !== 'undefined') {
+    if (process.client && typeof window !== 'undefined') {
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
+      this.refreshOnlineStatus()
+      // Setup the listeners
+      window.addEventListener('online', this.refreshOnlineStatus)
+      window.addEventListener('offline', this.refreshOnlineStatus)
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
@@ -80,6 +85,18 @@ export default {
   },
   <% } %>
   methods: {
+    refreshOnlineStatus() {
+      if (process.client) {
+        if (typeof window.navigator.onLine === 'undefined') {
+          // If the browser doesn't support connection status reports
+          // assume that we are online because most apps' only react
+          // when they now that the connection has been interrupted
+          this.isOnline = true
+        } else {
+          this.isOnline = window.navigator.onLine
+        }
+      }
+    },
     <% if (loading) { %>
     errorChanged() {
       if (this.nuxt.err && this.$loading) {

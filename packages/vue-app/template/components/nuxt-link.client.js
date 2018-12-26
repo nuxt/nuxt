@@ -60,12 +60,9 @@ export default {
     },
     canPrefetch() {
       const conn = navigator.connection
+      const hasBadConnection = conn && ((conn.effectiveType || '').includes('2g') || conn.saveData)
 
-      // Don't prefetch if the user is on 2G. or if Save-Data is enabled..
-      if (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData)) {
-        return false
-      }
-      return true
+      return this.$nuxt.isOnline && !hasBadConnection
     },
     getPrefetchComponents() {
       const ref = this.$router.resolve(this.to, this.$route, this.append)
