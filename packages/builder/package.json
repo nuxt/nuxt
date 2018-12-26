@@ -8,9 +8,9 @@
   ],
   "main": "dist/builder.js",
   "dependencies": {
-    "@nuxt/common": "2.3.4",
-    "@nuxt/vue-app": "2.3.4",
     "@nuxt/devalue": "^1.2.0",
+    "@nuxt/utils": "2.3.4",
+    "@nuxt/vue-app": "2.3.4",
     "chokidar": "^2.0.4",
     "consola": "^2.3.0",
     "fs-extra": "^7.0.1",
@@ -18,7 +18,7 @@
     "hash-sum": "^1.0.2",
     "lodash": "^4.17.11",
     "pify": "^4.0.1",
-    "serialize-javascript": "^1.5.0",
+    "serialize-javascript": "^1.6.0",
     "upath": "^1.1.0"
   },
   "publishConfig": {

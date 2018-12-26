@@ -1,8 +1,9 @@
 import chalk from 'chalk'
 import consola from 'consola'
-import { ModernBrowsers } from '@nuxt/common'
 import UAParser from 'ua-parser-js'
 import semver from 'semver'
+
+import ModernBrowsers from './modern-browsers'
 
 const modernBrowsers = Object.keys(ModernBrowsers)
   .reduce((allBrowsers, browser) => {
@@ -33,19 +34,27 @@ const detectModernBuild = ({ options, resources }) => {
   }
 }
 
-const detectModernBrowser = (req, options) => {
+const detectModernBrowser = ({ socket = {}, headers }) => {
+  if (socket.isModernBrowser === undefined) {
+    const ua = headers && headers['user-agent']
+    socket.isModernBrowser = isModernBrowser(ua)
+  }
+}
+
+const setModernMode = (req, options) => {
+  const { socket = {} } = req
+  const isModernBrowser = socket.isModernBrowser
   if (options.modern === 'server') {
-    const { socket = {}, headers } = req
-    if (socket.modernMode === undefined) {
-      const ua = headers && headers['user-agent']
-      socket.modernMode = isModernBrowser(ua)
-    }
-    req.modernMode = socket.modernMode
+    req.modernMode = isModernBrowser
+  }
+  if (options.dev) {
+    req.devModernMode = isModernBrowser
   }
 }
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
-  detectModernBrowser(req, context.options)
+  detectModernBrowser(req)
+  setModernMode(req, context.options)
   next()
 }

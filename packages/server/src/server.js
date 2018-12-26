@@ -4,7 +4,7 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
-import { determineGlobals, isUrl } from '@nuxt/common'
+import { determineGlobals, isUrl } from '@nuxt/utils'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -83,7 +83,7 @@ export default class Server {
     if (this.options.dev) {
       this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
-        const name = req.modernMode ? 'modern' : 'client'
+        const name = req.devModernMode ? 'modern' : 'client'
         if (this.devMiddleware && this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }

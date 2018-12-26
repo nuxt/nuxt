@@ -27,7 +27,7 @@ import {
   determineGlobals,
   stripWhitespace,
   isString
-} from '@nuxt/common'
+} from '@nuxt/utils'
 
 import BuildContext from './context'
 
@@ -45,7 +45,7 @@ export default class Builder {
       restart: null
     }
 
-    this.supportedExtensions = ['vue', 'js', 'ts']
+    this.supportedExtensions = ['vue', 'js', 'ts', 'tsx']
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) =>

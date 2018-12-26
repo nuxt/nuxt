@@ -7,15 +7,19 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "allowJs": true,
+    "jsx": "preserve",
     "sourceMap": true,
     "strict": true,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "baseUrl": ".",
     "paths": {
       "~/*": ["./*"]
-    }
+    },
+    "types": [
+      "@nuxt/vue-app"
+    ]
   }
 }

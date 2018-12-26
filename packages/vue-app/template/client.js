@@ -164,7 +164,7 @@ async function loadAsyncComponents(to, from, next) {
 
     this.error({ statusCode, message })
     this.$nuxt.$emit('routeChanged', to, from, err)
-    next(false)
+    next()
   }
 }
 
@@ -436,7 +436,7 @@ async function render(to, from, next) {
 
     this.error(error)
     this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
-    next(false)
+    next()
   }
 }
 
