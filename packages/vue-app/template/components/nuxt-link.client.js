@@ -60,9 +60,9 @@ export default {
     },
     canPrefetch() {
       const conn = navigator.connection
-      const hasBadConnection = conn && ((conn.effectiveType || '').includes('2g') || conn.saveData)
+      const hasBadConnection = this.$nuxt.isOffline || (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData))
 
-      return this.$nuxt.isOnline && !hasBadConnection
+      return !hasBadConnection
     },
     getPrefetchComponents() {
       const ref = this.$router.resolve(this.to, this.$route, this.append)
