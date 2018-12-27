@@ -66,7 +66,7 @@ export default {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
-    if (process.client && typeof window !== 'undefined') {
+    if (process.client) {
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
       this.refreshOnlineStatus()
       // Setup the listeners
