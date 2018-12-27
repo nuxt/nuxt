@@ -84,6 +84,11 @@ export default {
     'nuxt.err': 'errorChanged'
   },
   <% } %>
+  computed: {
+    isOffline() {
+      return !this.isOnline
+    }
+  },
   methods: {
     refreshOnlineStatus() {
       if (process.client) {
