@@ -12,6 +12,7 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
+    "intersection-observer": "^0.5.1",
     "vue": "^2.5.21",
     "vue-meta": "^1.5.8",
     "vue-no-ssr": "^1.1.1",

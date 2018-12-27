@@ -1,5 +1,6 @@
 <%= isTest ? '// @vue/component' : '' %>
 import Vue from 'vue'
+<%= router.prefetchLinks === 'polyfill' ? "import 'intersection-observer'" : "" %>
 
 const requestIdleCallback = window.requestIdleCallback ||
   function (cb) {
@@ -44,9 +45,9 @@ export default {
   },
   methods: {
     observe() {
-      // If no IntersectionObserver, prefetch directly
+      // If no IntersectionObserver, avoid prefetching
       if (!observer) {
-        return this.prefetch()
+        return
       }
       // Add to observer
       if (this.shouldPrefetch()) {
