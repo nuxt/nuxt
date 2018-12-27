@@ -25,6 +25,8 @@ declare module "vue/types/options" {
 declare module "vue/types/vue" {
   interface Vue {
     $nuxt: {
+      $isOnline: boolean;
+      $isOffline: boolean;
       $loading: LoadingObject;
     };
   }
