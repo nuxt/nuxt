@@ -48,7 +48,7 @@ const setModernMode = (req, options) => {
     req.modernMode = isModernBrowser
   }
   if (options.dev) {
-    req.devModernMode = isModernBrowser
+    req.devModernMode = options.modern && isModernBrowser
   }
 }
 
