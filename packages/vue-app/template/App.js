@@ -55,9 +55,9 @@ export default {
     ])
   },
   data: () => ({
+    isOnline: true,
     layout: null,
-    layoutName: '',
-    isOnline: true
+    layoutName: ''
   }),
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
