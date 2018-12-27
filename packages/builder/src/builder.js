@@ -304,7 +304,7 @@ export default class Builder {
           }
           return
         }
-        if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
+        if (!templateVars.layouts[name] && /\.vue$/.test(file)) {
           templateVars.layouts[name] = this.relativeToBuild(
             this.options.srcDir,
             file
