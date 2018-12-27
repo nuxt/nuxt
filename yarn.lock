@@ -5692,11 +5692,6 @@ inquirer@^6.1.0, inquirer@^6.2.0:
     strip-ansi "^4.0.0"
     through "^2.3.6"
 
-intersection-observer@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.npmjs.org/intersection-observer/-/intersection-observer-0.5.1.tgz#e340fc56ce74290fe2b2394d1ce88c4353ac6dfa"
-  integrity sha512-Zd7Plneq82kiXFixs7bX62YnuZ0BMRci9br7io88LwDyF3V43cQMI+G5IiTlTNTt+LsDUppl19J/M2Fp9UkH6g==
-
 invariant@^2.2.2, invariant@^2.2.4:
   version "2.2.4"
   resolved "https://registry.npmjs.org/invariant/-/invariant-2.2.4.tgz#610f3c92c9359ce1db616e538008d23ff35158e6"

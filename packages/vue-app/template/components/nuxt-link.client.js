@@ -1,6 +1,5 @@
 <%= isTest ? '// @vue/component' : '' %>
 import Vue from 'vue'
-<%= router.prefetchLinks === 'polyfill' ? "import 'intersection-observer'" : "" %>
 
 const requestIdleCallback = window.requestIdleCallback ||
   function (cb) {
