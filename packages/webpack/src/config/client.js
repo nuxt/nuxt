@@ -1,4 +1,6 @@
 import path from 'path'
+import fs from 'fs'
+import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
@@ -132,6 +134,24 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
+    // TypeScript type checker
+    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
+    if (this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
+      const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
+      if (forkTsCheckerResolvedPath) {
+        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
+        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
+          vue: true,
+          tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
+          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
+          formatter: 'codeframe'
+        }, this.options.build.useForkTsChecker)))
+      } else {
+        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
+      }
+    }
+
     return plugins
   }
 
@@ -146,6 +166,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // Add HMR support
     if (this.options.dev) {
       config.entry.app.unshift(
+        // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
+        'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
         `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
           this.options.router.base

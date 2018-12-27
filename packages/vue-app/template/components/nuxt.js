@@ -18,6 +18,7 @@ export default {
   props: {
     nuxtChildKey: String,
     keepAlive: Boolean,
+    keepAliveProps: Object,
     name: {
       type: String,
       default: 'default'
