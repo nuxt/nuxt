@@ -29,6 +29,10 @@ export default {
     noPrefetch: {
       type: Boolean,
       default: false
+    },
+    prefetchedClass: {
+      type: String,
+      default: '<%= router.linkPrefetchedClass %>'
     }
   },
   mounted() {
@@ -53,6 +57,8 @@ export default {
         this.$el.__prefetch = this.prefetch.bind(this)
         observer.observe(this.$el)
         this.__observed = true
+      } else {
+        this.addPrefetchedClass()
       }
     },
     shouldPrefetch() {
@@ -84,6 +90,10 @@ export default {
           Component.__prefetched = true
         } catch (e) {}
       }
+      this.addPrefetchedClass()
+    },
+    addPrefetchedClass() {
+      this.$el.className += ' nuxt-link-prefetched'
     }
   }
 }
