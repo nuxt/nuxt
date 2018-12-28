@@ -12,5 +12,5 @@ export default () => ({
   parseQuery: false,
   stringifyQuery: false,
   fallback: false,
-  prefetchLinks: true,
+  prefetchLinks: true
 })

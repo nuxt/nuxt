@@ -1,6 +1,8 @@
 <template>
   <div>
-    <nuxt-link v-for="link of $store.state.links" :key="link" :to="{ name: link }">/{{ link }}</nuxt-link>
+    <NuxtLink v-for="link of $store.state.links" :key="link" :to="{ name: link }">
+			/{{ link }}
+		</NuxtLink>
   </div>
 </template>
 
