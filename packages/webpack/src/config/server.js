@@ -28,7 +28,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }
     }
 
-    whitelist.push('vue', 'vue-router', 'vue-no-ssr', 'vuex')
+    if (!this.options.dev) {
+      whitelist.push('vue', 'vue-router', 'vue-no-ssr', 'vuex')
+    }
 
     return whitelist
   }
