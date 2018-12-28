@@ -134,6 +134,13 @@ export default class Builder {
     )
   }
 
+  async resolveFiles(dir) {
+    return this.ignore.filter(await glob(`${dir}/**/*.{${this.supportedExtensions.join(',')}}`, {
+      cwd: this.options.srcDir,
+      ignore: this.options.ignore
+    }))
+  }
+
   resolvePlugins() {
     // Check plugins exist then set alias to their real path
     return Promise.all(this.plugins.map(async (p) => {
@@ -291,10 +298,7 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = this.ignore.filter(await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
-        cwd: this.options.srcDir,
-        ignore: this.options.ignore
-      }))
+      const layoutsFiles = await this.resolveFiles(this.options.dir.layouts)
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
@@ -336,10 +340,7 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-      const pages = this.ignore.filter(await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
-        cwd: this.options.srcDir,
-        ignore: this.options.ignore
-      }))
+      const pages = await this.resolveFiles(this.options.dir.pages)
       pages.forEach((f) => {
         const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (/\.vue$/.test(f) || !files[key]) {
