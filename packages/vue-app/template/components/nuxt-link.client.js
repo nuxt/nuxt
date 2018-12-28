@@ -29,11 +29,11 @@ export default {
     noPrefetch: {
       type: Boolean,
       default: false
-    },
+    }<% if (router.linkPrefetchedClass) { %>,
     prefetchedClass: {
       type: String,
       default: '<%= router.linkPrefetchedClass %>'
-    }
+    }<% } %>
   },
   mounted() {
     if (!this.noPrefetch) {
@@ -57,9 +57,9 @@ export default {
         this.$el.__prefetch = this.prefetch.bind(this)
         observer.observe(this.$el)
         this.__observed = true
-      } else {
+      }<% if (router.linkPrefetchedClass) { %> else {
         this.addPrefetchedClass()
-      }
+      }<% } %>
     },
     shouldPrefetch() {
       return this.getPrefetchComponents().length > 0
@@ -89,11 +89,13 @@ export default {
           Component()
           Component.__prefetched = true
         } catch (e) {}
-      }
-      this.addPrefetchedClass()
-    },
+      }<% if (router.linkPrefetchedClass) { %>
+      this.addPrefetchedClass()<% } %>
+    }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass() {
-      this.$el.className += (' ' + this.prefetchedClass).trim()
-    }
+      if (this.prefetchedClass !== 'false') {
+        this.$el.className += (this.$el.className + ' ' + this.prefetchedClass).trim()
+      }
+    }<% } %>
   }
 }

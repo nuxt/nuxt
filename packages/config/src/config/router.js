@@ -6,7 +6,7 @@ export default () => ({
   middleware: [],
   linkActiveClass: 'nuxt-link-active',
   linkExactActiveClass: 'nuxt-link-exact-active',
-  linkPrefetchedClass: 'nuxt-link-prefetched',
+  linkPrefetchedClass: false,
   extendRoutes: null,
   scrollBehavior: null,
   parseQuery: false,
