@@ -14,8 +14,8 @@ const requestIdleCallback = window.requestIdleCallback ||
     }, 1)
   }
 const observer = window.IntersectionObserver && new window.IntersectionObserver(entries => {
-  entries.forEach(({ isIntersecting, target: link }) => {
-    if (!isIntersecting) {
+  entries.forEach(({ intersectionRatio, target: link }) => {
+    if (intersectionRatio <= 0) {
       return
     }
     link.__prefetch()
