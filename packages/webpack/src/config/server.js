@@ -17,7 +17,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   normalizeWhitelist() {
     const whitelist = [
       /\.css$/,
-      /\?vue&type=style/
+      /\?vue&type=style/,
+      /vue(-(router|no-ssr)|x)/
     ]
     for (const pattern of this.options.build.transpile) {
       if (pattern instanceof RegExp) {
