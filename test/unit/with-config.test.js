@@ -203,13 +203,9 @@ describe('with-config', () => {
   })
 })
 
-test('/test-ignore', async () => {
-  await expect(rp(url('/test-ignore'))).rejects.toMatchObject({
-    statusCode: 404,
-    response: {
-      body: expect.stringContaining('Cannot GET /-ignored')
-    }
-  })
+test('should ignore files in .nuxtignore', async () => {
+  await expect(rp(url('/test-ignore')))
+    .rejects.toMatchObject({ statusCode: 404 })
 })
 
 describe('server config', () => {
