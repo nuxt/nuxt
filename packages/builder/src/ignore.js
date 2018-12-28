@@ -27,12 +27,11 @@ export default class Ignore {
     if (this.findIgnoreFile()) {
       return fs.readFileSync(this.ignoreFile, 'utf8')
     }
-    return []
   }
 
   addIgnoresRules() {
     const content = this.readIgnoreFile()
-    if (this.ignore) {
+    if (content) {
       this.ignore.add(content)
     }
   }
