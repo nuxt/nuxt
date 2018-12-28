@@ -29,6 +29,7 @@ import {
   isString
 } from '@nuxt/utils'
 
+import Ignore from './ignore'
 import BuildContext from './context'
 
 const glob = pify(Glob)
@@ -84,6 +85,9 @@ export default class Builder {
     // }
 
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
+    this.ignore = new Ignore({
+      rootDir: this.options.srcDir
+    })
   }
 
   getBundleBuilder(BundleBuilder) {
@@ -287,10 +291,10 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
+      const layoutsFiles = this.ignore.filter(await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
-      })
+      }))
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
@@ -332,10 +336,11 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-        ; (await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
+      const pages = this.ignore.filter(await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
-      })).forEach((f) => {
+      }))
+      pages.forEach((f) => {
         const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
         if (/\.vue$/.test(f) || !files[key]) {
           files[key] = f.replace(/(['"])/g, '\\$1')

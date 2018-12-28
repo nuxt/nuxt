@@ -203,6 +203,15 @@ describe('with-config', () => {
   })
 })
 
+test('/test-ignore', async () => {
+  await expect(rp(url('/test-ignore'))).rejects.toMatchObject({
+    statusCode: 404,
+    response: {
+      body: expect.stringContaining('Cannot GET /-ignored')
+    }
+  })
+})
+
 describe('server config', () => {
   test('opens on port defined in server.port', async () => {
     const config = await loadFixture('with-config')
