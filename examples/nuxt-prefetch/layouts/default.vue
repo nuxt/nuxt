@@ -1,9 +1,11 @@
 <template>
   <div>
-    <div class="offline" v-if="$nuxt.isOffline">You are offline</div>
+    <div v-if="$nuxt.isOffline" class="offline">
+      You are offline
+    </div>
     <div class="container">
       <h1>{{ $route.name }}</h1>
-      <nuxt/>
+      <Nuxt />
     </div>
   </div>
 </template>
