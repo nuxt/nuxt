@@ -93,7 +93,7 @@ export default {
       this.addPrefetchedClass()
     },
     addPrefetchedClass() {
-      this.$el.className += ' nuxt-link-prefetched'
+      this.$el.className += (' ' + this.prefetchedClass).trim()
     }
   }
 }
