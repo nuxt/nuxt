@@ -180,6 +180,11 @@ describe('with-config', () => {
       .rejects.toMatchObject({ statusCode: 404 })
   })
 
+  test('should ignore files in .nuxtignore', async () => {
+    await expect(rp(url('/test-ignore')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   test('renderAndGetWindow options', async () => {
     const fakeErrorLog = jest.fn()
     const mockOptions = {
@@ -201,11 +206,6 @@ describe('with-config', () => {
   afterAll(async () => {
     await nuxt.close()
   })
-})
-
-test('should ignore files in .nuxtignore', async () => {
-  await expect(rp(url('/test-ignore')))
-    .rejects.toMatchObject({ statusCode: 404 })
 })
 
 describe('server config', () => {
