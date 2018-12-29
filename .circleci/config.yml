@@ -5,7 +5,13 @@ defaults: &defaults
   docker:
     - image: banian/node-headless-chrome
   environment:
-    - NODE_ENV: test
+    NODE_ENV: test
+
+release_branches: &release_branches
+  branches:
+    only:
+      - dev
+      - next
 
 jobs:
   # --------------------------------------------------------------------------
@@ -115,52 +121,50 @@ jobs:
       - run:
           name: release
           command: |
-            GIT_COMMIT_MSG=`git --no-pager log --pretty=full -n1 $CIRCLE_SHA1`
-            if echo "$GIT_COMMIT_MSG" | grep -o "\[release\]"; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              yarn lerna version --yes --no-git-tag-version --no-push
-              PACKAGE_SUFFIX=edge yarn build
-              if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
-              ./scripts/workspace-run npm publish $tag -q
-            fi
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            yarn lerna version --yes --no-git-tag-version --no-push
+            PACKAGE_SUFFIX=edge yarn build
+            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
+            ./scripts/workspace-run npm publish $tag -q
 
 # Workflow definition
 workflows:
   version: 2
-  setup-and-test:
+
+  # Build and test after each commit
+  # Manually release on releas branches
+  commit:
     jobs:
       - setup
-
-      - lint:
-          requires:
-            - setup
-
-      - audit:
-          requires:
-            - setup
-
-      - build:
-          requires:
-            - setup
-
-      - test-unit:
-          requires:
-            - build
-
-      - test-e2e:
-          requires:
-            - build
-
+      - lint:       { requires: [setup] }
+      - audit:      { requires: [setup] }
+      - build:      { requires: [setup] }
+      - test-unit:  { requires: [build] }
+      - test-e2e:   { requires: [build] }
+      - release-approval:
+          type: approval
+          requires: [build, lint, audit, test-unit, test-e2e]
+          filters:
+            <<: *release_branches
       - release:
           requires:
-            - build
-            - lint
-            - audit
-            - test-unit
-            - test-e2e
+            - release-approval
           filters:
-            branches:
-              only:
-                - dev
-                - next
+            <<: *release_branches
+
+  # Release nightly builds on release branches
+  nightly:
+    jobs:
+      - setup
+      - lint:       { requires: [setup] }
+      - audit:      { requires: [setup] }
+      - build:      { requires: [setup] }
+      - test-unit:  { requires: [build] }
+      - test-e2e:   { requires: [build] }
+      - release:    { requires: [build, lint, audit, test-unit, test-e2e] }
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            <<: *release_branches
