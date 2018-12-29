@@ -176,8 +176,17 @@ export default class Server {
     // Resolve handler setup as string (path)
     if (typeof handler === 'string') {
       try {
-        middleware = this.nuxt.resolver.requireModule(handler)
-        handler = middleware.handler || middleware
+        const requiredModuleFromHandlerPath = this.nuxt.resolver.requireModule(handler)
+
+        // In case the "handler" is not derived from an object but is a normal string, another object with
+        // path and handler could be the result
+
+        // If the required module has handler, treat the module as new "middleware" object
+        if (requiredModuleFromHandlerPath.handler) {
+          middleware = requiredModuleFromHandlerPath
+        }
+
+        handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
       } catch (err) {
         if (!this.options.dev) {
           throw err[0]
