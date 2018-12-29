@@ -176,7 +176,8 @@ export default class Server {
     // Resolve handler setup as string (path)
     if (typeof handler === 'string') {
       try {
-        handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
+        middleware = this.nuxt.resolver.requireModule(handler)
+        handler = middleware.handler || middleware
       } catch (err) {
         if (!this.options.dev) {
           throw err[0]

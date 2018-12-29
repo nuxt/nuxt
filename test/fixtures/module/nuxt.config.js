@@ -14,7 +14,7 @@ export default {
   ],
   serverMiddleware: [
     './modules/middleware/midd2',
-    './modules/middleware/midd3'
+    '~/modules/middleware/midd3'
   ],
   hooks(hook) {
     hook('ready', (nuxt) => {
