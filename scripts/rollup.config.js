@@ -27,11 +27,14 @@ export default function rollupConfig({
     pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
   }
 
+  const name = path.basename(pkg.name.replace('-edge', ''))
+
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
     output: {
-      file: `${pkg.name.replace('-edge', '')}.js`,
       dir: path.resolve(rootDir, 'dist'),
+      entryFileNames: `${name}.js`,
+      chunkFileNames: `${name}-[name].js`,
       format: 'cjs',
       preferConst: true
     },
