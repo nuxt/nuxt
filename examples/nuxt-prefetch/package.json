@@ -1,7 +1,7 @@
 {
-  "name": "example-hello-world",
+  "name": "example-nuxt-prefetch",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt-edge": "latest"
   },
   "scripts": {
     "dev": "nuxt",
