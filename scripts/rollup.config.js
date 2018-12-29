@@ -7,6 +7,7 @@ import replacePlugin from 'rollup-plugin-replace'
 import aliasPlugin from 'rollup-plugin-alias'
 import nodeResolvePlugin from 'rollup-plugin-node-resolve'
 import defaultsDeep from 'lodash/defaultsDeep'
+import consola from 'consola'
 
 import { builtins } from './builtins'
 
@@ -68,6 +69,12 @@ export default function rollupConfig({
           `*/`
         ].join('\n')
       })
-    ].concat(plugins)
+    ].concat(plugins),
+    onwarn(warning, warn) {
+      if (warning.plugin === 'rollup-plugin-license') {
+        return
+      }
+      consola.warn(warning)
+    }
   })
 }
