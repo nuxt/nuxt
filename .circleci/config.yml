@@ -129,7 +129,7 @@ jobs:
               if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
               ./scripts/workspace-run npm publish $tag -q
             else
-              echo "Release phase is skiped."
+              echo "Release phase is skipped."
             fi
 
 # Workflow definition
