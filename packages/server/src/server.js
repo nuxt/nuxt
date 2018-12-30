@@ -125,9 +125,9 @@ export default class Server {
     }
 
     // Add user provided middleware
-    this.options.serverMiddleware.forEach((m) => {
+    for (const m of this.options.serverMiddleware) {
       this.useMiddleware(m)
-    })
+    }
 
     const { fallback } = this.options.render
     if (fallback) {
@@ -188,11 +188,11 @@ export default class Server {
 
         handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
       } catch (err) {
+        consola.error(err)
+        // Throw error in production mode
         if (!this.options.dev) {
           throw err
         }
-        // Only warn missing file in development
-        consola.warn(err)
       }
     }
 
