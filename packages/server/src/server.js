@@ -189,10 +189,10 @@ export default class Server {
         handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
       } catch (err) {
         if (!this.options.dev) {
-          throw err[0]
+          throw err
         }
         // Only warn missing file in development
-        consola.warn(err[0])
+        consola.warn(err)
       }
     }
 

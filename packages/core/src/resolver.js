@@ -103,14 +103,13 @@ export default class Resolver {
   requireModule(path, { esm, alias, intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
-
-    const errors = []
+    let lastError
 
     // Try to resolve path
     try {
       resolvedPath = this.resolvePath(path, { alias })
     } catch (e) {
-      errors.push(e)
+      lastError = e
     }
 
     // Try to require
@@ -121,7 +120,7 @@ export default class Resolver {
         requiredModule = this.esm(resolvedPath)
       }
     } catch (e) {
-      errors.push(e)
+      lastError = e
     }
 
     // Introp default
@@ -130,8 +129,8 @@ export default class Resolver {
     }
 
     // Throw error if failed to require
-    if (requiredModule === undefined && errors.length) {
-      throw errors
+    if (requiredModule === undefined && lastError) {
+      throw lastError
     }
 
     return requiredModule
