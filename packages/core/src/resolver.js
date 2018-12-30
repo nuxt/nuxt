@@ -113,7 +113,7 @@ export default class Resolver {
     }
 
     // Disable esm for ts files by default
-    if (esm === undefined && /.ts/.test(path)) {
+    if (esm === undefined && /.ts$/.test(resolvedPath)) {
       esm = false
     }
 
