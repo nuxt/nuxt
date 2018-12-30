@@ -6,5 +6,10 @@ export default {
       logger: consola
     }
   },
-  plugins: ['~/plugins/plugin']
+  plugins: [
+    '~/plugins/plugin'
+  ],
+  serverMiddleware: [
+    '~/server-middleware/test.ts'
+  ]
 }
