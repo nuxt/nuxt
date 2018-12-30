@@ -10,6 +10,7 @@ export default () => ({
   ssr: undefined,
   parallel: false,
   cache: false,
+  standalone: false,
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }

@@ -33,7 +33,7 @@ export default {
     generate: {
       type: 'boolean',
       default: true,
-      description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
+      description: 'Don\'t generate static version for SPA mode (useful for nuxt-start)'
     },
     quiet: {
       alias: 'q',
@@ -44,6 +44,16 @@ export default {
         options.build = options.build || {}
         if (argv.quiet) {
           options.build.quiet = !!argv.quiet
+        }
+      }
+    },
+    standalone: {
+      type: 'boolean',
+      default: false,
+      description: 'Bundle all server dependencies (useful for nuxt-start)',
+      prepare(cmd, options, argv) {
+        if (argv.standalone) {
+          options.build.standalone = true
         }
       }
     }
