@@ -112,6 +112,11 @@ export default class Resolver {
       lastError = e
     }
 
+    // Disable esm for ts files by default
+    if (esm === undefined && /.ts/.test(path)) {
+      esm = false
+    }
+
     // Try to require
     try {
       if (esm === false) {
