@@ -593,6 +593,10 @@ export default class Builder {
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
 
+    if (this.ignore.ignoreFile) {
+      nuxtRestartWatch.push(this.ignore.ignoreFile)
+    }
+
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
       .on('all', (event, _path) => {
