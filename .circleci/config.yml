@@ -13,6 +13,26 @@ release_branches: &release_branches
       - dev
       - next
 
+release: &release
+  <<: *defaults
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ~/project
+    - run:
+        name: release
+        command: |
+          if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            yarn lerna version --yes --no-git-tag-version --no-push
+            PACKAGE_SUFFIX=edge yarn build
+            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
+            ./scripts/workspace-run npm publish $tag -q
+          else
+            echo "Release phase is skipped."
+          fi
+
 jobs:
   # --------------------------------------------------------------------------
   # Phase 1: Setup
@@ -112,25 +132,15 @@ jobs:
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
   # --------------------------------------------------------------------------
-  release:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: release
-          command: |
-            if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
-              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-              yarn lerna version --yes --no-git-tag-version --no-push
-              PACKAGE_SUFFIX=edge yarn build
-              if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
-              ./scripts/workspace-run npm publish $tag -q
-            else
-              echo "Release phase is skipped."
-            fi
+  release-commit:
+    <<: *release
+    environment:
+        COMMIT_MSG: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
+
+  release-nightly:
+    <<: *release
+    environment:
+        COMMIT_MSG: '[release]'
 
 # Workflow definition
 workflows:
@@ -146,12 +156,10 @@ workflows:
       - build:      { requires: [setup] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - release:
+      - release-commit:
           requires: [build, lint, audit, test-unit, test-e2e]
           filters:
             <<: *release_branches
-          environment:
-             COMMIT_MSG: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
 
   # Release nightly builds on release branches
   nightly:
@@ -162,10 +170,8 @@ workflows:
       - build:      { requires: [setup] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - release:
+      - release-nightly:
           requires: [build, lint, audit, test-unit, test-e2e]
-          environment:
-             COMMIT_MSG: '[release]'
     triggers:
       - schedule:
           cron: "0 0 * * *"
