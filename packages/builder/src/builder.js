@@ -134,11 +134,22 @@ export default class Builder {
     )
   }
 
-  async resolveFiles(dir) {
+  async resolveFiles(dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(`${dir}/**/*.{${this.supportedExtensions.join(',')}}`, {
-      cwd: this.options.srcDir,
+      cwd,
       ignore: this.options.ignore
     }))
+  }
+
+  async resolveStore() {
+    const storeDir = this.options.dir.store
+    const stores = []
+    for (const file of await this.resolveFiles(storeDir)) {
+      stores.push({
+        src: file.replace(new RegExp(`^${storeDir}/`), ''),
+      })
+    }
+    return stores
   }
 
   resolvePlugins() {
@@ -383,6 +394,7 @@ export default class Builder {
     // -- Store --
     // Add store if needed
     if (this.options.store) {
+      templateVars.stores = await this.resolveStore()
       templatesFiles.push('store.js')
     }
 

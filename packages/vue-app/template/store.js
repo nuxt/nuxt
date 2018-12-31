@@ -8,15 +8,10 @@ let storeData = {}
 let files;
 
 void function updateModules() {
-  files = require.context('@/<%= dir.store %>', true, /^\.\/(?!<%= ignorePrefix %>)[^.]+\.(<%= extensions %>)$/)
-  const filenames = files.keys()
-
-  // Check if {dir.store}/index.js exists
-  const indexFilename = filenames.find(filename => filename.includes('./index.'))
-
-  if (indexFilename) {
-    storeData = getModule(indexFilename)
-  }
+  <% stores.some(s => {
+    if(s.src.indexOf('index.') === 0) { %>
+  storeData = require('@/<%= dir.store %>/<%= s.src %>')
+  <% return true }}) %>
 
   // If store is not an exported method = modules store
   if (typeof storeData !== 'function') {
@@ -24,58 +19,17 @@ void function updateModules() {
     if (!storeData.modules) {
       storeData.modules = {}
     }
+    <% stores.forEach(s => {
+      if(s.src.indexOf('index.') !== 0) { %>
+    resolveStoreModules(require('@/<%= dir.store %>/<%= s.src %>'), '<%= s.src %>')<% }}) %>
 
-    for (const filename of filenames) {
-      let name = filename.replace(/^\.\//, '').replace(/\.(<%= extensions %>)$/, '')
-      if (name === 'index') continue
-
-      const namePath = name.split(/\//)
-
-      name = namePath[namePath.length - 1]
-      if (['state', 'getters', 'actions', 'mutations'].includes(name)) {
-        const module = getModuleNamespace(storeData, namePath, true)
-        appendModule(module, filename, name)
-        continue
-      }
-
-      // If file is foo/index.js, it should be saved as foo
-      const isIndex = (name === 'index')
-      if (isIndex) {
-        namePath.pop()
-      }
-
-      const module = getModuleNamespace(storeData, namePath)
-      const fileModule = getModule(filename)
-
-      name = namePath.pop()
-      module[name] = module[name] || {}
-
-      // if file is foo.js, existing properties take priority
-      // because it's the least specific case
-      if (!isIndex) {
-        module[name] = Object.assign({}, fileModule, module[name])
-        module[name].namespaced = true
-        continue
-      }
-
-      // if file is foo/index.js we want to overwrite properties from foo.js
-      // but not from appended mods like foo/actions.js
-      const appendedMods = {}
-      if (module[name].appends) {
-        appendedMods.appends = module[name].appends
-        for (const append of module[name].appends) {
-          appendedMods[append] = module[name][append]
-        }
-      }
-
-      module[name] = Object.assign({}, module[name], fileModule, appendedMods)
-      module[name].namespaced = true
-    }
-    // If the environment supports hot reloading...
-    <% if (isDev) { %>
+  // If the environment supports hot reloading...
+  <% if (isDev) { %>
     if (process.client && module.hot) {
       // Whenever any Vuex module is updated...
-      module.hot.accept(files.id, () => {
+      module.hot.accept([<% stores.forEach(s => { %>
+        '@/<%= dir.store %>/<%= s.src %>',<% }) %>
+      ], () => {
         // Update `root.modules` with the latest definitions.
         updateModules()
         // Trigger a hot update in the store.
@@ -98,17 +52,59 @@ export const createStore = storeData instanceof Function ? storeData : () => {
   }))
 }
 
+function resolveStoreModules(fileModule, filename) {
+  let name = filename.replace(/\.(<%= extensions %>)$/, '')
+  const namePath = name.split(/\//)
+
+  name = namePath[namePath.length - 1]
+  if (['state', 'getters', 'actions', 'mutations'].includes(name)) {
+    const module = getModuleNamespace(storeData, namePath, true)
+    appendModule(module, fileModule, name)
+    return
+  }
+
+  // If file is foo/index.js, it should be saved as foo
+  const isIndex = (name === 'index')
+  if (isIndex) {
+    namePath.pop()
+  }
+
+  const module = getModuleNamespace(storeData, namePath)
+  checkModule(fileModule, filename)
+
+  name = namePath.pop()
+  module[name] = module[name] || {}
+
+  // if file is foo.js, existing properties take priority
+  // because it's the least specific case
+  if (!isIndex) {
+    module[name] = Object.assign({}, fileModule, module[name])
+    module[name].namespaced = true
+    return
+  }
+
+  // if file is foo/index.js we want to overwrite properties from foo.js
+  // but not from appended mods like foo/actions.js
+  const appendedMods = {}
+  if (module[name].appends) {
+    appendedMods.appends = module[name].appends
+    for (const append of module[name].appends) {
+      appendedMods[append] = module[name][append]
+    }
+  }
+
+  module[name] = Object.assign({}, module[name], fileModule, appendedMods)
+  module[name].namespaced = true
+}
+
 // Dynamically require module
-function getModule(filename) {
-  const file = files(filename)
-  const module = file.default || file
+function checkModule(module, filename) {
   if (module.commit) {
-    throw new Error('[nuxt] <%= dir.store %>/' + filename.replace('./', '') + ' should export a method which returns a Vuex instance.')
+    throw new Error('[nuxt] <%= dir.store %>/' + filename + ' should export a method which returns a Vuex instance.')
   }
   if (module.state && typeof module.state !== 'function') {
-    throw new Error('[nuxt] state should be a function in <%= dir.store %>/' + filename.replace('./', ''))
+    throw new Error('[nuxt] state should be a function in <%= dir.store %>/' + filename)
   }
-  return module
 }
 
 function getModuleNamespace(storeData, namePath, forAppend = false) {
@@ -125,9 +121,8 @@ function getModuleNamespace(storeData, namePath, forAppend = false) {
   return getModuleNamespace(storeData.modules[namespace], namePath, forAppend)
 }
 
-function appendModule(module, filename, name) {
-  const file = files(filename)
+function appendModule(module, subModule, name) {
   module.appends = module.appends || []
   module.appends.push(name)
-  module[name] = file.default || file
+  module[name] = subModule.default || subModule
 }
