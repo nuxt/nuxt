@@ -141,15 +141,14 @@ export default class Builder {
     }))
   }
 
-  async resolveStore() {
-    const storeDir = this.options.dir.store
-    const stores = []
-    for (const file of await this.resolveFiles(storeDir)) {
-      stores.push({
-        src: file.replace(new RegExp(`^${storeDir}/`), '')
+  async resolveRelative(dir) {
+    const resources = []
+    for (const file of await this.resolveFiles(dir)) {
+      resources.push({
+        src: file.replace(new RegExp(`^${dir}/`), '')
       })
     }
-    return stores
+    return resources
   }
 
   resolvePlugins() {
@@ -284,14 +283,12 @@ export default class Builder {
       router: this.options.router,
       env: this.options.env,
       head: this.options.head,
-      middleware: fsExtra.existsSync(path.join(this.options.srcDir, this.options.dir.middleware)),
       store: this.options.store,
       globalName: this.options.globalName,
       globals: this.globals,
       css: this.options.css,
       plugins: this.plugins,
       appPath: './App.js',
-      ignorePrefix: this.options.ignorePrefix,
       layouts: Object.assign({}, this.options.layouts),
       loading:
         typeof this.options.loading === 'string'
@@ -394,9 +391,12 @@ export default class Builder {
     // -- Store --
     // Add store if needed
     if (this.options.store) {
-      templateVars.stores = await this.resolveStore()
+      templateVars.stores = await this.resolveRelative(this.options.dir.store)
       templatesFiles.push('store.js')
     }
+
+    // -- Middleware --
+    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
 
     // Resolve template files
     const customTemplateFiles = this.options.build.templates.map(
