@@ -135,12 +135,12 @@ jobs:
   release-commit:
     <<: *release
     environment:
-        COMMIT_MSG: '[release]'
+        COMMIT_MSG: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
 
   release-nightly:
     <<: *release
     environment:
-        COMMIT_MSG: $(git log --format=oneline -n 1 $CIRCLE_SHA1)
+        COMMIT_MSG: '[release]'
 
 # Workflow definition
 workflows:
