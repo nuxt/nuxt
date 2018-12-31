@@ -146,7 +146,7 @@ export default class Builder {
     const stores = []
     for (const file of await this.resolveFiles(storeDir)) {
       stores.push({
-        src: file.replace(new RegExp(`^${storeDir}/`), ''),
+        src: file.replace(new RegExp(`^${storeDir}/`), '')
       })
     }
     return stores
