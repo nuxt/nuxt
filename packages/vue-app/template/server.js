@@ -1,9 +1,14 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
 import omit from 'lodash/omit'
-import middleware from './middleware'
-import { applyAsyncData, sanitizeComponent, getMatchedComponents, getContext, middlewareSeries, promisify, urlJoin } from './utils'
-import { createApp, NuxtError } from './index'
+import middleware from './middleware.js'
+import { applyAsyncData, sanitizeComponent, getMatchedComponents, getContext, middlewareSeries, promisify, urlJoin } from './utils.js'
+import { createApp, NuxtError } from './index.js'
+import NuxtLink from './components/nuxt-link.server.js'
+
+// Component: <NuxtLink>
+Vue.component(NuxtLink.name, NuxtLink)
+Vue.component('NLink', NuxtLink)
 
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color

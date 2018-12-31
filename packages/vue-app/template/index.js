@@ -3,7 +3,6 @@ import Meta from 'vue-meta'
 import { createRouter } from './router.js'
 import NoSsr from './components/no-ssr.js'
 import NuxtChild from './components/nuxt-child.js'
-import NuxtLink from './components/nuxt-link.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 import Nuxt from './components/nuxt.js'
 import App from '<%= appPath %>'
@@ -23,9 +22,7 @@ Vue.component(NoSsr.name, NoSsr)
 Vue.component(NuxtChild.name, NuxtChild)
 Vue.component('NChild', NuxtChild)
 
-// Component: <NuxtLink
-Vue.component(NuxtLink.name, NuxtLink)
-Vue.component('NLink', NuxtLink)
+// Component NuxtLink is imported in server.js or client.js
 
 // Component: <Nuxt>`
 Vue.component(Nuxt.name, Nuxt)

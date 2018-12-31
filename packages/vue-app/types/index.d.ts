@@ -59,7 +59,11 @@ export interface ErrorParams {
   message?: string;
 }
 
-export interface LoadingObject {
-  start(): void;
-  finish(): void;
+export interface NuxtApp extends Vue {
+  isOffline: boolean;
+  isOnline: boolean;
+  $loading: {
+    start(): void;
+    finish(): void;
+  };
 }
