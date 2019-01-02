@@ -207,9 +207,11 @@ export default class Builder {
     }
 
     // Validate template
-    await this.validateTemplate().catch((error) => {
-      consola.fatal(error)
-    })
+    try {
+      this.validateTemplate()
+    } catch (err) {
+      consola.fatal(err)
+    }
 
     consola.success('Builder initialized')
 
@@ -243,7 +245,7 @@ export default class Builder {
     return this
   }
 
-  async validateTemplate() {
+  validateTemplate() {
     // Validate template dependencies
     const templateDependencies = this.template.dependencies
     const dpendencyFixes = []
