@@ -1,9 +1,6 @@
-import path from 'path'
-
 import { warmup } from 'thread-loader'
 
 // https://github.com/webpack-contrib/thread-loader
-// https://github.com/webpack-contrib/cache-loader
 
 export default class PerfLoader {
   constructor(config) {
@@ -36,15 +33,6 @@ export default class PerfLoader {
 
   use(poolName) {
     const loaders = []
-
-    if (this.options.build.cache) {
-      loaders.push({
-        loader: 'cache-loader',
-        options: {
-          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.name}`)
-        }
-      })
-    }
 
     if (this.options.build.parallel) {
       const pool = this.workerPools[poolName]

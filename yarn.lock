@@ -2464,16 +2464,6 @@ cache-base@^1.0.1:
     union-value "^1.0.0"
     unset-value "^1.0.0"
 
-cache-loader@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/cache-loader/-/cache-loader-2.0.0.tgz#75cad9eb1e1c882c2b8c31ea008b41ebb0787de0"
-  integrity sha512-zi4iyjWDs80PWRwFfIwcVSgRVIFX2PjyHH8YbsUGFH0U03oA5o80OEryZBCjfN+5tWYHFct1FXha8IhiIhaN6w==
-  dependencies:
-    loader-utils "^1.1.0"
-    mkdirp "^0.5.1"
-    neo-async "^2.5.0"
-    schema-utils "^1.0.0"
-
 call-me-maybe@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/call-me-maybe/-/call-me-maybe-1.0.1.tgz#26d208ea89e37b5cbde60250a15f031c16a4d66b"
@@ -10304,10 +10294,10 @@ term-size@^1.2.0:
   dependencies:
     execa "^0.7.0"
 
-terser-webpack-plugin@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.1.0.tgz#cf7c25a1eee25bf121f4a587bb9e004e3f80e528"
-  integrity sha512-61lV0DSxMAZ8AyZG7/A4a3UPlrbOBo8NIQ4tJzLPAdGOQ+yoNC7l5ijEow27lBAL2humer01KLS6bGIMYQxKoA==
+terser-webpack-plugin@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.2.0.tgz#24697213f2128009080f39f081c18cb2221d91ff"
+  integrity sha512-QW7RACLS89RalHtLDb0s8+Iqcs/IAEw1rnVrV+mS7Gx1kgPG8o1g33JhAGDgc/CQ84hLsTW5WrAMdVysh692yg==
   dependencies:
     cacache "^11.0.2"
     find-cache-dir "^2.0.0"
@@ -10318,10 +10308,10 @@ terser-webpack-plugin@^1.1.0:
     webpack-sources "^1.1.0"
     worker-farm "^1.5.2"
 
-terser-webpack-plugin@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.2.0.tgz#24697213f2128009080f39f081c18cb2221d91ff"
-  integrity sha512-QW7RACLS89RalHtLDb0s8+Iqcs/IAEw1rnVrV+mS7Gx1kgPG8o1g33JhAGDgc/CQ84hLsTW5WrAMdVysh692yg==
+terser-webpack-plugin@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.2.1.tgz#7545da9ae5f4f9ae6a0ac961eb46f5e7c845cc26"
+  integrity sha512-GGSt+gbT0oKcMDmPx4SRSfJPE1XaN3kQRWG4ghxKQw9cn5G9x6aCKSsgYdvyM0na9NJ4Drv0RG6jbBByZ5CMjw==
   dependencies:
     cacache "^11.0.2"
     find-cache-dir "^2.0.0"
@@ -11045,10 +11035,10 @@ webpack-sources@^1.0.1, webpack-sources@^1.1.0, webpack-sources@^1.3.0:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@5.0.0-alpha.0, webpack@^4.28.2:
-  version "5.0.0-alpha.0"
-  resolved "https://registry.npmjs.org/webpack/-/webpack-5.0.0-alpha.0.tgz#6fdd442932ff232da783e629f2ffcf29a571b533"
-  integrity sha512-dycVcffNaebFKI5Y6yv4yvtzAqr6MahHMBo58I9+YZQUAlf8x7sjVwFbCzxtEKLR3DAihJeQ7RscpqEQqimpuQ==
+webpack@5.0.0-alpha.3, webpack@^4.28.2:
+  version "5.0.0-alpha.3"
+  resolved "https://registry.npmjs.org/webpack/-/webpack-5.0.0-alpha.3.tgz#2330734b1f175703f3069c1cf5d4f80b688f76b7"
+  integrity sha512-9F8ZKS8+q+NVU8516RThPiMrDrcaIO4fctkC0V8Va/q16rEvcBonbN71OTuWz+Ewh6SwaVD8fWmQD6gW/mQMPw==
   dependencies:
     "@webassemblyjs/ast" "1.7.11"
     "@webassemblyjs/helper-module-context" "1.7.11"
@@ -11072,7 +11062,7 @@ webpack@5.0.0-alpha.0, webpack@^4.28.2:
     neo-async "^2.5.0"
     schema-utils "^0.4.4"
     tapable "^1.1.0"
-    terser-webpack-plugin "^1.1.0"
+    terser-webpack-plugin "^1.2.1"
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
 

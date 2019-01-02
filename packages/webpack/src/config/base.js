@@ -39,6 +39,10 @@ export default class WebpackBaseConfig {
     }
   }
 
+  get devtool() {
+    return false
+  }
+
   get nuxtEnv() {
     return {
       isDev: this.options.dev,
@@ -97,10 +101,6 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool() {
-    return false
-  }
-
   env() {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.buildMode),
@@ -125,6 +125,18 @@ export default class WebpackBaseConfig {
         ? this.options.build.publicPath
         : urlJoin(this.options.router.base, this.options.build.publicPath)
     }
+  }
+
+  cache() {
+    if (this.options.build.cache) {
+      return {
+        type: 'filesystem',
+        cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
+        ...this.options.build.cache,
+        name: this.name
+      }
+    }
+    return false
   }
 
   optimization() {
@@ -398,6 +410,7 @@ export default class WebpackBaseConfig {
       name: this.name,
       mode: this.buildMode,
       devtool: this.devtool,
+      cache: this.cache(),
       optimization: this.optimization(),
       output: this.output(),
       performance: {
