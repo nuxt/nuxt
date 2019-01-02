@@ -1,7 +1,7 @@
 import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% css.forEach((c) => { %>
-import '<%= relativeToBuild(resolvePath(c.src || c)) %>'
+import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
 
 <%= Object.keys(layouts).map((key) => {

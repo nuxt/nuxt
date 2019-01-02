@@ -42,6 +42,7 @@ export default () => ({
     store: 'store'
   },
   extensions: [],
+  styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
 
   // Ignores
   ignorePrefix: '-',
