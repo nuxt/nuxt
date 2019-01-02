@@ -81,12 +81,6 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 }).join('\n')%>
 
 Vue.use(Router)
-// router-view was changed to RouterView in vue-router 3.0.2
-// Fix: Vue.component('RouterLink') is undefined in vue-router 3.0.0
-if (!Vue.component('RouterLink')) {
-  Vue.options.components['RouterView'] = Vue.component('router-view')
-  Vue.options.components['RouterLink'] = Vue.component('router-link')
-}
 
 <% if (router.scrollBehavior) { %>
 const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>

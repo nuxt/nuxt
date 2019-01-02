@@ -7,6 +7,7 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import serialize from 'serialize-javascript'
 import upath from 'upath'
+import semver from 'semver'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'
@@ -75,7 +76,7 @@ export default class Builder {
     // Resolve template
     this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
-      this.template = this.nuxt.resolver.requireModule(this.template)
+      this.template = this.nuxt.resolver.requireModule(this.template).template
     }
 
     // if(!this.options.dev) {
@@ -205,6 +206,13 @@ export default class Builder {
       }
     }
 
+    // Validate template
+    try {
+      this.validateTemplate()
+    } catch (err) {
+      consola.fatal(err)
+    }
+
     consola.success('Builder initialized')
 
     consola.debug(`App root: ${this.options.srcDir}`)
@@ -237,6 +245,43 @@ export default class Builder {
     return this
   }
 
+  validateTemplate() {
+    // Validate template dependencies
+    const templateDependencies = this.template.dependencies
+    const dpendencyFixes = []
+    for (const depName in templateDependencies) {
+      const depVersion = templateDependencies[depName]
+      const requiredVersion = `${depName}@${depVersion}`
+
+      // Load installed version
+      const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'))
+      if (pkg) {
+        const validVersion = semver.satisfies(pkg.version, depVersion)
+        if (!validVersion) {
+          consola.warn(`${requiredVersion} is required but ${depName}@${pkg.version} is installed!`)
+          dpendencyFixes.push(requiredVersion)
+        }
+      } else {
+        consola.warn(`${depName}@${depVersion} is required but not installed!`)
+        dpendencyFixes.push(requiredVersion)
+      }
+    }
+
+    // Suggest dependency fixes (TODO: automate me)
+    if (dpendencyFixes.length) {
+      consola.error(
+        `Please install missing dependencies:\n`,
+        '\n',
+        `Using yarn:\n`,
+        `yarn add ${dpendencyFixes.join(' ')}\n`,
+        '\n',
+        `Using npm:\n`,
+        `npm i ${dpendencyFixes.join(' ')}\n`
+      )
+      throw new Error('Missing Template Dependencies')
+    }
+  }
+
   async generateRoutesAndFiles() {
     consola.debug(`Generating nuxt files`)
 
@@ -244,7 +289,7 @@ export default class Builder {
     this.plugins = Array.from(this.normalizePlugins())
 
     // -- Templates --
-    let templatesFiles = Array.from(this.template.templatesFiles)
+    let templatesFiles = Array.from(this.template.files)
 
     const templateVars = {
       options: this.options,
@@ -325,7 +370,7 @@ export default class Builder {
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes(
         ['index.vue'],
-        this.template.templatesDir + '/pages',
+        this.template.dir + '/pages',
         '',
         this.options.router.routeNameSplitter
       )
@@ -396,7 +441,7 @@ export default class Builder {
         const customFileExists = fsExtra.existsSync(customPath)
 
         return {
-          src: customFileExists ? customPath : r(this.template.templatesDir, file),
+          src: customFileExists ? customPath : r(this.template.dir, file),
           dst: file,
           custom: customFileExists
         }
@@ -421,7 +466,7 @@ export default class Builder {
     // -- Loading indicator --
     if (this.options.loadingIndicator.name) {
       const indicatorPath1 = path.resolve(
-        this.template.templatesDir,
+        this.template.dir,
         'views/loading',
         this.options.loadingIndicator.name + '.html'
       )
