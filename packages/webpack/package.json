@@ -46,7 +46,6 @@
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-dev-middleware": "^3.4.0",
     "webpack-hot-middleware": "^2.24.3",
-    "webpack-node-externals": "^1.7.2",
     "webpackbar": "^3.1.4"
   },
   "publishConfig": {

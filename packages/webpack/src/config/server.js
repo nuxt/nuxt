@@ -2,8 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import webpack from 'webpack'
 import escapeRegExp from 'lodash/escapeRegExp'
-import nodeExternals from 'webpack-node-externals'
 
+// TODO: remove when webpack-node-externals support webpack5
+import nodeExternals from '../plugins/externals'
 import VueSSRServerPlugin from '../plugins/vue/server'
 
 import WebpackBaseConfig from './base'
