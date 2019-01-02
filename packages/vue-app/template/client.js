@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import middleware from './middleware'
+import middleware from './middleware.js'
 import {
   applyAsyncData,
   sanitizeComponent,
@@ -14,8 +14,13 @@ import {
   compile,
   getQueryDiff,
   globalHandleError
-} from './utils'
-import { createApp, NuxtError } from './index'
+} from './utils.js'
+import { createApp, NuxtError } from './index.js'
+import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+
+// Component: <NuxtLink>
+Vue.component(NuxtLink.name, NuxtLink)
+Vue.component('NLink', NuxtLink)
 
 const noopData = () => { return {} }
 const noopFetch = () => {}
@@ -159,7 +164,7 @@ async function loadAsyncComponents(to, from, next) {
 
     this.error({ statusCode, message })
     this.$nuxt.$emit('routeChanged', to, from, err)
-    next(false)
+    next()
   }
 }
 
@@ -431,7 +436,7 @@ async function render(to, from, next) {
 
     this.error(error)
     this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
-    next(false)
+    next()
   }
 }
 

@@ -1,9 +1,9 @@
 import consola from 'consola'
 import chalk from 'chalk'
+import env from 'std-env'
 
-const isWin = process.platform === 'win32'
-describe.skip.win = isWin ? describe.skip : describe
-test.skip.win = isWin ? test.skip : test
+describe.skip.win = env.windows ? describe.skip : describe
+test.skip.win = env.windows ? test.skip : test
 
 chalk.enabled = false
 
