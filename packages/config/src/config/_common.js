@@ -42,6 +42,7 @@ export default () => ({
     store: 'store'
   },
   extensions: [],
+  styleExtensions: [],
 
   // Ignores
   ignorePrefix: '-',

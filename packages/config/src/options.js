@@ -43,6 +43,21 @@ export function getNuxtConfig(_options) {
     options.extensions = [options.extensions]
   }
 
+  const styleExtensionDefaults = ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less']
+
+  if (!options.styleExtensions) {
+    options.styleExtensions = styleExtensionDefaults
+  }
+
+  if (typeof options.styleExtensions === 'function') {
+    // Execute functions with defaults passed in as first argument
+    options.styleExtensions = options.styleExtensions(styleExtensionDefaults)
+  }
+
+  if (typeof options.styleExtensions === 'string') {
+    options.styleExtensions = [options.styleExtensions]
+  }
+
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
     : `nuxt`

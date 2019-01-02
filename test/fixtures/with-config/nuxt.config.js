@@ -80,7 +80,8 @@ export default {
       })
     }
   },
-  css: [{ src: '~/assets/app.pcss' }],
+  css: [{ src: '~/assets/app' }],
+  styleExtensions: currentExtensions => currentExtensions.filter(e => e === 'pcss'),
   render: {
     csp: true,
     http2: {
