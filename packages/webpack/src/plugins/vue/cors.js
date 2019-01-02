@@ -1,5 +1,4 @@
 import HTMLPlugin from 'html-webpack-plugin'
-import { className } from 'postcss-selector-parser';
 
 export default class CorsPlugin {
   constructor({ crossorigin }) {
