@@ -441,7 +441,7 @@ export default class Builder {
         const customFileExists = fsExtra.existsSync(customPath)
 
         return {
-          src: customFileExists ? customPath : r(this.template.templatesDir, file),
+          src: customFileExists ? customPath : r(this.template.dir, file),
           dst: file,
           custom: customFileExists
         }
@@ -466,7 +466,7 @@ export default class Builder {
     // -- Loading indicator --
     if (this.options.loadingIndicator.name) {
       const indicatorPath1 = path.resolve(
-        this.template.templatesDir,
+        this.template.dir,
         'views/loading',
         this.options.loadingIndicator.name + '.html'
       )
