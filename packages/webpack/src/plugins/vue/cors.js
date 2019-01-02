@@ -1,3 +1,6 @@
+import HTMLPlugin from 'html-webpack-plugin'
+import { className } from 'postcss-selector-parser';
+
 export default class CorsPlugin {
   constructor({ crossorigin }) {
     this.crossorigin = crossorigin
@@ -6,9 +9,9 @@ export default class CorsPlugin {
   apply(compiler) {
     const ID = `vue-cors-plugin`
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tap(ID, (data) => {
+      HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data, cb) => {
         if (this.crossorigin != null) {
-          [...data.head, ...data.body].forEach((tag) => {
+          [...data.headTags, ...data.bodyTags].forEach((tag) => {
             if (tag.tagName === 'script' || tag.tagName === 'link') {
               if (tag.attributes) {
                 tag.attributes.crossorigin = this.crossorigin
@@ -16,6 +19,7 @@ export default class CorsPlugin {
             }
           })
         }
+        cb(null, data)
       })
     })
   }
