@@ -66,7 +66,6 @@ export default () => ({
     splitChunks: {
       chunks: 'all',
       automaticNameDelimiter: '.',
-      name: undefined,
       cacheGroups: {}
     }
   },
