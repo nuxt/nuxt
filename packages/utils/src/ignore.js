@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import ignore from 'ignore'
 
-export default class Ignore {
+export class Ignore {
   constructor(options) {
     this.rootDir = options.rootDir
     this.addIgnoresRules()
