@@ -244,6 +244,10 @@ export class WebpackBundler {
       await devMiddleware.close()
     }
 
+    for (const compiler of this.compilers) {
+      compiler.close()
+    }
+
     // Cleanup MFS
     if (this.mfs) {
       delete this.mfs.data
