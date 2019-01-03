@@ -127,15 +127,16 @@ export default class WebpackBaseConfig {
   }
 
   cache() {
-    if (this.options.build.cache) {
-      return {
-        type: 'filesystem',
-        cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
-        ...this.options.build.cache,
-        name: this.name
-      }
+    if (!this.options.build.cache) {
+      return false
     }
-    return false
+
+    return {
+      type: 'filesystem',
+      cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
+      ...this.options.build.cache,
+      name: this.name
+    }
   }
 
   optimization() {
