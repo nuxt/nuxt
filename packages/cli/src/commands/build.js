@@ -33,7 +33,7 @@ export default {
     generate: {
       type: 'boolean',
       default: true,
-      description: 'Don\'t generate static version for SPA mode (useful for nuxt-start)'
+      description: 'Don\'t generate static version for SPA mode (useful for nuxt start)'
     },
     quiet: {
       alias: 'q',
