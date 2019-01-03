@@ -42,7 +42,10 @@
   "files": [
     "bin"
   ],
-  "bin": "bin/nuxt-ts.js",
+  "bin": {
+    "nuxt-ts": "bin/nuxt-ts.js",
+    "nuxts": "bin/nuxt-ts.js"
+  },
   "dependencies": {
     "@nuxt/builder": "2.3.4",
     "@nuxt/cli": "2.3.4",
