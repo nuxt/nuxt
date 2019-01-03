@@ -10,7 +10,7 @@ export default {
       skipTimerCount: 0,
       rtl: <%= Boolean(loading.rtl) %>,
       throttle: <%= typeof loading.throttle === 'number' ? loading.throttle : 200 %>,
-      duration: <%= typeof loading.throttle === 'number' ? loading.duration : 3000 %>,
+      duration: <%= typeof loading.duration === 'number' ? loading.duration : 3000 %>,
       continuous: <%= Boolean(loading.continuous) %>
     }
   },
