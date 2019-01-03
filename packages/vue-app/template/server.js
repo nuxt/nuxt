@@ -1,8 +1,7 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
-import omit from 'lodash/omit'
 import middleware from './middleware.js'
-import { applyAsyncData, sanitizeComponent, getMatchedComponents, getContext, middlewareSeries, promisify, urlJoin } from './utils.js'
+import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js'
 
