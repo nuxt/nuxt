@@ -22,6 +22,9 @@ release: &release
     - run:
         name: release
         command: |
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
+          fi
           if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
@@ -134,8 +137,6 @@ jobs:
   # --------------------------------------------------------------------------
   release-commit:
     <<: *release
-    environment:
-        COMMIT_MSG: git log --format=oneline -n 1 $CIRCLE_SHA1
 
   release-nightly:
     <<: *release
