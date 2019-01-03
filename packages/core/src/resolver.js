@@ -1,9 +1,12 @@
 import Module from 'module'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
+import consola from 'consola'
 import esm from 'esm'
 
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
+
+const logger = consola.withTag('@nuxt/resolver')
 
 export default class Resolver {
   constructor(nuxt) {
@@ -46,7 +49,15 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath(path, { alias, module, isStyle } = {}) {
+  resolvePath(path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
+    // TODO: Remove in Nuxt 3
+    if (alias) {
+      logger.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
+    }
+    if (module) {
+      logger.warn('Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.')
+    }
+
     // Fast return in case of path exists
     if (fs.existsSync(path)) {
       return path
@@ -55,12 +66,12 @@ export default class Resolver {
     let resolvedPath
 
     // Try to resolve it as a regular module
-    if (module !== false) {
+    if (isModule !== false) {
       resolvedPath = this.resolveModule(path)
     }
 
     // Try to resolve alias
-    if (!resolvedPath && alias !== false) {
+    if (!resolvedPath && isAlias !== false) {
       resolvedPath = this.resolveAlias(path)
     }
 
@@ -102,15 +113,27 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, alias, intropDefault } = {}) {
+  requireModule(path, { esm, isEsm = esm, alias, isAlias = alias, intropDefault, shouldIntropDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
+
+    // TODO: Remove in Nuxt 3
+    if (alias) {
+      logger.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
+    }
+    if (esm) {
+      logger.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `isEsm` instead.')
+    }
+
+    if (intropDefault) {
+      logger.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `shouldIntropDefault` instead.')
+    }
 
     const errors = []
 
     // Try to resolve path
     try {
-      resolvedPath = this.resolvePath(path, { alias })
+      resolvedPath = this.resolvePath(path, { isAlias })
     } catch (e) {
       errors.push(e)
     }
@@ -127,7 +150,7 @@ export default class Resolver {
     }
 
     // Introp default
-    if (intropDefault !== false && requiredModule && requiredModule.default) {
+    if (shouldIntropDefault !== false && requiredModule && requiredModule.default) {
       requiredModule = requiredModule.default
     }
 
