@@ -52,20 +52,20 @@ export const getters: GetterTree<State, RootState> = {
 }
 
 export interface Actions<S, R> extends ActionTree<S, R> {
-  select(context: ActionContext<S, R>, id: number): void
+  select (context: ActionContext<S, R>, id: number): void
 }
 
 export const actions: Actions<State, RootState> = {
-  select({ commit }, id: number) {
+  select ({ commit }, id: number) {
     commit(types.SELECT, id)
   }
 }
 
 export const mutations: MutationTree<State> = {
-  [types.SELECT](state, id: number) {
+  [types.SELECT] (state, id: number) {
     state.selected = id
   },
-  [types.SET](state, people: Person[]) {
+  [types.SET] (state, people: Person[]) {
     state.people = people
   }
 }

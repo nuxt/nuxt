@@ -18,8 +18,7 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'nuxt-class-component'
+import { Component, Vue } from 'vue-property-decorator'
 import Card from '~/components/Card.vue'
 import { namespace } from 'vuex-class'
 
@@ -32,10 +31,9 @@ const People = namespace(people.name)
     Card
   }
 })
-export default class extends Vue {
+export default class IndexPage extends Vue {
   @People.State selected
   @People.State people
   @People.Getter selectedPerson
 }
-
 </script>

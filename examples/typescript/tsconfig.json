@@ -1,23 +1,27 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
-    "module": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
+    "lib": ["es2015", "dom"],
+    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
     "allowJs": true,
+    "sourceMap": true,
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "baseUrl": ".",
     "paths": {
       "~/*": ["./*"]
-    }
+    },
+    "types": [
+      "@types/node",
+      "@nuxt/vue-app-edge"
+    ]
   }
 }
