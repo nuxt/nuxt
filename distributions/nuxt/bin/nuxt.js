@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const { name } = require('../package.json')
-const isEdge = name.indexOf('-edge') !== -1
-const cli = require(isEdge ? '@nuxt/cli-edge' : '@nuxt/cli')
-cli.run()
+
+const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
+require('@nuxt/cli' + suffix).run()

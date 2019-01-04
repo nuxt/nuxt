@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
-const { register } = require('ts-node')
-
-// globally indicate we are running in ts mode
+// Globally indicate we are running in ts mode
 process.env.NUXT_TS = 'true'
 
 // https://github.com/TypeStrong/ts-node
-register()
+require('ts-node').register()
 
-require('@nuxt/cli').run()
+const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
+require('@nuxt/cli' + suffix).run()
