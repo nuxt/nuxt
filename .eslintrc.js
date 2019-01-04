@@ -13,8 +13,7 @@ module.exports = {
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
-      'vue/name-property-casing': 'error',
-      'no-unused-vars': 'warn'
+      'vue/name-property-casing': 'error'
     }
   }, {
     files: [
