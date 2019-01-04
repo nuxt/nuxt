@@ -116,7 +116,7 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
-          name: Lint
+          name: Lint vue-app templates
           command: yarn lint:app
 
   # --------------------------------------------------------------------------
