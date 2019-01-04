@@ -1,4 +1,7 @@
 const config: any = {
+  modules: [
+    '~/modules/module'
+  ],
   plugins: [
     '~/plugins/plugin'
   ],
