@@ -109,6 +109,16 @@ jobs:
           paths:
             - test/fixtures
 
+  lint-app:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Lint
+          command: yarn lint:app
+
   # --------------------------------------------------------------------------
   # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
