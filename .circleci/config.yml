@@ -23,7 +23,7 @@ release: &release
         name: release
         command: |
           if [ -z "$COMMIT_MSG" ]; then
-            COMMIT_MSG=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
+            COMMIT_MSG=$(git --no-pager log --pretty=full -n1 $CIRCLE_SHA1)
           fi
           if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
             echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
