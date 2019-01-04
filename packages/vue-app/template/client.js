@@ -22,9 +22,6 @@ import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client"
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
 
-const noopData = () => { return {} }
-const noopFetch = () => {}
-
 // Global shared references
 let _lastPaths = []
 let app
@@ -150,8 +147,8 @@ async function loadAsyncComponents(to, from, next) {
     <% } %>
     // Call next()
     next()
-  } catch (err) {
-    err = err || {}
+  } catch (error) {
+    const err = error || {}
     const statusCode = err.statusCode || err.status || (err.response && err.response.status) || 500
     const message = err.message || ''
 
@@ -524,6 +521,9 @@ function nuxtReady(_app) {
 }
 
 <% if (isDev) { %>
+const noopData = () => { return {} }
+const noopFetch = () => {}
+
 // Special hot reload with asyncData(context)
 function getNuxtChildComponents($parent, $components = []) {
   $parent.$children.forEach(($child) => {

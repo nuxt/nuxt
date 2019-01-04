@@ -5,17 +5,17 @@ export function serializeFunction(func) {
   let open = false
   return serialize(func)
     .replace(serializeFunction.assignmentRE, (_, spaces) => {
-      return `${spaces}:function(`
+      return `${spaces}: function (`
     })
     .replace(serializeFunction.internalFunctionRE, (_, spaces, name, args) => {
       if (open) {
-        return `${spaces}${name}:function(${args}) {`
+        return `${spaces}${name}: function (${args}) {`
       } else {
         open = true
         return _
       }
     })
-    .replace(`${func.name}(`, 'function(')
+    .replace(`${func.name}(`, 'function (')
 }
 
 serializeFunction.internalFunctionRE = /^(\s*)(?!(?:if)|(?:for)|(?:while)|(?:switch))(\w+)\s*\((.*?)\)\s*\{/gm

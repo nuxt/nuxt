@@ -143,9 +143,9 @@ export function createRouter() {
     linkActiveClass: '<%= router.linkActiveClass %>',
     linkExactActiveClass: '<%= router.linkExactActiveClass %>',
     scrollBehavior,
-    <%= isTest ? '/* eslint-disable quotes */' : '' %>
+    <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
     routes: [<%= _routes %>],
-    <%= isTest ? '/* eslint-enable quotes */' : '' %>
+    <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
     <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
     <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>

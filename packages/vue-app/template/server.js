@@ -3,7 +3,7 @@ import Vue from 'vue'
 import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin } from './utils.js'
 import { createApp, NuxtError } from './index.js'
-import NuxtLink from './components/nuxt-link.server.js'
+import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
