@@ -6,7 +6,9 @@ describe('typescript', () => {
   const url = route => 'http://localhost:' + port + route
 
   beforeAll(async () => {
+    process.env.NUXT_TS = 'true'
     const options = await loadFixture('typescript')
+    delete process.env.NUXT_TS
     nuxt = new Nuxt(options)
     await nuxt.ready()
     port = await getPort()
@@ -33,8 +35,8 @@ describe('typescript', () => {
     expect(html).toContain('<div>Contact Page</div>')
   })
 
-  test.skip('/api/test', async () => {
-    const { html } = await rp(url('/api/test'))
+  test('/api/test', async () => {
+    const html = await rp(url('/api/test'))
     expect(html).toContain('Works!')
   })
 

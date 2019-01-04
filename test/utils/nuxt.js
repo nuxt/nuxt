@@ -12,7 +12,7 @@ export * from '../../packages/utils/src/index'
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
-  const configFile = path.resolve(rootDir, 'nuxt.config.js')
+  const configFile = path.resolve(rootDir, `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`)
 
   let config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
   if (typeof config === 'function') {
