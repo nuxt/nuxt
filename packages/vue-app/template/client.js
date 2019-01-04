@@ -26,7 +26,7 @@ Vue.component('NLink', NuxtLink)
 let _lastPaths = []
 let app
 let router
-<% if (store) { %>let store<% } %>
+<% if (store) { %>let store<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %><% } %>
 
 // Try to rehydrate SSR data from window
 const NUXT = window.<%= globals.context %> || {}

@@ -12,7 +12,7 @@ Vue.component('NLink', NuxtLink)
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
 
-const isDev = <%= isDev %>
+const isDev = <%= isDev %><%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 const noopApp = () => new Vue({ render: h => h('div') })
 

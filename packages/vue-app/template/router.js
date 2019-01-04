@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { interopDefault } from './utils'
+import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
   let res = '', resMap = ''
