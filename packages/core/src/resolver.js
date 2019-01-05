@@ -6,8 +6,6 @@ import esm from 'esm'
 
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
-const logger = consola.withTag('@nuxt/resolver')
-
 export default class Resolver {
   constructor(nuxt) {
     this.nuxt = nuxt
@@ -52,10 +50,10 @@ export default class Resolver {
   resolvePath(path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
-      logger.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
+      consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
     }
     if (module) {
-      logger.warn('Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.')
+      consola.warn('Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.')
     }
 
     // Fast return in case of path exists
@@ -113,20 +111,16 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, isEsm = esm, alias, isAlias = alias, intropDefault, shouldIntropDefault = intropDefault } = {}) {
+  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 
     // TODO: Remove in Nuxt 3
     if (alias) {
-      logger.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
+      consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
     }
     if (esm) {
-      logger.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `isEsm` instead.')
-    }
-
-    if (intropDefault) {
-      logger.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `shouldIntropDefault` instead.')
+      consola.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.')
     }
 
     const errors = []
@@ -150,7 +144,7 @@ export default class Resolver {
     }
 
     // Introp default
-    if (shouldIntropDefault !== false && requiredModule && requiredModule.default) {
+    if (intropDefault !== false && requiredModule && requiredModule.default) {
       requiredModule = requiredModule.default
     }
 
