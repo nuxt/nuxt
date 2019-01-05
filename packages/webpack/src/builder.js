@@ -66,14 +66,14 @@ export class WebpackBundler {
         clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
       }
 
+      // Modern config
+      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
+        modernConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
+      }
+
       // Server config
       if (serverConfig && !serverConfig.resolve.alias[p.name]) {
         serverConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
-      }
-
-      // Modern config
-      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
-        modernConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
       }
     }
 

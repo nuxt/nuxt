@@ -80,7 +80,7 @@ export default {
       })
     }
   },
-  css: [{ src: '~/assets/app.pcss' }],
+  css: [{ src: '~/assets/app' }],
   render: {
     csp: true,
     http2: {

@@ -46,7 +46,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath(path, { alias, module } = {}) {
+  resolvePath(path, { alias, module, isStyle } = {}) {
     // Fast return in case of path exists
     if (fs.existsSync(path)) {
       return path
@@ -80,8 +80,10 @@ export default class Resolver {
       }
     }
 
+    const extensions = isStyle ? this.options.styleExtensions : this.options.extensions
+
     // Check if any resolvedPath.[ext] or resolvedPath/index.[ext] exists
-    for (const ext of this.options.extensions) {
+    for (const ext of extensions) {
       if (!isDirectory && fs.existsSync(resolvedPath + '.' + ext)) {
         return resolvedPath + '.' + ext
       }

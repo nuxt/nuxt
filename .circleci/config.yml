@@ -13,6 +13,29 @@ release_branches: &release_branches
       - dev
       - next
 
+release: &release
+  <<: *defaults
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ~/project
+    - run:
+        name: release
+        command: |
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG=$(git --no-pager log --pretty=full -n1 $CIRCLE_SHA1)
+          fi
+          if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            yarn lerna version --yes --no-git-tag-version --no-push
+            PACKAGE_SUFFIX=edge yarn build
+            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
+            ./scripts/workspace-run npm publish $tag -q
+          else
+            echo "Release phase is skipped."
+          fi
+
 jobs:
   # --------------------------------------------------------------------------
   # Phase 1: Setup
@@ -112,21 +135,13 @@ jobs:
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
   # --------------------------------------------------------------------------
-  release:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: release
-          command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn lerna version --yes --no-git-tag-version --no-push
-            PACKAGE_SUFFIX=edge yarn build
-            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
-            ./scripts/workspace-run npm publish $tag -q
+  release-commit:
+    <<: *release
+
+  release-nightly:
+    <<: *release
+    environment:
+        COMMIT_MSG: '[release]'
 
 # Workflow definition
 workflows:
@@ -142,14 +157,8 @@ workflows:
       - build:      { requires: [setup] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - release-approval:
-          type: approval
+      - release-commit:
           requires: [build, lint, audit, test-unit, test-e2e]
-          filters:
-            <<: *release_branches
-      - release:
-          requires:
-            - release-approval
           filters:
             <<: *release_branches
 
@@ -162,7 +171,8 @@ workflows:
       - build:      { requires: [setup] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - release:    { requires: [build, lint, audit, test-unit, test-e2e] }
+      - release-nightly:
+          requires: [build, lint, audit, test-unit, test-e2e]
     triggers:
       - schedule:
           cron: "0 0 * * *"
