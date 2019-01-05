@@ -122,7 +122,7 @@ export default class Resolver {
     if (esm) {
       consola.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.')
     }
-    
+
     let lastError
 
     // Try to resolve path
