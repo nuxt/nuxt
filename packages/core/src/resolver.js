@@ -122,14 +122,19 @@ export default class Resolver {
     if (esm) {
       consola.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.')
     }
-
-    const errors = []
+    
+    let lastError
 
     // Try to resolve path
     try {
       resolvedPath = this.resolvePath(path, { isAlias })
     } catch (e) {
-      errors.push(e)
+      lastError = e
+    }
+
+    // Disable esm for ts files by default
+    if (esm === undefined && /.ts$/.test(resolvedPath)) {
+      esm = false
     }
 
     // Try to require
@@ -140,7 +145,7 @@ export default class Resolver {
         requiredModule = this.esm(resolvedPath)
       }
     } catch (e) {
-      errors.push(e)
+      lastError = e
     }
 
     // Introp default
@@ -149,8 +154,8 @@ export default class Resolver {
     }
 
     // Throw error if failed to require
-    if (requiredModule === undefined && errors.length) {
-      throw errors
+    if (requiredModule === undefined && lastError) {
+      throw lastError
     }
 
     return requiredModule

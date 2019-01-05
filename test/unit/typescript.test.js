@@ -1,12 +1,17 @@
-import { loadFixture, getPort, Nuxt } from '../utils'
-
-let nuxt = null
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 describe('typescript', () => {
+  let nuxt
+  let port
+  const url = route => 'http://localhost:' + port + route
+
   beforeAll(async () => {
+    process.env.NUXT_TS = 'true'
     const options = await loadFixture('typescript')
+    delete process.env.NUXT_TS
     nuxt = new Nuxt(options)
-    const port = await getPort()
+    await nuxt.ready()
+    port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
   })
 
@@ -28,6 +33,15 @@ describe('typescript', () => {
   test('/contact', async () => {
     const { html } = await nuxt.server.renderRoute('/contact')
     expect(html).toContain('<div>Contact Page</div>')
+  })
+
+  test('/api/test', async () => {
+    const html = await rp(url('/api/test'))
+    expect(html).toContain('Works!')
+  })
+
+  test('TS module successfully required', () => {
+    expect(nuxt.moduleContainer.requiredModules).toHaveProperty('~/modules/module')
   })
 
   // Close server and ask nuxt to stop listening to file changes
