@@ -13,9 +13,9 @@ module.exports = {
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
-      'vue/name-property-casing': ['error', 'kebab-case']
+      'vue/name-property-casing': 'error'
     }
-  },{
+  }, {
     files: [
       'examples/storybook/**',
       'examples/with-element-ui/**',
@@ -29,9 +29,9 @@ module.exports = {
       'vue/component-name-in-template-casing': ['warn', 'kebab-case']
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/+(App|index).js' ],
+    files: [ 'test/fixtures/*/.nuxt*/**/+(App|index|server|client).js' ],
     rules: {
-      'import/order': 'ignore'
+      'import/order': 'off'
     }
   }, {
     files: [ 'test/fixtures/*/.nuxt*/**/client.js' ],
@@ -47,7 +47,18 @@ module.exports = {
     files: [ 'test/fixtures/*/.nuxt*/**/*.html' ],
     rules: {
       'semi': ['error', 'always', { 'omitLastInOneLineBlock': true }],
-      'no-var': 'warn'
+      'no-var': 'off'
+    }
+  }, {
+    files: [ 'test/fixtures/*/.nuxt*/**/nuxt-error.vue' ],
+    rules: {
+      'vue/singleline-html-element-content-newline': 'off'
+    }
+  }, {
+    // might be removed in the future, see https://github.com/standard/eslint-plugin-standard/issues/27
+    files: [ 'test/fixtures/*/.nuxt*/**/nuxt-link.client.js' ],
+    rules: {
+      'standard/no-callback-literal': 'off'
     }
   }]
 }
