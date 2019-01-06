@@ -3,7 +3,7 @@ import Vue from 'vue'
 import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin } from './utils.js'
 import { createApp, NuxtError } from './index.js'
-import NuxtLink from './components/nuxt-link.server.js'
+import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -12,7 +12,7 @@ Vue.component('NLink', NuxtLink)
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
 
-const isDev = <%= isDev %>
+const isDev = <%= isDev %><%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 const noopApp = () => new Vue({ render: h => h('div') })
 

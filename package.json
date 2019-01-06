@@ -13,7 +13,7 @@
     "dev": "node -r esm ./scripts/dev",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
-    "lint:app": "eslint-multiplexer eslint --ignore-path packages/app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
+    "lint:app": "eslint-multiplexer eslint --ignore-path packages/vue-app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
     "nuxt": "node -r esm ./packages/cli/bin/nuxt-cli.js",
     "test": "yarn test:fixtures && yarn test:unit && yarn test:types",
     "test:fixtures": "jest test/fixtures",

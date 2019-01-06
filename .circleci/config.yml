@@ -109,6 +109,16 @@ jobs:
           paths:
             - test/fixtures
 
+  lint-app:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Lint vue-app templates
+          command: yarn lint:app
+
   # --------------------------------------------------------------------------
   # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
@@ -148,17 +158,18 @@ workflows:
   version: 2
 
   # Build and test after each commit
-  # Manually release on releas branches
+  # Manually release on release branches
   commit:
     jobs:
       - setup
       - lint:       { requires: [setup] }
       - audit:      { requires: [setup] }
       - build:      { requires: [setup] }
+      - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-commit:
-          requires: [build, lint, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
           filters:
             <<: *release_branches
 
@@ -169,10 +180,11 @@ workflows:
       - lint:       { requires: [setup] }
       - audit:      { requires: [setup] }
       - build:      { requires: [setup] }
+      - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-nightly:
-          requires: [build, lint, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
     triggers:
       - schedule:
           cron: "0 0 * * *"
