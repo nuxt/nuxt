@@ -1,5 +1,7 @@
 import { normalizeArg } from '../utils'
 
+const defaultConfigFile = `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`
+
 export default {
   spa: {
     alias: 's',
@@ -14,8 +16,8 @@ export default {
   'config-file': {
     alias: 'c',
     type: 'string',
-    default: 'nuxt.config.js',
-    description: 'Path to Nuxt.js config file (default: `nuxt.config.js`)'
+    default: defaultConfigFile,
+    description: `Path to Nuxt.js config file (default: \`${defaultConfigFile}\`)`
   },
   modern: {
     alias: 'm',

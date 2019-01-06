@@ -1,9 +1,9 @@
-<%= isTest ? '// @vue/component' : '' %>
 import Vue from 'vue'
 
+<%= isTest ? '// @vue/component' : '' %>
 export default {
-  extends: Vue.component('RouterLink'),
   name: 'NuxtLink',
+  extends: Vue.component('RouterLink'),
   props: {
     noPrefetch: {
       type: Boolean,

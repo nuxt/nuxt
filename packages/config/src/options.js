@@ -253,14 +253,6 @@ export function getNuxtConfig(_options) {
     delete options.render.gzip
   }
 
-  if (options.nuxtAppDir) {
-    consola.warn('nuxtAppDir is deprecated and will be removed in a future version! Please switch to build.template')
-    options.build.template = {
-      templatesDir: options.nuxtAppDir
-    }
-    delete options.nuxtAppDir
-  }
-
   // Apply mode preset
   const modePreset = options.modes[options.mode || 'universal']
 

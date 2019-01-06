@@ -10,6 +10,7 @@ export default () => ({
   ssr: undefined,
   parallel: false,
   cache: false,
+  standalone: false,
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }
@@ -53,7 +54,7 @@ export default () => ({
     },
     vueStyle: {}
   },
-  useForkTsChecker: false,
+  useForkTsChecker: process.env.NUXT_TS === 'true',
   styleResources: {},
   plugins: [],
   terser: {},

@@ -46,6 +46,16 @@ export default {
           options.build.quiet = !!argv.quiet
         }
       }
+    },
+    standalone: {
+      type: 'boolean',
+      default: false,
+      description: 'Bundle all server dependencies (useful for nuxt-start)',
+      prepare(cmd, options, argv) {
+        if (argv.standalone) {
+          options.build.standalone = true
+        }
+      }
     }
   },
   async run(cmd) {

@@ -5,14 +5,13 @@ Vue.use(Vuex)
 
 let storeData = {}
 
-let files;
+let files
 
 void function updateModules() {
   <% stores.some(s => {
     if(s.src.indexOf('index.') === 0) { %>
   storeData = require('@/<%= dir.store %>/<%= s.src %>')
   <% return true }}) %>
-
   // If store is not an exported method = modules store
   if (typeof storeData !== 'function') {
     // Store modules
@@ -36,12 +35,11 @@ void function updateModules() {
         window.<%= globals.nuxt %>.$store.hotUpdate(storeData)
       })
     }<% } %>
-  }
-  else {
+  } else {
     const log = (process.server ? require('consola') : console)
     log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }
-}()
+})()
 
 // createStore
 export const createStore = storeData instanceof Function ? storeData : () => {

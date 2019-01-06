@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { interopDefault } from './utils'
+import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
   let res = '', resMap = ''
@@ -81,12 +81,6 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 }).join('\n')%>
 
 Vue.use(Router)
-// router-view was changed to RouterView in vue-router 3.0.2
-// Fix: Vue.component('RouterLink') is undefined in vue-router 3.0.0
-if (!Vue.component('RouterLink')) {
-  Vue.options.components['RouterView'] = Vue.component('router-view')
-  Vue.options.components['RouterLink'] = Vue.component('router-link')
-}
 
 <% if (router.scrollBehavior) { %>
 const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>
@@ -149,9 +143,9 @@ export function createRouter() {
     linkActiveClass: '<%= router.linkActiveClass %>',
     linkExactActiveClass: '<%= router.linkExactActiveClass %>',
     scrollBehavior,
-    <%= isTest ? '/* eslint-disable quotes */' : '' %>
+    <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
     routes: [<%= _routes %>],
-    <%= isTest ? '/* eslint-enable quotes */' : '' %>
+    <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
     <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
     <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>
