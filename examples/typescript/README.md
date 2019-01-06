@@ -1,3 +1,3 @@
-# Using typescript within nuxt.js
+# TypeScript example
 
-https://github.com/johnlindquist/nuxt-typescript-starter/
+https://nuxtjs.org/examples/typescript

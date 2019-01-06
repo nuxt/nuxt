@@ -13,18 +13,14 @@
 </template>
 
 <script lang="ts">
-// PLEASE NOTE
-// All "Nuxt Class Components" require at minimum a script tag that exports a default object
-import Vue from 'vue'
-import Component from 'nuxt-class-component'
-import { Prop } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { namespace } from 'vuex-class'
 
 import * as people from '~/store/modules/people'
 
 const People = namespace(people.name)
 
-@Component({})
+@Component
 export default class Card extends Vue {
   @Prop() person
   @People.Action select
