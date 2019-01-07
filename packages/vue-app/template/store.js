@@ -39,7 +39,7 @@ void function updateModules() {
     const log = (process.server ? require('consola') : console)
     log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }
-})()
+}()
 
 // createStore
 export const createStore = storeData instanceof Function ? storeData : () => {
