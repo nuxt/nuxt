@@ -1,41 +1,15 @@
 <template>
-  <section class="pa4">
-    <div class="bg-white-90 pa4">
-      <div class="f1">
-        Nuxt TypeScript Starter
-      </div>
-      <div class="f3">
-        Selected Person: {{ selectedPerson.first_name }} {{ selectedPerson.last_name }}
-      </div>
-      {{ selected }}
-    </div>
-    <div class="flex flex-wrap ph2 justify-between bg-white-80">
-      <div v-for="person in people" :key="person.id">
-        <Card :person="person" />
-      </div>
-    </div>
-  </section>
+  <HelloWorld />
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'nuxt-class-component'
-import Card from '~/components/Card.vue'
-import { namespace } from 'vuex-class'
-
-import * as people from '~/store/modules/people'
-
-const People = namespace(people.name)
+import { Component, Vue } from 'vue-property-decorator'
+import HelloWorld from '~/components/HelloWorld.vue'
 
 @Component({
   components: {
-    Card
+    HelloWorld
   }
 })
-export default class extends Vue {
-  @People.State selected
-  @People.State people
-  @People.Getter selectedPerson
-}
-
+export default class Home extends Vue {}
 </script>
