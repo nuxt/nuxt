@@ -331,6 +331,13 @@ describe('basic ssr', () => {
     expect(html).toMatch('Hello unicode')
   })
 
+  test('/custom (js layout)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/custom'))
+    const html = window.document.body.innerHTML
+    expect(html).toMatch('<h1>JS Layout</h1>')
+    expect(html).toMatch('<h2>custom page</h2>')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
