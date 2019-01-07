@@ -143,13 +143,8 @@ export default class Builder {
   }
 
   async resolveRelative(dir) {
-    const resources = []
-    for (const file of await this.resolveFiles(dir)) {
-      resources.push({
-        src: file.replace(new RegExp(`^${dir}/`), '')
-      })
-    }
-    return resources
+    const dirPrefix = new RegExp(`^${dir}/`)
+    return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
   resolvePlugins() {
