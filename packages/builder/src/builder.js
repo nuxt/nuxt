@@ -27,10 +27,10 @@ import {
   serializeFunction,
   determineGlobals,
   stripWhitespace,
-  isString,
-  Ignore
+  isString
 } from '@nuxt/utils'
 
+import Ignore from './ignore'
 import BuildContext from './context'
 
 const glob = pify(Glob)
