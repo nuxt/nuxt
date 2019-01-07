@@ -436,7 +436,7 @@ export default class Builder {
     // -- Store --
     // Add store if needed
     if (this.options.store) {
-      templateVars.stores = await this.resolveRelative(this.options.dir.store)
+      templateVars.storeModules = await this.resolveRelative(this.options.dir.store)
       templatesFiles.push('store.js')
     }
 

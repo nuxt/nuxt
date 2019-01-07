@@ -8,7 +8,7 @@ let storeData = {}
 let files
 
 void function updateModules() {
-  <% stores.some(s => {
+  <% storeModules.some(s => {
     if(s.src.indexOf('index.') === 0) { %>
   storeData = require('@/<%= dir.store %>/<%= s.src %>')
   <% return true }}) %>
@@ -18,7 +18,7 @@ void function updateModules() {
     if (!storeData.modules) {
       storeData.modules = {}
     }
-    <% stores.forEach(s => {
+    <% storeModules.forEach(s => {
       if(s.src.indexOf('index.') !== 0) { %>
     resolveStoreModules(require('@/<%= dir.store %>/<%= s.src %>'), '<%= s.src %>')<% }}) %>
 
@@ -26,7 +26,7 @@ void function updateModules() {
   <% if (isDev) { %>
     if (process.client && module.hot) {
       // Whenever any Vuex module is updated...
-      module.hot.accept([<% stores.forEach(s => { %>
+      module.hot.accept([<% storeModules.forEach(s => { %>
         '@/<%= dir.store %>/<%= s.src %>',<% }) %>
       ], () => {
         // Update `root.modules` with the latest definitions.
