@@ -3,8 +3,8 @@ export default {
     titleTemplate: '%s - NuxtJS Prefetching',
     htmlAttrs: { lang: 'en' },
     meta: [
-      { charset: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" }
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' }
     ],
     // Support polyfill for browsers that don't support it (Safari Mobile for example)
     script: [
