@@ -77,7 +77,9 @@ describe('module', () => {
 
   test('AddLayout - duplicate layout', () => {
     nuxt.moduleContainer.addLayout(resolve(rootDir, 'modules', 'basic', 'layout.vue'))
-    expect(consola.warn).toHaveBeenCalledWith('Duplicate layout registration, "layout" has been registered as "./basic.layout.939cb65e.vue"')
+    expect(consola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Duplicate layout registration, "layout" has been registered as "./basic.layout.')
+    )
   })
 
   test('Lodash - deprecated', async () => {
