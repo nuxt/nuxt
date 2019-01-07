@@ -332,6 +332,7 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
+      const configLayouts = this.options.layouts
       const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
@@ -349,8 +350,10 @@ export default class Builder {
           }
           return
         }
-        // .vue file takes precedence over other extensions
-        if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
+        // Layout Priority: module.addLayout > .vue file > other extensions
+        if (configLayouts[name]) {
+          consola.warn(`Duplicate layout registration, "${name}" has been registered as "${configLayouts[name]}"`)
+        } else if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
           templateVars.layouts[name] = this.relativeToBuild(
             this.options.srcDir,
             file
