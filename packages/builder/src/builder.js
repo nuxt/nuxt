@@ -393,13 +393,13 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-      const pages = await this.resolveFiles(this.options.dir.pages)
-      pages.forEach((f) => {
-        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
-        if (/\.vue$/.test(f) || !files[key]) {
-          files[key] = f.replace(/(['"])/g, '\\$1')
+      const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
+      for (const page of await this.resolveFiles(this.options.dir.pages)) {
+        const key = page.replace(ext, '')
+        if (/\.vue$/.test(page) || !files[key]) {
+          files[key] = page.replace(/(['"])/g, '\\$1')
         }
-      })
+      }
       templateVars.router.routes = createRoutes(
         Object.values(files),
         this.options.srcDir,
