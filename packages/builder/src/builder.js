@@ -360,7 +360,8 @@ export default class Builder {
           }
           return
         }
-        if (!templateVars.layouts[name] && /\.vue$/.test(file)) {
+        // .vue file takes precedence over other extensions
+        if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
           templateVars.layouts[name] = this.relativeToBuild(
             this.options.srcDir,
             file
@@ -391,6 +392,7 @@ export default class Builder {
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
       for (const page of await this.resolveFiles(this.options.dir.pages)) {
         const key = page.replace(ext, '')
+        // .vue file takes precedence over other extensions
         if (/\.vue$/.test(page) || !files[key]) {
           files[key] = page.replace(/(['"])/g, '\\$1')
         }
