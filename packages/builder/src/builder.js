@@ -467,21 +467,30 @@ export default class Builder {
 
     // -- Loading indicator --
     if (this.options.loadingIndicator.name) {
-      const indicatorPath1 = path.resolve(
+      let indicatorPath = path.resolve(
         this.template.dir,
         'views/loading',
         this.options.loadingIndicator.name + '.html'
       )
-      const indicatorPath2 = this.nuxt.resolver.resolveAlias(
-        this.options.loadingIndicator.name
-      )
-      const indicatorPath = fsExtra.existsSync(indicatorPath1)
-        ? indicatorPath1
-        : fsExtra.existsSync(indicatorPath2) ? indicatorPath2 : null
+
+      let customIndicator = false
+      if (!fsExtra.existsSync(indicatorPath)) {
+        indicatorPath = this.nuxt.resolver.resolveAlias(
+          this.options.loadingIndicator.name
+        )
+
+        if (fsExtra.existsSync(indicatorPath)) {
+          customIndicator = true
+        } else {
+          indicatorPath = null
+        }
+      }
+
       if (indicatorPath) {
         templatesFiles.push({
           src: indicatorPath,
           dst: 'loading.html',
+          custom: customIndicator,
           options: this.options.loadingIndicator
         })
       } else {
@@ -529,11 +538,17 @@ export default class Builder {
       interpolate: /<%=([\s\S]+?)%>/g
     }
 
+    // Add vue-app template dir to watchers
+    this.options.build.watch.push(this.template.dir)
+
     // Interpret and move template files to .nuxt/
     await Promise.all(
       templatesFiles.map(async ({ src, dst, options, custom }) => {
-        // Add template to watchers
-        this.options.build.watch.push(src)
+        // Add custom templates to watcher
+        if (custom) {
+          this.options.build.watch.push(src)
+        }
+
         // Render template to dst
         const fileContent = await fsExtra.readFile(src, 'utf8')
         let content
@@ -612,6 +627,17 @@ export default class Builder {
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
       .on('change', refreshFiles)
+
+    const rewatchOnRawEvents = this.options.watchers.rewatchOnRawEvents
+    if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
+      this.watchers.custom.on('raw', (_event, _path, { watchedPath }) => {
+        if (rewatchOnRawEvents.includes(_event)) {
+          this.watchers.custom
+            .unwatch(watchedPath)
+            .add(watchedPath)
+        }
+      })
+    }
   }
 
   watchRestart() {
