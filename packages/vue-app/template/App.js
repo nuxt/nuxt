@@ -1,7 +1,7 @@
 import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% css.forEach((c) => { %>
-import '<%= relativeToBuild(resolvePath(c.src || c)) %>'
+import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
 
 <%= Object.keys(layouts).map((key) => {
@@ -17,9 +17,9 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 
 export default {
-  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
+  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
   head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, object-property-newline, arrow-parens */' : '' %>
+  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren */' : '' %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     const layoutEl = h(this.layout || 'nuxt')

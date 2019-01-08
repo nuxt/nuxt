@@ -5,9 +5,9 @@ Vue.use(Vuex)
 
 let storeData = {}
 
-let files;
+let files
 
-void function updateModules() {
+void (function updateModules() {
   files = require.context('@/<%= dir.store %>', true, /^\.\/(?!<%= ignorePrefix %>)[^.]+\.(<%= extensions %>)$/)
   const filenames = files.keys()
 
@@ -82,12 +82,11 @@ void function updateModules() {
         window.<%= globals.nuxt %>.$store.hotUpdate(storeData)
       })
     }<% } %>
-  }
-  else {
+  } else {
     const log = (process.server ? require('consola') : console)
     log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }
-}()
+})()
 
 // createStore
 export const createStore = storeData instanceof Function ? storeData : () => {

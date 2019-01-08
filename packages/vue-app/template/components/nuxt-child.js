@@ -8,7 +8,10 @@ export default {
       default: ''
     },
     keepAlive: Boolean,
-    keepAliveProps: Object
+    keepAliveProps: {
+      type: Object,
+      default: undefined
+    }
   },
   render(h, { parent, data, props }) {
     data.nuxtChild = true

@@ -17,6 +17,9 @@ const isModernBrowser = (ua) => {
   }
   const { browser } = UAParser(ua)
   const browserVersion = semver.coerce(browser.version)
+  if (!browserVersion) {
+    return false
+  }
   return modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name])
 }
 

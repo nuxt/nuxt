@@ -2,6 +2,9 @@ import Vue from "vue";
 import VueRouter, { Route } from "vue-router";
 import { Store } from "vuex";
 
+// augment typings of NodeJS.Process
+import "./process";
+
 // augment typings of Vue.js
 import "./vue";
 

@@ -11,11 +11,7 @@ import * as people from './modules/people'
   // action: Sync or async operations that commit mutations
   // mutations: Modify the state
 
-interface ModulesStates {
-  people: people.State
-}
-
-export type RootState = root.State & ModulesStates
+export type RootState = root.State
 
 const createStore = () => {
   return new Vuex.Store({
