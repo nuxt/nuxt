@@ -8815,6 +8815,15 @@ postcss@^7.0.0, postcss@^7.0.1, postcss@^7.0.2, postcss@^7.0.5, postcss@^7.0.6, 
     source-map "^0.6.1"
     supports-color "^5.5.0"
 
+postcss@^7.0.8:
+  version "7.0.8"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-7.0.8.tgz#2a3c5f2bdd00240cd0d0901fd998347c93d36696"
+  integrity sha512-WudsIzuTKRw9IInRTPBgVXJ7DKR26HT09Rxp0g3w0Fqh3TUtYICcUmvC0xURj04o3vdcDtnjCAUCECg/p341iQ==
+  dependencies:
+    chalk "^2.4.2"
+    source-map "^0.6.1"
+    supports-color "^6.0.0"
+
 prelude-ls@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
@@ -10434,6 +10443,13 @@ supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   integrity sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==
+  dependencies:
+    has-flag "^3.0.0"
+
+supports-color@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmjs.org/supports-color/-/supports-color-6.0.0.tgz#76cfe742cf1f41bb9b1c29ad03068c05b4c0e40a"
+  integrity sha512-on9Kwidc1IUQo+bQdhi8+Tijpo0e1SS6RoGo2guUwn5vdaxw8RXOF9Vb2ws+ihWOmh4JnCJOvaziZWP1VABaLg==
   dependencies:
     has-flag "^3.0.0"
 
