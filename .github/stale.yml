@@ -6,6 +6,7 @@ exemptLabels:
   - "cmty:feature-request"
   - "WIP"
   - ":clock1:Pending"
+  - "type:discussion"
 markComment: >
   Thanks for your contribution to Nuxt.js!
 
