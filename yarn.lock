@@ -4471,10 +4471,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-fork-ts-checker-webpack-plugin@^0.5.2:
-  version "0.5.2"
-  resolved "https://registry.npmjs.org/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-0.5.2.tgz#a73b3630bd0a69409a6e4824e54c03a62fe82d8f"
-  integrity sha512-a5IG+xXyKnpruI0CP/anyRLAoxWtp3lzdG6flxicANnoSzz64b12dJ7ASAVRrI2OaWwZR2JyBaMHFQqInhWhIw==
+fork-ts-checker-webpack-plugin@1.0.0-alpha.1, fork-ts-checker-webpack-plugin@^0.5.2:
+  version "1.0.0-alpha.1"
+  resolved "https://registry.npmjs.org/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-1.0.0-alpha.1.tgz#f0c036fff08d801a5c80eedd21d742c08ac29131"
+  integrity sha512-0hj3QiEurHFt+k55B7rOnKf0jgMyu3PJH1QhvWMuW+1QHL/lYQkZ7ryuvaCt9M4bL4bpp+1Xpvh93P+osIOzPA==
   dependencies:
     babel-code-frame "^6.22.0"
     chalk "^2.4.1"
