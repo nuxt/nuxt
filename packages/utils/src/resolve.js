@@ -98,3 +98,12 @@ export function defineAlias(src, target, prop, opts = {}) {
     }
   })
 }
+
+export function isIndexFileAndFolder(pluginFiles) {
+  const moreMatchingFilesThanJustIndexAndFolder = pluginFiles.length !== 2
+  if (moreMatchingFilesThanJustIndexAndFolder) {
+    return false
+  }
+  const isIndex = s => /(.*)\/index\.[^/]+$/.test(s)
+  return pluginFiles.some(isIndex)
+}

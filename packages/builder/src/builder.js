@@ -27,7 +27,8 @@ import {
   serializeFunction,
   determineGlobals,
   stripWhitespace,
-  isString
+  isString,
+  isIndexFileAndFolder
 } from '@nuxt/utils'
 
 import BuildContext from './context'
@@ -139,7 +140,9 @@ export default class Builder {
 
       if (!pluginFiles || pluginFiles.length === 0) {
         throw new Error(`Plugin not found: ${p.src}`)
-      } else if (pluginFiles.length > 1) {
+      }
+
+      if (pluginFiles.length > 1 && !isIndexFileAndFolder(pluginFiles)) {
         consola.warn({
           message: `Found ${pluginFiles.length} plugins that match the configuration, suggest to specify extension:`,
           additional: '\n' + pluginFiles.map(x => `- ${x}`).join('\n')
