@@ -26,7 +26,8 @@
   },
   "resolutions": {
     "webpack": "5.0.0-alpha.3",
-    "html-webpack-plugin": "4.0.0-beta.5"
+    "html-webpack-plugin": "4.0.0-beta.5",
+    "fork-ts-checker-webpack-plugin": "1.0.0-alpha.1"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
