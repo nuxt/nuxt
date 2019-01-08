@@ -14,6 +14,15 @@ export default {
       color: red;
       font-size: ${vm => vm.fontSize}px
     }
+    .github {
+      color: blue;
+      animation: blink 1s linear infinite;
+    }
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
   `,
   data() {
     return {
