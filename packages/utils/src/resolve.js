@@ -102,8 +102,8 @@ export function defineAlias(src, target, prop, opts = {}) {
 const isIndex = s => /(.*)\/index\.[^/]+$/.test(s)
 
 export function isIndexFileAndFolder(pluginFiles) {
-  const moreMatchingFilesThanJustIndexAndFolder = pluginFiles.length !== 2
-  if (moreMatchingFilesThanJustIndexAndFolder) {
+  // Return early in case the matching file count exceeds 2 (index.js + folder)
+  if (pluginFiles.length !== 2) {
     return false
   }
   return pluginFiles.some(isIndex)
