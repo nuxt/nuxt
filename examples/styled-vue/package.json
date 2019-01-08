@@ -10,6 +10,6 @@
     "start": "nuxt start"
   },
   "devDependencies": {
-    "styled-vue": "^0.1.2"
+    "styled-vue": "^0.1.3"
   }
 }
