@@ -12,7 +12,7 @@ export default {
   style: css`
     h1 {
       color: red;
-      font-size: ${vm => vm.fontSize}px
+      font-size: ${vm => vm.fontSize}px;
     }
     .github {
       color: blue;
