@@ -1,5 +1,4 @@
 
-import path from 'path'
 import PerfLoader from '../../packages/webpack/src/utils/perf-loader'
 
 describe('webpack configuration', () => {
