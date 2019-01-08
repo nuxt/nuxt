@@ -77,13 +77,6 @@ export default class ModernModePlugin {
           }
         })
 
-        // inject Safari 10 nomodule fix
-        data.body.push({
-          tagName: 'script',
-          closeTag: true,
-          innerHTML: ModernModePlugin.safariFix
-        })
-
         // inject links for legacy assets as <script nomodule>
         const fileName = data.plugin.options.filename
         const legacyAssets = (await this.getAssets(fileName))
@@ -100,6 +93,12 @@ export default class ModernModePlugin {
 
       compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tap(ID, (data) => {
         data.html = data.html.replace(/\snomodule="">/g, ' nomodule>')
+
+        // inject Safari 10 nomodule fix
+        data.html = data.html.replace(
+          /(<\/body\s*>)/i,
+          match => `<script>${ModernModePlugin.safariFix}</script>${match}`
+        )
       })
     })
   }
