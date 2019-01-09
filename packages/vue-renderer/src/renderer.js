@@ -291,7 +291,26 @@ export default class VueRenderer {
     return fn(opts)
   }
 
-  async renderRoute(url, context = {}, retries = 5) {
+  async renderSPA(context, ENV) {
+    const content = await this.renderer.spa.render(context)
+
+    const APP =
+      `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` +
+      content.BODY_SCRIPTS
+
+    const html = this.renderTemplate(false, {
+      ...content,
+      APP,
+      ENV
+    })
+
+    return {
+      html,
+      getPreloadFiles: this.getPreloadFiles.bind(this)
+    }
+  }
+
+  async renderRoute(url, context = { req: {}, res: {} }, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
       if (this.context.options.dev && retries > 0) {
@@ -309,46 +328,24 @@ export default class VueRenderer {
     // Add url and isSever to the context
     context.url = url
 
-    // Basic response if SSR is disabled or SPA data provided
-    const { req, res } = context
-    const spa = context.spa || (res && res.spa)
+    // ENV
     const ENV = this.context.options.env
 
-    if (!this.SSR || spa) {
-      const {
-        HTML_ATTRS,
-        HEAD_ATTRS,
-        BODY_ATTRS,
-        HEAD,
-        BODY_SCRIPTS,
-        getPreloadFiles
-      } = await this.renderer.spa.render(context)
-      const APP =
-        `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
-
-      const html = this.renderTemplate(false, {
-        HTML_ATTRS,
-        HEAD_ATTRS,
-        BODY_ATTRS,
-        HEAD,
-        APP,
-        ENV
-      })
-
-      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, { getPreloadFiles }) }
+    // Render SPA
+    if (!this.SSR || context.spa || context.req.spa || context.res.spa) {
+      return this.renderSPA(context, ENV)
     }
 
-    let APP
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (req && req.modernMode) {
-      APP = await this.renderer.modern.renderToString(context)
-    } else {
-      APP = await this.renderer.ssr.renderToString(context)
-    }
+    const renderer = context.req.modernMode ? this.renderer.modern : this.isReady.renderer.ssr
+    let APP = await renderer.ssr.renderToString(context)
 
+    // Fallback to empty response
     if (!context.nuxt.serverRendered) {
       APP = `<div id="${this.context.globals.id}"></div>`
     }
+
+    // Inject head meta
     const m = context.meta.inject()
     let HEAD =
       m.title.text() +
@@ -357,18 +354,28 @@ export default class VueRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
+
+    // Add <base href=""> meta if router base specified
     if (this.context.options._routerBaseSpecified) {
       HEAD += `<base href="${this.context.options.router.base}">`
     }
 
+    // Inject resource hints
     if (this.context.options.render.resourceHints) {
       HEAD += this.renderResourceHints(context)
     }
 
+    // Inject styles
+    HEAD += context.renderStyles()
+
+    // Call render:routeContext hook
     await this.context.nuxt.callHook('render:routeContext', context.nuxt)
 
+    // Serialize state
     const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
+    APP += `<script>${serializedSession}</script>`
 
+    // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (this.context.options.render.csp) {
       const { hashAlgorithm } = this.context.options.render.csp
@@ -377,13 +384,12 @@ export default class VueRenderer {
       cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
     }
 
-    APP += `<script>${serializedSession}</script>`
+    // Prepend scripts
     APP += this.renderScripts(context)
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
-    HEAD += context.renderStyles()
-
+    // Finally render HTML template
     const html = this.renderTemplate(true, {
       HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
       HEAD_ATTRS: m.headAttrs.text(),
