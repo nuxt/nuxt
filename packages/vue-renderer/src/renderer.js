@@ -325,7 +325,7 @@ export default class VueRenderer {
     // Log rendered url
     consola.debug(`Rendering url ${url}`)
 
-    // Add url and isSever to the context
+    // Add url to the context
     context.url = url
 
     // ENV
