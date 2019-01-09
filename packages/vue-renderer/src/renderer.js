@@ -337,8 +337,8 @@ export default class VueRenderer {
     }
 
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.req.modernMode ? this.renderer.modern : this.isReady.renderer.ssr
-    let APP = await renderer.ssr.renderToString(context)
+    const renderer = context.req.modernMode ? this.renderer.modern : this.renderer.ssr
+    let APP = await renderer.renderToString(context)
 
     // Fallback to empty response
     if (!context.nuxt.serverRendered) {
