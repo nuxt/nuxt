@@ -2589,10 +2589,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000918, caniuse-lite@^1.0.30000925, caniuse-lite@^1.0.30000926, caniuse-lite@^1.0.30000927:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000918, caniuse-lite@^1.0.30000925, caniuse-lite@^1.0.30000926:
   version "1.0.30000927"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000927.tgz#114a9de4ff1e01f5790fe578ecd93421c7524665"
   integrity sha512-ogq4NbUWf1uG/j66k0AmiO3GjqJAlQyF8n4w8a954cbCyFKmYGvRtgz6qkq2fWuduTXHibX7GyYL5Pg58Aks2g==
+
+caniuse-lite@^1.0.30000928:
+  version "1.0.30000928"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000928.tgz#805e828dc72b06498e3683a32e61c7507fd67b88"
+  integrity sha512-aSpMWRXL6ZXNnzm8hgE4QDLibG5pVJ2Ujzsuj3icazlIkxXkPXtL+BWnMx6FBkWmkZgBHGUxPZQvrbRw2ZTxhg==
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -9661,10 +9666,10 @@ rollup-plugin-alias@^1.5.1:
   dependencies:
     slash "^2.0.0"
 
-rollup-plugin-babel@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.npmjs.org/rollup-plugin-babel/-/rollup-plugin-babel-4.2.0.tgz#9a2c119b5c923928842783ec2abd306fa733054f"
-  integrity sha512-DBZbItGcru3iZM8aqVOS6+9GgIE+u0eX1HHN2iUIOjeXKMN8MK9/DaCOmQEt/le0sxqQOLIG+rPIhhm8uhJA7Q==
+rollup-plugin-babel@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.npmjs.org/rollup-plugin-babel/-/rollup-plugin-babel-4.3.0.tgz#1900e66af70c3975fef26a54111b87ee22a50974"
+  integrity sha512-HoNMaLA56MPZ9XCeG+RD2QzTySVe168R/k6bPEm8noB9PSK8wBnY4matFluwmH2Bj3PQdqYAknV1jDqw8GAc8g==
   dependencies:
     "@babel/helper-module-imports" "^7.0.0"
     rollup-pluginutils "^2.3.0"
