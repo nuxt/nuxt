@@ -136,7 +136,8 @@ export default async (ssrContext) => {
   ** Call middleware (layout + pages)
   */
   midd = []
-  if (layout.middleware) midd = midd.concat(layout.middleware)
+  const layoutMiddleware = layout.middleware || layout.options.middleware
+  if (layoutMiddleware) midd = midd.concat(layoutMiddleware)
   Components.forEach((Component) => {
     if (Component.options.middleware) {
       midd = midd.concat(Component.options.middleware)
