@@ -68,7 +68,7 @@
     "rimraf": "^2.6.3",
     "rollup": "^1.1.0",
     "rollup-plugin-alias": "^1.5.1",
-    "rollup-plugin-babel": "^4.2.0",
+    "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-license": "^0.7.0",
