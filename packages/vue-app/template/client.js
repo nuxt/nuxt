@@ -196,9 +196,9 @@ function callMiddleware(Components, context, layout) {
   // If layout is undefined, only call global middleware
   if (typeof layout !== 'undefined') {
     midd = [] // Exclude global middleware if layout defined (already called before)
-    const layoutMiddleware = layout.middleware || layout.options.middleware
-    if (layoutMiddleware) {
-      midd = midd.concat(layoutMiddleware)
+    layout = sanitizeComponent(layout)
+    if (layout.options.middleware) {
+      midd = midd.concat(layout.options.middleware)
     }
     Components.forEach((Component) => {
       if (Component.options.middleware) {
