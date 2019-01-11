@@ -12,7 +12,7 @@ async function _import(modulePath) {
     try {
       m = await import(modulePath)
     } catch (e) {
-      if (e.code === 'MODULE_NOT_FOUND')
+      if (e.code === 'MODULE_NOT_FOUND') {
         consola.fatal(
           `Module ${modulePath} not found.`,
           '\n\n',
