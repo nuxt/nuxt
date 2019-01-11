@@ -6,24 +6,19 @@ const localNodeModules = path.resolve(process.cwd(), 'node_modules')
 // Prefer importing modules from local node_modules (for NPX and global bin)
 async function _import(modulePath) {
   let m
-  try {
-    m = await import(path.resolve(localNodeModules, modulePath))
-  } catch (e) {
+  for (const mp of [ path.resolve(localNodeModules, modulePath), modulePath ]) {
     try {
-      m = await import(modulePath)
+      m = await import(mp)
     } catch (e) {
-      if (e.code === 'MODULE_NOT_FOUND') {
+      if (e.code !== 'MODULE_NOT_FOUND') {
+        throw e
+      } else if (mp === modulePath) {
         consola.fatal(
-          `Module ${modulePath} not found.`,
-          '\n\n',
-          `Please install missing dependency:`,
-          '\n\n',
-          `Using npm:  npm i ${modulePath}`,
-          '\n\n',
+          `Module ${modulePath} not found.\n\n`,
+          `Please install missing dependency:\n\n`,
+          `Using npm:  npm i ${modulePath}\n\n`,
           `Using yarn: yarn add ${modulePath}`
         )
-      } else {
-        throw e
       }
     }
   }

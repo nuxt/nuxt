@@ -21,4 +21,7 @@ describe('imports', () => {
       `Using yarn: yarn add not-found-module`
     )
   })
+  test('should throw error when error is not module not found', async () => {
+    await expect(importModule('jest/README.md')).rejects.toThrow()
+  })
 })
