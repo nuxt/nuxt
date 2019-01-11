@@ -1362,6 +1362,70 @@
   resolved "https://registry.npmjs.org/@types/strip-json-comments/-/strip-json-comments-0.0.30.tgz#9aa30c04db212a9a0649d6ae6fd50accc40748a1"
   integrity sha512-7NQmHra/JILCd1QqpSzl8+mJRc8ZHz3uDm8YV1Ks9IhK0epEiTw8aIErbvH9PI+6XbqhyIQy3462nEsn7UVzjQ==
 
+"@vue/babel-helper-vue-jsx-merge-props@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-helper-vue-jsx-merge-props/-/babel-helper-vue-jsx-merge-props-1.0.0-beta.1.tgz#cbfa2b4fef05d0462fe770759fe1766ba223c1d1"
+  integrity sha512-N5uSbvShCF7pMuk4gOoMaM/oAhr4Vt5s1DRnevuhCeRP2UtwDC6GuFFNFuhuefOsWwpAX/PmrSxA6kDH/GGQlg==
+
+"@vue/babel-plugin-transform-vue-jsx@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-plugin-transform-vue-jsx/-/babel-plugin-transform-vue-jsx-1.0.0-beta.1.tgz#ac1e8577eb6138a6f15025a0b2639cf9accd7b43"
+  integrity sha512-/ZV09X4BtA5OPdnQqQaxhD1aRBQF8PVY/ZUnQtrk4jld7+Mfy9CxT4gCznoJ+KFooCbyjvwhotB72Hg7N3T4zg==
+  dependencies:
+    "@babel/helper-module-imports" "^7.0.0"
+    "@babel/plugin-syntax-jsx" "^7.2.0"
+    "@vue/babel-helper-vue-jsx-merge-props" "^1.0.0-beta.1"
+    html-tags "^2.0.0"
+    lodash.kebabcase "^4.1.1"
+    svg-tags "^1.0.0"
+
+"@vue/babel-preset-jsx@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-preset-jsx/-/babel-preset-jsx-1.0.0-beta.1.tgz#3af92fdc90387851ef7873525d081d193fac2140"
+  integrity sha512-Nx6+KEJKApsofsYElwFaU7bnBWjMatAgUBFR45qMNl2KpwVOrgNABCbrX/9IqxZIOGCpRuzD96pWmnxFnu2HVQ==
+  dependencies:
+    "@vue/babel-helper-vue-jsx-merge-props" "^1.0.0-beta.1"
+    "@vue/babel-plugin-transform-vue-jsx" "^1.0.0-beta.1"
+    "@vue/babel-sugar-functional-vue" "^1.0.0-beta.1"
+    "@vue/babel-sugar-inject-h" "^1.0.0-beta.1"
+    "@vue/babel-sugar-v-model" "^1.0.0-beta.1"
+    "@vue/babel-sugar-v-on" "^1.0.0-beta.1"
+
+"@vue/babel-sugar-functional-vue@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-sugar-functional-vue/-/babel-sugar-functional-vue-1.0.0-beta.1.tgz#9b883d7564c358fda938670cffd4603d5a86bded"
+  integrity sha512-FD53t0SxlkNtCk78C/fl1WR79tOLYMOEcku0ie0nKhjn/gy56fhYOMlUjutjE/mdVa4wHSHnz2WC7N8e4zbxPg==
+  dependencies:
+    "@babel/plugin-syntax-jsx" "^7.2.0"
+
+"@vue/babel-sugar-inject-h@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-sugar-inject-h/-/babel-sugar-inject-h-1.0.0-beta.1.tgz#89d56355aa69cc6074e6d28f311566cdb8522ba2"
+  integrity sha512-/0Key+jZfxjRb1b7NPS29rrYzPXGqoYxRim54eVFzcAF255O5DCcBDbePGb/ktza2aA8ZvzPfnc/uNxcLA82FQ==
+  dependencies:
+    "@babel/plugin-syntax-jsx" "^7.2.0"
+
+"@vue/babel-sugar-v-model@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-sugar-v-model/-/babel-sugar-v-model-1.0.0-beta.1.tgz#f52a67bfe235f34478fc5804453415231fb0d213"
+  integrity sha512-TLcBppivEHL9oeAafLfxBG3M4FFnVp1BX8joBJwvfgMOFgarNux8QhttbqQSMAAVX4j6GOf1xlXpXK2odQHB0w==
+  dependencies:
+    "@babel/plugin-syntax-jsx" "^7.2.0"
+    "@vue/babel-helper-vue-jsx-merge-props" "^1.0.0-beta.1"
+    "@vue/babel-plugin-transform-vue-jsx" "^1.0.0-beta.1"
+    camelcase "^5.0.0"
+    html-tags "^2.0.0"
+    svg-tags "^1.0.0"
+
+"@vue/babel-sugar-v-on@^1.0.0-beta.1":
+  version "1.0.0-beta.1"
+  resolved "https://registry.npmjs.org/@vue/babel-sugar-v-on/-/babel-sugar-v-on-1.0.0-beta.1.tgz#2c98417ac625bbf1bad11fc3e103b7b6558fcb0e"
+  integrity sha512-K+QecqeKZseWoGkxMAuV08XqumPqBpQ681NwFsSZyj6Pfz5XpEPPlCH3nQ+7KC4yxjbH9bjIGVtkpvbONIfbvA==
+  dependencies:
+    "@babel/plugin-syntax-jsx" "^7.2.0"
+    "@vue/babel-plugin-transform-vue-jsx" "^1.0.0-beta.1"
+    camelcase "^5.0.0"
+
 "@vue/component-compiler-utils@^2.4.0":
   version "2.4.0"
   resolved "https://registry.npmjs.org/@vue/component-compiler-utils/-/component-compiler-utils-2.4.0.tgz#a887b57ff06e562873a0ba1dfcf1f8068efa6e26"
@@ -1996,11 +2060,6 @@ babel-generator@^6.18.0, babel-generator@^6.26.0:
     source-map "^0.5.7"
     trim-right "^1.0.1"
 
-babel-helper-vue-jsx-merge-props@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.npmjs.org/babel-helper-vue-jsx-merge-props/-/babel-helper-vue-jsx-merge-props-2.0.3.tgz#22aebd3b33902328e513293a8e4992b384f9f1b6"
-  integrity sha512-gsLiKK7Qrb7zYJNgiXKpXblxbV5ffSwR0f5whkPAaBAR4fhi6bwRZxX9wBlIc5M/v8CCkXUbXZL4N/nSE97cqg==
-
 babel-helpers@^6.24.1:
   version "6.24.1"
   resolved "https://registry.npmjs.org/babel-helpers/-/babel-helpers-6.24.1.tgz#3471de9caec388e5c850e597e58a26ddf37602b2"
@@ -2078,13 +2137,6 @@ babel-plugin-transform-strict-mode@^6.24.1:
   dependencies:
     babel-runtime "^6.22.0"
     babel-types "^6.24.1"
-
-babel-plugin-transform-vue-jsx@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.npmjs.org/babel-plugin-transform-vue-jsx/-/babel-plugin-transform-vue-jsx-4.0.1.tgz#2c8bddce87a6ef09eaa59869ff1bfbeeafc5f88d"
-  integrity sha512-wbOz7ITB5cloLSjKUU1hWn8zhR+Dwah/RZiTiJY/CQliCwhowmzu6m7NEF+y5EJX/blDzGjRtZvC10Vdb3Q7vw==
-  dependencies:
-    esutils "^2.0.2"
 
 babel-preset-jest@^23.2.0:
   version "23.2.0"
@@ -5247,6 +5299,11 @@ html-minifier@^3.2.3, html-minifier@^3.5.21:
     relateurl "0.2.x"
     uglify-js "3.4.x"
 
+html-tags@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/html-tags/-/html-tags-2.0.0.tgz#10b30a386085f43cede353cc8fa7cb0deeea668b"
+  integrity sha1-ELMKOGCF9Dzt41PMj6fLDe7qZos=
+
 html-webpack-plugin@^3.2.0:
   version "3.2.0"
   resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-3.2.0.tgz#b01abbd723acaaa7b37b6af4492ebda03d9dd37b"
@@ -6808,6 +6865,11 @@ lodash.isplainobject@^4.0.6:
   version "4.0.6"
   resolved "https://registry.npmjs.org/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
   integrity sha1-fFJqUtibRcRcxpC4gWO+BJf1UMs=
+
+lodash.kebabcase@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/lodash.kebabcase/-/lodash.kebabcase-4.1.1.tgz#8489b1cb0d29ff88195cceca448ff6d6cc295c36"
+  integrity sha1-hImxyw0p/4gZXM7KRI/21swpXDY=
 
 lodash.memoize@^4.1.2:
   version "4.1.2"
@@ -10457,6 +10519,11 @@ supports-color@^6.0.0:
   integrity sha512-on9Kwidc1IUQo+bQdhi8+Tijpo0e1SS6RoGo2guUwn5vdaxw8RXOF9Vb2ws+ihWOmh4JnCJOvaziZWP1VABaLg==
   dependencies:
     has-flag "^3.0.0"
+
+svg-tags@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/svg-tags/-/svg-tags-1.0.0.tgz#58f71cee3bd519b59d4b2a843b6c7de64ac04764"
+  integrity sha1-WPcc7jvVGbWdSyqEO2x95krAR2Q=
 
 svgo@^1.0.0:
   version "1.1.1"
