@@ -37,6 +37,7 @@ export default {
   extensions: 'ts',
   plugins: [
     '~/plugins/test',
+    '~/plugins/doubled',
     { src: '~/plugins/test.plugin', mode: 'abc' },
     '~/plugins/test.client',
     '~/plugins/test.server',

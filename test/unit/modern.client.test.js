@@ -39,6 +39,11 @@ describe('modern client mode (SSR)', () => {
     ].join(', '))
   })
 
+  test('should contain safari fix script', async () => {
+    const response = await rp(url('/'))
+    expect(response).toContain('"noModule"')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
