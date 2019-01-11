@@ -6105,10 +6105,10 @@ jest-jasmine2@^23.6.0:
     jest-util "^23.4.0"
     pretty-format "^23.6.0"
 
-jest-junit@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.npmjs.org/jest-junit/-/jest-junit-5.2.0.tgz#980401db7aa69999cf117c6d740a8135c22ae379"
-  integrity sha512-Mdg0Qpdh1Xm/FA1B/mcLlmEmlr3XzH5pZg7MvcAwZhjHijPRd1z/UwYwkwNHmCV7o4ZOWCf77nLu7ZkhHHrtJg==
+jest-junit@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.npmjs.org/jest-junit/-/jest-junit-6.0.0.tgz#6e3ce9583b9416b6b07d52375a655d2b12a9a2b2"
+  integrity sha512-tEQtceScdJ33N22Cn7ltOcFucMmjRWQ1LjU6KZXV34KvE114IOuHhE2hpWvWsIBXPdSc7+hzFQO1mssNK1+ChA==
   dependencies:
     jest-config "^23.6.0"
     jest-validate "^23.0.1"
