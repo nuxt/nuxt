@@ -1,4 +1,5 @@
 import path from 'path'
+import consola from 'consola'
 
 const localNodeModules = path.resolve(process.cwd(), 'node_modules')
 
@@ -8,7 +9,19 @@ async function _import(modulePath) {
   try {
     m = await import(path.resolve(localNodeModules, modulePath))
   } catch (e) {
-    m = await import(modulePath)
+    try {
+      m = await import(modulePath)
+    } catch (e) {
+      consola.fatal(
+        `Module ${modulePath} not found.`,
+        '\n\n',
+        `Please install missing dependency:`,
+        '\n\n',
+        `Using npm:  npm i ${modulePath}`,
+        '\n\n',
+        `Using yarn: yarn add ${modulePath}`
+      )
+    }
   }
   return m
 }
