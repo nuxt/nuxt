@@ -12,15 +12,17 @@ async function _import(modulePath) {
     try {
       m = await import(modulePath)
     } catch (e) {
-      consola.fatal(
-        `Module ${modulePath} not found.`,
-        '\n\n',
-        `Please install missing dependency:`,
-        '\n\n',
-        `Using npm:  npm i ${modulePath}`,
-        '\n\n',
-        `Using yarn: yarn add ${modulePath}`
-      )
+      if (e.code === 'MODULE_NOT_FOUND')
+        consola.fatal(
+          `Module ${modulePath} not found.`,
+          '\n\n',
+          `Please install missing dependency:`,
+          '\n\n',
+          `Using npm:  npm i ${modulePath}`,
+          '\n\n',
+          `Using yarn: yarn add ${modulePath}`
+        )
+      }
     }
   }
   return m
