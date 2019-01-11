@@ -22,6 +22,8 @@ async function _import(modulePath) {
           '\n\n',
           `Using yarn: yarn add ${modulePath}`
         )
+      } else {
+        throw e
       }
     }
   }
