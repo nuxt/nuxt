@@ -12,12 +12,9 @@ describe('imports', () => {
     await expect(importModule('not-found-module')).resolves.toBeUndefined()
     expect(consola.fatal).toHaveBeenCalled()
     expect(consola.fatal).toHaveBeenCalledWith(
-      `Module not-found-module not found.`,
-      '\n\n',
-      `Please install missing dependency:`,
-      '\n\n',
-      `Using npm:  npm i not-found-module`,
-      '\n\n',
+      `Module not-found-module not found.\n\n`,
+      `Please install missing dependency:\n\n`,
+      `Using npm:  npm i not-found-module\n\n`,
       `Using yarn: yarn add not-found-module`
     )
   })
