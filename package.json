@@ -57,7 +57,7 @@
     "jest-junit": "^5.2.0",
     "jsdom": "^13.1.0",
     "klaw-sync": "^6.0.0",
-    "lerna": "^3.10.2",
+    "lerna": "^3.10.5",
     "lodash": "^4.17.11",
     "node-fetch": "^2.3.0",
     "pug": "^2.0.3",
@@ -77,7 +77,7 @@
     "sort-package-json": "^1.17.1",
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
-    "tslint": "^5.12.0",
+    "tslint": "^5.12.1",
     "typescript": "^3.2.2",
     "vue-jest": "^3.0.2",
     "vue-property-decorator": "^7.2.0"
