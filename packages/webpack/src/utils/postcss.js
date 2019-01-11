@@ -6,6 +6,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
 import { isPureObject } from '@nuxt/utils'
+import { requireModule } from '@nuxt/cli/src/utils'
 
 export const orderPresets = {
   cssnanoLast: (names) => {
@@ -113,7 +114,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = require(p)
+          const plugin = requireModule(this.nuxt.resolver.resolveModule(p))
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled
