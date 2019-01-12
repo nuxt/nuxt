@@ -297,6 +297,13 @@ export function getNuxtConfig(_options) {
     options.build.optimizeCSS = options.build.extractCSS ? {} : false
   }
 
+  // Set dir to `ltr` if htmlAttrs not set otherwise
+  if (!options.head || !options.head.htmlAttrs) {
+    options.head.htmlAttrs = {
+      dir: 'ltr'
+    }
+  }
+
   const loaders = options.build.loaders
   const vueLoader = loaders.vue
   if (vueLoader.productionMode === undefined) {
