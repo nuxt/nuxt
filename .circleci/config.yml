@@ -48,7 +48,7 @@ jobs:
 
       # Restore cache
       - restore_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: lock-{{ checksum "yarn.lock" }}
 
       # Install dependencies
       - run:
@@ -57,7 +57,7 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: lock-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - packages/*/node_modules
