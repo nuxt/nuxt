@@ -48,7 +48,7 @@
   "dependencies": {
     "@nuxt/cli": "2.3.4",
     "@nuxt/core": "2.3.4",
-    "vue": "^2.5.21",
+    "vue": "^2.5.22",
     "vue-meta": "^1.5.8",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.2",
