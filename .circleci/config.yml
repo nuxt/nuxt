@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/project
   docker:
-    - image: circleci/node
+    - image: circleci/node:latest
   environment:
     NODE_ENV: test
 
@@ -135,7 +135,7 @@ jobs:
   test-e2e:
     <<: *defaults
     docker:
-      - image: circleci/node:browsers
+      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - attach_workspace:
