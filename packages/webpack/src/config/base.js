@@ -185,6 +185,10 @@ export default class WebpackBaseConfig {
       this.nuxt,
       { isServer: this.isServer, perfLoader }
     )
+    const babelLoader = {
+      loader: require.resolve('babel-loader'),
+      options: this.getBabelOptions()
+    }
 
     return [
       {
@@ -224,23 +228,22 @@ export default class WebpackBaseConfig {
           // item in transpile can be string or regex object
           return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.js().concat({
-          loader: require.resolve('babel-loader'),
-          options: this.getBabelOptions()
-        })
+        use: perfLoader.js().concat(babelLoader)
       },
       {
         test: /\.ts$/i,
-        loader: 'ts-loader',
-        options: this.loaders.ts
+        use: [
+          babelLoader,
+          {
+            loader: 'ts-loader',
+            options: this.loaders.ts
+          }
+        ]
       },
       {
         test: /\.tsx$/i,
         use: [
-          {
-            loader: require.resolve('babel-loader'),
-            options: this.getBabelOptions()
-          },
+          babelLoader,
           {
             loader: 'ts-loader',
             options: this.loaders.tsx
