@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/project
   docker:
-    - image: banian/node-headless-chrome
+    - image: circleci/node
   environment:
     NODE_ENV: test
 
@@ -134,6 +134,8 @@ jobs:
 
   test-e2e:
     <<: *defaults
+    docker:
+      - image: circleci/node:browsers
     steps:
       - checkout
       - attach_workspace:
