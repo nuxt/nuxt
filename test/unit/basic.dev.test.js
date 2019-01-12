@@ -113,6 +113,9 @@ describe('basic dev', () => {
     expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
   })
 
+  test('Check render:headersSet hook called', () => {
+    expect(nuxt.__hook_render_headersSet__).toBe('/stateless')
+  })
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {
   //   try {
   //     await rp(url('/_nuxt/test.hot-update.json'))

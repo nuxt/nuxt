@@ -22,6 +22,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     } = result
 
     if (redirected) {
+      nuxt.callHook('render:headersSet', url, result, context)
       nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
@@ -34,6 +35,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       const etag = generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
+        nuxt.callHook('render:headersSet', url, result, context)
         res.end()
         nuxt.callHook('render:routeDone', url, result, context)
         return
@@ -73,6 +75,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
+    nuxt.callHook('render:headersSet', url, result, context)
     res.end(html, 'utf8')
     nuxt.callHook('render:routeDone', url, result, context)
     return html

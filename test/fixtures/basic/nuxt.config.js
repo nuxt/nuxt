@@ -58,6 +58,9 @@ export default {
     render: {
       routeDone(url) {
         _nuxt.__hook_render_routeDone__ = url
+      },
+      headersSet(url) {
+        _nuxt.__hook_render_headersSet__ = url
       }
     },
     bad: null,
