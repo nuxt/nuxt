@@ -22,6 +22,8 @@ const _require = esm(module, {
   }
 })
 
+global.NUXT_VERSION = 'Source'
+
 module.exports = _require('../src/index')
 ` }
 
