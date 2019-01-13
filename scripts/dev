@@ -5,10 +5,11 @@ import consola from 'consola'
 
 import Package from './package.js'
 
-const useCjs = new Set([
+const useCjs = [
   '@nuxt/cli'
-])
+]
 
+let status
 const stub = {
   es: `export * from '../src/index'`,
   cjs: `const esm = require('esm')
@@ -22,7 +23,31 @@ const _require = esm(module, {
   }
 })
 
-global.NUXT_VERSION = 'Source'
+const execa = require('execa')
+
+global = new Proxy(global, {
+  get(target, propertyKey, receiver) {
+    if (propertyKey === '__NUXT_VERSION_') {
+      const { stdout } = execa.sync('git', ['status', '-s', '-b', '--porcelain=2'])
+
+      const status = { dirty: false }
+      for (const line of stdout.split('\\n')) {
+        if (line[0] === '#') {
+          const match = line.match(/branch\.([^\\s]+) (.*)\$/)
+          if (match && match.length) {
+            status[match[1]] = match[2]
+          }
+        } else {
+          status.dirty = true
+          break
+        }
+      }
+
+      return \`git<\${status.head}\${status.dirty?'~':'-'}\${status.oid && status.oid.substr(0,7) || ''}> (\${status.ab})\`
+    }
+    return target[propertyKey]
+  }
+});
 
 module.exports = _require('../src/index')
 ` }
@@ -40,7 +65,7 @@ async function main() {
     consola.info(pkg.pkg.main)
     const distMain = pkg.resolvePath(pkg.pkg.main)
     await fs.mkdirp(path.dirname(distMain))
-    await fs.writeFile(distMain, useCjs.has(pkg.pkg.name) ? stub.cjs : stub.es)
+    await fs.writeFile(distMain, useCjs.includes(pkg.pkg.name) ? stub.cjs : stub.es)
   }
 }
 
