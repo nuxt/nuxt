@@ -71,9 +71,15 @@ export default class ModuleContainer {
 
   addLayout(template, name) {
     const { dst, src } = this.addTemplate(template)
+    const layoutName = name || path.parse(src).name
+    const layout = this.options.layouts[layoutName]
+
+    if (layout) {
+      consola.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
+    }
 
     // Add to nuxt layouts
-    this.options.layouts[name || path.parse(src).name] = `./${dst}`
+    this.options.layouts[layoutName] = `./${dst}`
 
     // If error layout, set ErrorPage
     if (name === 'error') {

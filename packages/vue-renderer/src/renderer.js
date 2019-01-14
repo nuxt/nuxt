@@ -59,7 +59,11 @@ export default class VueRenderer {
         const modernJsFile = this.assetsMapping[legacyJsFile]
         const crossorigin = this.context.options.build.crossorigin
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-        const moduleTag = scriptTag.replace('<script', `<script type="module"${cors}`).replace(legacyJsFile, modernJsFile)
+        const moduleTag = modernJsFile
+          ? scriptTag
+            .replace('<script', `<script type="module"${cors}`)
+            .replace(legacyJsFile, modernJsFile)
+          : ''
         const noModuleTag = scriptTag.replace('<script', `<script nomodule${cors}`)
         return noModuleTag + moduleTag
       })
@@ -95,6 +99,9 @@ export default class VueRenderer {
       return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
+        if (!modernJsFile) {
+          return ''
+        }
         const crossorigin = this.context.options.build.crossorigin
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)

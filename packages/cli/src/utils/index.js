@@ -9,7 +9,7 @@ import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 
-export const requireModule = esm(module, {
+export const requireModule = process.env.NUXT_TS ? require : esm(module, {
   cache: false,
   cjs: {
     cache: true,

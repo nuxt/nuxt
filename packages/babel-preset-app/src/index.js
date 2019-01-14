@@ -26,16 +26,6 @@ module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
 
-  // JSX
-  if (options.jsx !== false) {
-    plugins.push(
-      require('@babel/plugin-syntax-jsx'),
-      require('babel-plugin-transform-vue-jsx')
-      // require('babel-plugin-jsx-event-modifiers'),
-      // require('babel-plugin-jsx-v-model')
-    )
-  }
-
   const modern = !!options.modern
 
   const {
@@ -91,6 +81,11 @@ module.exports = (context, options = {}) => {
       forceAllTransforms
     }
   ])
+
+  // JSX
+  if (options.jsx !== false) {
+    presets.push([require('@vue/babel-preset-jsx'), Object.assign({}, options.jsx)])
+  }
 
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),
