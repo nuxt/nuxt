@@ -317,7 +317,7 @@ export default class VueRenderer {
     }
   }
 
-  async renderRoute(url, context = { req: {}, res: {} }, retries = 5) {
+  async renderRoute(url, context = {}, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
       if (this.context.options.dev && retries > 0) {
@@ -335,13 +335,16 @@ export default class VueRenderer {
     // Add url to the context
     context.url = url
 
+    // Extract req, res
+    const { req = {}, res = {} } = context
+
     // Render SPA
-    if (!this.SSR || context.spa || context.req.spa || context.res.spa) {
+    if (!this.SSR || context.spa || req.spa || res.spa) {
       return this.renderSPA(context)
     }
 
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.req.modernMode ? this.renderer.modern : this.renderer.ssr
+    const renderer = req.modernMode ? this.renderer.modern : this.renderer.ssr
     let APP = await renderer.renderToString(context)
 
     // Fallback to empty response
