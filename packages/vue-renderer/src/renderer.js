@@ -330,7 +330,7 @@ export default class VueRenderer {
     let APP = await renderer.renderToString(context)
 
     // Call ssr:context hook
-    this.context.nuxt.callHook('vue-renderer:ssr:context', context)
+    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
     await this.context.nuxt.callHook('render:routeContext', context.nuxt) // Legacy
 
     // Fallback to empty response
@@ -375,7 +375,7 @@ export default class VueRenderer {
     }
 
     // Call ssr:csp hook
-    this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
+    await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
 
     // Prepend scripts
     APP += this.renderScripts(context)
@@ -393,7 +393,7 @@ export default class VueRenderer {
     }
 
     // Call ssr:templateParams hook
-    this.context.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
+    await this.context.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
 
     // Render with SSR template
     const html = this.renderTemplate(true, templateParams)
@@ -437,7 +437,7 @@ export default class VueRenderer {
     }
 
     // Call context hook
-    this.context.nuxt.callHook('vue-renderer:context', context)
+    await this.context.nuxt.callHook('vue-renderer:context', context)
 
     // Render SPA or SSR
     if (context.spa) {
