@@ -349,7 +349,8 @@ export default class Builder {
 
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      const layoutsFiles = await this.resolveFiles(this.options.dir.layouts)
+      const configLayouts = this.options.layouts
+      const layoutsFiles = await this.resolveFiles(configLayouts)
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
