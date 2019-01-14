@@ -298,7 +298,7 @@ export default class VueRenderer {
     return fn(opts)
   }
 
-  async renderSPA(context, ENV) {
+  async renderSPA(context) {
     const content = await this.renderer.spa.render(context)
 
     const APP =
@@ -308,7 +308,7 @@ export default class VueRenderer {
     const html = this.renderTemplate(false, {
       ...content,
       APP,
-      ENV
+      ENV: this.context.options.env
     })
 
     return {
@@ -335,12 +335,9 @@ export default class VueRenderer {
     // Add url to the context
     context.url = url
 
-    // ENV
-    const ENV = this.context.options.env
-
     // Render SPA
     if (!this.SSR || context.spa || context.req.spa || context.res.spa) {
-      return this.renderSPA(context, ENV)
+      return this.renderSPA(context)
     }
 
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
@@ -403,7 +400,7 @@ export default class VueRenderer {
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,
       APP,
-      ENV
+      ENV: this.context.options.env
     })
 
     return {
