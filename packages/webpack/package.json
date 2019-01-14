@@ -14,7 +14,7 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.4.0",
     "@nuxt/utils": "2.3.4",
     "babel-loader": "^8.0.5",
-    "caniuse-lite": "^1.0.30000927",
+    "caniuse-lite": "^1.0.30000928",
     "chalk": "^2.4.2",
     "consola": "^2.3.2",
     "css-loader": "^2.1.0",
@@ -29,7 +29,7 @@
     "memory-fs": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "pify": "^4.0.1",
-    "postcss": "^7.0.8",
+    "postcss": "^7.0.11",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.1.0",
     "postcss-loader": "^3.0.0",
@@ -42,11 +42,12 @@
     "time-fix-plugin": "^2.0.5",
     "url-loader": "^1.1.2",
     "vue-loader": "^15.5.1",
-    "webpack": "^4.28.3",
+    "webpack": "^4.28.4",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-dev-middleware": "^3.5.0",
     "webpack-hot-middleware": "^2.24.3",
-    "webpackbar": "^3.1.4"
+    "webpack-node-externals": "^1.7.2",
+    "webpackbar": "^3.1.5"
   },
   "publishConfig": {
     "access": "public"
