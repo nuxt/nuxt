@@ -1,4 +1,4 @@
-export default ({ env }) => ({
+export default ({ env = {} } = {}) => ({
   https: false,
   port: env.NUXT_PORT ||
     env.PORT ||
