@@ -19,7 +19,7 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:lint": "yarn lint",
-    "test:unit": "jest test/unit --forceExit",
+    "test:unit": "jest test/unit packages --forceExit",
     "test:types": "tsc -p test/types",
     "postinstall": "lerna link && yarn dev",
     "release": "./scripts/release"
