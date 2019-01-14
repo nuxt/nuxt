@@ -1,3 +1,3 @@
 # TypeScript example
 
-https://nuxtjs.org/examples/typescript
+https://codesandbox.io/s/0qmykr7wq0
