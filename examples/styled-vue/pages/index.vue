@@ -1,7 +1,9 @@
 <template>
   <div>
     <h1>styled-vue</h1>
-    <a href="https://github.com/egoist/styled-vue" class="github">Check it out on GitHub.</a>
+    <a href="https://github.com/egoist/styled-vue" class="github">
+      Check it out on GitHub.
+    </a>
   </div>
 </template>
 
