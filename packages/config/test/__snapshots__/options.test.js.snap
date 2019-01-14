@@ -240,6 +240,10 @@ Object {
     },
   },
   "modules": Array [],
+  "modulesDir": Array [
+    "/var/nuxt/node_modules",
+    "/var/nuxt/test/node_modules",
+  ],
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
