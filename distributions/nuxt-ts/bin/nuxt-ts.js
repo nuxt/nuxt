@@ -4,7 +4,11 @@
 process.env.NUXT_TS = 'true'
 
 // https://github.com/TypeStrong/ts-node
-require('ts-node').register()
+require('ts-node').register({
+  compilerOptions: {
+    module: 'commonjs'
+  }
+})
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
 require('@nuxt/cli' + suffix).run()
