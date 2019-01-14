@@ -4,8 +4,8 @@ exports[`config: options should return default nuxt config 1`] = `
 Object {
   "ErrorPage": null,
   "__normalized__": true,
-  "_nuxtConfigFile": "/mnt/c/Users/CDu/projects/github/nuxt.js/nuxt.config.js",
-  "appTemplatePath": "/mnt/c/Users/CDu/projects/github/nuxt.js/.nuxt/views/app.template.html",
+  "_nuxtConfigFile": "/var/nuxt/test/nuxt.config.js",
+  "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
     "analyze": false,
@@ -134,7 +134,7 @@ Object {
     "useForkTsChecker": false,
     "watch": Array [],
   },
-  "buildDir": "/mnt/c/Users/CDu/projects/github/nuxt.js/.nuxt",
+  "buildDir": "/var/nuxt/test/.nuxt",
   "cli": Object {
     "badgeMessages": Array [],
   },
@@ -158,7 +158,7 @@ Object {
   ],
   "generate": Object {
     "concurrency": 500,
-    "dir": "/mnt/c/Users/CDu/projects/github/nuxt.js/dist",
+    "dir": "/var/nuxt/test/dist",
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
@@ -240,19 +240,6 @@ Object {
     },
   },
   "modules": Array [],
-  "modulesDir": Array [
-    "/mnt/c/Users/CDu/projects/github/nuxt.js/packages/config/test/node_modules",
-    "/mnt/c/Users/CDu/projects/github/nuxt.js/packages/config/node_modules",
-    "/mnt/c/Users/CDu/projects/github/nuxt.js/packages/node_modules",
-    "/mnt/c/Users/CDu/projects/github/nuxt.js/node_modules",
-    "/mnt/c/Users/CDu/projects/github/node_modules",
-    "/mnt/c/Users/CDu/projects/node_modules",
-    "/mnt/c/Users/CDu/node_modules",
-    "/mnt/c/Users/node_modules",
-    "/mnt/c/node_modules",
-    "/mnt/node_modules",
-    "/node_modules",
-  ],
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -292,7 +279,7 @@ Object {
       "prefix": true,
     },
   },
-  "rootDir": "/mnt/c/Users/CDu/projects/github/nuxt.js",
+  "rootDir": "/var/nuxt/test",
   "router": Object {
     "base": "/",
     "extendRoutes": null,
@@ -316,7 +303,7 @@ Object {
     "socket": undefined,
   },
   "serverMiddleware": Array [],
-  "srcDir": "/mnt/c/Users/CDu/projects/github/nuxt.js",
+  "srcDir": "/var/nuxt/test",
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -343,7 +330,7 @@ Object {
     },
   },
   "watch": Array [
-    "/mnt/c/Users/CDu/projects/github/nuxt.js/nuxt.config.js",
+    "/var/nuxt/test/nuxt.config.js",
   ],
   "watchers": Object {
     "chokidar": Object {
