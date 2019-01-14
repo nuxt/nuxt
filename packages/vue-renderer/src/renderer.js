@@ -329,7 +329,7 @@ export default class VueRenderer {
     const renderer = context.modren ? this.renderer.modern : this.renderer.ssr
     let APP = await renderer.renderToString(context)
 
-    // Call SSRContext hook
+    // Call ssr:context hook
     this.context.nuxt.callHook('vue-renderer:ssr:context', context)
     await this.context.nuxt.callHook('render:routeContext', context.nuxt) // Legacy
 
@@ -374,8 +374,8 @@ export default class VueRenderer {
       cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
     }
 
-    // Call ssr:extendCSP hook
-    this.context.nuxt.callHook('vue-renderer:ssr:extendCSP', cspScriptSrcHashes)
+    // Call ssr:csp hook
+    this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
 
     // Prepend scripts
     APP += this.renderScripts(context)
@@ -436,8 +436,8 @@ export default class VueRenderer {
       context.modern = context.req ? (context.req.modernMode || context.req.modern) : false
     }
 
-    // Call extendContext hook
-    this.context.nuxt.callHook('vue-renderer:extendContext', context)
+    // Call context hook
+    this.context.nuxt.callHook('vue-renderer:context', context)
 
     // Render SPA or SSR
     if (context.spa) {
