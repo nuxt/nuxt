@@ -50,7 +50,7 @@ export default class WebpackBaseConfig {
 
   normalizeTranspile() {
     // include SFCs in node_modules
-    const items = [/\.vue\.js/]
+    const items = [/\.vue\.js/i]
     for (const pattern of this.options.build.transpile) {
       if (pattern instanceof RegExp) {
         items.push(pattern)
@@ -185,18 +185,22 @@ export default class WebpackBaseConfig {
       this.nuxt,
       { isServer: this.isServer, perfLoader }
     )
+    const babelLoader = {
+      loader: require.resolve('babel-loader'),
+      options: this.getBabelOptions()
+    }
 
     return [
       {
-        test: /\.vue$/,
+        test: /\.vue$/i,
         loader: 'vue-loader',
         options: this.loaders.vue
       },
       {
-        test: /\.pug$/,
+        test: /\.pug$/i,
         oneOf: [
           {
-            resourceQuery: /^\?vue/,
+            resourceQuery: /^\?vue/i,
             use: [{
               loader: 'pug-plain-loader',
               options: this.loaders.pugPlain
@@ -214,7 +218,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.jsx?$/,
+        test: /\.jsx?$/i,
         exclude: (file) => {
           // not exclude files outside node_modules
           if (!/node_modules/.test(file)) {
@@ -224,23 +228,22 @@ export default class WebpackBaseConfig {
           // item in transpile can be string or regex object
           return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.js().concat({
-          loader: require.resolve('babel-loader'),
-          options: this.getBabelOptions()
-        })
+        use: perfLoader.js().concat(babelLoader)
       },
       {
-        test: /\.ts$/,
-        loader: 'ts-loader',
-        options: this.loaders.ts
-      },
-      {
-        test: /\.tsx$/,
+        test: /\.ts$/i,
         use: [
+          babelLoader,
           {
-            loader: require.resolve('babel-loader'),
-            options: this.getBabelOptions()
-          },
+            loader: 'ts-loader',
+            options: this.loaders.ts
+          }
+        ]
+      },
+      {
+        test: /\.tsx$/i,
+        use: [
+          babelLoader,
           {
             loader: 'ts-loader',
             options: this.loaders.tsx
@@ -248,43 +251,43 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.css$/,
+        test: /\.css$/i,
         oneOf: styleLoader.apply('css')
       },
       {
-        test: /\.p(ost)?css$/,
+        test: /\.p(ost)?css$/i,
         oneOf: styleLoader.apply('postcss')
       },
       {
-        test: /\.less$/,
+        test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
           options: this.loaders.less
         })
       },
       {
-        test: /\.sass$/,
+        test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
           options: this.loaders.sass
         })
       },
       {
-        test: /\.scss$/,
+        test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
           options: this.loaders.scss
         })
       },
       {
-        test: /\.styl(us)?$/,
+        test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
           options: this.loaders.stylus
         })
       },
       {
-        test: /\.(png|jpe?g|gif|svg|webp)$/,
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
         use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
@@ -294,7 +297,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
         use: perfLoader.asset().concat({
           loader: 'url-loader',
           options: Object.assign(
@@ -304,7 +307,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.(webm|mp4|ogv)$/,
+        test: /\.(webm|mp4|ogv)$/i,
         use: perfLoader.asset().concat({
           loader: 'file-loader',
           options: Object.assign(

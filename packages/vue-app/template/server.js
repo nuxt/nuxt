@@ -1,7 +1,7 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
 import middleware from './middleware.js'
-import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin } from './utils.js'
+import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
@@ -136,7 +136,8 @@ export default async (ssrContext) => {
   ** Call middleware (layout + pages)
   */
   midd = []
-  if (layout.middleware) midd = midd.concat(layout.middleware)
+  layout = sanitizeComponent(layout)
+  if (layout.options.middleware) midd = midd.concat(layout.options.middleware)
   Components.forEach((Component) => {
     if (Component.options.middleware) {
       midd = midd.concat(Component.options.middleware)
