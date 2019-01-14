@@ -53,7 +53,7 @@
     "@nuxt/generator": "2.3.4",
     "@nuxt/opencollective": "^0.2.1",
     "@nuxt/webpack": "2.3.4",
-    "fork-ts-checker-webpack-plugin": "^0.5.2",
+    "fork-ts-checker-webpack-plugin": "^1.0.0-alpha.1",
     "ts-loader": "^5.3.3",
     "ts-node": "^7.0.1",
     "tslint": "^5.12.1",
