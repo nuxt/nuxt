@@ -84,9 +84,7 @@ export default class Generator {
         ? ['/']
         : flatRoutes(this.options.router.routes)
 
-    this.options.generate.exclude.forEach((regex) => {
-      routes = routes.filter(route => !regex.test(route))
-    })
+    routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
 
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
