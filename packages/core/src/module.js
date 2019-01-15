@@ -30,7 +30,7 @@ export default class ModuleContainer {
   addTemplate(template) {
     /* istanbul ignore if */
     if (!template) {
-      throw new Error('Invalid template:' + JSON.stringify(template))
+      throw new Error('Invalid template: ' + JSON.stringify(template))
     }
 
     // Validate & parse source
@@ -38,7 +38,7 @@ export default class ModuleContainer {
     const srcPath = path.parse(src)
     /* istanbul ignore if */
     if (typeof src !== 'string' || !fs.existsSync(src)) {
-      throw new Error('Template src not found:' + src)
+      throw new Error('Template src not found: ' + src)
     }
 
     // Generate unique and human readable dst filename
