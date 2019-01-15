@@ -157,17 +157,6 @@ export default class ModuleContainer {
       options = {}
     }
 
-    return new Promise((resolve) => {
-      // Call module with `this` context and pass options
-      const result = handler.call(this, options)
-
-      // If module send back a promise
-      if (result && result.then) {
-        return resolve(result)
-      }
-
-      // synchronous
-      return resolve()
-    })
+    return handler.call(this, options)
   }
 }
