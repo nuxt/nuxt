@@ -5,7 +5,7 @@ import listCommands from '../../src/list'
 import getCommand from '../../src/commands'
 import { indent, foldLines, colorize } from '../../src/utils/formatting'
 
-jest.mock('chalk', () => ({ green: jest.fn().mockImplementation(text => text) }))
+jest.mock('chalk', () => ({ green: jest.fn(text => text) }))
 jest.mock('../../src/commands')
 jest.mock('../../src/utils/formatting')
 
