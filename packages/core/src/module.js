@@ -111,7 +111,7 @@ export default class ModuleContainer {
     return this.addModule(moduleOpts, true /* require once */)
   }
 
-  addModule(moduleOpts, requireOnce) {
+  async addModule(moduleOpts, requireOnce) {
     let src
     let options
     let handler
@@ -157,6 +157,7 @@ export default class ModuleContainer {
       options = {}
     }
 
-    return handler.call(this, options)
+    const result = await handler.call(this, options)
+    return result
   }
 }
