@@ -24,9 +24,9 @@ const _require = esm(module, {
 
 const execa = require('execa')
 
-global = new Proxy(global, {
+global.__NUXT = new Proxy({}, {
   get(target, propertyKey, receiver) {
-    if (propertyKey === '__NUXT_VERSION_') {
+    if (propertyKey === 'version') {
       try {
         const { stdout } = execa.sync('git', ['status', '-s', '-b', '--porcelain=2'])
 
