@@ -1,5 +1,5 @@
 export default {
-  build: false,
+  build: true,
   hooks: {
     async 'build:done'(pkg) {
       const mono = pkg.load('../..')

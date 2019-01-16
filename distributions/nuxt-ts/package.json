@@ -42,6 +42,7 @@
   "files": [
     "bin"
   ],
+  "main": "dist/nuxt-ts.js",
   "bin": {
     "nuxt-ts": "bin/nuxt-ts.js",
     "nuxts": "bin/nuxt-ts.js"
