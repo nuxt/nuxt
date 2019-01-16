@@ -93,6 +93,5 @@ if (vm.$nuxt.$loading.increase) vm.$nuxt.$loading.increase(1)
 if (vm.$nuxt.$loading.pause) vm.$nuxt.$loading.pause()
 vm.$nuxt.$loading.start()
 
-
 vm.$nuxt.isOffline = true
 vm.$nuxt.isOnline = true
