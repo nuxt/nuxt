@@ -13,7 +13,6 @@
     "lint": "tslint --project ."
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
     "tslint-config-standard": "^8.0.1"
   }
 }
