@@ -357,4 +357,33 @@ describe('core: module', () => {
     })
     expect(result).toEqual({ test: true })
   })
+
+  test('should throw error when handler is not function', () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule: () => false },
+      options: {}
+    })
+
+    expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
+  })
+
+  test('should prevent multiple adding when requireOnce is enabled', async () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {}
+    })
+
+    const handler = jest.fn(() => true)
+    handler.meta = {
+      name: 'moduleTest'
+    }
+
+    const first = await module.addModule({ handler }, true)
+    const second = await module.addModule({ handler }, true)
+
+    expect(first).toEqual(true)
+    expect(second).toBeUndefined()
+    expect(handler).toBeCalledTimes(1)
+    expect(module.requiredModules.moduleTest).toBeDefined()
+  })
 })

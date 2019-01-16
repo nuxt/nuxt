@@ -14,8 +14,8 @@ describe('core: hookable', () => {
 
     expect(hook._hooks).toEqual({})
     expect(hook._deprecatedHooks).toEqual({})
-    expect(hook.hook).toEqual(expect.any(Function))
-    expect(hook.callHook).toEqual(expect.any(Function))
+    expect(hook.hook).toBeInstanceOf(Function)
+    expect(hook.callHook).toBeInstanceOf(Function)
   })
 
   test('should register hook successfully', () => {
@@ -24,7 +24,7 @@ describe('core: hookable', () => {
     hook.hook('test:hook', () => {})
 
     expect(hook._hooks['test:hook']).toHaveLength(2)
-    expect(hook._hooks['test:hook']).toEqual(expect.any(Array))
+    expect(hook._hooks['test:hook']).toBeInstanceOf(Array)
     expect(hook._hooks['test:hook']).toEqual([expect.any(Function), expect.any(Function)])
   })
 
