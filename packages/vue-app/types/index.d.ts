@@ -62,11 +62,16 @@ export interface ErrorParams {
   message?: string;
 }
 
+export interface NuxtLoading extends Vue {
+  fail?(): void;
+  finish(): void;
+  increase?(num: number): void;
+  pause?(): void;
+  start(): void;
+}
+
 export interface NuxtApp extends Vue {
+  $loading: NuxtLoading;
   isOffline: boolean;
   isOnline: boolean;
-  $loading: {
-    start(): void;
-    finish(): void;
-  };
 }
