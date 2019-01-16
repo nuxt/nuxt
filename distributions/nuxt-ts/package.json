@@ -40,7 +40,9 @@
     }
   ],
   "files": [
-    "bin"
+    "bin",
+    "dist",
+    "tsconfig.json"
   ],
   "main": "dist/nuxt-ts.js",
   "bin": {
