@@ -6,7 +6,7 @@ import pick from 'lodash/pick'
 import isObject from 'lodash/isObject'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { guardDir, isNonEmptyString, isPureObject, isUrl } from '@nuxt/utils'
+import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
 import { getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
@@ -113,7 +113,7 @@ export function getNuxtConfig(_options) {
 
   // Populate modulesDir
   options.modulesDir = uniq(
-    require.main.paths.concat(
+    getMainModule().paths.concat(
       [].concat(options.modulesDir).map(dir => path.resolve(options.rootDir, dir))
     )
   )

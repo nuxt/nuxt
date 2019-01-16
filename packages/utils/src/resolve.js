@@ -108,3 +108,5 @@ export function isIndexFileAndFolder(pluginFiles) {
   }
   return pluginFiles.some(isIndex)
 }
+
+export const getMainModule = () => require.main
