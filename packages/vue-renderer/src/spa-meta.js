@@ -73,10 +73,9 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const clientManifest = this.renderer.context.resources.clientManifest
+    const { clientManifest } = this.renderer.context.resources
 
-    const shouldPreload = this.options.render.bundleRenderer.shouldPreload
-    const shouldPrefetch = this.options.render.bundleRenderer.shouldPrefetch
+    const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
 
     if (this.options.render.resourceHints && clientManifest) {
       const publicPath = clientManifest.publicPath || '/_nuxt/'
