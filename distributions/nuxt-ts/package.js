@@ -1,4 +1,4 @@
-import { readJSON, writeFile } from 'fs-extra'
+import { readJSON, writeJson } from 'fs-extra'
 
 export default {
   build: true,
@@ -29,7 +29,7 @@ export default {
           return type + suffix
         })
 
-        await writeFile('tsconfig.json', JSON.stringify(tsconfig, undefined, 2) + '\n')
+        await writeJson(pkg.resolvePath('tsconfig.json'), tsconfig, { spaces: 2 })
       }
     }
   }
