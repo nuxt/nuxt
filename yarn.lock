@@ -9741,10 +9741,10 @@ rollup-plugin-json@^3.1.0:
   dependencies:
     rollup-pluginutils "^2.3.1"
 
-rollup-plugin-license@^0.8.0:
-  version "0.8.0"
-  resolved "https://registry.npmjs.org/rollup-plugin-license/-/rollup-plugin-license-0.8.0.tgz#a7e4bf9a64ad68668aaa4bd1c46e7608473194b3"
-  integrity sha512-yzdKIi6gCSQag8TEGf3hNkhJ8rGXafi2md7pguTGsq0VKE4wps9BF8z8D5MaQO5qJ8ESlrLP+m59S+K7LZy2rw==
+rollup-plugin-license@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.npmjs.org/rollup-plugin-license/-/rollup-plugin-license-0.8.1.tgz#cdcfee2a32f27790e5019a2a7abd9234476ac589"
+  integrity sha512-UeDVawklIv/rb4/M8AqHHtt03L+gDNfCVjQJqgUaQKiNTmUk+peAzkaLYeC6kfQm7i77kGYEzkbPZ0Dd9NEbCQ==
   dependencies:
     commenting "1.0.5"
     lodash "4.17.11"
