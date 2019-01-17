@@ -48,6 +48,10 @@ options.head = () => metaInfo
 options.layout = 'foo'
 options.layout = (context) => 'foo'
 
+// loading
+
+options.loading = true
+
 // middleware
 
 const middlewares: types.Middleware[] = [
