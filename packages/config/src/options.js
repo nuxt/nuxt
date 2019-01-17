@@ -180,7 +180,8 @@ export function getNuxtConfig(_options) {
   }
 
   // Apply default hash to CSP option
-  const csp = options.render.csp
+  const { csp } = options.render
+
   const cspDefaults = {
     hashAlgorithm: 'sha256',
     allowedSources: undefined,
@@ -297,7 +298,7 @@ export function getNuxtConfig(_options) {
     options.build.optimizeCSS = options.build.extractCSS ? {} : false
   }
 
-  const loaders = options.build.loaders
+  const { loaders } = options.build
   const vueLoader = loaders.vue
   if (vueLoader.productionMode === undefined) {
     vueLoader.productionMode = !options.dev

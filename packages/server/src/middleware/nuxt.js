@@ -105,7 +105,7 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
       return
     }
 
-    const crossorigin = options.build.crossorigin
+    const { crossorigin } = options.build
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
     const ref = modern ? 'modulepreload' : 'preload'
 

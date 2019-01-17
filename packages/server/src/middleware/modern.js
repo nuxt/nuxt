@@ -46,7 +46,7 @@ const detectModernBrowser = ({ socket = {}, headers }) => {
 
 const setModernMode = (req, options) => {
   const { socket = {} } = req
-  const isModernBrowser = socket.isModernBrowser
+  const { isModernBrowser } = socket
   if (options.modern === 'server') {
     req.modernMode = isModernBrowser
   }
