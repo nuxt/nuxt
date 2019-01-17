@@ -8,7 +8,7 @@ export function registerTsNode() {
       compilerOptions: {
         baseUrl: '.'
       }
-    }, undefined, 2))
+    }, undefined, 2) + '\n')
   }
   // https://github.com/TypeStrong/ts-node
   register({
