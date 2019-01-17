@@ -1,4 +1,4 @@
-import { readJSONSync, writeFile } from 'fs-extra'
+import { readJSON, writeFile } from 'fs-extra'
 
 export default {
   build: true,
@@ -22,7 +22,7 @@ export default {
       await pkg.writePackage()
 
       if (pkg.options.suffix && pkg.options.linkedDependencies) {
-        const tsconfig = readJSONSync(pkg.resolvePath('tsconfig.json'))
+        const tsconfig = await readJSON(pkg.resolvePath('tsconfig.json'))
 
         tsconfig.compilerOptions.types = tsconfig.compilerOptions.types.map((type) => {
           const suffix = pkg.options.linkedDependencies.includes(type) ? pkg.options.suffix : ''
