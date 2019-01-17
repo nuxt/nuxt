@@ -96,7 +96,7 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      BundleBuilder = require('@nuxt/webpack').BundleBuilder
+      ({ BundleBuilder } = require('@nuxt/webpack'))
     }
 
     return new BundleBuilder(context)
@@ -384,7 +384,7 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-        ; (await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
+      ;(await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
         cwd: this.options.srcDir,
         ignore: this.options.ignore
       })).forEach((f) => {
@@ -637,7 +637,7 @@ export default class Builder {
         .watch(customPatterns, options)
         .on('change', refreshFiles)
 
-      const rewatchOnRawEvents = this.options.watchers.rewatchOnRawEvents
+      const { rewatchOnRawEvents } = this.options.watchers
       if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
         this.watchers.custom.on('raw', (_event, _path, opts) => {
           if (rewatchOnRawEvents.includes(_event)) {
