@@ -100,22 +100,23 @@ function requireModule(path, { isRoot = false, isState = false } = {}) {
   let moduleData = file.default || file
 
   if (isState && typeof moduleData !== 'function') {
-    log.warn(`${path} should export a method which returns an object`)
+    log.warn(`${path} should export a method that returns an object`)
     const state = Object.assign({}, moduleData)
     return () => state
   }
   if (isRoot && moduleData.commit) {
-    throw new Error('[nuxt] <%= dir.store %>/' + path.replace('./', '') + ' should export a method which returns a Vuex instance.')
+    throw new Error('[nuxt] <%= dir.store %>/' + path.replace('./', '') + ' should export a method that returns a Vuex instance.')
   }
 
   if (isRoot && typeof moduleData !== 'function') {
     // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
     moduleData = Object.assign({}, moduleData)
-    if (moduleData.state && typeof moduleData.state !== 'function') {
-      log.warn(`State should be a method which returns an object in ${path}`)
-      const state = Object.assign({}, moduleData.state)
-      moduleData.state = () => state
-    }
+  }
+  if (moduleData.state && typeof moduleData.state !== 'function') {
+    log.warn(`'state' should be a method that returns an object in ${path}`)
+    const state = Object.assign({}, moduleData.state)
+    // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
+    moduleData = Object.assign({}, moduleData, { state: () => state })
   }
   return moduleData
 }
