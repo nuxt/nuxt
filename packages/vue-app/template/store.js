@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+const log = (process.server ? require('consola') : console)
 const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
 let store = {}
 let fileResolver
@@ -31,7 +32,6 @@ void (function updateModules() {
 
   // If store is an exported method = classic mode (deprecated)
   if (typeof store === 'function') {
-    const log = (process.server ? require('consola') : console)
     return log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }
 
@@ -97,10 +97,12 @@ export const createStore = store instanceof Function ? store : () => {
 // Dynamically require module
 function requireModule(path, { isRoot = false, isState = false } = {}) {
   const file = fileResolver(path)
-  const moduleData = file.default || file
+  let moduleData = file.default || file
 
   if (isState && typeof moduleData !== 'function') {
-    return () => moduleData
+    log.warn(`${path} should export a method which returns an object`)
+    const state = Object.assign({}, moduleData)
+    return () => state
   }
   if (isRoot && moduleData.commit) {
     throw new Error('[nuxt] <%= dir.store %>/' + path.replace('./', '') + ' should export a method which returns a Vuex instance.')
@@ -108,8 +110,12 @@ function requireModule(path, { isRoot = false, isState = false } = {}) {
 
   if (isRoot && typeof moduleData !== 'function') {
     // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
-    const state = moduleData.state && typeof moduleData.state !== 'function' ? (() => state) : moduleData.state
-    return Object.assign({}, moduleData, { state })
+    moduleData = Object.assign({}, moduleData)
+    if (moduleData.state && typeof moduleData.state !== 'function') {
+      log.warn(`State should be a method which returns an object in ${path}`)
+      const state = Object.assign({}, moduleData.state)
+      moduleData.state = () => state
+    }
   }
   return moduleData
 }
