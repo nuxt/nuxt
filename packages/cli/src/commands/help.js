@@ -13,7 +13,7 @@ export default {
     version: common.version
   },
   async run(cmd) {
-    const name = cmd._argv[0]
+    const [name] = cmd._argv
     if (!name) {
       return listCommands()
     }

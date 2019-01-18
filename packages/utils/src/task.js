@@ -14,19 +14,19 @@ export const chainFn = function chainFn(base, fn) {
   if (typeof fn !== 'function') {
     return base
   }
-  return function () {
+  return function (...args) {
     if (typeof base !== 'function') {
-      return fn.apply(this, arguments)
+      return fn.apply(this, args)
     }
-    let baseResult = base.apply(this, arguments)
+    let baseResult = base.apply(this, args)
     // Allow function to mutate the first argument instead of returning the result
     if (baseResult === undefined) {
-      baseResult = arguments[0]
+      [baseResult] = args
     }
     const fnResult = fn.call(
       this,
       baseResult,
-      ...Array.prototype.slice.call(arguments, 1)
+      ...Array.prototype.slice.call(args, 1)
     )
     // Return mutated argument if no result was returned
     if (fnResult === undefined) {

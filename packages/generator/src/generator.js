@@ -205,7 +205,7 @@ export default class Generator {
         _generate: true,
         payload
       })
-      html = res.html
+      ;({ html } = res)
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }
