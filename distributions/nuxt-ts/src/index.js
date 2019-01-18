@@ -1,12 +1,12 @@
 import { resolve } from 'path'
-import { existsSync, writeJsonSync } from 'fs-extra'
+import { existsSync, writeJSONSync } from 'fs-extra'
 import { register } from 'ts-node'
 
 export function generateTsConfigIfMissing(rootDir = '.') {
   const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
   if (!existsSync(tsConfigPath)) {
-    writeJsonSync(tsConfigPath, {
+    writeJSONSync(tsConfigPath, {
       extends: 'nuxt-ts',
       compilerOptions: {
         baseUrl: '.'

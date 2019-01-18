@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { mkdirp, exists, readJson, remove } from 'fs-extra'
+import { mkdirp, exists, readJSON, remove } from 'fs-extra'
 import { register } from 'ts-node'
 import { generateTsConfigIfMissing, registerTsNode } from '../../distributions/nuxt-ts/src'
 
@@ -17,7 +17,7 @@ describe('nuxt-ts', () => {
     const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
     expect(await exists(tsConfigPath)).toBe(true)
-    expect(await readJson(tsConfigPath)).toEqual({
+    expect(await readJSON(tsConfigPath)).toEqual({
       extends: 'nuxt-ts',
       compilerOptions: {
         baseUrl: '.'
