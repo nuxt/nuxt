@@ -120,13 +120,10 @@ export default class ModuleContainer {
       src = moduleOpts
     } else if (Array.isArray(moduleOpts)) {
       // Type 2: Babel style array
-      src = moduleOpts[0]
-      options = moduleOpts[1]
+      [src, options] = moduleOpts
     } else if (typeof moduleOpts === 'object') {
       // Type 3: Pure object
-      src = moduleOpts.src
-      options = moduleOpts.options
-      handler = moduleOpts.handler
+      ({ src, options, handler } = moduleOpts)
     }
 
     // Resolve handler

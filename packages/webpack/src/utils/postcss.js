@@ -108,7 +108,7 @@ export default class PostcssConfig {
   }
 
   loadPlugins(config) {
-    const plugins = config.plugins
+    const { plugins } = config
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)

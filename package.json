@@ -71,7 +71,7 @@
     "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-json": "^3.1.0",
-    "rollup-plugin-license": "^0.8.0",
+    "rollup-plugin-license": "^0.8.1",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^2.1.0",
     "sort-package-json": "^1.17.1",
