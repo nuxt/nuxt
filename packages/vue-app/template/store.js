@@ -103,7 +103,7 @@ function requireModule(path, { isRoot = false, isState = false } = {}) {
 
   if (isRoot) {
     // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
-    const state = moduleData.state && moduleData.state !== 'function' ? (() => state) : moduleData.state
+    const state = moduleData.state && typeof moduleData.state !== 'function' ? (() => state) : moduleData.state
     return Object.assign({}, moduleData, { state })
   }
   return moduleData
