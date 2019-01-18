@@ -3,6 +3,7 @@
 // Globally indicate we are running in ts mode
 process.env.NUXT_TS = 'true'
 
+require('..').generateTsConfigIfMissing()
 require('..').registerTsNode()
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
