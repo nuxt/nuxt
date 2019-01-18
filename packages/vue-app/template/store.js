@@ -14,9 +14,10 @@ void (function updateModules() {
   const paths = fileResolver.keys().sort((p1, p2) => {
     let res = p1.split('/').length - p2.split('/').length
 
-    if (res === 0) {
-      if (p1.includes('/index.')) res = -1
-      if (p2.includes('/index.')) res = 1
+    if (res === 0 && p1.includes('/index.')) {
+      res = -1
+    } else if (res === 0 && p2.includes('/index.')) {
+      res = 1
     }
     return res
   })
@@ -42,9 +43,11 @@ void (function updateModules() {
     const namespace = path.replace(/^\.\//, '').replace(/\.(<%= extensions %>)$/, '')
 
     // Ignore indexFile, handled before
-    if (namespace === 'index') continue
+    if (namespace === 'index') {
+      continue
+    }
 
-    const namespaces = namespace.split(/\//)
+    const namespaces = namespace.split('/')
     let moduleName = namespaces[namespaces.length - 1]
     const moduleData = requireModule(path, { isState: moduleName === 'state' })
 
@@ -67,7 +70,9 @@ void (function updateModules() {
 
     const storeModule = getStoreModule(store, namespaces)
 
-    VUEX_PROPERTIES.forEach((property) => mergeProperty(storeModule, moduleData[property], property))
+    for (const property of VUEX_PROPERTIES) {
+      mergeProperty(storeModule, moduleData[property], property)
+    }
   }
   // If the environment supports hot reloading...
   <% if (isDev) { %>
@@ -101,9 +106,9 @@ function requireModule(path, { isRoot = false, isState = false } = {}) {
     throw new Error('[nuxt] <%= dir.store %>/' + path.replace('./', '') + ' should export a method which returns a Vuex instance.')
   }
 
-  if (isRoot) {
+  if (isRoot && typeof moduleData !== 'function') {
     // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
-    const state = moduleData.state && moduleData.state !== 'function' ? (() => state) : moduleData.state
+    const state = moduleData.state && typeof moduleData.state !== 'function' ? (() => state) : moduleData.state
     return Object.assign({}, moduleData, { state })
   }
   return moduleData
@@ -111,11 +116,8 @@ function requireModule(path, { isRoot = false, isState = false } = {}) {
 
 function getStoreModule(storeModule, namespaces, { isProperty = false } = {}) {
   // If ./mutations.js
-  if (namespaces.length === 1 && isProperty) {
+  if (!namespaces.length || (isProperty && namespaces.length === 1)) {
     return storeModule
-  }
-  if (namespaces.length === 0) {
-    return storeModule.modules
   }
 
   const namespace = namespaces.shift()
