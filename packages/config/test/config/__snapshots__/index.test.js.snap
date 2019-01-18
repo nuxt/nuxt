@@ -145,6 +145,7 @@ Object {
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",
+    "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
@@ -467,6 +468,7 @@ Object {
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",
+    "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
