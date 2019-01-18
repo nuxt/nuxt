@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import querystring from 'querystring'
 import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
@@ -169,7 +170,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
         'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
+        `webpack-hot-middleware/client?reload=true&timeout=30000&${
+          querystring.stringify(this.options.build.hotMiddleware)
+        }&name=${this.name}&path=${
           this.options.router.base
         }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
       )
