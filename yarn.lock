@@ -11295,10 +11295,10 @@ vue@^2.5.22:
   resolved "https://registry.npmjs.org/vue/-/vue-2.5.22.tgz#3bf88041af08b8539c37b268b70ca79245e9cc30"
   integrity sha512-pxY3ZHlXNJMFQbkjEgGVMaMMkSV1ONpz+4qB55kZuJzyJOhn6MSy/YZdzhdnumegNzVTL/Dn3Pp4UrVBYt1j/g==
 
-vuex@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/vuex/-/vuex-3.0.1.tgz#e761352ebe0af537d4bb755a9b9dc4be3df7efd2"
-  integrity sha512-wLoqz0B7DSZtgbWL1ShIBBCjv22GV5U+vcBFox658g6V0s4wZV9P4YjCNyoHSyIBpj1f29JBoNQIqD82cR4O3w==
+vuex@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.npmjs.org/vuex/-/vuex-3.1.0.tgz#634b81515cf0cfe976bd1ffe9601755e51f843b9"
+  integrity sha512-mdHeHT/7u4BncpUZMlxNaIdcN/HIt1GsGG5LKByArvYG/v6DvHcOxvDCts+7SRdCoIRGllK8IMZvQtQXLppDYg==
 
 w3c-hr-time@^1.0.1:
   version "1.0.1"
@@ -11370,10 +11370,10 @@ webpack-bundle-analyzer@^3.0.3:
     opener "^1.5.1"
     ws "^6.0.0"
 
-webpack-dev-middleware@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.5.0.tgz#fff0a07b0461314fb6ca82df3642c2423f768429"
-  integrity sha512-1Zie7+dMr4Vv3nGyhr8mxGQkzTQK1PTS8K3yJ4yB1mfRGwO1DzQibgmNfUqbEfQY6eEtEEUzC+o7vhpm/Sfn5w==
+webpack-dev-middleware@^3.5.1:
+  version "3.5.1"
+  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.5.1.tgz#9265b7742ef50f54f54c1d9af022fc17c1be9b88"
+  integrity sha512-4dwCh/AyMOYAybggUr8fiCkRnjVDp+Cqlr9c+aaNB3GJYgRGYQWJ1YX/WAKUNA9dPNHZ6QSN2lYDKqjKSI8Vqw==
   dependencies:
     memory-fs "~0.4.1"
     mime "^2.3.1"
