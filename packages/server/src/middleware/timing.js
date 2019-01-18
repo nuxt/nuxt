@@ -1,6 +1,6 @@
 import consola from 'consola'
 import onHeaders from 'on-headers'
-import Timer from '../utils/timer'
+import { Timer } from '@nuxt/utils'
 
 export default options => (req, res, next) => {
   if (res.timing) {
@@ -45,6 +45,7 @@ class ServerTiming extends Timer {
   }
 
   formatHeader(time) {
-    return `${time.name};dur=${time.duration};desc="${time.description}"`
+    const desc = time.description ? `;desc="${time.description}"` : ''
+    return `${time.name};dur=${time.duration}${desc}`
   }
 }
