@@ -306,6 +306,7 @@ Object {
     "https": false,
     "port": 3000,
     "socket": undefined,
+    "timing": false,
   },
   "serverMiddleware": Array [],
   "srcDir": "/var/nuxt/test",
