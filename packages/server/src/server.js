@@ -230,7 +230,7 @@ export default class Server {
   async listen(port, host, socket) {
     // Create a new listener
     const listener = new Listener({
-      port: port || this.options.server.port,
+      port: isNaN(parseInt(port)) ? this.options.server.port : port,
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,

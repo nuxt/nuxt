@@ -28,17 +28,16 @@ export default class ModuleContainer {
   }
 
   addTemplate(template) {
-    /* istanbul ignore if */
     if (!template) {
-      throw new Error('Invalid template:' + JSON.stringify(template))
+      throw new Error('Invalid template: ' + JSON.stringify(template))
     }
 
     // Validate & parse source
     const src = template.src || template
     const srcPath = path.parse(src)
-    /* istanbul ignore if */
+
     if (typeof src !== 'string' || !fs.existsSync(src)) {
-      throw new Error('Template src not found:' + src)
+      throw new Error('Template src not found: ' + src)
     }
 
     // Generate unique and human readable dst filename
@@ -133,7 +132,6 @@ export default class ModuleContainer {
     }
 
     // Validate handler
-    /* istanbul ignore if */
     if (typeof handler !== 'function') {
       throw new Error('Module should export a function: ' + src)
     }
@@ -153,7 +151,6 @@ export default class ModuleContainer {
     if (options === undefined) {
       options = {}
     }
-
     const result = await handler.call(this, options)
     return result
   }
