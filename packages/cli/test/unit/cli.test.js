@@ -8,7 +8,7 @@ describe('cli', () => {
 
   test('calls expected method', async () => {
     const mockedCommand = {
-      run: jest.fn().mockImplementation(() => Promise.resolve({}))
+      run: jest.fn(() => Promise.resolve({}))
     }
     getCommand.mockImplementationOnce(() => Promise.resolve(mockedCommand))
 

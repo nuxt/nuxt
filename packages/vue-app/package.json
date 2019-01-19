@@ -17,7 +17,7 @@
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.2",
     "vue-template-compiler": "^2.5.22",
-    "vuex": "^3.0.1"
+    "vuex": "^3.1.0"
   },
   "publishConfig": {
     "access": "public"
