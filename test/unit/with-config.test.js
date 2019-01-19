@@ -197,6 +197,13 @@ describe('with-config', () => {
     expect(fakeErrorLog).toHaveBeenCalled()
   })
 
+  test('/ with Server-Timing header', async () => {
+    const { headers } = await rp(url('/test'), {
+      resolveWithFullResponse: true
+    })
+    expect(headers['server-timing']).toMatch(/total;dur=\d+;desc="Nuxt Server Time"/)
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

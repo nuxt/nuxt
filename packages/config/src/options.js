@@ -138,7 +138,6 @@ export function getNuxtConfig(_options) {
   options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
 
   // Ignore publicPath on dev
-  /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
     options.build.publicPath = options.build._publicPath
   }
@@ -263,7 +262,6 @@ export function getNuxtConfig(_options) {
   defaultsDeep(options, modePreset || options.modes.universal)
 
   // If no server-side rendering, add appear true transition
-  /* istanbul ignore if */
   if (options.render.ssr === false && options.transition) {
     options.transition.appear = true
   }

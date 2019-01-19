@@ -1,25 +1,17 @@
 import serverConfig from '../../src/config/server'
 
-describe('config: server', () => {
-  test('should return default server configurations', () => {
-    expect(serverConfig()).toEqual({
-      https: false,
-      port: 3000,
-      host: 'localhost',
-      socket: undefined
-    })
-  })
+const serverDefaults = serverConfig()
 
+describe('config: server', () => {
   test('should return server configurations with NUXT_* env', () => {
     const env = {
       NUXT_PORT: 3001,
       NUXT_HOST: '127.0.0.1'
     }
     expect(serverConfig({ env })).toEqual({
-      https: false,
+      ...serverDefaults,
       port: env.NUXT_PORT,
-      host: env.NUXT_HOST,
-      socket: undefined
+      host: env.NUXT_HOST
     })
   })
 
@@ -30,7 +22,7 @@ describe('config: server', () => {
       UNIX_SOCKET: '/var/run/env.sock'
     }
     expect(serverConfig({ env })).toEqual({
-      https: false,
+      ...serverDefaults,
       port: env.PORT,
       host: env.HOST,
       socket: env.UNIX_SOCKET
@@ -44,7 +36,7 @@ describe('config: server', () => {
       npm_package_config_unix_socket: '/var/run/env.npm.sock'
     }
     expect(serverConfig({ env })).toEqual({
-      https: false,
+      ...serverDefaults,
       port: env.npm_package_config_nuxt_port,
       host: env.npm_package_config_nuxt_host,
       socket: env.npm_package_config_unix_socket

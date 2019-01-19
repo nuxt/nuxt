@@ -1,0 +1,469 @@
+import Module from 'module'
+import path from 'path'
+import esm from 'esm'
+import fs from 'fs-extra'
+import consola from 'consola'
+import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
+
+import Resolver from '../src/resolver'
+
+jest.mock('module')
+jest.mock('path')
+jest.mock('esm', () => jest.fn(() => jest.fn()))
+jest.mock('fs-extra')
+jest.mock('@nuxt/utils')
+
+describe('core: resolver', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('should construct resolver', () => {
+    const nuxt = jest.fn()
+    nuxt.options = jest.fn()
+    const resolver = new Resolver(nuxt)
+
+    expect(resolver.nuxt).toBe(nuxt)
+    expect(resolver.options).toBe(nuxt.options)
+    expect(resolver.resolvePath).toBeInstanceOf(Function)
+    expect(resolver.resolveAlias).toBeInstanceOf(Function)
+    expect(resolver.resolveModule).toBeInstanceOf(Function)
+    expect(resolver.requireModule).toBeInstanceOf(Function)
+    expect(resolver.esm).toEqual(expect.any(Function))
+    expect(esm).toBeCalledTimes(1)
+    expect(esm).toBeCalledWith(expect.any(Object), {})
+  })
+
+  test('should call _resolveFilename in resolveModule', () => {
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    Module._resolveFilename = jest.fn(() => '/var/nuxt/resolver/module')
+
+    const modulePath = resolver.resolveModule('/var/nuxt/resolver')
+
+    expect(modulePath).toEqual('/var/nuxt/resolver/module')
+    expect(Module._resolveFilename).toBeCalledTimes(1)
+    expect(Module._resolveFilename).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
+  })
+
+  test('should return undefined when module is not found', () => {
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    Module._resolveFilename = jest.fn(() => {
+      const err = new Error()
+      err.code = 'MODULE_NOT_FOUND'
+      throw err
+    })
+
+    const modulePath = resolver.resolveModule('/var/nuxt/resolver')
+
+    expect(modulePath).toBeUndefined()
+    expect(Module._resolveFilename).toBeCalledTimes(1)
+  })
+
+  test('should throw error when _resolveFilename failed', () => {
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    Module._resolveFilename = jest.fn(() => {
+      throw new Error('resolve failed')
+    })
+
+    expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
+  })
+
+  test('should throw error when _resolveFilename failed', () => {
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    Module._resolveFilename = jest.fn(() => {
+      throw new Error('resolve failed')
+    })
+
+    expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
+  })
+
+  test('should resolve root alias', () => {
+    const resolver = new Resolver({
+      options: { rootDir: '/var/nuxt' }
+    })
+    startsWithRootAlias.mockReturnValue(true)
+
+    const aliasPath = { substr: jest.fn(p => String(p)) }
+    resolver.resolveAlias(aliasPath)
+
+    expect(path.join).toBeCalledTimes(1)
+    expect(path.join).toBeCalledWith('/var/nuxt', '2')
+    expect(aliasPath.substr).toBeCalledTimes(1)
+    expect(aliasPath.substr).toBeCalledWith(2)
+  })
+
+  test('should resolve src alias', () => {
+    const resolver = new Resolver({
+      options: { srcDir: '/var/nuxt/src' }
+    })
+    startsWithRootAlias.mockReturnValue(false)
+    startsWithSrcAlias.mockReturnValue(true)
+
+    const aliasPath = { substr: jest.fn(p => String(p)) }
+    resolver.resolveAlias(aliasPath)
+
+    expect(path.join).toBeCalledTimes(1)
+    expect(path.join).toBeCalledWith('/var/nuxt/src', '1')
+    expect(aliasPath.substr).toBeCalledTimes(1)
+    expect(aliasPath.substr).toBeCalledWith(1)
+  })
+
+  test('should resolve other alias', () => {
+    const resolver = new Resolver({
+      options: { srcDir: '/var/nuxt/src' }
+    })
+    startsWithRootAlias.mockReturnValue(false)
+    startsWithSrcAlias.mockReturnValue(false)
+
+    const aliasPath = { substr: jest.fn(p => String(p)) }
+    resolver.resolveAlias(aliasPath)
+
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).toBeCalledWith('/var/nuxt/src', aliasPath)
+  })
+
+  describe('core: resolver resolvePath', () => {
+    test('should resolve existed path', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(() => true)
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver/file')
+
+      expect(fs.existsSync).toBeCalledTimes(1)
+      expect(fs.existsSync).toBeCalledWith('/var/nuxt/resolver/file')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/file')
+    })
+
+    test('should resolve a module path', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/module')
+      fs.lstatSync = jest.fn(() => ({ isDirectory: () => false }))
+      resolver.resolveModule = jest.fn(() => '/var/nuxt/resolver/module')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver')
+
+      expect(fs.existsSync).toBeCalledTimes(2)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/module')
+      expect(fs.lstatSync).toBeCalledTimes(1)
+      expect(fs.lstatSync).nthCalledWith(1, '/var/nuxt/resolver/module')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/module')
+    })
+
+    test('should resolve a alias path', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/alias')
+      fs.lstatSync = jest.fn(() => ({
+        isDirectory: () => false
+      }))
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver')
+
+      expect(fs.existsSync).toBeCalledTimes(2)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(fs.lstatSync).toBeCalledTimes(1)
+      expect(fs.lstatSync).nthCalledWith(1, '/var/nuxt/resolver/alias')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias')
+    })
+
+    test('should resolve path with extension', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js']
+        }
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/file.js')
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => false)
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver/file')
+
+      expect(fs.existsSync).toBeCalledTimes(3)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver/file')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/file')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/file.js')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/file.js')
+    })
+
+    test('should resolve module path with extension', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js']
+        }
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/module.js')
+      resolver.resolveModule = jest.fn(() => '/var/nuxt/resolver/module')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver/file')
+
+      expect(fs.existsSync).toBeCalledTimes(3)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver/file')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/module')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/module.js')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/module.js')
+    })
+
+    test('should resolve alias path with extension', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js']
+        }
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/alias.js')
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver/file')
+
+      expect(fs.existsSync).toBeCalledTimes(3)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver/file')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/alias.js')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias.js')
+    })
+
+    test('should resolve index.[ext] when path is directory', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js']
+        }
+      })
+      fs.existsSync = jest.fn(path => ['/var/nuxt/resolver/alias', '/var/nuxt/resolver/alias/index.js'].includes(path))
+      fs.lstatSync = jest.fn(() => ({ isDirectory: () => true }))
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver')
+
+      expect(fs.existsSync).toBeCalledTimes(3)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/alias/index.js')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias/index.js')
+    })
+
+    test('should resolve style path', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js'],
+          styleExtensions: ['css', 'scss']
+        }
+      })
+      fs.existsSync = jest.fn(path => ['/var/nuxt/resolver/alias', '/var/nuxt/resolver/alias/index.scss'].includes(path))
+      fs.lstatSync = jest.fn(path => ({ isDirectory: () => path === '/var/nuxt/resolver/alias' }))
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver', { isStyle: true })
+
+      expect(fs.existsSync).toBeCalledTimes(4)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/alias/index.css')
+      expect(fs.existsSync).nthCalledWith(4, '/var/nuxt/resolver/alias/index.scss')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias/index.scss')
+    })
+
+    test('should resolve the directory path if no file', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js', 'vue']
+        }
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/alias')
+      fs.lstatSync = jest.fn(() => ({ isDirectory: () => true }))
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver')
+
+      expect(fs.existsSync).toBeCalledTimes(4)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(fs.existsSync).nthCalledWith(3, '/var/nuxt/resolver/alias/index.js')
+      expect(fs.existsSync).nthCalledWith(4, '/var/nuxt/resolver/alias/index.vue')
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias')
+    })
+
+    test('should throw error if no dir and file', () => {
+      const resolver = new Resolver({
+        options: {
+          extensions: ['js', 'vue']
+        }
+      })
+      fs.existsSync = jest.fn(() => false)
+      fs.lstatSync = jest.fn(() => ({ isDirectory: () => false }))
+      resolver.resolveModule = jest.fn(() => false)
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const errMsg = 'Cannot resolve "/var/nuxt/resolver/file" from "/var/nuxt/resolver/alias"'
+      expect(() => resolver.resolvePath('/var/nuxt/resolver/file')).toThrow(errMsg)
+    })
+
+    test('should ignore module resolve if isModule is false', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(path => path === '/var/nuxt/resolver/alias')
+      resolver.resolveModule = jest.fn(() => '/var/nuxt/resolver/module')
+      resolver.resolveAlias = jest.fn(() => '/var/nuxt/resolver/alias')
+
+      const resolvedPath = resolver.resolvePath('/var/nuxt/resolver/file', { isModule: false })
+
+      expect(fs.existsSync).toBeCalledTimes(2)
+      expect(fs.existsSync).nthCalledWith(1, '/var/nuxt/resolver/file')
+      expect(fs.existsSync).nthCalledWith(2, '/var/nuxt/resolver/alias')
+      expect(resolver.resolveModule).not.toBeCalled()
+      expect(resolvedPath).toEqual('/var/nuxt/resolver/alias')
+    })
+
+    test('should display deprecated alias options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(() => true)
+
+      resolver.resolvePath('/var/nuxt/resolver/file', { alias: true })
+      const warnMsg = 'Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
+    })
+
+    test('should display deprecated module options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      fs.existsSync = jest.fn(() => true)
+
+      resolver.resolvePath('/var/nuxt/resolver/file', { module: true })
+      const warnMsg = 'Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
+    })
+  })
+
+  describe('core: resolver resolveModule', () => {
+    test('should require es modules with default export', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn()
+      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module')
+
+      expect(resolvedModule).toEqual('resolved module')
+    })
+
+    test('should require es modules without default export', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn()
+      resolver.esm = jest.fn(() => 'resolved module')
+
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module')
+
+      expect(resolvedModule).toEqual('resolved module')
+    })
+
+    test('should require es modules without default export when intropDefault is disabled', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn()
+      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module', { intropDefault: false })
+
+      expect(resolvedModule).toEqual({ default: 'resolved module' })
+    })
+
+    test('should require common module', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn(() => 'path')
+      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+
+      const resolvedModule = resolver.requireModule('path', { esm: false })
+
+      expect(resolvedModule).toBe(path)
+    })
+
+    test('should resolve with commonjs for ts module', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn(() => '/var/nuxt/resolver/module.ts')
+      resolver.esm = jest.fn(() => ({ default: 'resolved ts module' }))
+
+      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow(
+        "Cannot find module '/var/nuxt/resolver/module.ts'"
+      )
+    })
+
+    test('should throw error if resolvePath failed', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
+      resolver.esm = jest.fn(() => undefined)
+
+      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow('resolve failed')
+    })
+
+    test('should throw last error', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
+      resolver.esm = jest.fn(() => { throw new Error('resolve esm failed') })
+
+      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow('resolve esm failed')
+    })
+
+    test('should display deprecated alias options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn()
+      resolver.esm = jest.fn()
+
+      resolver.requireModule('/var/nuxt/resolver/file', { alias: true })
+      const warnMsg = 'Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
+    })
+
+    test('should display deprecated esm options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = jest.fn()
+      resolver.esm = jest.fn()
+
+      resolver.requireModule('/var/nuxt/resolver/file', { esm: true })
+      const warnMsg = 'Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
+    })
+  })
+})

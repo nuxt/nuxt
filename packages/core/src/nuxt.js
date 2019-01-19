@@ -77,7 +77,6 @@ export default class Nuxt extends Hookable {
   async close(callback) {
     await this.callHook('close', this)
 
-    /* istanbul ignore if */
     if (typeof callback === 'function') {
       await callback()
     }
