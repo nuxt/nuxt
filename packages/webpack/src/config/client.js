@@ -172,7 +172,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // https://github.com/glenjamin/webpack-hot-middleware#config
         `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
           this.options.router.base
-          }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
+        }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
       )
     }
 
