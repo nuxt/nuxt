@@ -3,12 +3,15 @@
 // Globally indicate we are running in ts mode
 process.env.NUXT_TS = 'true'
 
-require('..').generateTsConfigIfMissing()
-require('..').registerTsNode()
+// rootDir should be set by a CLI helper to handle cases like `nuxt-ts path/to/project`
+const rootDir = process.cwd()
 
-const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
-require('@nuxt/cli' + suffix).run()
-  .catch((error) => {
-    require('consola').fatal(error)
-    process.exit(2)
-  })
+require('..').generateTsConfigIfMissing(rootDir).then(() => {
+  require('..').registerTsNode()
+  const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
+  require('@nuxt/cli' + suffix).run()
+    .catch((error) => {
+      require('consola').fatal(error)
+      process.exit(2)
+    })
+})

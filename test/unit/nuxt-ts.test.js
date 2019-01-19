@@ -12,7 +12,7 @@ describe('nuxt-ts', () => {
     // We're assuming that rootDir provided to generateTsConfigIfMissing is existing so we create the tested one
     await mkdirp(rootDir)
 
-    generateTsConfigIfMissing(rootDir)
+    await generateTsConfigIfMissing(rootDir)
 
     const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
