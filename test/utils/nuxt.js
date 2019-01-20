@@ -19,7 +19,8 @@ export const loadFixture = async function (fixture, overrides) {
   for (const ext of ['ts', 'js']) {
     const configFile = path.resolve(rootDir, `nuxt.config.${ext}`)
     if (fs.existsSync(configFile)) {
-      config = (await import(`../fixtures/${fixture}/nuxt.config`)).default
+      config = await import(`../fixtures/${fixture}/nuxt.config`)
+      config = config.default || config
       break
     }
   }
