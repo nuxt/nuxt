@@ -14,9 +14,16 @@ export const version = `v${coreVersion}`
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
-  const configFile = path.resolve(rootDir, `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`)
+  let config = {}
 
-  let config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
+  for (const ext of ['ts', 'js']) {
+    const configFile = path.resolve(rootDir, `nuxt.config.${ext}`)
+    if (fs.existsSync(configFile)) {
+      config = (await import(`../fixtures/${fixture}/nuxt.config`)).default
+      break
+    }
+  }
+
   if (typeof config === 'function') {
     config = await config()
   }
