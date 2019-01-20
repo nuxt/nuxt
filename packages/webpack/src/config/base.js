@@ -17,6 +17,8 @@ import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarnFixPlugin from '../plugins/warnfix'
 
+import { vueReservedTags } from '../utils/reserved-tags'
+
 export default class WebpackBaseConfig {
   constructor(builder, options) {
     this.name = options.name
@@ -156,6 +158,9 @@ export default class WebpackBaseConfig {
             },
             output: {
               comments: /^\**!|@preserve|@license|@cc_on/
+            },
+            mangle: {
+              reserved: vueReservedTags
             }
           }
         }, this.options.build.terser))
