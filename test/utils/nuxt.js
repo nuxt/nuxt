@@ -1,6 +1,5 @@
 
 import path from 'path'
-import fs from 'fs'
 import { defaultsDeep } from 'lodash'
 import { version as coreVersion } from '../../packages/core/package.json'
 
