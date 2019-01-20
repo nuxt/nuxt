@@ -6,8 +6,10 @@ process.env.NUXT_TS = 'true'
 // rootDir should be set by a CLI helper to handle cases like `nuxt-ts path/to/project`
 const rootDir = process.cwd()
 
-require('..').generateTsConfigIfMissing(rootDir).then(() => {
-  require('..').registerTsNode()
+const { generateTsConfigIfMissing, registerTsNode } = require('..')
+
+generateTsConfigIfMissing(rootDir).then(() => {
+  registerTsNode()
   const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
   require('@nuxt/cli' + suffix).run()
     .catch((error) => {
