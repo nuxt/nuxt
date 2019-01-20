@@ -17,7 +17,7 @@ export const loadFixture = async function (fixture, overrides) {
   let config = {}
 
   try {
-    await import(`../fixtures/${fixture}/nuxt.config`)
+    config = await import(`../fixtures/${fixture}/nuxt.config`)
     config = config.default || config
   } catch (e) {
     // Ignore MODULE_NOT_FOUND
