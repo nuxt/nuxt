@@ -7,11 +7,9 @@ describe('typescript modern', () => {
   let nuxt
 
   beforeAll(async () => {
-    process.env.NUXT_TS = 'true'
     const options = await loadFixture('typescript')
     nuxt = new Nuxt(Object.assign(options, { modern: true }))
     await new Builder(nuxt, BundleBuilder).build()
-    delete process.env.NUXT_TS
   })
 
   test('fork-ts-checker-webpack-plugin', () => {

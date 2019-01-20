@@ -7771,7 +7771,7 @@ on-finished@~2.3.0:
   dependencies:
     ee-first "1.1.1"
 
-on-headers@~1.0.1:
+on-headers@^1.0.1, on-headers@~1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/on-headers/-/on-headers-1.0.1.tgz#928f5d0f470d49342651ea6794b0857c100693f7"
   integrity sha1-ko9dD0cNSTQmUepnlLCFfBAGk/c=
@@ -9716,10 +9716,10 @@ rollup-plugin-alias@^1.5.1:
   dependencies:
     slash "^2.0.0"
 
-rollup-plugin-babel@^4.3.1:
-  version "4.3.1"
-  resolved "https://registry.npmjs.org/rollup-plugin-babel/-/rollup-plugin-babel-4.3.1.tgz#bf1b3d2a554ddb79a6b1edb335686e8121d08d0f"
-  integrity sha512-eV/extPWVFJE54w9ZFWNAn6y+HHsaKveg+qwGbXJCxP7HitwLVJ1g6Y0Zw2qrMlDj6mDSZRsTFbnTiZRtY7vqA==
+rollup-plugin-babel@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.npmjs.org/rollup-plugin-babel/-/rollup-plugin-babel-4.3.2.tgz#8c0e1bd7aa9826e90769cf76895007098ffd1413"
+  integrity sha512-KfnizE258L/4enADKX61ozfwGHoqYauvoofghFJBhFnpH9Sb9dNPpWg8QHOaAfVASUYV8w0mCx430i9z0LJoJg==
   dependencies:
     "@babel/helper-module-imports" "^7.0.0"
     rollup-pluginutils "^2.3.0"

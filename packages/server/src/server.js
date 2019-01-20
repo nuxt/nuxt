@@ -12,6 +12,7 @@ import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
+import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
   constructor(nuxt) {
@@ -73,6 +74,10 @@ export default class Server {
         // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
+    }
+
+    if (this.options.server.timing) {
+      this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
     const modernMiddleware = createModernMiddleware({
