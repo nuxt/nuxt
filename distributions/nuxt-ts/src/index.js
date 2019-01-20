@@ -19,13 +19,14 @@ export async function generateTsConfigIfMissing(rootDir) {
     })
 
     if (confirmGeneration) {
+      const configToExtend = 'nuxt-ts'
       await writeJSON(tsConfigPath, {
-        extends: 'nuxt-ts',
+        extends: configToExtend,
         compilerOptions: {
           baseUrl: '.'
         }
       }, { spaces: 2 })
-      consola.info(`Extending ${chalk.bold.blue('https://github.com/nuxt/nuxt.js/blob/master/distributions/nuxt-ts/tsconfig.json')}`)
+      consola.info(`Extending ${chalk.bold.blue(`node_modules/${configToExtend}/tsconfig.json`)}`)
       consola.success(`Generated successfully at ${chalk.bold.green(resolve(rootDir, 'tsconfig.json'))}`)
     }
   }
