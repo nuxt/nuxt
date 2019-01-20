@@ -31,9 +31,5 @@ export async function generateTsConfigIfMissing(rootDir) {
 
 export function registerTsNode() {
   // https://github.com/TypeStrong/ts-node
-  register({
-    compilerOptions: {
-      module: 'commonjs'
-    }
-  })
+  register()
 }
