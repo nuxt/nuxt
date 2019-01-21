@@ -158,7 +158,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   config() {
     const config = super.config()
-    const { client } = this.options.build.hotMiddleware || {}
+
+    const hotMiddlewareClientOptions = {
+      reload: true,
+      timeout: 30000,
+      ...(this.options.build.hotMiddleware || {}).client,
+      name: this.name,
+      path: `${this.options.router.base}/__webpack_hmr/${this.name}`
+    }
+    const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions).replace(/\/\//g, '/')
 
     // Entry points
     config.entry = {
@@ -171,11 +179,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
         'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?reload=true&timeout=30000&${
-          querystring.stringify(client)
-        }&name=${this.name}&path=${
-          this.options.router.base
-        }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
+        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
       )
     }
 
