@@ -1,5 +1,5 @@
 {
-  "extends": "nuxt-ts-edge",
+  "extends": "@nuxt/typescript-edge",
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitAny": false

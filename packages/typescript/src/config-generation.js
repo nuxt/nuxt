@@ -1,10 +1,9 @@
 import { resolve } from 'path'
+import { prompt } from 'enquirer'
+import { existsSync, writeJSON } from 'fs-extra'
 import chalk from 'chalk'
 import consola from 'consola'
 import env from 'std-env'
-import { existsSync, writeJSON } from 'fs-extra'
-import { register } from 'ts-node'
-import { prompt } from 'enquirer'
 
 export async function generateTsConfigIfMissing(rootDir) {
   const tsConfigPath = resolve(rootDir, 'tsconfig.json')
@@ -19,7 +18,7 @@ export async function generateTsConfigIfMissing(rootDir) {
     })
 
     if (confirmGeneration) {
-      const configToExtend = 'nuxt-ts'
+      const configToExtend = '@nuxt/typescript'
       await writeJSON(tsConfigPath, {
         extends: configToExtend,
         compilerOptions: {
@@ -30,9 +29,4 @@ export async function generateTsConfigIfMissing(rootDir) {
       consola.success(`Generated successfully at ${chalk.bold.green(resolve(rootDir, 'tsconfig.json'))}`)
     }
   }
-}
-
-export function registerTsNode() {
-  // https://github.com/TypeStrong/ts-node
-  register()
 }

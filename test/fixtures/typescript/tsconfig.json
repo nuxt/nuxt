@@ -1,5 +1,5 @@
 {
-  "extends": "nuxt-ts",
+  "extends": "@nuxt/typescript",
   "compilerOptions": {
     "noImplicitAny": false
   }
