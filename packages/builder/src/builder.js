@@ -639,7 +639,9 @@ export default class Builder {
       return
     }
 
-    if (refresh) refreshFiles()
+    if (refresh) {
+      refreshFiles()
+    }
 
     this.watchers.custom = chokidar
       .watch(customPatterns, options)
