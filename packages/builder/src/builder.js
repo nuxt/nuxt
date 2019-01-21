@@ -250,10 +250,10 @@ export default class Builder {
       throw new Error(
         `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
       )
-    } else {
-      this._defaultPage = true
-      consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
     }
+
+    this._defaultPage = true
+    consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
   }
 
   validateTemplate() {
