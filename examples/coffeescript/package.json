@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "coffee-loader": "^0.8.0",
-    "coffeescript": "^2.0.1"
+    "coffeescript": "^2.0.1",
+    "post-update": "yarn upgrade --latest"
   }
 }

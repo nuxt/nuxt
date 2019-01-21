@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node server.js",
     "build": "nuxt build",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "post-update": "yarn upgrade --latest"
   }
 }
