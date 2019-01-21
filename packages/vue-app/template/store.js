@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-const log = (process.server ? require('consola') : console)
+const log = console // on server-side, consola will catch all console.log
 const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
 let store = {}
 let fileResolver
