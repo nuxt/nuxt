@@ -630,27 +630,29 @@ export default class Builder {
       ...Object.values(omit(this.options.build.styleResources, ['options']))
     ]).map(upath.normalizeSafe)
 
-    const watchCustom = (refresh) => {
-      if (refresh) refreshFiles()
+    if (customPatterns.length > 0) {
+      const watchCustom = (refresh) => {
+        if (refresh) refreshFiles()
 
-      this.watchers.custom = chokidar
-        .watch(customPatterns, options)
-        .on('change', refreshFiles)
+        this.watchers.custom = chokidar
+          .watch(customPatterns, options)
+          .on('change', refreshFiles)
 
-      const { rewatchOnRawEvents } = this.options.watchers
-      if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
-        this.watchers.custom.on('raw', (_event, _path, opts) => {
-          if (rewatchOnRawEvents.includes(_event)) {
-            this.watchers.custom.close()
-            this.watchers.custom = null
+        const { rewatchOnRawEvents } = this.options.watchers
+        if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
+          this.watchers.custom.on('raw', (_event, _path, opts) => {
+            if (rewatchOnRawEvents.includes(_event)) {
+              this.watchers.custom.close()
+              this.watchers.custom = null
 
-            watchCustom(true)
-          }
-        })
+              watchCustom(true)
+            }
+          })
+        }
       }
-    }
 
-    watchCustom()
+      watchCustom()
+    }
   }
 
   watchRestart() {
