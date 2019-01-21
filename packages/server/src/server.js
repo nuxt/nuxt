@@ -12,6 +12,7 @@ import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
+import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
   constructor(nuxt) {
@@ -64,7 +65,7 @@ export default class Server {
 
     // Compression middleware for production
     if (!this.options.dev) {
-      const compressor = this.options.render.compressor
+      const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
@@ -73,6 +74,10 @@ export default class Server {
         // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
+    }
+
+    if (this.options.server.timing) {
+      this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
     const modernMiddleware = createModernMiddleware({
@@ -225,7 +230,7 @@ export default class Server {
   async listen(port, host, socket) {
     // Create a new listener
     const listener = new Listener({
-      port: port || this.options.server.port,
+      port: isNaN(parseInt(port)) ? this.options.server.port : port,
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,

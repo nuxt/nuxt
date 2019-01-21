@@ -28,17 +28,16 @@ export default class ModuleContainer {
   }
 
   addTemplate(template) {
-    /* istanbul ignore if */
     if (!template) {
-      throw new Error('Invalid template:' + JSON.stringify(template))
+      throw new Error('Invalid template: ' + JSON.stringify(template))
     }
 
     // Validate & parse source
     const src = template.src || template
     const srcPath = path.parse(src)
-    /* istanbul ignore if */
+
     if (typeof src !== 'string' || !fs.existsSync(src)) {
-      throw new Error('Template src not found:' + src)
+      throw new Error('Template src not found: ' + src)
     }
 
     // Generate unique and human readable dst filename
@@ -111,7 +110,7 @@ export default class ModuleContainer {
     return this.addModule(moduleOpts, true /* require once */)
   }
 
-  addModule(moduleOpts, requireOnce) {
+  async addModule(moduleOpts, requireOnce) {
     let src
     let options
     let handler
@@ -121,13 +120,10 @@ export default class ModuleContainer {
       src = moduleOpts
     } else if (Array.isArray(moduleOpts)) {
       // Type 2: Babel style array
-      src = moduleOpts[0]
-      options = moduleOpts[1]
+      [src, options] = moduleOpts
     } else if (typeof moduleOpts === 'object') {
       // Type 3: Pure object
-      src = moduleOpts.src
-      options = moduleOpts.options
-      handler = moduleOpts.handler
+      ({ src, options, handler } = moduleOpts)
     }
 
     // Resolve handler
@@ -136,7 +132,6 @@ export default class ModuleContainer {
     }
 
     // Validate handler
-    /* istanbul ignore if */
     if (typeof handler !== 'function') {
       throw new Error('Module should export a function: ' + src)
     }
@@ -156,18 +151,7 @@ export default class ModuleContainer {
     if (options === undefined) {
       options = {}
     }
-
-    return new Promise((resolve) => {
-      // Call module with `this` context and pass options
-      const result = handler.call(this, options)
-
-      // If module send back a promise
-      if (result && result.then) {
-        return resolve(result)
-      }
-
-      // synchronous
-      return resolve()
-    })
+    const result = await handler.call(this, options)
+    return result
   }
 }
