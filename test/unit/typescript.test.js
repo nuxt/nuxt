@@ -6,9 +6,7 @@ describe('typescript', () => {
   const url = route => 'http://localhost:' + port + route
 
   beforeAll(async () => {
-    process.env.NUXT_TS = 'true'
     const options = await loadFixture('typescript')
-    delete process.env.NUXT_TS
     nuxt = new Nuxt(options)
     await nuxt.ready()
     port = await getPort()
