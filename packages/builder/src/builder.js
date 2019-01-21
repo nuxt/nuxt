@@ -193,21 +193,7 @@ export default class Builder {
     // Call before hook
     await this.nuxt.callHook('build:before', this, this.options.build)
 
-    // Check if pages dir exists and warn if not
-    this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
-    if (this._nuxtPages) {
-      if (!fsExtra.existsSync(path.join(this.options.srcDir, this.options.dir.pages))) {
-        const dir = this.options.srcDir
-        if (fsExtra.existsSync(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
-          throw new Error(
-            `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
-          )
-        } else {
-          this._defaultPage = true
-          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
-        }
-      }
-    }
+    await this.validatePages()
 
     // Validate template
     try {
@@ -246,6 +232,28 @@ export default class Builder {
     await this.nuxt.callHook('build:done', this)
 
     return this
+  }
+
+  // Check if pages dir exists and warn if not
+  async validatePages() {
+    this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
+
+    if (
+      !this._nuxtPages ||
+      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
+    ) {
+      return
+    }
+
+    const dir = this.options.srcDir
+    if (await fsExtra.exists(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
+      throw new Error(
+        `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
+      )
+    } else {
+      this._defaultPage = true
+      consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
+    }
   }
 
   validateTemplate() {
