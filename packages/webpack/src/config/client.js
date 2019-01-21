@@ -158,6 +158,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   config() {
     const config = super.config()
+    const { client } = this.options.build.hotMiddleware || {}
 
     // Entry points
     config.entry = {
@@ -171,7 +172,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
         `webpack-hot-middleware/client?reload=true&timeout=30000&${
-          querystring.stringify(this.options.build.hotMiddleware)
+          querystring.stringify(client)
         }&name=${this.name}&path=${
           this.options.router.base
         }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')

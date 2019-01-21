@@ -182,6 +182,7 @@ export class WebpackBundler {
 
     const { name } = compiler.options
     const { nuxt: { server }, options } = this.context
+    const { client, ...hotMiddlewareConfig } = options.build.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -209,7 +210,7 @@ export class WebpackBundler {
             log: false,
             heartbeat: 10000
           },
-          options.build.hotMiddleware,
+          hotMiddlewareConfig,
           {
             path: `/__webpack_hmr/${name}`
           }
