@@ -6,7 +6,7 @@ declare namespace NodeJS {
   interface Process {
     browser: boolean;
     client: boolean;
-    mode: 'universal' | 'spa';
+    mode: 'spa' | 'universal';
     modern: boolean;
     server: boolean;
     static: boolean;
