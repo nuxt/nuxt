@@ -8,6 +8,7 @@
       "dom"
     ],
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "jsx": "preserve",
     "sourceMap": true,
