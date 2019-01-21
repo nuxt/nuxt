@@ -22,10 +22,12 @@ jest.mock('@nuxt/utils', () => ({
 describe('config: options', () => {
   test('should return default nuxt config', () => {
     jest.spyOn(process, 'cwd').mockReturnValue('/var/nuxt/test')
+    jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
     expect(getNuxtConfig({})).toMatchSnapshot()
 
     process.cwd.mockRestore()
+    path.resolve.mockRestore()
   })
 
   test('should prevent duplicate calls with same options', () => {
@@ -91,6 +93,11 @@ describe('config: options', () => {
     expect(consola.warn).toHaveBeenCalledWith('Unknown mode: test. Falling back to universal')
     expect(build.ssr).toEqual(true)
     expect(render.ssr).toEqual(true)
+  })
+
+  test('should add appear true in transition when no ssr', () => {
+    const { transition } = getNuxtConfig({ render: { ssr: false } })
+    expect(transition.appear).toEqual(true)
   })
 
   test('should return 404.html as default generate.fallback', () => {
