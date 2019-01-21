@@ -160,7 +160,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   config() {
     const config = super.config()
 
-    const { client } = this.options.build.hotMiddleware || {}
+    const { client = {} } = this.options.build.hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client
     const hotMiddlewareClientOptions = {
       reload: true,
