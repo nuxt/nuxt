@@ -1,5 +1,4 @@
-,
-    "post-update": "yarn upgrade --latest"{
+{
   "name": "example-custom-page-loading",
   "dependencies": {
     "nuxt-edge": "latest"
