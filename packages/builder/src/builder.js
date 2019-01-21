@@ -624,34 +624,37 @@ export default class Builder {
       .on('add', refreshFiles)
       .on('unlink', refreshFiles)
 
+    this.watchCustom(refreshFiles)
+  }
+
+  watchCustom(refreshFiles, refresh) {
+    const options = this.options.watchers.chokidar
     // Watch for custom provided files
     const customPatterns = uniq([
       ...this.options.build.watch,
       ...Object.values(omit(this.options.build.styleResources, ['options']))
     ]).map(upath.normalizeSafe)
 
-    if (customPatterns.length > 0) {
-      const watchCustom = (refresh) => {
-        if (refresh) refreshFiles()
+    if (customPatterns.length === 0) {
+      return
+    }
 
-        this.watchers.custom = chokidar
-          .watch(customPatterns, options)
-          .on('change', refreshFiles)
+    if (refresh) refreshFiles()
 
-        const { rewatchOnRawEvents } = this.options.watchers
-        if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
-          this.watchers.custom.on('raw', (_event, _path, opts) => {
-            if (rewatchOnRawEvents.includes(_event)) {
-              this.watchers.custom.close()
-              this.watchers.custom = null
+    this.watchers.custom = chokidar
+      .watch(customPatterns, options)
+      .on('change', refreshFiles)
 
-              watchCustom(true)
-            }
-          })
+    const { rewatchOnRawEvents } = this.options.watchers
+    if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
+      this.watchers.custom.on('raw', (_event, _path, opts) => {
+        if (rewatchOnRawEvents.includes(_event)) {
+          this.watchers.custom.close()
+          this.watchers.custom = null
+
+          this.watchCustom(refreshFiles, true)
         }
-      }
-
-      watchCustom()
+      })
     }
   }
 
