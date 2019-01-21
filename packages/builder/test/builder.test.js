@@ -1,5 +1,6 @@
 import Glob from 'glob'
 import consola from 'consola'
+import fsExtra from 'fs-extra'
 import chokidar from 'chokidar'
 import upath from 'upath'
 import debounce from 'lodash/debounce'
@@ -23,6 +24,7 @@ import BuildContext from '../src/context'
 
 jest.mock('glob')
 jest.mock('pify', () => fn => fn)
+jest.mock('fs-extra')
 jest.mock('chokidar', () => ({
   watch: jest.fn().mockReturnThis(),
   on: jest.fn().mockReturnThis(),
@@ -49,6 +51,7 @@ const createNuxt = () => ({
     globals: [],
     build: {}
   },
+  ready: jest.fn(),
   hook: jest.fn(),
   callHook: jest.fn(),
   resolver: {
@@ -297,6 +300,97 @@ describe('builder: builder', () => {
   })
 
   describe('builder: builder build', () => {
+    test('should build all resources', async () => {
+      const nuxt = createNuxt()
+      nuxt.options.srcDir = '/var/nuxt/src'
+      nuxt.options.buildDir = '/var/nuxt/build'
+      nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
+      nuxt.options.build.createRoutes = jest.fn()
+
+      const bundleBuilder = { build: jest.fn() }
+      const builder = new Builder(nuxt, bundleBuilder)
+      builder.validateTemplate = jest.fn()
+      builder.generateRoutesAndFiles = jest.fn()
+      builder.resolvePlugins = jest.fn()
+
+      r.mockImplementation((dir, src) => `r(${dir})`)
+
+      const buildReturn = await builder.build()
+
+      expect(consola.info).toBeCalledTimes(1)
+      expect(consola.info).toBeCalledWith('Production build')
+      expect(nuxt.ready).toBeCalledTimes(1)
+      expect(nuxt.callHook).toBeCalledTimes(2)
+      expect(nuxt.callHook).nthCalledWith(1, 'build:before', builder, nuxt.options.build)
+      expect(builder.validateTemplate).toBeCalledTimes(1)
+      expect(consola.success).toBeCalledTimes(1)
+      expect(consola.success).toBeCalledWith('Builder initialized')
+      expect(consola.debug).toBeCalledTimes(1)
+      expect(consola.debug).toBeCalledWith('App root: /var/nuxt/src')
+      expect(fsExtra.remove).toBeCalledTimes(1)
+      expect(fsExtra.remove).toBeCalledWith('r(/var/nuxt/build)')
+      expect(fsExtra.mkdirp).toBeCalledTimes(3)
+      expect(fsExtra.mkdirp).nthCalledWith(1, 'r(/var/nuxt/build)')
+      expect(fsExtra.mkdirp).nthCalledWith(2, 'r(/var/nuxt/build)')
+      expect(fsExtra.mkdirp).nthCalledWith(3, 'r(/var/nuxt/build)')
+      expect(r).toBeCalledTimes(4)
+      expect(r).nthCalledWith(1, '/var/nuxt/build')
+      expect(r).nthCalledWith(2, '/var/nuxt/build', 'components')
+      expect(r).nthCalledWith(3, '/var/nuxt/build', 'dist', 'client')
+      expect(r).nthCalledWith(4, '/var/nuxt/build', 'dist', 'server')
+      expect(builder.generateRoutesAndFiles).toBeCalledTimes(1)
+      expect(builder.resolvePlugins).toBeCalledTimes(1)
+      expect(bundleBuilder.build).toBeCalledTimes(1)
+      expect(builder._buildStatus).toEqual(2)
+      expect(nuxt.callHook).nthCalledWith(2, 'build:done', builder)
+      expect(buildReturn).toBe(builder)
+    })
+
+    test('should prevent duplicate build in dev mode', async () => {
+      const nuxt = createNuxt()
+      nuxt.options.dev = true
+      const builder = new Builder(nuxt, {})
+      builder._buildStatus = 3
+
+      waitFor.mockImplementationOnce(() => {
+        builder.build = jest.fn(() => 'calling build')
+      })
+
+      const buildReturn = await builder.build()
+
+      expect(nuxt.ready).not.toBeCalled()
+      expect(waitFor).toBeCalledTimes(1)
+      expect(waitFor).toBeCalledWith(1000)
+      expect(builder.build).toBeCalledTimes(1)
+      expect(buildReturn).toBe('calling build')
+    })
+
+    test('should wait 1000ms and retry if building is in progress', async () => {
+      const nuxt = createNuxt()
+      nuxt.options.dev = true
+      const builder = new Builder(nuxt, {})
+      builder._buildStatus = 2
+
+      const buildReturn = await builder.build()
+
+      expect(nuxt.ready).not.toBeCalled()
+      expect(buildReturn).toBe(builder)
+    })
+
+    test('should print dev mode building messages', () => {
+      const nuxt = createNuxt()
+      nuxt.options.dev = true
+      nuxt.ready.mockImplementationOnce(() => {
+        throw new Error('exit')
+      })
+      const builder = new Builder(nuxt, {})
+
+      expect(builder.build()).rejects.toThrow('exit')
+      expect(builder._buildStatus).toEqual(3)
+      expect(consola.info).toBeCalledTimes(2)
+      expect(consola.info).nthCalledWith(1, 'Preparing project for development')
+      expect(consola.info).nthCalledWith(2, 'Initial build may take a while')
+    })
   })
 
   describe('builder: builder generate', () => {
