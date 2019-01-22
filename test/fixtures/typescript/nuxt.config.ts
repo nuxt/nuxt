@@ -1,4 +1,4 @@
-import { NuxtConfiguration } from '@nuxt/config'
+import NuxtConfiguration from '@nuxt/config'
 
 const config: NuxtConfiguration = {
   modules: [

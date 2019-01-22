@@ -65,3 +65,5 @@ export {
   NuxtConfigurationVueConfiguration,
   NuxtConfigurationWatchers
 }
+
+export default NuxtConfiguration
