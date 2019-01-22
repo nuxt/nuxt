@@ -55,7 +55,7 @@
     "@nuxt/webpack": "2.3.4",
     "fork-ts-checker-webpack-plugin": "^0.5.2",
     "ts-loader": "^5.3.3",
-    "ts-node": "^7.0.1",
+    "ts-node": "^8.0.1",
     "tslint": "^5.12.1",
     "typescript": "^3.2.4"
   },
