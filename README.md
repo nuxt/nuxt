@@ -2,6 +2,7 @@
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
   <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
+<a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fnuxt%2Fnuxt.js?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fnuxt%2Fnuxt.js.svg?type=shield"/></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/dev" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
@@ -17,6 +18,9 @@
 </p>
 
 > Vue.js Meta Framework to create complex, fast & universal web applications *quickly*.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fnuxt%2Fnuxt.js.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fnuxt%2Fnuxt.js?ref=badge_large)
 
 ## Links
 
