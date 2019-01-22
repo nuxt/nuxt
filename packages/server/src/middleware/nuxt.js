@@ -64,6 +64,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     if (options.render.csp) {
       const { allowedSources, policies } = options.render.csp
+      const policies = policies ? {...policies} : null
       const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
       res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev }))
