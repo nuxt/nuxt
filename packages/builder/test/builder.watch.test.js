@@ -163,7 +163,7 @@ describe('builder: builder watch', () => {
     expect(refreshFiles).toBeCalledTimes(1)
   })
 
-  test('should rewatch custom patterns when rewatchOnRawEvents is array', () => {
+  test('should rewatch custom patterns when event is included in rewatchOnRawEvents', () => {
     const nuxt = createNuxt()
     nuxt.options.watchers = {
       chokidar: { test: true },
@@ -183,6 +183,7 @@ describe('builder: builder watch', () => {
     const rewatchHandler = chokidar.on.mock.calls[1][1]
     builder.watchCustom = jest.fn()
     rewatchHandler('rename')
+    rewatchHandler('change')
 
     expect(chokidar.close).toBeCalledTimes(1)
     expect(builder.watchers.custom).toBeNull()
@@ -293,6 +294,19 @@ describe('builder: builder watch', () => {
     expect(builder.__closed).toEqual(true)
     expect(builder.unwatch).toBeCalledTimes(1)
     expect(bundleBuilderClose).toBeCalledTimes(1)
+  })
+
+  test('should close bundleBuilder only if close api exists', async () => {
+    const nuxt = createNuxt()
+    const builder = new Builder(nuxt, { })
+    builder.unwatch = jest.fn()
+
+    expect(builder.__closed).toBeUndefined()
+
+    await builder.close()
+
+    expect(builder.__closed).toEqual(true)
+    expect(builder.unwatch).toBeCalledTimes(1)
   })
 
   test('should prevent duplicate close', async () => {
