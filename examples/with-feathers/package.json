@@ -17,7 +17,8 @@
     "dev": "DEBUG=nuxt:* nodemon --watch src/ --watch config/ src/index.js",
     "build": "nuxt build",
     "start": "NODE_ENV=production node src/",
-    "mocha": "mocha test/ --recursive --timeout=30000"
+    "mocha": "mocha test/ --recursive --timeout=30000",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
     "body-parser": "^1.15.2",
