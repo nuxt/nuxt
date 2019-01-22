@@ -52,12 +52,11 @@ export default class VueRenderer {
 
   renderScripts(context) {
     if (this.context.options.modern === 'client') {
-      const publicPath = this.context.options.build.publicPath
+      const { publicPath, crossorigin } = this.context.options.build
       const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
-        const crossorigin = this.context.options.build.crossorigin
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         const moduleTag = modernJsFile
           ? scriptTag
@@ -94,7 +93,7 @@ export default class VueRenderer {
 
   renderResourceHints(context) {
     if (this.context.options.modern === 'client') {
-      const publicPath = this.context.options.build.publicPath
+      const { publicPath, crossorigin } = this.context.options.build
       const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
       return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
         const legacyJsFile = jsFile.replace(publicPath, '')
@@ -102,7 +101,6 @@ export default class VueRenderer {
         if (!modernJsFile) {
           return ''
         }
-        const crossorigin = this.context.options.build.crossorigin
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
       })
@@ -145,7 +143,7 @@ export default class VueRenderer {
   loadResources(_fs, isMFS = false) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
-    const resourceMap = this.resourceMap
+    const { resourceMap } = this
 
     const readResource = (fileName, encoding) => {
       try {

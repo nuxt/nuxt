@@ -55,6 +55,7 @@ export default () => ({
   generate: {
     dir: 'dist',
     routes: [],
+    exclude: [],
     concurrency: 500,
     interval: 0,
     subFolders: true,

@@ -13,9 +13,9 @@ export default async function listCommands() {
   let maxLength = 0
   const commandsHelp = []
 
-  for (const name in _commands) {
-    commandsHelp.push([_commands[name].usage, _commands[name].description])
-    maxLength = Math.max(maxLength, _commands[name].usage.length)
+  for (const command of _commands) {
+    commandsHelp.push([command.usage, command.description])
+    maxLength = Math.max(maxLength, command.usage.length)
   }
 
   const _cmds = commandsHelp.map(([cmd, description]) => {

@@ -46,7 +46,7 @@ export default class Nuxt extends Hookable {
   }
 
   static get version() {
-    return version
+    return (global.__NUXT && global.__NUXT.version) || `v${version}`
   }
 
   async ready() {
@@ -78,7 +78,6 @@ export default class Nuxt extends Hookable {
   async close(callback) {
     await this.callHook('close', this)
 
-    /* istanbul ignore if */
     if (typeof callback === 'function') {
       await callback()
     }

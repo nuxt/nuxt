@@ -90,7 +90,7 @@ export function showBanner(nuxt) {
   const lines = []
 
   // Name and version
-  lines.push(`${chalk.green.bold('Nuxt.js')} v${nuxt.constructor.version}`)
+  lines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
   lines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)

@@ -46,7 +46,7 @@ module.exports = (context, options = {}) => {
     decoratorsLegacy
   } = options
 
-  let targets = options.targets
+  let { targets } = options
   if (modern === true) {
     targets = { esmodules: true }
   } else if (targets === undefined) {

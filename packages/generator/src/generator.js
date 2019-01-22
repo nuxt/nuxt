@@ -4,7 +4,7 @@ import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
-import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/utils'
+import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor(nuxt, builder) {
@@ -83,6 +83,9 @@ export default class Generator {
       this.options.router.mode === 'hash'
         ? ['/']
         : flatRoutes(this.options.router.routes)
+
+    routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
+
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
     // extendRoutes hook
@@ -202,7 +205,7 @@ export default class Generator {
         _generate: true,
         payload
       })
-      html = res.html
+      ;({ html } = res)
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }
