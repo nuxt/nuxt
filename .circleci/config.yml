@@ -104,7 +104,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -w=2 --coverage && yarn coverage
+          command: yarn test:fixtures -i --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
