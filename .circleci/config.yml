@@ -6,6 +6,7 @@ defaults: &defaults
     - image: circleci/node:latest
   environment:
     NODE_ENV: test
+    NODE_OPTIONS: --max_old_space_size=4096
 
 release_branches: &release_branches
   branches:
