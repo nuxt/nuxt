@@ -4,8 +4,11 @@
   "description": "Nuxt With Runtime Typescript Support",
   "keywords": [
     "nuxt",
+    "nuxt-ts",
     "nuxt.js",
+    "nuxt.ts",
     "nuxtjs",
+    "nuxts",
     "ssr",
     "vue",
     "vue isomorphic",
@@ -37,6 +40,9 @@
     },
     {
       "name": "Alexander Lichter (@manniL)"
+    },
+    {
+      "name": "Kevin Marrec (@kevinmarrec)"
     }
   ],
   "files": [
@@ -52,12 +58,8 @@
     "@nuxt/core": "2.3.4",
     "@nuxt/generator": "2.3.4",
     "@nuxt/opencollective": "^0.2.1",
-    "@nuxt/webpack": "2.3.4",
-    "fork-ts-checker-webpack-plugin": "^0.5.2",
-    "ts-loader": "^5.3.3",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.12.1",
-    "typescript": "^3.2.4"
+    "@nuxt/typescript": "2.3.4",
+    "@nuxt/webpack": "2.3.4"
   },
   "engines": {
     "node": ">=6.0.0",
