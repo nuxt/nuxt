@@ -447,7 +447,18 @@ export default class Builder {
     // -- Store --
     // Add store if needed
     if (this.options.store) {
-      templateVars.storeModules = await this.resolveRelative(this.options.dir.store)
+      templateVars.storeModules = (await this.resolveRelative(this.options.dir.store))
+        .sort(({ src: p1 }, { src: p2 }) => {
+          // modules are sorted from low to high priority (for overwriting properties)
+          let res = p1.split('/').length - p2.split('/').length
+          if (res === 0 && p1.includes('/index.')) {
+            res = -1
+          } else if (res === 0 && p2.includes('/index.')) {
+            res = 1
+          }
+          return res
+        })
+
       templatesFiles.push('store.js')
     }
 
