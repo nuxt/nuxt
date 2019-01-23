@@ -11,7 +11,7 @@ export default class StyleLoader {
     this.perfLoader = perfLoader
     this.rootDir = options.rootDir
     this.loaders = {
-      ...options.build.loaders,
+      vueStyle: options.build.loaders.vueStyle,
       css: options.build.loaders.css,
       cssModules: options.build.loaders.cssModules
     }
