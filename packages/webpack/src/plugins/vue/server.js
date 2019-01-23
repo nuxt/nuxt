@@ -12,7 +12,7 @@ export default class VueSSRServerPlugin {
 
     onEmit(compiler, 'vue-server-plugin', (compilation, cb) => {
       const stats = compilation.getStats().toJson()
-      const entryName = Object.keys(stats.entrypoints)[0]
+      const [entryName] = Object.keys(stats.entrypoints)
       const entryInfo = stats.entrypoints[entryName]
 
       if (!entryInfo) {
@@ -29,7 +29,7 @@ export default class VueSSRServerPlugin {
         )
       }
 
-      const entry = entryAssets[0]
+      const [entry] = entryAssets
       if (!entry || typeof entry !== 'string') {
         throw new Error(
           `Entry "${entryName}" not found. Did you specify the correct entry option?`

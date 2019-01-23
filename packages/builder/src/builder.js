@@ -100,7 +100,7 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      BundleBuilder = require('@nuxt/webpack').BundleBuilder
+      ({ BundleBuilder } = require('@nuxt/webpack'))
     }
 
     return new BundleBuilder(context)
@@ -121,7 +121,7 @@ export default class Builder {
           p.mode = 'client'
         } else if (p.mode === undefined) {
           p.mode = 'all'
-        } else if (!['client', 'server'].includes(p.mode)) {
+        } else if (!['client', 'server', 'all'].includes(p.mode)) {
           consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'`)
           p.mode = 'all'
         }
@@ -209,21 +209,7 @@ export default class Builder {
     // Call before hook
     await this.nuxt.callHook('build:before', this, this.options.build)
 
-    // Check if pages dir exists and warn if not
-    this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
-    if (this._nuxtPages) {
-      if (!fsExtra.existsSync(path.join(this.options.srcDir, this.options.dir.pages))) {
-        const dir = this.options.srcDir
-        if (fsExtra.existsSync(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
-          throw new Error(
-            `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
-          )
-        } else {
-          this._defaultPage = true
-          consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
-        }
-      }
-    }
+    await this.validatePages()
 
     // Validate template
     try {
@@ -262,6 +248,28 @@ export default class Builder {
     await this.nuxt.callHook('build:done', this)
 
     return this
+  }
+
+  // Check if pages dir exists and warn if not
+  async validatePages() {
+    this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
+
+    if (
+      !this._nuxtPages ||
+      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
+    ) {
+      return
+    }
+
+    const dir = this.options.srcDir
+    if (await fsExtra.exists(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
+      throw new Error(
+        `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
+      )
+    }
+
+    this._defaultPage = true
+    consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
   }
 
   validateTemplate() {
@@ -637,33 +645,40 @@ export default class Builder {
       .on('add', refreshFiles)
       .on('unlink', refreshFiles)
 
+    this.watchCustom(refreshFiles)
+  }
+
+  watchCustom(refreshFiles, refresh) {
+    const options = this.options.watchers.chokidar
     // Watch for custom provided files
     const customPatterns = uniq([
       ...this.options.build.watch,
       ...Object.values(omit(this.options.build.styleResources, ['options']))
     ]).map(upath.normalizeSafe)
 
-    const watchCustom = (refresh) => {
-      if (refresh) refreshFiles()
-
-      this.watchers.custom = chokidar
-        .watch(customPatterns, options)
-        .on('change', refreshFiles)
-
-      const rewatchOnRawEvents = this.options.watchers.rewatchOnRawEvents
-      if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
-        this.watchers.custom.on('raw', (_event, _path, opts) => {
-          if (rewatchOnRawEvents.includes(_event)) {
-            this.watchers.custom.close()
-            this.watchers.custom = null
-
-            watchCustom(true)
-          }
-        })
-      }
+    if (customPatterns.length === 0) {
+      return
     }
 
-    watchCustom()
+    if (refresh) {
+      refreshFiles()
+    }
+
+    this.watchers.custom = chokidar
+      .watch(customPatterns, options)
+      .on('change', refreshFiles)
+
+    const { rewatchOnRawEvents } = this.options.watchers
+    if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
+      this.watchers.custom.on('raw', (_event, _path, opts) => {
+        if (rewatchOnRawEvents.includes(_event)) {
+          this.watchers.custom.close()
+          this.watchers.custom = null
+
+          this.watchCustom(refreshFiles, true)
+        }
+      })
+    }
   }
 
   watchRestart() {

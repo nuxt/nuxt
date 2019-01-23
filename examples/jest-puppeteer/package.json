@@ -13,6 +13,7 @@
   "devDependencies": {
     "jest": "latest",
     "jest-puppeteer": "latest",
-    "puppeteer": "latest"
+    "puppeteer": "latest",
+    "post-update": "yarn upgrade --latest"
   }
 }

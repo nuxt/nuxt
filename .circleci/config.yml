@@ -6,6 +6,7 @@ defaults: &defaults
     - image: circleci/node:latest
   environment:
     NODE_ENV: test
+    NODE_OPTIONS: --max_old_space_size=4096
 
 release_branches: &release_branches
   branches:
@@ -120,7 +121,7 @@ jobs:
           command: yarn lint:app
 
   # --------------------------------------------------------------------------
-  # Phase 3: Unit and E2E tests
+  # Phase 3: Unit, E2E and types tests
   # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
@@ -143,6 +144,18 @@ jobs:
       - run:
           name: E2E Tests
           command: yarn test:e2e && yarn coverage
+
+  test-types:
+    <<: *defaults
+    docker:
+      - image: circleci/node:latest-browsers
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Types Tests
+          command: yarn test:types
 
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
@@ -170,8 +183,9 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
+      - test-types: { requires: [build] }
       - release-commit:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
           filters:
             <<: *release_branches
 
@@ -185,8 +199,9 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
+      - test-types: { requires: [build] }
       - release-nightly:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
     triggers:
       - schedule:
           cron: "0 0 * * *"

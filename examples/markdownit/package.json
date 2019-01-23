@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
     "jstransformer-markdown-it": "^2.0.0"

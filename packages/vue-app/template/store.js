@@ -3,124 +3,145 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-let storeData = {}
+const log = console // on server-side, consola will catch all console.log
+const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
+let store = {}
+let fileResolver
 
-let files
+void (function updateModules() {
+  fileResolver = require.context('@/<%= dir.store %>', true, /^\.\/(?!<%= ignorePrefix %>)[^.]+\.(<%= extensions %>)$/)
 
-void function updateModules() {
-  <% storeModules.some(s => {
-    if(s.src.indexOf('index.') === 0) { %>
-  storeData = require('@/<%= dir.store %>/<%= s.src %>')
-  <% return true }}) %>
-  // If store is not an exported method = modules store
-  if (typeof storeData !== 'function') {
-    // Store modules
-    if (!storeData.modules) {
-      storeData.modules = {}
+  // Paths are sorted from low to high priority (for overwriting properties)
+  const paths = fileResolver.keys().sort((p1, p2) => {
+    let res = p1.split('/').length - p2.split('/').length
+
+    if (res === 0 && p1.includes('/index.')) {
+      res = -1
+    } else if (res === 0 && p2.includes('/index.')) {
+      res = 1
     }
-    <% storeModules.forEach(s => {
-      if(s.src.indexOf('index.') !== 0) { %>
-    resolveStoreModules(require('@/<%= dir.store %>/<%= s.src %>'), '<%= s.src %>')<% }}) %>
+    return res
+  })
 
+  // Check if {dir.store}/index.js exists
+  const indexPath = paths.find(path => path.includes('./index.'))
+
+  if (indexPath) {
+    store = requireModule(indexPath, { isRoot: true })
+  }
+
+  // If store is an exported method = classic mode (deprecated)
+  if (typeof store === 'function') {
+    return log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
+  }
+
+  // Enforce store modules
+  store.modules = store.modules || {}
+
+  for (const path of paths) {
+    // Remove store path + extension (./foo/index.js -> foo/index)
+    const namespace = path.replace(/^\.\//, '').replace(/\.(<%= extensions %>)$/, '')
+
+    // Ignore indexFile, handled before
+    if (namespace === 'index') {
+      continue
+    }
+
+    const namespaces = namespace.split('/')
+    let moduleName = namespaces[namespaces.length - 1]
+    const moduleData = requireModule(path, { isState: moduleName === 'state' })
+
+    // If path is a known Vuex property
+    if (VUEX_PROPERTIES.includes(moduleName)) {
+      const property = moduleName
+      const storeModule = getStoreModule(store, namespaces, { isProperty: true })
+
+      // Replace state since it's a function
+      mergeProperty(storeModule, moduleData, property)
+      continue
+    }
+
+    // If file is foo/index.js, it should be saved as foo
+    const isIndexModule = (moduleName === 'index')
+    if (isIndexModule) {
+      namespaces.pop()
+      moduleName = namespaces[namespaces.length - 1]
+    }
+
+    const storeModule = getStoreModule(store, namespaces)
+
+    for (const property of VUEX_PROPERTIES) {
+      mergeProperty(storeModule, moduleData[property], property)
+    }
+  }
   // If the environment supports hot reloading...
   <% if (isDev) { %>
-    if (process.client && module.hot) {
-      // Whenever any Vuex module is updated...
-      module.hot.accept([<% storeModules.forEach(s => { %>
-        '@/<%= dir.store %>/<%= s.src %>',<% }) %>
-      ], () => {
-        // Update `root.modules` with the latest definitions.
-        updateModules()
-        // Trigger a hot update in the store.
-        window.<%= globals.nuxt %>.$store.hotUpdate(storeData)
-      })
-    }<% } %>
-  } else {
-    const log = (process.server ? require('consola') : console)
-    log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
-  }
-}()
+  if (process.client && module.hot) {
+    // Whenever any Vuex module is updated...
+    module.hot.accept(fileResolver.id, () => {
+      // Update `root.modules` with the latest definitions.
+      updateModules()
+      // Trigger a hot update in the store.
+      window.<%= globals.nuxt %>.$store.hotUpdate(store)
+    })
+  }<% } %>
+})()
 
 // createStore
-export const createStore = storeData instanceof Function ? storeData : () => {
+export const createStore = store instanceof Function ? store : () => {
   return new Vuex.Store(Object.assign({
     strict: (process.env.NODE_ENV !== 'production')
-  }, storeData, {
-    state: storeData.state instanceof Function ? storeData.state() : {}
-  }))
-}
-
-function resolveStoreModules(fileModule, filename) {
-  let name = filename.replace(/\.(<%= extensions %>)$/, '')
-  const namePath = name.split(/\//)
-
-  name = namePath[namePath.length - 1]
-  if (['state', 'getters', 'actions', 'mutations'].includes(name)) {
-    const module = getModuleNamespace(storeData, namePath, true)
-    appendModule(module, fileModule, name)
-    return
-  }
-
-  // If file is foo/index.js, it should be saved as foo
-  const isIndex = (name === 'index')
-  if (isIndex) {
-    namePath.pop()
-  }
-
-  const module = getModuleNamespace(storeData, namePath)
-  checkModule(fileModule, filename)
-
-  name = namePath.pop()
-  module[name] = module[name] || {}
-
-  // if file is foo.js, existing properties take priority
-  // because it's the least specific case
-  if (!isIndex) {
-    module[name] = Object.assign({}, fileModule, module[name])
-    module[name].namespaced = true
-    return
-  }
-
-  // if file is foo/index.js we want to overwrite properties from foo.js
-  // but not from appended mods like foo/actions.js
-  const appendedMods = {}
-  if (module[name].appends) {
-    appendedMods.appends = module[name].appends
-    for (const append of module[name].appends) {
-      appendedMods[append] = module[name][append]
-    }
-  }
-
-  module[name] = Object.assign({}, module[name], fileModule, appendedMods)
-  module[name].namespaced = true
+  }, store))
 }
 
 // Dynamically require module
-function checkModule(module, filename) {
-  if (module.commit) {
-    throw new Error('[nuxt] <%= dir.store %>/' + filename + ' should export a method which returns a Vuex instance.')
+function requireModule(path, { isRoot = false, isState = false } = {}) {
+  const file = fileResolver(path)
+  let moduleData = file.default || file
+
+  if (isState && typeof moduleData !== 'function') {
+    log.warn(`${path} should export a method that returns an object`)
+    const state = Object.assign({}, moduleData)
+    return () => state
   }
-  if (module.state && typeof module.state !== 'function') {
-    throw new Error('[nuxt] state should be a function in <%= dir.store %>/' + filename)
+  if (isRoot && moduleData.commit) {
+    throw new Error('[nuxt] <%= dir.store %>/' + path.replace('./', '') + ' should export a method that returns a Vuex instance.')
   }
+
+  if (isRoot && typeof moduleData !== 'function') {
+    // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
+    moduleData = Object.assign({}, moduleData)
+  }
+  if (moduleData.state && typeof moduleData.state !== 'function') {
+    log.warn(`'state' should be a method that returns an object in ${path}`)
+    const state = Object.assign({}, moduleData.state)
+    // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
+    moduleData = Object.assign({}, moduleData, { state: () => state })
+  }
+  return moduleData
 }
 
-function getModuleNamespace(storeData, namePath, forAppend = false) {
-  if (namePath.length === 1) {
-    if (forAppend) {
-      return storeData
-    }
-    return storeData.modules
+function getStoreModule(storeModule, namespaces, { isProperty = false } = {}) {
+  // If ./mutations.js
+  if (!namespaces.length || (isProperty && namespaces.length === 1)) {
+    return storeModule
   }
-  const namespace = namePath.shift()
-  storeData.modules[namespace] = storeData.modules[namespace] || {}
-  storeData.modules[namespace].namespaced = true
-  storeData.modules[namespace].modules = storeData.modules[namespace].modules || {}
-  return getModuleNamespace(storeData.modules[namespace], namePath, forAppend)
+
+  const namespace = namespaces.shift()
+
+  storeModule.modules[namespace] = storeModule.modules[namespace] || {}
+  storeModule.modules[namespace].namespaced = true
+  storeModule.modules[namespace].modules = storeModule.modules[namespace].modules || {}
+
+  return getStoreModule(storeModule.modules[namespace], namespaces, { isProperty })
 }
 
-function appendModule(module, subModule, name) {
-  module.appends = module.appends || []
-  module.appends.push(name)
-  module[name] = subModule.default || subModule
+function mergeProperty(storeModule, moduleData, property) {
+  if (!moduleData) return
+
+  if (property === 'state') {
+    storeModule.state = moduleData || storeModule.state
+  } else {
+    storeModule[property] = Object.assign({}, storeModule[property], moduleData)
+  }
 }

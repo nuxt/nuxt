@@ -1,6 +1,6 @@
 # Configuration for lock-threads - https://github.com/dessant/lock-threads
 # disable lock bot for now
-daysUntilLock: 36500
+daysUntilLock: 3650
 exemptLabels: []
 lockLabel: false
 lockComment: >

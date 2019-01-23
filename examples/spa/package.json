@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt"
+    "start": "nuxt",
+    "post-update": "yarn upgrade --latest"
   }
 }
