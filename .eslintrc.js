@@ -10,6 +10,9 @@ module.exports = {
   extends: [
     '@nuxtjs'
   ],
+  "globals": {
+    "BigInt": true
+  },
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {

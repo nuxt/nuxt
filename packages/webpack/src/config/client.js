@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import querystring from 'querystring'
 import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
@@ -19,7 +20,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   getFileName(...args) {
     if (this.options.build.analyze) {
-      const key = args[0]
+      const [key] = args
       if (['app', 'chunk'].includes(key)) {
         return `${this.isModern ? 'modern-' : ''}[name].js`
       }
@@ -135,7 +136,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
+    if (!this.isModern && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
       const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
       if (forkTsCheckerResolvedPath) {
         const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
@@ -144,7 +145,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
           // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
           tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
-          formatter: 'codeframe'
+          formatter: 'codeframe',
+          logger: consola
         }, this.options.build.useForkTsChecker)))
       } else {
         consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
@@ -157,6 +159,20 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   config() {
     const config = super.config()
 
+    const { client = {} } = this.options.build.hotMiddleware || {}
+    const { ansiColors, overlayStyles, ...options } = client
+    const hotMiddlewareClientOptions = {
+      reload: true,
+      timeout: 30000,
+      ansiColors: JSON.stringify(ansiColors),
+      overlayStyles: JSON.stringify(overlayStyles),
+      ...options,
+      name: this.name
+    }
+    const clientPath = `${this.options.router.base}/__webpack_hmr/${this.name}`
+    const hotMiddlewareClientOptionsStr =
+      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
+
     // Entry points
     config.entry = {
       app: [path.resolve(this.options.buildDir, 'client.js')]
@@ -168,9 +184,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
         'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
-          this.options.router.base
-        }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
+        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
       )
     }
 

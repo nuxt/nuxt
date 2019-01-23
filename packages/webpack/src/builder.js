@@ -38,7 +38,7 @@ export class WebpackBundler {
   }
 
   async build() {
-    const options = this.context.options
+    const { options } = this.context
 
     const compilersOptions = []
 
@@ -78,7 +78,7 @@ export class WebpackBundler {
     }
 
     // Check styleResource existence
-    const styleResources = this.context.options.build.styleResources
+    const { styleResources } = this.context.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
         'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
@@ -123,7 +123,7 @@ export class WebpackBundler {
   }
 
   async webpackCompile(compiler) {
-    const name = compiler.options.name
+    const { name } = compiler.options
     const { nuxt, options } = this.context
 
     await nuxt.callHook('build:compile', { name, compiler })
@@ -180,8 +180,9 @@ export class WebpackBundler {
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
-    const name = compiler.options.name
+    const { name } = compiler.options
     const { nuxt: { server }, options } = this.context
+    const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -209,7 +210,7 @@ export class WebpackBundler {
             log: false,
             heartbeat: 10000
           },
-          options.build.hotMiddleware,
+          hotMiddlewareOptions,
           {
             path: `/__webpack_hmr/${name}`
           }

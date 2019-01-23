@@ -6,7 +6,10 @@ export default {
   srcDir: __dirname,
   server: {
     port: 8000,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    timing: {
+      total: true
+    }
   },
   router: {
     base: '/test/',

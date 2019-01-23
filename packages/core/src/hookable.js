@@ -34,7 +34,7 @@ export default class Hookable {
     try {
       await sequence(this._hooks[name], fn => fn(...args))
     } catch (err) {
-      name !== 'error' && this.callHook('error', err)
+      name !== 'error' && await this.callHook('error', err)
       consola.fatal(err)
     }
   }

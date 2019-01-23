@@ -4,7 +4,8 @@
 		"dev": "nuxt",
 		"build": "nuxt build",
 		"start": "nuxt start",
-		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec"
+		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec",
+    "post-update": "yarn upgrade --latest"
 	},
 	"devDependencies": {
 		"browser-env": "^3.2.1",

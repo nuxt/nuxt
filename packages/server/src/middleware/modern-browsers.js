@@ -4,6 +4,7 @@ export default {
   Chrome: '61',
   'Chrome Headless': '61',
   Chromium: '61',
+  Iron: '61',
   Safari: '10.1',
   Opera: '48',
   Yandex: '18',

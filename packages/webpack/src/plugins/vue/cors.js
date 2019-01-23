@@ -11,7 +11,7 @@ export default class CorsPlugin {
       HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data, cb) => {
         if (this.crossorigin != null) {
           [...data.headTags, ...data.bodyTags].forEach((tag) => {
-            if (tag.tagName === 'script' || tag.tagName === 'link') {
+            if (['script', 'link'].includes(tag.tagName)) {
               if (tag.attributes) {
                 tag.attributes.crossorigin = this.crossorigin
               }
