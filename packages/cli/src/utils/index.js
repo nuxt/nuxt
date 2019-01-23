@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { getDefaultNuxtConfig } from '@nuxt/config'
+import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
 import boxen from 'boxen'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
@@ -54,7 +54,7 @@ export async function loadNuxtConfig(argv) {
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = nuxtConfigFile
-  } else if (argv['config-file'] !== 'nuxt.config.js') {
+  } else if (argv['config-file'] !== defaultNuxtConfigFile) {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
   if (typeof options.rootDir !== 'string') {
