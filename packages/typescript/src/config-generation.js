@@ -22,7 +22,10 @@ export async function generateTsConfigIfMissing(rootDir) {
       await writeJSON(tsConfigPath, {
         extends: configToExtend,
         compilerOptions: {
-          baseUrl: '.'
+          types: [
+            '@types/node',
+            '@nuxt/vue-app'
+          ]
         }
       }, { spaces: 2 })
       consola.info(`Extending ${chalk.bold.blue(`node_modules/${configToExtend}/tsconfig.json`)}`)
