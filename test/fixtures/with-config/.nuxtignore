@@ -1,4 +1,3 @@
 pages/test-ignore.vue
 store/test-ignore.js
-plugin/test-ignore.js
 middleware/test-ignore.js
