@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
     "node-sass": "^4.7.2",
