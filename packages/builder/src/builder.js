@@ -279,12 +279,12 @@ export default class Builder {
     // Suggest dependency fixes (TODO: automate me)
     if (dpendencyFixes.length) {
       consola.error(
-        `Please install missing dependencies:\n`,
+        'Please install missing dependencies:\n',
         '\n',
-        `Using yarn:\n`,
+        'Using yarn:\n',
         `yarn add ${dpendencyFixes.join(' ')}\n`,
         '\n',
-        `Using npm:\n`,
+        'Using npm:\n',
         `npm i ${dpendencyFixes.join(' ')}\n`
       )
       throw new Error('Missing Template Dependencies')
@@ -292,7 +292,7 @@ export default class Builder {
   }
 
   async generateRoutesAndFiles() {
-    consola.debug(`Generating nuxt files`)
+    consola.debug('Generating nuxt files')
 
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
