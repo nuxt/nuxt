@@ -56,7 +56,7 @@ The EOL also applies to the documentation.
 
 
 ### Example
-We are on Nuxt 2 right now. When Nuxt three would be released tomorrow, Nuxt 2 would still receive fixes. 
-Imagine nuxt 4 would release exactly 1 week after (which is unlikely but for the sake of the example). 
+We are on Nuxt 2 right now. When Nuxt 3 would be released tomorrow, Nuxt 2 would still receive fixes. 
+Imagine Nuxt 4 would release exactly one week after (which is unlikely but for the sake of the example). 
 Then the countdown for the End of Life for Nuxt 2 would start. 
 Two weeks after the Nuxt 4 release, we will stop maintaining Nuxt 2.
