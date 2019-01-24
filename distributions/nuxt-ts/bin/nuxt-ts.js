@@ -4,7 +4,7 @@
 process.env.NUXT_TS = 'true'
 
 const nuxtCommands = ['dev', 'build', 'generate', 'start']
-const rootDir = (process.argv[2] && nuxtCommands.indexOf(process.argv[2]) === -1) ? process.argv[2] : process.cwd()
+const rootDir = (process.argv[2] && !nuxtCommands.includes(process.argv[2])) ? process.argv[2] : process.cwd()
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
 
