@@ -6,7 +6,7 @@
   "files": [
     "README.md"
   ],
-  "imageSize": 150,
+  "imageSize": 120,
   "commit": false,
   "contributors": [
     {
@@ -93,6 +93,31 @@
         "example",
         "review",
         "test"
+      ]
+    },
+    {
+      "login": "aldarund",
+      "name": "Dmitry Molotkov",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/571159?v=4",
+      "profile": "https://github.com/aldarund",
+      "contributions": [
+        "question",
+        "bug",
+        "code",
+        "ideas",
+        "review"
+      ]
+    },
+    {
+      "login": "kevinmarrec",
+      "name": "Kevin Marrec",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/25272043?v=4",
+      "profile": "https://www.kevinmarrec.com",
+      "contributions": [
+        "code",
+        "ideas",
+        "platform",
+        "review"
       ]
     }
   ]
