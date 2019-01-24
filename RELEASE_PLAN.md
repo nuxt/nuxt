@@ -37,14 +37,14 @@ Fixes can or will include:
 
 Bugfixes for upcoming features won't be ported of course.
 
-### Edge releases
+### Edge Release Channel
 
 We've experimented with `nuxt-edge` releases in the last time and decided to do **nightly releases** for now instead of 
 releasing a version after *each commit*.
 
-## End Of Life
+## End of Life
 
-We agreed to set an **End Of Life** for older major Nuxt.js versions. 
+We agreed to set an **End of Life** for older major Nuxt.js versions. 
 Previous releases will receive security updates and bugfixes *until two weeks after the second next major release*. 
 As we release new majors approximately once every 6 months, this will allow people to "skip one major version" without
 being stuck with a buggy or unsecure Nuxt.js dependency.
@@ -54,5 +54,5 @@ The EOL also applies to the documentation.
 ### Example
 We are on Nuxt 2 right now. When Nuxt three would be released tomorrow, Nuxt 2 would still receive fixes. 
 Imagine nuxt 4 would release exactly 1 week after (which is unlikely but for the sake of the example). 
-Then the countdown for the End Of Life for Nuxt 2 would start. 
+Then the countdown for the End of Life for Nuxt 2 would start. 
 Two weeks after the Nuxt 4 release, we will stop maintaining Nuxt 2.
