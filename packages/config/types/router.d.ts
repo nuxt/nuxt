@@ -5,7 +5,7 @@
  *                https://router.vuejs.org/api/#router-construction-options
  */
 
-import { RouterOptions, Route } from "vue-router";
+import { RouterOptions, Route } from 'vue-router'
 
 export interface NuxtConfigurationRouter extends RouterOptions {
   routeNameSplitter?: string;

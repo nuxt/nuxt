@@ -4,6 +4,6 @@
  *                https://vuejs.org/v2/api/#Global-Config
  */
 
-import { VueConstructor } from "vue";
+import { VueConstructor } from 'vue'
 
 export type NuxtConfigurationVueConfiguration = VueConstructor['config'];

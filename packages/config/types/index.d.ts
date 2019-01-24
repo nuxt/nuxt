@@ -13,7 +13,7 @@ import { NuxtConfigurationServerMiddleware } from './server-middleware'
 import { NuxtConfigurationVueConfiguration } from './vue-configuration'
 import { NuxtConfigurationWatchers } from './watchers'
 
-type ExtendableConfiguration = { [key: string]: any }
+type ExtendableConfiguration = { [key: string]: any };
 
 interface NuxtConfiguration extends ExtendableConfiguration {
   build?: NuxtConfigurationBuild;
