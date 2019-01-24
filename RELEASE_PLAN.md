@@ -3,17 +3,18 @@
 Starting with version `v2.4`, the Nuxt core team will adhere to a formalized release plan (as good as possible).
 Also, an end of life for older major versions is defined with this document
 
-### Major versions (3.x.y, 4.x.y, ...)
+### Major versions (3.x -> 4.0)
 
 We aim for a major release once every **6 months**. This depends on a few factors though:
 
-* Major version releases of critical dependencies like Vue, Webpack or Babel
-* Number of breaking changes "in the queue"
+* If there are no breaking changes waiting for a release, we can't and won't publish a new major version. Instead, we will go for another minor one. 
+* In case of unexpected major updates of important dependencies like Vue, Webpack, and so on, we might have to release majors *earlier* than planned.
+
 
 Our goal is to provide a **migration guide** for each major version as well as escape hatches so existing code
 won't "just break".
 
-### Minor versions
+### Minor versions (2.1 -> 2.2)
 
 The team agree on a release cycle of (roughly) **4 weeks**. 
 
@@ -24,7 +25,7 @@ That also means a *feature freeze* for the next minor version after these three 
 Features that aren't ready will be moved to the next cycle. We try to avoid to "wait" for features 
 (for a longer time) to keep releases lean, concise, predictable and digestible.
 
-### Patch releases
+### Patch releases (2.2.3 -> 2.2.4)
 
 The last patch releases were mostly *bundled* fixes or single *hotfixes*. 
 In the future we will avoid this practice and try to release each fix **as soon as possible** after the actual PR/commit.
