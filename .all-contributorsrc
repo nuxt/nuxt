@@ -8,6 +8,7 @@
   ],
   "imageSize": 100,
   "commit": false,
+  "contributorsPerLine": 6,
   "contributors": [
     {
       "login": "Atinux",
