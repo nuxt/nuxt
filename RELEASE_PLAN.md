@@ -45,11 +45,14 @@ releasing a version after *each commit*.
 ## End of Life
 
 We agreed to set an **End of Life** for older major Nuxt.js versions. 
-Previous releases will receive security updates and bugfixes *until two weeks after the second next major release*. 
+Previous releases will receive security updates and bugfixes *until two weeks after the second next major release* **\***. 
 As we release new majors approximately once every 6 months, this will allow people to "skip one major version" without
 being stuck with a buggy or unsecure Nuxt.js dependency.
 There will be a detailed migration guide for each major update.
 The EOL also applies to the documentation.
+
+**\*** Exceptions, e.g. for critical security fixes, are possible but not guaranteed
+
 
 ### Example
 We are on Nuxt 2 right now. When Nuxt three would be released tomorrow, Nuxt 2 would still receive fixes. 
