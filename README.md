@@ -13,7 +13,9 @@
   <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
   <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-
+</p>
+<p align="center">
+  <a href="https://otechie.com/nuxt?ref=badge"><img src="https://api.otechie.com/consultancy/nuxt/badge.svg" alt="Hire Nuxt"></a>
 </p>
 
 > Vue.js Meta Framework to create complex, fast & universal web applications *quickly*.
@@ -41,6 +43,10 @@
 - Loading just the critical CSS (page-level)
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
+
+## Consulting from the Nuxt team
+
+Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $200 an hour, get technical support, advice, code reviews, and development from the Nuxt core team: [Hire Nuxt on Otechie](https://otechie.com/nuxt?ref=readme)
 
 ## Professional support with TideLift
 
