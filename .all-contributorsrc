@@ -6,9 +6,9 @@
   "files": [
     "README.md"
   ],
-  "imageSize": 100,
+  "imageSize": 120,
   "commit": false,
-  "contributorsPerLine": 6,
+  "contributorsPerLine": 4,
   "contributors": [
     {
       "login": "Atinux",
