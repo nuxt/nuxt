@@ -22,6 +22,7 @@ describe('typescript setup', () => {
     expect(await readJSON(tsConfigPath)).toEqual({
       extends: '@nuxt/typescript',
       compilerOptions: {
+        baseUrl: '.',
         types: [
           '@types/node',
           '@nuxt/vue-app'

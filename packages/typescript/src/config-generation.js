@@ -22,6 +22,7 @@ export async function generateTsConfigIfMissing(rootDir) {
       await writeJSON(tsConfigPath, {
         extends: configToExtend,
         compilerOptions: {
+          baseUrl: '.',
           types: [
             '@types/node',
             '@nuxt/vue-app'
