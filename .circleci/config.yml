@@ -6,6 +6,7 @@ defaults: &defaults
     - image: circleci/node:latest
   environment:
     NODE_ENV: test
+    NODE_OPTIONS: --max_old_space_size=4096
 
 release_branches: &release_branches
   branches:
@@ -103,7 +104,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -w=2 --coverage && yarn coverage
+          command: yarn test:fixtures -i --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:

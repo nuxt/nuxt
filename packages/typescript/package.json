@@ -1,0 +1,27 @@
+{
+  "name": "@nuxt/typescript",
+  "version": "2.3.4",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "tsconfig.json"
+  ],
+  "main": "dist/typescript.js",
+  "dependencies": {
+    "@types/node": "^10.12.18",
+    "chalk": "^2.4.2",
+    "consola": "^2.3.2",
+    "enquirer": "^2.3.0",
+    "fork-ts-checker-webpack-plugin": "^0.5.2",
+    "fs-extra": "^7.0.1",
+    "std-env": "^2.2.1",
+    "ts-loader": "^5.3.3",
+    "ts-node": "^8.0.1",
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

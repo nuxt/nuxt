@@ -225,8 +225,10 @@ export default class WebpackBaseConfig {
       {
         test: /\.jsx?$/i,
         exclude: (file) => {
+          file = file.split('node_modules', 2)[1]
+
           // not exclude files outside node_modules
-          if (!/node_modules/.test(file)) {
+          if (!file) {
             return false
           }
 
