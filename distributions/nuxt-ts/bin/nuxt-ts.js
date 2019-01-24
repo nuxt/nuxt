@@ -3,7 +3,8 @@
 // Globally indicate we are running in ts mode
 process.env.NUXT_TS = 'true'
 
-const rootDir = (process.argv[2] && process.argv[2] !== 'dev') ? process.argv[2] : process.cwd()
+const nuxtCommands = ['dev', 'build', 'generate', 'start']
+const rootDir = (process.argv[2] && !nuxtCommands.includes(process.argv[2])) ? process.argv[2] : process.cwd()
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
 
