@@ -16,7 +16,7 @@ jest.mock('chalk', () => ({
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
-describe('generator: generator', () => {
+describe('generator: generate routes', () => {
   const sep = path.sep
 
   beforeAll(() => {

@@ -11,7 +11,7 @@ jest.mock('fs-extra')
 jest.mock('html-minifier')
 jest.mock('@nuxt/utils')
 
-describe('generator: generator', () => {
+describe('generator: generate route', () => {
   const sep = path.sep
 
   beforeAll(() => {

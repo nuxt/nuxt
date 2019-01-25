@@ -10,7 +10,7 @@ jest.mock('path')
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
-describe('generator: generator', () => {
+describe('generator: initialize', () => {
   beforeAll(() => {
     isString.mockImplementation(str => typeof str === 'string')
     path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
