@@ -1,0 +1,20 @@
+{
+  "name": "tsx",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nuxt-ts",
+    "build": "nuxt-ts build",
+    "start": "nuxt-ts start",
+    "generate": "nuxt-ts generate",
+    "lint": "tslint --project .",
+    "post-update": "yarn upgrade --latest"
+  },
+  "dependencies": {
+    "nuxt-ts-edge": "latest",
+    "vue-tsx-support": "^2.2.2"
+  },
+  "devDependencies": {
+    "tslint-config-standard": "^8.0.1"
+  }
+}
