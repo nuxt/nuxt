@@ -9,14 +9,13 @@ describe('typescript setup', () => {
   const rootDir = 'tmp'
   const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
-  beforeAll(() => {
-    setupTypeScript(tsConfigPath)
+  beforeAll(async () => {
+    // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
+    await mkdirp(rootDir)
+    await setupTypeScript(tsConfigPath)
   })
 
   test('tsconfig.json has been generated if missing', async () => {
-    // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
-    await mkdirp(rootDir)
-
     expect(await exists(tsConfigPath)).toBe(true)
     expect(await readJSON(tsConfigPath)).toEqual({
       extends: '@nuxt/typescript',
@@ -28,14 +27,20 @@ describe('typescript setup', () => {
         ]
       }
     })
-
-    // Clean workspace by removing the temporary folder (and the generated tsconfig.json at the same time)
-    await remove(tsConfigPath)
   })
 
-  test('ts-node has been registered', () => {
+  test('ts-node has been registered once', async () => {
+    // Call setupTypeScript a second time to test guard
+    await setupTypeScript(tsConfigPath)
+
+    expect(register).toHaveBeenCalledTimes(1)
     expect(register).toHaveBeenCalledWith({
       project: tsConfigPath
     })
+  })
+
+  afterAll(async () => {
+    // Clean workspace by removing the temporary folder (and the generated tsconfig.json at the same time)
+    await remove(tsConfigPath)
   })
 })
