@@ -7,6 +7,7 @@ import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/util
 
 import Generator from '../src/generator'
 
+jest.mock('path')
 jest.mock('chalk', () => ({
   red: jest.fn(str => `red:${str}`),
   yellow: jest.fn(str => `yellow:${str}`),
@@ -32,12 +33,18 @@ const createNuxt = () => ({
 })
 
 describe('generator: generator', () => {
+  const sep = path.sep
+
   beforeAll(() => {
     path.sep = '[sep]'
     isString.mockImplementation(str => typeof str === 'string')
-    jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
-    jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
-    jest.spyOn(path, 'dirname').mockImplementation((...args) => `dirname(${args.join(', ')})`)
+    path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
+    path.resolve.mockImplementation((...args) => `resolve(${args.join(', ')})`)
+    path.dirname.mockImplementation((...args) => `dirname(${args.join(', ')})`)
+  })
+
+  afterAll(() => {
+    path.sep = sep
   })
 
   beforeEach(() => {
