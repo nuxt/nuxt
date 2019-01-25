@@ -9,7 +9,9 @@
   ],
   "main": "dist/typescript.js",
   "dependencies": {
+    "@types/chokidar": "^1.7.5",
     "@types/node": "^10.12.18",
+    "@types/webpack": "^4.4.24",
     "chalk": "^2.4.2",
     "consola": "^2.3.2",
     "enquirer": "^2.3.0",
