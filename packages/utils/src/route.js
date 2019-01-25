@@ -9,7 +9,6 @@ export const flatRoutes = function flatRoutes(router, _path = '', routes = []) {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
-    /* istanbul ignore if */
     if (r.children) {
       if (_path === '' && r.path === '/') {
         routes.push('/')

@@ -11,7 +11,6 @@ export const startsWithRootAlias = startsWithAlias(['@@', '~~'])
 export const isWindows = /^win/.test(process.platform)
 
 export const wp = function wp(p = '') {
-  /* istanbul ignore if */
   if (isWindows) {
     return p.replace(/\\/g, '\\\\')
   }
@@ -19,7 +18,6 @@ export const wp = function wp(p = '') {
 }
 
 export const wChunk = function wChunk(p = '') {
-  /* istanbul ignore if */
   if (isWindows) {
     return p.replace(/\//g, '_')
   }
