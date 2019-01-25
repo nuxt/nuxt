@@ -21,7 +21,14 @@ async function generateTsConfig(tsConfigPath) {
   consola.success(`Generated successfully at ${chalk.bold.green(tsConfigPath)}`)
 }
 
+let _setup = false
+
 export async function setup(tsConfigPath) {
+  if (_setup) {
+    return
+  }
+  _setup = true
+
   if (!existsSync(tsConfigPath)) {
     const { confirmGeneration } = await prompt({
       type: 'confirm',
