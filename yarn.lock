@@ -4287,10 +4287,10 @@ eslint@^5.12.1:
     table "^5.0.2"
     text-table "^0.2.0"
 
-esm@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/esm/-/esm-3.1.2.tgz#3f33496ab6ff6556fc0a803696229d147b9a8700"
-  integrity sha512-orLuMaPdxYelL1qsM16XUbby4DQX1j5WSsFBg5vHuDJ2gUMMzpcbX82Lu305TjHYacXSuxYz3SuzWjdNFxIDJw==
+esm@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.npmjs.org/esm/-/esm-3.1.3.tgz#63b025cda7c10caa4a8d759b877a860daf9c5a45"
+  integrity sha512-W5DKpMvvvtdn4Wzwl9scBUlsdiy4sXALG5oKIrCgnalg6db6vAztKVHWfOW4R8TlFvXlZDjipXSTrqhJDHpdRg==
 
 espree@^4.1.0:
   version "4.1.0"
@@ -10870,17 +10870,16 @@ ts-loader@^5.3.3:
     micromatch "^3.1.4"
     semver "^5.0.1"
 
-ts-node@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.npmjs.org/ts-node/-/ts-node-8.0.1.tgz#cad98e8d50f0474f0d763ca8dc4c1bf8b7554ae2"
-  integrity sha512-zER3Js6Iotp31ghen6nKjgX75UOipwTWX9T5fAVmHaaYAizWhOes4uAsLmDC8H51UG5tHL8gNjoa/wLFjo7wtA==
+ts-node@^8.0.2:
+  version "8.0.2"
+  resolved "https://registry.npmjs.org/ts-node/-/ts-node-8.0.2.tgz#9ecdf8d782a0ca4c80d1d641cbb236af4ac1b756"
+  integrity sha512-MosTrinKmaAcWgO8tqMjMJB22h+sp3Rd1i4fdoWY4mhBDekOwIAKI/bzmRi7IcbCmjquccYg2gcF6NBkLgr0Tw==
   dependencies:
     arg "^4.1.0"
-    arrify "^1.0.0"
     diff "^3.1.0"
     make-error "^1.1.1"
     source-map-support "^0.5.6"
-    yn "^2.0.0"
+    yn "^3.0.0"
 
 tsconfig@^7.0.0:
   version "7.0.0"
@@ -11257,10 +11256,10 @@ vue-jest@^3.0.2:
     tsconfig "^7.0.0"
     vue-template-es2015-compiler "^1.6.0"
 
-vue-loader@^15.6.0:
-  version "15.6.0"
-  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.6.0.tgz#c78916dc4f994b1559056d4a1cb92fa0b00e42bf"
-  integrity sha512-V1Hzv04jVj9bwQuq1ha+109+7xYRRZIAQ+lK5oIGsE1IH5z5wXhzGgcTtZwIfSqBOuij6Z8exfrrHV812v1eFA==
+vue-loader@^15.6.1:
+  version "15.6.1"
+  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.6.1.tgz#e1a4b89ff98e9ba4d557ec9e183a2c1fcd8c5165"
+  integrity sha512-h68Qylvff+IVpbEP1Bqf32fpVmwCWhZU6b79ZLsgHZSPtAz9X1igyKWpy+DdiIq5hmU4fezA4D7uL4uINDSlaw==
   dependencies:
     "@vue/component-compiler-utils" "^2.4.0"
     hash-sum "^1.0.2"
@@ -11805,7 +11804,7 @@ yauzl@2.4.1:
   dependencies:
     fd-slicer "~1.0.1"
 
-yn@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/yn/-/yn-2.0.0.tgz#e5adabc8acf408f6385fc76495684c88e6af689a"
-  integrity sha1-5a2ryKz0CPY4X8dklWhMiOavaJo=
+yn@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/yn/-/yn-3.0.0.tgz#0073c6b56e92aed652fbdfd62431f2d6b9a7a091"
+  integrity sha512-+Wo/p5VRfxUgBUGy2j/6KX2mj9AYJWOHuhMjMcbBFc3y54o9/4buK1ksBvuiK01C3kby8DH9lSmJdSxw+4G/2Q==
