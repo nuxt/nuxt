@@ -17,7 +17,7 @@
     "fs-extra": "^7.0.1",
     "std-env": "^2.2.1",
     "ts-loader": "^5.3.3",
-    "ts-node": "^8.0.1",
+    "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "typescript": "^3.2.4"
   },
