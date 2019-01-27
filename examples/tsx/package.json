@@ -8,12 +8,12 @@
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate",
     "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
     "post-update": "yarn upgrade --latest",
     "watch:css": "tcm components -w"
   },
   "dependencies": {
-    "nuxt-ts-edge": "latest",
-    "vue-tsx-support": "^2.2.2"
+    "nuxt-ts-edge": "latest"
   },
   "devDependencies": {
     "tslint-config-standard": "^8.0.1",

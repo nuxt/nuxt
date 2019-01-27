@@ -3,10 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitThis": true,
-    "types": [
-      "@types/node",
-      "@nuxt/vue-app-edge",
-      "vue-tsx-support/enable-check"
-    ]
+    "types": ["@types/node", "@nuxt/vue-app-edge"]
   }
 }
