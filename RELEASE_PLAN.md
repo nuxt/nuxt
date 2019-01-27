@@ -1,35 +1,33 @@
 ## Release Plan
 
-Starting with version `v2.4`, the Nuxt core team will adhere to a formalized release plan (as good as possible).
+Starting with version `v2.4`, Nuxt will adhere to a formalized release plan (as good as possible).
 Also, an end of life for older major versions is defined with this document
 
 ### Major versions (3.x -> 4.0)
 
-We aim for a major release once every **6 months**. This depends on a few factors though:
+Nuxt major releases are planned every **6 months**. This depends on a few factors though:
 
-* If there are no breaking changes waiting for a release, we can't and won't publish a new major version. Instead, we will go for another minor one. 
-* In case of unexpected major updates of important dependencies like Vue, Webpack, and so on, we might have to release majors *earlier* than planned.
+* If there are no breaking changes waiting for a release, no new major version will be published. Instead, another minor one will be released. 
+* In case of unexpected major updates of important dependencies like Vue, Webpack, and so on, major versions might be released *earlier* than planned.
 
-
-Our goal is to provide a **migration guide** for each major version as well as escape hatches so existing code
+The goal is to provide a **migration guide** for each major version as well, as escape hatches, so existing code
 won't "just break".
 
 ### Minor versions (2.1 -> 2.2)
 
-The team agree on a release cycle of (roughly) **4 weeks**. 
+The release cycle for Nuxt.js minor versions is roughly **4 weeks**. 
 
 Three of the for weeks will be used for actual **feature implementations** while the last week will be used for 
 **testing, fixing bugs and thorough audits**.
 
 That also means a *feature freeze* for the next minor version after these three weeks.
-Features that aren't ready will be moved to the next cycle. We try to avoid to "wait" for features 
-(for a longer time) to keep releases lean, concise, predictable and digestible.
+Features that aren't ready will be moved to the next cycle. "Waiting" for features 
+(for a longer time) will be avoided as good as possible to keep releases lean, concise, predictable and digestible.
 
 ### Patch releases (2.2.3 -> 2.2.4)
 
 The last patch releases were mostly *bundled* fixes or single *hotfixes*. 
-In the future we will avoid this practice and try to release each fix **as soon as possible** after the actual PR/commit.
-People won't have to switch to `nuxt-edge` for bugfixes then.
+In the future, fixes will be released **as soon as possible** after the actual PR/commit so people won't have to switch to `nuxt-edge` for bugfixes. This should improve the stability of Nuxt
 
 Fixes can or will include:
 
@@ -40,23 +38,12 @@ Bugfixes for upcoming features won't be ported of course.
 
 ### Edge Release Channel
 
-We've experimented with `nuxt-edge` releases in the last time and decided to do **nightly releases** for now instead of 
-releasing a version after *each commit*.
+After experimenting with `nuxt-edge` releases in the last time, the decisiion to do **nightly releases** for now instead of 
+releasing a version after *each commit* was made.
 
 ## End of Life
 
-We agreed to set an **End of Life** for older major Nuxt.js versions. 
-Previous releases will receive security updates and bugfixes *until two weeks after the second next major release* **\***. 
-As we release new majors approximately once every 6 months, this will allow people to "skip one major version" without
-being stuck with a buggy or unsecure Nuxt.js dependency.
-There will be a detailed migration guide for each major update.
+Starting with `v2.4`, every major Nuxt.js version will have an **End of Life**.
+Previous releases will receive security updates and bugfixes **for one year and two weeks**, countede from the first release on. 
+As Nuxt majors are approximately released once every 6 months, this will allow developers to "skip one major version" without being stuck with a broken or unsecure Nuxt.js dependency.
 The EOL also applies to the documentation.
-
-**\*** Exceptions, e.g. for critical security fixes, are possible but not guaranteed
-
-
-### Example
-We are on Nuxt 2 right now. When Nuxt 3 would be released tomorrow, Nuxt 2 would still receive fixes. 
-Imagine Nuxt 4 would release exactly one week after (which is unlikely but for the sake of the example). 
-Then the countdown for the End of Life for Nuxt 2 would start. 
-Two weeks after the Nuxt 4 release, we will stop maintaining Nuxt 2.
