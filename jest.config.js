@@ -9,7 +9,7 @@ module.exports = {
   // But its performance overhead is pretty bad (30+%).
   // detectOpenHandles: true
 
-  setupTestFrameworkScriptFile: './test/utils/setup',
+  setupFilesAfterEnv: './test/utils/setup',
 
   coverageDirectory: './coverage',
 
