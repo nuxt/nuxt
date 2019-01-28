@@ -17,7 +17,7 @@ won't "just break".
 
 The release cycle for Nuxt.js minor versions is roughly **4 weeks**. 
 
-Three of the for weeks will be used for actual **feature implementations** while the last week will be used for 
+Three of the four weeks will be used for actual **feature implementations** while the last week will be used for 
 **testing, fixing bugs and thorough audits**.
 
 That also means a *feature freeze* for the next minor version after these three weeks.
@@ -44,6 +44,6 @@ releasing a version after *each commit* was made.
 ## End of Life
 
 Starting with `v2.4`, every major Nuxt.js version will have an **End of Life**.
-Previous releases will receive security updates and bugfixes **for one year and two weeks**, countede from the first release on. 
+Previous releases will receive security updates and bugfixes **for one year and two weeks**, counted from the first release on. 
 As Nuxt majors are approximately released once every 6 months, this will allow developers to "skip one major version" without being stuck with a broken or unsecure Nuxt.js dependency.
 The EOL also applies to the documentation.
