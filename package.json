@@ -77,7 +77,7 @@
     "ts-loader": "^5.3.3",
     "tslint": "^5.12.1",
     "typescript": "^3.2.4",
-    "vue-jest": "^3.0.2",
+    "vue-jest": "^4.0.0-0",
     "vue-property-decorator": "^7.3.0"
   },
   "repository": {
