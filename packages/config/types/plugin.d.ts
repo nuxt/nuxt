@@ -4,4 +4,4 @@
  *                https://nuxtjs.org/guide/plugins
  */
 
-export type NuxtConfigurationPlugin = string | { src: string, ssr?: boolean };
+export type NuxtConfigurationPlugin = { mode?: 'all' | 'client' | 'server', src: string, ssr?: boolean } | string;
