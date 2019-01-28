@@ -1,3 +1,5 @@
+const path = require('path')
+
 const defaultPolyfills = [
   // Promise polyfill alone doesn't work in IE,
   // Needs this as well. see: #1642
@@ -24,31 +26,27 @@ module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
 
-  // JSX
-  if (options.jsx !== false) {
-    plugins.push(
-      require('@babel/plugin-syntax-jsx'),
-      require('babel-plugin-transform-vue-jsx')
-      // require('babel-plugin-jsx-event-modifiers'),
-      // require('babel-plugin-jsx-v-model')
-    )
-  }
-
   const modern = !!options.modern
 
   const {
+    polyfills: userPolyfills,
     buildTarget,
     loose = false,
-    useBuiltIns = (modern ? false : 'usage'),
+    debug = false,
+    useBuiltIns = 'usage',
     modules = false,
-    polyfills: userPolyfills,
+    spec,
     ignoreBrowserslistConfig = modern,
     configPath,
+    include,
+    exclude,
+    shippedProposals,
     forceAllTransforms,
+    decoratorsBeforeExport,
     decoratorsLegacy
   } = options
 
-  let targets = options.targets
+  let { targets } = options
   if (modern === true) {
     targets = { esmodules: true }
   } else if (targets === undefined) {
@@ -69,25 +67,42 @@ module.exports = (context, options = {}) => {
   // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
+      spec,
       loose,
+      debug,
       modules,
       targets,
       useBuiltIns,
-      forceAllTransforms,
       ignoreBrowserslistConfig,
-      exclude: polyfills
+      configPath,
+      include,
+      exclude: polyfills.concat(exclude || []),
+      shippedProposals,
+      forceAllTransforms
     }
   ])
 
+  // JSX
+  if (options.jsx !== false) {
+    presets.push([require('@vue/babel-preset-jsx'), Object.assign({}, options.jsx)])
+  }
+
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),
-    [require('@babel/plugin-proposal-decorators'), { legacy: decoratorsLegacy !== false }],
+    [require('@babel/plugin-proposal-decorators'), {
+      decoratorsBeforeExport,
+      legacy: decoratorsLegacy !== false
+    }],
     [require('@babel/plugin-proposal-class-properties'), { loose }]
   )
 
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
-    regenerator: useBuiltIns !== 'usage'
+    regenerator: useBuiltIns !== 'usage',
+    corejs: useBuiltIns !== false ? false : 2,
+    helpers: useBuiltIns === 'usage',
+    useESModules: true,
+    absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))
   }])
 
   return {

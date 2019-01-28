@@ -5,10 +5,12 @@ export default () => ({
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
+  crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
   parallel: false,
   cache: false,
+  standalone: false,
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }
@@ -42,11 +44,21 @@ export default () => ({
     },
     scss: {},
     stylus: {},
+    ts: {
+      transpileOnly: true,
+      appendTsSuffixTo: [/\.vue$/]
+    },
+    tsx: {
+      transpileOnly: true,
+      appendTsxSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
+  useForkTsChecker: process.env.NUXT_TS === 'true',
   styleResources: {},
   plugins: [],
   terser: {},
+  hardSource: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',
@@ -102,5 +114,6 @@ export default () => ({
       /index\..+\.html$/,
       /vue-ssr-(client|modern)-manifest.json/
     ]
-  }
+  },
+  friendlyErrors: true
 })

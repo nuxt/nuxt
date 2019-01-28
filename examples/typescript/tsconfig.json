@@ -1,30 +1,10 @@
 {
+  "extends": "@nuxt/typescript-edge",
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
-    "module": "es2015",
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "noImplicitAny": false,
-    "noImplicitThis": false,
-    "strictNullChecks": true,
-    "removeComments": true,
-    "suppressImplicitAnyIndexErrors": true,
-    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "allowJs": true,
-    "paths": {
-      "~/": ["./"],
-      "~/assets/*": ["./assets/*"],
-      "~/components/*": ["./components/*"],
-      "~/middleware/*": ["./middleware/*"],
-      "~/pages/*": ["./pages/*"],
-      "~/plugins/*": ["./plugins/*"],
-      "~/static/*": ["./static/*"],
-      "~/store/*": ["./store/*"]
-    }
-  }
+    "types": [
+      "@types/node",
+      "@nuxt/vue-app-edge"
+    ]
+  },
 }

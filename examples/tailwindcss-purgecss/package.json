@@ -8,7 +8,8 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "deploy": "surge -p dist/ -d https://nuxt-tailwindcss-purgecss.surge.sh"
+    "deploy": "surge -p dist/ -d https://nuxt-tailwindcss-purgecss.surge.sh",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
     "nuxt": "^2.2.0"

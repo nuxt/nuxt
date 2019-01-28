@@ -1,5 +1,3 @@
-import path from 'path'
-import fs from 'fs'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 
@@ -12,7 +10,7 @@ export default () => ({
 
   // Mode
   mode: 'universal',
-  modern: false,
+  modern: undefined,
 
   // Globals
   globalName: `nuxt`,
@@ -29,11 +27,9 @@ export default () => ({
   serverMiddleware: [],
 
   // Dirs and extensions
+  _nuxtConfigFile: undefined,
   srcDir: undefined,
   buildDir: '.nuxt',
-  nuxtDir: fs.existsSync(path.resolve(__dirname, '..', '..', 'package.js'))
-    ? path.resolve(__dirname, '..', '..') // src
-    : path.resolve(__dirname, '..'), // dist
   modulesDir: [
     'node_modules'
   ],
@@ -46,6 +42,7 @@ export default () => ({
     store: 'store'
   },
   extensions: [],
+  styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
 
   // Ignores
   ignorePrefix: '-',
@@ -58,6 +55,7 @@ export default () => ({
   generate: {
     dir: 'dist',
     routes: [],
+    exclude: [],
     concurrency: 500,
     interval: 0,
     subFolders: true,
@@ -67,6 +65,7 @@ export default () => ({
   // Watch
   watch: [],
   watchers: {
+    rewatchOnRawEvents: env.linux ? ['rename'] : undefined,
     webpack: {},
     chokidar: {
       ignoreInitial: true

@@ -1,16 +1,18 @@
 import path from 'path'
+import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
-import { determineGlobals, isUrl } from '@nuxt/common'
+import { determineGlobals, isUrl } from '@nuxt/utils'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import modernMiddleware from './middleware/modern'
+import createModernMiddleware from './middleware/modern'
+import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
   constructor(nuxt) {
@@ -35,6 +37,9 @@ export default class Server {
 
     // Create new connect instance
     this.app = connect()
+
+    // Close hook
+    this.nuxt.hook('close', () => this.close())
   }
 
   async ready() {
@@ -52,14 +57,6 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
-
-    // Close all listeners after nuxt close
-    this.nuxt.hook('close', async () => {
-      for (const listener of this.listeners) {
-        await listener.close()
-      }
-      this.listeners = []
-    })
   }
 
   async setupMiddleware() {
@@ -68,29 +65,34 @@ export default class Server {
 
     // Compression middleware for production
     if (!this.options.dev) {
-      const compressor = this.options.render.compressor
+      const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
         this.useMiddleware(compression(compressor))
-      } else {
-        // Else, require own compression middleware
+      } else if (compressor) {
+        // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
     }
 
-    if (this.options.modern === 'server') {
-      this.useMiddleware(modernMiddleware)
+    if (this.options.server.timing) {
+      this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
+
+    const modernMiddleware = createModernMiddleware({
+      context: this.renderer.context
+    })
 
     // Add webpack middleware support only for development
     if (this.options.dev) {
+      this.useMiddleware(modernMiddleware)
       this.useMiddleware(async (req, res, next) => {
-        const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware[name]) {
+        const name = req.devModernMode ? 'modern' : 'client'
+        if (this.devMiddleware && this.devMiddleware[name]) {
           await this.devMiddleware[name](req, res)
         }
-        if (this.hotMiddleware[name]) {
+        if (this.hotMiddleware && this.hotMiddleware[name]) {
           await this.hotMiddleware[name](req, res)
         }
         next()
@@ -124,12 +126,13 @@ export default class Server {
           this.options.render.dist
         )
       })
+      this.useMiddleware(modernMiddleware)
     }
 
     // Add user provided middleware
-    this.options.serverMiddleware.forEach((m) => {
+    for (const m of this.options.serverMiddleware) {
       this.useMiddleware(m)
-    })
+    }
 
     const { fallback } = this.options.render
     if (fallback) {
@@ -173,16 +176,30 @@ export default class Server {
   }
 
   useMiddleware(middleware) {
-    // Resolve middleware
-    if (typeof middleware === 'string') {
-      middleware = this.nuxt.resolver.requireModule(middleware)
-    }
+    let handler = middleware.handler || middleware
 
-    // Resolve handler
-    if (typeof middleware.handler === 'string') {
-      middleware.handler = this.nuxt.resolver.requireModule(middleware.handler)
+    // Resolve handler setup as string (path)
+    if (typeof handler === 'string') {
+      try {
+        const requiredModuleFromHandlerPath = this.nuxt.resolver.requireModule(handler)
+
+        // In case the "handler" is not derived from an object but is a normal string, another object with
+        // path and handler could be the result
+
+        // If the required module has handler, treat the module as new "middleware" object
+        if (requiredModuleFromHandlerPath.handler) {
+          middleware = requiredModuleFromHandlerPath
+        }
+
+        handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
+      } catch (err) {
+        consola.error(err)
+        // Throw error in production mode
+        if (!this.options.dev) {
+          throw err
+        }
+      }
     }
-    const handler = middleware.handler || middleware
 
     // Resolve path
     const path = (
@@ -213,11 +230,12 @@ export default class Server {
   async listen(port, host, socket) {
     // Create a new listener
     const listener = new Listener({
-      port: port || this.options.server.port,
+      port: isNaN(parseInt(port)) ? this.options.server.port : port,
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,
-      app: this.app
+      app: this.app,
+      dev: this.options.dev
     })
 
     // Listen
@@ -227,5 +245,28 @@ export default class Server {
     this.listeners.push(listener)
 
     await this.nuxt.callHook('listen', listener.server, listener)
+  }
+
+  async close() {
+    if (this.__closed) {
+      return
+    }
+    this.__closed = true
+
+    for (const listener of this.listeners) {
+      await listener.close()
+    }
+    this.listeners = []
+
+    if (typeof this.renderer.close === 'function') {
+      await this.renderer.close()
+    }
+
+    this.app.removeAllListeners()
+    this.app = null
+
+    for (const key in this.resources) {
+      delete this.resources[key]
+    }
   }
 }

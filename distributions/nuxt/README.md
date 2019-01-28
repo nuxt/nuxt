@@ -38,6 +38,7 @@
 - Custom layouts with the `layouts/` directory
 - Middleware
 - Code splitting for every `pages/`
+- Loading just the critical CSS (page-level)
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
 
@@ -70,43 +71,10 @@ Support us with a monthly donation and help us continue our activities. [[Become
 ## Getting started
 
 ```
-$ npm install nuxt
+$ npx create-nuxt-app <project-name>
 ```
 
-Add a script to your package.json like this:
-
-```json
-{
-  "scripts": {
-    "start": "nuxt"
-  }
-}
-```
-
-After that, the file-system is the main API. Every .vue file becomes a route that gets automatically processed and rendered.
-
-Populate `./pages/index.vue` inside your project:
-
-```html
-<template>
-  <h1>Hello {{ name }}!</h1>
-</template>
-
-<script>
-export default {
-  data: () => {
-    return { name: 'world' }
-  }
-}
-</script>
-```
-
-And then run:
-```bash
-npm start
-```
-
-Go to [http://localhost:3000](http://localhost:3000)
+It's as simple as that!
 
 ## Templates
 
@@ -226,6 +194,11 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-g
 Thanks to BrowserStack!
 
 <a href="http://browserstack.com"><img height="70" src="https://p3.zdusercontent.com/attachment/1015988/PWfFdN71Aung2evRkIVQuKJpE?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..aUrNFb8clSXsFwgw5BUTcg.IJr5piuCen7PmSSBHSrOnqM9K5YZfxX3lvbp-5LCqoKOi4CjjgdA419iqjofs0nLtm26FMURvZ8JRTuKB4iHer6lGu5f8dXHtIkYAHjP5fXDWkl044Yg2mSdrhF6uPy62GdlBYoYxwvgkNrac8nN_In8GY-qOC7bYmlZyJT7tsTZUTYbNMQiXS86YA5LgdCEWzWreMvc3C6cvZtVXIrcVgpkroIhvsTQPm4vQA-Uq6iCbTPA4oX5cpEtMtrlg4jYBnnAE4BTw5UwU_dY83ep5g.7wpc1IKv0rSRGsvqCG_q3g" alt="BrowserStack"></a>
+
+
+## Security
+
+If you discover a security vulnerability regarding Nuxt.js, please send an e-mail to the team via security@nuxtjs.org! All security vulnerabilities will be promptly addressed.
 
 ## License
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <async-test />
+    <AsyncTest />
   </div>
 </template>
 

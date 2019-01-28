@@ -1,0 +1,12 @@
+{
+  "name": "example-nuxt-prefetch",
+  "dependencies": {
+    "nuxt-edge": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
+  }
+}

@@ -1,31 +1,42 @@
-import consola from 'consola'
+import fs from 'fs'
+import execa from 'execa'
 import NuxtCommand from './command'
-import * as commands from './commands'
 import setup from './setup'
-import listCommands from './list'
+import getCommand from './commands'
 
-export default function run() {
-  const defaultCommand = 'dev'
-  let cmd = process.argv[2]
+export default async function run(_argv) {
+  // Read from process.argv
+  const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
-  if (commands[cmd]) { // eslint-disable-line import/namespace
-    process.argv.splice(2, 1)
-  } else {
-    if (process.argv.includes('--help') || process.argv.includes('-h')) {
-      listCommands().then(() => process.exit(0))
-      return
-    }
-    cmd = defaultCommand
+  // Check for internal command
+  let cmd = await getCommand(argv[0])
+
+  // Matching `nuxt` or `nuxt [dir]` or `nuxt -*` for `nuxt dev` shortcut
+  if (!cmd && (!argv[0] || argv[0][0] === '-' || fs.existsSync(argv[0]))) {
+    argv.unshift('dev')
+    cmd = await getCommand('dev')
   }
 
-  // Setup runtime
-  setup({
-    dev: cmd === 'dev'
-  })
+  // Setup env
+  setup({ dev: argv[0] === 'dev' })
 
-  return NuxtCommand.load(cmd)
-    .then(command => command.run())
-    .catch((error) => {
-      consola.fatal(error)
+  // Try internal command
+  if (cmd) {
+    return NuxtCommand.run(cmd, argv.slice(1))
+  }
+
+  // Try external command
+  try {
+    await execa(`nuxt-${argv[0]}`, argv.slice(1), {
+      stdout: process.stdout,
+      stderr: process.stderr,
+      stdin: process.stdin
     })
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw String(`Command not found: nuxt-${argv[0]}`)
+    } else {
+      throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)
+    }
+  }
 }

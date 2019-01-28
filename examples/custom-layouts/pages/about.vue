@@ -1,7 +1,9 @@
 <template>
   <div>
     <p>Hi from {{ name }}</p>
-    <nuxt-link to="/">Home page</nuxt-link>
+    <NuxtLink to="/">
+      Home page
+    </NuxtLink>
   </div>
 </template>
 

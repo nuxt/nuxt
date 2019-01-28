@@ -1,6 +1,6 @@
 <script>
 export default {
-  name: 'nuxt-loading',
+  name: 'NuxtLoading',
   data() {
     return {
       percent: 0,
@@ -9,8 +9,8 @@ export default {
       reversed: false,
       skipTimerCount: 0,
       rtl: <%= Boolean(loading.rtl) %>,
-      throttle: <%= Number(loading.throttle) ? loading.throttle : 200 %>,
-      duration: <%= Number(loading.duration) ? loading.duration : 3000 %>,
+      throttle: <%= typeof loading.throttle === 'number' ? loading.throttle : 200 %>,
+      duration: <%= typeof loading.duration === 'number' ? loading.duration : 3000 %>,
       continuous: <%= Boolean(loading.continuous) %>
     }
   },

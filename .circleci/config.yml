@@ -3,9 +3,39 @@ version: 2
 defaults: &defaults
   working_directory: ~/project
   docker:
-    - image: banian/node-headless-chrome
+    - image: circleci/node:latest
   environment:
-    - NODE_ENV: test
+    NODE_ENV: test
+    NODE_OPTIONS: --max_old_space_size=4096
+
+release_branches: &release_branches
+  branches:
+    only:
+      - dev
+      - next
+
+release: &release
+  <<: *defaults
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ~/project
+    - run:
+        name: release
+        command: |
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG=$(git --no-pager log --pretty=full -n1 $CIRCLE_SHA1)
+          fi
+          if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
+            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            yarn lerna version --yes --no-git-tag-version --no-push
+            PACKAGE_SUFFIX=edge yarn build
+            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
+            ./scripts/workspace-run npm publish $tag -q
+          else
+            echo "Release phase is skipped."
+          fi
 
 jobs:
   # --------------------------------------------------------------------------
@@ -19,7 +49,7 @@ jobs:
 
       # Restore cache
       - restore_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: lock-{{ checksum "yarn.lock" }}
 
       # Install dependencies
       - run:
@@ -28,7 +58,7 @@ jobs:
 
       # Save cache
       - save_cache:
-          key: yarn-{{ checksum "yarn.lock" }}
+          key: lock-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - packages/*/node_modules
@@ -64,7 +94,7 @@ jobs:
           at: ~/project
       - run:
           name: Security Audit
-          command: npm install --package-lock-only && npm audit --audit-level=moderate
+          command: yarn audit
 
   build:
     <<: *defaults
@@ -74,14 +104,24 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -w=4 --coverage && yarn coverage
+          command: yarn test:fixtures -i --coverage && yarn coverage
       - persist_to_workspace:
           root: ~/project
           paths:
             - test/fixtures
 
+  lint-app:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+      - run:
+          name: Lint vue-app templates
+          command: yarn lint:app
+
   # --------------------------------------------------------------------------
-  # Phase 3: Unit and E2E tests
+  # Phase 3: Unit, E2E and types tests
   # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
@@ -91,10 +131,12 @@ jobs:
           at: ~/project
       - run:
           name: Unit Tests
-          command: yarn test:unit -w=4 --coverage && yarn coverage
+          command: yarn test:unit -w=2 --coverage && yarn coverage
 
   test-e2e:
     <<: *defaults
+    docker:
+      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - attach_workspace:
@@ -103,59 +145,65 @@ jobs:
           name: E2E Tests
           command: yarn test:e2e && yarn coverage
 
-  # --------------------------------------------------------------------------
-  # Phase 4: Release (dev branch only)
-  # --------------------------------------------------------------------------
-  release:
+  test-types:
     <<: *defaults
+    docker:
+      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - attach_workspace:
           at: ~/project
       - run:
-          name: release
-          command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn release --yes
-            PACKAGE_SUFFIX=edge yarn build
-            ./scripts/workspace-run npm publish -q
+          name: Types Tests
+          command: yarn test:types
+
+  # --------------------------------------------------------------------------
+  # Phase 4: Release (dev branch only)
+  # --------------------------------------------------------------------------
+  release-commit:
+    <<: *release
+
+  release-nightly:
+    <<: *release
+    environment:
+        COMMIT_MSG: '[release]'
 
 # Workflow definition
 workflows:
   version: 2
-  setup-and-test:
+
+  # Build and test after each commit
+  # Manually release on release branches
+  commit:
     jobs:
       - setup
-
-      - lint:
-          requires:
-            - setup
-
-      - audit:
-          requires:
-            - setup
-
-      - build:
-          requires:
-            - setup
-
-      - test-unit:
-          requires:
-            - build
-
-      - test-e2e:
-          requires:
-            - build
-
-      - release:
-          requires:
-            - build
-            - lint
-            - audit
-            - test-unit
-            - test-e2e
+      - lint:       { requires: [setup] }
+      - audit:      { requires: [setup] }
+      - build:      { requires: [setup] }
+      - lint-app:   { requires: [build] }
+      - test-unit:  { requires: [build] }
+      - test-e2e:   { requires: [build] }
+      - test-types: { requires: [build] }
+      - release-commit:
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
           filters:
-            branches:
-              only:
-                - dev
+            <<: *release_branches
+
+  # Release nightly builds on release branches
+  nightly:
+    jobs:
+      - setup
+      - lint:       { requires: [setup] }
+      - audit:      { requires: [setup] }
+      - build:      { requires: [setup] }
+      - lint-app:   { requires: [build] }
+      - test-unit:  { requires: [build] }
+      - test-e2e:   { requires: [build] }
+      - test-types: { requires: [build] }
+      - release-nightly:
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            <<: *release_branches

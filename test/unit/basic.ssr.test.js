@@ -35,7 +35,20 @@ describe('basic ssr', () => {
 
     const element = window.document.querySelector('.red')
     expect(element).not.toBe(null)
-    expect(element.textContent).toBe('This is red')
+    expect(element.textContent).toContain('This is red')
+    expect(element.className).toBe('red')
+    // t.is(window.getComputedStyle(element).color, 'red')
+  })
+
+  test('/postcss', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/css'))
+
+    const headHtml = window.document.head.innerHTML
+    expect(headHtml).toContain('color:red')
+
+    const element = window.document.querySelector('.red')
+    expect(element).not.toBe(null)
+    expect(element.textContent).toContain('This is red')
     expect(element.className).toBe('red')
     // t.is(window.getComputedStyle(element).color, 'red')
   })
@@ -57,8 +70,10 @@ describe('basic ssr', () => {
 
   test('/store', async () => {
     const { html } = await nuxt.server.renderRoute('/store')
-    expect(html).toContain('<h1>Vuex Nested Modules</h1>')
-    expect(html).toContain('<p>1</p>')
+    expect(html).toContain('<h1>foo/bar/baz: Vuex Nested Modules</h1>')
+    expect(html).toContain('<h2>index/counter: 1</h2>')
+    expect(html).toContain('<h3>foo/blarg/getVal: 4</h3>')
+    expect(html).toContain('<h4>foo/bab/getBabVal: 10</h4>')
   })
 
   test('/head', async () => {
@@ -222,6 +237,7 @@ describe('basic ssr', () => {
     expect(html).toContain('Custom error')
     expect(error.message).toContain('Custom error')
     expect(error.statusCode).toBe(500)
+    expect(error.customProp).toBe('ezpz')
   })
 
   test('/error2 status code', async () => {
@@ -268,11 +284,6 @@ describe('basic ssr', () => {
       .rejects.toMatchObject({ statusCode: 304 })
   })
 
-  test('/_nuxt/server-bundle.json should return 404', async () => {
-    await expect(rp(url('/_nuxt/server-bundle.json')))
-      .rejects.toMatchObject({ statusCode: 404 })
-  })
-
   test('/_nuxt/ should return 404', async () => {
     await expect(rp(url('/_nuxt/')))
       .rejects.toMatchObject({ statusCode: 404 })
@@ -315,8 +326,16 @@ describe('basic ssr', () => {
   })
 
   test('/тест雨 (test non ascii route)', async () => {
-    const { html } = await nuxt.server.renderRoute('/тест雨')
+    const window = await nuxt.server.renderAndGetWindow(url('/тест雨'))
+    const html = window.document.body.innerHTML
     expect(html).toMatch('Hello unicode')
+  })
+
+  test('/custom (js layout)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/custom'))
+    const html = window.document.body.innerHTML
+    expect(html).toMatch('<h1>JS Layout</h1>')
+    expect(html).toMatch('<h2>custom page</h2>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

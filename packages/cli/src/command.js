@@ -1,70 +1,72 @@
-import parseArgs from 'minimist'
+
+import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
 import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
-import * as commands from './commands'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor({ name, description, usage, options, run } = {}) {
-    this.name = name || ''
-    this.description = description || ''
-    this.usage = usage || ''
-    this.options = Object.assign({}, options)
-    this._run = run
+  constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
+    if (!cmd.options) {
+      cmd.options = {}
+    }
+    this.cmd = cmd
+
+    this._argv = Array.from(argv)
+    this._parsedArgv = null // Lazy evaluate
   }
 
-  static async load(name) {
-    if (name in commands) {
-      const cmd = await commands[name]() // eslint-disable-line import/namespace
-        .then(m => m.default)
-      return NuxtCommand.from(cmd)
-    } else {
-      // TODO dynamic module loading
-      throw new Error('Command ' + name + ' could not be loaded!')
-    }
+  static run(cmd, argv) {
+    return NuxtCommand.from(cmd, argv).run()
   }
 
-  static from(options) {
-    if (options instanceof NuxtCommand) {
-      return options
+  static from(cmd, argv) {
+    if (cmd instanceof NuxtCommand) {
+      return cmd
     }
-    return new NuxtCommand(options)
+    return new NuxtCommand(cmd, argv)
   }
 
   run() {
-    return this._run(this)
+    if (this.argv.help) {
+      this.showHelp()
+      return Promise.resolve()
+    }
+
+    if (this.argv.version) {
+      this.showVersion()
+      return Promise.resolve()
+    }
+
+    if (typeof this.cmd.run !== 'function') {
+      return Promise.resolve()
+    }
+
+    return Promise.resolve(this.cmd.run(this))
   }
 
   showVersion() {
     process.stdout.write(`${name} v${version}\n`)
-    process.exit(0)
   }
 
   showHelp() {
     process.stdout.write(this._getHelp())
-    process.exit(0)
   }
 
-  getArgv(args) {
-    const minimistOptions = this._getMinimistOptions()
-    const argv = parseArgs(args || process.argv.slice(2), minimistOptions)
-
-    if (argv.version) {
-      this.showVersion()
-    } else if (argv.help) {
-      this.showHelp()
+  get argv() {
+    if (!this._parsedArgv) {
+      const minimistOptions = this._getMinimistOptions()
+      this._parsedArgv = minimist(this._argv, minimistOptions)
     }
-
-    return argv
+    return this._parsedArgv
   }
 
-  async getNuxtConfig(argv, extraOptions) {
-    const config = await loadNuxtConfig(argv)
+  async getNuxtConfig(extraOptions) {
+    const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions || {})
 
-    for (const name of Object.keys(this.options)) {
-      this.options[name].prepare && this.options[name].prepare(this, options, argv)
+    for (const name of Object.keys(this.cmd.options)) {
+      this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
 
     return options
@@ -72,7 +74,9 @@ export default class NuxtCommand {
 
   async getNuxt(options) {
     const { Nuxt } = await imports.core()
-    return new Nuxt(options)
+    const nuxt = new Nuxt(options)
+    await nuxt.ready()
+    return nuxt
   }
 
   async getBuilder(nuxt) {
@@ -95,8 +99,8 @@ export default class NuxtCommand {
       default: {}
     }
 
-    for (const name of Object.keys(this.options)) {
-      const option = this.options[name]
+    for (const name of Object.keys(this.cmd.options)) {
+      const option = this.cmd.options[name]
 
       if (option.alias) {
         minimistOptions.alias[option.alias] = name
@@ -116,8 +120,8 @@ export default class NuxtCommand {
     const options = []
     let maxOptionLength = 0
 
-    for (const name in this.options) {
-      const option = this.options[name]
+    for (const name in this.cmd.options) {
+      const option = this.cmd.options[name]
 
       let optionHelp = '--'
       optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
@@ -139,13 +143,17 @@ export default class NuxtCommand {
       )
     }).join('\n')
 
-    const usage = foldLines(`Usage: nuxt ${this.usage} [options]`, startSpaces)
-    const description = foldLines(this.description, startSpaces)
+    const usage = foldLines(`Usage: nuxt ${this.cmd.usage} [options]`, startSpaces)
+    const description = foldLines(this.cmd.description, startSpaces)
     const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
 
     let helpText = colorize(`${usage}\n\n`)
-    if (this.description) helpText += colorize(`${description}\n\n`)
-    if (options.length) helpText += colorize(`${opts}\n\n`)
+    if (this.cmd.description) {
+      helpText += colorize(`${description}\n\n`)
+    }
+    if (options.length) {
+      helpText += colorize(`${opts}\n\n`)
+    }
 
     return helpText
   }

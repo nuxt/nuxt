@@ -1,7 +1,11 @@
 import { resolve } from 'path'
 import consola from 'consola'
+import Glob from 'glob'
+import pify from 'pify'
 
 import { Nuxt, getNuxtConfig, version } from '../utils'
+
+const glob = pify(Glob)
 
 describe('basic config defaults', () => {
   test('Nuxt.version is same as package', () => {
@@ -12,6 +16,11 @@ describe('basic config defaults', () => {
     const options = getNuxtConfig({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
     expect(options.modulesDir).toContain(currentNodeModulesDir)
+  })
+
+  test('client source map not generated', async () => {
+    const mapFiles = await glob(resolve(__dirname, '..', 'fixtures/basic/.nuxt/dist/client/*.js.map'))
+    expect(mapFiles.length).toEqual(0)
   })
 
   test('vendor has been deprecated', () => {

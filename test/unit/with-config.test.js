@@ -1,5 +1,11 @@
+import { resolve } from 'path'
+import { existsSync } from 'fs'
 import jsdom from 'jsdom'
+import Glob from 'glob'
+import pify from 'pify'
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
+
+const glob = pify(Glob)
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -12,6 +18,13 @@ describe('with-config', () => {
     nuxt = new Nuxt(config)
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
+  })
+
+  test('client source map generated', async () => {
+    const jsFiles = await glob(resolve(__dirname, '..', 'fixtures/with-config/.nuxt/dist/client/*.js'))
+    for (const file of jsFiles) {
+      expect(existsSync(`${file}.map`)).toBe(true)
+    }
   })
 
   test('/', async () => {
@@ -77,6 +90,9 @@ describe('with-config', () => {
     expect(html).toContain('<h1>I have custom configurations</h1>')
 
     expect(window.__test_plugin).toBe(true)
+    expect(window.__test_plugin_ext).toBe(true)
+    expect(window.__test_plugin_client).toBe('test_plugin_client')
+    expect(window.__test_plugin_server).toBeUndefined()
   })
 
   test('/test/about (custom layout)', async () => {
@@ -134,6 +150,7 @@ describe('with-config', () => {
     const html = window.document.body.innerHTML
     expect(html).toContain('<h1>Custom layout</h1>')
     expect(html).toContain('<h1>About page</h1>')
+    expect(html).toContain('<h2>test-meta</h2>')
   })
 
   test('/test/not-existed should return 404', async () => {
@@ -178,6 +195,13 @@ describe('with-config', () => {
     } catch (e) {}
     expect(mockOptions.beforeParse).toHaveBeenCalled()
     expect(fakeErrorLog).toHaveBeenCalled()
+  })
+
+  test('/ with Server-Timing header', async () => {
+    const { headers } = await rp(url('/test'), {
+      resolveWithFullResponse: true
+    })
+    expect(headers['server-timing']).toMatch(/total;dur=\d+;desc="Nuxt Server Time"/)
   })
 
   // Close server and ask nuxt to stop listening to file changes

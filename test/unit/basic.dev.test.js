@@ -80,14 +80,14 @@ describe('basic dev', () => {
   })
 
   test('Config: build.loaders', () => {
-    expect(Object.keys(loadersOptions)).toHaveLength(12)
+    expect(Object.keys(loadersOptions)).toHaveLength(14)
     expect(loadersOptions).toHaveProperty(
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
-      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'tsx', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')
-    expect(vueLoader.options).toBe(vue)
+    expect(vueLoader.options).toEqual(vue)
   })
 
   test('Config: cssnano is at then end of postcss plugins', () => {
@@ -141,17 +141,6 @@ describe('basic dev', () => {
     await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
-  })
-
-  test('/error no source-map (Youch)', async () => {
-    const sourceMaps = nuxt.renderer.resources.serverBundle.maps
-    nuxt.renderer.resources.serverBundle.maps = {}
-
-    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
-    })
-
-    nuxt.renderer.resources.serverBundle.maps = sourceMaps
   })
 
   test('/error should return json format error (Youch)', async () => {

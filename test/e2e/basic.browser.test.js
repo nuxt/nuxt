@@ -58,7 +58,7 @@ describe('basic browser', () => {
   test('/css', async () => {
     await page.nuxt.navigate('/css')
 
-    expect(await page.$text('.red')).toBe('This is red')
+    expect(await page.$text('.red', true)).toEqual('This is red')
     expect(await page.$eval('.red', (red) => {
       const { color, backgroundColor } = window.getComputedStyle(red)
       return { color, backgroundColor }
@@ -78,8 +78,10 @@ describe('basic browser', () => {
   test('/store', async () => {
     await page.nuxt.navigate('/store')
 
-    expect(await page.$text('h1')).toBe('Vuex Nested Modules')
-    expect(await page.$text('p')).toBe('1')
+    expect(await page.$text('h1')).toBe('foo/bar/baz: Vuex Nested Modules')
+    expect(await page.$text('h2')).toBe('index/counter: 1')
+    expect(await page.$text('h3')).toBe('foo/blarg/getVal: 4')
+    expect(await page.$text('h4')).toBe('foo/bab/getBabVal: 10')
   })
 
   test('/head', async () => {
@@ -117,6 +119,15 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/users/1')
 
     expect(await page.$text('h1')).toBe('User: 1')
+  })
+
+  test('/scroll-to-top', async () => {
+    const page = await browser.page(url('/scroll-to-top'))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.nuxt.navigate('/scroll-to-top/other')
+    const pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBeGreaterThan(0)
+    page.close()
   })
 
   test('/validate should display a 404', async () => {
@@ -166,7 +177,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/error2')
 
     expect(await page.$text('.title')).toBe('Custom error')
-    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500 })
+    expect(await page.nuxt.errorData()).toEqual({ message: 'Custom error', statusCode: 500, customProp: 'ezpz' })
   })
 
   test('/redirect-middleware', async () => {

@@ -3,13 +3,13 @@ import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import defaultsDeep from 'lodash/defaultsDeep'
-import { getDefaultNuxtConfig } from '@nuxt/config'
+import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
 import boxen from 'boxen'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 
-const _require = esm(module, {
+export const requireModule = process.env.NUXT_TS ? require : esm(module, {
   cache: false,
   cjs: {
     cache: true,
@@ -17,6 +17,12 @@ const _require = esm(module, {
     namedExports: true
   }
 })
+
+export const eventsMapping = {
+  add: { icon: '+', color: 'green', action: 'Created' },
+  change: { icon: env.windows ? '»' : '↻', color: 'blue', action: 'Updated' },
+  unlink: { icon: '-', color: 'red', action: 'Removed' }
+}
 
 const getRootDir = argv => path.resolve(argv._[0] || '.')
 const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
@@ -29,7 +35,7 @@ export async function loadNuxtConfig(argv) {
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]
-    options = _require(nuxtConfigFile) || {}
+    options = requireModule(nuxtConfigFile) || {}
     if (options.default) {
       options = options.default
     }
@@ -45,7 +51,10 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
-  } else if (argv['config-file'] !== 'nuxt.config.js') {
+
+    // Keep _nuxtConfigFile for watching
+    options._nuxtConfigFile = nuxtConfigFile
+  } else if (argv['config-file'] !== defaultNuxtConfigFile) {
     consola.fatal('Could not load config file: ' + argv['config-file'])
   }
   if (typeof options.rootDir !== 'string') {
@@ -81,7 +90,7 @@ export function showBanner(nuxt) {
   const lines = []
 
   // Name and version
-  lines.push(`${chalk.green.bold('Nuxt.js')} v${nuxt.constructor.version}`)
+  lines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
   lines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
@@ -109,6 +118,13 @@ export function showBanner(nuxt) {
   })
 
   process.stdout.write(box + '\n')
+}
+
+export function formatPath(filePath) {
+  if (!filePath) {
+    return
+  }
+  return filePath.replace(process.cwd() + path.sep, '')
 }
 
 /**

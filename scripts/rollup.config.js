@@ -7,6 +7,7 @@ import replacePlugin from 'rollup-plugin-replace'
 import aliasPlugin from 'rollup-plugin-alias'
 import nodeResolvePlugin from 'rollup-plugin-node-resolve'
 import defaultsDeep from 'lodash/defaultsDeep'
+import consola from 'consola'
 
 import { builtins } from './builtins'
 
@@ -16,20 +17,28 @@ export default function rollupConfig({
   input = 'src/index.js',
   replace = {},
   alias = {},
+  resolve = {
+    only: [
+      /lodash/
+    ]
+  },
   ...options
 }, pkg) {
   if (!pkg) {
     pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
   }
 
+  const name = path.basename(pkg.name.replace('-edge', ''))
+
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
     output: {
-      file: `${pkg.name.replace('-edge', '')}.js`,
       dir: path.resolve(rootDir, 'dist'),
-      format: 'cjs'
+      entryFileNames: `${name}.js`,
+      chunkFileNames: `${name}-[name].js`,
+      format: 'cjs',
+      preferConst: true
     },
-    preferConst: true,
     external: [
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
@@ -46,11 +55,7 @@ export default function rollupConfig({
           ...replace
         }
       }),
-      nodeResolvePlugin({
-        only: [
-          /lodash/
-        ]
-      }),
+      nodeResolvePlugin(resolve),
       commonjsPlugin(),
       jsonPlugin(),
       licensePlugin({
@@ -64,6 +69,12 @@ export default function rollupConfig({
           `*/`
         ].join('\n')
       })
-    ].concat(plugins)
+    ].concat(plugins),
+    onwarn(warning, warn) {
+      if (warning.plugin === 'rollup-plugin-license') {
+        return
+      }
+      consola.warn(warning)
+    }
   })
 }

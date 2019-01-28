@@ -10,20 +10,22 @@ import router from './router'
 import server from './server'
 import cli from './cli'
 
+export const defaultNuxtConfigFile = `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`
+
 export function getDefaultNuxtConfig(options = {}) {
   if (!options.env) {
     options.env = process.env
   }
 
   return {
-    ..._app(options),
-    ..._common(options),
-    build: build(options),
-    messages: messages(options),
-    modes: modes(options),
-    render: render(options),
-    router: router(options),
+    ..._app(),
+    ..._common(),
+    build: build(),
+    messages: messages(),
+    modes: modes(),
+    render: render(),
+    router: router(),
     server: server(options),
-    cli: cli(options)
+    cli: cli()
   }
 }

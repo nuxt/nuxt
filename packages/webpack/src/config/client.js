@@ -1,13 +1,16 @@
 import path from 'path'
+import fs from 'fs'
+import querystring from 'querystring'
+import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
-import TerserWebpackPlugin from 'terser-webpack-plugin'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
-import ModernModePlugin from './plugins/vue/modern'
-import VueSSRClientPlugin from './plugins/vue/client'
+import CorsPlugin from '../plugins/vue/cors'
+import ModernModePlugin from '../plugins/vue/modern'
+import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
@@ -17,7 +20,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   getFileName(...args) {
     if (this.options.build.analyze) {
-      const key = args[0]
+      const [key] = args
       if (['app', 'chunk'].includes(key)) {
         return `${this.isModern ? 'modern-' : ''}[name].js`
       }
@@ -30,7 +33,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       'process.env.VUE_ENV': JSON.stringify('client'),
       'process.browser': true,
       'process.client': true,
-      'process.server': false
+      'process.server': false,
+      'process.modern': false
     })
   }
 
@@ -52,6 +56,21 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     return optimization
+  }
+
+  minimizer() {
+    const minimizer = super.minimizer()
+
+    // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+    // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
+    // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
+    if (this.options.build.optimizeCSS) {
+      minimizer.push(
+        new OptimizeCSSAssetsPlugin(Object.assign({}, this.options.build.optimizeCSS))
+      )
+    }
+
+    return minimizer
   }
 
   plugins() {
@@ -78,7 +97,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         chunksSortMode: 'dependency'
       }),
       new VueSSRClientPlugin({
-        filename: `../server/vue-ssr-${this.name}-manifest.json`
+        filename: `../server/${this.name}.manifest.json`
       }),
       new webpack.DefinePlugin(this.env())
     )
@@ -110,53 +129,50 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
-    return plugins
-  }
+    if (this.options.build.crossorigin) {
+      plugins.push(new CorsPlugin({
+        crossorigin: this.options.build.crossorigin
+      }))
+    }
 
-  extendConfig() {
-    const config = super.extendConfig(...arguments)
-
-    // Add minimizer plugins
-    if (config.optimization.minimize && config.optimization.minimizer === undefined) {
-      config.optimization.minimizer = []
-
-      // https://github.com/webpack-contrib/terser-webpack-plugin
-      if (this.options.build.terser) {
-        config.optimization.minimizer.push(
-          new TerserWebpackPlugin(Object.assign({
-            parallel: true,
-            cache: this.options.build.cache,
-            sourceMap: config.devtool && /source-?map/.test(config.devtool),
-            extractComments: {
-              filename: 'LICENSES'
-            },
-            terserOptions: {
-              compress: {
-                ecma: this.isModern ? 6 : undefined
-              },
-              output: {
-                comments: /^\**!|@preserve|@license|@cc_on/
-              }
-            }
-          }, this.options.build.terser))
-        )
-      }
-
-      // https://github.com/NMFR/optimize-css-assets-webpack-plugin
-      // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
-      // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
-      if (this.options.build.optimizeCSS) {
-        config.optimization.minimizer.push(
-          new OptimizeCSSAssetsPlugin(Object.assign({}, this.options.build.optimizeCSS))
-        )
+    // TypeScript type checker
+    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
+    if (!this.isModern && this.loaders.ts.transpileOnly && this.options.build.useForkTsChecker) {
+      const forkTsCheckerResolvedPath = this.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
+      if (forkTsCheckerResolvedPath) {
+        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
+        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
+          vue: true,
+          tsconfig: path.resolve(this.options.rootDir, 'tsconfig.json'),
+          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.options.rootDir, 'tslint.json')),
+          formatter: 'codeframe',
+          logger: consola
+        }, this.options.build.useForkTsChecker)))
+      } else {
+        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       }
     }
 
-    return config
+    return plugins
   }
 
   config() {
     const config = super.config()
+
+    const { client = {} } = this.options.build.hotMiddleware || {}
+    const { ansiColors, overlayStyles, ...options } = client
+    const hotMiddlewareClientOptions = {
+      reload: true,
+      timeout: 30000,
+      ansiColors: JSON.stringify(ansiColors),
+      overlayStyles: JSON.stringify(overlayStyles),
+      ...options,
+      name: this.name
+    }
+    const clientPath = `${this.options.router.base}/__webpack_hmr/${this.name}`
+    const hotMiddlewareClientOptionsStr =
+      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
 
     // Entry points
     config.entry = {
@@ -166,15 +182,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // Add HMR support
     if (this.options.dev) {
       config.entry.app.unshift(
+        // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
+        'eventsource-polyfill',
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?name=${this.name}&reload=true&timeout=30000&path=${
-          this.options.router.base
-        }/__webpack_hmr/${this.name}`.replace(/\/\//g, '/')
+        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
       )
     }
 
     // Add friendly error plugin
-    if (this.options.dev && !this.options.build.quiet) {
+    if (this.options.dev && !this.options.build.quiet && this.options.build.friendlyErrors) {
       config.plugins.push(
         new FriendlyErrorsWebpackPlugin({
           clearConsole: false,

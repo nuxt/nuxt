@@ -1,6 +1,6 @@
 <%= isTest ? '// @vue/component' : '' %>
 export default {
-  name: 'nuxt-child',
+  name: 'NuxtChild',
   functional: true,
   props: {
     nuxtChildKey: {
@@ -8,7 +8,10 @@ export default {
       default: ''
     },
     keepAlive: Boolean,
-    keepAliveProps: Object
+    keepAliveProps: {
+      type: Object,
+      default: undefined
+    }
   },
   render(h, { parent, data, props }) {
     data.nuxtChild = true

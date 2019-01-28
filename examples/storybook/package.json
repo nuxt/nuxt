@@ -9,7 +9,8 @@
     "generate": "nuxt generate",
     "precommit": "yarn run lint",
     "storybook": "start-storybook -p 9001 -c .storybook",
-    "storybookoutput": "build-storybook -c .storybook -o .out"
+    "storybookoutput": "build-storybook -c .storybook -o .out",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
     "chart.js": "^2.7.1",

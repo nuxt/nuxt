@@ -111,8 +111,8 @@ export async function getRouteData(route) {
   // Send back a copy of route with meta based on Component definition
   return {
     ...route,
-    meta: getMatchedComponents(route).map((Component) => {
-      return Component.options.meta || {}
+    meta: getMatchedComponents(route).map((Component, index) => {
+      return { ...Component.options.meta, ...(route.matched[index] || {}).meta }
     })
   }
 }
@@ -285,6 +285,7 @@ export function normalizeError(err) {
     message = err.message || err
   }
   return {
+    ...err,
     message: message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
   }
@@ -565,4 +566,3 @@ function formatQuery(query) {
     return key + '=' + val
   }).filter(Boolean).join('&')
 }
-

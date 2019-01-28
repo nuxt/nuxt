@@ -1,3 +1,4 @@
+import { defaultNuxtConfigFile } from '@nuxt/config'
 import { normalizeArg } from '../utils'
 
 export default {
@@ -14,8 +15,8 @@ export default {
   'config-file': {
     alias: 'c',
     type: 'string',
-    default: 'nuxt.config.js',
-    description: 'Path to Nuxt.js config file (default: `nuxt.config.js`)'
+    default: defaultNuxtConfigFile,
+    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}\`)`
   },
   modern: {
     alias: 'm',
@@ -28,6 +29,7 @@ export default {
     }
   },
   version: {
+    alias: 'v',
     type: 'boolean',
     description: 'Display the Nuxt version'
   },

@@ -20,10 +20,10 @@ const close = async (nuxtInt) => {
   }
 }
 
-describe('cli', () => {
+describe.skip.win('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
-    const env = process.env
+    const { env } = process
     env.PORT = port = await getPort()
 
     const nuxtDev = spawnNuxt('dev', { env })
@@ -52,7 +52,7 @@ describe('cli', () => {
     let stdout = ''
     let error
 
-    const env = process.env
+    const { env } = process
     env.PORT = port = await getPort()
 
     await new Promise((resolve) => {

@@ -1,7 +1,9 @@
 <template>
   <div class="container">
     <p>Hello {{ name }}!</p>
-    <nuxt-link to="/about">Go to /about</nuxt-link>
+    <NuxtLink to="/about">
+      Go to /about
+    </NuxtLink>
   </div>
 </template>
 

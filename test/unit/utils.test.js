@@ -1,6 +1,6 @@
 import path from 'path'
 import { waitUntil } from '../utils'
-import * as Utils from '../../packages/common/src/index'
+import * as Utils from '../../packages/utils/src/index'
 
 describe('utils', () => {
   test('encodeHtml', () => {
