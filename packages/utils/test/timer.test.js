@@ -3,7 +3,7 @@ import { timeout, waitFor, Timer } from '../src/timer'
 describe('util: timer', () => {
   test('timeout (promise)', async () => {
     const result = await timeout(Promise.resolve('time not run out'), 100)
-    expect(result).toBe('time not run out')
+    expect(result).toEqual('time not run out')
   })
 
   test('timeout (async function)', async () => {
@@ -11,7 +11,7 @@ describe('util: timer', () => {
       await waitFor(10)
       return 'time not run out'
     }, 100)
-    expect(result).toBe('time not run out')
+    expect(result).toEqual('time not run out')
   })
 
   test('timeout (timeout in 100ms)', async () => {
@@ -77,6 +77,89 @@ describe('util: timer', () => {
       const time = timer.end('test')
 
       expect(time).toBeUndefined()
+    })
+
+    test('should use bigint hrtime if supports', () => {
+      const timer = new Timer()
+      const hrtime = process.hrtime
+      process.hrtime = {
+        bigint: jest.fn(() => 'bingint hrtime')
+      }
+
+      const time = timer.hrtime()
+
+      expect(time).toEqual('bingint hrtime')
+      expect(process.hrtime.bigint).toBeCalledTimes(1)
+
+      process.hrtime = hrtime
+    })
+
+    if (BigInt) {
+      test('should calculate duration with bigint hrtime', () => {
+        const timer = new Timer()
+        const hrtime = process.hrtime
+        process.hrtime = {
+          bigint: jest.fn()
+            .mockReturnValueOnce(BigInt(100000000))
+            .mockReturnValueOnce(BigInt(213000000))
+        }
+
+        let time = timer.hrtime()
+        time = timer.hrtime(time)
+
+        expect(time).toEqual(BigInt(113))
+        expect(process.hrtime.bigint).toBeCalledTimes(2)
+
+        process.hrtime = hrtime
+      })
+    }
+
+    test('should use hrtime if bigint it not supported', () => {
+      const timer = new Timer()
+      const hrtime = process.hrtime
+      process.hrtime = jest.fn(() => 'hrtime')
+      process.hrtime.bigint = undefined
+
+      const time = timer.hrtime()
+
+      expect(time).toEqual('hrtime')
+      expect(process.hrtime).toBeCalledTimes(1)
+
+      process.hrtime = hrtime
+    })
+
+    test('should calculate duration with hrtime', () => {
+      const timer = new Timer()
+      const hrtime = process.hrtime
+      process.hrtime = jest.fn()
+        .mockReturnValueOnce([1, 500000])
+        .mockReturnValueOnce([2, 600000])
+      process.hrtime.bigint = undefined
+
+      let time = timer.hrtime()
+      time = timer.hrtime(time)
+
+      expect(time).toEqual(2000.6)
+      expect(process.hrtime).toBeCalledTimes(2)
+      expect(process.hrtime).nthCalledWith(1)
+      expect(process.hrtime).nthCalledWith(2, [1, 500000])
+
+      process.hrtime = hrtime
+    })
+
+    test('should clear all times', () => {
+      const timer = new Timer()
+      timer.hrtime = jest.fn(() => 'hrtime')
+
+      timer.start('time-1', 'test time-1')
+      timer.start('time-2', 'test time-2')
+      timer.start('time-3', 'test time-3')
+
+      expect(timer._times.size).toEqual(3)
+
+      timer.clear()
+
+      expect(timer._times.size).toEqual(0)
     })
   })
 })
