@@ -1,7 +1,7 @@
-import * as tsx from 'vue-tsx-support'
+import Vue from 'vue'
 import HelloWorld from '../components/HelloWorld'
 
-export default tsx.component({
+export default Vue.extend({
   name: 'Home',
   render () {
     return (
