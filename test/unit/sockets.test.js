@@ -1,6 +1,5 @@
 import { loadFixture, Nuxt } from '../utils'
 
-
 describe.skip.win('basic sockets', () => {
   test('/', async () => {
     const options = await loadFixture('sockets')
