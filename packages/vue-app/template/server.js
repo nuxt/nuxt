@@ -12,8 +12,6 @@ Vue.component('NLink', NuxtLink)
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
 
-const isDev = <%= isDev %><%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
-
 const noopApp = () => new Vue({ render: h => h('div') })
 
 const createNext = ssrContext => (opts) => {
@@ -84,7 +82,7 @@ export default async (ssrContext) => {
     return renderErrorPage()
   }
 
-  <% if (isDev) { %>const s = isDev && Date.now()<% } %>
+  <% if (isDev) { %>const s = Date.now()<% } %>
 
   // Components are already resolved by setContext -> getRouteData (app/utils.js)
   const Components = getMatchedComponents(router.match(ssrContext.url))

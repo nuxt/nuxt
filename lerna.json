@@ -11,6 +11,9 @@
   "command": {
     "publish": {
       "npmClient": "npm"
+    },
+    "init": {
+      "exact": true
     }
   },
   "changelog": {
