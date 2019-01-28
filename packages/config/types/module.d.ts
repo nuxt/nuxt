@@ -4,4 +4,6 @@
  *                https://nuxtjs.org/guide/modules
  */
 
-export type NuxtConfigurationModule = string | [string, { [key: string]: any }] | Function; // Function signature TBD (NuxtModule interface)
+export type NuxtModule = (this: any, moduleOptions?: { [key: string]: any }) => Promise<void> | void; // this, this.options & this.nuxt TBD
+
+export type NuxtConfigurationModule = string | [string, { [key: string]: any }] | NuxtModule;

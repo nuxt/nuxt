@@ -4,7 +4,7 @@ import { NuxtConfigurationGenerate } from './generate'
 import { NuxtConfigurationHead } from './head'
 import { NuxtConfigurationGlobals } from './globals'
 import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './loading'
-import { NuxtConfigurationModule } from './module'
+import { NuxtConfigurationModule, NuxtModule } from './module'
 import { NuxtConfigurationPlugin } from './plugin'
 import { NuxtConfigurationRender } from './render'
 import { NuxtConfigurationRouter } from './router'
@@ -63,7 +63,8 @@ export {
   NuxtConfigurationServer,
   NuxtConfigurationServerMiddleware,
   NuxtConfigurationVueConfiguration,
-  NuxtConfigurationWatchers
+  NuxtConfigurationWatchers,
+  NuxtModule
 }
 
 export default NuxtConfiguration
