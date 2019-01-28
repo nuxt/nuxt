@@ -9,7 +9,7 @@ import { NuxtConfigurationPlugin } from './plugin'
 import { NuxtConfigurationRender } from './render'
 import { NuxtConfigurationRouter } from './router'
 import { NuxtConfigurationServer } from './server'
-import { NuxtConfigurationServerMiddleware } from './server-middleware'
+import { NuxtConfigurationServerMiddleware, NuxtServerMiddleware } from './server-middleware'
 import { NuxtConfigurationVueConfiguration } from './vue-configuration'
 import { NuxtConfigurationWatchers } from './watchers'
 
@@ -64,7 +64,8 @@ export {
   NuxtConfigurationServerMiddleware,
   NuxtConfigurationVueConfiguration,
   NuxtConfigurationWatchers,
-  NuxtModule
+  NuxtModule,
+  NuxtServerMiddleware
 }
 
 export default NuxtConfiguration

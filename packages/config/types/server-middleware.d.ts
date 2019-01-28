@@ -3,4 +3,8 @@
  * Documentation: https://nuxtjs.org/api/configuration-servermiddleware
  */
 
-export type NuxtConfigurationServerMiddleware = string | { path: string, handler: string | Function } | Function; // Function signature TBD (NuxtServerMiddleware interface)
+import { RequestHandler } from 'express'
+
+export type NuxtServerMiddleware = RequestHandler;
+
+export type NuxtConfigurationServerMiddleware = string | { path: string, handler: string | Function } | NuxtServerMiddleware;

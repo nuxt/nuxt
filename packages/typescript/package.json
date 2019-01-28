@@ -10,6 +10,7 @@
   "main": "dist/typescript.js",
   "dependencies": {
     "@types/chokidar": "^1.7.5",
+    "@types/express": "^4.16.1",
     "@types/node": "^10.12.18",
     "@types/webpack": "^4.4.24",
     "chalk": "^2.4.2",
