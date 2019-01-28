@@ -9,7 +9,7 @@ module.exports = {
   // But its performance overhead is pretty bad (30+%).
   // detectOpenHandles: true
 
-  setupTestFrameworkScriptFile: './test/utils/setup',
+  setupFilesAfterEnv: ['./test/utils/setup'],
 
   coverageDirectory: './coverage',
 
@@ -42,9 +42,5 @@ module.exports = {
     'ts',
     'js',
     'json'
-  ],
-
-  reporters: [
-    'default'
-  ].concat(process.env.JEST_JUNIT_OUTPUT ? ['jest-junit'] : [])
+  ]
 }
