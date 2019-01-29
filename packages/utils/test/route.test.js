@@ -1,4 +1,3 @@
-import { r } from '../src/resolve'
 import { flatRoutes, createRoutes, guardDir, promisifyRoute } from '../src/route'
 
 describe('util: route', () => {
