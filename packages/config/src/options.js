@@ -291,10 +291,6 @@ export function getNuxtConfig(_options) {
     options.build.optimization.minimize = !options.dev
   }
 
-  if (options.dev) {
-    options.build.extractCSS = false
-  }
-
   // Enable optimizeCSS only when extractCSS is enabled
   if (options.build.optimizeCSS === undefined) {
     options.build.optimizeCSS = options.build.extractCSS ? {} : false
