@@ -21,7 +21,7 @@ export default function RateLimit(_options) {
   }
 
   if (typeof options.handler === 'undefined') {
-    options.handler = (req, res) => {
+    options.handler = (_, res) => {
       res.statusCode = options.statusCode
       res.end(String(options.message))
     }
@@ -45,7 +45,7 @@ export default function RateLimit(_options) {
       req.rateLimit = {
         limit: options.max,
         current: current,
-        remaining: Math.max(options.maxmax - current, 0),
+        remaining: Math.max(options.max - current, 0),
         resetTime: resetTime
       }
 
@@ -53,8 +53,7 @@ export default function RateLimit(_options) {
         res.setHeader('X-RateLimit-Limit', req.rateLimit.limit)
         res.setHeader('X-RateLimit-Remaining', req.rateLimit.remaining)
         if (resetTime instanceof Date) {
-          // If we have a resetTime, also provide the current date
-          // to help avoid issues with incorrect clocks
+          // If we have a resetTime, also provide the current date to help avoid issues with incorrect clocks
           res.setHeader('Date', new Date().toGMTString())
           res.setHeader('X-RateLimit-Reset', Math.ceil(resetTime.getTime() / 1000))
         }
