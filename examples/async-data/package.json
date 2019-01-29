@@ -2,7 +2,7 @@
   "name": "example-async-data",
   "dependencies": {
     "axios": "latest",
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

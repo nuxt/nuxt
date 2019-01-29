@@ -2,7 +2,7 @@
   "name": "example-styled-vue",
   "version": "1.0.0",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
