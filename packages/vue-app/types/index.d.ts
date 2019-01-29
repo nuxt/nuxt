@@ -23,6 +23,7 @@ export interface Context {
   store: Store<any>;
   env: Dictionary<any>;
   params: Route['params'];
+  payload: any;
   query: Route['query'];
   req: Request;
   res: Response;
