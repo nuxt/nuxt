@@ -2,8 +2,13 @@ import consola from 'consola'
 import chalk from 'chalk'
 import env from 'std-env'
 
-describe.skip.win = env.windows ? describe.skip : describe
-test.skip.win = env.windows ? test.skip : test
+const isWin = env.windows
+
+describe.win = isWin ? describe : describe.skip
+test.win = isWin ? test : test.skip
+
+describe.posix = !isWin ? describe : describe.skip
+test.posix = !isWin ? test : test.skip
 
 chalk.enabled = false
 
