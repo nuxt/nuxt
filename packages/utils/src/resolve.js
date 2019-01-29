@@ -60,7 +60,7 @@ export const relativeTo = function relativeTo() {
   // Make correct relative path
   let rp = path.relative(dir, _path)
   if (rp[0] !== '.') {
-    rp = './' + rp
+    rp = '.' + path.sep + rp
   }
 
   return wp(rp)

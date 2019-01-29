@@ -1,5 +1,4 @@
 import { serializeFunction } from '../src/serialize'
-import serialize from 'serialize-javascript'
 
 describe('util: serialize', () => {
   test('should serialize normal function', () => {
