@@ -1,0 +1,17 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [2.4.0](https://github.com/nuxt/nuxt.js/compare/v2.3.4...v2.4.0) (2019-01-28)
+
+
+### Bug Fixes
+
+* no false positives for plugins with index.js ([#4714](https://github.com/nuxt/nuxt.js/issues/4714)) ([eef2af3](https://github.com/nuxt/nuxt.js/commit/eef2af3)), closes [#4713](https://github.com/nuxt/nuxt.js/issues/4713)
+
+
+### Features
+
+* **server:** timing option for `Server-Timing` header ([#4800](https://github.com/nuxt/nuxt.js/issues/4800)) ([b23f5c9](https://github.com/nuxt/nuxt.js/commit/b23f5c9))
+* **ts:** add TSX support ([#4613](https://github.com/nuxt/nuxt.js/issues/4613)) ([4d52742](https://github.com/nuxt/nuxt.js/commit/4d52742))
