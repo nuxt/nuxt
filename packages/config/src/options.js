@@ -324,5 +324,15 @@ export function getNuxtConfig(_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
+  // Enable rate limit for dev mode
+  if (options.dev) {
+    if (typeof options.server.rateLimit === 'undefined') {
+      options.server.rateLimit = {
+        windowMs: 60 * 1000,
+        max: 10
+      }
+    }
+  }
+
   return options
 }
