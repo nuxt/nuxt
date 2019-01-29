@@ -497,11 +497,12 @@ export default class Builder {
     })
 
     // Prepare template options
-    const templateOptions = {
-      ...templateContext.templateOptions,
+    const templateOptions = templateContext.templateOptions
+    templateOptions.imports = {
+      ...templateOptions.imports,
       resolvePath: this.nuxt.resolver.resolvePath,
       resolveAlias: this.nuxt.resolver.resolveAlias,
-      relativeToBuild: this.relativeToBuild,
+      relativeToBuild: this.relativeToBuild
     }
 
     // Interpret and move template files to .nuxt/
