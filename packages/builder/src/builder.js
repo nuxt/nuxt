@@ -155,7 +155,7 @@ export default class Builder {
       )
     }
     await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
-\\\\\\\\\\\\
+
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
