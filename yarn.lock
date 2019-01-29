@@ -1674,7 +1674,7 @@ acorn@^5.5.3, acorn@^5.7.3:
   resolved "https://registry.npmjs.org/acorn/-/acorn-5.7.3.tgz#67aa231bf8812974b85235a96771eb6bd07ea279"
   integrity sha512-T/zvzYRfbVojPWahDsE5evJdHb3oJoQfFbsrKM7w5Zcs++Tr257tia3BmMP8XYVjp1S9RZXQMh7gao96BlqZOw==
 
-acorn@^6.0.0, acorn@^6.0.1, acorn@^6.0.2, acorn@^6.0.4, acorn@^6.0.5:
+acorn@^6.0.1, acorn@^6.0.2, acorn@^6.0.4, acorn@^6.0.5:
   version "6.0.5"
   resolved "https://registry.npmjs.org/acorn/-/acorn-6.0.5.tgz#81730c0815f3f3b34d8efa95cb7430965f4d887a"
   integrity sha512-i33Zgp3XWtmZBMNvCr4azvOFeWVw1Rk6p3hfi3LUDvIFraOMywb1kAtrbi+med14m4Xfpqm3zRZMT+c0FNE7kg==
@@ -6225,13 +6225,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
-
-json-stable-stringify@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/json-stable-stringify/-/json-stable-stringify-1.0.1.tgz#9a759d39c5f2ff503fd5300646ed445f88c4f9af"
-  integrity sha1-mnWdOcXy/1A/1TAGRu1EX4jE+a8=
-  dependencies:
-    jsonify "~0.0.0"
 
 json-stringify-safe@^5.0.1, json-stringify-safe@~5.0.1:
   version "5.0.1"
@@ -10939,16 +10932,16 @@ webpack-sources@^1.1.0:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@^5.0.0-alpha.3:
-  version "5.0.0-alpha.8"
-  resolved "https://registry.npmjs.org/webpack/-/webpack-5.0.0-alpha.8.tgz#773359ad463a3c46a7171d70ffb4e712ec848c09"
-  integrity sha512-rkbK5i86IDGE86GUTFat1T5VApDYxPDpdXK40Zz6fOnZxtAE4kNPZOzE0YEyA00J+lZgnECqRiYo5LkHMOOS3Q==
+webpack@^5.0.0-alpha.9:
+  version "5.0.0-alpha.9"
+  resolved "https://registry.npmjs.org/webpack/-/webpack-5.0.0-alpha.9.tgz#3d30ba2c53140c130cffd22b7173d3435c0a2839"
+  integrity sha512-uH0N6eCvE/p1g3ga+byQZ8vMrnfKoOzI0uo4mLtDEfjbORO2SDrAjFCXKw/rMME9irlySUd76kMfD5fdiJm0Qw==
   dependencies:
     "@webassemblyjs/ast" "1.7.11"
     "@webassemblyjs/helper-module-context" "1.7.11"
     "@webassemblyjs/wasm-edit" "1.7.11"
     "@webassemblyjs/wasm-parser" "1.7.11"
-    acorn "^6.0.0"
+    acorn "^6.0.5"
     acorn-dynamic-import "^4.0.0"
     ajv "^6.1.0"
     ajv-keywords "^3.1.0"
@@ -10957,7 +10950,6 @@ webpack@^5.0.0-alpha.3:
     eslint-scope "^4.0.0"
     events "^3.0.0"
     json-parse-better-errors "^1.0.2"
-    json-stable-stringify "^1.0.1"
     loader-runner "3.0.0"
     loader-utils "^1.1.0"
     memory-fs "~0.4.1"
