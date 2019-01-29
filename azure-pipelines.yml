@@ -20,7 +20,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    set JEST_JUNIT_OUTPUT=test-fixtures-junit.xml && set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:fixtures -w=2
+    set JEST_JUNIT_OUTPUT=test-fixtures-junit.xml && set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:fixtures -i
   displayName: 'Test: Build Fixtures'
 
 - script: |
