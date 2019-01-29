@@ -31,6 +31,7 @@ import {
   isIndexFileAndFolder
 } from '@nuxt/utils'
 
+import Ignore from './ignore'
 import BuildContext from './context'
 
 const glob = pify(Glob)
@@ -86,6 +87,9 @@ export default class Builder {
     // }
 
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
+    this.ignore = new Ignore({
+      rootDir: this.options.srcDir
+    })
   }
 
   getBundleBuilder(BundleBuilder) {
@@ -130,6 +134,18 @@ export default class Builder {
       }),
       p => p.name
     )
+  }
+
+  async resolveFiles(dir, cwd = this.options.srcDir) {
+    return this.ignore.filter(await glob(`${dir}/**/*.{${this.supportedExtensions.join(',')}}`, {
+      cwd,
+      ignore: this.options.ignore
+    }))
+  }
+
+  async resolveRelative(dir) {
+    const dirPrefix = new RegExp(`^${dir}/`)
+    return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
   resolvePlugins() {
@@ -318,14 +334,12 @@ export default class Builder {
       router: this.options.router,
       env: this.options.env,
       head: this.options.head,
-      middleware: fsExtra.existsSync(path.join(this.options.srcDir, this.options.dir.middleware)),
       store: this.options.store,
       globalName: this.options.globalName,
       globals: this.globals,
       css: this.options.css,
       plugins: this.plugins,
       appPath: './App.js',
-      ignorePrefix: this.options.ignorePrefix,
       layouts: Object.assign({}, this.options.layouts),
       loading:
         typeof this.options.loading === 'string'
@@ -344,10 +358,7 @@ export default class Builder {
     // -- Layouts --
     if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       const configLayouts = this.options.layouts
-      const layoutsFiles = await glob(`${this.options.dir.layouts}/**/*.{${this.supportedExtensions.join(',')}}`, {
-        cwd: this.options.srcDir,
-        ignore: this.options.ignore
-      })
+      const layoutsFiles = await this.resolveFiles(this.options.dir.layouts)
       layoutsFiles.forEach((file) => {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
@@ -392,16 +403,14 @@ export default class Builder {
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
-      ;(await glob(`${this.options.dir.pages}/**/*.{${this.supportedExtensions.join(',')}}`, {
-        cwd: this.options.srcDir,
-        ignore: this.options.ignore
-      })).forEach((f) => {
-        const key = f.replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
+      const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
+      for (const page of await this.resolveFiles(this.options.dir.pages)) {
+        const key = page.replace(ext, '')
         // .vue file takes precedence over other extensions
-        if (/\.vue$/.test(f) || !files[key]) {
-          files[key] = f.replace(/(['"])/g, '\\$1')
+        if (/\.vue$/.test(page) || !files[key]) {
+          files[key] = page.replace(/(['"])/g, '\\$1')
         }
-      })
+      }
       templateVars.router.routes = createRoutes(
         Object.values(files),
         this.options.srcDir,
@@ -438,8 +447,23 @@ export default class Builder {
     // -- Store --
     // Add store if needed
     if (this.options.store) {
+      templateVars.storeModules = (await this.resolveRelative(this.options.dir.store))
+        .sort(({ src: p1 }, { src: p2 }) => {
+          // modules are sorted from low to high priority (for overwriting properties)
+          let res = p1.split('/').length - p2.split('/').length
+          if (res === 0 && p1.includes('/index.')) {
+            res = -1
+          } else if (res === 0 && p2.includes('/index.')) {
+            res = 1
+          }
+          return res
+        })
+
       templatesFiles.push('store.js')
     }
+
+    // -- Middleware --
+    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
 
     // Resolve template files
     const customTemplateFiles = this.options.build.templates.map(
@@ -675,6 +699,10 @@ export default class Builder {
       // Custom watchers
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
+
+    if (this.ignore.ignoreFile) {
+      nuxtRestartWatch.push(this.ignore.ignoreFile)
+    }
 
     this.watchers.restart = chokidar
       .watch(nuxtRestartWatch, this.options.watchers.chokidar)
