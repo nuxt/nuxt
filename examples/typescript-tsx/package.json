@@ -1,5 +1,5 @@
 {
-  "name": "tsx",
+  "name": "typescript-tsx",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -13,7 +13,7 @@
     "watch:css": "tcm components -w"
   },
   "dependencies": {
-    "nuxt-ts-edge": "latest"
+    "nuxt-ts": "latest"
   },
   "devDependencies": {
     "tslint-config-standard": "^8.0.1",
