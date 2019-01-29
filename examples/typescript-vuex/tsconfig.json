@@ -2,6 +2,10 @@
   "extends": "@nuxt/typescript-edge",
   "compilerOptions": {
     "baseUrl": ".",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": [
+      "@types/node",
+      "@nuxt/vue-app-edge"
+    ]
   }
 }

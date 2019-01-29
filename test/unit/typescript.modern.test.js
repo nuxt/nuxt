@@ -12,7 +12,7 @@ describe('typescript modern', () => {
     await new Builder(nuxt, BundleBuilder).build()
   })
 
-  test('fork-ts-checker-webpack-plugin', () => {
+  test('check types only once', () => {
     expect(ForkTsCheckerWebpackPlugin).toHaveBeenCalledTimes(1)
   })
 
