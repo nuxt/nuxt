@@ -59,9 +59,6 @@ export default class TemplateContext {
         r,
         wp,
         wChunk,
-        resolvePath: this.nuxt.resolver.resolvePath,
-        resolveAlias: this.nuxt.resolver.resolveAlias,
-        relativeToBuild: this.relativeToBuild,
         // Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
         _: new Proxy({}, {
           get(target, prop) {

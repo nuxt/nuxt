@@ -155,7 +155,7 @@ export default class Builder {
       )
     }
     await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
-
+\\\\\\\\\\\\
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
@@ -497,7 +497,12 @@ export default class Builder {
     })
 
     // Prepare template options
-    const templateOptions = templateContext.templateOptions
+    const templateOptions = {
+      ...templateContext.templateOptions,
+      resolvePath: this.nuxt.resolver.resolvePath,
+      resolveAlias: this.nuxt.resolver.resolveAlias,
+      relativeToBuild: this.relativeToBuild,
+    }
 
     // Interpret and move template files to .nuxt/
     await Promise.all(
