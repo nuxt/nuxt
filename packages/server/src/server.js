@@ -13,6 +13,7 @@ import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
+import rateLimitMiddleware from './middleware/rate-limit'
 
 export default class Server {
   constructor(nuxt) {
@@ -62,6 +63,13 @@ export default class Server {
   async setupMiddleware() {
     // Apply setupMiddleware from modules first
     await this.nuxt.callHook('render:setupMiddleware', this.app)
+
+    // RateLimit middleware
+    if (this.options.server.rateLimit) {
+      this.useMiddleware(
+        rateLimitMiddleware(this.options.server.rateLimit)
+      )
+    }
 
     // Compression middleware for production
     if (!this.options.dev) {

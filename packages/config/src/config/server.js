@@ -10,5 +10,6 @@ export default ({ env = {} } = {}) => ({
     'localhost',
   socket: env.UNIX_SOCKET ||
     env.npm_package_config_unix_socket,
-  timing: false
+  timing: false,
+  rateLimit: undefined
 })
