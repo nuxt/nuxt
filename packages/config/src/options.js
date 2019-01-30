@@ -327,15 +327,7 @@ export function getNuxtConfig(_options) {
   // Enable rate limit for dev mode
   if (options.dev) {
     if (typeof options.server.rateLimit === 'undefined') {
-      // It is unsual to request same resource more than 5 times in a 1sec!
-      options.server.rateLimit = {
-        windowMs: 1000,
-        max: 5,
-        keyGenerator: req => req.ip + '_' + req.url,
-        onLimitReached: (req) => {
-          consola.warn('Too many requests in a short time detected for path: ' + req.url)
-        }
-      }
+      options.server.rateLimit = true
     }
   }
 

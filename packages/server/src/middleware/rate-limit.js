@@ -1,10 +1,11 @@
 // Based on https://github.com/nfriedly/express-rate-limit (MIT)
+import consola from 'consola'
 
 const defaults = {
   // How long to keep records of requests in memory (milliseconds)
   windowMs: 1000,
   // Max number of recent connections during `window` milliseconds before sending a 429 response
-  max: 15,
+  max: 5,
   // 429 status = Too Many Requests (RFC 6585)
   statusCode: 429,
   // Send custom rate limit header with limit and remaining
@@ -14,13 +15,13 @@ const defaults = {
   // Do not count successful requests (status < 400)
   skipSuccessfulRequests: false,
   // Allows to create custom keys (by default user IP is used)
-  keyGenerator: req => req.ip,
+  keyGenerator: req => req.ip + '_' + req.url,
   // Skip certain requests
   skip: () => false,
   // Handler in case of reate limits
   handler: undefined,
   // A custom callback when rate limit reached
-  onLimitReached: () => {}
+  onLimitReached: undefined
 }
 
 export default function RateLimit(_options) {
@@ -34,6 +35,12 @@ export default function RateLimit(_options) {
       const secondsLeft = Math.ceil((+req.rateLimit.resetTime - Date.now()) / 1000)
       res.statusCode = options.statusCode
       res.end(`Too many requests, please try again after ${secondsLeft} second${(secondsLeft > 1 ? 's' : '')}.`)
+    }
+  }
+
+  if (typeof options.onLimitReached === 'undefined') {
+    options.onLimitReached = (req) => {
+      consola.warn('Too many requests in a short time detected for path: ' + req.url)
     }
   }
 
