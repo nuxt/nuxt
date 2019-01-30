@@ -14,7 +14,7 @@ const defaults = {
   // Do not count successful requests (status < 400)
   skipSuccessfulRequests: false,
   // Allows to create custom keys (by default user IP is used)
-  keyGenerator: req => req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null),
+  keyGenerator: req => req.ip,
   // Skip certain requests
   skip: () => false,
   // Handler in case of reate limits
