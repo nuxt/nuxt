@@ -416,9 +416,7 @@ export default class Builder {
       t => t.dst || path.basename(t.src || t)
     )
 
-    let templateFiles = templateContext.templateFiles
-
-    templateFiles = await Promise.all(templateFiles.map(async (file) => {
+    const templateFiles = await Promise.all(templateContext.templateFiles.map(async (file) => {
       // Skip if custom file was already provided in build.templates[]
       if (customTemplateFiles.includes(file)) {
         return
@@ -491,13 +489,15 @@ export default class Builder {
   }
 
   async compileTemplates(templateContext) {
+    // Prepare template options
+    const { templateVars, templateFiles, templateOptions } = templateContext
+
     await this.nuxt.callHook('build:templates', {
-      ...templateContext,
+      templateVars,
+      templateFiles,
       resolve: r
     })
 
-    // Prepare template options
-    const templateOptions = templateContext.templateOptions
     templateOptions.imports = {
       ...templateOptions.imports,
       resolvePath: this.nuxt.resolver.resolvePath,
@@ -507,7 +507,7 @@ export default class Builder {
 
     // Interpret and move template files to .nuxt/
     await Promise.all(
-      templateContext.templateFiles.map(async ({ src, dst, options, custom }) => {
+      templateFiles.map(async ({ src, dst, options, custom }) => {
         // Add custom templates to watcher
         if (custom) {
           this.options.build.watch.push(src)
@@ -520,7 +520,7 @@ export default class Builder {
           const templateFunction = template(fileContent, templateOptions)
           content = stripWhitespace(
             templateFunction(
-              Object.assign({}, templateContext.templateVars, {
+              Object.assign({}, templateVars, {
                 options: options || {},
                 custom,
                 src,
