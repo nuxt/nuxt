@@ -2,9 +2,9 @@
 
 const defaults = {
   // How long to keep records of requests in memory (milliseconds)
-  windowMs: 60 * 1000,
+  windowMs: 1000,
   // Max number of recent connections during `window` milliseconds before sending a 429 response
-  max: 5,
+  max: 15,
   // 429 status = Too Many Requests (RFC 6585)
   statusCode: 429,
   // Send custom rate limit header with limit and remaining
@@ -14,7 +14,7 @@ const defaults = {
   // Do not count successful requests (status < 400)
   skipSuccessfulRequests: false,
   // Allows to create custom keys (by default user IP is used)
-  keyGenerator: req => req.ip,
+  keyGenerator: req => req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null),
   // Skip certain requests
   skip: () => false,
   // Handler in case of reate limits
@@ -31,8 +31,10 @@ export default function RateLimit(_options) {
 
   if (typeof options.handler === 'undefined') {
     options.handler = (req, res) => {
+      const secondsLeft = Math.ceil((+req.rateLimit.resetTime - Date.now()) / 1000)
+
       res.statusCode = options.statusCode
-      res.end(`Too many requests, please try again after ${req.rateLimit.retryAfter} seconds.`)
+      res.end(`Too many requests, please try again after ${secondsLeft} second${(secondsLeft > 1 ? 's' : '')}.`)
     }
   }
 
