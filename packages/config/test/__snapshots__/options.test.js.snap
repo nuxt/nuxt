@@ -305,6 +305,7 @@ Object {
     "host": "localhost",
     "https": false,
     "port": 3000,
+    "rateLimit": undefined,
     "socket": undefined,
     "timing": false,
   },
