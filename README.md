@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
+<p align="center"><img align="center" src="https://nuxtjs.org/NUXTJS-logo-800.png"/></p>
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
   <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
