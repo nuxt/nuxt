@@ -240,11 +240,15 @@ export default class Builder {
 
     const templateContext = new TemplateContext(this, this.options)
 
-    await this.resolveLayouts(templateContext)
-    await this.resolveRoutes(templateContext)
-    await this.resolveStore(templateContext)
-    await this.resolveMiddleware(templateContext)
+    await Promise.all([
+      this.resolveLayouts(templateContext),
+      this.resolveRoutes(templateContext),
+      this.resolveStore(templateContext),
+      this.resolveMiddleware(templateContext)
+    ])
+
     await this.resolveCustomTemplates(templateContext)
+
     await this.resolveLoadingIndicator(templateContext)
 
     // Add vue-app template dir to watchers
