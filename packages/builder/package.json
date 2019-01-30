@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -9,8 +9,8 @@
   "main": "dist/builder.js",
   "dependencies": {
     "@nuxt/devalue": "^1.2.0",
-    "@nuxt/utils": "2.4.0",
-    "@nuxt/vue-app": "2.4.0",
+    "@nuxt/utils": "2.4.1",
+    "@nuxt/vue-app": "2.4.1",
     "chokidar": "^2.0.4",
     "consola": "^2.3.2",
     "fs-extra": "^7.0.1",

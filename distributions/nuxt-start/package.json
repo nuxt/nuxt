@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Starts Nuxt.js Application in production mode",
   "keywords": [
     "nuxt",
@@ -52,8 +52,8 @@
   "main": "dist/nuxt-start.js",
   "bin": "bin/nuxt-start.js",
   "dependencies": {
-    "@nuxt/cli": "2.4.0",
-    "@nuxt/core": "2.4.0",
+    "@nuxt/cli": "2.4.1",
+    "@nuxt/core": "2.4.1",
     "vue": "^2.5.22",
     "vue-meta": "^1.5.8",
     "vue-no-ssr": "^1.1.1",

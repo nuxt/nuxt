@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,8 +8,8 @@
   ],
   "main": "dist/server.js",
   "dependencies": {
-    "@nuxt/config": "2.4.0",
-    "@nuxt/utils": "2.4.0",
+    "@nuxt/config": "2.4.1",
+    "@nuxt/utils": "2.4.1",
     "@nuxtjs/youch": "^4.2.3",
     "chalk": "^2.4.2",
     "compression": "^1.7.3",

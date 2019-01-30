@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/config",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "main": "dist/config.js",
   "dependencies": {
-    "@nuxt/utils": "2.4.0",
+    "@nuxt/utils": "2.4.1",
     "consola": "^2.3.2",
     "std-env": "^2.2.1"
   },
