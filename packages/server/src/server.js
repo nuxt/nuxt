@@ -14,6 +14,7 @@ import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
 import rateLimitMiddleware from './middleware/rate-limit'
+import ipMiddleware from './middleware/ip'
 
 export default class Server {
   constructor(nuxt) {
@@ -63,6 +64,9 @@ export default class Server {
   async setupMiddleware() {
     // Apply setupMiddleware from modules first
     await this.nuxt.callHook('render:setupMiddleware', this.app)
+
+    // IP middleware
+    this.useMiddleware(ipMiddleware())
 
     // RateLimit middleware
     if (this.options.server.rateLimit) {
