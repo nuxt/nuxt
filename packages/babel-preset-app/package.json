@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "babel-preset-app for nuxt.js",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
