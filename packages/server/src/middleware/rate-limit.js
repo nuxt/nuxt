@@ -1,16 +1,25 @@
 // Based on https://github.com/nfriedly/express-rate-limit (MIT)
 
 const defaults = {
-  windowMs: 60 * 1000, // How long to keep records of requests in memory (milliseconds)
-  max: 5, // Max number of recent connections during `window` milliseconds before sending a 429 response
-  message: 'Too many requests, please try again later.',
-  statusCode: 429, // 429 status = Too Many Requests (RFC 6585)
-  headers: true, // Send custom rate limit header with limit and remaining
-  skipFailedRequests: false, // Do not count failed requests (status >= 400)
-  skipSuccessfulRequests: false, // Do not count successful requests (status < 400)
-  keyGenerator: req => req.ip, // Allows to create custom keys (by default user IP is used)
+  // How long to keep records of requests in memory (milliseconds)
+  windowMs: 60 * 1000,
+  // Max number of recent connections during `window` milliseconds before sending a 429 response
+  max: 5,
+  // 429 status = Too Many Requests (RFC 6585)
+  statusCode: 429,
+  // Send custom rate limit header with limit and remaining
+  headers: true,
+  // Do not count failed requests (status >= 400)
+  skipFailedRequests: false,
+  // Do not count successful requests (status < 400)
+  skipSuccessfulRequests: false,
+  // Allows to create custom keys (by default user IP is used)
+  keyGenerator: req => req.ip,
+  // Skip certain requests
   skip: () => false,
+  // Handler in case of reate limits
   handler: undefined,
+  // A custom callback when rate limit reached
   onLimitReached: () => {}
 }
 
@@ -21,9 +30,9 @@ export default function RateLimit(_options) {
   }
 
   if (typeof options.handler === 'undefined') {
-    options.handler = (_, res) => {
+    options.handler = (req, res) => {
       res.statusCode = options.statusCode
-      res.end(String(options.message))
+      res.end(`Too many requests, please try again after ${req.rateLimit.retryAfter} seconds.`)
     }
   }
 
@@ -46,15 +55,13 @@ export default function RateLimit(_options) {
         limit: options.max,
         current: current,
         remaining: Math.max(options.max - current, 0),
-        resetTime: resetTime
+        resetTime
       }
 
       if (options.headers) {
         res.setHeader('X-RateLimit-Limit', req.rateLimit.limit)
         res.setHeader('X-RateLimit-Remaining', req.rateLimit.remaining)
         if (resetTime instanceof Date) {
-          // If we have a resetTime, also provide the current date to help avoid issues with incorrect clocks
-          res.setHeader('Date', new Date().toGMTString())
           res.setHeader('X-RateLimit-Reset', Math.ceil(resetTime.getTime() / 1000))
         }
       }
@@ -87,7 +94,7 @@ export default function RateLimit(_options) {
         if (options.skipSuccessfulRequests) {
           res.on('finish', function () {
             if (res.statusCode < 400) {
-              options.store.decrement(key)
+              decrementKey()
             }
           })
         }
@@ -99,7 +106,8 @@ export default function RateLimit(_options) {
 
       if (options.max && current > options.max) {
         if (options.headers) {
-          res.setHeader('Retry-After', Math.ceil(options.windowMs / 1000))
+          req.rateLimit.retryAfter = Math.ceil(options.windowMs / 1000)
+          res.setHeader('Retry-After', req.rateLimit.retryAfter)
         }
         return options.handler(req, res, next)
       }
@@ -117,10 +125,8 @@ class MemoryStore {
     this.resetAll()
 
     // Reset ALL hits every windowMs
-    const interval = setInterval(this.resetAll, windowMs)
-    if (interval.unref) {
-      interval.unref()
-    }
+    const interval = setInterval(() => this.resetAll(), windowMs)
+    interval.unref()
   }
 
   resetAll() {
