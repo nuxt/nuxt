@@ -83,12 +83,12 @@ describe('util: timer', () => {
       const timer = new Timer()
       const hrtime = process.hrtime
       process.hrtime = {
-        bigint: jest.fn(() => 'bingint hrtime')
+        bigint: jest.fn(() => 'bigint hrtime')
       }
 
       const time = timer.hrtime()
 
-      expect(time).toEqual('bingint hrtime')
+      expect(time).toEqual('bigint hrtime')
       expect(process.hrtime.bigint).toBeCalledTimes(1)
 
       process.hrtime = hrtime

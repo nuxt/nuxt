@@ -111,7 +111,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault } = {}) {
+  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 
@@ -148,8 +148,8 @@ export default class Resolver {
       lastError = e
     }
 
-    // Introp default
-    if (intropDefault !== false && requiredModule && requiredModule.default) {
+    // interop default
+    if (interopDefault !== false && requiredModule && requiredModule.default) {
       requiredModule = requiredModule.default
     }
 
