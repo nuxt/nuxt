@@ -27,7 +27,7 @@
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
 - 💬 Chat: [Discord](https://discord.nuxtjs.org/)
-- 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
+- 🌟 [AwesomeNuxt](https://awesome.nuxtjs.org/)
 - 👉 [Play with Nuxt.js online](https://template.nuxtjs.org)
 
 ## Features
