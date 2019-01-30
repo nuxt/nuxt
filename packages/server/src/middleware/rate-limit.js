@@ -48,7 +48,7 @@ export default function RateLimit(_options) {
 
     const key = options.keyGenerator(req, res)
 
-    options.store.incr(key, (err, current, resetTime) => {
+    options.store.increment(key, (err, current, resetTime) => {
       if (err) {
         return next(err)
       }
@@ -145,7 +145,7 @@ class MemoryStore {
     delete this.resetTime[key]
   }
 
-  incr(key, cb) {
+  increment(key, cb) {
     if (this.hits[key]) {
       this.hits[key]++
     } else {
