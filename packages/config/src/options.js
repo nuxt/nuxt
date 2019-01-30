@@ -333,7 +333,7 @@ export function getNuxtConfig(_options) {
         max: 5,
         keyGenerator: req => req.ip + '_' + req.url,
         onLimitReached: (req) => {
-          consola.warn('Too fast requests detected on path: ' + req.url)
+          consola.warn('Too many requests in a short time detected for path: ' + req.url)
         }
       }
     }
