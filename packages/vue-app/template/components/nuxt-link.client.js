@@ -94,7 +94,7 @@ export default {
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass() {
       if (this.prefetchedClass !== 'false') {
-        this.$el.className += (this.$el.className + ' ' + this.prefetchedClass).trim()
+        this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
       }
     }<% } %>
   }

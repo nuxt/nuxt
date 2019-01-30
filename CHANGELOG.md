@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/nuxt/nuxt.js/compare/v2.4.0...v2.4.1) (2019-01-30)
+
+
+### Bug Fixes
+
+* keepAliveProps broken in <nuxt-child> ([#4521](https://github.com/nuxt/nuxt.js/issues/4521)) ([b48b220](https://github.com/nuxt/nuxt.js/commit/b48b220))
+
+
+
+
+
 # [2.4.0](https://github.com/nuxt/nuxt.js/compare/v2.3.4...v2.4.0) (2019-01-28)
 
 

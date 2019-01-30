@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-renderer",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -9,7 +9,7 @@
   "main": "dist/vue-renderer.js",
   "dependencies": {
     "@nuxt/devalue": "^1.2.0",
-    "@nuxt/utils": "2.4.0",
+    "@nuxt/utils": "2.4.1",
     "consola": "^2.3.2",
     "fs-extra": "^7.0.1",
     "lru-cache": "^5.1.1",
