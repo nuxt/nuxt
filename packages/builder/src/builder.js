@@ -483,7 +483,7 @@ export default class Builder {
         })
       } else {
         // eslint-disable-next-line no-console
-        console.error(
+        consola.error(
           `Could not fetch loading indicator: ${
             this.options.loadingIndicator.name
           }`
