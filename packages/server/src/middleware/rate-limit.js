@@ -32,7 +32,6 @@ export default function RateLimit(_options) {
   if (typeof options.handler === 'undefined') {
     options.handler = (req, res) => {
       const secondsLeft = Math.ceil((+req.rateLimit.resetTime - Date.now()) / 1000)
-
       res.statusCode = options.statusCode
       res.end(`Too many requests, please try again after ${secondsLeft} second${(secondsLeft > 1 ? 's' : '')}.`)
     }
