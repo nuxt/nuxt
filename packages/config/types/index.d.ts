@@ -2,6 +2,7 @@ import { NuxtConfigurationBuild } from './build'
 import { NuxtConfigurationEnv } from './env'
 import { NuxtConfigurationGenerate } from './generate'
 import { NuxtConfigurationHead } from './head'
+import { NuxtConfigurationHooks } from './hooks'
 import { NuxtConfigurationGlobals } from './globals'
 import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './loading'
 import { NuxtConfigurationModule, NuxtModule } from './module'
@@ -25,6 +26,7 @@ interface NuxtConfiguration extends ExtendableConfiguration {
   globalName?: string;
   globals?: NuxtConfigurationGlobals;
   head?: NuxtConfigurationHead;
+  hooks?: NuxtConfigurationHooks;
   ignorePrefix?: string;
   ignore?: string[];
   layoutTransition?: any; // TBD - should be of type `Transition` already defined in @nuxt/vue-app
@@ -54,6 +56,7 @@ export {
   NuxtConfigurationGenerate,
   NuxtConfigurationGlobals,
   NuxtConfigurationHead,
+  NuxtConfigurationHooks,
   NuxtConfigurationLoading,
   NuxtConfigurationLoadingIndicator,
   NuxtConfigurationModule,
