@@ -1,7 +1,9 @@
 export default {
   hooks: {
-    listen: () => {
-      process.send('ready')
+    listen () {
+      if (process.send) {
+        process.send('ready')
+      }
     }
   }
 }
