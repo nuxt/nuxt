@@ -295,33 +295,33 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/i,
-        use: perfLoader.asset().concat({
+        use: {
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.imgUrl,
             { name: this.getFileName('img') }
           )
-        })
+        }
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
-        use: perfLoader.asset().concat({
+        use: {
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.fontUrl,
             { name: this.getFileName('font') }
           )
-        })
+        }
       },
       {
         test: /\.(webm|mp4|ogv)$/i,
-        use: perfLoader.asset().concat({
+        use: {
           loader: 'file-loader',
           options: Object.assign(
             this.loaders.file,
             { name: this.getFileName('video') }
           )
-        })
+        }
       }
     ]
   }
