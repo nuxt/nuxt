@@ -3,6 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitThis": true,
-    "types": ["@types/node", "@nuxt/vue-app"]
+    "types": ["@types/node", "@nuxt/vue-app"],
+    "paths": {
+      "~/*":["./*"]
+    }
   }
 }

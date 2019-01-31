@@ -5,6 +5,9 @@
     "types": [
       "@types/node",
       "@nuxt/vue-app-edge"
-    ]
-  },
+    ],
+    "paths": {
+      "~/*": ["./*"]
+    }
+  }
 }
