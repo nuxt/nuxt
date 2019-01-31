@@ -327,14 +327,26 @@ export default class WebpackBaseConfig {
   }
 
   plugins() {
-    const plugins = [new VueLoader.VueLoaderPlugin()]
-
-    Array.prototype.push.apply(plugins, this.options.build.plugins || [])
+    const plugins = []
 
     // Add timefix-plugin before others plugins
     if (this.options.dev) {
-      plugins.unshift(new TimeFixPlugin())
+      plugins.push(new TimeFixPlugin())
     }
+
+    // CSS extraction)
+    if (this.options.build.extractCSS) {
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+        filename: this.getFileName('css'),
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
+      }, this.options.build.extractCSS)))
+    }
+
+    plugins.push(new VueLoader.VueLoaderPlugin())
+
+    Array.prototype.push.apply(plugins, this.options.build.plugins || [])
 
     // Hide warnings about plugins without a default export (#1179)
     plugins.push(new WarnFixPlugin())
@@ -369,16 +381,6 @@ export default class WebpackBaseConfig {
         }
       }
     }))
-
-    // CSS extraction)
-    if (this.options.build.extractCSS) {
-      plugins.push(new ExtractCssChunksPlugin(Object.assign({
-        filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css'),
-        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
-        reloadAll: true
-      }, this.options.build.extractCSS)))
-    }
 
     if (this.options.build.hardSource) {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))
