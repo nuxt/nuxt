@@ -7,7 +7,7 @@ import isObject from 'lodash/isObject'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
-import { getDefaultNuxtConfig } from './config'
+import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
   // Prevent duplicate calls
@@ -84,7 +84,7 @@ export function getNuxtConfig(_options) {
 
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, 'nuxt.config.js')
+    options._nuxtConfigFile = path.resolve(options.rootDir, defaultNuxtConfigFile)
   }
 
   // Watch for _nuxtConfigFile changes
@@ -138,7 +138,6 @@ export function getNuxtConfig(_options) {
   options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
 
   // Ignore publicPath on dev
-  /* istanbul ignore if */
   if (options.dev && isUrl(options.build.publicPath)) {
     options.build.publicPath = options.build._publicPath
   }
@@ -263,7 +262,6 @@ export function getNuxtConfig(_options) {
   defaultsDeep(options, modePreset || options.modes.universal)
 
   // If no server-side rendering, add appear true transition
-  /* istanbul ignore if */
   if (options.render.ssr === false && options.transition) {
     options.transition.appear = true
   }

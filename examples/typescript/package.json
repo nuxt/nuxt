@@ -10,10 +10,10 @@
     "build": "nuxt-ts build",
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate",
-    "lint": "tslint --project ."
+    "lint": "tslint --project .",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
     "tslint-config-standard": "^8.0.1"
   }
 }

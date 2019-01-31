@@ -5,7 +5,8 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "test": "jest"
+    "test": "jest",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
     "nuxt-edge": "latest"

@@ -4,7 +4,8 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "test": "ava --serial --verbose"
+    "test": "ava --serial --verbose",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
     "ava": "^0.19.1",

@@ -66,7 +66,7 @@ export default {
     },
     canPrefetch() {
       const conn = navigator.connection
-      const hasBadConnection = this.$nuxt.isOffline || (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData))
+      const hasBadConnection = this.<%= globals.nuxt %>.isOffline || (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData))
 
       return !hasBadConnection
     },
@@ -94,7 +94,7 @@ export default {
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass() {
       if (this.prefetchedClass !== 'false') {
-        this.$el.className += (this.$el.className + ' ' + this.prefetchedClass).trim()
+        this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
       }
     }<% } %>
   }

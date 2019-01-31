@@ -9,5 +9,6 @@ export default ({ env = {} } = {}) => ({
     env.npm_package_config_nuxt_host ||
     'localhost',
   socket: env.UNIX_SOCKET ||
-    env.npm_package_config_unix_socket
+    env.npm_package_config_unix_socket,
+  timing: false
 })
