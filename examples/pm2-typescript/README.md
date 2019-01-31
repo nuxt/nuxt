@@ -8,6 +8,7 @@
 
 ## Zero-downtime deployment
 *all depends on your deployment method. It's just example
+
 #### Directories:
 - `$PROJECT_ROOT` - your project root path on server
 - `/current` - root dir for nginx(if you are using [proxy configuration](https://nuxtjs.org/faq/nginx-proxy/))

@@ -15,11 +15,6 @@ export default {
 
     // Listen and show ready banner
     await nuxt.server.listen()
-
-    if (typeof process.send === 'function') {
-      process.send('ready')
-    }
-
     showBanner(nuxt)
   }
 }
