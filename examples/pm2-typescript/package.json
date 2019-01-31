@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "nuxt-ts-edge": "latest",
+    "nuxt-ts": "latest",
     "vue-property-decorator": "^7.3.0"
   },
   "scripts": {
@@ -13,7 +13,6 @@
     "lint": "tslint --project ."
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
     "tslint-config-standard": "^8.0.1"
   }
 }
