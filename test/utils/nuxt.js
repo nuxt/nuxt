@@ -1,6 +1,5 @@
 
 import path from 'path'
-import fs from 'fs'
 import { defaultsDeep } from 'lodash'
 import { version as coreVersion } from '../../packages/core/package.json'
 
@@ -14,9 +13,18 @@ export const version = `v${coreVersion}`
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
-  const configFile = path.resolve(rootDir, `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`)
+  let config = {}
 
-  let config = fs.existsSync(configFile) ? (await import(`../fixtures/${fixture}/nuxt.config`)).default : {}
+  try {
+    config = await import(`../fixtures/${fixture}/nuxt.config`)
+    config = config.default || config
+  } catch (e) {
+    // Ignore MODULE_NOT_FOUND
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      throw e
+    }
+  }
+
   if (typeof config === 'function') {
     config = await config()
   }

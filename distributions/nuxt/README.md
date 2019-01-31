@@ -38,6 +38,7 @@
 - Custom layouts with the `layouts/` directory
 - Middleware
 - Code splitting for every `pages/`
+- Loading just the critical CSS (page-level)
 
 Learn more at [nuxtjs.org](https://nuxtjs.org).
 
@@ -70,43 +71,10 @@ Support us with a monthly donation and help us continue our activities. [[Become
 ## Getting started
 
 ```
-$ npm install nuxt
+$ npx create-nuxt-app <project-name>
 ```
 
-Add a script to your package.json like this:
-
-```json
-{
-  "scripts": {
-    "start": "nuxt"
-  }
-}
-```
-
-After that, the file-system is the main API. Every .vue file becomes a route that gets automatically processed and rendered.
-
-Populate `./pages/index.vue` inside your project:
-
-```html
-<template>
-  <h1>Hello {{ name }}!</h1>
-</template>
-
-<script>
-export default {
-  data: () => {
-    return { name: 'world' }
-  }
-}
-</script>
-```
-
-And then run:
-```bash
-npm start
-```
-
-Go to [http://localhost:3000](http://localhost:3000)
+It's as simple as that!
 
 ## Templates
 

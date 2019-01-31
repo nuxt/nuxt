@@ -1,6 +1,5 @@
+import { defaultNuxtConfigFile } from '@nuxt/config'
 import { normalizeArg } from '../utils'
-
-const defaultConfigFile = `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`
 
 export default {
   spa: {
@@ -16,8 +15,8 @@ export default {
   'config-file': {
     alias: 'c',
     type: 'string',
-    default: defaultConfigFile,
-    description: `Path to Nuxt.js config file (default: \`${defaultConfigFile}\`)`
+    default: defaultNuxtConfigFile,
+    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}\`)`
   },
   modern: {
     alias: 'm',

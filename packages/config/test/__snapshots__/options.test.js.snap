@@ -159,6 +159,7 @@ Object {
   "generate": Object {
     "concurrency": 500,
     "dir": "/var/nuxt/test/dist",
+    "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
@@ -305,6 +306,7 @@ Object {
     "https": false,
     "port": 3000,
     "socket": undefined,
+    "timing": false,
   },
   "serverMiddleware": Array [],
   "srcDir": "/var/nuxt/test",
