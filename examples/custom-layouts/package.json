@@ -1,7 +1,7 @@
 {
   "name": "example-custom-layouts",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

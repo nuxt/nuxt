@@ -1,7 +1,7 @@
 {
   "name": "example-nested-routes",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

@@ -16,6 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.15.3",
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   }
 }
