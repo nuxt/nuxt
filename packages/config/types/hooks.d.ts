@@ -47,4 +47,4 @@ export interface NuxtConfigurationHooks {
   };
 }
 
-// Hooks need core typedefs to be 100% defined
+// Hooks need too many core typedefs to be 100% defined
