@@ -5,6 +5,7 @@ import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
 
 jest.mock('@nuxt/utils')
+jest.mock('../src/ignore')
 
 describe('builder: builder constructor', () => {
   beforeEach(() => {

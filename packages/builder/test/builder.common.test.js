@@ -1,7 +1,7 @@
 import { BundleBuilder } from '@nuxt/webpack'
 
 import Builder from '../src/builder'
-import BuildContext from '../src/context'
+import BuildContext from '../src/context/build'
 import { createNuxt } from './__utils__'
 
 jest.mock('@nuxt/webpack', () => ({
@@ -9,9 +9,10 @@ jest.mock('@nuxt/webpack', () => ({
     this.name = 'webpack_builder'
   })
 }))
-jest.mock('../src/context', () => jest.fn(function () {
+jest.mock('../src/context/build', () => jest.fn(function () {
   this.name = 'build_context'
 }))
+jest.mock('../src/ignore')
 
 describe('builder: builder common', () => {
   beforeEach(() => {

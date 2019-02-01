@@ -14,6 +14,7 @@ jest.mock('chokidar', () => ({
 jest.mock('upath', () => ({ normalizeSafe: jest.fn(src => src) }))
 jest.mock('lodash/debounce', () => jest.fn(fn => fn))
 jest.mock('@nuxt/utils')
+jest.mock('../src/ignore')
 
 describe('builder: builder watch', () => {
   beforeEach(() => {
@@ -204,13 +205,18 @@ describe('builder: builder watch', () => {
       { obj: 'test' }
     ]
     const builder = new Builder(nuxt, {})
+    builder.ignore.ignoreFile = '/var/nuxt/src/.nuxtignore'
     isString.mockImplementationOnce(src => typeof src === 'string')
 
     builder.watchRestart()
 
     expect(chokidar.watch).toBeCalledTimes(1)
     expect(chokidar.watch).toBeCalledWith(
-      ['resolveAlias(/var/nuxt/src/middleware/test)', 'resolveAlias(/var/nuxt/src/watch/test)'],
+      [
+        'resolveAlias(/var/nuxt/src/middleware/test)',
+        'resolveAlias(/var/nuxt/src/watch/test)',
+        '/var/nuxt/src/.nuxtignore'
+      ],
       { test: true }
     )
     expect(chokidar.on).toBeCalledTimes(1)

@@ -9,6 +9,7 @@ jest.mock('glob')
 jest.mock('pify', () => fn => fn)
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
+jest.mock('../src/ignore')
 
 describe('builder: builder plugins', () => {
   beforeEach(() => {

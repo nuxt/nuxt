@@ -11,6 +11,7 @@ jest.mock('fs-extra')
 jest.mock('semver')
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
+jest.mock('../src/ignore')
 
 describe('builder: builder build', () => {
   beforeAll(() => {

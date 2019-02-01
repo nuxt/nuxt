@@ -1,6 +1,6 @@
-import BuildContext from '../src/context'
+import BuildContext from '../../src/context/build'
 
-describe('builder: context', () => {
+describe('builder: buildContext', () => {
   test('should construct context', () => {
     const builder = {
       nuxt: { options: {} }
