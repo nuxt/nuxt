@@ -3,7 +3,7 @@
  * Documentation: https://nuxtjs.org/api/configuration-hooks
  */
 
-export type NuxtConfigurationHooks = {
+export interface NuxtConfigurationHooks {
   build?: {
     before?(builder: any, buildOptions: any): void;
     compile?(params: { name: 'client' | 'server', compiler: any }): void;
