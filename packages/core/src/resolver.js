@@ -116,6 +116,9 @@ export default class Resolver {
     let requiredModule
 
     // TODO: Remove in Nuxt 3
+    if (intropDefault) {
+      consola.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.')
+    }
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
     }
