@@ -9,7 +9,7 @@
   ],
   "main": "dist/typescript.js",
   "dependencies": {
-    "@types/node": "^10.12.19",
+    "@types/node": "^10.12.21",
     "chalk": "^2.4.2",
     "consola": "^2.3.2",
     "enquirer": "^2.3.0",
@@ -19,7 +19,7 @@
     "ts-loader": "^5.3.3",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
-    "typescript": "^3.2.4"
+    "typescript": "^3.3.1"
   },
   "publishConfig": {
     "access": "public"
