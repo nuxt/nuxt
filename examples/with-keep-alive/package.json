@@ -1,7 +1,7 @@
 {
   "name": "example-with-keep-alive",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

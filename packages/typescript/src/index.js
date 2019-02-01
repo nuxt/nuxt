@@ -47,6 +47,7 @@ export async function setup(tsConfigPath) {
     project: tsConfigPath,
     compilerOptions: {
       module: 'commonjs'
-    }
+    },
+    transpileOnly: process.argv[2] === 'start'
   })
 }

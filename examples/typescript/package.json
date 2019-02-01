@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "nuxt-ts-edge": "latest",
+    "nuxt-ts": "latest",
     "vue-property-decorator": "^7.3.0"
   },
   "scripts": {

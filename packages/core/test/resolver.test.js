@@ -384,14 +384,14 @@ describe('core: resolver', () => {
       expect(resolvedModule).toEqual('resolved module')
     })
 
-    test('should require es modules without default export when intropDefault is disabled', () => {
+    test('should require es modules without default export when interopDefault is disabled', () => {
       const resolver = new Resolver({
         options: {}
       })
       resolver.resolvePath = jest.fn()
       resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
 
-      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module', { intropDefault: false })
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module', { interopDefault: false })
 
       expect(resolvedModule).toEqual({ default: 'resolved module' })
     })

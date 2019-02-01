@@ -196,7 +196,7 @@ export default class Builder {
   validateTemplate() {
     // Validate template dependencies
     const templateDependencies = this.template.dependencies
-    const dpendencyFixes = []
+    const dependencyFixes = []
     for (const depName in templateDependencies) {
       const depVersion = templateDependencies[depName]
       const requiredVersion = `${depName}@${depVersion}`
@@ -207,24 +207,24 @@ export default class Builder {
         const validVersion = semver.satisfies(pkg.version, depVersion)
         if (!validVersion) {
           consola.warn(`${requiredVersion} is required but ${depName}@${pkg.version} is installed!`)
-          dpendencyFixes.push(requiredVersion)
+          dependencyFixes.push(requiredVersion)
         }
       } else {
         consola.warn(`${depName}@${depVersion} is required but not installed!`)
-        dpendencyFixes.push(requiredVersion)
+        dependencyFixes.push(requiredVersion)
       }
     }
 
     // Suggest dependency fixes (TODO: automate me)
-    if (dpendencyFixes.length) {
+    if (dependencyFixes.length) {
       consola.error(
         'Please install missing dependencies:\n',
         '\n',
         'Using yarn:\n',
-        `yarn add ${dpendencyFixes.join(' ')}\n`,
+        `yarn add ${dependencyFixes.join(' ')}\n`,
         '\n',
         'Using npm:\n',
-        `npm i ${dpendencyFixes.join(' ')}\n`
+        `npm i ${dependencyFixes.join(' ')}\n`
       )
       throw new Error('Missing Template Dependencies')
     }
@@ -445,7 +445,7 @@ export default class Builder {
               dst: t.dst || path.basename(t.src || t),
               custom: true
             },
-            t
+            typeof t === 'object' ? t : undefined
           )
         })
       )
