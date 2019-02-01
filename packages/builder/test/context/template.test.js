@@ -1,6 +1,5 @@
 import hash from 'hash-sum'
 import consola from 'consola'
-import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
@@ -59,7 +58,6 @@ describe('builder: buildContext', () => {
   })
 
   test('should return object loading template options', () => {
-
     const context = new TemplateContext(builder, options)
     const templateOptions = context.templateOptions
     expect(templateOptions).toEqual({

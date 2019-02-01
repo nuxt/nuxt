@@ -1,63 +1,23 @@
 import path from 'path'
-import Glob from 'glob'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
-import chokidar from 'chokidar'
-import upath from 'upath'
-import semver from 'semver'
-import debounce from 'lodash/debounce'
 import template from 'lodash/template'
-import uniqBy from 'lodash/uniqBy'
 import {
   r,
-  wp,
-  wChunk,
-  createRoutes,
-  relativeTo,
-  waitFor,
-  serializeFunction,
-  determineGlobals,
-  stripWhitespace,
-  isString,
-  isIndexFileAndFolder
+  stripWhitespace
 } from '@nuxt/utils'
-import { BundleBuilder } from '@nuxt/webpack'
 
 import Builder from '../src/builder'
-import BuildContext from '../src/context/build'
 import { createNuxt } from './__utils__'
 
-jest.mock('glob')
-jest.mock('pify', () => fn => fn)
 jest.mock('fs-extra')
-jest.mock('chokidar', () => ({
-  watch: jest.fn().mockReturnThis(),
-  on: jest.fn().mockReturnThis(),
-  close: jest.fn().mockReturnThis()
-}))
-jest.mock('upath', () => ({
-  normalizeSafe: jest.fn(src => src)
-}))
-jest.mock('semver')
-jest.mock('hash-sum', () => src => `hash(${src})`)
-jest.mock('lodash')
-jest.mock('lodash/debounce', () => jest.fn(fn => fn))
 jest.mock('lodash/template', () => jest.fn())
-jest.mock('lodash/uniqBy', () => 'lodash/uniqBy')
 jest.mock('@nuxt/utils')
-jest.mock('@nuxt/webpack', () => ({
-  BundleBuilder: jest.fn(function () {
-    this.name = 'webpack_builder'
-  })
-}))
-jest.mock('../src/context/build', () => jest.fn(function () {
-  this.name = 'build_context'
-}))
 jest.mock('../src/ignore', () => jest.fn(() => ({
   filter: files => files
 })))
 
-describe.skip('builder: builder generate', () => {
+describe('builder: builder generate', () => {
   const templateFn = jest.fn(() => 'templateFn()')
 
   beforeAll(() => {
@@ -231,62 +191,5 @@ describe.skip('builder: builder generate', () => {
     expect(fsExtra.outputFile).toBeCalledTimes(2)
     expect(fsExtra.outputFile).nthCalledWith(1, 'r(/var/nuxt/build, App.js)', 'strip(templateFn())', 'utf8')
     expect(fsExtra.outputFile).nthCalledWith(2, 'r(/var/nuxt/build, index.js)', 'strip(templateFn())', 'utf8')
-
-    // const templateOptions = template.mock.calls[0][1]._
   })
-
-  // test('should match templateVars snapshot', async () => {
-  //   const nuxt = createNuxt()
-  //   nuxt.options.dev = false
-  //   nuxt.options.test = true
-  //   nuxt.options.debug = false
-  //   nuxt.options.mode = 'test'
-  //   nuxt.options.env = 'env'
-  //   nuxt.options.head = 'head()'
-  //   nuxt.options.store = { test: 'store' }
-  //   nuxt.options.globalName = { test: 'globalName' }
-  //   nuxt.options.globals = { id: 'test' }
-  //   nuxt.options.css = [ 'test-css' ]
-  //   nuxt.options.ignorePrefix = 'test-ignore-prefix'
-  //   nuxt.options.loading = 'test-loading'
-  //   nuxt.options.transition = 'test-transition'
-  //   nuxt.options.layoutTransition = 'test-layout-transition'
-  //   nuxt.options.ErrorPage = 'test-error-page'
-  //   nuxt.options.srcDir = '/var/nuxt/src'
-  //   nuxt.options.buildDir = '/var/nuxt/build'
-  //   nuxt.options.extensions = ['js', 'vue', '.ts']
-  //   nuxt.options.messages = { msg: 'test' }
-  //   nuxt.options.vue = { config: { id: 'test' } }
-  //   nuxt.options.dir = {
-  //     layouts: '/var/nuxt/src/layouts',
-  //     pages: '/var/nuxt/src/pages',
-  //     store: '/var/nuxt/src/store',
-  //     middleware: '/var/nuxt/src/middleware'
-  //   }
-  //   nuxt.options.router = { routes: [] }
-  //   nuxt.options.layouts = { default: './layouts/test.vue' }
-  //   nuxt.options.loadingIndicator = {}
-  //   nuxt.options.build.template = {
-  //     dir: '/var/nuxt/src/template',
-  //     files: [ 'App.js', 'index.js' ]
-  //   }
-  //   nuxt.options.build.splitChunks = {
-  //     chunks: 'all'
-  //   }
-  //   nuxt.options.build.templates = []
-  //   nuxt.options.build.watch = []
-  //   nuxt.options.build.createRoutes = jest.fn()
-
-  //   fsExtra.existsSync.mockImplementationOnce(src => `existsSync(${src})`)
-
-  //   const builder = new Builder(nuxt, {})
-
-  //   builder.normalizePlugins = jest.fn(() => ['/var/nuxt/src/plugin'])
-  //   builder.relativeToBuild = jest.fn(src => `relativeToBuild(${src})`)
-
-  //   await builder.generateRoutesAndFiles()
-
-  //   const templateVars = nuxt.callHook.mock.calls[1][1].templateVars
-  //   expect(templateVars).toMatchSnapshot()
-  // })
 })
