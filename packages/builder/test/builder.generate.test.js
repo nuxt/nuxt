@@ -2,7 +2,8 @@ import path from 'path'
 import Glob from 'glob'
 import fs from 'fs-extra'
 import consola from 'consola'
-import { r, createRoutes } from '@nuxt/utils'
+import template from 'lodash/template'
+import { r, createRoutes, stripWhitespace } from '@nuxt/utils'
 import Builder from '../src/builder'
 import TemplateContext from '../src/context/template'
 import { createNuxt } from './__utils__'
@@ -10,6 +11,7 @@ import { createNuxt } from './__utils__'
 jest.mock('glob')
 jest.mock('pify', () => fn => fn)
 jest.mock('fs-extra')
+jest.mock('lodash/template')
 jest.mock('@nuxt/utils')
 jest.mock('../src/context/template', () => jest.fn())
 jest.mock('../src/ignore', () => function () {
@@ -180,6 +182,226 @@ describe('builder: builder generate', () => {
     expect(templateVars.middleware).toEqual([ { src: '/var/nuxt/src/middleware/midd.js' } ])
   })
 
+  test('should custom templates', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.build = {
+      template: { dir: '/var/nuxt/templates' },
+      templates: [
+        '/var/nuxt/templates/foo.js',
+        { src: '/var/nuxt/templates/bar.js' },
+        { src: '/var/nuxt/templates/baz.js', dst: 'baz.js' }
+      ]
+    }
+    const builder = new Builder(nuxt, {})
+    fs.exists.mockReturnValueOnce(true)
+
+    const templateContext = {
+      templateFiles: [
+        'foo.js',
+        'bar.js',
+        'baz.js',
+        'router.js',
+        'store.js',
+        'middleware.js'
+      ]
+    }
+    await builder.resolveCustomTemplates(templateContext)
+
+    expect(templateContext.templateFiles).toEqual([
+      { custom: true, dst: 'router.js', src: 'r(/var/nuxt/src, app, router.js)' },
+      { custom: undefined, dst: 'store.js', src: 'r(/var/nuxt/templates, store.js)' },
+      { custom: undefined, dst: 'middleware.js', src: 'r(/var/nuxt/templates, middleware.js)' },
+      { custom: true, dst: 'foo.js', src: 'r(/var/nuxt/src, /var/nuxt/templates/foo.js)' },
+      { custom: true, dst: 'bar.js', src: '/var/nuxt/templates/bar.js' },
+      { custom: true, dst: 'baz.js', src: '/var/nuxt/templates/baz.js' }
+    ])
+  })
+
+  test('should resolve loading indicator', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.loadingIndicator = {
+      name: 'test_loading_indicator'
+    }
+    nuxt.options.build = {
+      template: { dir: '/var/nuxt/templates' }
+    }
+    const builder = new Builder(nuxt, {})
+    fs.exists.mockReturnValueOnce(true)
+
+    const templateFiles = []
+    await builder.resolveLoadingIndicator({ templateFiles })
+
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', 'test_loading_indicator.html')
+    expect(fs.exists).toBeCalledTimes(1)
+    expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/templates, views/loading, test_loading_indicator.html)')
+    expect(templateFiles).toEqual([{
+      custom: false,
+      dst: 'loading.html',
+      options: { name: 'test_loading_indicator' },
+      src: 'resolve(/var/nuxt/templates, views/loading, test_loading_indicator.html)'
+    }])
+  })
+
+  test('should resolve alias loading indicator', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.loadingIndicator = {
+      name: '@/app/template.vue'
+    }
+    nuxt.options.build = {
+      template: { dir: '/var/nuxt/templates' }
+    }
+    const builder = new Builder(nuxt, {})
+    fs.exists
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true)
+
+    const templateFiles = []
+    await builder.resolveLoadingIndicator({ templateFiles })
+
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', '@/app/template.vue.html')
+    expect(fs.exists).toBeCalledTimes(2)
+    expect(fs.exists).nthCalledWith(1, 'resolve(/var/nuxt/templates, views/loading, @/app/template.vue.html)')
+    expect(fs.exists).nthCalledWith(2, 'resolveAlias(@/app/template.vue)')
+    expect(templateFiles).toEqual([{
+      custom: true,
+      dst: 'loading.html',
+      options: { name: '@/app/template.vue' },
+      src: 'resolveAlias(@/app/template.vue)'
+    }])
+  })
+
+  test('should display error if three is not loading indicator', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.loadingIndicator = {
+      name: '@/app/empty.vue'
+    }
+    nuxt.options.build = {
+      template: { dir: '/var/nuxt/templates' }
+    }
+    const builder = new Builder(nuxt, {})
+    fs.exists
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(false)
+
+    const templateFiles = []
+    await builder.resolveLoadingIndicator({ templateFiles })
+
+    expect(path.resolve).toBeCalledTimes(1)
+    expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', '@/app/empty.vue.html')
+    expect(fs.exists).toBeCalledTimes(2)
+    expect(fs.exists).nthCalledWith(1, 'resolve(/var/nuxt/templates, views/loading, @/app/empty.vue.html)')
+    expect(fs.exists).nthCalledWith(2, 'resolveAlias(@/app/empty.vue)')
+    expect(consola.error).toBeCalledTimes(1)
+    expect(consola.error).toBeCalledWith('Could not fetch loading indicator: @/app/empty.vue')
+    expect(templateFiles).toEqual([])
+  })
+
+  test('should disable loading indicator', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.loadingIndicator = {
+      name: false
+    }
+    const builder = new Builder(nuxt, {})
+
+    await builder.resolveLoadingIndicator({ templateFiles: [] })
+
+    expect(path.resolve).not.toBeCalled()
+  })
+
+  test('should compile templates', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.build.watch = []
+    nuxt.options.buildDir = '/var/nuxt/build'
+    const builder = new Builder(nuxt, {})
+    builder.relativeToBuild = jest.fn()
+    const templateFn = jest.fn(() => 'compiled content')
+    template.mockImplementation(() => templateFn)
+    stripWhitespace.mockImplementation(content => `trim(${content})`)
+
+    const templateContext = {
+      templateVars: { test: 'template_vars' },
+      templateFiles: [
+        { src: '/var/nuxt/src/foo.js', dst: 'foo.js', options: { foo: true } },
+        { src: '/var/nuxt/src/bar.js', dst: 'bar.js', options: { bar: true } },
+        { src: '/var/nuxt/src/baz.js', dst: 'baz.js', custom: true }
+      ],
+      templateOptions: {}
+    }
+    await builder.compileTemplates(templateContext)
+
+    expect(nuxt.callHook).toBeCalledTimes(1)
+    expect(nuxt.callHook).toBeCalledWith('build:templates', {
+      templateVars: templateContext.templateVars,
+      templatesFiles: templateContext.templateFiles,
+      resolve: r
+    })
+    expect(templateContext.templateOptions.imports).toEqual({
+      resolvePath: nuxt.resolver.resolvePath,
+      resolveAlias: nuxt.resolver.resolveAlias,
+      relativeToBuild: builder.relativeToBuild
+    })
+    expect(nuxt.options.build.watch).toEqual([ '/var/nuxt/src/baz.js' ])
+    expect(fs.readFile).toBeCalledTimes(3)
+    expect(fs.readFile).nthCalledWith(1, '/var/nuxt/src/foo.js', 'utf8')
+    expect(fs.readFile).nthCalledWith(2, '/var/nuxt/src/bar.js', 'utf8')
+    expect(fs.readFile).nthCalledWith(3, '/var/nuxt/src/baz.js', 'utf8')
+    expect(template).toBeCalledTimes(3)
+    expect(template).nthCalledWith(1, 'readFile(/var/nuxt/src/foo.js, utf8)', templateContext.templateOptions)
+    expect(template).nthCalledWith(2, 'readFile(/var/nuxt/src/bar.js, utf8)', templateContext.templateOptions)
+    expect(template).nthCalledWith(3, 'readFile(/var/nuxt/src/baz.js, utf8)', templateContext.templateOptions)
+    expect(templateFn).toBeCalledTimes(3)
+    expect(templateFn).nthCalledWith(1, {
+      ...templateContext.templateVars,
+      custom: undefined,
+      dst: 'foo.js',
+      src: '/var/nuxt/src/foo.js',
+      options: { foo: true }
+    })
+    expect(templateFn).nthCalledWith(2, {
+      ...templateContext.templateVars,
+      custom: undefined,
+      dst: 'bar.js',
+      src: '/var/nuxt/src/bar.js',
+      options: { bar: true }
+    })
+    expect(templateFn).nthCalledWith(3, {
+      ...templateContext.templateVars,
+      custom: true,
+      dst: 'baz.js',
+      src: '/var/nuxt/src/baz.js',
+      options: {}
+    })
+    expect(stripWhitespace).toBeCalledTimes(3)
+    expect(stripWhitespace).nthCalledWith(1, 'compiled content')
+    expect(stripWhitespace).nthCalledWith(2, 'compiled content')
+    expect(stripWhitespace).nthCalledWith(3, 'compiled content')
+    expect(fs.outputFile).toBeCalledTimes(3)
+    expect(fs.outputFile).nthCalledWith(1, 'r(/var/nuxt/build, foo.js)', 'trim(compiled content)', 'utf8')
+    expect(fs.outputFile).nthCalledWith(2, 'r(/var/nuxt/build, bar.js)', 'trim(compiled content)', 'utf8')
+    expect(fs.outputFile).nthCalledWith(3, 'r(/var/nuxt/build, baz.js)', 'trim(compiled content)', 'utf8')
+  })
+
+  test('should throw error if compile failed', async () => {
+    const nuxt = createNuxt()
+    const builder = new Builder(nuxt, {})
+    builder.relativeToBuild = jest.fn()
+    template.mockImplementation(() => {
+      throw new Error('compile failed')
+    })
+
+    const templateContext = {
+      templateVars: { test: 'template_vars' },
+      templateFiles: [ { src: '/var/nuxt/src/foo.js' } ],
+      templateOptions: {}
+    }
+    await expect(builder.compileTemplates(templateContext)).rejects.toThrow(
+      'Could not compile template /var/nuxt/src/foo.js: compile failed'
+    )
+  })
+
   describe('builder: builder resolveLayouts', () => {
     test('should resolve layouts', async () => {
       const nuxt = createNuxt()
@@ -199,7 +421,7 @@ describe('builder: builder generate', () => {
         `${layouts}/error.vue`
       ])
       builder.relativeToBuild = jest.fn((...args) => `relativeBuild(${args.join(', ')})`)
-      fs.existsSync.mockReturnValueOnce(true)
+      fs.exists.mockReturnValueOnce(true)
 
       const templateVars = {
         components: {},
@@ -212,8 +434,8 @@ describe('builder: builder generate', () => {
 
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
-      expect(fs.existsSync).toBeCalledTimes(1)
-      expect(fs.existsSync).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
+      expect(fs.exists).toBeCalledTimes(1)
+      expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
       expect(builder.resolveFiles).toBeCalledTimes(1)
       expect(builder.resolveFiles).toBeCalledWith('/var/nuxt/src/layouts')
       expect(builder.relativeToBuild).toBeCalledTimes(2)
@@ -244,7 +466,7 @@ describe('builder: builder generate', () => {
         `${layouts}/error.vue`
       ])
       builder.relativeToBuild = jest.fn((...args) => `relativeBuild(${args.join(', ')})`)
-      fs.existsSync.mockReturnValueOnce(true)
+      fs.exists.mockReturnValueOnce(true)
 
       const templateVars = {
         components: {
@@ -278,8 +500,8 @@ describe('builder: builder generate', () => {
 
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
-      expect(fs.existsSync).toBeCalledTimes(1)
-      expect(fs.existsSync).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
+      expect(fs.exists).toBeCalledTimes(1)
+      expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
       expect(builder.resolveFiles).not.toBeCalled()
       expect(fs.mkdirp).not.toBeCalled()
     })

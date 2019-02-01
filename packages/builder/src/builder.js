@@ -300,7 +300,7 @@ export default class Builder {
   }
 
   async resolveLayouts({ templateVars, templateFiles }) {
-    if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
+    if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
@@ -465,7 +465,7 @@ export default class Builder {
           this.options.loadingIndicator.name
         )
 
-        if (fsExtra.existsSync(indicatorPath)) {
+        if (await fsExtra.exists(indicatorPath)) {
           customIndicator = true
         } else {
           indicatorPath = null
