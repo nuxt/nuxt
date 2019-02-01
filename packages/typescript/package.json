@@ -10,8 +10,11 @@
   "main": "dist/typescript.js",
   "dependencies": {
     "@types/chokidar": "^1.7.5",
+    "@types/compression": "^0.0.36",
+    "@types/etag": "^1.8.0",
     "@types/express": "^4.16.1",
     "@types/node": "^10.12.18",
+    "@types/serve-static": "^1.13.2",
     "@types/webpack": "^4.4.24",
     "chalk": "^2.4.2",
     "consola": "^2.3.2",
