@@ -447,7 +447,7 @@ export default class Builder {
               dst: t.dst || path.basename(t.src || t),
               custom: true
             },
-            t
+            typeof t === 'object' ? t : undefined
           )
         })
       )
