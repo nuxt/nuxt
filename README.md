@@ -1,4 +1,4 @@
-<p align="center"><img align="center" src="http://imgur.com/V4LtoII.png"/></p>
+<p align="center"><img align="center" style="width:320px" src="https://nuxtjs.org/meta_400.png"/></p><br/>
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
   <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
@@ -27,7 +27,7 @@
 - 🎬 Video: [1 minute demo](https://www.youtube.com/watch?v=kmf-p-pTi40)
 - 🐦 Twitter: [@nuxt_js](https://twitter.nuxtjs.org/)
 - 💬 Chat: [Discord](https://discord.nuxtjs.org/)
-- 📦 [Nuxt.js Modules](https://github.com/nuxt-community/modules)
+- 🌟 [AwesomeNuxt](https://awesome.nuxtjs.org/)
 - 👉 [Play with Nuxt.js online](https://template.nuxtjs.org)
 
 ## Features

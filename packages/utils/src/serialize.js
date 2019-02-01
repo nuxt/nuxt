@@ -1,4 +1,3 @@
-
 import serialize from 'serialize-javascript'
 
 export function serializeFunction(func) {
