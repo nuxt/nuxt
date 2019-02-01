@@ -497,7 +497,7 @@ export default class Builder {
 
     await this.nuxt.callHook('build:templates', {
       templateVars,
-      templateFiles,
+      templatesFiles: templateFiles,
       resolve: r
     })
 
