@@ -1,6 +1,11 @@
 /**
  * NuxtConfigurationHooks
  * Documentation: https://nuxtjs.org/api/configuration-hooks
+ *                https://nuxtjs.org/api/internals-nuxt#hooks
+ *                https://nuxtjs.org/api/internals-renderer#hooks
+ *                https://nuxtjs.org/api/internals-module-container#hooks
+ *                https://nuxtjs.org/api/internals-builder#hooks
+ *                https://nuxtjs.org/api/internals-generator#hooks
  */
 
 export interface NuxtConfigurationHooks {
