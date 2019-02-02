@@ -62,7 +62,7 @@
     "node-fetch": "^2.3.0",
     "pug": "^2.0.3",
     "pug-plain-loader": "^1.0.0",
-    "puppeteer": "^1.12.1",
+    "puppeteer": "~1.11.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "rimraf": "^2.6.3",
