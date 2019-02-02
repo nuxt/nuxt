@@ -1,10 +1,6 @@
 pkg = require('./package')
-
-
 module.exports =
-  
   mode: 'universal'
-
   #
   # Headers of the page
   #
@@ -31,36 +27,20 @@ module.exports =
         type: 'image/x-icon'
         href: '/favicon.ico'
       ]
-
-
   # Customize the progress-bar color
   loading:
     {
       color: '#3B8070'
     }
-
-
   # Global CSS
-  css:
-    [
-
-    ]
-
-
+  css: []
   # Plugins to load before mounting the App
-  plugins:
-    [
-
-    ]
-
-
+  plugins: []
   # Nuxt.js modules
   modules:
     [
       '~/modules/coffeescript'
     ]
-
-
   # Build configuration
   build:
     # You can extend webpack config here

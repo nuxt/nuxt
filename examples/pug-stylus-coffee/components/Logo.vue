@@ -6,7 +6,6 @@
     .Triangle.Triangle--four
 </template>
 
-
 <style lang="stylus">
 .VueToNuxtLogo
   display: inline-block

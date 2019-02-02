@@ -3,7 +3,6 @@
     nuxt
 </template>
 
-
 <style lang="stylus">
 html
   font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
