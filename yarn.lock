@@ -9231,10 +9231,10 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer@~1.11.0:
-  version "1.11.0"
-  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.11.0.tgz#63cdbe12b07275cd6e0b94bce41f3fcb20305770"
-  integrity sha512-iG4iMOHixc2EpzqRV+pv7o3GgmU2dNYEMkvKwSaQO/vMZURakwSOn/EYJ6OIRFYOque1qorzIBvrytPIQB3YzQ==
+puppeteer-core@^1.12.1:
+  version "1.12.1"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-1.12.1.tgz#aec39d9c199ceff6ddd4da00e0733bb73fce4156"
+  integrity sha512-arGXPRe1dkX3+tOh1GMQ0Ny3CoOCRurkHAW4AZEBIBMX/LdY6ReFqRTT9YSV3d9zzxiIat9kJc3v9h9nkxAu3g==
   dependencies:
     debug "^4.1.0"
     extract-zip "^1.6.6"
