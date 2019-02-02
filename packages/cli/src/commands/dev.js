@@ -32,7 +32,9 @@ export default {
 
   async startDev(cmd, argv) {
     try {
-      return await this._startDev(cmd, argv)
+      const nuxt = await this._startDev(cmd, argv)
+
+      return nuxt
     } catch (error) {
       consola.error(error)
     }
