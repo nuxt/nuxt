@@ -1,5 +1,6 @@
 import consola from 'consola'
 import chalk from 'chalk'
+import opn from 'opn'
 import { common, server } from '../options'
 import { showBanner, eventsMapping, formatPath } from '../utils'
 
@@ -9,17 +10,29 @@ export default {
   usage: 'dev <dir>',
   options: {
     ...common,
-    ...server
+    ...server,
+    open: {
+      alias: 'o',
+      type: 'boolean',
+      description: 'Opens the server listeners url in the default browser'
+    }
   },
 
   async run(cmd) {
     const { argv } = cmd
-    await this.startDev(cmd, argv)
+    const nuxt = await this.startDev(cmd, argv)
+
+    // Opens the server listeners url in the default browser
+    if (argv.open) {
+      for (const listener of nuxt.server.listeners) {
+        await opn(listener.url)
+      }
+    }
   },
 
   async startDev(cmd, argv) {
     try {
-      await this._startDev(cmd, argv)
+      return await this._startDev(cmd, argv)
     } catch (error) {
       consola.error(error)
     }
