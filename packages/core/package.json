@@ -15,7 +15,7 @@
     "@nuxt/vue-renderer": "2.4.2",
     "consola": "^2.3.2",
     "debug": "^4.1.1",
-    "esm": "^3.1.4",
+    "esm": "^3.2.0",
     "fs-extra": "^7.0.1",
     "hash-sum": "^1.0.2",
     "std-env": "^2.2.1"
