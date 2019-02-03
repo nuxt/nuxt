@@ -5,8 +5,11 @@ import consola from 'consola'
 import Youch from '@nuxtjs/youch'
 
 export default ({ resources, options }) => function errorMiddleware(err, req, res, next) {
-  // ensure statusCode, message and name fields
+  if (/unexpected token/gi.test(err.message)) {
+    err.message += ' - You might have to transpile third party packages!'
+  }
 
+  // ensure statusCode, message and name fields
   const error = {
     statusCode: err.statusCode || 500,
     message: err.message || 'Nuxt Server Error',
