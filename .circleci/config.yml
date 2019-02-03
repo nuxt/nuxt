@@ -147,8 +147,6 @@ jobs:
 
   test-types:
     <<: *defaults
-    docker:
-      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - attach_workspace:
