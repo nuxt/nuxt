@@ -19,7 +19,7 @@
 import Logo from '~/components/Logo.vue'
 
 export default {
-  components: { Logo }
+  components: { Logo },
   computed:
     message: -> @$store.state.msgComputed
 }
