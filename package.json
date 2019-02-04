@@ -74,7 +74,7 @@
     "rollup-plugin-license": "^0.8.1",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^2.1.0",
-    "sort-package-json": "^1.18.0",
+    "sort-package-json": "^1.19.0",
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
     "tslint": "^5.12.1",
