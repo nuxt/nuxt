@@ -1,6 +1,6 @@
 import consola from 'consola'
 import chalk from 'chalk'
-import opn from 'opn'
+import opener from 'opener'
 import { common, server } from '../options'
 import { showBanner, eventsMapping, formatPath } from '../utils'
 
@@ -25,7 +25,7 @@ export default {
     // Opens the server listeners url in the default browser
     if (argv.open) {
       for (const listener of nuxt.server.listeners) {
-        await opn(listener.url)
+        await opener(listener.url)
       }
     }
   },
