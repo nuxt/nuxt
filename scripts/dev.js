@@ -34,7 +34,7 @@ Object.defineProperty(global.__NUXT, 'version', {
       const status = { dirty: false }
       for (const line of stdout.split('\\n')) {
         if (line[0] === '#') {
-          const match = line.match(/branch\.([^\\s]+) (.*)\$/)
+          const match = line.match(/branch\\.([^\\s]+) (.*)$/)
           if (match && match.length) {
             status[match[1]] = match[2]
           }
