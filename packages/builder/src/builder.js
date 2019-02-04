@@ -580,6 +580,37 @@ export default class Builder {
   //   )
   // }
 
+  createFileWatcher(patterns, events, listener, watcherCreatedCallback) {
+    const options = this.options.watchers.chokidar
+    const watcher = chokidar.watch(patterns, options)
+
+    for (const event of events) {
+      watcher.on(event, listener)
+    }
+
+    const { rewatchOnRawEvents } = this.options.watchers
+    if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
+      watcher.on('raw', (_event) => {
+        if (rewatchOnRawEvents.includes(_event)) {
+          watcher.close()
+
+          listener()
+          this.createFileWatcher(patterns, events, listener, watcherCreatedCallback)
+        }
+      })
+    }
+
+    if (typeof watcherCreatedCallback === 'function') {
+      watcherCreatedCallback(watcher)
+    }
+  }
+
+  assignWatcher(key) {
+    return (watcher) => {
+      this.watchers[key] = watcher
+    }
+  }
+
   watchClient() {
     const src = this.options.srcDir
     const rGlob = dir => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
@@ -600,20 +631,11 @@ export default class Builder {
 
     patterns = patterns.map(upath.normalizeSafe)
 
-    const options = this.options.watchers.chokidar
     const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 
     // Watch for src Files
-    this.watchers.files = chokidar
-      .watch(patterns, options)
-      .on('add', refreshFiles)
-      .on('unlink', refreshFiles)
+    this.createFileWatcher(patterns, ['add', 'unlink'], refreshFiles, this.assignWatcher('files'))
 
-    this.watchCustom(refreshFiles)
-  }
-
-  watchCustom(refreshFiles, refresh) {
-    const options = this.options.watchers.chokidar
     // Watch for custom provided files
     const customPatterns = uniq([
       ...this.options.build.watch,
@@ -624,25 +646,7 @@ export default class Builder {
       return
     }
 
-    if (refresh) {
-      refreshFiles()
-    }
-
-    this.watchers.custom = chokidar
-      .watch(customPatterns, options)
-      .on('change', refreshFiles)
-
-    const { rewatchOnRawEvents } = this.options.watchers
-    if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
-      this.watchers.custom.on('raw', (_event, _path, opts) => {
-        if (rewatchOnRawEvents.includes(_event)) {
-          this.watchers.custom.close()
-          this.watchers.custom = null
-
-          this.watchCustom(refreshFiles, true)
-        }
-      })
-    }
+    this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
   }
 
   watchRestart() {
@@ -657,15 +661,18 @@ export default class Builder {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
 
-    this.watchers.restart = chokidar
-      .watch(nuxtRestartWatch, this.options.watchers.chokidar)
-      .on('all', (event, _path) => {
+    this.createFileWatcher(
+      nuxtRestartWatch,
+      ['all'],
+      (event, _path) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
         }
         this.nuxt.callHook('watch:fileChanged', this, _path) // Legacy
         this.nuxt.callHook('watch:restart', { event, path: _path })
-      })
+      },
+      this.assignWatcher('restart')
+    )
   }
 
   unwatch() {
