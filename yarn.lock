@@ -2664,10 +2664,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000918, caniuse-lite@^1.0.30000929:
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000930.tgz#c238bab82bedb462bcbdc61d0334932dcc084d8a"
   integrity sha512-KD+pw9DderBLB8CGqBzYyFWpnrPVOEjsjargU/CvkNyg60od3cxSPTcTeMPhxJhDbkQPWvOz5BAyBzNl/St9vg==
 
-caniuse-lite@^1.0.30000933:
-  version "1.0.30000933"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000933.tgz#5871ff54b3177675ae1c2a275b2aae7abf2b9222"
-  integrity sha512-d3QXv7eFTU40DSedSP81dV/ajcGSKpT+GW+uhtWmLvQm9bPk0KK++7i1e2NSW/CXGZhWFt2mFbFtCJ5I5bMuVA==
+caniuse-lite@^1.0.30000934:
+  version "1.0.30000934"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000934.tgz#4f2d749f51e9e2d4e9b182f8f121d26ec4208e8d"
+  integrity sha512-o7yfZn0R9N+mWAuksDsdLsb1gu9o//XK0QSU0zSSReKNRsXsFc/n/psxi0YSPNiqlKxImp5h4DHnAPdwYJ8nNA==
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -9231,10 +9231,10 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer@~1.11.0:
-  version "1.11.0"
-  resolved "https://registry.npmjs.org/puppeteer/-/puppeteer-1.11.0.tgz#63cdbe12b07275cd6e0b94bce41f3fcb20305770"
-  integrity sha512-iG4iMOHixc2EpzqRV+pv7o3GgmU2dNYEMkvKwSaQO/vMZURakwSOn/EYJ6OIRFYOque1qorzIBvrytPIQB3YzQ==
+puppeteer-core@^1.12.1:
+  version "1.12.1"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-1.12.1.tgz#aec39d9c199ceff6ddd4da00e0733bb73fce4156"
+  integrity sha512-arGXPRe1dkX3+tOh1GMQ0Ny3CoOCRurkHAW4AZEBIBMX/LdY6ReFqRTT9YSV3d9zzxiIat9kJc3v9h9nkxAu3g==
   dependencies:
     debug "^4.1.0"
     extract-zip "^1.6.6"

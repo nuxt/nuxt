@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import consola from 'consola'
 import defaults from 'lodash/defaults'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
@@ -93,7 +94,10 @@ export default class PostcssConfig {
   }
 
   normalize(config) {
+    // TODO: Remove in Nuxt 3
     if (Array.isArray(config)) {
+      consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
+        ' declaration')
       config = { plugins: config }
     }
     return config
