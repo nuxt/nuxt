@@ -10,7 +10,7 @@
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*",
-    "dev": "node -r esm ./scripts/dev",
+    "dev": "node -r esm ./scripts/dev.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/vue-app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
