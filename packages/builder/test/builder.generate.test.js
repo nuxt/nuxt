@@ -489,6 +489,8 @@ describe('builder: builder generate', () => {
         layouts: '/var/nuxt/src/layouts'
       }
       const builder = new Builder(nuxt, {})
+      builder.resolveFiles = jest.fn()
+      fs.exists.mockReturnValueOnce(false)
 
       const templateVars = {
         layouts: {
@@ -496,7 +498,6 @@ describe('builder: builder generate', () => {
         }
       }
       await builder.resolveLayouts({ templateVars })
-      builder.resolveFiles = jest.fn()
 
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
@@ -541,7 +542,7 @@ describe('builder: builder generate', () => {
       expect(builder.routes).toEqual(templateVars.router.routes)
     })
 
-    test('should resolve routes from defualt pages dir', async () => {
+    test('should resolve routes from default pages dir', async () => {
       const nuxt = createNuxt()
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.build = {
