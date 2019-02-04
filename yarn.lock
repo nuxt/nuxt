@@ -10202,7 +10202,7 @@ source-map-support@^0.4.15:
   dependencies:
     source-map "^0.5.6"
 
-source-map-support@^0.5.6, source-map-support@^0.5.9, source-map-support@~0.5.6:
+source-map-support@^0.5.6, source-map-support@^0.5.9, source-map-support@~0.5.6, source-map-support@~0.5.9:
   version "0.5.10"
   resolved "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.10.tgz#2214080bc9d51832511ee2bab96e3c2f9353120c"
   integrity sha512-YfQ3tQFTK/yzlGJuX8pTwa4tifQj4QS2Mj7UegOu8jAz59MqIiMGPXxQhVQiIMNzayuUSF/jEuVnfFF5JqybmQ==
@@ -10665,7 +10665,7 @@ term-size@^1.2.0:
   dependencies:
     execa "^0.7.0"
 
-terser-webpack-plugin@^1.1.0, terser-webpack-plugin@^1.2.1:
+terser-webpack-plugin@^1.1.0:
   version "1.2.1"
   resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.2.1.tgz#7545da9ae5f4f9ae6a0ac961eb46f5e7c845cc26"
   integrity sha512-GGSt+gbT0oKcMDmPx4SRSfJPE1XaN3kQRWG4ghxKQw9cn5G9x6aCKSsgYdvyM0na9NJ4Drv0RG6jbBByZ5CMjw==
@@ -10678,6 +10678,29 @@ terser-webpack-plugin@^1.1.0, terser-webpack-plugin@^1.2.1:
     terser "^3.8.1"
     webpack-sources "^1.1.0"
     worker-farm "^1.5.2"
+
+terser-webpack-plugin@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-1.2.2.tgz#9bff3a891ad614855a7dde0d707f7db5a927e3d9"
+  integrity sha512-1DMkTk286BzmfylAvLXwpJrI7dWa5BnFmscV/2dCr8+c56egFcbaeFAl7+sujAjdmpLam21XRdhA4oifLyiWWg==
+  dependencies:
+    cacache "^11.0.2"
+    find-cache-dir "^2.0.0"
+    schema-utils "^1.0.0"
+    serialize-javascript "^1.4.0"
+    source-map "^0.6.1"
+    terser "^3.16.1"
+    webpack-sources "^1.1.0"
+    worker-farm "^1.5.2"
+
+terser@^3.16.1:
+  version "3.16.1"
+  resolved "https://registry.npmjs.org/terser/-/terser-3.16.1.tgz#5b0dd4fa1ffd0b0b43c2493b2c364fd179160493"
+  integrity sha512-JDJjgleBROeek2iBcSNzOHLKsB/MdDf+E/BOAJ0Tk9r7p9/fVobfv7LMJ/g/k3v9SXdmjZnIlFd5nfn/Rt0Xow==
+  dependencies:
+    commander "~2.17.1"
+    source-map "~0.6.1"
+    source-map-support "~0.5.9"
 
 terser@^3.8.1:
   version "3.14.1"
@@ -11478,10 +11501,10 @@ webpack-sources@^1.0.1, webpack-sources@^1.1.0, webpack-sources@^1.3.0:
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@^4.29.0:
-  version "4.29.0"
-  resolved "https://registry.npmjs.org/webpack/-/webpack-4.29.0.tgz#f2cfef83f7ae404ba889ff5d43efd285ca26e750"
-  integrity sha512-pxdGG0keDBtamE1mNvT5zyBdx+7wkh6mh7uzMOo/uRQ/fhsdj5FXkh/j5mapzs060forql1oXqXN9HJGju+y7w==
+webpack@^4.29.1:
+  version "4.29.1"
+  resolved "https://registry.npmjs.org/webpack/-/webpack-4.29.1.tgz#a6533d7bc6a6b1ed188cb029d53d231be777e175"
+  integrity sha512-dY3KyQIVeg6cDPj9G5Bnjy9Pt9SoCpbNWl0RDKHstbd3MWe0dG9ri4RQRpCm43iToy3zoA1IMOpFkJ8Clnc7FQ==
   dependencies:
     "@webassemblyjs/ast" "1.7.11"
     "@webassemblyjs/helper-module-context" "1.7.11"
