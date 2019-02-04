@@ -72,7 +72,7 @@ export default class Listener {
     try {
       this.server = await new Promise((resolve, reject) => {
         this._server.on('error', error => reject(error))
-        const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+        this._server.listen(listenArgs, error => error ? reject(error) : resolve())
       })
     } catch (error) {
       return this.serverErrorHandler(error)
