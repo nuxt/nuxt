@@ -92,7 +92,7 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should throw error if plugin no existed', () => {
+  test('should throw error if plugin no existed', async () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, {})
     builder.plugins = [
@@ -100,7 +100,7 @@ describe('builder: builder plugins', () => {
     ]
     Glob.mockImplementationOnce(() => [])
 
-    expect(builder.resolvePlugins()).rejects.toThrow('Plugin not found: /var/nuxt/plugins/test.js')
+    await expect(builder.resolvePlugins()).rejects.toThrow('Plugin not found: /var/nuxt/plugins/test.js')
   })
 
   test('should warn if there are multiple files and not index', async () => {

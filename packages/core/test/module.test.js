@@ -358,13 +358,13 @@ describe('core: module', () => {
     expect(result).toEqual({ test: true })
   })
 
-  test('should throw error when handler is not function', () => {
+  test('should throw error when handler is not function', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule: () => false },
       options: {}
     })
 
-    expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
+    await expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
   })
 
   test('should prevent multiple adding when requireOnce is enabled', async () => {
