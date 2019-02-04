@@ -10171,10 +10171,10 @@ sort-object-keys@^1.1.2:
   resolved "https://registry.npmjs.org/sort-object-keys/-/sort-object-keys-1.1.2.tgz#d3a6c48dc2ac97e6bc94367696e03f6d09d37952"
   integrity sha1-06bEjcKsl+a8lDZ2luA/bQnTeVI=
 
-sort-package-json@^1.18.0:
-  version "1.18.0"
-  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.18.0.tgz#d9ece79b1e1818dea67451813f9e504481bebd00"
-  integrity sha512-OkUR/WjlMz4IFOOMhYTpVl9rDaL4XIIOabzTXUBQVck04Dh+DyhjCNnMcndwX2dz+u77Q3MUuj1ncyVjVesB7Q==
+sort-package-json@^1.19.0:
+  version "1.19.0"
+  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.19.0.tgz#3e6819147d75680832890523e753b8992166a442"
+  integrity sha512-SRzbsvOG+g8jTuFYZCvljh+LOsNeCS04bH+MF6qf0Ukva0Eh3Y6Jf7a4GSNEeDHLHM6CWqhZuJo7OLdzycTH1A==
   dependencies:
     detect-indent "^5.0.0"
     sort-object-keys "^1.1.2"
