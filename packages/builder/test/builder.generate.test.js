@@ -489,6 +489,8 @@ describe('builder: builder generate', () => {
         layouts: '/var/nuxt/src/layouts'
       }
       const builder = new Builder(nuxt, {})
+      builder.resolveFiles = jest.fn()
+      fs.exists.mockReturnValueOnce(false)
 
       const templateVars = {
         layouts: {
@@ -496,7 +498,6 @@ describe('builder: builder generate', () => {
         }
       }
       await builder.resolveLayouts({ templateVars })
-      builder.resolveFiles = jest.fn()
 
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
