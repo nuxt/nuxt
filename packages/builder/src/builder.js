@@ -107,12 +107,10 @@ export default class Builder {
 
   async build() {
     // Avoid calling build() method multiple times when dev:true
-    /* istanbul ignore if */
     if (this._buildStatus === STATUS.BUILD_DONE && this.options.dev) {
       return this
     }
     // If building
-    /* istanbul ignore if */
     if (this._buildStatus === STATUS.BUILDING) {
       await waitFor(1000)
       return this.build()
@@ -302,7 +300,7 @@ export default class Builder {
   }
 
   async resolveLayouts({ templateVars, templateFiles }) {
-    if (fsExtra.existsSync(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
+    if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
           .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
@@ -467,7 +465,7 @@ export default class Builder {
           this.options.loadingIndicator.name
         )
 
-        if (fsExtra.existsSync(indicatorPath)) {
+        if (await fsExtra.exists(indicatorPath)) {
           customIndicator = true
         } else {
           indicatorPath = null
@@ -572,7 +570,7 @@ export default class Builder {
   }
 
   // TODO: Uncomment when generateConfig enabled again
-  // async generateConfig() /* istanbul ignore next */ {
+  // async generateConfig() {
   //   const config = path.resolve(this.options.buildDir, 'build.config.js')
   //   const options = omit(this.options, Options.unsafeKeys)
   //   await fsExtra.writeFile(
@@ -603,7 +601,6 @@ export default class Builder {
     patterns = patterns.map(upath.normalizeSafe)
 
     const options = this.options.watchers.chokidar
-    /* istanbul ignore next */
     const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 
     // Watch for src Files
