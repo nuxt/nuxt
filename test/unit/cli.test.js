@@ -11,16 +11,18 @@ const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt-cli.js')
 const spawnNuxt = (command, opts) => spawn(nuxtBin, [command, rootDir], opts)
 
-const start = (resolve, cmd, env) => {
-  const nuxt = spawnNuxt(cmd, { env })
-  const listener = (data) => {
-    if (data.includes(`${port}`)) {
-      nuxt.stdout.removeListener('data', listener)
-      resolve()
+const start = (cmd, env, cb) => {
+  return new Promise((resolve) => {
+    const nuxt = spawnNuxt(cmd, { env })
+    const listener = (data) => {
+      if (data.includes(`${port}`)) {
+        nuxt.stdout.removeListener('data', listener)
+        resolve(nuxt)
+      }
     }
-  }
-  nuxt.stdout.on('data', listener)
-  return nuxt
+    if (typeof cb === 'function') cb(nuxt)
+    nuxt.stdout.on('data', listener)
+  })
 }
 
 const close = (nuxt) => {
@@ -35,10 +37,7 @@ describe.posix('cli', () => {
     const { env } = process
     env.PORT = port = await getPort()
 
-    let nuxtDev
-    await new Promise((resolve) => {
-      nuxtDev = start(resolve, 'dev', env)
-    })
+    const nuxtDev = await start('dev', env)
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
@@ -67,9 +66,7 @@ describe.posix('cli', () => {
       nuxtBuild.on('close', resolve)
     })
 
-    let nuxtStart
-    await new Promise((resolve) => {
-      nuxtStart = start(resolve, 'start', env)
+    const nuxtStart = await start('start', env, (nuxtStart) => {
       nuxtStart.on('error', (err) => { error = err })
     })
 
