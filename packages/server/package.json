@@ -14,7 +14,7 @@
     "chalk": "^2.4.2",
     "compression": "^1.7.3",
     "connect": "^3.6.6",
-    "consola": "^2.3.2",
+    "consola": "^2.4.0",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
     "fs-extra": "^7.0.1",
