@@ -352,7 +352,7 @@ export default class WebpackBaseConfig {
 
   plugins() {
     const plugins = []
-    const { nuxt, buildOptions } = this.buildContext
+    const { nuxt, buildOptions, options: { _typescript = {} } } = this.buildContext
 
     // Add timefix-plugin before others plugins
     if (this.dev) {
@@ -377,6 +377,13 @@ export default class WebpackBaseConfig {
         warn.message.includes(`export 'default'`) &&
         warn.message.includes('nuxt_plugin_'))
     ))
+
+    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
+      // NOTE: this needs to be added to the plugin stack before the `WebpackBar`
+      plugins.push(new WarnFixPlugin(warn =>
+        !(warn.name === 'ModuleDependencyWarning' && /export .* was not found in /.test(warn.message))
+      ))
+    }
 
     // Build progress indicator
     plugins.push(new WebpackBar({
