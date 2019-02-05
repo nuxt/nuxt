@@ -55,7 +55,8 @@ export default () => ({
     vueStyle: {}
   },
   typescript: {
-    typeCheck: true
+    typeCheck: true,
+    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],
