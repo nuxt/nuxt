@@ -1,7 +1,7 @@
 import { resolve, join } from 'path'
 import { spawn } from 'cross-spawn'
 import { writeFileSync } from 'fs-extra'
-import { getPort, rp, waitUntil, waitFor } from '../utils'
+import { getPort, rp, waitFor } from '../utils'
 
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
@@ -11,26 +11,34 @@ const url = route => 'http://localhost:' + port + route
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt-cli.js')
 const spawnNuxt = (command, opts) => spawn(nuxtBin, [command, rootDir], opts)
 
-const close = async (nuxtInt) => {
-  nuxtInt.kill('SIGKILL')
-  // Wait max 10s for the process to be killed
-  if (await waitUntil(() => nuxtInt.killed, 10)) {
-    // eslint-disable-next-line no-console
-    console.warn(`Unable to close process with pid: ${nuxtInt.pid}`)
+const start = (resolve, cmd, env) => {
+  const nuxt = spawnNuxt(cmd, { env })
+  const listener = (data) => {
+    if (data.includes(`${port}`)) {
+      nuxt.stdout.removeListener('data', listener)
+      resolve()
+    }
   }
+  nuxt.stdout.on('data', listener)
+  return nuxt
 }
 
-describe.skip('cli', () => {
+const close = (nuxt) => {
+  return new Promise((resolve) => {
+    nuxt.kill('SIGKILL')
+    nuxt.on('exit', resolve)
+  })
+}
+
+describe.posix('cli', () => {
   test('nuxt dev', async () => {
-    let stdout = ''
     const { env } = process
     env.PORT = port = await getPort()
 
-    const nuxtDev = spawnNuxt('dev', { env })
-    nuxtDev.stdout.on('data', (data) => { stdout += data })
-
-    // Wait max 20s for the starting
-    await waitUntil(() => stdout.includes(`${port}`))
+    let nuxtDev
+    await new Promise((resolve) => {
+      nuxtDev = start(resolve, 'dev', env)
+    })
 
     // Change file specified in `watchers` (nuxt.config.js)
     const customFilePath = join(rootDir, 'custom.file')
@@ -49,7 +57,6 @@ describe.skip('cli', () => {
   })
 
   test('nuxt start', async () => {
-    let stdout = ''
     let error
 
     const { env } = process
@@ -57,21 +64,16 @@ describe.skip('cli', () => {
 
     await new Promise((resolve) => {
       const nuxtBuild = spawnNuxt('build', { env })
-      nuxtBuild.on('close', () => { resolve() })
+      nuxtBuild.on('close', resolve)
     })
 
-    const nuxtStart = spawnNuxt('start', { env })
-
-    nuxtStart.stdout.on('data', (data) => { stdout += data })
-    nuxtStart.on('error', (err) => { error = err })
-
-    // Wait max 40s for the starting
-    if (await waitUntil(() => stdout.includes(`${port}`), 40)) {
-      error = 'server failed to start successfully in 40 seconds'
-    }
+    let nuxtStart
+    await new Promise((resolve) => {
+      nuxtStart = start(resolve, 'start', env)
+      nuxtStart.on('error', (err) => { error = err })
+    })
 
     expect(error).toBe(undefined)
-    expect(stdout).toContain('Listening on')
 
     const html = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
