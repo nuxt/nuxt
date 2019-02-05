@@ -1,9 +1,13 @@
 
 import minimist from 'minimist'
+import env from 'std-env'
 import { name, version } from '../package.json'
 import { loadNuxtConfig } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import { indent, foldLines, colorize, warningBox } from './utils/formatting'
+import { startSpaces, optionSpaces } from './utils/settings'
 import * as imports from './imports'
+
+const forceExitAfterSeconds = 5
 
 export default class NuxtCommand {
   constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
@@ -11,6 +15,10 @@ export default class NuxtCommand {
       cmd.options = {}
     }
     this.cmd = cmd
+
+    // If the cmd is a server then dont forcibly exit when the cmd is finished
+    this.isServer = cmd.isServer !== undefined ? cmd.isServer : Boolean(this.cmd.options.hostname)
+    this.forceExit = !this.isServer && !env.test
 
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
@@ -43,6 +51,19 @@ export default class NuxtCommand {
     }
 
     return Promise.resolve(this.cmd.run(this))
+      .then(() => {
+        if (this.forceExit) {
+          const exitTimeout = setTimeout(() => {
+            let msg = `The command 'nuxt ${this.cmd.name}' finished but Nuxt.js did not exit after ${forceExitAfterSeconds}s\n`
+            msg += 'This is most likely not caused by a bug in Nuxt\n'
+            msg += 'Make sure to cleanup all timers and listeners you or your plugins/modules start.\n'
+            msg += 'Nuxt.js will now force exit'
+            process.stderr.write(warningBox(msg))
+            process.exit(0)
+          }, forceExitAfterSeconds * 1000)
+          exitTimeout.unref()
+        }
+      })
   }
 
   showVersion() {

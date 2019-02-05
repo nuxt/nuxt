@@ -1,5 +1,6 @@
 import Command from '../../src/command'
 import { common, server } from '../../src/options'
+import * as settings from '../../src/utils/settings'
 import { consola } from '../utils'
 
 jest.mock('@nuxt/core')
@@ -88,16 +89,18 @@ describe('cli/command', () => {
   })
 
   test('builds help text', () => {
+    jest.spyOn(settings, 'maxCharsPerLine').mockReturnValue(40)
+
     const cmd = new Command({
-      description: 'a very long description that should not wrap to the next line because is not longer ' +
+      description: 'a very long description that should wrap to the next line because is not longer ' +
         'than the terminal width',
       usage: 'this is how you do it',
       options: {
         ...allOptions,
         foo: {
           type: 'boolean',
-          description: 'very long option that is not longer than the terminal width and ' +
-        'should not wrap to the next line'
+          description: 'very long option that is longer than the terminal width and ' +
+        'should wrap to the next line'
         }
       }
     })
