@@ -1,3 +1,5 @@
+export const forceExitTimeout = 5
+
 export const startSpaces = 2
 export const optionSpaces = 2
 
