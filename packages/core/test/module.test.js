@@ -309,6 +309,31 @@ describe('core: module', () => {
     expect(result).toEqual({ src: 'moduleTest', options: {} })
   })
 
+  test('should add function module', async () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {}
+    })
+
+    const functionModule = function (options) {
+      return Promise.resolve(options)
+    }
+
+    functionModule.meta = { name: 'moduleTest' }
+
+    const result = await module.addModule(functionModule)
+
+    expect(requireModule).not.toBeCalled()
+    expect(module.requiredModules).toEqual({
+      moduleTest: {
+        handler: expect.any(Function),
+        options: undefined,
+        src: functionModule
+      }
+    })
+    expect(result).toEqual({ })
+  })
+
   test('should add array module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
