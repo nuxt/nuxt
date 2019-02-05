@@ -13,22 +13,24 @@ const spawnNuxt = (command, opts) => spawn(nuxtBin, [command, rootDir], opts)
 
 const start = (cmd, env, cb) => {
   return new Promise((resolve) => {
-    const nuxt = spawnNuxt(cmd, { env })
+    const nuxt = spawnNuxt(cmd, { env, detached: true })
     const listener = (data) => {
       if (data.includes(`${port}`)) {
         nuxt.stdout.removeListener('data', listener)
         resolve(nuxt)
       }
     }
-    if (typeof cb === 'function') cb(nuxt)
+    if (typeof cb === 'function') {
+      cb(nuxt)
+    }
     nuxt.stdout.on('data', listener)
   })
 }
 
 const close = (nuxt) => {
   return new Promise((resolve) => {
-    nuxt.kill('SIGKILL')
     nuxt.on('exit', resolve)
+    process.kill(-nuxt.pid)
   })
 }
 
