@@ -7,14 +7,14 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "devDependencies": {
     "coffee-loader": "^0.8.0",
-    "coffeescript": "^2.0.1",
-    "post-update": "yarn upgrade --latest"
+    "coffeescript": "^2.0.1"
   }
 }

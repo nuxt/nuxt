@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "node",
     "lib": [
       "esnext",
@@ -8,7 +9,6 @@
       "dom"
     ],
     "esModuleInterop": true,
-    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "jsx": "preserve",
     "sourceMap": true,
@@ -25,10 +25,6 @@
       "@/*": [
         "./*"
       ]
-    },
-    "types": [
-      "@types/node",
-      "@nuxt/vue-app"
-    ]
+    }
   }
 }

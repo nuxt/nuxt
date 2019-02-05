@@ -8,7 +8,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "devDependencies": {
     "glob-all": "^3.1.0",

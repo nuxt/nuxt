@@ -20,7 +20,7 @@ const close = async (nuxtInt) => {
   }
 }
 
-describe.skip.win('cli', () => {
+describe.skip('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
     const { env } = process

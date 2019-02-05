@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`builder: buildContext should construct context 1`] = `
+TemplateContext {
+  "templateFiles": Array [
+    "template.js",
+  ],
+  "templateVars": Object {
+    "appPath": "./App.js",
+    "components": Object {
+      "ErrorPage": "relativeBuild(test_error_page)",
+    },
+    "css": Array [
+      "test.css",
+    ],
+    "debug": "test_debug",
+    "dir": Array [
+      "test_dir",
+    ],
+    "env": "test_env",
+    "extensions": "test|ext",
+    "globalName": "test_global",
+    "globals": Array [
+      "globals",
+    ],
+    "head": "test_head",
+    "isDev": "test_dev",
+    "isTest": "test_test",
+    "layoutTransition": Object {
+      "name": "test_layout_trans",
+    },
+    "layouts": Object {
+      "test-layout": "test.template",
+    },
+    "loading": "relativeBuild(test_src_dir, test-loading)",
+    "messages": Object {
+      "test": "test message",
+    },
+    "mode": "test mode",
+    "options": Object {
+      "ErrorPage": "test_error_page",
+      "build": Object {
+        "splitChunks": Object {
+          "testSC": true,
+        },
+      },
+      "css": Array [
+        "test.css",
+      ],
+      "debug": "test_debug",
+      "dev": "test_dev",
+      "dir": Array [
+        "test_dir",
+      ],
+      "env": "test_env",
+      "extensions": Array [
+        "test",
+        "ext",
+      ],
+      "globalName": "test_global",
+      "head": "test_head",
+      "layoutTransition": Object {
+        "name": "test_layout_trans",
+      },
+      "layouts": Object {
+        "test-layout": "test.template",
+      },
+      "loading": "test-loading",
+      "messages": Object {
+        "test": "test message",
+      },
+      "mode": "test mode",
+      "router": Object {
+        "route": "test",
+      },
+      "srcDir": "test_src_dir",
+      "store": "test_store",
+      "test": "test_test",
+      "transition": Object {
+        "name": "test_trans",
+      },
+      "vue": Object {
+        "config": "test_config",
+      },
+    },
+    "plugins": Array [
+      "plugins",
+    ],
+    "router": Object {
+      "route": "test",
+    },
+    "splitChunks": Object {
+      "testSC": true,
+    },
+    "store": "test_store",
+    "transition": Object {
+      "name": "test_trans",
+    },
+    "uniqBy": [Function],
+    "vue": Object {
+      "config": "test_config",
+    },
+  },
+}
+`;
