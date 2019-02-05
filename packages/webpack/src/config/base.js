@@ -372,7 +372,11 @@ export default class WebpackBaseConfig {
     plugins.push(...(buildOptions.plugins || []))
 
     // Hide warnings about plugins without a default export (#1179)
-    plugins.push(new WarnFixPlugin())
+    plugins.push(new WarnFixPlugin(warn =>
+      !(warn.name === 'ModuleDependencyWarning' &&
+        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('nuxt_plugin_'))
+    ))
 
     // Build progress indicator
     plugins.push(new WebpackBar({

@@ -1,10 +1,11 @@
 export default class WarnFixPlugin {
+  constructor(filter) {
+    this.filter = filter
+  }
+
   apply(compiler) /* istanbul ignore next */ {
     compiler.hooks.done.tap('warnfix-plugin', (stats) => {
-      stats.compilation.warnings = stats.compilation.warnings.filter(warn =>
-        !(warn.name === 'ModuleDependencyWarning' &&
-          warn.message.includes(`export 'default'`) &&
-          warn.message.includes('nuxt_plugin_')))
+      stats.compilation.warnings = stats.compilation.warnings.filter(this.filter)
     })
   }
 }
