@@ -110,7 +110,6 @@ export default class VueRenderer {
 
   async ready() {
     // -- Development mode --
-
     if (this.context.options.dev) {
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
       return
@@ -121,7 +120,7 @@ export default class VueRenderer {
     // Try once to load SSR resources from fs
     await this.loadResources(fs)
 
-    // Without using`nuxt start` (Programatic, Tests and Generate)
+    // Without using `nuxt start` (Programatic, Tests and Generate)
     if (!this.context.options._start) {
       this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
     }
@@ -324,11 +323,14 @@ export default class VueRenderer {
 
   async renderSSR(context) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.modren ? this.renderer.modern : this.renderer.ssr
+    const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
+    // Call ssr:context hook to extend context from modules
+    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
+
+    // Call Vue renderer renderToString
     let APP = await renderer.renderToString(context)
 
-    // Call ssr:context hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
+    // Legacy hook
     await this.context.nuxt.callHook('render:routeContext', context.nuxt) // Legacy
 
     // Fallback to empty response
