@@ -22,7 +22,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     } = result
 
     if (redirected) {
-      nuxt.callHook('render:routeDone', url, result, context)
+      await nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
     if (error) {
@@ -35,7 +35,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
-        nuxt.callHook('render:routeDone', url, result, context)
+        await nuxt.callHook('render:routeDone', url, result, context)
         return
       }
       res.setHeader('ETag', etag)
@@ -74,7 +74,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
-    nuxt.callHook('render:routeDone', url, result, context)
+    await nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
     /* istanbul ignore if */
