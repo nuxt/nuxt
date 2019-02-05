@@ -136,6 +136,7 @@ Object {
     "terser": Object {},
     "transpile": Array [],
     "typescript": Object {
+      "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
     "watch": Array [],
