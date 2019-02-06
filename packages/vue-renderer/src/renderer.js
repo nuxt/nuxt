@@ -454,11 +454,9 @@ export default class VueRenderer {
     await this.context.nuxt.callHook('vue-renderer:context', context)
 
     // Render SPA or SSR
-    if (context.spa) {
-      return this.renderSPA(context)
-    } else {
-      return this.renderSSR(context)
-    }
+    return context.spa
+      ? this.renderSPA(context)
+      : this.renderSSR(context)
   }
 
   get resourceMap() {
