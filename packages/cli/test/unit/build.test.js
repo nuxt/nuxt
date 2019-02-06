@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils/'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
@@ -6,6 +7,7 @@ describe('build', () => {
   beforeAll(async () => {
     build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => jest.resetAllMocks())

@@ -1,5 +1,6 @@
 import chalk from 'chalk'
-import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import { indent, foldLines, colorize } from './utils/formatting'
+import { startSpaces, optionSpaces } from './utils/constants'
 import getCommand from './commands'
 
 export default async function listCommands() {
