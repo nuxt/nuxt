@@ -139,16 +139,20 @@ export function normalizeArg(arg, defaultValue) {
 }
 
 export function forceExit(cmdName, timeout) {
-  const exitTimeout = setTimeout(() => {
-    let msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s\n`
-    msg += 'This is most likely not caused by a bug in Nuxt.js\n'
-    msg += 'Make sure to cleanup all timers and listeners you or your plugins/modules start.\n'
-    msg += 'Nuxt.js will now force exit\n\n'
-    msg += chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')
+  if (timeout) {
+    const exitTimeout = setTimeout(() => {
+      let msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s\n`
+      msg += 'This is most likely not caused by a bug in Nuxt.js\n'
+      msg += 'Make sure to cleanup all timers and listeners you or your plugins/modules start.\n'
+      msg += 'Nuxt.js will now force exit\n\n'
+      msg += chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')
 
-    // TODO: Change this to a fatal error in v3
-    process.stderr.write(warningBox(msg))
+      // TODO: Change this to a fatal error in v3
+      process.stderr.write(warningBox(msg))
+      process.exit(0)
+    }, timeout * 1000)
+    exitTimeout.unref()
+  } else {
     process.exit(0)
-  }, timeout * 1000)
-  exitTimeout.unref()
+  }
 }

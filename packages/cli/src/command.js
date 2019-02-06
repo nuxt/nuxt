@@ -48,7 +48,8 @@ export default class NuxtCommand {
 
     const runResolve = Promise.resolve(this.cmd.run(this))
 
-    if (!this.isServer && this.argv['force-exit']) {
+    // TODO: For v3 set timeout to 0 when force-exit === true
+    if (!this.isServer || this.argv['force-exit']) {
       runResolve.then(() => forceExit(this.cmd.name, forceExitTimeout))
     }
 

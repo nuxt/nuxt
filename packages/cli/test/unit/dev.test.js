@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils/'
 import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('dev', () => {
@@ -5,6 +6,8 @@ describe('dev', () => {
 
   beforeAll(async () => {
     dev = await import('../../src/commands/dev').then(m => m.default)
+    // TODO: Below spyOn can be removed in v3 when force-exit is default false
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => jest.clearAllMocks())

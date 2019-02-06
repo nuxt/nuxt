@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils/'
 import { mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('generate', () => {
@@ -6,6 +7,7 @@ describe('generate', () => {
   beforeAll(async () => {
     generate = await import('../../src/commands/generate').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -18,7 +20,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.from(generate, ['--no-force-exit']).run()
+    await NuxtCommand.from(generate).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(true)
@@ -28,7 +30,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.run(generate, ['generate', '.', '--no-build', '--no-force-exit'])
+    await NuxtCommand.run(generate, ['generate', '.', '--no-build'])
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
@@ -38,7 +40,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools', '--no-force-exit'])
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools'])
 
     const options = await cmd.getNuxtConfig()
 
@@ -53,7 +55,7 @@ describe('generate', () => {
     mockGetNuxt()
     mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m', '--no-force-exit'])
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
 
     const options = await cmd.getNuxtConfig()
 

@@ -1,5 +1,6 @@
 import Command from '../../src/command'
 import { common, server } from '../../src/options'
+import * as utils from '../../src/utils/'
 import * as constants from '../../src/utils/constants'
 import { consola } from '../utils'
 
@@ -39,7 +40,9 @@ describe('cli/command', () => {
   })
 
   test('prints version automatically', async () => {
-    const cmd = new Command({}, ['--version', '--no-force-exit'])
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+
+    const cmd = new Command({}, ['--version'])
     cmd.showVersion = jest.fn()
     await cmd.run()
 
@@ -47,7 +50,9 @@ describe('cli/command', () => {
   })
 
   test('prints help automatically', async () => {
-    const cmd = new Command({ options: allOptions }, ['-h', '--no-force-exit'])
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+
+    const cmd = new Command({ options: allOptions }, ['-h'])
     cmd.showHelp = jest.fn()
     await cmd.run()
 
