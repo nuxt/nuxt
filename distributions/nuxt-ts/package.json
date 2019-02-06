@@ -1,6 +1,6 @@
 {
   "name": "nuxt-ts",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "Nuxt With Runtime Typescript Support",
   "keywords": [
     "nuxt",
@@ -56,13 +56,13 @@
     "nuxts": "bin/nuxt-ts.js"
   },
   "dependencies": {
-    "@nuxt/builder": "2.4.2",
-    "@nuxt/cli": "2.4.2",
-    "@nuxt/core": "2.4.2",
-    "@nuxt/generator": "2.4.2",
+    "@nuxt/builder": "2.4.3",
+    "@nuxt/cli": "2.4.3",
+    "@nuxt/core": "2.4.3",
+    "@nuxt/generator": "2.4.3",
     "@nuxt/opencollective": "^0.2.1",
-    "@nuxt/typescript": "2.4.2",
-    "@nuxt/webpack": "2.4.2"
+    "@nuxt/typescript": "2.4.3",
+    "@nuxt/webpack": "2.4.3"
   },
   "engines": {
     "node": ">=6.0.0",
