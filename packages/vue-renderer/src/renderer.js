@@ -30,6 +30,9 @@ export default class VueRenderer {
       spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
+
+    // Keep time of last shown messages
+    this._lastWaitingForResource = new Date()
   }
 
   get assetsMapping() {
@@ -417,7 +420,11 @@ export default class VueRenderer {
     /* istanbul ignore if */
     if (!this.isReady) {
       if (this.context.options.dev && retries > 0) {
-        consola.info('Waiting for server resources...')
+        const now = new Date()
+        if (now - this._lastWaitingForResource > 3000) {
+          consola.info('Waiting for server resources...')
+          this._lastWaitingForResource = now
+        }
         await waitFor(1000)
         return this.renderRoute(url, context, retries - 1)
       } else {
