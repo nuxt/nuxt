@@ -18,7 +18,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.from(generate).run()
+    await NuxtCommand.from(generate, ['--no-force-exit']).run()
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(true)
@@ -28,7 +28,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.run(generate, ['generate', '.', '--no-build'])
+    await NuxtCommand.run(generate, ['generate', '.', '--no-build', '--no-force-exit'])
 
     expect(generator).toHaveBeenCalled()
     expect(generator.mock.calls[0][0].build).toBe(false)
@@ -38,7 +38,7 @@ describe('generate', () => {
     mockGetNuxt()
     const generator = mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools'])
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools', '--no-force-exit'])
 
     const options = await cmd.getNuxtConfig()
 
@@ -53,7 +53,7 @@ describe('generate', () => {
     mockGetNuxt()
     mockGetGenerator(Promise.resolve())
 
-    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m', '--no-force-exit'])
 
     const options = await cmd.getNuxtConfig()
 

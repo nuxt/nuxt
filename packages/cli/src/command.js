@@ -1,10 +1,9 @@
 
 import minimist from 'minimist'
-import env from 'std-env'
 import { name, version } from '../package.json'
-import { loadNuxtConfig } from './utils'
-import { indent, foldLines, colorize, warningBox } from './utils/formatting'
-import { startSpaces, optionSpaces, forceExitTimeout } from './utils/settings'
+import { loadNuxtConfig, forceExit } from './utils'
+import { indent, foldLines, colorize } from './utils/formatting'
+import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -14,9 +13,8 @@ export default class NuxtCommand {
     }
     this.cmd = cmd
 
-    // If the cmd is a server then dont forcibly exit when the cmd is finished
+    // If the cmd is a server then dont forcibly exit when the cmd has finished
     this.isServer = cmd.isServer !== undefined ? cmd.isServer : Boolean(this.cmd.options.hostname)
-    this.forceExit = !this.isServer && !env.test
 
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
@@ -48,20 +46,13 @@ export default class NuxtCommand {
       return Promise.resolve()
     }
 
-    return Promise.resolve(this.cmd.run(this))
-      .then(() => {
-        if (this.forceExit) {
-          const exitTimeout = setTimeout(() => {
-            let msg = `The command 'nuxt ${this.cmd.name}' finished but Nuxt.js did not exit after ${forceExitTimeout}s\n`
-            msg += 'This is most likely not caused by a bug in Nuxt\n'
-            msg += 'Make sure to cleanup all timers and listeners you or your plugins/modules start.\n'
-            msg += 'Nuxt.js will now force exit'
-            process.stderr.write(warningBox(msg))
-            process.exit(0)
-          }, forceExitTimeout * 1000)
-          exitTimeout.unref()
-        }
-      })
+    const runResolve = Promise.resolve(this.cmd.run(this))
+
+    if (!this.isServer && this.argv['force-exit']) {
+      runResolve.then(() => forceExit(this.cmd.name, forceExitTimeout))
+    }
+
+    return runResolve
   }
 
   showVersion() {

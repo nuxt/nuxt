@@ -1,7 +1,7 @@
 import wrapAnsi from 'wrap-ansi'
 import chalk from 'chalk'
 import boxen from 'boxen'
-import { maxCharsPerLine } from './settings'
+import { maxCharsPerLine } from './constants'
 
 export function indent(count, chr = ' ') {
   return chr.repeat(count)
@@ -46,8 +46,14 @@ export function box(message, title, options) {
   }, options)) + '\n'
 }
 
+export function successBox(message, title) {
+  return box(message, title || chalk.green('✔ Nuxt Success'), {
+    borderColor: 'green'
+  })
+}
+
 export function warningBox(message, title) {
-  return box(message, title || chalk.yellow('❗ Nuxt Warning'), {
+  return box(message, title || chalk.yellow('⚠ Nuxt Warning'), {
     borderColor: 'yellow'
   })
 }

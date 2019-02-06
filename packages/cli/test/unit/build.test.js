@@ -23,7 +23,7 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    await NuxtCommand.from(build).run()
+    await NuxtCommand.from(build, ['--no-force-exit']).run()
 
     expect(builder).toHaveBeenCalled()
   })
@@ -37,7 +37,7 @@ describe('build', () => {
     })
     const generate = mockGetGenerator(Promise.resolve())
 
-    await NuxtCommand.from(build).run()
+    await NuxtCommand.from(build, ['--no-force-exit']).run()
 
     expect(generate).toHaveBeenCalled()
   })
@@ -48,7 +48,7 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build, ['build', '.', '--devtools'])
+    const cmd = NuxtCommand.from(build, ['build', '.', '--devtools', '--no-force-exit'])
 
     const options = await cmd.getNuxtConfig(cmd.argv)
 
@@ -64,7 +64,7 @@ describe('build', () => {
     })
     mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build, ['build', '.', '--m'])
+    const cmd = NuxtCommand.from(build, ['build', '.', '--m', '--no-force-exit'])
 
     const options = await cmd.getNuxtConfig()
 

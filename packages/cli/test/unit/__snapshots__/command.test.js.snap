@@ -18,6 +18,10 @@ exports[`cli/command builds help text 1`] = `
     --modern, -m       Build/Start app for 
                        modern browsers, e.g. server, client and 
                        false
+    --no-force-exit    Do not force Nuxt.js 
+                       to exit after the command has finished 
+                       (this option has no effect on commands 
+                       which start a server)
     --version, -v      Display the Nuxt 
                        version
     --help, -h         Display this message
