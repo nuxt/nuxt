@@ -26,7 +26,8 @@ export default function setup({ dev }) {
   consola.addReporter({
     log(logObj) {
       if (logObj.type === 'fatal') {
-        process.stderr.write(fatalBox(String(logObj.args[0])))
+        const errorMessage = String(logObj.args[0])
+        process.stderr.write(fatalBox(errorMessage))
         exit(1)
       }
     }
