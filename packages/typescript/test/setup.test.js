@@ -38,7 +38,8 @@ describe('typescript setup', () => {
       project: tsConfigPath,
       compilerOptions: {
         module: 'commonjs'
-      }
+      },
+      transpileOnly: false
     })
   })
 

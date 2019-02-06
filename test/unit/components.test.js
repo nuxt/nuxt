@@ -33,7 +33,7 @@ describe('components', () => {
       component.throttle = 0
       component.start()
       const str = await renderToString(component)
-      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;left:false;"></div>')
+      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;"></div>')
       component.clear()
     })
 
@@ -46,7 +46,7 @@ describe('components', () => {
       await waitFor(250)
       const str = await renderToString(component)
       expect(str).not.toBe('<!---->')
-      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;left:false;"></div>')
+      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;"></div>')
       expect(component.$data.percent).not.toBe(0)
       component.clear()
     })
@@ -58,7 +58,7 @@ describe('components', () => {
       component.start()
       component.finish()
       let str = await renderToString(component)
-      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;left:false;"></div>')
+      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;"></div>')
       expect(component.$data.percent).toBe(100)
       jest.runAllTimers()
       str = await renderToString(component)
@@ -73,7 +73,7 @@ describe('components', () => {
       component.set(50)
       component.fail()
       const str = await renderToString(component)
-      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress nuxt-progress-failed" style="width:50%;left:false;"></div>')
+      expect(str).toBe('<div data-server-rendered="true" class="nuxt-progress nuxt-progress-failed" style="width:50%;"></div>')
     })
 
     test('not shown until throttle', async () => {
@@ -87,7 +87,7 @@ describe('components', () => {
       await waitFor(1000)
       str = await renderToString(component)
       expect(str).not.toBe('<!---->')
-      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;left:false;"></div>')
+      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:0%;"></div>')
       component.clear()
     })
 
@@ -120,9 +120,9 @@ describe('components', () => {
       await waitFor(850)
       const str = await renderToString(component)
       expect(str).not.toBe('<!---->')
-      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;left:false;"></div>')
+      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;"></div>')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress" style="width:100%;left:auto;"></div>')
-      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress nuxt-progress-notransition" style="width:100%;left:false;"></div>')
+      expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress nuxt-progress-notransition" style="width:100%;"></div>')
       expect(str).not.toBe('<div data-server-rendered="true" class="nuxt-progress nuxt-progress-notransition" style="width:100%;left:auto;"></div>')
       component.clear()
     })

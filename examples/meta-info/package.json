@@ -1,7 +1,7 @@
 {
   "name": "example-meta-info",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

@@ -115,8 +115,8 @@ export default class ModuleContainer {
     let options
     let handler
 
-    // Type 1: String
-    if (typeof moduleOpts === 'string') {
+    // Type 1: String or Function
+    if (typeof moduleOpts === 'string' || typeof moduleOpts === 'function') {
       src = moduleOpts
     } else if (Array.isArray(moduleOpts)) {
       // Type 2: Babel style array
@@ -124,6 +124,11 @@ export default class ModuleContainer {
     } else if (typeof moduleOpts === 'object') {
       // Type 3: Pure object
       ({ src, options, handler } = moduleOpts)
+    }
+
+    // Define handler if src is a function
+    if (typeof src === 'function') {
+      handler = src
     }
 
     // Resolve handler

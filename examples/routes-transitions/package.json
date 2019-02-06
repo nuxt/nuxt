@@ -2,7 +2,7 @@
   "name": "example-routes-transitions",
   "dependencies": {
     "axios": "^0.15.3",
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
