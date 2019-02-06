@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import * as utils from '../../src/utils/'
 import { consola, mockGetNuxtStart, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('start', () => {
@@ -6,6 +7,8 @@ describe('start', () => {
 
   beforeAll(async () => {
     start = await import('../../src/commands/start').then(m => m.default)
+    // TODO: Below spyOn can be removed in v3 when force-exit is default false
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => {
