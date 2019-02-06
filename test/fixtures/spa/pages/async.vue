@@ -1,0 +1,20 @@
+<template>
+  <pre>
+    {{ debug }}
+  </pre>
+</template>
+
+<script>
+export default {
+  asyncData() {
+    return {
+      [Math.random()]: true
+    }
+  },
+  computed: {
+    debug() {
+      return JSON.stringify(this.$data, 2, null)
+    }
+  }
+}
+</script>
