@@ -28,7 +28,7 @@ export default {
       }
     }
   },
-  // TODO: Change this to default: false in Nuxt v3 (and remove --no-force-exit in tests)
+  // TODO: Change this to default: false in Nuxt v3 (see related todo's)
   'force-exit': {
     type: 'boolean',
     default: true,
