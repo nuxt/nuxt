@@ -8,7 +8,7 @@
   ],
   "main": "dist/utils.js",
   "dependencies": {
-    "consola": "^2.3.2",
+    "consola": "^2.4.0",
     "serialize-javascript": "^1.6.1"
   },
   "publishConfig": {
