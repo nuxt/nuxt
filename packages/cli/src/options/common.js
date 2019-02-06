@@ -28,6 +28,12 @@ export default {
       }
     }
   },
+  // TODO: Change this to default: true in Nuxt 3
+  'force-exit': {
+    type: 'boolean',
+    default: false,
+    description: 'Force Nuxt.js to exit after the command has finished (this option has no effect on commands which start a server)'
+  },
   version: {
     alias: 'v',
     type: 'boolean',

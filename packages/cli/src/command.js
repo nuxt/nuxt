@@ -1,8 +1,9 @@
 
 import minimist from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import { loadNuxtConfig, forceExit } from './utils'
+import { indent, foldLines, colorize } from './utils/formatting'
+import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -11,6 +12,9 @@ export default class NuxtCommand {
       cmd.options = {}
     }
     this.cmd = cmd
+
+    // If the cmd is a server then dont forcibly exit when the cmd has finished
+    this.isServer = cmd.isServer !== undefined ? cmd.isServer : Boolean(this.cmd.options.hostname)
 
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
@@ -42,7 +46,14 @@ export default class NuxtCommand {
       return Promise.resolve()
     }
 
-    return Promise.resolve(this.cmd.run(this))
+    const runResolve = Promise.resolve(this.cmd.run(this))
+
+    // TODO: For v3 set timeout to 0 when force-exit === true
+    if (!this.isServer || this.argv['force-exit']) {
+      runResolve.then(() => forceExit(this.cmd.name, forceExitTimeout))
+    }
+
+    return runResolve
   }
 
   showVersion() {

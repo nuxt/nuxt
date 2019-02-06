@@ -1,11 +1,7 @@
 import wrapAnsi from 'wrap-ansi'
 import chalk from 'chalk'
-
-export const startSpaces = 2
-export const optionSpaces = 2
-
-// 80% of terminal column width
-export const maxCharsPerLine = (process.stdout.columns || 100) * 80 / 100
+import boxen from 'boxen'
+import { maxCharsPerLine } from './constants'
 
 export function indent(count, chr = ' ') {
   return chr.repeat(count)
@@ -25,8 +21,8 @@ export function indentLines(string, spaces, firstLineSpaces) {
   return s
 }
 
-export function foldLines(string, spaces, firstLineSpaces, maxCharsPerLine) {
-  return indentLines(wrapAnsi(string, maxCharsPerLine, { trim: false }), spaces, firstLineSpaces)
+export function foldLines(string, spaces, firstLineSpaces, charsPerLine = maxCharsPerLine()) {
+  return indentLines(wrapAnsi(string, charsPerLine, { trim: false }), spaces, firstLineSpaces)
 }
 
 export function colorize(text) {
@@ -35,4 +31,39 @@ export function colorize(text) {
     .replace(/<[^ ]+>/g, m => chalk.green(m))
     .replace(/ (-[-\w,]+)/g, m => chalk.bold(m))
     .replace(/`(.+)`/g, (_, m) => chalk.bold.cyan(m))
+}
+
+export function box(message, title, options) {
+  return boxen([
+    title || chalk.white('Nuxt Message'),
+    '',
+    chalk.white(foldLines(message, 0, 0, maxCharsPerLine()))
+  ].join('\n'), Object.assign({
+    borderColor: 'white',
+    borderStyle: 'round',
+    padding: 1,
+    margin: 1
+  }, options)) + '\n'
+}
+
+export function successBox(message, title) {
+  return box(message, title || chalk.green('✔ Nuxt Success'), {
+    borderColor: 'green'
+  })
+}
+
+export function warningBox(message, title) {
+  return box(message, title || chalk.yellow('⚠ Nuxt Warning'), {
+    borderColor: 'yellow'
+  })
+}
+
+export function errorBox(message, title) {
+  return box(message, title || chalk.red('✖ Nuxt Error'), {
+    borderColor: 'red'
+  })
+}
+
+export function fatalBox(message, title) {
+  return errorBox(message, title || chalk.red('✖ Nuxt Fatal Error'))
 }
