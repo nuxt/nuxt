@@ -11,7 +11,7 @@
   "dependencies": {
     "@types/node": "^10.12.21",
     "chalk": "^2.4.2",
-    "consola": "^2.3.2",
+    "consola": "^2.4.0",
     "enquirer": "^2.3.0",
     "fork-ts-checker-webpack-plugin": "^0.5.2",
     "fs-extra": "^7.0.1",
