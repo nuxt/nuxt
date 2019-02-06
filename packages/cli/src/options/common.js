@@ -32,7 +32,7 @@ export default {
   'force-exit': {
     type: 'boolean',
     default: false,
-    description: 'Do not force Nuxt.js to exit after the command has finished (this option has no effect on commands which start a server)'
+    description: 'Force Nuxt.js to exit after the command has finished (this option has no effect on commands which start a server)'
   },
   version: {
     alias: 'v',
