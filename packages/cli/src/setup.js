@@ -1,4 +1,5 @@
 import consola from 'consola'
+import exit from 'exit'
 import { fatalBox } from './utils/formatting'
 
 let _setup = false
@@ -26,7 +27,7 @@ export default function setup({ dev }) {
     log(logObj) {
       if (logObj.type === 'fatal') {
         process.stderr.write(fatalBox(String(logObj.args[0])))
-        process.exit(1)
+        exit(1)
       }
     }
   })

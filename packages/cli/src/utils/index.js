@@ -2,6 +2,7 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
+import exit from 'exit'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
 import chalk from 'chalk'
@@ -140,19 +141,21 @@ export function normalizeArg(arg, defaultValue) {
 
 export function forceExit(cmdName, timeout) {
   if (timeout) {
+    const err = new Error(cmdName)
     const exitTimeout = setTimeout(() => {
-      let msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s\n`
-      msg += 'This is most likely not caused by a bug in Nuxt.js\n'
-      msg += 'Make sure to cleanup all timers and listeners you or your plugins/modules start.\n'
-      msg += 'Nuxt.js will now force exit\n\n'
-      msg += chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')
+      const msg = `${err.stack} The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s
+This is most likely not caused by a bug in Nuxt.js\
+Make sure to cleanup all timers and listeners you or your plugins/modules start.
+Nuxt.js will now force exit
+
+${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')}`
 
       // TODO: Change this to a fatal error in v3
       process.stderr.write(warningBox(msg))
-      process.exit(0)
+      exit(0)
     }, timeout * 1000)
     exitTimeout.unref()
   } else {
-    process.exit(0)
+    exit(0)
   }
 }

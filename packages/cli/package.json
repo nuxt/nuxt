@@ -18,6 +18,7 @@
     "consola": "^2.3.2",
     "esm": "^3.2.0",
     "execa": "^1.0.0",
+    "exit": "^0.1.2",
     "minimist": "^1.2.0",
     "pretty-bytes": "^5.1.0",
     "std-env": "^2.2.1",
