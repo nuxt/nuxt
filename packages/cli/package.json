@@ -15,10 +15,11 @@
     "@nuxt/config": "2.4.2",
     "boxen": "^2.1.0",
     "chalk": "^2.4.2",
-    "consola": "^2.3.2",
-    "esm": "^3.2.0",
+    "consola": "^2.4.0",
+    "esm": "^3.2.1",
     "execa": "^1.0.0",
     "minimist": "^1.2.0",
+    "opener": "1.5.1",
     "pretty-bytes": "^5.1.0",
     "std-env": "^2.2.1",
     "wrap-ansi": "^4.0.0"

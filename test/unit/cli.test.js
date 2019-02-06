@@ -20,7 +20,7 @@ const close = async (nuxtInt) => {
   }
 }
 
-describe.posix('cli', () => {
+describe.skip('cli', () => {
   test('nuxt dev', async () => {
     let stdout = ''
     const { env } = process

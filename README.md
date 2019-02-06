@@ -46,7 +46,7 @@ Learn more at [nuxtjs.org](https://nuxtjs.org).
 
 ## Consulting from the Nuxt team
 
-Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $200 an hour, get technical support, advice, code reviews, and development from the Nuxt core team: [Hire Nuxt on Otechie](https://otechie.com/nuxt?ref=readme)
+Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice, code reviews, and development from the Nuxt core team: [Hire Nuxt on Otechie](https://otechie.com/nuxt?ref=readme)
 
 ## Professional support with TideLift
 
