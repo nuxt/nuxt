@@ -338,9 +338,8 @@ export default class VueRenderer {
 
     // Call ssr:context hook
     await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
-
-    // Legacy hook
-    await this.context.nuxt.callHook('render:routeContext', context.nuxt) // Legacy
+    // TODO: Remove in next major release
+    await this.context.nuxt.callHook('render:routeContext', context.nuxt)
 
     // Fallback to empty response
     if (!context.nuxt.serverRendered) {

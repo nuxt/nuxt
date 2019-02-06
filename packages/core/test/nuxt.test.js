@@ -57,6 +57,7 @@ describe('core: nuxt', () => {
     expect(nuxt.ready).toBeCalledTimes(1)
   })
 
+  // TODO: Remove in next major release
   test('should call hook webpack:done in showReady', () => {
     const nuxt = new Nuxt()
     nuxt.callHook = jest.fn()
