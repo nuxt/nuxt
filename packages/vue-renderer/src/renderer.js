@@ -317,7 +317,9 @@ export default class VueRenderer {
 
     return {
       html,
-      getPreloadFiles: content.getPreloadFiles
+      getPreloadFiles: this.getPreloadFiles.bind(this, {
+        getPreloadFiles: content.getPreloadFiles
+      })
     }
   }
 
