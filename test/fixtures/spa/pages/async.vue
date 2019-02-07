@@ -13,7 +13,7 @@ export default {
   },
   computed: {
     debug() {
-      return JSON.stringify(this.$data, 2, null)
+      return JSON.stringify(this.$data, null, 2)
     }
   }
 }
