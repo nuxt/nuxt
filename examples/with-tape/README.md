@@ -1,3 +1,3 @@
-# Nuxt.js and [Tape](https://github.com/substack/tape) example 
+# Nux with [Tape](https://github.com/substack/tape) 
 
-Tape is a tap-producing test harness for node and browsers
+> Tape is a tap-producing test harness for node and browsers
