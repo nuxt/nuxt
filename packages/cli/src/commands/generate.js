@@ -38,6 +38,9 @@ export default {
     const config = await cmd.getNuxtConfig({ dev: false })
 
     // Disable analyze if set by the nuxt config
+    if (!config.build) {
+      config.build = {}
+    }
     config.build.analyze = false
 
     const nuxt = await cmd.getNuxt(config)
