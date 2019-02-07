@@ -63,4 +63,49 @@ describe('generate', () => {
 
     expect(options.modern).toBe('client')
   })
+
+  test('generate with modern mode', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
+
+    const options = await cmd.getNuxtConfig()
+
+    await cmd.run()
+
+    expect(options.modern).toBe('client')
+  })
+
+  test('generate force-exits by default', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('generate', 5)
+  })
+
+  test('generate can set force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('generate', 0)
+  })
+
+  test('generate can disable force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--no-force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
+  })
 })

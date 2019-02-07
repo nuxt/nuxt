@@ -48,9 +48,12 @@ export default class NuxtCommand {
 
     const runResolve = Promise.resolve(this.cmd.run(this))
 
-    // TODO: For v3 set timeout to 0 when force-exit === true
-    if (!this.isServer || this.argv['force-exit']) {
-      runResolve.then(() => forceExit(this.cmd.name, forceExitTimeout))
+    if (
+      this.argv['force-exit'] ||
+      // dont force exit when it was explicitly disabled by the user
+      (!this.isServer && !this.isExplicitArgument('force-exit'))
+    ) {
+      runResolve.then(() => forceExit(this.cmd.name, this.argv['force-exit'] ? 0 : forceExitTimeout))
     }
 
     return runResolve
@@ -100,6 +103,10 @@ export default class NuxtCommand {
     const { Generator } = await imports.generator()
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
+  }
+
+  isExplicitArgument(option) {
+    return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
   }
 
   _getMinimistOptions() {
