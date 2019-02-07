@@ -224,9 +224,7 @@ export class WebpackBundler {
   }
 
   async unwatch() {
-    for (const watching of this.compilersWatching) {
-      await watching.close()
-    }
+    await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
   async close() {
