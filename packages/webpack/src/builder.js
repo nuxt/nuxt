@@ -117,9 +117,7 @@ export class WebpackBundler {
     // Start Builds
     const runner = options.dev ? parallel : sequence
 
-    await runner(this.compilers, (compiler) => {
-      return this.webpackCompile(compiler)
-    })
+    await runner(this.compilers, compiler => this.webpackCompile(compiler))
   }
 
   async webpackCompile(compiler) {
