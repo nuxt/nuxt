@@ -168,10 +168,10 @@ export class WebpackBundler {
     if (stats.hasErrors()) {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
-      } else {
-        // Actual error will be printed by webpack
-        throw new Error('Nuxt Build Error')
       }
+
+      // Actual error will be printed by webpack
+      throw new Error('Nuxt Build Error')
     }
   }
 
