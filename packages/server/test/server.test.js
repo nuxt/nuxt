@@ -1,5 +1,6 @@
 import path from 'path'
 import connect from 'connect'
+import consola from 'consola'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import launchMiddleware from 'launch-editor-middleware'
@@ -7,7 +8,9 @@ import { determineGlobals, isUrl } from '@nuxt/utils'
 import { VueRenderer } from '@nuxt/vue-renderer'
 
 import Server from '../src/server'
+import Listener from '../src/listener'
 import ServerContext from '../src/context'
+import renderAndGetWindow from '../src/jsdom'
 import nuxtMiddleware from '../src/middleware/nuxt'
 import errorMiddleware from '../src/middleware/error'
 import createModernMiddleware from '../src/middleware/modern'
@@ -19,7 +22,9 @@ jest.mock('serve-placeholder')
 jest.mock('launch-editor-middleware')
 jest.mock('@nuxt/utils')
 jest.mock('@nuxt/vue-renderer')
+jest.mock('../src/listener')
 jest.mock('../src/context')
+jest.mock('../src/jsdom')
 jest.mock('../src/middleware/nuxt')
 jest.mock('../src/middleware/error')
 jest.mock('../src/middleware/modern')
@@ -95,11 +100,10 @@ describe('server: server', () => {
 
   test('should construct server', () => {
     const nuxt = createNuxt()
-    determineGlobals.mockReturnValue({
+    determineGlobals.mockReturnValueOnce({
       ...nuxt.options.globals,
       name: nuxt.options.globalName
     })
-
     let server = new Server(nuxt)
 
     expect(server.nuxt).toBe(nuxt)
@@ -377,5 +381,213 @@ describe('server: server', () => {
     nuxt.options.render.fallback = {}
     await server.setupMiddleware()
     expect(servePlaceholder).not.toBeCalled()
+  })
+
+  test('should use object middleware', () => {
+    const nuxt = createNuxt()
+    nuxt.options.router = { base: '/' }
+    const server = new Server(nuxt)
+    const handler = jest.fn()
+
+    server.useMiddleware({
+      handler
+    })
+
+    expect(nuxt.resolver.requireModule).not.toBeCalled()
+    expect(server.app.use).toBeCalledTimes(1)
+    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler)
+  })
+
+  test('should use function module middleware', () => {
+    const nuxt = createNuxt()
+    nuxt.options.router = { base: '/' }
+    const server = new Server(nuxt)
+    const handler = jest.fn()
+    nuxt.resolver.requireModule.mockReturnValueOnce(handler)
+
+    server.useMiddleware('test-middleware')
+
+    expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
+    expect(nuxt.resolver.requireModule).toBeCalledWith('test-middleware')
+    expect(server.app.use).toBeCalledTimes(1)
+    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler)
+  })
+
+  test('should use object module middleware', () => {
+    const nuxt = createNuxt()
+    nuxt.options.router = { base: '/' }
+    const server = new Server(nuxt)
+    const handler = jest.fn()
+    nuxt.resolver.requireModule.mockReturnValueOnce({
+      handler,
+      prefix: false,
+      path: '//middleware'
+    })
+
+    server.useMiddleware('test-middleware')
+
+    expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
+    expect(nuxt.resolver.requireModule).toBeCalledWith('test-middleware')
+    expect(server.app.use).toBeCalledTimes(1)
+    expect(server.app.use).toBeCalledWith('/middleware', handler)
+  })
+
+  test('should throw error when module resolves failed', () => {
+    const nuxt = createNuxt()
+    nuxt.options.router = { base: '/' }
+    const server = new Server(nuxt)
+    const error = Error('middleware resolves failed')
+    nuxt.resolver.requireModule.mockImplementationOnce(() => {
+      throw error
+    })
+
+    expect(() => server.useMiddleware('test-middleware')).toThrow(error)
+    expect(consola.error).toBeCalledTimes(1)
+    expect(consola.error).toBeCalledWith(error)
+  })
+
+  test('should only log error when module resolves failed in dev mode', () => {
+    const nuxt = createNuxt()
+    nuxt.options.dev = true
+    nuxt.options.router = { base: '/' }
+    const server = new Server(nuxt)
+    const error = Error('middleware resolves failed')
+    nuxt.resolver.requireModule.mockImplementationOnce(() => {
+      throw error
+    })
+
+    server.useMiddleware('test-middleware')
+
+    expect(consola.error).toBeCalledTimes(1)
+    expect(consola.error).toBeCalledWith(error)
+  })
+
+  test('should render route via renderer', () => {
+    const nuxt = createNuxt()
+    const server = new Server(nuxt)
+    server.renderer = { renderRoute: jest.fn() }
+
+    server.renderRoute('test-render-route')
+
+    expect(server.renderer.renderRoute).toBeCalledTimes(1)
+    expect(server.renderer.renderRoute).toBeCalledWith('test-render-route')
+  })
+
+  test('should load resources via renderer', () => {
+    const nuxt = createNuxt()
+    const server = new Server(nuxt)
+    server.renderer = { loadResources: jest.fn() }
+
+    server.loadResources('test-load-resources')
+
+    expect(server.renderer.loadResources).toBeCalledTimes(1)
+    expect(server.renderer.loadResources).toBeCalledWith('test-load-resources')
+  })
+
+  test('should render and get window', () => {
+    const nuxt = createNuxt()
+    const globals = {
+      ...nuxt.options.globals,
+      name: nuxt.options.globalName,
+      loadedCallback: jest.fn()
+    }
+    determineGlobals.mockReturnValueOnce(globals)
+    const server = new Server(nuxt)
+
+    server.renderAndGetWindow('/render/window')
+
+    expect(renderAndGetWindow).toBeCalledTimes(1)
+    expect(renderAndGetWindow).toBeCalledWith('/render/window', {}, {
+      loadedCallback: globals.loadedCallback,
+      ssr: nuxt.options.render.ssr,
+      globals: globals
+    })
+  })
+
+  test('should listen server', async () => {
+    const nuxt = createNuxt()
+    const server = new Server(nuxt)
+    const listener = {
+      listen: jest.fn(),
+      server: jest.fn()
+    }
+    Listener.mockImplementationOnce(() => {
+      return listener
+    })
+
+    await server.listen(3000, 'localhost', '/var/nuxt/unix.socket')
+
+    expect(Listener).toBeCalledWith({
+      port: 3000,
+      host: 'localhost',
+      socket: '/var/nuxt/unix.socket',
+      https: undefined,
+      app: server.app,
+      dev: server.options.dev
+    })
+    expect(listener.listen).toBeCalledTimes(1)
+    expect(server.listeners).toEqual([ listener ])
+    expect(server.nuxt.callHook).toBeCalledTimes(1)
+    expect(server.nuxt.callHook).toBeCalledWith('listen', listener.server, listener)
+  })
+
+  test('should listen server via options.server', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.server = {
+      host: 'localhost',
+      port: '3000',
+      socket: '/var/nuxt/unix.socket',
+      https: true
+    }
+    const server = new Server(nuxt)
+
+    await server.listen()
+
+    expect(Listener).toBeCalledWith({
+      ...nuxt.options.server,
+      app: server.app,
+      dev: server.options.dev
+    })
+  })
+
+  test('should close server', async () => {
+    const removeAllListeners = jest.fn()
+    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    const nuxt = createNuxt()
+    const server = new Server(nuxt)
+    const listener = { close: jest.fn() }
+    server.listeners = [ listener ]
+    server.renderer = { close: jest.fn() }
+    server.resources = { id: 'test-resources' }
+
+    await server.close()
+
+    expect(server.__closed).toEqual(true)
+    expect(listener.close).toBeCalledTimes(1)
+    expect(server.listeners).toEqual([])
+    expect(server.renderer.close).toBeCalledTimes(1)
+    expect(removeAllListeners).toBeCalledTimes(1)
+    expect(server.app).toBeNull()
+    expect(server.resources).toEqual({})
+  })
+
+  test('should prevent closing server multiple times', async () => {
+    const removeAllListeners = jest.fn()
+    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    const nuxt = createNuxt()
+    const server = new Server(nuxt)
+    server.renderer = {}
+
+    await server.close()
+
+    expect(server.__closed).toEqual(true)
+    expect(removeAllListeners).toBeCalledTimes(1)
+
+    removeAllListeners.mockClear()
+
+    await server.close()
+
+    expect(server.__closed).toEqual(true)
+    expect(removeAllListeners).not.toBeCalled()
   })
 })
