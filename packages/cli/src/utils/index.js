@@ -140,7 +140,7 @@ export function normalizeArg(arg, defaultValue) {
 }
 
 export function forceExit(cmdName, timeout) {
-  if (timeout) {
+  if (timeout !== false) {
     const exitTimeout = setTimeout(() => {
       const msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s
 This is most likely not caused by a bug in Nuxt.js

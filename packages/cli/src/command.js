@@ -13,9 +13,6 @@ export default class NuxtCommand {
     }
     this.cmd = cmd
 
-    // If the cmd is a server then dont forcibly exit when the cmd has finished
-    this.isServer = cmd.isServer !== undefined ? cmd.isServer : Boolean(this.cmd.options.hostname)
-
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
   }
@@ -48,12 +45,9 @@ export default class NuxtCommand {
 
     const runResolve = Promise.resolve(this.cmd.run(this))
 
-    if (
-      this.argv['force-exit'] ||
-      // dont force exit when it was explicitly disabled by the user
-      (!this.isServer && !this.isExplicitArgument('force-exit'))
-    ) {
-      runResolve.then(() => forceExit(this.cmd.name, this.argv['force-exit'] ? 0 : forceExitTimeout))
+    if (this.argv['force-exit']) {
+      const forceExitByUser = this.isUserSuppliedArg('force-exit')
+      runResolve.then(() => forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout))
     }
 
     return runResolve
@@ -105,8 +99,12 @@ export default class NuxtCommand {
     return new Generator(nuxt, builder)
   }
 
-  isExplicitArgument(option) {
+  isUserSuppliedArg(option) {
     return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
+  }
+
+  _getDefaultOptionValue(option) {
+    return typeof option.default === 'function' ? option.default(this.cmd) : option.default
   }
 
   _getMinimistOptions() {
@@ -127,7 +125,7 @@ export default class NuxtCommand {
         minimistOptions[option.type].push(option.alias || name)
       }
       if (option.default) {
-        minimistOptions.default[option.alias || name] = option.default
+        minimistOptions.default[option.alias || name] = this._getDefaultOptionValue(option)
       }
     }
 
@@ -142,7 +140,7 @@ export default class NuxtCommand {
       const option = this.cmd.options[name]
 
       let optionHelp = '--'
-      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += option.type === 'boolean' && this._getDefaultOptionValue(option) ? 'no-' : ''
       optionHelp += name
       if (option.alias) {
         optionHelp += `, -${option.alias}`

@@ -51,7 +51,7 @@ describe('start', () => {
     await cmd.run()
 
     expect(utils.forceExit).toHaveBeenCalledTimes(1)
-    expect(utils.forceExit).toHaveBeenCalledWith('start', 0)
+    expect(utils.forceExit).toHaveBeenCalledWith('start', false)
   })
 
   test('start can disable force exit explicitly', async () => {

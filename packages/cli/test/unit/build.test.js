@@ -94,7 +94,7 @@ describe('build', () => {
     await cmd.run()
 
     expect(utils.forceExit).toHaveBeenCalledTimes(1)
-    expect(utils.forceExit).toHaveBeenCalledWith('build', 0)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', false)
   })
 
   test('build can disable force exit explicitly', async () => {

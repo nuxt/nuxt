@@ -96,7 +96,7 @@ describe('generate', () => {
     await cmd.run()
 
     expect(utils.forceExit).toHaveBeenCalledTimes(1)
-    expect(utils.forceExit).toHaveBeenCalledWith('generate', 0)
+    expect(utils.forceExit).toHaveBeenCalledWith('generate', false)
   })
 
   test('generate can disable force exit explicitly', async () => {

@@ -125,7 +125,7 @@ describe('dev', () => {
     await cmd.run()
 
     expect(utils.forceExit).toHaveBeenCalledTimes(1)
-    expect(utils.forceExit).toHaveBeenCalledWith('dev', 0)
+    expect(utils.forceExit).toHaveBeenCalledWith('dev', false)
   })
 
   test('dev can disable force exit explicitly', async () => {

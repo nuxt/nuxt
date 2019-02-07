@@ -19,7 +19,7 @@ describe('cli', () => {
 
     await run()
     expect(mockedCommand.run).toHaveBeenCalled()
-    expect(utils.forceExit).toHaveBeenCalled()
+    expect(utils.forceExit).not.toHaveBeenCalled()
   })
 
   test('sets NODE_ENV=development for dev', async () => {
