@@ -1,6 +1,6 @@
-# Nuxt With [Vue-Material](https://vuematerial.io/)
+# Nuxt.js With [Vue-Material](https://vuematerial.io/)
 
-Vue Material is a Vue.js bassed Material Design component library 
+> Vue Material is a Vue.js bassed Material Design component library 
 
 ## Compatibility
 
