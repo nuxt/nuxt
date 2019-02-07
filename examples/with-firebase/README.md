@@ -1,6 +1,4 @@
-# nuxt-firebase
-
-> Nuxt.js with Firebase (REST API)
+# Nuxt.js with [Firebase](https://firebase.google.com/) (REST API)
 
 [DEMO](https://nuxt-firebase.now.sh/)
 
