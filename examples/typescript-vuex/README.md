@@ -1,3 +1,3 @@
-# TypeScript with Vuex example
+# Nuxt with TypeScript and Vuex 
 
 https://nuxtjs.org/examples/typescript-vuex
