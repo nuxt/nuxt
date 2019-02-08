@@ -1,7 +1,5 @@
 import Vue from 'vue'
 
-const noopData = () => ({})
-
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
 if (process.client) {
@@ -24,12 +22,17 @@ export function interopDefault(promise) {
 }
 
 export function applyAsyncData(Component, asyncData) {
-  const ComponentData = Component.options.data || noopData
-  // Prevent calling this method for each request on SSR context
-  if (!asyncData && Component.options.hasAsyncData) {
+  if (
+    // For SSR, we once all this function without second param to just apply asyncData
+    // Prevent doing this for each SSR request
+    !asyncData && Component.options.__hasNuxtData
+  ) {
     return
   }
-  Component.options.hasAsyncData = true
+
+  const ComponentData = Component.options._originDataFn || Component.options.data || function () { return {} }
+  Component.options._originDataFn = ComponentData
+
   Component.options.data = function () {
     const data = ComponentData.call(this)
     if (this.$ssrContext) {
@@ -37,6 +40,9 @@ export function applyAsyncData(Component, asyncData) {
     }
     return { ...data, ...asyncData }
   }
+
+  Component.options.__hasNuxtData = true
+
   if (Component._Ctor && Component._Ctor.options) {
     Component._Ctor.options.data = Component.options.data
   }
