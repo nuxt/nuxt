@@ -6,7 +6,6 @@ jest.mock('../../src/commands')
 
 describe('cli', () => {
   beforeAll(() => {
-    // TODO: Below spyOn can be removed in v3 when force-exit is default false
     jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
@@ -20,6 +19,7 @@ describe('cli', () => {
 
     await run()
     expect(mockedCommand.run).toHaveBeenCalled()
+    expect(utils.forceExit).not.toHaveBeenCalled()
   })
 
   test('sets NODE_ENV=development for dev', async () => {
