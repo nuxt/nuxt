@@ -123,7 +123,7 @@ export default class VueRenderer {
     // Try once to load SSR resources from fs
     await this.loadResources(fs)
 
-    // Without using `nuxt start` (Programatic, Tests and Generate)
+    // Without using `nuxt start` (Programmatic, Tests and Generate)
     if (!this.context.options._start) {
       this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
     }
