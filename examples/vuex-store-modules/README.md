@@ -1,4 +1,4 @@
-# Nuxt.js with [Vuex](https://vuex.vuejs.org/) and store modules
+# Nuxt with [Vuex](https://vuex.vuejs.org/) and store modules
 
 > Vuex is a state management pattern + library for Vue.js applications. 
 
