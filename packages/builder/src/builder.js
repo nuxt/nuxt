@@ -46,8 +46,7 @@ export default class Builder {
     this.supportedExtensions = ['vue', 'js', 'ts', 'tsx']
 
     // Helper to resolve build paths
-    this.relativeToBuild = (...args) =>
-      relativeTo(this.options.buildDir, ...args)
+    this.relativeToBuild = (...args) => relativeTo(this.options.buildDir, ...args)
 
     this._buildStatus = STATUS.INITIAL
 
