@@ -12,8 +12,11 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
     message: err.message || 'Nuxt Server Error',
     name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
   }
-  const errorFull = err instanceof Error ? err : typeof err === 'string'
-    ? new Error(err) : new Error(err.message || JSON.stringify(err))
+  const errorFull = err instanceof Error
+    ? err
+    : typeof err === 'string'
+      ? new Error(err)
+      : new Error(err.message || JSON.stringify(err))
   if (err.stack) errorFull.stack = err.stack
   errorFull.name = error.name
   errorFull.statusCode = error.statusCode
