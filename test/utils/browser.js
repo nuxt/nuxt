@@ -1,5 +1,12 @@
+import fs from 'fs'
 import puppeteer from 'puppeteer-core'
 import which from 'which'
+import env from 'std-env'
+
+const macChromePath = [
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+]
 
 export default class Browser {
   async start(options = {}) {
@@ -16,6 +23,14 @@ export default class Browser {
     if (!_opts.executablePath) {
       const resolve = cmd => which.sync(cmd, { nothrow: true })
       _opts.executablePath = resolve('google-chrome') || resolve('chromium')
+      if (!_opts.executablePath && env.darwin) {
+        for (const bin of macChromePath) {
+          if (fs.existsSync(bin)) {
+            _opts.executablePath = bin
+            break
+          }
+        }
+      }
     }
 
     this.browser = await puppeteer.launch(_opts)

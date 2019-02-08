@@ -346,7 +346,7 @@ export default class WebpackBaseConfig {
 
     plugins.push(new VueLoader.VueLoaderPlugin())
 
-    Array.prototype.push.apply(plugins, this.options.build.plugins || [])
+    plugins.push(...(this.options.build.plugins || []))
 
     // Hide warnings about plugins without a default export (#1179)
     plugins.push(new WarnFixPlugin())
