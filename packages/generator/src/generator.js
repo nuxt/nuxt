@@ -210,7 +210,7 @@ export default class Generator {
       }
     } catch (err) {
       pageErrors.push({ type: 'unhandled', route, error: err })
-      Array.prototype.push.apply(errors, pageErrors)
+      errors.push(...pageErrors)
 
       await this.nuxt.callHook('generate:routeFailed', {
         route,
