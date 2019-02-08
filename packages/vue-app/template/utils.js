@@ -25,14 +25,13 @@ export function applyAsyncData(Component, asyncData) {
   if (
     // For SSR, we once all this function without second param to just apply asyncData
     // Prevent doing this for each SSR request
-    (!asyncData && Component.options.__isNuxt) ||
-    // Prevent chain and leak on client-side
-    (Component.options.data && Component.options.data.__isNuxt)
+    !asyncData && Component.options.__hasNuxtData
   ) {
     return
   }
 
-  const ComponentData = Component.options.data || function () { return {} }
+  const ComponentData = Component.options._originDataFn || Component.options.data || function () { return {} }
+  Component.options._originDataFn = ComponentData
 
   Component.options.data = function () {
     const data = ComponentData.call(this)
@@ -42,8 +41,7 @@ export function applyAsyncData(Component, asyncData) {
     return { ...data, ...asyncData }
   }
 
-  Component.options.__isNuxt = true
-  Component.options.data.__isNuxt = true
+  Component.options.__hasNuxtData = true
 
   if (Component._Ctor && Component._Ctor.options) {
     Component._Ctor.options.data = Component.options.data
