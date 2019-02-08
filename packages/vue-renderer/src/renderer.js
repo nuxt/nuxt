@@ -295,9 +295,9 @@ export default class VueRenderer {
     opts.head_attrs = opts.HEAD_ATTRS
     opts.body_attrs = opts.BODY_ATTRS
 
-    const fn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
+    const templateFn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
 
-    return fn(opts)
+    return templateFn(opts)
   }
 
   async renderSPA(context) {
