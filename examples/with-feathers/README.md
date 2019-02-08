@@ -1,4 +1,4 @@
-# Nuxt.js with [Feathers](http://feathersjs.com)
+# Nuxt with [Feathers](http://feathersjs.com)
 
 ## About
 
