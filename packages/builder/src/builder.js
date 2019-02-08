@@ -389,21 +389,23 @@ export default class Builder {
 
   async resolveStore({ templateVars, templateFiles }) {
     // Add store if needed
-    if (this.options.store) {
-      templateVars.storeModules = (await this.resolveRelative(this.options.dir.store))
-        .sort(({ src: p1 }, { src: p2 }) => {
-          // modules are sorted from low to high priority (for overwriting properties)
-          let res = p1.split('/').length - p2.split('/').length
-          if (res === 0 && p1.includes('/index.')) {
-            res = -1
-          } else if (res === 0 && p2.includes('/index.')) {
-            res = 1
-          }
-          return res
-        })
-
-      templateFiles.push('store.js')
+    if (!this.options.store) {
+      return
     }
+
+    templateVars.storeModules = (await this.resolveRelative(this.options.dir.store))
+      .sort(({ src: p1 }, { src: p2 }) => {
+        // modules are sorted from low to high priority (for overwriting properties)
+        let res = p1.split('/').length - p2.split('/').length
+        if (res === 0 && p1.includes('/index.')) {
+          res = -1
+        } else if (res === 0 && p2.includes('/index.')) {
+          res = 1
+        }
+        return res
+      })
+
+    templateFiles.push('store.js')
   }
 
   async resolveMiddleware({ templateVars }) {
@@ -451,41 +453,43 @@ export default class Builder {
   }
 
   async resolveLoadingIndicator({ templateFiles }) {
-    if (this.options.loadingIndicator.name) {
-      let indicatorPath = path.resolve(
-        this.template.dir,
-        'views/loading',
-        this.options.loadingIndicator.name + '.html'
+    if (!this.options.loadingIndicator.name) {
+      return
+    }
+    let indicatorPath = path.resolve(
+      this.template.dir,
+      'views/loading',
+      this.options.loadingIndicator.name + '.html'
+    )
+
+    let customIndicator = false
+    if (!await fsExtra.exists(indicatorPath)) {
+      indicatorPath = this.nuxt.resolver.resolveAlias(
+        this.options.loadingIndicator.name
       )
 
-      let customIndicator = false
-      if (!await fsExtra.exists(indicatorPath)) {
-        indicatorPath = this.nuxt.resolver.resolveAlias(
-          this.options.loadingIndicator.name
-        )
-
-        if (await fsExtra.exists(indicatorPath)) {
-          customIndicator = true
-        } else {
-          indicatorPath = null
-        }
-      }
-
-      if (indicatorPath) {
-        templateFiles.push({
-          src: indicatorPath,
-          dst: 'loading.html',
-          custom: customIndicator,
-          options: this.options.loadingIndicator
-        })
+      if (await fsExtra.exists(indicatorPath)) {
+        customIndicator = true
       } else {
-        consola.error(
-          `Could not fetch loading indicator: ${
-            this.options.loadingIndicator.name
-          }`
-        )
+        indicatorPath = null
       }
     }
+
+    if (!indicatorPath) {
+      consola.error(
+        `Could not fetch loading indicator: ${
+          this.options.loadingIndicator.name
+        }`
+      )
+      return
+    }
+
+    templateFiles.push({
+      src: indicatorPath,
+      dst: 'loading.html',
+      custom: customIndicator,
+      options: this.options.loadingIndicator
+    })
   }
 
   async compileTemplates(templateContext) {
