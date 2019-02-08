@@ -303,9 +303,7 @@ export default class VueRenderer {
   async renderSPA(context) {
     const content = await this.renderer.spa.render(context)
 
-    const APP =
-      `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` +
-      content.BODY_SCRIPTS
+    const APP = `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>${content.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {
