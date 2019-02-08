@@ -47,14 +47,14 @@ export default {
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
-      const releaseBuildLock = await createLock({
+      cmd.setLock(await createLock({
         id: 'build',
         dir: nuxt.options.buildDir,
         root: config.rootDir
-      })
+      }))
 
       nuxt.hook('build:done', async () => {
-        await releaseBuildLock()
+        await cmd.releaseLock()
 
         cmd.setLock(await createLock({
           id: 'generate',

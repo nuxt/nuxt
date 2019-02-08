@@ -1,4 +1,4 @@
-import * as utils from '../../src/utils/'
+import * as utils from '../../src/utils'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
@@ -8,6 +8,7 @@ describe('build', () => {
     build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
     jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+    jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -105,5 +106,35 @@ describe('build', () => {
     await cmd.run()
 
     expect(utils.forceExit).not.toHaveBeenCalled()
+  })
+
+  test('build locks project by default', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const createLock = jest.fn()
+    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
+
+    expect(createLock).toHaveBeenCalledTimes(1)
+  })
+
+  test('build can disable locking', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const createLock = jest.fn()
+    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-lock'])
+    await cmd.run()
+
+    expect(createLock).not.toHaveBeenCalled()
   })
 })

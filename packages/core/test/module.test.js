@@ -5,7 +5,8 @@ import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
 
 jest.mock('fs', () => ({
-  existsSync: Boolean
+  existsSync: Boolean,
+  closeSync: Boolean
 }))
 
 jest.mock('hash-sum', () => src => `hash(${src})`)

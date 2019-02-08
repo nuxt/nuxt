@@ -5,12 +5,11 @@ import esm from 'esm'
 import exit from 'exit'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
+import { lock } from '@nuxt/utils'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import { successBox, warningBox } from './formatting'
-
-export { lock as createLock } from '@nuxt/utils'
 
 export const requireModule = process.env.NUXT_TS ? require : esm(module, {
   cache: false,
@@ -159,4 +158,8 @@ ${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fa
   } else {
     exit(0)
   }
+}
+
+export function createLock(...args) {
+  return lock(...args)
 }

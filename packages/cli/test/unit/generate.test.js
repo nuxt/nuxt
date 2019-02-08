@@ -1,4 +1,4 @@
-import * as utils from '../../src/utils/'
+import * as utils from '../../src/utils'
 import { mockGetNuxt, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('generate', () => {
@@ -8,6 +8,7 @@ describe('generate', () => {
     generate = await import('../../src/commands/generate').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
     jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+    jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -64,19 +65,6 @@ describe('generate', () => {
     expect(options.modern).toBe('client')
   })
 
-  test('generate with modern mode', async () => {
-    mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
-
-    const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
-
-    const options = await cmd.getNuxtConfig()
-
-    await cmd.run()
-
-    expect(options.modern).toBe('client')
-  })
-
   test('generate force-exits by default', async () => {
     mockGetNuxt()
     mockGetGenerator(Promise.resolve())
@@ -107,5 +95,33 @@ describe('generate', () => {
     await cmd.run()
 
     expect(utils.forceExit).not.toHaveBeenCalled()
+  })
+
+  test('generate locks project by default', async () => {
+    const releaseLock = jest.fn()
+    const createLock = jest.fn(() => releaseLock)
+    jest.spyOn(utils, 'createLock').mockImplementation(createLock)
+
+    mockGetNuxt()
+    mockGetGenerator()
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.'])
+    await cmd.run()
+
+    expect(createLock).toHaveBeenCalledTimes(1)
+    expect(releaseLock).toHaveBeenCalledTimes(1)
+  })
+
+  test('generate can disable locking', async () => {
+    mockGetNuxt()
+    mockGetGenerator(Promise.resolve())
+
+    const createLock = jest.fn()
+    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--no-lock'])
+    await cmd.run()
+
+    expect(createLock).not.toHaveBeenCalled()
   })
 })

@@ -23,7 +23,7 @@ export const mockGetNuxt = (options = {}, implementation) => {
     return Object.assign({
       hook: jest.fn(),
       options
-    }, implementation)
+    }, implementation || {})
   })
 }
 
