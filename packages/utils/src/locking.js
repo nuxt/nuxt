@@ -60,5 +60,6 @@ export async function lock({ id, dir, root, options }) {
   return async function lockRelease() {
     await release()
     await fs.remove(lockPath)
+    lockPaths.delete(lockPath)
   }
 }

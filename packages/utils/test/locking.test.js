@@ -103,6 +103,17 @@ describe('util: locking', () => {
     expect(fs.remove).toHaveBeenCalledTimes(1)
   })
 
+  test('lock release also cleansup onExit set', async () => {
+    const release = jest.fn()
+    properlock.lock.mockImplementationOnce(() => release)
+
+    const fn = await lock(lockConfig)
+    expect(lockPaths.size).toBe(1)
+
+    await fn()
+    expect(lockPaths.size).toBe(0)
+  })
+
   test('lock sets exit listener once to remove lockPaths', async () => {
     properlock.lock.mockImplementationOnce(() => true)
 
