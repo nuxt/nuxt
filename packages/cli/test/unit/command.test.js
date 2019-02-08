@@ -128,4 +128,14 @@ describe('cli/command', () => {
     expect(process.stdout.write).toHaveBeenCalled()
     process.stdout.write.mockRestore()
   })
+
+  test('can set and release lock', () => {
+    const release = jest.fn()
+    const cmd = new Command()
+
+    cmd.setLock(release)
+    cmd.releaseLock()
+
+    expect(release).toHaveBeenCalledTimes(1)
+  })
 })

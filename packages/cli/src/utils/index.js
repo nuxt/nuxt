@@ -10,6 +10,8 @@ import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import { successBox, warningBox } from './formatting'
 
+export { lock as createLock } from '@nuxt/utils'
+
 export const requireModule = process.env.NUXT_TS ? require : esm(module, {
   cache: false,
   cjs: {

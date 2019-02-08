@@ -48,6 +48,10 @@ export default class NuxtCommand {
 
     const runResolve = Promise.resolve(this.cmd.run(this))
 
+    if (this.argv.lock) {
+      runResolve.then(() => this.releaseLock())
+    }
+
     // TODO: For v3 set timeout to 0 when force-exit === true
     if (!this.isServer || this.argv['force-exit']) {
       runResolve.then(() => forceExit(this.cmd.name, forceExitTimeout))
@@ -74,7 +78,7 @@ export default class NuxtCommand {
 
   async getNuxtConfig(extraOptions) {
     const config = await loadNuxtConfig(this.argv)
-    const options = Object.assign(config, extraOptions || {})
+    const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
@@ -100,6 +104,18 @@ export default class NuxtCommand {
     const { Generator } = await imports.generator()
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
+  }
+
+  setLock(lockRelease) {
+    if (lockRelease) {
+      this._lockRelease = lockRelease
+    }
+  }
+
+  releaseLock() {
+    if (this._lockRelease) {
+      return this._lockRelease()
+    }
   }
 
   _getMinimistOptions() {

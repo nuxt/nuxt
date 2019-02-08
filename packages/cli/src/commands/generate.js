@@ -1,5 +1,5 @@
-import { common } from '../options'
-import { normalizeArg } from '../utils'
+import { common, locking } from '../options'
+import { normalizeArg, createLock } from '../utils'
 
 export default {
   name: 'generate',
@@ -7,6 +7,7 @@ export default {
   usage: 'generate <dir>',
   options: {
     ...common,
+    ...locking,
     build: {
       type: 'boolean',
       default: true,
@@ -37,6 +38,25 @@ export default {
   async run(cmd) {
     const config = await cmd.getNuxtConfig({ dev: false })
     const nuxt = await cmd.getNuxt(config)
+
+    if (cmd.argv.lock) {
+      const releaseBuildLock = await createLock({
+        id: 'build',
+        dir: nuxt.options.buildDir,
+        root: config.rootDir
+      })
+
+      nuxt.hook('build:done', async () => {
+        await releaseBuildLock()
+
+        cmd.setLock(await createLock({
+          id: 'generate',
+          dir: nuxt.options.generate.dir,
+          root: config.rootDir
+        }))
+      })
+    }
+
     const generator = await cmd.getGenerator(nuxt)
 
     await generator.generate({
