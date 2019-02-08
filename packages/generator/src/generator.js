@@ -269,11 +269,11 @@ export default class Generator {
 
     if (pageErrors.length) {
       consola.error('Error generating ' + route)
-      Array.prototype.push.apply(errors, pageErrors)
-    } else {
-      consola.success('Generated ' + route)
+      errors.push(...pageErrors)
+      return
     }
 
+    consola.success('Generated ' + route)
     return true
   }
 }
