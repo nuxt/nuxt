@@ -80,7 +80,7 @@
     "ts-loader": "^5.3.3",
     "tslint": "^5.12.1",
     "typescript": "^3.3.3",
-    "vue-jest": "^3.0.2",
+    "vue-jest": "^3.0.3",
     "vue-property-decorator": "^7.3.0"
   },
   "repository": {
