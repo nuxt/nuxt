@@ -1,4 +1,4 @@
-# Middleware with Nuxt.js
+# Middleware with Nuxt
 
 ## Demo
 https://nuxtjs.org/examples/middleware
