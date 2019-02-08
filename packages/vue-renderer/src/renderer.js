@@ -123,22 +123,22 @@ export default class VueRenderer {
     // Try once to load SSR resources from fs
     await this.loadResources(fs)
 
-    // Without using `nuxt start` (Programatic, Tests and Generate)
+    // Without using `nuxt start` (Programmatic, Tests and Generate)
     if (!this.context.options._start) {
       this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
+      return
     }
 
     // Verify resources
-    if (this.context.options._start) {
-      if (!this.isReady) {
-        throw new Error(
-          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-        )
-      } else if (this.context.options.modern && !this.context.resources.modernManifest) {
-        throw new Error(
-          'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
-        )
-      }
+    if (!this.isReady) {
+      throw new Error(
+        'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+      )
+    }
+    if (this.context.options.modern && !this.context.resources.modernManifest) {
+      throw new Error(
+        'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+      )
     }
   }
 
@@ -218,6 +218,7 @@ export default class VueRenderer {
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
+  // TODO: Remove in Nuxt 3
   get noSSR() { /* Backward compatibility */
     return this.context.options.render.ssr === false
   }
@@ -240,6 +241,7 @@ export default class VueRenderer {
     return true
   }
 
+  // TODO: Remove in Nuxt 3
   get isResourcesAvailable() { /* Backward compatibility */
     return this.isReady
   }
@@ -293,17 +295,15 @@ export default class VueRenderer {
     opts.head_attrs = opts.HEAD_ATTRS
     opts.body_attrs = opts.BODY_ATTRS
 
-    const fn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
+    const templateFn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
 
-    return fn(opts)
+    return templateFn(opts)
   }
 
   async renderSPA(context) {
     const content = await this.renderer.spa.render(context)
 
-    const APP =
-      `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` +
-      content.BODY_SCRIPTS
+    const APP = `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>${content.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {

@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => function errorMiddleware(err, req, res, next) {
+export default ({ resources, options }) => async function errorMiddleware(err, req, res, next) {
   // ensure statusCode, message and name fields
 
   const error = {
@@ -12,11 +12,15 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
     message: err.message || 'Nuxt Server Error',
     name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
   }
-  const errorFull = err instanceof Error ? err : typeof err === 'string'
-    ? new Error(err) : new Error(err.message || JSON.stringify(err))
-  if (err.stack) errorFull.stack = err.stack
+  const errorFull = err instanceof Error
+    ? err
+    : typeof err === 'string'
+      ? new Error(err)
+      : new Error(err.message || JSON.stringify(err))
+
   errorFull.name = error.name
   errorFull.statusCode = error.statusCode
+  errorFull.stack = err.stack || undefined
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
@@ -71,18 +75,18 @@ export default ({ resources, options }) => function errorMiddleware(err, req, re
     true
   )
   if (isJson) {
-    youch.toJSON().then((json) => {
-      sendResponse(JSON.stringify(json, undefined, 2), 'text/json')
-    })
-  } else {
-    youch.toHTML().then(html => sendResponse(html))
+    const json = await youch.toJSON()
+    sendResponse(JSON.stringify(json, undefined, 2), 'text/json')
+    return
   }
+
+  const html = await youch.toHTML()
+  sendResponse(html)
 }
 
 const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource(frame) {
   // Remove webpack:/// & query string from the end
-  const sanitizeName = name =>
-    name ? name.replace('webpack:///', '').split('?')[0] : null
+  const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
   frame.fileName = sanitizeName(frame.fileName)
 
   // Return if fileName is unknown
