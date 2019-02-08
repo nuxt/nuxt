@@ -34,9 +34,8 @@ export default async function run(_argv) {
     })
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw String(`Command not found: nuxt-${argv[0]}`)
-    } else {
-      throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)
+      throw new Error(`Command not found: nuxt-${argv[0]}`)
     }
+    throw new Error(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)
   }
 }
