@@ -72,15 +72,13 @@ export default class StyleLoader {
 
   css(options) {
     options.exportOnlyLocals = this.exportOnlyLocals
-
     const cssLoader = { loader: 'css-loader', options }
-    const styleLoader = options.exportOnlyLocals ? false : this.styleLoader()
 
-    if (!styleLoader) {
+    if (options.exportOnlyLocals) {
       return [cssLoader]
     }
 
-    return [styleLoader, cssLoader]
+    return [this.styleLoader(), cssLoader]
   }
 
   cssModules(options) {
