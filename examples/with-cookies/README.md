@@ -1,4 +1,4 @@
-# Nuxt.js and cookies example
+# Nuxt with cookies
 
 This demo showcases reading/updating cookies with Nuxt.js
 
