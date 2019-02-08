@@ -24,9 +24,8 @@ export default {
 
     // Opens the server listeners url in the default browser
     if (argv.open) {
-      for (const listener of nuxt.server.listeners) {
-        await opener(listener.url)
-      }
+      const openerPromises = nuxt.server.listeners.map(listener => opener(listener.url))
+      await Promise.all(openerPromises)
     }
   },
 
