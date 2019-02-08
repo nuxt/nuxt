@@ -218,6 +218,7 @@ export default class VueRenderer {
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
+  // TODO: Remove in Nuxt 3
   get noSSR() { /* Backward compatibility */
     return this.context.options.render.ssr === false
   }
@@ -240,6 +241,7 @@ export default class VueRenderer {
     return true
   }
 
+  // TODO: Remove in Nuxt 3
   get isResourcesAvailable() { /* Backward compatibility */
     return this.isReady
   }
