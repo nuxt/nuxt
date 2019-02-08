@@ -86,8 +86,7 @@ export default ({ resources, options }) => async function errorMiddleware(err, r
 
 const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource(frame) {
   // Remove webpack:/// & query string from the end
-  const sanitizeName = name =>
-    name ? name.replace('webpack:///', '').split('?')[0] : null
+  const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
   frame.fileName = sanitizeName(frame.fileName)
 
   // Return if fileName is unknown
