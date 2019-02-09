@@ -160,6 +160,8 @@ ${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fa
   }
 }
 
+// An immediate export throws an error when mocking with jest
+// TypeError: Cannot set property createLock of #<Object> which has only a getter
 export function createLock(...args) {
   return lock(...args)
 }
