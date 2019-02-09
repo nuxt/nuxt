@@ -8,7 +8,7 @@ import onExit from 'signal-exit'
 export const lockPaths = new Set()
 
 export const defaultLockOptions = {
-  stale: 30000,
+  stale: 15000,
   onCompromised: err => consola.fatal(err)
 }
 
