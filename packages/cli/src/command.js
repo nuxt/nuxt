@@ -1,4 +1,4 @@
-
+import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, forceExit } from './utils'
@@ -103,15 +103,23 @@ export default class NuxtCommand {
     return new Generator(nuxt, builder)
   }
 
-  setLock(lockRelease) {
+  async setLock(lockRelease) {
     if (lockRelease) {
-      this._lockRelease = lockRelease
+      if (this._lockRelease) {
+        consola.warn(`A previous unreleased lock was found, this shouldn't happen and is probably an error in 'nuxt ${this.cmd.name}' command. The lock will be removed but be aware of potential strange results`)
+
+        await this.releaseLock()
+        this._lockRelease = lockRelease
+      } else {
+        this._lockRelease = lockRelease
+      }
     }
   }
 
-  releaseLock() {
+  async releaseLock() {
     if (this._lockRelease) {
-      return this._lockRelease()
+      await this._lockRelease()
+      this._lockRelease = undefined
     }
   }
 

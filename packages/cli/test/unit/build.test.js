@@ -38,7 +38,7 @@ describe('build', () => {
         analyze: false
       }
     })
-    const generate = mockGetGenerator(Promise.resolve())
+    const generate = mockGetGenerator()
 
     await NuxtCommand.from(build).run()
 
@@ -114,13 +114,15 @@ describe('build', () => {
     })
     mockGetBuilder(Promise.resolve())
 
-    const createLock = jest.fn()
-    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+    const releaseLock = jest.fn(() => Promise.resolve())
+    const createLock = jest.fn(() => releaseLock)
+    jest.spyOn(utils, 'createLock').mockImplementation(createLock)
 
     const cmd = NuxtCommand.from(build, ['build', '.'])
     await cmd.run()
 
     expect(createLock).toHaveBeenCalledTimes(1)
+    expect(releaseLock).toHaveBeenCalledTimes(1)
   })
 
   test('build can disable locking', async () => {
@@ -129,7 +131,7 @@ describe('build', () => {
     })
     mockGetBuilder(Promise.resolve())
 
-    const createLock = jest.fn()
+    const createLock = jest.fn(() => Promise.resolve())
     jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
 
     const cmd = NuxtCommand.from(build, ['build', '.', '--no-lock'])

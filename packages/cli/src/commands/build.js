@@ -65,7 +65,7 @@ export default {
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
-      cmd.setLock(await createLock({
+      await cmd.setLock(await createLock({
         id: 'build',
         dir: nuxt.options.buildDir,
         root: config.rootDir

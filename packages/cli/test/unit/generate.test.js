@@ -19,7 +19,7 @@ describe('generate', () => {
 
   test('builds by default', async () => {
     mockGetNuxt()
-    const generator = mockGetGenerator(Promise.resolve())
+    const generator = mockGetGenerator()
 
     await NuxtCommand.from(generate).run()
 
@@ -29,7 +29,7 @@ describe('generate', () => {
 
   test('doesnt build with no-build', async () => {
     mockGetNuxt()
-    const generator = mockGetGenerator(Promise.resolve())
+    const generator = mockGetGenerator()
 
     await NuxtCommand.run(generate, ['generate', '.', '--no-build'])
 
@@ -39,7 +39,7 @@ describe('generate', () => {
 
   test('build with devtools', async () => {
     mockGetNuxt()
-    const generator = mockGetGenerator(Promise.resolve())
+    const generator = mockGetGenerator()
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--devtools'])
 
@@ -54,7 +54,7 @@ describe('generate', () => {
 
   test('generate with modern mode', async () => {
     mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
+    mockGetGenerator()
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--m'])
 
@@ -67,7 +67,7 @@ describe('generate', () => {
 
   test('generate force-exits by default', async () => {
     mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
+    mockGetGenerator()
 
     const cmd = NuxtCommand.from(generate, ['generate', '.'])
     await cmd.run()
@@ -78,7 +78,7 @@ describe('generate', () => {
 
   test('generate can set force exit explicitly', async () => {
     mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
+    mockGetGenerator()
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--force-exit'])
     await cmd.run()
@@ -89,7 +89,7 @@ describe('generate', () => {
 
   test('generate can disable force exit explicitly', async () => {
     mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
+    mockGetGenerator()
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--no-force-exit'])
     await cmd.run()
@@ -97,26 +97,32 @@ describe('generate', () => {
     expect(utils.forceExit).not.toHaveBeenCalled()
   })
 
-  test('generate locks project by default', async () => {
-    const releaseLock = jest.fn()
+  test('generate locks project by default twice', async () => {
+    const releaseLock = jest.fn(() => Promise.resolve())
     const createLock = jest.fn(() => releaseLock)
     jest.spyOn(utils, 'createLock').mockImplementation(createLock)
 
-    mockGetNuxt()
-    mockGetGenerator()
+    let buildDone
+    mockGetNuxt({ generate: {} }, {
+      hook: (hookName, fn) => (buildDone = fn)
+    })
+
+    mockGetGenerator(async () => {
+      await buildDone()
+    })
 
     const cmd = NuxtCommand.from(generate, ['generate', '.'])
     await cmd.run()
 
-    expect(createLock).toHaveBeenCalledTimes(1)
-    expect(releaseLock).toHaveBeenCalledTimes(1)
+    expect(createLock).toHaveBeenCalledTimes(2)
+    expect(releaseLock).toHaveBeenCalledTimes(2)
   })
 
   test('generate can disable locking', async () => {
     mockGetNuxt()
-    mockGetGenerator(Promise.resolve())
+    mockGetGenerator()
 
-    const createLock = jest.fn()
+    const createLock = jest.fn(() => Promise.resolve())
     jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--no-lock'])

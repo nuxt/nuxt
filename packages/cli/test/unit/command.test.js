@@ -130,12 +130,27 @@ describe('cli/command', () => {
   })
 
   test('can set and release lock', () => {
-    const release = jest.fn()
+    const release = jest.fn(() => Promise.resolve())
     const cmd = new Command()
 
     cmd.setLock(release)
     cmd.releaseLock()
 
     expect(release).toHaveBeenCalledTimes(1)
+  })
+
+  test('logs warning when lock already exists and removes old lock', () => {
+    const release = jest.fn(() => Promise.resolve())
+    const cmd = new Command()
+
+    cmd.setLock(release)
+    cmd.setLock(release)
+
+    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledWith(expect.stringMatching('A previous unreleased lock was found'))
+    expect(release).toHaveBeenCalledTimes(1)
+
+    cmd.releaseLock()
+    expect(release).toHaveBeenCalledTimes(2)
   })
 })
