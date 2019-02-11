@@ -66,10 +66,11 @@ export default {
       // Build only
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()
-    } else {
-      // Build + Generate for static deployment
-      const generator = await cmd.getGenerator(nuxt)
-      await generator.generate({ build: true })
+      return
     }
+
+    // Build + Generate for static deployment
+    const generator = await cmd.getGenerator(nuxt)
+    await generator.generate({ build: true })
   }
 }

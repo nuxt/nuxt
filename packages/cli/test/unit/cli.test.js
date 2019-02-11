@@ -1,9 +1,14 @@
 import { run } from '../../src'
 import getCommand from '../../src/commands'
+import * as utils from '../../src/utils/'
 
 jest.mock('../../src/commands')
 
 describe('cli', () => {
+  beforeAll(() => {
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+  })
+
   afterEach(() => jest.resetAllMocks())
 
   test('calls expected method', async () => {
@@ -14,6 +19,7 @@ describe('cli', () => {
 
     await run()
     expect(mockedCommand.run).toHaveBeenCalled()
+    expect(utils.forceExit).not.toHaveBeenCalled()
   })
 
   test('sets NODE_ENV=development for dev', async () => {

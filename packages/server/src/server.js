@@ -265,9 +265,8 @@ export default class Server {
     }
     this.__closed = true
 
-    for (const listener of this.listeners) {
-      await listener.close()
-    }
+    await Promise.all(this.listeners.map(l => l.close()))
+
     this.listeners = []
 
     if (typeof this.renderer.close === 'function') {

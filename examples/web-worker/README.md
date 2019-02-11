@@ -1,4 +1,4 @@
-# web-worker
+# Nuxt with web-workers using [Worker-loader](https://github.com/webpack-contrib/worker-loader)
 
 > Nuxt.js project
 

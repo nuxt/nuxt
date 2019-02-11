@@ -21,3 +21,7 @@ And since the CSS remains inline (due to using Purgecss as a postcss plugin) it 
 
 ![pagespeed mobile](.github/pagespeed-mobile.png)
 ![pagespeed desktop](.github/pagespeed-desktop.png)
+
+### Other
+
+See also this [demo](https://github.com/nuxt/nuxt.js/tree/dev/examples/with-purgecss)

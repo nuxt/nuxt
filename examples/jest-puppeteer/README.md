@@ -1,4 +1,8 @@
-# Example how to test Nuxt.js app with Jest and Puppeteer
+# Nuxt with [Jest](https://jestjs.io/) and [Puppeteer](https://developers.google.com/web/tools/puppeteer/)
+
+> Jest is a delightful JavaScript Testing Framework with a focus on simplicity.
+
+> Puppeteer is a Node library which provides a high-level API to control headless Chrome or Chromium over the DevTools Protocol.
 
 # Install deps
 ```
@@ -35,5 +39,5 @@ Ran all test suites.
 
 ## Documentation
 - [jest-puppeteer](https://github.com/smooth-code/jest-puppeteer)
-- [jest]()
+- [jest](https://jestjs.io/)
 - [puppeteer](https://pptr.dev/)

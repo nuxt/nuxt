@@ -37,39 +37,48 @@ export default class StyleLoader {
     const extResource = this.resources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
-    if (extResource) {
-      const patterns = wrapArray(extResource).map(p => path.resolve(this.rootDir, p))
+    if (!extResource) {
+      return
+    }
+    const patterns = wrapArray(extResource).map(p => path.resolve(this.rootDir, p))
 
-      return {
-        loader: 'style-resources-loader',
-        options: Object.assign(
-          { patterns },
-          this.resources.options || {}
-        )
-      }
+    return {
+      loader: 'style-resources-loader',
+      options: Object.assign(
+        { patterns },
+        this.resources.options || {}
+      )
     }
   }
 
   postcss() {
     // postcss-loader
     // https://github.com/postcss/postcss-loader
-    if (this.postcssConfig) {
-      const config = this.postcssConfig.config()
-      if (config) {
-        return {
-          loader: 'postcss-loader',
-          options: Object.assign({ sourceMap: this.sourceMap }, config)
-        }
-      }
+    if (!this.postcssConfig) {
+      return
+    }
+
+    const config = this.postcssConfig.config()
+
+    if (!config) {
+      return
+    }
+
+    return {
+      loader: 'postcss-loader',
+      options: Object.assign({ sourceMap: this.sourceMap }, config)
     }
   }
 
   css(options) {
     options.exportOnlyLocals = this.exportOnlyLocals
-    return [
-      ...options.exportOnlyLocals ? [] : [this.styleLoader()],
-      { loader: 'css-loader', options }
-    ]
+    const cssLoader = { loader: 'css-loader', options }
+
+    if (options.exportOnlyLocals) {
+      return [cssLoader]
+    }
+
+    return [this.styleLoader(), cssLoader]
   }
 
   cssModules(options) {

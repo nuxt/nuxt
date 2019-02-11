@@ -6,7 +6,7 @@
 import hash from 'hash-sum'
 import uniq from 'lodash/uniq'
 
-import { isJS, isCSS, onEmit } from './util'
+import { isJS, isCSS } from './util'
 
 export default class VueSSRClientPlugin {
   constructor(options = {}) {
@@ -16,7 +16,7 @@ export default class VueSSRClientPlugin {
   }
 
   apply(compiler) {
-    onEmit(compiler, 'vue-client-plugin', (compilation, cb) => {
+    compiler.hooks.emit.tapAsync('vue-client-plugin', (compilation, cb) => {
       const stats = compilation.getStats().toJson()
 
       const allFiles = uniq(stats.assets

@@ -1,4 +1,4 @@
-# CoffeeScript
+# Nuxt with CoffeeScript
 
 > Nuxt.js project with CoffeeScript
 
