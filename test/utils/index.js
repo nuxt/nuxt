@@ -1,29 +1,10 @@
 import klawSync from 'klaw-sync'
-import { waitFor } from '../../packages/utils'
 
 export { getNuxtConfig } from '../../packages/config'
 export { default as getPort } from 'get-port'
 export { default as rp } from 'request-promise-native'
 
 export * from './nuxt'
-
-// Pauses execution for a determined amount of time (`duration`)
-// until `condition` is met. Also allows specifying the `interval`
-// at which the condition is checked during the waiting period.
-export const waitUntil = async function waitUntil(condition, duration = 20, interval = 250) {
-  let iterator = 0
-  const steps = Math.floor(duration * 1000 / interval)
-
-  while (!condition() && iterator < steps) {
-    await waitFor(interval)
-    iterator++
-  }
-
-  if (iterator === steps) {
-    return true
-  }
-  return false
-}
 
 export const listPaths = function listPaths(dir, pathsBefore = [], options = {}) {
   if (Array.isArray(pathsBefore) && pathsBefore.length) {

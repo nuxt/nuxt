@@ -117,9 +117,7 @@ export class WebpackBundler {
     // Start Builds
     const runner = options.dev ? parallel : sequence
 
-    await runner(this.compilers, (compiler) => {
-      return this.webpackCompile(compiler)
-    })
+    await runner(this.compilers, compiler => this.webpackCompile(compiler))
   }
 
   async webpackCompile(compiler) {
@@ -170,10 +168,10 @@ export class WebpackBundler {
     if (stats.hasErrors()) {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
-      } else {
-        // Actual error will be printed by webpack
-        throw new Error('Nuxt Build Error')
       }
+
+      // Actual error will be printed by webpack
+      throw new Error('Nuxt Build Error')
     }
   }
 
@@ -226,9 +224,7 @@ export class WebpackBundler {
   }
 
   async unwatch() {
-    for (const watching of this.compilersWatching) {
-      await watching.close()
-    }
+    await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
   async close() {

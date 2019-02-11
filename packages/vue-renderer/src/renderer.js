@@ -30,6 +30,9 @@ export default class VueRenderer {
       spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
+
+    // Keep time of last shown messages
+    this._lastWaitingForResource = new Date()
   }
 
   get assetsMapping() {
@@ -110,7 +113,6 @@ export default class VueRenderer {
 
   async ready() {
     // -- Development mode --
-
     if (this.context.options.dev) {
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
       return
@@ -121,22 +123,22 @@ export default class VueRenderer {
     // Try once to load SSR resources from fs
     await this.loadResources(fs)
 
-    // Without using`nuxt start` (Programatic, Tests and Generate)
+    // Without using `nuxt start` (Programmatic, Tests and Generate)
     if (!this.context.options._start) {
       this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
+      return
     }
 
     // Verify resources
-    if (this.context.options._start) {
-      if (!this.isReady) {
-        throw new Error(
-          'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-        )
-      } else if (this.context.options.modern && !this.context.resources.modernManifest) {
-        throw new Error(
-          'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
-        )
-      }
+    if (!this.isReady) {
+      throw new Error(
+        'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+      )
+    }
+    if (this.context.options.modern && !this.context.resources.modernManifest) {
+      throw new Error(
+        'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+      )
     }
   }
 
@@ -216,6 +218,7 @@ export default class VueRenderer {
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
 
+  // TODO: Remove in Nuxt 3
   get noSSR() { /* Backward compatibility */
     return this.context.options.render.ssr === false
   }
@@ -238,6 +241,7 @@ export default class VueRenderer {
     return true
   }
 
+  // TODO: Remove in Nuxt 3
   get isResourcesAvailable() { /* Backward compatibility */
     return this.isReady
   }
@@ -291,69 +295,58 @@ export default class VueRenderer {
     opts.head_attrs = opts.HEAD_ATTRS
     opts.body_attrs = opts.BODY_ATTRS
 
-    const fn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
+    const templateFn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
 
-    return fn(opts)
+    return templateFn(opts)
   }
 
-  async renderRoute(url, context = {}, retries = 5) {
-    /* istanbul ignore if */
-    if (!this.isReady) {
-      if (this.context.options.dev && retries > 0) {
-        consola.info('Waiting for server resources...')
-        await waitFor(1000)
-        return this.renderRoute(url, context, retries - 1)
-      } else {
-        throw new Error('Server resources are not available!')
-      }
+  async renderSPA(context) {
+    const content = await this.renderer.spa.render(context)
+
+    const APP = `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>${content.BODY_SCRIPTS}`
+
+    // Prepare template params
+    const templateParams = {
+      ...content,
+      APP,
+      ENV: this.context.options.env
     }
 
-    // Log rendered url
-    consola.debug(`Rendering url ${url}`)
+    // Call spa:templateParams hook
+    this.context.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
 
-    // Add url and isSever to the context
-    context.url = url
+    // Render with SPA template
+    const html = this.renderTemplate(false, templateParams)
 
-    // Basic response if SSR is disabled or SPA data provided
-    const { req, res } = context
-    const spa = context.spa || (res && res.spa)
-    const ENV = this.context.options.env
-
-    if (!this.SSR || spa) {
-      const {
-        HTML_ATTRS,
-        HEAD_ATTRS,
-        BODY_ATTRS,
-        HEAD,
-        BODY_SCRIPTS,
-        getPreloadFiles
-      } = await this.renderer.spa.render(context)
-      const APP =
-        `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>` + BODY_SCRIPTS
-
-      const html = this.renderTemplate(false, {
-        HTML_ATTRS,
-        HEAD_ATTRS,
-        BODY_ATTRS,
-        HEAD,
-        APP,
-        ENV
+    return {
+      html,
+      getPreloadFiles: this.getPreloadFiles.bind(this, {
+        getPreloadFiles: content.getPreloadFiles
       })
-
-      return { html, getPreloadFiles: this.getPreloadFiles.bind(this, { getPreloadFiles }) }
     }
+  }
 
-    let APP
+  async renderSSR(context) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    if (req && req.modernMode) {
-      APP = await this.renderer.modern.renderToString(context)
-    } else {
-      APP = await this.renderer.ssr.renderToString(context)
-    }
+    const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
 
+    // Call ssr:context hook to extend context from modules
+    await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
+
+    // Call Vue renderer renderToString
+    let APP = await renderer.renderToString(context)
+
+    // Call ssr:context hook
+    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
+    // TODO: Remove in next major release
+    await this.context.nuxt.callHook('render:routeContext', context.nuxt)
+
+    // Fallback to empty response
     if (!context.nuxt.serverRendered) {
       APP = `<div id="${this.context.globals.id}"></div>`
     }
+
+    // Inject head meta
     const m = context.meta.inject()
     let HEAD =
       m.title.text() +
@@ -362,18 +355,25 @@ export default class VueRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
+
+    // Add <base href=""> meta if router base specified
     if (this.context.options._routerBaseSpecified) {
       HEAD += `<base href="${this.context.options.router.base}">`
     }
 
+    // Inject resource hints
     if (this.context.options.render.resourceHints) {
       HEAD += this.renderResourceHints(context)
     }
 
-    await this.context.nuxt.callHook('render:routeContext', context.nuxt)
+    // Inject styles
+    HEAD += context.renderStyles()
 
+    // Serialize state
     const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
+    APP += `<script>${serializedSession}</script>`
 
+    // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (this.context.options.render.csp) {
       const { hashAlgorithm } = this.context.options.render.csp
@@ -382,21 +382,29 @@ export default class VueRenderer {
       cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
     }
 
-    APP += `<script>${serializedSession}</script>`
+    // Call ssr:csp hook
+    await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
+
+    // Prepend scripts
     APP += this.renderScripts(context)
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
-    HEAD += context.renderStyles()
-
-    const html = this.renderTemplate(true, {
+    // Template params
+    const templateParams = {
       HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
       HEAD_ATTRS: m.headAttrs.text(),
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,
       APP,
-      ENV
-    })
+      ENV: this.context.options.env
+    }
+
+    // Call ssr:templateParams hook
+    await this.context.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
+
+    // Render with SSR template
+    const html = this.renderTemplate(true, templateParams)
 
     return {
       html,
@@ -405,6 +413,49 @@ export default class VueRenderer {
       error: context.nuxt.error,
       redirected: context.redirected
     }
+  }
+
+  async renderRoute(url, context = {}, retries = 5) {
+    /* istanbul ignore if */
+    if (!this.isReady) {
+      if (!this.context.options.dev || retries <= 0) {
+        throw new Error('Server resources are not available!')
+      }
+
+      const now = new Date()
+      if (now - this._lastWaitingForResource > 3000) {
+        consola.info('Waiting for server resources...')
+        this._lastWaitingForResource = now
+      }
+      await waitFor(1000)
+
+      return this.renderRoute(url, context, retries - 1)
+    }
+
+    // Log rendered url
+    consola.debug(`Rendering url ${url}`)
+
+    // Add url to the context
+    context.url = url
+
+    // context.spa
+    if (context.spa === undefined) {
+      // TODO: Remove reading from context.res in Nuxt3
+      context.spa = !this.SSR || context.spa || (context.req && context.req.spa) || (context.res && context.res.spa)
+    }
+
+    // context.modern
+    if (context.modern === undefined) {
+      context.modern = context.req ? (context.req.modernMode || context.req.modern) : false
+    }
+
+    // Call context hook
+    await this.context.nuxt.callHook('vue-renderer:context', context)
+
+    // Render SPA or SSR
+    return context.spa
+      ? this.renderSPA(context)
+      : this.renderSSR(context)
   }
 
   get resourceMap() {

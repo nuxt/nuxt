@@ -11,7 +11,6 @@ export const startsWithRootAlias = startsWithAlias(['@@', '~~'])
 export const isWindows = /^win/.test(process.platform)
 
 export const wp = function wp(p = '') {
-  /* istanbul ignore if */
   if (isWindows) {
     return p.replace(/\\/g, '\\\\')
   }
@@ -19,7 +18,6 @@ export const wp = function wp(p = '') {
 }
 
 export const wChunk = function wChunk(p = '') {
-  /* istanbul ignore if */
   if (isWindows) {
     return p.replace(/\//g, '_')
   }
@@ -40,8 +38,7 @@ export const r = function r(...args) {
   return wp(path.resolve(...args.map(normalize)))
 }
 
-export const relativeTo = function relativeTo() {
-  const args = Array.prototype.slice.apply(arguments)
+export const relativeTo = function relativeTo(...args) {
   const dir = args.shift()
 
   // Keep webpack inline loader intact
@@ -62,7 +59,7 @@ export const relativeTo = function relativeTo() {
   // Make correct relative path
   let rp = path.relative(dir, _path)
   if (rp[0] !== '.') {
-    rp = './' + rp
+    rp = '.' + path.sep + rp
   }
 
   return wp(rp)

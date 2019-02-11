@@ -1,8 +1,9 @@
 
 import minimist from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig } from './utils'
-import { indent, foldLines, startSpaces, optionSpaces, colorize } from './utils/formatting'
+import { loadNuxtConfig, forceExit } from './utils'
+import { indent, foldLines, colorize } from './utils/formatting'
+import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -42,7 +43,14 @@ export default class NuxtCommand {
       return Promise.resolve()
     }
 
-    return Promise.resolve(this.cmd.run(this))
+    const runResolve = Promise.resolve(this.cmd.run(this))
+
+    if (this.argv['force-exit']) {
+      const forceExitByUser = this.isUserSuppliedArg('force-exit')
+      runResolve.then(() => forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout))
+    }
+
+    return runResolve
   }
 
   showVersion() {
@@ -91,6 +99,14 @@ export default class NuxtCommand {
     return new Generator(nuxt, builder)
   }
 
+  isUserSuppliedArg(option) {
+    return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
+  }
+
+  _getDefaultOptionValue(option) {
+    return typeof option.default === 'function' ? option.default(this.cmd) : option.default
+  }
+
   _getMinimistOptions() {
     const minimistOptions = {
       alias: {},
@@ -109,7 +125,7 @@ export default class NuxtCommand {
         minimistOptions[option.type].push(option.alias || name)
       }
       if (option.default) {
-        minimistOptions.default[option.alias || name] = option.default
+        minimistOptions.default[option.alias || name] = this._getDefaultOptionValue(option)
       }
     }
 
@@ -124,7 +140,7 @@ export default class NuxtCommand {
       const option = this.cmd.options[name]
 
       let optionHelp = '--'
-      optionHelp += option.type === 'boolean' && option.default ? 'no-' : ''
+      optionHelp += option.type === 'boolean' && this._getDefaultOptionValue(option) ? 'no-' : ''
       optionHelp += name
       if (option.alias) {
         optionHelp += `, -${option.alias}`

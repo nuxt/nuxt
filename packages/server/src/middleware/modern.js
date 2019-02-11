@@ -25,23 +25,31 @@ const isModernBrowser = (ua) => {
 
 let detected = false
 
+const distinctModernModeOptions = [false, 'client', 'server']
+
 const detectModernBuild = ({ options, resources }) => {
-  if (detected === false && ![false, 'client', 'server'].includes(options.modern)) {
-    detected = true
-    if (resources.modernManifest) {
-      options.modern = options.render.ssr ? 'server' : 'client'
-      consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
-    } else {
-      options.modern = false
-    }
+  if (detected || distinctModernModeOptions.includes(options.modern)) {
+    return
   }
+
+  detected = true
+
+  if (!resources.modernManifest) {
+    options.modern = false
+    return
+  }
+
+  options.modern = options.render.ssr ? 'server' : 'client'
+  consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
 }
 
 const detectModernBrowser = ({ socket = {}, headers }) => {
-  if (socket.isModernBrowser === undefined) {
-    const ua = headers && headers['user-agent']
-    socket.isModernBrowser = isModernBrowser(ua)
+  if (socket.isModernBrowser !== undefined) {
+    return
   }
+
+  const ua = headers && headers['user-agent']
+  socket.isModernBrowser = isModernBrowser(ua)
 }
 
 const setModernMode = (req, options) => {

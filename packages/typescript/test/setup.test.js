@@ -35,7 +35,11 @@ describe('typescript setup', () => {
 
     expect(register).toHaveBeenCalledTimes(1)
     expect(register).toHaveBeenCalledWith({
-      project: tsConfigPath
+      project: tsConfigPath,
+      compilerOptions: {
+        module: 'commonjs'
+      },
+      transpileOnly: false
     })
   })
 

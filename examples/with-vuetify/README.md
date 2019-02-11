@@ -1,4 +1,6 @@
-# Using Vuetify.js with Nuxt.js
+# Using [Vuetify.js](https://vuetifyjs.com/en/) with Nuxt.js
+
+> Vuetify is a Vue based Material Design Component Framework
 
 ## Demo
 https://nuxt-with-vuetify-example.surge.sh

@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "buefy": "^0.5.4",
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "vue": "~2.4.4"
   },
   "devDependencies": {

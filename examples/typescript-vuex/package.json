@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
-    "nuxt-ts-edge": "latest",
+    "nuxt-ts": "latest",
     "tachyons": "^4.11.1",
     "vue-property-decorator": "^7.3.0",
     "vuex-class": "^0.3.1"
