@@ -122,6 +122,7 @@ export default class WebpackBaseConfig {
     return {
       path: path.resolve(this.options.buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
+      futureEmitAssets: true,
       chunkFilename: this.getFileName('chunk'),
       publicPath: isUrl(this.options.build.publicPath)
         ? this.options.build.publicPath
