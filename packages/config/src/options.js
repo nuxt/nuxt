@@ -280,6 +280,11 @@ export function getNuxtConfig(_options) {
     delete options.build.vendor
     consola.warn('vendor has been deprecated due to webpack4 optimization')
   }
+  
+  if (options.build.parallel && typeof options.build.extractCSS !== 'undefined') {
+    delete options.build.extractCSS
+    consola.warn('extractCSS cannot work with parallel loaders due to missing webpack context')
+  }
 
   // build.extractCSS.allChunks has no effect
   if (typeof options.build.extractCSS.allChunks !== 'undefined') {
