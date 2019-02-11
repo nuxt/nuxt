@@ -21,9 +21,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {
-    "@vue/server-test-utils": "^1.0.0-beta.29",
-    "@vue/test-utils": "^1.0.0-beta.29"
   }
 }
