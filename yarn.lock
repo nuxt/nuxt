@@ -9648,6 +9648,13 @@ repeating@^2.0.0:
   dependencies:
     is-finite "^1.0.0"
 
+reqlim@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.npmjs.org/reqlim/-/reqlim-0.0.0.tgz#77c113300edf36d301c1374a283d855c4a4a9ec9"
+  integrity sha512-l5OrIBQ/TGaNPFTDv44d27E/hLsvLyEttoqSPwqTklfRjOn86wqKbi2qwIlhK2VDdgIHWHM7A+eejv169idBYw==
+  dependencies:
+    consola "^2.4.0"
+
 request-promise-core@1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/request-promise-core/-/request-promise-core-1.1.1.tgz#3eee00b2c5aa83239cfb04c5700da36f81cd08b6"

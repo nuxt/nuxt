@@ -3,6 +3,7 @@ import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
+import rateLimit from 'reqlim'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/utils'
 
@@ -13,7 +14,6 @@ import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
-import rateLimitMiddleware from './middleware/rate-limit'
 import ipMiddleware from './middleware/ip'
 
 export default class Server {
@@ -68,11 +68,9 @@ export default class Server {
     // IP middleware
     this.useMiddleware(ipMiddleware())
 
-    // RateLimit middleware
+    // Rate-Limit middleware
     if (this.options.server.rateLimit) {
-      this.useMiddleware(
-        rateLimitMiddleware(this.options.server.rateLimit)
-      )
+      this.useMiddleware(rateLimit(this.options.server.rateLimit))
     }
 
     // Compression middleware for production
