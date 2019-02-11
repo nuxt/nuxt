@@ -1,0 +1,75 @@
+{
+  "name": "nuxt-ts",
+  "version": "2.4.3",
+  "description": "Nuxt With Runtime Typescript Support",
+  "keywords": [
+    "nuxt",
+    "nuxt-ts",
+    "nuxt.js",
+    "nuxt.ts",
+    "nuxtjs",
+    "nuxts",
+    "ssr",
+    "vue",
+    "vue isomorphic",
+    "vue server side",
+    "vue ssr",
+    "vue universal",
+    "vue versatile",
+    "vue.js",
+    "vuejs"
+  ],
+  "homepage": "https://github.com/nuxt/nuxt.js#readme",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Sebastien Chopin (@Atinux)"
+    },
+    {
+      "name": "Alexandre Chopin (@alexchopin)"
+    },
+    {
+      "name": "Pooya Parsa (@pi0)"
+    },
+    {
+      "name": "Clark Du (@clarkdo)"
+    },
+    {
+      "name": "Jonas Galvez (@galvez)"
+    },
+    {
+      "name": "Alexander Lichter (@manniL)"
+    },
+    {
+      "name": "Dmitry Molotkov (@aldarund)"
+    },
+    {
+      "name": "Kevin Marrec (@kevinmarrec)"
+    }
+  ],
+  "files": [
+    "bin"
+  ],
+  "bin": {
+    "nuxt-ts": "bin/nuxt-ts.js",
+    "nuxts": "bin/nuxt-ts.js"
+  },
+  "dependencies": {
+    "@nuxt/builder": "2.4.3",
+    "@nuxt/cli": "2.4.3",
+    "@nuxt/core": "2.4.3",
+    "@nuxt/generator": "2.4.3",
+    "@nuxt/opencollective": "^0.2.1",
+    "@nuxt/typescript": "2.4.3",
+    "@nuxt/webpack": "2.4.3"
+  },
+  "engines": {
+    "node": ">=6.0.0",
+    "npm": ">=3.0.0"
+  },
+  "collective": {
+    "url": "https://opencollective.com/nuxtjs",
+    "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+  }
+}

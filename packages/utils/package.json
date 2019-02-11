@@ -1,0 +1,17 @@
+{
+  "name": "@nuxt/utils",
+  "version": "2.4.3",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/utils.js",
+  "dependencies": {
+    "consola": "^2.4.0",
+    "serialize-javascript": "^1.6.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

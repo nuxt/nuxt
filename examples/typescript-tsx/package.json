@@ -1,0 +1,22 @@
+{
+  "name": "typescript-tsx",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nuxt-ts",
+    "build": "nuxt-ts build",
+    "start": "nuxt-ts start",
+    "generate": "nuxt-ts generate",
+    "lint": "tslint --project .",
+    "lint:fix": "tslint --project . --fix",
+    "post-update": "yarn upgrade --latest",
+    "watch:css": "tcm components -w"
+  },
+  "dependencies": {
+    "nuxt-ts": "latest"
+  },
+  "devDependencies": {
+    "tslint-config-standard": "^8.0.1",
+    "typed-css-modules": "^0.3.7"
+  }
+}

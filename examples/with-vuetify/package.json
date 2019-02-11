@@ -1,7 +1,7 @@
 {
   "name": "example-with-vuetify",
   "dependencies": {
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "vuetify": "latest",
     "vuetify-loader": "latest"
   },
@@ -9,7 +9,8 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
     "stylus": "^0.54.5",

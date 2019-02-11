@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-const register = require('@babel/register')
-
 require('@babel/polyfill')
 
-register({
+require('@babel/register')({
   presets: [
     [ '@babel/env', { targets: { node: 'current' } } ]
   ],
@@ -24,4 +22,9 @@ register({
   ]
 })
 
-require('@nuxt/cli').run()
+const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
+require('@nuxt/cli' + suffix).run()
+  .catch((error) => {
+    require('consola').fatal(error)
+    process.exit(2)
+  })

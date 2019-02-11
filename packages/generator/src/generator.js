@@ -4,7 +4,7 @@ import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
-import { flatRoutes, isUrl, promisifyRoute, waitFor, isString } from '@nuxt/common'
+import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor(nuxt, builder) {
@@ -83,6 +83,9 @@ export default class Generator {
       this.options.router.mode === 'hash'
         ? ['/']
         : flatRoutes(this.options.router.routes)
+
+    routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
+
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
     // extendRoutes hook
@@ -144,7 +147,7 @@ export default class Generator {
     const fallbackPath = path.join(this.distPath, fallback)
 
     // Prevent conflicts
-    if (fsExtra.existsSync(fallbackPath)) {
+    if (await fsExtra.exists(fallbackPath)) {
       consola.warn(`SPA fallback was configured, but the configured path (${fallbackPath}) already exists.`)
       return
     }
@@ -161,8 +164,7 @@ export default class Generator {
     await this.nuxt.callHook('generate:distRemoved', this)
 
     // Copy static and built files
-    /* istanbul ignore if */
-    if (fsExtra.existsSync(this.staticRoutes)) {
+    if (await fsExtra.exists(this.staticRoutes)) {
       await fsExtra.copy(this.staticRoutes, this.distPath)
     }
     await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
@@ -202,14 +204,13 @@ export default class Generator {
         _generate: true,
         payload
       })
-      html = res.html
+      ;({ html } = res)
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }
     } catch (err) {
-      /* istanbul ignore next */
       pageErrors.push({ type: 'unhandled', route, error: err })
-      Array.prototype.push.apply(errors, pageErrors)
+      errors.push(...pageErrors)
 
       await this.nuxt.callHook('generate:routeFailed', {
         route,
@@ -233,7 +234,7 @@ export default class Generator {
     if (minificationOptions) {
       try {
         html = htmlMinifier.minify(html, minificationOptions)
-      } catch (err) /* istanbul ignore next */ {
+      } catch (err) {
         const minifyErr = new Error(
           `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
         )
@@ -268,7 +269,7 @@ export default class Generator {
 
     if (pageErrors.length) {
       consola.error('Error generating ' + route)
-      Array.prototype.push.apply(errors, pageErrors)
+      errors.push(...pageErrors)
     } else {
       consola.success('Generated ' + route)
     }

@@ -1,0 +1,101 @@
+import Vue from 'vue'
+
+const requestIdleCallback = window.requestIdleCallback ||
+  function (cb) {
+    const start = Date.now()
+    return setTimeout(function () {
+      cb({
+        didTimeout: false,
+        timeRemaining: function () {
+          return Math.max(0, 50 - (Date.now() - start))
+        }
+      })
+    }, 1)
+  }
+const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
+  entries.forEach(({ intersectionRatio, target: link }) => {
+    if (intersectionRatio <= 0) {
+      return
+    }
+    link.__prefetch()
+  })
+})
+
+<%= isTest ? '// @vue/component' : '' %>
+export default {
+  name: 'NuxtLink',
+  extends: Vue.component('RouterLink'),
+  props: {
+    noPrefetch: {
+      type: Boolean,
+      default: false
+    }<% if (router.linkPrefetchedClass) { %>,
+    prefetchedClass: {
+      type: String,
+      default: '<%= router.linkPrefetchedClass %>'
+    }<% } %>
+  },
+  mounted() {
+    if (!this.noPrefetch) {
+      requestIdleCallback(this.observe, { timeout: 2e3 })
+    }
+  },
+  beforeDestroy() {
+    if (this.__observed) {
+      observer.unobserve(this.$el)
+      delete this.$el.__prefetch
+    }
+  },
+  methods: {
+    observe() {
+      // If no IntersectionObserver, avoid prefetching
+      if (!observer) {
+        return
+      }
+      // Add to observer
+      if (this.shouldPrefetch()) {
+        this.$el.__prefetch = this.prefetch.bind(this)
+        observer.observe(this.$el)
+        this.__observed = true
+      }<% if (router.linkPrefetchedClass) { %> else {
+        this.addPrefetchedClass()
+      }<% } %>
+    },
+    shouldPrefetch() {
+      return this.getPrefetchComponents().length > 0
+    },
+    canPrefetch() {
+      const conn = navigator.connection
+      const hasBadConnection = this.<%= globals.nuxt %>.isOffline || (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData))
+
+      return !hasBadConnection
+    },
+    getPrefetchComponents() {
+      const ref = this.$router.resolve(this.to, this.$route, this.append)
+      const Components = ref.resolved.matched.map(r => r.components.default)
+
+      return Components.filter(Component => typeof Component === 'function' && !Component.options && !Component.__prefetched)
+    },
+    prefetch() {
+      if (!this.canPrefetch()) {
+        return
+      }
+      // Stop obersing this link (in case of internet connection changes)
+      observer.unobserve(this.$el)
+      const Components = this.getPrefetchComponents()
+
+      for (const Component of Components) {
+        try {
+          Component()
+          Component.__prefetched = true
+        } catch (e) {}
+      }<% if (router.linkPrefetchedClass) { %>
+      this.addPrefetchedClass()<% } %>
+    }<% if (router.linkPrefetchedClass) { %>,
+    addPrefetchedClass() {
+      if (this.prefetchedClass !== 'false') {
+        this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
+      }
+    }<% } %>
+  }
+}

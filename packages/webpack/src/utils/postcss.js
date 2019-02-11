@@ -1,11 +1,12 @@
 import fs from 'fs'
 import path from 'path'
+import consola from 'consola'
 import defaults from 'lodash/defaults'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
-import { isPureObject } from '@nuxt/common'
+import { isPureObject } from '@nuxt/utils'
 
 export const orderPresets = {
   cssnanoLast: (names) => {
@@ -93,7 +94,10 @@ export default class PostcssConfig {
   }
 
   normalize(config) {
+    // TODO: Remove in Nuxt 3
     if (Array.isArray(config)) {
+      consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
+        ' declaration')
       config = { plugins: config }
     }
     return config
@@ -108,12 +112,12 @@ export default class PostcssConfig {
   }
 
   loadPlugins(config) {
-    const plugins = config.plugins
+    const { plugins } = config
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = require(p)
+          const plugin = this.nuxt.resolver.requireModule(p)
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled

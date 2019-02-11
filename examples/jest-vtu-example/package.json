@@ -5,10 +5,11 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "test": "jest ."
+    "test": "jest",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -17,7 +18,7 @@
     "babel-jest": "^23.6.0",
     "jest": "^23.6.0",
     "jest-serializer-vue": "^2.0.2",
-    "vue-jest": "^2.6.0"
+    "vue-jest": "^3.0.2"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -31,16 +32,17 @@
       "^~~/(.*)$": "<rootDir>/$1"
     },
     "transform": {
-      "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
-      ".*\\.(vue)$": "<rootDir>/node_modules/vue-jest"
+      "^.+\\.js$": "babel-jest",
+      ".*\\.(vue)$": "vue-jest"
     },
     "snapshotSerializers": [
-      "<rootDir>/node_modules/jest-serializer-vue"
+      "jest-serializer-vue"
     ],
     "collectCoverage": true,
     "collectCoverageFrom": [
       "<rootDir>/components/**/*.vue",
       "<rootDir>/pages/*.vue"
-    ]
+    ],
+    "testURL": "http://localhost/"
   }
 }

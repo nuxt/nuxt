@@ -4,13 +4,14 @@
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "test": "ava --serial --verbose"
+    "test": "ava --serial --verbose",
+    "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
     "ava": "^0.19.1",
     "jsdom": "^11.0.0"
   },
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   }
 }

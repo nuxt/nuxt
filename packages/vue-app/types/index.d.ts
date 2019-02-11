@@ -2,6 +2,9 @@ import Vue from "vue";
 import VueRouter, { Route } from "vue-router";
 import { Store } from "vuex";
 
+// augment typings of NodeJS.Process
+import "./process";
+
 // augment typings of Vue.js
 import "./vue";
 
@@ -59,7 +62,16 @@ export interface ErrorParams {
   message?: string;
 }
 
-export interface LoadingObject {
-  start(): void;
+export interface NuxtLoading extends Vue {
+  fail?(): void;
   finish(): void;
+  increase?(num: number): void;
+  pause?(): void;
+  start(): void;
+}
+
+export interface NuxtApp extends Vue {
+  $loading: NuxtLoading;
+  isOffline: boolean;
+  isOnline: boolean;
 }

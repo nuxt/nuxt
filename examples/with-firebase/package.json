@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   },
   "keywords": [
     "nuxt",
@@ -15,6 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.15.3",
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   }
 }

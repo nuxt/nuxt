@@ -2,11 +2,12 @@
   "name": "example-cached-components",
   "dependencies": {
     "lru-cache": "^4.0.2",
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   }
 }

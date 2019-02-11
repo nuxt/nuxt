@@ -80,10 +80,10 @@ describe('basic dev', () => {
   })
 
   test('Config: build.loaders', () => {
-    expect(Object.keys(loadersOptions)).toHaveLength(13)
+    expect(Object.keys(loadersOptions)).toHaveLength(14)
     expect(loadersOptions).toHaveProperty(
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
-      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'vueStyle'
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'tsx', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')

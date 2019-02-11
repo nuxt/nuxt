@@ -1,5 +1,7 @@
 import Command from '../../src/command'
 import { common, server } from '../../src/options'
+import * as utils from '../../src/utils/'
+import * as constants from '../../src/utils/constants'
 import { consola } from '../utils'
 
 jest.mock('@nuxt/core')
@@ -19,56 +21,48 @@ describe('cli/command', () => {
     const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(5)
-    expect(minimistOptions.boolean.length).toBe(4)
+    expect(minimistOptions.boolean.length).toBe(5)
     expect(minimistOptions.alias.c).toBe('config-file')
     expect(minimistOptions.default.c).toBe(common['config-file'].default)
   })
 
   test('parses args', () => {
-    const cmd = new Command({ options: { ...common, ...server } })
+    const argv = ['-c', 'test-file', '-s', '-p', '3001']
+    const cmd = new Command({ options: { ...common, ...server } }, argv)
 
-    let args = ['-c', 'test-file', '-s', '-p', '3001']
-    let argv = cmd.getArgv(args)
+    expect(cmd.argv['config-file']).toBe(argv[1])
+    expect(cmd.argv.spa).toBe(true)
+    expect(cmd.argv.universal).toBe(false)
+    expect(cmd.argv.port).toBe('3001')
 
-    expect(argv['config-file']).toBe(args[1])
-    expect(argv.spa).toBe(true)
-    expect(argv.universal).toBe(false)
-    expect(argv.port).toBe('3001')
-
-    args = ['--no-build']
-    argv = cmd.getArgv(args)
-
-    expect(argv.build).toBe(false)
+    const cmd2 = new Command({ options: { ...common, ...server } }, ['--no-build'])
+    expect(cmd2.argv.build).toBe(false)
   })
 
-  test('prints version automatically', () => {
-    const cmd = new Command()
-    cmd.showVersion = jest.fn()
+  test('prints version automatically', async () => {
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
 
-    const args = ['--version']
-    cmd.getArgv(args)
+    const cmd = new Command({}, ['--version'])
+    cmd.showVersion = jest.fn()
+    await cmd.run()
 
     expect(cmd.showVersion).toHaveBeenCalledTimes(1)
   })
 
-  test('prints help automatically', () => {
-    const cmd = new Command({ options: allOptions })
-    cmd.showHelp = jest.fn()
+  test('prints help automatically', async () => {
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
 
-    const args = ['-h']
-    cmd.getArgv(args)
+    const cmd = new Command({ options: allOptions }, ['-h'])
+    cmd.showHelp = jest.fn()
+    await cmd.run()
 
     expect(cmd.showHelp).toHaveBeenCalledTimes(1)
   })
 
   test('returns nuxt config', async () => {
-    const cmd = new Command({ options: allOptions })
+    const cmd = new Command({ options: allOptions }, ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H'])
 
-    const args = ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H']
-    const argv = cmd.getArgv(args)
-    argv._ = ['.']
-
-    const options = await cmd.getNuxtConfig(argv, { testOption: true })
+    const options = await cmd.getNuxtConfig({ testOption: true })
 
     expect(options.testOption).toBe(true)
     expect(options.server.port).toBe(3001)
@@ -100,16 +94,18 @@ describe('cli/command', () => {
   })
 
   test('builds help text', () => {
+    jest.spyOn(constants, 'maxCharsPerLine').mockReturnValue(40)
+
     const cmd = new Command({
-      description: 'a very long description that should not wrap to the next line because is not longer ' +
+      description: 'a very long description that should wrap to the next line because is not longer ' +
         'than the terminal width',
       usage: 'this is how you do it',
       options: {
         ...allOptions,
         foo: {
           type: 'boolean',
-          description: 'very long option that is not longer than the terminal width and ' +
-        'should not wrap to the next line'
+          description: 'very long option that is longer than the terminal width and ' +
+        'should wrap to the next line'
         }
       }
     })
@@ -117,36 +113,19 @@ describe('cli/command', () => {
     expect(cmd._getHelp()).toMatchSnapshot()
   })
 
-  test('loads command from name', async () => {
-    const cmd = await Command.load('dev')
-    expect(cmd._getHelp()).toMatchSnapshot()
-  })
-
   test('show version prints to stdout and exits', () => {
     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
-
     const cmd = new Command()
     cmd.showVersion()
-
     expect(process.stdout.write).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
-
     process.stdout.write.mockRestore()
-    process.exit.mockRestore()
   })
 
   test('show help prints to stdout and exits', () => {
     jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
-    jest.spyOn(process, 'exit').mockImplementationOnce(code => code)
-
     const cmd = new Command()
     cmd.showHelp()
-
     expect(process.stdout.write).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
-
     process.stdout.write.mockRestore()
-    process.exit.mockRestore()
   })
 })

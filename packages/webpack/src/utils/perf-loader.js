@@ -34,6 +34,10 @@ export default class PerfLoader {
     PerfLoader.warmup(options.css, ['css-loader'])
   }
 
+  static warmup(...args) {
+    warmup(...args)
+  }
+
   use(poolName) {
     const loaders = []
 
@@ -59,5 +63,3 @@ export default class PerfLoader {
     return loaders
   }
 }
-
-PerfLoader.warmup = warmup

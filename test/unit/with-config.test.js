@@ -91,6 +91,8 @@ describe('with-config', () => {
 
     expect(window.__test_plugin).toBe(true)
     expect(window.__test_plugin_ext).toBe(true)
+    expect(window.__test_plugin_client).toBe('test_plugin_client')
+    expect(window.__test_plugin_server).toBeUndefined()
   })
 
   test('/test/about (custom layout)', async () => {
@@ -178,6 +180,11 @@ describe('with-config', () => {
       .rejects.toMatchObject({ statusCode: 404 })
   })
 
+  test('should ignore files in .nuxtignore', async () => {
+    await expect(rp(url('/test-ignore')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   test('renderAndGetWindow options', async () => {
     const fakeErrorLog = jest.fn()
     const mockOptions = {
@@ -193,6 +200,13 @@ describe('with-config', () => {
     } catch (e) {}
     expect(mockOptions.beforeParse).toHaveBeenCalled()
     expect(fakeErrorLog).toHaveBeenCalled()
+  })
+
+  test('/ with Server-Timing header', async () => {
+    const { headers } = await rp(url('/test'), {
+      resolveWithFullResponse: true
+    })
+    expect(headers['server-timing']).toMatch(/total;dur=\d+;desc="Nuxt Server Time"/)
   })
 
   // Close server and ask nuxt to stop listening to file changes

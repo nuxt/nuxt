@@ -3,7 +3,6 @@ import Meta from 'vue-meta'
 import { createRouter } from './router.js'
 import NoSsr from './components/no-ssr.js'
 import NuxtChild from './components/nuxt-child.js'
-import NuxtLink from './components/nuxt-link.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 import Nuxt from './components/nuxt.js'
 import App from '<%= appPath %>'
@@ -12,7 +11,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 
 /* Plugins */
 <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %><%= (plugin.ssr===false) ? ' (ssr: false)' : '' %>
+<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %> (mode: '<%= plugin.mode %>')
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
@@ -23,9 +22,7 @@ Vue.component(NoSsr.name, NoSsr)
 Vue.component(NuxtChild.name, NuxtChild)
 Vue.component('NChild', NuxtChild)
 
-// Component: <NuxtLink
-Vue.component(NuxtLink.name, NuxtLink)
-Vue.component('NLink', NuxtLink)
+// Component NuxtLink is imported in server.js or client.js
 
 // Component: <Nuxt>`
 Vue.component(Nuxt.name, Nuxt)
@@ -126,7 +123,8 @@ async function createApp(ssrContext) {
     payload: ssrContext ? ssrContext.payload : undefined,
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
-    beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined
+    beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined,
+    ssrContext
   })
 
   <% if (plugins.length) { %>
@@ -168,11 +166,18 @@ async function createApp(ssrContext) {
 
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-  <% plugins.filter(p => p.ssr).forEach((plugin) => { %>
+  <% plugins.filter(p => p.mode === 'all').forEach((plugin) => { %>
   if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
-  <% if (plugins.filter(p => !p.ssr).length) { %>
+
+  <% if (plugins.filter(p => p.mode === 'client').length) { %>
   if (process.client) {
-    <% plugins.filter((p) => !p.ssr).forEach((plugin) => { %>
+    <% plugins.filter(p => p.mode === 'client').forEach((plugin) => { %>
+    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
+  }<% } %>
+
+  <% if (plugins.filter(p => p.mode === 'server').length) { %>
+  if (process.server) {
+    <% plugins.filter(p => p.mode === 'server').forEach((plugin) => { %>
     if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
   }<% } %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>

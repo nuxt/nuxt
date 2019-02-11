@@ -9,6 +9,7 @@ module.exports = {
   // But its performance overhead is pretty bad (30+%).
   // detectOpenHandles: true
 
+  // setupFilesAfterEnv: ['./test/utils/setup'],
   setupTestFrameworkScriptFile: './test/utils/setup',
 
   coverageDirectory: './coverage',
@@ -33,11 +34,13 @@ module.exports = {
   ],
 
   transform: {
+    '^.+\\.ts$': 'ts-jest',
     '^.+\\.js$': 'babel-jest',
     '.*\\.(vue)$': 'vue-jest'
   },
 
   moduleFileExtensions: [
+    'ts',
     'js',
     'json'
   ],

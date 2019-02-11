@@ -42,6 +42,7 @@ export default () => ({
     store: 'store'
   },
   extensions: [],
+  styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
 
   // Ignores
   ignorePrefix: '-',
@@ -54,6 +55,7 @@ export default () => ({
   generate: {
     dir: 'dist',
     routes: [],
+    exclude: [],
     concurrency: 500,
     interval: 0,
     subFolders: true,
@@ -63,6 +65,7 @@ export default () => ({
   // Watch
   watch: [],
   watchers: {
+    rewatchOnRawEvents: env.linux ? ['rename'] : undefined,
     webpack: {},
     chokidar: {
       ignoreInitial: true

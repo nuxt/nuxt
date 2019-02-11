@@ -1,4 +1,4 @@
-# Markdown Example
+# Nuxt with Markdown 
 
 > Convert Markdown file to HTML using markdown-it.
 

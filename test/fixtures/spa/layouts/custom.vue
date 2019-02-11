@@ -1,7 +1,7 @@
 <template>
   <div>
     Custom layout
-           <br>
-           <Nuxt />
+    <br>
+    <Nuxt />
   </div>
 </template>

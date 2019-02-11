@@ -16,8 +16,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
   normalizeWhitelist() {
     const whitelist = [
-      /\.css$/,
-      /\?vue&type=style/
+      /\.(?!js(x|on)?$)/i
     ]
     for (const pattern of this.options.build.transpile) {
       if (pattern instanceof RegExp) {
@@ -86,16 +85,18 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     // https://webpack.js.org/configuration/externals/#externals
     // https://github.com/liady/webpack-node-externals
     // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-    this.options.modulesDir.forEach((dir) => {
-      if (fs.existsSync(dir)) {
-        config.externals.push(
-          nodeExternals({
-            whitelist: this.whitelist,
-            modulesDir: dir
-          })
-        )
-      }
-    })
+    if (!this.options.build.standalone) {
+      this.options.modulesDir.forEach((dir) => {
+        if (fs.existsSync(dir)) {
+          config.externals.push(
+            nodeExternals({
+              whitelist: this.whitelist,
+              modulesDir: dir
+            })
+          )
+        }
+      })
+    }
 
     return config
   }

@@ -3,11 +3,12 @@
   "scripts": {
     "dev": "nodemon -w server.js -w nuxt.config.js server.js",
     "build": "nuxt build",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
     "express": "^4.14.0",
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "socket.io": "^1.7.2",
     "socket.io-client": "^1.7.2"
   },

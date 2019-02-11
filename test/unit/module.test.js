@@ -1,9 +1,10 @@
-import { normalize } from 'path'
+import { normalize, resolve } from 'path'
 import consola from 'consola'
 import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
+const rootDir = resolve(__dirname, '..', 'fixtures/module')
 
 let nuxt = null
 // let buildSpies = null
@@ -24,7 +25,7 @@ describe('module', () => {
     expect(html).toContain('<h1>TXUN</h1>')
   })
 
-  test('Layout', async () => {
+  test('Layout - layouts from Module.addLayout take precedence', async () => {
     expect(nuxt.options.layouts.layout).toContain('layout')
 
     const { html } = await nuxt.server.renderRoute('/layout')
@@ -54,6 +55,11 @@ describe('module', () => {
     expect(response).toBe('It works!')
   })
 
+  test('serverMiddleware with path', async () => {
+    const response = await rp(url('/midd3'))
+    expect(response).toBe('Be creative when writing test strings! Hey Mama :wave:')
+  })
+
   test('Hooks - Use external middleware before render', async () => {
     const response = await rp(url('/use-middleware'))
     expect(response).toBe('Use external middleware')
@@ -67,6 +73,13 @@ describe('module', () => {
   test('AddVendor - deprecated', () => {
     nuxt.moduleContainer.addVendor('nuxt-test')
     expect(consola.warn).toHaveBeenCalledWith('addVendor has been deprecated due to webpack4 optimization')
+  })
+
+  test('AddLayout - duplicate layout', () => {
+    nuxt.moduleContainer.addLayout(resolve(rootDir, 'modules', 'basic', 'layout.vue'))
+    expect(consola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Duplicate layout registration, "layout" has been registered as "./basic.layout.')
+    )
   })
 
   test('Lodash - deprecated', async () => {

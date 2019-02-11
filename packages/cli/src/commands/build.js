@@ -1,4 +1,3 @@
-import consola from 'consola'
 import { common } from '../options'
 
 export default {
@@ -47,40 +46,31 @@ export default {
           options.build.quiet = !!argv.quiet
         }
       }
+    },
+    standalone: {
+      type: 'boolean',
+      default: false,
+      description: 'Bundle all server dependencies (useful for nuxt-start)',
+      prepare(cmd, options, argv) {
+        if (argv.standalone) {
+          options.build.standalone = true
+        }
+      }
     }
   },
   async run(cmd) {
-    const argv = cmd.getArgv()
+    const config = await cmd.getNuxtConfig({ dev: false })
+    const nuxt = await cmd.getNuxt(config)
 
-    // Create production build when calling `nuxt build` (dev: false)
-    const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false })
-    )
-
-    let builderOrGenerator
-    if (nuxt.options.mode !== 'spa' || argv.generate === false) {
+    if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
       // Build only
-      builderOrGenerator = (await cmd.getBuilder(nuxt)).build()
-    } else {
-      // Build + Generate for static deployment
-      builderOrGenerator = (await cmd.getGenerator(nuxt)).generate({
-        build: true
-      })
+      const builder = await cmd.getBuilder(nuxt)
+      await builder.build()
+      return
     }
 
-    return builderOrGenerator
-      .then(() => {
-        // In analyze mode wait for plugin
-        // emitting assets and opening browser
-        if (
-          nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object'
-        ) {
-          return
-        }
-
-        process.exit(0)
-      })
-      .catch(err => consola.fatal(err))
+    // Build + Generate for static deployment
+    const generator = await cmd.getGenerator(nuxt)
+    await generator.generate({ build: true })
   }
 }

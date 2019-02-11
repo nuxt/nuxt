@@ -8,11 +8,12 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "test": "jest -w=4",
-    "testServer": "nuxt build & nuxt start"
+    "testServer": "nuxt build && nuxt start"
   },
   "devDependencies": {
     "jest": "latest",
     "jest-puppeteer": "latest",
-    "puppeteer": "latest"
+    "puppeteer": "latest",
+    "post-update": "yarn upgrade --latest"
   }
 }

@@ -11,7 +11,7 @@ import {
   parallel,
   sequence,
   wrapArray
-} from '@nuxt/common'
+} from '@nuxt/utils'
 
 import { ClientConfig, ModernConfig, ServerConfig } from './config'
 import PerfLoader from './utils/perf-loader'
@@ -38,7 +38,7 @@ export class WebpackBundler {
   }
 
   async build() {
-    const options = this.context.options
+    const { options } = this.context
 
     const compilersOptions = []
 
@@ -63,23 +63,22 @@ export class WebpackBundler {
     for (const p of this.context.plugins) {
       // Client config
       if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = p.src
-      }
-
-      // Server config
-      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
-        // Alias to noop for ssr:false plugins
-        serverConfig.resolve.alias[p.name] = p.ssr ? p.src : './empty.js'
+        clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
       }
 
       // Modern config
       if (modernConfig && !modernConfig.resolve.alias[p.name]) {
-        modernConfig.resolve.alias[p.name] = p.src
+        modernConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
+      }
+
+      // Server config
+      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
+        serverConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
       }
     }
 
     // Check styleResource existence
-    const styleResources = this.context.options.build.styleResources
+    const { styleResources } = this.context.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
         'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
@@ -118,13 +117,11 @@ export class WebpackBundler {
     // Start Builds
     const runner = options.dev ? parallel : sequence
 
-    await runner(this.compilers, (compiler) => {
-      return this.webpackCompile(compiler)
-    })
+    await runner(this.compilers, compiler => this.webpackCompile(compiler))
   }
 
   async webpackCompile(compiler) {
-    const name = compiler.options.name
+    const { name } = compiler.options
     const { nuxt, options } = this.context
 
     await nuxt.callHook('build:compile', { name, compiler })
@@ -171,18 +168,19 @@ export class WebpackBundler {
     if (stats.hasErrors()) {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
-      } else {
-        // Actual error will be printed by webpack
-        throw new Error('Nuxt Build Error')
       }
+
+      // Actual error will be printed by webpack
+      throw new Error('Nuxt Build Error')
     }
   }
 
   webpackDev(compiler) {
     consola.debug('Adding webpack middleware...')
 
-    const name = [compiler.options.name]
+    const { name } = compiler.options
     const { nuxt: { server }, options } = this.context
+    const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -210,7 +208,7 @@ export class WebpackBundler {
             log: false,
             heartbeat: 10000
           },
-          options.build.hotMiddleware,
+          hotMiddlewareOptions,
           {
             path: `/__webpack_hmr/${name}`
           }
@@ -226,9 +224,7 @@ export class WebpackBundler {
   }
 
   async unwatch() {
-    for (const watching of this.compilersWatching) {
-      await watching.close()
-    }
+    await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
   async close() {
