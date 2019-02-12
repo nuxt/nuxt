@@ -17,6 +17,6 @@
 		"vue-test-utils": "^1.0.0-beta.2"
 	},
 	"dependencies": {
-		"nuxt-edge": "latest"
+		"nuxt": "latest"
 	}
 }

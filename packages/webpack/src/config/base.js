@@ -122,6 +122,7 @@ export default class WebpackBaseConfig {
     return {
       path: path.resolve(this.options.buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
+      futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
       publicPath: isUrl(this.options.build.publicPath)
         ? this.options.build.publicPath
@@ -295,46 +296,58 @@ export default class WebpackBaseConfig {
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/i,
-        use: perfLoader.asset().concat({
+        use: [{
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.imgUrl,
             { name: this.getFileName('img') }
           )
-        })
+        }]
       },
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
-        use: perfLoader.asset().concat({
+        use: [{
           loader: 'url-loader',
           options: Object.assign(
             this.loaders.fontUrl,
             { name: this.getFileName('font') }
           )
-        })
+        }]
       },
       {
         test: /\.(webm|mp4|ogv)$/i,
-        use: perfLoader.asset().concat({
+        use: [{
           loader: 'file-loader',
           options: Object.assign(
             this.loaders.file,
             { name: this.getFileName('video') }
           )
-        })
+        }]
       }
     ]
   }
 
   plugins() {
-    const plugins = [new VueLoader.VueLoaderPlugin()]
-
-    Array.prototype.push.apply(plugins, this.options.build.plugins || [])
+    const plugins = []
 
     // Add timefix-plugin before others plugins
     if (this.options.dev) {
-      plugins.unshift(new TimeFixPlugin())
+      plugins.push(new TimeFixPlugin())
     }
+
+    // CSS extraction)
+    if (this.options.build.extractCSS) {
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+        filename: this.getFileName('css'),
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
+      }, this.options.build.extractCSS)))
+    }
+
+    plugins.push(new VueLoader.VueLoaderPlugin())
+
+    plugins.push(...(this.options.build.plugins || []))
 
     // Hide warnings about plugins without a default export (#1179)
     plugins.push(new WarnFixPlugin())
@@ -369,16 +382,6 @@ export default class WebpackBaseConfig {
         }
       }
     }))
-
-    // CSS extraction)
-    if (this.options.build.extractCSS) {
-      plugins.push(new ExtractCssChunksPlugin(Object.assign({
-        filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css'),
-        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
-        reloadAll: true
-      }, this.options.build.extractCSS)))
-    }
 
     if (this.options.build.hardSource) {
       plugins.push(new HardSourcePlugin(Object.assign({}, this.options.build.hardSource)))

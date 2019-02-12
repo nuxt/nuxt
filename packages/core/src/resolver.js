@@ -111,11 +111,14 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault } = {}) {
+  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 
     // TODO: Remove in Nuxt 3
+    if (intropDefault) {
+      consola.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.')
+    }
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
     }
@@ -148,8 +151,8 @@ export default class Resolver {
       lastError = e
     }
 
-    // Introp default
-    if (intropDefault !== false && requiredModule && requiredModule.default) {
+    // Interop default
+    if (interopDefault !== false && requiredModule && requiredModule.default) {
       requiredModule = requiredModule.default
     }
 

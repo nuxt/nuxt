@@ -2,12 +2,13 @@ import path from 'path'
 import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
+import exit from 'exit'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
-import boxen from 'boxen'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
+import { successBox, warningBox } from './formatting'
 
 export const requireModule = process.env.NUXT_TS ? require : esm(module, {
   cache: false,
@@ -87,37 +88,30 @@ export function showBanner(nuxt) {
     return
   }
 
-  const lines = []
+  const titleLines = []
+  const messageLines = []
 
   // Name and version
-  lines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
+  titleLines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
-  lines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+  titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
 
   // https://nodejs.org/api/process.html#process_process_memoryusage
   const { heapUsed, rss } = process.memoryUsage()
-  lines.push(`Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`)
+  titleLines.push(`Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`)
 
   // Listeners
-  lines.push('')
   for (const listener of nuxt.server.listeners) {
-    lines.push(chalk.bold('Listening on: ') + chalk.underline.blue(listener.url))
+    messageLines.push(chalk.bold('Listening on: ') + chalk.underline.blue(listener.url))
   }
 
   // Add custom badge messages
   if (nuxt.options.cli.badgeMessages.length) {
-    lines.push('', ...nuxt.options.cli.badgeMessages)
+    messageLines.push('', ...nuxt.options.cli.badgeMessages)
   }
 
-  const box = boxen(lines.join('\n'), {
-    borderColor: 'green',
-    borderStyle: 'round',
-    padding: 1,
-    margin: 1
-  })
-
-  process.stdout.write(box + '\n')
+  process.stdout.write(successBox(messageLines.join('\n'), titleLines.join('\n')))
 }
 
 export function formatPath(filePath) {
@@ -143,4 +137,24 @@ export function normalizeArg(arg, defaultValue) {
     case undefined: arg = defaultValue; break
   }
   return arg
+}
+
+export function forceExit(cmdName, timeout) {
+  if (timeout !== false) {
+    const exitTimeout = setTimeout(() => {
+      const msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s
+This is most likely not caused by a bug in Nuxt.js
+Make sure to cleanup all timers and listeners you or your plugins/modules start.
+Nuxt.js will now force exit
+
+${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')}`
+
+      // TODO: Change this to a fatal error in v3
+      process.stderr.write(warningBox(msg))
+      exit(0)
+    }, timeout * 1000)
+    exitTimeout.unref()
+  } else {
+    exit(0)
+  }
 }

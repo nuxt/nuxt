@@ -34,6 +34,6 @@ describe('size-limit test', () => {
     const responseSizeBytes = responseSizes.reduce((bytes, responseLength) => bytes + responseLength, 0)
     const responseSizeKilobytes = Math.ceil(responseSizeBytes / 1024)
     // Without gzip!
-    expect(responseSizeKilobytes).toBeLessThanOrEqual(180)
+    expect(responseSizeKilobytes).toBeLessThanOrEqual(185)
   })
 })

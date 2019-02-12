@@ -1,4 +1,4 @@
-import { validate, isJS, onEmit } from './util'
+import { validate, isJS } from './util'
 
 export default class VueSSRServerPlugin {
   constructor(options = {}) {
@@ -10,7 +10,7 @@ export default class VueSSRServerPlugin {
   apply(compiler) {
     validate(compiler)
 
-    onEmit(compiler, 'vue-server-plugin', (compilation, cb) => {
+    compiler.hooks.emit.tapAsync('vue-server-plugin', (compilation, cb) => {
       const stats = compilation.getStats().toJson()
       const [entryName] = Object.keys(stats.entrypoints)
       const entryInfo = stats.entrypoints[entryName]

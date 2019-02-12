@@ -4,7 +4,7 @@ export const encodeHtml = function encodeHtml(str) {
 
 export const isString = obj => typeof obj === 'string' || obj instanceof String
 
-export const isNonEmptyString = obj => obj && isString(obj)
+export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
 export const isPureObject = function isPureObject(o) {
   return !Array.isArray(o) && typeof o === 'object'

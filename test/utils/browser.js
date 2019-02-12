@@ -1,17 +1,28 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+
+import ChromeDetector from './chrome'
 
 export default class Browser {
+  constructor() {
+    this.detector = new ChromeDetector()
+  }
+
   async start(options = {}) {
     // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
-    this.browser = await puppeteer.launch(
-      Object.assign(
-        {
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-          executablePath: process.env.PUPPETEER_EXECUTABLE_PATH
-        },
-        options
-      )
-    )
+    const _opts = {
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      ...options
+    }
+
+    if (!_opts.executablePath) {
+      _opts.executablePath = this.detector.detect()
+    }
+
+    this.browser = await puppeteer.launch(_opts)
   }
 
   async close() {

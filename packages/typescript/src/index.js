@@ -44,6 +44,10 @@ export async function setup(tsConfigPath) {
   }
   // https://github.com/TypeStrong/ts-node
   register({
-    project: tsConfigPath
+    project: tsConfigPath,
+    compilerOptions: {
+      module: 'commonjs'
+    },
+    transpileOnly: process.argv[2] === 'start'
   })
 }
