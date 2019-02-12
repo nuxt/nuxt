@@ -11053,7 +11053,7 @@ vue-hot-reload-api@^2.3.0:
   resolved "https://registry.npmjs.org/vue-hot-reload-api/-/vue-hot-reload-api-2.3.2.tgz#1fcc1495effe08a790909b46bf7b5c4cfeb6f21b"
   integrity sha512-NpznMQoe/DzMG7nJjPkJKT7FdEn9xXfnntG7POfTmqnSaza97ylaBf1luZDh4IgV+vgUoR//id5pf8Ru+Ym+0g==
 
-vue-jest@^4.0.0-0:
+vue-jest@^4.0.0-beta.1:
   version "4.0.0-beta.1"
   resolved "https://registry.npmjs.org/vue-jest/-/vue-jest-4.0.0-beta.1.tgz#9cc12a366c9fa61079bf994f842258d5709b5a5c"
   integrity sha512-EGbk9r22HtJ0BEft7Iz693Z7hgANnyR1Wh6Arb1UmS0FuolD91WMXjN+ab5Wf5L57Kliw5kiIrsySLDOADLSWQ==
