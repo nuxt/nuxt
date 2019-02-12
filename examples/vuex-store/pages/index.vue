@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p /><h3>Index Module</h3>
+    <h3>Index Module</h3>
     <button @click="increment">
       {{ counter }}
     </button>
@@ -20,7 +20,6 @@
     <NuxtLink to="/website">
       Website
     </NuxtLink>
-    </p>
   </div>
 </template>
 
