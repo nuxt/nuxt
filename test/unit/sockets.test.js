@@ -1,11 +1,9 @@
 import { loadFixture, Nuxt } from '../utils'
 
-let nuxt = null
-
 describe.posix('basic sockets', () => {
   test('/', async () => {
     const options = await loadFixture('sockets')
-    nuxt = new Nuxt(options)
+    const nuxt = new Nuxt(options)
     await nuxt.server.listen()
 
     const { html } = await nuxt.server.renderRoute('/')
