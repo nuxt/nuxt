@@ -54,7 +54,3 @@ coverage
 Network Trash Folder
 Temporary Items
 .apdisk
-
-# Junit report from jest-junit
-*junit.xml
-
