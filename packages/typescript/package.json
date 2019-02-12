@@ -9,7 +9,7 @@
   ],
   "main": "dist/typescript.js",
   "dependencies": {
-    "@types/node": "^10.12.24",
+    "@types/node": "^10.12.25",
     "chalk": "^2.4.2",
     "consola": "^2.4.0",
     "enquirer": "^2.3.0",

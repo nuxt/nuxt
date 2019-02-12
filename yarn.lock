@@ -739,16 +739,16 @@
     read-package-tree "^5.1.6"
     semver "^5.5.0"
 
-"@lerna/changed@3.11.0":
-  version "3.11.0"
-  resolved "https://registry.npmjs.org/@lerna/changed/-/changed-3.11.0.tgz#aa164446dc175cc59b6b70f878a9ccdc52a89e4d"
-  integrity sha512-owUwGqinBx4YWRelPlYyz+F7TqoyZcYCRPQZG+8F16Bivof5yj3bdnuzx0xzeOSW3WNOWANiaD4rWGdo3rmjeQ==
+"@lerna/changed@3.11.1":
+  version "3.11.1"
+  resolved "https://registry.npmjs.org/@lerna/changed/-/changed-3.11.1.tgz#d8a856f8237e37e7686d17a1e13bf4d082a3e48b"
+  integrity sha512-A21h3DvMjDwhksmCmTQ1+3KPHg7gHVHFs3zC5lR9W+whYlm0JI2Yp70vYnqMv2hPAcJx+2tlCrqJkzCFkNQdqg==
   dependencies:
     "@lerna/collect-updates" "3.11.0"
     "@lerna/command" "3.11.0"
     "@lerna/listable" "3.11.0"
     "@lerna/output" "3.11.0"
-    "@lerna/version" "3.11.0"
+    "@lerna/version" "3.11.1"
 
 "@lerna/check-working-tree@3.11.0":
   version "3.11.0"
@@ -1138,10 +1138,10 @@
     inquirer "^6.2.0"
     npmlog "^4.1.2"
 
-"@lerna/publish@3.11.0":
-  version "3.11.0"
-  resolved "https://registry.npmjs.org/@lerna/publish/-/publish-3.11.0.tgz#b35460bf6f472d17d756043baedb02c6f434acf0"
-  integrity sha512-8vdb5YOnPphIig4FCXwuLAdptFNfMcCj/TMCwtsFDQqNbeCbVABkptqjfmldVmGfcxwbkqHLH7cbazVSIGPonA==
+"@lerna/publish@3.11.1":
+  version "3.11.1"
+  resolved "https://registry.npmjs.org/@lerna/publish/-/publish-3.11.1.tgz#06b0f646afea7f29cd820a63086692a4ac4d080e"
+  integrity sha512-UOvmSivuqzWoiTqoYWk+liPDZvC6O7NrT8DwoG2peRvjIPs5RKYMubwXPOrBBVVE+yX/vR6V1Y3o6vf3av52dg==
   dependencies:
     "@lerna/batch-packages" "3.11.0"
     "@lerna/check-working-tree" "3.11.0"
@@ -1160,7 +1160,7 @@
     "@lerna/run-lifecycle" "3.11.0"
     "@lerna/run-parallel-batches" "3.0.0"
     "@lerna/validation-error" "3.11.0"
-    "@lerna/version" "3.11.0"
+    "@lerna/version" "3.11.1"
     figgy-pudding "^3.5.1"
     fs-extra "^7.0.0"
     libnpmaccess "^3.0.1"
@@ -1268,10 +1268,10 @@
   dependencies:
     npmlog "^4.1.2"
 
-"@lerna/version@3.11.0":
-  version "3.11.0"
-  resolved "https://registry.npmjs.org/@lerna/version/-/version-3.11.0.tgz#84c7cb9ecbf670dc6ebb72fda9339017435b7738"
-  integrity sha512-J6Ffq1qU7hYwgmn7vM1QlhkBUH1wakG5wiHWv6Pk4XpCCA+PoHKTjCbpovmFIIYOI19QGYpdZV9C8dST/0aPiA==
+"@lerna/version@3.11.1":
+  version "3.11.1"
+  resolved "https://registry.npmjs.org/@lerna/version/-/version-3.11.1.tgz#c4031670838ccd5e285ec481c36e8703f4d835b2"
+  integrity sha512-+lFq4D8BpchIslIz6jyUY6TZO1kuAgQ+G1LjaYwUBiP2SzXVWgPoPoq/9dnaSq38Hhhvlf7FF6i15d+q8gk1xQ==
   dependencies:
     "@lerna/batch-packages" "3.11.0"
     "@lerna/check-working-tree" "3.11.0"
@@ -1419,10 +1419,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-10.12.23.tgz#308a3acdc5d1c842aeadc50b867d99c46cfae868"
   integrity sha512-EKhb5NveQ3NlW5EV7B0VRtDKwUfVey8LuJRl9pp5iW0se87/ZqLjG0PMf2MCzPXAJYWZN5Ltg7pHIAf9/Dm1tQ==
 
-"@types/node@^10.12.24":
-  version "10.12.24"
-  resolved "https://registry.npmjs.org/@types/node/-/node-10.12.24.tgz#b13564af612a22a20b5d95ca40f1bffb3af315cf"
-  integrity sha512-GWWbvt+z9G5otRBW8rssOFgRY87J9N/qbhqfjMZ+gUuL6zoL+Hm6gP/8qQBG4jjimqdaNLCehcVapZ/Fs2WjCQ==
+"@types/node@^10.12.25":
+  version "10.12.25"
+  resolved "https://registry.npmjs.org/@types/node/-/node-10.12.25.tgz#0d01a7dd6127de60d861ece4a650963042abb538"
+  integrity sha512-IcvnGLGSQFDvC07Bz2I8SX+QKErDZbUdiQq7S2u3XyzTyJfUmT0sWJMbeQkMzpTAkO7/N7sZpW/arUM2jfKsbQ==
 
 "@types/q@^1.5.1":
   version "1.5.1"
@@ -2819,10 +2819,29 @@ cheerio@^1.0.0-rc.2:
     lodash "^4.15.0"
     parse5 "^3.0.1"
 
-chokidar@^2.0.2, chokidar@^2.0.4, chokidar@^2.1.0:
+chokidar@^2.0.2, chokidar@^2.0.4:
   version "2.1.0"
   resolved "https://registry.npmjs.org/chokidar/-/chokidar-2.1.0.tgz#5fcb70d0b28ebe0867eb0f09d5f6a08f29a1efa0"
   integrity sha512-5t6G2SH8eO6lCvYOoUpaRnF5Qfd//gd7qJAkwRUw9qlGVkiQ13uwQngqbWWaurOsaAm9+kUGbITADxt6H0XFNQ==
+  dependencies:
+    anymatch "^2.0.0"
+    async-each "^1.0.1"
+    braces "^2.3.2"
+    glob-parent "^3.1.0"
+    inherits "^2.0.3"
+    is-binary-path "^1.0.0"
+    is-glob "^4.0.0"
+    normalize-path "^3.0.0"
+    path-is-absolute "^1.0.0"
+    readdirp "^2.2.1"
+    upath "^1.1.0"
+  optionalDependencies:
+    fsevents "^1.2.7"
+
+chokidar@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/chokidar/-/chokidar-2.1.1.tgz#adc39ad55a2adf26548bd2afa048f611091f9184"
+  integrity sha512-gfw3p2oQV2wEt+8VuMlNsPjCxDxvvgnm/kz+uATu805mWVF8IJN7uz9DN7iBz+RMJISmiVbCOBFs9qBGMjtPfQ==
   dependencies:
     anymatch "^2.0.0"
     async-each "^1.0.1"
@@ -6772,14 +6791,14 @@ left-pad@^1.3.0:
   resolved "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz#5b8a3a7765dfe001261dde915589e782f8c94d1e"
   integrity sha512-XI5MPzVNApjAyhQzphX8BkmKsKUxD4LdyK24iZeQGinBN9yTQT3bFlCBy/aVx2HrNcqQGsdot8ghrjyrvMCoEA==
 
-lerna@3.11.0:
-  version "3.11.0"
-  resolved "https://registry.npmjs.org/lerna/-/lerna-3.11.0.tgz#bd2542bdd8c0bdd6e71260877224cfd56530ca5d"
-  integrity sha512-87gFkJ/E/XtWvKrnBnixfPkroAZls7Vzfhdt42gPJYaBdXBqeJWQskGB10mr80GZTm8RmMPrC8M+t7XL1g/YQA==
+lerna@3.11.1:
+  version "3.11.1"
+  resolved "https://registry.npmjs.org/lerna/-/lerna-3.11.1.tgz#c3f86aaf6add615ffc172554657a139bc2360b9a"
+  integrity sha512-7an/cia9u6qVTts5PQ/adFq8QSgE7gzG1pUHhH+XKVU1seDKQ99JLu61n3/euv2qeQF+ww4WLKnFHIPa5+LJSQ==
   dependencies:
     "@lerna/add" "3.11.0"
     "@lerna/bootstrap" "3.11.0"
-    "@lerna/changed" "3.11.0"
+    "@lerna/changed" "3.11.1"
     "@lerna/clean" "3.11.0"
     "@lerna/cli" "3.11.0"
     "@lerna/create" "3.11.0"
@@ -6789,9 +6808,9 @@ lerna@3.11.0:
     "@lerna/init" "3.11.0"
     "@lerna/link" "3.11.0"
     "@lerna/list" "3.11.0"
-    "@lerna/publish" "3.11.0"
+    "@lerna/publish" "3.11.1"
     "@lerna/run" "3.11.0"
-    "@lerna/version" "3.11.0"
+    "@lerna/version" "3.11.1"
     import-local "^1.0.0"
     npmlog "^4.1.2"
 
@@ -11355,10 +11374,10 @@ vue-router@^3.0.2:
   resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
   integrity sha512-opKtsxjp9eOcFWdp6xLQPLmRGgfM932Tl56U9chYTnoWqKxQ8M20N7AkdEbM5beUh6wICoFGYugAX9vQjyJLFg==
 
-vue-server-renderer@^2.6.5:
-  version "2.6.5"
-  resolved "https://registry.npmjs.org/vue-server-renderer/-/vue-server-renderer-2.6.5.tgz#0a9f4f75cd7aeebbac628f45d8ccded07491ba70"
-  integrity sha512-nNfJ/u3wqaFOrqY9lAaUURcjEwd6MY9xiQXRPygYkigLdAEo6E5WI720BXd25Vno0C1G/yFvTl6J/r7CgeRq1Q==
+vue-server-renderer@^2.6.6:
+  version "2.6.6"
+  resolved "https://registry.npmjs.org/vue-server-renderer/-/vue-server-renderer-2.6.6.tgz#a2b1174cf1914817147b34789cc1a6baa0672aa1"
+  integrity sha512-dJ4IrIilS3nhxpOrR12+IKGu9Meg8L0t/W/e/UNSXKyh9EkwDqFPK0nZTfGPudXzr9FMQfg2hK6p2RMydPRU2Q==
   dependencies:
     chalk "^1.1.3"
     hash-sum "^1.0.2"
@@ -11377,10 +11396,10 @@ vue-style-loader@^4.1.0:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue-template-compiler@^2.6.5:
-  version "2.6.5"
-  resolved "https://registry.npmjs.org/vue-template-compiler/-/vue-template-compiler-2.6.5.tgz#2e3b4f20cdfa2a54a48895d97a5b711d0e7ad81c"
-  integrity sha512-7X/KZCqGulQ8KbysFd46cUnVzwvba7JxoPKA2TvVrO61/x0pIBqR17raV+ycnfUI4NYshhiNqH/3Db5NXErSdg==
+vue-template-compiler@^2.6.6:
+  version "2.6.6"
+  resolved "https://registry.npmjs.org/vue-template-compiler/-/vue-template-compiler-2.6.6.tgz#a807acbf3d51971d3721d75ecb1b927b517c1a02"
+  integrity sha512-OakxDGyrmMQViCjkakQFbDZlG0NibiOzpLauOfyCUVRQc9yPmTqpiz9nF0VeA+dFkXegetw0E5x65BFhhLXO0A==
   dependencies:
     de-indent "^1.0.2"
     he "^1.1.0"
@@ -11390,10 +11409,10 @@ vue-template-es2015-compiler@^1.6.0, vue-template-es2015-compiler@^1.8.2:
   resolved "https://registry.npmjs.org/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.8.2.tgz#dd73e80ba58bb65dd7a8aa2aeef6089cf6116f2a"
   integrity sha512-cliV19VHLJqFUYbz/XeWXe5CO6guzwd0yrrqqp0bmjlMP3ZZULY7fu8RTC4+3lmHwo6ESVDHFDsvjB15hcR5IA==
 
-vue@^2.6.5:
-  version "2.6.5"
-  resolved "https://registry.npmjs.org/vue/-/vue-2.6.5.tgz#7a7e8723b875b91800e576aac41cb3ed325dddf0"
-  integrity sha512-htb449YZnpJ5ts+JjXQHVuvH3R3dcaGBe6/ePAwtsRj4cA1FG/OI0rHDCSMs+L9ZHDzpX7ru//Usb/2R3XfQaQ==
+vue@^2.6.6:
+  version "2.6.6"
+  resolved "https://registry.npmjs.org/vue/-/vue-2.6.6.tgz#dde41e483c11c46a7bf523909f4f2f816ab60d25"
+  integrity sha512-Y2DdOZD8sxApS+iUlwv1v8U1qN41kq6Kw45lM6nVZKhygeWA49q7VCCXkjXqeDBXgurrKWkYQ9cJeEJwAq0b9Q==
 
 vuex@^3.1.0:
   version "3.1.0"
