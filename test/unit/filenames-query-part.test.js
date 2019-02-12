@@ -31,7 +31,6 @@ describe('build filenames with query part', () => {
   })
 
   test('server manifest files exist', () => {
-
     const manifest = JSON.parse(readFileSync(resolve(__dirname, '..', 'fixtures/filenames-query-part/.nuxt/dist/server/server.manifest.json'), 'utf8'))
     expect(manifest).toMatchObject({
       files: expect.any(Object)
