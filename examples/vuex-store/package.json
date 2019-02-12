@@ -1,5 +1,5 @@
 {
-  "name": "example-vuex-store",
+  "name": "example-vuex-store-modules",
   "dependencies": {
     "nuxt": "latest"
   },
