@@ -281,6 +281,12 @@ export function getNuxtConfig(_options) {
     consola.warn('vendor has been deprecated due to webpack4 optimization')
   }
 
+  // Disable CSS extraction due to incompatibility with thread-loader
+  if (options.build && options.build.extractCSS && options.build.parallel) {
+    options.build.parallel = false
+    consola.warn('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
+  }
+
   // build.extractCSS.allChunks has no effect
   if (typeof options.build.extractCSS.allChunks !== 'undefined') {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
