@@ -23,11 +23,7 @@ import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client"
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
 
-<% if (fetch.client) { %>
-if (!global.fetch) {
-  global.fetch = fetch
-}
-<% } %>
+<% if (fetch.client) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 // Global shared references
 let _lastPaths = []

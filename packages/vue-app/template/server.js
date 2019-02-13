@@ -10,11 +10,7 @@ import NuxtLink from './components/nuxt-link.server.js' // should be included af
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
 
-<% if (fetch.server) { %>
-if (!global.fetch) {
-  global.fetch = fetch
-}
-<% } %>
+<% if (fetch.server) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
