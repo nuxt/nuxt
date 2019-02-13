@@ -6,7 +6,6 @@ import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJ
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
-
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
