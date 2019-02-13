@@ -15,6 +15,7 @@ import { isUrl, urlJoin } from '@nuxt/utils'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarnFixPlugin from '../plugins/warnfix'
+import WP5FixPlugin from '../plugins/wp5-fix'
 
 import { reservedVueTags } from '../utils/reserved-tags'
 
@@ -340,6 +341,9 @@ export default class WebpackBaseConfig {
 
   plugins() {
     const plugins = []
+
+    // TODO: Remove ME
+    plugins.push(new WP5FixPlugin())
 
     // Add timefix-plugin before others plugins
     if (this.options.dev) {
