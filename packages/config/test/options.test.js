@@ -105,10 +105,10 @@ describe('config: options', () => {
     expect(fallback).toEqual('404.html')
   })
 
-  test('should disable extractCSS in paralell mode', () => {
-    const { build: { extractCSS } } = getNuxtConfig({ build: { extractCSS: true, parallel: true } })
-    expect(extractCSS).toEqual(false)
-    expect(consola.warn).toHaveBeenCalledWith('extractCSS cannot work with parallel loaders due to missing webpack context')
+  test('should disable parallel if extractCSS is enabled', () => {
+    const { build: { parallel } } = getNuxtConfig({ build: { extractCSS: true, parallel: true } })
+    expect(parallel).toEqual(false)
+    expect(consola.warn).toHaveBeenCalledWith('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
   })
 
   describe('config: router dir', () => {
