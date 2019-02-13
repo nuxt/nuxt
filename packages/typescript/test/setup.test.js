@@ -1,5 +1,4 @@
 import { resolve } from 'path'
-import enquirer from 'enquirer' // eslint-disable-line no-unused-vars
 import { exists, mkdirp, readJSON, remove } from 'fs-extra'
 import { register } from 'ts-node'
 import { setup as setupTypeScript } from '@nuxt/typescript'
