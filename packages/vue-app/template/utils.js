@@ -191,14 +191,8 @@ export async function setContext(app, context) {
       app.context.nuxtState = window.<%= globals.context %>
     }
   }
-  // Dynamic keys
-  app.context.next = context.next
-  app.context._redirected = false
-  app.context._errored = false
-  app.context.isHMR = !!context.isHMR
-  app.context.params = app.context.route.params || {}
-  app.context.query = app.context.route.query || {}
 
+  // Dynamic keys
   const [currentRouteData, fromRouteData] = await Promise.all([
     getRouteData(context.route),
     getRouteData(context.from)
@@ -211,6 +205,13 @@ export async function setContext(app, context) {
   if (context.from) {
     app.context.from = fromRouteData
   }
+
+  app.context.next = context.next
+  app.context._redirected = false
+  app.context._errored = false
+  app.context.isHMR = !!context.isHMR
+  app.context.params = app.context.route.params || {}
+  app.context.query = app.context.route.query || {}
 }
 
 export function middlewareSeries(promises, appContext) {
