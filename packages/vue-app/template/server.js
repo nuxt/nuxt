@@ -3,8 +3,17 @@ import Vue from 'vue'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
+import asyncDataMixin from './mixins/async-data.server'
+import fetchMixin from './mixins/fetch.server'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
+
+// Update serverPrefetch strategy
+Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
+
+// Async Data & fetch mixin
+Vue.mixin(asyncDataMixin)
+Vue.mixin(fetchMixin)
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -192,37 +201,10 @@ export default async (ssrContext) => {
   // If no Components found, returns 404
   if (!Components.length) return render404Page()
 
-  // Call asyncData & fetch hooks on components matched by the route.
-  const asyncDatas = await Promise.all(Components.map((Component) => {
-    const promises = []
-
-    // Call asyncData(context)
-    if (Component.options.asyncData && typeof Component.options.asyncData === 'function') {
-      const promise = promisify(Component.options.asyncData, app.context)
-      promise.then((asyncDataResult) => {
-        ssrContext.asyncData[Component.cid] = asyncDataResult
-        applyAsyncData(Component)
-        return asyncDataResult
-      })
-      promises.push(promise)
-    } else {
-      promises.push(null)
-    }
-
-    // Call fetch(context)
-    if (Component.options.fetch) {
-      promises.push(Component.options.fetch(app.context))
-    } else {
-      promises.push(null)
-    }
-
-    return Promise.all(promises)
-  }))
-
-  <% if (isDev) { %>if (asyncDatas.length) debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
+  // <% if (isDev) { %>if (asyncDatas.length) debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
 
   // datas are the first row of each
-  ssrContext.nuxt.data = asyncDatas.map(r => r[0] || {})
+  ssrContext.nuxt.data = ssrContext.asyncData
 
   // ...If there is a redirect or an error, stop the process
   if (ssrContext.redirected) return noopApp()

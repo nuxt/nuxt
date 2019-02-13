@@ -36,6 +36,7 @@ export function applyAsyncData(Component, asyncData) {
   Component.options.data = function () {
     const data = ComponentData.call(this)
     if (this.$ssrContext) {
+      console.log('Component.cid', Component.cid)
       asyncData = this.$ssrContext.asyncData[Component.cid]
     }
     return { ...data, ...asyncData }

@@ -17,8 +17,11 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
+import asyncDataMixin from './mixins/async-data.client'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 
+// Async Data mixin
+Vue.mixin(asyncDataMixin)
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)

@@ -61,6 +61,9 @@ export default {
   }),
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
+    if (process.client) {
+      this.ssrState = window.<%= globals.context %>
+    }
   },
   created() {
     // Add this.$nuxt in child instances
