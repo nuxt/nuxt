@@ -5,7 +5,7 @@ module.exports = class WP5Fix {
       compilation.compilationDependencies = {
         add() {
           // eslint-disable-next-line no-console
-          console.error(new Error('compilation.compilationDependencies is removed!'))
+          // console.error(new Error('compilation.compilationDependencies is removed!'))
         }
       }
     })
