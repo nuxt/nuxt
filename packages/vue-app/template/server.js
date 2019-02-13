@@ -1,13 +1,21 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
+<% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
+
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
+
+<% if (fetch.server) { %>
+if (!global.fetch) {
+  global.fetch = fetch
+}
+<% } %>
 
 const debug = require('debug')('nuxt:render')
 debug.color = 4 // force blue color
