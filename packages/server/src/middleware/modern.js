@@ -53,8 +53,7 @@ const detectModernBrowser = ({ socket = {}, headers }) => {
 }
 
 const setModernMode = (req, options) => {
-  const { socket = {} } = req
-  const { isModernBrowser } = socket
+  const { socket: { isModernBrowser } = {} } = req
   if (options.modern === 'server') {
     req.modernMode = isModernBrowser
   }
@@ -65,7 +64,9 @@ const setModernMode = (req, options) => {
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
-  detectModernBrowser(req)
-  setModernMode(req, context.options)
+  if (context.options.modern !== false) {
+    detectModernBrowser(req)
+    setModernMode(req, context.options)
+  }
   next()
 }
