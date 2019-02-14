@@ -328,7 +328,7 @@ export default class VueRenderer {
 
   async renderSSR(context) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
+    const renderer = context.useModernRenderer ? this.renderer.modern : this.renderer.ssr
 
     // Call ssr:context hook to extend context from modules
     await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
@@ -438,15 +438,17 @@ export default class VueRenderer {
     // Add url to the context
     context.url = url
 
+    const { req = {} } = context
+
     // context.spa
     if (context.spa === undefined) {
       // TODO: Remove reading from context.res in Nuxt3
-      context.spa = !this.SSR || context.spa || (context.req && context.req.spa) || (context.res && context.res.spa)
+      context.spa = !this.SSR || context.spa || req.spa || (context.res && context.res.spa)
     }
 
-    // context.modern
-    if (context.modern === undefined) {
-      context.modern = context.req ? (context.req.modernMode || context.req.modern) : false
+    // context.useModernRenderer
+    if (context.useModernRenderer === undefined) {
+      context.useModernRenderer = req.modern === 'server' && req.modernMode
     }
 
     // Call context hook
