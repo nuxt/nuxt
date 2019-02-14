@@ -18,11 +18,10 @@
 <script lang="coffee">
 import Logo from '~/components/Logo.vue'
 
-export default {
-  components: { Logo },
+export default
+  components: { Logo }
   computed:
     message: -> @$store.state.msgComputed
-}
 </script>
 
 <style lang="stylus">
