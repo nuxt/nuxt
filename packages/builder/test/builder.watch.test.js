@@ -31,10 +31,10 @@ describe('builder: builder watch', () => {
       middleware: '/var/nuxt/src/middleware'
     }
     nuxt.options.build.watch = []
-    nuxt.options.watchers = {
-      chokidar: { test: true }
-    }
+
     const builder = new Builder(nuxt, {})
+    builder.createFileWatcher = jest.fn()
+    builder.assignWatcher = jest.fn(() => () => {})
     r.mockImplementation((dir, src) => src)
 
     builder.watchClient()
@@ -61,11 +61,9 @@ describe('builder: builder watch', () => {
     expect(upath.normalizeSafe).nthCalledWith(4, '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}', 3, patterns)
     expect(upath.normalizeSafe).nthCalledWith(5, '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}', 4, patterns)
 
-    expect(chokidar.watch).toBeCalledTimes(1)
-    expect(chokidar.watch).toBeCalledWith(patterns, { test: true })
-    expect(chokidar.on).toBeCalledTimes(2)
-    expect(chokidar.on).nthCalledWith(1, 'add', expect.any(Function))
-    expect(chokidar.on).nthCalledWith(2, 'unlink', expect.any(Function))
+    expect(builder.createFileWatcher).toBeCalledTimes(1)
+    expect(builder.createFileWatcher).toBeCalledWith(patterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
+    expect(builder.assignWatcher).toBeCalledTimes(1)
   })
 
   test('should watch pages files', () => {
@@ -81,6 +79,7 @@ describe('builder: builder watch', () => {
     nuxt.options.watchers = {
       chokidar: { test: true }
     }
+
     const builder = new Builder(nuxt, {})
     builder._nuxtPages = true
     r.mockImplementation((dir, src) => src)
@@ -93,7 +92,7 @@ describe('builder: builder watch', () => {
     expect(r).nthCalledWith(8, '/var/nuxt/src', '/var/nuxt/src/pages/**/*.{vue,js,ts,tsx}')
   })
 
-  test('should watch custom in watchClient', () => {
+  test('should invoke generateRoutesAndFiles on file refresh', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = {
@@ -119,14 +118,16 @@ describe('builder: builder watch', () => {
     builder.generateRoutesAndFiles = jest.fn()
     refreshFiles()
     expect(builder.generateRoutesAndFiles).toBeCalled()
-    expect(builder.watchCustom).toBeCalledTimes(1)
-    expect(builder.watchCustom).toBeCalledWith(refreshFiles)
   })
 
   test('should watch custom patterns', () => {
     const nuxt = createNuxt()
-    nuxt.options.watchers = {
-      chokidar: { test: true }
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
     }
     nuxt.options.build.watch = [
       '/var/nuxt/src/custom'
@@ -135,61 +136,81 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/style'
     ]
     const builder = new Builder(nuxt, {})
-    const refreshFiles = jest.fn()
+    builder.createFileWatcher = jest.fn()
+    builder.assignWatcher = jest.fn(() => () => {})
+    builder.watchClient()
 
-    builder.watchCustom(refreshFiles)
+    const patterns = [
+      '/var/nuxt/src/custom',
+      '/var/nuxt/src/style'
+    ]
 
-    expect(chokidar.watch).toBeCalledTimes(1)
-    expect(chokidar.watch).toBeCalledWith(
-      ['/var/nuxt/src/custom', '/var/nuxt/src/style'],
-      { test: true }
-    )
-    expect(chokidar.on).toBeCalledTimes(1)
-    expect(chokidar.on).toBeCalledWith('change', refreshFiles)
+    expect(builder.createFileWatcher).toBeCalledTimes(2)
+    expect(builder.createFileWatcher).toBeCalledWith(patterns, ['change'], expect.any(Function), expect.any(Function))
+    expect(builder.assignWatcher).toBeCalledTimes(2)
   })
 
-  test('should call refreshFiles before watching custom patterns', () => {
+  test('should invoke chokidar to create watcher', () => {
     const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
     nuxt.options.watchers = {
       chokidar: { test: true }
     }
-    nuxt.options.build.watch = [
-      '/var/nuxt/src/custom'
-    ]
+
+    const patterns = ['/patterns']
+    const events = ['event', 'another event']
+    const listener = jest.fn()
+    const watcherCreatedCallback = jest.fn()
+
     const builder = new Builder(nuxt, {})
-    const refreshFiles = jest.fn()
+    builder.createFileWatcher(patterns, events, listener, watcherCreatedCallback)
 
-    builder.watchCustom(refreshFiles, true)
-
-    expect(refreshFiles).toBeCalledTimes(1)
+    expect(chokidar.watch).toBeCalledTimes(1)
+    expect(chokidar.watch).toBeCalledWith(patterns, { test: true })
+    expect(chokidar.on).toBeCalledTimes(2)
+    expect(chokidar.on).nthCalledWith(1, 'event', listener)
+    expect(chokidar.on).nthCalledWith(2, 'another event', listener)
+    expect(watcherCreatedCallback).toBeCalledTimes(1)
   })
 
-  test('should rewatch custom patterns when event is included in rewatchOnRawEvents', () => {
+  test('should restart watcher when event is included in rewatchOnRawEvents', () => {
     const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
     nuxt.options.watchers = {
       chokidar: { test: true },
       rewatchOnRawEvents: ['rename']
     }
-    nuxt.options.build.watch = [
-      '/var/nuxt/src/custom'
-    ]
-    const builder = new Builder(nuxt, {})
-    const refreshFiles = jest.fn()
 
-    builder.watchCustom(refreshFiles)
+    const patterns = ['/pattern']
+    const events = ['event']
+    const listener = jest.fn()
+    const watcherCreatedCallback = jest.fn()
+
+    const builder = new Builder(nuxt, {})
+    builder.createFileWatcher(patterns, events, listener, watcherCreatedCallback)
 
     expect(chokidar.on).toBeCalledTimes(2)
     expect(chokidar.on).nthCalledWith(2, 'raw', expect.any(Function))
 
     const rewatchHandler = chokidar.on.mock.calls[1][1]
-    builder.watchCustom = jest.fn()
     rewatchHandler('rename')
     rewatchHandler('change')
 
     expect(chokidar.close).toBeCalledTimes(1)
     expect(builder.watchers.custom).toBeNull()
-    expect(builder.watchCustom).toBeCalledTimes(1)
-    expect(builder.watchCustom).toBeCalledWith(refreshFiles, true)
+    expect(watcherCreatedCallback).toBeCalledTimes(2)
   })
 
   test('should watch files for restarting server', () => {
@@ -326,5 +347,19 @@ describe('builder: builder watch', () => {
 
     expect(builder.unwatch).not.toBeCalled()
     expect(bundleBuilderClose).not.toBeCalled()
+  })
+
+  test('should assign watcher with key', () => {
+    const nuxt = createNuxt()
+    const builder = new Builder(nuxt, {})
+
+    const key = 'key'
+    const watcher = 'watcher'
+
+    const fn = builder.assignWatcher(key)
+    fn(watcher)
+
+    expect(Boolean(builder.watchers[key])).toBe(true)
+    expect(builder.watchers[key]).toBe(watcher)
   })
 })

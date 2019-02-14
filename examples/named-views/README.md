@@ -1,0 +1,1 @@
+# Nuxt with named views

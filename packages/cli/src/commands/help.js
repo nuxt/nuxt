@@ -18,10 +18,12 @@ export default {
       return listCommands()
     }
     const command = await getCommand(name)
-    if (command) {
-      NuxtCommand.from(command).showHelp()
-    } else {
+
+    if (!command) {
       consola.info(`Unknown command: ${name}`)
+      return
     }
+
+    NuxtCommand.from(command).showHelp()
   }
 }

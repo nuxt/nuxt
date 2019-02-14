@@ -1,7 +1,12 @@
 import puppeteer from 'puppeteer-core'
-import which from 'which'
+
+import ChromeDetector from './chrome'
 
 export default class Browser {
+  constructor() {
+    this.detector = new ChromeDetector()
+  }
+
   async start(options = {}) {
     // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
     const _opts = {
@@ -14,8 +19,7 @@ export default class Browser {
     }
 
     if (!_opts.executablePath) {
-      const resolve = cmd => which.sync(cmd, { nothrow: true })
-      _opts.executablePath = resolve('google-chrome') || resolve('chromium')
+      _opts.executablePath = this.detector.detect()
     }
 
     this.browser = await puppeteer.launch(_opts)

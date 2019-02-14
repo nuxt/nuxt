@@ -1,4 +1,4 @@
-import { validate, isJS, onEmit } from './util'
+import { validate, isJS, extractQueryPartJS } from './util'
 
 export default class VueSSRServerPlugin {
   constructor(options = {}) {
@@ -10,7 +10,7 @@ export default class VueSSRServerPlugin {
   apply(compiler) {
     validate(compiler)
 
-    onEmit(compiler, 'vue-server-plugin', (compilation, cb) => {
+    compiler.hooks.emit.tapAsync('vue-server-plugin', (compilation, cb) => {
       const stats = compilation.getStats().toJson()
       const [entryName] = Object.keys(stats.entrypoints)
       const entryInfo = stats.entrypoints[entryName]
@@ -44,7 +44,12 @@ export default class VueSSRServerPlugin {
 
       stats.assets.forEach((asset) => {
         if (isJS(asset.name)) {
-          bundle.files[asset.name] = asset.name
+          const queryPart = extractQueryPartJS(asset.name)
+          if (queryPart !== undefined) {
+            bundle.files[asset.name] = asset.name.replace(queryPart, '')
+          } else {
+            bundle.files[asset.name] = asset.name
+          }
         } else if (asset.name.match(/\.js\.map$/)) {
           bundle.maps[asset.name.replace(/\.map$/, '')] = asset.name
         } else {
