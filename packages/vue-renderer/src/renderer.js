@@ -448,7 +448,7 @@ export default class VueRenderer {
 
     // context.useModernRenderer
     if (context.useModernRenderer === undefined) {
-      context.useModernRenderer = req.modern === 'server' && req.modernMode
+      context.useModernRenderer = this.context.options.modern === 'server' && req.modernMode
     }
 
     // Call context hook
