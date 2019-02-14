@@ -28,7 +28,7 @@ describe('server: modernMiddleware', () => {
     jest.clearAllMocks()
   })
 
-  test('should return error middleware', () => {
+  test('should return modern middleware', () => {
     const modernMiddleware = createModernMiddleware({})
     expect(modernMiddleware).toBeInstanceOf(Function)
   })
