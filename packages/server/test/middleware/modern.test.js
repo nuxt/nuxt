@@ -1,7 +1,4 @@
-import chalk from 'chalk'
 import consola from 'consola'
-import UAParser from 'ua-parser-js'
-import semver from 'semver'
 
 jest.mock('chalk', () => ({
   green: {
