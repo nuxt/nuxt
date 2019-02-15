@@ -18,7 +18,7 @@ import { TerserPluginOptions } from 'terser-webpack-plugin'
 type NuxtConfigurationLoaders = any // TBD
 
 export interface NuxtConfigurationBuild {
-  analyze?: BundleAnalyzerPlugin.Options
+  analyze?: BundleAnalyzerPlugin.Options | boolean
   babel?: any // TBD
   cache?: boolean
   crossorigin?: string
