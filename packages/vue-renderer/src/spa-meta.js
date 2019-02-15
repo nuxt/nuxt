@@ -73,8 +73,8 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const { modernManifest, clientManifest } = this.renderer.context.resources
-    const manifest = this.render.context.req.modernMode ? modernManifest : clientManifest
+    const { resource: { modernManifest, clientManifest }, req } = this.renderer.context
+    const manifest = req.modernMode ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
 
