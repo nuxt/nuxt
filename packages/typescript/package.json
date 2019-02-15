@@ -9,9 +9,9 @@
   ],
   "main": "dist/typescript.js",
   "dependencies": {
-    "@types/node": "^10.12.24",
+    "@types/node": "^10.12.26",
     "chalk": "^2.4.2",
-    "consola": "^2.4.0",
+    "consola": "^2.4.1",
     "enquirer": "^2.3.0",
     "fork-ts-checker-webpack-plugin": "^0.5.2",
     "fs-extra": "^7.0.1",

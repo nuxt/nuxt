@@ -1,4 +1,5 @@
 import Vue from 'vue'
+<% if (fetch.client) { %>import fetch from 'unfetch'<% } %>
 import middleware from './middleware.js'
 import {
   applyAsyncData,
@@ -21,6 +22,8 @@ import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client"
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
+
+<% if (fetch.client) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 // Global shared references
 let _lastPaths = []

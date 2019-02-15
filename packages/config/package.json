@@ -9,7 +9,7 @@
   "main": "dist/config.js",
   "dependencies": {
     "@nuxt/utils": "2.4.3",
-    "consola": "^2.4.0",
+    "consola": "^2.4.1",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

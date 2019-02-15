@@ -10,12 +10,12 @@
   "dependencies": {
     "@nuxt/devalue": "^1.2.0",
     "@nuxt/utils": "2.4.3",
-    "consola": "^2.4.0",
+    "consola": "^2.4.1",
     "fs-extra": "^7.0.1",
     "lru-cache": "^5.1.1",
-    "vue": "^2.6.5",
+    "vue": "^2.6.6",
     "vue-meta": "^1.5.8",
-    "vue-server-renderer": "^2.6.5"
+    "vue-server-renderer": "^2.6.6"
   },
   "publishConfig": {
     "access": "public"

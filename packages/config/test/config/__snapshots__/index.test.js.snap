@@ -142,6 +142,10 @@ Object {
   "editor": undefined,
   "env": Object {},
   "extensions": Array [],
+  "fetch": Object {
+    "client": true,
+    "server": true,
+  },
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",
@@ -467,6 +471,10 @@ Object {
   "editor": undefined,
   "env": Object {},
   "extensions": Array [],
+  "fetch": Object {
+    "client": true,
+    "server": true,
+  },
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",
