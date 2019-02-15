@@ -55,7 +55,6 @@ export interface NuxtConfigurationBuild {
     pages?: boolean
   }
   ssr?: boolean
-  styleResources?: any // Deprecated
   templates?: any
   terser?: TerserPluginOptions | boolean
   transpile?: (string | RegExp)[]
