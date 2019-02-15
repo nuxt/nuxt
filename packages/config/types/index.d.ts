@@ -51,6 +51,26 @@ export default interface NuxtConfiguration extends ExtendableConfiguration {
   watchers?: NuxtConfigurationWatchers
 }
 
+export {
+  NuxtConfigurationBuild as Build,
+  NuxtConfigurationEnv as Env,
+  NuxtConfigurationFetch as Fetch,
+  NuxtConfigurationGenerate as Generate,
+  NuxtConfigurationHead as Head,
+  NuxtConfigurationHooks as Hooks,
+  NuxtConfigurationGlobals as Globals,
+  NuxtConfigurationLoading as Loading,
+  NuxtConfigurationLoadingIndicator as LoadingIndicator,
+  NuxtConfigurationModule as Module,
+  NuxtConfigurationPlugin as Plugin,
+  NuxtConfigurationRender as Render,
+  NuxtConfigurationRouter as Router,
+  NuxtConfigurationServer as Server,
+  NuxtConfigurationServerMiddleware as ServerMiddleware,
+  NuxtConfigurationVueConfiguration as VueConfiguration,
+  NuxtConfigurationWatchers as Watchers
+}
+
 export namespace NuxtConfiguration {
   export type Build = NuxtConfigurationBuild
   export type Env = NuxtConfigurationEnv
