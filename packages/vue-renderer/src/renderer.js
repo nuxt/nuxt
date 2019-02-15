@@ -328,7 +328,7 @@ export default class VueRenderer {
 
   async renderSSR(context) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.useModernRenderer ? this.renderer.modern : this.renderer.ssr
+    const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
 
     // Call ssr:context hook to extend context from modules
     await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
@@ -446,9 +446,9 @@ export default class VueRenderer {
       context.spa = !this.SSR || context.spa || req.spa || (context.res && context.res.spa)
     }
 
-    // context.useModernRenderer
-    if (context.useModernRenderer === undefined) {
-      context.useModernRenderer = this.context.options.modern === 'server' && req.modernMode
+    // context.modern
+    if (context.modern === undefined) {
+      context.modern = req.modernMode && this.context.options.modern === 'server'
     }
 
     // Call context hook
