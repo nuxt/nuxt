@@ -6,18 +6,18 @@ import { NuxtConfigurationHead } from './head'
 import { NuxtConfigurationHooks } from './hooks'
 import { NuxtConfigurationGlobals } from './globals'
 import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './loading'
-import { NuxtConfigurationModule, NuxtModule } from './module'
+import { NuxtConfigurationModule } from './module'
 import { NuxtConfigurationPlugin } from './plugin'
 import { NuxtConfigurationRender } from './render'
 import { NuxtConfigurationRouter } from './router'
 import { NuxtConfigurationServer } from './server'
-import { NuxtConfigurationServerMiddleware, NuxtServerMiddleware } from './server-middleware'
+import { NuxtConfigurationServerMiddleware } from './server-middleware'
 import { NuxtConfigurationVueConfiguration } from './vue-configuration'
 import { NuxtConfigurationWatchers } from './watchers'
 
 type ExtendableConfiguration = { [key: string]: any }
 
-interface NuxtConfiguration extends ExtendableConfiguration {
+export default interface NuxtConfiguration extends ExtendableConfiguration {
   build?: NuxtConfigurationBuild
   buildDir?: string
   css?: string[]
@@ -51,27 +51,22 @@ interface NuxtConfiguration extends ExtendableConfiguration {
   watchers?: NuxtConfigurationWatchers
 }
 
-export {
-  NuxtConfiguration,
-  NuxtConfigurationBuild,
-  NuxtConfigurationEnv,
-  NuxtConfigurationFetch,
-  NuxtConfigurationGenerate,
-  NuxtConfigurationGlobals,
-  NuxtConfigurationHead,
-  NuxtConfigurationHooks,
-  NuxtConfigurationLoading,
-  NuxtConfigurationLoadingIndicator,
-  NuxtConfigurationModule,
-  NuxtConfigurationPlugin,
-  NuxtConfigurationRender,
-  NuxtConfigurationRouter,
-  NuxtConfigurationServer,
-  NuxtConfigurationServerMiddleware,
-  NuxtConfigurationVueConfiguration,
-  NuxtConfigurationWatchers,
-  NuxtModule,
-  NuxtServerMiddleware
+export namespace NuxtConfiguration {
+  export type Build = NuxtConfigurationBuild
+  export type Env = NuxtConfigurationEnv
+  export type Fetch = NuxtConfigurationFetch
+  export type Generate = NuxtConfigurationGenerate
+  export type Head = NuxtConfigurationHead
+  export type Hooks = NuxtConfigurationHooks
+  export type Globals = NuxtConfigurationGlobals
+  export type Loading = NuxtConfigurationLoading
+  export type LoadingIndicator = NuxtConfigurationLoadingIndicator
+  export type Module = NuxtConfigurationModule
+  export type Plugin = NuxtConfigurationPlugin
+  export type Render = NuxtConfigurationRender
+  export type Router = NuxtConfigurationRouter
+  export type Server = NuxtConfigurationServer
+  export type ServerMiddleware = NuxtConfigurationServerMiddleware
+  export type VueConfiguration = NuxtConfigurationVueConfiguration
+  export type Watchers = NuxtConfigurationWatchers
 }
-
-export default NuxtConfiguration
