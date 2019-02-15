@@ -30,7 +30,7 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/' }) {
+  async render({ url = '/', req = {} }) {
     let meta = this.cache.get(url)
 
     if (meta) {
@@ -73,7 +73,7 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const { resources: { modernManifest, clientManifest }, req } = this.renderer.context
+    const { resources: { modernManifest, clientManifest } } = this.renderer.context
     const manifest = req.modernMode ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
