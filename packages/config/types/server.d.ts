@@ -4,12 +4,12 @@
  */
 
 export interface NuxtConfigurationServer {
-  host?: string;
+  host?: string
   https?: {
-    cert?: string | Buffer;
-    key?: string | Buffer;
-  };
-  port?: number | string;
-  socket?: string;
-  timing?: boolean | { total?: boolean };
+    cert?: string | Buffer
+    key?: string | Buffer
+  }
+  port?: number | string
+  socket?: string
+  timing?: boolean | { total?: boolean }
 }

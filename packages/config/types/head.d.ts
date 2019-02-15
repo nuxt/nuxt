@@ -6,4 +6,4 @@
 
 import { MetaInfo } from 'vue-meta'
 
-export type NuxtConfigurationHead = MetaInfo;
+export type NuxtConfigurationHead = MetaInfo

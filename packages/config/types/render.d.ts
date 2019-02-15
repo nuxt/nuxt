@@ -14,14 +14,14 @@ import { BundleRendererOptions } from 'vue-server-renderer'
 import { NuxtConfigurationServerMiddleware } from './index'
 
 export interface NuxtConfigurationRender {
-  bundleRenderer?: BundleRendererOptions;
-  compressor?: CompressionOptions | NuxtConfigurationServerMiddleware;
-  csp?: any; // TBD
-  dist?: ServeStaticOptions;
-  etag?: EtagOptions | false;
-  fallback?: any; // https://github.com/nuxt/serve-placeholder types TBD
-  http2?: any; // TBD
-  resourceHints?: boolean;
-  ssr?: boolean;
-  static?: ServeStaticOptions;
+  bundleRenderer?: BundleRendererOptions
+  compressor?: CompressionOptions | NuxtConfigurationServerMiddleware
+  csp?: any // TBD
+  dist?: ServeStaticOptions
+  etag?: EtagOptions | false
+  fallback?: any // https://github.com/nuxt/serve-placeholder types TBD
+  http2?: any // TBD
+  resourceHints?: boolean
+  ssr?: boolean
+  static?: ServeStaticOptions
 }

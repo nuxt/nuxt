@@ -6,4 +6,4 @@
 
 import { VueConstructor } from 'vue'
 
-export type NuxtConfigurationVueConfiguration = VueConstructor['config'];
+export type NuxtConfigurationVueConfiguration = VueConstructor['config']

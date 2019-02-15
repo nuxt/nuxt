@@ -4,14 +4,14 @@
  */
 
 export interface NuxtConfigurationLoading {
-  color?: string;
-  continuous?: boolean;
-  css?: boolean;
-  duration?: number;
-  failedColor?: string;
-  height?: string;
-  rtl?: boolean;
-  throttle?: number;
+  color?: string
+  continuous?: boolean
+  css?: boolean
+  duration?: number
+  failedColor?: string
+  height?: string
+  rtl?: boolean
+  throttle?: number
 }
 
 /**
@@ -20,8 +20,8 @@ export interface NuxtConfigurationLoading {
  */
 
 export interface NuxtConfigurationLoadingIndicator {
-  background?: string;
-  color?: string;
-  color2?: string;
-  name?: string;
+  background?: string
+  color?: string
+  color2?: string
+  name?: string
 }

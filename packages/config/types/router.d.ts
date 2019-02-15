@@ -8,9 +8,9 @@
 import { RouterOptions, Route } from 'vue-router'
 
 export interface NuxtConfigurationRouter extends RouterOptions {
-  routeNameSplitter?: string;
-  extendRoutes?: (routes: Route[], resolve: (...pathSegments: string[]) => string) => void;
-  linkPrefetchedClass?: string;
-  middleware?: string | string[];
-  prefetchLinks?: boolean;
+  routeNameSplitter?: string
+  extendRoutes?: (routes: Route[], resolve: (...pathSegments: string[]) => string) => void
+  linkPrefetchedClass?: string
+  middleware?: string | string[]
+  prefetchLinks?: boolean
 }
