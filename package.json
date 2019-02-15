@@ -65,7 +65,7 @@
     "pug-plain-loader": "^1.0.0",
     "puppeteer-core": "^1.12.2",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.5",
+    "request-promise-native": "^1.0.7",
     "rimraf": "^2.6.3",
     "rollup": "^1.1.2",
     "rollup-plugin-alias": "^1.5.1",
