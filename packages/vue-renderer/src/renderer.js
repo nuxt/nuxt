@@ -87,7 +87,7 @@ export default class VueRenderer {
     return modernFiles
   }
 
-  getPreloadFiles(context) {
+  getSsrPreloadFiles(context) {
     const preloadFiles = context.getPreloadFiles()
     // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
     return this.context.options.modern === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
@@ -319,9 +319,7 @@ export default class VueRenderer {
 
     return {
       html,
-      getPreloadFiles: this.getPreloadFiles.bind(this, {
-        getPreloadFiles: content.getPreloadFiles
-      })
+      getPreloadFiles: content.getPreloadFiles
     }
   }
 
@@ -408,7 +406,7 @@ export default class VueRenderer {
     return {
       html,
       cspScriptSrcHashes,
-      getPreloadFiles: this.getPreloadFiles.bind(this, context),
+      getPreloadFiles: this.getSsrPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected
     }

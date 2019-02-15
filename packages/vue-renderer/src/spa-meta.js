@@ -31,7 +31,8 @@ export default class SPAMetaRenderer {
   }
 
   async render({ url = '/', req = {} }) {
-    let meta = this.cache.get(url)
+    const cacheKey = `${req.modernMode ? 'modern:' : 'legacy:'}${url}`
+    let meta = this.cache.get(cacheKey)
 
     if (meta) {
       return meta
@@ -117,12 +118,13 @@ export default class SPAMetaRenderer {
 
     // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
     meta.getPreloadFiles = () =>
-      clientManifest.initial
+      manifest.initial
         .map(SPAMetaRenderer.normalizeFile)
         .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
+        .map(file => ({ ...file, modern: req.modernMode }))
 
     // Set meta tags inside cache
-    this.cache.set(url, meta)
+    this.cache.set(cacheKey, meta)
 
     return meta
   }
