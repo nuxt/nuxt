@@ -1,7 +1,7 @@
 {
   "name": "example-pug",
   "dependencies": {
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "pug": "^2.0.3",
     "pug-loader": "^2.4.0"
   },

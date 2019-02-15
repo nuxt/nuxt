@@ -10,7 +10,6 @@ export const parallel = function parallel(tasks, fn) {
 }
 
 export const chainFn = function chainFn(base, fn) {
-  /* istanbul ignore if */
   if (typeof fn !== 'function') {
     return base
   }

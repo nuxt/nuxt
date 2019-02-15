@@ -4,6 +4,9 @@ import { register } from 'ts-node'
 import { setup as setupTypeScript } from '@nuxt/typescript'
 
 jest.mock('ts-node')
+jest.mock('enquirer', () => ({
+  prompt: jest.fn(() => ({ confirmGeneration: true }))
+}))
 
 describe('typescript setup', () => {
   const rootDir = 'tmp'
@@ -35,7 +38,11 @@ describe('typescript setup', () => {
 
     expect(register).toHaveBeenCalledTimes(1)
     expect(register).toHaveBeenCalledWith({
-      project: tsConfigPath
+      project: tsConfigPath,
+      compilerOptions: {
+        module: 'commonjs'
+      },
+      transpileOnly: false
     })
   })
 

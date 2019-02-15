@@ -49,7 +49,7 @@ module.exports = (context, options = {}) => {
   let { targets } = options
   if (modern === true) {
     targets = { esmodules: true }
-  } else if (targets === undefined) {
+  } else if (targets === undefined && typeof buildTarget === 'string') {
     targets = buildTarget === 'server' ? { node: 'current' } : { ie: 9 }
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "example-no-ssr",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",

@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils/'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
@@ -6,6 +7,7 @@ describe('build', () => {
   beforeAll(async () => {
     build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -71,5 +73,37 @@ describe('build', () => {
     await cmd.run()
 
     expect(options.modern).toBe(true)
+  })
+
+  test('build force-exits by default', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', 5)
+  })
+
+  test('build can set force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', false)
+  })
+
+  test('build can disable force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
   })
 })

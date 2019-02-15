@@ -1,7 +1,7 @@
 {
   "name": "example-vue-class-component",
   "dependencies": {
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "nuxt-class-component": "latest"
   },
   "scripts": {

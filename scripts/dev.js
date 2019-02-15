@@ -24,32 +24,31 @@ const _require = esm(module, {
 
 const execa = require('execa')
 
-global.__NUXT = new Proxy({}, {
-  get(target, propertyKey, receiver) {
-    if (propertyKey === 'version') {
-      try {
-        const { stdout } = execa.sync('git', ['status', '-s', '-b', '--porcelain=2'])
+global.__NUXT = {}
+Object.defineProperty(global.__NUXT, 'version', {
+  enumerable: true,
+  get() {
+    try {
+      const { stdout } = execa.sync('git', ['status', '-s', '-b', '--porcelain=2'])
 
-        const status = { dirty: false }
-        for (const line of stdout.split('\\n')) {
-          if (line[0] === '#') {
-            const match = line.match(/branch\.([^\\s]+) (.*)\$/)
-            if (match && match.length) {
-              status[match[1]] = match[2]
-            }
-          } else {
-            status.dirty = true
-            break
+      const status = { dirty: false }
+      for (const line of stdout.split('\\n')) {
+        if (line[0] === '#') {
+          const match = line.match(/branch\\.([^\\s]+) (.*)$/)
+          if (match && match.length) {
+            status[match[1]] = match[2]
           }
+        } else {
+          status.dirty = true
+          break
         }
-
-        return \`git<\${status.head}\${status.dirty ? '~' : '-'}\${(status.oid && status.oid.substr(0, 7)) || ''}> (\${status.ab})\`
-      } catch (err) {
-        return 'source'
       }
-    }
 
-    return target[propertyKey]
+      return \`git<\${status.head}\${status.dirty ? '~' : '-'}\${(status.oid && status.oid.substr(0, 7)) || ''}>\` +
+        (status.ab ? \` (\${status.ab})\` : '')
+    } catch (err) {
+      return 'source'
+    }
   }
 })
 

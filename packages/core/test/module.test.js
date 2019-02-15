@@ -309,6 +309,31 @@ describe('core: module', () => {
     expect(result).toEqual({ src: 'moduleTest', options: {} })
   })
 
+  test('should add function module', async () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {}
+    })
+
+    const functionModule = function (options) {
+      return Promise.resolve(options)
+    }
+
+    functionModule.meta = { name: 'moduleTest' }
+
+    const result = await module.addModule(functionModule)
+
+    expect(requireModule).not.toBeCalled()
+    expect(module.requiredModules).toEqual({
+      moduleTest: {
+        handler: expect.any(Function),
+        options: undefined,
+        src: functionModule
+      }
+    })
+    expect(result).toEqual({ })
+  })
+
   test('should add array module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
@@ -358,13 +383,13 @@ describe('core: module', () => {
     expect(result).toEqual({ test: true })
   })
 
-  test('should throw error when handler is not function', () => {
+  test('should throw error when handler is not function', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule: () => false },
       options: {}
     })
 
-    expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
+    await expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
   })
 
   test('should prevent multiple adding when requireOnce is enabled', async () => {
