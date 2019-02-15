@@ -94,7 +94,7 @@ export default class SPAMetaRenderer {
             if (asType === 'font') {
               extra = ` type="font/${extension}" crossorigin`
             }
-            return `<link rel="${this.options.modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
+            return `<link rel="${req.modernMode ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
