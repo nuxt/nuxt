@@ -1,5 +1,6 @@
 import { NuxtConfigurationBuild } from './build'
 import { NuxtConfigurationEnv } from './env'
+import { NuxtConfigurationFetch } from './fetch'
 import { NuxtConfigurationGenerate } from './generate'
 import { NuxtConfigurationHead } from './head'
 import { NuxtConfigurationHooks } from './hooks'
@@ -22,6 +23,7 @@ interface NuxtConfiguration extends ExtendableConfiguration {
   css?: string[]
   dev?: boolean
   env?: NuxtConfigurationEnv
+  fetch?: NuxtConfigurationFetch
   generate?: NuxtConfigurationGenerate
   globalName?: string
   globals?: NuxtConfigurationGlobals
@@ -53,6 +55,7 @@ export {
   NuxtConfiguration,
   NuxtConfigurationBuild,
   NuxtConfigurationEnv,
+  NuxtConfigurationFetch,
   NuxtConfigurationGenerate,
   NuxtConfigurationGlobals,
   NuxtConfigurationHead,
