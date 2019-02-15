@@ -89,9 +89,8 @@ export default class VueRenderer {
 
   getPreloadFiles(context) {
     const preloadFiles = context.getPreloadFiles()
-    const modernMode = this.context.options.modern
     // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
-    return modernMode === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
+    return this.context.options.modern === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
   }
 
   renderResourceHints(context) {
