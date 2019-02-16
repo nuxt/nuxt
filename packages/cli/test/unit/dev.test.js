@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils/'
 import { consola, mockNuxt, mockBuilder, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
 describe('dev', () => {
@@ -5,6 +6,7 @@ describe('dev', () => {
 
   beforeAll(async () => {
     dev = await import('../../src/commands/dev').then(m => m.default)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
   })
 
   afterEach(() => jest.clearAllMocks())
@@ -103,5 +105,36 @@ describe('dev', () => {
     await NuxtCommand.from(dev).run()
 
     expect(consola.error).toHaveBeenCalledWith(new Error('Listen Error'))
+  })
+
+  test('dev doesnt force-exit by default', async () => {
+    mockNuxt()
+    mockBuilder()
+
+    const cmd = NuxtCommand.from(dev, ['dev', '.'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
+  })
+
+  test('dev can set force exit explicitly', async () => {
+    mockNuxt()
+    mockBuilder()
+
+    const cmd = NuxtCommand.from(dev, ['dev', '.', '--force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('dev', false)
+  })
+
+  test('dev can disable force exit explicitly', async () => {
+    mockNuxt()
+    mockBuilder()
+
+    const cmd = NuxtCommand.from(dev, ['dev', '.', '--no-force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
   })
 })

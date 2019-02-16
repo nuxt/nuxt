@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.3](https://github.com/nuxt/nuxt.js/compare/v2.4.2...v2.4.3) (2019-02-06)
+
+
+### Bug Fixes
+
+* update terser-webpack-plugin to 1.2.2 ([b1a5a19](https://github.com/nuxt/nuxt.js/commit/b1a5a19))
+* update webpack to 4.29.1 ([95ef1d4](https://github.com/nuxt/nuxt.js/commit/95ef1d4))
+
+
+
+
+
 ## [2.4.2](https://github.com/nuxt/nuxt.js/compare/v2.4.1...v2.4.2) (2019-01-30)
 
 **Note:** Version bump only for package @nuxt/webpack

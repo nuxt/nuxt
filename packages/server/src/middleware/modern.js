@@ -20,33 +20,40 @@ const isModernBrowser = (ua) => {
   if (!browserVersion) {
     return false
   }
-  return modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name])
+  return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
 let detected = false
 
+const distinctModernModeOptions = [false, 'client', 'server']
+
 const detectModernBuild = ({ options, resources }) => {
-  if (detected === false && ![false, 'client', 'server'].includes(options.modern)) {
-    detected = true
-    if (resources.modernManifest) {
-      options.modern = options.render.ssr ? 'server' : 'client'
-      consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
-    } else {
-      options.modern = false
-    }
+  if (detected || distinctModernModeOptions.includes(options.modern)) {
+    return
   }
+
+  detected = true
+
+  if (!resources.modernManifest) {
+    options.modern = false
+    return
+  }
+
+  options.modern = options.render.ssr ? 'server' : 'client'
+  consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
 }
 
 const detectModernBrowser = ({ socket = {}, headers }) => {
-  if (socket.isModernBrowser === undefined) {
-    const ua = headers && headers['user-agent']
-    socket.isModernBrowser = isModernBrowser(ua)
+  if (socket.isModernBrowser !== undefined) {
+    return
   }
+
+  const ua = headers && headers['user-agent']
+  socket.isModernBrowser = isModernBrowser(ua)
 }
 
 const setModernMode = (req, options) => {
-  const { socket = {} } = req
-  const { isModernBrowser } = socket
+  const { socket: { isModernBrowser } = {} } = req
   if (options.modern === 'server') {
     req.modernMode = isModernBrowser
   }
@@ -57,7 +64,9 @@ const setModernMode = (req, options) => {
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
-  detectModernBrowser(req)
-  setModernMode(req, context.options)
+  if (context.options.modern !== false) {
+    detectModernBrowser(req)
+    setModernMode(req, context.options)
+  }
   next()
 }

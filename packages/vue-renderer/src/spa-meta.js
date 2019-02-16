@@ -73,16 +73,20 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const { clientManifest } = this.renderer.context.resources
+    const { modernManifest, clientManifest } = this.renderer.context.resources
+    const manifest = this.options.modern ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
 
-    if (this.options.render.resourceHints && clientManifest) {
-      const publicPath = clientManifest.publicPath || '/_nuxt/'
+    if (this.options.render.resourceHints && manifest) {
+      const publicPath = manifest.publicPath || '/_nuxt/'
 
       // Preload initial resources
-      if (Array.isArray(clientManifest.initial)) {
-        meta.resourceHints += clientManifest.initial
+      if (Array.isArray(manifest.initial)) {
+        const { crossorigin } = this.options.build
+        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
+
+        meta.resourceHints += manifest.initial
           .map(SPAMetaRenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
           .map(({ file, extension, fileWithoutQuery, asType }) => {
@@ -90,15 +94,15 @@ export default class SPAMetaRenderer {
             if (asType === 'font') {
               extra = ` type="font/${extension}" crossorigin`
             }
-            return `<link rel="preload" href="${publicPath}${file}"${
+            return `<link rel="${this.options.modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
       }
 
       // Prefetch async resources
-      if (Array.isArray(clientManifest.async)) {
-        meta.resourceHints += clientManifest.async
+      if (Array.isArray(manifest.async)) {
+        meta.resourceHints += manifest.async
           .map(SPAMetaRenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPrefetch(fileWithoutQuery, asType))
           .map(({ file }) => `<link rel="prefetch" href="${publicPath}${file}">`)

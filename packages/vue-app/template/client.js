@@ -1,4 +1,5 @@
 import Vue from 'vue'
+<% if (fetch.client) { %>import fetch from 'unfetch'<% } %>
 import middleware from './middleware.js'
 import {
   applyAsyncData,
@@ -21,6 +22,8 @@ import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client"
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
+
+<% if (fetch.client) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 // Global shared references
 let _lastPaths = []
@@ -528,7 +531,7 @@ const noopFetch = () => {}
 // Special hot reload with asyncData(context)
 function getNuxtChildComponents($parent, $components = []) {
   $parent.$children.forEach(($child) => {
-    if ($child.$vnode.data.nuxtChild && !$components.find(c =>(c.$options.__file === $child.$options.__file))) {
+    if ($child.$vnode && $child.$vnode.data.nuxtChild && !$components.find(c =>(c.$options.__file === $child.$options.__file))) {
       $components.push($child)
     }
     if ($child.$children && $child.$children.length) {

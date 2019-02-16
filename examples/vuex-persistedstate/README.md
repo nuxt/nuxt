@@ -1,3 +1,4 @@
-# Nuxt.js with Vuex persisted state (localStorage)
+# Nuxt with [Vuex](https://vuex.vuejs.org/) persisted state (localStorage)
 
-See https://github.com/robinvdvleuten/vuex-persistedstate
+
+Demo is using [vuex-persistedstate](https://github.com/robinvdvleuten/vuex-persistedstate) library

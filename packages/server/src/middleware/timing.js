@@ -15,13 +15,16 @@ export default options => (req, res, next) => {
   onHeaders(res, () => {
     res.timing.end('total')
 
-    res.setHeader(
-      'Server-Timing',
-      []
-        .concat(res.getHeader('Server-Timing') || [])
-        .concat(res.timing.headers)
-        .join(', ')
-    )
+    if (res.timing.headers.length > 0) {
+      res.setHeader(
+        'Server-Timing',
+        []
+          .concat(res.getHeader('Server-Timing') || [])
+          .concat(res.timing.headers)
+          .join(', ')
+      )
+    }
+    res.timing.clear()
   })
 
   next()
@@ -35,7 +38,9 @@ class ServerTiming extends Timer {
 
   end(...args) {
     const time = super.end(...args)
-    this.headers.push(this.formatHeader(time))
+    if (time) {
+      this.headers.push(this.formatHeader(time))
+    }
     return time
   }
 

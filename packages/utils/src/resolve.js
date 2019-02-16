@@ -38,8 +38,7 @@ export const r = function r(...args) {
   return wp(path.resolve(...args.map(normalize)))
 }
 
-export const relativeTo = function relativeTo() {
-  const args = Array.prototype.slice.apply(arguments)
+export const relativeTo = function relativeTo(...args) {
   const dir = args.shift()
 
   // Keep webpack inline loader intact
