@@ -23,6 +23,10 @@ export default class PostcssConfig {
     this.buildContext = buildContext
   }
 
+  get postcssOptions() {
+    return this.buildContext.buildOptions.postcss
+  }
+
   get defaultConfig() {
     const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
@@ -74,7 +78,7 @@ export default class PostcssConfig {
   }
 
   configFromFile() {
-    const loaderConfig = (this.buildContext.buildOptions.postcss && this.buildContext.buildOptions.postcss.config) || {}
+    const loaderConfig = (this.postcssOptions && this.postcssOptions.config) || {}
     loaderConfig.path = loaderConfig.path || this.searchConfigFile()
 
     if (loaderConfig.path) {
@@ -122,7 +126,7 @@ export default class PostcssConfig {
 
   config() {
     /* istanbul ignore if */
-    if (!this.buildContext.buildOptions.postcss) {
+    if (!this.postcssOptions) {
       return false
     }
 
@@ -131,7 +135,7 @@ export default class PostcssConfig {
       return config
     }
 
-    config = this.normalize(cloneDeep(this.buildContext.buildOptions.postcss))
+    config = this.normalize(cloneDeep(this.postcssOptions))
 
     // Apply default plugins
     if (isPureObject(config)) {

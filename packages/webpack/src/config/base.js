@@ -124,14 +124,16 @@ export default class WebpackBaseConfig {
   }
 
   output() {
+    const {
+      options: { buildDir, router },
+      buildOptions: { publicPath }
+    } = this.buildContext
     return {
-      path: path.resolve(this.buildContext.options.buildDir, 'dist', this.isServer ? 'server' : 'client'),
+      path: path.resolve(buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
-      publicPath: isUrl(this.buildContext.buildOptions.publicPath)
-        ? this.buildContext.buildOptions.publicPath
-        : urlJoin(this.buildContext.options.router.base, this.buildContext.buildOptions.publicPath)
+      publicPath: isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
     }
   }
 
@@ -147,13 +149,14 @@ export default class WebpackBaseConfig {
 
   minimizer() {
     const minimizer = []
+    const { terser, cache } = this.buildContext.buildOptions
 
     // https://github.com/webpack-contrib/terser-webpack-plugin
-    if (this.buildContext.buildOptions.terser) {
+    if (terser) {
       minimizer.push(
         new TerserWebpackPlugin(Object.assign({
           parallel: true,
-          cache: this.buildContext.buildOptions.cache,
+          cache: cache,
           sourceMap: this.devtool && /source-?map/.test(this.devtool),
           extractComments: {
             filename: 'LICENSES'
@@ -169,7 +172,7 @@ export default class WebpackBaseConfig {
               reserved: reservedVueTags
             }
           }
-        }, this.buildContext.buildOptions.terser))
+        }, terser))
       )
     }
 
@@ -332,8 +335,8 @@ export default class WebpackBaseConfig {
   }
 
   plugins() {
-    const { buildOptions, nuxt } = this.buildContext
     const plugins = []
+    const { nuxt, buildOptions } = this.buildContext
 
     // Add timefix-plugin before others plugins
     if (this.dev) {

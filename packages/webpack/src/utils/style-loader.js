@@ -30,19 +30,20 @@ export default class StyleLoader {
   }
 
   styleResource(ext) {
-    const extResource = this.buildContext.buildOptions.styleResources[ext]
+    const { buildOptions: { styleResources }, options: { rootDir } } = this.buildContext
+    const extResource = styleResources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
     if (!extResource) {
       return
     }
-    const patterns = wrapArray(extResource).map(p => path.resolve(this.buildContext.options.rootDir, p))
+    const patterns = wrapArray(extResource).map(p => path.resolve(rootDir, p))
 
     return {
       loader: 'style-resources-loader',
       options: Object.assign(
         { patterns },
-        this.buildContext.buildOptions.styleResources.options || {}
+        styleResources.options || {}
       )
     }
   }
