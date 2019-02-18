@@ -16,8 +16,12 @@ export default class StyleLoader {
     }
   }
 
+  get buildOpts() {
+    return this.context.options.build
+  }
+
   get exportOnlyLocals() {
-    return Boolean(this.isServer && this.context.options.build.extractCSStCSS)
+    return Boolean(this.isServer && this.buildOpts.extractCSStCSS)
   }
 
   normalize(loaders) {
@@ -26,7 +30,7 @@ export default class StyleLoader {
   }
 
   styleResource(ext) {
-    const extResource = this.context.options.build.styleResources[ext]
+    const extResource = this.buildOpts.styleResources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
     if (!extResource) {
@@ -38,7 +42,7 @@ export default class StyleLoader {
       loader: 'style-resources-loader',
       options: Object.assign(
         { patterns },
-        this.context.options.build.styleResources.options || {}
+        this.buildOpts.styleResources.options || {}
       )
     }
   }
@@ -58,7 +62,7 @@ export default class StyleLoader {
 
     return {
       loader: 'postcss-loader',
-      options: Object.assign({ sourceMap: this.context.options.build.cssSourceMap }, config)
+      options: Object.assign({ sourceMap: this.buildOpts.cssSourceMap }, config)
     }
   }
 
@@ -78,15 +82,15 @@ export default class StyleLoader {
   }
 
   extract() {
-    if (this.context.options.build.extractCSStCSS) {
+    if (this.buildOpts.extractCSStCSS) {
       return ExtractCssChunksPlugin.loader
     }
   }
 
   styleLoader() {
-    return this.context.options.build.extractCSSt() || {
+    return this.buildOpts.extractCSSt() || {
       loader: 'vue-style-loader',
-      options: this.context.options.build.loaders.vueStyle
+      options: this.buildOpts.loaders.vueStyle
     }
   }
 
@@ -97,21 +101,21 @@ export default class StyleLoader {
       this.styleResource(ext)
     ).filter(Boolean)
 
-    this.context.options.build.loaders.css.importLoaders = this.context.options.build.loaders.cssModules.importLoaders = customLoaders.length
+    this.buildOpts.loaders.css.importLoaders = this.buildOpts.loaders.cssModules.importLoaders = customLoaders.length
 
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          this.cssModules(this.context.options.build.loaders.cssModules),
+          this.cssModules(this.buildOpts.loaders.cssModules),
           customLoaders
         )
       },
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          this.css(this.context.options.build.loaders.css),
+          this.css(this.buildOpts.loaders.css),
           customLoaders
         )
       }
