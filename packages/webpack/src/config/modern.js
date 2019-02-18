@@ -2,8 +2,10 @@ import clone from 'lodash/clone'
 import WebpackClientConfig from './client'
 
 export default class WebpackModernConfig extends WebpackClientConfig {
-  constructor(builder) {
-    super(builder, { name: 'modern', isServer: false, isModern: true })
+  constructor(...args) {
+    super(...args)
+    this.name = 'modern'
+    this.isModern = true
   }
 
   env() {
@@ -13,7 +15,7 @@ export default class WebpackModernConfig extends WebpackClientConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.options.build.babel)
+    const options = clone(this.buildContext.buildOptions.babel)
 
     options.presets = [
       [
