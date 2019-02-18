@@ -17,7 +17,7 @@ export default class StyleLoader {
   }
 
   get exportOnlyLocals() {
-    return Boolean(this.isServer && this.buildContext.buildOptions.extractCSStCSS)
+    return Boolean(this.isServer && this.buildContext.buildOptions.extractCSS)
   }
 
   normalize(loaders) {
@@ -78,13 +78,13 @@ export default class StyleLoader {
   }
 
   extract() {
-    if (this.buildContext.buildOptions.extractCSStCSS) {
+    if (this.buildContext.buildOptions.extractCSS) {
       return ExtractCssChunksPlugin.loader
     }
   }
 
   styleLoader() {
-    return this.buildContext.buildOptions.extractCSSt() || {
+    return this.buildContext.buildOptions.extractCSS() || {
       loader: 'vue-style-loader',
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
