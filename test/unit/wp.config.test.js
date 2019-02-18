@@ -20,7 +20,7 @@ describe('webpack configuration', () => {
       {
         options: {
           dev: true,
-          build: {
+          buildOptions: {
             parallel: true,
             cache: true
           }
