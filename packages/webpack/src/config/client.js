@@ -22,7 +22,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   getFileName(...args) {
-    if (this.buildOpts.analyze) {
+    if (this.buildContext.buildOptions.analyze) {
       const [key] = args
       if (['app', 'chunk'].includes(key)) {
         return `${this.isModern ? 'modern-' : ''}[name].js`
@@ -47,7 +47,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
-      this.buildOpts.splitChunks.commons === true &&
+      this.buildContext.buildOptions.splitChunks.commons === true &&
       optimization.splitChunks.cacheGroups.commons === undefined
     ) {
       optimization.splitChunks.cacheGroups.commons = {
@@ -67,9 +67,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // https://github.com/NMFR/optimize-css-assets-webpack-plugin
     // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
     // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
-    if (this.buildOpts.optimizeCSS) {
+    if (this.buildContext.buildOptions.optimizeCSS) {
       minimizer.push(
-        new OptimizeCSSAssetsPlugin(Object.assign({}, this.buildOpts.optimizeCSS))
+        new OptimizeCSSAssetsPlugin(Object.assign({}, this.buildContext.buildOptions.optimizeCSS))
       )
     }
 
@@ -80,12 +80,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     const plugins = super.plugins()
 
     // Generate output HTML for SSR
-    if (this.buildOpts.ssr) {
+    if (this.buildContext.buildOptions.ssr) {
       plugins.push(
         new HTMLPlugin({
           filename: '../server/index.ssr.html',
-          template: this.context.options.appTemplatePath,
-          minify: this.buildOpts.html.minify,
+          template: this.buildContext.options.appTemplatePath,
+          minify: this.buildContext.buildOptions.html.minify,
           inject: false // Resources will be injected using bundleRenderer
         })
       )
@@ -94,8 +94,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     plugins.push(
       new HTMLPlugin({
         filename: '../server/index.spa.html',
-        template: this.context.options.appTemplatePath,
-        minify: this.buildOpts.html.minify,
+        template: this.buildContext.options.appTemplatePath,
+        minify: this.buildContext.buildOptions.html.minify,
         inject: true,
         chunksSortMode: 'dependency'
       }),
@@ -112,46 +112,46 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // Webpack Bundle Analyzer
     // https://github.com/webpack-contrib/webpack-bundle-analyzer
-    if (!this.dev && this.buildOpts.analyze) {
-      const statsDir = path.resolve(this.context.options.buildDir, 'stats')
+    if (!this.dev && this.buildContext.buildOptions.analyze) {
+      const statsDir = path.resolve(this.buildContext.options.buildDir, 'stats')
 
       plugins.push(new BundleAnalyzer.BundleAnalyzerPlugin(Object.assign({
         analyzerMode: 'static',
         defaultSizes: 'gzip',
         generateStatsFile: true,
-        openAnalyzer: !this.buildOpts.quiet,
+        openAnalyzer: !this.buildContext.buildOptions.quiet,
         reportFilename: path.resolve(statsDir, `${this.name}.html`),
         statsFilename: path.resolve(statsDir, `${this.name}.json`)
-      }, this.buildOpts.analyze)))
+      }, this.buildContext.buildOptions.analyze)))
     }
 
-    if (this.context.options.modern) {
+    if (this.buildContext.options.modern) {
       plugins.push(new ModernModePlugin({
-        targetDir: path.resolve(this.context.options.buildDir, 'dist', 'client'),
+        targetDir: path.resolve(this.buildContext.options.buildDir, 'dist', 'client'),
         isModernBuild: this.isModern
       }))
     }
 
-    if (this.buildOpts.crossorigin) {
+    if (this.buildContext.buildOptions.crossorigin) {
       plugins.push(new CorsPlugin({
-        crossorigin: this.buildOpts.crossorigin
+        crossorigin: this.buildContext.buildOptions.crossorigin
       }))
     }
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isModern && this.buildOpts.loaders.ts.transpileOnly && this.buildOpts.useForkTsChecker) {
-      const forkTsCheckerResolvedPath = this.context.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
+    if (!this.isModern && this.buildContext.buildOptions.loaders.ts.transpileOnly && this.buildContext.buildOptions.useForkTsChecker) {
+      const forkTsCheckerResolvedPath = this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
       if (forkTsCheckerResolvedPath) {
         const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
         plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
           vue: true,
-          tsconfig: path.resolve(this.context.options.rootDir, 'tsconfig.json'),
+          tsconfig: path.resolve(this.buildContext.options.rootDir, 'tsconfig.json'),
           // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.context.options.rootDir, 'tslint.json')),
+          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.buildContext.options.rootDir, 'tslint.json')),
           formatter: 'codeframe',
           logger: consola
-        }, this.buildOpts.useForkTsChecker)))
+        }, this.buildContext.buildOptions.useForkTsChecker)))
       } else {
         consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       }
@@ -163,7 +163,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   config() {
     const config = super.config()
 
-    const { client = {} } = this.buildOpts.hotMiddleware || {}
+    const { client = {} } = this.buildContext.buildOptions.hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client
     const hotMiddlewareClientOptions = {
       reload: true,
@@ -173,13 +173,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       ...options,
       name: this.name
     }
-    const clientPath = `${this.context.options.router.base}/__webpack_hmr/${this.name}`
+    const clientPath = `${this.buildContext.options.router.base}/__webpack_hmr/${this.name}`
     const hotMiddlewareClientOptionsStr =
       `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
 
     // Entry points
     config.entry = {
-      app: [path.resolve(this.context.options.buildDir, 'client.js')]
+      app: [path.resolve(this.buildContext.options.buildDir, 'client.js')]
     }
 
     // Add HMR support
@@ -193,7 +193,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     // Add friendly error plugin
-    if (this.dev && !this.buildOpts.quiet && this.buildOpts.friendlyErrors) {
+    if (this.dev && !this.buildContext.buildOptions.quiet && this.buildContext.buildOptions.friendlyErrors) {
       config.plugins.push(
         new FriendlyErrorsWebpackPlugin({
           clearConsole: false,

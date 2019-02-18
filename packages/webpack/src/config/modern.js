@@ -15,7 +15,7 @@ export default class WebpackModernConfig extends WebpackClientConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildOpts.babel)
+    const options = clone(this.buildContext.buildOptions.babel)
 
     options.presets = [
       [

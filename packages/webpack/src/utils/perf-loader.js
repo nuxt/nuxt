@@ -6,9 +6,10 @@ import { warmup } from 'thread-loader'
 // https://github.com/webpack-contrib/cache-loader
 
 export default class PerfLoader {
-  constructor(config) {
-    this.config = config
-    this.workerPools = PerfLoader.defaultPools({ dev: config.dev })
+  constructor(name, buildContext) {
+    this.name = name
+    this.buildContext = buildContext
+    this.workerPools = PerfLoader.defaultPools({ dev: buildContext.options.dev })
     return new Proxy(this, {
       get(target, name) {
         return target[name] ? target[name] : target.use.bind(target, name)
@@ -40,16 +41,16 @@ export default class PerfLoader {
   use(poolName) {
     const loaders = []
 
-    if (this.config.buildOpts.cache) {
+    if (this.buildContext.buildOptions.cache) {
       loaders.push({
         loader: 'cache-loader',
         options: {
-          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.config.name}`)
+          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.name}`)
         }
       })
     }
 
-    if (this.config.buildOpts.parallel) {
+    if (this.buildContext.buildOptions.parallel) {
       const pool = this.workerPools[poolName]
       if (pool) {
         loaders.push({

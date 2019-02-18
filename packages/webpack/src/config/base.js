@@ -22,7 +22,7 @@ import { reservedVueTags } from '../utils/reserved-tags'
 export default class WebpackBaseConfig {
   constructor(builder) {
     this.builder = builder
-    this.context = builder.context
+    this.buildContext = builder.buildContext
     this.modulesToTranspile = this.normalizeTranspile()
   }
 
@@ -48,17 +48,13 @@ export default class WebpackBaseConfig {
   }
 
   get dev() {
-    return this.context.options.dev
-  }
-
-  get buildOpts() {
-    return this.context.options.build
+    return this.buildContext.options.dev
   }
 
   normalizeTranspile() {
     // include SFCs in node_modules
     const items = [/\.vue\.js/i]
-    for (const pattern of this.buildOpts.transpile) {
+    for (const pattern of this.buildContext.buildOptions.transpile) {
       if (pattern instanceof RegExp) {
         items.push(pattern)
       } else {
@@ -70,7 +66,7 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildOpts.babel)
+    const options = clone(this.buildContext.buildOptions.babel)
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets({ isServer: this.isServer })
@@ -91,7 +87,7 @@ export default class WebpackBaseConfig {
   }
 
   getFileName(key) {
-    let fileName = this.buildOpts.filenames[key]
+    let fileName = this.buildContext.buildOptions.filenames[key]
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
     }
@@ -112,7 +108,7 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.options.mode),
-      'process.static': this.this.context.isStatic
+      'process.static': this.this.buildContext.isStatic
     }
     Object.entries(this.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
@@ -129,14 +125,14 @@ export default class WebpackBaseConfig {
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
-      publicPath: isUrl(this.buildOpts.publicPath)
-        ? this.buildOpts.publicPath
-        : urlJoin(this.options.router.base, this.buildOpts.publicPath)
+      publicPath: isUrl(this.buildContext.buildOptions.publicPath)
+        ? this.buildContext.buildOptions.publicPath
+        : urlJoin(this.options.router.base, this.buildContext.buildOptions.publicPath)
     }
   }
 
   optimization() {
-    const optimization = cloneDeep(this.buildOpts.optimization)
+    const optimization = cloneDeep(this.buildContext.buildOptions.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
       optimization.minimizer = this.minimizer()
@@ -149,11 +145,11 @@ export default class WebpackBaseConfig {
     const minimizer = []
 
     // https://github.com/webpack-contrib/terser-webpack-plugin
-    if (this.buildOpts.terser) {
+    if (this.buildContext.buildOptions.terser) {
       minimizer.push(
         new TerserWebpackPlugin(Object.assign({
           parallel: true,
-          cache: this.buildOpts.cache,
+          cache: this.buildContext.buildOptions.cache,
           sourceMap: this.devtool && /source-?map/.test(this.devtool),
           extractComments: {
             filename: 'LICENSES'
@@ -169,7 +165,7 @@ export default class WebpackBaseConfig {
               reserved: reservedVueTags
             }
           }
-        }, this.buildOpts.terser))
+        }, this.buildContext.buildOptions.terser))
       )
     }
 
@@ -190,9 +186,9 @@ export default class WebpackBaseConfig {
   }
 
   rules() {
-    const perfLoader = new PerfLoader(this)
+    const perfLoader = new PerfLoader(this.name, this.buildContext)
     const styleLoader = new StyleLoader(
-      this.context,
+      this.buildContext,
       { isServer: this.isServer, perfLoader }
     )
     const babelLoader = {
@@ -204,7 +200,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.vue$/i,
         loader: 'vue-loader',
-        options: this.buildOpts.loaders.vue
+        options: this.buildContext.buildOptions.loaders.vue
       },
       {
         test: /\.pug$/i,
@@ -213,7 +209,7 @@ export default class WebpackBaseConfig {
             resourceQuery: /^\?vue/i,
             use: [{
               loader: 'pug-plain-loader',
-              options: this.buildOpts.loaders.pugPlain
+              options: this.buildContext.buildOptions.loaders.pugPlain
             }]
           },
           {
@@ -221,7 +217,7 @@ export default class WebpackBaseConfig {
               'raw-loader',
               {
                 loader: 'pug-plain-loader',
-                options: this.buildOpts.loaders.pugPlain
+                options: this.buildContext.buildOptions.loaders.pugPlain
               }
             ]
           }
@@ -248,7 +244,7 @@ export default class WebpackBaseConfig {
           babelLoader,
           {
             loader: 'ts-loader',
-            options: this.buildOpts.loaders.ts
+            options: this.buildContext.buildOptions.loaders.ts
           }
         ]
       },
@@ -258,7 +254,7 @@ export default class WebpackBaseConfig {
           babelLoader,
           {
             loader: 'ts-loader',
-            options: this.buildOpts.loaders.tsx
+            options: this.buildContext.buildOptions.loaders.tsx
           }
         ]
       },
@@ -274,28 +270,28 @@ export default class WebpackBaseConfig {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
-          options: this.buildOpts.loaders.less
+          options: this.buildContext.buildOptions.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
-          options: this.buildOpts.loaders.sass
+          options: this.buildContext.buildOptions.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
-          options: this.buildOpts.loaders.scss
+          options: this.buildContext.buildOptions.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
-          options: this.buildOpts.loaders.stylus
+          options: this.buildContext.buildOptions.loaders.stylus
         })
       },
       {
@@ -303,7 +299,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'url-loader',
           options: Object.assign(
-            this.buildOpts.loaders.imgUrl,
+            this.buildContext.buildOptions.loaders.imgUrl,
             { name: this.getFileName('img') }
           )
         }]
@@ -313,7 +309,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'url-loader',
           options: Object.assign(
-            this.buildOpts.loaders.fontUrl,
+            this.buildContext.buildOptions.loaders.fontUrl,
             { name: this.getFileName('font') }
           )
         }]
@@ -323,7 +319,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'file-loader',
           options: Object.assign(
-            this.buildOpts.loaders.file,
+            this.buildContext.buildOptions.loaders.file,
             { name: this.getFileName('video') }
           )
         }]
@@ -340,18 +336,18 @@ export default class WebpackBaseConfig {
     }
 
     // CSS extraction)
-    if (this.buildOpts.extractCSS) {
+    if (this.buildContext.buildOptions.extractCSS) {
       plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
         reloadAll: true
-      }, this.buildOpts.extractCSS)))
+      }, this.buildContext.buildOptions.extractCSS)))
     }
 
     plugins.push(new VueLoader.VueLoaderPlugin())
 
-    plugins.push(...(this.buildOpts.plugins || []))
+    plugins.push(...(this.buildContext.buildOptions.plugins || []))
 
     // Hide warnings about plugins without a default export (#1179)
     plugins.push(new WarnFixPlugin())
@@ -366,38 +362,38 @@ export default class WebpackBaseConfig {
         'profile',
         'stats'
       ],
-      basic: !this.buildOpts.quiet && env.minimalCLI,
-      fancy: !this.buildOpts.quiet && !env.minimalCLI,
-      profile: !this.buildOpts.quiet && this.buildOpts.profile,
-      stats: !this.buildOpts.quiet && !this.dev && this.buildOpts.stats,
+      basic: !this.buildContext.buildOptions.quiet && env.minimalCLI,
+      fancy: !this.buildContext.buildOptions.quiet && !env.minimalCLI,
+      profile: !this.buildContext.buildOptions.quiet && this.buildContext.buildOptions.profile,
+      stats: !this.buildContext.buildOptions.quiet && !this.dev && this.buildContext.buildOptions.stats,
       reporter: {
         change: (_, { shortPath }) => {
           if (!this.isServer) {
-            this.context.nuxt.callHook('bundler:change', shortPath)
+            this.buildContext.nuxt.callHook('bundler:change', shortPath)
           }
         },
-        done: (context) => {
-          if (context.hasErrors) {
-            this.context.nuxt.callHook('bundler:error')
+        done: (buildContext) => {
+          if (buildContext.hasErrors) {
+            this.buildContext.nuxt.callHook('bundler:error')
           }
         },
         allDone: () => {
-          this.context.nuxt.callHook('bundler:done')
+          this.buildContext.nuxt.callHook('bundler:done')
         }
       }
     }))
 
-    if (this.buildOpts.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, this.buildOpts.hardSource)))
+    if (this.buildContext.buildOptions.hardSource) {
+      plugins.push(new HardSourcePlugin(Object.assign({}, this.buildContext.buildOptions.hardSource)))
     }
 
     return plugins
   }
 
   extendConfig(config) {
-    if (typeof this.buildOpts.extend === 'function') {
-      const extendedConfig = this.buildOpts.extend.call(
-        this.builder, config, { loaders: this.buildOpts.loaders, ...this.nuxtEnv }
+    if (typeof this.buildContext.buildOptions.extend === 'function') {
+      const extendedConfig = this.buildContext.buildOptions.extend.call(
+        this.builder, config, { loaders: this.buildContext.buildOptions.loaders, ...this.nuxtEnv }
       )
       // Only overwrite config when something is returned for backwards compatibility
       if (extendedConfig !== undefined) {

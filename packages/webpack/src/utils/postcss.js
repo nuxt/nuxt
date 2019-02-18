@@ -19,18 +19,14 @@ export const orderPresets = {
 }
 
 export default class PostcssConfig {
-  constructor(context) {
-    this.context = context
-  }
-
-  get buildOpts() {
-    return this.context.options.build
+  constructor(buildContext) {
+    this.buildContext = buildContext
   }
 
   get defaultConfig() {
-    const { dev, srcDir, rootDir, modulesDir } = this.context.options
+    const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
-      sourceMap: this.buildOpts.cssSourceMap,
+      sourceMap: this.buildContext.buildOptions.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
@@ -60,7 +56,7 @@ export default class PostcssConfig {
   searchConfigFile() {
     // Search for postCSS config file and use it if exists
     // https://github.com/michael-ciniawsky/postcss-load-config
-    const { srcDir, rootDir } = this.context.options
+    const { srcDir, rootDir } = this.buildContext.options
     for (const dir of [ srcDir, rootDir ]) {
       for (const file of [
         'postcss.config.js',
@@ -78,12 +74,12 @@ export default class PostcssConfig {
   }
 
   configFromFile() {
-    const loaderConfig = (this.buildOpts.postcss && this.buildOpts.postcss.config) || {}
+    const loaderConfig = (this.buildContext.buildOptions.postcss && this.buildContext.buildOptions.postcss.config) || {}
     loaderConfig.path = loaderConfig.path || this.searchConfigFile()
 
     if (loaderConfig.path) {
       return {
-        sourceMap: this.buildOpts.cssSourceMap,
+        sourceMap: this.buildContext.buildOptions.cssSourceMap,
         config: loaderConfig
       }
     }
@@ -113,7 +109,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = this.context.nuxt.resolver.requireModule(p)
+          const plugin = this.buildContext.nuxt.resolver.requireModule(p)
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled
@@ -126,7 +122,7 @@ export default class PostcssConfig {
 
   config() {
     /* istanbul ignore if */
-    if (!this.buildOpts.postcss) {
+    if (!this.buildContext.buildOptions.postcss) {
       return false
     }
 
@@ -135,7 +131,7 @@ export default class PostcssConfig {
       return config
     }
 
-    config = this.normalize(cloneDeep(this.buildOpts.postcss))
+    config = this.normalize(cloneDeep(this.buildContext.buildOptions.postcss))
 
     // Apply default plugins
     if (isPureObject(config)) {

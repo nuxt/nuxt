@@ -6,22 +6,18 @@ import { wrapArray } from '@nuxt/utils'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor(context, { isServer, perfLoader }) {
-    this.context = context
+  constructor(buildContext, { isServer, perfLoader }) {
+    this.buildContext = buildContext
     this.isServer = isServer
     this.perfLoader = perfLoader
 
-    if (context.options.build.postcss) {
-      this.postcssConfig = new PostcssConfig(context)
+    if (buildContext.options.build.postcss) {
+      this.postcssConfig = new PostcssConfig(buildContext)
     }
   }
 
-  get buildOpts() {
-    return this.context.options.build
-  }
-
   get exportOnlyLocals() {
-    return Boolean(this.isServer && this.buildOpts.extractCSStCSS)
+    return Boolean(this.isServer && this.buildContext.buildOptions.extractCSStCSS)
   }
 
   normalize(loaders) {
@@ -30,19 +26,19 @@ export default class StyleLoader {
   }
 
   styleResource(ext) {
-    const extResource = this.buildOpts.styleResources[ext]
+    const extResource = this.buildContext.buildOptions.styleResources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
     if (!extResource) {
       return
     }
-    const patterns = wrapArray(extResource).map(p => path.resolve(this.context.options.rootDir, p))
+    const patterns = wrapArray(extResource).map(p => path.resolve(this.buildContext.options.rootDir, p))
 
     return {
       loader: 'style-resources-loader',
       options: Object.assign(
         { patterns },
-        this.buildOpts.styleResources.options || {}
+        this.buildContext.buildOptions.styleResources.options || {}
       )
     }
   }
@@ -62,7 +58,7 @@ export default class StyleLoader {
 
     return {
       loader: 'postcss-loader',
-      options: Object.assign({ sourceMap: this.buildOpts.cssSourceMap }, config)
+      options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
     }
   }
 
@@ -82,15 +78,15 @@ export default class StyleLoader {
   }
 
   extract() {
-    if (this.buildOpts.extractCSStCSS) {
+    if (this.buildContext.buildOptions.extractCSStCSS) {
       return ExtractCssChunksPlugin.loader
     }
   }
 
   styleLoader() {
-    return this.buildOpts.extractCSSt() || {
+    return this.buildContext.buildOptions.extractCSSt() || {
       loader: 'vue-style-loader',
-      options: this.buildOpts.loaders.vueStyle
+      options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }
 
@@ -101,21 +97,21 @@ export default class StyleLoader {
       this.styleResource(ext)
     ).filter(Boolean)
 
-    this.buildOpts.loaders.css.importLoaders = this.buildOpts.loaders.cssModules.importLoaders = customLoaders.length
+    this.buildContext.buildOptions.loaders.css.importLoaders = this.buildContext.buildOptions.loaders.cssModules.importLoaders = customLoaders.length
 
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          this.cssModules(this.buildOpts.loaders.cssModules),
+          this.cssModules(this.buildContext.buildOptions.loaders.cssModules),
           customLoaders
         )
       },
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          this.css(this.buildOpts.loaders.css),
+          this.css(this.buildContext.buildOptions.loaders.css),
           customLoaders
         )
       }
