@@ -107,10 +107,10 @@ export default class WebpackBaseConfig {
   env() {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
-      'process.mode': JSON.stringify(this.options.mode),
+      'process.mode': JSON.stringify(this.mode),
       'process.static': this.this.buildContext.isStatic
     }
-    Object.entries(this.options.env).forEach(([key, value]) => {
+    Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
         ['boolean', 'number'].includes(typeof value)
           ? value
@@ -121,13 +121,13 @@ export default class WebpackBaseConfig {
 
   output() {
     return {
-      path: path.resolve(this.options.buildDir, 'dist', this.isServer ? 'server' : 'client'),
+      path: path.resolve(this.buildContext.options.buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
       publicPath: isUrl(this.buildContext.buildOptions.publicPath)
         ? this.buildContext.buildOptions.publicPath
-        : urlJoin(this.options.router.base, this.buildContext.buildOptions.publicPath)
+        : urlJoin(this.buildContext.options.router.base, this.buildContext.buildOptions.publicPath)
     }
   }
 
@@ -173,7 +173,7 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.options
+    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
 
     return {
       '~': path.join(srcDir),
@@ -405,7 +405,7 @@ export default class WebpackBaseConfig {
 
   config() {
     // Prioritize nested node_modules in webpack search path (#2558)
-    const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
+    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
     const config = {
       name: this.name,
