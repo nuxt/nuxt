@@ -93,7 +93,7 @@ export default class VueRenderer {
     return this.context.options.modern === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
   }
 
-  renderResourceHints(context) {
+  renderSsrResourceHints(context) {
     if (this.context.options.modern === 'client') {
       const { publicPath, crossorigin } = this.context.options.build
       const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
@@ -360,7 +360,7 @@ export default class VueRenderer {
 
     // Inject resource hints
     if (this.context.options.render.resourceHints) {
-      HEAD += this.renderResourceHints(context)
+      HEAD += this.renderSsrResourceHints(context)
     }
 
     // Inject styles
