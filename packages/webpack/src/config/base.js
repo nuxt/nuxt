@@ -156,7 +156,7 @@ export default class WebpackBaseConfig {
       minimizer.push(
         new TerserWebpackPlugin(Object.assign({
           parallel: true,
-          cache: cache,
+          cache,
           sourceMap: this.devtool && /source-?map/.test(this.devtool),
           extractComments: {
             filename: 'LICENSES'
