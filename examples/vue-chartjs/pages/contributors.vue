@@ -18,6 +18,9 @@ function getRandomColor() {
 }
 
 export default {
+  components: {
+    DoughnutChart
+  },
   async asyncData({ env }) {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/contributors?access_token=${env.githubToken}`)
     return {
@@ -32,9 +35,6 @@ export default {
         ]
       }
     }
-  },
-  components: {
-    DoughnutChart
   }
 }
 </script>
