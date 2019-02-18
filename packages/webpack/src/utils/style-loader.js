@@ -88,7 +88,7 @@ export default class StyleLoader {
   }
 
   styleLoader() {
-    return this.extractCSS || {
+    return this.extract() || {
       loader: 'vue-style-loader',
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
