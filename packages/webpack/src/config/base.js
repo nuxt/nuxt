@@ -108,7 +108,7 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
-      'process.static': this.this.buildContext.isStatic
+      'process.static': this.buildContext.isStatic
     }
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
