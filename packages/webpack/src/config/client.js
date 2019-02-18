@@ -78,14 +78,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins() {
     const plugins = super.plugins()
+    const { buildOptions } = this.buildContext
 
     // Generate output HTML for SSR
-    if (this.buildContext.buildOptions.ssr) {
+    if (buildOptions.ssr) {
       plugins.push(
         new HTMLPlugin({
           filename: '../server/index.ssr.html',
           template: this.buildContext.options.appTemplatePath,
-          minify: this.buildContext.buildOptions.html.minify,
+          minify: buildOptions.html.minify,
           inject: false // Resources will be injected using bundleRenderer
         })
       )
@@ -95,7 +96,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       new HTMLPlugin({
         filename: '../server/index.spa.html',
         template: this.buildContext.options.appTemplatePath,
-        minify: this.buildContext.buildOptions.html.minify,
+        minify: buildOptions.html.minify,
         inject: true,
         chunksSortMode: 'dependency'
       }),
@@ -112,17 +113,17 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // Webpack Bundle Analyzer
     // https://github.com/webpack-contrib/webpack-bundle-analyzer
-    if (!this.dev && this.buildContext.buildOptions.analyze) {
+    if (!this.dev && buildOptions.analyze) {
       const statsDir = path.resolve(this.buildContext.options.buildDir, 'stats')
 
       plugins.push(new BundleAnalyzer.BundleAnalyzerPlugin(Object.assign({
         analyzerMode: 'static',
         defaultSizes: 'gzip',
         generateStatsFile: true,
-        openAnalyzer: !this.buildContext.buildOptions.quiet,
+        openAnalyzer: !buildOptions.quiet,
         reportFilename: path.resolve(statsDir, `${this.name}.html`),
         statsFilename: path.resolve(statsDir, `${this.name}.json`)
-      }, this.buildContext.buildOptions.analyze)))
+      }, buildOptions.analyze)))
     }
 
     if (this.buildContext.options.modern) {
@@ -132,15 +133,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
-    if (this.buildContext.buildOptions.crossorigin) {
+    if (buildOptions.crossorigin) {
       plugins.push(new CorsPlugin({
-        crossorigin: this.buildContext.buildOptions.crossorigin
+        crossorigin: buildOptions.crossorigin
       }))
     }
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isModern && this.loaders.ts.transpileOnly && this.buildContext.buildOptions.useForkTsChecker) {
+    if (!this.isModern && this.loaders.ts.transpileOnly && buildOptions.useForkTsChecker) {
       const forkTsCheckerResolvedPath = this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
       if (forkTsCheckerResolvedPath) {
         const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
@@ -151,7 +152,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(this.buildContext.options.rootDir, 'tslint.json')),
           formatter: 'codeframe',
           logger: consola
-        }, this.buildContext.buildOptions.useForkTsChecker)))
+        }, buildOptions.useForkTsChecker)))
       } else {
         consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
       }

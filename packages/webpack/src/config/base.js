@@ -332,6 +332,7 @@ export default class WebpackBaseConfig {
   }
 
   plugins() {
+    const { buildOptions, nuxt } = this.buildContext
     const plugins = []
 
     // Add timefix-plugin before others plugins
@@ -340,18 +341,18 @@ export default class WebpackBaseConfig {
     }
 
     // CSS extraction)
-    if (this.buildContext.buildOptions.extractCSS) {
+    if (buildOptions.extractCSS) {
       plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
         reloadAll: true
-      }, this.buildContext.buildOptions.extractCSS)))
+      }, buildOptions.extractCSS)))
     }
 
     plugins.push(new VueLoader.VueLoaderPlugin())
 
-    plugins.push(...(this.buildContext.buildOptions.plugins || []))
+    plugins.push(...(buildOptions.plugins || []))
 
     // Hide warnings about plugins without a default export (#1179)
     plugins.push(new WarnFixPlugin())
@@ -366,37 +367,38 @@ export default class WebpackBaseConfig {
         'profile',
         'stats'
       ],
-      basic: !this.buildContext.buildOptions.quiet && env.minimalCLI,
-      fancy: !this.buildContext.buildOptions.quiet && !env.minimalCLI,
-      profile: !this.buildContext.buildOptions.quiet && this.buildContext.buildOptions.profile,
-      stats: !this.buildContext.buildOptions.quiet && !this.dev && this.buildContext.buildOptions.stats,
+      basic: !buildOptions.quiet && env.minimalCLI,
+      fancy: !buildOptions.quiet && !env.minimalCLI,
+      profile: !buildOptions.quiet && buildOptions.profile,
+      stats: !buildOptions.quiet && !this.dev && buildOptions.stats,
       reporter: {
         change: (_, { shortPath }) => {
           if (!this.isServer) {
-            this.buildContext.nuxt.callHook('bundler:change', shortPath)
+            nuxt.callHook('bundler:change', shortPath)
           }
         },
         done: (buildContext) => {
           if (buildContext.hasErrors) {
-            this.buildContext.nuxt.callHook('bundler:error')
+            nuxt.callHook('bundler:error')
           }
         },
         allDone: () => {
-          this.buildContext.nuxt.callHook('bundler:done')
+          nuxt.callHook('bundler:done')
         }
       }
     }))
 
-    if (this.buildContext.buildOptions.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, this.buildContext.buildOptions.hardSource)))
+    if (buildOptions.hardSource) {
+      plugins.push(new HardSourcePlugin(Object.assign({}, buildOptions.hardSource)))
     }
 
     return plugins
   }
 
   extendConfig(config) {
-    if (typeof this.buildContext.buildOptions.extend === 'function') {
-      const extendedConfig = this.buildContext.buildOptions.extend.call(
+    const { extend } = this.buildContext.buildOptions
+    if (typeof extend === 'function') {
+      const extendedConfig = extend.call(
         this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
       )
       // Only overwrite config when something is returned for backwards compatibility
