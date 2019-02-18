@@ -51,6 +51,10 @@ export default class WebpackBaseConfig {
     return this.buildContext.options.dev
   }
 
+  get loaders() {
+    return this.buildContext.buildOptions.loaders
+  }
+
   normalizeTranspile() {
     // include SFCs in node_modules
     const items = [/\.vue\.js/i]
@@ -200,7 +204,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.vue$/i,
         loader: 'vue-loader',
-        options: this.buildContext.buildOptions.loaders.vue
+        options: this.loaders.vue
       },
       {
         test: /\.pug$/i,
@@ -209,7 +213,7 @@ export default class WebpackBaseConfig {
             resourceQuery: /^\?vue/i,
             use: [{
               loader: 'pug-plain-loader',
-              options: this.buildContext.buildOptions.loaders.pugPlain
+              options: this.loaders.pugPlain
             }]
           },
           {
@@ -217,7 +221,7 @@ export default class WebpackBaseConfig {
               'raw-loader',
               {
                 loader: 'pug-plain-loader',
-                options: this.buildContext.buildOptions.loaders.pugPlain
+                options: this.loaders.pugPlain
               }
             ]
           }
@@ -244,7 +248,7 @@ export default class WebpackBaseConfig {
           babelLoader,
           {
             loader: 'ts-loader',
-            options: this.buildContext.buildOptions.loaders.ts
+            options: this.loaders.ts
           }
         ]
       },
@@ -254,7 +258,7 @@ export default class WebpackBaseConfig {
           babelLoader,
           {
             loader: 'ts-loader',
-            options: this.buildContext.buildOptions.loaders.tsx
+            options: this.loaders.tsx
           }
         ]
       },
@@ -270,28 +274,28 @@ export default class WebpackBaseConfig {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
           loader: 'less-loader',
-          options: this.buildContext.buildOptions.loaders.less
+          options: this.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
           loader: 'sass-loader',
-          options: this.buildContext.buildOptions.loaders.sass
+          options: this.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
           loader: 'sass-loader',
-          options: this.buildContext.buildOptions.loaders.scss
+          options: this.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
           loader: 'stylus-loader',
-          options: this.buildContext.buildOptions.loaders.stylus
+          options: this.loaders.stylus
         })
       },
       {
@@ -299,7 +303,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'url-loader',
           options: Object.assign(
-            this.buildContext.buildOptions.loaders.imgUrl,
+            this.loaders.imgUrl,
             { name: this.getFileName('img') }
           )
         }]
@@ -309,7 +313,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'url-loader',
           options: Object.assign(
-            this.buildContext.buildOptions.loaders.fontUrl,
+            this.loaders.fontUrl,
             { name: this.getFileName('font') }
           )
         }]
@@ -319,7 +323,7 @@ export default class WebpackBaseConfig {
         use: [{
           loader: 'file-loader',
           options: Object.assign(
-            this.buildContext.buildOptions.loaders.file,
+            this.loaders.file,
             { name: this.getFileName('video') }
           )
         }]
@@ -393,7 +397,7 @@ export default class WebpackBaseConfig {
   extendConfig(config) {
     if (typeof this.buildContext.buildOptions.extend === 'function') {
       const extendedConfig = this.buildContext.buildOptions.extend.call(
-        this.builder, config, { loaders: this.buildContext.buildOptions.loaders, ...this.nuxtEnv }
+        this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
       )
       // Only overwrite config when something is returned for backwards compatibility
       if (extendedConfig !== undefined) {

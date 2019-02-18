@@ -16,8 +16,12 @@ export default class StyleLoader {
     }
   }
 
+  get extractCSS() {
+    return this.buildContext.buildOptions.extractCSS
+  }
+
   get exportOnlyLocals() {
-    return Boolean(this.isServer && this.buildContext.buildOptions.extractCSS)
+    return Boolean(this.isServer && this.extractCSS)
   }
 
   normalize(loaders) {
@@ -78,40 +82,42 @@ export default class StyleLoader {
   }
 
   extract() {
-    if (this.buildContext.buildOptions.extractCSS) {
+    if (this.extractCSS) {
       return ExtractCssChunksPlugin.loader
     }
   }
 
   styleLoader() {
-    return this.buildContext.buildOptions.extractCSS() || {
+    return this.extractCSS || {
       loader: 'vue-style-loader',
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }
 
   apply(ext, loaders = []) {
+    const { css, cssModules } = this.buildContext.buildOptions.loaders
+
     const customLoaders = [].concat(
       this.postcss(),
       this.normalize(loaders),
       this.styleResource(ext)
     ).filter(Boolean)
 
-    this.buildContext.buildOptions.loaders.css.importLoaders = this.buildContext.buildOptions.loaders.cssModules.importLoaders = customLoaders.length
+    css.importLoaders = cssModules.importLoaders = customLoaders.length
 
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          this.cssModules(this.buildContext.buildOptions.loaders.cssModules),
+          this.cssModules(cssModules),
           customLoaders
         )
       },
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          this.css(this.buildContext.buildOptions.loaders.css),
+          this.css(css),
           customLoaders
         )
       }

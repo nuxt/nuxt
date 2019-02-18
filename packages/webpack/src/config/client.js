@@ -140,7 +140,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isModern && this.buildContext.buildOptions.loaders.ts.transpileOnly && this.buildContext.buildOptions.useForkTsChecker) {
+    if (!this.isModern && this.loaders.ts.transpileOnly && this.buildContext.buildOptions.useForkTsChecker) {
       const forkTsCheckerResolvedPath = this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
       if (forkTsCheckerResolvedPath) {
         const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
