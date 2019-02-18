@@ -7,9 +7,8 @@ import { warmup } from 'thread-loader'
 
 export default class PerfLoader {
   constructor(config) {
-    this.name = config.name
-    this.options = config.options
-    this.workerPools = PerfLoader.defaultPools(this.options)
+    this.config = config
+    this.workerPools = PerfLoader.defaultPools({ dev: config.dev })
     return new Proxy(this, {
       get(target, name) {
         return target[name] ? target[name] : target.use.bind(target, name)
@@ -25,13 +24,13 @@ export default class PerfLoader {
     }
   }
 
-  static warmupAll(options) {
-    options = PerfLoader.defaultPools(options)
-    PerfLoader.warmup(options.js, [
+  static warmupAll({ dev }) {
+    const pools = PerfLoader.defaultPools({ dev })
+    PerfLoader.warmup(pools.js, [
       require.resolve('babel-loader'),
       require.resolve('@babel/preset-env')
     ])
-    PerfLoader.warmup(options.css, ['css-loader'])
+    PerfLoader.warmup(pools.css, ['css-loader'])
   }
 
   static warmup(...args) {
@@ -41,16 +40,16 @@ export default class PerfLoader {
   use(poolName) {
     const loaders = []
 
-    if (this.options.build.cache) {
+    if (this.config.buildOpts.cache) {
       loaders.push({
         loader: 'cache-loader',
         options: {
-          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.name}`)
+          cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.config.name}`)
         }
       })
     }
 
-    if (this.options.build.parallel) {
+    if (this.config.buildOpts.parallel) {
       const pool = this.workerPools[poolName]
       if (pool) {
         loaders.push({
