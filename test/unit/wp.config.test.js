@@ -19,11 +19,11 @@ describe('webpack configuration', () => {
       'test-perf',
       {
         options: {
-          dev: true,
-          buildOptions: {
-            parallel: true,
-            cache: true
-          }
+          dev: true
+        },
+        buildOptions: {
+          parallel: true,
+          cache: true
         }
       }
     )
