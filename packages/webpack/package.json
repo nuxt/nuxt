@@ -43,10 +43,10 @@
     "thread-loader": "^1.2.0",
     "time-fix-plugin": "^2.0.5",
     "url-loader": "^1.1.2",
-    "vue-loader": "^15.6.2",
+    "vue-loader": "^15.6.3",
     "webpack": "^4.29.5",
     "webpack-bundle-analyzer": "^3.0.4",
-    "webpack-dev-middleware": "^3.5.2",
+    "webpack-dev-middleware": "^3.6.0",
     "webpack-hot-middleware": "^2.24.3",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^3.1.5"
