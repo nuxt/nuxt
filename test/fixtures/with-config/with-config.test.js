@@ -5,13 +5,6 @@ beforeAll(() => {
   process.env.NUXT_ENV_FOO = 'manniL'
 })
 
-let customCompressionMiddlewareFunctionName
-const hooks = [
-  ['render:errorMiddleware', (app) => {
-    customCompressionMiddlewareFunctionName = app.stack[0].handle.name
-  }]
-]
-
 describe('with-config', () => {
   buildFixture('with-config', () => {
     expect(consola.warn).toHaveBeenCalledTimes(5)
@@ -35,8 +28,7 @@ describe('with-config', () => {
         'Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.'
       ]
     ])
-    expect(customCompressionMiddlewareFunctionName).toBe('damn')
-  }, hooks)
+  })
 })
 
 afterAll(() => {

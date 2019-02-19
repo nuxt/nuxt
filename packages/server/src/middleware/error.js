@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => async function errorMiddleware(err, req, res, next) {
+export default ({ resources, options }) => async function errorMiddleware(err, req, reply) {
   // ensure statusCode, message and name fields
 
   const error = {
@@ -24,14 +24,13 @@ export default ({ resources, options }) => async function errorMiddleware(err, r
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
-    res.statusCode = error.statusCode
-    res.statusMessage = error.name
-    res.setHeader('Content-Type', type + '; charset=utf-8')
-    res.setHeader('Content-Length', Buffer.byteLength(content))
-    res.setHeader('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
-
-    // Send Response
-    res.end(content, 'utf-8')
+    reply.res.statusMessage = error.name
+    reply
+      .code(error.statusCode)
+      .type(`${type}; charset=utf-8`)
+      .header('Content-Length', Buffer.byteLength(content))
+      .header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+      .send(content)
   }
 
   // Check if request accepts JSON

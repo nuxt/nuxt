@@ -168,7 +168,7 @@ export default class Server {
     await this.nuxt.callHook('render:errorMiddleware', this.app)
 
     // Apply errorMiddleware from Nuxt
-    this.useMiddleware(errorMiddleware({
+    this.app.setErrorHandler(errorMiddleware({
       resources: this.resources,
       options: this.options
     }))
