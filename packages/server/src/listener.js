@@ -20,7 +20,7 @@ export default class Listener {
   async close() {
     // Destroy server by forcing every connection to be closed
     if (this.app.server && this.app.server.listening) {
-      await this.close()
+      await this.app.close()
       consola.debug('server closed')
     }
 
