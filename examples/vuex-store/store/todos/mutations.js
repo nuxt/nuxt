@@ -1,8 +1,4 @@
-export const state = () => ({
-  list: []
-})
-
-export const mutations = {
+export default {
   add(state, { text }) {
     state.list.push({
       text,
@@ -12,11 +8,5 @@ export const mutations = {
 
   toggle(state, todo) {
     todo.done = !todo.done
-  }
-}
-
-export const getters = {
-  todos(state) {
-    return state.list
   }
 }
