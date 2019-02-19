@@ -10893,10 +10893,10 @@ vue-jest@^4.0.0-beta.2:
     source-map "^0.5.6"
     ts-jest "^23.10.5"
 
-vue-loader@^15.6.3:
-  version "15.6.3"
-  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.6.3.tgz#94a5d8a4912a37392a79e22cf9ebc091fe3ef51b"
-  integrity sha512-4rgz4hk5pEzz/BNiXPG9UpgFqFPHldO6l9X7/HB2NxOYTbn/dmQDw/UjW+/rnBoRCGqyTazGNNqXVp5Htb0Mfg==
+vue-loader@^15.6.4:
+  version "15.6.4"
+  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.6.4.tgz#ea6ea48cada424da2cc2304495377678e4b0f6a7"
+  integrity sha512-GImqWcO3OsiRYS/zfMhmthFd1xwL68AAE5gAHhzNCI4SLNSxIlB9YmjgJS89anqViWSyl0mnAmyXNYHs7sydFw==
   dependencies:
     "@vue/component-compiler-utils" "^2.5.1"
     hash-sum "^1.0.2"
