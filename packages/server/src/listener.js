@@ -1,9 +1,5 @@
-import http from 'http'
-import https from 'https'
-import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'
-import pify from 'pify'
 
 export default class Listener {
   constructor({ port, host, socket, https, app, dev }) {
@@ -17,29 +13,25 @@ export default class Listener {
 
     // After listen
     this.listening = false
-    this._server = null
-    this.server = null
     this.address = null
     this.url = null
   }
 
   async close() {
     // Destroy server by forcing every connection to be closed
-    if (this.server && this.server.listening) {
-      await this.server.destroy()
+    if (this.app.server && this.app.server.listening) {
+      await this.close()
       consola.debug('server closed')
     }
 
     // Delete references
     this.listening = false
-    this._server = null
-    this.server = null
     this.address = null
     this.url = null
   }
 
   computeURL() {
-    const address = this.server.address()
+    const address = this.app.server.address()
     if (!this.socket) {
       switch (address.address) {
         case '127.0.0.1': this.host = 'localhost'; break
@@ -58,29 +50,16 @@ export default class Listener {
       return
     }
 
-    // Initialize underlying http(s) server
-    const protocol = this.https ? https : http
-    const protocolOpts = typeof this.https === 'object' ? [this.https] : []
-    this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
-
     // Call server.listen
     // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
-    listenArgs.exclusive = false
+    const listenArgs = this.socket ? [ this.socket ] : [ this.port, this.host ]
 
     // Call server.listen
     try {
-      this.server = await new Promise((resolve, reject) => {
-        this._server.on('error', error => reject(error))
-        const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
-      })
+      await this.app.listen(...listenArgs)
     } catch (error) {
       return this.serverErrorHandler(error)
     }
-
-    // Enable destroy support
-    enableDestroy(this.server)
-    pify(this.server.destroy)
 
     // Compute listen URL
     this.computeURL()

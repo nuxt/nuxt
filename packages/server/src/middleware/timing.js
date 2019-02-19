@@ -1,18 +1,8 @@
 import consola from 'consola'
-import onHeaders from 'on-headers'
 import { Timer } from '@nuxt/utils'
 
-export default options => (req, res, next) => {
-  if (res.timing) {
-    consola.warn('server-timing is already registered.')
-  }
-  res.timing = new ServerTiming()
-
-  if (options && options.total) {
-    res.timing.start('total', 'Nuxt Server Time')
-  }
-
-  onHeaders(res, () => {
+export default (app, options) => {
+  app.addHook('onSend', (req, { res }) => {
     res.timing.end('total')
 
     if (res.timing.headers.length > 0) {
@@ -27,7 +17,18 @@ export default options => (req, res, next) => {
     res.timing.clear()
   })
 
-  next()
+  return (req, res, next) => {
+    if (res.timing) {
+      consola.warn('server-timing is already registered.')
+    }
+    res.timing = new ServerTiming()
+
+    if (options && options.total) {
+      res.timing.start('total', 'Nuxt Server Time')
+    }
+
+    next()
+  }
 }
 
 class ServerTiming extends Timer {

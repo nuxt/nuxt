@@ -3,7 +3,7 @@ import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
-import connect from 'connect'
+import fastify from 'fastify'
 import { determineGlobals, isUrl } from '@nuxt/utils'
 
 import ServerContext from './context'
@@ -35,8 +35,8 @@ export default class Server {
     // Will be set after listen
     this.listeners = []
 
-    // Create new connect instance
-    this.app = connect()
+    // Create new fastify instance
+    this.app = fastify(this.options.server)
 
     // Close hook
     this.nuxt.hook('close', () => this.close())
@@ -52,6 +52,9 @@ export default class Server {
     this.renderer = new VueRenderer(context)
     await this.renderer.ready()
 
+    // Setup server middleware
+    await this.setupPlugin()
+
     // Setup nuxt middleware
     await this.setupMiddleware()
 
@@ -59,25 +62,28 @@ export default class Server {
     await this.nuxt.callHook('render:done', this)
   }
 
-  async setupMiddleware() {
-    // Apply setupMiddleware from modules first
-    await this.nuxt.callHook('render:setupMiddleware', this.app)
+  async setupPlugin() {
+    await this.nuxt.callHook('render:setupPlugin', this.app)
 
     // Compression middleware for production
     if (!this.options.dev) {
       const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
-        const compression = this.nuxt.resolver.requireModule('compression')
-        this.useMiddleware(compression(compressor))
+        this.app.register(this.nuxt.resolver.requireModule('fastify-compress'), compressor)
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
-        this.useMiddleware(compressor)
+        this.app.register(compressor)
       }
     }
+  }
+
+  async setupMiddleware() {
+    // Apply setupMiddleware from modules first
+    await this.nuxt.callHook('render:setupMiddleware', this.app)
 
     if (this.options.server.timing) {
-      this.useMiddleware(createTimingMiddleware(this.options.server.timing))
+      this.useMiddleware(createTimingMiddleware(this.app, this.options.server.timing))
     }
 
     const modernMiddleware = createModernMiddleware({
@@ -261,7 +267,6 @@ export default class Server {
       await this.renderer.close()
     }
 
-    this.app.removeAllListeners()
     this.app = null
 
     for (const key in this.resources) {
