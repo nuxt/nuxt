@@ -16,7 +16,7 @@ export default {
     alias: 'c',
     type: 'string',
     default: defaultNuxtConfigFile,
-    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}\`)`
+    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}.js\`)`
   },
   modern: {
     alias: 'm',

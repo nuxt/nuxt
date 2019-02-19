@@ -1,7 +1,5 @@
 import path from 'path'
-import { existsSync } from 'fs'
 import consola from 'consola'
-import esm from 'esm'
 import exit from 'exit'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
@@ -9,15 +7,6 @@ import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import { successBox, warningBox } from './formatting'
-
-export const requireModule = process.env.NUXT_TS ? require : esm(module, {
-  cache: false,
-  cjs: {
-    cache: true,
-    vars: true,
-    namedExports: true
-  }
-})
 
 export const eventsMapping = {
   add: { icon: '+', color: 'green', action: 'Created' },
@@ -32,21 +21,16 @@ export async function loadNuxtConfig(argv) {
   const rootDir = getRootDir(argv)
   const nuxtConfigFile = getNuxtConfigFile(argv)
 
-  let options = {}
+  let config = {}
 
-  if (existsSync(nuxtConfigFile)) {
-    delete require.cache[nuxtConfigFile]
-    options = requireModule(nuxtConfigFile) || {}
-    if (options.default) {
-      options = options.default
-    }
+  try {
+    config = await import(nuxtConfigFile)
+    config = config.default || config
 
-    if (typeof options === 'function') {
+    if (typeof config === 'function') {
       try {
-        options = await options()
-        if (options.default) {
-          options = options.default
-        }
+        config = await config()
+        config = config.default || config
       } catch (error) {
         consola.error(error)
         consola.fatal('Error while fetching async configuration')
@@ -54,26 +38,29 @@ export async function loadNuxtConfig(argv) {
     }
 
     // Keep _nuxtConfigFile for watching
-    options._nuxtConfigFile = nuxtConfigFile
-  } else if (argv['config-file'] !== defaultNuxtConfigFile) {
-    consola.fatal('Could not load config file: ' + argv['config-file'])
+    config._nuxtConfigFile = nuxtConfigFile
+  } catch (e) {
+    if (e.code === 'MODULE_NOT_FOUND' && argv['config-file'] !== defaultNuxtConfigFile) {
+      consola.fatal('Could not load config file: ' + argv['config-file'])
+    }
   }
-  if (typeof options.rootDir !== 'string') {
-    options.rootDir = rootDir
+
+  if (typeof config.rootDir !== 'string') {
+    config.rootDir = rootDir
   }
 
   // Nuxt Mode
-  options.mode =
-    (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
+  config.mode =
+    (argv.spa && 'spa') || (argv.universal && 'universal') || config.mode
 
   // Server options
-  options.server = defaultsDeep({
+  config.server = defaultsDeep({
     port: argv.port || undefined,
     host: argv.hostname || undefined,
     socket: argv['unix-socket'] || undefined
-  }, options.server || {}, getDefaultNuxtConfig().server)
+  }, config.server || {}, getDefaultNuxtConfig().server)
 
-  return options
+  return config
 }
 
 export function showBanner(nuxt) {
