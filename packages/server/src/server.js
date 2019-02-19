@@ -52,9 +52,6 @@ export default class Server {
     this.renderer = new VueRenderer(context)
     await this.renderer.ready()
 
-    // Setup server middleware
-    await this.setupPlugin()
-
     // Setup nuxt middleware
     await this.setupMiddleware()
 
@@ -62,8 +59,9 @@ export default class Server {
     await this.nuxt.callHook('render:done', this)
   }
 
-  async setupPlugin() {
-    await this.nuxt.callHook('render:setupPlugin', this.app)
+  async setupMiddleware() {
+    // Apply setupMiddleware from modules first
+    await this.nuxt.callHook('render:setupMiddleware', this.app)
 
     // Compression middleware for production
     if (!this.options.dev) {
@@ -73,14 +71,9 @@ export default class Server {
         this.app.register(this.nuxt.resolver.requireModule('fastify-compress'), compressor)
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
-        this.app.register(compressor)
+        this.useMiddleware(compressor)
       }
     }
-  }
-
-  async setupMiddleware() {
-    // Apply setupMiddleware from modules first
-    await this.nuxt.callHook('render:setupMiddleware', this.app)
 
     if (this.options.server.timing) {
       this.useMiddleware(createTimingMiddleware(this.app, this.options.server.timing))
