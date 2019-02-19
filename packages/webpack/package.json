@@ -43,7 +43,7 @@
     "thread-loader": "^1.2.0",
     "time-fix-plugin": "^2.0.5",
     "url-loader": "^1.1.2",
-    "vue-loader": "^15.6.3",
+    "vue-loader": "^15.6.4",
     "webpack": "^4.29.5",
     "webpack-bundle-analyzer": "^3.0.4",
     "webpack-dev-middleware": "^3.6.0",
