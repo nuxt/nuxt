@@ -96,16 +96,7 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
-
-      // In dev, write files in memory FS
-      if (options.dev) {
-        compiler.outputFileSystem = this.mfs
-      }
-
-      return compiler
-    })
+    this.compilers = compilersOptions.map(compilersOption => webpack(compilersOption))
 
     // Warm up perfLoader before build
     if (options.build.parallel) {
@@ -188,6 +179,7 @@ export class WebpackBundler {
         compiler,
         Object.assign(
           {
+            fs: this.mfs,
             publicPath: options.build.publicPath,
             stats: false,
             logLevel: 'silent',
