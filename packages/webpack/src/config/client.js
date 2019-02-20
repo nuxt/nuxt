@@ -1,7 +1,7 @@
 import path from 'path'
 import { existsSync } from 'fs'
-import consola from 'consola'
 import querystring from 'querystring'
+import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
@@ -144,12 +144,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       // We assume that "typescript" option being truthy means @nuxt/typescript is installed <=> fork-ts-checker-webpack-plugin is installed
       const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
       plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
-          vue: true,
-          tsconfig: path.resolve(rootDir, 'tsconfig.json'),
-          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
-          formatter: 'codeframe',
-          logger: consola
+        vue: true,
+        tsconfig: path.resolve(rootDir, 'tsconfig.json'),
+        // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+        tslint: (tslintPath => existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
+        formatter: 'codeframe',
+        logger: consola
       }, typescript.typeCheck)))
     }
 

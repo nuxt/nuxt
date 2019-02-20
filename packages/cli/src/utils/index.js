@@ -1,5 +1,4 @@
 import path from 'path'
-import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import exit from 'exit'
