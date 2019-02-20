@@ -1,9 +1,11 @@
 
+import path from 'path'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, forceExit } from './utils'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
+import { getTypescriptConfig } from './utils/typescript'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -70,7 +72,10 @@ export default class NuxtCommand {
   }
 
   async getNuxtConfig(extraOptions) {
-    const config = await loadNuxtConfig(this.argv)
+    const rootDir = path.resolve(this.argv._[0] || '.')
+    extraOptions.typescript = await getTypescriptConfig(rootDir, extraOptions)
+
+    const config = await loadNuxtConfig(this.argv, extraOptions)
     const options = Object.assign(config, extraOptions || {})
 
     for (const name of Object.keys(this.cmd.options)) {

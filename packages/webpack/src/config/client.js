@@ -1,7 +1,5 @@
 import path from 'path'
-import fs from 'fs'
 import querystring from 'querystring'
-import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
@@ -77,7 +75,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins() {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, rootDir, modern } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, typescript } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -140,21 +138,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isModern && this.loaders.ts.transpileOnly && buildOptions.useForkTsChecker) {
-      const forkTsCheckerResolvedPath = this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
-      if (forkTsCheckerResolvedPath) {
-        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
-        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
-          vue: true,
-          tsconfig: path.resolve(rootDir, 'tsconfig.json'),
-          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
-          formatter: 'codeframe',
-          logger: consola
-        }, buildOptions.useForkTsChecker)))
-      } else {
-        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
-      }
+    if (typescript && typescript.typeCheck !== false && !this.isModern && this.loaders.ts.transpileOnly) {
+      // We assume that "typescript" option being truthy means @nuxt/typescript is installed <=> fork-ts-checker-webpack-plugin is installed
+      const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
+      plugins.push(new ForkTsCheckerWebpackPlugin(typescript.typeCheck))
     }
 
     return plugins

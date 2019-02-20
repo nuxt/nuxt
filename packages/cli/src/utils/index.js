@@ -10,14 +10,14 @@ import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import { successBox, warningBox } from './formatting'
 
-export const requireModule = process.env.NUXT_TS ? require : esm(module, {
+const esmOptions = {
   cache: false,
   cjs: {
     cache: true,
     vars: true,
     namedExports: true
   }
-})
+}
 
 export const eventsMapping = {
   add: { icon: '+', color: 'green', action: 'Created' },
@@ -25,14 +25,17 @@ export const eventsMapping = {
   unlink: { icon: '-', color: 'red', action: 'Removed' }
 }
 
-const getRootDir = argv => path.resolve(argv._[0] || '.')
-const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
-
-export async function loadNuxtConfig(argv) {
-  const rootDir = getRootDir(argv)
-  const nuxtConfigFile = getNuxtConfigFile(argv)
+export async function loadNuxtConfig(argv, extraOptions = {}) {
+  const rootDir = path.resolve(argv._[0] || '.')
+  let nuxtConfigFile = path.resolve(rootDir, argv['config-file'])
+  let requireModule = esm(module, esmOptions)
 
   let options = {}
+
+  if (extraOptions.typescript && !existsSync(nuxtConfigFile)) {
+    nuxtConfigFile = nuxtConfigFile.replace(/.js$/, '.ts')
+    requireModule = require
+  }
 
   if (existsSync(nuxtConfigFile)) {
     delete require.cache[nuxtConfigFile]

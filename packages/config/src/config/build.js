@@ -54,7 +54,7 @@ export default () => ({
     },
     vueStyle: {}
   },
-  useForkTsChecker: process.env.NUXT_TS === 'true',
+  typescript: undefined,
   styleResources: {},
   plugins: [],
   terser: {},
