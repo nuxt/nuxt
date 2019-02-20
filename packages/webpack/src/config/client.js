@@ -1,4 +1,6 @@
 import path from 'path'
+import { existsSync } from 'fs'
+import consola from 'consola'
 import querystring from 'querystring'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
@@ -75,7 +77,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins() {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern, typescript } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, typescript } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -138,10 +140,17 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (typescript && typescript.typeCheck !== false && !this.isModern && this.loaders.ts.transpileOnly) {
+    if (typescript && typescript.typeCheck && !this.isModern && this.loaders.ts.transpileOnly) {
       // We assume that "typescript" option being truthy means @nuxt/typescript is installed <=> fork-ts-checker-webpack-plugin is installed
       const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
-      plugins.push(new ForkTsCheckerWebpackPlugin(typescript.typeCheck))
+      plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
+          vue: true,
+          tsconfig: path.resolve(rootDir, 'tsconfig.json'),
+          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
+          tslint: (tslintPath => existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
+          formatter: 'codeframe',
+          logger: consola
+      }, typescript.typeCheck)))
     }
 
     return plugins

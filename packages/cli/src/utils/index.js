@@ -25,21 +25,23 @@ export const eventsMapping = {
   unlink: { icon: '-', color: 'red', action: 'Removed' }
 }
 
-export async function loadNuxtConfig(argv, extraOptions = {}) {
+export async function loadNuxtConfig(argv) {
   const rootDir = path.resolve(argv._[0] || '.')
-  let nuxtConfigFile = path.resolve(rootDir, argv['config-file'])
-  let requireModule = esm(module, esmOptions)
-
+  let nuxtConfigFile
   let options = {}
 
-  if (extraOptions.typescript && !existsSync(nuxtConfigFile)) {
-    nuxtConfigFile = nuxtConfigFile.replace(/.js$/, '.ts')
-    requireModule = require
+  try {
+    nuxtConfigFile = require.resolve(path.resolve(rootDir, argv['config-file']))
+  } catch (e) {
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      throw (e)
+    } else if (argv['config-file'] !== defaultNuxtConfigFile) {
+      consola.fatal('Could not load config file: ' + argv['config-file'])
+    }
   }
 
-  if (existsSync(nuxtConfigFile)) {
-    delete require.cache[nuxtConfigFile]
-    options = requireModule(nuxtConfigFile) || {}
+  if (nuxtConfigFile) {
+    options = (nuxtConfigFile.endsWith('.ts') ? require(nuxtConfigFile) : esm(module, esmOptions)(nuxtConfigFile)) || {}
     if (options.default) {
       options = options.default
     }
@@ -58,9 +60,8 @@ export async function loadNuxtConfig(argv, extraOptions = {}) {
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = nuxtConfigFile
-  } else if (argv['config-file'] !== defaultNuxtConfigFile) {
-    consola.fatal('Could not load config file: ' + argv['config-file'])
   }
+
   if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
   }
