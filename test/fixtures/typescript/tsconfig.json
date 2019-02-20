@@ -10,6 +10,7 @@
     ],
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "jsx": "preserve",
     "sourceMap": true,
     "strict": true,
     "noImplicitAny": false,
