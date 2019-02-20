@@ -2,18 +2,19 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "nuxt-ts": "latest",
+    "nuxt": "latest",
     "vue-property-decorator": "^7.3.0"
   },
   "scripts": {
-    "dev": "nuxt-ts",
-    "build": "nuxt-ts build",
-    "start": "nuxt-ts start",
-    "generate": "nuxt-ts generate",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
     "lint": "tslint --project .",
     "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
+    "@nuxt/typescript": "latest",
     "tslint-config-standard": "^8.0.1"
   }
 }
