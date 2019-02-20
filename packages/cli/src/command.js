@@ -78,7 +78,7 @@ export default class NuxtCommand {
     const options = Object.assign(config, extraOptions || {})
 
     if (tsDetected) {
-      options.typescript = { typeCheck: true }
+      options.typescript = options.typescript || { typeCheck: true }
     }
 
     for (const name of Object.keys(this.cmd.options)) {
