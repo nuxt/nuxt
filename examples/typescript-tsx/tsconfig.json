@@ -1,8 +1,6 @@
 {
-  "extends": "@nuxt/typescript",
   "compilerOptions": {
-    "baseUrl": ".",
-    "noImplicitThis": true,
-    "types": ["@types/node", "@nuxt/vue-app"]
+    "jsx": "preserve",
+    "noImplicitThis": true
   }
 }
