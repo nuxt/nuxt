@@ -128,10 +128,39 @@ async function createApp(ssrContext) {
   })
 
   <% if (plugins.length) { %>
+  const _componentInject = function(key, setter) {
+    const installKey = '__<%= globals.pluginPrefix %>_' + key + '_installed__'
+    // Keeping this check here so it never clashes with the global inject()
+    if (Vue[installKey]) {
+      return
+    }
+    Vue[installKey] = true
+    const componentKey = `$${key}`
+    const privateKey = `_${key}`
+    Vue.use(() => {
+      if (!Vue.prototype.hasOwnProperty(componentKey)) {
+        Object.defineProperty(Vue.prototype, componentKey, {
+          get() {
+            if (!this[privateKey]) {
+              this[privateKey] = setter(this)
+            }
+            return this[privateKey]
+          }
+        })
+      }
+    })
+  }
   const inject = function (key, value) {
-    if (!key) throw new Error('inject(key, value) has no key provided')
-    if (typeof value === 'undefined') throw new Error('inject(key, value) has no value provided')
-    key = '$' + key
+    if (!key) {
+      throw new Error('inject(key, value) has no key provided')
+    }
+    if (typeof value === 'undefined') {
+      throw new Error('inject(key, value) has no value provided')
+    }
+    if (typeof value === 'function') {
+      return _componentInject(key, value)
+    }
+    key = `$${key}`
     // Add into app
     app[key] = value
     <% if (store) { %>
