@@ -4,8 +4,7 @@
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
-    "dist",
-    "tsconfig.json"
+    "dist"
   ],
   "main": "dist/typescript.js",
   "dependencies": {
