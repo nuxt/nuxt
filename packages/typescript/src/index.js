@@ -14,7 +14,7 @@ export const defaultTsJsonConfig = {
     ],
     esModuleInterop: true,
     experimentalDecorators: true,
-    // jsx: 'preserve', // TODO : Mention this option in docs for TSX
+    allowJs: true,
     sourceMap: true,
     strict: true,
     noImplicitAny: false,
