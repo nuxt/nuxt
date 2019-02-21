@@ -128,7 +128,13 @@ async function createApp(ssrContext) {
   })
 
   <% if (plugins.length) { %>
-  const _componentInject = function(key, setter) {
+  const componentInject = function(key, setter) {
+    if (!key) {
+      throw new Error('componentInject(key, setter) has no key provided')
+    }
+    if (typeof setteer !== 'function') {
+      throw new Error('componentInject(key, setter) has no setter provided')
+    }
     const installKey = '__<%= globals.pluginPrefix %>_' + key + '_installed__'
     // Keeping this check here so it never clashes with the global inject()
     if (Vue[installKey]) {
@@ -150,15 +156,12 @@ async function createApp(ssrContext) {
       }
     })
   }
-  const inject = function (key, value) {
+  const inject = function (key, value, setter) {
     if (!key) {
       throw new Error('inject(key, value) has no key provided')
     }
     if (typeof value === 'undefined') {
       throw new Error('inject(key, value) has no value provided')
-    }
-    if (typeof value === 'function') {
-      return _componentInject(key, value)
     }
     key = `$${key}`
     // Add into app
@@ -196,18 +199,27 @@ async function createApp(ssrContext) {
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.filter(p => p.mode === 'all').forEach((plugin) => { %>
-  if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
+  if (typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject, componentInject)
+  }
+  <% }) %>
 
   <% if (plugins.filter(p => p.mode === 'client').length) { %>
   if (process.client) {
     <% plugins.filter(p => p.mode === 'client').forEach((plugin) => { %>
-    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
+    if (typeof <%= plugin.name %> === 'function') {
+      await <%= plugin.name %>(app.context, inject, componentInject)
+    }
+    <% }) %>
   }<% } %>
 
   <% if (plugins.filter(p => p.mode === 'server').length) { %>
   if (process.server) {
     <% plugins.filter(p => p.mode === 'server').forEach((plugin) => { %>
-    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
+    if (typeof <%= plugin.name %> === 'function') {
+      await <%= plugin.name %>(app.context, inject, componentInject)
+    }
+    <% }) %>
   }<% } %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
