@@ -79,6 +79,9 @@ export default class NuxtCommand {
 
     if (tsDetected) {
       options.typescript = options.typescript || { typeCheck: true }
+    } else {
+      // Ignore/Override custom typescript option set in config file if TS hasn't be detected
+      options.typescript = undefined
     }
 
     for (const name of Object.keys(this.cmd.options)) {
