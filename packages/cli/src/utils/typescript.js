@@ -13,7 +13,7 @@ yarn add -D @nuxt/typescript
 ${chalk.bold('Using npm')}
 npm install -D @nuxt/typescript`
 
-export async function detectAndSetupTypeScriptSupport(rootDir, extraOptions = {}) {
+export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
   const tsConfigPath = path.resolve(rootDir, 'tsconfig.json')
 
   if (!existsSync(tsConfigPath)) {
@@ -24,7 +24,10 @@ export async function detectAndSetupTypeScriptSupport(rootDir, extraOptions = {}
 
   try {
     const { setup } = require('@nuxt/typescript')
-    await setup(tsConfigPath, { transpileOnly: !!extraOptions._start })
+    await setup({
+      project: tsConfigPath,
+      ...options
+    })
   } catch (e) {
     if (e.code === 'MODULE_NOT_FOUND') {
       process.stdout.write(warningBox(dependencyNotFoundMessage, chalk.yellow('An external official dependency is needed to enable TS support')))

@@ -71,18 +71,12 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions) {
+  async getNuxtConfig(extraOptions = {}) {
     const rootDir = path.resolve(this.argv._[0] || '.')
-    const tsDetected = await detectAndSetupTypeScriptSupport(rootDir, extraOptions)
-    const config = await loadNuxtConfig(this.argv)
-    const options = Object.assign(config, extraOptions || {})
+    extraOptions._typescript = await detectAndSetupTypeScriptSupport(rootDir, { transpileOnly: this.cmd.name === 'start' })
 
-    if (tsDetected) {
-      options.typescript = options.typescript || { typeCheck: true }
-    } else {
-      // Ignore/Override custom typescript option set in config file if TS hasn't be detected
-      options.typescript = undefined
-    }
+    const config = await loadNuxtConfig(this.argv)
+    const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)

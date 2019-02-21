@@ -54,7 +54,9 @@ export default () => ({
     },
     vueStyle: {}
   },
-  typescript: undefined,
+  typescript: {
+    typeCheck: true
+  },
   styleResources: {},
   plugins: [],
   terser: {},

@@ -121,7 +121,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": undefined,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -449,7 +451,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": undefined,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",

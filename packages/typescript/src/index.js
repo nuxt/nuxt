@@ -37,21 +37,22 @@ export const defaultTsJsonConfig = {
 
 let _setup = false
 
-export async function setup(tsConfigPath, options = {}) {
+export async function setup(options) {
   if (_setup) {
     return
   }
   _setup = true
 
-  const config = await readJSON(tsConfigPath)
-  await writeJSON(tsConfigPath, defaultsDeep(config, defaultTsJsonConfig), { spaces: 2 })
+  if (options.tsConfigPath) {
+    const config = await readJSON(options.tsConfigPath)
+    await writeJSON(options.tsConfigPath, defaultsDeep(config, defaultTsJsonConfig), { spaces: 2 })
+  }
 
   // https://github.com/TypeStrong/ts-node
   register({
-    project: tsConfigPath,
+    ...options,
     compilerOptions: {
       module: 'commonjs'
-    },
-    transpileOnly: !!options.transpileOnly
+    }
   })
 }
