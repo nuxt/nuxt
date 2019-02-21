@@ -11,7 +11,7 @@ const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
 
-const errorHandler = error => {
+const errorHandler = (error) => {
   require('consola').fatal(error)
   process.exit(2)
 }
