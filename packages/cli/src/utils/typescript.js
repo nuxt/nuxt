@@ -24,10 +24,7 @@ export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
 
   try {
     const { setup } = require('@nuxt/typescript')
-    await setup({
-      project: tsConfigPath,
-      ...options
-    })
+    await setup(tsConfigPath, options)
   } catch (e) {
     if (e.code === 'MODULE_NOT_FOUND') {
       process.stdout.write(warningBox(dependencyNotFoundMessage, chalk.yellow('An external official dependency is needed to enable TS support')))

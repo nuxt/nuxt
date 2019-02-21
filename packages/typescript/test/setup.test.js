@@ -13,7 +13,7 @@ describe('typescript setup', () => {
     // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
     await mkdirp(rootDir)
     await writeJSON(tsConfigPath, {})
-    await setupTypeScript({ tsConfigPath })
+    await setupTypeScript(tsConfigPath)
   })
 
   test('tsconfig.json has been updated with defaults', async () => {
