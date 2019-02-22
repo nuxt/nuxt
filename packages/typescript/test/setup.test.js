@@ -21,7 +21,7 @@ describe('typescript setup', () => {
   test('tsconfig.json has been generated if missing', async () => {
     expect(await exists(tsConfigPath)).toBe(true)
     expect(await readJSON(tsConfigPath)).toEqual({
-      extends: '@nuxt/typescript',
+      extends: './node_modules/@nuxt/typescript/tsconfig',
       compilerOptions: {
         baseUrl: '.',
         types: [

@@ -1,8 +1,11 @@
 {
-  "extends": "@nuxt/typescript",
+  "extends": "./node_modules/@nuxt/typescript/tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitThis": true,
-    "types": ["@types/node", "@nuxt/vue-app"]
+    "types": [
+      "@types/node",
+      "@nuxt/vue-app"
+    ]
   }
 }

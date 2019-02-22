@@ -6,7 +6,7 @@ import { existsSync, writeJSON } from 'fs-extra'
 import { register } from 'ts-node'
 
 async function generateTsConfig(tsConfigPath) {
-  const configToExtend = '@nuxt/typescript'
+  const configToExtend = './node_modules/@nuxt/typescript/tsconfig'
   await writeJSON(tsConfigPath, {
     extends: configToExtend,
     compilerOptions: {
@@ -17,7 +17,7 @@ async function generateTsConfig(tsConfigPath) {
       ]
     }
   }, { spaces: 2 })
-  consola.info(`Extending ${chalk.bold.blue(`node_modules/${configToExtend}/tsconfig.json`)}`)
+  consola.info(`Extending ${chalk.bold.blue(`${configToExtend}.json`)}`)
   consola.success(`Generated successfully at ${chalk.bold.green(tsConfigPath)}`)
 }
 
