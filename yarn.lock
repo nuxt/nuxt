@@ -1419,10 +1419,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-11.9.4.tgz#ceb0048a546db453f6248f2d1d95e937a6f00a14"
   integrity sha512-Zl8dGvAcEmadgs1tmSPcvwzO1YRsz38bVJQvH1RvRqSR9/5n61Q1ktcDL0ht3FXWR+ZpVmXVwN1LuH4Ax23NsA==
 
-"@types/node@^10.12.26":
-  version "10.12.26"
-  resolved "https://registry.npmjs.org/@types/node/-/node-10.12.26.tgz#2dec19f1f7981c95cb54bab8f618ecb5dc983d0e"
-  integrity sha512-nMRqS+mL1TOnIJrL6LKJcNZPB8V3eTfRo9FQA2b5gDvrHurC8XbSA86KNe0dShlEL7ReWJv/OU9NL7Z0dnqWTg==
+"@types/node@^10.12.27":
+  version "10.12.27"
+  resolved "https://registry.npmjs.org/@types/node/-/node-10.12.27.tgz#eb3843f15d0ba0986cc7e4d734d2ee8b50709ef8"
+  integrity sha512-e9wgeY6gaY21on3ve0xAjgBVjGDWq/xUteK0ujsE53bUoxycMkqfnkUgMt6ffZtykZ5X12Mg3T7Pw4TRCObDKg==
 
 "@types/q@^1.5.1":
   version "1.5.1"
@@ -2587,10 +2587,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000918, caniuse-lite@^1.0.30000929, caniuse-lite@^1.0.30000932, caniuse-lite@^1.0.30000938:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000918, caniuse-lite@^1.0.30000929, caniuse-lite@^1.0.30000932:
   version "1.0.30000938"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000938.tgz#b64bf1427438df40183fce910fe24e34feda7a3f"
   integrity sha512-ekW8NQ3/FvokviDxhdKLZZAx7PptXNwxKgXtnR5y+PR3hckwuP3yJ1Ir+4/c97dsHNqtAyfKUGdw8P4EYzBNgw==
+
+caniuse-lite@^1.0.30000939:
+  version "1.0.30000939"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000939.tgz#b9ab7ac9e861bf78840b80c5dfbc471a5cd7e679"
+  integrity sha512-oXB23ImDJOgQpGjRv1tCtzAvJr4/OvrHi5SO2vUgB0g0xpdZZoA/BxfImiWfdwoYdUTtQrPsXsvYU/dmCSM8gg==
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -4201,10 +4206,10 @@ eslint@^5.14.1:
     table "^5.2.3"
     text-table "^0.2.0"
 
-esm@^3.2.5:
-  version "3.2.5"
-  resolved "https://registry.npmjs.org/esm/-/esm-3.2.5.tgz#036e410a2373ea81bfe62166c419ca0b0cf85c09"
-  integrity sha512-rukU6Nd3agbHQCJWV4rrlZxqpbO3ix8qhUxK1BhKALGS2E465O0BFwgCOqJjNnYfO/I2MwpUBmPsW8DXoe8tcA==
+esm@^3.2.6:
+  version "3.2.6"
+  resolved "https://registry.npmjs.org/esm/-/esm-3.2.6.tgz#879e4888e631a6893f2afc24adb23d4dbe8fad30"
+  integrity sha512-3wWjSurKSczMzYyHiBih3VVEQYCoZa6nfsqqcM2Tx6KBAQAeor0SZUfAol+zeVUtESLygayOi2ZcMfYZy7MCsg==
 
 espree@^4.1.0:
   version "4.1.0"
