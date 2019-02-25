@@ -50,9 +50,9 @@
   ],
   "bin": "bin/nuxt-legacy.js",
   "dependencies": {
-    "@babel/core": "^7.3.3",
+    "@babel/core": "^7.3.4",
     "@babel/polyfill": "^7.2.5",
-    "@babel/preset-env": "^7.3.1",
+    "@babel/preset-env": "^7.3.4",
     "@babel/register": "^7.0.0",
     "@nuxt/builder": "2.4.3",
     "@nuxt/cli": "2.4.3",
