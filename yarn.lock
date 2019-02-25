@@ -2957,10 +2957,10 @@ consola@^2.0.0-1, consola@^2.3.0:
   resolved "https://registry.npmjs.org/consola/-/consola-2.5.4.tgz#127627375ca45a1d507223dee770aba17cb991f7"
   integrity sha512-4XX27fEcMgE0RDI9E4Dl0jYZm5IBFfpb4HlDMj0mgeULjj/hKXEjaDZEzQho0A8O6Cb3kiVnz2Tr9YfmGo2DNw==
 
-consola@^2.5.5:
-  version "2.5.5"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.5.5.tgz#d7296a3fcdf6d82827c4d5344ce4fa02d0e627d8"
-  integrity sha512-XCT5Ddy5SwUFYo0v5LSpuVSDlD+raLqVd9Pi1NAuH5Ldg6WHhrehIHHqm+3m27t0jo4/tlTwdKCtwfKfGVwilA==
+consola@^2.5.6:
+  version "2.5.6"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.5.6.tgz#5ce14dbaf6f5b589c8a258ef80ed97b752fa57d5"
+  integrity sha512-DN0j6ewiNWkT09G3ZoyyzN3pSYrjxWcx49+mHu+oDI5dvW5vzmyuzYsqGS79+yQserH9ymJQbGzeqUejfssr8w==
 
 console-browserify@^1.1.0:
   version "1.1.0"
