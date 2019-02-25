@@ -35,7 +35,7 @@
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "cheerio": "^1.0.0-rc.2",
     "codecov": "^3.2.0",
-    "consola": "^2.4.1",
+    "consola": "^2.5.4",
     "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.14.1",
@@ -78,7 +78,7 @@
     "sort-package-json": "^1.19.0",
     "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.3",
-    "tslint": "^5.12.1",
+    "tslint": "^5.13.0",
     "typescript": "^3.3.3333",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^7.3.0"
