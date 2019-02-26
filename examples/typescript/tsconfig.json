@@ -6,5 +6,5 @@
       "@types/node",
       "@nuxt/vue-app"
     ]
-  },
+  }
 }

@@ -20,4 +20,14 @@ describe('builder: buildContext', () => {
     const context = new BuildContext(builder)
     expect(context.plugins).toEqual(builder.plugins)
   })
+
+  test('should return builder build options', () => {
+    const buildOptions = { id: 'test-build-options' }
+    const builder = {
+      plugins: [],
+      nuxt: { options: { build: buildOptions } }
+    }
+    const context = new BuildContext(builder)
+    expect(context.buildOptions).toEqual(buildOptions)
+  })
 })

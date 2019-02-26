@@ -8,7 +8,7 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "test": "jest -w=4",
-    "testServer": "nuxt build & nuxt start"
+    "testServer": "nuxt build && nuxt start"
   },
   "devDependencies": {
     "jest": "latest",

@@ -1,0 +1,25 @@
+{
+  "name": "example-pug-stylus-coffee",
+  "version": "1.0.0",
+  "description": "Nuxt.js with Pug Stylus and CoffeeScript",
+  "author": "Alex Ananiev <alex.ananiev.r@gmail.com>, Kron Austrum <huyach@protonmail.ch>",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "post-update": "yarn upgrade --latest"
+  },
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.8.0",
+    "coffeescript": "^2.0.1",
+    "pug": "^2.0.3",
+    "pug-plain-loader": "^1.0.0",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2"
+  }
+}

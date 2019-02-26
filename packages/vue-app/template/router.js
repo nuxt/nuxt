@@ -86,7 +86,21 @@ Vue.use(Router)
 const scrollBehavior = <%= serializeFunction(router.scrollBehavior) %>
 <% } else { %>
 if (process.client) {
-  window.history.scrollRestoration = 'manual'
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual'
+
+    // reset scrollRestoration to auto when leaving page, allowing page reload
+    // and back-navigation from other pages to use the browser to restore the
+    // scrolling position.
+    window.addEventListener('beforeunload', () => {
+      window.history.scrollRestoration = 'auto'
+    })
+
+    // Setting scrollRestoration to manual again when returning to this page.
+    window.addEventListener('load', () => {
+      window.history.scrollRestoration = 'manual'
+    })
+  }
 }
 const scrollBehavior = function (to, from, savedPosition) {
   // if the returned position is falsy or an empty object,

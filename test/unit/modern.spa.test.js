@@ -31,7 +31,7 @@ describe('modern client mode (SPA)', () => {
     expect(response).toContain('<script type="module" src="/_nuxt/modern-commons.app.js" crossorigin="use-credentials"')
   })
 
-  test.skip('should contain module preload resources', async () => {
+  test('should contain module preload resources', async () => {
     const response = await rp(url('/'))
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-app.js" as="script">')
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-commons.app.js" as="script">')

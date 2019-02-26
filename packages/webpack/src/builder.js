@@ -19,8 +19,8 @@ import PerfLoader from './utils/perf-loader'
 const glob = pify(Glob)
 
 export class WebpackBundler {
-  constructor(context) {
-    this.context = context
+  constructor(buildContext) {
+    this.buildContext = buildContext
     // Fields that set on build
     this.compilers = []
     this.compilersWatching = []
@@ -28,7 +28,7 @@ export class WebpackBundler {
     this.hotMiddleware = {}
 
     // Initialize shared MFS for dev
-    if (this.context.options.dev) {
+    if (this.buildContext.options.dev) {
       this.mfs = new MFS()
 
       // TODO: Enable when async FS required
@@ -38,7 +38,7 @@ export class WebpackBundler {
   }
 
   async build() {
-    const { options } = this.context
+    const { options } = this.buildContext
 
     const compilersOptions = []
 
@@ -60,7 +60,7 @@ export class WebpackBundler {
       compilersOptions.push(serverConfig)
     }
 
-    for (const p of this.context.plugins) {
+    for (const p of this.buildContext.plugins) {
       // Client config
       if (!clientConfig.resolve.alias[p.name]) {
         clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
@@ -78,7 +78,7 @@ export class WebpackBundler {
     }
 
     // Check styleResource existence
-    const { styleResources } = this.context.options.build
+    const { styleResources } = this.buildContext.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
         'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
@@ -86,7 +86,7 @@ export class WebpackBundler {
       )
       for (const ext of Object.keys(styleResources)) {
         await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-          const styleResourceFiles = await glob(path.resolve(this.context.options.rootDir, p))
+          const styleResourceFiles = await glob(path.resolve(this.buildContext.options.rootDir, p))
 
           if (!styleResourceFiles || styleResourceFiles.length === 0) {
             throw new Error(`Style Resource not found: ${p}`)
@@ -117,14 +117,12 @@ export class WebpackBundler {
     // Start Builds
     const runner = options.dev ? parallel : sequence
 
-    await runner(this.compilers, (compiler) => {
-      return this.webpackCompile(compiler)
-    })
+    await runner(this.compilers, compiler => this.webpackCompile(compiler))
   }
 
   async webpackCompile(compiler) {
     const { name } = compiler.options
-    const { nuxt, options } = this.context
+    const { nuxt, options } = this.buildContext
 
     await nuxt.callHook('build:compile', { name, compiler })
 
@@ -170,10 +168,10 @@ export class WebpackBundler {
     if (stats.hasErrors()) {
       if (options.build.quiet === true) {
         return Promise.reject(stats.toString(options.build.stats))
-      } else {
-        // Actual error will be printed by webpack
-        throw new Error('Nuxt Build Error')
       }
+
+      // Actual error will be printed by webpack
+      throw new Error('Nuxt Build Error')
     }
   }
 
@@ -181,7 +179,7 @@ export class WebpackBundler {
     consola.debug('Adding webpack middleware...')
 
     const { name } = compiler.options
-    const { nuxt: { server }, options } = this.context
+    const { nuxt: { server }, options } = this.buildContext
     const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
 
     // Create webpack dev middleware
@@ -226,9 +224,7 @@ export class WebpackBundler {
   }
 
   async unwatch() {
-    for (const watching of this.compilersWatching) {
-      await watching.close()
-    }
+    await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
   async close() {
@@ -259,6 +255,6 @@ export class WebpackBundler {
   }
 
   forGenerate() {
-    this.context.isStatic = true
+    this.buildContext.isStatic = true
   }
 }

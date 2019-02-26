@@ -6,6 +6,10 @@ export default class BuildContext {
     this.isStatic = false
   }
 
+  get buildOptions() {
+    return this.options.build
+  }
+
   get plugins() {
     return this._builder.plugins
   }

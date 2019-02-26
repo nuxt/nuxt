@@ -1,4 +1,6 @@
-# PM2 with nuxt-ts example
+# Nuxt.ts  with PM2 example
+
+> [pm2](http://pm2.keymetrics.io/) ia an advanced process manager for production Node.js applications. Load balancer, logs facility, startup script, micro service management and more.
 
 [Gracefull zero-downtime restart](https://pm2.io/doc/en/runtime/best-practices/graceful-shutdown/#graceful-start)
 

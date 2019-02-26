@@ -19,6 +19,7 @@ TemplateContext {
     ],
     "env": "test_env",
     "extensions": "test|ext",
+    "fetch": undefined,
     "globalName": "test_global",
     "globals": Array [
       "globals",
