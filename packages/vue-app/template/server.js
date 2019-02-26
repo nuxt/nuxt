@@ -76,8 +76,9 @@ export default async (ssrContext) => {
     // Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
     <% if (store) { %>
-    // Add the state from the vuex store
-    ssrContext.nuxt.state = store.state
+      ssrContext.rendered = () => {
+        ssrContext.nuxt.state = store.state
+      }
     <% } %>
   }
   const renderErrorPage = async () => {
