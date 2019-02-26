@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
+
+
+### Bug Fixes
+
+* **nuxt-ts:** error catch in nuxt-ts binary ([#5086](https://github.com/nuxt/nuxt.js/issues/5086)) ([4f887f6](https://github.com/nuxt/nuxt.js/commit/4f887f6))
+
+
+
+
+
 ## [2.4.3](https://github.com/nuxt/nuxt.js/compare/v2.4.2...v2.4.3) (2019-02-06)
 
 **Note:** Version bump only for package nuxt-ts
