@@ -12,8 +12,11 @@ import NuxtLink from './components/nuxt-link.server.js' // should be included af
 Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
 
 // Async Data & fetch mixin
-Vue.mixin(asyncDataMixin)
-Vue.mixin(fetchMixin)
+if (!Vue.__nuxt__async__mixin__) {
+  Vue.mixin(asyncDataMixin)
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__async__mixin__ = true
+}
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
