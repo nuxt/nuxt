@@ -24,24 +24,26 @@ where `options` is an object with paramaters of following type
 Below is the list of all available parameters
 
 ### Options
-* **polyfills**, default `['es6.array.iterator','es6.promise','es7.promise.finally']`
-* **buildTarget**
-* **loose**, default `false`
-* **debug**, default  `false`
-* **useBuiltIns**, default `"usage"`
-* **modules**, default `false`
-* **spec**
-* **ignoreBrowserslistConfig**, default `modern`
-* **configPath**
-* **include**
-* **exclude**
-* **targets**
-* **jsx**
-* **modern**
-* **shippedProposals**
-* **forceAllTransforms**
+* **buildTarget** passed by builder, either `"server"` or `"client"`
+* **configPath** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#configpath)' parameter
+* **forceAllTransforms** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#forcealltransforms)' parameter
+* **debug**, default  `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#debug)' parameter
 * **decoratorsBeforeExport**
-* **decoratorsLegacy**
+* **decoratorsLegacy**, default true
+* **exclude** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#exclude)' parameter
+* **ignoreBrowserslistConfig**, defaults to value of `modern` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#ignorebrowserslistconfig)' parameter
+* **include** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#include)' parameter
+* **jsx**, default truish, can be a an object passed as params to [@vue/babel-preset-jsx`](https://www.npmjs.com/package/@vue/babel-preset-jsx)
+* **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter
+* **modern** passed by builder, either `true` or `false`
+* **modules**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#modules)' parameter
+* **polyfills**, default `['es6.array.iterator','es6.promise','es7.promise.finally']`, more [here](https://github.com/zloirock/core-js)
+* **shippedProposals** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#shippedproposals)' parameter
+* **spec** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#spec)' parameter
+* **targets** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#targets)' parameter
+* **useBuiltIns**, default `"usage"` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#usebuiltins)' parameter
+
+[Here](https://babeljs.io/docs/en/babel-preset-env#options) is a detailed docs for '@babel/preset-env' parameters
 
 ### Example 1. Change targets for server and client respectively
 ```js
