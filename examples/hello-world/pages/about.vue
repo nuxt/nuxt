@@ -1,10 +1,11 @@
 <template>
   <div>
-    <p>Hi from {{ n }}</p>
+    <p>Hi from {{ mode }}</p>
     <NLink to="/">
       Home page
     </NLink>
-    <hello :foo="n"/>
+    <nuxt-child :project="{ test: true }" />
+    <hello :mode="mode" />
   </div>
 </template>
 
@@ -15,11 +16,15 @@ export default {
   components: {
     Hello
   },
-  async asyncData(ctx) {
-    console.log('async Data about')
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+  data() {
     return {
-      n: process.static ? 'static' : (process.server ? 'server' : 'client')
+      showHello: false
+    }
+  },
+  async asyncData(ctx) {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    return {
+      mode: process.static ? 'static' : (process.server ? 'server' : 'client')
     }
   },
   head: {

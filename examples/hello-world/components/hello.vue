@@ -2,29 +2,32 @@
   <div>
     <pre>dataFn {{ dataFn }}</pre>
     <pre>hello {{ hello }}</pre>
-    <pre>foo {{ foo }}</pre>
+    <pre>mode {{ mode }}</pre>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['foo'],
+  props: {
+    mode: {
+      type: String,
+      default: ''
+    }
+  },
   data() {
     return {
       dataFn: 'done'
     }
   },
-  fetch() {
-    console.log('fetch')
-  },
   async asyncData() {
-    console.log('async Data hello')
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 100))
     return {
       hello: 'pouet',
-      dataFn: this.dataFn,
-      foo: this.foo
+      dataFn: this.dataFn
     }
+  },
+  async fetch() {
+    await new Promise(resolve => setTimeout(resolve, 50))
   }
 }
 </script>
