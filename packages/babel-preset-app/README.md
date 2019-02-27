@@ -17,7 +17,7 @@ No additional configuration usually required. But there is an option to fine tun
       }
     }
 ```    
-where `options` is an object with paramaters of following type
+where `options` is an object with parameters of following type
 ```
  const options = {
       useBuiltIns: "entry"
