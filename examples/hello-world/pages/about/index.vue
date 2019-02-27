@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <p>
     I am /pages/about/index.vue {{ p }}
-  </div>
+  </p>
 </template>
 
 <script>
