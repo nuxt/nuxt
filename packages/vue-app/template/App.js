@@ -61,8 +61,10 @@ export default {
   }),
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
-    if (process.client) {
-      this.ssrState = window.<%= globals.context %>
+    if (process.server) {
+      this.state = this.$options.context.ssrContext.nuxt
+    } else {
+      this.state = window.<%= globals.context %>
     }
   },
   created() {

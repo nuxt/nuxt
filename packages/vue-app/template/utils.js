@@ -21,31 +21,21 @@ export function interopDefault(promise) {
   return promise.then(m => m.default || m)
 }
 
-export function applyAsyncData(Component, asyncData) {
-  if (
-    // For SSR, we once all this function without second param to just apply asyncData
-    // Prevent doing this for each SSR request
-    !asyncData && Component.options.__hasNuxtData
-  ) {
-    return
-  }
+export function applyAsyncData(vm, asyncData = {}) {
+  // Overwrite `data` with asyncData result
+  vm.$data.$asyncData = asyncData
 
-  const ComponentData = Component.options._originDataFn || Component.options.data || function () { return {} }
-  Component.options._originDataFn = ComponentData
-
-  Component.options.data = function () {
-    const data = ComponentData.call(this)
-    if (this.$ssrContext) {
-      console.log('Component.cid', Component.cid)
-      asyncData = this.$ssrContext.asyncData[Component.cid]
-    }
-    return { ...data, ...asyncData }
-  }
-
-  Component.options.__hasNuxtData = true
-
-  if (Component._Ctor && Component._Ctor.options) {
-    Component._Ctor.options.data = Component.options.data
+  for (const key in asyncData) {
+    Object.defineProperty(vm, key, {
+      get() {
+        return vm.$data.$asyncData[key]
+      },
+      set(value) {
+        return vm.$data.$asyncData[key] = value
+      },
+      enumerable: true,
+      configurable: true
+    })
   }
 }
 

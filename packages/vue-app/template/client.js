@@ -18,14 +18,20 @@ import {
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import asyncDataMixin from './mixins/async-data.client'
+import fetchMixin from './mixins/fetch.client'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 
-// Async Data mixin
-Vue.mixin(asyncDataMixin)
+// Async Data & fetch mixin
+if (!Vue.__nuxt__async__mixin__) {
+  Vue.mixin(asyncDataMixin)
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__async__mixin__ = true
+}
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 Vue.component('NLink', NuxtLink)
 
+// Fetch polyfill
 <% if (fetch.client) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 // Global shared references
@@ -171,14 +177,6 @@ async function loadAsyncComponents(to, from, next) {
   }
 }
 
-function applySSRData(Component, ssrData) {
-  if (NUXT.serverRendered && ssrData) {
-    applyAsyncData(Component, ssrData)
-  }
-  Component._Ctor = Component
-  return Component
-}
-
 // Get matched components
 function resolveComponents(router) {
   const path = getLocation(router.options.base, router.options.mode)
@@ -189,7 +187,7 @@ function resolveComponents(router) {
       Component = await Component()
     }
     // Sanitize it and save it
-    const _Component = applySSRData(sanitizeComponent(Component), NUXT.data ? NUXT.data[index] : null)
+    const _Component = sanitizeComponent(Component)
     match.components[key] = _Component
     return _Component
   })
@@ -345,72 +343,72 @@ async function render(to, from, next) {
     }
 
     // Call asyncData & fetch hooks on components matched by the route.
-    await Promise.all(Components.map((Component, i) => {
-      // Check if only children route changed
-      Component._path = compile(to.matched[matches[i]].path)(to.params)
-      Component._dataRefresh = false
-      // Check if Component need to be refreshed (call asyncData & fetch)
-      // Only if its slug has changed or is watch query changes
-      if ((this._pathChanged && this._queryChanged) || Component._path !== _lastPaths[i]) {
-        Component._dataRefresh = true
-      } else if (!this._pathChanged && this._queryChanged) {
-        const watchQuery = Component.options.watchQuery
-        if (watchQuery === true) {
-          Component._dataRefresh = true
-        } else if (Array.isArray(watchQuery)) {
-          Component._dataRefresh = watchQuery.some(key => this._diffQuery[key])
-        }
-      }
-      if (!this._hadError && this._isMounted && !Component._dataRefresh) {
-        return Promise.resolve()
-      }
+    // await Promise.all(Components.map((Component, i) => {
+    //   // Check if only children route changed
+    //   Component._path = compile(to.matched[matches[i]].path)(to.params)
+    //   Component._dataRefresh = false
+    //   // Check if Component need to be refreshed (call asyncData & fetch)
+    //   // Only if its slug has changed or is watch query changes
+    //   if ((this._pathChanged && this._queryChanged) || Component._path !== _lastPaths[i]) {
+    //     Component._dataRefresh = true
+    //   } else if (!this._pathChanged && this._queryChanged) {
+    //     const watchQuery = Component.options.watchQuery
+    //     if (watchQuery === true) {
+    //       Component._dataRefresh = true
+    //     } else if (Array.isArray(watchQuery)) {
+    //       Component._dataRefresh = watchQuery.some(key => this._diffQuery[key])
+    //     }
+    //   }
+    //   if (!this._hadError && this._isMounted && !Component._dataRefresh) {
+    //     return Promise.resolve()
+    //   }
 
-      const promises = []
+    //   const promises = []
 
-      const hasAsyncData = (
-        Component.options.asyncData &&
-        typeof Component.options.asyncData === 'function'
-      )
-      const hasFetch = !!Component.options.fetch
-      <% if (loading) { %>
-      const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
-      <% } %>
+    //   const hasAsyncData = (
+    //     Component.options.asyncData &&
+    //     typeof Component.options.asyncData === 'function'
+    //   )
+    //   const hasFetch = !!Component.options.fetch
+    //   <% if (loading) { %>
+    //   const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
+    //   <% } %>
 
-      // Call asyncData(context)
-      if (hasAsyncData) {
-        const promise = promisify(Component.options.asyncData, app.context)
-          .then((asyncDataResult) => {
-            applyAsyncData(Component, asyncDataResult)
-            <% if (loading) { %>
-            if (this.$loading.increase) {
-              this.$loading.increase(loadingIncrease)
-            }
-            <% } %>
-          })
-        promises.push(promise)
-      }
+    //   // Call asyncData(context)
+    //   if (hasAsyncData) {
+    //     const promise = promisify(Component.options.asyncData, app.context)
+    //       .then((asyncDataResult) => {
+    //         applyAsyncData(Component, asyncDataResult)
+    //         <% if (loading) { %>
+    //         if (this.$loading.increase) {
+    //           this.$loading.increase(loadingIncrease)
+    //         }
+    //         <% } %>
+    //       })
+    //     promises.push(promise)
+    //   }
 
-      // Check disabled page loading
-      this.$loading.manual = Component.options.loading === false
+    //   // Check disabled page loading
+    //   this.$loading.manual = Component.options.loading === false
 
-      // Call fetch(context)
-      if (hasFetch) {
-        let p = Component.options.fetch(app.context)
-        if (!p || (!(p instanceof Promise) && (typeof p.then !== 'function'))) {
-          p = Promise.resolve(p)
-        }
-        p.then((fetchResult) => {
-          <% if (loading) { %>
-          if (this.$loading.increase) {
-            this.$loading.increase(loadingIncrease)
-          }
-          <% } %>
-        })
-        promises.push(p)
-      }
+    //   // Call fetch(context)
+    //   if (hasFetch) {
+    //     let p = Component.options.fetch(app.context)
+    //     if (!p || (!(p instanceof Promise) && (typeof p.then !== 'function'))) {
+    //       p = Promise.resolve(p)
+    //     }
+    //     p.then((fetchResult) => {
+    //       <% if (loading) { %>
+    //       if (this.$loading.increase) {
+    //         this.$loading.increase(loadingIncrease)
+    //       }
+    //       <% } %>
+    //     })
+    //     promises.push(p)
+    //   }
 
-      return Promise.all(promises)
-    }))
+    //   return Promise.all(promises)
+    // }))
 
     // If not redirected
     if (!nextCalled) {
@@ -605,8 +603,9 @@ function addHotReload($component, depth) {
     .then(() => {
       // Call asyncData(context)
       let pAsyncData = promisify(Component.options.asyncData || noopData, context)
-      pAsyncData.then((asyncDataResult) => {
-        applyAsyncData(Component, asyncDataResult)
+      pAsyncData.then((asyncData) => {
+        // applyAsyncData(Component, asyncDataResult)
+        // applyAsyncData(instance, asyncData)
         <%= (loading ? 'this.$loading.increase && this.$loading.increase(30)' : '') %>
       })
       promises.push(pAsyncData)

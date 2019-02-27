@@ -65,15 +65,13 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { layout: 'default', data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  ssrContext.nuxt = { layout: 'default', data: {}, error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
 
   // Add meta infos (used in renderer.js)
   ssrContext.meta = _app.$meta()
-  // Keep asyncData for each matched component in ssrContext (used in app/utils.js via this.$ssrContext)
-  ssrContext.asyncData = {}
 
   const beforeRender = async () => {
     // Call beforeNuxtRender() methods
@@ -206,9 +204,6 @@ export default async (ssrContext) => {
   if (!Components.length) return render404Page()
 
   // <% if (isDev) { %>if (asyncDatas.length) debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
-
-  // datas are the first row of each
-  ssrContext.nuxt.data = ssrContext.asyncData
 
   // ...If there is a redirect or an error, stop the process
   if (ssrContext.redirected) return noopApp()

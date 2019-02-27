@@ -1,3 +1,5 @@
+import { applyAsyncData } from '../utils'
+
 export default {
   async serverPrefetch() {
     // MAYBE: Move this check in beforeCreate and push the serverPrefetch only if declared?
@@ -13,22 +15,9 @@ export default {
     attrs['data-ssr-key'] = this._ssrKey
 
     // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
-    const asyncData = this.$data.$asyncData = await this.$options.asyncData.call(this, this.$nuxt.context)
-    this.$ssrContext.asyncData[this._ssrKey] = asyncData
+    const asyncData = await this.$options.asyncData.call(this, this.$nuxt.$options.context)
+    this.$nuxt.state.data[this._ssrKey] = asyncData
 
-    // Overwrite `data` with asyncData result
-    const vm = this
-    for (const key in asyncData) {
-      Object.defineProperty(this, key, {
-        get() {
-          return vm.$data.$asyncData[key]
-        },
-        set(value) {
-          return vm.$data.$asyncData[key] = value
-        },
-        enumerable: true,
-        configurable: true
-      })
-    }
+    applyAsyncData(this, asyncData)
   }
 }
