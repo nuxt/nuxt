@@ -13,7 +13,7 @@ export default {
     }
   },
   async asyncData(ctx) {
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 500))
     return {
       p: Object.assign({}, this.project, { extended: true })
     }

@@ -20,7 +20,7 @@ export default {
     }
   },
   async asyncData() {
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 1000))
     return {
       hello: 'pouet',
       dataFn: this.dataFn
