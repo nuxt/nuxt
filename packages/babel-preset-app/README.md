@@ -3,7 +3,9 @@
 
 ## Usage
 
-This is the default preset used by Nuxt and no additional configuration usually required. But there is an option to fine tune it's behavior if needed. Just add the following to nuxt-config
+This is the default preset used by Nuxt, which is mainly a wrapper around  '@babel/preset-env' preset. It also optionally uses `@vue/babel-preset-jsx` and adds polyfills.
+
+No additional configuration usually required. But there is an option to fine tune it's behavior if needed. Just add the following to nuxt-config
 ```js
     babel: {
       presets({ isServer }) {
