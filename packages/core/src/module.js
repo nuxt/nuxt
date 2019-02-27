@@ -136,6 +136,11 @@ export default class ModuleContainer {
       handler = src
     }
 
+    // Prevent adding devModules-listed entries in production
+    if (this.options.devModules.includes(handler) && this.options._start) {
+      return
+    }
+
     // Resolve handler
     if (!handler) {
       handler = this.nuxt.resolver.requireModule(src)
