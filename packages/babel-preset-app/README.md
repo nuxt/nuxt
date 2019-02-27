@@ -3,7 +3,7 @@
 
 ## Usage
 
-This is the default preset used by Nuxt, which is mainly a wrapper around  '@babel/preset-env' preset. It also optionally uses `@vue/babel-preset-jsx` and adds polyfills.
+This is the default preset used by Nuxt, which is mainly a wrapper around  '@babel/preset-env' preset. It also optionally uses preset `@vue/babel-preset-jsx`, plugins `@babel/plugin-syntax-dynamic-import`, `@babel/plugin-proposal-decorators`, `@babel/plugin-proposal-class-properties`, `@babel/plugin-transform-runtime`  and adds polyfills.
 
 No additional configuration usually required. But there is an option to fine tune it's behavior if needed. Just add the following to nuxt-config
 ```js
@@ -36,7 +36,7 @@ Below is the list of all available parameters
 * **ignoreBrowserslistConfig**, defaults to value of `modern` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#ignorebrowserslistconfig)' parameter
 * **include** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#include)' parameter
 * **jsx**, default truish, can be a an object passed as params to [@vue/babel-preset-jsx`](https://www.npmjs.com/package/@vue/babel-preset-jsx)
-* **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter
+* **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter and also sets `loose=true` for `@babel/plugin-proposal-class-properties`
 * **modern** passed by builder, either `true` or `false`
 * **modules**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#modules)' parameter
 * **polyfills**, default `['es6.array.iterator','es6.promise','es7.promise.finally']`, more [here](https://github.com/zloirock/core-js)
