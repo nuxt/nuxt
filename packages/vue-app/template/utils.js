@@ -23,7 +23,7 @@ export function interopDefault(promise) {
 
 export function applyAsyncData(vm, asyncData = {}) {
   // Overwrite `data` with asyncData result
-  vm.$data.$asyncData = asyncData
+  vm.$data.$asyncData = Vue.observable(asyncData)
 
   for (const key in asyncData) {
     Object.defineProperty(vm, key, {

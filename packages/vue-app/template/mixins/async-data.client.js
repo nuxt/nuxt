@@ -20,9 +20,11 @@ export default {
 
     const originalRender = this.$options.render
     this.$options.render = function (h) {
-      return h('p', {}, 'Loading...')
+      if (this.$options.placeholder) {
+        return h(this.$options.placeholder)
+      }
+      return h('div', {}, 'Loading...')
     }
-    this.$nuxt.$loading.start()
     // Call and apply asyncData on components
     const asyncData = await this.$options.asyncData.call(this, this.$nuxt.$options.context)
     applyAsyncData(this, asyncData)

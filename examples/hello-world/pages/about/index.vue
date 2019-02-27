@@ -1,7 +1,10 @@
 <template>
-  <p>
-    I am /pages/about/index.vue {{ p }}
-  </p>
+  <div>
+    <p>
+      I am /pages/about/index.vue
+    </p>
+    <pre>{{ p.extended }}</pre>
+  </div>
 </template>
 
 <script>

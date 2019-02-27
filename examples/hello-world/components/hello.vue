@@ -7,7 +7,10 @@
 </template>
 
 <script>
+import Placeholder from '~/components/placeholder'
+
 export default {
+  placeholder: Placeholder,
   props: {
     mode: {
       type: String,
