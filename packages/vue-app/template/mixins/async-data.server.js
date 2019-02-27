@@ -8,7 +8,7 @@ export default {
     }
 
     // Define and ssrKey for hydration
-    this._ssrKey = this._uid
+    this._ssrKey = this.$nuxt.state.data.length
 
     // Add data-ssr-key on parent element of Component
     const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
@@ -16,7 +16,7 @@ export default {
 
     // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
     const asyncData = await this.$options.asyncData.call(this, this.$nuxt.$options.context)
-    this.$nuxt.state.data[this._ssrKey] = asyncData
+    this.$nuxt.state.data.push(asyncData)
 
     applyAsyncData(this, asyncData)
   }

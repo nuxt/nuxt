@@ -6,7 +6,7 @@ export default {
       return
     }
     // Hydrate component
-    this._ssrKey = this.$vnode.elm.dataset.ssrKey
+    this._ssrKey = +this.$vnode.elm.dataset.ssrKey
     const asyncData = this.$nuxt.state.data[this._ssrKey]
 
     applyAsyncData(this, asyncData)
