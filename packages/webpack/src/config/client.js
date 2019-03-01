@@ -1,5 +1,4 @@
 import path from 'path'
-import { existsSync } from 'fs'
 import querystring from 'querystring'
 import consola from 'consola'
 import webpack from 'webpack'
