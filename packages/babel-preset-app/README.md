@@ -27,7 +27,7 @@ Below is a list of all available parameters:
 
 ### Options
 * **buildTarget** - passed in through the Builder, either `"server"` or `"client"`
-* **configPath** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#configpath)' parameter
+* **configPath** - [`@babel/preset-env` parameter](https://babeljs.io/docs/en/babel-preset-env#configpath)
 * **forceAllTransforms** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#forcealltransforms)' parameter
 * **debug**, default  `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#debug)' parameter
 * **decoratorsBeforeExport**
