@@ -17,7 +17,7 @@ Usually, no additional configuration is required. If needed though, there is an 
       }
     }
 ```    
-where `options` is an object with parameters of following type
+...where `options` is an object with parameters, for example:
 ```
  const options = {
       useBuiltIns: "entry"
