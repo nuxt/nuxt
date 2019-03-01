@@ -26,7 +26,7 @@ Usually, no additional configuration is required. If needed though, there is an 
 Below is a list of all available parameters:
 
 ### Options
-* **buildTarget** passed by builder, either `"server"` or `"client"`
+* **buildTarget** - passed in through the Builder, either `"server"` or `"client"`
 * **configPath** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#configpath)' parameter
 * **forceAllTransforms** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#forcealltransforms)' parameter
 * **debug**, default  `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#debug)' parameter
