@@ -45,7 +45,7 @@ Below is a list of all available parameters:
 * **targets** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#targets)' parameter
 * **useBuiltIns**, default `"usage"` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#usebuiltins)' parameter
 
-[Here](https://babeljs.io/docs/en/babel-preset-env#options) is a detailed docs for '@babel/preset-env' parameters
+There are [detailed docs](https://babeljs.io/docs/en/babel-preset-env#options) for the parameters of '@babel/preset-env'.
 
 ### Example 1. Change targets for server and client respectively
 ```js
