@@ -8,7 +8,7 @@ coverage
 
 ## cofeescript
 examples/coffeescript/pages/index.vue
-
+examples/pug-stylus-coffee/
 # Packages
 
 # vue-app

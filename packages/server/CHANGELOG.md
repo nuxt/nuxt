@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
+
+
+### Bug Fixes
+
+* **deps:** update serve-placeholder and esm ([#4970](https://github.com/nuxt/nuxt.js/issues/4970)) ([111455f](https://github.com/nuxt/nuxt.js/commit/111455f))
+
+
+
+
+
 ## [2.4.3](https://github.com/nuxt/nuxt.js/compare/v2.4.2...v2.4.3) (2019-02-06)
 
 
