@@ -7,15 +7,13 @@ This is the default preset used by Nuxt, which is mainly a wrapper around the `@
 
 Usually, no additional configuration is required. If needed though, there is an option to fine-tune the preset's behavior. Just add the following to `nuxt.config.js`:
 ```js
-    babel: {
-      presets({ isServer }) {
-        return [
-          [
-            "@nuxt/babel-preset-app", options            
-          ]
-        ]
-      }
-    }
+babel: {
+  presets({ isServer }) {
+    return [
+      [ "@nuxt/babel-preset-app", options ]
+    ]
+  }
+}
 ```    
 ...where `options` is an object with parameters, for example:
 ```
@@ -49,18 +47,18 @@ There are [detailed docs](https://babeljs.io/docs/en/babel-preset-env#options) f
 
 ### Example 1. Change targets for server and client respectively
 ```js
-  babel: {
-      presets({ isServer }) {
-        return [
-          [
-            "@nuxt/babel-preset-app",
-            {
-              targets: isServer
-                ? { node: "current" }
-                : { browsers: ["last 2 versions"], ie: 11 }
-            }
-          ]
-        ]
-      }
-    },
+babel: {
+  presets({ isServer }) {
+    return [
+      [
+        "@nuxt/babel-preset-app",
+        {
+          targets: isServer
+            ? { node: "current" }
+            : { browsers: ["last 2 versions"], ie: 11 }
+        }
+      ]
+    ]
+  }
+},
 ```    
