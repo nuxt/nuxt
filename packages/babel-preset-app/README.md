@@ -3,7 +3,7 @@
 
 ## Usage
 
-This is the default preset used by Nuxt, which is mainly a wrapper around  '@babel/preset-env' preset. It also optionally uses preset `@vue/babel-preset-jsx`, plugins `@babel/plugin-syntax-dynamic-import`, `@babel/plugin-proposal-decorators`, `@babel/plugin-proposal-class-properties`, `@babel/plugin-transform-runtime`  and adds polyfills.
+This is the default preset used by Nuxt, which is mainly a wrapper around the `@babel/preset-env` preset. It also optionally uses the `@vue/babel-preset-jsx` preset as well as `@babel/plugin-syntax-dynamic-import`, `@babel/plugin-proposal-decorators`, `@babel/plugin-proposal-class-properties`, `@babel/plugin-transform-runtime`. Furthermore the preset is adding polyfills.
 
 No additional configuration usually required. But there is an option to fine tune it's behavior if needed. Just add the following to nuxt-config
 ```js
