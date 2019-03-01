@@ -1,5 +1,5 @@
 # `@nuxt/babel-preset-app`
-## Default babel preset for nuxt
+> Default babel preset for nuxt
 
 ## Usage
 
