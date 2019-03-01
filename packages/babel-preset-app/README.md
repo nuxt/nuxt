@@ -21,7 +21,7 @@ Usually, no additional configuration is required. If needed though, there is an 
 ```
  const options = {
       useBuiltIns: "entry"
-      }
+}
 ```
 Below is the list of all available parameters
 
