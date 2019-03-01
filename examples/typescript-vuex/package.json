@@ -13,11 +13,9 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "lint": "tslint --project .",
     "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
-    "@nuxt/typescript": "latest",
-    "tslint-config-standard": "^8.0.1"
+    "@nuxt/typescript": "latest"
   }
 }

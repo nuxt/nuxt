@@ -146,8 +146,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
         vue: true,
         tsconfig: path.resolve(rootDir, 'tsconfig.json'),
-        // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-        tslint: (tslintPath => existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
+        tslint: false, // We recommend using ESLint so we set this option to `false` by default
         formatter: 'codeframe',
         logger: consola
       }, buildOptions.typescript.typeCheck)))
