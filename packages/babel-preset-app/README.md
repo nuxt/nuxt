@@ -23,7 +23,7 @@ Usually, no additional configuration is required. If needed though, there is an 
   useBuiltIns: "entry"
 }
 ```
-Below is the list of all available parameters
+Below is a list of all available parameters:
 
 ### Options
 * **buildTarget** passed by builder, either `"server"` or `"client"`
