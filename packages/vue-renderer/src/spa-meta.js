@@ -30,8 +30,9 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/' }) {
-    let meta = this.cache.get(url)
+  async render({ url = '/', req = {} }) {
+    const cacheKey = `${req.modernMode ? 'modern:' : 'legacy:'}${url}`
+    let meta = this.cache.get(cacheKey)
 
     if (meta) {
       return meta
@@ -73,8 +74,8 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const { modernManifest, clientManifest } = this.renderer.context.resources
-    const manifest = this.options.modern ? modernManifest : clientManifest
+    const { resources: { modernManifest, clientManifest } } = this.renderer.context
+    const manifest = req.modernMode ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
 
@@ -86,15 +87,18 @@ export default class SPAMetaRenderer {
         const { crossorigin } = this.options.build
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
 
-        meta.resourceHints += manifest.initial
+        meta.preloadFiles = manifest.initial
           .map(SPAMetaRenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
-          .map(({ file, extension, fileWithoutQuery, asType }) => {
+          .map(file => ({ ...file, modern: req.modernMode }))
+
+        meta.resourceHints += meta.preloadFiles
+          .map(({ file, extension, fileWithoutQuery, asType, modern }) => {
             let extra = ''
             if (asType === 'font') {
-              extra = ` type="font/${extension}" crossorigin`
+              extra = ` type="font/${extension}"${cors ? '' : ' crossorigin'}`
             }
-            return `<link rel="${this.options.modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
+            return `<link rel="${modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
@@ -116,13 +120,10 @@ export default class SPAMetaRenderer {
     }
 
     // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
-    meta.getPreloadFiles = () =>
-      clientManifest.initial
-        .map(SPAMetaRenderer.normalizeFile)
-        .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
+    meta.getPreloadFiles = () => (meta.preloadFiles || [])
 
     // Set meta tags inside cache
-    this.cache.set(url, meta)
+    this.cache.set(cacheKey, meta)
 
     return meta
   }
