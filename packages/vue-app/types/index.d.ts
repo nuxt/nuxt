@@ -63,11 +63,11 @@ export interface ErrorParams {
 }
 
 export interface NuxtLoading extends Vue {
-  fail?(): void;
-  finish(): void;
-  increase?(num: number): void;
-  pause?(): void;
-  start(): void;
+  fail?(): NuxtLoading;
+  finish(): NuxtLoading;
+  increase?(num: number): NuxtLoading;
+  pause?(): NuxtLoading;
+  start(): NuxtLoading;
 }
 
 export interface NuxtApp extends Vue {
