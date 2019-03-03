@@ -8,7 +8,7 @@
   ],
   "main": "dist/builder.js",
   "dependencies": {
-    "@nuxt/devalue": "^1.2.0",
+    "@nuxt/devalue": "^1.2.1",
     "@nuxt/utils": "2.4.5",
     "@nuxt/vue-app": "2.4.5",
     "chokidar": "^2.1.2",

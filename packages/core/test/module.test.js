@@ -15,6 +15,11 @@ jest.mock('@nuxt/utils', () => ({
   chainFn: jest.fn(() => 'chainedFn')
 }))
 
+const defaultOptions = {
+  modules: [],
+  devModules: []
+}
+
 describe('core: module', () => {
   const requireModule = jest.fn(src => options => Promise.resolve({ src, options }))
 
@@ -41,6 +46,7 @@ describe('core: module', () => {
   test('should call hooks and addModule when ready', async () => {
     const nuxt = {
       options: {
+        ...defaultOptions,
         modules: [jest.fn(), jest.fn()]
       },
       callHook: jest.fn()
@@ -60,7 +66,9 @@ describe('core: module', () => {
   })
 
   test('should display deprecated message for addVendor', () => {
-    new ModuleContainer({}).addVendor()
+    new ModuleContainer({
+      ...defaultOptions
+    }).addVendor()
 
     expect(consola.warn).toBeCalledTimes(1)
     expect(consola.warn).toBeCalledWith('addVendor has been deprecated due to webpack4 optimization')
@@ -69,6 +77,7 @@ describe('core: module', () => {
   test('should add string template', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         build: {
           templates: []
         }
@@ -88,6 +97,7 @@ describe('core: module', () => {
   test('should add object template', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         build: {
           templates: []
         }
@@ -109,6 +119,7 @@ describe('core: module', () => {
 
   test('should use filename in preference to calculation', () => {
     const module = new ModuleContainer({
+      ...defaultOptions,
       options: {
         build: {
           templates: []
@@ -130,13 +141,21 @@ describe('core: module', () => {
   })
 
   test('should throw error when template invalid', () => {
-    const module = new ModuleContainer({})
+    const module = new ModuleContainer({
+      options: {
+        ...defaultOptions
+      }
+    })
 
     expect(() => module.addTemplate()).toThrow('Invalid template: undefined')
   })
 
   test('should throw error when template not found', () => {
-    const module = new ModuleContainer({})
+    const module = new ModuleContainer({
+      options: {
+        ...defaultOptions
+      }
+    })
     fs.existsSync = jest.fn(() => false)
 
     expect(() => module.addTemplate('/var/nuxt/test')).toThrow('Template src not found: /var/nuxt/test')
@@ -147,6 +166,7 @@ describe('core: module', () => {
   test('should add plugin into module', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         buildDir: '/var/nuxt/build',
         plugins: []
       }
@@ -165,6 +185,7 @@ describe('core: module', () => {
   test('should add layout into module', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         layouts: {}
       }
     })
@@ -181,6 +202,7 @@ describe('core: module', () => {
   test('should display deprecated message when registration is duplicate', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         layouts: {
           'test-layout': 'test.template'
         }
@@ -200,6 +222,7 @@ describe('core: module', () => {
   test('should register error layout at same time', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         layouts: {}
       }
     })
@@ -219,6 +242,7 @@ describe('core: module', () => {
   test('should add error layout', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         rootDir: '/var/nuxt',
         buildDir: '/var/nuxt/build',
         layouts: {}
@@ -233,6 +257,7 @@ describe('core: module', () => {
   test('should add server middleware', () => {
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         serverMiddleware: []
       }
     })
@@ -248,6 +273,7 @@ describe('core: module', () => {
     const extend = () => {}
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         build: { extend }
       }
     })
@@ -264,6 +290,7 @@ describe('core: module', () => {
     const extendRoutes = () => {}
     const module = new ModuleContainer({
       options: {
+        ...defaultOptions,
         router: { extendRoutes }
       }
     })
@@ -278,7 +305,9 @@ describe('core: module', () => {
 
   test('should call addModule when require module', () => {
     const module = new ModuleContainer({
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
     module.addModule = jest.fn()
 
@@ -292,7 +321,9 @@ describe('core: module', () => {
   test('should add string module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     const result = await module.addModule('moduleTest')
@@ -312,7 +343,9 @@ describe('core: module', () => {
   test('should add function module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     const functionModule = function (options) {
@@ -337,7 +370,9 @@ describe('core: module', () => {
   test('should add array module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     const result = await module.addModule(['moduleTest', { test: true }])
@@ -359,7 +394,9 @@ describe('core: module', () => {
   test('should add object module', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     const result = await module.addModule({
@@ -386,7 +423,9 @@ describe('core: module', () => {
   test('should throw error when handler is not function', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule: () => false },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     await expect(module.addModule('moduleTest')).rejects.toThrow('Module should export a function: moduleTest')
@@ -395,7 +434,9 @@ describe('core: module', () => {
   test('should prevent multiple adding when requireOnce is enabled', async () => {
     const module = new ModuleContainer({
       resolver: { requireModule },
-      options: {}
+      options: {
+        ...defaultOptions
+      }
     })
 
     const handler = jest.fn(() => true)

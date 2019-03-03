@@ -141,6 +141,7 @@ Object {
   "css": Array [],
   "debug": false,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
