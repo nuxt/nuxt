@@ -141,6 +141,7 @@ Object {
   "css": Array [],
   "debug": false,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
@@ -156,6 +157,10 @@ Object {
     "mjs",
     "ts",
   ],
+  "fetch": Object {
+    "client": true,
+    "server": true,
+  },
   "generate": Object {
     "concurrency": 500,
     "dir": "/var/nuxt/test/dist",

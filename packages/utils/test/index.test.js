@@ -1,6 +1,7 @@
 import * as Util from '../src'
 import * as context from '../src/context'
 import * as lang from '../src/lang'
+import * as locking from '../src/locking'
 import * as resolve from '../src/resolve'
 import * as route from '../src/route'
 import * as serialize from '../src/serialize'
@@ -12,6 +13,7 @@ describe('util: entry', () => {
     expect(Util).toEqual({
       ...context,
       ...lang,
+      ...locking,
       ...resolve,
       ...route,
       ...serialize,

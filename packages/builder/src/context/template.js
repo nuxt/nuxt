@@ -21,6 +21,7 @@ export default class TemplateContext {
       isTest: options.test,
       debug: options.debug,
       vue: { config: options.vue.config },
+      fetch: options.fetch,
       mode: options.mode,
       router: options.router,
       env: options.env,

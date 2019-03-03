@@ -131,6 +131,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
@@ -142,6 +143,10 @@ Object {
   "editor": undefined,
   "env": Object {},
   "extensions": Array [],
+  "fetch": Object {
+    "client": true,
+    "server": true,
+  },
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",
@@ -455,6 +460,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
@@ -466,6 +472,10 @@ Object {
   "editor": undefined,
   "env": Object {},
   "extensions": Array [],
+  "fetch": Object {
+    "client": true,
+    "server": true,
+  },
   "generate": Object {
     "concurrency": 500,
     "dir": "dist",

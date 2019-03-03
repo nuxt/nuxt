@@ -14,9 +14,10 @@ void (function updateModules() {
   <% return true }}) %>
 
   // If store is an exported method = classic mode (deprecated)
+  <% if (isDev) { %>
   if (typeof store === 'function') {
     return log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
-  }
+  }<% } %>
 
   // Enforce store modules
   store.modules = store.modules || {}

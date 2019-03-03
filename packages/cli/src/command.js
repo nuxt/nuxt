@@ -1,4 +1,4 @@
-
+import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, forceExit } from './utils'
@@ -45,6 +45,10 @@ export default class NuxtCommand {
 
     const runResolve = Promise.resolve(this.cmd.run(this))
 
+    if (this.argv.lock) {
+      runResolve.then(() => this.releaseLock())
+    }
+
     if (this.argv['force-exit']) {
       const forceExitByUser = this.isUserSuppliedArg('force-exit')
       runResolve.then(() => forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout))
@@ -71,7 +75,7 @@ export default class NuxtCommand {
 
   async getNuxtConfig(extraOptions) {
     const config = await loadNuxtConfig(this.argv)
-    const options = Object.assign(config, extraOptions || {})
+    const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
@@ -97,6 +101,26 @@ export default class NuxtCommand {
     const { Generator } = await imports.generator()
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
+  }
+
+  async setLock(lockRelease) {
+    if (lockRelease) {
+      if (this._lockRelease) {
+        consola.warn(`A previous unreleased lock was found, this shouldn't happen and is probably an error in 'nuxt ${this.cmd.name}' command. The lock will be removed but be aware of potential strange results`)
+
+        await this.releaseLock()
+        this._lockRelease = lockRelease
+      } else {
+        this._lockRelease = lockRelease
+      }
+    }
+  }
+
+  async releaseLock() {
+    if (this._lockRelease) {
+      await this._lockRelease()
+      this._lockRelease = undefined
+    }
   }
 
   isUserSuppliedArg(option) {

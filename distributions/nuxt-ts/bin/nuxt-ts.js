@@ -11,9 +11,11 @@ const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
 
-require('@nuxt/typescript' + suffix).setup(tsConfigPath).then(() => {
-  require('@nuxt/cli' + suffix).run()
-}).catch((error) => {
+const errorHandler = (error) => {
   require('consola').fatal(error)
   process.exit(2)
-})
+}
+
+require('@nuxt/typescript' + suffix).setup(tsConfigPath).then(() => {
+  require('@nuxt/cli' + suffix).run().catch(errorHandler)
+}).catch(errorHandler)

@@ -5,6 +5,7 @@ import esm from 'esm'
 import exit from 'exit'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
+import { lock } from '@nuxt/utils'
 import chalk from 'chalk'
 import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
@@ -157,4 +158,10 @@ ${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fa
   } else {
     exit(0)
   }
+}
+
+// An immediate export throws an error when mocking with jest
+// TypeError: Cannot set property createLock of #<Object> which has only a getter
+export function createLock(...args) {
+  return lock(...args)
 }

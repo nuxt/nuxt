@@ -20,7 +20,7 @@ const isModernBrowser = (ua) => {
   if (!browserVersion) {
     return false
   }
-  return modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name])
+  return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
 let detected = false
@@ -44,28 +44,18 @@ const detectModernBuild = ({ options, resources }) => {
 }
 
 const detectModernBrowser = ({ socket = {}, headers }) => {
-  if (socket.isModernBrowser !== undefined) {
-    return
+  if (socket.isModernBrowser === undefined) {
+    const ua = headers && headers['user-agent']
+    socket.isModernBrowser = isModernBrowser(ua)
   }
 
-  const ua = headers && headers['user-agent']
-  socket.isModernBrowser = isModernBrowser(ua)
-}
-
-const setModernMode = (req, options) => {
-  const { socket = {} } = req
-  const { isModernBrowser } = socket
-  if (options.modern === 'server') {
-    req.modernMode = isModernBrowser
-  }
-  if (options.dev && !!options.modern) {
-    req.devModernMode = isModernBrowser
-  }
+  return socket.isModernBrowser
 }
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
-  detectModernBrowser(req)
-  setModernMode(req, context.options)
+  if (context.options.modern !== false) {
+    req.modernMode = detectModernBrowser(req)
+  }
   next()
 }

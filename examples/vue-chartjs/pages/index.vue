@@ -10,6 +10,9 @@ import axios from 'axios'
 import moment from 'moment'
 
 export default {
+  components: {
+    BarChart
+  },
   async asyncData({ env }) {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/commit_activity?access_token=${env.githubToken}`)
     return {
@@ -24,9 +27,6 @@ export default {
         ]
       }
     }
-  },
-  components: {
-    BarChart
   }
 }
 </script>
