@@ -22,7 +22,7 @@ export function indentLines(string, spaces, firstLineSpaces) {
 }
 
 export function foldLines(string, spaces, firstLineSpaces, charsPerLine = maxCharsPerLine()) {
-  return indentLines(wrapAnsi(string, charsPerLine, { trim: false }), spaces, firstLineSpaces)
+  return indentLines(wrapAnsi(string, charsPerLine), spaces, firstLineSpaces)
 }
 
 export function colorize(text) {

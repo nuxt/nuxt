@@ -11183,6 +11183,15 @@ wrap-ansi@^4.0.0:
     string-width "^2.1.1"
     strip-ansi "^4.0.0"
 
+wrap-ansi@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-5.0.0.tgz#c3838a85fbac6a647558ca97024d41d7631721dc"
+  integrity sha512-3ThemJUfTTju0SKG2gjGExzGRHxT5l/KEM5sff3TQReaVWe/bFTiF1GEr8DKr/j0LxGt8qPzx0yhd2RLyqgy2Q==
+  dependencies:
+    ansi-styles "^3.2.0"
+    string-width "^3.0.0"
+    strip-ansi "^5.0.0"
+
 wrappy@1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
