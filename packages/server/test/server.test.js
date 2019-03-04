@@ -94,6 +94,11 @@ describe('server: server', () => {
     }))
   })
 
+  afterAll(() => {
+    path.join.mockRestore()
+    path.resolve.mockRestore()
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
