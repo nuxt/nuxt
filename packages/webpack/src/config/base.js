@@ -352,7 +352,7 @@ export default class WebpackBaseConfig {
 
   plugins() {
     const plugins = []
-    const { nuxt, buildOptions, options: { _typescript = {} } } = this.buildContext
+    const { nuxt, buildOptions } = this.buildContext
 
     // Add timefix-plugin before others plugins
     if (this.dev) {
