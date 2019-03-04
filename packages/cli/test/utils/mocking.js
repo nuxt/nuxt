@@ -28,13 +28,9 @@ export const mockGetNuxt = (options = {}, implementation) => {
 }
 
 export const mockGetBuilder = (ret) => {
-  const build = jest.fn().mockImplementationOnce(() => {
-    return ret
-  })
+  const build = jest.fn().mockImplementationOnce(() => ret)
 
-  Command.prototype.getBuilder = jest.fn().mockImplementationOnce(() => {
-    return { build }
-  })
+  Command.prototype.getBuilder = jest.fn().mockImplementationOnce(() => ({ build }))
 
   return build
 }
@@ -42,14 +38,10 @@ export const mockGetBuilder = (ret) => {
 export const mockGetGenerator = (ret) => {
   const generate = jest.fn()
   if (ret) {
-    generate.mockImplementationOnce(() => {
-      return ret
-    })
+    generate.mockImplementationOnce(ret)
   }
 
-  Command.prototype.getGenerator = jest.fn().mockImplementationOnce(() => {
-    return { generate }
-  })
+  Command.prototype.getGenerator = jest.fn().mockImplementationOnce(() => ({ generate }))
 
   return generate
 }
