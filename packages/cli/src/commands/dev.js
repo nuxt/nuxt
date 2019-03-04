@@ -40,18 +40,21 @@ export default {
   },
 
   async _startDev(cmd, argv) {
-    const config = await cmd.getNuxtConfig({ dev: true })
-    const nuxt = await cmd.getNuxt(config)
+    const config = await cmd.getNuxtConfig({ dev: true, _autoInit: false })
+    const nuxt = await cmd.getNuxt(config, false)
 
     // Setup hooks
     nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
 
-    // Start listening
-    await nuxt.server.listen()
-
     // Create builder instance
     const builder = await cmd.getBuilder(nuxt)
+
+    // Wait for nuxt to be ready
+    await nuxt.ready()
+
+    // Start listening
+    await nuxt.server.listen()
 
     // Start Build
     await builder.build()

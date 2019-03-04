@@ -76,21 +76,14 @@ export default class Server {
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
-    const modernMiddleware = createModernMiddleware({
-      context: this.renderer.context
-    })
+    if (this.options.modern) {
+      this.useMiddleware(createModernMiddleware({
+        context: this.renderer.context
+      }))
+    }
 
     if (this.options.dev) {
-      // Modern middleware is required for builder
-      this.useMiddleware(modernMiddleware)
-
-      // Add builder middleware support only for development
-      this.useMiddleware((req, res, next) => {
-        if (this.nuxt.builder && this.nuxt.builder.middleware) {
-          return this.nuxt.builder.middleware(req, res, next)
-        }
-        next()
-      })
+      await this.nuxt.callHook('server:devMiddleware', this.app)
     }
 
     // open in editor for debug mode only
@@ -120,7 +113,6 @@ export default class Server {
           this.options.render.dist
         )
       })
-      this.useMiddleware(modernMiddleware)
     }
 
     // Add user provided middleware
@@ -128,9 +120,10 @@ export default class Server {
       this.useMiddleware(m)
     }
 
+    // Graceful 404 error handler
     const { fallback } = this.options.render
     if (fallback) {
-      // Graceful 404 errors for dist files
+      // Dist files
       if (fallback.dist) {
         this.useMiddleware({
           path: this.publicPath,
@@ -138,7 +131,7 @@ export default class Server {
         })
       }
 
-      // Graceful 404 errors for other paths
+      // Other paths
       if (fallback.static) {
         this.useMiddleware({
           path: '/',
@@ -155,14 +148,10 @@ export default class Server {
       resources: this.resources
     }))
 
-    // Error middleware for errors that occurred in middleware that declared above
-    // Middleware should exactly take 4 arguments
-    // https://github.com/senchalabs/connect#error-middleware
-
     // Apply errorMiddleware from modules first
     await this.nuxt.callHook('render:errorMiddleware', this.app)
 
-    // Apply errorMiddleware from Nuxt
+    // Error middleware for errors that occurred in middleware that declared above
     this.useMiddleware(errorMiddleware({
       resources: this.resources,
       options: this.options

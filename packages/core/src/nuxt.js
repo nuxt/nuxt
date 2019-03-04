@@ -22,10 +22,6 @@ export default class Nuxt extends Hookable {
     // Create instance of core components
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
-    this.server = new Server(this)
-
-    // Builder reference
-    this.builder = null
 
     // Deprecated hooks
     this._deprecatedHooks = {
@@ -35,26 +31,40 @@ export default class Nuxt extends Hookable {
     }
 
     // Add Legacy aliases
-    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
-    this.renderer = this.server
-    this.render = this.server.app
     this.showReady = () => { this.callHook('webpack:done') }
 
-    // Wait for Nuxt to be ready
+    // Call ready only if _autoInit not set to false
     this.initialized = false
-    this._ready = this.ready().catch((err) => {
-      consola.fatal(err)
-    })
+    if (options._autoInit !== false) {
+      this.ready()
+    }
   }
 
   static get version() {
     return (global.__NUXT && global.__NUXT.version) || `v${version}`
   }
 
-  async ready() {
-    if (this._ready) {
-      return this._ready
+  ready() {
+    if (!this._ready) {
+      this._ready = this.init().catch((err) => {
+        consola.fatal(err)
+      })
+    }
+    return this._ready
+  }
+
+  async init() {
+    if (this.initialized) {
+      return this
+    }
+
+    // Init server
+    if (this.options.server) {
+      this.server = new Server(this)
+      defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
+      this.renderer = this.server
+      this.render = this.server.app
     }
 
     // Add hooks

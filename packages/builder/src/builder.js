@@ -78,14 +78,6 @@ export default class Builder {
     // Create a new bundle builder
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
 
-    // Publish middleware of bundle builder to higher order modules
-    this.middleware = this.bundleBuilder.middleware
-
-    if (this.nuxt.builder) {
-      throw new Error('Cannot attach more than one builder to the nuxt instance!')
-    }
-    this.nuxt.builder = this
-
     this.ignore = new Ignore({
       rootDir: this.options.srcDir
     })
