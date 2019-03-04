@@ -299,7 +299,7 @@ describe('server: server', () => {
     expect(next).toBeCalledTimes(1)
 
     next.mockClear()
-    req.devModernMode = true
+    req.modernMode = true
     server.devMiddleware = { modern: jest.fn() }
     server.hotMiddleware = { modern: jest.fn() }
     await devMiddleware(req, res, next)

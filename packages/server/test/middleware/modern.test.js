@@ -46,7 +46,6 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.modernMode).toEqual(false)
-    expect(ctx.req.devModernMode).toEqual(false)
   })
 
   test('should detect client modern build and display message', () => {
@@ -80,7 +79,6 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.modernMode).toBeUndefined()
-    expect(ctx.req.devModernMode).toBeUndefined()
   })
 
   test('should not detect modern browser if connect has been detected', () => {
@@ -94,7 +92,6 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.modernMode).toEqual(true)
-    expect(ctx.req.devModernMode).toEqual(true)
   })
 
   test('should detect modern browser based on user-agent', () => {
@@ -111,7 +108,6 @@ describe('server: modernMiddleware', () => {
 
     expect(ctx.req.socket.isModernBrowser).toEqual(true)
     expect(ctx.req.modernMode).toEqual(true)
-    expect(ctx.req.devModernMode).toEqual(true)
   })
 
   test('should detect legacy browser based on user-agent', () => {
@@ -127,7 +123,6 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(false)
-    expect(ctx.req.devModernMode).toEqual(false)
   })
 
   test('should ignore illegal user-agent', () => {
@@ -143,6 +138,5 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(false)
-    expect(ctx.req.devModernMode).toEqual(false)
   })
 })
