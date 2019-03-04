@@ -13,7 +13,7 @@
   "typings": "types/index.d.ts",
   "dependencies": {
     "node-fetch": "^2.3.0",
-    "unfetch": "^4.0.1",
+    "unfetch": "^4.1.0",
     "vue": "^2.6.8",
     "vue-meta": "^1.5.8",
     "vue-no-ssr": "^1.1.1",
