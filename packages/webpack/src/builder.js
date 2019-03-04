@@ -144,7 +144,7 @@ export class WebpackBundler {
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
           compiler.hooks.done.tap('nuxt-dev', () => resolve())
-          this.webpackDev(compiler)
+          return this.webpackDev(compiler)
         })
       }
 
@@ -175,7 +175,7 @@ export class WebpackBundler {
     }
   }
 
-  webpackDev(compiler) {
+  async webpackDev(compiler) {
     consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
@@ -217,7 +217,7 @@ export class WebpackBundler {
     )
 
     // Register devMiddleware on server
-    this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
+    await this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
   }
 
   async middleware(req, res, next) {
