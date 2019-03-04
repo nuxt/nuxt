@@ -9,8 +9,10 @@ import VueSSRServerPlugin from '../plugins/vue/server'
 import WebpackBaseConfig from './base'
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
-  constructor(builder) {
-    super(builder, { name: 'server', isServer: true })
+  constructor(...args) {
+    super(...args)
+    this.name = 'server'
+    this.isServer = true
     this.whitelist = this.normalizeWhitelist()
   }
 
@@ -18,7 +20,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const whitelist = [
       /\.(?!js(x|on)?$)/i
     ]
-    for (const pattern of this.options.build.transpile) {
+    for (const pattern of this.buildContext.buildOptions.transpile) {
       if (pattern instanceof RegExp) {
         whitelist.push(pattern)
       } else {
@@ -68,7 +70,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       target: 'node',
       node: false,
       entry: {
-        app: [path.resolve(this.options.buildDir, 'server.js')]
+        app: [path.resolve(this.buildContext.options.buildDir, 'server.js')]
       },
       output: Object.assign({}, config.output, {
         filename: 'server.js',
@@ -85,8 +87,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     // https://webpack.js.org/configuration/externals/#externals
     // https://github.com/liady/webpack-node-externals
     // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-    if (!this.options.build.standalone) {
-      this.options.modulesDir.forEach((dir) => {
+    if (!this.buildContext.buildOptions.standalone) {
+      this.buildContext.options.modulesDir.forEach((dir) => {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({
