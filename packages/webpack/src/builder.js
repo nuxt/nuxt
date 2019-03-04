@@ -220,8 +220,6 @@ export class WebpackBundler {
   async middleware(req, res, next) {
     const name = req.modernMode ? 'modern' : 'client'
 
-    consola.log(req)
-
     if (this.devMiddleware && this.devMiddleware[name]) {
       await this.devMiddleware[name](req, res)
     }
