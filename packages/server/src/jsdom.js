@@ -53,7 +53,6 @@ export default async function renderAndGetWindow(
     ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
   )
 
-  /* istanbul ignore if */
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')
     error.body = window.document.body.innerHTML

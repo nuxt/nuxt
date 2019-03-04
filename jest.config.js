@@ -19,7 +19,8 @@ module.exports = {
 
   coveragePathIgnorePatterns: [
     'node_modules/(?!(@nuxt|nuxt))',
-    'packages/webpack/src/config/plugins/vue'
+    'packages/webpack/src/config/plugins/vue',
+    'packages/server/src/jsdom'
   ],
 
   testPathIgnorePatterns: [

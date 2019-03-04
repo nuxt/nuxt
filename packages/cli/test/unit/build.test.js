@@ -11,6 +11,10 @@ describe('build', () => {
     jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
   })
 
+  afterAll(() => {
+    process.exit.mockRestore()
+  })
+
   afterEach(() => jest.resetAllMocks())
 
   test('has run function', () => {
