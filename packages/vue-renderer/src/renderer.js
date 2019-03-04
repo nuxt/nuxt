@@ -87,14 +87,13 @@ export default class VueRenderer {
     return modernFiles
   }
 
-  getPreloadFiles(context) {
+  getSsrPreloadFiles(context) {
     const preloadFiles = context.getPreloadFiles()
-    const modernMode = this.context.options.modern
     // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
-    return modernMode === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
+    return this.context.options.modern === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
   }
 
-  renderResourceHints(context) {
+  renderSsrResourceHints(context) {
     if (this.context.options.modern === 'client') {
       const { publicPath, crossorigin } = this.context.options.build
       const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
@@ -320,9 +319,7 @@ export default class VueRenderer {
 
     return {
       html,
-      getPreloadFiles: this.getPreloadFiles.bind(this, {
-        getPreloadFiles: content.getPreloadFiles
-      })
+      getPreloadFiles: content.getPreloadFiles
     }
   }
 
@@ -363,7 +360,7 @@ export default class VueRenderer {
 
     // Inject resource hints
     if (this.context.options.render.resourceHints) {
-      HEAD += this.renderResourceHints(context)
+      HEAD += this.renderSsrResourceHints(context)
     }
 
     // Inject styles
@@ -409,7 +406,7 @@ export default class VueRenderer {
     return {
       html,
       cspScriptSrcHashes,
-      getPreloadFiles: this.getPreloadFiles.bind(this, context),
+      getPreloadFiles: this.getSsrPreloadFiles.bind(this, context),
       error: context.nuxt.error,
       redirected: context.redirected
     }
@@ -438,15 +435,17 @@ export default class VueRenderer {
     // Add url to the context
     context.url = url
 
+    const { req = {} } = context
+
     // context.spa
     if (context.spa === undefined) {
       // TODO: Remove reading from context.res in Nuxt3
-      context.spa = !this.SSR || context.spa || (context.req && context.req.spa) || (context.res && context.res.spa)
+      context.spa = !this.SSR || context.spa || req.spa || (context.res && context.res.spa)
     }
 
     // context.modern
     if (context.modern === undefined) {
-      context.modern = context.req ? (context.req.modernMode || context.req.modern) : false
+      context.modern = req.modernMode && this.context.options.modern === 'server'
     }
 
     // Call context hook

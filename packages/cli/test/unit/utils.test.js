@@ -3,6 +3,11 @@ import { consola } from '../utils'
 import * as utils from '../../src/utils'
 import * as fmt from '../../src/utils/formatting'
 
+jest.mock('std-env', () => ({
+  test: false,
+  minimalCLI: false
+}))
+
 describe('cli/utils', () => {
   afterEach(() => jest.resetAllMocks())
 
@@ -112,5 +117,68 @@ describe('cli/utils', () => {
 
   test('indent custom char', () => {
     expect(fmt.indent(4, '-')).toBe('----')
+  })
+
+  test('showBanner prints full-info box', () => {
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    const successBox = jest.fn().mockImplementation((m, t) => t + m)
+    jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
+
+    const badgeMessages = [ 'badgeMessage' ]
+    const listeners = [
+      { url: 'first' },
+      { url: 'second' }
+    ]
+
+    utils.showBanner({
+      options: {
+        cli: {
+          badgeMessages
+        }
+      },
+      server: {
+        listeners
+      }
+    })
+
+    expect(successBox).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening on: ${listeners[0].url}`))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening on: ${listeners[1].url}`))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('badgeMessage'))
+    stdout.mockRestore()
+  })
+
+  test('forceExit exits after timeout', () => {
+    jest.useFakeTimers()
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {})
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => {})
+
+    utils.forceExit('test', 1)
+    expect(exit).not.toHaveBeenCalled()
+    jest.runAllTimers()
+
+    expect(stderr).toHaveBeenCalledTimes(1)
+    expect(stderr).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js will now force exit'))
+    expect(exit).toHaveBeenCalledTimes(1)
+
+    stderr.mockRestore()
+    exit.mockRestore()
+    jest.useRealTimers()
+  })
+
+  test('forceExit exits immediately without timeout', () => {
+    jest.useFakeTimers()
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {})
+    const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => {})
+
+    utils.forceExit('test', false)
+    expect(stderr).not.toHaveBeenCalledWith()
+    expect(exit).toHaveBeenCalledTimes(1)
+
+    stderr.mockRestore()
+    exit.mockRestore()
+    jest.useRealTimers()
   })
 })

@@ -1,4 +1,6 @@
-const config: any = {
+import NuxtConfiguration from '@nuxt/config'
+
+const config: NuxtConfiguration = {
   modules: [
     '~/modules/module'
   ],

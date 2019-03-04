@@ -133,6 +133,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
@@ -463,6 +464,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
+  "devModules": Array [],
   "dir": Object {
     "assets": "assets",
     "layouts": "layouts",
