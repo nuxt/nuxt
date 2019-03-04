@@ -12,15 +12,6 @@ export default ({ resources, options }) => async function errorMiddleware(err, r
     message: err.message || 'Nuxt Server Error',
     name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
   }
-  const errorFull = err instanceof Error
-    ? err
-    : typeof err === 'string'
-      ? new Error(err)
-      : new Error(err.message || JSON.stringify(err))
-
-  errorFull.name = error.name
-  errorFull.statusCode = error.statusCode
-  errorFull.stack = err.stack || undefined
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
@@ -62,6 +53,16 @@ export default ({ resources, options }) => async function errorMiddleware(err, r
     return
   }
 
+  const errorFull = err instanceof Error
+    ? err
+    : typeof err === 'string'
+      ? new Error(err)
+      : new Error(err.message || JSON.stringify(err))
+
+  errorFull.name = error.name
+  errorFull.statusCode = error.statusCode
+  errorFull.stack = err.stack || undefined
+
   // Show stack trace
   const youch = new Youch(
     errorFull,
@@ -90,7 +91,6 @@ const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function read
   frame.fileName = sanitizeName(frame.fileName)
 
   // Return if fileName is unknown
-  /* istanbul ignore if */
   if (!frame.fileName) {
     return
   }
