@@ -33,7 +33,6 @@ jest.mock('../src/middleware/timing')
 describe('server: server', () => {
   const createNuxt = () => ({
     options: {
-      modern: 'server',
       dir: {
         static: 'var/nuxt/static'
       },

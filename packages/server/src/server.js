@@ -83,13 +83,12 @@ export default class Server {
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
-    if (this.options.modern) {
-      this.useMiddleware(createModernMiddleware({
-        context: this.renderer.context
-      }))
-    }
+    const modernMiddleware = createModernMiddleware({
+      context: this.renderer.context
+    })
 
     if (this.options.dev) {
+      this.useMiddleware(modernMiddleware)
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
           return next()
@@ -125,6 +124,7 @@ export default class Server {
           this.options.render.dist
         )
       })
+      this.useMiddleware(modernMiddleware)
     }
 
     // Add user provided middleware
