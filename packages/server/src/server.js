@@ -36,6 +36,14 @@ export default class Server {
 
     // Close hook
     this.nuxt.hook('close', () => this.close())
+
+    // devMiddleware placeholder
+    if (this.options.dev) {
+      this.devMiddleware = (req, res, next) => next()
+      this.nuxt.hook('server:devMiddleware', (devMiddleware) => {
+        this.devMiddleware = devMiddleware
+      })
+    }
   }
 
   async ready() {
@@ -83,7 +91,7 @@ export default class Server {
     }
 
     if (this.options.dev) {
-      await this.nuxt.callHook('server:devMiddleware', this.app)
+      this.useMiddleware((req, res, next) => this.devMiddleware(req, res, next))
     }
 
     // open in editor for debug mode only

@@ -35,11 +35,6 @@ export class WebpackBundler {
     if (this.buildContext.options.dev) {
       this.mfs = new MFS()
     }
-
-    // Hook to register devMiddleware
-    this.buildContext.nuxt.hook('server:devMiddleware', (app) => {
-      app.use(this.middleware)
-    })
   }
 
   async build() {
@@ -220,6 +215,9 @@ export class WebpackBundler {
         )
       )
     )
+
+    // Register devMiddleware on server
+    this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
   }
 
   async middleware(req, res, next) {
