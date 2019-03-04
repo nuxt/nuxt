@@ -21,19 +21,19 @@ const glob = pify(Glob)
 export class WebpackBundler {
   constructor(buildContext) {
     this.buildContext = buildContext
-    // Fields that set on build
+
+    // Class fields
     this.compilers = []
     this.compilersWatching = []
     this.devMiddleware = {}
     this.hotMiddleware = {}
 
+    // Bind middleware to self
+    this.middleware = this.middleware.bind(this)
+
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
       this.mfs = new MFS()
-
-      // TODO: Enable when async FS required
-      // this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
-      // this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
     }
   }
 
@@ -176,11 +176,11 @@ export class WebpackBundler {
   }
 
   webpackDev(compiler) {
-    consola.debug('Adding webpack middleware...')
+    consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
-    const { nuxt: { server }, options } = this.buildContext
-    const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
+    const buildOptions = this.buildContext.options.build
+    const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -188,12 +188,12 @@ export class WebpackBundler {
         compiler,
         Object.assign(
           {
-            publicPath: options.build.publicPath,
+            publicPath: buildOptions.publicPath,
             stats: false,
             logLevel: 'silent',
-            watchOptions: options.watchers.webpack
+            watchOptions: this.buildContext.options.watchers.webpack
           },
-          options.build.devMiddleware
+          buildOptions.devMiddleware
         )
       )
     )
@@ -215,12 +215,22 @@ export class WebpackBundler {
         )
       )
     )
+  }
 
-    // Inject to renderer instance
-    if (server) {
-      server.devMiddleware = this.devMiddleware
-      server.hotMiddleware = this.hotMiddleware
+  async middleware(req, res, next) {
+    const name = req.modernMode ? 'modern' : 'client'
+
+    consola.log(req)
+
+    if (this.devMiddleware && this.devMiddleware[name]) {
+      await this.devMiddleware[name](req, res)
     }
+
+    if (this.hotMiddleware && this.hotMiddleware[name]) {
+      await this.hotMiddleware[name](req, res)
+    }
+
+    next()
   }
 
   async unwatch() {

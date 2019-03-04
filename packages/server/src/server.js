@@ -28,10 +28,6 @@ export default class Server {
     // Runtime shared resources
     this.resources = {}
 
-    // Will be available on dev
-    this.devMiddleware = null
-    this.hotMiddleware = null
-
     // Will be set after listen
     this.listeners = []
 
@@ -84,16 +80,14 @@ export default class Server {
       context: this.renderer.context
     })
 
-    // Add webpack middleware support only for development
     if (this.options.dev) {
+      // Modern middleware is required for builder
       this.useMiddleware(modernMiddleware)
-      this.useMiddleware(async (req, res, next) => {
-        const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware && this.devMiddleware[name]) {
-          await this.devMiddleware[name](req, res)
-        }
-        if (this.hotMiddleware && this.hotMiddleware[name]) {
-          await this.hotMiddleware[name](req, res)
+
+      // Add builder middleware support only for development
+      this.useMiddleware((req, res, next) => {
+        if (this.nuxt.builder && this.nuxt.builder.middleware) {
+          return this.nuxt.builder.middleware(req, res, next)
         }
         next()
       })

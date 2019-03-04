@@ -24,6 +24,9 @@ export default class Nuxt extends Hookable {
     this.moduleContainer = new ModuleContainer(this)
     this.server = new Server(this)
 
+    // Builder reference
+    this.builder = null
+
     // Deprecated hooks
     this._deprecatedHooks = {
       'render:context': 'render:routeContext',
