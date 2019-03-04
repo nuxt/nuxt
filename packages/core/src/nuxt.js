@@ -59,8 +59,8 @@ export default class Nuxt extends Hookable {
     }
 
     // Init server
-    if (this.options._autoInitServer !== false) {
-      this.initServer()
+    if (this.options._autoCreateServer !== false) {
+      this.createServer()
     }
 
     // Add hooks
@@ -86,11 +86,11 @@ export default class Nuxt extends Hookable {
     return this
   }
 
-  initServer() {
+  createServer() {
     this.server = new Server(this)
-    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
     this.renderer = this.server
     this.render = this.server.app
+    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
   async close(callback) {
