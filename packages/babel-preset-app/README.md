@@ -37,7 +37,7 @@ Below is a list of all available parameters:
 * **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter and also sets `loose=true` for `@babel/plugin-proposal-class-properties`
 * **modern** passed by builder, either `true` or `false`
 * **modules**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#modules)' parameter
-* **polyfills**, default `['es6.array.iterator','es6.promise','es7.promise.finally']`, more [in the corresponding repository](https://github.com/zloirock/core-js)
+* **polyfills**, default `['es6.array.iterator','es6.promise','es6.object.assign','es7.promise.finally']`, more [in the corresponding repository](https://github.com/zloirock/core-js)
 * **shippedProposals** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#shippedproposals)' parameter
 * **spec** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#spec)' parameter
 * **targets** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#targets)' parameter

@@ -6,6 +6,9 @@ const defaultPolyfills = [
   'es6.array.iterator',
   // This is required for webpack code splitting, vuex etc.
   'es6.promise',
+  // this is needed for object rest spread support in templates
+  // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
+  'es6.object.assign',
   // #2012 es6.promise replaces native Promise in FF and causes missing finally
   'es7.promise.finally'
 ]
