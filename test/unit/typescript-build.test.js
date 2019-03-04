@@ -1,41 +1,44 @@
-import WarnFixPlugin from '../../packages/webpack/src/plugins/warnfix'
-import { loadFixture, Nuxt, Builder, BundleBuilder } from '../utils'
+import WebpackBaseConfig from '../../packages/webpack/src/config/base'
 
-jest.mock('../../packages/webpack/src/plugins/warnfix')
-
-describe('times create of WarnFixPlugin', () => {
-  let nuxt
-  const createNuxtInstance = async (ignoreNotFoundWarnings) => {
-    const overrides = {
-      build: { typescript: { ignoreNotFoundWarnings } }
+const createWebpackBaseConfig = (typescriptBuild, ignoreNotFoundWarnings) => {
+  const builder = {
+    buildContext: {
+      buildOptions: {
+        typescript: { ignoreNotFoundWarnings },
+        transpile: []
+      },
+      options: {
+        _typescript: { build: typescriptBuild }
+      }
     }
-
-    const options = await loadFixture('typescript', overrides)
-    nuxt = new Nuxt(Object.assign(options, { _typescript: { build: true } }))
-    await new Builder(nuxt, BundleBuilder).build()
-
-    return nuxt
   }
 
-  beforeEach(() => WarnFixPlugin.mockClear())
+  return new WebpackBaseConfig(builder)
+}
+
+describe('warningFixFilter', () => {
+  let filters
+  const name = 'ModuleDependencyWarning'
 
   describe('disabled ignoreNotFoundWarnings', () => {
-    test('the number of calls is correct', async () => {
-      nuxt = await createNuxtInstance(false)
-
-      // called by client, server and modern instances
-      expect(WarnFixPlugin).toHaveBeenCalledTimes(3)
+    beforeEach(() => {
+      filters = createWebpackBaseConfig(true, false).warningFixFilter()
     })
+
+    test('should be true', () => expect(filters({})).toBe(true))
+    test('should be true', () => expect(filters({ name, message: 'error!' })).toBe(true))
+    test('should be false', () => expect(filters({ name, message: `export 'default' nuxt_plugin_xxxx` })).toBe(false))
+    test('should be true', () => expect(filters({ name, message: `export 'xxx' was not found in ` })).toBe(true))
   })
 
   describe('enabled ignoreNotFoundWarnings', () => {
-    test('the number of calls is correct', async () => {
-      nuxt = await createNuxtInstance(true)
-
-      // called by client, server and modern instances x 2
-      expect(WarnFixPlugin).toHaveBeenCalledTimes(6)
+    beforeEach(() => {
+      filters = createWebpackBaseConfig(true, true).warningFixFilter()
     })
-  })
 
-  afterEach(async () => { await nuxt.close() })
+    test('should be true', () => expect(filters({})).toBe(true))
+    test('should be true', () => expect(filters({ name, message: 'error!' })).toBe(true))
+    test('should be false', () => expect(filters({ name, message: `export 'default' nuxt_plugin_xxxx` })).toBe(false))
+    test('should be false', () => expect(filters({ name, message: `export 'xxx' was not found in ` })).toBe(false))
+  })
 })
