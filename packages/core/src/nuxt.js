@@ -74,7 +74,9 @@ export default class Nuxt extends Hookable {
     await this.moduleContainer.ready()
 
     // Await for server to be ready
-    await this.server.ready()
+    if (this.server) {
+      await this.server.ready()
+    }
 
     this.initialized = true
 
