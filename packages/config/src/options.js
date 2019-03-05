@@ -282,7 +282,7 @@ export function getNuxtConfig(_options) {
   }
 
   // Disable CSS extraction due to incompatibility with thread-loader
-  if (options.build && options.build.extractCSS && options.build.parallel) {
+  if (options.build.extractCSS && options.build.parallel) {
     options.build.parallel = false
     consola.warn('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
   }

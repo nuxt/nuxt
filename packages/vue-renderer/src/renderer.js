@@ -440,7 +440,7 @@ export default class VueRenderer {
     // context.spa
     if (context.spa === undefined) {
       // TODO: Remove reading from context.res in Nuxt3
-      context.spa = !this.SSR || context.spa || req.spa || (context.res && context.res.spa)
+      context.spa = !this.SSR || req.spa || (context.res && context.res.spa)
     }
 
     // context.modern
