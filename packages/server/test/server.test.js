@@ -285,7 +285,7 @@ describe('server: server', () => {
     expect(launchMiddleware).toBeCalledTimes(1)
     expect(launchMiddleware).toBeCalledWith({ id: 'test-editor' })
 
-    expect(server.useMiddleware).nthCalledWith(3, {
+    expect(server.useMiddleware).nthCalledWith(4, {
       handler: { id: 'test-editor' },
       path: '__open-in-editor'
     })
