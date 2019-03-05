@@ -575,15 +575,6 @@ export default class Builder {
         })
       }
 
-      const modes = ['client', 'server']
-      const modePattern = new RegExp(`\\.(${modes.join('|')})\\.\\w+$`)
-      pluginFiles[0].replace(modePattern, (_, mode) => {
-        // mode in nuxt.config has higher priority
-        if (p.mode === 'all' && modes.includes(mode)) {
-          p.mode = mode
-        }
-      })
-
       p.src = this.relativeToBuild(p.src)
     }))
   }
