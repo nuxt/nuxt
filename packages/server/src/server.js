@@ -83,28 +83,6 @@ export default class Server {
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
-    const modernMiddleware = createModernMiddleware({
-      context: this.renderer.context
-    })
-
-    if (this.options.dev) {
-      this.useMiddleware(modernMiddleware)
-      this.useMiddleware((req, res, next) => {
-        if (!this.devMiddleware) {
-          return next()
-        }
-        this.devMiddleware(req, res, next)
-      })
-    }
-
-    // open in editor for debug mode only
-    if (this.options.debug && this.options.dev) {
-      this.useMiddleware({
-        path: '__open-in-editor',
-        handler: launchMiddleware(this.options.editor)
-      })
-    }
-
     // For serving static/ files to /
     const staticMiddleware = serveStatic(
       path.resolve(this.options.srcDir, this.options.dir.static),
@@ -124,7 +102,27 @@ export default class Server {
           this.options.render.dist
         )
       })
-      this.useMiddleware(modernMiddleware)
+    }
+
+    this.useMiddleware(createModernMiddleware({
+      context: this.renderer.context
+    }))
+
+    if (this.options.dev) {
+      this.useMiddleware((req, res, next) => {
+        if (!this.devMiddleware) {
+          return next()
+        }
+        this.devMiddleware(req, res, next)
+      })
+
+      // open in editor for debug mode only
+      if (this.options.debug) {
+        this.useMiddleware({
+          path: '__open-in-editor',
+          handler: launchMiddleware(this.options.editor)
+        })
+      }
     }
 
     // Add user provided middleware
