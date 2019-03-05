@@ -121,7 +121,7 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should detect plugin mode for client/server plugins', async () => {
+  test('should detect plugin mode for client/server plugins', () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, {})
     builder.plugins = [
@@ -129,17 +129,13 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.client', mode: 'all' },
       { src: '/var/nuxt/plugins/test.server', mode: 'all' }
     ]
-    builder.relativeToBuild = jest.fn(src => `relative(${src})`)
-    for (let step = 0; step < builder.plugins.length; step++) {
-      Glob.mockImplementationOnce(src => [`${src.replace(/\{.*\}/, '')}.js`])
-    }
 
-    await builder.resolvePlugins()
+    builder.resolvePluginsMode()
 
     expect(builder.plugins).toEqual([
-      { mode: 'all', src: 'relative(/var/nuxt/plugins/test.js)' },
-      { mode: 'client', src: 'relative(/var/nuxt/plugins/test.client)' },
-      { mode: 'server', src: 'relative(/var/nuxt/plugins/test.server)' }
+      { mode: 'all', src: '/var/nuxt/plugins/test.js' },
+      { mode: 'client', src: '/var/nuxt/plugins/test.client' },
+      { mode: 'server', src: '/var/nuxt/plugins/test.server' }
     ])
   })
 })

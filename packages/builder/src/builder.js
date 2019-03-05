@@ -235,6 +235,8 @@ export default class Builder {
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
 
+    this.resolvePluginsMode()
+
     const templateContext = new TemplateContext(this, this.options)
 
     await Promise.all([
@@ -540,6 +542,20 @@ export default class Builder {
         await fsExtra.outputFile(_path, content, 'utf8')
       })
     )
+  }
+
+  resolvePluginsMode() {
+    this.plugins.map((p) => {
+      const modes = ['client', 'server']
+      const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)?$`)
+
+      p.src.replace(modePattern, (_, mode) => {
+        // mode in nuxt.config has higher priority
+        if (p.mode === 'all' && modes.includes(mode)) {
+          p.mode = mode
+        }
+      })
+    })
   }
 
   resolvePlugins() {
