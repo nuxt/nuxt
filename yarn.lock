@@ -2761,10 +2761,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000939, caniuse-lite@^1.0.30000940:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000939:
   version "1.0.30000940"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000940.tgz#19f2b1497fbfa5b96b615963097c3757f27989ce"
   integrity sha512-rp/086IBUfCsNgBpko6DGQv674jRjeXPesDatDB2kxrkmDfD+S5Gesw+uT8YjpRWvLKLMRBy72SLRZ8I0EgQFw==
+
+caniuse-lite@^1.0.30000941:
+  version "1.0.30000941"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000941.tgz#f0810802b2ab8d27f4b625d4769a610e24d5a42c"
+  integrity sha512-4vzGb2MfZcO20VMPj1j6nRAixhmtlhkypM4fL4zhgzEucQIYiRzSqPcWIu1OF8i0FETD93FMIPWfUJCAcFvrqA==
 
 capture-exit@^1.2.0:
   version "1.2.0"
@@ -4284,10 +4289,10 @@ eslint-visitor-keys@^1.0.0:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-1.0.0.tgz#3f3180fb2e291017716acb4c9d6d5b5c34a6a81d"
   integrity sha512-qzm/XxIbxm/FHyH341ZrbnMUpe+5Bocte9xkmFMzPMjRaZMcXww+MpBptFvtU+79L362nqiLhekCxCxDPaUMBQ==
 
-eslint@^5.15.0:
-  version "5.15.0"
-  resolved "https://registry.npmjs.org/eslint/-/eslint-5.15.0.tgz#f313a2f7c7628d39adeefdba4a9c41f842012c9e"
-  integrity sha512-xwG7SS5JLeqkiR3iOmVgtF8Y6xPdtr6AAsN6ph7Q6R/fv+3UlKYoika8SmNzmb35qdRF+RfTY35kMEdtbi+9wg==
+eslint@^5.15.1:
+  version "5.15.1"
+  resolved "https://registry.npmjs.org/eslint/-/eslint-5.15.1.tgz#8266b089fd5391e0009a047050795b1d73664524"
+  integrity sha512-NTcm6vQ+PTgN3UBsALw5BMhgO6i5EpIjQF/Xb5tIh3sk9QhrFafujUOczGz4J24JBlzWclSB9Vmx8d+9Z6bFCg==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     ajv "^6.9.1"
@@ -8985,10 +8990,10 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^1.12.2:
-  version "1.12.2"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-1.12.2.tgz#f4797979aa9fde1045e52b343840f60500d5988e"
-  integrity sha512-M+atMV5e+MwJdR+OwQVZ1xqAIwh3Ou4nUxNuf334GwpcLG+LDj5BwIph4J9y8YAViByRtWGL+uF8qX2Ggzb+Fg==
+puppeteer-core@^1.13.0:
+  version "1.13.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-1.13.0.tgz#f8001851e924e6e9ef6e9fae1778c3ab87c3f307"
+  integrity sha512-8MypjWVHu2EEdtN2HxhCsTtIYdJgiCcbGpHoosv265fzanfOICC2/DadLZq6/Qc/OKsovQmjkO+2vKMrV3BRfA==
   dependencies:
     debug "^4.1.0"
     extract-zip "^1.6.6"
