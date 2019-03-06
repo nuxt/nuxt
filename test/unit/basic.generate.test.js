@@ -25,7 +25,7 @@ describe('basic generate', () => {
     pathsBefore = listPaths(nuxt.options.rootDir)
 
     // Make sure our check for changed files is really working
-    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
+    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate', '.nuxt-generate-changed')
     nuxt.hook('generate:done', () => {
       writeFileSync(changedFileName, '')
     })
