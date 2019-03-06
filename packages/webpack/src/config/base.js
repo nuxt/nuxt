@@ -347,9 +347,7 @@ export default class WebpackBaseConfig {
     if (buildOptions.extractCSS) {
       plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css'),
-        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
-        reloadAll: true
+        chunkFilename: this.getFileName('css')
       }, buildOptions.extractCSS)))
     }
 
