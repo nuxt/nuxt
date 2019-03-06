@@ -235,8 +235,6 @@ export default class Builder {
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
 
-    this.resolvePluginsMode()
-
     const templateContext = new TemplateContext(this, this.options)
 
     await Promise.all([
@@ -259,6 +257,8 @@ export default class Builder {
   }
 
   normalizePlugins() {
+    const modes = ['client', 'server']
+    const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)?$`)
     return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {
@@ -273,6 +273,11 @@ export default class Builder {
           p.mode = 'client'
         } else if (p.mode === undefined) {
           p.mode = 'all'
+          p.src.replace(modePattern, (_, mode) => {
+            if (modes.includes(mode)) {
+              p.mode = mode
+            }
+          })
         } else if (!['client', 'server', 'all'].includes(p.mode)) {
           consola.warn(`Invalid plugin mode (server/client/all): '${p.mode}'. Falling back to 'all'`)
           p.mode = 'all'
@@ -542,20 +547,6 @@ export default class Builder {
         await fsExtra.outputFile(_path, content, 'utf8')
       })
     )
-  }
-
-  resolvePluginsMode() {
-    this.plugins.map((p) => {
-      const modes = ['client', 'server']
-      const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)?$`)
-
-      p.src.replace(modePattern, (_, mode) => {
-        // mode in nuxt.config has higher priority
-        if (p.mode === 'all' && modes.includes(mode)) {
-          p.mode = mode
-        }
-      })
-    })
   }
 
   resolvePlugins() {

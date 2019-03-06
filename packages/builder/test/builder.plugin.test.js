@@ -124,18 +124,24 @@ describe('builder: builder plugins', () => {
   test('should detect plugin mode for client/server plugins', () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, {})
-    builder.plugins = [
+    builder.options.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' },
-      { src: '/var/nuxt/plugins/test.client', mode: 'all' },
-      { src: '/var/nuxt/plugins/test.server', mode: 'all' }
+      { src: '/var/nuxt/plugins/test.client' },
+      { src: '/var/nuxt/plugins/test.server' }
     ]
 
-    builder.resolvePluginsMode()
+    const plugins = builder.normalizePlugins()
 
-    expect(builder.plugins).toEqual([
-      { mode: 'all', src: '/var/nuxt/plugins/test.js' },
-      { mode: 'client', src: '/var/nuxt/plugins/test.client' },
-      { mode: 'server', src: '/var/nuxt/plugins/test.server' }
+    expect(plugins).toEqual([
+      { mode: 'all',
+        src: 'resolveAlias(/var/nuxt/plugins/test.js)',
+        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.js)' },
+      { mode: 'client',
+        src: 'resolveAlias(/var/nuxt/plugins/test.client)',
+        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.client)' },
+      { mode: 'server',
+        src: 'resolveAlias(/var/nuxt/plugins/test.server)',
+        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.server)' }
     ])
   })
 })
