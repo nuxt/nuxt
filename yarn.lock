@@ -11157,10 +11157,10 @@ webpack-bundle-analyzer@^3.1.0:
     opener "^1.5.1"
     ws "^6.0.0"
 
-webpack-dev-middleware@^3.6.0:
-  version "3.6.0"
-  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.6.0.tgz#71f1b04e52ff8d442757af2be3a658237d53a3e5"
-  integrity sha512-oeXA3m+5gbYbDBGo4SvKpAHJJEGMoekUbHgo1RK7CP1sz7/WOSeu/dWJtSTk+rzDCLkPwQhGocgIq6lQqOyOwg==
+webpack-dev-middleware@^3.6.1:
+  version "3.6.1"
+  resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-3.6.1.tgz#91f2531218a633a99189f7de36045a331a4b9cd4"
+  integrity sha512-XQmemun8QJexMEvNFbD2BIg4eSKrmSIMrTfnl2nql2Sc6OGAYFyb8rwuYrCjl/IiEYYuyTEiimMscu7EXji/Dw==
   dependencies:
     memory-fs "^0.4.1"
     mime "^2.3.1"
