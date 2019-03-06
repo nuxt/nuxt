@@ -9,7 +9,7 @@
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
-    "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt test/fixtures/*/.nuxt-*",
+    "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*/",
     "dev": "node -r esm ./scripts/dev.js",
     "coverage": "codecov",
     "lint": "eslint --ext .js,.mjs,.vue .",
