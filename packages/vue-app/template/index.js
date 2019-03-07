@@ -166,7 +166,6 @@ async function createApp(ssrContext) {
 
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-  <% if (plugins.length) { %>
   <% plugins.forEach((plugin) => { %>
   <% if (plugin.mode == 'client') { %>
   if (process.client && typeof <%= plugin.name %> === 'function') {
@@ -182,7 +181,6 @@ async function createApp(ssrContext) {
   }
   <% } %>
   <% }) %>
-  <% } %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
   // If server-side, wait for async component to be resolved first
