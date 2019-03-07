@@ -81,7 +81,7 @@
     "tslint": "^5.13.1",
     "typescript": "^3.3.3333",
     "vue-jest": "^4.0.0-beta.2",
-    "vue-property-decorator": "^7.3.0"
+    "vue-property-decorator": "^8.0.0"
   },
   "repository": {
     "type": "git",
