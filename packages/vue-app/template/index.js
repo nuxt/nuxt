@@ -167,19 +167,21 @@ async function createApp(ssrContext) {
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% if (plugins.length) { %>
-    <% plugins.forEach((plugin) => { %>
-      <% if (plugin.mode == 'client') { %>
-        if (process.client) {
-          if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)
-        }
-      <% } else if (plugin.mode == 'server') { %>
-        if (process.server) {
-          if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)
-        }
-      <% } else { %>
-        if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)
-      <% } %>
-    <% }) %>
+  <% plugins.forEach((plugin) => { %>
+  <% if (plugin.mode == 'client') { %>
+  if (process.client && typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } else if (plugin.mode == 'server') { %>
+  if (process.server && typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } else { %>
+  if (typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } %>
+  <% }) %>
   <% } %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
