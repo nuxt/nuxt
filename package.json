@@ -50,7 +50,7 @@
     "esm": "^3.2.11",
     "express": "^4.16.4",
     "finalhandler": "^1.1.1",
-    "fork-ts-checker-webpack-plugin": "^0.5.2",
+    "fork-ts-checker-webpack-plugin": "^1.0.0",
     "fs-extra": "^7.0.1",
     "get-port": "^4.2.0",
     "glob": "^7.1.3",

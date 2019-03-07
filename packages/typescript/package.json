@@ -25,7 +25,7 @@
     "chalk": "^2.4.2",
     "consola": "^2.5.6",
     "enquirer": "^2.3.0",
-    "fork-ts-checker-webpack-plugin": "^0.5.2",
+    "fork-ts-checker-webpack-plugin": "^1.0.0",
     "fs-extra": "^7.0.1",
     "std-env": "^2.2.1",
     "ts-loader": "^5.3.3",
