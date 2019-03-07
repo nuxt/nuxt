@@ -157,7 +157,7 @@ async function loadAsyncComponents(to, from, next) {
 
     // Handle chunk loading errors
     // This may be due to a new deployment or a network problem
-    if (/^Loading chunk (\d)+ failed\./.test(message)) {
+    if (/^Loading( CSS)? chunk (\d)+ failed\./.test(message)) {
       window.location.reload(true /* skip cache */)
       return // prevent error page blinking for user
     }
