@@ -84,7 +84,13 @@ export default class StyleLoader {
 
   extract() {
     if (this.extractCSS) {
-      return ExtractCssChunksPlugin.loader
+      return {
+        loader: ExtractCssChunksPlugin.loader,
+        options: {
+          // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+          reloadAll: true
+        }
+      }
     }
   }
 
