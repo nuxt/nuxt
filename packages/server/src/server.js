@@ -46,6 +46,11 @@ export default class Server {
   }
 
   async ready() {
+    if (this._readyCalled) {
+      return this
+    }
+    this._readyCalled = true
+
     await this.nuxt.callHook('render:before', this, this.options.render)
 
     // Initialize vue-renderer
@@ -60,6 +65,8 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
+
+    return this
   }
 
   async setupMiddleware() {

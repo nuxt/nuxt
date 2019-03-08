@@ -111,6 +111,9 @@ export default class VueRenderer {
   }
 
   async ready() {
+    if (this._readyCalled) {
+      return this
+    }
     this._readyCalled = true
 
     // -- Development mode --
@@ -141,6 +144,8 @@ export default class VueRenderer {
         'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
       )
     }
+
+    return this
   }
 
   async loadResources(_fs) {
