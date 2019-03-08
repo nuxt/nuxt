@@ -21,11 +21,15 @@ const glob = pify(Glob)
 export class WebpackBundler {
   constructor(buildContext) {
     this.buildContext = buildContext
-    // Fields that set on build
+
+    // Class fields
     this.compilers = []
     this.compilersWatching = []
     this.devMiddleware = {}
     this.hotMiddleware = {}
+
+    // Bind middleware to self
+    this.middleware = this.middleware.bind(this)
 
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
@@ -140,7 +144,7 @@ export class WebpackBundler {
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
           compiler.hooks.done.tap('nuxt-dev', () => resolve())
-          this.webpackDev(compiler)
+          return this.webpackDev(compiler)
         })
       }
 
@@ -171,12 +175,12 @@ export class WebpackBundler {
     }
   }
 
-  webpackDev(compiler) {
-    consola.debug('Adding webpack middleware...')
+  async webpackDev(compiler) {
+    consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
-    const { nuxt: { server }, options } = this.buildContext
-    const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
+    const buildOptions = this.buildContext.options.build
+    const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -184,12 +188,12 @@ export class WebpackBundler {
         compiler,
         Object.assign(
           {
-            publicPath: options.build.publicPath,
+            publicPath: buildOptions.publicPath,
             stats: false,
             logLevel: 'silent',
-            watchOptions: options.watchers.webpack
+            watchOptions: this.buildContext.options.watchers.webpack
           },
-          options.build.devMiddleware
+          buildOptions.devMiddleware
         )
       )
     )
@@ -212,11 +216,22 @@ export class WebpackBundler {
       )
     )
 
-    // Inject to renderer instance
-    if (server) {
-      server.devMiddleware = this.devMiddleware
-      server.hotMiddleware = this.hotMiddleware
+    // Register devMiddleware on server
+    await this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
+  }
+
+  async middleware(req, res, next) {
+    const name = req.modernMode ? 'modern' : 'client'
+
+    if (this.devMiddleware && this.devMiddleware[name]) {
+      await this.devMiddleware[name](req, res)
     }
+
+    if (this.hotMiddleware && this.hotMiddleware[name]) {
+      await this.hotMiddleware[name](req, res)
+    }
+
+    next()
   }
 
   async unwatch() {

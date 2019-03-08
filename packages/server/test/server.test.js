@@ -116,8 +116,6 @@ describe('server: server', () => {
     expect(server.options).toBe(nuxt.options)
     expect(server.publicPath).toBe('__nuxt_test')
     expect(server.resources).toEqual({})
-    expect(server.devMiddleware).toBeNull()
-    expect(server.hotMiddleware).toBeNull()
     expect(server.listeners).toEqual([])
     expect(connect).toBeCalledTimes(1)
     expect(server.nuxt.hook).toBeCalledTimes(1)
@@ -272,48 +270,6 @@ describe('server: server', () => {
     expect(server.useMiddleware).nthCalledWith(1, { id: 'test-server-timing' })
   })
 
-  test('should setup dev middleware', async () => {
-    const nuxt = createNuxt()
-    nuxt.options.dev = true
-    const server = new Server(nuxt)
-    server.useMiddleware = jest.fn()
-    server.renderer = {
-      context: { id: 'test-server-context' }
-    }
-
-    await server.setupMiddleware()
-
-    expect(server.useMiddleware).nthCalledWith(1, {
-      id: 'test-modern-middleware',
-      context: server.renderer.context
-    })
-
-    const devMiddleware = server.useMiddleware.mock.calls[1][0]
-
-    const req = { id: 'req' }
-    const res = { id: 'res' }
-    const next = jest.fn()
-    await devMiddleware(req, res, next)
-    expect(next).toBeCalledTimes(1)
-
-    next.mockClear()
-    server.devMiddleware = { client: jest.fn() }
-    server.hotMiddleware = { client: jest.fn() }
-    await devMiddleware(req, res, next)
-    expect(server.devMiddleware.client).nthCalledWith(1, req, res)
-    expect(server.hotMiddleware.client).nthCalledWith(1, req, res)
-    expect(next).toBeCalledTimes(1)
-
-    next.mockClear()
-    req.modernMode = true
-    server.devMiddleware = { modern: jest.fn() }
-    server.hotMiddleware = { modern: jest.fn() }
-    await devMiddleware(req, res, next)
-    expect(server.devMiddleware.modern).nthCalledWith(1, req, res)
-    expect(server.hotMiddleware.modern).nthCalledWith(1, req, res)
-    expect(next).toBeCalledTimes(1)
-  })
-
   test('should setup open-in-editor middleware', async () => {
     const nuxt = createNuxt()
     nuxt.options.dev = true
@@ -330,7 +286,7 @@ describe('server: server', () => {
     expect(launchMiddleware).toBeCalledTimes(1)
     expect(launchMiddleware).toBeCalledWith({ id: 'test-editor' })
 
-    expect(server.useMiddleware).nthCalledWith(3, {
+    expect(server.useMiddleware).nthCalledWith(4, {
       handler: { id: 'test-editor' },
       path: '__open-in-editor'
     })

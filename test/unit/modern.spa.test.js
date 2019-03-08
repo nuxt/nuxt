@@ -11,6 +11,8 @@ describe('modern client mode (SPA)', () => {
   beforeAll(async () => {
     options = await loadFixture('modern', { render: { ssr: false } })
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })

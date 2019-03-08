@@ -9,14 +9,12 @@ describe('nuxt', () => {
   test('Nuxt.js Instance', async () => {
     const config = await loadFixture('empty')
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     expect(typeof nuxt).toBe('object')
     expect(nuxt.options.dev).toBe(false)
     expect(typeof nuxt._ready.then).toBe('function')
-
-    await nuxt.ready()
-
-    expect(nuxt.initialized).toBe(true)
+    expect(nuxt._initCalled).toBe(true)
   })
 
   test('Fail to build when no pages/ directory but is in the parent', async () => {
@@ -38,6 +36,8 @@ describe('nuxt', () => {
   test('Build with default page when no pages/ directory', async () => {
     const config = await loadFixture('missing-pages-dir')
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     const port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
@@ -51,6 +51,7 @@ describe('nuxt', () => {
   test('Fail to build when specified plugin isn\'t found', async () => {
     const config = await loadFixture('missing-plugin')
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     await expect(new Builder(nuxt).build()).rejects.toThrow('Plugin not found')
   })
@@ -58,6 +59,7 @@ describe('nuxt', () => {
   test('Warn when styleResource isn\'t found', async () => {
     const config = await loadFixture('missing-style-resource')
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     await expect(new Builder(nuxt).build()).rejects.toThrow('Style Resource not found')
   })

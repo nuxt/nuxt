@@ -75,12 +75,9 @@ export default class Builder {
       this.template = this.nuxt.resolver.requireModule(this.template).template
     }
 
-    // if(!this.options.dev) {
-    // TODO: enable again when unsafe concern resolved.(common/options.js:42)
-    // this.nuxt.hook('build:done', () => this.generateConfig())
-    // }
-
+    // Create a new bundle builder
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
+
     this.ignore = new Ignore({
       rootDir: this.options.srcDir
     })

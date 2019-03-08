@@ -26,6 +26,8 @@ describe('build filenames with query part', () => {
   beforeAll(async () => {
     const config = await loadFixture('filenames-query-part')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })
