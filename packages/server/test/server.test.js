@@ -57,6 +57,7 @@ describe('server: server', () => {
       serverMiddleware: []
     },
     hook: jest.fn(),
+    ready: jest.fn(),
     callHook: jest.fn(),
     resolver: {
       requireModule: jest.fn()

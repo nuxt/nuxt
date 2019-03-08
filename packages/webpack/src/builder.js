@@ -1,7 +1,6 @@
 import path from 'path'
 import pify from 'pify'
 import webpack from 'webpack'
-import MFS from 'memory-fs'
 import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
@@ -12,6 +11,7 @@ import {
   sequence,
   wrapArray
 } from '@nuxt/utils'
+import AsyncMFS from './utils/async-mfs'
 
 import { ClientConfig, ModernConfig, ServerConfig } from './config'
 import PerfLoader from './utils/perf-loader'
@@ -33,7 +33,7 @@ export class WebpackBundler {
 
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
-      this.mfs = new MFS()
+      this.mfs = new AsyncMFS()
     }
   }
 
