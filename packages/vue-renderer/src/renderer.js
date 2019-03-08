@@ -183,8 +183,12 @@ export default class VueRenderer {
     // Load templates
     await this.loadTemplates()
 
-    // Call createRenderer if any resource changed
+    // Detect if any resource updated
     if (updated.length > 0) {
+      // Invalidate assetsMapping cache
+      delete this._assetsMapping
+
+      // Create new renderer
       this.createRenderer()
     }
 
