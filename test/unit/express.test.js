@@ -13,6 +13,7 @@ describe('express', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     port = await getPort()
 
