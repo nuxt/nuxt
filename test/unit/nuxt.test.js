@@ -16,7 +16,7 @@ describe('nuxt', () => {
 
     await nuxt.ready()
 
-    expect(nuxt.initialized).toBe(true)
+    expect(nuxt._initCalled).toBe(true)
   })
 
   test('Fail to build when no pages/ directory but is in the parent', async () => {

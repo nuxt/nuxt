@@ -68,7 +68,7 @@ describe('core: nuxt', () => {
   test('should display fatal message if ready failed', async () => {
     const err = new Error('nuxt ready failed')
     const nuxt = new Nuxt()
-    nuxt.init = () => Promise.reject(err)
+    nuxt._init = () => Promise.reject(err)
     await nuxt.ready()
 
     expect(consola.fatal).toBeCalledTimes(1)
@@ -101,7 +101,7 @@ describe('core: nuxt', () => {
     expect(result).toBe(nuxt)
     expect(nuxt.moduleContainer.ready).toBeCalledTimes(1)
     expect(nuxt.server.ready).toBeCalledTimes(1)
-    expect(nuxt.initialized).toEqual(true)
+    expect(nuxt._initCalled).toEqual(true)
     expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('ready', nuxt)
   })
@@ -169,7 +169,7 @@ describe('core: nuxt', () => {
     expect(result).toBe(nuxt)
     expect(nuxt.moduleContainer.ready).toBeCalledTimes(1)
     expect(nuxt.server.ready).toBeCalledTimes(1)
-    expect(nuxt.initialized).toEqual(true)
+    expect(nuxt._initCalled).toEqual(true)
     expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('ready', nuxt)
   })

@@ -61,7 +61,7 @@ export default {
     }
   },
   async run(cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false, _autoCreateServer: false })
+    const config = await cmd.getNuxtConfig({ dev: false, server: false })
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
