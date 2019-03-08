@@ -14,9 +14,7 @@ jest.mock('@nuxt/utils')
 jest.mock('@nuxt/server')
 
 jest.mock('@nuxt/config', () => ({
-  getNuxtConfig: jest.fn(() => ({
-    _autoInit: false
-  }))
+  getNuxtConfig: jest.fn(() => ({}))
 }))
 
 describe('core: nuxt', () => {
@@ -115,7 +113,7 @@ describe('core: nuxt', () => {
 
   test('should add object hooks', async () => {
     const hooks = {}
-    getNuxtConfig.mockReturnValueOnce({ hooks, _autoInit: false })
+    getNuxtConfig.mockReturnValueOnce({ hooks })
     const nuxt = new Nuxt()
 
     nuxt.addHooks = jest.fn()
