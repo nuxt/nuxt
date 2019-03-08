@@ -1,6 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs from 'fs'
+import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxt/devalue'
 import invert from 'lodash/invert'
@@ -113,7 +113,7 @@ export default class VueRenderer {
   async ready() {
     // -- Development mode --
     if (this.context.options.dev) {
-      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
+      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
       return
     }
 
@@ -141,34 +141,28 @@ export default class VueRenderer {
     }
   }
 
-  loadResources(_fs, isMFS = false) {
+  async loadResources(_fs) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
-    const { resourceMap } = this
 
-    const readResource = (fileName, encoding) => {
+    const readResource = async (fileName, encoding) => {
       try {
         const fullPath = path.resolve(distPath, fileName)
-        if (!_fs.existsSync(fullPath)) {
+        if (!await _fs.exists(fullPath)) {
           return
         }
-        const contents = _fs.readFileSync(fullPath, encoding)
-        if (isMFS) {
-          // Cleanup MFS as soon as possible to save memory
-          _fs.unlinkSync(fullPath)
-          delete this._assetsMapping
-        }
+        const contents = await _fs.readFile(fullPath, encoding)
         return contents
       } catch (err) {
         consola.error('Unable to load resource:', fileName, err)
       }
     }
 
-    for (const resourceName in resourceMap) {
-      const { fileName, transform, encoding } = resourceMap[resourceName]
+    for (const resourceName in this.resourceMap) {
+      const { fileName, transform, encoding } = this.resourceMap[resourceName]
 
       // Load resource
-      let resource = readResource(fileName, encoding)
+      let resource = await readResource(fileName, encoding)
 
       // Skip unavailable resources
       if (!resource) {
@@ -178,10 +172,7 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof transform === 'function') {
-        resource = transform(resource, {
-          readResource,
-          oldValue: this.context.resources[resourceName]
-        })
+        resource = await transform(resource, { readResource })
       }
 
       // Update resource
@@ -189,23 +180,8 @@ export default class VueRenderer {
       updated.push(resourceName)
     }
 
-    // Reload error template
-    const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
-    if (fs.existsSync(errorTemplatePath)) {
-      this.context.resources.errorTemplate = this.parseTemplate(
-        fs.readFileSync(errorTemplatePath, 'utf8')
-      )
-    }
-
-    // Reload loading template
-    const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
-    if (fs.existsSync(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
-      this.context.resources.loadingHTML = this.context.resources.loadingHTML
-        .replace(/\r|\n|[\t\s]{3,}/g, '')
-    } else {
-      this.context.resources.loadingHTML = ''
-    }
+    // Load templates
+    await this.loadTemplates()
 
     // Call createRenderer if any resource changed
     if (updated.length > 0) {
@@ -215,6 +191,24 @@ export default class VueRenderer {
     // Call resourcesLoaded hook
     consola.debug('Resources loaded:', updated.join(','))
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
+  }
+
+  async loadTemplates() {
+    // Reload error template
+    const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
+    if (await fs.exists(errorTemplatePath)) {
+      const errorTemplate = await fs.readFile(errorTemplatePath, 'utf8')
+      this.context.resources.errorTemplate = this.parseTemplate(errorTemplate)
+    }
+
+    // Reload loading template
+    const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
+    if (await fs.exists(loadingHTMLPath)) {
+      this.context.resources.loadingHTML = await fs.readFile(loadingHTMLPath, 'utf8')
+      this.context.resources.loadingHTML = this.context.resources.loadingHTML.replace(/\r|\n|[\t\s]{3,}/g, '')
+    } else {
+      this.context.resources.loadingHTML = ''
+    }
   }
 
   // TODO: Remove in Nuxt 3
@@ -470,22 +464,18 @@ export default class VueRenderer {
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
+        transform: async (src, { readResource }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = (obj, oldObj) => {
-            Object.keys(obj).forEach((name) => {
-              obj[name] = readResource(obj[name])
-              // Try to reuse deleted MFS files if no new version exists
-              if (!obj[name]) {
-                obj[name] = oldObj[name]
-              }
-            })
+          const resolveAssets = async (obj) => {
+            for (const name in obj) {
+              obj[name] = await readResource(obj[name])
+            }
             return obj
           }
 
-          const files = resolveAssets(serverManifest.files, oldValue.files)
-          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
+          const files = await resolveAssets(serverManifest.files)
+          const maps = await resolveAssets(serverManifest.maps)
 
           // Try to parse sourcemaps
           for (const map in maps) {
