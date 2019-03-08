@@ -9,6 +9,8 @@ const startCspServer = async (csp, isProduction = true) => {
     render: { csp }
   })
   const nuxt = new Nuxt(options)
+  await nuxt.ready()
+
   port = await getPort()
   await nuxt.server.listen(port, '0.0.0.0')
   return nuxt

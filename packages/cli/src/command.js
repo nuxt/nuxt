@@ -86,8 +86,10 @@ export default class NuxtCommand {
 
   async getNuxt(options) {
     const { Nuxt } = await imports.core()
+
     const nuxt = new Nuxt(options)
     await nuxt.ready()
+
     return nuxt
   }
 

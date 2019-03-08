@@ -9,6 +9,8 @@ describe('dist options', () => {
   beforeAll(async () => {
     const options = await loadFixture('basic')
     nuxt = new Nuxt(Object.assign(options, { dev: false }))
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
   })
