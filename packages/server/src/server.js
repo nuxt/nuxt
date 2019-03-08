@@ -228,6 +228,9 @@ export default class Server {
   }
 
   async listen(port, host, socket) {
+    // Don't start listening before nuxt is ready
+    await this.nuxt.ready()
+
     // Create a new listener
     const listener = new Listener({
       port: isNaN(parseInt(port)) ? this.options.server.port : port,
