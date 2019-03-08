@@ -33,6 +33,11 @@ export default class Nuxt extends Hookable {
     // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
     this.showReady = () => { this.callHook('webpack:done') }
+
+    // Init server
+    if (this.options.server !== false) {
+      this._initServer()
+    }
   }
 
   static get version() {
@@ -53,11 +58,6 @@ export default class Nuxt extends Hookable {
       return this
     }
     this._initCalled = true
-
-    // Init server
-    if (this.options.server !== false) {
-      this._initServer()
-    }
 
     // Add hooks
     if (isPlainObject(this.options.hooks)) {
