@@ -33,11 +33,6 @@ export default class Nuxt extends Hookable {
     // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
     this.showReady = () => { this.callHook('webpack:done') }
-
-    // Call ready only if _autoInit not set to false
-    if (this.options._autoInit !== false) {
-      this.ready()
-    }
   }
 
   static get version() {

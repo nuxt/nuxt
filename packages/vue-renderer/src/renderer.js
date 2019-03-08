@@ -111,6 +111,8 @@ export default class VueRenderer {
   }
 
   async ready() {
+    this._readyCalled = true
+
     // -- Development mode --
     if (this.context.options.dev) {
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
@@ -413,6 +415,10 @@ export default class VueRenderer {
   async renderRoute(url, context = {}, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      if (!this._readyCalled) {
+        throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called!')
+      }
+
       if (!this.context.options.dev || retries <= 0) {
         throw new Error('Server resources are not available!')
       }
