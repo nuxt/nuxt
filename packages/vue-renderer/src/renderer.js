@@ -467,15 +467,18 @@ export default class VueRenderer {
         transform: async (src, { readResource }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = async (obj) => {
-            for (const name in obj) {
-              obj[name] = await readResource(obj[name])
-            }
-            return obj
+          const readResources = async (obj) => {
+            const _obj = {}
+            await Promise.all(Object.keys(obj).map(async (key) => {
+              _obj[key] = await readResource(obj[key])
+            }))
+            return _obj
           }
 
-          const files = await resolveAssets(serverManifest.files)
-          const maps = await resolveAssets(serverManifest.maps)
+          const [files, maps] = await Promise.all([
+            readResources(serverManifest.files),
+            readResources(serverManifest.maps)
+          ])
 
           // Try to parse sourcemaps
           for (const map in maps) {
