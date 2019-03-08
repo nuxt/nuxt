@@ -122,7 +122,7 @@ describe('basic dev', () => {
   //   }
   // })
 
-  test('/__open-in-editor (open-in-editor)', async () => {
+  test.skip('/__open-in-editor (open-in-editor)', async () => {
     const { body } = await rp(
       url('/__open-in-editor?file=pages/index.vue'),
       { resolveWithFullResponse: true }
@@ -130,7 +130,7 @@ describe('basic dev', () => {
     expect(body).toBe('')
   })
 
-  test('/__open-in-editor should return error (open-in-editor)', async () => {
+  test.skip('/__open-in-editor should return error (open-in-editor)', async () => {
     await expect(rp(url('/__open-in-editor?file='))).rejects.toMatchObject({
       statusCode: 500,
       error: 'launch-editor-middleware: required query param "file" is missing.'
@@ -143,7 +143,7 @@ describe('basic dev', () => {
     })
   })
 
-  test('/error should return json format error (Youch)', async () => {
+  test.skip('/error should return json format error (Youch)', async () => {
     const opts = {
       headers: {
         accept: 'application/json'

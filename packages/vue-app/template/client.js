@@ -491,6 +491,7 @@ function fixPrepatch(to, ___) {
       if (
         instance.constructor._dataRefresh &&
         Components[i] === instance.constructor &&
+        instance.$vnode.data.keepAlive !== true &&
         typeof instance.constructor.options.data === 'function'
       ) {
         const newData = instance.constructor.options.data.call(instance)
