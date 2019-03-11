@@ -141,4 +141,5 @@ export default {
 
 The navigation to the same page will not trigger an HTTP request before 30 sec.
 
-<img alt="nuxt-fetch-keep-alive" src="https://user-images.githubusercontent.com/904724/54164259-45308b00-445c-11e9-8866-b487f0af5a59.gif">
+![fetch-keep-alive-nuxt3](https://user-images.githubusercontent.com/904724/54164405-c6881d80-445c-11e9-94e0-366406270874.gif)
+
