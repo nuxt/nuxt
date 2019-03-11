@@ -6,9 +6,6 @@ const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.datas
 export default {
   beforeCreate() {
     if (hasFetch(this)) {
-      const waitOnFetch = typeof this.$options.waitOnFetch === 'undefined' ? true : this.$options.waitOnFetch
-
-      this._waitOnFetch = [true, 'client'].includes(waitOnFetch)
       Vue.util.defineReactive(this, '$isFetching', false)
     }
   },
@@ -33,7 +30,7 @@ export default {
   },
   methods: {
     async '$fetch'() {
-      this._waitOnFetch && this.$nuxt.nbFetching++
+      this.$nuxt.nbFetching++
       this.$isFetching = true
       try {
         await this.$options.fetch.call(this, this.$nuxt.$options.context)
@@ -41,9 +38,7 @@ export default {
         this.$nuxt.error(err)
       }
       this.$isFetching = false
-      if (this._waitOnFetch) {
-        this.$nextTick(() => this.$nuxt.nbFetching--)
-      }
+      this.$nextTick(() => this.$nuxt.nbFetching--)
     }
   }
 }

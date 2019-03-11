@@ -49,48 +49,11 @@ export default {
       // Add triggerScroll event on beforeEnter (fix #1376)
       const beforeEnter = listeners.beforeEnter
       listeners.beforeEnter = (el) => {
-        el.style.opacity = 0
         // Ensure to trigger scroll event after calling scrollBehavior
         _parent.$nuxt.$nextTick(() => {
           _parent.$nuxt.$emit('triggerScroll')
         })
         if (beforeEnter) return beforeEnter.call(_parent, el)
-      }
-
-      // Promise to wait until all fetches are done
-      const P = new Promise((resolve) => {
-        const unwatch = _parent.$nuxt.$watch('nbFetching', (nbFetching, oldFetching) => {
-          if (nbFetching === 0) {
-            resolve()
-            unwatch()
-          }
-        })
-      })
-      // Force transition mode to 'in-out' (otherwise we cannot wait when to leave exactly)
-      transitionProps.mode = 'in-out'
-      // Overwrite leave hook
-      const leave = listeners.leave
-      listeners.leave = async (el, done) => {
-        await P
-        _parent.$nuxt.$loading.finish && _parent.$nuxt.$loading.finish()
-        if (leave) {
-          return leave(el, done)
-        }
-        done()
-      }
-      // Overwrite enter hook
-      const enter = listeners.enter
-      listeners.enter = async (el, done) => {
-        if (_parent.$nuxt.$loading.start && !_parent.$nuxt.$loading.show) {
-          _parent.$nuxt.$loading.start()
-        }
-        await P
-        el.style.opacity = 1
-        if (enter) {
-          enter(el, done)
-          return
-        }
-        done()
       }
     }
 

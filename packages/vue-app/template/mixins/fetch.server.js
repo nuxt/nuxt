@@ -15,14 +15,12 @@ function getDataDiff(o1, o2) {
 export default {
   beforeCreate() {
     if (hasFetch(this)) {
-      const waitOnFetch = typeof this.$options.waitOnFetch === 'undefined' ? true : this.$options.waitOnFetch
-
-      this._waitOnFetch = [true, 'server'].includes(waitOnFetch)
-      this.$isFetching = !this._waitOnFetch
+      this._fetchOnServer = this.$options.fetchOnServer !== false
+      this.$isFetching = !this._fetchOnServer
     }
   },
   async serverPrefetch() {
-    if (hasFetch(this) && this._waitOnFetch) {
+    if (hasFetch(this) && this._fetchOnServer) {
       const data = Object.assign({}, this.$data)
 
       await this.$options.fetch.call(this, this.$nuxt.$options.context)

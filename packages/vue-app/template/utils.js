@@ -71,15 +71,6 @@ export function getMatchedComponents(route, matches = false) {
   }))
 }
 
-export function getMatchedComponentsInstances(route, matches = false) {
-  return Array.prototype.concat.apply([], route.matched.map((m, index) => {
-    return Object.keys(m.instances).map((key) => {
-      matches && matches.push(index)
-      return m.instances[key]
-    })
-  }))
-}
-
 export function flatMapComponents(route, fn) {
   return Array.prototype.concat.apply([], route.matched.map((m, index) => {
     return Object.keys(m.components).reduce((promises, key) => {

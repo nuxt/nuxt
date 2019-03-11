@@ -2,30 +2,25 @@ import Vue from 'vue'
 <% if (fetch.client) { %>import fetch from 'unfetch'<% } %>
 import middleware from './middleware.js'
 import {
-  applyAsyncData,
   sanitizeComponent,
   resolveRouteComponents,
   getMatchedComponents,
-  getMatchedComponentsInstances,
   flatMapComponents,
   setContext,
   middlewareSeries,
-  promisify,
   getLocation,
   compile,
   getQueryDiff,
   globalHandleError
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
-import asyncDataMixin from './mixins/async-data.client'
 import fetchMixin from './mixins/fetch.client'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 
 // Async Data & fetch mixin
-if (!Vue.__nuxt__async__mixin__) {
-  Vue.mixin(asyncDataMixin)
+if (!Vue.__nuxt__fetch__mixin__) {
   Vue.mixin(fetchMixin)
-  Vue.__nuxt__async__mixin__ = true
+  Vue.__nuxt__fetch__mixin__ = true
 }
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -133,30 +128,8 @@ async function loadAsyncComponents(to, from, next) {
   this._queryChanged = JSON.stringify(to.query) !== JSON.stringify(from.query)
   this._diffQuery = (this._queryChanged ? getQueryDiff(to.query, from.query) : [])
 
-  <% if (loading) { %>
-  if (this._pathChanged && this.$loading.start && !this.$loading.manual) {
-    this.$loading.start()
-  }
-  <% } %>
-
   try {
     const Components = await resolveRouteComponents(to)
-    <% if (loading) { %>
-    if (!this._pathChanged && this._queryChanged) {
-      // Add a marker on each component that it needs to refresh or not
-      const startLoader = Components.some((Component) => {
-        const watchQuery = Component.options.watchQuery
-        if (watchQuery === true) return true
-        if (Array.isArray(watchQuery)) {
-          return watchQuery.some(key => this._diffQuery[key])
-        }
-        return false
-      })
-      if (startLoader && this.$loading.start && !this.$loading.manual) {
-        this.$loading.start()
-      }
-    }
-    <% } %>
     // Call next()
     next()
   } catch (error) {
@@ -238,7 +211,7 @@ async function render(to, from, next) {
   // nextCalled is true when redirected
   let nextCalled = false
   const _next = (path) => {
-    this.nbFetching--
+    // this.nbFetching--
     if (nextCalled) return
     nextCalled = true
     next(path)
@@ -251,7 +224,7 @@ async function render(to, from, next) {
     next: _next.bind(this)
   })
   // reset promises when navigating
-  this.nbFetching++
+  // this.nbFetching++
 
   this._dateLastError = app.nuxt.dateErr
   this._hadError = !!app.nuxt.err
@@ -277,14 +250,6 @@ async function render(to, from, next) {
     app.context.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
     return _next()
   }
-
-  // Update ._data and other properties if hot reloaded
-  Components.forEach((Component) => {
-    if (Component._Ctor && Component._Ctor.options) {
-      Component.options.asyncData = Component._Ctor.options.asyncData
-      Component.options.fetch = Component._Ctor.options.fetch
-    }
-  })
 
   // Apply transitions
   this.setTransitions(mapTransitions(Components, to, from))

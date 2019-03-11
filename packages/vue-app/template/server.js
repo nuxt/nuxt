@@ -3,7 +3,6 @@ import Vue from 'vue'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
-import asyncDataMixin from './mixins/async-data.server'
 import fetchMixin from './mixins/fetch.server'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
@@ -12,10 +11,9 @@ import NuxtLink from './components/nuxt-link.server.js' // should be included af
 Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
 
 // Async Data & fetch mixin
-if (!Vue.__nuxt__async__mixin__) {
-  Vue.mixin(asyncDataMixin)
+if (!Vue.__nuxt__fetch__mixin__) {
   Vue.mixin(fetchMixin)
-  Vue.__nuxt__async__mixin__ = true
+  Vue.__nuxt__fetch__mixin__ = true
 }
 
 // Component: <NuxtLink>
