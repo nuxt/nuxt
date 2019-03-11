@@ -56,6 +56,7 @@ export default async function renderAndGetWindow(
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')
     error.body = window.document.body.innerHTML
+    window.close()
     throw error
   }
 

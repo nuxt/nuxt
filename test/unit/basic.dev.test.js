@@ -107,10 +107,9 @@ describe('basic dev', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html).toContain('<h1>My component!</h1>')
-  })
-
-  test('Check render:routeDone hook called', () => {
+    // Check render:routeDone hook called
     expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
+    window.close()
   })
 
   // test('/_nuxt/test.hot-update.json should returns empty html', async t => {
@@ -122,7 +121,7 @@ describe('basic dev', () => {
   //   }
   // })
 
-  test.skip('/__open-in-editor (open-in-editor)', async () => {
+  test('/__open-in-editor (open-in-editor)', async () => {
     const { body } = await rp(
       url('/__open-in-editor?file=pages/index.vue'),
       { resolveWithFullResponse: true }
@@ -130,7 +129,7 @@ describe('basic dev', () => {
     expect(body).toBe('')
   })
 
-  test.skip('/__open-in-editor should return error (open-in-editor)', async () => {
+  test('/__open-in-editor should return error (open-in-editor)', async () => {
     await expect(rp(url('/__open-in-editor?file='))).rejects.toMatchObject({
       statusCode: 500,
       error: 'launch-editor-middleware: required query param "file" is missing.'
@@ -143,7 +142,7 @@ describe('basic dev', () => {
     })
   })
 
-  test.skip('/error should return json format error (Youch)', async () => {
+  test('/error should return json format error (Youch)', async () => {
     const opts = {
       headers: {
         accept: 'application/json'
