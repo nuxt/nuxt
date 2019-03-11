@@ -87,4 +87,4 @@ When navigating, you should now see "Loading post #..." on client-side, and no l
 <img width="669" alt="fetch-nuxt3" src="https://user-images.githubusercontent.com/904724/54161844-d3544380-4453-11e9-9586-7428597db40e.gif">
 
 > **INFO** 💡<br>
-> In the component having `fetch` hook, you will also have access to `$fetch()` to re-call `fetch` hook (`$isFetching` will become `true` again).
+> In the component having `fetch` hook, you will also have access to `this.$fetch()` to re-call `fetch` hook (`$isFetching` will become `true` again).
