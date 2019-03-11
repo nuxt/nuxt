@@ -21,6 +21,10 @@ export function interopDefault(promise) {
   return promise.then(m => m.default || m)
 }
 
+export function hasFetch(vm) {
+  return vm.$options && typeof vm.$options.fetch === 'function'
+}
+
 export function applyAsyncData(vm, asyncData = {}) {
   // Overwrite `data` with asyncData result
   vm.$data.$asyncData = Vue.observable(asyncData)

@@ -57,7 +57,8 @@ export default {
   data: () => ({
     isOnline: true,
     layout: null,
-    layoutName: ''
+    layoutName: '',
+    nbFetching: 0
   }),
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -92,6 +93,9 @@ export default {
   computed: {
     isOffline() {
       return !this.isOnline
+    },
+    isFetching() {
+      return this.nbFetching > 0
     }
   },
   methods: {

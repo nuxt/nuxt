@@ -13,8 +13,9 @@ export default {
       default: undefined
     }
   },
-  render(h, { parent, data, props }) {
+  render(_, { parent, data, props }) {
     data.nuxtChild = true
+    const h = parent.$createElement
     const _parent = parent
     const transitions = parent.<%= globals.nuxt %>.nuxt.transitions
     const defaultTransition = parent.<%= globals.nuxt %>.nuxt.defaultTransition
@@ -26,6 +27,7 @@ export default {
       }
       parent = parent.$parent
     }
+
     data.nuxtChildDepth = depth
     const transition = transitions[depth] || defaultTransition
     const transitionProps = {}
@@ -41,14 +43,55 @@ export default {
         listeners[key] = transition[key].bind(_parent)
       }
     })
-    // Add triggerScroll event on beforeEnter (fix #1376)
-    const beforeEnter = listeners.beforeEnter
-    listeners.beforeEnter = (el) => {
-      // Ensure to trigger scroll event after calling scrollBehavior
-      window.<%= globals.nuxt %>.$nextTick(() => {
-        window.<%= globals.nuxt %>.$emit('triggerScroll')
+
+    // Update transitions (only for client-side)
+    if (process.client) {
+      // Add triggerScroll event on beforeEnter (fix #1376)
+      const beforeEnter = listeners.beforeEnter
+      listeners.beforeEnter = (el) => {
+        el.style.opacity = 0
+        // Ensure to trigger scroll event after calling scrollBehavior
+        _parent.$nuxt.$nextTick(() => {
+          _parent.$nuxt.$emit('triggerScroll')
+        })
+        if (beforeEnter) return beforeEnter.call(_parent, el)
+      }
+
+      // Promise to wait until all fetches are done
+      const P = new Promise((resolve) => {
+        const unwatch = _parent.$nuxt.$watch('nbFetching', (nbFetching, oldFetching) => {
+          if (nbFetching === 0) {
+            resolve()
+            unwatch()
+          }
+        })
       })
-      if (beforeEnter) return beforeEnter.call(_parent, el)
+      // Force transition mode to 'in-out' (otherwise we cannot wait when to leave exactly)
+      transitionProps.mode = 'in-out'
+      // Overwrite leave hook
+      const leave = listeners.leave
+      listeners.leave = async (el, done) => {
+        await P
+        _parent.$nuxt.$loading.finish && _parent.$nuxt.$loading.finish()
+        if (leave) {
+          return leave(el, done)
+        }
+        done()
+      }
+      // Overwrite enter hook
+      const enter = listeners.enter
+      listeners.enter = async (el, done) => {
+        if (_parent.$nuxt.$loading.start && !_parent.$nuxt.$loading.show) {
+          _parent.$nuxt.$loading.start()
+        }
+        await P
+        el.style.opacity = 1
+        if (enter) {
+          enter(el, done)
+          return
+        }
+        done()
+      }
     }
 
     let routerView = [

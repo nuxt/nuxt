@@ -238,16 +238,7 @@ async function render(to, from, next) {
   // nextCalled is true when redirected
   let nextCalled = false
   const _next = (path) => {
-    <% if (loading) { %>
-    if (from.path === path.path && this.$loading.finish) {
-      this.$loading.finish()
-    }
-    <% } %>
-    <% if (loading) { %>
-    if (from.path !== path.path && this.$loading.pause) {
-      this.$loading.pause()
-    }
-    <% } %>
+    this.nbFetching--
     if (nextCalled) return
     nextCalled = true
     next(path)
@@ -259,6 +250,9 @@ async function render(to, from, next) {
     from,
     next: _next.bind(this)
   })
+  // reset promises when navigating
+  this.nbFetching++
+
   this._dateLastError = app.nuxt.dateErr
   this._hadError = !!app.nuxt.err
 
@@ -281,7 +275,7 @@ async function render(to, from, next) {
     if (nextCalled) return
     // Show error page
     app.context.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
-    return next()
+    return _next()
   }
 
   // Update ._data and other properties if hot reloaded
@@ -298,8 +292,7 @@ async function render(to, from, next) {
   try {
     // Call middleware
     await callMiddleware.call(this, Components, app.context)
-    if (nextCalled) return
-    if (app.context._errored) return next()
+    if (app.context._errored) return _next()
 
     // Set layout
     let layout = Components[0].options.layout
@@ -310,8 +303,7 @@ async function render(to, from, next) {
 
     // Call middleware for layout
     await callMiddleware.call(this, Components, app.context, layout)
-    if (nextCalled) return
-    if (app.context._errored) return next()
+    if (app.context._errored) return _next()
 
     // Call .validate()
     let isValid = true
@@ -333,92 +325,17 @@ async function render(to, from, next) {
         statusCode: validationError.statusCode || '500',
         message: validationError.message
       })
-      return next()
+      return _next()
     }
 
     // ...If .validate() returned false
     if (!isValid) {
       this.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
-      return next()
+      return _next()
     }
-
-    // Call asyncData & fetch hooks on components matched by the route.
-    // await Promise.all(Components.map((Component, i) => {
-    //   // Check if only children route changed
-    //   Component._path = compile(to.matched[matches[i]].path)(to.params)
-    //   Component._dataRefresh = false
-    //   // Check if Component need to be refreshed (call asyncData & fetch)
-    //   // Only if its slug has changed or is watch query changes
-    //   if ((this._pathChanged && this._queryChanged) || Component._path !== _lastPaths[i]) {
-    //     Component._dataRefresh = true
-    //   } else if (!this._pathChanged && this._queryChanged) {
-    //     const watchQuery = Component.options.watchQuery
-    //     if (watchQuery === true) {
-    //       Component._dataRefresh = true
-    //     } else if (Array.isArray(watchQuery)) {
-    //       Component._dataRefresh = watchQuery.some(key => this._diffQuery[key])
-    //     }
-    //   }
-    //   if (!this._hadError && this._isMounted && !Component._dataRefresh) {
-    //     return Promise.resolve()
-    //   }
-
-    //   const promises = []
-
-    //   const hasAsyncData = (
-    //     Component.options.asyncData &&
-    //     typeof Component.options.asyncData === 'function'
-    //   )
-    //   const hasFetch = !!Component.options.fetch
-    //   <% if (loading) { %>
-    //   const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
-    //   <% } %>
-
-    //   // Call asyncData(context)
-    //   if (hasAsyncData) {
-    //     const promise = promisify(Component.options.asyncData, app.context)
-    //       .then((asyncDataResult) => {
-    //         applyAsyncData(Component, asyncDataResult)
-    //         <% if (loading) { %>
-    //         if (this.$loading.increase) {
-    //           this.$loading.increase(loadingIncrease)
-    //         }
-    //         <% } %>
-    //       })
-    //     promises.push(promise)
-    //   }
-
-    //   // Check disabled page loading
-    //   this.$loading.manual = Component.options.loading === false
-
-    //   // Call fetch(context)
-    //   if (hasFetch) {
-    //     let p = Component.options.fetch(app.context)
-    //     if (!p || (!(p instanceof Promise) && (typeof p.then !== 'function'))) {
-    //       p = Promise.resolve(p)
-    //     }
-    //     p.then((fetchResult) => {
-    //       <% if (loading) { %>
-    //       if (this.$loading.increase) {
-    //         this.$loading.increase(loadingIncrease)
-    //       }
-    //       <% } %>
-    //     })
-    //     promises.push(p)
-    //   }
-
-    //   return Promise.all(promises)
-    // }))
 
     // If not redirected
-    if (!nextCalled) {
-      <% if (loading) { %>
-      if (this.$loading.finish && !this.$loading.manual) {
-        this.$loading.finish()
-      }
-      <% } %>
-      next()
-    }
+    _next()
 
   } catch (err) {
     const error = err || {}
@@ -438,7 +355,7 @@ async function render(to, from, next) {
 
     this.error(error)
     this.<%= globals.nuxt %>.$emit('routeChanged', to, from, error)
-    next()
+    _next()
   }
 }
 
@@ -472,38 +389,6 @@ function showNextPage(to) {
   this.setLayout(layout)
 }
 
-// When navigating on a different route but the same component is used, Vue.js
-// Will not update the instance data, so we have to update $data ourselves
-function fixPrepatch(to, ___) {
-  if (this._pathChanged === false && this._queryChanged === false) return
-
-  Vue.nextTick(() => {
-    const matches = []
-    const instances = getMatchedComponentsInstances(to, matches)
-    const Components = getMatchedComponents(to, matches)
-
-    instances.forEach((instance, i) => {
-      if (!instance) return
-      // if (
-      //   !this._queryChanged &&
-      //   to.matched[matches[i]].path.indexOf(':') === -1 &&
-      //   to.matched[matches[i]].path.indexOf('*') === -1
-      // ) return // If not a dynamic route, skip
-      if (
-        instance.constructor._dataRefresh &&
-        Components[i] === instance.constructor &&
-        typeof instance.constructor.options.data === 'function'
-      ) {
-        const newData = instance.constructor.options.data.call(instance)
-        for (const key in newData) {
-          Vue.set(instance.$data, key, newData[key])
-        }
-      }
-    })
-    showNextPage.call(this, to)
-  })
-}
-
 function nuxtReady(_app) {
   window.<%= globals.readyCallback %>Cbs.forEach((cb) => {
     if (typeof cb === 'function') {
@@ -517,7 +402,9 @@ function nuxtReady(_app) {
   // Add router hooks
   router.afterEach((to, from) => {
     // Wait for fixPrepatch + $data updates
-    Vue.nextTick(() => _app.<%= globals.nuxt %>.$emit('routeChanged', to, from))
+    Vue.nextTick(() => {
+      _app.<%= globals.nuxt %>.$emit('routeChanged', to, from)
+    })
   })
 }
 
@@ -566,7 +453,6 @@ async function mountApp(__app) {
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
   router.afterEach(normalizeComponents)
-  router.afterEach(fixPrepatch.bind(_app))
 
   // If page already is server rendered
   if (NUXT.serverRendered) {
@@ -580,7 +466,6 @@ async function mountApp(__app) {
     if (!path) {
       normalizeComponents(router.currentRoute, router.currentRoute)
       showNextPage.call(_app, router.currentRoute)
-      // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
       mount()
       return
     }
