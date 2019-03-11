@@ -76,7 +76,7 @@ export default {
       build: cmd.argv.build
     })
 
-    if (cmd.argv['fail-on-page-error'] && errors && errors.errors && errors.errors.length > 0) {
+    if (cmd.argv['fail-on-page-error'] && errors.errors.length > 0) {
       throw new Error('Error generating pages, exiting with non-zero code')
     }
   }
