@@ -92,3 +92,49 @@ When navigating, you should now see "Loading post #..." on client-side, and no l
 
 > **INFO** 💡<br>
 > In the component having `fetch` hook, you will also have access to `this.$fetch()` to re-call `fetch` hook (`$isFetching` will become `true` again).
+
+## Caching
+
+You can use the `keep-alive` directive in `<nuxt/>` and `<nuxt-child/>` component to saving `fetch` calls on pages you already visited:
+
+`layouts/default.vue`
+```vue
+<template>
+  <nuxt keep-alive />
+</template>
+```
+
+> **INFO** 💡<br>
+> You can also specify `keep-alive-props` directive (see [props](https://vuejs.org/v2/api/#keep-alive)).<br>
+> Example: `<nuxt keep-alive :keep-alive-props="{ max: 10 }" />` to keep only 10 page components in memory.
+
+### Using `activated` hook
+
+Nuxt will directly fill `this._lastFetchAt` (timestamp) of the last `fetch` call (ssr included). You can use this property combined with `activated` hook to add a 30 seconds cache to `fetch`:
+
+`pages/posts/_id.vue`
+
+```vue
+<template>
+  ...
+</template>
+    
+<script>
+export default {
+  data () {
+    return {
+      post: {}
+    }
+  },
+  activated() {
+    // Call fetch again if last fetch was > 30 sec ago
+    if (this._lastFetchAt <= (Date.now() - 30000)) {
+      this.$fetch()
+    }
+  },
+  async fetch() {
+    this.post = await fetch(`https://jsonplaceholder.typicode.com/posts/${this.$route.params.id}`).then((res) => res.json())
+  }
+}
+</script>
+```
