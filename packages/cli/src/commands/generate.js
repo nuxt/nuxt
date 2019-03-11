@@ -71,12 +71,12 @@ export default {
 
     const generator = await cmd.getGenerator(nuxt)
 
-    const errors = await generator.generate({
+    const generateResult = await generator.generate({
       init: true,
       build: cmd.argv.build
     })
 
-    if (cmd.argv['fail-on-error'] && errors.errors.length > 0) {
+    if (cmd.argv['fail-on-error'] && generateResult.errors.length > 0) {
       throw new Error('Error generating pages, exiting with non-zero code')
     }
   }
