@@ -14,6 +14,7 @@ export default {
       // Hydrate component
       this._hydrated = true
       this.$isLoading = false
+      this._lastFetchAt = Date.now()
 
       this._ssrKey = +this.$vnode.elm.dataset.ssrKey
       const asyncData = this.$nuxt.state.data[this._ssrKey]
@@ -38,6 +39,7 @@ export default {
         this.$nuxt.error(err)
       }
       this.$isFetching = false
+      this._lastFetchAt = Date.now()
       this.$nextTick(() => this.$nuxt.nbFetching--)
     }
   }
