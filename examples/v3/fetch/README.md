@@ -5,6 +5,10 @@ Nuxt.js introduces a new hook called `fetch` in any of your Vue components.
 > **INFO** 💡<br>
 > Nuxt.js also add the [fetch polyfill](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch) so you can easily make HTTP request inside your components.
 
+> :warning: WIP<br>
+> Working only in Nuxt development you can see the [draft pull request](https://github.com/nuxt/nuxt.js/pull/5118)<br>
+> If you want to run it locally, please clone Nuxt repo, `git checkout feat/async-data`, install the dependencies and run `yarn nuxt examples/v3/fetch/`
+
 ## When to use fetch?
 
 Every time you need to fetch **asynchronous** data. `fetch` is called on server-side when rendering the route, and on client-side when navigating.
