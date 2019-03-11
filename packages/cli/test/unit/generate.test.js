@@ -113,6 +113,7 @@ describe('generate', () => {
 
     mockGetGenerator(async () => {
       await buildDone()
+      return { errors: [] }
     })
 
     const cmd = NuxtCommand.from(generate, ['generate', '.'])
