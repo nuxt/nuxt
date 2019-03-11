@@ -69,6 +69,12 @@ export default {
     '~/plugins/dir-plugin',
     '~/plugins/inject'
   ],
+  serverMiddleware: [
+    {
+      path: '/api/test',
+      handler: (_, res) => res.end('Works!')
+    }
+  ],
   build: {
     scopeHoisting: true,
     publicPath: '',

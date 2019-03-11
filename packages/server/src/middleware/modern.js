@@ -1,8 +1,9 @@
 import chalk from 'chalk'
 import consola from 'consola'
-import { ModernBrowsers } from '@nuxt/common'
 import UAParser from 'ua-parser-js'
 import semver from 'semver'
+
+import ModernBrowsers from './modern-browsers'
 
 const modernBrowsers = Object.keys(ModernBrowsers)
   .reduce((allBrowsers, browser) => {
@@ -16,36 +17,45 @@ const isModernBrowser = (ua) => {
   }
   const { browser } = UAParser(ua)
   const browserVersion = semver.coerce(browser.version)
-  return modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name])
+  if (!browserVersion) {
+    return false
+  }
+  return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
 let detected = false
 
+const distinctModernModeOptions = [false, 'client', 'server']
+
 const detectModernBuild = ({ options, resources }) => {
-  if (detected === false && ![false, 'client', 'server'].includes(options.modern)) {
-    detected = true
-    if (resources.modernManifest) {
-      options.modern = options.render.ssr ? 'server' : 'client'
-      consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
-    } else {
-      options.modern = false
-    }
+  if (detected || distinctModernModeOptions.includes(options.modern)) {
+    return
   }
+
+  detected = true
+
+  if (!resources.modernManifest) {
+    options.modern = false
+    return
+  }
+
+  options.modern = options.render.ssr ? 'server' : 'client'
+  consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
 }
 
-const detectModernBrowser = (req, options) => {
-  if (options.modern === 'server') {
-    const { socket = {}, headers } = req
-    if (socket.modernMode === undefined) {
-      const ua = headers && headers['user-agent']
-      socket.modernMode = isModernBrowser(ua)
-    }
-    req.modernMode = socket.modernMode
+const detectModernBrowser = ({ socket = {}, headers }) => {
+  if (socket.isModernBrowser === undefined) {
+    const ua = headers && headers['user-agent']
+    socket.isModernBrowser = isModernBrowser(ua)
   }
+
+  return socket.isModernBrowser
 }
 
 export default ({ context }) => (req, res, next) => {
   detectModernBuild(context)
-  detectModernBrowser(req, context.options)
+  if (context.options.modern !== false) {
+    req.modernMode = detectModernBrowser(req)
+  }
   next()
 }

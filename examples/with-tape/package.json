@@ -4,7 +4,8 @@
 		"dev": "nuxt",
 		"build": "nuxt build",
 		"start": "nuxt start",
-		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec"
+		"test": "tape ./test/**/*.js -r ./test/setup.js | tap-spec",
+    "post-update": "yarn upgrade --latest"
 	},
 	"devDependencies": {
 		"browser-env": "^3.2.1",
@@ -16,6 +17,6 @@
 		"vue-test-utils": "^1.0.0-beta.2"
 	},
 	"dependencies": {
-		"nuxt-edge": "latest"
+		"nuxt": "latest"
 	}
 }

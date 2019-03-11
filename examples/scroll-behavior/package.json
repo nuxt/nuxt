@@ -2,12 +2,13 @@
   "name": "example-scroll-behavior",
   "dependencies": {
     "@nuxtjs/axios": "^5.3.6",
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "vue-router": "https://github.com/homerjam/vue-router#dist"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   }
 }

@@ -1,4 +1,5 @@
-import { consola, mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
+import * as utils from '../../src/utils'
+import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
   let build
@@ -6,9 +7,14 @@ describe('build', () => {
   beforeAll(async () => {
     build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+    jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
   })
 
-  afterAll(() => process.exit.mockRestore())
+  afterAll(() => {
+    process.exit.mockRestore()
+  })
+
   afterEach(() => jest.resetAllMocks())
 
   test('has run function', () => {
@@ -36,12 +42,11 @@ describe('build', () => {
         analyze: false
       }
     })
-    const generate = mockGetGenerator(Promise.resolve())
+    const generate = mockGetGenerator()
 
     await NuxtCommand.from(build).run()
 
     expect(generate).toHaveBeenCalled()
-    expect(process.exit).toHaveBeenCalled()
   })
 
   test('build with devtools', async () => {
@@ -50,12 +55,9 @@ describe('build', () => {
     })
     const builder = mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build)
-    const args = ['build', '.', '--devtools']
-    const argv = cmd.getArgv(args)
-    argv._ = ['.']
+    const cmd = NuxtCommand.from(build, ['build', '.', '--devtools'])
 
-    const options = await cmd.getNuxtConfig(argv)
+    const options = await cmd.getNuxtConfig(cmd.argv)
 
     await cmd.run()
 
@@ -69,22 +71,76 @@ describe('build', () => {
     })
     mockGetBuilder(Promise.resolve())
 
-    const cmd = NuxtCommand.from(build)
-    const args = ['build', '.', '--m']
+    const cmd = NuxtCommand.from(build, ['build', '.', '--m'])
 
-    const options = await cmd.getNuxtConfig(cmd.getArgv(args))
+    const options = await cmd.getNuxtConfig()
 
     await cmd.run()
 
     expect(options.modern).toBe(true)
   })
 
-  test('catches error', async () => {
-    mockGetNuxt({ mode: 'universal' })
-    mockGetBuilder(Promise.reject(new Error('Builder Error')))
+  test('build force-exits by default', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
 
-    await NuxtCommand.from(build).run()
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
 
-    expect(consola.fatal).toHaveBeenCalledWith(new Error('Builder Error'))
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', 5)
+  })
+
+  test('build can set force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', false)
+  })
+
+  test('build can disable force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
+  })
+
+  test('build locks project by default', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const releaseLock = jest.fn(() => Promise.resolve())
+    const createLock = jest.fn(() => releaseLock)
+    jest.spyOn(utils, 'createLock').mockImplementation(createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
+
+    expect(createLock).toHaveBeenCalledTimes(1)
+    expect(releaseLock).toHaveBeenCalledTimes(1)
+  })
+
+  test('build can disable locking', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const createLock = jest.fn(() => Promise.resolve())
+    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-lock'])
+    await cmd.run()
+
+    expect(createLock).not.toHaveBeenCalled()
   })
 })

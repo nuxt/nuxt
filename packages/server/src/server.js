@@ -4,7 +4,7 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
-import { determineGlobals, isUrl } from '@nuxt/common'
+import { determineGlobals, isUrl } from '@nuxt/utils'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -12,6 +12,7 @@ import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createModernMiddleware from './middleware/modern'
+import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
   constructor(nuxt) {
@@ -27,10 +28,6 @@ export default class Server {
     // Runtime shared resources
     this.resources = {}
 
-    // Will be available on dev
-    this.devMiddleware = null
-    this.hotMiddleware = null
-
     // Will be set after listen
     this.listeners = []
 
@@ -39,9 +36,21 @@ export default class Server {
 
     // Close hook
     this.nuxt.hook('close', () => this.close())
+
+    // devMiddleware placeholder
+    if (this.options.dev) {
+      this.nuxt.hook('server:devMiddleware', (devMiddleware) => {
+        this.devMiddleware = devMiddleware
+      })
+    }
   }
 
   async ready() {
+    if (this._readyCalled) {
+      return this
+    }
+    this._readyCalled = true
+
     await this.nuxt.callHook('render:before', this, this.options.render)
 
     // Initialize vue-renderer
@@ -56,6 +65,8 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
+
+    return this
   }
 
   async setupMiddleware() {
@@ -64,7 +75,7 @@ export default class Server {
 
     // Compression middleware for production
     if (!this.options.dev) {
-      const compressor = this.options.render.compressor
+      const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
@@ -75,31 +86,8 @@ export default class Server {
       }
     }
 
-    const modernMiddleware = createModernMiddleware({
-      context: this.renderer.context
-    })
-
-    // Add webpack middleware support only for development
-    if (this.options.dev) {
-      this.useMiddleware(modernMiddleware)
-      this.useMiddleware(async (req, res, next) => {
-        const name = req.modernMode ? 'modern' : 'client'
-        if (this.devMiddleware && this.devMiddleware[name]) {
-          await this.devMiddleware[name](req, res)
-        }
-        if (this.hotMiddleware && this.hotMiddleware[name]) {
-          await this.hotMiddleware[name](req, res)
-        }
-        next()
-      })
-    }
-
-    // open in editor for debug mode only
-    if (this.options.debug && this.options.dev) {
-      this.useMiddleware({
-        path: '__open-in-editor',
-        handler: launchMiddleware(this.options.editor)
-      })
+    if (this.options.server.timing) {
+      this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
     // For serving static/ files to /
@@ -121,17 +109,38 @@ export default class Server {
           this.options.render.dist
         )
       })
-      this.useMiddleware(modernMiddleware)
+    }
+
+    this.useMiddleware(createModernMiddleware({
+      context: this.renderer.context
+    }))
+
+    if (this.options.dev) {
+      this.useMiddleware((req, res, next) => {
+        if (!this.devMiddleware) {
+          return next()
+        }
+        this.devMiddleware(req, res, next)
+      })
+
+      // open in editor for debug mode only
+      if (this.options.debug) {
+        this.useMiddleware({
+          path: '__open-in-editor',
+          handler: launchMiddleware(this.options.editor)
+        })
+      }
     }
 
     // Add user provided middleware
-    this.options.serverMiddleware.forEach((m) => {
+    for (const m of this.options.serverMiddleware) {
       this.useMiddleware(m)
-    })
+    }
 
+    // Graceful 404 error handler
     const { fallback } = this.options.render
     if (fallback) {
-      // Graceful 404 errors for dist files
+      // Dist files
       if (fallback.dist) {
         this.useMiddleware({
           path: this.publicPath,
@@ -139,7 +148,7 @@ export default class Server {
         })
       }
 
-      // Graceful 404 errors for other paths
+      // Other paths
       if (fallback.static) {
         this.useMiddleware({
           path: '/',
@@ -156,14 +165,10 @@ export default class Server {
       resources: this.resources
     }))
 
-    // Error middleware for errors that occurred in middleware that declared above
-    // Middleware should exactly take 4 arguments
-    // https://github.com/senchalabs/connect#error-middleware
-
     // Apply errorMiddleware from modules first
     await this.nuxt.callHook('render:errorMiddleware', this.app)
 
-    // Apply errorMiddleware from Nuxt
+    // Error middleware for errors that occurred in middleware that declared above
     this.useMiddleware(errorMiddleware({
       resources: this.resources,
       options: this.options
@@ -176,13 +181,23 @@ export default class Server {
     // Resolve handler setup as string (path)
     if (typeof handler === 'string') {
       try {
-        handler = this.nuxt.resolver.requireModule(middleware.handler || middleware)
-      } catch (err) {
-        if (!this.options.dev) {
-          throw err[0]
+        const requiredModuleFromHandlerPath = this.nuxt.resolver.requireModule(handler)
+
+        // In case the "handler" is not derived from an object but is a normal string, another object with
+        // path and handler could be the result
+
+        // If the required module has handler, treat the module as new "middleware" object
+        if (requiredModuleFromHandlerPath.handler) {
+          middleware = requiredModuleFromHandlerPath
         }
-        // Only warn missing file in development
-        consola.warn(err[0])
+
+        handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
+      } catch (err) {
+        consola.error(err)
+        // Throw error in production mode
+        if (!this.options.dev) {
+          throw err
+        }
       }
     }
 
@@ -213,9 +228,12 @@ export default class Server {
   }
 
   async listen(port, host, socket) {
+    // Ensure nuxt is ready
+    await this.nuxt.ready()
+
     // Create a new listener
     const listener = new Listener({
-      port: port || this.options.server.port,
+      port: isNaN(parseInt(port)) ? this.options.server.port : port,
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,
@@ -238,9 +256,8 @@ export default class Server {
     }
     this.__closed = true
 
-    for (const listener of this.listeners) {
-      await listener.close()
-    }
+    await Promise.all(this.listeners.map(l => l.close()))
+
     this.listeners = []
 
     if (typeof this.renderer.close === 'function') {

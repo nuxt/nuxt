@@ -6,6 +6,8 @@ describe('meta-attrs', () => {
   beforeAll(async () => {
     const options = await loadFixture('meta-attrs')
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     await nuxt.server.listen(await getPort(), '0.0.0.0')
   })
 

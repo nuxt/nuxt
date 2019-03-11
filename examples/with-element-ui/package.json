@@ -4,7 +4,8 @@
   "license": "MIT",
   "dependencies": {
     "element-ui": "^2",
-    "nuxt-edge": "latest"
+    "nuxt": "latest",
+    "post-update": "yarn upgrade --latest"
   },
   "scripts": {
     "dev": "nuxt",

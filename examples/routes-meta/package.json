@@ -1,12 +1,13 @@
 {
   "name": "examples-routes-meta",
   "dependencies": {
-    "nuxt-edge": "latest",
+    "nuxt": "latest",
     "wingcss": "^1.0.0-beta"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt start"
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
   }
 }

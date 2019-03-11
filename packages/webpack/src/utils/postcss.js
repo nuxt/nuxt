@@ -1,11 +1,12 @@
 import fs from 'fs'
 import path from 'path'
+import consola from 'consola'
 import defaults from 'lodash/defaults'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
-import { isPureObject } from '@nuxt/common'
+import { isPureObject } from '@nuxt/utils'
 
 export const orderPresets = {
   cssnanoLast: (names) => {
@@ -18,34 +19,29 @@ export const orderPresets = {
 }
 
 export default class PostcssConfig {
-  constructor(options, nuxt) {
-    this.nuxt = nuxt
-    this.dev = options.dev
-    this.postcss = options.build.postcss
-    this.srcDir = options.srcDir
-    this.rootDir = options.rootDir
-    this.cssSourceMap = options.build.cssSourceMap
-    this.modulesDir = options.modulesDir
+  constructor(buildContext) {
+    this.buildContext = buildContext
+  }
+
+  get postcssOptions() {
+    return this.buildContext.buildOptions.postcss
   }
 
   get defaultConfig() {
+    const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
-      sourceMap: this.cssSourceMap,
+      sourceMap: this.buildContext.buildOptions.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
           resolve: createResolver({
             alias: {
-              '~': path.join(this.srcDir),
-              '~~': path.join(this.rootDir),
-              '@': path.join(this.srcDir),
-              '@@': path.join(this.rootDir)
+              '~': path.join(srcDir),
+              '~~': path.join(rootDir),
+              '@': path.join(srcDir),
+              '@@': path.join(rootDir)
             },
-            modules: [
-              this.srcDir,
-              this.rootDir,
-              ...this.modulesDir
-            ]
+            modules: [ srcDir, rootDir, ...modulesDir ]
           })
         },
 
@@ -54,7 +50,7 @@ export default class PostcssConfig {
 
         // https://github.com/csstools/postcss-preset-env
         'postcss-preset-env': this.preset || {},
-        'cssnano': this.dev ? false : { preset: 'default' }
+        'cssnano': dev ? false : { preset: 'default' }
       },
       // Array, String or Function
       order: 'cssnanoLast'
@@ -64,7 +60,8 @@ export default class PostcssConfig {
   searchConfigFile() {
     // Search for postCSS config file and use it if exists
     // https://github.com/michael-ciniawsky/postcss-load-config
-    for (const dir of [this.srcDir, this.rootDir]) {
+    const { srcDir, rootDir } = this.buildContext.options
+    for (const dir of [ srcDir, rootDir ]) {
       for (const file of [
         'postcss.config.js',
         '.postcssrc.js',
@@ -81,19 +78,22 @@ export default class PostcssConfig {
   }
 
   configFromFile() {
-    const loaderConfig = (this.postcss && this.postcss.config) || {}
+    const loaderConfig = (this.postcssOptions && this.postcssOptions.config) || {}
     loaderConfig.path = loaderConfig.path || this.searchConfigFile()
 
     if (loaderConfig.path) {
       return {
-        sourceMap: this.cssSourceMap,
+        sourceMap: this.buildContext.buildOptions.cssSourceMap,
         config: loaderConfig
       }
     }
   }
 
   normalize(config) {
+    // TODO: Remove in Nuxt 3
     if (Array.isArray(config)) {
+      consola.warn('Using an Array as `build.postcss` will be deprecated in Nuxt 3. Please switch to the object' +
+        ' declaration')
       config = { plugins: config }
     }
     return config
@@ -108,12 +108,12 @@ export default class PostcssConfig {
   }
 
   loadPlugins(config) {
-    const plugins = config.plugins
+    const { plugins } = config
     if (isPureObject(plugins)) {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = require(p)
+          const plugin = this.buildContext.nuxt.resolver.requireModule(p)
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled
@@ -126,7 +126,7 @@ export default class PostcssConfig {
 
   config() {
     /* istanbul ignore if */
-    if (!this.postcss) {
+    if (!this.postcssOptions) {
       return false
     }
 
@@ -135,7 +135,7 @@ export default class PostcssConfig {
       return config
     }
 
-    config = this.normalize(cloneDeep(this.postcss))
+    config = this.normalize(cloneDeep(this.postcssOptions))
 
     // Apply default plugins
     if (isPureObject(config)) {

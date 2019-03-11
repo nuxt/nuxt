@@ -1,4 +1,4 @@
-# i18n with Nuxt.js
+# Nuxt with i18n
 
 https://nuxtjs.org/examples/i18n
 

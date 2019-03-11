@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { timeout } from '@nuxt/common'
+import { timeout } from '@nuxt/utils'
 
 export default async function renderAndGetWindow(
   url = 'http://localhost:3000',
@@ -53,10 +53,10 @@ export default async function renderAndGetWindow(
     ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
   )
 
-  /* istanbul ignore if */
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')
     error.body = window.document.body.innerHTML
+    window.close()
     throw error
   }
 

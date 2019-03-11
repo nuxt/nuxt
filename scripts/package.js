@@ -107,7 +107,8 @@ export default class Package {
   tryRequire(id) {
     try {
       return require(id)
-    } catch (e) {}
+    } catch (e) {
+    }
   }
 
   suffixAndVersion() {
@@ -132,7 +133,7 @@ export default class Package {
     }
 
     if (typeof this.pkg.bin === 'string') {
-      const bin = this.pkg.bin
+      const { bin } = this.pkg
       this.pkg.bin = {
         [oldPkgName]: bin,
         [this.pkg.name]: bin
@@ -171,10 +172,12 @@ export default class Package {
     for (const workspace of this.pkg.workspaces || []) {
       const dirs = await glob(workspace)
       for (const dir of dirs) {
-        const pkg = new Package({
-          rootDir: this.resolvePath(dir)
-        })
-        packages.push(pkg)
+        if (existsSync(this.resolvePath(dir, 'package.json'))) {
+          const pkg = new Package({ rootDir: this.resolvePath(dir) })
+          packages.push(pkg)
+        } else {
+          consola.warn('Invalid workspace package:', dir)
+        }
       }
     }
 
@@ -215,13 +218,16 @@ export default class Package {
       watcher.on('event', (event) => {
         switch (event.code) {
           // The watcher is (re)starting
-          case 'START': return this.logger.debug('Watching for changes')
+          case 'START':
+            return this.logger.debug('Watching for changes')
 
           // Building an individual bundle
-          case 'BUNDLE_START': return this.logger.debug('Building bundle')
+          case 'BUNDLE_START':
+            return this.logger.debug('Building bundle')
 
           // Finished building a bundle
-          case 'BUNDLE_END': return
+          case 'BUNDLE_END':
+            return
 
           // Finished building all bundles
           case 'END':
@@ -229,13 +235,16 @@ export default class Package {
             return this.logger.success('Bundle built')
 
           // Encountered an error while bundling
-          case 'ERROR': return this.logger.error(event.error)
+          case 'ERROR':
+            return this.logger.error(event.error)
 
           // Eencountered an unrecoverable error
-          case 'FATAL': return this.logger.fatal(event.error)
+          case 'FATAL':
+            return this.logger.fatal(event.error)
 
           // Unknown event
-          default: return this.logger.info(JSON.stringify(event))
+          default:
+            return this.logger.info(JSON.stringify(event))
         }
       })
     } else {

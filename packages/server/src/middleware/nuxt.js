@@ -2,7 +2,7 @@ import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
 
-import { getContext } from '@nuxt/common'
+import { getContext } from '@nuxt/utils'
 
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
@@ -22,7 +22,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     } = result
 
     if (redirected) {
-      nuxt.callHook('render:routeDone', url, result, context)
+      await nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
     if (error) {
@@ -35,7 +35,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
-        nuxt.callHook('render:routeDone', url, result, context)
+        await nuxt.callHook('render:routeDone', url, result, context)
         return
       }
       res.setHeader('ETag', etag)
@@ -74,10 +74,9 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
     res.end(html, 'utf8')
-    nuxt.callHook('render:routeDone', url, result, context)
+    await nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
-    /* istanbul ignore if */
     if (context && context.redirected) {
       consola.error(err)
       return err
@@ -95,7 +94,6 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   const links = []
   preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
-    /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
       return
     }
@@ -105,7 +103,7 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
       return
     }
 
-    const crossorigin = options.build.crossorigin
+    const { crossorigin } = options.build
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
     const ref = modern ? 'modulepreload' : 'preload'
 

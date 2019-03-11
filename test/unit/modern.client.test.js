@@ -7,6 +7,8 @@ describe('modern client mode (SSR)', () => {
   beforeAll(async () => {
     const options = await loadFixture('modern', { modern: 'client' })
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })
@@ -37,6 +39,11 @@ describe('modern client mode (SSR)', () => {
       '</_nuxt/modern-app.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=modulepreload; crossorigin=use-credentials; as=script`
     ].join(', '))
+  })
+
+  test('should contain safari fix script', async () => {
+    const response = await rp(url('/'))
+    expect(response).toContain('"noModule"')
   })
 
   // Close server and ask nuxt to stop listening to file changes

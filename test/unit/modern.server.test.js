@@ -11,6 +11,8 @@ describe('modern server mode', () => {
   beforeAll(async () => {
     const options = await loadFixture('modern')
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })

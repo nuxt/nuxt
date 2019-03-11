@@ -10,6 +10,7 @@ export default () => ({
   ssr: undefined,
   parallel: false,
   cache: false,
+  standalone: false,
   publicPath: '/_nuxt/',
   filenames: {
     // { isDev, isClient, isServer }
@@ -47,8 +48,13 @@ export default () => ({
       transpileOnly: true,
       appendTsSuffixTo: [/\.vue$/]
     },
+    tsx: {
+      transpileOnly: true,
+      appendTsxSuffixTo: [/\.vue$/]
+    },
     vueStyle: {}
   },
+  useForkTsChecker: process.env.NUXT_TS === 'true',
   styleResources: {},
   plugins: [],
   terser: {},

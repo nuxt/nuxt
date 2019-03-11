@@ -1,5 +1,5 @@
-import consola from 'consola'
-import { common } from '../options'
+import { common, locking } from '../options'
+import { createLock } from '../utils'
 
 export default {
   name: 'build',
@@ -7,6 +7,7 @@ export default {
   usage: 'build <dir>',
   options: {
     ...common,
+    ...locking,
     analyze: {
       alias: 'a',
       type: 'boolean',
@@ -47,40 +48,39 @@ export default {
           options.build.quiet = !!argv.quiet
         }
       }
+    },
+    standalone: {
+      type: 'boolean',
+      default: false,
+      description: 'Bundle all server dependencies (useful for nuxt-start)',
+      prepare(cmd, options, argv) {
+        if (argv.standalone) {
+          options.build.standalone = true
+        }
+      }
     }
   },
   async run(cmd) {
-    const argv = cmd.getArgv()
+    const config = await cmd.getNuxtConfig({ dev: false, server: false })
+    const nuxt = await cmd.getNuxt(config)
 
-    // Create production build when calling `nuxt build` (dev: false)
-    const nuxt = await cmd.getNuxt(
-      await cmd.getNuxtConfig(argv, { dev: false })
-    )
-
-    let builderOrGenerator
-    if (nuxt.options.mode !== 'spa' || argv.generate === false) {
-      // Build only
-      builderOrGenerator = (await cmd.getBuilder(nuxt)).build()
-    } else {
-      // Build + Generate for static deployment
-      builderOrGenerator = (await cmd.getGenerator(nuxt)).generate({
-        build: true
-      })
+    if (cmd.argv.lock) {
+      await cmd.setLock(await createLock({
+        id: 'build',
+        dir: nuxt.options.buildDir,
+        root: config.rootDir
+      }))
     }
 
-    return builderOrGenerator
-      .then(() => {
-        // In analyze mode wait for plugin
-        // emitting assets and opening browser
-        if (
-          nuxt.options.build.analyze === true ||
-          typeof nuxt.options.build.analyze === 'object'
-        ) {
-          return
-        }
+    if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
+      // Build only
+      const builder = await cmd.getBuilder(nuxt)
+      await builder.build()
+      return
+    }
 
-        process.exit(0)
-      })
-      .catch(err => consola.fatal(err))
+    // Build + Generate for static deployment
+    const generator = await cmd.getGenerator(nuxt)
+    await generator.generate({ build: true })
   }
 }

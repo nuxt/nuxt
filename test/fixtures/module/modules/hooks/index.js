@@ -12,6 +12,7 @@ export default function () {
   })
 
   // Get data before data sent to client
+  // TODO: Remove in next major release
   this.nuxt.hook('render:context', (data) => {
     this.nuxt.__render_context = data
   })

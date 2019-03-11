@@ -1,11 +1,12 @@
 {
   "name": "example-async-components-injection",
   "dependencies": {
-    "nuxt-edge": "latest"
+    "nuxt": "latest"
   },
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
-    "start": "nuxt"
+    "start": "nuxt",
+    "post-update": "yarn upgrade --latest"
   }
 }

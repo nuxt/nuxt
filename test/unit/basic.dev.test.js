@@ -80,10 +80,10 @@ describe('basic dev', () => {
   })
 
   test('Config: build.loaders', () => {
-    expect(Object.keys(loadersOptions)).toHaveLength(13)
+    expect(Object.keys(loadersOptions)).toHaveLength(14)
     expect(loadersOptions).toHaveProperty(
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
-      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'vueStyle'
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'tsx', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.localIdentName).toBe('[hash:base64:6]')
@@ -107,10 +107,9 @@ describe('basic dev', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/stateless'))
     const html = window.document.body.innerHTML
     expect(html).toContain('<h1>My component!</h1>')
-  })
-
-  test('Check render:routeDone hook called', () => {
+    // Check render:routeDone hook called
     expect(nuxt.__hook_render_routeDone__).toBe('/stateless')
+    window.close()
   })
 
   test('/client-init', async () => {

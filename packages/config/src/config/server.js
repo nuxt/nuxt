@@ -1,4 +1,4 @@
-export default ({ env }) => ({
+export default ({ env = {} } = {}) => ({
   https: false,
   port: env.NUXT_PORT ||
     env.PORT ||
@@ -9,5 +9,6 @@ export default ({ env }) => ({
     env.npm_package_config_nuxt_host ||
     'localhost',
   socket: env.UNIX_SOCKET ||
-    env.npm_package_config_unix_socket
+    env.npm_package_config_unix_socket,
+  timing: false
 })

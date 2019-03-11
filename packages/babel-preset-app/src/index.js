@@ -6,6 +6,9 @@ const defaultPolyfills = [
   'es6.array.iterator',
   // This is required for webpack code splitting, vuex etc.
   'es6.promise',
+  // this is needed for object rest spread support in templates
+  // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
+  'es6.object.assign',
   // #2012 es6.promise replaces native Promise in FF and causes missing finally
   'es7.promise.finally'
 ]
@@ -25,16 +28,6 @@ function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath 
 module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
-
-  // JSX
-  if (options.jsx !== false) {
-    plugins.push(
-      require('@babel/plugin-syntax-jsx'),
-      require('babel-plugin-transform-vue-jsx')
-      // require('babel-plugin-jsx-event-modifiers'),
-      // require('babel-plugin-jsx-v-model')
-    )
-  }
 
   const modern = !!options.modern
 
@@ -56,10 +49,10 @@ module.exports = (context, options = {}) => {
     decoratorsLegacy
   } = options
 
-  let targets = options.targets
+  let { targets } = options
   if (modern === true) {
     targets = { esmodules: true }
-  } else if (targets === undefined) {
+  } else if (targets === undefined && typeof buildTarget === 'string') {
     targets = buildTarget === 'server' ? { node: 'current' } : { ie: 9 }
   }
 
@@ -91,6 +84,11 @@ module.exports = (context, options = {}) => {
       forceAllTransforms
     }
   ])
+
+  // JSX
+  if (options.jsx !== false) {
+    presets.push([require('@vue/babel-preset-jsx'), Object.assign({}, options.jsx)])
+  }
 
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),
