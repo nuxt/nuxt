@@ -24,7 +24,7 @@ export const orderPresets = {
     return names
   },
   presetEnvAndCssnanoLast(names) {
-    return this.cssnanoLast(this.presetEnvLast(names))
+    return orderPresets.cssnanoLast(orderPresets.presetEnvLast(names))
   }
 }
 
