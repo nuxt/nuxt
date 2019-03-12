@@ -1,0 +1,15 @@
+{
+  "name": "example-hello-world",
+  "dependencies": {
+    "nuxt-start": "latest"
+  },
+  "devDependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "post-update": "yarn upgrade --latest"
+  }
+}
