@@ -83,7 +83,11 @@ createApp()
   .catch((err) => {
     const improvedErr = new Error('[nuxt] Error while mounting app: ' + err.message)
     improvedErr.original = err
-    improvedErr.stack = improvedErr.stack.split('\n').slice(0,2).join('\n') + '\n' + err.stack
+
+    if(improvedErr.hasOwnProperty('stack')) {
+      improvedErr.stack = improvedErr.stack.split('\n').slice(0, 2).join('\n') + '\n' + err.stack
+    }
+
     errorHandler(improvedErr)
   })
 
