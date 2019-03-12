@@ -81,8 +81,10 @@ const errorHandler = Vue.config.errorHandler || console.error
 createApp()
   .then(mountApp)
   .catch((err) => {
-    err.message = '[nuxt] Error while mounting app: ' + err.message
-    errorHandler(err)
+    const improvedErr = new Error('[nuxt] Error while mounting app: ' + err.message)
+    improvedErr.original = err
+    improvedErr.stack = improvedErr.stack.split('\n').slice(0,2).join('\n') + '\n' + err.stack
+    errorHandler(improvedErr)
   })
 
 function componentOption(component, key, ...args) {
