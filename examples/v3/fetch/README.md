@@ -51,13 +51,13 @@ export default {
 </script>
 ```
 
-If you go directly to [http://localhost:3000/](http://localhost:3000/), you will see directly the full list of posts which has been server-rendered.
+If you go directly to [http://localhost:3000/](http://localhost:3000/), you will see directly the full list of posts which has been **server-rendered** (great for SEO).
 
 <img width="669" alt="Screenshot 2019-03-11 at 23 04 57" src="https://user-images.githubusercontent.com/904724/54161334-1f9e8400-4452-11e9-97bf-996a6e69d9db.png">
 
 
 > **INFO** 💡<br>
-> Nuxt will smartly detect what data you mutated inside `fetch` and optimised the JSON included in the returned HTML.
+> Nuxt will smartly detect what data you mutated inside `fetch` and optimises the JSON included in the returned HTML.
 
 Now, let's add `pages/posts/_id.vue` page to display a post on `/posts/:id`.
 
@@ -86,7 +86,7 @@ export default {
 </script>
 ```
 
-When navigating, you should now see "Loading post #..." on client-side, and no loading when refreshing a post.
+When navigating, you should now see `"Loading post #..."` on client-side, and no loading when refreshing a post (hard refresh on the browser).
 
 <img width="669" alt="fetch-nuxt3" src="https://user-images.githubusercontent.com/904724/54161844-d3544380-4453-11e9-9586-7428597db40e.gif">
 
@@ -95,7 +95,7 @@ When navigating, you should now see "Loading post #..." on client-side, and no l
 
 ## Caching
 
-You can use the `keep-alive` directive in `<nuxt/>` and `<nuxt-child/>` component to saving `fetch` calls on pages you already visited:
+You can use `keep-alive` directive in `<nuxt/>` and `<nuxt-child/>` component to save `fetch` calls on pages you already visited:
 
 `layouts/default.vue`
 ```vue
@@ -139,7 +139,7 @@ export default {
 </script>
 ```
 
-The navigation to the same page will not trigger an HTTP request before 30 sec.
+The navigation to the same page will not call `fetch` if last `fetch` call was before 30 sec ago.
 
 ![fetch-keep-alive-nuxt3](https://user-images.githubusercontent.com/904724/54164405-c6881d80-445c-11e9-94e0-366406270874.gif)
 
