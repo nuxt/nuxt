@@ -5,7 +5,7 @@ import consola from 'consola'
 import devalue from '@nuxt/devalue'
 import invert from 'lodash/invert'
 import template from 'lodash/template'
-import { waitFor } from '@nuxt/utils'
+import { waitFor, isUrl, urlJoin } from '@nuxt/utils'
 import { createBundleRenderer } from 'vue-server-renderer'
 
 import SPAMetaRenderer from './spa-meta'
@@ -13,6 +13,9 @@ import SPAMetaRenderer from './spa-meta'
 export default class VueRenderer {
   constructor(context) {
     this.context = context
+
+    const { build: { publicPath }, router: { base } } = this.context.options
+    this.publicPath = isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
 
     // Will be set by createRenderer
     this.renderer = {
@@ -55,11 +58,11 @@ export default class VueRenderer {
 
   renderScripts(context) {
     if (this.context.options.modern === 'client') {
-      const { publicPath, crossorigin } = this.context.options.build
       const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(publicPath, '')
+        const legacyJsFile = jsFile.replace(this.publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
+        const { build: { crossorigin } } = this.context.options
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         const moduleTag = modernJsFile
           ? scriptTag
@@ -95,14 +98,14 @@ export default class VueRenderer {
 
   renderSsrResourceHints(context) {
     if (this.context.options.modern === 'client') {
-      const { publicPath, crossorigin } = this.context.options.build
       const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
       return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(publicPath, '')
+        const legacyJsFile = jsFile.replace(this.publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
         if (!modernJsFile) {
           return ''
         }
+        const { crossorigin } = this.context.options.build
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
       })
