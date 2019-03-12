@@ -9,12 +9,22 @@ import createResolver from 'postcss-import-resolver'
 import { isPureObject } from '@nuxt/utils'
 
 export const orderPresets = {
-  cssnanoLast: (names) => {
+  cssnanoLast(names) {
     const nanoIndex = names.indexOf('cssnano')
     if (nanoIndex !== names.length - 1) {
       names.push(names.splice(nanoIndex, 1)[0])
     }
     return names
+  },
+  presetEnvLast(names) {
+    const nanoIndex = names.indexOf('postcss-preset-env')
+    if (nanoIndex !== names.length - 1) {
+      names.push(names.splice(nanoIndex, 1)[0])
+    }
+    return names
+  },
+  presetEnvAndCssnanoLast(names) {
+    return this.cssnanoLast(this.presetEnvLast(names))
   }
 }
 
@@ -53,7 +63,7 @@ export default class PostcssConfig {
         'cssnano': dev ? false : { preset: 'default' }
       },
       // Array, String or Function
-      order: 'cssnanoLast'
+      order: 'presetEnvAndCssnanoLast'
     }
   }
 
