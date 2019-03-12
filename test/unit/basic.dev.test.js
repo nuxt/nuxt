@@ -90,15 +90,15 @@ describe('basic dev', () => {
     expect(vueLoader.options).toEqual(vue)
   })
 
-  test('Config: cssnano is at then end of postcss plugins', () => {
+  test('Config: preset-env and cssnano are at then end of postcss plugins', () => {
     const plugins = postcssLoader.options.plugins.map((plugin) => {
       return plugin.postcssPlugin
     })
     expect(plugins).toEqual([
       'postcss-import',
       'postcss-url',
-      'postcss-preset-env',
       'nuxt-test',
+      'postcss-preset-env',
       'cssnano'
     ])
   })
