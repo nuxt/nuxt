@@ -40,7 +40,7 @@ describe('typescript', () => {
   })
 
   test('TS module successfully required', () => {
-    expect(nuxt.moduleContainer.requiredModules).toHaveProperty('~/modules/module')
+    expect(nuxt.moduleContainer.requiredModules.testTSModule).toBeDefined()
   })
 
   // Close server and ask nuxt to stop listening to file changes

@@ -352,7 +352,7 @@ describe('core: resolver', () => {
       })
       fs.existsSync = jest.fn(() => true)
 
-      resolver.resolvePath('/var/nuxt/resolver/file', { module: true })
+      resolver.resolvePath('/var/nuxt/resolver/file.js', { module: true })
       const warnMsg = 'Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.'
       expect(consola.warn).toBeCalledTimes(1)
       expect(consola.warn).toBeCalledWith(warnMsg)
@@ -364,10 +364,10 @@ describe('core: resolver', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = x => x
       resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
 
-      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module')
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js')
 
       expect(resolvedModule).toEqual('resolved module')
     })
@@ -376,10 +376,10 @@ describe('core: resolver', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = x => x
       resolver.esm = jest.fn(() => 'resolved module')
 
-      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module')
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js')
 
       expect(resolvedModule).toEqual('resolved module')
     })
@@ -388,10 +388,10 @@ describe('core: resolver', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = x => x
       resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
 
-      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module', { interopDefault: false })
+      const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js', { interopDefault: false })
 
       expect(resolvedModule).toEqual({ default: 'resolved module' })
     })
@@ -403,7 +403,7 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn(() => 'path')
       resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
 
-      const resolvedModule = resolver.requireModule('path', { esm: false })
+      const resolvedModule = resolver.requireModule('path', { useESM: false })
 
       expect(resolvedModule).toBe(path)
     })
@@ -427,7 +427,7 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
       resolver.esm = jest.fn(() => undefined)
 
-      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow('resolve failed')
+      expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve failed')
     })
 
     test('should throw last error', () => {
@@ -437,17 +437,17 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
       resolver.esm = jest.fn(() => { throw new Error('resolve esm failed') })
 
-      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow('resolve esm failed')
+      expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve esm failed')
     })
 
     test('should display deprecated alias options', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = x => x
       resolver.esm = jest.fn()
 
-      resolver.requireModule('/var/nuxt/resolver/file', { alias: true })
+      resolver.requireModule('/var/nuxt/resolver/file.js', { alias: true })
       const warnMsg = 'Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.'
       expect(consola.warn).toBeCalledTimes(1)
       expect(consola.warn).toBeCalledWith(warnMsg)
@@ -460,7 +460,7 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn()
       resolver.esm = jest.fn()
 
-      resolver.requireModule('/var/nuxt/resolver/file', { esm: true })
+      resolver.requireModule('/var/nuxt/resolver/file.js', { esm: true })
       const warnMsg = 'Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.'
       expect(consola.warn).toBeCalledTimes(1)
       expect(consola.warn).toBeCalledWith(warnMsg)
