@@ -152,7 +152,10 @@ export default class ModuleContainer {
     }
 
     // Resolve module meta
-    const key = (handler.meta && handler.meta.name) || handler.name || src
+    let key = (handler.meta && handler.meta.name) || handler.name
+    if (!key || key === 'default') {
+      key = src
+    }
 
     // Update requiredModules
     if (typeof key === 'string') {
