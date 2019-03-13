@@ -21,8 +21,6 @@
     "@types/webpack-bundle-analyzer": "^2.13.1",
     "@types/webpack-dev-middleware": "^2.0.2",
     "@types/webpack-hot-middleware": "^2.16.5",
-    "chalk": "^2.4.2",
-    "consola": "^2.5.6",
     "fork-ts-checker-webpack-plugin": "^1.0.0",
     "fs-extra": "^7.0.1",
     "lodash": "^4.17.11",
