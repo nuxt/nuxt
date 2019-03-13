@@ -8996,10 +8996,10 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-proper-lockfile@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/proper-lockfile/-/proper-lockfile-3.2.0.tgz#89ca420eea1d55d38ca552578851460067bcda66"
-  integrity sha512-iMghHHXv2bsxl6NchhEaFck8tvX3F9cknEEh1SUpguUOBjN7PAAW9BLzmbc1g/mCD1gY3EE2EABBHPJfFdHFmA==
+proper-lockfile@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/proper-lockfile/-/proper-lockfile-4.0.0.tgz#8c69a611ed11c4f9a9be000c217441018321c4fc"
+  integrity sha512-P85AS7lPUMs8S2G9HQITSbNlZ5FJaQdade/RQSySPFp9Qs425X28UasQ5Suk/6NiLNi4P3tD2P5LhEPzURgIQg==
   dependencies:
     graceful-fs "^4.1.11"
     retry "^0.12.0"
