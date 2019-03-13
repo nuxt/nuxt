@@ -403,7 +403,7 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn(() => 'path')
       resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
 
-      const resolvedModule = resolver.requireModule('path', { esm: false })
+      const resolvedModule = resolver.requireModule('path', { useESM: false })
 
       expect(resolvedModule).toBe(path)
     })
@@ -460,7 +460,7 @@ describe('core: resolver', () => {
       resolver.resolvePath = jest.fn()
       resolver.esm = jest.fn()
 
-      resolver.requireModule('/var/nuxt/resolver/file', { esm: true })
+      resolver.requireModule('/var/nuxt/resolver/file', { useESM: true })
       const warnMsg = 'Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.'
       expect(consola.warn).toBeCalledTimes(1)
       expect(consola.warn).toBeCalledWith(warnMsg)
