@@ -330,7 +330,7 @@ describe('core: module', () => {
     const result = await module.addModule('moduleTest')
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest')
+    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
@@ -379,7 +379,7 @@ describe('core: module', () => {
     const result = await module.addModule(['moduleTest', { test: true }])
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest')
+    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
