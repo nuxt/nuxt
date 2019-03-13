@@ -143,9 +143,9 @@ export default class Resolver {
     // Try to require
     try {
       if (useESM) {
-        requiredModule = require(resolvedPath)
-      } else {
         requiredModule = this.esm(resolvedPath)
+      } else {
+        requiredModule = require(resolvedPath)
       }
     } catch (e) {
       lastError = e
