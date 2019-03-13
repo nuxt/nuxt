@@ -143,7 +143,7 @@ export default class ModuleContainer {
 
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.resolver.requireModule(src)
+      handler = this.nuxt.resolver.requireModule(src, { useESM: true })
     }
 
     // Validate handler
