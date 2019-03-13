@@ -11,6 +11,8 @@ describe('server listen', () => {
 
   test('should throw error when listening on same port (prod)', async () => {
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     const port = await getPort()
     const listen = () => nuxt.server.listen(port, 'localhost')
 
@@ -26,6 +28,8 @@ describe('server listen', () => {
 
   test('should assign a random port when listening on same port (dev)', async () => {
     const nuxt = new Nuxt({ ...config, dev: true })
+    await nuxt.ready()
+
     const port = await getPort()
     const listen = () => nuxt.server.listen(port, 'localhost')
 
@@ -53,6 +57,8 @@ describe('server listen', () => {
 
     // Setup test
     const nuxt = new Nuxt({ ...config, dev: true })
+    await nuxt.ready()
+
     const listen = () => nuxt.server.listen(0, 'localhost') // Use port 0 to let allow host to randomly assign a free PORT
     const toString = (x = '') => `${x}`
 

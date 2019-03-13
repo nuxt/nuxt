@@ -1,11 +1,11 @@
 import path from 'path'
 import crypto from 'crypto'
-import fs from 'fs'
+import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxt/devalue'
 import invert from 'lodash/invert'
 import template from 'lodash/template'
-import { waitFor } from '@nuxt/utils'
+import { waitFor, isUrl, urlJoin } from '@nuxt/utils'
 import { createBundleRenderer } from 'vue-server-renderer'
 
 import SPAMetaRenderer from './spa-meta'
@@ -13,6 +13,9 @@ import SPAMetaRenderer from './spa-meta'
 export default class VueRenderer {
   constructor(context) {
     this.context = context
+
+    const { build: { publicPath }, router: { base } } = this.context.options
+    this.publicPath = isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
 
     // Will be set by createRenderer
     this.renderer = {
@@ -55,11 +58,11 @@ export default class VueRenderer {
 
   renderScripts(context) {
     if (this.context.options.modern === 'client') {
-      const { publicPath, crossorigin } = this.context.options.build
       const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
       return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(publicPath, '')
+        const legacyJsFile = jsFile.replace(this.publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
+        const { build: { crossorigin } } = this.context.options
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         const moduleTag = modernJsFile
           ? scriptTag
@@ -95,14 +98,14 @@ export default class VueRenderer {
 
   renderSsrResourceHints(context) {
     if (this.context.options.modern === 'client') {
-      const { publicPath, crossorigin } = this.context.options.build
       const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
       return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(publicPath, '')
+        const legacyJsFile = jsFile.replace(this.publicPath, '')
         const modernJsFile = this.assetsMapping[legacyJsFile]
         if (!modernJsFile) {
           return ''
         }
+        const { crossorigin } = this.context.options.build
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
         return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
       })
@@ -111,9 +114,14 @@ export default class VueRenderer {
   }
 
   async ready() {
+    if (this._readyCalled) {
+      return this
+    }
+    this._readyCalled = true
+
     // -- Development mode --
     if (this.context.options.dev) {
-      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs, true))
+      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
       return
     }
 
@@ -139,36 +147,32 @@ export default class VueRenderer {
         'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
       )
     }
+
+    return this
   }
 
-  loadResources(_fs, isMFS = false) {
+  async loadResources(_fs) {
     const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
-    const { resourceMap } = this
 
-    const readResource = (fileName, encoding) => {
+    const readResource = async (fileName, encoding) => {
       try {
         const fullPath = path.resolve(distPath, fileName)
-        if (!_fs.existsSync(fullPath)) {
+        if (!await _fs.exists(fullPath)) {
           return
         }
-        const contents = _fs.readFileSync(fullPath, encoding)
-        if (isMFS) {
-          // Cleanup MFS as soon as possible to save memory
-          _fs.unlinkSync(fullPath)
-          delete this._assetsMapping
-        }
+        const contents = await _fs.readFile(fullPath, encoding)
         return contents
       } catch (err) {
         consola.error('Unable to load resource:', fileName, err)
       }
     }
 
-    for (const resourceName in resourceMap) {
-      const { fileName, transform, encoding } = resourceMap[resourceName]
+    for (const resourceName in this.resourceMap) {
+      const { fileName, transform, encoding } = this.resourceMap[resourceName]
 
       // Load resource
-      let resource = readResource(fileName, encoding)
+      let resource = await readResource(fileName, encoding)
 
       // Skip unavailable resources
       if (!resource) {
@@ -178,10 +182,7 @@ export default class VueRenderer {
 
       // Apply transforms
       if (typeof transform === 'function') {
-        resource = transform(resource, {
-          readResource,
-          oldValue: this.context.resources[resourceName]
-        })
+        resource = await transform(resource, { readResource })
       }
 
       // Update resource
@@ -189,32 +190,39 @@ export default class VueRenderer {
       updated.push(resourceName)
     }
 
-    // Reload error template
-    const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
-    if (fs.existsSync(errorTemplatePath)) {
-      this.context.resources.errorTemplate = this.parseTemplate(
-        fs.readFileSync(errorTemplatePath, 'utf8')
-      )
-    }
+    // Load templates
+    await this.loadTemplates()
 
-    // Reload loading template
-    const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
-    if (fs.existsSync(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = fs.readFileSync(loadingHTMLPath, 'utf8')
-      this.context.resources.loadingHTML = this.context.resources.loadingHTML
-        .replace(/\r|\n|[\t\s]{3,}/g, '')
-    } else {
-      this.context.resources.loadingHTML = ''
-    }
-
-    // Call createRenderer if any resource changed
+    // Detect if any resource updated
     if (updated.length > 0) {
+      // Invalidate assetsMapping cache
+      delete this._assetsMapping
+
+      // Create new renderer
       this.createRenderer()
     }
 
     // Call resourcesLoaded hook
     consola.debug('Resources loaded:', updated.join(','))
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
+  }
+
+  async loadTemplates() {
+    // Reload error template
+    const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
+    if (await fs.exists(errorTemplatePath)) {
+      const errorTemplate = await fs.readFile(errorTemplatePath, 'utf8')
+      this.context.resources.errorTemplate = this.parseTemplate(errorTemplate)
+    }
+
+    // Reload loading template
+    const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
+    if (await fs.exists(loadingHTMLPath)) {
+      this.context.resources.loadingHTML = await fs.readFile(loadingHTMLPath, 'utf8')
+      this.context.resources.loadingHTML = this.context.resources.loadingHTML.replace(/\r|\n|[\t\s]{3,}/g, '')
+    } else {
+      this.context.resources.loadingHTML = ''
+    }
   }
 
   // TODO: Remove in Nuxt 3
@@ -415,6 +423,10 @@ export default class VueRenderer {
   async renderRoute(url, context = {}, retries = 5) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      if (!this._readyCalled) {
+        throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called!')
+      }
+
       if (!this.context.options.dev || retries <= 0) {
         throw new Error('Server resources are not available!')
       }
@@ -440,7 +452,7 @@ export default class VueRenderer {
     // context.spa
     if (context.spa === undefined) {
       // TODO: Remove reading from context.res in Nuxt3
-      context.spa = !this.SSR || context.spa || req.spa || (context.res && context.res.spa)
+      context.spa = !this.SSR || req.spa || (context.res && context.res.spa)
     }
 
     // context.modern
@@ -470,22 +482,21 @@ export default class VueRenderer {
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        transform: (src, { readResource, oldValue = { files: {}, maps: {} } }) => {
+        transform: async (src, { readResource }) => {
           const serverManifest = JSON.parse(src)
 
-          const resolveAssets = (obj, oldObj) => {
-            Object.keys(obj).forEach((name) => {
-              obj[name] = readResource(obj[name])
-              // Try to reuse deleted MFS files if no new version exists
-              if (!obj[name]) {
-                obj[name] = oldObj[name]
-              }
-            })
-            return obj
+          const readResources = async (obj) => {
+            const _obj = {}
+            await Promise.all(Object.keys(obj).map(async (key) => {
+              _obj[key] = await readResource(obj[key])
+            }))
+            return _obj
           }
 
-          const files = resolveAssets(serverManifest.files, oldValue.files)
-          const maps = resolveAssets(serverManifest.maps, oldValue.maps)
+          const [files, maps] = await Promise.all([
+            readResources(serverManifest.files),
+            readResources(serverManifest.maps)
+          ])
 
           // Try to parse sourcemaps
           for (const map in maps) {

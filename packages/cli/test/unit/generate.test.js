@@ -11,6 +11,10 @@ describe('generate', () => {
     jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
   })
 
+  afterAll(() => {
+    process.exit.mockRestore()
+  })
+
   afterEach(() => jest.resetAllMocks())
 
   test('has run function', () => {
@@ -109,6 +113,7 @@ describe('generate', () => {
 
     mockGetGenerator(async () => {
       await buildDone()
+      return { errors: [] }
     })
 
     const cmd = NuxtCommand.from(generate, ['generate', '.'])
@@ -129,5 +134,29 @@ describe('generate', () => {
     await cmd.run()
 
     expect(createLock).not.toHaveBeenCalled()
+  })
+
+  test('throw an error when fail-on-error enabled and page errors', async () => {
+    mockGetNuxt()
+    mockGetGenerator(() => ({ errors: [{ type: 'dummy' }] }))
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--fail-on-error'])
+    await expect(cmd.run()).rejects
+  })
+
+  test('do not throw an error when fail-on-error disabled and page errors', async () => {
+    mockGetNuxt()
+    mockGetGenerator(() => ({ errors: [{ type: 'dummy' }] }))
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.'])
+    await cmd.run()
+  })
+
+  test('do not throw an error when fail-on-error enabled and no page errors', async () => {
+    mockGetNuxt()
+    mockGetGenerator()
+
+    const cmd = NuxtCommand.from(generate, ['generate', '.', '--fail-on-error'])
+    await cmd.run()
   })
 })

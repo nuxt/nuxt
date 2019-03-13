@@ -77,7 +77,6 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     await nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
-    /* istanbul ignore if */
     if (context && context.redirected) {
       consola.error(err)
       return err
@@ -95,7 +94,6 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   const links = []
   preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
-    /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
       return
     }

@@ -9,8 +9,9 @@ describe('basic fail generate', () => {
         }
       }
     })
-
     const nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     const generator = new Generator(nuxt)
 
     await generator.generate({ build: false }).catch((e) => {

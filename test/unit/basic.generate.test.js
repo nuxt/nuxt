@@ -21,11 +21,12 @@ describe('basic generate', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     pathsBefore = listPaths(nuxt.options.rootDir)
 
     // Make sure our check for changed files is really working
-    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
+    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate', '.nuxt-generate-changed')
     nuxt.hook('generate:done', () => {
       writeFileSync(changedFileName, '')
     })
