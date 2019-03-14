@@ -17,15 +17,15 @@ export interface Context {
   /**
    * @deprecated Use process.client instead
   */
-  isClient: boolean; isClient: boolean;
+  isClient: boolean;
   /**
    * @deprecated Use process.server instead
   */
-  isServer: boolean; isServer: boolean;
+  isServer: boolean;
   /**
    * @deprecated Use process.static instead
   */
-  isStatic: boolean; isStatic: boolean;
+  isStatic: boolean;
   isDev: boolean
   isHMR: boolean
   route: Route
