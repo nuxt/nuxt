@@ -182,9 +182,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
 
     // Entry points
-    config.entry = {
+    config.entry = Object.assign({}, config.entry, {
       app: [path.resolve(buildDir, 'client.js')]
-    }
+    })
 
     // Add HMR support
     if (this.dev) {

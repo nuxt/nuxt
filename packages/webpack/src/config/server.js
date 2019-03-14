@@ -69,9 +69,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     Object.assign(config, {
       target: 'node',
       node: false,
-      entry: {
+      entry: Object.assign({}, config.entry, {
         app: [path.resolve(this.buildContext.options.buildDir, 'server.js')]
-      },
+      }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
         libraryTarget: 'commonjs2'
