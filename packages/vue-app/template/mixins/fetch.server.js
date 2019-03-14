@@ -23,17 +23,24 @@ export default {
     if (hasFetch(this) && this._fetchOnServer) {
       const data = Object.assign({}, this.$data)
 
-      await this.$options.fetch.call(this, this.$nuxt.$options.context)
+      try {
+        await this.$options.fetch.call(this, this.$nuxt.$options.context)
 
-      // Define and ssrKey for hydration
-      this._ssrKey = this.$nuxt.state.data.length
+        // Define and ssrKey for hydration
+        this._ssrKey = this.$nuxt.state.data.length
 
-      // Add data-ssr-key on parent element of Component
-      const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
-      attrs['data-ssr-key'] = this._ssrKey
+        // Add data-ssr-key on parent element of Component
+        const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
+        attrs['data-ssr-key'] = this._ssrKey
 
-      // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
-      this.$nuxt.state.data.push(getDataDiff(data, this.$data))
+        // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
+        this.$nuxt.state.data.push(getDataDiff(data, this.$data))
+      } catch (err) {
+        console.log('fetch errored')
+        this.$nuxt.error(err)
+        this.$nuxt.$forceUpdate()
+      }
+      await new Promise(resolve => this.$nextTick(resolve))
     }
   }
 }
