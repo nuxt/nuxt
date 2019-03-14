@@ -4,23 +4,25 @@
 
 latestTag=`git describe | grep -oE "^[^-]+"`
 
-echo "Comaparing $latestTag...dev"
+rm commits.md
+
+write() {
+  echo "$@"
+  echo "$@" >> commits.md
+}
+
+write "Comaparing $latestTag...dev"
 
 diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
 
-echo
-echo "# Features"
-echo "$diff" | awk '/feat/'
-echo "$diff" | awk '/feat/' | grep -oE "[0-9a-f]{8}" > .git/feat.txt
+write
+write "## Features"
+write
+res=`echo "$diff" | awk '/feat/' | grep ":" | grep -v "renovate"  | sed -e 's/^/- /' | sort`
+write "$res"
 
-echo
-echo "# Fixes"
-echo "$diff" | awk '!/feat/'
-echo "$diff" | awk '!/feat/' | grep -oE "[0-9a-f]{8}" > .git/fix.txt
-
-echo
-echo "To apply diff into target banch:"
-echo "$ git cherry-pick \`tac .git/fix.txt\`"
-echo "In case of conflicts:"
-echo "$ yarn"
-echo "$ git cherry-pick --continue"
+write
+write "## Fixes"
+write
+res=`echo "$diff" | awk '!/feat/' | grep ":" | grep -v "renovate" | sed -e 's/^/- /' | sort`
+write "$res"
