@@ -11,18 +11,22 @@ write() {
   echo "$@" >> commits.md
 }
 
+writeSection() {
+  write
+  write "## $1"
+  write
+  res=`echo "$3" | awk "/^$2(.*):/;" | grep ":" | grep -v "renovate"  | sed -e 's/^/- /' | sort`
+  write "$res"
+}
+
 write "Comaparing $latestTag...dev"
 
 diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
 
-write
-write "## Features"
-write
-res=`echo "$diff" | awk '/feat/' | grep ":" | grep -v "renovate"  | sed -e 's/^/- /' | sort`
-write "$res"
-
-write
-write "## Fixes"
-write
-res=`echo "$diff" | awk '!/feat/' | grep ":" | grep -v "renovate" | sed -e 's/^/- /' | sort`
-write "$res"
+writeSection 'Features' 'feat'  $diff
+writeSection 'Fixes' 'fix'  $diff
+writeSection 'Refactors' 'refactor'  $diff
+writeSection 'Performance Improvements' 'perf'  $diff
+writeSection 'Examples' 'examples'  $diff
+writeSection 'Chore' 'chore'  $diff
+writeSection 'Tests' 'test'  $diff
