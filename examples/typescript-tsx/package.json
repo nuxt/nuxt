@@ -3,20 +3,18 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "nuxt-ts",
-    "build": "nuxt-ts build",
-    "start": "nuxt-ts start",
-    "generate": "nuxt-ts generate",
-    "lint": "tslint --project .",
-    "lint:fix": "tslint --project . --fix",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
     "post-update": "yarn upgrade --latest",
     "watch:css": "tcm components -w"
   },
   "dependencies": {
-    "nuxt-ts": "latest"
+    "nuxt": "latest"
   },
   "devDependencies": {
-    "tslint-config-standard": "^8.0.1",
+    "@nuxt/typescript": "latest",
     "typed-css-modules": "^0.3.7"
   }
 }

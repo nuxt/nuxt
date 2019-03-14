@@ -1,9 +1,12 @@
+
+import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
 import { loadNuxtConfig, forceExit } from './utils'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
+import { detectAndSetupTypeScriptSupport } from './utils/typescript'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -73,7 +76,10 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions) {
+  async getNuxtConfig(extraOptions = {}) {
+    const rootDir = path.resolve(this.argv._[0] || '.')
+    extraOptions._typescript = await detectAndSetupTypeScriptSupport(rootDir, { transpileOnly: this.cmd.name === 'start' })
+
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)
 

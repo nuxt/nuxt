@@ -84,7 +84,7 @@ export function getNuxtConfig(_options) {
 
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, defaultNuxtConfigFile)
+    options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
   // Watch for _nuxtConfigFile changes
