@@ -1463,10 +1463,10 @@
   resolved "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@nuxt/devalue@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.1.tgz#29f077ba646cf77c865872b1c9aa615518905cd5"
-  integrity sha512-lNhY8yo9rc/FME52sUyQcs07wjTQ4QS8geFgBI5R/Zg60rq7CruG54qi5Za1m+mVvrJvhW24Jyu0Sq3lwfe3cg==
+"@nuxt/devalue@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.2.tgz#1d7993f9a6029df07f597a20246b16282302b156"
+  integrity sha512-T3S20YKOG0bzhvFRuGWqXLjqnwTczvRns5BgzHKRosijWHjl6tOpWCIr+2PFC5YQ3gTE4c5ZOLG5wOEcMLvn1w==
   dependencies:
     consola "^2.5.6"
 
