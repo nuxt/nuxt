@@ -4,10 +4,25 @@ import consola from 'consola'
 
 import { getContext } from '@nuxt/utils'
 
-export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
   const context = getContext(req, res)
-  const url = decodeURI(req.url)
+  let url
+
+  try {
+    url = decodeURI(req.url)
+  } catch (err) {
+    /* istanbul ignore if */
+    if (context && context.redirected) {
+      consola.error(err)
+      return err
+    }
+
+    const e = new Error('URL malformed')
+    e.name = 'Bad Request'
+    e.statusCode = 400
+    return next(e)
+  }
 
   res.statusCode = 200
   try {
