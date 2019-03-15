@@ -7,10 +7,9 @@ import { getContext } from '@nuxt/utils'
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
-  let url
 
   try {
-    url = decodeURI(req.url)
+    const url = decodeURI(req.url)
     res.statusCode = 200
     const result = await renderRoute(url, context)
     await nuxt.callHook('render:route', url, result, context)
