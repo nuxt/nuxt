@@ -7,10 +7,9 @@ export default class BuilderUI {
   constructor() {
     this.middleware = this.middleware.bind(this)
     this.reporter = new BuilderUIReporter()
-    this.template = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8')
     this.ws = new WebSocket.Server({ noServer: true })
 
-    this.reporter.on('update', () => { this.broadcast() })
+    this.reporter.on('update', () => this.broadcast())
   }
 
   get data() {
@@ -21,8 +20,13 @@ export default class BuilderUI {
 
   broadcast() {
     const data = JSON.stringify(this.data)
+
     for (const client of this.ws.clients) {
-      client.send(data)
+      try {
+        client.send(data)
+      } catch (err) {
+        // Ignore error (if client not ready to receive event)
+      }
     }
   }
 
@@ -30,10 +34,11 @@ export default class BuilderUI {
     if (req.url.match(/\/ws$/)) {
       return this.ws.handleUpgrade(req, req.socket, req.headers, (client) => {
         this.ws.emit('connection', client, req)
+        this.broadcast()
       })
     }
 
-    const html = this.template.replace('__DATA__', JSON.stringify(this.data))
-    res.end(html)
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify(this.data))
   }
 }

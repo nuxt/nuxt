@@ -237,7 +237,7 @@ export class WebpackBundler {
       await this.hotMiddleware[name](req, res)
     }
 
-    if (this.ui && req.url.indexOf('/_ui/build') === 0) {
+    if (this.ui && req.url.indexOf('/_webpack/ui') === 0) {
       return this.ui.middleware(req, res)
     }
 

@@ -24,6 +24,9 @@ export default class VueRenderer {
       spa: undefined
     }
 
+    // Template for loading screen
+    this.loadingScreenTemplate = fs.readFileSync(path.join(__dirname, 'loading.html'), 'utf-8')
+
     // Renderer runtime resources
     Object.assign(this.context.resources, {
       clientManifest: undefined,
@@ -448,20 +451,21 @@ export default class VueRenderer {
     throw error
   }
 
+  renderLoadingScreen(req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    res.end(this.loadingScreenTemplate)
+  }
+
   async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
       if (!this.context.options.dev) {
         return this._throwNotReadyError()
       }
-      const redirectTo = '/_ui/build?redirect=' + (context.req ? context.req.url : '/')
-      const canRedirect = context.res && url.split('?')[0] !== redirectTo.split('?')[0]
-      if (!canRedirect) {
-        return this._throwNotReadyError()
-      }
-      context.res.writeHead(302, { Location: redirectTo })
-      context.res.end()
-      return
+      this.renderLoadingScreen(context.req, context.res)
+
+      // Tell nuxtMiddleware to not return anything
+      return false
     }
 
     // Log rendered url
