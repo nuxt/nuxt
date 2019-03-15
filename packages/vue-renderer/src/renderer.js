@@ -33,9 +33,6 @@ export default class VueRenderer {
       spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
-
-    // Keep time of last shown messages
-    this._lastWaitingForResource = new Date()
   }
 
   get assetsMapping() {
@@ -119,6 +116,9 @@ export default class VueRenderer {
     }
     this._readyCalled = true
 
+    // Resolve dist path
+    this.distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
+
     // -- Development mode --
     if (this.context.options.dev) {
       this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
@@ -139,12 +139,12 @@ export default class VueRenderer {
     // Verify resources
     if (!this.isReady) {
       throw new Error(
-        'No build files found. Use either `nuxt build` or `builder.build()` or start nuxt in development mode.'
+        `No build files found in ${this.distPath}. Use either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
       )
     }
     if (this.context.options.modern && !this.context.resources.modernManifest) {
       throw new Error(
-        'No modern build files found. Use either `nuxt build --modern` or `modern` option to build modern files.'
+        `No modern build files found in ${this.distPath}. Use either \`nuxt build --modern\` or \`modern\` option to build modern files.`
       )
     }
 
@@ -152,12 +152,11 @@ export default class VueRenderer {
   }
 
   async loadResources(_fs) {
-    const distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
     const updated = []
 
     const readResource = async (fileName, encoding) => {
       try {
-        const fullPath = path.resolve(distPath, fileName)
+        const fullPath = path.resolve(this.distPath, fileName)
         if (!await _fs.exists(fullPath)) {
           return
         }
@@ -420,25 +419,33 @@ export default class VueRenderer {
     }
   }
 
-  async renderRoute(url, context = {}, retries = 5) {
+  _throwNotReadyError() {
+    const error = new Error()
+    error.statusCode = 500
+    if (!this._readyCalled) {
+      error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called!'
+    } else if (this.context.options.dev) {
+      error.message = `Nuxt is running in development mode but build is not finished yet!`
+    } else {
+      error.message = `SSR renderer is unavailable at the moment! Please check ${this.distPath}.`
+    }
+    throw error
+  }
+
+  async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      if (!this._readyCalled) {
-        throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called!')
+      if (!this.context.options.dev) {
+        return this._throwNotReadyError()
       }
-
-      if (!this.context.options.dev || retries <= 0) {
-        throw new Error('Server resources are not available!')
+      const redirectTo = '/_ui/build?redirect=' + (context.req ? context.req.url : '/')
+      const canRedirect = context.res && url.split('?')[0] !== redirectTo.split('?')[0]
+      if (!canRedirect) {
+        return this._throwNotReadyError()
       }
-
-      const now = new Date()
-      if (now - this._lastWaitingForResource > 3000) {
-        consola.info('Waiting for server resources...')
-        this._lastWaitingForResource = now
-      }
-      await waitFor(1000)
-
-      return this.renderRoute(url, context, retries - 1)
+      context.res.writeHead(302, { Location: redirectTo })
+      context.res.end()
+      return
     }
 
     // Log rendered url

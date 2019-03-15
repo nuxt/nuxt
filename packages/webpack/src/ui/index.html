@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0">
+  <title>Building</title>
+</head>
+<body>
+
+<div id="main"></div>
+
+<script>
+var data = __DATA__
+
+const ws = new WebSocket(location.href.replace('http://', 'ws://') + '/ws')
+ws.onmessage = (message) => {
+  console.log(message.data)
+  data = JSON.parse(message.data)
+  render()
+}
+
+main = document.getElementById('main')
+
+function render() {
+  main.innerHTML = JSON.stringify(data, null, 2)
+}
+
+render()
+</script>
+</body>
+</html>
