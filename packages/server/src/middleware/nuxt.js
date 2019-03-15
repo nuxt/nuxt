@@ -11,21 +11,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
   try {
     url = decodeURI(req.url)
-  } catch (err) {
-    /* istanbul ignore if */
-    if (context && context.redirected) {
-      consola.error(err)
-      return err
-    }
-
-    const e = new Error('URL malformed')
-    e.name = 'Bad Request'
-    e.statusCode = 400
-    return next(e)
-  }
-
-  res.statusCode = 200
-  try {
+    res.statusCode = 200
     const result = await renderRoute(url, context)
     await nuxt.callHook('render:route', url, result, context)
     const {
@@ -97,6 +83,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       return err
     }
 
+    if(err.name === 'URIError') err.statusCode = 400
     next(err)
   }
 }
