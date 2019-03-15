@@ -83,7 +83,9 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       return err
     }
 
-    if (err.name === 'URIError') err.statusCode = 400
+    if (err.name === 'URIError') {
+      err.statusCode = 400
+    }
     next(err)
   }
 }
