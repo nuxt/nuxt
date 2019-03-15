@@ -24,9 +24,6 @@ export default class VueRenderer {
       spa: undefined
     }
 
-    // Template for loading screen
-    this.loadingScreenTemplate = fs.readFileSync(path.join(__dirname, 'loading.html'), 'utf-8')
-
     // Renderer runtime resources
     Object.assign(this.context.resources, {
       clientManifest: undefined,
@@ -452,6 +449,11 @@ export default class VueRenderer {
   }
 
   renderLoadingScreen(req, res) {
+    // Template for loading screen
+    if (!this.loadingScreenTemplate) {
+      this.loadingScreenTemplate = fs.readFileSync(path.join(__dirname, 'loading.html'), 'utf-8')
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/html' })
     res.end(this.loadingScreenTemplate)
   }
