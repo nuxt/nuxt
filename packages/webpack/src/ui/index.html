@@ -6,25 +6,48 @@
 </head>
 <body>
 
-<div id="main"></div>
+<pre id="main"></pre>
 
 <script>
 var data = __DATA__
 
-const ws = new WebSocket(location.href.replace('http://', 'ws://') + '/ws')
-ws.onmessage = (message) => {
-  console.log(message.data)
-  data = JSON.parse(message.data)
-  render()
+var _reconnectTimer
+function reconnect() {
+  if (_reconnectTimer) {
+    clearTimeout(_reconnectTimer)
+  }
+  setTimeout(async () => {
+    try {
+      await connect()
+    } catch(e) {
+      reconnect()
+    }
+   }, 1000)
 }
 
-main = document.getElementById('main')
+function connect() {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(location.href.replace('http://', 'ws://') + '/ws')
+
+    ws.onmessage = (message) => {
+      data = JSON.parse(message.data)
+      render()
+    }
+
+    ws.onclose = () => { reconnect() }
+    ws.onerror = (error) => reject(error)
+    ws.onopen = () => resolve()
+  })
+}
 
 function render() {
   main.innerHTML = JSON.stringify(data, null, 2)
 }
 
+main = document.getElementById('main')
 render()
+
+connect()
 </script>
 </body>
 </html>
