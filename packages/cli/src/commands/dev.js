@@ -56,11 +56,11 @@ export default {
     // Start listening
     await nuxt.server.listen()
 
-    // Start Build
-    await builder.build()
-
-    // Show banner after build
+    // Show banner when listening
     showBanner(nuxt)
+
+    // Start Build
+    builder.build()
 
     // Return instance
     return nuxt
