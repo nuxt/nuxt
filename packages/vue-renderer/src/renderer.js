@@ -149,12 +149,12 @@ export default class VueRenderer {
     // Verify resources
     if (!this.isReady) {
       throw new Error(
-        `No build files found in ${this.distPath}. Use either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
+        `No build files found in ${this.distPath}.\nUse either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
       )
     }
     if (this.context.options.modern && !this.context.resources.modernManifest) {
       throw new Error(
-        `No modern build files found in ${this.distPath}. Use either \`nuxt build --modern\` or \`modern\` option to build modern files.`
+        `No modern build files found in ${this.distPath}.\nUse either \`nuxt build --modern\` or \`modern\` option to build modern files.`
       )
     }
 
