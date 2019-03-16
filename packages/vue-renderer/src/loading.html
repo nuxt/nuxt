@@ -195,7 +195,7 @@
         }
         this.ws.onclose = (e) => {
           this.connected = false
-          // https://www.iana.org/assignments/websocket/websocket.xml#close-code-number
+          // https://tools.ietf.org/html/rfc6455#section-11.7
           if (e.code === 1000 || e.code === 1005) {
             // Normal close
             console.log('WebSocket(client): closed')
