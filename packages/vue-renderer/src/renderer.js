@@ -147,14 +147,13 @@ export default class VueRenderer {
     }
 
     // Verify resources
-    if (!this.isReady) {
-      throw new Error(
-        `No build files found in ${this.distPath}.\nUse either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
-      )
-    }
-    if (this.context.options.modern && !this.context.resources.modernManifest) {
+    if (this.context.options.modern && !this.isModernReady) {
       throw new Error(
         `No modern build files found in ${this.distPath}.\nUse either \`nuxt build --modern\` or \`modern\` option to build modern files.`
+      )
+    } else if (!this.isReady) {
+      throw new Error(
+        `No build files found in ${this.distPath}.\nUse either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
       )
     }
 
@@ -260,6 +259,10 @@ export default class VueRenderer {
     }
 
     return true
+  }
+
+  get isModernReady() {
+    return this.isReady && this.context.resources.modernManifest
   }
 
   // TODO: Remove in Nuxt 3
