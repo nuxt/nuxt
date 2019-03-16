@@ -142,8 +142,14 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
+          name: Download Chromium
+          command: |
+            wget https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/641430/chrome-linux.zip
+            unzip chrome-linux.zip
+            ln -s `pwd`/chrome-linux/chrome /bin/chromium
+      - run:
           name: E2E Tests
-          command: yarn test:e2e && yarn coverage
+          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage
 
   test-types:
     <<: *defaults
