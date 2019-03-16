@@ -31,33 +31,47 @@ export default class NuxtCommand {
     return new NuxtCommand(cmd, argv)
   }
 
-  run() {
+  async run() {
     if (this.argv.help) {
       this.showHelp()
-      return Promise.resolve()
+      return
     }
 
     if (this.argv.version) {
       this.showVersion()
-      return Promise.resolve()
+      return
     }
 
     if (typeof this.cmd.run !== 'function') {
-      return Promise.resolve()
+      return
     }
 
-    const runResolve = Promise.resolve(this.cmd.run(this))
+    let cmdError
+
+    try {
+      await this.cmd.run(this)
+    } catch (e) {
+      cmdError = e
+    }
 
     if (this.argv.lock) {
-      runResolve.then(() => this.releaseLock())
+      await this.releaseLock()
     }
 
     if (this.argv['force-exit']) {
       const forceExitByUser = this.isUserSuppliedArg('force-exit')
-      runResolve.then(() => forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout))
+      if (cmdError) {
+        consola.fatal(cmdError)
+      }
+      forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout)
+      if (forceExitByUser) {
+        return
+      }
     }
 
-    return runResolve
+    if (cmdError) {
+      throw cmdError
+    }
   }
 
   showVersion() {

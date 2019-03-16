@@ -141,7 +141,7 @@ describe('generate', () => {
     mockGetGenerator(() => ({ errors: [{ type: 'dummy' }] }))
 
     const cmd = NuxtCommand.from(generate, ['generate', '.', '--fail-on-error'])
-    await expect(cmd.run()).rejects
+    await expect(cmd.run()).rejects.toThrow('Error generating pages, exiting with non-zero code')
   })
 
   test('do not throw an error when fail-on-error disabled and page errors', async () => {
