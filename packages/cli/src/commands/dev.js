@@ -43,17 +43,9 @@ export default {
     const config = await cmd.getNuxtConfig({ dev: true })
     const nuxt = await cmd.getNuxt(config)
 
-    // Add loading screen
-    if (nuxt.options.devModules) {
-      nuxt.options.devModules.push('@nuxt/loading-screen')
-    }
-
     // Setup hooks
     nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
-
-    // Create builder instance
-    const builder = await cmd.getBuilder(nuxt)
 
     // Wait for nuxt to be ready
     await nuxt.ready()
@@ -63,6 +55,9 @@ export default {
 
     // Show banner when listening
     showBanner(nuxt)
+
+    // Create builder instance
+    const builder = await cmd.getBuilder(nuxt)
 
     // Start Build
     builder.build()

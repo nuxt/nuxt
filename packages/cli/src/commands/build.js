@@ -63,7 +63,6 @@ export default {
   async run(cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, server: false })
     const nuxt = await cmd.getNuxt(config)
-    await nuxt.ready()
 
     if (cmd.argv.lock) {
       await cmd.setLock(await createLock({

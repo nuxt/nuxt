@@ -33,7 +33,6 @@ export class WebpackBundler {
 
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
-      // Initialize shared MFS for dev
       this.mfs = new AsyncMFS()
     }
   }

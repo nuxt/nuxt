@@ -50,7 +50,6 @@ export default {
     config.build.analyze = false
 
     const nuxt = await cmd.getNuxt(config)
-    await nuxt.ready()
 
     if (cmd.argv.lock) {
       await cmd.setLock(await createLock({

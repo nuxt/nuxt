@@ -22,7 +22,6 @@ export const mockGetNuxt = (options = {}, implementation) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {
     return Object.assign({
       hook: jest.fn(),
-      ready: jest.fn(() => Promise.resolve()),
       options
     }, implementation)
   })
