@@ -60,7 +60,11 @@ export default class NuxtCommand {
 
     if (this.argv['force-exit']) {
       const forceExitByUser = this.isUserSuppliedArg('force-exit')
+      if (cmdError) {
+        consola.fatal(cmdError)
+      }
       forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout)
+      return
     }
 
     if (cmdError) {
