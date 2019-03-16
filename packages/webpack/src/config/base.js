@@ -386,6 +386,9 @@ export default class WebpackBaseConfig {
         },
         allDone: () => {
           nuxt.callHook('bundler:done')
+        },
+        progress({ statesArray }) {
+          nuxt.callHook('bundler:progress', statesArray)
         }
       }
     }))

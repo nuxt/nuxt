@@ -5,6 +5,7 @@ import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
 import { determineGlobals, isUrl } from '@nuxt/utils'
+import { NuxtUI } from '@nuxt/ui'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -52,6 +53,12 @@ export default class Server {
     this._readyCalled = true
 
     await this.nuxt.callHook('render:before', this, this.options.render)
+
+    // Initialize UI
+    if (this.options.dev) {
+      this.ui = new NuxtUI(this.nuxt)
+      await this.ui.init()
+    }
 
     // Initialize vue-renderer
     const { VueRenderer } = await import('@nuxt/vue-renderer')
@@ -115,6 +122,7 @@ export default class Server {
       context: this.renderer.context
     }))
 
+    // Dev middleware
     if (this.options.dev) {
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
@@ -135,6 +143,14 @@ export default class Server {
     // Add user provided middleware
     for (const m of this.options.serverMiddleware) {
       this.useMiddleware(m)
+    }
+
+    // Use UI middleware if available
+    if (this.ui) {
+      this.useMiddleware({
+        path: '/_ui',
+        handler: this.ui.middleware
+      })
     }
 
     // Graceful 404 error handler
@@ -162,7 +178,8 @@ export default class Server {
       options: this.options,
       nuxt: this.nuxt,
       renderRoute: this.renderRoute.bind(this),
-      resources: this.resources
+      resources: this.resources,
+      ui: this.ui
     }))
 
     // Apply errorMiddleware from modules first

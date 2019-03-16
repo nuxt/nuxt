@@ -443,22 +443,10 @@ export default class VueRenderer {
     error.statusCode = 500
     if (!this._readyCalled) {
       error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called!'
-    } else if (this.context.options.dev) {
-      error.message = `Nuxt is running in development mode but build is not finished yet!`
     } else {
       error.message = `SSR renderer is unavailable at the moment! Please check ${this.distPath}.`
     }
     throw error
-  }
-
-  renderLoadingScreen(req, res) {
-    // Template for loading screen
-    if (!this.loadingScreenTemplate) {
-      this.loadingScreenTemplate = fs.readFileSync(path.join(__dirname, 'loading.html'), 'utf-8')
-    }
-
-    res.writeHead(200, { 'Content-Type': 'text/html' })
-    res.end(this.loadingScreenTemplate)
   }
 
   async renderRoute(url, context = {}) {
@@ -467,9 +455,7 @@ export default class VueRenderer {
       if (!this.context.options.dev) {
         return this._throwNotReadyError()
       }
-      this.renderLoadingScreen(context.req, context.res)
-
-      // Tell nuxtMiddleware to not return anything
+      // Tell nuxt middleware to render UI
       return false
     }
 

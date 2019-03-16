@@ -1,0 +1,1 @@
+export { NuxtUI } from './ui'

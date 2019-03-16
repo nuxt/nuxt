@@ -1,0 +1,20 @@
+{
+  "name": "@nuxt/ui",
+  "version": "2.4.5",
+  "repository": "nuxt/nuxt.js",
+  "license": "MIT",
+  "files": [
+    "resources",
+    "dist"
+  ],
+  "main": "dist/ui.js",
+  "dependencies": {
+    "connect": "^3.6.6",
+    "fs-extra": "^7.0.1",
+    "serve-static": "^1.13.2",
+    "ws": "^6.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

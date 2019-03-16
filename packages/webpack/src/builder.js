@@ -16,8 +16,6 @@ import AsyncMFS from './utils/async-mfs'
 import { ClientConfig, ModernConfig, ServerConfig } from './config'
 import PerfLoader from './utils/perf-loader'
 
-import BuilderUI from './ui/ui'
-
 const glob = pify(Glob)
 
 export class WebpackBundler {
@@ -37,9 +35,6 @@ export class WebpackBundler {
     if (this.buildContext.options.dev) {
       // Initialize shared MFS for dev
       this.mfs = new AsyncMFS()
-
-      // Initialize UI
-      this.ui = new BuilderUI()
     }
   }
 
@@ -235,10 +230,6 @@ export class WebpackBundler {
 
     if (this.hotMiddleware && this.hotMiddleware[name]) {
       await this.hotMiddleware[name](req, res)
-    }
-
-    if (this.ui && req.url.indexOf('/_webpack/ui') === 0) {
-      return this.ui.middleware(req, res)
     }
 
     next()
