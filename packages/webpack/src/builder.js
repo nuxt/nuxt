@@ -96,8 +96,8 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
+    this.compilers = compilersOptions.map((compilerOptions) => {
+      const compiler = webpack(compilerOptions)
 
       // In dev, write files in memory FS
       if (options.dev) {
