@@ -12,6 +12,7 @@ export default {
   async run(cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, _start: true })
     const nuxt = await cmd.getNuxt(config)
+    await nuxt.ready()
 
     // Listen and show ready banner
     await nuxt.server.listen()

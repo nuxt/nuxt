@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@nuxt/config": "2.4.5",
-    "@nuxt/loading-screen": "2.4.5",
     "boxen": "^3.0.0",
     "chalk": "^2.4.2",
     "consola": "^2.5.6",
