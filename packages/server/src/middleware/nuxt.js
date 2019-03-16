@@ -7,10 +7,10 @@ import { getContext } from '@nuxt/utils'
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
-  const url = decodeURI(req.url)
 
-  res.statusCode = 200
   try {
+    const url = decodeURI(req.url)
+    res.statusCode = 200
     const result = await renderRoute(url, context)
 
     // If result is falsy, call renderLoading
@@ -89,6 +89,9 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       return err
     }
 
+    if (err.name === 'URIError') {
+      err.statusCode = 400
+    }
     next(err)
   }
 }
