@@ -64,7 +64,9 @@ export default class NuxtCommand {
         consola.fatal(cmdError)
       }
       forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout)
-      return
+      if (forceExitByUser) {
+        return
+      }
     }
 
     if (cmdError) {
