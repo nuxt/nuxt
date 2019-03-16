@@ -1,8 +1,8 @@
 import consola from 'consola'
 import { Nuxt } from '../utils'
 
-const NO_BUILD_MSG = 'No build files found in /path/to/404/dist/server.\nUse either `nuxt build` or `builder.build()` or start nuxt in development mode.'
-const NO_MODERN_BUILD_MSG = 'No modern build files found in /path/to/404/dist/server.\nUse either `nuxt build --modern` or `modern` option to build modern files.'
+const NO_BUILD_MSG = /Use either `nuxt build` or `builder\.build\(\)` or start nuxt in development mode/
+const NO_MODERN_BUILD_MSG = /Use either `nuxt build --modern` or `modern` option to build modern files/
 
 describe('renderer', () => {
   afterEach(() => {
@@ -18,7 +18,9 @@ describe('renderer', () => {
     })
     await nuxt.ready()
     await expect(nuxt.renderer.renderer.isReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(new Error(NO_BUILD_MSG))
+    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+      message: expect.stringMatching(NO_BUILD_MSG)
+    }))
   })
 
   test('detect no-build (SPA)', async () => {
@@ -30,7 +32,9 @@ describe('renderer', () => {
     })
     await nuxt.ready()
     await expect(nuxt.renderer.renderer.isReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(new Error(NO_BUILD_MSG))
+    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+      message: expect.stringMatching(NO_BUILD_MSG)
+    }))
   })
   test('detect no-modern-build', async () => {
     const nuxt = new Nuxt({
@@ -42,6 +46,8 @@ describe('renderer', () => {
     })
     await nuxt.ready()
     await expect(nuxt.renderer.renderer.isModernReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(new Error(NO_MODERN_BUILD_MSG))
+    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+      message: expect.stringMatching(NO_MODERN_BUILD_MSG)
+    }))
   })
 })
