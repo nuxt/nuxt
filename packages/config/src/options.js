@@ -330,5 +330,10 @@ export function getNuxtConfig(_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
+  // Add loading screen
+  if (options.dev) {
+    options.devModules.push('@nuxt/loading-screen')
+  }
+
   return options
 }
