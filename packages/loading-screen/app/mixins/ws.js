@@ -1,4 +1,4 @@
-Vue.mixin({
+export default {
   methods: {
     logWS(...args) {
       this.log('[WS]', ...args)
@@ -79,4 +79,4 @@ Vue.mixin({
       }
     }
   }
-})
+}

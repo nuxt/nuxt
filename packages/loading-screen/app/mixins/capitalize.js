@@ -1,4 +1,4 @@
-Vue.mixin({
+export default {
   filters: {
     capitalize(value) {
       if (!value) {
@@ -8,4 +8,4 @@ Vue.mixin({
       return value.charAt(0).toUpperCase() + value.slice(1)
     }
   }
-})
+}

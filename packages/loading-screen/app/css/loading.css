@@ -1,4 +1,4 @@
-.loading-page {
+.loading-screen {
   display: flex;
   flex-flow: column nowrap;
   justify-content: center;
@@ -9,11 +9,11 @@
   transition: opacity 0.4s;
 }
 
-.loading-page.hide {
+.loading-screen.hide {
   opacity: 0;
 }
 
-.loading-page .row {
+.loading-screen .row {
   flex: 0 0 auto;
 }
 
@@ -77,6 +77,3 @@ h4 {
   background-color: #2F495E;
 }
 
-[v-cloak] {
-  opacity: none;
-}

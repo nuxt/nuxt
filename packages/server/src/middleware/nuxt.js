@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import { getContext } from '@nuxt/utils'
 
-export default ({ options, nuxt, renderRoute, ui, resources }) => async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
   const url = decodeURI(req.url)
@@ -13,13 +13,9 @@ export default ({ options, nuxt, renderRoute, ui, resources }) => async function
   try {
     const result = await renderRoute(url, context)
 
-    // If result is falsy, try to render loading UI or skip
+    // If result is falsy, call renderLoading
     if (!result) {
-      if (ui) {
-        await ui.renderLoadingPage(req, res)
-      } else {
-        next()
-      }
+      await nuxt.callHook('server:nuxt:renderLoading', req, res)
       return
     }
 
