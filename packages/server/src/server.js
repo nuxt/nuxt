@@ -138,14 +138,6 @@ export default class Server {
       this.useMiddleware(m)
     }
 
-    // Use UI middleware if available
-    if (this.ui) {
-      this.useMiddleware({
-        path: '/_ui',
-        handler: this.ui.middleware
-      })
-    }
-
     // Graceful 404 error handler
     const { fallback } = this.options.render
     if (fallback) {

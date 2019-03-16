@@ -366,8 +366,7 @@ export default class WebpackBaseConfig {
         'basic',
         'fancy',
         'profile',
-        'stats',
-        this.builder.ui ? this.builder.ui.reporter : false
+        'stats'
       ],
       basic: !buildOptions.quiet && env.minimalCLI,
       fancy: !buildOptions.quiet && !env.minimalCLI,

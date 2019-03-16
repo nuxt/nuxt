@@ -31,7 +31,7 @@ export class WebpackBundler {
     // Bind middleware to self
     this.middleware = this.middleware.bind(this)
 
-    // Dev mode
+    // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
       // Initialize shared MFS for dev
       this.mfs = new AsyncMFS()
