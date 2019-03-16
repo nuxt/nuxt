@@ -1,4 +1,3 @@
-import path from 'path'
 import consola from 'consola'
 import { Nuxt } from '../utils'
 
