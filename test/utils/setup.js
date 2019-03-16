@@ -15,3 +15,13 @@ chalk.enabled = false
 jest.setTimeout(60000)
 
 consola.mockTypes(() => jest.fn())
+
+function errorTrap(...args) {
+  // eslint-disable-next-line no-console
+  console.error(...args)
+  // eslint-disable-next-line no-console
+  console.warn('Closing proccess due to unhandled error!')
+  process.exit(1)
+}
+process.on('unhandledRejection', errorTrap)
+process.on('uncaughtException', errorTrap)
