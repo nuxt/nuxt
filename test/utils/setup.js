@@ -1,6 +1,7 @@
 import consola from 'consola'
 import chalk from 'chalk'
 import env from 'std-env'
+import exit from 'exit'
 
 const isWin = env.windows
 
@@ -16,12 +17,10 @@ jest.setTimeout(60000)
 
 consola.mockTypes(() => jest.fn())
 
-function errorTrap(...args) {
-  // eslint-disable-next-line no-console
-  console.error(...args)
-  // eslint-disable-next-line no-console
-  console.warn('Closing proccess due to unhandled error!')
-  process.exit(1)
+function errorTrap(error) {
+  process.stderr.write('\n' + error.stack + '\n')
+  exit(1)
 }
+
 process.on('unhandledRejection', errorTrap)
 process.on('uncaughtException', errorTrap)
