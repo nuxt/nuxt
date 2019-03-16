@@ -442,9 +442,9 @@ export default class VueRenderer {
 
     error.statusCode = 500
     if (!this._readyCalled) {
-      error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called!'
+      error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called.'
     } else {
-      error.message = `SSR renderer is unavailable at the moment! Please check ${this.distPath}.`
+      error.message = `SSR renderer is not initialized! Please check ${this.distPath} existence.`
     }
     throw error
   }
