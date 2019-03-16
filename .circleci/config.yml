@@ -144,9 +144,10 @@ jobs:
       - run:
           name: Download Chromium
           command: |
-            wget https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/641430/chrome-linux.zip
-            unzip chrome-linux.zip
-            ln -s `pwd`/chrome-linux/chrome /bin/chromium
+            cd /opt
+            sudo wget https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/641430/chrome-linux.zip
+            sudo unzip chrome-linux.zip
+            sudo ln -s `pwd`/chrome-linux/chrome /bin/chromium
       - run:
           name: E2E Tests
           command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage
