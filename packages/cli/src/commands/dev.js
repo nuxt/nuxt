@@ -44,7 +44,9 @@ export default {
     const nuxt = await cmd.getNuxt(config)
 
     // Add loading screen
-    nuxt.options.devModules.push('@nuxt/loading-screen')
+    if (nuxt.options.devModules) {
+      nuxt.options.devModules.push('@nuxt/loading-screen')
+    }
 
     // Setup hooks
     nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
