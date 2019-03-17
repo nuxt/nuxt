@@ -14,17 +14,20 @@ export default {
         }
       }
 
-      index = routes.findIndex(route => route.name === 'main')
-      routes[index] = {
-        ...routes[index],
-        components: {
-          default: routes[index].component,
-          top: resolve(__dirname, 'components/mainTop.vue')
-        },
-        chunkNames: {
-          top: 'components/mainTop'
-        }
-      }
+      index = routes
+        .filter(route => route.name === 'main' || route.name === 'another')
+        .forEach((route, index) => {
+          routes[index] = {
+            ...route,
+            components: {
+              default: route.component,
+              top: resolve(__dirname, 'components/mainTop.vue')
+            },
+            chunkNames: {
+              top: 'components/mainTop'
+            }
+          }
+        })
     }
   }
 }
