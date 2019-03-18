@@ -3,12 +3,12 @@ import Router from 'vue-router'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
-  let res = '';
+  let res = ''
   const baseIndent = tab.repeat(indentCount)
   const firstIndent = '\n' + tab.repeat(indentCount + 1)
   const nextIndent = ',' + firstIndent
   routes.forEach((route, i) => {
-    let resMap = '';
+    let resMap = ''
     // If need to handle named views
     if (route.components) {
       let _name = '_' + hash(route.components.default)
