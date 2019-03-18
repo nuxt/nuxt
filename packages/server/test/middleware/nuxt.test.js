@@ -306,4 +306,20 @@ describe('server: nuxtMiddleware', () => {
     expect(await nuxtMiddleware(req, res, next)).toBe(err)
     expect(consola.error).toBeCalledWith(err)
   })
+
+  test('should return 400 if request is uri error', async () => {
+    const context = createContext()
+    const err = Error('render error')
+    err.name = 'URIError'
+    err.statusCode = 400
+    context.renderRoute.mockImplementation((url, ctx) => {
+      throw err
+    })
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+
+    await nuxtMiddleware(req, res, next)
+
+    expect(next).toBeCalledWith(err)
+  })
 })
