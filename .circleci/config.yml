@@ -142,13 +142,18 @@ jobs:
       - attach_workspace:
           at: ~/project
       - run:
+          name: Download Chromium
+          command: |
+            cd /opt
+            sudo wget https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/641430/chrome-linux.zip
+            sudo unzip chrome-linux.zip
+            sudo ln -s `pwd`/chrome-linux/chrome /bin/chromium
+      - run:
           name: E2E Tests
-          command: yarn test:e2e && yarn coverage
+          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage
 
   test-types:
     <<: *defaults
-    docker:
-      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - attach_workspace:

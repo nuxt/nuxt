@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
+
+
+### Bug Fixes
+
+* **types:** reflect chainlable NuxtLoading methods ([#5104](https://github.com/nuxt/nuxt.js/issues/5104)) ([66273f4](https://github.com/nuxt/nuxt.js/commit/66273f4))
+* **vue-app:** fix `asyncData` memory leak on client-side ([#4966](https://github.com/nuxt/nuxt.js/issues/4966)) ([4086800](https://github.com/nuxt/nuxt.js/commit/4086800))
+* **vue-app:** fix `getNuxtChildComponents` method ([#4969](https://github.com/nuxt/nuxt.js/issues/4969)) ([dbf7099](https://github.com/nuxt/nuxt.js/commit/dbf7099))
+* **vue-app:** use browser to handle scrolling position on page reload and back-navigation from other sites ([#5080](https://github.com/nuxt/nuxt.js/issues/5080)) ([7001312](https://github.com/nuxt/nuxt.js/commit/7001312))
+
+
+
+
+
 ## [2.4.2](https://github.com/nuxt/nuxt.js/compare/v2.4.1...v2.4.2) (2019-01-30)
 
 **Note:** Version bump only for package @nuxt/vue-app

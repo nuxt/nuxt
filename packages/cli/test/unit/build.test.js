@@ -1,3 +1,4 @@
+import * as utils from '../../src/utils'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
 describe('build', () => {
@@ -6,6 +7,12 @@ describe('build', () => {
   beforeAll(async () => {
     build = await import('../../src/commands/build').then(m => m.default)
     jest.spyOn(process, 'exit').mockImplementation(code => code)
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+    jest.spyOn(utils, 'createLock').mockImplementation(() => () => {})
+  })
+
+  afterAll(() => {
+    process.exit.mockRestore()
   })
 
   afterEach(() => jest.resetAllMocks())
@@ -35,7 +42,7 @@ describe('build', () => {
         analyze: false
       }
     })
-    const generate = mockGetGenerator(Promise.resolve())
+    const generate = mockGetGenerator()
 
     await NuxtCommand.from(build).run()
 
@@ -71,5 +78,69 @@ describe('build', () => {
     await cmd.run()
 
     expect(options.modern).toBe(true)
+  })
+
+  test('build force-exits by default', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', 5)
+  })
+
+  test('build can set force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).toHaveBeenCalledTimes(1)
+    expect(utils.forceExit).toHaveBeenCalledWith('build', false)
+  })
+
+  test('build can disable force exit explicitly', async () => {
+    mockGetNuxt()
+    mockGetBuilder(Promise.resolve())
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-force-exit'])
+    await cmd.run()
+
+    expect(utils.forceExit).not.toHaveBeenCalled()
+  })
+
+  test('build locks project by default', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const releaseLock = jest.fn(() => Promise.resolve())
+    const createLock = jest.fn(() => releaseLock)
+    jest.spyOn(utils, 'createLock').mockImplementation(createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.'])
+    await cmd.run()
+
+    expect(createLock).toHaveBeenCalledTimes(1)
+    expect(releaseLock).toHaveBeenCalledTimes(1)
+  })
+
+  test('build can disable locking', async () => {
+    mockGetNuxt({
+      mode: 'universal'
+    })
+    mockGetBuilder(Promise.resolve())
+
+    const createLock = jest.fn(() => Promise.resolve())
+    jest.spyOn(utils, 'createLock').mockImplementationOnce(() => createLock)
+
+    const cmd = NuxtCommand.from(build, ['build', '.', '--no-lock'])
+    await cmd.run()
+
+    expect(createLock).not.toHaveBeenCalled()
   })
 })

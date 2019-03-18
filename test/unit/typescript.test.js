@@ -9,6 +9,7 @@ describe('typescript', () => {
     const options = await loadFixture('typescript')
     nuxt = new Nuxt(options)
     await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
   })
@@ -39,7 +40,7 @@ describe('typescript', () => {
   })
 
   test('TS module successfully required', () => {
-    expect(nuxt.moduleContainer.requiredModules).toHaveProperty('~/modules/module')
+    expect(nuxt.moduleContainer.requiredModules.testTSModule).toBeDefined()
   })
 
   // Close server and ask nuxt to stop listening to file changes

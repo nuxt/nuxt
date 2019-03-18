@@ -6,22 +6,18 @@ import { wrapArray } from '@nuxt/utils'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor(options, nuxt, { isServer, perfLoader }) {
+  constructor(buildContext, { isServer, perfLoader }) {
+    this.buildContext = buildContext
     this.isServer = isServer
     this.perfLoader = perfLoader
-    this.rootDir = options.rootDir
-    this.loaders = {
-      vueStyle: options.build.loaders.vueStyle,
-      css: options.build.loaders.css,
-      cssModules: options.build.loaders.cssModules
-    }
-    this.extractCSS = options.build.extractCSS
-    this.resources = options.build.styleResources
-    this.sourceMap = Boolean(options.build.cssSourceMap)
 
-    if (options.build.postcss) {
-      this.postcssConfig = new PostcssConfig(options, nuxt)
+    if (buildContext.options.build.postcss) {
+      this.postcssConfig = new PostcssConfig(buildContext)
     }
+  }
+
+  get extractCSS() {
+    return this.buildContext.buildOptions.extractCSS
   }
 
   get exportOnlyLocals() {
@@ -34,42 +30,52 @@ export default class StyleLoader {
   }
 
   styleResource(ext) {
-    const extResource = this.resources[ext]
+    const { buildOptions: { styleResources }, options: { rootDir } } = this.buildContext
+    const extResource = styleResources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
-    if (extResource) {
-      const patterns = wrapArray(extResource).map(p => path.resolve(this.rootDir, p))
+    if (!extResource) {
+      return
+    }
+    const patterns = wrapArray(extResource).map(p => path.resolve(rootDir, p))
 
-      return {
-        loader: 'style-resources-loader',
-        options: Object.assign(
-          { patterns },
-          this.resources.options || {}
-        )
-      }
+    return {
+      loader: 'style-resources-loader',
+      options: Object.assign(
+        { patterns },
+        styleResources.options || {}
+      )
     }
   }
 
   postcss() {
     // postcss-loader
     // https://github.com/postcss/postcss-loader
-    if (this.postcssConfig) {
-      const config = this.postcssConfig.config()
-      if (config) {
-        return {
-          loader: 'postcss-loader',
-          options: Object.assign({ sourceMap: this.sourceMap }, config)
-        }
-      }
+    if (!this.postcssConfig) {
+      return
+    }
+
+    const config = this.postcssConfig.config()
+
+    if (!config) {
+      return
+    }
+
+    return {
+      loader: 'postcss-loader',
+      options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
     }
   }
 
   css(options) {
     options.exportOnlyLocals = this.exportOnlyLocals
-    return [
-      ...options.exportOnlyLocals ? [] : [this.styleLoader()],
-      { loader: 'css-loader', options }
-    ]
+    const cssLoader = { loader: 'css-loader', options }
+
+    if (options.exportOnlyLocals) {
+      return [cssLoader]
+    }
+
+    return [this.styleLoader(), cssLoader]
   }
 
   cssModules(options) {
@@ -78,39 +84,47 @@ export default class StyleLoader {
 
   extract() {
     if (this.extractCSS) {
-      return ExtractCssChunksPlugin.loader
+      return {
+        loader: ExtractCssChunksPlugin.loader,
+        options: {
+          // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+          reloadAll: true
+        }
+      }
     }
   }
 
   styleLoader() {
     return this.extract() || {
       loader: 'vue-style-loader',
-      options: this.loaders.vueStyle
+      options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }
 
   apply(ext, loaders = []) {
+    const { css, cssModules } = this.buildContext.buildOptions.loaders
+
     const customLoaders = [].concat(
       this.postcss(),
       this.normalize(loaders),
       this.styleResource(ext)
     ).filter(Boolean)
 
-    this.loaders.css.importLoaders = this.loaders.cssModules.importLoaders = customLoaders.length
+    css.importLoaders = cssModules.importLoaders = customLoaders.length
 
     return [
       // This matches <style module>
       {
         resourceQuery: /module/,
         use: this.perfLoader.css().concat(
-          this.cssModules(this.loaders.cssModules),
+          this.cssModules(cssModules),
           customLoaders
         )
       },
       // This matches plain <style> or <style scoped>
       {
         use: this.perfLoader.css().concat(
-          this.css(this.loaders.css),
+          this.css(css),
           customLoaders
         )
       }

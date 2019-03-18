@@ -1,5 +1,6 @@
 export * from './context'
 export * from './lang'
+export * from './locking'
 export * from './resolve'
 export * from './route'
 export * from './serialize'

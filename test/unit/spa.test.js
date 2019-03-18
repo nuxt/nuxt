@@ -15,6 +15,8 @@ describe('spa', () => {
   beforeAll(async () => {
     const config = await loadFixture('spa')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })
@@ -82,6 +84,23 @@ describe('spa', () => {
     expect(consola.log).toHaveBeenCalledWith('mounted')
     consola.log.mockClear()
   })
+
+  test('/async no asyncData leak', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/async'))
+
+    const navigate = url => new Promise((resolve, reject) => {
+      window.$nuxt.$router.push(url, resolve, reject)
+    })
+
+    for (let i = 0; i < 3; i++) {
+      await navigate('/')
+      await navigate('/async')
+    }
+
+    const { $data } = window.$nuxt.$route.matched[0].instances.default
+    expect(Object.keys($data).length).toBe(1)
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

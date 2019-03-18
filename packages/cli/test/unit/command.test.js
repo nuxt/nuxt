@@ -1,5 +1,7 @@
 import Command from '../../src/command'
 import { common, server } from '../../src/options'
+import * as utils from '../../src/utils/'
+import * as constants from '../../src/utils/constants'
 import { consola } from '../utils'
 
 jest.mock('@nuxt/core')
@@ -19,7 +21,7 @@ describe('cli/command', () => {
     const minimistOptions = cmd._getMinimistOptions()
 
     expect(minimistOptions.string.length).toBe(5)
-    expect(minimistOptions.boolean.length).toBe(4)
+    expect(minimistOptions.boolean.length).toBe(5)
     expect(minimistOptions.alias.c).toBe('config-file')
     expect(minimistOptions.default.c).toBe(common['config-file'].default)
   })
@@ -38,6 +40,8 @@ describe('cli/command', () => {
   })
 
   test('prints version automatically', async () => {
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+
     const cmd = new Command({}, ['--version'])
     cmd.showVersion = jest.fn()
     await cmd.run()
@@ -46,6 +50,8 @@ describe('cli/command', () => {
   })
 
   test('prints help automatically', async () => {
+    jest.spyOn(utils, 'forceExit').mockImplementation(() => {})
+
     const cmd = new Command({ options: allOptions }, ['-h'])
     cmd.showHelp = jest.fn()
     await cmd.run()
@@ -88,16 +94,18 @@ describe('cli/command', () => {
   })
 
   test('builds help text', () => {
+    jest.spyOn(constants, 'maxCharsPerLine').mockReturnValue(40)
+
     const cmd = new Command({
-      description: 'a very long description that should not wrap to the next line because is not longer ' +
+      description: 'a very long description that should wrap to the next line because is not longer ' +
         'than the terminal width',
       usage: 'this is how you do it',
       options: {
         ...allOptions,
         foo: {
           type: 'boolean',
-          description: 'very long option that is not longer than the terminal width and ' +
-        'should not wrap to the next line'
+          description: 'very long option that is longer than the terminal width and ' +
+        'should wrap to the next line'
         }
       }
     })
@@ -119,5 +127,30 @@ describe('cli/command', () => {
     cmd.showHelp()
     expect(process.stdout.write).toHaveBeenCalled()
     process.stdout.write.mockRestore()
+  })
+
+  test('can set and release lock', () => {
+    const release = jest.fn(() => Promise.resolve())
+    const cmd = new Command()
+
+    cmd.setLock(release)
+    cmd.releaseLock()
+
+    expect(release).toHaveBeenCalledTimes(1)
+  })
+
+  test('logs warning when lock already exists and removes old lock', () => {
+    const release = jest.fn(() => Promise.resolve())
+    const cmd = new Command()
+
+    cmd.setLock(release)
+    cmd.setLock(release)
+
+    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledWith(expect.stringMatching('A previous unreleased lock was found'))
+    expect(release).toHaveBeenCalledTimes(1)
+
+    cmd.releaseLock()
+    expect(release).toHaveBeenCalledTimes(2)
   })
 })

@@ -16,6 +16,11 @@ export default class ModuleContainer {
     // Call before hook
     await this.nuxt.callHook('modules:before', this, this.options.modules)
 
+    if (this.options.devModules && !this.options._start) {
+      // Load every devModule in sequence
+      await sequence(this.options.devModules, this.addModule.bind(this))
+    }
+
     // Load every module in sequence
     await sequence(this.options.modules, this.addModule.bind(this))
 
@@ -131,9 +136,14 @@ export default class ModuleContainer {
       handler = src
     }
 
+    // Prevent adding devModules-listed entries in production
+    if (this.options.devModules.includes(handler) && this.options._start) {
+      return
+    }
+
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.resolver.requireModule(src)
+      handler = this.nuxt.resolver.requireModule(src, { useESM: true })
     }
 
     // Validate handler
@@ -142,7 +152,10 @@ export default class ModuleContainer {
     }
 
     // Resolve module meta
-    const key = (handler.meta && handler.meta.name) || handler.name || src
+    let key = (handler.meta && handler.meta.name) || handler.name
+    if (!key || key === 'default') {
+      key = src
+    }
 
     // Update requiredModules
     if (typeof key === 'string') {

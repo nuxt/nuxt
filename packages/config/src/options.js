@@ -84,7 +84,7 @@ export function getNuxtConfig(_options) {
 
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, defaultNuxtConfigFile)
+    options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
   // Watch for _nuxtConfigFile changes
@@ -279,6 +279,12 @@ export function getNuxtConfig(_options) {
   if (typeof options.build.vendor !== 'undefined') {
     delete options.build.vendor
     consola.warn('vendor has been deprecated due to webpack4 optimization')
+  }
+
+  // Disable CSS extraction due to incompatibility with thread-loader
+  if (options.build.extractCSS && options.build.parallel) {
+    options.build.parallel = false
+    consola.warn('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
   }
 
   // build.extractCSS.allChunks has no effect

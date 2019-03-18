@@ -7,6 +7,8 @@ describe('named views', () => {
   beforeAll(async () => {
     const options = await loadFixture('named-views')
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
   })

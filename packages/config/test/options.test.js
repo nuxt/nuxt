@@ -105,6 +105,12 @@ describe('config: options', () => {
     expect(fallback).toEqual('404.html')
   })
 
+  test('should disable parallel if extractCSS is enabled', () => {
+    const { build: { parallel } } = getNuxtConfig({ build: { extractCSS: true, parallel: true } })
+    expect(parallel).toEqual(false)
+    expect(consola.warn).toHaveBeenCalledWith('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
+  })
+
   describe('config: router dir', () => {
     test('should transform middleware to array', () => {
       const { router: { middleware } } = getNuxtConfig({ router: { middleware: 'midd' } })

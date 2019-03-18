@@ -1,5 +1,5 @@
-import { common } from '../options'
-import { normalizeArg } from '../utils'
+import { common, locking } from '../options'
+import { normalizeArg, createLock } from '../utils'
 
 export default {
   name: 'generate',
@@ -7,6 +7,7 @@ export default {
   usage: 'generate <dir>',
   options: {
     ...common,
+    ...locking,
     build: {
       type: 'boolean',
       default: true,
@@ -32,16 +33,51 @@ export default {
           options.modern = 'client'
         }
       }
+    },
+    'fail-on-error': {
+      type: 'boolean',
+      default: false,
+      description: 'Exit with non-zero status code if there are errors when generating pages'
     }
   },
   async run(cmd) {
     const config = await cmd.getNuxtConfig({ dev: false })
+
+    // Disable analyze if set by the nuxt config
+    if (!config.build) {
+      config.build = {}
+    }
+    config.build.analyze = false
+
     const nuxt = await cmd.getNuxt(config)
+
+    if (cmd.argv.lock) {
+      await cmd.setLock(await createLock({
+        id: 'build',
+        dir: nuxt.options.buildDir,
+        root: config.rootDir
+      }))
+
+      nuxt.hook('build:done', async () => {
+        await cmd.releaseLock()
+
+        await cmd.setLock(await createLock({
+          id: 'generate',
+          dir: nuxt.options.generate.dir,
+          root: config.rootDir
+        }))
+      })
+    }
+
     const generator = await cmd.getGenerator(nuxt)
 
-    await generator.generate({
+    const { errors } = await generator.generate({
       init: true,
       build: cmd.argv.build
     })
+
+    if (cmd.argv['fail-on-error'] && errors.length > 0) {
+      throw new Error('Error generating pages, exiting with non-zero code')
+    }
   }
 }

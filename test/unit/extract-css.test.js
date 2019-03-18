@@ -11,6 +11,8 @@ describe('extract css', () => {
   beforeAll(async () => {
     const options = await loadFixture('extract-css')
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     await nuxt.server.listen(await getPort(), '0.0.0.0')
   })
 
