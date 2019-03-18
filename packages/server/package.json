@@ -12,7 +12,7 @@
     "@nuxt/utils": "2.4.5",
     "@nuxtjs/youch": "^4.2.3",
     "chalk": "^2.4.2",
-    "compression": "^1.7.3",
+    "compression": "^1.7.4",
     "connect": "^3.6.6",
     "consola": "^2.5.6",
     "etag": "^1.8.1",
