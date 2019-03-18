@@ -1,8 +1,8 @@
 export default {
   router: {
     extendRoutes(routes, resolve) {
-      const indexChildRoute = routes.find(route => route.name === 'index')
-        .children.find(route => route.name === 'index-child-id')
+      const indexRoute = routes.find(route => route.name === 'index')
+      const indexChildRoute = indexRoute.children.find(route => route.name === 'index-child-id')
 
       Object.assign(indexChildRoute, {
         components: {
