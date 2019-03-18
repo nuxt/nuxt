@@ -15,7 +15,7 @@ export default {
       })
 
       routes
-        .filter(route => route.name === 'main' || route.name === 'another')
+        .filter(route => ['main', 'another'].includes(route.name))
         .forEach((route) => {
           Object.assign(route, {
             components: {
