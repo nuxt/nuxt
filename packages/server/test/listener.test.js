@@ -330,6 +330,15 @@ describe('server: listener', () => {
     expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `localhost:3000` is already in use.')
   })
 
+  test('should throw address in use error for socket', () => {
+    const listener = new Listener({})
+    listener.socket = 'nuxt.socket'
+
+    const addressInUse = new Error()
+    addressInUse.code = 'EADDRINUSE'
+    expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `nuxt.socket` is already in use.')
+  })
+
   test('should fallback to a random port in address in use error', async () => {
     const listener = new Listener({ dev: true })
     listener.host = 'localhost'

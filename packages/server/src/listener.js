@@ -95,15 +95,16 @@ export default class Listener {
 
     // Use better error message
     if (addressInUse) {
-      error.message = `Address \`${this.host}:${this.port}\` is already in use.`
-    }
+      const address = this.socket || `${this.host}:${this.port}`
+      error.message = `Address \`${address}\` is already in use.`
 
-    // Listen to a random port on dev as a fallback
-    if (addressInUse && this.dev && this.port !== '0') {
-      consola.warn(error.message)
-      consola.info('Trying a random port...')
-      this.port = '0'
-      return this.close().then(() => this.listen())
+      // Listen to a random port on dev as a fallback
+      if (this.dev && !this.socket && this.port !== '0') {
+        consola.warn(error.message)
+        consola.info('Trying a random port...')
+        this.port = '0'
+        return this.close().then(() => this.listen())
+      }
     }
 
     // Throw error
