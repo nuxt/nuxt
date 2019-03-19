@@ -18,9 +18,9 @@ describe('util: locking', () => {
   beforeEach(() => jest.resetAllMocks())
   beforeEach(() => lockPaths.clear())
 
-  test('onCompromised lock is fatal error by default', () => {
+  test('onCompromised lock is warn error by default', () => {
     defaultLockOptions.onCompromised()
-    expect(consola.fatal).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledTimes(1)
   })
 
   test('can override default options', () => {
