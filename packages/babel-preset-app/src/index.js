@@ -15,7 +15,7 @@ const defaultPolyfills = [
 
 function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath }) {
   const { isPluginRequired } = require('@babel/preset-env')
-  const builtInsList = require('@babel/preset-env/data/built-ins.json')
+  const builtInsList = require('core-js-compat/data')
   const getTargets = require('@babel/preset-env/lib/targets-parser').default
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
@@ -67,7 +67,7 @@ module.exports = (context, options = {}) => {
     polyfills = []
   }
 
-  const corejs = useBuiltIns !== false ? false : { version: 3 }
+  const corejs = { version: 3 }
 
   // Pass options along to babel-preset-env
   presets.push([
@@ -104,8 +104,8 @@ module.exports = (context, options = {}) => {
 
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
-    corejs,
     regenerator: useBuiltIns !== 'usage',
+    corejs: useBuiltIns !== false ? false : corejs,
     helpers: useBuiltIns === 'usage',
     useESModules: true,
     absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))
