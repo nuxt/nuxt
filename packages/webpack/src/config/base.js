@@ -442,7 +442,7 @@ export default class WebpackBaseConfig {
     }
 
     // Clone deep avoid leaking config between Client and Server
-    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const extendedConfig = cloneDeep(this.extendConfig(config))
     const { optimization } = extendedConfig
     // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
     if (optimization && optimization.minimizer && extendedConfig.devtool) {

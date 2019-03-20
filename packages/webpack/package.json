@@ -9,7 +9,6 @@
   "main": "dist/webpack.js",
   "dependencies": {
     "@babel/core": "^7.4.0",
-    "@babel/polyfill": "^7.4.0",
     "@nuxt/babel-preset-app": "2.4.5",
     "@nuxt/friendly-errors-webpack-plugin": "^2.4.0",
     "@nuxt/utils": "2.4.5",
