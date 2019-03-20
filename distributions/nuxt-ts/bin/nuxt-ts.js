@@ -7,7 +7,7 @@ const warningBox = boxen([
   chalk.yellow.bold('IMPORTANT : Package deprecation'),
   '',
   `Nuxt TypeScript Support has been refactored to be used with ${chalk.green.bold('nuxt')} package.`,
-  `Which means that ${chalk.yellow.bold(`nuxt-ts`)} package is now longer needed and is now tagged as ${chalk.yellow.bold('deprecated')}.`,
+  `Which means that ${chalk.yellow.bold(`nuxt-ts`)} package is now no longer needed and is now tagged as ${chalk.yellow.bold('deprecated')}.`,
   `${chalk.bold.underline('We highly recommend')} to follow the guidelines below :`,
   '',
   chalk.yellow.bold('Migration guide (2.5.x)'),
