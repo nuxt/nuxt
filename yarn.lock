@@ -1481,10 +1481,10 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.1.0.tgz#f2ffd5da205463a0e9c20a6c0dfede79adb08ed3"
-  integrity sha512-BKalWBW7pCxnNa5N7plPE04zLOtfsPpkwFW2PAVo2xr7GBSG8i9Ei4fFYT3yQkEOxJgDknf0G6Y1Dh3ms2Sbdg==
+"@nuxt/loading-screen@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.1.2.tgz#2438ce21fcc1ae33cbd5168430b763c7ee93626d"
+  integrity sha512-IsSySwZ5nHF34RUdsTEElvx/dLP8uBDTek1xL5vuqgBL+4hsanbBPMhz2B9XSkCLM0wrqKORaZAfY1ZYXmHajA==
   dependencies:
     connect "^3.6.6"
     fs-extra "^7.0.1"
@@ -9490,11 +9490,6 @@ regenerator-runtime@^0.11.0:
   version "0.11.1"
   resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
   integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
-
-regenerator-runtime@^0.13.1:
-  version "0.13.1"
-  resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.1.tgz#522ea2aafd9200a00eee143dc14219a35a0f3991"
-  integrity sha512-5KzMIyPLvfdPmvsdlYsHqITrDfK9k7bmvf97HvHSN4810i254ponbxCQ1NukpRWlu6en2MBWzAlhDExEKISwAA==
 
 regenerator-runtime@^0.13.2:
   version "0.13.2"
