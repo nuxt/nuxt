@@ -26,8 +26,8 @@
     "release": "./scripts/release"
   },
   "devDependencies": {
-    "@babel/core": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.1",
     "@nuxtjs/eslint-config": "^0.0.1",
     "@vue/server-test-utils": "^1.0.0-beta.29",
     "@vue/test-utils": "^1.0.0-beta.29",
@@ -80,7 +80,7 @@
     "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.3",
     "tslint": "^5.14.0",
-    "typescript": "^3.3.3333",
+    "typescript": "^3.3.4000",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^8.0.0"
   },
