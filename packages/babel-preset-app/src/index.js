@@ -1,5 +1,3 @@
-const path = require('path')
-
 const defaultPolyfills = [
   // Promise polyfill alone doesn't work in IE,
   // Needs this as well. see: #1642
