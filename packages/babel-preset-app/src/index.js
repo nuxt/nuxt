@@ -3,14 +3,14 @@ const path = require('path')
 const defaultPolyfills = [
   // Promise polyfill alone doesn't work in IE,
   // Needs this as well. see: #1642
-  'es6.array.iterator',
+  'es.array.iterator',
   // This is required for webpack code splitting, vuex etc.
-  'es6.promise',
+  'es.promise',
   // this is needed for object rest spread support in templates
   // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
-  'es6.object.assign',
-  // #2012 es6.promise replaces native Promise in FF and causes missing finally
-  'es7.promise.finally'
+  'es.object.assign',
+  // #2012 es.promise replaces native Promise in FF and causes missing finally
+  'es.promise.finally'
 ]
 
 function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath }) {
@@ -67,6 +67,8 @@ module.exports = (context, options = {}) => {
     polyfills = []
   }
 
+  const corejs = useBuiltIns !== false ? false : { version: 3 }
+
   // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
@@ -76,6 +78,7 @@ module.exports = (context, options = {}) => {
       modules,
       targets,
       useBuiltIns,
+      corejs,
       ignoreBrowserslistConfig,
       configPath,
       include,
@@ -101,8 +104,8 @@ module.exports = (context, options = {}) => {
 
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
+    corejs,
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : 2,
     helpers: useBuiltIns === 'usage',
     useESModules: true,
     absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))

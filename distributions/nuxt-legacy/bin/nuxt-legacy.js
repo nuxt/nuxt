@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-require('@babel/polyfill')
+require('core-js/stable')
+require('renegerator-runtime/runtime')
 
 require('@babel/register')({
   presets: [

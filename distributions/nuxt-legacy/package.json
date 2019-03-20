@@ -51,7 +51,6 @@
   "bin": "bin/nuxt-legacy.js",
   "dependencies": {
     "@babel/core": "^7.4.0",
-    "@babel/polyfill": "^7.4.0",
     "@babel/preset-env": "^7.4.1",
     "@babel/register": "^7.4.0",
     "@nuxt/builder": "2.4.5",
@@ -59,7 +58,9 @@
     "@nuxt/core": "2.4.5",
     "@nuxt/generator": "2.4.5",
     "@nuxt/opencollective": "^0.2.1",
-    "@nuxt/webpack": "2.4.5"
+    "@nuxt/webpack": "2.4.5",
+    "core-js": "3",
+    "regenerator-runtime": "^0.13.1"
   },
   "engines": {
     "node": ">=6.0.0",
