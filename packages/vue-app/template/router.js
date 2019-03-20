@@ -154,7 +154,7 @@ const scrollBehavior = function (to, from, savedPosition) {
 export function createRouter() {
   return new Router({
     mode: '<%= router.mode %>',
-    base: '<%= router.base %>',
+    base: decodeURI('<%= router.base %>'),
     linkActiveClass: '<%= router.linkActiveClass %>',
     linkExactActiveClass: '<%= router.linkExactActiveClass %>',
     scrollBehavior,
