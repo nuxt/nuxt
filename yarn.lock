@@ -9901,10 +9901,10 @@ rollup-pluginutils@^2.3.0, rollup-pluginutils@^2.3.3, rollup-pluginutils@^2.4.1,
     estree-walker "^0.6.0"
     micromatch "^3.1.10"
 
-rollup@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-1.6.1.tgz#b1f2edc949d78186fb487597b28dd9717b8bc20f"
-  integrity sha512-2giWBZjBepr/25vkds/EzpC52xySDyhX1wPGaJ69cnZJHCuYTzIJKFzJB1DTZ8C7A1FocBbG0KhS/No3whXmzw==
+rollup@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-1.7.0.tgz#2f5063c0f344f2225d1077655dc54d105a512bb2"
+  integrity sha512-hjuWSCgoQsFSTsmsNP4AH1l1kfkFqW82gW00V9nL81Zr3JtnKn3rvxh18jUAAEMb7qNoHj21PR5SqbK2mhBgMg==
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "^11.9.5"
