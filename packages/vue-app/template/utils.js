@@ -164,7 +164,7 @@ export async function setContext(app, context) {
         status = 302
       }
       if (pathType === 'object') {
-        path = app.router.resolve(path).href
+        path = app.router.resolve(path).route.fullPath
       }
       // "/absolute/route", "./relative/route" or "../relative/route"
       if (/(^[.]{1,2}\/)|(^\/(?!\/))/.test(path)) {
