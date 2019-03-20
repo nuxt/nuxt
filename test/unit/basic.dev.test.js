@@ -1,6 +1,6 @@
 import path from 'path'
 import consola from 'consola'
-import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp } from '../utils'
+import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp, waitFor } from '../utils'
 
 let port
 const url = route => 'http://localhost:' + port + route
@@ -50,9 +50,15 @@ describe('basic dev', () => {
         }
       }
     })
+
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     builder = new Builder(nuxt, BundleBuilder)
+
     await builder.build()
+    await waitFor(2000) // TODO: Find a better way
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })

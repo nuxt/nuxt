@@ -115,6 +115,7 @@ export default class Server {
       context: this.renderer.context
     }))
 
+    // Dev middleware
     if (this.options.dev) {
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {

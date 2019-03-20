@@ -12,6 +12,13 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     const url = decodeURI(req.url)
     res.statusCode = 200
     const result = await renderRoute(url, context)
+
+    // If result is falsy, call renderLoading
+    if (!result) {
+      await nuxt.callHook('server:nuxt:renderLoading', req, res)
+      return
+    }
+
     await nuxt.callHook('render:route', url, result, context)
     const {
       html,
