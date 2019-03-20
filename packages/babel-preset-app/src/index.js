@@ -46,7 +46,8 @@ module.exports = (context, options = {}) => {
     shippedProposals,
     forceAllTransforms,
     decoratorsBeforeExport,
-    decoratorsLegacy
+    decoratorsLegacy,
+    absoluteRuntime
   } = options
 
   let { targets } = options
@@ -108,7 +109,7 @@ module.exports = (context, options = {}) => {
     corejs: useBuiltIns !== false ? false : corejs,
     helpers: useBuiltIns === 'usage',
     useESModules: true,
-    absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))
+    absoluteRuntime
   }])
 
   return {
