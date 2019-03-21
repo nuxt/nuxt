@@ -11,7 +11,7 @@ import { CompressionOptions } from 'compression'
 import { Options as EtagOptions } from 'etag'
 import { ServeStaticOptions } from 'serve-static'
 import { BundleRendererOptions } from 'vue-server-renderer'
-import { NuxtConfigurationServerMiddleware } from './index'
+import { NuxtConfigurationServerMiddleware } from './server-middleware'
 
 export interface NuxtConfigurationRender {
   bundleRenderer?: BundleRendererOptions
