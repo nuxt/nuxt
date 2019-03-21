@@ -1,19 +1,19 @@
 const defaultPolyfills = [
   // Promise polyfill alone doesn't work in IE,
   // Needs this as well. see: #1642
-  'es.array.iterator',
+  'es6.array.iterator',
   // This is required for webpack code splitting, vuex etc.
-  'es.promise',
+  'es6.promise',
   // this is needed for object rest spread support in templates
   // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
-  'es.object.assign',
-  // #2012 es.promise replaces native Promise in FF and causes missing finally
-  'es.promise.finally'
+  'es6.object.assign',
+  // #2012 es7.promise replaces native Promise in FF and causes missing finally
+  'es7.promise.finally'
 ]
 
 function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath }) {
   const { isPluginRequired } = require('@babel/preset-env')
-  const builtInsList = require('core-js-compat/data')
+  const builtInsList = require('@babel/preset-env/data/built-ins.json.js')
   const getTargets = require('@babel/preset-env/lib/targets-parser').default
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
@@ -66,7 +66,7 @@ module.exports = (context, options = {}) => {
     polyfills = []
   }
 
-  const corejs = { version: 3 }
+  const corejs = { version: 2 }
 
   // Pass options along to babel-preset-env
   presets.push([

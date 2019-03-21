@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 
-require('core-js/stable')
-require('renegerator-runtime/runtime')
+require('core-js')
+require('regenerator-runtime/runtime')
 
 require('@babel/register')({
   presets: [
     [ '@babel/env', { targets: { node: 'current' } } ]
   ],
+  plugins: [
+    '@babel/plugin-syntax-dynamic-import'
+  ],
   ignore: [
     (path) => {
       // Transpile known packages
-      if (/(@nuxt|@nuxtjs)[\\/]/.test(path)) {
+      if (/(@nuxt|@nuxtjs)[\\/]|proper-lockfile|webpack|vue-app/.test(path)) {
         return false
       }
       // Ignore everything else inside node_modules
