@@ -1,4 +1,6 @@
-export default {
+import NuxtConfiguration from '@nuxt/config'
+
+const config: NuxtConfiguration = {
   build: {
     loaders: {
       vueStyle: {
@@ -12,3 +14,5 @@ export default {
     }
   }
 }
+
+export default config
