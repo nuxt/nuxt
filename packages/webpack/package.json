@@ -17,7 +17,6 @@
     "caniuse-lite": "^1.0.30000951",
     "chalk": "^2.4.2",
     "consola": "^2.5.7",
-    "core-js": "^3.0.0",
     "css-loader": "^2.1.1",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
