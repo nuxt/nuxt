@@ -188,7 +188,8 @@ export default class WebpackBaseConfig {
       '@': path.join(srcDir),
       '@@': path.join(rootDir),
       [assetsDir]: path.join(srcDir, assetsDir),
-      [staticDir]: path.join(srcDir, staticDir)
+      [staticDir]: path.join(srcDir, staticDir),
+      'core-js': path.dirname(require.resolve('core-js/package.json'))
     }
   }
 
