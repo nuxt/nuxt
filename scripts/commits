@@ -25,6 +25,7 @@ diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
 
 writeSection 'Features' 'feat'  "$diff"
 writeSection 'Fixes' 'fix'  "$diff"
+writeSection 'Hot Fixes' 'hotfix'  "$diff"
 writeSection 'Refactors' 'refactor'  "$diff"
 writeSection 'Performance Improvements' 'perf'  "$diff"
 writeSection 'Examples' 'examples'  "$diff"
