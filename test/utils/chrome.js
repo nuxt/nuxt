@@ -47,8 +47,8 @@ export default class ChromeDetector {
     }
     execSync(
       `${LSREGISTER} -dump` +
-      " | grep -i '(google chrome\\( canary\\)\\?|chromium).app$'" +
-      ' | awk \'{$1=""; print $0}\''
+        " | grep -i '(google chrome\\( canary\\)\\?|chromium).app$'" +
+        ' | awk \'{$1=""; print $0}\''
     )
       .toString()
       .split(newLineRegex)
@@ -126,7 +126,7 @@ export default class ChromeDetector {
     if (!installations.length) {
       throw new Error(
         'The environment variable CHROME_PATH must be set to ' +
-        'executable of a build of Chromium version 54.0 or later.'
+          'executable of a build of Chromium version 54.0 or later.'
       )
     }
     const priorities = [

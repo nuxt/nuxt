@@ -13,11 +13,17 @@ export default () => ({
     script: []
   },
 
+  fetch: {
+    server: true,
+    client: true
+  },
+
   plugins: [],
 
   css: [],
 
   modules: [],
+  devModules: [],
 
   layouts: {},
 

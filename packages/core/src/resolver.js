@@ -111,11 +111,14 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault } = {}) {
+  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 
     // TODO: Remove in Nuxt 3
+    if (intropDefault) {
+      consola.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.')
+    }
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
     }
@@ -132,24 +135,24 @@ export default class Resolver {
       lastError = e
     }
 
-    // Disable esm for ts files by default
-    if (useESM === undefined && /.ts$/.test(resolvedPath)) {
-      useESM = false
+    // By default use esm only for js,mjs files outside of node_modules
+    if (useESM === undefined) {
+      useESM = /.(js|mjs)$/.test(resolvedPath) && !/node_modules/.test(resolvedPath)
     }
 
     // Try to require
     try {
-      if (useESM === false) {
-        requiredModule = require(resolvedPath)
-      } else {
+      if (useESM) {
         requiredModule = this.esm(resolvedPath)
+      } else {
+        requiredModule = require(resolvedPath)
       }
     } catch (e) {
       lastError = e
     }
 
-    // Introp default
-    if (intropDefault !== false && requiredModule && requiredModule.default) {
+    // Interop default
+    if (interopDefault !== false && requiredModule && requiredModule.default) {
       requiredModule = requiredModule.default
     }
 

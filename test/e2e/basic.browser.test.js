@@ -12,6 +12,8 @@ describe('basic browser', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 

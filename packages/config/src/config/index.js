@@ -10,7 +10,7 @@ import router from './router'
 import server from './server'
 import cli from './cli'
 
-export const defaultNuxtConfigFile = `nuxt.config${process.env.NUXT_TS === 'true' ? '.ts' : '.js'}`
+export const defaultNuxtConfigFile = 'nuxt.config'
 
 export function getDefaultNuxtConfig(options = {}) {
   if (!options.env) {

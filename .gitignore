@@ -17,6 +17,7 @@ distributions/*/LICENSE
 
 # Other
 .nuxt*
+!.nuxtignore
 .cache
 
 # Dist folders
@@ -54,3 +55,4 @@ coverage
 Network Trash Folder
 Temporary Items
 .apdisk
+commits.md

@@ -11,6 +11,8 @@ let page = null
 const startServer = async (type = 'basic') => {
   const config = await loadFixture(type)
   nuxt = new Nuxt(config)
+  await nuxt.ready()
+
   port = await getPort()
   await nuxt.server.listen(port, 'localhost')
 

@@ -16,6 +16,8 @@ describe('with-config', () => {
   beforeAll(async () => {
     const config = await loadFixture('with-config')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })
@@ -180,6 +182,11 @@ describe('with-config', () => {
       .rejects.toMatchObject({ statusCode: 404 })
   })
 
+  test('should ignore files in .nuxtignore', async () => {
+    await expect(rp(url('/test-ignore')))
+      .rejects.toMatchObject({ statusCode: 404 })
+  })
+
   test('renderAndGetWindow options', async () => {
     const fakeErrorLog = jest.fn()
     const mockOptions = {
@@ -215,6 +222,8 @@ describe('server config', () => {
     const config = await loadFixture('with-config')
     config.server.port = port = await getPort()
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     await nuxt.server.listen()
     await nuxt.server.renderAndGetWindow(url('/test/'))
   })

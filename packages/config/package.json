@@ -1,15 +1,17 @@
 {
   "name": "@nuxt/config",
-  "version": "2.4.5",
+  "version": "2.5.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "types/*.d.ts"
   ],
   "main": "dist/config.js",
+  "typings": "types/index.d.ts",
   "dependencies": {
-    "@nuxt/utils": "2.4.5",
-    "consola": "^2.3.2",
+    "@nuxt/utils": "2.5.0",
+    "consola": "^2.5.7",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

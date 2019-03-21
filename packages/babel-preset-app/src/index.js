@@ -1,18 +1,19 @@
-const path = require('path')
-
 const defaultPolyfills = [
   // Promise polyfill alone doesn't work in IE,
   // Needs this as well. see: #1642
-  'es6.array.iterator',
+  'es.array.iterator',
   // This is required for webpack code splitting, vuex etc.
-  'es6.promise',
-  // #2012 es6.promise replaces native Promise in FF and causes missing finally
-  'es7.promise.finally'
+  'es.promise',
+  // this is needed for object rest spread support in templates
+  // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
+  'es.object.assign',
+  // #2012 es.promise replaces native Promise in FF and causes missing finally
+  'es.promise.finally'
 ]
 
 function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath }) {
   const { isPluginRequired } = require('@babel/preset-env')
-  const builtInsList = require('@babel/preset-env/data/built-ins.json')
+  const builtInsList = require('core-js-compat/data')
   const getTargets = require('@babel/preset-env/lib/targets-parser').default
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
@@ -43,13 +44,14 @@ module.exports = (context, options = {}) => {
     shippedProposals,
     forceAllTransforms,
     decoratorsBeforeExport,
-    decoratorsLegacy
+    decoratorsLegacy,
+    absoluteRuntime
   } = options
 
   let { targets } = options
   if (modern === true) {
     targets = { esmodules: true }
-  } else if (targets === undefined) {
+  } else if (targets === undefined && typeof buildTarget === 'string') {
     targets = buildTarget === 'server' ? { node: 'current' } : { ie: 9 }
   }
 
@@ -64,6 +66,8 @@ module.exports = (context, options = {}) => {
     polyfills = []
   }
 
+  const corejs = { version: 3 }
+
   // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
@@ -73,6 +77,7 @@ module.exports = (context, options = {}) => {
       modules,
       targets,
       useBuiltIns,
+      corejs,
       ignoreBrowserslistConfig,
       configPath,
       include,
@@ -99,10 +104,10 @@ module.exports = (context, options = {}) => {
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : 2,
+    corejs: useBuiltIns !== false ? false : corejs,
     helpers: useBuiltIns === 'usage',
     useESModules: true,
-    absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))
+    absoluteRuntime
   }])
 
   return {

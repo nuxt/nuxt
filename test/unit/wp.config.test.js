@@ -15,16 +15,18 @@ describe('webpack configuration', () => {
     ])
     expect(PerfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
-    const perfLoader = new PerfLoader({
-      name: 'test-perf',
-      options: {
-        dev: true,
-        build: {
+    const perfLoader = new PerfLoader(
+      'test-perf',
+      {
+        options: {
+          dev: true
+        },
+        buildOptions: {
           parallel: true,
           cache: true
         }
       }
-    })
+    )
     expect(perfLoader.workerPools).toMatchObject({ js, css })
     const loaders = perfLoader.use('js')
     const cacheDirectory = path.resolve('node_modules/.cache/cache-loader/test-perf')

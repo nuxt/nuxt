@@ -28,10 +28,6 @@ export default class Server {
     // Runtime shared resources
     this.resources = {}
 
-    // Will be available on dev
-    this.devMiddleware = null
-    this.hotMiddleware = null
-
     // Will be set after listen
     this.listeners = []
 
@@ -40,9 +36,21 @@ export default class Server {
 
     // Close hook
     this.nuxt.hook('close', () => this.close())
+
+    // devMiddleware placeholder
+    if (this.options.dev) {
+      this.nuxt.hook('server:devMiddleware', (devMiddleware) => {
+        this.devMiddleware = devMiddleware
+      })
+    }
   }
 
   async ready() {
+    if (this._readyCalled) {
+      return this
+    }
+    this._readyCalled = true
+
     await this.nuxt.callHook('render:before', this, this.options.render)
 
     // Initialize vue-renderer
@@ -57,6 +65,8 @@ export default class Server {
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
+
+    return this
   }
 
   async setupMiddleware() {
@@ -80,33 +90,6 @@ export default class Server {
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
-    const modernMiddleware = createModernMiddleware({
-      context: this.renderer.context
-    })
-
-    // Add webpack middleware support only for development
-    if (this.options.dev) {
-      this.useMiddleware(modernMiddleware)
-      this.useMiddleware(async (req, res, next) => {
-        const name = req.devModernMode ? 'modern' : 'client'
-        if (this.devMiddleware && this.devMiddleware[name]) {
-          await this.devMiddleware[name](req, res)
-        }
-        if (this.hotMiddleware && this.hotMiddleware[name]) {
-          await this.hotMiddleware[name](req, res)
-        }
-        next()
-      })
-    }
-
-    // open in editor for debug mode only
-    if (this.options.debug && this.options.dev) {
-      this.useMiddleware({
-        path: '__open-in-editor',
-        handler: launchMiddleware(this.options.editor)
-      })
-    }
-
     // For serving static/ files to /
     const staticMiddleware = serveStatic(
       path.resolve(this.options.srcDir, this.options.dir.static),
@@ -126,7 +109,28 @@ export default class Server {
           this.options.render.dist
         )
       })
-      this.useMiddleware(modernMiddleware)
+    }
+
+    this.useMiddleware(createModernMiddleware({
+      context: this.renderer.context
+    }))
+
+    // Dev middleware
+    if (this.options.dev) {
+      this.useMiddleware((req, res, next) => {
+        if (!this.devMiddleware) {
+          return next()
+        }
+        this.devMiddleware(req, res, next)
+      })
+
+      // open in editor for debug mode only
+      if (this.options.debug) {
+        this.useMiddleware({
+          path: '__open-in-editor',
+          handler: launchMiddleware(this.options.editor)
+        })
+      }
     }
 
     // Add user provided middleware
@@ -134,9 +138,10 @@ export default class Server {
       this.useMiddleware(m)
     }
 
+    // Graceful 404 error handler
     const { fallback } = this.options.render
     if (fallback) {
-      // Graceful 404 errors for dist files
+      // Dist files
       if (fallback.dist) {
         this.useMiddleware({
           path: this.publicPath,
@@ -144,7 +149,7 @@ export default class Server {
         })
       }
 
-      // Graceful 404 errors for other paths
+      // Other paths
       if (fallback.static) {
         this.useMiddleware({
           path: '/',
@@ -161,14 +166,10 @@ export default class Server {
       resources: this.resources
     }))
 
-    // Error middleware for errors that occurred in middleware that declared above
-    // Middleware should exactly take 4 arguments
-    // https://github.com/senchalabs/connect#error-middleware
-
     // Apply errorMiddleware from modules first
     await this.nuxt.callHook('render:errorMiddleware', this.app)
 
-    // Apply errorMiddleware from Nuxt
+    // Error middleware for errors that occurred in middleware that declared above
     this.useMiddleware(errorMiddleware({
       resources: this.resources,
       options: this.options
@@ -228,6 +229,9 @@ export default class Server {
   }
 
   async listen(port, host, socket) {
+    // Ensure nuxt is ready
+    await this.nuxt.ready()
+
     // Create a new listener
     const listener = new Listener({
       port: isNaN(parseInt(port)) ? this.options.server.port : port,
@@ -253,9 +257,8 @@ export default class Server {
     }
     this.__closed = true
 
-    for (const listener of this.listeners) {
-      await listener.close()
-    }
+    await Promise.all(this.listeners.map(l => l.close()))
+
     this.listeners = []
 
     if (typeof this.renderer.close === 'function') {

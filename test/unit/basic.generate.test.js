@@ -21,11 +21,12 @@ describe('basic generate', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
 
     pathsBefore = listPaths(nuxt.options.rootDir)
 
     // Make sure our check for changed files is really working
-    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate-changed')
+    changedFileName = resolve(nuxt.options.generate.dir, '..', '.nuxt-generate', '.nuxt-generate-changed')
     nuxt.hook('generate:done', () => {
       writeFileSync(changedFileName, '')
     })
@@ -46,7 +47,7 @@ describe('basic generate', () => {
   })
 
   test('Check builder', () => {
-    expect(builder.bundleBuilder.context.isStatic).toBe(true)
+    expect(builder.bundleBuilder.buildContext.isStatic).toBe(true)
     expect(builder.build).toHaveBeenCalledTimes(1)
   })
 

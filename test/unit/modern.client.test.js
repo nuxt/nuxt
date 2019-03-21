@@ -7,6 +7,8 @@ describe('modern client mode (SSR)', () => {
   beforeAll(async () => {
     const options = await loadFixture('modern', { modern: 'client' })
     nuxt = new Nuxt(options)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })

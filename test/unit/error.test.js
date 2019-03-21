@@ -12,6 +12,8 @@ describe('error', () => {
   beforeAll(async () => {
     const config = await loadFixture('error')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
   })

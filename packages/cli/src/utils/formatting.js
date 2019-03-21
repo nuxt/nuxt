@@ -22,7 +22,7 @@ export function indentLines(string, spaces, firstLineSpaces) {
 }
 
 export function foldLines(string, spaces, firstLineSpaces, charsPerLine = maxCharsPerLine()) {
-  return indentLines(wrapAnsi(string, charsPerLine, { trim: false }), spaces, firstLineSpaces)
+  return indentLines(wrapAnsi(string, charsPerLine), spaces, firstLineSpaces)
 }
 
 export function colorize(text) {
@@ -30,7 +30,7 @@ export function colorize(text) {
     .replace(/\[[^ ]+]/g, m => chalk.grey(m))
     .replace(/<[^ ]+>/g, m => chalk.green(m))
     .replace(/ (-[-\w,]+)/g, m => chalk.bold(m))
-    .replace(/`(.+)`/g, (_, m) => chalk.bold.cyan(m))
+    .replace(/`([^`]+)`/g, (_, m) => chalk.bold.cyan(m))
 }
 
 export function box(message, title, options) {

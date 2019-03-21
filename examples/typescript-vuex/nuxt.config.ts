@@ -1,4 +1,6 @@
-const config = {
+import NuxtConfiguration from '@nuxt/config-edge'
+
+const config: NuxtConfiguration = {
   head: {
     title: 'starter',
     meta: [

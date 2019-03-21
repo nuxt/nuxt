@@ -123,7 +123,8 @@ async function createApp(ssrContext) {
     payload: ssrContext ? ssrContext.payload : undefined,
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
-    beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined
+    beforeRenderFns: ssrContext ? ssrContext.beforeRenderFns : undefined,
+    ssrContext
   })
 
   <% if (plugins.length) { %>
@@ -165,20 +166,21 @@ async function createApp(ssrContext) {
 
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-  <% plugins.filter(p => p.mode === 'all').forEach((plugin) => { %>
-  if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
-
-  <% if (plugins.filter(p => p.mode === 'client').length) { %>
-  if (process.client) {
-    <% plugins.filter(p => p.mode === 'client').forEach((plugin) => { %>
-    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
-  }<% } %>
-
-  <% if (plugins.filter(p => p.mode === 'server').length) { %>
-  if (process.server) {
-    <% plugins.filter(p => p.mode === 'server').forEach((plugin) => { %>
-    if (typeof <%= plugin.name %> === 'function') await <%= plugin.name %>(app.context, inject)<% }) %>
-  }<% } %>
+  <% plugins.forEach((plugin) => { %>
+  <% if (plugin.mode == 'client') { %>
+  if (process.client && typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } else if (plugin.mode == 'server') { %>
+  if (process.server && typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } else { %>
+  if (typeof <%= plugin.name %> === 'function') {
+    await <%= plugin.name %>(app.context, inject)
+  }
+  <% } %>
+  <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
   // If server-side, wait for async component to be resolved first

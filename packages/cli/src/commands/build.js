@@ -1,4 +1,5 @@
-import { common } from '../options'
+import { common, locking } from '../options'
+import { createLock } from '../utils'
 
 export default {
   name: 'build',
@@ -6,6 +7,7 @@ export default {
   usage: 'build <dir>',
   options: {
     ...common,
+    ...locking,
     analyze: {
       alias: 'a',
       type: 'boolean',
@@ -62,14 +64,23 @@ export default {
     const config = await cmd.getNuxtConfig({ dev: false })
     const nuxt = await cmd.getNuxt(config)
 
+    if (cmd.argv.lock) {
+      await cmd.setLock(await createLock({
+        id: 'build',
+        dir: nuxt.options.buildDir,
+        root: config.rootDir
+      }))
+    }
+
     if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
       // Build only
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()
-    } else {
-      // Build + Generate for static deployment
-      const generator = await cmd.getGenerator(nuxt)
-      await generator.generate({ build: true })
+      return
     }
+
+    // Build + Generate for static deployment
+    const generator = await cmd.getGenerator(nuxt)
+    await generator.generate({ build: true })
   }
 }
