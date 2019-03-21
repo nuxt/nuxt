@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* remove consola.debug for hooks ([#5318](https://github.com/nuxt/nuxt.js/issues/5318)) ([9ff01f9](https://github.com/nuxt/nuxt.js/commit/9ff01f9))
+
+
+
+
+
 # [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
 
 
