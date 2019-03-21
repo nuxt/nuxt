@@ -40,6 +40,7 @@ export async function lock({ id, dir, root, options }) {
     consola.fatal(`A lock with id '${id}' already exists on ${dir}`)
   }
 
+  options = getLockOptions(options)
   const release = await properlock.lock(lockPath, options)
 
   if (!release) {

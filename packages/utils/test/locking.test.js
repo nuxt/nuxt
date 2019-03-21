@@ -18,16 +18,16 @@ describe('util: locking', () => {
   beforeEach(() => jest.resetAllMocks())
   beforeEach(() => lockPaths.clear())
 
-  test('onCompromised lock is warn error by default', () => {
+  test('onCompromised lock warns on compromise by default', () => {
     defaultLockOptions.onCompromised()
     expect(consola.warn).toHaveBeenCalledTimes(1)
   })
 
   test('can override default options', () => {
-    const options = getLockOptions({ onCompromised: err => consola.warn(err) })
+    const options = getLockOptions({ onCompromised: err => consola.fatal(err) })
     options.onCompromised()
 
-    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.fatal).toHaveBeenCalledTimes(1)
   })
 
   test('createLockPath creates the same lockPath for identical locks', () => {
@@ -142,5 +142,18 @@ describe('util: locking', () => {
 
     expect(fs.removeSync).toHaveBeenCalledWith(path1)
     expect(fs.removeSync).toHaveBeenCalledWith(path2)
+  })
+
+  test('lock uses setLockOptions to set defaults', async () => {
+    const spy = properlock.lock.mockImplementationOnce(() => true)
+
+    await lock(lockConfig)
+
+    expect(spy).toHaveBeenCalledWith(expect.any(String), expect.any(Object))
+    const options = spy.mock.calls[0][1]
+    expect(options.stale).toBeDefined()
+    expect(options.onCompromised).toBeDefined()
+    expect(() => options.onCompromised()).not.toThrow()
+    expect(consola.fatal).not.toHaveBeenCalled()
   })
 })
