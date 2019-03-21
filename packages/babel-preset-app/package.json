@@ -18,7 +18,7 @@
     "@babel/preset-env": "^7.4.2",
     "@babel/runtime": "^7.4.2",
     "@vue/babel-preset-jsx": "^1.0.0-beta.2",
-    "core-js": "^2.6.5"
+    "core-js": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
