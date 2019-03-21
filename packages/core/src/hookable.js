@@ -30,7 +30,7 @@ export default class Hookable {
     if (!this._hooks[name]) {
       return
     }
-    
+
     try {
       await sequence(this._hooks[name], fn => fn(...args))
     } catch (err) {
