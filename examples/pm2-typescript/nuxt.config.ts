@@ -1,4 +1,6 @@
-export default {
+import NuxtConfiguration from '@nuxt/config'
+
+const config: NuxtConfiguration = {
   hooks: {
     listen () {
       if (process.send) {
@@ -7,3 +9,5 @@ export default {
     }
   }
 }
+
+export default config
