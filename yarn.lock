@@ -4400,14 +4400,14 @@ eslint-module-utils@^2.3.0:
     debug "^2.6.8"
     pkg-dir "^2.0.0"
 
-eslint-multiplexer@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.npmjs.org/eslint-multiplexer/-/eslint-multiplexer-1.0.3.tgz#8bba4c28ee81e5267a6a28004af63b50c1ad8c94"
-  integrity sha512-wvJqYkLnJAOE480S3/0FKdjiY7oFIV+lsU0DWxUINQbTTxT0dN1XSkT06QQeu74wjpwsWdb1UNWPSWo6T0QyGQ==
+eslint-multiplexer@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.npmjs.org/eslint-multiplexer/-/eslint-multiplexer-1.0.4.tgz#4dde202fa2c9edc2ee802ab4b8fdb02a49b6d596"
+  integrity sha512-KdakcevBFb6n4VQBRY7u+wFqyREzz1QYJRuuPNHUcK5hN1XOikJIEC5Qf+28ZRIvHkoxiw/CW//LNAAyQzxaiQ==
   dependencies:
     cross-spawn "^6.0.5"
     minimist "^1.2.0"
-    minimist-options "^3.0.2"
+    minimist-options "^4.0.1"
 
 eslint-plugin-es@^1.3.1:
   version "1.4.0"
@@ -4535,10 +4535,10 @@ eslint@^5.15.3:
     table "^5.2.3"
     text-table "^0.2.0"
 
-esm@^3.2.18:
-  version "3.2.18"
-  resolved "https://registry.npmjs.org/esm/-/esm-3.2.18.tgz#54e9276449ab832b01240069ae66bf245785c767"
-  integrity sha512-1UENjnnI37UDp7KuOqKYjfqdaMim06eBWnDv37smaxTIzDl0ZWnlgoXwsVwD9+Lidw+q/f1gUf2diVMDCycoVw==
+esm@^3.2.19:
+  version "3.2.19"
+  resolved "https://registry.npmjs.org/esm/-/esm-3.2.19.tgz#700a250f6fe06c4d67bb609528d4d208d2c81411"
+  integrity sha512-thFxRC6o0gKfSiSwuUI2JO01f9JOm1qRWGfBLry0LF3L8mSeSTK58DqCE3+0ZKq02e/DClCJf3BW9nVwd/ejCw==
 
 espree@^4.1.0:
   version "4.1.0"
@@ -7277,10 +7277,18 @@ minimatch@^3.0.0, minimatch@^3.0.3, minimatch@^3.0.4:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimist-options@^3.0.1, minimist-options@^3.0.2:
+minimist-options@^3.0.1:
   version "3.0.2"
   resolved "https://registry.npmjs.org/minimist-options/-/minimist-options-3.0.2.tgz#fba4c8191339e13ecf4d61beb03f070103f3d954"
   integrity sha512-FyBrT/d0d4+uiZRbqznPXqw3IpZZG3gl3wKWiX784FycUKVwBt0uLBFkQrtE4tZOrgo78nZp2jnKz3L65T5LdQ==
+  dependencies:
+    arrify "^1.0.1"
+    is-plain-obj "^1.1.0"
+
+minimist-options@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/minimist-options/-/minimist-options-4.0.1.tgz#7acffad2a4885859737f9430b2f634328e02732a"
+  integrity sha512-mM6mNIRActjNAB6tHeB9qBPg4LqGWVGrnB8mHupgVu7SwrcyTO3qUB184L1H+MuJS8lQYHCu+NzE3HDf5hu/pw==
   dependencies:
     arrify "^1.0.1"
     is-plain-obj "^1.1.0"
