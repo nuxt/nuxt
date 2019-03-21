@@ -1,4 +1,4 @@
-import NuxtConfiguration from '@nuxt/config-edge'
+import NuxtConfiguration from '@nuxt/config'
 
 const config: NuxtConfiguration = {
   head: {
