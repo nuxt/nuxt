@@ -126,9 +126,10 @@ export default class VueRenderer {
 
   ready() {
     if (!this._readyPromise) {
-      this._state = 'loading'
+      this._state = 'initializing'
       this._readyPromise = this._ready()
         .then(() => {
+          this._state = 'ready'
           return this
         })
         .catch((error) => {
@@ -142,8 +143,6 @@ export default class VueRenderer {
   }
 
   async _ready() {
-    this._state = 'loading'
-
     // Resolve dist path
     this.distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
 
@@ -225,10 +224,6 @@ export default class VueRenderer {
 
       // Create new renderer
       this.createRenderer()
-    }
-
-    if (this.isReady) {
-      this._state = 'ready'
     }
 
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
@@ -460,13 +455,13 @@ export default class VueRenderer {
       if (!this.context.options.dev) {
         switch (this._state) {
           case 'created':
-            throw new Error('Renderer is not initialized! `nuxt.ready()` should be called.')
-          case 'loading':
-            throw new Error(`Renderer is loading.`)
+            throw new Error('Renderer is not initialized! Please ensure `nuxt.ready()` is called and awaited.')
+          case 'initializing':
+            throw new Error(`Renderer is initializing.`)
           case 'error':
             throw this._error
           case 'ready':
-            throw new Error(`Renderer resources unavailable! Please check ${this.distPath} existence.`)
+            throw new Error(`Renderer is initialized but not all resources are unavailable! Please check ${this.distPath} existence.`)
           default:
             throw new Error('Renderer is in unknown state!')
         }
