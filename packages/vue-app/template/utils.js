@@ -259,7 +259,7 @@ export function promisify(fn, context) {
 
 // Imported from vue-router
 export function getLocation(base, mode) {
-  let path = window.location.pathname
+  let path = decodeURI(window.location.pathname)
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
