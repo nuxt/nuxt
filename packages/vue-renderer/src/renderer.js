@@ -462,7 +462,7 @@ export default class VueRenderer {
           case 'created':
             throw new Error('Renderer is not initialized! `nuxt.ready()` should be called.')
           case 'loading':
-            throw new Error(`Renderer is initializing.`)
+            throw new Error(`Renderer is loading.`)
           case 'error':
             throw this._error
           case 'ready':
