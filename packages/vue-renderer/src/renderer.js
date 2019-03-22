@@ -33,6 +33,10 @@ export default class VueRenderer {
       spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
+
+    // Default status
+    this._status = 'created'
+    this._error = null
   }
 
   get assetsMapping() {
