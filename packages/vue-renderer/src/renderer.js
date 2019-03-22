@@ -129,7 +129,6 @@ export default class VueRenderer {
       this._state = 'loading'
       this._readyPromise = this._ready()
         .then(() => {
-          this._state = 'ready'
           return this
         })
         .catch((error) => {
@@ -143,10 +142,7 @@ export default class VueRenderer {
   }
 
   async _ready() {
-    if (this._readyCalled) {
-      return this
-    }
-    this._readyCalled = true
+    this._state = 'loading'
 
     // Resolve dist path
     this.distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
@@ -178,8 +174,6 @@ export default class VueRenderer {
         `No build files found in ${this.distPath}.\nUse either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
       )
     }
-
-    return this
   }
 
   async loadResources(_fs) {
@@ -208,7 +202,6 @@ export default class VueRenderer {
 
       // Skip unavailable resources
       if (!resource) {
-        consola.debug('Resource not available:', resourceName)
         continue
       }
 
@@ -234,8 +227,9 @@ export default class VueRenderer {
       this.createRenderer()
     }
 
-    // Call resourcesLoaded hook
-    consola.debug('Resources loaded:', updated.join(','))
+    if (this.isReady) {
+      this._state = 'ready'
+    }
 
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
