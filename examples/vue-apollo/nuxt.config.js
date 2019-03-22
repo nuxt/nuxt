@@ -4,5 +4,7 @@ export default {
     networkInterfaces: {
       default: '~/apollo/network-interfaces/default.js'
     }
-  }
+  },
+  // for clientci- side rendering only.
+  mode: 'spa'
 }
