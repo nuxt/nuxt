@@ -120,7 +120,25 @@ export default class VueRenderer {
     return context.renderResourceHints()
   }
 
-  async ready() {
+  ready() {
+    if (!this._readyPromise) {
+      this._status = 'loading'
+      this._readyPromise = this._ready()
+        .then(() => {
+          this._status = 'ready'
+          return this
+        })
+        .catch((error) => {
+          this._status = 'error'
+          this._error = error
+          throw error
+        })
+    }
+
+    return this._readyPromise
+  }
+
+  async _ready() {
     if (this._readyCalled) {
       return this
     }
@@ -437,23 +455,23 @@ export default class VueRenderer {
     }
   }
 
-  _throwNotReadyError() {
-    const error = new Error()
-
-    error.statusCode = 500
-    if (!this._readyCalled) {
-      error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called.'
-    } else {
-      error.message = `SSR renderer is not initialized! Please check ${this.distPath} existence.`
-    }
-    throw error
-  }
-
   async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      // Production
       if (!this.context.options.dev) {
-        return this._throwNotReadyError()
+        switch (this._status) {
+          case 'created':
+            throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called.')
+          case 'loading':
+            await this.ready()
+            return this.renderRoute(url, context)
+          case 'error':
+            throw this._error
+          case 'ready':
+          default:
+            throw new Error(`SSR renderer is not initialized! Please check ${this.distPath} existence.`)
+        }
       }
       // Tell nuxt middleware to render UI
       return false
