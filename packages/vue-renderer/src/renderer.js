@@ -35,7 +35,7 @@ export default class VueRenderer {
     })
 
     // Default status
-    this._status = 'created'
+    this._state = 'created'
     this._error = null
   }
 
@@ -126,14 +126,14 @@ export default class VueRenderer {
 
   ready() {
     if (!this._readyPromise) {
-      this._status = 'loading'
+      this._state = 'loading'
       this._readyPromise = this._ready()
         .then(() => {
-          this._status = 'ready'
+          this._state = 'ready'
           return this
         })
         .catch((error) => {
-          this._status = 'error'
+          this._state = 'error'
           this._error = error
           throw error
         })
@@ -464,7 +464,7 @@ export default class VueRenderer {
     if (!this.isReady) {
       // Production
       if (!this.context.options.dev) {
-        switch (this._status) {
+        switch (this._state) {
           case 'created':
             throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called.')
           case 'loading':
