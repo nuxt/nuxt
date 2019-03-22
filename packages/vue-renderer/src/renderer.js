@@ -460,15 +460,15 @@ export default class VueRenderer {
       if (!this.context.options.dev) {
         switch (this._state) {
           case 'created':
-            throw new Error('Nuxt is not initialized! `nuxt.ready()` should be called.')
+            throw new Error('Renderer is not initialized! `nuxt.ready()` should be called.')
           case 'loading':
-            await this.ready()
-            return this.renderRoute(url, context)
+            throw new Error(`Renderer is initializing.`)
           case 'error':
             throw this._error
           case 'ready':
+            throw new Error(`Renderer resource unavailable! Please check ${this.distPath} existence.`)
           default:
-            throw new Error(`SSR renderer is not initialized! Please check ${this.distPath} existence.`)
+            throw new Error('Renderer is in unknown state!')
         }
       }
       // Tell nuxt middleware to render UI
