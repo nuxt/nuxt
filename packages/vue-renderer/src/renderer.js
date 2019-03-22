@@ -126,7 +126,7 @@ export default class VueRenderer {
 
   ready() {
     if (!this._readyPromise) {
-      this._state = 'initializing'
+      this._state = 'loading'
       this._readyPromise = this._ready()
         .then(() => {
           this._state = 'ready'
@@ -456,8 +456,8 @@ export default class VueRenderer {
         switch (this._state) {
           case 'created':
             throw new Error('Renderer is not initialized! Please ensure `nuxt.ready()` is called and awaited.')
-          case 'initializing':
-            throw new Error(`Renderer is initializing.`)
+          case 'loading':
+            throw new Error(`Renderer is loading.`)
           case 'error':
             throw this._error
           case 'ready':
