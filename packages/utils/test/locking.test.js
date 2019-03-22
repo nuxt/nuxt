@@ -137,7 +137,7 @@ describe('util: locking', () => {
 
     expect(consola.warn).toHaveBeenCalledTimes(1)
   })
-  
+
   test('lock check only logs error when error thrown', async () => {
     const testError = new Error('check error')
     properlock.lock.mockImplementation(() => () => {})
