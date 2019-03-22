@@ -135,7 +135,7 @@ describe('util: locking', () => {
     const fn = await lock(lockConfig)
     await expect(fn()).resolves.not.toThrow()
 
-    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.debug).toHaveBeenCalledTimes(1)
   })
 
   test('lock check only logs error when error thrown', async () => {
@@ -148,8 +148,8 @@ describe('util: locking', () => {
     const fn = await lock(lockConfig)
     expect(fn).toEqual(expect.any(Function))
 
-    expect(consola.warn).toHaveBeenCalledTimes(1)
-    expect(consola.warn).toHaveBeenCalledWith('Check for existing lock failed', testError)
+    expect(consola.debug).toHaveBeenCalledTimes(1)
+    expect(consola.debug).toHaveBeenCalledWith(`Check for an existing lock with id '${lockConfig.id}' on ${lockConfig.dir} failed`, testError)
   })
 
   test('lock release doesnt log error when error thrown because lock compromised', async () => {

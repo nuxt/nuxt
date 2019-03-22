@@ -41,7 +41,7 @@ export async function lock({ id, dir, root, options }) {
       consola.fatal(`A lock with id '${id}' already exists on ${dir}`)
     }
   } catch (e) {
-    consola.warn(`Check for existing lock failed`, e)
+    consola.debug(`Check for an existing lock with id '${id}' on ${dir} failed`, e)
   }
 
   let lockWasCompromised = false
@@ -84,19 +84,19 @@ export async function lock({ id, dir, root, options }) {
       // when it fails on a compromised lock
       await release()
     } catch (e) {
-      if (lockWasCompromised && e.message.includes('already released')) {
-        // proper-lockfile doesnt remove lockDir when lock is compromised
-        // removing it here could cause the 'other' process to throw an error
-        // as well, but in our case its much more likely the lock was
-        // compromised due to mtime update timeouts
-        const lockDir = `${lockPath}.lock`
-        if (await fs.exists(lockDir)) {
-          await fs.remove(lockDir)
-        }
+      if (!lockWasCompromised || !e.message.includes('already released')) {
+        consola.debug(e)
         return
       }
 
-      consola.warn(e)
+      // proper-lockfile doesnt remove lockDir when lock is compromised
+      // removing it here could cause the 'other' process to throw an error
+      // as well, but in our case its much more likely the lock was
+      // compromised due to mtime update timeouts
+      const lockDir = `${lockPath}.lock`
+      if (await fs.exists(lockDir)) {
+        await fs.remove(lockDir)
+      }
     }
   }
 }
