@@ -1,4 +1,5 @@
 import { NuxtConfigurationBuild } from './build'
+import { NuxtConfigurationCSS } from './css'
 import { NuxtConfigurationEnv } from './env'
 import { NuxtConfigurationFetch } from './fetch'
 import { NuxtConfigurationGenerate } from './generate'
@@ -20,7 +21,7 @@ type ExtendableConfiguration = { [key: string]: any }
 export default interface NuxtConfiguration extends ExtendableConfiguration {
   build?: NuxtConfigurationBuild
   buildDir?: string
-  css?: string[]
+  css?: NuxtConfigurationCSS
   dev?: boolean
   env?: NuxtConfigurationEnv
   fetch?: NuxtConfigurationFetch
