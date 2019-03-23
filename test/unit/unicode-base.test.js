@@ -19,8 +19,7 @@ describe('unicode-base', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/ö/'))
 
     const html = window.document.body.innerHTML
-    // important to have the actual page transition classes here -> page works, no hydration error
-    expect(html).toContain('<h1 class="page-enter page-enter-active">Unicode base works!</h1>')
+    expect(html).toContain('<h1>Unicode base works!</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes
