@@ -11,7 +11,7 @@
     "@nuxt/devalue": "^1.2.2",
     "@nuxt/utils": "2.5.1",
     "@nuxt/vue-app": "2.5.1",
-    "chokidar": "^2.1.2",
+    "chokidar": "^2.1.5",
     "consola": "^2.5.7",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",
