@@ -1,8 +1,10 @@
 export default {
   modules: ['@nuxtjs/apollo'],
   apollo: {
-    networkInterfaces: {
-      default: '~/apollo/network-interfaces/default.js'
+    clientConfigs: {
+      default: {
+        httpEndpoint: 'https://api.graph.cool/simple/v1/cj1dqiyvqqnmj0113yuqamkuu'
+      }
     }
   }
 }
