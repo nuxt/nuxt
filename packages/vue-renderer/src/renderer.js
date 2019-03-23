@@ -413,6 +413,7 @@ export default class VueRenderer {
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
       cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
+      HEAD += cspScriptSrcHashes
     }
 
     // Call ssr:csp hook
