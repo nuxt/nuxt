@@ -2,36 +2,26 @@ import path from 'path'
 import { existsSync } from 'fs'
 import chalk from 'chalk'
 import consola from 'consola'
-import { warningBox } from './formatting'
-
-const dependencyNotFoundMessage =
-`Please install @nuxt/typescript and rerun the command
-
-${chalk.bold('Using yarn')}
-yarn add -D @nuxt/typescript
-
-${chalk.bold('Using npm')}
-npm install -D @nuxt/typescript`
 
 export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
   const tsConfigPath = path.resolve(rootDir, 'tsconfig.json')
 
+  // Check if tsconfig.json is existed
   if (!existsSync(tsConfigPath)) {
     return false
   }
 
-  consola.info(`${chalk.bold.blue('tsconfig.json')} found, enabling TypeScript runtime support`)
-
+  // Check if `@nuxt/typescript` is installed
   try {
     const { setup } = require('@nuxt/typescript')
+    // Enabling TypeScript runtime
     await setup(tsConfigPath, options)
+    consola.info(`${chalk.bold.blue('@nuxt/typescript')} and ${chalk.bold.blue('tsconfig.json')} found, enabling TypeScript runtime support`)
   } catch (e) {
-    if (e.code === 'MODULE_NOT_FOUND') {
-      process.stdout.write(warningBox(dependencyNotFoundMessage, chalk.yellow('An external official dependency is needed to enable TS support')))
-      process.exit(1)
-    } else {
+    if (e.code !== 'MODULE_NOT_FOUND') {
       throw (e)
     }
+    return false
   }
 
   return true

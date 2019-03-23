@@ -1,5 +1,11 @@
 import { resolve } from 'path'
-import { mkdirp, readJSON, remove, writeJSON } from 'fs-extra'
+import {
+  mkdirp,
+  readJSON,
+  remove,
+  writeFile,
+  writeJSON
+} from 'fs-extra'
 import { register } from 'ts-node'
 import { defaultTsJsonConfig, setup as setupTypeScript } from '@nuxt/typescript'
 
@@ -12,16 +18,30 @@ describe('typescript setup', () => {
   beforeAll(async () => {
     // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
     await mkdirp(rootDir)
-    await writeJSON(tsConfigPath, {})
     await setupTypeScript(tsConfigPath)
   })
 
-  test('tsconfig.json has been updated with defaults', async () => {
+  test('tsconfig.json has been created with defaults', async () => {
     expect(await readJSON(tsConfigPath)).toEqual(defaultTsJsonConfig)
+  })
+
+  test('should not overwrite tsconfig.json if exists', async () => {
+    const editedTsJsonConfig = {
+      ...defaultTsJsonConfig,
+      lib: ['dom', 'es2015']
+    }
+    await writeJSON(tsConfigPath, editedTsJsonConfig, { spaces: 2 })
+    expect(await readJSON(tsConfigPath)).toEqual(editedTsJsonConfig)
+  })
+
+  test('should throw an error after reading invalid json', async () => {
+    await writeFile(tsConfigPath, '{"invalidJson": "test"')
+    await expect(readJSON(tsConfigPath)).rejects.toThrow()
   })
 
   test('ts-node has been registered once', async () => {
     // Call setupTypeScript a second time to test guard
+    await remove(tsConfigPath)
     await setupTypeScript(tsConfigPath)
 
     expect(register).toHaveBeenCalledTimes(1)
