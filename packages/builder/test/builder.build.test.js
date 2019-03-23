@@ -263,7 +263,7 @@ describe('builder: builder build', () => {
       .mockReturnValueOnce({ version: 'alpha' })
       .mockReturnValueOnce(undefined)
 
-    expect(() => builder.validateTemplate()).toThrow('Missing Template Dependencies')
+    expect(() => builder.validateTemplate()).toThrow('Missing App Dependencies')
 
     expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
     expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
