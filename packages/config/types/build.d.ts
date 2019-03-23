@@ -61,6 +61,5 @@ export interface NuxtConfigurationBuild {
   typescript?: {
     typeCheck?: { [key: string]: any} | boolean // TBD - Couldn't find typedefs for the forkTsCheckerWebpackPlugin options
   }
-  useForkTsChecker?: { [key: string]: string } | boolean // TBD - Couldn't find typedefs for the forkTsCheckerWebpackPlugin options
   watch?: string[]
 }
