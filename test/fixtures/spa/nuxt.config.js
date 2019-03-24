@@ -15,6 +15,9 @@ export default {
       chunk: '[name].js'
     }
   },
+  router: {
+    middleware: 'middleware'
+  },
   plugins: [
     '~/plugins/error.js'
   ]
