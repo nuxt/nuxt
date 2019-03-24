@@ -413,11 +413,15 @@ export default class VueRenderer {
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
       cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
-      HEAD += cspScriptSrcHashes.join()
     }
 
     // Call ssr:csp hook
     await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
+
+    // Add csp meta tags
+    if (this.context.options.render.csp && this.context.options.render.csp.asMeta) {
+      HEAD += `<meta http-equiv="Content-Security-Policy" content="script-src ${cspScriptSrcHashes.join()}">`
+    }
 
     // Prepend scripts
     APP += this.renderScripts(context)
