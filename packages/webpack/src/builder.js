@@ -173,6 +173,9 @@ export class WebpackBundler {
       // Actual error will be printed by webpack
       throw new Error('Nuxt Build Error')
     }
+
+    // Await for renderer to load resources (programmatic, tests and generate)
+    await nuxt.callHook('build:resources')
   }
 
   async webpackDev(compiler) {

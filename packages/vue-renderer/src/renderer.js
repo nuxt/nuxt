@@ -33,6 +33,10 @@ export default class VueRenderer {
       spaTemplate: undefined,
       errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
     })
+
+    // Default status
+    this._state = 'created'
+    this._error = null
   }
 
   get assetsMapping() {
@@ -120,12 +124,25 @@ export default class VueRenderer {
     return context.renderResourceHints()
   }
 
-  async ready() {
-    if (this._readyCalled) {
-      return this
+  ready() {
+    if (!this._readyPromise) {
+      this._state = 'loading'
+      this._readyPromise = this._ready()
+        .then(() => {
+          this._state = 'ready'
+          return this
+        })
+        .catch((error) => {
+          this._state = 'error'
+          this._error = error
+          throw error
+        })
     }
-    this._readyCalled = true
 
+    return this._readyPromise
+  }
+
+  async _ready() {
     // Resolve dist path
     this.distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
 
@@ -140,7 +157,7 @@ export default class VueRenderer {
     // Try once to load SSR resources from fs
     await this.loadResources(fs)
 
-    // Without using `nuxt start` (Programmatic, Tests and Generate)
+    // Without using `nuxt start` (programmatic, tests and generate)
     if (!this.context.options._start) {
       this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
       return
@@ -156,8 +173,6 @@ export default class VueRenderer {
         `No build files found in ${this.distPath}.\nUse either \`nuxt build\` or \`builder.build()\` or start nuxt in development mode.`
       )
     }
-
-    return this
   }
 
   async loadResources(_fs) {
@@ -186,7 +201,6 @@ export default class VueRenderer {
 
       // Skip unavailable resources
       if (!resource) {
-        consola.debug('Resource not available:', resourceName)
         continue
       }
 
@@ -211,9 +225,6 @@ export default class VueRenderer {
       // Create new renderer
       this.createRenderer()
     }
-
-    // Call resourcesLoaded hook
-    consola.debug('Resources loaded:', updated.join(','))
 
     return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
   }
@@ -437,23 +448,23 @@ export default class VueRenderer {
     }
   }
 
-  _throwNotReadyError() {
-    const error = new Error()
-
-    error.statusCode = 500
-    if (!this._readyCalled) {
-      error.message = 'Nuxt is not initialized! `nuxt.ready()` should be called.'
-    } else {
-      error.message = `SSR renderer is not initialized! Please check ${this.distPath} existence.`
-    }
-    throw error
-  }
-
   async renderRoute(url, context = {}) {
     /* istanbul ignore if */
     if (!this.isReady) {
+      // Production
       if (!this.context.options.dev) {
-        return this._throwNotReadyError()
+        switch (this._state) {
+          case 'created':
+            throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
+          case 'loading':
+            throw new Error(`Renderer is loading.`)
+          case 'error':
+            throw this._error
+          case 'ready':
+            throw new Error(`Renderer is loaded but not all resources are unavailable! Please check ${this.distPath} existence.`)
+          default:
+            throw new Error('Renderer is in unknown state!')
+        }
       }
       // Tell nuxt middleware to render UI
       return false

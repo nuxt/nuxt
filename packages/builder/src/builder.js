@@ -222,7 +222,7 @@ export default class Builder {
         'Using npm:\n',
         `npm i ${dependencyFixes.join(' ')}\n`
       )
-      throw new Error('Missing Template Dependencies')
+      throw new Error('Missing App Dependencies')
     }
   }
 
