@@ -79,6 +79,7 @@ export default () => ({
     commons: true
   },
   babel: {
+    configFile: false,
     babelrc: false,
     cacheDirectory: undefined
   },
