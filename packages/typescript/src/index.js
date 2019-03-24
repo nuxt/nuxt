@@ -45,7 +45,7 @@ export async function setup(tsConfigPath, options = {}) {
 
   // Only create a default `tsconfig.json` if it doesn't exist
   if (!existsSync(tsConfigPath)) {
-    consola.info('Generating tsconfig.json')
+    consola.info(`Generating tsconfig.json (${tsConfigPath})`)
     await writeJSON(tsConfigPath, defaultTsJsonConfig, { spaces: 2 })
   }
 
