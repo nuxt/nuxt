@@ -189,9 +189,10 @@ describe('config: options', () => {
       })
       expect(consola.warn).toHaveBeenCalledWith('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
       expect(babel).toEqual({
-        'babelrc': false,
-        'cacheDirectory': false,
-        'presets': ['@nuxt/babel-preset-app']
+        configFile: false,
+        babelrc: false,
+        cacheDirectory: false,
+        presets: ['@nuxt/babel-preset-app']
       })
     })
 
@@ -200,9 +201,10 @@ describe('config: options', () => {
         build: { babel: { presets: [['@nuxt/babel-preset-app', { test: true }]] } }
       })
       expect(babel).toEqual({
-        'babelrc': false,
-        'cacheDirectory': false,
-        'presets': [['@nuxt/babel-preset-app', { test: true }]]
+        configFile: false,
+        babelrc: false,
+        cacheDirectory: false,
+        presets: [['@nuxt/babel-preset-app', { test: true }]]
       })
     })
   })
