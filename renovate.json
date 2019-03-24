@@ -6,7 +6,8 @@
     "dev"
   ],
   "ignoreDeps": [
-    "thread-loader"
+    "thread-loader",
+    "core-js"
   ],
   "lockFileMaintenance": {
     "enabled": true
