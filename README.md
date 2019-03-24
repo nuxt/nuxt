@@ -104,6 +104,7 @@ let config = require('./nuxt.config.js')
 config.dev = (process.env.NODE_ENV !== 'production')
 
 let nuxt = new Nuxt(config)
+await nuxt.ready()
 
 // Start build process (only in development)
 if (config.dev) {
