@@ -1,7 +1,6 @@
 <template>
   <section class="section">
     <div class="columns is-mobile">
-
       <card
         title="Free"
         icon="github-circle"
@@ -29,7 +28,6 @@
       >
         No other internal dependency
       </card>
-
     </div>
   </section>
 </template>
