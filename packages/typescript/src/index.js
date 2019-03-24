@@ -1,6 +1,6 @@
-import { readJSON, writeJSON } from 'fs-extra'
+import { existsSync, writeJSON } from 'fs-extra'
 import { register } from 'ts-node'
-import defaultsDeep from 'lodash/defaultsDeep'
+import consola from 'consola'
 
 export const defaultTsJsonConfig = {
   compilerOptions: {
@@ -43,8 +43,11 @@ export async function setup(tsConfigPath, options = {}) {
   }
   _setup = true
 
-  const config = await readJSON(tsConfigPath)
-  await writeJSON(tsConfigPath, defaultsDeep(config, defaultTsJsonConfig), { spaces: 2 })
+  // Only create a default `tsconfig.json` if it doesn't exist
+  if (!existsSync(tsConfigPath)) {
+    consola.info('Generating tsconfig.json')
+    await writeJSON(tsConfigPath, defaultTsJsonConfig, { spaces: 2 })
+  }
 
   // https://github.com/TypeStrong/ts-node
   register({
