@@ -24,6 +24,8 @@ export default class WebpackBaseConfig {
     this.builder = builder
     this.buildContext = builder.buildContext
     this.modulesToTranspile = this.normalizeTranspile()
+
+    this.config = this.config.bind(this)
   }
 
   get colors() {
@@ -180,9 +182,10 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
+    const { plugins, options } = this.buildContext
+    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = options
 
-    return {
+    const aliases = {
       '~': path.join(srcDir),
       '~~': path.join(rootDir),
       '@': path.join(srcDir),
@@ -190,6 +193,15 @@ export default class WebpackBaseConfig {
       [assetsDir]: path.join(srcDir, assetsDir),
       [staticDir]: path.join(srcDir, staticDir)
     }
+
+    for (const plugin of plugins) {
+      if (!aliases[plugin.name]) {
+        const canUsePlugin = (this.isServer && plugin.mode === 'server') || (!this.isServer && plugin.mode === 'client')
+        aliases[plugin.name] = canUsePlugin ? plugin.src : './empty.js'
+      }
+    }
+
+    return aliases
   }
 
   rules() {

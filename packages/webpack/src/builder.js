@@ -37,44 +37,32 @@ export class WebpackBundler {
     }
   }
 
+  getWebpackConfig(name) {
+    switch (name) {
+      case 'client':
+        return new ClientConfig(this)
+      case 'modern':
+        return new ModernConfig(this)
+      case 'server':
+        return new ServerConfig(this)
+      default:
+        throw new Error('webpack config class not found')
+    }
+  }
+
   async build() {
     const { options } = this.buildContext
 
-    const compilersOptions = []
+    const webpackConfigs = [
+      this.getWebpackConfig('client')
+    ]
 
-    // Client
-    const clientConfig = new ClientConfig(this).config()
-    compilersOptions.push(clientConfig)
-
-    // Modern
-    let modernConfig
     if (options.modern) {
-      modernConfig = new ModernConfig(this).config()
-      compilersOptions.push(modernConfig)
+      webpackConfigs.push(this.getWebpackConfig('modern'))
     }
 
-    // Server
-    let serverConfig = null
     if (options.build.ssr) {
-      serverConfig = new ServerConfig(this).config()
-      compilersOptions.push(serverConfig)
-    }
-
-    for (const p of this.buildContext.plugins) {
-      // Client config
-      if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Modern config
-      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
-        modernConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Server config
-      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
-        serverConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
-      }
+      webpackConfigs.push(this.getWebpackConfig('server'))
     }
 
     // Check styleResource existence
@@ -96,8 +84,8 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilerOptions) => {
-      const compiler = webpack(compilerOptions)
+    this.compilers = webpackConfigs.map(({ config }) => {
+      const compiler = webpack(config())
 
       // In dev, write files in memory FS
       if (options.dev) {
