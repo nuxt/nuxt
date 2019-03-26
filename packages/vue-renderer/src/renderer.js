@@ -408,7 +408,11 @@ export default class VueRenderer {
 
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
-    if (this.context.options.render.csp) {
+    const csp = this.context.options.render.csp
+    const containsUnsafeInlineScriptSrc = csp && csp.policies['script-src'] && csp.policies['script-src'].indexOf('\'unsafe-inline\'') !== -1
+
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts
+    if (csp && !containsUnsafeInlineScriptSrc) {
       const { hashAlgorithm } = this.context.options.render.csp
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
