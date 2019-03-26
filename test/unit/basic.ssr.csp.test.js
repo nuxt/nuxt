@@ -171,6 +171,31 @@ describe('basic ssr csp', () => {
         expect(uniqueHashes.length).toBe(hashes.length)
       }
     )
+
+    test(
+      'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
+      async () => {
+        const policies = {
+          'script-src': [`'unsafe-inline'`]
+        }
+
+        nuxt = await startCspServer({
+          policies
+        })
+
+        for (let i = 0; i < 5; i++) {
+          await rp(url('/stateless'), {
+            resolveWithFullResponse: true
+          })
+        }
+
+        const { headers } = await rp(url('/stateful'), {
+          resolveWithFullResponse: true
+        })
+
+        expect(headers[cspHeader]).toMatch(/script-src 'self' 'unsafe-inline'$/)
+      }
+    )
   })
   describe('debug mode', () => {
     test(
@@ -314,6 +339,7 @@ describe('basic ssr csp', () => {
         expect(uniqueHashes.length).toBe(hashes.length)
       }
     )
+
     test(
       'Not contain old hashes when loading new page',
       async () => {
@@ -337,6 +363,31 @@ describe('basic ssr csp', () => {
 
         const intersection = new Set(user1Hashes.filter(x => user2Hashes.has(x)))
         expect(intersection.size).toBe(0)
+      }
+    )
+
+    test(
+      'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
+      async () => {
+        const policies = {
+          'script-src': [`'unsafe-inline'`]
+        }
+
+        nuxt = await startCspDevServer({
+          policies
+        })
+
+        for (let i = 0; i < 5; i++) {
+          await rp(url('/stateless'), {
+            resolveWithFullResponse: true
+          })
+        }
+
+        const { headers } = await rp(url('/stateful'), {
+          resolveWithFullResponse: true
+        })
+
+        expect(headers[reportOnlyHeader]).toMatch(/script-src 'self' 'unsafe-inline'$/)
       }
     )
   })
