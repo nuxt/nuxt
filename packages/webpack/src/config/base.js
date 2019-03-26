@@ -182,10 +182,9 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { plugins, options } = this.buildContext
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = options
+    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
 
-    const aliases = {
+    return {
       '~': path.join(srcDir),
       '~~': path.join(rootDir),
       '@': path.join(srcDir),
@@ -193,15 +192,6 @@ export default class WebpackBaseConfig {
       [assetsDir]: path.join(srcDir, assetsDir),
       [staticDir]: path.join(srcDir, staticDir)
     }
-
-    for (const plugin of plugins) {
-      if (!aliases[plugin.name]) {
-        const canUsePlugin = (this.isServer && plugin.mode === 'server') || (!this.isServer && plugin.mode === 'client')
-        aliases[plugin.name] = canUsePlugin ? plugin.src : './empty.js'
-      }
-    }
-
-    return aliases
   }
 
   rules() {

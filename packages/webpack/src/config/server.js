@@ -52,6 +52,19 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     }
   }
 
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load client-side plugins on server-side
+        aliases[p.name] = p.mode === 'client' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
+  }
+
   plugins() {
     const plugins = super.plugins()
     plugins.push(

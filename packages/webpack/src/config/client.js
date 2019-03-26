@@ -74,6 +74,19 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return minimizer
   }
 
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load server-side plugins on client-side
+        aliases[p.name] = p.mode === 'server' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
+  }
+
   plugins() {
     const plugins = super.plugins()
     const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, _typescript } } = this.buildContext
