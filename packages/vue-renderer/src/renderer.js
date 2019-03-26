@@ -409,7 +409,7 @@ export default class VueRenderer {
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
     const csp = this.context.options.render.csp
-    const containsUnsafeInlineScriptSrc = csp && csp.policies['script-src'] && csp.policies['script-src'].indexOf('\'unsafe-inline\'') !== -1
+    const containsUnsafeInlineScriptSrc = csp && csp.policies && csp.policies['script-src'] && csp.policies['script-src'].indexOf('\'unsafe-inline\'') !== -1
 
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts
     if (csp && !containsUnsafeInlineScriptSrc) {
