@@ -277,6 +277,30 @@ describe('server: nuxtMiddleware', () => {
     )
   })
 
+  test('should not add a hash if the \'unsafe-inline\' option is present in script-src', async () => {
+    const context = createContext()
+    const result = { html: 'rendered html', cspScriptSrcHashes: ['sha256-hashes'] }
+    context.renderRoute.mockReturnValue(result)
+    context.options.dev = true
+    context.options.render.csp = {
+      policies: {
+        'script-src': [ '\'unsafe-inline\'' ]
+      }
+    }
+
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+    fresh.mockReturnValue(true)
+
+    await nuxtMiddleware(req, res, next)
+
+    expect(res.setHeader).nthCalledWith(
+      1,
+      'Content-Security-Policy',
+      "script-src 'self' 'unsafe-inline'"
+    )
+  })
+
   test('should catch error during running nuxt middleware', async () => {
     const context = createContext()
     const err = Error('render error')
