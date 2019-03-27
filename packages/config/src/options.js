@@ -191,6 +191,13 @@ export function getNuxtConfig(_options) {
     options.render.csp = defaults(isObject(csp) ? csp : {}, cspDefaults)
   }
 
+  // Check if options.render is truthy
+  if (options.render.csp) {
+    if (options.render.csp.hasOwnProperty('asMeta')) {
+      // ToDo
+    }
+  }
+
   // cssSourceMap
   if (options.build.cssSourceMap === undefined) {
     options.build.cssSourceMap = options.dev
