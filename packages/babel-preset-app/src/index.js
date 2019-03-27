@@ -106,7 +106,7 @@ module.exports = (context, options = {}) => {
     regenerator: useBuiltIns !== 'usage',
     corejs: useBuiltIns !== false ? false : corejs,
     helpers: useBuiltIns === 'usage',
-    useESModules: true,
+    useESModules: false,
     absoluteRuntime
   }])
 
