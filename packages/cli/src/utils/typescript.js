@@ -7,7 +7,7 @@ export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
 
     consola.info('Initializing TypeScript Support')
     await setup(path.resolve(rootDir, 'tsconfig.json'), options)
-    consola.success('TypeScript Support enabled')
+    consola.success('TypeScript support enabled')
   } catch (e) {
     if (e.code === 'MODULE_NOT_FOUND') {
       return false
