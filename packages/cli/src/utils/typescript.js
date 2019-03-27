@@ -5,7 +5,7 @@ export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
   try {
     const { setup } = require('@nuxt/typescript')
 
-    consola.info('Initializing TypeScript Support')
+    consola.info('Initializing TypeScript support')
     await setup(path.resolve(rootDir, 'tsconfig.json'), options)
     consola.success('TypeScript support enabled')
   } catch (e) {

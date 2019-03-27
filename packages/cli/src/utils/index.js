@@ -102,7 +102,7 @@ export function showBanner(nuxt) {
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
 
   if (nuxt.options._typescript) {
-    titleLines.push(`TypeScript Support is ${chalk.green.bold('enabled')}`)
+    titleLines.push(`TypeScript support is ${chalk.green.bold('enabled')}`)
   }
 
   // https://nodejs.org/api/process.html#process_process_memoryusage
