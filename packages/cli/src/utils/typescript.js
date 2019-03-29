@@ -1,6 +1,5 @@
 import path from 'path'
 import fs from 'fs-extra'
-import consola from 'consola'
 import * as imports from '../imports'
 
 async function registerTSNode(tsConfigPath, options) {
