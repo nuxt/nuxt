@@ -14,7 +14,9 @@ jest.mock('@nuxt/utils')
 jest.mock('@nuxt/server')
 
 jest.mock('@nuxt/config', () => ({
-  getNuxtConfig: jest.fn(() => ({}))
+  getNuxtConfig: jest.fn(() => ({
+    _ready: false
+  }))
 }))
 
 describe('core: nuxt', () => {
@@ -67,10 +69,7 @@ describe('core: nuxt', () => {
     const err = new Error('nuxt ready failed')
     const nuxt = new Nuxt()
     nuxt._init = () => Promise.reject(err)
-    await nuxt.ready()
-
-    expect(consola.fatal).toBeCalledTimes(1)
-    expect(consola.fatal).toBeCalledWith(err)
+    await expect(nuxt.ready()).rejects.toThrow(err)
   })
 
   test('should return nuxt version from package.json', () => {
@@ -113,7 +112,7 @@ describe('core: nuxt', () => {
 
   test('should add object hooks', async () => {
     const hooks = {}
-    getNuxtConfig.mockReturnValueOnce({ hooks })
+    getNuxtConfig.mockReturnValueOnce({ hooks, _ready: false })
     const nuxt = new Nuxt()
 
     nuxt.addHooks = jest.fn()
