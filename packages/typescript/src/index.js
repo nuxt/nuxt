@@ -1,5 +1,4 @@
-import { existsSync, writeJSON } from 'fs-extra'
-import { register } from 'ts-node'
+import { exists, readFile, writeJSON } from 'fs-extra'
 import consola from 'consola'
 
 export const defaultTsJsonConfig = {
@@ -35,26 +34,15 @@ export const defaultTsJsonConfig = {
   }
 }
 
-let _setup = false
+export async function setupDefaults(tsConfigPath) {
+  let contents = ''
 
-export async function setup(tsConfigPath, options = {}) {
-  if (_setup) {
-    return
+  if (await exists(tsConfigPath)) {
+    contents = await readFile(tsConfigPath, 'utf-8')
   }
-  _setup = true
 
-  // Only create a default `tsconfig.json` if it doesn't exist
-  if (!existsSync(tsConfigPath)) {
-    consola.info(`Generating tsconfig.json (${tsConfigPath})`)
+  if (!contents || contents === '{}') {
+    consola.info(`Generating ${tsConfigPath.replace(process.cwd(), '')}`)
     await writeJSON(tsConfigPath, defaultTsJsonConfig, { spaces: 2 })
   }
-
-  // https://github.com/TypeStrong/ts-node
-  register({
-    project: tsConfigPath,
-    compilerOptions: {
-      module: 'commonjs'
-    },
-    ...options
-  })
 }
