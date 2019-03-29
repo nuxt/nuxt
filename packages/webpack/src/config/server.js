@@ -29,12 +29,6 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }
     }
 
-    // Bundle vue js for avoiding single shared Vue instance
-    const { runInNewContext } = this.buildContext.options.render.bundleRenderer
-    if (runInNewContext === true) {
-      whitelist.push('vue')
-    }
-
     return whitelist
   }
 
