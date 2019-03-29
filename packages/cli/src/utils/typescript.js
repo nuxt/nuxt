@@ -46,7 +46,5 @@ export async function detectTypeScript(rootDir, options = {}) {
     await nuxtTypeScript.setupDefaults(tsConfigPath)
   }
 
-  consola.success('TypeScript support enabled')
-
   return true
 }
