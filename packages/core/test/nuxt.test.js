@@ -1,4 +1,3 @@
-import consola from 'consola'
 import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
 import { Server } from '@nuxt/server'
