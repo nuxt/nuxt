@@ -26,7 +26,7 @@
     "fs-extra": "^7.0.1",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.0.3",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.4.1"
   },
   "publishConfig": {
     "access": "public"
