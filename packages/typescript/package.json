@@ -21,11 +21,11 @@
     "@types/webpack-bundle-analyzer": "^2.13.1",
     "@types/webpack-dev-middleware": "^2.0.2",
     "@types/webpack-hot-middleware": "^2.16.5",
-    "consola": "^2.5.7",
+    "consola": "^2.5.8",
     "fork-ts-checker-webpack-plugin": "^1.0.1",
     "fs-extra": "^7.0.1",
     "ts-loader": "^5.3.3",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.4.1
   },
   "publishConfig": {
     "access": "public"
