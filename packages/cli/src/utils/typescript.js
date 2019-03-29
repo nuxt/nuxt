@@ -1,19 +1,48 @@
 import path from 'path'
-import consola from 'consola'
+import fs from 'fs-extra'
+import * as imports from '../imports'
 
-export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
+async function registerTSNode(tsConfigPath, options) {
+  const { register } = await imports.tsNode()
+
+  // https://github.com/TypeStrong/ts-node
+  register({
+    project: tsConfigPath,
+    compilerOptions: {
+      module: 'commonjs'
+    },
+    ...options
+  })
+}
+
+async function getNuxtTypeScript() {
   try {
-    const { setup } = require('@nuxt/typescript')
-
-    consola.info('Initializing typeScript support')
-    await setup(path.resolve(rootDir, 'tsconfig.json'), options)
-    consola.success('TypeScript support enabled')
-  } catch (e) {
-    if (e.code === 'MODULE_NOT_FOUND') {
-      return false
-    } else {
-      throw (e)
+    return await imports.nuxtTypescript()
+  } catch (error) {
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      throw (error)
     }
+  }
+}
+
+export async function detectTypeScript(rootDir, options = {}) {
+  // Check if tsconfig.json exists in project rootDir
+  const tsConfigPath = path.resolve(rootDir, 'tsconfig.json')
+
+  // Skip if tsconfig.json not exists
+  if (!await fs.exists(tsConfigPath)) {
+    return false
+  }
+
+  // Register runtime support
+  await registerTSNode(tsConfigPath, options)
+
+  // Try to load @nuxt/typescript
+  const nuxtTypeScript = await getNuxtTypeScript()
+
+  // If exists do additional setup
+  if (nuxtTypeScript) {
+    await nuxtTypeScript.setupDefaults(tsConfigPath)
   }
 
   return true
