@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { mkdirp, readJSON, remove, writeJSON } from 'fs-extra'
+import { mkdirp, readJSON, remove } from 'fs-extra'
 import { register } from 'ts-node'
 import { defaultTsJsonConfig, setup as setupTypeScript } from '@nuxt/typescript'
 
@@ -12,11 +12,10 @@ describe('typescript setup', () => {
   beforeAll(async () => {
     // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
     await mkdirp(rootDir)
-    await writeJSON(tsConfigPath, {})
     await setupTypeScript(tsConfigPath)
   })
 
-  test('tsconfig.json has been updated with defaults', async () => {
+  test('tsconfig.json has been created with defaults', async () => {
     expect(await readJSON(tsConfigPath)).toEqual(defaultTsJsonConfig)
   })
 
