@@ -25,7 +25,6 @@
     "fork-ts-checker-webpack-plugin": "^1.0.1",
     "fs-extra": "^7.0.1",
     "ts-loader": "^5.3.3",
-    "ts-node": "^8.0.3",
     "typescript": "^3.3.4000"
   },
   "publishConfig": {

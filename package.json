@@ -88,5 +88,8 @@
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js.git"
   },
-  "name": "nuxt.js"
+  "name": "nuxt.js",
+  "dependencies": {
+    "ts-node": "^8.0.3"
+  }
 }
