@@ -101,7 +101,7 @@ export function showBanner(nuxt) {
   // Running mode
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
 
-  if (nuxt.options._typescript) {
+  if (nuxt.options._typescript && nuxt.options._typescript.runtime) {
     titleLines.push(`TypeScript support is ${chalk.green.bold('enabled')}`)
   }
 
