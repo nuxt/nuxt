@@ -41,7 +41,9 @@ export default class Nuxt extends Hookable {
 
     // Call ready
     if (this.options._ready !== false) {
-      this.ready()
+      this.ready().catch((err) => {
+        consola.fatal(err)
+      })
     }
   }
 
@@ -51,9 +53,7 @@ export default class Nuxt extends Hookable {
 
   ready() {
     if (!this._ready) {
-      this._ready = this._init().catch((err) => {
-        consola.fatal(err)
-      })
+      this._ready = this._init()
     }
     return this._ready
   }
