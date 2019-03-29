@@ -38,6 +38,11 @@ export default class Nuxt extends Hookable {
     if (this.options.server !== false) {
       this._initServer()
     }
+
+    // Call ready
+    if (this.options._ready !== false) {
+      this.ready()
+    }
   }
 
   static get version() {
