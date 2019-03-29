@@ -12,7 +12,6 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
-    "core-js": "^2.6.5",
     "node-fetch": "^2.3.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
