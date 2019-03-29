@@ -452,11 +452,15 @@ export default class VueRenderer {
     }
   }
 
-  async renderRoute(url, context = {}) {
+  async renderRoute(url, context = {}, _retried) {
     /* istanbul ignore if */
     if (!this.isReady) {
       // Production
       if (!this.context.options.dev) {
+        if (!_retried && (this._state === 'loading' || this._state === 'created')) {
+          await this.ready()
+          return this.renderRoute(url, context, true)
+        }
         switch (this._state) {
           case 'created':
             throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
