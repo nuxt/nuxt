@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import * as imports from '../imports'
 
-async function registerTSNode(tsConfigPath, options) {
+async function registerTSNode({ tsConfigPath, options }) {
   const { register } = await imports.tsNode()
 
   // https://github.com/TypeStrong/ts-node
@@ -26,24 +26,34 @@ async function getNuxtTypeScript() {
 }
 
 export async function detectTypeScript(rootDir, options = {}) {
-  // Check if tsconfig.json exists in project rootDir
-  const tsConfigPath = path.resolve(rootDir, 'tsconfig.json')
+  const typescript = {
+    tsConfigPath: path.resolve(rootDir, 'tsconfig.json'),
+    tsConfigExists: false,
+    runtime: false,
+    build: false,
+    options
+  }
+
+  // Check if tsconfig.json exists
+  typescript.tsConfigExists = await fs.exists(typescript.tsConfigPath)
 
   // Skip if tsconfig.json not exists
-  if (!await fs.exists(tsConfigPath)) {
-    return false
+  if (!typescript.tsConfigExists) {
+    return typescript
   }
 
   // Register runtime support
-  await registerTSNode(tsConfigPath, options)
+  typescript.runtime = true
+  await registerTSNode(typescript)
 
   // Try to load @nuxt/typescript
   const nuxtTypeScript = await getNuxtTypeScript()
 
   // If exists do additional setup
   if (nuxtTypeScript) {
-    await nuxtTypeScript.setupDefaults(tsConfigPath)
+    typescript.build = true
+    await nuxtTypeScript.setupDefaults(typescript.tsConfigPath)
   }
 
-  return true
+  return typescript
 }
