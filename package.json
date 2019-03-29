@@ -1,29 +1,34 @@
 {
+  "name": "nuxt.js",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "workspaces": [
     "packages/*",
     "distributions/*"
   ],
   "scripts": {
     "build": "yarn clean && yarn pkg",
-    "pkg": "node -r esm ./scripts/package",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*/",
-    "dev": "node -r esm ./scripts/dev.js",
     "coverage": "codecov",
+    "dev": "node -r esm ./scripts/dev.js",
+    "postinstall": "lerna link && yarn dev",
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/vue-app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
     "nuxt": "node -r esm ./packages/cli/bin/nuxt-cli.js",
+    "pkg": "node -r esm ./scripts/package",
+    "release": "./scripts/release",
     "test": "yarn test:fixtures && yarn test:unit && yarn test:types",
-    "test:fixtures": "jest test/fixtures --forceExit",
     "test:e2e": "jest -i test/e2e --forceExit",
+    "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
-    "test:unit": "jest test/unit packages --forceExit",
     "test:types": "tsc -p test/types",
-    "postinstall": "lerna link && yarn dev",
-    "release": "./scripts/release"
+    "test:unit": "jest test/unit packages --forceExit"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
@@ -79,17 +84,10 @@
     "sort-package-json": "^1.22.1",
     "ts-jest": "^24.0.0",
     "ts-loader": "^5.3.3",
+    "ts-node": "^8.0.3",
     "tslint": "^5.14.0",
     "typescript": "^3.3.4000",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^8.1.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
-  },
-  "name": "nuxt.js",
-  "dependencies": {
-    "ts-node": "^8.0.3"
   }
 }
