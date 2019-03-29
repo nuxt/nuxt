@@ -70,8 +70,8 @@ module.exports = (context, options = {}) => {
 
   let { corejs = { version: 2 } } = options
 
-  if (typeof corejs === 'number') {
-    corejs = { version: corejs }
+  if (typeof corejs !== 'object') {
+    corejs = { version: Number(corejs) }
   }
 
   let { targets } = options
