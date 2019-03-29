@@ -19,11 +19,11 @@ babel: {
 **Note**: Since `core-js@2` and `core-js@3` are both supported from Babel 7.4.0, we recommend directly adding `core-js` and setting the version via the [`corejs`](#corejs) option.
 
 ```sh
-yarn add --dev core-js@3 @babel/runtime-corejs2 --save
+yarn add --dev core-js@3 @babel/runtime-corejs3
 
 # or
 
-yarn add --dev core-js@2 @babel/runtime-corejs3 --save
+yarn add --dev core-js@2 @babel/runtime-corejs2
 
 ```
 
