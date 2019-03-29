@@ -99,6 +99,43 @@ describe('spa', () => {
 
     const { $data } = window.$nuxt.$route.matched[0].instances.default
     expect(Object.keys($data).length).toBe(1)
+    consola.log.mockClear()
+  })
+
+  test('/redirect-done (no redirect)', async () => {
+    const { html } = await renderRoute('/redirect-done')
+    expect(html).toContain('<div>Redirect Done Page</div>')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done created')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done mounted')
+    expect(consola.log).toHaveBeenCalledTimes(2)
+    consola.log.mockClear()
+  })
+
+  test('/redirect1 (redirect 1 time)', async () => {
+    const { html } = await renderRoute('/redirect1')
+    expect(html).toContain('<div>Redirect Done Page</div>')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done created')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done mounted')
+    expect(consola.log).toHaveBeenCalledTimes(2)
+    consola.log.mockClear()
+  })
+
+  test('/redirect2 (redirect 2 times)', async () => {
+    const { html } = await renderRoute('/redirect2')
+    expect(html).toContain('<div>Redirect Done Page</div>')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done created')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done mounted')
+    expect(consola.log).toHaveBeenCalledTimes(2)
+    consola.log.mockClear()
+  })
+
+  test('/redirect10 (redirect 10 times)', async () => {
+    const { html } = await renderRoute('/redirect10')
+    expect(html).toContain('<div>Redirect Done Page</div>')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done created')
+    expect(consola.log).toHaveBeenCalledWith('redirect-done mounted')
+    expect(consola.log).toHaveBeenCalledTimes(2)
+    consola.log.mockClear()
   })
 
   // Close server and ask nuxt to stop listening to file changes
