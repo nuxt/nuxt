@@ -38,6 +38,13 @@ export default class Nuxt extends Hookable {
     if (this.options.server !== false) {
       this._initServer()
     }
+
+    // Call ready
+    if (this.options._ready !== false) {
+      this.ready().catch((err) => {
+        consola.fatal(err)
+      })
+    }
   }
 
   static get version() {
@@ -46,9 +53,7 @@ export default class Nuxt extends Hookable {
 
   ready() {
     if (!this._ready) {
-      this._ready = this._init().catch((err) => {
-        consola.fatal(err)
-      })
+      this._ready = this._init()
     }
     return this._ready
   }
