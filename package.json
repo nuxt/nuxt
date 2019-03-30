@@ -67,8 +67,6 @@
     "lerna": "^3.13.1",
     "lodash": "^4.17.11",
     "node-fetch": "^2.3.0",
-    "pug": "^2.0.3",
-    "pug-plain-loader": "^1.0.0",
     "puppeteer-core": "^1.14.0",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
