@@ -457,7 +457,7 @@ export default class VueRenderer {
     if (!this.isReady) {
       // Production
       if (!this.context.options.dev) {
-        if (!_retried && (['loading', 'created'].includes(this._state)) {
+        if (!_retried && ['loading', 'created'].includes(this._state)) {
           await this.ready()
           return this.renderRoute(url, context, true)
         }
