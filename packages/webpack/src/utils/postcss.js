@@ -28,6 +28,17 @@ export const orderPresets = {
   }
 }
 
+const postcssConfigFileWarning = (() => {
+  let executed
+  return () => {
+    if (executed) {
+      return
+    }
+    consola.warn(`Please use \`build.postcss\` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3.`)
+    executed = true
+  }
+})()
+
 export default class PostcssConfig {
   constructor(buildContext) {
     this.buildContext = buildContext
@@ -82,7 +93,7 @@ export default class PostcssConfig {
       ]) {
         const configFile = path.resolve(dir, file)
         if (fs.existsSync(configFile)) {
-          consola.warn(`Please use \`build.postcss\` in your nuxt.config.js instead of a${file} file. Support for such files will be removed in Nuxt 3.`)
+          postcssConfigFileWarning()
           return configFile
         }
       }
