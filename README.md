@@ -100,11 +100,10 @@ Or you can start by using one of our starter templates:
 const { Nuxt, Builder } = require('nuxt')
 
 // Import and set nuxt.js options
-let config = require('./nuxt.config.js')
+const config = require('./nuxt.config.js')
 config.dev = (process.env.NODE_ENV !== 'production')
 
-let nuxt = new Nuxt(config)
-nuxt.ready().catch(console.error)
+const nuxt = new Nuxt(config)
 
 // Start build process (only in development)
 if (config.dev) {

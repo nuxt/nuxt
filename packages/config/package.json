@@ -11,7 +11,7 @@
   "typings": "types/index.d.ts",
   "dependencies": {
     "@nuxt/utils": "2.5.1",
-    "consola": "^2.5.7",
+    "consola": "^2.5.8",
     "std-env": "^2.2.1"
   },
   "publishConfig": {
