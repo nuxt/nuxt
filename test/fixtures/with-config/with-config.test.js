@@ -20,7 +20,7 @@ describe('with-config', () => {
       ['Unknown mode: unknown. Falling back to universal'],
       ['Invalid plugin mode (server/client/all): \'abc\'. Falling back to \'all\''],
       [{
-        'additional': '',
+        'additional': expect.stringContaining('plugins/test.json'),
         'message': 'Found 2 plugins that match the configuration, suggest to specify extension:'
       }],
       ['Please use `build.postcss` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3.'],
