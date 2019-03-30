@@ -34,7 +34,7 @@ const postcssConfigFileWarning = (() => {
     if (executed) {
       return
     }
-    consola.warn(`Please use \`build.postcss\` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3.`)
+    consola.warn(`Please use \`build.postcss\` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3 as they remove all defaults set by Nuxt and can cause severe problems with features like alias resolving inside your CSS.`)
     executed = true
   }
 })()
