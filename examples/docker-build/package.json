@@ -11,7 +11,6 @@
     "nuxt-start": "latest"
   },
   "devDependencies": {
-    "nodemon": "latest",
     "nuxt": "latest"
   }
 }
