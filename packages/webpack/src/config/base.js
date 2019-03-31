@@ -24,8 +24,6 @@ export default class WebpackBaseConfig {
     this.builder = builder
     this.buildContext = builder.buildContext
     this.modulesToTranspile = this.normalizeTranspile()
-
-    this.config = this.config.bind(this)
   }
 
   get colors() {

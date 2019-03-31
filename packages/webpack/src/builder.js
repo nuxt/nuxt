@@ -6,14 +6,10 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import {
-  parallel,
-  sequence,
-  wrapArray
-} from '@nuxt/utils'
+import { parallel, sequence, wrapArray } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
-import { ClientConfig, ModernConfig, ServerConfig } from './config'
+import * as WebpackConfigs from './config'
 import PerfLoader from './utils/perf-loader'
 
 const glob = pify(Glob)
@@ -38,31 +34,27 @@ export class WebpackBundler {
   }
 
   getWebpackConfig(name) {
-    switch (name) {
-      case 'client':
-        return new ClientConfig(this)
-      case 'modern':
-        return new ModernConfig(this)
-      case 'server':
-        return new ServerConfig(this)
-      default:
-        throw new Error('webpack config class not found')
+    const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
+    if (!Config) {
+      throw new Error(`Unsupported webpack config ${name}`)
     }
+    const config = new Config(this)
+    return config.config()
   }
 
   async build() {
     const { options } = this.buildContext
 
     const webpackConfigs = [
-      this.getWebpackConfig('client')
+      this.getWebpackConfig('Client')
     ]
 
     if (options.modern) {
-      webpackConfigs.push(this.getWebpackConfig('modern'))
+      webpackConfigs.push(this.getWebpackConfig('Modern'))
     }
 
     if (options.build.ssr) {
-      webpackConfigs.push(this.getWebpackConfig('server'))
+      webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
     // Check styleResource existence
@@ -84,8 +76,8 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = webpackConfigs.map(({ config }) => {
-      const compiler = webpack(config())
+    this.compilers = webpackConfigs.map((config) => {
+      const compiler = webpack(config)
 
       // In dev, write files in memory FS
       if (options.dev) {
