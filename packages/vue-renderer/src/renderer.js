@@ -363,14 +363,6 @@ export default class VueRenderer {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
     const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
 
-    // Remove vue js cache for avoiding single shared Vue instance
-    const { runInNewContext } = this.context.options.render.bundleRenderer
-    if (runInNewContext === true) {
-      const vueDist = require.resolve('vue')
-      delete require.cache[vueDist]
-      delete require.cache[vueDist.replace(/\.js$/, '.dev.js')]
-    }
-
     // Call ssr:context hook to extend context from modules
     await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
 
