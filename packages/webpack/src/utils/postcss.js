@@ -28,6 +28,14 @@ export const orderPresets = {
   }
 }
 
+function postcssConfigFileWarning() {
+  if (postcssConfigFileWarning.executed) {
+    return
+  }
+  consola.warn('Please use `build.postcss` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3 as they remove all defaults set by Nuxt and can cause severe problems with features like alias resolving inside your CSS.')
+  postcssConfigFileWarning.executed = true
+}
+
 export default class PostcssConfig {
   constructor(buildContext) {
     this.buildContext = buildContext
@@ -70,6 +78,7 @@ export default class PostcssConfig {
   searchConfigFile() {
     // Search for postCSS config file and use it if exists
     // https://github.com/michael-ciniawsky/postcss-load-config
+    // TODO: Remove in Nuxt 3
     const { srcDir, rootDir } = this.buildContext.options
     for (const dir of [ srcDir, rootDir ]) {
       for (const file of [
@@ -81,6 +90,7 @@ export default class PostcssConfig {
       ]) {
         const configFile = path.resolve(dir, file)
         if (fs.existsSync(configFile)) {
+          postcssConfigFileWarning()
           return configFile
         }
       }

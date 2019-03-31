@@ -16,9 +16,8 @@ describe('renderer', () => {
       dev: false,
       buildDir: '/path/to/404'
     })
-    await nuxt.ready()
-    await expect(nuxt.renderer.renderer.isReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+
+    await expect(nuxt.ready()).rejects.toThrow(expect.objectContaining({
       message: expect.stringMatching(NO_BUILD_MSG)
     }))
   })
@@ -30,9 +29,8 @@ describe('renderer', () => {
       dev: false,
       buildDir: '/path/to/404'
     })
-    await nuxt.ready()
-    await expect(nuxt.renderer.renderer.isReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+
+    await expect(nuxt.ready()).rejects.toThrow(expect.objectContaining({
       message: expect.stringMatching(NO_BUILD_MSG)
     }))
   })
@@ -44,9 +42,8 @@ describe('renderer', () => {
       dev: false,
       buildDir: '/path/to/404'
     })
-    await nuxt.ready()
-    await expect(nuxt.renderer.renderer.isModernReady).toBe(false)
-    expect(consola.fatal).toHaveBeenCalledWith(expect.objectContaining({
+
+    await expect(nuxt.ready()).rejects.toThrow(expect.objectContaining({
       message: expect.stringMatching(NO_MODERN_BUILD_MSG)
     }))
   })
