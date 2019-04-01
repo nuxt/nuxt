@@ -53,7 +53,7 @@ export default {
     }
   },
   async run(cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false })
+    const config = await cmd.getNuxtConfig({ dev: false, _generate: true, _build: cmd.argv.build })
 
     // Disable analyze if set by the nuxt config
     if (!config.build) {
