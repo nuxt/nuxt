@@ -3,7 +3,6 @@ import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
-import isObject from 'lodash/isObject'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
@@ -179,23 +178,14 @@ export function getNuxtConfig(_options) {
   }
 
   // Apply default hash to CSP option
-  const { csp } = options.render
-
-  const cspDefaults = {
-    hashAlgorithm: 'sha256',
-    allowedSources: undefined,
-    policies: undefined,
-    reportOnly: options.debug
-  }
-  if (csp) {
-    options.render.csp = defaults(isObject(csp) ? csp : {}, cspDefaults)
-  }
-
-  // Check if options.render is truthy
   if (options.render.csp) {
-    if (options.render.csp.hasOwnProperty('asMeta')) {
-      // ToDo
-    }
+    options.render.csp = defaults({}, options.render.csp, {
+      hashAlgorithm: 'sha256',
+      allowedSources: undefined,
+      policies: undefined,
+      addMeta: Boolean(options._generate),
+      reportOnly: options.debug
+    })
   }
 
   // cssSourceMap

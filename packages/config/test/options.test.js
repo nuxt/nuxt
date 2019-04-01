@@ -81,6 +81,7 @@ describe('config: options', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
+      addMeta: false,
       allowedSources: true,
       policies: undefined,
       reportOnly: false,
