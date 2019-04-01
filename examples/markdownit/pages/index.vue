@@ -6,8 +6,6 @@
   Data model is: {{ model }}
 
   <NuxtLink to="/about">Goto About</NuxtLink>
-
-  <NuxtLink to="/pug">Goto Pug</NuxtLink>
 </template>
 
 <script>
