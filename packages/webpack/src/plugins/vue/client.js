@@ -60,6 +60,15 @@ export default class VueSSRClientPlugin {
           const id = m.identifier.replace(/\s\w+$/, '') // remove appended hash
           const files = manifest.modules[hash(id)] = chunk.files.map(fileToIndex)
 
+          if (Array.isArray(m.modules)) {
+            for (const concatenatedModule of m.modules) {
+              const id = hash(concatenatedModule.identifier.replace(/\s\w+$/, ''))
+              if (!manifest.modules[id]) {
+                manifest.modules[id] = files
+              }
+            }
+          }
+
           // Find all asset modules associated with the same chunk
           assetModules.forEach((m) => {
             if (m.chunks.some(id => id === cid)) {
