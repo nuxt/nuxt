@@ -408,7 +408,11 @@ export default class VueRenderer {
 
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
-    if (this.context.options.render.csp) {
+    const csp = this.context.options.render.csp
+    const containsUnsafeInlineScriptSrc = csp && csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
+
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+    if (csp && !containsUnsafeInlineScriptSrc) {
       const { hashAlgorithm } = this.context.options.render.csp
       const hash = crypto.createHash(hashAlgorithm)
       hash.update(serializedSession)
@@ -453,11 +457,15 @@ export default class VueRenderer {
     }
   }
 
-  async renderRoute(url, context = {}) {
+  async renderRoute(url, context = {}, _retried) {
     /* istanbul ignore if */
     if (!this.isReady) {
       // Production
       if (!this.context.options.dev) {
+        if (!_retried && ['loading', 'created'].includes(this._state)) {
+          await this.ready()
+          return this.renderRoute(url, context, true)
+        }
         switch (this._state) {
           case 'created':
             throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')

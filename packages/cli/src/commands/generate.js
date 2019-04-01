@@ -25,6 +25,18 @@ export default {
         }
       }
     },
+    quiet: {
+      alias: 'q',
+      type: 'boolean',
+      description: 'Disable output except for errors',
+      prepare(cmd, options, argv) {
+        // Silence output when using --quiet
+        options.build = options.build || {}
+        if (argv.quiet) {
+          options.build.quiet = true
+        }
+      }
+    },
     modern: {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',

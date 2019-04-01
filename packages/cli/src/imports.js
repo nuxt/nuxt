@@ -29,4 +29,8 @@ export const builder = () => _import('@nuxt/builder')
 export const webpack = () => _import('@nuxt/webpack')
 export const generator = () => _import('@nuxt/generator')
 export const core = () => _import('@nuxt/core')
+
+export const tsNode = () => _import('ts-node')
+export const nuxtTypescript = () => _import('@nuxt/typescript')
+
 export const importModule = _import

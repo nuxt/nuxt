@@ -74,9 +74,22 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return minimizer
   }
 
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load server-side plugins on client-side
+        aliases[p.name] = p.mode === 'server' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
+  }
+
   plugins() {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, _typescript } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, _typescript = {} } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -139,8 +152,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (_typescript && buildOptions.typescript && buildOptions.typescript.typeCheck && !this.isModern && this.loaders.ts.transpileOnly) {
-      // We assume that "_typescript" being truthy means @nuxt/typescript is installed <=> fork-ts-checker-webpack-plugin is installed
+    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.typeCheck && !this.isModern && this.loaders.ts.transpileOnly) {
       const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
       plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
         vue: true,

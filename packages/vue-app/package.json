@@ -12,11 +12,10 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
-    "core-js": "^2.6.5",
     "node-fetch": "^2.3.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
-    "vue-meta": "^1.5.8",
+    "vue-meta": "^1.6.0",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.2",
     "vue-template-compiler": "^2.6.10",

@@ -29,12 +29,6 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }
     }
 
-    // Bundle vue js for avoiding single shared Vue instance
-    const { runInNewContext } = this.buildContext.options.render.bundleRenderer
-    if (runInNewContext === true) {
-      whitelist.push('vue')
-    }
-
     return whitelist
   }
 
@@ -57,6 +51,19 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       splitChunks: false,
       minimizer: this.minimizer()
     }
+  }
+
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load client-side plugins on server-side
+        aliases[p.name] = p.mode === 'client' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
   }
 
   plugins() {
@@ -94,7 +101,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     // https://webpack.js.org/configuration/externals/#externals
     // https://github.com/liady/webpack-node-externals
     // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-    if (!this.buildContext.buildOptions.standalone) {
+    if (!this.dev && !this.buildContext.buildOptions.standalone) {
       this.buildContext.options.modulesDir.forEach((dir) => {
         if (fs.existsSync(dir)) {
           config.externals.push(

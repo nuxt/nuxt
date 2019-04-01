@@ -1,38 +1,59 @@
 import path from 'path'
-import { existsSync } from 'fs'
-import chalk from 'chalk'
-import consola from 'consola'
-import { warningBox } from './formatting'
+import fs from 'fs-extra'
+import * as imports from '../imports'
 
-const dependencyNotFoundMessage =
-`Please install @nuxt/typescript and rerun the command
+async function registerTSNode({ tsConfigPath, options }) {
+  const { register } = await imports.tsNode()
 
-${chalk.bold('Using yarn')}
-yarn add -D @nuxt/typescript
+  // https://github.com/TypeStrong/ts-node
+  register({
+    project: tsConfigPath,
+    compilerOptions: {
+      module: 'commonjs'
+    },
+    ...options
+  })
+}
 
-${chalk.bold('Using npm')}
-npm install -D @nuxt/typescript`
-
-export async function detectAndSetupTypeScriptSupport(rootDir, options = {}) {
-  const tsConfigPath = path.resolve(rootDir, 'tsconfig.json')
-
-  if (!existsSync(tsConfigPath)) {
-    return false
-  }
-
-  consola.info(`${chalk.bold.blue('tsconfig.json')} found, enabling TypeScript runtime support`)
-
+async function getNuxtTypeScript() {
   try {
-    const { setup } = require('@nuxt/typescript')
-    await setup(tsConfigPath, options)
-  } catch (e) {
-    if (e.code === 'MODULE_NOT_FOUND') {
-      process.stdout.write(warningBox(dependencyNotFoundMessage, chalk.yellow('An external official dependency is needed to enable TS support')))
-      process.exit(1)
-    } else {
-      throw (e)
+    return await imports.nuxtTypescript()
+  } catch (error) {
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      throw (error)
     }
   }
+}
 
-  return true
+export async function detectTypeScript(rootDir, options = {}) {
+  const typescript = {
+    tsConfigPath: path.resolve(rootDir, 'tsconfig.json'),
+    tsConfigExists: false,
+    runtime: false,
+    build: false,
+    options
+  }
+
+  // Check if tsconfig.json exists
+  typescript.tsConfigExists = await fs.exists(typescript.tsConfigPath)
+
+  // Skip if tsconfig.json not exists
+  if (!typescript.tsConfigExists) {
+    return typescript
+  }
+
+  // Register runtime support
+  typescript.runtime = true
+  await registerTSNode(typescript)
+
+  // Try to load @nuxt/typescript
+  const nuxtTypeScript = await getNuxtTypeScript()
+
+  // If exists do additional setup
+  if (nuxtTypeScript) {
+    typescript.build = true
+    await nuxtTypeScript.setupDefaults(typescript.tsConfigPath)
+  }
+
+  return typescript
 }
