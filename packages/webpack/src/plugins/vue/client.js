@@ -60,6 +60,8 @@ export default class VueSSRClientPlugin {
           const id = m.identifier.replace(/\s\w+$/, '') // remove appended hash
           const files = manifest.modules[hash(id)] = chunk.files.map(fileToIndex)
 
+          // In production mode, modules may be concatenated by scope hoisting
+          // Include ConcatenatedModule for not losing module-component mapping
           if (Array.isArray(m.modules)) {
             for (const concatenatedModule of m.modules) {
               const id = hash(concatenatedModule.identifier.replace(/\s\w+$/, ''))
