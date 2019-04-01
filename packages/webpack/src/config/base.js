@@ -362,9 +362,7 @@ export default class WebpackBaseConfig {
     if (buildOptions.extractCSS) {
       plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css'),
-        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
-        reloadAll: true
+        chunkFilename: this.getFileName('css')
       }, buildOptions.extractCSS)))
     }
 
@@ -402,6 +400,9 @@ export default class WebpackBaseConfig {
         },
         allDone: () => {
           nuxt.callHook('bundler:done')
+        },
+        progress({ statesArray }) {
+          nuxt.callHook('bundler:progress', statesArray)
         }
       }
     }))
@@ -463,7 +464,7 @@ export default class WebpackBaseConfig {
     }
 
     // Clone deep avoid leaking config between Client and Server
-    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const extendedConfig = cloneDeep(this.extendConfig(config))
     const { optimization } = extendedConfig
     // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
     if (optimization && optimization.minimizer && extendedConfig.devtool) {

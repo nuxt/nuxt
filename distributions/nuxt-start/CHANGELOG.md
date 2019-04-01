@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package nuxt-start
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Features
+
+* **vue-app:** universal fetch ([#5028](https://github.com/nuxt/nuxt.js/issues/5028)) ([2015140](https://github.com/nuxt/nuxt.js/commit/2015140))
+* upgrade vue to 2.6 ([#4953](https://github.com/nuxt/nuxt.js/issues/4953)) ([9308954](https://github.com/nuxt/nuxt.js/commit/9308954))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 **Note:** Version bump only for package nuxt-start

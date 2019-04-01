@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* **ts:** wrong export used in render.d.ts ([#5309](https://github.com/nuxt/nuxt.js/issues/5309)) ([e67b298](https://github.com/nuxt/nuxt.js/commit/e67b298))
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* disable parallel build when extractCSS is enabled ([aad46ed](https://github.com/nuxt/nuxt.js/commit/aad46ed))
+
+
+### Code Refactoring
+
+* **ts:** better DX for typescript support ([#5079](https://github.com/nuxt/nuxt.js/issues/5079)) ([920f444](https://github.com/nuxt/nuxt.js/commit/920f444))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* **ts:** nuxt configuration typedefs ([#4854](https://github.com/nuxt/nuxt.js/issues/4854)) ([92f81e0](https://github.com/nuxt/nuxt.js/commit/92f81e0))
+* support `devModules` option ([#5102](https://github.com/nuxt/nuxt.js/issues/5102)) ([e87711c](https://github.com/nuxt/nuxt.js/commit/e87711c))
+* **vue-app:** universal fetch ([#5028](https://github.com/nuxt/nuxt.js/issues/5028)) ([2015140](https://github.com/nuxt/nuxt.js/commit/2015140))
+
+
+### BREAKING CHANGES
+
+* **ts:** `build.useForkTsChecker` renamed to `build.typescript.typeCheck`
+
+
+
+
+
 ## [2.4.3](https://github.com/nuxt/nuxt.js/compare/v2.4.2...v2.4.3) (2019-02-06)
 
 **Note:** Version bump only for package @nuxt/config

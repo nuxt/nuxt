@@ -8,7 +8,7 @@ describe('typescript modern', () => {
 
   beforeAll(async () => {
     const options = await loadFixture('typescript')
-    nuxt = new Nuxt(Object.assign(options, { modern: true, build: { useForkTsChecker: true } }))
+    nuxt = new Nuxt(Object.assign(options, { modern: true, _typescript: { build: true } }))
     await new Builder(nuxt, BundleBuilder).build()
   })
 

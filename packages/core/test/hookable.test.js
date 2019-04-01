@@ -64,7 +64,6 @@ describe('core: hookable', () => {
 
     await hook.callHook('test:hook')
 
-    expect(consola.debug).toBeCalledWith('Call test:hook hooks (1)')
     expect(consola.log).toBeCalledWith('test:hook called')
   })
 

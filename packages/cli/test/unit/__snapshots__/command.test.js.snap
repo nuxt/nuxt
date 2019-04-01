@@ -14,7 +14,7 @@ exports[`cli/command builds help text 1`] = `
     --universal, -u    Launch in Universal
                        mode (default)
     --config-file, -c  Path to Nuxt.js
-                       config file (default: nuxt.config.js)
+                       config file (default: nuxt.config)
     --modern, -m       Build/Start app for
                        modern browsers, e.g. server, client and
                        false

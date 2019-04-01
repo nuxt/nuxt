@@ -1,5 +1,4 @@
 import path from 'path'
-import { existsSync } from 'fs'
 import consola from 'consola'
 import esm from 'esm'
 import exit from 'exit'
@@ -11,14 +10,14 @@ import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import { successBox, warningBox } from './formatting'
 
-export const requireModule = process.env.NUXT_TS ? require : esm(module, {
+const esmOptions = {
   cache: false,
   cjs: {
     cache: true,
     vars: true,
     namedExports: true
   }
-})
+}
 
 export const eventsMapping = {
   add: { icon: '+', color: 'green', action: 'Created' },
@@ -26,18 +25,23 @@ export const eventsMapping = {
   unlink: { icon: '-', color: 'red', action: 'Removed' }
 }
 
-const getRootDir = argv => path.resolve(argv._[0] || '.')
-const getNuxtConfigFile = argv => path.resolve(getRootDir(argv), argv['config-file'])
-
 export async function loadNuxtConfig(argv) {
-  const rootDir = getRootDir(argv)
-  const nuxtConfigFile = getNuxtConfigFile(argv)
-
+  const rootDir = path.resolve(argv._[0] || '.')
+  let nuxtConfigFile
   let options = {}
 
-  if (existsSync(nuxtConfigFile)) {
-    delete require.cache[nuxtConfigFile]
-    options = requireModule(nuxtConfigFile) || {}
+  try {
+    nuxtConfigFile = require.resolve(path.resolve(rootDir, argv['config-file']))
+  } catch (e) {
+    if (e.code !== 'MODULE_NOT_FOUND') {
+      throw (e)
+    } else if (argv['config-file'] !== defaultNuxtConfigFile) {
+      consola.fatal('Could not load config file: ' + argv['config-file'])
+    }
+  }
+
+  if (nuxtConfigFile) {
+    options = (nuxtConfigFile.endsWith('.ts') ? require(nuxtConfigFile) : esm(module, esmOptions)(nuxtConfigFile)) || {}
     if (options.default) {
       options = options.default
     }
@@ -56,9 +60,8 @@ export async function loadNuxtConfig(argv) {
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = nuxtConfigFile
-  } else if (argv['config-file'] !== defaultNuxtConfigFile) {
-    consola.fatal('Could not load config file: ' + argv['config-file'])
   }
+
   if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
   }
@@ -97,6 +100,10 @@ export function showBanner(nuxt) {
 
   // Running mode
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+
+  if (nuxt.options._typescript && nuxt.options._typescript.runtime) {
+    titleLines.push(`TypeScript support is ${chalk.green.bold('enabled')}`)
+  }
 
   // https://nodejs.org/api/process.html#process_process_memoryusage
   const { heapUsed, rss } = process.memoryUsage()

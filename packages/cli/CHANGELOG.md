@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/cli
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **cli:** enable server for implicit SPA generate in nuxt build ([c46def7](https://github.com/nuxt/nuxt.js/commit/c46def7))
+* **pkg:** add missing dependencies ([665f15a](https://github.com/nuxt/nuxt.js/commit/665f15a))
+* default for-exit to false to prevent dev exit ([a347ef9](https://github.com/nuxt/nuxt.js/commit/a347ef9))
+* disable "analyze" for nuxt generate ([#4975](https://github.com/nuxt/nuxt.js/issues/4975)) ([574a2eb](https://github.com/nuxt/nuxt.js/commit/574a2eb))
+* dont force exit when it was explicitly disabled ([#4973](https://github.com/nuxt/nuxt.js/issues/4973)) ([3e9eee2](https://github.com/nuxt/nuxt.js/commit/3e9eee2))
+
+
+### Code Refactoring
+
+* **ts:** better DX for typescript support ([#5079](https://github.com/nuxt/nuxt.js/issues/5079)) ([920f444](https://github.com/nuxt/nuxt.js/commit/920f444))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* **cli:** lock project during build or generate  ([#4985](https://github.com/nuxt/nuxt.js/issues/4985)) ([4e51723](https://github.com/nuxt/nuxt.js/commit/4e51723))
+* **cli:** option to open the project in the browser  ([#4930](https://github.com/nuxt/nuxt.js/issues/4930)) ([4c7bd9c](https://github.com/nuxt/nuxt.js/commit/4c7bd9c))
+* **generate:** return non-zero code or page error (fixes [#4991](https://github.com/nuxt/nuxt.js/issues/4991)) ([#5195](https://github.com/nuxt/nuxt.js/issues/5195)) ([c6565c9](https://github.com/nuxt/nuxt.js/commit/c6565c9))
+* show warning on forced exit ([#4958](https://github.com/nuxt/nuxt.js/issues/4958)) ([5094d9c](https://github.com/nuxt/nuxt.js/commit/5094d9c))
+
+
+### BREAKING CHANGES
+
+* **ts:** `build.useForkTsChecker` renamed to `build.typescript.typeCheck`
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

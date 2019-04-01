@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/webpack
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **postcss:** default to preset-env and cssnano last ([#5215](https://github.com/nuxt/nuxt.js/issues/5215)) ([adf423a](https://github.com/nuxt/nuxt.js/commit/adf423a))
+* **webpack:** always resolve core-js to v3 ([#5307](https://github.com/nuxt/nuxt.js/issues/5307)) ([65c1f86](https://github.com/nuxt/nuxt.js/commit/65c1f86))
+* **webpack:** clone `config.entry` (fixes [#4849](https://github.com/nuxt/nuxt.js/issues/4849)) ([#5236](https://github.com/nuxt/nuxt.js/issues/5236)) ([8216765](https://github.com/nuxt/nuxt.js/commit/8216765))
+* **webpack:** loaders in extend config is broken ([#5292](https://github.com/nuxt/nuxt.js/issues/5292)) ([0eb5ed9](https://github.com/nuxt/nuxt.js/commit/0eb5ed9))
+* bundle resources other than js(x)/json in node_modules ([#4913](https://github.com/nuxt/nuxt.js/issues/4913)) ([268851f](https://github.com/nuxt/nuxt.js/commit/268851f))
+* fix non standard esm modifications ([fb87a55](https://github.com/nuxt/nuxt.js/commit/fb87a55))
+* remove cache-loader for external resources ([#4915](https://github.com/nuxt/nuxt.js/issues/4915)) ([0223e56](https://github.com/nuxt/nuxt.js/commit/0223e56))
+* warn when using array postcss configuration ([#4936](https://github.com/nuxt/nuxt.js/issues/4936)) ([422155e](https://github.com/nuxt/nuxt.js/commit/422155e))
+
+
+### Code Refactoring
+
+* **ts:** better DX for typescript support ([#5079](https://github.com/nuxt/nuxt.js/issues/5079)) ([920f444](https://github.com/nuxt/nuxt.js/commit/920f444))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* support core-js 3 ([#5291](https://github.com/nuxt/nuxt.js/issues/5291)) ([d094c4a](https://github.com/nuxt/nuxt.js/commit/d094c4a))
+* **vue-renderer:** use async fs ([#5186](https://github.com/nuxt/nuxt.js/issues/5186)) ([d07aefa](https://github.com/nuxt/nuxt.js/commit/d07aefa))
+
+
+### Performance Improvements
+
+* **webpack:** use `futureEmitAssets` ([#5003](https://github.com/nuxt/nuxt.js/issues/5003)) ([3997d50](https://github.com/nuxt/nuxt.js/commit/3997d50))
+
+
+### BREAKING CHANGES
+
+* **ts:** `build.useForkTsChecker` renamed to `build.typescript.typeCheck`
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

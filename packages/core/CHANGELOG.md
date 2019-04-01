@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* remove consola.debug for hooks ([#5318](https://github.com/nuxt/nuxt.js/issues/5318)) ([9ff01f9](https://github.com/nuxt/nuxt.js/commit/9ff01f9))
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Features
+
+* **cli:** lock project during build or generate  ([#4985](https://github.com/nuxt/nuxt.js/issues/4985)) ([4e51723](https://github.com/nuxt/nuxt.js/commit/4e51723))
+* support `devModules` option ([#5102](https://github.com/nuxt/nuxt.js/issues/5102)) ([e87711c](https://github.com/nuxt/nuxt.js/commit/e87711c))
+* **module:** support src as a function in addModule ([#4956](https://github.com/nuxt/nuxt.js/issues/4956)) ([1e9eb4b](https://github.com/nuxt/nuxt.js/commit/1e9eb4b))
+* **vue-renderer:** improvements ([#4722](https://github.com/nuxt/nuxt.js/issues/4722)) ([2929716](https://github.com/nuxt/nuxt.js/commit/2929716))
+
+
+### Performance Improvements
+
+* **core:** skip esm for node_modules and non .js files ([#5220](https://github.com/nuxt/nuxt.js/issues/5220)) ([aabb1f6](https://github.com/nuxt/nuxt.js/commit/aabb1f6))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

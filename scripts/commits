@@ -4,23 +4,30 @@
 
 latestTag=`git describe | grep -oE "^[^-]+"`
 
-echo "Comaparing $latestTag...dev"
+rm commits.md
+
+write() {
+  echo "$@"
+  echo "$@" >> commits.md
+}
+
+writeSection() {
+  write
+  write "## $1"
+  write
+  res=`echo "$3" | awk "/^$2(.*):/;" | grep ":" | grep -v "renovate"  | sed -e 's/^/- /' | sort`
+  write "$res"
+}
+
+write "Comaparing $latestTag...dev"
 
 diff=`git --no-pager log $latestTag...dev --pretty="%s (%an) (%h)"`
 
-echo
-echo "# Features"
-echo "$diff" | awk '/feat/'
-echo "$diff" | awk '/feat/' | grep -oE "[0-9a-f]{8}" > .git/feat.txt
-
-echo
-echo "# Fixes"
-echo "$diff" | awk '!/feat/'
-echo "$diff" | awk '!/feat/' | grep -oE "[0-9a-f]{8}" > .git/fix.txt
-
-echo
-echo "To apply diff into target banch:"
-echo "$ git cherry-pick \`tac .git/fix.txt\`"
-echo "In case of conflicts:"
-echo "$ yarn"
-echo "$ git cherry-pick --continue"
+writeSection 'Features' 'feat'  "$diff"
+writeSection 'Fixes' 'fix'  "$diff"
+writeSection 'Hot Fixes' 'hotfix'  "$diff"
+writeSection 'Refactors' 'refactor'  "$diff"
+writeSection 'Performance Improvements' 'perf'  "$diff"
+writeSection 'Examples' 'examples'  "$diff"
+writeSection 'Chore' 'chore'  "$diff"
+writeSection 'Tests' 'test'  "$diff"

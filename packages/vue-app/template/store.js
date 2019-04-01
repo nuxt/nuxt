@@ -82,6 +82,10 @@ function resolveStoreModules(moduleData, filename) {
   for (const property of VUEX_PROPERTIES) {
     mergeProperty(storeModule, moduleData[property], property)
   }
+
+  if (moduleData.namespaced === false) {
+    delete storeModule.namespaced
+  }
 }
 
 function normalizeRoot(moduleData, filePath) {

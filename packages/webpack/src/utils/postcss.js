@@ -9,13 +9,31 @@ import createResolver from 'postcss-import-resolver'
 import { isPureObject } from '@nuxt/utils'
 
 export const orderPresets = {
-  cssnanoLast: (names) => {
+  cssnanoLast(names) {
     const nanoIndex = names.indexOf('cssnano')
     if (nanoIndex !== names.length - 1) {
       names.push(names.splice(nanoIndex, 1)[0])
     }
     return names
+  },
+  presetEnvLast(names) {
+    const nanoIndex = names.indexOf('postcss-preset-env')
+    if (nanoIndex !== names.length - 1) {
+      names.push(names.splice(nanoIndex, 1)[0])
+    }
+    return names
+  },
+  presetEnvAndCssnanoLast(names) {
+    return orderPresets.cssnanoLast(orderPresets.presetEnvLast(names))
   }
+}
+
+function postcssConfigFileWarning() {
+  if (postcssConfigFileWarning.executed) {
+    return
+  }
+  consola.warn('Please use `build.postcss` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3 as they remove all defaults set by Nuxt and can cause severe problems with features like alias resolving inside your CSS.')
+  postcssConfigFileWarning.executed = true
 }
 
 export default class PostcssConfig {
@@ -53,13 +71,14 @@ export default class PostcssConfig {
         'cssnano': dev ? false : { preset: 'default' }
       },
       // Array, String or Function
-      order: 'cssnanoLast'
+      order: 'presetEnvAndCssnanoLast'
     }
   }
 
   searchConfigFile() {
     // Search for postCSS config file and use it if exists
     // https://github.com/michael-ciniawsky/postcss-load-config
+    // TODO: Remove in Nuxt 3
     const { srcDir, rootDir } = this.buildContext.options
     for (const dir of [ srcDir, rootDir ]) {
       for (const file of [
@@ -71,6 +90,7 @@ export default class PostcssConfig {
       ]) {
         const configFile = path.resolve(dir, file)
         if (fs.existsSync(configFile)) {
+          postcssConfigFileWarning()
           return configFile
         }
       }

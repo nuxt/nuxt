@@ -12,6 +12,8 @@ describe('basic browser', () => {
   beforeAll(async () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)
+    await nuxt.ready()
+
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
@@ -208,12 +210,6 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/no-ssr')
 
     expect(await page.$text('h1')).toBe('Displayed only on client-side')
-  })
-
-  test('/pug', async () => {
-    await page.nuxt.navigate('/pug')
-
-    expect(await page.$text('h1')).toBe('Pug page')
   })
 
   test('/meta', async () => {

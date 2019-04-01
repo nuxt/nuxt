@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* apply default lock options before setting lock ([#5320](https://github.com/nuxt/nuxt.js/issues/5320)) ([7c24280](https://github.com/nuxt/nuxt.js/commit/7c24280))
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **pkg:** add missing dependencies ([665f15a](https://github.com/nuxt/nuxt.js/commit/665f15a))
+* relax lock settings ([#5280](https://github.com/nuxt/nuxt.js/issues/5280)) ([65a431d](https://github.com/nuxt/nuxt.js/commit/65a431d))
+
+
+### Features
+
+* **cli:** lock project during build or generate  ([#4985](https://github.com/nuxt/nuxt.js/issues/4985)) ([4e51723](https://github.com/nuxt/nuxt.js/commit/4e51723))
+
+
+
+
+
 ## [2.4.3](https://github.com/nuxt/nuxt.js/compare/v2.4.2...v2.4.3) (2019-02-06)
 
 

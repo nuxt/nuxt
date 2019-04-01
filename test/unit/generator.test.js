@@ -9,6 +9,7 @@ describe('generator', () => {
       }
     }
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
     const generator = new Generator(nuxt)
     const routes = await generator.initRoutes()
 
@@ -28,6 +29,7 @@ describe('generator', () => {
       }
     }
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
     const generator = new Generator(nuxt)
     const routes = await generator.initRoutes()
 
@@ -46,6 +48,7 @@ describe('generator', () => {
       }
     }
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
     const generator = new Generator(nuxt)
     const array = ['/1', '/2', '/3', '/4']
     const routes = await generator.initRoutes(array)
@@ -65,6 +68,7 @@ describe('generator', () => {
       }
     }
     const nuxt = new Nuxt(config)
+    await nuxt.ready()
     const generator = new Generator(nuxt)
     const array = ['/1', '/2', '/3', '/4']
     const routes = await generator.initRoutes(...array)

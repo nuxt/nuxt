@@ -46,7 +46,7 @@ describe('builder: builder generate', () => {
       watch: []
     }
     const builder = new Builder(nuxt, {})
-    builder.normalizePlugins = jest.fn(() => [{ name: 'test_plugin' }])
+    builder.normalizePlugins = jest.fn(() => [{ name: 'test_plugin', src: '/var/somesrc' }])
     builder.resolveLayouts = jest.fn(() => 'resolveLayouts')
     builder.resolveRoutes = jest.fn(() => 'resolveRoutes')
     builder.resolveStore = jest.fn(() => 'resolveStore')

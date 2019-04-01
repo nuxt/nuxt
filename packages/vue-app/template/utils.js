@@ -164,7 +164,7 @@ export async function setContext(app, context) {
         status = 302
       }
       if (pathType === 'object') {
-        path = app.router.resolve(path).href
+        path = app.router.resolve(path).route.fullPath
       }
       // "/absolute/route", "./relative/route" or "../relative/route"
       if (/(^[.]{1,2}\/)|(^\/(?!\/))/.test(path)) {
@@ -259,14 +259,14 @@ export function promisify(fn, context) {
 
 // Imported from vue-router
 export function getLocation(base, mode) {
-  let path = window.location.pathname
+  let path = decodeURI(window.location.pathname)
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
   if (base && path.indexOf(base) === 0) {
     path = path.slice(base.length)
   }
-  return decodeURI(path || '/') + window.location.search + window.location.hash
+  return (path || '/') + window.location.search + window.location.hash
 }
 
 export function urlJoin() {

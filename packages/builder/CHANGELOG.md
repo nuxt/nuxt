@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/builder
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **builder, vue-app:** order of plugin execution based on order in array ([#5163](https://github.com/nuxt/nuxt.js/issues/5163)) ([a867dbd](https://github.com/nuxt/nuxt.js/commit/a867dbd))
+* refactor file watchers (chokidar/linux workaround) ([#4950](https://github.com/nuxt/nuxt.js/issues/4950)) ([5ec5932](https://github.com/nuxt/nuxt.js/commit/5ec5932))
+* **test:** unhandled open handles ([858c9ee](https://github.com/nuxt/nuxt.js/commit/858c9ee))
+* extra properties in templateFiles ([#4925](https://github.com/nuxt/nuxt.js/issues/4925)) ([ca19124](https://github.com/nuxt/nuxt.js/commit/ca19124))
+* revert templatFiles name ([#4924](https://github.com/nuxt/nuxt.js/issues/4924)) ([f70645e](https://github.com/nuxt/nuxt.js/commit/f70645e))
+
+
+### Features
+
+* **test:** unit tests for @nuxt/builder ([#4834](https://github.com/nuxt/nuxt.js/issues/4834)) ([43491f6](https://github.com/nuxt/nuxt.js/commit/43491f6))
+* **vue-app:** universal fetch ([#5028](https://github.com/nuxt/nuxt.js/issues/5028)) ([2015140](https://github.com/nuxt/nuxt.js/commit/2015140))
+* .nuxtignore ([#4647](https://github.com/nuxt/nuxt.js/issues/4647)) ([59be77a](https://github.com/nuxt/nuxt.js/commit/59be77a))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 **Note:** Version bump only for package @nuxt/builder

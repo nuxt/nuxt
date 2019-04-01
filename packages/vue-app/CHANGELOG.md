@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/vue-app
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **builder, vue-app:** order of plugin execution based on order in array ([#5163](https://github.com/nuxt/nuxt.js/issues/5163)) ([a867dbd](https://github.com/nuxt/nuxt.js/commit/a867dbd))
+* **ts:** deprecate `isClient`, `isServer`, `isStatic` ([#5211](https://github.com/nuxt/nuxt.js/issues/5211)) ([29c3c42](https://github.com/nuxt/nuxt.js/commit/29c3c42))
+* **types:** reflect chainlable NuxtLoading methods ([#5104](https://github.com/nuxt/nuxt.js/issues/5104)) ([a6756a4](https://github.com/nuxt/nuxt.js/commit/a6756a4))
+* **vua-app:** clone mount error to prevent mutating read-only error object ([#5214](https://github.com/nuxt/nuxt.js/issues/5214)) ([37006f6](https://github.com/nuxt/nuxt.js/commit/37006f6))
+* **vue-app:** avoid css chunk error ([#5173](https://github.com/nuxt/nuxt.js/issues/5173)) ([41028a4](https://github.com/nuxt/nuxt.js/commit/41028a4))
+* **vue-app:** decode router base to support unicode characters ([#5297](https://github.com/nuxt/nuxt.js/issues/5297)) ([3ac01df](https://github.com/nuxt/nuxt.js/commit/3ac01df))
+* **vue-app:** duplicated router.base when using context.redirect(object) ([#5290](https://github.com/nuxt/nuxt.js/issues/5290)) ([cf02e82](https://github.com/nuxt/nuxt.js/commit/cf02e82))
+* **vue-app:** multiple named views cause invalid syntax ([#5262](https://github.com/nuxt/nuxt.js/issues/5262)) ([d03a61b](https://github.com/nuxt/nuxt.js/commit/d03a61b))
+* keep-alive component data should not be updated ([#5188](https://github.com/nuxt/nuxt.js/issues/5188)) ([1ea8661](https://github.com/nuxt/nuxt.js/commit/1ea8661))
+* respect namespaced in store module ([#5189](https://github.com/nuxt/nuxt.js/issues/5189)) ([9e1ef88](https://github.com/nuxt/nuxt.js/commit/9e1ef88))
+* **vue-app:** use browser to handle scrolling position on page reload and back-navigation from other sites ([#5080](https://github.com/nuxt/nuxt.js/issues/5080)) ([ee87f4c](https://github.com/nuxt/nuxt.js/commit/ee87f4c))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* **ts:** nuxt configuration typedefs ([#4854](https://github.com/nuxt/nuxt.js/issues/4854)) ([92f81e0](https://github.com/nuxt/nuxt.js/commit/92f81e0))
+* **vue-app:** universal fetch ([#5028](https://github.com/nuxt/nuxt.js/issues/5028)) ([2015140](https://github.com/nuxt/nuxt.js/commit/2015140))
+* **vue-renderer:** improvements ([#4722](https://github.com/nuxt/nuxt.js/issues/4722)) ([2929716](https://github.com/nuxt/nuxt.js/commit/2929716))
+* .nuxtignore ([#4647](https://github.com/nuxt/nuxt.js/issues/4647)) ([59be77a](https://github.com/nuxt/nuxt.js/commit/59be77a))
+* upgrade vue to 2.6 ([#4953](https://github.com/nuxt/nuxt.js/issues/4953)) ([9308954](https://github.com/nuxt/nuxt.js/commit/9308954))
+
+
+### Performance Improvements
+
+* await routeData promises in parallel ([#5027](https://github.com/nuxt/nuxt.js/issues/5027)) ([0826d7e](https://github.com/nuxt/nuxt.js/commit/0826d7e))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

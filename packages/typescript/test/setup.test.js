@@ -1,53 +1,31 @@
 import { resolve } from 'path'
-import { exists, mkdirp, readJSON, remove } from 'fs-extra'
-import { register } from 'ts-node'
-import { setup as setupTypeScript } from '@nuxt/typescript'
-
-jest.mock('ts-node')
-jest.mock('enquirer', () => ({
-  prompt: jest.fn(() => ({ confirmGeneration: true }))
-}))
+import { mkdirp, readJSON, writeFile, remove, readFile } from 'fs-extra'
+import { defaultTsJsonConfig, setupDefaults } from '@nuxt/typescript'
 
 describe('typescript setup', () => {
   const rootDir = 'tmp'
   const tsConfigPath = resolve(rootDir, 'tsconfig.json')
 
   beforeAll(async () => {
-    // We're assuming that rootDir provided to setupTypeScript is existing so we create the tested one
     await mkdirp(rootDir)
-    await setupTypeScript(tsConfigPath)
+    await writeFile(tsConfigPath, '{}', 'utf-8')
   })
 
-  test('tsconfig.json has been generated if missing', async () => {
-    expect(await exists(tsConfigPath)).toBe(true)
-    expect(await readJSON(tsConfigPath)).toEqual({
-      extends: '@nuxt/typescript',
-      compilerOptions: {
-        baseUrl: '.',
-        types: [
-          '@types/node',
-          '@nuxt/vue-app'
-        ]
-      }
-    })
+  test('Create tsconfig.json with defaults', async () => {
+    await setupDefaults(tsConfigPath)
+    expect(await readJSON(tsConfigPath)).toEqual(defaultTsJsonConfig)
   })
 
-  test('ts-node has been registered once', async () => {
-    // Call setupTypeScript a second time to test guard
-    await setupTypeScript(tsConfigPath)
+  test('Do not override tsconfig.json', async () => {
+    const fooJSON = '{ "foo": 123 }'
+    await writeFile(tsConfigPath, fooJSON, 'utf-8')
 
-    expect(register).toHaveBeenCalledTimes(1)
-    expect(register).toHaveBeenCalledWith({
-      project: tsConfigPath,
-      compilerOptions: {
-        module: 'commonjs'
-      },
-      transpileOnly: false
-    })
+    await setupDefaults(tsConfigPath)
+
+    expect(await readFile(tsConfigPath, 'utf-8')).toEqual(fooJSON)
   })
 
   afterAll(async () => {
-    // Clean workspace by removing the temporary folder (and the generated tsconfig.json at the same time)
-    await remove(tsConfigPath)
+    await remove(rootDir)
   })
 })

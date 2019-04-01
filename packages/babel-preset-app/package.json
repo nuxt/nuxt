@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.4.5",
+  "version": "2.5.1",
   "description": "babel-preset-app for nuxt.js",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
@@ -10,14 +10,15 @@
   ],
   "main": "src/index.js",
   "dependencies": {
-    "@babel/core": "^7.3.4",
-    "@babel/plugin-proposal-class-properties": "^7.3.4",
-    "@babel/plugin-proposal-decorators": "^7.3.0",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-decorators": "^7.4.0",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/plugin-transform-runtime": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
-    "@babel/runtime": "^7.3.4",
-    "@vue/babel-preset-jsx": "^1.0.0-beta.2"
+    "@babel/plugin-transform-runtime": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@babel/runtime": "^7.4.2",
+    "@vue/babel-preset-jsx": "^1.0.0-beta.3",
+    "core-js": "^2.6.5"
   },
   "publishConfig": {
     "access": "public"

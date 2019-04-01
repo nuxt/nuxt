@@ -22,7 +22,6 @@ export default class Nuxt extends Hookable {
     // Create instance of core components
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
-    this.server = new Server(this)
 
     // Deprecated hooks
     this._deprecatedHooks = {
@@ -32,27 +31,38 @@ export default class Nuxt extends Hookable {
     }
 
     // Add Legacy aliases
-    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
-    this.renderer = this.server
-    this.render = this.server.app
     this.showReady = () => { this.callHook('webpack:done') }
 
-    // Wait for Nuxt to be ready
-    this.initialized = false
-    this._ready = this.ready().catch((err) => {
-      consola.fatal(err)
-    })
+    // Init server
+    if (this.options.server !== false) {
+      this._initServer()
+    }
+
+    // Call ready
+    if (this.options._ready !== false) {
+      this.ready().catch((err) => {
+        consola.fatal(err)
+      })
+    }
   }
 
   static get version() {
     return (global.__NUXT && global.__NUXT.version) || `v${version}`
   }
 
-  async ready() {
-    if (this._ready) {
-      return this._ready
+  ready() {
+    if (!this._ready) {
+      this._ready = this._init()
     }
+    return this._ready
+  }
+
+  async _init() {
+    if (this._initCalled) {
+      return this
+    }
+    this._initCalled = true
 
     // Add hooks
     if (isPlainObject(this.options.hooks)) {
@@ -65,14 +75,24 @@ export default class Nuxt extends Hookable {
     await this.moduleContainer.ready()
 
     // Await for server to be ready
-    await this.server.ready()
-
-    this.initialized = true
+    if (this.server) {
+      await this.server.ready()
+    }
 
     // Call ready hook
     await this.callHook('ready', this)
 
     return this
+  }
+
+  _initServer() {
+    if (this.server) {
+      return
+    }
+    this.server = new Server(this)
+    this.renderer = this.server
+    this.render = this.server.app
+    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
   async close(callback) {

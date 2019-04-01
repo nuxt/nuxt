@@ -1,19 +1,15 @@
 import path from 'path'
 import pify from 'pify'
 import webpack from 'webpack'
-import MFS from 'memory-fs'
 import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import {
-  parallel,
-  sequence,
-  wrapArray
-} from '@nuxt/utils'
+import { parallel, sequence, wrapArray } from '@nuxt/utils'
+import AsyncMFS from './utils/async-mfs'
 
-import { ClientConfig, ModernConfig, ServerConfig } from './config'
+import * as WebpackConfigs from './config'
 import PerfLoader from './utils/perf-loader'
 
 const glob = pify(Glob)
@@ -21,60 +17,44 @@ const glob = pify(Glob)
 export class WebpackBundler {
   constructor(buildContext) {
     this.buildContext = buildContext
-    // Fields that set on build
+
+    // Class fields
     this.compilers = []
     this.compilersWatching = []
     this.devMiddleware = {}
     this.hotMiddleware = {}
 
+    // Bind middleware to self
+    this.middleware = this.middleware.bind(this)
+
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
-      this.mfs = new MFS()
-
-      // TODO: Enable when async FS required
-      // this.mfs.exists = function (...args) { return Promise.resolve(this.existsSync(...args)) }
-      // this.mfs.readFile = function (...args) { return Promise.resolve(this.readFileSync(...args)) }
+      this.mfs = new AsyncMFS()
     }
+  }
+
+  getWebpackConfig(name) {
+    const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
+    if (!Config) {
+      throw new Error(`Unsupported webpack config ${name}`)
+    }
+    const config = new Config(this)
+    return config.config()
   }
 
   async build() {
     const { options } = this.buildContext
 
-    const compilersOptions = []
+    const webpackConfigs = [
+      this.getWebpackConfig('Client')
+    ]
 
-    // Client
-    const clientConfig = new ClientConfig(this).config()
-    compilersOptions.push(clientConfig)
-
-    // Modern
-    let modernConfig
     if (options.modern) {
-      modernConfig = new ModernConfig(this).config()
-      compilersOptions.push(modernConfig)
+      webpackConfigs.push(this.getWebpackConfig('Modern'))
     }
 
-    // Server
-    let serverConfig = null
     if (options.build.ssr) {
-      serverConfig = new ServerConfig(this).config()
-      compilersOptions.push(serverConfig)
-    }
-
-    for (const p of this.buildContext.plugins) {
-      // Client config
-      if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Modern config
-      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
-        modernConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Server config
-      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
-        serverConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
-      }
+      webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
     // Check styleResource existence
@@ -96,8 +76,8 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
+    this.compilers = webpackConfigs.map((config) => {
+      const compiler = webpack(config)
 
       // In dev, write files in memory FS
       if (options.dev) {
@@ -144,7 +124,7 @@ export class WebpackBundler {
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
           compiler.hooks.done.tap('nuxt-dev', () => resolve())
-          this.webpackDev(compiler)
+          return this.webpackDev(compiler)
         })
       }
 
@@ -173,14 +153,17 @@ export class WebpackBundler {
       // Actual error will be printed by webpack
       throw new Error('Nuxt Build Error')
     }
+
+    // Await for renderer to load resources (programmatic, tests and generate)
+    await nuxt.callHook('build:resources')
   }
 
-  webpackDev(compiler) {
-    consola.debug('Adding webpack middleware...')
+  async webpackDev(compiler) {
+    consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
-    const { nuxt: { server }, options } = this.buildContext
-    const { client, ...hotMiddlewareOptions } = options.build.hotMiddleware || {}
+    const buildOptions = this.buildContext.options.build
+    const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
@@ -188,12 +171,12 @@ export class WebpackBundler {
         compiler,
         Object.assign(
           {
-            publicPath: options.build.publicPath,
+            publicPath: buildOptions.publicPath,
             stats: false,
             logLevel: 'silent',
-            watchOptions: options.watchers.webpack
+            watchOptions: this.buildContext.options.watchers.webpack
           },
-          options.build.devMiddleware
+          buildOptions.devMiddleware
         )
       )
     )
@@ -216,11 +199,22 @@ export class WebpackBundler {
       )
     )
 
-    // Inject to renderer instance
-    if (server) {
-      server.devMiddleware = this.devMiddleware
-      server.hotMiddleware = this.hotMiddleware
+    // Register devMiddleware on server
+    await this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
+  }
+
+  async middleware(req, res, next) {
+    const name = req.modernMode ? 'modern' : 'client'
+
+    if (this.devMiddleware && this.devMiddleware[name]) {
+      await this.devMiddleware[name](req, res)
     }
+
+    if (this.hotMiddleware && this.hotMiddleware[name]) {
+      await this.hotMiddleware[name](req, res)
+    }
+
+    next()
   }
 
   async unwatch() {

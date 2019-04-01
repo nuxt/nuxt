@@ -84,7 +84,7 @@ export function getNuxtConfig(_options) {
 
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, defaultNuxtConfigFile)
+    options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
   // Watch for _nuxtConfigFile changes
@@ -282,7 +282,7 @@ export function getNuxtConfig(_options) {
   }
 
   // Disable CSS extraction due to incompatibility with thread-loader
-  if (options.build && options.build.extractCSS && options.build.parallel) {
+  if (options.build.extractCSS && options.build.parallel) {
     options.build.parallel = false
     consola.warn('extractCSS cannot work with parallel build due to limited work pool in thread-loader')
   }
@@ -328,6 +328,11 @@ export function getNuxtConfig(_options) {
   const { bundleRenderer } = options.render
   if (typeof bundleRenderer.runInNewContext === 'undefined') {
     bundleRenderer.runInNewContext = options.dev
+  }
+
+  // Add loading screen
+  if (options.dev) {
+    options.devModules.push('@nuxt/loading-screen')
   }
 
   return options

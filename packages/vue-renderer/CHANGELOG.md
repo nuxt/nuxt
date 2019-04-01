@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/vue-renderer
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* correct public path in generation and start ([#5202](https://github.com/nuxt/nuxt.js/issues/5202)) ([648062c](https://github.com/nuxt/nuxt.js/commit/648062c))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* **vue-renderer:** improvements ([#4722](https://github.com/nuxt/nuxt.js/issues/4722)) ([2929716](https://github.com/nuxt/nuxt.js/commit/2929716))
+* **vue-renderer:** use async fs ([#5186](https://github.com/nuxt/nuxt.js/issues/5186)) ([d07aefa](https://github.com/nuxt/nuxt.js/commit/d07aefa))
+* upgrade vue to 2.6 ([#4953](https://github.com/nuxt/nuxt.js/issues/4953)) ([9308954](https://github.com/nuxt/nuxt.js/commit/9308954))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+**Note:** Version bump only for package @nuxt/server
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* correct socket address in use error message ([2eb1965](https://github.com/nuxt/nuxt.js/commit/2eb1965))
+* **server:** handle decodeURI error ([#5243](https://github.com/nuxt/nuxt.js/issues/5243)) ([5b7f6d7](https://github.com/nuxt/nuxt.js/commit/5b7f6d7))
+* await buildDone hook ([#4955](https://github.com/nuxt/nuxt.js/issues/4955)) ([5c08db2](https://github.com/nuxt/nuxt.js/commit/5c08db2))
+* not send Server-Timing header if no timing info ([d9a0b5f](https://github.com/nuxt/nuxt.js/commit/d9a0b5f))
+* publicPath is not reactive in dev restarting ([#5227](https://github.com/nuxt/nuxt.js/issues/5227)) ([1fb7538](https://github.com/nuxt/nuxt.js/commit/1fb7538))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* **vue-renderer:** use async fs ([#5186](https://github.com/nuxt/nuxt.js/issues/5186)) ([d07aefa](https://github.com/nuxt/nuxt.js/commit/d07aefa))
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

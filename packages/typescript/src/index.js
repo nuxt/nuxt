@@ -1,53 +1,48 @@
-import chalk from 'chalk'
+import { exists, readFile, writeJSON } from 'fs-extra'
 import consola from 'consola'
-import env from 'std-env'
-import { prompt } from 'enquirer'
-import { existsSync, writeJSON } from 'fs-extra'
-import { register } from 'ts-node'
 
-async function generateTsConfig(tsConfigPath) {
-  const configToExtend = '@nuxt/typescript'
-  await writeJSON(tsConfigPath, {
-    extends: configToExtend,
-    compilerOptions: {
-      baseUrl: '.',
-      types: [
-        '@types/node',
-        '@nuxt/vue-app'
+export const defaultTsJsonConfig = {
+  compilerOptions: {
+    target: 'esnext',
+    module: 'esnext',
+    moduleResolution: 'node',
+    lib: [
+      'esnext',
+      'esnext.asynciterable',
+      'dom'
+    ],
+    esModuleInterop: true,
+    experimentalDecorators: true,
+    allowJs: true,
+    sourceMap: true,
+    strict: true,
+    noImplicitAny: false,
+    noEmit: true,
+    baseUrl: '.',
+    paths: {
+      '~/*': [
+        './*'
+      ],
+      '@/*': [
+        './*'
       ]
-    }
-  }, { spaces: 2 })
-  consola.info(`Extending ${chalk.bold.blue(`node_modules/${configToExtend}/tsconfig.json`)}`)
-  consola.success(`Generated successfully at ${chalk.bold.green(tsConfigPath)}`)
+    },
+    types: [
+      '@types/node',
+      '@nuxt/vue-app'
+    ]
+  }
 }
 
-let _setup = false
+export async function setupDefaults(tsConfigPath) {
+  let contents = ''
 
-export async function setup(tsConfigPath) {
-  if (_setup) {
-    return
+  if (await exists(tsConfigPath)) {
+    contents = await readFile(tsConfigPath, 'utf-8')
   }
-  _setup = true
 
-  if (!existsSync(tsConfigPath)) {
-    const { confirmGeneration } = await prompt({
-      type: 'confirm',
-      name: 'confirmGeneration',
-      message: `${chalk.bold.blue(tsConfigPath)} is missing, generate it ?`,
-      initial: true,
-      skip: env.minimal
-    })
-
-    if (confirmGeneration) {
-      await generateTsConfig(tsConfigPath)
-    }
+  if (!contents || contents === '{}') {
+    consola.info(`Generating ${tsConfigPath.replace(process.cwd(), '')}`)
+    await writeJSON(tsConfigPath, defaultTsJsonConfig, { spaces: 2 })
   }
-  // https://github.com/TypeStrong/ts-node
-  register({
-    project: tsConfigPath,
-    compilerOptions: {
-      module: 'commonjs'
-    },
-    transpileOnly: process.argv[2] === 'start'
-  })
 }

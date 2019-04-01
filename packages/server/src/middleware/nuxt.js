@@ -7,11 +7,18 @@ import { getContext } from '@nuxt/utils'
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
   // Get context
   const context = getContext(req, res)
-  const url = decodeURI(req.url)
 
-  res.statusCode = 200
   try {
+    const url = decodeURI(req.url)
+    res.statusCode = 200
     const result = await renderRoute(url, context)
+
+    // If result is falsy, call renderLoading
+    if (!result) {
+      await nuxt.callHook('server:nuxt:renderLoading', req, res)
+      return
+    }
+
     await nuxt.callHook('render:route', url, result, context)
     const {
       html,
@@ -77,12 +84,14 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
     await nuxt.callHook('render:routeDone', url, result, context)
     return html
   } catch (err) {
-    /* istanbul ignore if */
     if (context && context.redirected) {
       consola.error(err)
       return err
     }
 
+    if (err.name === 'URIError') {
+      err.statusCode = 400
+    }
     next(err)
   }
 }
@@ -95,7 +104,6 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   const links = []
   preloadFiles.forEach(({ file, asType, fileWithoutQuery, modern }) => {
     // By default, we only preload scripts or css
-    /* istanbul ignore if */
     if (!shouldPush && asType !== 'script' && asType !== 'style') {
       return
     }

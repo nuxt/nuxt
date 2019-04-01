@@ -39,6 +39,8 @@ export const mockGetGenerator = (ret) => {
   const generate = jest.fn()
   if (ret) {
     generate.mockImplementationOnce(ret)
+  } else {
+    generate.mockImplementationOnce(() => ({ errors: [] }))
   }
 
   Command.prototype.getGenerator = jest.fn().mockImplementationOnce(() => ({ generate }))

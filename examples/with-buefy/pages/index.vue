@@ -1,28 +1,43 @@
 <template>
-  <nav class="navbar has-shadow is-light">
-    <div class="container">
-      <div class="navbar-brand">
-        <NuxtLink to="/" class="navbar-item">
-          <img src="~/assets/logo.png">
-        </NuxtLink>
-      </div>
-      <div class="navbar-menu">
-        <div class="navbar-start">
-          <NuxtLink to="/" class="navbar-item is-tab" exact>
-            Home
-          </NuxtLink>
-          <NuxtLink to="/about" class="navbar-item is-tab" exact>
-            About
-          </NuxtLink>
-        </div>
-      </div>
+  <section class="section">
+    <div class="columns is-mobile">
+      <card
+        title="Free"
+        icon="github-circle"
+      >
+        Open source on <a href="https://github.com/buefy/buefy"> GitHub</a>
+      </card>
+
+      <card
+        title="Responsive"
+        icon="cellphone-link"
+      >
+        <b class="has-text-grey">Every</b> component is responsive
+      </card>
+
+      <card
+        title="Modern"
+        icon="alert-decagram"
+      >
+        Built with <a href="https://vuejs.org/">Vue.js</a> and <a href="http://bulma.io/">Bulma</a>
+      </card>
+
+      <card
+        title="Lightweight"
+        icon="arrange-bring-to-front"
+      >
+        No other internal dependency
+      </card>
     </div>
-  </nav>
+  </section>
 </template>
 
-<style lang="scss">
-  $primary: blue;
-  $navbar-tab-active-border-bottom-color: red;
-  @import "~bulma";
-  @import "~buefy/src/scss/buefy";
-</style>
+<script>
+import Card from '~/components/Card'
+export default {
+  name: 'HomePage',
+  components: {
+    Card
+  }
+}
+</script>

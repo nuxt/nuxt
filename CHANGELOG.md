@@ -3,6 +3,106 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
+
+
+### Bug Fixes
+
+* apply default lock options before setting lock ([#5320](https://github.com/nuxt/nuxt.js/issues/5320)) ([7c24280](https://github.com/nuxt/nuxt.js/commit/7c24280))
+* remove consola.debug for hooks ([#5318](https://github.com/nuxt/nuxt.js/issues/5318)) ([9ff01f9](https://github.com/nuxt/nuxt.js/commit/9ff01f9))
+* **ts:** wrong export used in render.d.ts ([#5309](https://github.com/nuxt/nuxt.js/issues/5309)) ([e67b298](https://github.com/nuxt/nuxt.js/commit/e67b298))
+
+
+
+
+
+# [2.5.0](https://github.com/nuxt/nuxt.js/compare/v2.4.5...v2.5.0) (2019-03-21)
+
+
+### Bug Fixes
+
+* **builder, vue-app:** order of plugin execution based on order in array ([#5163](https://github.com/nuxt/nuxt.js/issues/5163)) ([a867dbd](https://github.com/nuxt/nuxt.js/commit/a867dbd))
+* **cli:** enable server for implicit SPA generate in nuxt build ([c46def7](https://github.com/nuxt/nuxt.js/commit/c46def7))
+* **pkg:** add missing dependencies ([665f15a](https://github.com/nuxt/nuxt.js/commit/665f15a))
+* **postcss:** default to preset-env and cssnano last ([#5215](https://github.com/nuxt/nuxt.js/issues/5215)) ([adf423a](https://github.com/nuxt/nuxt.js/commit/adf423a))
+* **server:** handle decodeURI error ([#5243](https://github.com/nuxt/nuxt.js/issues/5243)) ([5b7f6d7](https://github.com/nuxt/nuxt.js/commit/5b7f6d7))
+* **ts:** deprecate `isClient`, `isServer`, `isStatic` ([#5211](https://github.com/nuxt/nuxt.js/issues/5211)) ([29c3c42](https://github.com/nuxt/nuxt.js/commit/29c3c42))
+* **types:** reflect chainlable NuxtLoading methods ([#5104](https://github.com/nuxt/nuxt.js/issues/5104)) ([a6756a4](https://github.com/nuxt/nuxt.js/commit/a6756a4))
+* **vua-app:** clone mount error to prevent mutating read-only error object ([#5214](https://github.com/nuxt/nuxt.js/issues/5214)) ([37006f6](https://github.com/nuxt/nuxt.js/commit/37006f6))
+* **vue-app:** avoid css chunk error ([#5173](https://github.com/nuxt/nuxt.js/issues/5173)) ([41028a4](https://github.com/nuxt/nuxt.js/commit/41028a4))
+* **vue-app:** decode router base to support unicode characters ([#5297](https://github.com/nuxt/nuxt.js/issues/5297)) ([3ac01df](https://github.com/nuxt/nuxt.js/commit/3ac01df))
+* **vue-app:** duplicated router.base when using context.redirect(object) ([#5290](https://github.com/nuxt/nuxt.js/issues/5290)) ([cf02e82](https://github.com/nuxt/nuxt.js/commit/cf02e82))
+* **vue-app:** multiple named views cause invalid syntax ([#5262](https://github.com/nuxt/nuxt.js/issues/5262)) ([d03a61b](https://github.com/nuxt/nuxt.js/commit/d03a61b))
+* **webpack:** always resolve core-js to v3 ([#5307](https://github.com/nuxt/nuxt.js/issues/5307)) ([65c1f86](https://github.com/nuxt/nuxt.js/commit/65c1f86))
+* **webpack:** clone `config.entry` (fixes [#4849](https://github.com/nuxt/nuxt.js/issues/4849)) ([#5236](https://github.com/nuxt/nuxt.js/issues/5236)) ([8216765](https://github.com/nuxt/nuxt.js/commit/8216765))
+* **webpack:** loaders in extend config is broken ([#5292](https://github.com/nuxt/nuxt.js/issues/5292)) ([0eb5ed9](https://github.com/nuxt/nuxt.js/commit/0eb5ed9))
+* await buildDone hook ([#4955](https://github.com/nuxt/nuxt.js/issues/4955)) ([5c08db2](https://github.com/nuxt/nuxt.js/commit/5c08db2))
+* bundle resources other than js(x)/json in node_modules ([#4913](https://github.com/nuxt/nuxt.js/issues/4913)) ([268851f](https://github.com/nuxt/nuxt.js/commit/268851f))
+* correct public path in generation and start ([#5202](https://github.com/nuxt/nuxt.js/issues/5202)) ([648062c](https://github.com/nuxt/nuxt.js/commit/648062c))
+* correct socket address in use error message ([2eb1965](https://github.com/nuxt/nuxt.js/commit/2eb1965))
+* default for-exit to false to prevent dev exit ([a347ef9](https://github.com/nuxt/nuxt.js/commit/a347ef9))
+* disable "analyze" for nuxt generate ([#4975](https://github.com/nuxt/nuxt.js/issues/4975)) ([574a2eb](https://github.com/nuxt/nuxt.js/commit/574a2eb))
+* disable parallel build when extractCSS is enabled ([aad46ed](https://github.com/nuxt/nuxt.js/commit/aad46ed))
+* dont force exit when it was explicitly disabled ([#4973](https://github.com/nuxt/nuxt.js/issues/4973)) ([3e9eee2](https://github.com/nuxt/nuxt.js/commit/3e9eee2))
+* extra properties in templateFiles ([#4925](https://github.com/nuxt/nuxt.js/issues/4925)) ([ca19124](https://github.com/nuxt/nuxt.js/commit/ca19124))
+* fix non standard esm modifications ([fb87a55](https://github.com/nuxt/nuxt.js/commit/fb87a55))
+* improve nuxt version number when running from git ([#4946](https://github.com/nuxt/nuxt.js/issues/4946)) ([92803b2](https://github.com/nuxt/nuxt.js/commit/92803b2))
+* keep-alive component data should not be updated ([#5188](https://github.com/nuxt/nuxt.js/issues/5188)) ([1ea8661](https://github.com/nuxt/nuxt.js/commit/1ea8661))
+* not send Server-Timing header if no timing info ([d9a0b5f](https://github.com/nuxt/nuxt.js/commit/d9a0b5f))
+* publicPath is not reactive in dev restarting ([#5227](https://github.com/nuxt/nuxt.js/issues/5227)) ([1fb7538](https://github.com/nuxt/nuxt.js/commit/1fb7538))
+* refactor file watchers (chokidar/linux workaround) ([#4950](https://github.com/nuxt/nuxt.js/issues/4950)) ([5ec5932](https://github.com/nuxt/nuxt.js/commit/5ec5932))
+* relax lock settings ([#5280](https://github.com/nuxt/nuxt.js/issues/5280)) ([65a431d](https://github.com/nuxt/nuxt.js/commit/65a431d))
+* respect namespaced in store module ([#5189](https://github.com/nuxt/nuxt.js/issues/5189)) ([9e1ef88](https://github.com/nuxt/nuxt.js/commit/9e1ef88))
+* Unexpected token .... Expected a property name in Safari ([eef7f69](https://github.com/nuxt/nuxt.js/commit/eef7f69))
+* **test:** unhandled open handles ([858c9ee](https://github.com/nuxt/nuxt.js/commit/858c9ee))
+* **vue-app:** use browser to handle scrolling position on page reload and back-navigation from other sites ([#5080](https://github.com/nuxt/nuxt.js/issues/5080)) ([ee87f4c](https://github.com/nuxt/nuxt.js/commit/ee87f4c))
+* remove cache-loader for external resources ([#4915](https://github.com/nuxt/nuxt.js/issues/4915)) ([0223e56](https://github.com/nuxt/nuxt.js/commit/0223e56))
+* revert templatFiles name ([#4924](https://github.com/nuxt/nuxt.js/issues/4924)) ([f70645e](https://github.com/nuxt/nuxt.js/commit/f70645e))
+* trailing comma in tsconfig ([#5061](https://github.com/nuxt/nuxt.js/issues/5061)) ([1fb44d9](https://github.com/nuxt/nuxt.js/commit/1fb44d9))
+* warn when using array postcss configuration ([#4936](https://github.com/nuxt/nuxt.js/issues/4936)) ([422155e](https://github.com/nuxt/nuxt.js/commit/422155e))
+
+
+### Code Refactoring
+
+* **ts:** better DX for typescript support ([#5079](https://github.com/nuxt/nuxt.js/issues/5079)) ([920f444](https://github.com/nuxt/nuxt.js/commit/920f444))
+
+
+### Features
+
+* loading screen ([#5251](https://github.com/nuxt/nuxt.js/issues/5251)) ([ef41e20](https://github.com/nuxt/nuxt.js/commit/ef41e20))
+* support core-js 3 ([#5291](https://github.com/nuxt/nuxt.js/issues/5291)) ([d094c4a](https://github.com/nuxt/nuxt.js/commit/d094c4a))
+* **babel:** include es6.object.assign by default ([52fe145](https://github.com/nuxt/nuxt.js/commit/52fe145))
+* **cli:** lock project during build or generate  ([#4985](https://github.com/nuxt/nuxt.js/issues/4985)) ([4e51723](https://github.com/nuxt/nuxt.js/commit/4e51723))
+* **cli:** option to open the project in the browser  ([#4930](https://github.com/nuxt/nuxt.js/issues/4930)) ([4c7bd9c](https://github.com/nuxt/nuxt.js/commit/4c7bd9c))
+* **generate:** return non-zero code or page error (fixes [#4991](https://github.com/nuxt/nuxt.js/issues/4991)) ([#5195](https://github.com/nuxt/nuxt.js/issues/5195)) ([c6565c9](https://github.com/nuxt/nuxt.js/commit/c6565c9))
+* **module:** support src as a function in addModule ([#4956](https://github.com/nuxt/nuxt.js/issues/4956)) ([1e9eb4b](https://github.com/nuxt/nuxt.js/commit/1e9eb4b))
+* **test:** unit tests for @nuxt/builder ([#4834](https://github.com/nuxt/nuxt.js/issues/4834)) ([43491f6](https://github.com/nuxt/nuxt.js/commit/43491f6))
+* **ts:** nuxt configuration typedefs ([#4854](https://github.com/nuxt/nuxt.js/issues/4854)) ([92f81e0](https://github.com/nuxt/nuxt.js/commit/92f81e0))
+* **vue-app:** universal fetch ([#5028](https://github.com/nuxt/nuxt.js/issues/5028)) ([2015140](https://github.com/nuxt/nuxt.js/commit/2015140))
+* **vue-renderer:** use async fs ([#5186](https://github.com/nuxt/nuxt.js/issues/5186)) ([d07aefa](https://github.com/nuxt/nuxt.js/commit/d07aefa))
+* .nuxtignore ([#4647](https://github.com/nuxt/nuxt.js/issues/4647)) ([59be77a](https://github.com/nuxt/nuxt.js/commit/59be77a))
+* show warning on forced exit ([#4958](https://github.com/nuxt/nuxt.js/issues/4958)) ([5094d9c](https://github.com/nuxt/nuxt.js/commit/5094d9c))
+* support `devModules` option ([#5102](https://github.com/nuxt/nuxt.js/issues/5102)) ([e87711c](https://github.com/nuxt/nuxt.js/commit/e87711c))
+* upgrade to jest 24 ([#4868](https://github.com/nuxt/nuxt.js/issues/4868)) ([90ba0cd](https://github.com/nuxt/nuxt.js/commit/90ba0cd))
+* **vue-renderer:** improvements ([#4722](https://github.com/nuxt/nuxt.js/issues/4722)) ([2929716](https://github.com/nuxt/nuxt.js/commit/2929716))
+* upgrade vue to 2.6 ([#4953](https://github.com/nuxt/nuxt.js/issues/4953)) ([9308954](https://github.com/nuxt/nuxt.js/commit/9308954))
+
+
+### Performance Improvements
+
+* **core:** skip esm for node_modules and non .js files ([#5220](https://github.com/nuxt/nuxt.js/issues/5220)) ([aabb1f6](https://github.com/nuxt/nuxt.js/commit/aabb1f6))
+* await routeData promises in parallel ([#5027](https://github.com/nuxt/nuxt.js/issues/5027)) ([0826d7e](https://github.com/nuxt/nuxt.js/commit/0826d7e))
+* **webpack:** use `futureEmitAssets` ([#5003](https://github.com/nuxt/nuxt.js/issues/5003)) ([3997d50](https://github.com/nuxt/nuxt.js/commit/3997d50))
+
+
+### BREAKING CHANGES
+
+* **ts:** `build.useForkTsChecker` renamed to `build.typescript.typeCheck`
+
+
+
+
+
 ## [2.4.4](https://github.com/nuxt/nuxt.js/compare/v2.4.3...v2.4.4) (2019-02-26)
 
 

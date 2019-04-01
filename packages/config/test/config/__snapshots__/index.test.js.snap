@@ -9,6 +9,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": undefined,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,
@@ -121,7 +122,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "useForkTsChecker": false,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -338,6 +341,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": undefined,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,
@@ -450,7 +454,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "useForkTsChecker": false,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",
