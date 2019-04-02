@@ -56,7 +56,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   resolve() {
     const resolveConfig = super.resolve()
 
-    resolveConfig.mainFields = ['main', 'module']
+    resolveConfig.resolve.mainFields = ['main', 'module']
 
     return resolveConfig
   }
