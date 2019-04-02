@@ -95,7 +95,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
-      externals: []
+      externals: [].concat(config.externals || [])
     })
 
     // https://webpack.js.org/configuration/externals/#externals
