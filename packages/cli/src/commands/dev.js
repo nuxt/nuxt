@@ -35,7 +35,7 @@ export default {
   },
 
   async _startDev(cmd, argv) {
-    const config = await cmd.getNuxtConfig({ dev: true })
+    const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
     // Setup hooks

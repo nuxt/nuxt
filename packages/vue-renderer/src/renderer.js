@@ -407,20 +407,25 @@ export default class VueRenderer {
     APP += `<script>${serializedSession}</script>`
 
     // Calculate CSP hashes
+    const { csp } = this.context.options.render
     const cspScriptSrcHashes = []
-    const csp = this.context.options.render.csp
-    const containsUnsafeInlineScriptSrc = csp && csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
+    if (csp) {
+      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+      const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
+      if (!containsUnsafeInlineScriptSrc) {
+        const hash = crypto.createHash(csp.hashAlgorithm)
+        hash.update(serializedSession)
+        cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+      }
 
-    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-    if (csp && !containsUnsafeInlineScriptSrc) {
-      const { hashAlgorithm } = this.context.options.render.csp
-      const hash = crypto.createHash(hashAlgorithm)
-      hash.update(serializedSession)
-      cspScriptSrcHashes.push(`'${hashAlgorithm}-${hash.digest('base64')}'`)
+      // Call ssr:csp hook
+      await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
+
+      // Add csp meta tags
+      if (csp.addMeta) {
+        HEAD += `<meta http-equiv="Content-Security-Policy" content="script-src ${cspScriptSrcHashes.join()}">`
+      }
     }
-
-    // Call ssr:csp hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
 
     // Prepend scripts
     APP += this.renderScripts(context)
