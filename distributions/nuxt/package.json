@@ -59,7 +59,7 @@
     "@nuxt/core": "2.5.1",
     "@nuxt/generator": "2.5.1",
     "@nuxt/loading-screen": "^0.2.0",
-    "@nuxt/opencollective": "^0.2.1",
+    "@nuxt/opencollective": "^0.2.2",
     "@nuxt/webpack": "2.5.1"
   },
   "engines": {
