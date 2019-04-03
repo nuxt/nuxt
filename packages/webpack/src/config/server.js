@@ -109,7 +109,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     // https://webpack.js.org/configuration/externals/#externals
     // https://github.com/liady/webpack-node-externals
     // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-    if (!this.dev && !this.buildContext.buildOptions.standalone) {
+    if (!this.buildContext.buildOptions.standalone) {
       this.buildContext.options.modulesDir.forEach((dir) => {
         if (fs.existsSync(dir)) {
           config.externals.push(
