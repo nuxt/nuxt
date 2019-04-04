@@ -53,7 +53,7 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.2.2",
-    "esm": "^3.2.22",
+    "esm": "3.2.20",
     "express": "^4.16.4",
     "finalhandler": "^1.1.1",
     "fork-ts-checker-webpack-plugin": "^1.0.1",
