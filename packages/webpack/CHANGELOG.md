@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* revert node-externals disabling in dev mode ([#5452](https://github.com/nuxt/nuxt.js/issues/5452)) ([6ce99d2](https://github.com/nuxt/nuxt.js/commit/6ce99d2))
+* **webpack:** prefer `main` over `module` field for server config ([#5446](https://github.com/nuxt/nuxt.js/issues/5446)) ([e155ea4](https://github.com/nuxt/nuxt.js/commit/e155ea4))
+* disable `node-externals` for dev mode ([#5414](https://github.com/nuxt/nuxt.js/issues/5414)) ([a5a1657](https://github.com/nuxt/nuxt.js/commit/a5a1657))
+* memory leak in dev mode ([#5399](https://github.com/nuxt/nuxt.js/issues/5399)) ([04ddcac](https://github.com/nuxt/nuxt.js/commit/04ddcac))
+* not override externals set by build.extend ([#5444](https://github.com/nuxt/nuxt.js/issues/5444)) ([1ae4333](https://github.com/nuxt/nuxt.js/commit/1ae4333))
+* **builder:** await for renderer to load resources ([#5341](https://github.com/nuxt/nuxt.js/issues/5341)) ([caf5198](https://github.com/nuxt/nuxt.js/commit/caf5198))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 **Note:** Version bump only for package @nuxt/webpack

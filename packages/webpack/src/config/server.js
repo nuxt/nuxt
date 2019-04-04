@@ -28,6 +28,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         whitelist.push(new RegExp(escapeRegExp(posixModule)))
       }
     }
+
     return whitelist
   }
 
@@ -50,6 +51,27 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       splitChunks: false,
       minimizer: this.minimizer()
     }
+  }
+
+  resolve() {
+    const resolveConfig = super.resolve()
+
+    resolveConfig.resolve.mainFields = ['main', 'module']
+
+    return resolveConfig
+  }
+
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load client-side plugins on server-side
+        aliases[p.name] = p.mode === 'client' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
   }
 
   plugins() {
@@ -81,7 +103,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
-      externals: []
+      externals: [].concat(config.externals || [])
     })
 
     // https://webpack.js.org/configuration/externals/#externals

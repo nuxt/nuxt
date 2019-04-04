@@ -25,6 +25,18 @@ export default {
         }
       }
     },
+    quiet: {
+      alias: 'q',
+      type: 'boolean',
+      description: 'Disable output except for errors',
+      prepare(cmd, options, argv) {
+        // Silence output when using --quiet
+        options.build = options.build || {}
+        if (argv.quiet) {
+          options.build.quiet = true
+        }
+      }
+    },
     modern: {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',
@@ -41,7 +53,7 @@ export default {
     }
   },
   async run(cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false })
+    const config = await cmd.getNuxtConfig({ dev: false, _generate: true, _build: cmd.argv.build })
 
     // Disable analyze if set by the nuxt config
     if (!config.build) {

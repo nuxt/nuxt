@@ -12,6 +12,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": false,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,

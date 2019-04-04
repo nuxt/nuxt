@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* SyntaxError Unexpected token export in importing babel runtime helper ([#5401](https://github.com/nuxt/nuxt.js/issues/5401)) ([3b85dd9](https://github.com/nuxt/nuxt.js/commit/3b85dd9))
+
+
+### Features
+
+* **babel-preset-app:** support specifying core-js version ([#5411](https://github.com/nuxt/nuxt.js/issues/5411)) ([159123f](https://github.com/nuxt/nuxt.js/commit/159123f))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 **Note:** Version bump only for package @nuxt/babel-preset-app

@@ -1,0 +1,5 @@
+*.yaml
+*.md
+*.lock
+LICENSE
+CHANGELOG

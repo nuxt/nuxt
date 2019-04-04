@@ -81,6 +81,7 @@ describe('config: options', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
+      addMeta: false,
       allowedSources: true,
       policies: undefined,
       reportOnly: false,
@@ -189,9 +190,10 @@ describe('config: options', () => {
       })
       expect(consola.warn).toHaveBeenCalledWith('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
       expect(babel).toEqual({
-        'babelrc': false,
-        'cacheDirectory': false,
-        'presets': ['@nuxt/babel-preset-app']
+        configFile: false,
+        babelrc: false,
+        cacheDirectory: false,
+        presets: ['@nuxt/babel-preset-app']
       })
     })
 
@@ -200,9 +202,10 @@ describe('config: options', () => {
         build: { babel: { presets: [['@nuxt/babel-preset-app', { test: true }]] } }
       })
       expect(babel).toEqual({
-        'babelrc': false,
-        'cacheDirectory': false,
-        'presets': [['@nuxt/babel-preset-app', { test: true }]]
+        configFile: false,
+        babelrc: false,
+        cacheDirectory: false,
+        presets: [['@nuxt/babel-preset-app', { test: true }]]
       })
     })
   })
