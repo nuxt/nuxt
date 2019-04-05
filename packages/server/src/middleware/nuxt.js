@@ -122,7 +122,7 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
+const getCspString = ({ cspScriptSrcHashes = [], allowedSources, policies, isDev }) => {
   const joinedHashes = cspScriptSrcHashes.join(' ')
   const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashes}`
 
