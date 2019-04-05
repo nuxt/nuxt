@@ -227,3 +227,10 @@ describe('config: options', () => {
     })
   })
 })
+
+describe('config: router', () => {
+  test('should sanetize router.base', () => {
+    const config = getNuxtConfig({ router: { base: '/foo' } })
+    expect(config.router.base).toBe('/foo/')
+  })
+})
