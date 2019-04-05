@@ -22,6 +22,7 @@ export function getNuxtConfig(_options) {
   if (options.loading === true) {
     delete options.loading
   }
+
   if (
     options.router &&
     options.router.middleware &&
@@ -29,15 +30,19 @@ export function getNuxtConfig(_options) {
   ) {
     options.router.middleware = [options.router.middleware]
   }
+
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
   }
+
   if (typeof options.transition === 'string') {
     options.transition = { name: options.transition }
   }
+
   if (typeof options.layoutTransition === 'string') {
     options.layoutTransition = { name: options.layoutTransition }
   }
+
   if (typeof options.extensions === 'string') {
     options.extensions = [options.extensions]
   }
@@ -68,6 +73,11 @@ export function getNuxtConfig(_options) {
   }
 
   defaultsDeep(options, nuxtConfig)
+
+  // Sanitize router.base
+  if (!/\/$/.test(options.router.base)) {
+    options.router.base += '/'
+  }
 
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
@@ -221,7 +231,7 @@ export function getNuxtConfig(_options) {
     })
   }
 
-  // vue config
+  // Vue config
   const vueConfig = options.vue.config
 
   if (vueConfig.silent === undefined) {
