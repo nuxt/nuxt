@@ -74,7 +74,7 @@ export function getNuxtConfig(_options) {
 
   defaultsDeep(options, nuxtConfig)
 
-  // Sanetize router.base
+  // Sanitize router.base
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
