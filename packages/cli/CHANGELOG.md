@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/nuxt/nuxt.js/compare/v2.6.0...v2.6.1) (2019-04-04)
+
+
+### Bug Fixes
+
+* pin esm to 3.2.20 ([#5464](https://github.com/nuxt/nuxt.js/issues/5464)) ([53915c5](https://github.com/nuxt/nuxt.js/commit/53915c5))
+
+
+
+
+
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Features
+
+* **cli:** add `--quiet` option to nuxt generate command ([#5357](https://github.com/nuxt/nuxt.js/issues/5357)) ([91f4eb0](https://github.com/nuxt/nuxt.js/commit/91f4eb0))
+* **cli:** add internal _generate and _build options ([#5434](https://github.com/nuxt/nuxt.js/issues/5434)) ([516aea3](https://github.com/nuxt/nuxt.js/commit/516aea3))
+* **typescript:** detect typescript based on `tsconfig.json` ([#5412](https://github.com/nuxt/nuxt.js/issues/5412)) ([6ffc5c5](https://github.com/nuxt/nuxt.js/commit/6ffc5c5))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 **Note:** Version bump only for package @nuxt/cli

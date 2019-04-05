@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/nuxt/nuxt.js/compare/v2.6.0...v2.6.1) (2019-04-04)
+
+**Note:** Version bump only for package @nuxt/config
+
+
+
+
+
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* **build:** disable loading `babel.config.js` by default ([#5365](https://github.com/nuxt/nuxt.js/issues/5365)) ([64fa424](https://github.com/nuxt/nuxt.js/commit/64fa424))
+* add type definition for configuring forkTsChecker ([2c1444d](https://github.com/nuxt/nuxt.js/commit/2c1444d))
+
+
+### Features
+
+* **vue-renderer:** add csp meta tags ([#5354](https://github.com/nuxt/nuxt.js/issues/5354)) ([b978a37](https://github.com/nuxt/nuxt.js/commit/b978a37))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 

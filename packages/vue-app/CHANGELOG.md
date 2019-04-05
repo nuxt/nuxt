@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/nuxt/nuxt.js/compare/v2.6.0...v2.6.1) (2019-04-04)
+
+**Note:** Version bump only for package @nuxt/vue-app
+
+
+
+
+
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* **vue-app:** decode uri in `getlocation` ([#5337](https://github.com/nuxt/nuxt.js/issues/5337)) ([77dcfe6](https://github.com/nuxt/nuxt.js/commit/77dcfe6))
+* **vue-app:** prevent mounting page twice on redirect ([#5361](https://github.com/nuxt/nuxt.js/issues/5361)) ([2d73e8a](https://github.com/nuxt/nuxt.js/commit/2d73e8a))
+* fail in case of missing core-js dependency ([#5342](https://github.com/nuxt/nuxt.js/issues/5342)) ([439b914](https://github.com/nuxt/nuxt.js/commit/439b914))
+
+
+### Features
+
+* **babel-preset-app:** support specifying core-js version ([#5411](https://github.com/nuxt/nuxt.js/issues/5411)) ([159123f](https://github.com/nuxt/nuxt.js/commit/159123f))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 **Note:** Version bump only for package @nuxt/vue-app

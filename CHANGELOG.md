@@ -3,6 +3,56 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/nuxt/nuxt.js/compare/v2.6.0...v2.6.1) (2019-04-04)
+
+
+### Bug Fixes
+
+* pin esm to 3.2.20 ([#5464](https://github.com/nuxt/nuxt.js/issues/5464)) ([53915c5](https://github.com/nuxt/nuxt.js/commit/53915c5))
+
+
+
+
+
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* revert node-externals disabling in dev mode ([#5452](https://github.com/nuxt/nuxt.js/issues/5452)) ([6ce99d2](https://github.com/nuxt/nuxt.js/commit/6ce99d2))
+* **webpack:** prefer `main` over `module` field for server config ([#5446](https://github.com/nuxt/nuxt.js/issues/5446)) ([e155ea4](https://github.com/nuxt/nuxt.js/commit/e155ea4))
+* disable `node-externals` for dev mode ([#5414](https://github.com/nuxt/nuxt.js/issues/5414)) ([a5a1657](https://github.com/nuxt/nuxt.js/commit/a5a1657))
+* not override externals set by build.extend ([#5444](https://github.com/nuxt/nuxt.js/issues/5444)) ([1ae4333](https://github.com/nuxt/nuxt.js/commit/1ae4333))
+* **build:** disable loading `babel.config.js` by default ([#5365](https://github.com/nuxt/nuxt.js/issues/5365)) ([64fa424](https://github.com/nuxt/nuxt.js/commit/64fa424))
+* **builder:** await for renderer to load resources ([#5341](https://github.com/nuxt/nuxt.js/issues/5341)) ([caf5198](https://github.com/nuxt/nuxt.js/commit/caf5198))
+* **cli:** catch all possible errors thrown from proper-filelock ([#5347](https://github.com/nuxt/nuxt.js/issues/5347)) ([39bbe46](https://github.com/nuxt/nuxt.js/commit/39bbe46))
+* **renderer:** retry render if renderer is in loading or created state ([#5417](https://github.com/nuxt/nuxt.js/issues/5417)) ([8b99695](https://github.com/nuxt/nuxt.js/commit/8b99695))
+* **vue-app:** prevent mounting page twice on redirect ([#5361](https://github.com/nuxt/nuxt.js/issues/5361)) ([2d73e8a](https://github.com/nuxt/nuxt.js/commit/2d73e8a))
+* **vue-renderer:** add the csp hash if `unsafe-inline` hasn't been specified ([#5387](https://github.com/nuxt/nuxt.js/issues/5387)) ([97db6a4](https://github.com/nuxt/nuxt.js/commit/97db6a4))
+* add type definition for configuring forkTsChecker ([2c1444d](https://github.com/nuxt/nuxt.js/commit/2c1444d))
+* fail in case of missing core-js dependency ([#5342](https://github.com/nuxt/nuxt.js/issues/5342)) ([439b914](https://github.com/nuxt/nuxt.js/commit/439b914))
+* memory leak in dev mode ([#5399](https://github.com/nuxt/nuxt.js/issues/5399)) ([04ddcac](https://github.com/nuxt/nuxt.js/commit/04ddcac))
+* SyntaxError Unexpected token export in importing babel runtime helper ([#5401](https://github.com/nuxt/nuxt.js/issues/5401)) ([3b85dd9](https://github.com/nuxt/nuxt.js/commit/3b85dd9))
+* **vue-app:** decode uri in `getlocation` ([#5337](https://github.com/nuxt/nuxt.js/issues/5337)) ([77dcfe6](https://github.com/nuxt/nuxt.js/commit/77dcfe6))
+
+
+### Features
+
+* **babel-preset-app:** support specifying core-js version ([#5411](https://github.com/nuxt/nuxt.js/issues/5411)) ([159123f](https://github.com/nuxt/nuxt.js/commit/159123f))
+* **cli:** add `--quiet` option to nuxt generate command ([#5357](https://github.com/nuxt/nuxt.js/issues/5357)) ([91f4eb0](https://github.com/nuxt/nuxt.js/commit/91f4eb0))
+* **cli:** add internal _generate and _build options ([#5434](https://github.com/nuxt/nuxt.js/issues/5434)) ([516aea3](https://github.com/nuxt/nuxt.js/commit/516aea3))
+* **typescript:** detect typescript based on `tsconfig.json` ([#5412](https://github.com/nuxt/nuxt.js/issues/5412)) ([6ffc5c5](https://github.com/nuxt/nuxt.js/commit/6ffc5c5))
+* **vue-renderer:** add csp meta tags ([#5354](https://github.com/nuxt/nuxt.js/issues/5354)) ([b978a37](https://github.com/nuxt/nuxt.js/commit/b978a37))
+
+
+### Reverts
+
+* **core:** call ready to prevent breaking changes ([#5413](https://github.com/nuxt/nuxt.js/issues/5413)) ([001ba77](https://github.com/nuxt/nuxt.js/commit/001ba77))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 

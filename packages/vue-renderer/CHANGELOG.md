@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/nuxt/nuxt.js/compare/v2.6.0...v2.6.1) (2019-04-04)
+
+**Note:** Version bump only for package @nuxt/vue-renderer
+
+
+
+
+
+# [2.6.0](https://github.com/nuxt/nuxt.js/compare/v2.5.1...v2.6.0) (2019-04-04)
+
+
+### Bug Fixes
+
+* **builder:** await for renderer to load resources ([#5341](https://github.com/nuxt/nuxt.js/issues/5341)) ([caf5198](https://github.com/nuxt/nuxt.js/commit/caf5198))
+* **renderer:** retry render if renderer is in loading or created state ([#5417](https://github.com/nuxt/nuxt.js/issues/5417)) ([8b99695](https://github.com/nuxt/nuxt.js/commit/8b99695))
+* **vue-renderer:** add the csp hash if `unsafe-inline` hasn't been specified ([#5387](https://github.com/nuxt/nuxt.js/issues/5387)) ([97db6a4](https://github.com/nuxt/nuxt.js/commit/97db6a4))
+
+
+### Features
+
+* **vue-renderer:** add csp meta tags ([#5354](https://github.com/nuxt/nuxt.js/issues/5354)) ([b978a37](https://github.com/nuxt/nuxt.js/commit/b978a37))
+
+
+
+
+
 ## [2.5.1](https://github.com/nuxt/nuxt.js/compare/v2.5.0...v2.5.1) (2019-03-21)
 
 **Note:** Version bump only for package @nuxt/vue-renderer
