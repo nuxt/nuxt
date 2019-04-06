@@ -1,0 +1,41 @@
+{
+  "name": "nuxt-crud-with-lokijs",
+  "version": "1.0.0",
+  "description": "Nuxt CRUD app with Loki.js and Vuetify",
+  "author": "Huseyn Guliyev",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "lint": "eslint --fix --ext .js,.vue --ignore-path .gitignore .",
+    "precommit": "npm run lint"
+  },
+  "dependencies": {
+    "@nuxtjs/axios": "5.4.1",
+    "@nuxtjs/vuetify": "0.5.5",
+    "body-parser": "1.18.3",
+    "express": "4.16.4",
+    "lokijs": "1.5.6",
+    "nuxt": "2.6.1",
+    "vuetify": "1.5.9"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.0.1",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-loader": "^2.0.0",
+    "eslint-plugin-node": ">=7.0.1",
+    "eslint-plugin-prettier": "3.0.1",
+    "eslint-plugin-vue": "^5.0.0",
+    "prettier": "1.16.4",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2"
+  },
+  "keywords": [
+    "nuxt",
+    "vuetify",
+    "loki"
+  ]
+}
