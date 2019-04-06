@@ -1,4 +1,4 @@
-#Loki.js + Nuxt.js demo
+# Nuxt with Loki.js 
 
 This demo showcases building CRUD app with embedded json database
 [Loki.js](http://lokijs.org/) and featuring Vuetify. Also it uses Nuxt ServerMiddleware
