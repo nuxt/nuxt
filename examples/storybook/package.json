@@ -16,18 +16,18 @@
     "chart.js": "^2.7.1",
     "nuxt": "latest",
     "vue-chartjs": "^3.1.1",
-    "vuetify": "1.2.6"
+    "vuetify": "1.5.9"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^4.0.0-alpha.24",
-    "@storybook/addon-centered": "^4.0.0-alpha.24",
-    "@storybook/addon-knobs": "^4.0.0-alpha.24",
-    "@storybook/addon-links": "^4.0.0-alpha.24",
-    "@storybook/addon-notes": "^4.0.0-alpha.24",
-    "@storybook/addon-storyshots": "^4.0.0-alpha.24",
-    "@storybook/addon-viewport": "^4.0.0-alpha.24",
-    "@storybook/addons": "^4.0.0-alpha.24",
-    "@storybook/vue": "^4.0.0-alpha.24",
+    "@storybook/addon-actions": "^5.0.6",
+    "@storybook/addon-centered": "^5.0.6",
+    "@storybook/addon-knobs": "^5.0.6",
+    "@storybook/addon-links": "^5.0.6",
+    "@storybook/addon-notes": "^5.0.6",
+    "@storybook/addon-storyshots": "^5.0.6",
+    "@storybook/addon-viewport": "^5.0.6",
+    "@storybook/addons": "^5.0.6",
+    "@storybook/vue": "^5.0.6",
     "babel-preset-vue": "^2.0.2",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.1"

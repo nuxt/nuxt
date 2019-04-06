@@ -1,14 +1,14 @@
 const path = require('path')
 const nuxtConf = require('../nuxt.config')
 
-module.exports = (sBaseConfig, configType, defaultConfig) => {
+module.exports = ({ config, mode }) => {
   const srcDir = `../${nuxtConf.srcDir || ''}`
   const rootDir = `../${nuxtConf.rootDir || ''}`
 
-  Object.assign(defaultConfig.resolve.alias, {
-    '~~': path.resolve(__dirname, rootDir),
-    '~': path.resolve(__dirname, srcDir)
+  Object.assign(config.resolve.alias, {
+    "~~": path.resolve(__dirname, rootDir),
+    "~": path.resolve(__dirname, srcDir)
   })
 
-  return defaultConfig
+  return config
 }
