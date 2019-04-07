@@ -1,5 +1,4 @@
 import path from 'path'
-import consola from 'consola'
 
 const localNodeModules = path.resolve(process.cwd(), 'node_modules')
 
