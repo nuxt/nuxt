@@ -30,8 +30,9 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/', req = {} }) {
-    const cacheKey = `${req.modernMode ? 'modern:' : 'legacy:'}${url}`
+  async render({ url = '/', req = {}, _generate }) {
+    const modern = req.modernMode || _generate
+    const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
     if (meta) {
@@ -75,7 +76,7 @@ export default class SPAMetaRenderer {
     meta.resourceHints = ''
 
     const { resources: { modernManifest, clientManifest } } = this.renderer.context
-    const manifest = req.modernMode ? modernManifest : clientManifest
+    const manifest = modern ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
 
@@ -90,7 +91,7 @@ export default class SPAMetaRenderer {
         meta.preloadFiles = manifest.initial
           .map(SPAMetaRenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
-          .map(file => ({ ...file, modern: req.modernMode }))
+          .map(file => ({ ...file, modern }))
 
         meta.resourceHints += meta.preloadFiles
           .map(({ file, extension, fileWithoutQuery, asType, modern }) => {
