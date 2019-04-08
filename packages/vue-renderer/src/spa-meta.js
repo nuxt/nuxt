@@ -31,7 +31,7 @@ export default class SPAMetaRenderer {
   }
 
   async render({ url = '/', req = {}, _generate }) {
-    const modern = req.modernMode || _generate
+    const modern = req.modernMode || (this.options.modern && _generate)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
