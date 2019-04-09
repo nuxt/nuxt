@@ -64,7 +64,7 @@
     "jest": "^24.7.1",
     "jsdom": "^14.0.0",
     "klaw-sync": "^6.0.0",
-    "lerna": "^3.13.1",
+    "lerna": "^3.13.2",
     "lodash": "^4.17.11",
     "node-fetch": "^2.3.0",
     "puppeteer-core": "^1.14.0",
