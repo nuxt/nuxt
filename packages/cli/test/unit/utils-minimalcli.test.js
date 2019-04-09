@@ -1,5 +1,5 @@
 import { consola } from '../utils'
-import * as utils from '../../src/utils'
+import { showBanner } from '../../src/utils/banner'
 
 jest.mock('std-env', () => ({
   test: false,
@@ -15,7 +15,7 @@ describe('cli/utils', () => {
       { url: 'second' }
     ]
 
-    utils.showBanner({
+    showBanner({
       options: {
         cli: {}
       },

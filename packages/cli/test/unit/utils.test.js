@@ -1,6 +1,8 @@
 import { getDefaultNuxtConfig } from '@nuxt/config'
 import { consola } from '../utils'
+import { loadNuxtConfig } from '../../src/utils/config'
 import * as utils from '../../src/utils'
+import { showBanner } from '../../src/utils/banner'
 import * as fmt from '../../src/utils/formatting'
 
 jest.mock('std-env', () => ({
@@ -18,7 +20,7 @@ describe('cli/utils', () => {
       universal: true
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = await loadNuxtConfig(argv)
     expect(options.rootDir).toBe(process.cwd())
     expect(options.mode).toBe('universal')
     expect(options.server.host).toBe('localhost')
@@ -33,7 +35,7 @@ describe('cli/utils', () => {
       spa: true
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = await loadNuxtConfig(argv)
     expect(options.testOption).toBe(true)
     expect(options.rootDir).toBe('/some/path')
     expect(options.mode).toBe('spa')
@@ -48,7 +50,7 @@ describe('cli/utils', () => {
       'config-file': '../fixtures/nuxt.doesnt-exist.js'
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = await loadNuxtConfig(argv)
     expect(options.testOption).not.toBeDefined()
 
     expect(consola.fatal).toHaveBeenCalledTimes(1)
@@ -64,7 +66,7 @@ describe('cli/utils', () => {
       'unix-socket': '/var/run/async.sock'
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = await loadNuxtConfig(argv)
     expect(options.testOption).toBe(true)
     expect(options.mode).toBe('supercharged')
     expect(options.server.host).toBe('async-host')
@@ -78,7 +80,7 @@ describe('cli/utils', () => {
       'config-file': '../fixtures/nuxt.async-error.js'
     }
 
-    const options = await utils.loadNuxtConfig(argv)
+    const options = await loadNuxtConfig(argv)
     expect(options.testOption).not.toBeDefined()
 
     expect(consola.error).toHaveBeenCalledTimes(1)
@@ -130,7 +132,7 @@ describe('cli/utils', () => {
       { url: 'second' }
     ]
 
-    utils.showBanner({
+    showBanner({
       options: {
         cli: {
           badgeMessages
