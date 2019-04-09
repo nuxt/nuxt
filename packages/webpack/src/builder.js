@@ -61,7 +61,7 @@ export class WebpackBundler {
     const { styleResources } = this.buildContext.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
-        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
+        'Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.',
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
       for (const ext of Object.keys(styleResources)) {
