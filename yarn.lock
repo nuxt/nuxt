@@ -1493,15 +1493,15 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.2.0.tgz#fbdfd75814a9935f1827574f2b4c924ac3de81c9"
-  integrity sha512-QprkUsdOMqwQuw4OeQUX/Fj4LOyLSAAi0aa6mxxpITjfLScTp6Bx2Z+flG0cU19w0L2WSZtdqfQtjY6tYaTVuw==
+"@nuxt/loading-screen@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.3.0.tgz#ec438337690efffea9508cebcca35675f5445110"
+  integrity sha512-h0Z5g2MxJCXyeRmzx3Niwkv+/HRQEkKYpL54cN9cHYc4FUG/NBxeIIJgqbh1ih7y5cg0jdDboL0izZrbFsBtiA==
   dependencies:
     connect "^3.6.6"
     fs-extra "^7.0.1"
     serve-static "^1.13.2"
-    ws "^6.2.0"
+    ws "^6.2.1"
 
 "@nuxt/opencollective@^0.2.2":
   version "0.2.2"
@@ -11408,7 +11408,7 @@ ws@^5.2.0:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@^6.0.0, ws@^6.1.0, ws@^6.1.2, ws@^6.2.0:
+ws@^6.0.0, ws@^6.1.0, ws@^6.1.2, ws@^6.2.1:
   version "6.2.1"
   resolved "https://registry.npmjs.org/ws/-/ws-6.2.1.tgz#442fdf0a47ed64f59b6a5d8ff130f4748ed524fb"
   integrity sha512-GIyAXC2cB7LjvpgMt9EKS2ldqr0MTrORaleiOno6TweZ6r3TKtoFQWay/2PceJ3RuBasOHzXNn5Lrw1X0bEjqA==
