@@ -43,6 +43,9 @@
     },
     {
       "name": "Kevin Marrec (@kevinmarrec)"
+    },
+    {
+      "name": "Pim (@pimlie)"
     }
   ],
   "files": [
@@ -58,7 +61,7 @@
     "vue": "^2.6.10",
     "vue-meta": "^1.6.0",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.0.2",
+    "vue-router": "^3.0.3",
     "vuex": "^3.1.0"
   },
   "engines": {
