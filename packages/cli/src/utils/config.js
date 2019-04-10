@@ -70,7 +70,7 @@ export async function loadNuxtConfig(argv) {
 
 function clearRequireCache(id) {
   const entry = require.cache[id]
-  if (!entry || /node_modules/.test(id)) {
+  if (!entry || id.includes('node_modules')) {
     return
   }
 
@@ -83,7 +83,7 @@ function clearRequireCache(id) {
 
 function scanRequireTree(id, files = new Set()) {
   const entry = require.cache[id]
-  if (!entry || /node_modules/.test(id) || files.has(id)) {
+  if (!entry || id.includes('node_modules') || files.has(id)) {
     return files
   }
 
