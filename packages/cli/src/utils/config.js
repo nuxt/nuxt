@@ -74,6 +74,13 @@ function clearRequireCache(id) {
     return
   }
 
+  if (entry.parent) {
+    const i = entry.parent.children.findIndex(e => e.id === id)
+    if (i > -1) {
+      entry.parent.children.splice(i, 1)
+    }
+  }
+
   for (const child of entry.children) {
     clearRequireCache(child.id)
   }
