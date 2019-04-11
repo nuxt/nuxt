@@ -2,7 +2,8 @@ import consola from 'consola'
 import chalk from 'chalk'
 import opener from 'opener'
 import { common, server } from '../options'
-import { showBanner, eventsMapping, formatPath } from '../utils'
+import { eventsMapping, formatPath } from '../utils'
+import { showBanner } from '../utils/banner'
 
 export default {
   name: 'dev',

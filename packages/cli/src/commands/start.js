@@ -1,5 +1,5 @@
 import { common, server } from '../options'
-import { showBanner } from '../utils'
+import { showBanner } from '../utils/banner'
 
 export default {
   name: 'start',
