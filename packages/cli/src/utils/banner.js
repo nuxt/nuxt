@@ -1,10 +1,10 @@
 import consola from 'consola'
-import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 import chalk from 'chalk'
 import { successBox } from './formatting'
+import { getMemoryUsage } from './memory'
 
-export function showBanner(nuxt) {
+export function showBanner(nuxt, showMemoryUsage = true) {
   if (env.test) {
     return
   }
@@ -29,9 +29,9 @@ export function showBanner(nuxt) {
     titleLines.push(`TypeScript support is ${chalk.green.bold('enabled')}`)
   }
 
-  // https://nodejs.org/api/process.html#process_process_memoryusage
-  const { heapUsed, rss } = process.memoryUsage()
-  titleLines.push(`Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`)
+  if (showMemoryUsage) {
+    titleLines.push(getMemoryUsage())
+  }
 
   // Listeners
   for (const listener of nuxt.server.listeners) {

@@ -4,6 +4,7 @@ import opener from 'opener'
 import { common, server } from '../options'
 import { eventsMapping, formatPath } from '../utils'
 import { showBanner } from '../utils/banner'
+import { showMemoryUsage } from '../utils/memory'
 
 export default {
   name: 'dev',
@@ -42,6 +43,7 @@ export default {
     // Setup hooks
     nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
+    nuxt.hook('build:done', showMemoryUsage)
 
     // Wait for nuxt to be ready
     await nuxt.ready()
@@ -50,7 +52,7 @@ export default {
     await nuxt.server.listen()
 
     // Show banner when listening
-    showBanner(nuxt)
+    showBanner(nuxt, false)
 
     // Opens the server listeners url in the default browser (only once)
     if (argv.open) {
