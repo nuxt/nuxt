@@ -6,7 +6,6 @@ import defaultsDeep from 'lodash/defaultsDeep'
 import { getDefaultNuxtConfig } from '@nuxt/config'
 import boxen from 'boxen'
 import chalk from 'chalk'
-import prettyBytes from 'pretty-bytes'
 import env from 'std-env'
 
 const _require = esm(module, {
@@ -94,10 +93,6 @@ export function showBanner(nuxt) {
 
   // Running mode
   lines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
-
-  // https://nodejs.org/api/process.html#process_process_memoryusage
-  const { heapUsed, rss } = process.memoryUsage()
-  lines.push(`Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`)
 
   // Listeners
   lines.push('')
