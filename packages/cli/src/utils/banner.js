@@ -2,7 +2,7 @@ import consola from 'consola'
 import env from 'std-env'
 import chalk from 'chalk'
 import { successBox } from './formatting'
-import { getMemoryUsage } from './memory'
+import { getFormattedMemoryUsage } from './memory'
 
 export function showBanner(nuxt, showMemoryUsage = true) {
   if (env.test) {
@@ -30,7 +30,7 @@ export function showBanner(nuxt, showMemoryUsage = true) {
   }
 
   if (showMemoryUsage) {
-    titleLines.push(getMemoryUsage())
+    titleLines.push(getFormattedMemoryUsage())
   }
 
   // Listeners
