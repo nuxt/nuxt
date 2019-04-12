@@ -44,7 +44,7 @@ export default {
       if (Component && Component.options && Component.options.key) {
         return (typeof Component.options.key === 'function' ? Component.options.key(this.$route) : Component.options.key)
       }
-      return this.$route.path
+      return this.$route.fullPath
     }
   },
   beforeCreate() {
