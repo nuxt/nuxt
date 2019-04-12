@@ -158,6 +158,7 @@ Object {
     "interval": 0,
     "routes": Array [],
     "subFolders": true,
+    "mergeOutputLog": false,
   },
   "globalName": "nuxt",
   "globals": Object {
