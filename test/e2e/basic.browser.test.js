@@ -123,10 +123,19 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('User: 1')
   })
 
-  test('/scroll-to-top', async () => {
+  test('/scroll-to-top with scrollToTop set to true', async () => {
     const page = await browser.page(url('/scroll-to-top'))
     await page.evaluate(() => window.scrollBy(0, window.innerHeight))
-    await page.nuxt.navigate('/scroll-to-top/other')
+    await page.nuxt.navigate('/scroll-to-top/scroll-to-top-true')
+    const pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBe(0)
+    page.close()
+  })
+
+  test('/scroll-to-top with scrollToTop set to false', async () => {
+    const page = await browser.page(url('/scroll-to-top'))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.nuxt.navigate('/scroll-to-top/scroll-to-top-false')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
     page.close()
