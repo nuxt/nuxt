@@ -96,6 +96,7 @@ export default class Generator {
 
   async generateRoutes(routes) {
     const errors = []
+    let generatedRoutesCount = 0
 
     // Start generate process
     while (routes.length) {
@@ -105,9 +106,16 @@ export default class Generator {
           .splice(0, this.options.generate.concurrency)
           .map(async ({ route, payload }) => {
             await waitFor(n++ * this.options.generate.interval)
-            await this.generateRoute({ route, payload, errors })
+            const routeGenerated = await this.generateRoute({ route, payload, errors })
+            if (routeGenerated) {
+              generatedRoutesCount++
+            }
           })
       )
+    }
+
+    if (this.options.generate.mergeOutputLog) {
+      consola.success('Generated ' + generatedRoutesCount + ' pages')
     }
 
     // Improve string representation for errors
@@ -270,7 +278,7 @@ export default class Generator {
     if (pageErrors.length) {
       consola.error('Error generating ' + route)
       errors.push(...pageErrors)
-    } else {
+    } else if (!this.options.generate.mergeOutputLog) {
       consola.success('Generated ' + route)
     }
 
