@@ -6,6 +6,9 @@
     <NuxtLink to="/scroll-to-top/scroll-to-top-false">
       go to scroll-to-top-false
     </NuxtLink>
+    <NuxtLink to="/scroll-to-top?same-page">
+      go to the same page
+    </NuxtLink>
   </div>
 </template>
 
