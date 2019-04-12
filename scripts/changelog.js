@@ -37,7 +37,7 @@ async function main() {
   const markdown = generateMarkDown(commits)
 
   process.stdout.write('\n\n' + markdown + '\n\n')
-  await writeFile('RELEASE_NOTES.md', markdown, 'utf-8')
+  await writeFile('CHANGELOG.md', markdown, 'utf-8')
 }
 
 function execCommand(cmd, args) {

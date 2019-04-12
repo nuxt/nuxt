@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn clean && yarn pkg",
+    "changelog": "node -r esm scripts/changelog.js",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
     "clean:build": "rimraf distributions/*/dist packages/*/dist",
     "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
@@ -28,8 +29,7 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
     "test:types": "tsc -p test/types",
-    "test:unit": "jest test/unit packages --forceExit",
-    "release-notes": "node -r esm scripts/release-notes.js"
+    "test:unit": "jest test/unit packages --forceExit"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
