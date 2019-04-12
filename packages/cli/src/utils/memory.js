@@ -9,5 +9,6 @@ export function getMemoryUsage() {
 }
 
 export function showMemoryUsage() {
-  consola.info(getMemoryUsage())
+  const { heap, rss } = getMemoryUsage()
+  consola.info(`Memory usage: ${chalk.bold(prettyBytes(heap))} (RSS: ${prettyBytes(rss)})`)
 }
