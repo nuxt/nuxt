@@ -3,6 +3,7 @@ import { consola } from '../utils'
 import { loadNuxtConfig } from '../../src/utils/config'
 import * as utils from '../../src/utils'
 import { showBanner } from '../../src/utils/banner'
+import { showMemoryUsage } from '../../src/utils/memory'
 import * as fmt from '../../src/utils/formatting'
 
 jest.mock('std-env', () => ({
@@ -121,7 +122,7 @@ describe('cli/utils', () => {
     expect(fmt.indent(4, '-')).toBe('----')
   })
 
-  test('showBanner prints full-info box', () => {
+  test('showBanner prints full-info box with memory usage', () => {
     const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
     const successBox = jest.fn().mockImplementation((m, t) => t + m)
     jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
@@ -148,8 +149,39 @@ describe('cli/utils', () => {
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening on: ${listeners[0].url}`))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening on: ${listeners[1].url}`))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('badgeMessage'))
     stdout.mockRestore()
+  })
+
+  test('showBanner doesnt print memory usage', () => {
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    const successBox = jest.fn().mockImplementation((m, t) => t + m)
+    jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
+
+    showBanner({
+      options: {
+        cli: {
+          badgeMessages: []
+        }
+      },
+      server: {
+        listeners: []
+      }
+    }, false)
+
+    expect(successBox).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).not.toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
+    stdout.mockRestore()
+  })
+
+  test('showMemoryUsage prints memory usage', () => {
+    showMemoryUsage()
+
+    expect(consola.info).toHaveBeenCalledTimes(1)
+    expect(consola.info).toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
   })
 
   test('forceExit exits after timeout', () => {
