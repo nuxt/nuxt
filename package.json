@@ -28,7 +28,8 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
     "test:types": "tsc -p test/types",
-    "test:unit": "jest test/unit packages --forceExit"
+    "test:unit": "jest test/unit packages --forceExit",
+    "release-notes": "node -r esm scripts/release-notes.js"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
@@ -54,6 +55,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.2.2",
     "esm": "3.2.20",
+    "execa": "^1.0.0",
     "express": "^4.16.4",
     "finalhandler": "^1.1.1",
     "fork-ts-checker-webpack-plugin": "^1.0.2",
