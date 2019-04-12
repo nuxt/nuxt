@@ -5,7 +5,7 @@ import prettyBytes from 'pretty-bytes'
 export function getMemoryUsage() {
   // https://nodejs.org/api/process.html#process_process_memoryusage
   const { heapUsed, rss } = process.memoryUsage()
-  return `Memory usage: ${chalk.bold(prettyBytes(heapUsed))} (RSS: ${prettyBytes(rss)})`
+  return { heap: heapUsed, rss }
 }
 
 export function showMemoryUsage() {
