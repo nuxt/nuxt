@@ -1476,10 +1476,10 @@
   resolved "https://registry.npmjs.org/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@nuxt/devalue@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.2.tgz#1d7993f9a6029df07f597a20246b16282302b156"
-  integrity sha512-T3S20YKOG0bzhvFRuGWqXLjqnwTczvRns5BgzHKRosijWHjl6tOpWCIr+2PFC5YQ3gTE4c5ZOLG5wOEcMLvn1w==
+"@nuxt/devalue@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.3.tgz#0a814d7e10519ffcb1a2a9930add831f91783092"
+  integrity sha512-iA25xn409pguKhJwfNKQNCzWDZS44yhLcuVPpfy2CQ4xMqrJRpBxePTpkdCRxf7/m66M3rmCgkDZlvex4ygc6w==
   dependencies:
     consola "^2.5.6"
 
@@ -4364,10 +4364,10 @@ eslint-import-resolver-node@^0.3.2:
     debug "^2.6.9"
     resolve "^1.5.0"
 
-eslint-module-utils@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.npmjs.org/eslint-module-utils/-/eslint-module-utils-2.3.0.tgz#546178dab5e046c8b562bbb50705e2456d7bda49"
-  integrity sha512-lmDJgeOOjk8hObTysjqH7wyMi+nsHwwvfBykwfhjR1LNdd7C2uFJBvx4OpWYpXOw4df1yE1cDEVd1yLHitk34w==
+eslint-module-utils@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.npmjs.org/eslint-module-utils/-/eslint-module-utils-2.4.0.tgz#8b93499e9b00eab80ccb6614e69f03678e84e09a"
+  integrity sha512-14tltLm38Eu3zS+mt0KvILC3q8jyIAH518MlG+HO0p+yK885Lb1UHTY/UgR91eOyGdmxAPb+OLoW4znqIT6Ndw==
   dependencies:
     debug "^2.6.8"
     pkg-dir "^2.0.0"
@@ -4389,17 +4389,17 @@ eslint-plugin-es@^1.3.1:
     eslint-utils "^1.3.0"
     regexpp "^2.0.1"
 
-eslint-plugin-import@^2.17.0:
-  version "2.17.0"
-  resolved "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.17.0.tgz#bdf6598aded839a27454d824b0758fd46f80eb72"
-  integrity sha512-JCsOtNwPYUoeZPlSr8t0+uCU5OVlHh+dIBn8Rw7FiOPjCECG+QzDIKDqshbyJE6CYoj9wpcstEl8vUY7rXkqVA==
+eslint-plugin-import@^2.17.1:
+  version "2.17.1"
+  resolved "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.17.1.tgz#b888feb4d9b3ee155113c8dccdd4bec5db33bdf4"
+  integrity sha512-lzD9uvRvW4MsHzIOMJEDSb5MOV9LzgxRPBaovvOhJqzgxRHYfGy9QOrMuwHIh5ehKFJ7Z3DcrcGKDQ0IbP0EdQ==
   dependencies:
     array-includes "^3.0.3"
     contains-path "^0.1.0"
     debug "^2.6.9"
     doctrine "1.5.0"
     eslint-import-resolver-node "^0.3.2"
-    eslint-module-utils "^2.3.0"
+    eslint-module-utils "^2.4.0"
     has "^1.0.3"
     lodash "^4.17.11"
     minimatch "^3.0.4"
@@ -4733,10 +4733,10 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-extract-css-chunks-webpack-plugin@^4.3.0:
-  version "4.3.0"
-  resolved "https://registry.npmjs.org/extract-css-chunks-webpack-plugin/-/extract-css-chunks-webpack-plugin-4.3.0.tgz#01fb5ea225a78d5bd51e29b191dc1248ab320957"
-  integrity sha512-U2mCuqF9JKmyQydQQUy+tsCVCeuysgIZNZHd0eeTgIgq6gSqCnS9eaCpknyLVl3aRr8y2gkvRPzpuHS7AdvK0Q==
+extract-css-chunks-webpack-plugin@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.npmjs.org/extract-css-chunks-webpack-plugin/-/extract-css-chunks-webpack-plugin-4.3.1.tgz#da947a26062f985aa47aafffce1d3f56f923f9f2"
+  integrity sha512-dSzNLh4UueMcJAA/L2CX+7l3ntpOnpvoDxD2gfHVsf8e1ZwOXI+r4QoFFNwCSblAR1MmK485VMqswpEtzW6wYQ==
   dependencies:
     loader-utils "^1.1.0"
     lodash "^4.17.11"
@@ -5589,10 +5589,15 @@ ignore@^4.0.6:
   resolved "https://registry.npmjs.org/ignore/-/ignore-4.0.6.tgz#750e3db5862087b4737ebac8207ffd1ef27b25fc"
   integrity sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==
 
-ignore@^5.0.2, ignore@^5.0.6:
+ignore@^5.0.2:
   version "5.0.6"
   resolved "https://registry.npmjs.org/ignore/-/ignore-5.0.6.tgz#562dacc7ec27d672dde433aa683c543b24c17694"
   integrity sha512-/+hp3kUf/Csa32ktIaj0OlRqQxrgs30n62M90UBpNd9k+ENEch5S+hmbW3DtcJGz3sYFTh4F3A6fQ0q7KWsp4w==
+
+ignore@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/ignore/-/ignore-5.1.0.tgz#a949efb645e5d67fd78e46f470bee6b8c5d862f9"
+  integrity sha512-dJEmMwloo0gq40chdtDmE4tMp67ZGwN7MFTgjNqWi2VHEi5Ya6JkuvPWasjcAIm7lg+2if8xxn5R199wspcplg==
 
 import-cwd@^2.0.0:
   version "2.1.0"

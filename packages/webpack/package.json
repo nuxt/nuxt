@@ -20,7 +20,7 @@
     "css-loader": "^2.1.1",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
-    "extract-css-chunks-webpack-plugin": "^4.3.0",
+    "extract-css-chunks-webpack-plugin": "^4.3.1",
     "file-loader": "^3.0.1",
     "fs-extra": "^7.0.1",
     "glob": "^7.1.3",

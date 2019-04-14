@@ -9,7 +9,7 @@
   "main": "dist/core.js",
   "dependencies": {
     "@nuxt/config": "2.6.1",
-    "@nuxt/devalue": "^1.2.2",
+    "@nuxt/devalue": "^1.2.3",
     "@nuxt/server": "2.6.1",
     "@nuxt/utils": "2.6.1",
     "@nuxt/vue-renderer": "2.6.1",
