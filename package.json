@@ -47,7 +47,7 @@
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-multiplexer": "^1.0.4",
-    "eslint-plugin-import": "^2.17.0",
+    "eslint-plugin-import": "^2.17.1",
     "eslint-plugin-jest": "^22.4.1",
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.1.1",
