@@ -22,6 +22,7 @@ export function getNuxtConfig(_options) {
   if (options.loading === true) {
     delete options.loading
   }
+
   if (
     options.router &&
     options.router.middleware &&
@@ -29,15 +30,19 @@ export function getNuxtConfig(_options) {
   ) {
     options.router.middleware = [options.router.middleware]
   }
+
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
   }
+
   if (typeof options.transition === 'string') {
     options.transition = { name: options.transition }
   }
+
   if (typeof options.layoutTransition === 'string') {
     options.layoutTransition = { name: options.layoutTransition }
   }
+
   if (typeof options.extensions === 'string') {
     options.extensions = [options.extensions]
   }
@@ -69,6 +74,11 @@ export function getNuxtConfig(_options) {
 
   defaultsDeep(options, nuxtConfig)
 
+  // Sanitize router.base
+  if (!/\/$/.test(options.router.base)) {
+    options.router.base += '/'
+  }
+
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
   const hasGenerateDir = isNonEmptyString(options.generate.dir)
@@ -86,8 +96,14 @@ export function getNuxtConfig(_options) {
     options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
-  // Watch for _nuxtConfigFile changes
-  options.watch.push(options._nuxtConfigFile)
+  if (!options._nuxtConfigFiles) {
+    options._nuxtConfigFiles = [
+      options._nuxtConfigFile
+    ]
+  }
+
+  // Watch for config file changes
+  options.watch.push(...options._nuxtConfigFiles)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
@@ -221,7 +237,7 @@ export function getNuxtConfig(_options) {
     })
   }
 
-  // vue config
+  // Vue config
   const vueConfig = options.vue.config
 
   if (vueConfig.silent === undefined) {
