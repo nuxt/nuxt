@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/generator",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "main": "dist/generator.js",
   "dependencies": {
-    "@nuxt/utils": "2.6.1",
+    "@nuxt/utils": "2.6.2",
     "chalk": "^2.4.2",
     "consola": "^2.6.0",
     "fs-extra": "^7.0.1",
