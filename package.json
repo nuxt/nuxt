@@ -83,7 +83,7 @@
     "sort-package-json": "^1.22.1",
     "ts-jest": "^24.0.2",
     "ts-loader": "^5.3.3",
-    "ts-node": "^8.0.3",
+    "ts-node": "^8.1.0",
     "tslint": "^5.15.0",
     "typescript": "^3.4.3",
     "vue-jest": "^4.0.0-beta.2",
