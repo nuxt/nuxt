@@ -2,6 +2,7 @@ import consola from 'consola'
 import execa from 'execa'
 import groupBy from 'lodash/groupBy'
 import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import { writeFile } from 'fs-extra'
 
 const types = {
@@ -14,6 +15,19 @@ const types = {
   chore: { title: 'Chore' },
   test: { title: 'Tests' }
 }
+
+const knownAuthors = [
+  'chopin',
+  'parsa',
+  'clark',
+  'galvez',
+  'lichter',
+  'molotkov',
+  'marrec',
+  'pim'
+]
+
+const isKnownAuthor = name => Boolean(knownAuthors.find(n => name.toLowerCase().includes(n)))
 
 const allowedTypes = Object.keys(types)
 
@@ -50,11 +64,12 @@ async function getLastGitTag() {
 }
 
 async function getGitDiff(from, to) {
-  const r = await execCommand('git', ['--no-pager', 'log', `${from}...${to}`, '--pretty=%s|%h'])
+  // # https://git-scm.com/docs/pretty-formats
+  const r = await execCommand('git', ['--no-pager', 'log', `${from}...${to}`, '--pretty=%s|%h|%an|%ae'])
   return r.split('\n').map((line) => {
-    const [message, commit] = line.split('|')
+    const [message, commit, authorName, authorEmail] = line.split('|')
 
-    return { message, commit }
+    return { message, commit, authorName, authorEmail }
   })
 }
 
@@ -81,11 +96,11 @@ function parseCommits(commits) {
     type = type.split('(')[0]
 
     return {
+      ...commit,
       message,
       type,
       scope,
-      references,
-      commit: commit.commit
+      references
     }
   })
 }
@@ -104,6 +119,12 @@ function generateMarkDown(commits) {
     const { title } = types[type]
     markdown += '\n\n' + '## ' + title + '\n\n'
     markdown += sortBy(group, 'scope').map(formatCommitForMarkdown).join('\n')
+  }
+
+  const authors = sortBy(uniq(commits.map(commit => commit.authorName).filter(an => !isKnownAuthor(an))))
+  if (authors.length) {
+    markdown += '\n\n' + '## ' + 'Thanks to' + '\n\n'
+    markdown += authors.map(name => '- ' + name).join('\n')
   }
 
   return markdown.trim()
