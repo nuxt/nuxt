@@ -96,8 +96,14 @@ export function getNuxtConfig(_options) {
     options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
-  // Watch for _nuxtConfigFile changes
-  options.watch.push(options._nuxtConfigFile)
+  if (!options._nuxtConfigFiles) {
+    options._nuxtConfigFiles = [
+      options._nuxtConfigFile
+    ]
+  }
+
+  // Watch for config file changes
+  options.watch.push(...options._nuxtConfigFiles)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
