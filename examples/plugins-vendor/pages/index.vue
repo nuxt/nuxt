@@ -16,7 +16,7 @@
 <script>
 let miniToastr
 if (process.client) {
-  miniToastr = require('mini-toastr')
+  miniToastr = require('mini-toastr').default
 }
 
 export default {
