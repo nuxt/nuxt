@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/typescript",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -21,8 +21,8 @@
     "@types/webpack-bundle-analyzer": "^2.13.1",
     "@types/webpack-dev-middleware": "^2.0.2",
     "@types/webpack-hot-middleware": "^2.16.5",
-    "consola": "^2.5.8",
-    "fork-ts-checker-webpack-plugin": "^1.0.1",
+    "consola": "^2.6.0",
+    "fork-ts-checker-webpack-plugin": "^1.0.2",
     "fs-extra": "^7.0.1",
     "ts-loader": "^5.3.3",
     "typescript": "^3.4.3"
