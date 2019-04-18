@@ -47,7 +47,6 @@ export function getNuxtConfig(_options) {
     options.pageTransition = { name: options.pageTransition }
   }
 
-
   if (typeof options.layoutTransition === 'string') {
     options.layoutTransition = { name: options.layoutTransition }
   }

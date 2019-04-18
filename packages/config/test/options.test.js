@@ -66,7 +66,7 @@ describe('config: options', () => {
       pageTransition: 'test-tran',
       layoutTransition: 'test-layout-tran'
     })
-    expect(transition).toMatchObject({ name: 'test-tran' })
+    expect(pageTransition).toMatchObject({ name: 'test-tran' })
     expect(layoutTransition).toMatchObject({ name: 'test-layout-tran' })
   })
 
