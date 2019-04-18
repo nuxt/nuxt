@@ -53,9 +53,17 @@ describe('config: options', () => {
     })
   })
 
-  test('should transform transition/layoutTransition to name', () => {
-    const { transition, layoutTransition } = getNuxtConfig({
-      transition: 'test-tran',
+  test('[Compatibility] should transform transition to pageTransition', () => {
+    const { pageTransition, transition } = getNuxtConfig({
+      transition: 'test-tran'
+    })
+    expect(pageTransition).toMatchObject({ name: 'test-tran' })
+    expect(transition).toBeUndefined()
+  })
+
+  test('should transform pageTransition/layoutTransition to name', () => {
+    const { pageTransition, layoutTransition } = getNuxtConfig({
+      pageTransition: 'test-tran',
       layoutTransition: 'test-layout-tran'
     })
     expect(transition).toMatchObject({ name: 'test-tran' })

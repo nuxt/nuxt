@@ -37,7 +37,7 @@ export default class TemplateContext {
         typeof options.loading === 'string'
           ? builder.relativeToBuild(options.srcDir, options.loading)
           : options.loading,
-      transition: options.transition,
+      pageTransition: options.pageTransition,
       layoutTransition: options.layoutTransition,
       dir: options.dir,
       components: {
