@@ -1,5 +1,3 @@
-import consola from 'consola'
-
 jest.mock('chalk', () => ({
   green: {
     bold: modern => `greenBold(${modern})`
@@ -45,40 +43,7 @@ describe('server: modernMiddleware', () => {
     context.options.modern = 'server'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
-    expect(ctx.req.modernMode).toEqual(false)
-  })
-
-  test('should detect client modern build and display message', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
-
-    context.resources.modernManifest = {}
-    modernMiddleware(ctx.req, ctx.res, ctx.next)
-    expect(context.options.modern).toEqual('client')
-    expect(consola.info).toBeCalledWith('Modern bundles are detected. Modern mode (greenBold(client)) is enabled now.')
-  })
-
-  test('should detect server modern build and display message', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
-
-    context.options.render.ssr = true
-    context.resources.modernManifest = {}
-    modernMiddleware(ctx.req, ctx.res, ctx.next)
-    expect(context.options.modern).toEqual('server')
-    expect(consola.info).toBeCalledWith('Modern bundles are detected. Modern mode (greenBold(server)) is enabled now.')
-  })
-
-  test('should not detect modern browser if modern build is not found', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
-
-    modernMiddleware(ctx.req, ctx.res, ctx.next)
-
-    expect(ctx.req.modernMode).toBeUndefined()
+    expect(ctx.req._modern).toEqual(false)
   })
 
   test('should not detect modern browser if connect has been detected', () => {
@@ -91,7 +56,7 @@ describe('server: modernMiddleware', () => {
     context.options.modern = 'server'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
-    expect(ctx.req.modernMode).toEqual(true)
+    expect(ctx.req._modern).toEqual(true)
   })
 
   test('should detect modern browser based on user-agent', () => {
@@ -107,7 +72,7 @@ describe('server: modernMiddleware', () => {
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(true)
-    expect(ctx.req.modernMode).toEqual(true)
+    expect(ctx.req._modern).toEqual(true)
   })
 
   test('should detect legacy browser based on user-agent', () => {

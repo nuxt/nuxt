@@ -204,7 +204,7 @@ export class WebpackBundler {
   }
 
   async middleware(req, res, next) {
-    const name = req.modernMode ? 'modern' : 'client'
+    const name = req._modern ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
       await this.devMiddleware[name](req, res)

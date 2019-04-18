@@ -1,21 +1,16 @@
 import path from 'path'
-import crypto from 'crypto'
 import fs from 'fs-extra'
+import chalk from 'chalk'
 import consola from 'consola'
-import devalue from '@nuxt/devalue'
-import invert from 'lodash/invert'
 import template from 'lodash/template'
-import { isUrl, urlJoin } from '@nuxt/utils'
-import { createBundleRenderer } from 'vue-server-renderer'
 
-import SPAMetaRenderer from './spa-meta'
+import SPARenderer from './renderer/spa'
+import SSRRenderer from './renderer/ssr'
+import ModernRenderer from './renderer/ssr/modern'
 
 export default class VueRenderer {
   constructor(context) {
     this.context = context
-
-    const { build: { publicPath }, router: { base } } = this.context.options
-    this.publicPath = isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
 
     // Will be set by createRenderer
     this.renderer = {
@@ -37,91 +32,6 @@ export default class VueRenderer {
     // Default status
     this._state = 'created'
     this._error = null
-  }
-
-  get assetsMapping() {
-    if (this._assetsMapping) {
-      return this._assetsMapping
-    }
-
-    const legacyAssets = this.context.resources.clientManifest.assetsMapping
-    const modernAssets = invert(this.context.resources.modernManifest.assetsMapping)
-    const mapping = {}
-
-    for (const legacyJsFile in legacyAssets) {
-      const chunkNamesHash = legacyAssets[legacyJsFile]
-      mapping[legacyJsFile] = modernAssets[chunkNamesHash]
-    }
-    delete this.context.resources.clientManifest.assetsMapping
-    delete this.context.resources.modernManifest.assetsMapping
-    this._assetsMapping = mapping
-
-    return mapping
-  }
-
-  renderScripts(context) {
-    if (this.context.options.modern === 'client') {
-      const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
-
-      return context.renderScripts().replace(scriptPattern, (scriptTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(this.publicPath, '')
-        const modernJsFile = this.assetsMapping[legacyJsFile]
-        const { build: { crossorigin } } = this.context.options
-        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-        const moduleTag = modernJsFile
-          ? scriptTag
-            .replace('<script', `<script type="module"${cors}`)
-            .replace(legacyJsFile, modernJsFile)
-          : ''
-        const noModuleTag = scriptTag.replace('<script', `<script nomodule${cors}`)
-
-        return noModuleTag + moduleTag
-      })
-    }
-
-    return context.renderScripts()
-  }
-
-  getModernFiles(legacyFiles = []) {
-    const modernFiles = []
-
-    for (const legacyJsFile of legacyFiles) {
-      const modernFile = { ...legacyJsFile, modern: true }
-      if (modernFile.asType === 'script') {
-        const file = this.assetsMapping[legacyJsFile.file]
-        modernFile.file = file
-        modernFile.fileWithoutQuery = file.replace(/\?.*/, '')
-      }
-      modernFiles.push(modernFile)
-    }
-
-    return modernFiles
-  }
-
-  getSsrPreloadFiles(context) {
-    const preloadFiles = context.getPreloadFiles()
-
-    // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
-    return this.context.options.modern === 'client' ? this.getModernFiles(preloadFiles) : preloadFiles
-  }
-
-  renderSsrResourceHints(context) {
-    if (this.context.options.modern === 'client') {
-      const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
-
-      return context.renderResourceHints().replace(linkPattern, (linkTag, jsFile) => {
-        const legacyJsFile = jsFile.replace(this.publicPath, '')
-        const modernJsFile = this.assetsMapping[legacyJsFile]
-        if (!modernJsFile) {
-          return ''
-        }
-        const { crossorigin } = this.context.options.build
-        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-        return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
-      })
-    }
-
-    return context.renderResourceHints()
   }
 
   ready() {
@@ -219,9 +129,6 @@ export default class VueRenderer {
 
     // Detect if any resource updated
     if (updated.length > 0) {
-      // Invalidate assetsMapping cache
-      delete this._assetsMapping
-
       // Create new renderer
       this.createRenderer()
     }
@@ -281,180 +188,56 @@ export default class VueRenderer {
     return this.isReady
   }
 
+  detectModernBuild() {
+    const { options, resources } = this.context
+    if ([false, 'client', 'server'].includes(options.modern)) {
+      return
+    }
+
+    if (!resources.modernManifest) {
+      options.modern = false
+      return
+    }
+
+    options.modern = options.render.ssr ? 'server' : 'client'
+    consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
+  }
+
   createRenderer() {
     // Resource clientManifest is always required
     if (!this.context.resources.clientManifest) {
       return
     }
 
+    this.detectModernBuild()
+
     // Create SPA renderer
     if (this.context.resources.spaTemplate) {
-      this.renderer.spa = new SPAMetaRenderer(this)
+      this.renderer.spa = new SPARenderer(this.context)
     }
 
     // Skip the rest if SSR resources are not available
-    if (!this.context.resources.ssrTemplate || !this.context.resources.serverManifest) {
-      return
+    if (this.context.resources.ssrTemplate && this.context.resources.serverManifest) {
+      // Create bundle renderer for SSR
+      this.renderer.ssr = new SSRRenderer(this.context)
+
+      if (this.context.resources.modernManifest &&
+        this.context.options.modern !== false) {
+        this.renderer.modern = new ModernRenderer(this.context)
+      }
     }
-
-    const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
-
-    const rendererOptions = {
-      clientManifest: this.context.resources.clientManifest,
-      // for globally installed nuxt command, search dependencies in global dir
-      basedir: hasModules ? this.context.options.rootDir : __dirname,
-      ...this.context.options.render.bundleRenderer
-    }
-
-    // Create bundle renderer for SSR
-    this.renderer.ssr = createBundleRenderer(
-      this.context.resources.serverManifest,
-      rendererOptions
-    )
-
-    if (this.context.resources.modernManifest &&
-      !['client', false].includes(this.context.options.modern)) {
-      this.renderer.modern = createBundleRenderer(
-        this.context.resources.serverManifest,
-        {
-          ...rendererOptions,
-          clientManifest: this.context.resources.modernManifest
-        }
-      )
-    }
-  }
-
-  renderTemplate(ssr, opts) {
-    // Fix problem with HTMLPlugin's minify option (#3392)
-    opts.html_attrs = opts.HTML_ATTRS
-    opts.head_attrs = opts.HEAD_ATTRS
-    opts.body_attrs = opts.BODY_ATTRS
-
-    const templateFn = ssr ? this.context.resources.ssrTemplate : this.context.resources.spaTemplate
-
-    return templateFn(opts)
   }
 
   async renderSPA(context) {
     const content = await this.renderer.spa.render(context)
-
-    const APP = `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>${content.BODY_SCRIPTS}`
-
-    // Prepare template params
-    const templateParams = {
-      ...content,
-      APP,
-      ENV: this.context.options.env
-    }
-
-    // Call spa:templateParams hook
-    this.context.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
-
-    // Render with SPA template
-    const html = this.renderTemplate(false, templateParams)
-
-    return {
-      html,
-      getPreloadFiles: content.getPreloadFiles
-    }
+    return content
   }
 
   async renderSSR(context) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
     const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
-
-    // Call ssr:context hook to extend context from modules
-    await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
-
-    // Call Vue renderer renderToString
-    let APP = await renderer.renderToString(context)
-
-    // Call ssr:context hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
-    // TODO: Remove in next major release
-    await this.context.nuxt.callHook('render:routeContext', context.nuxt)
-
-    // Fallback to empty response
-    if (!context.nuxt.serverRendered) {
-      APP = `<div id="${this.context.globals.id}"></div>`
-    }
-
-    // Inject head meta
-    const m = context.meta.inject()
-    let HEAD =
-      m.title.text() +
-      m.meta.text() +
-      m.link.text() +
-      m.style.text() +
-      m.script.text() +
-      m.noscript.text()
-
-    // Add <base href=""> meta if router base specified
-    if (this.context.options._routerBaseSpecified) {
-      HEAD += `<base href="${this.context.options.router.base}">`
-    }
-
-    // Inject resource hints
-    if (this.context.options.render.resourceHints) {
-      HEAD += this.renderSsrResourceHints(context)
-    }
-
-    // Inject styles
-    HEAD += context.renderStyles()
-
-    // Serialize state
-    const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
-    APP += `<script>${serializedSession}</script>`
-
-    // Calculate CSP hashes
-    const { csp } = this.context.options.render
-    const cspScriptSrcHashes = []
-    if (csp) {
-      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-      const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
-      if (!containsUnsafeInlineScriptSrc) {
-        const hash = crypto.createHash(csp.hashAlgorithm)
-        hash.update(serializedSession)
-        cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
-      }
-
-      // Call ssr:csp hook
-      await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
-
-      // Add csp meta tags
-      if (csp.addMeta) {
-        HEAD += `<meta http-equiv="Content-Security-Policy" content="script-src ${cspScriptSrcHashes.join()}">`
-      }
-    }
-
-    // Prepend scripts
-    APP += this.renderScripts(context)
-    APP += m.script.text({ body: true })
-    APP += m.noscript.text({ body: true })
-
-    // Template params
-    const templateParams = {
-      HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
-      HEAD_ATTRS: m.headAttrs.text(),
-      BODY_ATTRS: m.bodyAttrs.text(),
-      HEAD,
-      APP,
-      ENV: this.context.options.env
-    }
-
-    // Call ssr:templateParams hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
-
-    // Render with SSR template
-    const html = this.renderTemplate(true, templateParams)
-
-    return {
-      html,
-      cspScriptSrcHashes,
-      getPreloadFiles: this.getSsrPreloadFiles.bind(this, context),
-      error: context.nuxt.error,
-      redirected: context.redirected
-    }
+    const content = await renderer.render(context)
+    return content
   }
 
   async renderRoute(url, context = {}, _retried) {
@@ -499,7 +282,7 @@ export default class VueRenderer {
 
     // context.modern
     if (context.modern === undefined) {
-      context.modern = req.modernMode && this.context.options.modern === 'server'
+      context.modern = req._modern || this.context.options.modern === 'client'
     }
 
     // Call context hook
