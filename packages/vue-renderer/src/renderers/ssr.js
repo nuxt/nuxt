@@ -52,7 +52,7 @@ export default class SSRRenderer extends Renderer {
 
     // Fallback to empty response
     if (!renderContext.nuxt.serverRendered) {
-      APP = `<div id="${this.renderContext.globals.id}"></div>`
+      APP = `<div id="${this.context.globals.id}"></div>`
     }
 
     // Inject head meta
