@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 
-import Renderer from '../index'
+import Renderer from './index'
 
 export default class SSRRenderer extends Renderer {
   get rendererOptions() {
@@ -18,16 +18,16 @@ export default class SSRRenderer extends Renderer {
     }
   }
 
-  renderScripts(context) {
-    return context.renderScripts()
+  renderScripts(renderContext) {
+    return renderContext.renderScripts()
   }
 
-  getPreloadFiles(context) {
-    return context.getPreloadFiles()
+  getPreloadFiles(renderContext) {
+    return renderContext.getPreloadFiles()
   }
 
-  renderResourceHints(context) {
-    return context.renderResourceHints()
+  renderResourceHints(renderContext) {
+    return renderContext.renderResourceHints()
   }
 
   createRenderer() {
@@ -38,25 +38,25 @@ export default class SSRRenderer extends Renderer {
     )
   }
 
-  async render(context) {
+  async render(renderContext) {
     // Call ssr:context hook to extend context from modules
-    await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', context)
+    await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
     // Call Vue renderer renderToString
-    let APP = await this.vueRenderer.renderToString(context)
+    let APP = await this.vueRenderer.renderToString(renderContext)
 
     // Call ssr:context hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:context', context)
+    await this.context.nuxt.callHook('vue-renderer:ssr:context', renderContext)
     // TODO: Remove in next major release
-    await this.context.nuxt.callHook('render:routeContext', context.nuxt)
+    await this.context.nuxt.callHook('render:routeContext', renderContext.nuxt)
 
     // Fallback to empty response
-    if (!context.nuxt.serverRendered) {
-      APP = `<div id="${this.context.globals.id}"></div>`
+    if (!renderContext.nuxt.serverRendered) {
+      APP = `<div id="${this.renderContext.globals.id}"></div>`
     }
 
     // Inject head meta
-    const m = context.meta.inject()
+    const m = renderContext.meta.inject()
     let HEAD =
       m.title.text() +
       m.meta.text() +
@@ -72,14 +72,14 @@ export default class SSRRenderer extends Renderer {
 
     // Inject resource hints
     if (this.context.options.render.resourceHints) {
-      HEAD += this.renderResourceHints(context)
+      HEAD += this.renderResourceHints(renderContext)
     }
 
     // Inject styles
-    HEAD += context.renderStyles()
+    HEAD += renderContext.renderStyles()
 
     // Serialize state
-    const serializedSession = `window.${this.context.globals.context}=${devalue(context.nuxt)};`
+    const serializedSession = `window.${this.context.globals.context}=${devalue(renderContext.nuxt)};`
     APP += `<script>${serializedSession}</script>`
 
     // Calculate CSP hashes
@@ -104,7 +104,7 @@ export default class SSRRenderer extends Renderer {
     }
 
     // Prepend scripts
-    APP += this.renderScripts(context)
+    APP += this.renderScripts(renderContext)
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
@@ -126,15 +126,15 @@ export default class SSRRenderer extends Renderer {
 
     let preloadFiles
     if (this.context.options.render.http2.push) {
-      preloadFiles = this.getPreloadFiles(context)
+      preloadFiles = this.getPreloadFiles(renderContext)
     }
 
     return {
       html,
       cspScriptSrcHashes,
       preloadFiles,
-      error: context.nuxt.error,
-      redirected: context.redirected
+      error: renderContext.nuxt.error,
+      redirected: renderContext.redirected
     }
   }
 }

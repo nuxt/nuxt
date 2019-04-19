@@ -17,7 +17,7 @@ export default class Renderer {
     return templateFn(opts)
   }
 
-  render(context) {
+  render(renderContext) {
     throw new Error('render needs to be implemented')
   }
 }

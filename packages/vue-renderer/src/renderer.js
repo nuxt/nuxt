@@ -4,9 +4,9 @@ import chalk from 'chalk'
 import consola from 'consola'
 import template from 'lodash/template'
 
-import SPARenderer from './renderer/spa'
-import SSRRenderer from './renderer/ssr'
-import ModernRenderer from './renderer/ssr/modern'
+import SPARenderer from './renderers/spa'
+import SSRRenderer from './renderers/ssr'
+import ModernRenderer from './renderers/modern'
 
 export default class VueRenderer {
   constructor(context) {
@@ -221,33 +221,30 @@ export default class VueRenderer {
       // Create bundle renderer for SSR
       this.renderer.ssr = new SSRRenderer(this.context)
 
-      if (this.context.resources.modernManifest &&
-        this.context.options.modern !== false) {
+      if (this.context.options.modern !== false) {
         this.renderer.modern = new ModernRenderer(this.context)
       }
     }
   }
 
-  async renderSPA(context) {
-    const content = await this.renderer.spa.render(context)
-    return content
+  renderSPA(renderContext) {
+    return this.renderer.spa.render(renderContext)
   }
 
-  async renderSSR(context) {
-    // Call renderToString from the bundleRenderer and generate the HTML (will update the context as well)
-    const renderer = context.modern ? this.renderer.modern : this.renderer.ssr
-    const content = await renderer.render(context)
-    return content
+  renderSSR(renderContext) {
+    // Call renderToString from the bundleRenderer and generate the HTML (will update the renderContext as well)
+    const renderer = renderContext.modern ? this.renderer.modern : this.renderer.ssr
+    return renderer.render(renderContext)
   }
 
-  async renderRoute(url, context = {}, _retried) {
+  async renderRoute(url, renderContext = {}, _retried) {
     /* istanbul ignore if */
     if (!this.isReady) {
       // Production
       if (!this.context.options.dev) {
         if (!_retried && ['loading', 'created'].includes(this._state)) {
           await this.ready()
-          return this.renderRoute(url, context, true)
+          return this.renderRoute(url, renderContext, true)
         }
         switch (this._state) {
           case 'created':
@@ -269,29 +266,29 @@ export default class VueRenderer {
     // Log rendered url
     consola.debug(`Rendering url ${url}`)
 
-    // Add url to the context
-    context.url = url
+    // Add url to the renderContext
+    renderContext.url = url
 
-    const { req = {} } = context
+    const { req = {} } = renderContext
 
-    // context.spa
-    if (context.spa === undefined) {
-      // TODO: Remove reading from context.res in Nuxt3
-      context.spa = !this.SSR || req.spa || (context.res && context.res.spa)
+    // renderContext.spa
+    if (renderContext.spa === undefined) {
+      // TODO: Remove reading from renderContext.res in Nuxt3
+      renderContext.spa = !this.SSR || req.spa || (renderContext.res && renderContext.res.spa)
     }
 
-    // context.modern
-    if (context.modern === undefined) {
-      context.modern = req._modern || this.context.options.modern === 'client'
+    // renderContext.modern
+    if (renderContext.modern === undefined) {
+      renderContext.modern = req._modern || this.context.options.modern === 'client'
     }
 
-    // Call context hook
-    await this.context.nuxt.callHook('vue-renderer:context', context)
+    // Call renderContext hook
+    await this.context.nuxt.callHook('vue-renderer:renderContext', renderContext)
 
     // Render SPA or SSR
-    return context.spa
-      ? this.renderSPA(context)
-      : this.renderSSR(context)
+    return renderContext.spa
+      ? this.renderSPA(renderContext)
+      : this.renderSSR(renderContext)
   }
 
   get resourceMap() {

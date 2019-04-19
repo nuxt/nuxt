@@ -4,7 +4,7 @@ import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
 
-import Renderer from '../index'
+import Renderer from './index'
 
 export default class SPARenderer extends Renderer {
   constructor(context) {
@@ -35,7 +35,8 @@ export default class SPARenderer extends Renderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/', req = {}, _generate }) {
+  async render(renderContext) {
+    const { url = '/', req = {}, _generate } = renderContext
     const modern = req._modern || (this.options.modern && _generate)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)

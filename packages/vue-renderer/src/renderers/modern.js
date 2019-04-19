@@ -1,7 +1,7 @@
 import invert from 'lodash/invert'
 import { isUrl, urlJoin } from '@nuxt/utils'
 
-import SSRRenderer from './index'
+import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {
   constructor(context) {
@@ -16,16 +16,17 @@ export default class ModernRenderer extends SSRRenderer {
       return this._assetsMapping
     }
 
-    const legacyAssets = this.context.resources.clientManifest.assetsMapping
-    const modernAssets = invert(this.context.resources.modernManifest.assetsMapping)
+    const { clientManifest, modernManifest } = this.context.resources
+    const legacyAssets = clientManifest.assetsMapping
+    const modernAssets = invert(modernManifest.assetsMapping)
     const mapping = {}
 
     for (const legacyJsFile in legacyAssets) {
       const chunkNamesHash = legacyAssets[legacyJsFile]
       mapping[legacyJsFile] = modernAssets[chunkNamesHash]
     }
-    delete this.context.resources.clientManifest.assetsMapping
-    delete this.context.resources.modernManifest.assetsMapping
+    delete clientManifest.assetsMapping
+    delete modernManifest.assetsMapping
     this._assetsMapping = mapping
 
     return mapping
@@ -43,8 +44,8 @@ export default class ModernRenderer extends SSRRenderer {
     return rendererOptions
   }
 
-  renderScripts(context) {
-    const scripts = super.renderScripts(context)
+  renderScripts(renderContext) {
+    const scripts = super.renderScripts(renderContext)
 
     if (this.isServerMode) {
       return scripts
@@ -84,14 +85,14 @@ export default class ModernRenderer extends SSRRenderer {
     return modernFiles
   }
 
-  getPreloadFiles(context) {
-    const preloadFiles = super.getPreloadFiles(context)
+  getPreloadFiles(renderContext) {
+    const preloadFiles = super.getPreloadFiles(renderContext)
     // In eligible server modern mode, preloadFiles are modern bundles from modern renderer
     return this.isServerMode ? preloadFiles : this.getModernFiles(preloadFiles)
   }
 
-  renderResourceHints(context) {
-    const resourceHints = super.renderResourceHints(context)
+  renderResourceHints(renderContext) {
+    const resourceHints = super.renderResourceHints(renderContext)
     if (this.isServerMode) {
       return resourceHints
     }
