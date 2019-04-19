@@ -283,7 +283,7 @@ export default class VueRenderer {
     }
 
     // Call renderContext hook
-    await this.context.nuxt.callHook('vue-renderer:renderContext', renderContext)
+    await this.context.nuxt.callHook('vue-renderer:context', renderContext)
 
     // Render SPA or SSR
     return renderContext.spa
