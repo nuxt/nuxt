@@ -100,10 +100,10 @@ Or you can start by using one of our starter templates:
 const { Nuxt, Builder } = require('nuxt')
 
 // Import and set nuxt.js options
-let config = require('./nuxt.config.js')
+const config = require('./nuxt.config.js')
 config.dev = (process.env.NODE_ENV !== 'production')
 
-let nuxt = new Nuxt(config)
+const nuxt = new Nuxt(config)
 
 // Start build process (only in development)
 if (config.dev) {
@@ -117,7 +117,7 @@ Learn more: https://nuxtjs.org/api/nuxt
 
 ## Using nuxt.js as a middleware
 
-You might want to use your own server with your configurations, your API and everything awesome your created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
+You might want to use your own server with your configurations, your API and everything awesome you have created with. That's why you can use nuxt.js as a middleware. It's recommended to use it at the end of your middleware since it will handle the rendering of your web application and won't call next().
 
 ```js
 app.use(nuxt.render)

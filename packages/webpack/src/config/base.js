@@ -159,6 +159,22 @@ export default class WebpackBaseConfig {
     return optimization
   }
 
+  resolve() {
+    // Prioritize nested node_modules in webpack search path (#2558)
+    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
+
+    return {
+      resolve: {
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
+        alias: this.alias(),
+        modules: webpackModulesDir
+      },
+      resolveLoader: {
+        modules: webpackModulesDir
+      }
+    }
+  }
+
   minimizer() {
     const minimizer = []
     const { terser, cache } = this.buildContext.buildOptions
@@ -435,9 +451,6 @@ export default class WebpackBaseConfig {
   }
 
   config() {
-    // Prioritize nested node_modules in webpack search path (#2558)
-    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
-
     const config = {
       name: this.name,
       mode: this.mode,
@@ -449,18 +462,11 @@ export default class WebpackBaseConfig {
         maxEntrypointSize: 1000 * 1024,
         hints: this.dev ? false : 'warning'
       },
-      resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
-        alias: this.alias(),
-        modules: webpackModulesDir
-      },
-      resolveLoader: {
-        modules: webpackModulesDir
-      },
       module: {
         rules: this.rules()
       },
-      plugins: this.plugins()
+      plugins: this.plugins(),
+      ...this.resolve()
     }
 
     // Clone deep avoid leaking config between Client and Server

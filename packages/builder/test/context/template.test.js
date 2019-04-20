@@ -37,7 +37,7 @@ describe('builder: buildContext', () => {
     },
     srcDir: 'test_src_dir',
     loading: 'test-loading',
-    transition: { name: 'test_trans' },
+    pageTransition: { name: 'test_trans' },
     layoutTransition: { name: 'test_layout_trans' },
     dir: ['test_dir'],
     ErrorPage: 'test_error_page'

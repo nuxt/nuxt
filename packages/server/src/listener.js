@@ -6,7 +6,7 @@ import consola from 'consola'
 import pify from 'pify'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app, dev }) {
+  constructor({ port, host, socket, https, app, dev, baseURL }) {
     // Options
     this.port = port
     this.host = host
@@ -14,6 +14,7 @@ export default class Listener {
     this.https = https
     this.app = app
     this.dev = dev
+    this.baseURL = baseURL
 
     // After listen
     this.listening = false
@@ -46,7 +47,7 @@ export default class Listener {
         case '0.0.0.0': this.host = ip.address(); break
       }
       this.port = address.port
-      this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}`
+      this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}${this.baseURL}`
       return
     }
     this.url = `unix+http://${address}`

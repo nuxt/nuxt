@@ -53,12 +53,20 @@ describe('config: options', () => {
     })
   })
 
-  test('should transform transition/layoutTransition to name', () => {
-    const { transition, layoutTransition } = getNuxtConfig({
-      transition: 'test-tran',
+  test('[Compatibility] should transform transition to pageTransition', () => {
+    const { pageTransition, transition } = getNuxtConfig({
+      transition: 'test-tran'
+    })
+    expect(pageTransition).toMatchObject({ name: 'test-tran' })
+    expect(transition).toBeUndefined()
+  })
+
+  test('should transform pageTransition/layoutTransition to name', () => {
+    const { pageTransition, layoutTransition } = getNuxtConfig({
+      pageTransition: 'test-tran',
       layoutTransition: 'test-layout-tran'
     })
-    expect(transition).toMatchObject({ name: 'test-tran' })
+    expect(pageTransition).toMatchObject({ name: 'test-tran' })
     expect(layoutTransition).toMatchObject({ name: 'test-layout-tran' })
   })
 
@@ -81,6 +89,7 @@ describe('config: options', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
+      addMeta: false,
       allowedSources: true,
       policies: undefined,
       reportOnly: false,
@@ -95,9 +104,9 @@ describe('config: options', () => {
     expect(render.ssr).toEqual(true)
   })
 
-  test('should add appear true in transition when no ssr', () => {
-    const { transition } = getNuxtConfig({ render: { ssr: false } })
-    expect(transition.appear).toEqual(true)
+  test('should add appear true in pageTransition when no ssr', () => {
+    const { pageTransition } = getNuxtConfig({ render: { ssr: false } })
+    expect(pageTransition.appear).toEqual(true)
   })
 
   test('should return 404.html as default generate.fallback', () => {
@@ -224,5 +233,12 @@ describe('config: options', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
     })
+  })
+})
+
+describe('config: router', () => {
+  test('should sanitize router.base', () => {
+    const config = getNuxtConfig({ router: { base: '/foo' } })
+    expect(config.router.base).toBe('/foo/')
   })
 })

@@ -1,6 +1,6 @@
 export default {
   mode: 'spa',
-  transition: false,
+  pageTransition: false,
   render: {
     http2: {
       push: true
