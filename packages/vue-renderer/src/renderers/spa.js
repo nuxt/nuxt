@@ -3,12 +3,12 @@ import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
+import BaseRenderer from './base'
 
-export default class SPAMetaRenderer {
-  constructor(renderer) {
-    this.renderer = renderer
-    this.options = this.renderer.context.options
-    this.vueRenderer = createRenderer()
+export default class SPARenderer extends BaseRenderer {
+  constructor(serverContext) {
+    super(serverContext)
+
     this.cache = new LRU()
 
     // Add VueMeta to Vue (this is only for SPA mode)
@@ -21,6 +21,10 @@ export default class SPAMetaRenderer {
     })
   }
 
+  createRenderer() {
+    return createRenderer()
+  }
+
   async getMeta() {
     const vm = new Vue({
       render: h => h(), // Render empty html tag
@@ -30,8 +34,9 @@ export default class SPAMetaRenderer {
     return vm.$meta().inject()
   }
 
-  async render({ url = '/', req = {}, _generate }) {
-    const modern = req.modernMode || (this.options.modern && _generate)
+  async render(renderContext) {
+    const { url = '/', req = {}, _generate } = renderContext
+    const modern = req._modern || (this.options.modern && _generate)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
@@ -75,7 +80,7 @@ export default class SPAMetaRenderer {
 
     meta.resourceHints = ''
 
-    const { resources: { modernManifest, clientManifest } } = this.renderer.context
+    const { resources: { modernManifest, clientManifest } } = this.serverContext
     const manifest = modern ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
@@ -89,7 +94,7 @@ export default class SPAMetaRenderer {
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
 
         meta.preloadFiles = manifest.initial
-          .map(SPAMetaRenderer.normalizeFile)
+          .map(SPARenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPreload(fileWithoutQuery, asType))
           .map(file => ({ ...file, modern }))
 
@@ -108,7 +113,7 @@ export default class SPAMetaRenderer {
       // Prefetch async resources
       if (Array.isArray(manifest.async)) {
         meta.resourceHints += manifest.async
-          .map(SPAMetaRenderer.normalizeFile)
+          .map(SPARenderer.normalizeFile)
           .filter(({ fileWithoutQuery, asType }) => shouldPrefetch(fileWithoutQuery, asType))
           .map(({ file }) => `<link rel="prefetch" href="${publicPath}${file}">`)
           .join('')
@@ -120,13 +125,29 @@ export default class SPAMetaRenderer {
       }
     }
 
-    // Emulate getPreloadFiles from vue-server-renderer (works for JS chunks only)
-    meta.getPreloadFiles = () => (meta.preloadFiles || [])
+    const APP = `<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+
+    // Prepare template params
+    const templateParams = {
+      ...meta,
+      APP,
+      ENV: this.options.env
+    }
+
+    // Call spa:templateParams hook
+    this.serverContext.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
+
+    // Render with SPA template
+    const html = this.renderTemplate(this.serverContext.resources.spaTemplate, templateParams)
+    const content = {
+      html,
+      preloadFiles: meta.preloadFiles || []
+    }
 
     // Set meta tags inside cache
-    this.cache.set(cacheKey, meta)
+    this.cache.set(cacheKey, content)
 
-    return meta
+    return content
   }
 
   static normalizeFile(file) {
@@ -136,7 +157,7 @@ export default class SPAMetaRenderer {
       file,
       extension,
       fileWithoutQuery: withoutQuery,
-      asType: SPAMetaRenderer.getPreloadType(extension)
+      asType: SPARenderer.getPreloadType(extension)
     }
   }
 
