@@ -71,18 +71,21 @@ TemplateContext {
         "test": "test message",
       },
       "mode": "test mode",
+      "pageTransition": Object {
+        "name": "test_trans",
+      },
       "router": Object {
         "route": "test",
       },
       "srcDir": "test_src_dir",
       "store": "test_store",
       "test": "test_test",
-      "transition": Object {
-        "name": "test_trans",
-      },
       "vue": Object {
         "config": "test_config",
       },
+    },
+    "pageTransition": Object {
+      "name": "test_trans",
     },
     "plugins": Array [
       "plugins",
@@ -94,9 +97,6 @@ TemplateContext {
       "testSC": true,
     },
     "store": "test_store",
-    "transition": Object {
-      "name": "test_trans",
-    },
     "uniqBy": [Function],
     "vue": Object {
       "config": "test_config",

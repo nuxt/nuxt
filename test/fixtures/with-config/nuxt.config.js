@@ -34,7 +34,7 @@ export default {
     }
   },
   modulesDir: [path.join(__dirname, '..', '..', '..', 'node_modules')],
-  transition: 'test',
+  pageTransition: 'test',
   layoutTransition: 'test',
   loadingIndicator: 'circle',
   extensions: 'ts',

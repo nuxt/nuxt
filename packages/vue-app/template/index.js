@@ -36,7 +36,7 @@ Vue.use(Meta, {
 })
 
 const defaultTransition = <%=
-  serialize(transition)
+  serialize(pageTransition)
   .replace('beforeEnter(', 'function(').replace('enter(', 'function(').replace('afterEnter(', 'function(')
   .replace('enterCancelled(', 'function(').replace('beforeLeave(', 'function(').replace('leave(', 'function(')
   .replace('afterLeave(', 'function(').replace('leaveCancelled(', 'function(').replace('beforeAppear(', 'function(')

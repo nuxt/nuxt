@@ -230,6 +230,14 @@ Object {
   "modulesDir": Array [
     "node_modules",
   ],
+  "pageTransition": Object {
+    "appear": false,
+    "appearActiveClass": "appear-active",
+    "appearClass": "appear",
+    "appearToClass": "appear-to",
+    "mode": "out-in",
+    "name": "page",
+  },
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -305,14 +313,6 @@ Object {
     "less",
   ],
   "test": true,
-  "transition": Object {
-    "appear": false,
-    "appearActiveClass": "appear-active",
-    "appearClass": "appear",
-    "appearToClass": "appear-to",
-    "mode": "out-in",
-    "name": "page",
-  },
   "vue": Object {
     "config": Object {
       "performance": undefined,
@@ -562,6 +562,14 @@ Object {
   "modulesDir": Array [
     "node_modules",
   ],
+  "pageTransition": Object {
+    "appear": false,
+    "appearActiveClass": "appear-active",
+    "appearClass": "appear",
+    "appearToClass": "appear-to",
+    "mode": "out-in",
+    "name": "page",
+  },
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -637,14 +645,6 @@ Object {
     "less",
   ],
   "test": true,
-  "transition": Object {
-    "appear": false,
-    "appearActiveClass": "appear-active",
-    "appearClass": "appear",
-    "appearToClass": "appear-to",
-    "mode": "out-in",
-    "name": "page",
-  },
   "vue": Object {
     "config": Object {
       "performance": undefined,
