@@ -170,9 +170,7 @@ describe('server: server', () => {
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     server.useMiddleware = jest.fn()
-    server.renderer = {
-      context: { id: 'test-server-context' }
-    }
+    server.serverContext = { id: 'test-server-context' }
 
     await server.setupMiddleware()
 
@@ -198,8 +196,9 @@ describe('server: server', () => {
     })
 
     const modernMiddleware = {
-      context: server.renderer.context
+      serverContext: server.serverContext
     }
+
     expect(createModernMiddleware).toBeCalledTimes(1)
     expect(createModernMiddleware).toBeCalledWith(modernMiddleware)
     expect(server.useMiddleware).nthCalledWith(3, {

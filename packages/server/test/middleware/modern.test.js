@@ -4,14 +4,14 @@ jest.mock('chalk', () => ({
   }
 }))
 
-const createContext = () => ({
+const createServerContext = () => ({
   resources: {},
   options: {
     render: {}
   }
 })
 
-const createServerContext = () => ({
+const createRenderContext = () => ({
   req: { headers: {} },
   next: jest.fn()
 })
@@ -32,43 +32,43 @@ describe('server: modernMiddleware', () => {
   })
 
   test('should not detect modern build if modern mode is specified', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
+    const serverContext = createServerContext()
+    const modernMiddleware = createModernMiddleware({ serverContext })
+    const ctx = createRenderContext()
 
-    context.options.modern = false
+    serverContext.options.modern = false
     modernMiddleware(ctx.req, ctx.res, ctx.next)
-    context.options.modern = 'client'
+    serverContext.options.modern = 'client'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
-    context.options.modern = 'server'
+    serverContext.options.modern = 'server'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req._modern).toEqual(false)
   })
 
   test('should not detect modern browser if connect has been detected', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
+    const serverContext = createServerContext()
+    const modernMiddleware = createModernMiddleware({ serverContext })
+    const ctx = createRenderContext()
     ctx.req.socket = { isModernBrowser: true }
 
-    context.options.dev = true
-    context.options.modern = 'server'
+    serverContext.options.dev = true
+    serverContext.options.modern = 'server'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req._modern).toEqual(true)
   })
 
   test('should detect modern browser based on user-agent', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
+    const serverContext = createServerContext()
+    const modernMiddleware = createModernMiddleware({ serverContext })
+    const ctx = createRenderContext()
     const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
     ctx.req.headers['user-agent'] = ua
     ctx.req.socket = {}
 
-    context.options.dev = true
-    context.options.modern = 'server'
+    serverContext.options.dev = true
+    serverContext.options.modern = 'server'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(true)
@@ -76,30 +76,30 @@ describe('server: modernMiddleware', () => {
   })
 
   test('should detect legacy browser based on user-agent', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
+    const serverContext = createServerContext()
+    const modernMiddleware = createModernMiddleware({ serverContext })
+    const ctx = createRenderContext()
     const ua = 'Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))'
     ctx.req.headers['user-agent'] = ua
     ctx.req.socket = {}
 
-    context.options.dev = true
-    context.options.modern = 'client'
+    serverContext.options.dev = true
+    serverContext.options.modern = 'client'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(false)
   })
 
   test('should ignore illegal user-agent', () => {
-    const context = createContext()
-    const modernMiddleware = createModernMiddleware({ context })
-    const ctx = createServerContext()
+    const serverContext = createServerContext()
+    const modernMiddleware = createModernMiddleware({ serverContext })
+    const ctx = createRenderContext()
     const ua = 'illegal user agent'
     ctx.req.headers['user-agent'] = ua
     ctx.req.socket = {}
 
-    context.options.dev = true
-    context.options.modern = 'client'
+    serverContext.options.dev = true
+    serverContext.options.modern = 'client'
     modernMiddleware(ctx.req, ctx.res, ctx.next)
 
     expect(ctx.req.socket.isModernBrowser).toEqual(false)
