@@ -30,9 +30,9 @@ const detectModernBrowser = ({ socket = {}, headers }) => {
   return socket.isModernBrowser
 }
 
-export default ({ context }) => {
+export default ({ serverContext }) => {
   return (req, res, next) => {
-    if (context.options.modern !== false) {
+    if (serverContext.options.modern !== false) {
       req._modern = detectModernBrowser(req)
     }
     next()
