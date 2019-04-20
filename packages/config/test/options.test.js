@@ -104,9 +104,9 @@ describe('config: options', () => {
     expect(render.ssr).toEqual(true)
   })
 
-  test('should add appear true in transition when no ssr', () => {
-    const { transition } = getNuxtConfig({ render: { ssr: false } })
-    expect(transition.appear).toEqual(true)
+  test('should add appear true in pageTransition when no ssr', () => {
+    const { pageTransition } = getNuxtConfig({ render: { ssr: false } })
+    expect(pageTransition.appear).toEqual(true)
   })
 
   test('should return 404.html as default generate.fallback', () => {
