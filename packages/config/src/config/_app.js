@@ -42,7 +42,7 @@ export default () => ({
 
   loadingIndicator: 'default',
 
-  transition: {
+  pageTransition: {
     name: 'page',
     mode: 'out-in',
     appear: false,
