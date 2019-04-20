@@ -3,10 +3,9 @@ import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
+import BaseRenderer from './base'
 
-import Renderer from './index'
-
-export default class SPARenderer extends Renderer {
+export default class SPARenderer extends BaseRenderer {
   constructor(context) {
     super(context)
     this.options = this.context.options

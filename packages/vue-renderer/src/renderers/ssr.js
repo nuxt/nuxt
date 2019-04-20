@@ -3,10 +3,9 @@ import crypto from 'crypto'
 import fs from 'fs-extra'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
+import BaseRenderer from './base'
 
-import Renderer from './index'
-
-export default class SSRRenderer extends Renderer {
+export default class SSRRenderer extends BaseRenderer {
   get rendererOptions() {
     const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
 

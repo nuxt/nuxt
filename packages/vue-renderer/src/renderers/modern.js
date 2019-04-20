@@ -1,6 +1,5 @@
 import invert from 'lodash/invert'
 import { isUrl, urlJoin } from '@nuxt/utils'
-
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {

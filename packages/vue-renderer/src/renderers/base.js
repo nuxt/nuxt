@@ -1,4 +1,4 @@
-export default class Renderer {
+export default class BaseRenderer {
   constructor(context) {
     this.context = context
     this.vueRenderer = this.createRenderer()
