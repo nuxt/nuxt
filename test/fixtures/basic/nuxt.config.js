@@ -63,7 +63,7 @@ export default {
     bad: null,
     '': true
   },
-  transition: false,
+  pageTransition: false,
   plugins: [
     '~/plugins/vuex-module',
     '~/plugins/dir-plugin',
