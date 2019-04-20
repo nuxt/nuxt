@@ -10,12 +10,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "buefy": "^0.5.4",
     "nuxt": "latest",
-    "vue": "~2.4.4"
-  },
-  "devDependencies": {
-    "node-sass": "^4.6.0",
-    "sass-loader": "^6.0.6"
+    "nuxt-buefy": "latest"
   }
 }

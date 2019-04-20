@@ -43,6 +43,9 @@ describe('server: server', () => {
       build: {
         publicPath: '__nuxt_test'
       },
+      router: {
+        base: '/foo/'
+      },
       render: {
         id: 'test-render',
         dist: {
@@ -485,7 +488,8 @@ describe('server: server', () => {
       socket: '/var/nuxt/unix.socket',
       https: undefined,
       app: server.app,
-      dev: server.options.dev
+      dev: server.options.dev,
+      baseURL: '/foo/'
     })
     expect(listener.listen).toBeCalledTimes(1)
     expect(server.listeners).toEqual([ listener ])
@@ -508,7 +512,8 @@ describe('server: server', () => {
     expect(Listener).toBeCalledWith({
       ...nuxt.options.server,
       app: server.app,
-      dev: server.options.dev
+      dev: server.options.dev,
+      baseURL: '/foo/'
     })
   })
 

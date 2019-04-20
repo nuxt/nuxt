@@ -8,8 +8,8 @@ import onExit from 'signal-exit'
 export const lockPaths = new Set()
 
 export const defaultLockOptions = {
-  stale: 15000,
-  onCompromised: err => consola.fatal(err)
+  stale: 30000,
+  onCompromised: err => consola.warn(err)
 }
 
 export function getLockOptions(options) {
@@ -35,15 +35,33 @@ export async function getLockPath(config) {
 export async function lock({ id, dir, root, options }) {
   const lockPath = await getLockPath({ id, dir, root })
 
-  const locked = await properlock.check(lockPath)
-  if (locked) {
-    consola.fatal(`A lock with id '${id}' already exists on ${dir}`)
+  try {
+    const locked = await properlock.check(lockPath)
+    if (locked) {
+      consola.fatal(`A lock with id '${id}' already exists on ${dir}`)
+    }
+  } catch (e) {
+    consola.debug(`Check for an existing lock with id '${id}' on ${dir} failed`, e)
   }
 
-  const release = await properlock.lock(lockPath, options)
+  let lockWasCompromised = false
+  let release
+
+  try {
+    options = getLockOptions(options)
+
+    const onCompromised = options.onCompromised
+    options.onCompromised = (err) => {
+      onCompromised(err)
+      lockWasCompromised = true
+    }
+
+    release = await properlock.lock(lockPath, options)
+  } catch (e) {}
 
   if (!release) {
     consola.warn(`Unable to get a lock with id '${id}' on ${dir} (but will continue)`)
+    return false
   }
 
   if (!lockPaths.size) {
@@ -58,8 +76,27 @@ export async function lock({ id, dir, root, options }) {
   lockPaths.add(lockPath)
 
   return async function lockRelease() {
-    await release()
-    await fs.remove(lockPath)
-    lockPaths.delete(lockPath)
+    try {
+      await fs.remove(lockPath)
+      lockPaths.delete(lockPath)
+
+      // release as last so the lockPath is still removed
+      // when it fails on a compromised lock
+      await release()
+    } catch (e) {
+      if (!lockWasCompromised || !e.message.includes('already released')) {
+        consola.debug(e)
+        return
+      }
+
+      // proper-lockfile doesnt remove lockDir when lock is compromised
+      // removing it here could cause the 'other' process to throw an error
+      // as well, but in our case its much more likely the lock was
+      // compromised due to mtime update timeouts
+      const lockDir = `${lockPath}.lock`
+      if (await fs.exists(lockDir)) {
+        await fs.remove(lockDir)
+      }
+    }
   }
 }

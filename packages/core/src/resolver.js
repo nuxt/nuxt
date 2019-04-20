@@ -135,17 +135,17 @@ export default class Resolver {
       lastError = e
     }
 
-    // Disable esm for ts files by default
-    if (useESM === undefined && /.ts$/.test(resolvedPath)) {
-      useESM = false
+    // By default use esm only for js,mjs files outside of node_modules
+    if (useESM === undefined) {
+      useESM = /.(js|mjs)$/.test(resolvedPath) && !/node_modules/.test(resolvedPath)
     }
 
     // Try to require
     try {
-      if (useESM === false) {
-        requiredModule = require(resolvedPath)
-      } else {
+      if (useESM) {
         requiredModule = this.esm(resolvedPath)
+      } else {
+        requiredModule = require(resolvedPath)
       }
     } catch (e) {
       lastError = e

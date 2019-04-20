@@ -23,16 +23,12 @@ const isModernBrowser = (ua) => {
   return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
-let detected = false
-
 const distinctModernModeOptions = [false, 'client', 'server']
 
 const detectModernBuild = ({ options, resources }) => {
-  if (detected || distinctModernModeOptions.includes(options.modern)) {
+  if (distinctModernModeOptions.includes(options.modern)) {
     return
   }
-
-  detected = true
 
   if (!resources.modernManifest) {
     options.modern = false
@@ -52,10 +48,16 @@ const detectModernBrowser = ({ socket = {}, headers }) => {
   return socket.isModernBrowser
 }
 
-export default ({ context }) => (req, res, next) => {
-  detectModernBuild(context)
-  if (context.options.modern !== false) {
-    req.modernMode = detectModernBrowser(req)
+export default ({ context }) => {
+  let detected = false
+  return (req, res, next) => {
+    if (!detected) {
+      detectModernBuild(context)
+      detected = true
+    }
+    if (context.options.modern !== false) {
+      req.modernMode = detectModernBrowser(req)
+    }
+    next()
   }
-  next()
 }

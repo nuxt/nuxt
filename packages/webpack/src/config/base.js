@@ -147,6 +147,22 @@ export default class WebpackBaseConfig {
     return optimization
   }
 
+  resolve() {
+    // Prioritize nested node_modules in webpack search path (#2558)
+    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
+
+    return {
+      resolve: {
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
+        alias: this.alias(),
+        modules: webpackModulesDir
+      },
+      resolveLoader: {
+        modules: webpackModulesDir
+      }
+    }
+  }
+
   minimizer() {
     const minimizer = []
     const { terser, cache } = this.buildContext.buildOptions
@@ -385,6 +401,9 @@ export default class WebpackBaseConfig {
         },
         allDone: () => {
           nuxt.callHook('bundler:done')
+        },
+        progress({ statesArray }) {
+          nuxt.callHook('bundler:progress', statesArray)
         }
       }
     }))
@@ -411,9 +430,6 @@ export default class WebpackBaseConfig {
   }
 
   config() {
-    // Prioritize nested node_modules in webpack search path (#2558)
-    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
-
     const config = {
       name: this.name,
       mode: this.mode,
@@ -424,22 +440,15 @@ export default class WebpackBaseConfig {
         maxEntrypointSize: 1000 * 1024,
         hints: this.dev ? false : 'warning'
       },
-      resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
-        alias: this.alias(),
-        modules: webpackModulesDir
-      },
-      resolveLoader: {
-        modules: webpackModulesDir
-      },
       module: {
         rules: this.rules()
       },
-      plugins: this.plugins()
+      plugins: this.plugins(),
+      ...this.resolve()
     }
 
     // Clone deep avoid leaking config between Client and Server
-    const extendedConfig = this.extendConfig(cloneDeep(config))
+    const extendedConfig = cloneDeep(this.extendConfig(config))
     const { optimization } = extendedConfig
     // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
     if (optimization && optimization.minimizer && extendedConfig.devtool) {

@@ -54,7 +54,9 @@ export default () => ({
     },
     vueStyle: {}
   },
-  useForkTsChecker: process.env.NUXT_TS === 'true',
+  typescript: {
+    typeCheck: true
+  },
   styleResources: {},
   plugins: [],
   terser: {},
@@ -77,6 +79,7 @@ export default () => ({
     commons: true
   },
   babel: {
+    configFile: false,
     babelrc: false,
     cacheDirectory: undefined
   },

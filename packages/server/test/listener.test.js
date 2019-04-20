@@ -228,7 +228,8 @@ describe('server: listener', () => {
   test('should compute http url', () => {
     const options = {
       port: 3000,
-      host: 'localhost'
+      host: 'localhost',
+      baseURL: '/'
     }
     const listener = new Listener(options)
     listener.server = mockServer()
@@ -240,7 +241,7 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('localhost')
     expect(listener.port).toEqual(3000)
-    expect(listener.url).toEqual('http://localhost:3000')
+    expect(listener.url).toEqual('http://localhost:3000/')
 
     listener.server.address.mockReturnValueOnce({
       address: '127.0.0.1',
@@ -249,7 +250,7 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('localhost')
     expect(listener.port).toEqual(3001)
-    expect(listener.url).toEqual('http://localhost:3001')
+    expect(listener.url).toEqual('http://localhost:3001/')
 
     ip.address.mockReturnValueOnce('192.168.0.1')
     listener.server.address.mockReturnValueOnce({
@@ -259,14 +260,15 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('192.168.0.1')
     expect(listener.port).toEqual(3002)
-    expect(listener.url).toEqual('http://192.168.0.1:3002')
+    expect(listener.url).toEqual('http://192.168.0.1:3002/')
   })
 
   test('should compute https url', () => {
     const options = {
       port: 3000,
       host: 'localhost',
-      https: true
+      https: true,
+      baseURL: '/'
     }
     const listener = new Listener(options)
     listener.server = mockServer()
@@ -278,7 +280,7 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('localhost')
     expect(listener.port).toEqual(3000)
-    expect(listener.url).toEqual('https://localhost:3000')
+    expect(listener.url).toEqual('https://localhost:3000/')
 
     listener.server.address.mockReturnValueOnce({
       address: '127.0.0.1',
@@ -287,7 +289,7 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('localhost')
     expect(listener.port).toEqual(3001)
-    expect(listener.url).toEqual('https://localhost:3001')
+    expect(listener.url).toEqual('https://localhost:3001/')
 
     ip.address.mockReturnValueOnce('192.168.0.1')
     listener.server.address.mockReturnValueOnce({
@@ -297,7 +299,7 @@ describe('server: listener', () => {
     listener.computeURL()
     expect(listener.host).toEqual('192.168.0.1')
     expect(listener.port).toEqual(3002)
-    expect(listener.url).toEqual('https://192.168.0.1:3002')
+    expect(listener.url).toEqual('https://192.168.0.1:3002/')
   })
 
   test('should compute unix socket url', () => {
@@ -328,6 +330,15 @@ describe('server: listener', () => {
     const addressInUse = new Error()
     addressInUse.code = 'EADDRINUSE'
     expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `localhost:3000` is already in use.')
+  })
+
+  test('should throw address in use error for socket', () => {
+    const listener = new Listener({})
+    listener.socket = 'nuxt.socket'
+
+    const addressInUse = new Error()
+    addressInUse.code = 'EADDRINUSE'
+    expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `nuxt.socket` is already in use.')
   })
 
   test('should fallback to a random port in address in use error', async () => {

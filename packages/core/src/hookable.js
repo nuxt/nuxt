@@ -30,7 +30,7 @@ export default class Hookable {
     if (!this._hooks[name]) {
       return
     }
-    consola.debug(`Call ${name} hooks (${this._hooks[name].length})`)
+
     try {
       await sequence(this._hooks[name], fn => fn(...args))
     } catch (err) {

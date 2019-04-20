@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter, { Route } from 'vue-router'
 import { Store } from 'vuex'
+import { IncomingMessage, ServerResponse } from 'http'
 
 // augment typings of NodeJS.Process
 import './process'
@@ -14,8 +15,17 @@ type NuxtState = Dictionary<any>
 
 export interface Context {
   app: Vue
+  /**
+   * @deprecated Use process.client instead
+  */
   isClient: boolean
+  /**
+   * @deprecated Use process.server instead
+  */
   isServer: boolean
+  /**
+   * @deprecated Use process.static instead
+  */
   isStatic: boolean
   isDev: boolean
   isHMR: boolean
@@ -25,13 +35,13 @@ export interface Context {
   params: Route['params']
   payload: any
   query: Route['query']
-  req: Request
-  res: Response
-  redirect (status: number, path: string, query?: Route['query']): void
-  redirect (path: string, query?: Route['query']): void
-  error (params: ErrorParams): void
+  req: IncomingMessage
+  res: ServerResponse
+  redirect(status: number, path: string, query?: Route['query']): void
+  redirect(path: string, query?: Route['query']): void
+  error(params: ErrorParams): void
   nuxtState: NuxtState
-  beforeNuxtRender (fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
+  beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
 }
 
 export type Middleware = string | ((ctx: Context, cb: Function) => Promise<void> | void)

@@ -1,21 +1,49 @@
 #!/usr/bin/env node
 
-const { resolve } = require('path')
+const boxen = require('boxen').default
+const chalk = require('chalk').default
 
-// Globally indicate we are running in ts mode
-process.env.NUXT_TS = 'true'
+const warningBox = boxen([
+  chalk.yellow.bold('IMPORTANT : Package deprecation'),
+  '',
+  `Nuxt TypeScript Support has been refactored to be used with ${chalk.green.bold('nuxt')} package.`,
+  `Which means that ${chalk.yellow.bold(`nuxt-ts`)} package is now no longer needed and is now tagged as ${chalk.yellow.bold('deprecated')}.`,
+  `${chalk.bold.underline('We highly recommend')} to follow the guidelines below :`,
+  '',
+  chalk.yellow.bold('Migration guide (2.5.x)'),
+  '',
+  chalk.bold('Using yarn'),
+  'yarn remove nuxt-ts',
+  'yarn add nuxt',
+  'yarn add -D @nuxt/typescript',
+  '',
+  chalk.bold('Using npm'),
+  'npm uninstall nuxt-ts',
+  'npm install nuxt',
+  'npm install -D @nuxt/typescript',
+  '',
+  ` ----- ${chalk.bold('nuxt.config.ts')} -----`,
+  '| build: {                 |',
+  `| ${chalk.red('-- useForkTsChecker: ...')} |`,
+  `| ${chalk.green('++ typescript : {')}        |`,
+  `| ${chalk.green('++   typeCheck: ...')}      |`,
+  `| ${chalk.green('++ }')}                     |`,
+  '| }                        |',
+  ' --------------------------',
+  '',
+  'Find more information in updated docs : ' + chalk.blue.underline('https://nuxtjs.org/guide/typescript')
+].join('\n'), Object.assign({
+  borderColor: 'yellow',
+  borderStyle: 'round',
+  padding: 1,
+  margin: 1
+})) + '\n'
 
-const nuxtCommands = ['dev', 'build', 'generate', 'start']
-const rootDir = (process.argv[2] && !nuxtCommands.includes(process.argv[2])) ? process.argv[2] : process.cwd()
-const tsConfigPath = resolve(rootDir, 'tsconfig.json')
+process.stdout.write(warningBox)
 
 const suffix = require('../package.json').name.includes('-edge') ? '-edge' : ''
-
-const errorHandler = (error) => {
-  require('consola').fatal(error)
-  process.exit(2)
-}
-
-require('@nuxt/typescript' + suffix).setup(tsConfigPath).then(() => {
-  require('@nuxt/cli' + suffix).run().catch(errorHandler)
-}).catch(errorHandler)
+require('@nuxt/cli' + suffix).run()
+  .catch((error) => {
+    require('consola').fatal(error)
+    process.exit(2)
+  })

@@ -51,7 +51,7 @@ describe('dev', () => {
     // Test error on second build so we cover oldInstance stuff
     const builder = new Builder()
     builder.nuxt = new Nuxt()
-    Builder.prototype.build = jest.fn().mockImplementationOnce(() => Promise.reject(new Error('Build Error')))
+    Builder.prototype.build = () => { throw new Error('Build Error') }
     await Nuxt.fileRestartHook(builder)
 
     expect(Nuxt.prototype.close).toHaveBeenCalled()

@@ -2,7 +2,9 @@ import consola from 'consola'
 import chalk from 'chalk'
 import opener from 'opener'
 import { common, server } from '../options'
-import { showBanner, eventsMapping, formatPath } from '../utils'
+import { eventsMapping, formatPath } from '../utils'
+import { showBanner } from '../utils/banner'
+import { showMemoryUsage } from '../utils/memory'
 
 export default {
   name: 'dev',
@@ -20,13 +22,8 @@ export default {
 
   async run(cmd) {
     const { argv } = cmd
-    const nuxt = await this.startDev(cmd, argv)
 
-    // Opens the server listeners url in the default browser
-    if (argv.open) {
-      const openerPromises = nuxt.server.listeners.map(listener => opener(listener.url))
-      await Promise.all(openerPromises)
-    }
+    await this.startDev(cmd, argv, argv.open)
   },
 
   async startDev(cmd, argv) {
@@ -40,15 +37,12 @@ export default {
   },
 
   async _startDev(cmd, argv) {
-    const config = await cmd.getNuxtConfig({ dev: true })
+    const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
     // Setup hooks
     nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
-
-    // Create builder instance
-    const builder = await cmd.getBuilder(nuxt)
 
     // Wait for nuxt to be ready
     await nuxt.ready()
@@ -56,11 +50,24 @@ export default {
     // Start listening
     await nuxt.server.listen()
 
+    // Show banner when listening
+    showBanner(nuxt, false)
+
+    // Opens the server listeners url in the default browser (only once)
+    if (argv.open) {
+      argv.open = false
+      const openerPromises = nuxt.server.listeners.map(listener => opener(listener.url))
+      await Promise.all(openerPromises)
+    }
+
+    // Create builder instance
+    const builder = await cmd.getBuilder(nuxt)
+
     // Start Build
     await builder.build()
 
-    // Show banner after build
-    showBanner(nuxt)
+    // Print memory usage
+    showMemoryUsage()
 
     // Return instance
     return nuxt

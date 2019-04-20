@@ -1,21 +1,39 @@
-const path = require('path')
+const coreJsMeta = {
+  2: {
+    prefixes: {
+      es6: 'es6',
+      es7: 'es7'
+    },
+    builtIns: '@babel/preset-env/data/built-ins.json.js'
+  },
+  3: {
+    prefixes: {
+      es6: 'es',
+      es7: 'es'
+    },
+    builtIns: 'core-js-compat/data'
+  }
+}
 
-const defaultPolyfills = [
-  // Promise polyfill alone doesn't work in IE,
-  // Needs this as well. see: #1642
-  'es6.array.iterator',
-  // This is required for webpack code splitting, vuex etc.
-  'es6.promise',
-  // this is needed for object rest spread support in templates
-  // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
-  'es6.object.assign',
-  // #2012 es6.promise replaces native Promise in FF and causes missing finally
-  'es7.promise.finally'
-]
+function getDefaultPolyfills(corejs) {
+  const { prefixes: { es6, es7 } } = coreJsMeta[corejs.version]
+  return [
+    // Promise polyfill alone doesn't work in IE,
+    // Needs this as well. see: #1642
+    `${es6}.array.iterator`,
+    // This is required for webpack code splitting, vuex etc.
+    `${es6}.promise`,
+    // this is needed for object rest spread support in templates
+    // as vue-template-es2015-compiler 1.8+ compiles it to Object.assign() calls.
+    `${es6}.object.assign`,
+    // #2012 es7.promise replaces native Promise in FF and causes missing finally
+    `${es7}.promise.finally`
+  ]
+}
 
-function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath }) {
+function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
   const { isPluginRequired } = require('@babel/preset-env')
-  const builtInsList = require('@babel/preset-env/data/built-ins.json')
+  const builtInsList = require(coreJsMeta[corejs.version].builtIns)
   const getTargets = require('@babel/preset-env/lib/targets-parser').default
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
@@ -46,8 +64,15 @@ module.exports = (context, options = {}) => {
     shippedProposals,
     forceAllTransforms,
     decoratorsBeforeExport,
-    decoratorsLegacy
+    decoratorsLegacy,
+    absoluteRuntime
   } = options
+
+  let { corejs = { version: 2 } } = options
+
+  if (typeof corejs !== 'object') {
+    corejs = { version: Number(corejs) }
+  }
 
   let { targets } = options
   if (modern === true) {
@@ -58,9 +83,10 @@ module.exports = (context, options = {}) => {
 
   let polyfills
   if (modern === false && useBuiltIns === 'usage' && buildTarget === 'client') {
-    polyfills = getPolyfills(targets, userPolyfills || defaultPolyfills, {
+    polyfills = getPolyfills(targets, userPolyfills || getDefaultPolyfills(corejs), {
       ignoreBrowserslistConfig,
-      configPath
+      configPath,
+      corejs
     })
     plugins.push([require('./polyfills-plugin'), { polyfills }])
   } else {
@@ -76,6 +102,7 @@ module.exports = (context, options = {}) => {
       modules,
       targets,
       useBuiltIns,
+      corejs,
       ignoreBrowserslistConfig,
       configPath,
       include,
@@ -102,10 +129,10 @@ module.exports = (context, options = {}) => {
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : 2,
+    corejs: useBuiltIns !== false ? false : corejs,
     helpers: useBuiltIns === 'usage',
-    useESModules: true,
-    absoluteRuntime: path.dirname(require.resolve('@babel/runtime/package.json'))
+    useESModules: buildTarget !== 'server',
+    absoluteRuntime
   }])
 
   return {

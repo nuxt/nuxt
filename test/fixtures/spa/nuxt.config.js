@@ -1,6 +1,6 @@
 export default {
   mode: 'spa',
-  transition: false,
+  pageTransition: false,
   render: {
     http2: {
       push: true
@@ -14,6 +14,9 @@ export default {
       app: '[name].js',
       chunk: '[name].js'
     }
+  },
+  router: {
+    middleware: 'middleware'
   },
   plugins: [
     '~/plugins/error.js'

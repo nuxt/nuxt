@@ -9,6 +9,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": undefined,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,
@@ -121,7 +122,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "useForkTsChecker": false,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -227,6 +230,14 @@ Object {
   "modulesDir": Array [
     "node_modules",
   ],
+  "pageTransition": Object {
+    "appear": false,
+    "appearActiveClass": "appear-active",
+    "appearClass": "appear",
+    "appearToClass": "appear-to",
+    "mode": "out-in",
+    "name": "page",
+  },
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -302,14 +313,6 @@ Object {
     "less",
   ],
   "test": true,
-  "transition": Object {
-    "appear": false,
-    "appearActiveClass": "appear-active",
-    "appearClass": "appear",
-    "appearToClass": "appear-to",
-    "mode": "out-in",
-    "name": "page",
-  },
   "vue": Object {
     "config": Object {
       "performance": undefined,
@@ -338,6 +341,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": undefined,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,
@@ -450,7 +454,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "useForkTsChecker": false,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -556,6 +562,14 @@ Object {
   "modulesDir": Array [
     "node_modules",
   ],
+  "pageTransition": Object {
+    "appear": false,
+    "appearActiveClass": "appear-active",
+    "appearClass": "appear",
+    "appearToClass": "appear-to",
+    "mode": "out-in",
+    "name": "page",
+  },
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -631,14 +645,6 @@ Object {
     "less",
   ],
   "test": true,
-  "transition": Object {
-    "appear": false,
-    "appearActiveClass": "appear-active",
-    "appearClass": "appear",
-    "appearToClass": "appear-to",
-    "mode": "out-in",
-    "name": "page",
-  },
   "vue": Object {
     "config": Object {
       "performance": undefined,

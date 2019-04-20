@@ -306,4 +306,19 @@ describe('server: nuxtMiddleware', () => {
     expect(await nuxtMiddleware(req, res, next)).toBe(err)
     expect(consola.error).toBeCalledWith(err)
   })
+
+  test('should return 400 if request is uri error', async () => {
+    const context = createContext()
+    const result = { html: 'rendered html' }
+    context.renderRoute.mockReturnValue(result)
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+
+    const err = Error('URI malformed')
+    err.name = 'URIError'
+
+    await nuxtMiddleware({ ...req, url: 'http://localhost/test/server/%c1%81' }, res, next)
+
+    expect(next).toBeCalledWith(err)
+  })
 })

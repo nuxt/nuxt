@@ -5,6 +5,9 @@ Object {
   "ErrorPage": null,
   "__normalized__": true,
   "_nuxtConfigFile": "/var/nuxt/test/nuxt.config.js",
+  "_nuxtConfigFiles": Array [
+    "/var/nuxt/test/nuxt.config.js",
+  ],
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
@@ -12,6 +15,7 @@ Object {
     "babel": Object {
       "babelrc": false,
       "cacheDirectory": false,
+      "configFile": false,
     },
     "cache": false,
     "crossorigin": undefined,
@@ -131,7 +135,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "useForkTsChecker": false,
+    "typescript": Object {
+      "typeCheck": true,
+    },
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
@@ -250,6 +256,14 @@ Object {
     "/var/nuxt/node_modules",
     "/var/nuxt/test/node_modules",
   ],
+  "pageTransition": Object {
+    "appear": false,
+    "appearActiveClass": "appear-active",
+    "appearClass": "appear",
+    "appearToClass": "appear-to",
+    "mode": "out-in",
+    "name": "page",
+  },
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
@@ -326,14 +340,6 @@ Object {
     "less",
   ],
   "test": true,
-  "transition": Object {
-    "appear": false,
-    "appearActiveClass": "appear-active",
-    "appearClass": "appear",
-    "appearToClass": "appear-to",
-    "mode": "out-in",
-    "name": "page",
-  },
   "vue": Object {
     "config": Object {
       "performance": false,

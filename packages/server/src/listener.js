@@ -6,7 +6,7 @@ import consola from 'consola'
 import pify from 'pify'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app, dev }) {
+  constructor({ port, host, socket, https, app, dev, baseURL }) {
     // Options
     this.port = port
     this.host = host
@@ -14,6 +14,7 @@ export default class Listener {
     this.https = https
     this.app = app
     this.dev = dev
+    this.baseURL = baseURL
 
     // After listen
     this.listening = false
@@ -46,7 +47,7 @@ export default class Listener {
         case '0.0.0.0': this.host = ip.address(); break
       }
       this.port = address.port
-      this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}`
+      this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}${this.baseURL}`
       return
     }
     this.url = `unix+http://${address}`
@@ -95,15 +96,16 @@ export default class Listener {
 
     // Use better error message
     if (addressInUse) {
-      error.message = `Address \`${this.host}:${this.port}\` is already in use.`
-    }
+      const address = this.socket || `${this.host}:${this.port}`
+      error.message = `Address \`${address}\` is already in use.`
 
-    // Listen to a random port on dev as a fallback
-    if (addressInUse && this.dev && this.port !== '0') {
-      consola.warn(error.message)
-      consola.info('Trying a random port...')
-      this.port = '0'
-      return this.close().then(() => this.listen())
+      // Listen to a random port on dev as a fallback
+      if (this.dev && !this.socket && this.port !== '0') {
+        consola.warn(error.message)
+        consola.info('Trying a random port...')
+        this.port = '0'
+        return this.close().then(() => this.listen())
+      }
     }
 
     // Throw error

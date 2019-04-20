@@ -1,9 +1,13 @@
+
+import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
-import { loadNuxtConfig, forceExit } from './utils'
+import { forceExit } from './utils'
+import { loadNuxtConfig } from './utils/config'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
+import { detectTypeScript } from './utils/typescript'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -28,33 +32,47 @@ export default class NuxtCommand {
     return new NuxtCommand(cmd, argv)
   }
 
-  run() {
+  async run() {
     if (this.argv.help) {
       this.showHelp()
-      return Promise.resolve()
+      return
     }
 
     if (this.argv.version) {
       this.showVersion()
-      return Promise.resolve()
+      return
     }
 
     if (typeof this.cmd.run !== 'function') {
-      return Promise.resolve()
+      return
     }
 
-    const runResolve = Promise.resolve(this.cmd.run(this))
+    let cmdError
+
+    try {
+      await this.cmd.run(this)
+    } catch (e) {
+      cmdError = e
+    }
 
     if (this.argv.lock) {
-      runResolve.then(() => this.releaseLock())
+      await this.releaseLock()
     }
 
     if (this.argv['force-exit']) {
       const forceExitByUser = this.isUserSuppliedArg('force-exit')
-      runResolve.then(() => forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout))
+      if (cmdError) {
+        consola.fatal(cmdError)
+      }
+      forceExit(this.cmd.name, forceExitByUser ? false : forceExitTimeout)
+      if (forceExitByUser) {
+        return
+      }
     }
 
-    return runResolve
+    if (cmdError) {
+      throw cmdError
+    }
   }
 
   showVersion() {
@@ -73,7 +91,14 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions) {
+  async getNuxtConfig(extraOptions = {}) {
+    const rootDir = path.resolve(this.argv._[0] || '.')
+
+    // Typescript support
+    extraOptions._typescript = await detectTypeScript(rootDir, {
+      transpileOnly: this.cmd.name === 'start'
+    })
+
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)
 

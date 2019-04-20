@@ -28,6 +28,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         whitelist.push(new RegExp(escapeRegExp(posixModule)))
       }
     }
+
     return whitelist
   }
 
@@ -52,6 +53,27 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     }
   }
 
+  resolve() {
+    const resolveConfig = super.resolve()
+
+    resolveConfig.resolve.mainFields = ['main', 'module']
+
+    return resolveConfig
+  }
+
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load client-side plugins on server-side
+        aliases[p.name] = p.mode === 'client' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
+  }
+
   plugins() {
     const plugins = super.plugins()
     plugins.push(
@@ -69,9 +91,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     Object.assign(config, {
       target: 'node',
       node: false,
-      entry: {
+      entry: Object.assign({}, config.entry, {
         app: [path.resolve(this.buildContext.options.buildDir, 'server.js')]
-      },
+      }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
         libraryTarget: 'commonjs2'
@@ -81,7 +103,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         maxEntrypointSize: Infinity,
         maxAssetSize: Infinity
       },
-      externals: []
+      externals: [].concat(config.externals || [])
     })
 
     // https://webpack.js.org/configuration/externals/#externals

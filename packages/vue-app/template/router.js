@@ -3,11 +3,12 @@ import Router from 'vue-router'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
-  let res = '', resMap = ''
+  let res = ''
   const baseIndent = tab.repeat(indentCount)
   const firstIndent = '\n' + tab.repeat(indentCount + 1)
   const nextIndent = ',' + firstIndent
   routes.forEach((route, i) => {
+    let resMap = ''
     // If need to handle named views
     if (route.components) {
       let _name = '_' + hash(route.components.default)
@@ -153,7 +154,7 @@ const scrollBehavior = function (to, from, savedPosition) {
 export function createRouter() {
   return new Router({
     mode: '<%= router.mode %>',
-    base: '<%= router.base %>',
+    base: decodeURI('<%= router.base %>'),
     linkActiveClass: '<%= router.linkActiveClass %>',
     linkExactActiveClass: '<%= router.linkExactActiveClass %>',
     scrollBehavior,

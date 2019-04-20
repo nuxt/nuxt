@@ -1,12 +1,9 @@
-let VueChart = import('vue-chartjs' /* webpackChunkName: "vue-chartjs" */)
+import { Bar } from 'vue-chartjs'
 
-export default async () => {
-  VueChart = await VueChart
-
-  return VueChart.Bar.extend({
-    props: ['data'],
-    mounted() {
-      this.renderChart(this.data)
-    }
-  })
+export default {
+  extends: Bar,
+  props: ['data'],
+  mounted() {
+    this.renderChart(this.data)
+  }
 }

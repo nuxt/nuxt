@@ -1,5 +1,4 @@
 import path from 'path'
-import fs from 'fs'
 import querystring from 'querystring'
 import consola from 'consola'
 import webpack from 'webpack'
@@ -75,9 +74,22 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return minimizer
   }
 
+  alias() {
+    const aliases = super.alias()
+
+    for (const p of this.buildContext.plugins) {
+      if (!aliases[p.name]) {
+        // Do not load server-side plugins on client-side
+        aliases[p.name] = p.mode === 'server' ? './empty.js' : p.src
+      }
+    }
+
+    return aliases
+  }
+
   plugins() {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, rootDir, modern } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, _typescript = {} } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -140,21 +152,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     // TypeScript type checker
     // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (!this.isModern && this.loaders.ts.transpileOnly && buildOptions.useForkTsChecker) {
-      const forkTsCheckerResolvedPath = this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin')
-      if (forkTsCheckerResolvedPath) {
-        const ForkTsCheckerWebpackPlugin = require(forkTsCheckerResolvedPath)
-        plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
-          vue: true,
-          tsconfig: path.resolve(rootDir, 'tsconfig.json'),
-          // https://github.com/Realytics/fork-ts-checker-webpack-plugin#options - tslint: boolean | string - So we set it false if file not found
-          tslint: (tslintPath => fs.existsSync(tslintPath) && tslintPath)(path.resolve(rootDir, 'tslint.json')),
-          formatter: 'codeframe',
-          logger: consola
-        }, buildOptions.useForkTsChecker)))
-      } else {
-        consola.warn('You need to install `fork-ts-checker-webpack-plugin` as devDependency to enable TypeScript type checking !')
-      }
+    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.typeCheck && !this.isModern && this.loaders.ts.transpileOnly) {
+      const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
+      plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
+        vue: true,
+        tsconfig: path.resolve(rootDir, 'tsconfig.json'),
+        tslint: false, // We recommend using ESLint so we set this option to `false` by default
+        formatter: 'codeframe',
+        logger: consola
+      }, buildOptions.typescript.typeCheck)))
     }
 
     return plugins
@@ -182,9 +188,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
 
     // Entry points
-    config.entry = {
+    config.entry = Object.assign({}, config.entry, {
       app: [path.resolve(buildDir, 'client.js')]
-    }
+    })
 
     // Add HMR support
     if (this.dev) {

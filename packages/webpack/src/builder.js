@@ -6,14 +6,10 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import {
-  parallel,
-  sequence,
-  wrapArray
-} from '@nuxt/utils'
+import { parallel, sequence, wrapArray } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
-import { ClientConfig, ModernConfig, ServerConfig } from './config'
+import * as WebpackConfigs from './config'
 import PerfLoader from './utils/perf-loader'
 
 const glob = pify(Glob)
@@ -37,51 +33,35 @@ export class WebpackBundler {
     }
   }
 
+  getWebpackConfig(name) {
+    const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
+    if (!Config) {
+      throw new Error(`Unsupported webpack config ${name}`)
+    }
+    const config = new Config(this)
+    return config.config()
+  }
+
   async build() {
     const { options } = this.buildContext
 
-    const compilersOptions = []
+    const webpackConfigs = [
+      this.getWebpackConfig('Client')
+    ]
 
-    // Client
-    const clientConfig = new ClientConfig(this).config()
-    compilersOptions.push(clientConfig)
-
-    // Modern
-    let modernConfig
     if (options.modern) {
-      modernConfig = new ModernConfig(this).config()
-      compilersOptions.push(modernConfig)
+      webpackConfigs.push(this.getWebpackConfig('Modern'))
     }
 
-    // Server
-    let serverConfig = null
     if (options.build.ssr) {
-      serverConfig = new ServerConfig(this).config()
-      compilersOptions.push(serverConfig)
-    }
-
-    for (const p of this.buildContext.plugins) {
-      // Client config
-      if (!clientConfig.resolve.alias[p.name]) {
-        clientConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Modern config
-      if (modernConfig && !modernConfig.resolve.alias[p.name]) {
-        modernConfig.resolve.alias[p.name] = p.mode === 'server' ? './empty.js' : p.src
-      }
-
-      // Server config
-      if (serverConfig && !serverConfig.resolve.alias[p.name]) {
-        serverConfig.resolve.alias[p.name] = p.mode === 'client' ? './empty.js' : p.src
-      }
+      webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
     // Check styleResource existence
     const { styleResources } = this.buildContext.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
-        'Using styleResources without the nuxt-style-resources-module is not suggested and can lead to severe performance issues.',
+        'Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.',
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
       for (const ext of Object.keys(styleResources)) {
@@ -96,8 +76,8 @@ export class WebpackBundler {
     }
 
     // Configure compilers
-    this.compilers = compilersOptions.map((compilersOption) => {
-      const compiler = webpack(compilersOption)
+    this.compilers = webpackConfigs.map((config) => {
+      const compiler = webpack(config)
 
       // In dev, write files in memory FS
       if (options.dev) {
@@ -173,6 +153,9 @@ export class WebpackBundler {
       // Actual error will be printed by webpack
       throw new Error('Nuxt Build Error')
     }
+
+    // Await for renderer to load resources (programmatic, tests and generate)
+    await nuxt.callHook('build:resources')
   }
 
   async webpackDev(compiler) {

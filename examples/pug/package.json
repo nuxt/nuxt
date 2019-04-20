@@ -3,7 +3,7 @@
   "dependencies": {
     "nuxt": "latest",
     "pug": "^2.0.3",
-    "pug-loader": "^2.4.0"
+    "pug-plain-loader": "^1.0.0"
   },
   "scripts": {
     "dev": "nuxt",

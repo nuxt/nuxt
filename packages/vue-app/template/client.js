@@ -81,8 +81,9 @@ const errorHandler = Vue.config.errorHandler || console.error
 createApp()
   .then(mountApp)
   .catch((err) => {
-    err.message = '[nuxt] Error while mounting app: ' + err.message
-    errorHandler(err)
+    const wrapperError = new Error(err)
+    wrapperError.message = '[nuxt] Error while mounting app: ' + wrapperError.message
+    errorHandler(wrapperError)
   })
 
 function componentOption(component, key, ...args) {
@@ -666,6 +667,10 @@ async function mountApp(__app) {
   const mount = () => {
     _app.$mount('#<%= globals.id %>')
 
+    // Add afterEach router hooks
+    router.afterEach(normalizeComponents)
+    router.afterEach(fixPrepatch.bind(_app))
+
     // Listen for first Vue update
     Vue.nextTick(async () => {
       <% if (store && mode === 'universal') { %>
@@ -691,11 +696,9 @@ async function mountApp(__app) {
   _app.$loading = {} // To avoid error while _app.$nuxt does not exist
   if (NUXT.error) _app.error(NUXT.error)
 
-  // Add router hooks
+  // Add beforeEach router hooks
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
-  router.afterEach(normalizeComponents)
-  router.afterEach(fixPrepatch.bind(_app))
 
   // If page already is server rendered
   if (NUXT.serverRendered) {
@@ -704,20 +707,30 @@ async function mountApp(__app) {
   }
 
   // First render on client-side
+  const clientFirstMount = () => {
+    normalizeComponents(router.currentRoute, router.currentRoute)
+    showNextPage.call(_app, router.currentRoute)
+    // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
+    mount()
+  }
+
   render.call(_app, router.currentRoute, router.currentRoute, (path) => {
     // If not redirected
     if (!path) {
-      normalizeComponents(router.currentRoute, router.currentRoute)
-      showNextPage.call(_app, router.currentRoute)
-      // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
-      mount()
+      clientFirstMount()
       return
     }
 
-    // Push the path and then mount app
-    router.push(path, () => mount(), (err) => {
-      if (!err) return mount()
-      errorHandler(err)
+    // Add a one-time afterEach hook to
+    // mount the app wait for redirect and route gets resolved
+    const unregisterHook = router.afterEach((to, from) => {
+      unregisterHook()
+      clientFirstMount()
+    })
+
+    // Push the path and let route to be resolved
+    router.push(path, undefined, (err) => {
+      if (err) errorHandler(err)
     })
   })
 }

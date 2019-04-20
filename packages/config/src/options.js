@@ -3,7 +3,6 @@ import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
 import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
-import isObject from 'lodash/isObject'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
@@ -23,6 +22,7 @@ export function getNuxtConfig(_options) {
   if (options.loading === true) {
     delete options.loading
   }
+
   if (
     options.router &&
     options.router.middleware &&
@@ -30,15 +30,27 @@ export function getNuxtConfig(_options) {
   ) {
     options.router.middleware = [options.router.middleware]
   }
+
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
   }
-  if (typeof options.transition === 'string') {
-    options.transition = { name: options.transition }
+
+  // TODO: Remove for Nuxt 3
+  // transition -> pageTransition
+  if (typeof options.transition !== 'undefined') {
+    consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
+    options.pageTransition = options.transition
+    delete options.transition
   }
+
+  if (typeof options.pageTransition === 'string') {
+    options.pageTransition = { name: options.pageTransition }
+  }
+
   if (typeof options.layoutTransition === 'string') {
     options.layoutTransition = { name: options.layoutTransition }
   }
+
   if (typeof options.extensions === 'string') {
     options.extensions = [options.extensions]
   }
@@ -70,6 +82,11 @@ export function getNuxtConfig(_options) {
 
   defaultsDeep(options, nuxtConfig)
 
+  // Sanitize router.base
+  if (!/\/$/.test(options.router.base)) {
+    options.router.base += '/'
+  }
+
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
   const hasGenerateDir = isNonEmptyString(options.generate.dir)
@@ -84,11 +101,17 @@ export function getNuxtConfig(_options) {
 
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, defaultNuxtConfigFile)
+    options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
-  // Watch for _nuxtConfigFile changes
-  options.watch.push(options._nuxtConfigFile)
+  if (!options._nuxtConfigFiles) {
+    options._nuxtConfigFiles = [
+      options._nuxtConfigFile
+    ]
+  }
+
+  // Watch for config file changes
+  options.watch.push(...options._nuxtConfigFiles)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
@@ -179,16 +202,14 @@ export function getNuxtConfig(_options) {
   }
 
   // Apply default hash to CSP option
-  const { csp } = options.render
-
-  const cspDefaults = {
-    hashAlgorithm: 'sha256',
-    allowedSources: undefined,
-    policies: undefined,
-    reportOnly: options.debug
-  }
-  if (csp) {
-    options.render.csp = defaults(isObject(csp) ? csp : {}, cspDefaults)
+  if (options.render.csp) {
+    options.render.csp = defaults({}, options.render.csp, {
+      hashAlgorithm: 'sha256',
+      allowedSources: undefined,
+      policies: undefined,
+      addMeta: Boolean(options._generate),
+      reportOnly: options.debug
+    })
   }
 
   // cssSourceMap
@@ -224,7 +245,7 @@ export function getNuxtConfig(_options) {
     })
   }
 
-  // vue config
+  // Vue config
   const vueConfig = options.vue.config
 
   if (vueConfig.silent === undefined) {
@@ -262,8 +283,8 @@ export function getNuxtConfig(_options) {
   defaultsDeep(options, modePreset || options.modes.universal)
 
   // If no server-side rendering, add appear true transition
-  if (options.render.ssr === false && options.transition) {
-    options.transition.appear = true
+  if (options.render.ssr === false && options.pageTransition) {
+    options.pageTransition.appear = true
   }
 
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
@@ -328,6 +349,11 @@ export function getNuxtConfig(_options) {
   const { bundleRenderer } = options.render
   if (typeof bundleRenderer.runInNewContext === 'undefined') {
     bundleRenderer.runInNewContext = options.dev
+  }
+
+  // Add loading screen
+  if (options.dev) {
+    options.devModules.push('@nuxt/loading-screen')
   }
 
   return options

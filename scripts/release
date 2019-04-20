@@ -1,5 +1,0 @@
-#!/bin/bash
-set -e
-yarn lerna version
-yarn build
-./scripts/workspace-run npm publish -q
