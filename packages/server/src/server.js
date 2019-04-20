@@ -111,12 +111,13 @@ export default class Server {
       })
     }
 
-    this.useMiddleware(createModernMiddleware({
-      serverContext: this.serverContext
-    }))
-
     // Dev middleware
     if (this.options.dev) {
+      // devMiddleware needs req._modern for serving different files
+      this.useMiddleware(createModernMiddleware({
+        serverContext: this.serverContext
+      }))
+
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
           return next()
@@ -156,6 +157,13 @@ export default class Server {
           handler: servePlaceholder(fallback.static)
         })
       }
+    }
+
+    if (!this.options.dev) {
+      // Put detection after serve-static for avoiding unnecessary detections
+      this.useMiddleware(createModernMiddleware({
+        serverContext: this.serverContext
+      }))
     }
 
     // Finally use nuxtMiddleware
