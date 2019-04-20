@@ -2,7 +2,9 @@ import consola from 'consola'
 import chalk from 'chalk'
 import opener from 'opener'
 import { common, server } from '../options'
-import { showBanner, eventsMapping, formatPath } from '../utils'
+import { eventsMapping, formatPath } from '../utils'
+import { showBanner } from '../utils/banner'
+import { showMemoryUsage } from '../utils/memory'
 
 export default {
   name: 'dev',
@@ -49,7 +51,7 @@ export default {
     await nuxt.server.listen()
 
     // Show banner when listening
-    showBanner(nuxt)
+    showBanner(nuxt, false)
 
     // Opens the server listeners url in the default browser (only once)
     if (argv.open) {
@@ -63,6 +65,9 @@ export default {
 
     // Start Build
     await builder.build()
+
+    // Print memory usage
+    showMemoryUsage()
 
     // Return instance
     return nuxt

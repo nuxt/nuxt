@@ -35,8 +35,16 @@ export function getNuxtConfig(_options) {
     options._routerBaseSpecified = true
   }
 
-  if (typeof options.transition === 'string') {
-    options.transition = { name: options.transition }
+  // TODO: Remove for Nuxt 3
+  // transition -> pageTransition
+  if (typeof options.transition !== 'undefined') {
+    consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
+    options.pageTransition = options.transition
+    delete options.transition
+  }
+
+  if (typeof options.pageTransition === 'string') {
+    options.pageTransition = { name: options.pageTransition }
   }
 
   if (typeof options.layoutTransition === 'string') {
@@ -96,8 +104,14 @@ export function getNuxtConfig(_options) {
     options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
   }
 
-  // Watch for _nuxtConfigFile changes
-  options.watch.push(options._nuxtConfigFile)
+  if (!options._nuxtConfigFiles) {
+    options._nuxtConfigFiles = [
+      options._nuxtConfigFile
+    ]
+  }
+
+  // Watch for config file changes
+  options.watch.push(...options._nuxtConfigFiles)
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
@@ -269,8 +283,8 @@ export function getNuxtConfig(_options) {
   defaultsDeep(options, modePreset || options.modes.universal)
 
   // If no server-side rendering, add appear true transition
-  if (options.render.ssr === false && options.transition) {
-    options.transition.appear = true
+  if (options.render.ssr === false && options.pageTransition) {
+    options.pageTransition.appear = true
   }
 
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
