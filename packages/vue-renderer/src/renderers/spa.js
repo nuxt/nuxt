@@ -6,9 +6,9 @@ import LRU from 'lru-cache'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
-  constructor(context) {
-    super(context)
-    this.options = this.context.options
+  constructor(serverContext) {
+    super(serverContext)
+
     this.cache = new LRU()
 
     // Add VueMeta to Vue (this is only for SPA mode)
@@ -80,7 +80,7 @@ export default class SPARenderer extends BaseRenderer {
 
     meta.resourceHints = ''
 
-    const { resources: { modernManifest, clientManifest } } = this.context
+    const { resources: { modernManifest, clientManifest } } = this.serverContext
     const manifest = modern ? modernManifest : clientManifest
 
     const { shouldPreload, shouldPrefetch } = this.options.render.bundleRenderer
@@ -125,20 +125,20 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `<div id="${this.context.globals.id}">${this.context.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    const APP = `<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {
       ...meta,
       APP,
-      ENV: this.context.options.env
+      ENV: this.options.env
     }
 
     // Call spa:templateParams hook
-    this.context.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
+    this.serverContext.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
 
     // Render with SPA template
-    const html = this.renderTemplate(this.context.resources.spaTemplate, templateParams)
+    const html = this.renderTemplate(this.serverContext.resources.spaTemplate, templateParams)
     const content = {
       html,
       preloadFiles: meta.preloadFiles || []

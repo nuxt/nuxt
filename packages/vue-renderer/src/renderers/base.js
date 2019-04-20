@@ -1,11 +1,13 @@
 export default class BaseRenderer {
-  constructor(context) {
-    this.context = context
+  constructor(serverContext) {
+    this.serverContext = serverContext
+    this.options = serverContext.options
+
     this.vueRenderer = this.createRenderer()
   }
 
   createRenderer() {
-    throw new Error('createRenderer needs to be implemented')
+    throw new Error('`createRenderer()` needs to be implemented')
   }
 
   renderTemplate(templateFn, opts) {
@@ -17,7 +19,7 @@ export default class BaseRenderer {
     return templateFn(opts)
   }
 
-  render(renderContext) {
-    throw new Error('render needs to be implemented')
+  render() {
+    throw new Error('`render()` needs to be implemented')
   }
 }

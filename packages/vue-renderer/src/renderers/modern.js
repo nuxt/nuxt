@@ -3,10 +3,10 @@ import { isUrl, urlJoin } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {
-  constructor(context) {
-    super(context)
+  constructor(serverContext) {
+    super(serverContext)
 
-    const { build: { publicPath }, router: { base } } = this.context.options
+    const { build: { publicPath }, router: { base } } = this.options
     this.publicPath = isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
   }
 
@@ -15,7 +15,7 @@ export default class ModernRenderer extends SSRRenderer {
       return this._assetsMapping
     }
 
-    const { clientManifest, modernManifest } = this.context.resources
+    const { clientManifest, modernManifest } = this.serverContext.resources
     const legacyAssets = clientManifest.assetsMapping
     const modernAssets = invert(modernManifest.assetsMapping)
     const mapping = {}
@@ -32,13 +32,13 @@ export default class ModernRenderer extends SSRRenderer {
   }
 
   get isServerMode() {
-    return this.context.options.modern === 'server'
+    return this.options.modern === 'server'
   }
 
   get rendererOptions() {
     const rendererOptions = super.rendererOptions
     if (this.isServerMode) {
-      rendererOptions.clientManifest = this.context.resources.modernManifest
+      rendererOptions.clientManifest = this.serverContext.resources.modernManifest
     }
     return rendererOptions
   }
@@ -55,7 +55,7 @@ export default class ModernRenderer extends SSRRenderer {
     return scripts.replace(scriptPattern, (scriptTag, jsFile) => {
       const legacyJsFile = jsFile.replace(this.publicPath, '')
       const modernJsFile = this.assetsMapping[legacyJsFile]
-      const { build: { crossorigin } } = this.context.options
+      const { build: { crossorigin } } = this.options
       const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
       const moduleTag = modernJsFile
         ? scriptTag
@@ -104,7 +104,7 @@ export default class ModernRenderer extends SSRRenderer {
       if (!modernJsFile) {
         return ''
       }
-      const { crossorigin } = this.context.options.build
+      const { crossorigin } = this.options.build
       const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
       return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
     })

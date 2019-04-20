@@ -10,7 +10,8 @@ import ModernRenderer from './renderers/modern'
 
 export default class VueRenderer {
   constructor(context) {
-    this.context = context
+    this.serverContext = context
+    this.options = this.serverContext.options
 
     // Will be set by createRenderer
     this.renderer = {
@@ -20,7 +21,7 @@ export default class VueRenderer {
     }
 
     // Renderer runtime resources
-    Object.assign(this.context.resources, {
+    Object.assign(this.serverContext.resources, {
       clientManifest: undefined,
       modernManifest: undefined,
       serverManifest: undefined,
@@ -54,11 +55,11 @@ export default class VueRenderer {
 
   async _ready() {
     // Resolve dist path
-    this.distPath = path.resolve(this.context.options.buildDir, 'dist', 'server')
+    this.distPath = path.resolve(this.options.buildDir, 'dist', 'server')
 
     // -- Development mode --
-    if (this.context.options.dev) {
-      this.context.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
+    if (this.options.dev) {
+      this.serverContext.nuxt.hook('build:resources', mfs => this.loadResources(mfs))
       return
     }
 
@@ -68,13 +69,13 @@ export default class VueRenderer {
     await this.loadResources(fs)
 
     // Without using `nuxt start` (programmatic, tests and generate)
-    if (!this.context.options._start) {
-      this.context.nuxt.hook('build:resources', () => this.loadResources(fs))
+    if (!this.options._start) {
+      this.serverContext.nuxt.hook('build:resources', () => this.loadResources(fs))
       return
     }
 
     // Verify resources
-    if (this.context.options.modern && !this.isModernReady) {
+    if (this.options.modern && !this.isModernReady) {
       throw new Error(
         `No modern build files found in ${this.distPath}.\nUse either \`nuxt build --modern\` or \`modern\` option to build modern files.`
       )
@@ -120,7 +121,7 @@ export default class VueRenderer {
       }
 
       // Update resource
-      this.context.resources[resourceName] = resource
+      this.serverContext.resources[resourceName] = resource
       updated.push(resourceName)
     }
 
@@ -133,46 +134,46 @@ export default class VueRenderer {
       this.createRenderer()
     }
 
-    return this.context.nuxt.callHook('render:resourcesLoaded', this.context.resources)
+    return this.serverContext.nuxt.callHook('render:resourcesLoaded', this.serverContext.resources)
   }
 
   async loadTemplates() {
     // Reload error template
-    const errorTemplatePath = path.resolve(this.context.options.buildDir, 'views/error.html')
+    const errorTemplatePath = path.resolve(this.options.buildDir, 'views/error.html')
 
     if (await fs.exists(errorTemplatePath)) {
       const errorTemplate = await fs.readFile(errorTemplatePath, 'utf8')
-      this.context.resources.errorTemplate = this.parseTemplate(errorTemplate)
+      this.serverContext.resources.errorTemplate = this.parseTemplate(errorTemplate)
     }
 
     // Reload loading template
-    const loadingHTMLPath = path.resolve(this.context.options.buildDir, 'loading.html')
+    const loadingHTMLPath = path.resolve(this.options.buildDir, 'loading.html')
 
     if (await fs.exists(loadingHTMLPath)) {
-      this.context.resources.loadingHTML = await fs.readFile(loadingHTMLPath, 'utf8')
-      this.context.resources.loadingHTML = this.context.resources.loadingHTML.replace(/\r|\n|[\t\s]{3,}/g, '')
+      this.serverContext.resources.loadingHTML = await fs.readFile(loadingHTMLPath, 'utf8')
+      this.serverContext.resources.loadingHTML = this.serverContext.resources.loadingHTML.replace(/\r|\n|[\t\s]{3,}/g, '')
     } else {
-      this.context.resources.loadingHTML = ''
+      this.serverContext.resources.loadingHTML = ''
     }
   }
 
   // TODO: Remove in Nuxt 3
   get noSSR() { /* Backward compatibility */
-    return this.context.options.render.ssr === false
+    return this.options.render.ssr === false
   }
 
   get SSR() {
-    return this.context.options.render.ssr === true
+    return this.options.render.ssr === true
   }
 
   get isReady() {
     // SPA
-    if (!this.context.resources.spaTemplate || !this.renderer.spa) {
+    if (!this.serverContext.resources.spaTemplate || !this.renderer.spa) {
       return false
     }
 
     // SSR
-    if (this.SSR && (!this.context.resources.ssrTemplate || !this.renderer.ssr)) {
+    if (this.SSR && (!this.serverContext.resources.ssrTemplate || !this.renderer.ssr)) {
       return false
     }
 
@@ -180,7 +181,7 @@ export default class VueRenderer {
   }
 
   get isModernReady() {
-    return this.isReady && this.context.resources.modernManifest
+    return this.isReady && this.serverContext.resources.modernManifest
   }
 
   // TODO: Remove in Nuxt 3
@@ -189,7 +190,7 @@ export default class VueRenderer {
   }
 
   detectModernBuild() {
-    const { options, resources } = this.context
+    const { options, resources } = this.serverContext
     if ([false, 'client', 'server'].includes(options.modern)) {
       return
     }
@@ -205,24 +206,24 @@ export default class VueRenderer {
 
   createRenderer() {
     // Resource clientManifest is always required
-    if (!this.context.resources.clientManifest) {
+    if (!this.serverContext.resources.clientManifest) {
       return
     }
 
     this.detectModernBuild()
 
     // Create SPA renderer
-    if (this.context.resources.spaTemplate) {
-      this.renderer.spa = new SPARenderer(this.context)
+    if (this.serverContext.resources.spaTemplate) {
+      this.renderer.spa = new SPARenderer(this.serverContext)
     }
 
     // Skip the rest if SSR resources are not available
-    if (this.context.resources.ssrTemplate && this.context.resources.serverManifest) {
+    if (this.serverContext.resources.ssrTemplate && this.serverContext.resources.serverManifest) {
       // Create bundle renderer for SSR
-      this.renderer.ssr = new SSRRenderer(this.context)
+      this.renderer.ssr = new SSRRenderer(this.serverContext)
 
-      if (this.context.options.modern !== false) {
-        this.renderer.modern = new ModernRenderer(this.context)
+      if (this.options.modern !== false) {
+        this.renderer.modern = new ModernRenderer(this.serverContext)
       }
     }
   }
@@ -241,7 +242,7 @@ export default class VueRenderer {
     /* istanbul ignore if */
     if (!this.isReady) {
       // Production
-      if (!this.context.options.dev) {
+      if (!this.options.dev) {
         if (!_retried && ['loading', 'created'].includes(this._state)) {
           await this.ready()
           return this.renderRoute(url, renderContext, true)
@@ -279,11 +280,11 @@ export default class VueRenderer {
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
-      renderContext.modern = req._modern || this.context.options.modern === 'client'
+      renderContext.modern = req._modern || this.options.modern === 'client'
     }
 
     // Call renderContext hook
-    await this.context.nuxt.callHook('vue-renderer:context', renderContext)
+    await this.serverContext.nuxt.callHook('vue-renderer:context', renderContext)
 
     // Render SPA or SSR
     return renderContext.spa

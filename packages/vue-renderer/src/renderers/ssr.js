@@ -7,13 +7,13 @@ import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
   get rendererOptions() {
-    const hasModules = fs.existsSync(path.resolve(this.context.options.rootDir, 'node_modules'))
+    const hasModules = fs.existsSync(path.resolve(this.options.rootDir, 'node_modules'))
 
     return {
-      clientManifest: this.context.resources.clientManifest,
+      clientManifest: this.serverContext.resources.clientManifest,
       // for globally installed nuxt command, search dependencies in global dir
-      basedir: hasModules ? this.context.options.rootDir : __dirname,
-      ...this.context.options.render.bundleRenderer
+      basedir: hasModules ? this.options.rootDir : __dirname,
+      ...this.options.render.bundleRenderer
     }
   }
 
@@ -32,26 +32,26 @@ export default class SSRRenderer extends BaseRenderer {
   createRenderer() {
     // Create bundle renderer for SSR
     return createBundleRenderer(
-      this.context.resources.serverManifest,
+      this.serverContext.resources.serverManifest,
       this.rendererOptions
     )
   }
 
   async render(renderContext) {
     // Call ssr:context hook to extend context from modules
-    await this.context.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
     // Call Vue renderer renderToString
     let APP = await this.vueRenderer.renderToString(renderContext)
 
     // Call ssr:context hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:context', renderContext)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)
     // TODO: Remove in next major release
-    await this.context.nuxt.callHook('render:routeContext', renderContext.nuxt)
+    await this.serverContext.nuxt.callHook('render:routeContext', renderContext.nuxt)
 
     // Fallback to empty response
     if (!renderContext.nuxt.serverRendered) {
-      APP = `<div id="${this.context.globals.id}"></div>`
+      APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
     // Inject head meta
@@ -65,12 +65,12 @@ export default class SSRRenderer extends BaseRenderer {
       m.noscript.text()
 
     // Add <base href=""> meta if router base specified
-    if (this.context.options._routerBaseSpecified) {
-      HEAD += `<base href="${this.context.options.router.base}">`
+    if (this.options._routerBaseSpecified) {
+      HEAD += `<base href="${this.options.router.base}">`
     }
 
     // Inject resource hints
-    if (this.context.options.render.resourceHints) {
+    if (this.options.render.resourceHints) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
@@ -78,11 +78,11 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     // Serialize state
-    const serializedSession = `window.${this.context.globals.context}=${devalue(renderContext.nuxt)};`
+    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
     APP += `<script>${serializedSession}</script>`
 
     // Calculate CSP hashes
-    const { csp } = this.context.options.render
+    const { csp } = this.options.render
     const cspScriptSrcHashes = []
     if (csp) {
       // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
@@ -94,7 +94,7 @@ export default class SSRRenderer extends BaseRenderer {
       }
 
       // Call ssr:csp hook
-      await this.context.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
+      await this.serverContext.nuxt.callHook('vue-renderer:ssr:csp', cspScriptSrcHashes)
 
       // Add csp meta tags
       if (csp.addMeta) {
@@ -114,17 +114,17 @@ export default class SSRRenderer extends BaseRenderer {
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,
       APP,
-      ENV: this.context.options.env
+      ENV: this.options.env
     }
 
     // Call ssr:templateParams hook
-    await this.context.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
 
     // Render with SSR template
-    const html = this.renderTemplate(this.context.resources.ssrTemplate, templateParams)
+    const html = this.renderTemplate(this.serverContext.resources.ssrTemplate, templateParams)
 
     let preloadFiles
-    if (this.context.options.render.http2.push) {
+    if (this.options.render.http2.push) {
       preloadFiles = this.getPreloadFiles(renderContext)
     }
 
