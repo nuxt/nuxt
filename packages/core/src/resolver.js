@@ -18,7 +18,7 @@ export default class Resolver {
     this.requireModule = this.requireModule.bind(this)
 
     // ESM Loader
-    this.esm = esm(module, {})
+    this.esm = esm(module)
   }
 
   resolveModule(path) {
