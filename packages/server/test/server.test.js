@@ -308,8 +308,8 @@ describe('server: server', () => {
 
     await server.setupMiddleware()
 
-    expect(server.useMiddleware).nthCalledWith(4, { id: 'test-server-middleware-1' })
-    expect(server.useMiddleware).nthCalledWith(5, { id: 'test-server-middleware-2' })
+    expect(server.useMiddleware).nthCalledWith(3, { id: 'test-server-middleware-1' })
+    expect(server.useMiddleware).nthCalledWith(4, { id: 'test-server-middleware-2' })
   })
 
   test('should setup fallback middleware', async () => {
@@ -326,14 +326,14 @@ describe('server: server', () => {
 
     await server.setupMiddleware()
     expect(servePlaceholder).toBeCalledTimes(2)
-    expect(server.useMiddleware).nthCalledWith(4, {
+    expect(server.useMiddleware).nthCalledWith(3, {
       handler: {
         id: 'test-render-fallback-dist',
         key: 'test-serve-placeholder'
       },
       path: '__nuxt_test'
     })
-    expect(server.useMiddleware).nthCalledWith(5, {
+    expect(server.useMiddleware).nthCalledWith(4, {
       handler: {
         id: 'test-render-fallback-static',
         key: 'test-serve-placeholder'
