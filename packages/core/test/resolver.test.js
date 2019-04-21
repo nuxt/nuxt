@@ -31,7 +31,6 @@ describe('core: resolver', () => {
     expect(resolver.requireModule).toBeInstanceOf(Function)
     expect(resolver.esm).toEqual(expect.any(Function))
     expect(esm).toBeCalledTimes(1)
-    expect(esm).toBeCalledWith(expect.any(Object), {})
   })
 
   test('should call _resolveFilename in resolveModule', () => {
