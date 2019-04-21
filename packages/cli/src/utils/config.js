@@ -21,11 +21,13 @@ export async function loadNuxtConfig(argv) {
   }
 
   if (nuxtConfigFile) {
+    // Clear cache
+    clearRequireCache(nuxtConfigFile)
+
     if (nuxtConfigFile.endsWith('.ts')) {
       options = require(nuxtConfigFile) || {}
     } else {
-      clearRequireCache(nuxtConfigFile)
-      options = esm(module, { cache: false, cjs: { cache: false } })(nuxtConfigFile) || {}
+      options = esm(module, { cache: false, cjs: { cache: true } })(nuxtConfigFile) || {}
     }
 
     if (options.default) {
@@ -49,6 +51,9 @@ export async function loadNuxtConfig(argv) {
 
     // Keep all related files for watching
     options._nuxtConfigFiles = Array.from(scanRequireTree(nuxtConfigFile))
+    if (!options._nuxtConfigFiles.includes(nuxtConfigFile)) {
+      options._nuxtConfigFiles.unshift(nuxtConfigFile)
+    }
   }
 
   if (typeof options.rootDir !== 'string') {
