@@ -35,13 +35,18 @@ describe('util: serialize', () => {
       // eslint-disable-next-line arrow-parens
       fn: foobar => {},
       fn2: foobar => 1,
+      // eslint-disable-next-line arrow-parens
       fn3: foobar => {
         return 3
-      }
+      },
+      // eslint-disable-next-line arrow-parens
+      fn4: arg1 =>
+        2 * arg1
     }
     expect(serializeFunction(obj.fn)).toEqual('foobar => {}')
     expect(serializeFunction(obj.fn2)).toEqual('foobar => 1')
     expect(serializeFunction(obj.fn3)).toEqual('foobar => {\n        return 3;\n      }')
+    expect(serializeFunction(obj.fn4)).toEqual('arg1 => 2 * arg1')
   })
 
   test('should not replace custom scripts', () => {
