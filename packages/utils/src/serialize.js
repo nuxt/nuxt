@@ -8,18 +8,19 @@ function normalizeFunctions(obj) {
     if (key === '__proto__' || key === 'constructor') {
       continue
     }
-    const val = obj[key]    
+    const val = obj[key]
     if (val !== null && typeof val === 'object' && !Array.isArray(obj)) {
       obj[key] = normalizeFunctions(val)
     }
     if (typeof obj[key] === 'function') {
       const asString = obj[key].toString()
-      let match
-      if (match = asString.match(/^([^{(]+)=>\s*(.*)/)) {
+      const match = asString.match(/^([^{(]+)=>\s*(.*)/)
+      if (match) {
         let functionBody = match[2].match(/^{?(\s*return\s+)?(.*?)}?$/)[2].trim()
         if (!match[2].trim().match(/^{/)) {
           functionBody = `return ${functionBody}`
         }
+        // eslint-disable-next-line no-new-func
         obj[key] = new Function(...match[1].split(',').map(arg => arg.trim()), functionBody)
       }
     }
