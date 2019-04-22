@@ -18,7 +18,7 @@ export function normalizeFunctions(obj) {
       if (match) {
         const fullFunctionBody = match[2].match(/^{?(\s*return\s+)?(.*?)}?$/s)
         let functionBody = fullFunctionBody[2].trim()
-        if ((fullFunctionBody[1] && fullFunctionBody[1].match(/return/)) || !match[2].trim().match(/^\s*{/s)) {
+        if (fullFunctionBody[1] || !match[2].trim().match(/^\s*{/s)) {
           functionBody = `return ${functionBody}`
         }
         // eslint-disable-next-line no-new-func
