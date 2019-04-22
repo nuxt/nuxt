@@ -24,6 +24,7 @@ describe('util: serialize', () => {
 
   test('should serialize arrow function with single parameter', () => {
     const obj = {
+      // eslint-disable-next-line arrow-parens
       fn: foobar => {}
     }
     expect(serializeFunction(obj.fn)).toEqual('(foobar) => {}')
