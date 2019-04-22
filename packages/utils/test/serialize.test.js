@@ -25,9 +25,15 @@ describe('util: serialize', () => {
   test('should serialize arrow function with single parameter', () => {
     const obj = {
       // eslint-disable-next-line arrow-parens
-      fn: foobar => {}
+      fn: foobar => {},
+      fn2: foobar => 1,
+      fn3: foobar => {
+        return 3
+      }
     }
-    expect(serializeFunction(obj.fn)).toEqual('(foobar) => {}')
+    expect(serializeFunction(obj.fn)).toEqual('foobar => {}')
+    expect(serializeFunction(obj.fn2)).toEqual('foobar => 1')
+    expect(serializeFunction(obj.fn3)).toEqual('foobar => {\n        return 3;\n      }')
   })
 
   test('should not replace custom scripts', () => {
