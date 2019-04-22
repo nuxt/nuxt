@@ -40,11 +40,34 @@ export default {
       if (typeof this.nuxtChildKey !== 'undefined' || this.$route.matched.length > 1) {
         return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)
       }
+
       const Component = this.$route.matched[0] && this.$route.matched[0].components.default
-      if (Component && Component.options && Component.options.key) {
-        return (typeof Component.options.key === 'function' ? Component.options.key(this.$route) : Component.options.key)
+      if (Component && Component.options) {
+        const options = Component.options
+
+        if (options.key) {
+          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
+        }
+
+        if (options.watchQuery) {
+          const watchQuery = options.watchQuery
+          if (watchQuery === true) {
+            return this.$route.fullPath
+          } else if (Array.isArray(watchQuery)) {
+            const pickedQuery = {}
+            for (const key of watchQuery) {
+              pickedQuery[key] = this.$route.query[key]
+            }
+
+            return this.$router.resolve({
+              path: this.$route.path,
+              query: pickedQuery
+            }).href
+          }
+        }
       }
-      return this.$route.fullPath
+
+      return this.$route.path
     }
   },
   beforeCreate() {
