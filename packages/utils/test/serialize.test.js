@@ -35,6 +35,7 @@ describe('util: serialize', () => {
       // eslint-disable-next-line arrow-parens
       fn: foobar => {},
       fn2: foobar => 1,
+      // eslint-disable-next-line arrow-parens
       fn3: foobar => {
         return 3
       }
