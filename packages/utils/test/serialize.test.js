@@ -22,7 +22,7 @@ describe('util: serialize', () => {
     expect(serializeFunction(obj.fn)).toEqual('() => {}')
   })
 
-test('should serialize arrow function with single parameter', () => {
+  test('should serialize arrow function with single parameter', () => {
     const obj = {
       fn: foobar => {}
     }

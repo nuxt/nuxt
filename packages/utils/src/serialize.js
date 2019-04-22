@@ -1,7 +1,28 @@
 import serialize from 'serialize-javascript'
 
-export function serializeFunction(func) {
+function normalizeFunctions(obj) {
+  if (typeof val !== 'object' || Array.isArray(obj) || val === null) {
+    return
+  }
+  for (const key in obj) {
+    if (key === '__proto__' || key === 'constructor') {
+      continue
+    }
+    const val = obj[key]    
+    if (val !== null && typeof val === 'object' && !Array.isArray(obj)) {
+      normalizeFunctions(val)
+    }
+    if (typeof obj[key] === 'function') {
+      // This will cause an arrow function to be normalized into function() {}
+      obj[key] = new Function(obj[key])
+    }
+  }
+  return obj
+}
+
+function serializeFunction(func) {
   let open = false
+  func = normalizeFunctions(func)
   return serialize(func)
     .replace(serializeFunction.assignmentRE, (_, spaces) => {
       return `${spaces}: function (`
