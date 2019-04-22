@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import { parallel, sequence, wrapArray } from '@nuxt/utils'
+import { parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
 import * as WebpackConfigs from './config'
@@ -204,7 +204,7 @@ export class WebpackBundler {
   }
 
   async middleware(req, res, next) {
-    const name = req._modern ? 'modern' : 'client'
+    const name = isModernRequest(req, this.buildContext.options) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
       await this.devMiddleware[name](req, res)

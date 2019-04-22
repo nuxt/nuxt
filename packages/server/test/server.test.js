@@ -13,7 +13,6 @@ import ServerContext from '../src/context'
 import renderAndGetWindow from '../src/jsdom'
 import nuxtMiddleware from '../src/middleware/nuxt'
 import errorMiddleware from '../src/middleware/error'
-import createModernMiddleware from '../src/middleware/modern'
 import createTimingMiddleware from '../src/middleware/timing'
 
 jest.mock('connect')
@@ -27,7 +26,6 @@ jest.mock('../src/context')
 jest.mock('../src/jsdom')
 jest.mock('../src/middleware/nuxt')
 jest.mock('../src/middleware/error')
-jest.mock('../src/middleware/modern')
 jest.mock('../src/middleware/timing')
 
 describe('server: server', () => {
@@ -72,10 +70,6 @@ describe('server: server', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
     connect.mockReturnValue({ use: jest.fn() })
     serveStatic.mockImplementation(dir => ({ id: 'test-serve-static', dir }))
-    createModernMiddleware.mockImplementation(options => ({
-      id: 'test-modern-middleware',
-      ...options
-    }))
     nuxtMiddleware.mockImplementation(options => ({
       id: 'test-nuxt-middleware',
       ...options
@@ -178,7 +172,7 @@ describe('server: server', () => {
     expect(server.nuxt.callHook).nthCalledWith(1, 'render:setupMiddleware', server.app)
     expect(server.nuxt.callHook).nthCalledWith(2, 'render:errorMiddleware', server.app)
 
-    expect(server.useMiddleware).toBeCalledTimes(5)
+    expect(server.useMiddleware).toBeCalledTimes(4)
     expect(serveStatic).toBeCalledTimes(2)
     expect(serveStatic).nthCalledWith(1, 'resolve(/var/nuxt/src, var/nuxt/static)', server.options.render.static)
     expect(server.useMiddleware).nthCalledWith(1, {
@@ -195,17 +189,6 @@ describe('server: server', () => {
       path: '__nuxt_test'
     })
 
-    const modernMiddleware = {
-      serverContext: server.serverContext
-    }
-
-    expect(createModernMiddleware).toBeCalledTimes(1)
-    expect(createModernMiddleware).toBeCalledWith(modernMiddleware)
-    expect(server.useMiddleware).nthCalledWith(3, {
-      id: 'test-modern-middleware',
-      ...modernMiddleware
-    })
-
     const nuxtMiddlewareOpts = {
       options: server.options,
       nuxt: server.nuxt,
@@ -214,7 +197,7 @@ describe('server: server', () => {
     }
     expect(nuxtMiddleware).toBeCalledTimes(1)
     expect(nuxtMiddleware).toBeCalledWith(nuxtMiddlewareOpts)
-    expect(server.useMiddleware).nthCalledWith(4, {
+    expect(server.useMiddleware).nthCalledWith(3, {
       id: 'test-nuxt-middleware',
       ...nuxtMiddlewareOpts
     })
@@ -225,7 +208,7 @@ describe('server: server', () => {
     }
     expect(errorMiddleware).toBeCalledTimes(1)
     expect(errorMiddleware).toBeCalledWith(errorMiddlewareOpts)
-    expect(server.useMiddleware).nthCalledWith(5, {
+    expect(server.useMiddleware).nthCalledWith(4, {
       id: 'test-error-middleware',
       ...errorMiddlewareOpts
     })
@@ -288,7 +271,7 @@ describe('server: server', () => {
     expect(launchMiddleware).toBeCalledTimes(1)
     expect(launchMiddleware).toBeCalledWith({ id: 'test-editor' })
 
-    expect(server.useMiddleware).nthCalledWith(4, {
+    expect(server.useMiddleware).nthCalledWith(3, {
       handler: { id: 'test-editor' },
       path: '__open-in-editor'
     })

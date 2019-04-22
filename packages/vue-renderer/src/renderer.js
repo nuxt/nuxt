@@ -3,6 +3,7 @@ import fs from 'fs-extra'
 import chalk from 'chalk'
 import consola from 'consola'
 import template from 'lodash/template'
+import { isModernRequest } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -280,7 +281,7 @@ export default class VueRenderer {
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
-      renderContext.modern = req._modern || this.options.modern === 'client'
+      renderContext.modern = this.options.modern === 'client' || isModernRequest(req, this.options)
     }
 
     // Call renderContext hook
