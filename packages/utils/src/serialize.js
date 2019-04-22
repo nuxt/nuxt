@@ -2,7 +2,7 @@ import serialize from 'serialize-javascript'
 
 function normalizeFunctions(obj) {
   if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
-    return
+    return obj
   }
   for (const key in obj) {
     if (key === '__proto__' || key === 'constructor') {
