@@ -1,6 +1,6 @@
 import serialize from 'serialize-javascript'
 
-function normalizeFunctions(obj) {
+export function normalizeFunctions(obj) {
   if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
     return obj
   }
@@ -14,10 +14,11 @@ function normalizeFunctions(obj) {
     }
     if (typeof obj[key] === 'function') {
       const asString = obj[key].toString()
-      const match = asString.match(/^([^{(]+)=>\s*(.*)/)
+      const match = asString.match(/^([^{(]+)=>\s*(.*)/s)
       if (match) {
-        let functionBody = match[2].match(/^{?(\s*return\s+)?(.*?)}?$/)[2].trim()
-        if (!match[2].trim().match(/^{/)) {
+        const fullFunctionBody = match[2].match(/^{?(\s*return\s+)?(.*?)}?$/s)
+        let functionBody = fullFunctionBody[2].trim()
+        if ((fullFunctionBody[1] && fullFunctionBody[1].match(/return/)) || !match[2].trim().match(/^\s*{/s)) {
           functionBody = `return ${functionBody}`
         }
         // eslint-disable-next-line no-new-func

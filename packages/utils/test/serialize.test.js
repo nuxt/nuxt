@@ -1,6 +1,29 @@
-import { serializeFunction } from '../src/serialize'
+import { serializeFunction, normalizeFunctions } from '../src/serialize'
 
 describe('util: serialize', () => {
+  test('should normalize arrow functions', () => {
+    const obj = {
+      // eslint-disable-next-line arrow-parens
+      fn1: foobar => {},
+      fn2: foobar => 1,
+      // eslint-disable-next-line arrow-parens
+      fn3: foobar => {
+        return 3
+      },
+      // eslint-disable-next-line arrow-parens
+      fn4: arg1 =>
+        2 * arg1
+    }
+    expect(normalizeFunctions(obj).fn1.toString())
+      .toEqual('function anonymous(foobar\n) {\n\n}')
+    expect(normalizeFunctions(obj).fn2.toString())
+      .toEqual('function anonymous(foobar\n) {\nreturn 1\n}')
+    expect(normalizeFunctions(obj).fn3.toString())
+      .toEqual('function anonymous(foobar\n) {\nreturn 3;\n}')
+    expect(normalizeFunctions(obj).fn4.toString())
+      .toEqual('function anonymous(arg1\n) {\nreturn 2 * arg1\n}')
+  })
+
   test('should serialize normal function', () => {
     const obj = {
       fn: function () {}
@@ -33,7 +56,7 @@ describe('util: serialize', () => {
   test('should serialize arrow function with single parameter', () => {
     const obj = {
       // eslint-disable-next-line arrow-parens
-      fn: foobar => {},
+      fn1: foobar => {},
       fn2: foobar => 1,
       // eslint-disable-next-line arrow-parens
       fn3: foobar => {
@@ -43,7 +66,7 @@ describe('util: serialize', () => {
       fn4: arg1 =>
         2 * arg1
     }
-    expect(serializeFunction(obj.fn)).toEqual('foobar => {}')
+    expect(serializeFunction(obj.fn1)).toEqual('foobar => {}')
     expect(serializeFunction(obj.fn2)).toEqual('foobar => 1')
     expect(serializeFunction(obj.fn3)).toEqual('foobar => {\n        return 3;\n      }')
     expect(serializeFunction(obj.fn4)).toEqual('arg1 => 2 * arg1')
