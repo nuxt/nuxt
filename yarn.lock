@@ -4987,10 +4987,10 @@ forever-agent@~0.6.1:
   resolved "https://registry.npmjs.org/forever-agent/-/forever-agent-0.6.1.tgz#fbc71f0c41adeb37f96c577ad1ed42d8fdacca91"
   integrity sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
 
-fork-ts-checker-webpack-plugin@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-1.1.0.tgz#b86ad22bd87cc243763e2bf384fe5192026238fc"
-  integrity sha512-2y0etlSxfJ17wfoC+dLDj/k9tZDcAJa5vqoiNGZTLr6NM8OzycDQDJhuY5BboPw4xrMG6syo4E4o9UkLWzd9qg==
+fork-ts-checker-webpack-plugin@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/fork-ts-checker-webpack-plugin/-/fork-ts-checker-webpack-plugin-1.2.0.tgz#2d0b0d94ef6a2479ac94f44cb9edfa9e8f1de160"
+  integrity sha512-JY+qctuwZkg25tt3GdX3q4MOAI4mddWTs4ugAZD3EhJ12P3K0xtg0wvU+MMRPNBP0zT1hvQXemT2xeeQ8DYSWg==
   dependencies:
     babel-code-frame "^6.22.0"
     chalk "^2.4.1"
@@ -10714,10 +10714,10 @@ ts-jest@^24.0.2:
     semver "^5.5"
     yargs-parser "10.x"
 
-ts-loader@^5.3.3:
-  version "5.3.3"
-  resolved "https://registry.npmjs.org/ts-loader/-/ts-loader-5.3.3.tgz#8b4af042e773132d86b3c99ef0acf3b4d325f473"
-  integrity sha512-KwF1SplmOJepnoZ4eRIloH/zXL195F51skt7reEsS6jvDqzgc/YSbz9b8E07GxIUwLXdcD4ssrJu6v8CwaTafA==
+ts-loader@^5.4.2:
+  version "5.4.2"
+  resolved "https://registry.npmjs.org/ts-loader/-/ts-loader-5.4.2.tgz#94fee8c70bb2b84700b490a1d2a18bb287bc60e9"
+  integrity sha512-esJotPw0qWBAGVxiNk5yEKtidaHngNWuT00aJqiGXbNJGeyXW+P00iSjURz4lQam9pHILmSvR3sCB5+soqYP7Q==
   dependencies:
     chalk "^2.3.0"
     enhanced-resolve "^4.0.0"
