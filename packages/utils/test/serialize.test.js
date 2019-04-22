@@ -22,6 +22,14 @@ describe('util: serialize', () => {
     expect(serializeFunction(obj.fn)).toEqual('() => {}')
   })
 
+  test('should serialize arrow function with ternary in parens', () => {
+    const obj = {
+      // eslint-disable-next-line arrow-parens
+      fn: foobar => (foobar ? 1 : 0)
+    }
+    expect(serializeFunction(obj.fn)).toEqual('foobar => foobar ? 1 : 0')
+  })
+
   test('should serialize arrow function with single parameter', () => {
     const obj = {
       // eslint-disable-next-line arrow-parens
