@@ -49,15 +49,15 @@ export const relativeTo = function relativeTo(...args) {
   }
 
   // Resolve path
-  const _path = r(...args)
+  const relativePath = r(...args)
 
   // Check if path is an alias
-  if (startsWithSrcAlias(_path)) {
-    return _path
+  if (startsWithSrcAlias(relativePath)) {
+    return relativePath
   }
 
   // Make correct relative path
-  let rp = path.relative(dir, _path)
+  let rp = path.relative(dir, relativePath)
   if (rp[0] !== '.') {
     rp = '.' + path.sep + rp
   }

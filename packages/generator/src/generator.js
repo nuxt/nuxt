@@ -242,17 +242,17 @@ export default class Generator {
       }
     }
 
-    let _path
+    let fileName
 
     if (this.options.generate.subFolders) {
-      _path = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      _path = _path === '/404/index.html' ? '/404.html' : _path // /404 -> /404.html
+      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
+      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
     } else {
-      _path = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
+      fileName = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: _path, html }
+    const page = { route, path: fileName, html }
     await this.nuxt.callHook('generate:page', page)
 
     page.path = path.join(this.distPath, page.path)

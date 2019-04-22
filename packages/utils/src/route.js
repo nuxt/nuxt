@@ -4,22 +4,22 @@ import consola from 'consola'
 
 import { r } from './resolve'
 
-export const flatRoutes = function flatRoutes(router, _path = '', routes = []) {
+export const flatRoutes = function flatRoutes(router, fileName = '', routes = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
     if (r.children) {
-      if (_path === '' && r.path === '/') {
+      if (fileName === '' && r.path === '/') {
         routes.push('/')
       }
-      return flatRoutes(r.children, _path + r.path + '/', routes)
+      return flatRoutes(r.children, fileName + r.path + '/', routes)
     }
-    _path = _path.replace(/^\/+$/, '/')
+    fileName = fileName.replace(/^\/+$/, '/')
     routes.push(
-      (r.path === '' && _path[_path.length - 1] === '/'
-        ? _path.slice(0, -1)
-        : _path) + r.path
+      (r.path === '' && fileName[fileName.length - 1] === '/'
+        ? fileName.slice(0, -1)
+        : fileName) + r.path
     )
   })
   return routes
