@@ -13,9 +13,7 @@ function normalizeFunctions(obj) {
       normalizeFunctions(val)
     }
     if (typeof obj[key] === 'function') {
-      // This will cause an arrow function to be normalized into function() {}
-      // eslint-disable-next-line no-new-func
-      obj[key] = new Function(obj[key])
+      // to implement
     }
   }
   return obj
