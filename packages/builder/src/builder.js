@@ -539,9 +539,10 @@ export default class Builder {
         } catch (err) {
           throw new Error(`Could not compile template ${src}: ${err.message}`)
         }
-        const _path = r(this.options.buildDir, dst)
+
         // Ensure parent dir exits and write file
-        await fsExtra.outputFile(_path, content, 'utf8')
+        const relativePath = r(this.options.buildDir, dst)
+        await fsExtra.outputFile(relativePath, content, 'utf8')
       })
     )
   }
@@ -662,12 +663,12 @@ export default class Builder {
     this.createFileWatcher(
       nuxtRestartWatch,
       ['all'],
-      (event, _path) => {
+      (event, fileName) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
         }
-        this.nuxt.callHook('watch:fileChanged', this, _path) // Legacy
-        this.nuxt.callHook('watch:restart', { event, path: _path })
+        this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
+        this.nuxt.callHook('watch:restart', { event, path: fileName })
       },
       this.assignWatcher('restart')
     )
