@@ -11,7 +11,6 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
@@ -56,8 +55,8 @@ export default class Server {
     // Initialize vue-renderer
     const { VueRenderer } = await import('@nuxt/vue-renderer')
 
-    const context = new ServerContext(this)
-    this.renderer = new VueRenderer(context)
+    this.serverContext = new ServerContext(this)
+    this.renderer = new VueRenderer(this.serverContext)
     await this.renderer.ready()
 
     // Setup nuxt middleware
@@ -110,10 +109,6 @@ export default class Server {
         )
       })
     }
-
-    this.useMiddleware(createModernMiddleware({
-      context: this.renderer.context
-    }))
 
     // Dev middleware
     if (this.options.dev) {
