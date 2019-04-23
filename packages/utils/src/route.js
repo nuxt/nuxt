@@ -153,7 +153,7 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir = '', 
       route.name += key === '_' ? 'all' : ''
       route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
-      const parentRoute = route.chunkName.replace(new RegExp(`^${pagesDir}/+`), '')
+      const parentRoute = child && child.chunkName.replace(new RegExp(`^${pagesDir}/+`), '')
 
       if (child && !leafRoutes.includes(parentRoute)) {
         child.children = child.children || []
