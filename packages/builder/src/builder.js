@@ -361,7 +361,8 @@ export default class Builder {
         Object.values(files),
         this.options.srcDir,
         this.options.dir.pages,
-        this.options.router.routeNameSplitter
+        this.options.router.routeNameSplitter,
+        this.options.router.leafRoutes
       )
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
