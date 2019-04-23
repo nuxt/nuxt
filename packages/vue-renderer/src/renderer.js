@@ -281,7 +281,8 @@ export default class VueRenderer {
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
-      renderContext.modern = this.options.modern === 'client' || isModernRequest(req, this.options)
+      const modernMode = this.options.modern
+      renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
     }
 
     // Call renderContext hook

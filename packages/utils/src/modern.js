@@ -33,8 +33,8 @@ export const isModernBrowser = (ua) => {
   return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
-export const isModernRequest = (req, options) => {
-  if (options.modern === false) {
+export const isModernRequest = (req, modernMode = false) => {
+  if (modernMode === false) {
     return false
   }
 
