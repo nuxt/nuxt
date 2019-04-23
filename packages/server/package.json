@@ -22,11 +22,9 @@
     "launch-editor-middleware": "^2.2.1",
     "on-headers": "^1.0.2",
     "pify": "^4.0.1",
-    "semver": "^6.0.0",
     "serve-placeholder": "^1.2.1",
     "serve-static": "^1.13.2",
-    "server-destroy": "^1.0.1",
-    "ua-parser-js": "^0.7.19"
+    "server-destroy": "^1.0.1"
   },
   "publishConfig": {
     "access": "public"

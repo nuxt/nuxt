@@ -11,7 +11,6 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
@@ -113,11 +112,6 @@ export default class Server {
 
     // Dev middleware
     if (this.options.dev) {
-      // devMiddleware needs req._modern for serving different files
-      this.useMiddleware(createModernMiddleware({
-        serverContext: this.serverContext
-      }))
-
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
           return next()
@@ -157,13 +151,6 @@ export default class Server {
           handler: servePlaceholder(fallback.static)
         })
       }
-    }
-
-    if (!this.options.dev) {
-      // Put detection after serve-static for avoiding unnecessary detections
-      this.useMiddleware(createModernMiddleware({
-        serverContext: this.serverContext
-      }))
     }
 
     // Finally use nuxtMiddleware

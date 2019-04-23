@@ -3,6 +3,7 @@ import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
+import { isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
@@ -36,7 +37,8 @@ export default class SPARenderer extends BaseRenderer {
 
   async render(renderContext) {
     const { url = '/', req = {}, _generate } = renderContext
-    const modern = req._modern || (this.options.modern && _generate)
+    const modernMode = this.options.modern
+    const modern = (modernMode && _generate) || isModernRequest(req, modernMode)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
