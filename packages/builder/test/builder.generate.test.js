@@ -589,7 +589,8 @@ describe('builder: builder generate', () => {
       }
       nuxt.options.router = {
         routeNameSplitter: '[splitter]',
-        extendRoutes: jest.fn()
+        extendRoutes: jest.fn(),
+        leafRoutes: ['leaf']
       }
       createRoutes.mockImplementationOnce(files => files.map(file => ({ path: file })))
       const builder = new Builder(nuxt, {})
@@ -620,7 +621,8 @@ describe('builder: builder generate', () => {
         [ '/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue' ],
         '/var/nuxt/src',
         '/var/nuxt/pages',
-        '[splitter]'
+        '[splitter]',
+        ['leaf']
       )
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(

@@ -308,6 +308,7 @@ Object {
     "base": "/",
     "extendRoutes": null,
     "fallback": false,
+    "leafRoutes": Array [],
     "linkActiveClass": "nuxt-link-active",
     "linkExactActiveClass": "nuxt-link-exact-active",
     "linkPrefetchedClass": false,
