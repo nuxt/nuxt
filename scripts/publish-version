@@ -2,4 +2,3 @@
 set -e
 
 yarn lerna version --no-changelog
-yarn build

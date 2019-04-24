@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
 
+yarn build
 ./scripts/workspace-run npm publish -q
