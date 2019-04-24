@@ -1493,10 +1493,10 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.3.0.tgz#ec438337690efffea9508cebcca35675f5445110"
-  integrity sha512-h0Z5g2MxJCXyeRmzx3Niwkv+/HRQEkKYpL54cN9cHYc4FUG/NBxeIIJgqbh1ih7y5cg0jdDboL0izZrbFsBtiA==
+"@nuxt/loading-screen@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.5.0.tgz#b2c9289fe5247c222125e87f1df3cac19735096d"
+  integrity sha512-rMQfCywYklVUpeWvIGzRrqT1odsH1LvmisWwORNyqPaMpKxX8bBxFZ56FZUT5HS9xRRlUy37KvBHiirWfIpVEw==
   dependencies:
     connect "^3.6.6"
     fs-extra "^7.0.1"
