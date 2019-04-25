@@ -13,14 +13,7 @@ const stub = {
   es: `export * from '../src/index'`,
   cjs: `const esm = require('esm')
 
-const _require = esm(module, {
-  cache: false,
-  cjs: {
-    cache: true,
-    vars: true,
-    namedExports: true
-  }
-})
+const _require = esm(module)
 
 const execa = require('execa')
 
