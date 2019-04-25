@@ -63,8 +63,8 @@ function execCommand(cmd, args) {
 }
 
 async function getLastGitTag() {
-  const r = await execCommand('git', ['describe'])
-  return /^[^-]+/.exec(r)[0]
+  const r = await execCommand('git', ['--no-pager', 'tag', '-l']).then(r => r.split('\n'))
+  return r[r.length - 1]
 }
 
 async function getCurrentGitBranch() {
