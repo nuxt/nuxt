@@ -67,7 +67,7 @@
   },
   "engines": {
     "node": ">=8.0.0",
-    "npm": ">=5.0.0"
+    "npm": ">=6.9.0"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",
