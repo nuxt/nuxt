@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
