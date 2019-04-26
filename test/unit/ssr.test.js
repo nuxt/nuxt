@@ -110,6 +110,11 @@ describe('ssr', () => {
     await stressTest('/asyncData')
   })
 
+  test('should hit pre-defined connect middleware', async () => {
+    const { html } = await nuxt.server.renderRoute(url('/ping'))
+    expect(html).toInclude('pong')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
