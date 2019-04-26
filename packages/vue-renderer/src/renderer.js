@@ -1,6 +1,5 @@
 import path from 'path'
 import fs from 'fs-extra'
-import chalk from 'chalk'
 import consola from 'consola'
 import template from 'lodash/template'
 import { isModernRequest } from '@nuxt/utils'
@@ -202,7 +201,7 @@ export default class VueRenderer {
     }
 
     options.modern = options.render.ssr ? 'server' : 'client'
-    consola.info(`Modern bundles are detected. Modern mode (${chalk.green.bold(options.modern)}) is enabled now.`)
+    consola.info(`Modern bundles are detected. Modern mode (\`${options.modern}\`) is enabled now.`)
   }
 
   createRenderer() {
