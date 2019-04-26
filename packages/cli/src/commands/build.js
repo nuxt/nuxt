@@ -5,6 +5,7 @@ export default {
   name: 'build',
   description: 'Compiles the application for production deployment',
   usage: 'build <dir>',
+  // options 여기 있네
   options: {
     ...common,
     ...locking,
@@ -61,6 +62,7 @@ export default {
     }
   },
   async run(cmd) {
+    // cmd는 NuxtCommand 클래스의 인스턴스임 (경로: ../command.js)
     const config = await cmd.getNuxtConfig({ dev: false, _build: true })
     const nuxt = await cmd.getNuxt(config)
 

@@ -6,6 +6,7 @@ const commands = {
   help: () => import('./help')
 }
 
+// start인지 dev인지 뭐인지 리턴해줌.....
 export default function getCommand(name) {
   if (!commands[name]) {
     return Promise.resolve(null)

@@ -6,11 +6,13 @@ import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 
 export async function loadNuxtConfig(argv) {
+  // 인자로 받은 파일의 절대 경로를 리턴
   const rootDir = path.resolve(argv._[0] || '.')
   let nuxtConfigFile
   let options = {}
 
   try {
+    // require resolve 경로에서 파일만 가져옴
     nuxtConfigFile = require.resolve(path.resolve(rootDir, argv['config-file']))
   } catch (e) {
     if (e.code !== 'MODULE_NOT_FOUND') {

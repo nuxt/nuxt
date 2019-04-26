@@ -1,4 +1,5 @@
 import path from 'path'
+// fs-extra는 fs에 없는 몇 파일 시스템 메소드를 추가하고, promise도 추가 됨
 import fs from 'fs-extra'
 import * as imports from '../imports'
 
@@ -27,6 +28,7 @@ async function getNuxtTypeScript() {
 
 export async function detectTypeScript(rootDir, options = {}) {
   const typescript = {
+    // 전달받은 rootDir에서부터 tsconfig.son까지의 절대경로
     tsConfigPath: path.resolve(rootDir, 'tsconfig.json'),
     tsConfigExists: false,
     runtime: false,
