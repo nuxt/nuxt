@@ -14,11 +14,11 @@ export function normalizeFunctions(obj) {
     }
     if (typeof obj[key] === 'function') {
       const asString = obj[key].toString()
-      const match = asString.match(/^([^{(]+)=>\s*(.*)/s)
+      const match = asString.match(/^([^{(]+)=>\s*([\0-\uFFFF]*)/)
       if (match) {
-        const fullFunctionBody = match[2].match(/^{?(\s*return\s+)?(.*?)}?$/s)
+        const fullFunctionBody = match[2].match(/^{?(\s*return\s+)?([\0-\uFFFF]*?)}?$/)
         let functionBody = fullFunctionBody[2].trim()
-        if (fullFunctionBody[1] || !match[2].trim().match(/^\s*{/s)) {
+        if (fullFunctionBody[1] || !match[2].trim().match(/^\s*{/)) {
           functionBody = `return ${functionBody}`
         }
         // eslint-disable-next-line no-new-func
