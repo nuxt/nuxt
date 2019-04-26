@@ -30,8 +30,13 @@ export default class Server {
     // Will be set after listen
     this.listeners = []
 
-    // Create new connect instance
-    this.app = connect()
+    // Use different server instance if provided
+    if (this.options.server.app) {
+      this.app = this.options.server.app
+    } else {
+      // Create new connect instance
+      this.app = connect()
+    }
 
     // Close hook
     this.nuxt.hook('close', () => this.close())
