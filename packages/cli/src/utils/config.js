@@ -6,7 +6,7 @@ import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 
 export async function loadNuxtConfig(argv) {
-  // 인자로 받은 파일의 절대 경로를 리턴
+  // 인자로 받은 파일의 절대 경로를 리턴, 이 경우는 process.argv.slice(2)나 현재 파일의 절대 경로
   const rootDir = path.resolve(argv._[0] || '.')
   let nuxtConfigFile
   let options = {}
@@ -17,6 +17,7 @@ export async function loadNuxtConfig(argv) {
   } catch (e) {
     if (e.code !== 'MODULE_NOT_FOUND') {
       throw (e)
+      // 'config-file'이 없으면, @nuxt/config에서 defaultNuxtConfigFile 가져옴
     } else if (argv['config-file'] !== defaultNuxtConfigFile) {
       consola.fatal('Could not load config file: ' + argv['config-file'])
     }

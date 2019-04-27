@@ -18,7 +18,7 @@ export default {
         options.build = options.build || {}
         if (argv.analyze && typeof options.build.analyze !== 'object') {
           options.build.analyze = true
-        }
+        } // cmd의 name이 start이면 Typescript error 검사가 아니라 transpile만
       }
     },
     devtools: {

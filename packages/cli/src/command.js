@@ -58,6 +58,7 @@ export default class NuxtCommand {
     let cmdError
 
     try {
+      //★
       await this.cmd.run(this)
     } catch (e) {
       cmdError = e
@@ -91,7 +92,7 @@ export default class NuxtCommand {
     process.stdout.write(this._getHelp())
   }
 
-  // minimist 돌려서 argv 돌려주는 getter
+  // minimist 돌려서 argv 돌려주는 getter 연습☆
   get argv() {
     // 위에서 parseArgv 초기화를 null로 했음, 따라서 null 이면 아래의 내용 실행
     if (!this._parsedArgv) {
@@ -103,19 +104,25 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
+  // 연습☆
   async getNuxtConfig(extraOptions = {}) {
-    // argv에서 첫번째 옵션이나 현재 파일 절대 경로 리턴함!
+    // argv에서 첫번째 옵션과 현재 파일을 합친 절대 경로 리턴함
     const rootDir = path.resolve(this.argv._[0] || '.')
 
     // Typescript support
+    // 타입스크립트가 있는 프로젝트인지 아닌지를 판단함
     extraOptions._typescript = await detectTypeScript(rootDir, {
+      // cmd의 name이 start이면 Typescript error 검사가 아니라 transpile만
       transpileOnly: this.cmd.name === 'start'
     })
 
+    // nuxtConfig 파일 로드함
     const config = await loadNuxtConfig(this.argv)
+    // loadNuxtConfig로 받은 파일과, extraOptions를 합침
     const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
+      // prepare function들 실행
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
 
@@ -123,6 +130,7 @@ export default class NuxtCommand {
   }
 
   async getNuxt(options) {
+    // imports의 @nuxt/core에서 ./nuxt.js 가져옴
     const { Nuxt } = await imports.core()
 
     const nuxt = new Nuxt(options)

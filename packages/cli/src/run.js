@@ -25,7 +25,7 @@ export default async function run(_argv) {
 
   // Try internal command
   if (cmd) {
-    // argv의 첫 번째 엘리먼트를 cmd로, 첫 번째 엘리먼트 제외한 엘리먼트들을 argv.slice(1)로 보냄
+    // argv의 첫 번째 엘리먼트를 cmd로(예를 들어 dev), 첫 번째 엘리먼트 제외한 엘리먼트들을 argv.slice(1)로 보냄
     return NuxtCommand.run(cmd, argv.slice(1))
   }
 
