@@ -12,15 +12,10 @@ import * as imports from './imports'
 
 export default class NuxtCommand {
   /*    
-    The "argv" array contains everything given on the command line. 
-    The first item (argv[0]) will be the path to node itself, 
-    and the second item (argv[1]) will be the path to your script code.
-
-    So a slice starting at 2 will discard both of those 
-    and return everything else that was typed on the command line. 
-    These are the arguments that will be used to construct the API query string.
+    argv는 커맨드로 받은 모든 것을 담고 있다.
+    첫째의 argv[0]는 node의 경로를, argv[1]는 현재 script code의 경로를 담는다.
+    process.argv.slice(2)를 하게 되면, 이 둘 다음의 커맨드 라인에서 받은 내용을 가져온다.
   */ 
-  // Node 위치와 file 위치를 제외한 argv 옵션들
   constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
     
     if (!cmd.options) {
@@ -28,6 +23,7 @@ export default class NuxtCommand {
     }
     this.cmd = cmd
 
+    // argv로 내려온 _argv
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
   }
@@ -97,15 +93,18 @@ export default class NuxtCommand {
 
   // minimist 돌려서 argv 돌려주는 getter
   get argv() {
+    // 위에서 parseArgv 초기화를 null로 했음, 따라서 null 이면 아래의 내용 실행
     if (!this._parsedArgv) {
+      //_getMinistOptions에서 리턴받은 값 가져옴
       const minimistOptions = this._getMinimistOptions()
+      // process.argv.slice(2)로 넘어온 커맨드 옵션들이랑, minimistOptions된 값 
       this._parsedArgv = minimist(this._argv, minimistOptions)
     }
     return this._parsedArgv
   }
 
   async getNuxtConfig(extraOptions = {}) {
-    // ???
+    // argv에서 첫번째 옵션이나 현재 파일 절대 경로 리턴함!
     const rootDir = path.resolve(this.argv._[0] || '.')
 
     // Typescript support
@@ -173,6 +172,7 @@ export default class NuxtCommand {
     return typeof option.default === 'function' ? option.default(this.cmd) : option.default
   }
 
+  // /command/build.js의 옵션의 형식을 바꿔줌
   _getMinimistOptions() {
     const minimistOptions = {
       alias: {},
@@ -185,10 +185,10 @@ export default class NuxtCommand {
     for (const name of Object.keys(this.cmd.options)) {
       // option 
       // options들 중에 key를 option으로 넣고, 그 키로 다시 option 값 가져옴
-      const option = this.cmd.options[name] // 예, name이 analyze라면
+      const option = this.cmd.options[name] // 예) name이 analyze라면
 
-      if (option.alias) { // name
-        minimistOptions.alias[option.alias] = name
+      if (option.alias) { // 예) analyze의 alias
+        minimistOptions.alias[option.alias] = name // 예) a(alias의 값) : analyze
       }
       if (option.type) {
         minimistOptions[option.type].push(option.alias || name)

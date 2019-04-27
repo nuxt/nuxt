@@ -29,6 +29,7 @@ async function getNuxtTypeScript() {
 export async function detectTypeScript(rootDir, options = {}) {
   const typescript = {
     // 전달받은 rootDir에서부터 tsconfig.son까지의 절대경로
+    // tsconfig.json이 있다면, 그 위치가 타입스크립트 프로젝트의 루트임을 의미함
     tsConfigPath: path.resolve(rootDir, 'tsconfig.json'),
     tsConfigExists: false,
     runtime: false,

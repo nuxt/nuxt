@@ -10,7 +10,7 @@ export async function loadNuxtConfig(argv) {
   const rootDir = path.resolve(argv._[0] || '.')
   let nuxtConfigFile
   let options = {}
-
+ 
   try {
     // require resolve 경로에서 파일만 가져옴
     nuxtConfigFile = require.resolve(path.resolve(rootDir, argv['config-file']))
