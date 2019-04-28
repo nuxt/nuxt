@@ -23,7 +23,7 @@
     "fs-extra": "^7.0.1",
     "minimist": "^1.2.0",
     "opener": "1.5.1",
-    "pretty-bytes": "^5.1.0",
+    "pretty-bytes": "^5.2.0",
     "std-env": "^2.2.1",
     "wrap-ansi": "^5.1.0"
   },
