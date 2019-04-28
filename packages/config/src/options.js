@@ -10,16 +10,20 @@ import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
   // Prevent duplicate calls
+  // options의 nomalized가 false이면
   if (_options.__normalized__) {
     return _options
   }
 
   // Clone options to prevent unwanted side-effects
+  // 오브젝트 복사한뒤
   const options = Object.assign({}, _options)
+  // nomalized true로
   options.__normalized__ = true
 
   // Normalize options
   if (options.loading === true) {
+    // loading 속성이 사라짐
     delete options.loading
   }
 
@@ -28,21 +32,26 @@ export function getNuxtConfig(_options) {
     options.router.middleware &&
     !Array.isArray(options.router.middleware)
   ) {
+    // array에 넣어줌
     options.router.middleware = [options.router.middleware]
   }
 
+  // router.base의 자료형이 string이면
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
   }
 
   // TODO: Remove for Nuxt 3
   // transition -> pageTransition
+  // 기본적으로 값이 할당되지 않은 변수는 undefined 타입이며,  undefined 타입은 변수 자체의 값 또한 undefined 입니다.
+  // 초기화되어 있지 않거나 존재하지 않는 객체
   if (typeof options.transition !== 'undefined') {
     consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
     options.pageTransition = options.transition
     delete options.transition
   }
 
+  // name 속성 아래에다가 넣어줌
   if (typeof options.pageTransition === 'string') {
     options.pageTransition = { name: options.pageTransition }
   }
@@ -55,6 +64,7 @@ export function getNuxtConfig(_options) {
     options.extensions = [options.extensions]
   }
 
+  // options.globalNAme이 string인지 검사, globalname의 정규식 검새
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
     : `nuxt`

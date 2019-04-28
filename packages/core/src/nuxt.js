@@ -11,13 +11,15 @@ import { version } from '../package.json'
 import ModuleContainer from './module'
 import Hookable from './hookable'
 import Resolver from './resolver'
- 
+
+// 아까 생성한 options들 받아왔음
 export default class Nuxt extends Hookable {
   constructor(options = {}) {
     super()
 
     // Assign options and apply defaults
-    // 디폴트로 쓸 NuxtConfig파일 가져옴
+    // 디폴트로 쓸 NuxtConfig파일 생성
+    // 위에서 받아왔던 options로
     this.options = getNuxtConfig(options)
 
     // Create instance of core components

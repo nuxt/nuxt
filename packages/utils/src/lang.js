@@ -3,7 +3,7 @@ export const encodeHtml = function encodeHtml(str) {
 }
 
 export const isString = obj => typeof obj === 'string' || obj instanceof String
-
+// 0, -0, null, false, NaN, undefined, or the empty string ("")
 export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
 export const isPureObject = function isPureObject(o) {
