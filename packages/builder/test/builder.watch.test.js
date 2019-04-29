@@ -244,7 +244,7 @@ describe('builder: builder watch', () => {
     expect(chokidar.on).toBeCalledWith('all', expect.any(Function))
   })
 
-  test('should trigger restarting when files changed', () => {
+  test('should trigger restarting when files changed', async () => {
     const nuxt = createNuxt()
     nuxt.options.watchers = {
       chokidar: { test: true }
@@ -259,9 +259,9 @@ describe('builder: builder watch', () => {
 
     const restartHandler = chokidar.on.mock.calls[0][1]
     const watchingFile = '/var/nuxt/src/watch/test/index.js'
-    restartHandler('add', watchingFile)
-    restartHandler('change', watchingFile)
-    restartHandler('unlink', watchingFile)
+    await restartHandler('add', watchingFile)
+    await restartHandler('change', watchingFile)
+    await restartHandler('unlink', watchingFile)
 
     expect(nuxt.callHook).toBeCalledTimes(6)
     expect(nuxt.callHook).nthCalledWith(1, 'watch:fileChanged', builder, watchingFile)
