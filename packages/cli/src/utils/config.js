@@ -24,12 +24,13 @@ export async function loadNuxtConfig(argv) {
   }
 
   // 20190429 여기서 부터
-
   if (nuxtConfigFile) {
     // Clear cache
     clearRequireCache(nuxtConfigFile)
 
+    // 확장자가 ts로 끝난다면
     if (nuxtConfigFile.endsWith('.ts')) {
+      // 
       options = require(nuxtConfigFile) || {}
     } else {
       options = esm(module)(nuxtConfigFile) || {}
