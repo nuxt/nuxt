@@ -137,7 +137,7 @@ export default class SPARenderer extends BaseRenderer {
     }
 
     // Call spa:templateParams hook
-    this.serverContext.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
+    await this.serverContext.nuxt.callHook('vue-renderer:spa:templateParams', templateParams)
 
     // Render with SPA template
     const html = this.renderTemplate(this.serverContext.resources.spaTemplate, templateParams)
