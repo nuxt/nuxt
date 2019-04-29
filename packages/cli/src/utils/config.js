@@ -23,6 +23,8 @@ export async function loadNuxtConfig(argv) {
     }
   }
 
+  // 20190429 여기서 부터
+
   if (nuxtConfigFile) {
     // Clear cache
     clearRequireCache(nuxtConfigFile)

@@ -64,7 +64,7 @@ export function getNuxtConfig(_options) {
     options.extensions = [options.extensions]
   }
 
-  // options.globalNAme이 string인지 검사, globalname의 정규식 검새
+  // options.globalNAme이 string인지 검사, globalname의 정규식 검사
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
     : `nuxt`
@@ -90,6 +90,7 @@ export function getNuxtConfig(_options) {
     options.build.publicPath = undefined
   }
 
+  // options 기준으로 nuxtConfig 합치는데, 중복 시 options따름
   defaultsDeep(options, nuxtConfig)
 
   // Sanitize router.base

@@ -10,7 +10,7 @@ export default {
     ...common,
     ...locking,
     analyze: {
-      alias: 'a',
+      alias:'a' ,
       type: 'boolean',
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
       prepare(cmd, options, argv) {

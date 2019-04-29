@@ -15,9 +15,9 @@ export default class NuxtCommand {
     argv는 커맨드로 받은 모든 것을 담고 있다.
     첫째의 argv[0]는 node의 경로를, argv[1]는 현재 script code의 경로를 담는다.
     process.argv.slice(2)를 하게 되면, 이 둘 다음의 커맨드 라인에서 받은 내용을 가져온다.
-  */ 
+  */
   constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
-    
+
     if (!cmd.options) {
       cmd.options = {}
     }
@@ -175,16 +175,11 @@ export default class NuxtCommand {
     return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
   }
 
-  _getDefaultOptionValue(option) {
-    // 자료의 타입을 반환
-    return typeof option.default === 'function' ? option.default(this.cmd) : option.default
-  }
-
   // /command/build.js의 옵션의 형식을 바꿔줌
   _getMinimistOptions() {
     const minimistOptions = {
-      alias: {},
-      boolean: [],
+      alias: { 'a':  'analyze' },
+      boolean: [ 'a' ],
       string: [],
       default: {}
     }
@@ -193,10 +188,11 @@ export default class NuxtCommand {
     for (const name of Object.keys(this.cmd.options)) {
       // option 
       // options들 중에 key를 option으로 넣고, 그 키로 다시 option 값 가져옴
-      const option = this.cmd.options[name] // 예) name이 analyze라면
+      const option = this.cmd.options[name] // name = analyze
 
-      if (option.alias) { // 예) analyze의 alias
-        minimistOptions.alias[option.alias] = name // 예) a(alias의 값) : analyze
+      if (option.alias) {
+        minimistOptions.alias[option.alias] = name
+
       }
       if (option.type) {
         minimistOptions[option.type].push(option.alias || name)
@@ -205,6 +201,7 @@ export default class NuxtCommand {
         minimistOptions.default[option.alias || name] = this._getDefaultOptionValue(option)
       }
     }
+  
 
     return minimistOptions
   }
