@@ -63,7 +63,7 @@
     "@nuxt/cli": "2.6.3",
     "@nuxt/core": "2.6.3",
     "@nuxt/generator": "2.6.3",
-    "@nuxt/loading-screen": "^0.5.0",
+    "@nuxt/loading-screen": "^0.5.1",
     "@nuxt/opencollective": "^0.2.2",
     "@nuxt/typescript": "2.6.3",
     "@nuxt/webpack": "2.6.3"
