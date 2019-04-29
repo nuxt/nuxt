@@ -282,9 +282,9 @@ export default class Package {
     return this.build(true)
   }
 
-  async publish(tag = 'latest') {
+  publish(tag = 'latest') {
     this.logger.info(`publishing ${this.pkg.name}@${this.pkg.version} with tag ${tag}`)
-    await this.exec('npm', `publish --tag ${tag}`)
+    this.exec('npm', `publish --tag ${tag}`)
   }
 
   copyFieldsFrom(source, fields = []) {
