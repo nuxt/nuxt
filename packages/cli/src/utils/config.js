@@ -12,12 +12,12 @@ export async function loadNuxtConfig(argv) {
   let options = {}
  
   try {
-    // require resolve 경로에서 파일만 가져옴
+    // require resolve 경로에서 필요한 파일만 가져옴, 아래 경우 nuxt.config.js임
     nuxtConfigFile = require.resolve(path.resolve(rootDir, argv['config-file']))
   } catch (e) {
     if (e.code !== 'MODULE_NOT_FOUND') {
       throw (e)
-      // 'config-file'이 없으면, @nuxt/config에서 defaultNuxtConfigFile 가져옴
+      // 'config-file'이 없으면, @nuxt/config에서 defaultNuxtConfigFile 가져옴 => 'nuxt.config'임
     } else if (argv['config-file'] !== defaultNuxtConfigFile) {
       consola.fatal('Could not load config file: ' + argv['config-file'])
     }
