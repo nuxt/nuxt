@@ -33,7 +33,7 @@ export function getNuxtConfig(_options) {
     options.router.middleware &&
     !Array.isArray(options.router.middleware)
   ) {
-    // array에 넣어줌
+    // array로 바꿔줌
     options.router.middleware = [options.router.middleware]
   }
 
@@ -52,15 +52,15 @@ export function getNuxtConfig(_options) {
     delete options.transition
   }
 
-  // name 속성 아래에다가 넣어줌
+  // name 속성 아래에다가 프로퍼티 넣어줌
   if (typeof options.pageTransition === 'string') {
     options.pageTransition = { name: options.pageTransition }
   }
-
+  // name 속성 아래에다가 프로퍼티 넣어줌
   if (typeof options.layoutTransition === 'string') {
     options.layoutTransition = { name: options.layoutTransition }
   }
-
+  // array로 바꿔줌
   if (typeof options.extensions === 'string') {
     options.extensions = [options.extensions]
   }
