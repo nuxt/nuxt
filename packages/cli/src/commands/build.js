@@ -15,10 +15,12 @@ export default {
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
       prepare(cmd, options, argv) {
         // Analyze option
+        // options.build를 넣거나, options.build 아니면 뒤의 빈 오브젝트를 넣겠다
         options.build = options.build || {}
+        // argv.analyze와 options.build.analyze가 object가 아니면
         if (argv.analyze && typeof options.build.analyze !== 'object') {
           options.build.analyze = true
-        } // cmd의 name이 start이면 Typescript error 검사가 아니라 transpile만
+        }
       }
     },
     devtools: {
@@ -46,6 +48,7 @@ export default {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
+          // !! 는 논리 연산에서 확실한 true/false리턴을 위해 사용함. undefined나 null의 경우 특히
           options.build.quiet = !!argv.quiet
         }
       }

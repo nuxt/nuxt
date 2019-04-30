@@ -28,7 +28,8 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
     "test:types": "tsc -p test/types",
-    "test:unit": "jest test/unit packages --forceExit"
+    "test:unit": "jest test/unit packages --forceExit",
+    "debug": "node-inspect -r esm ./packages/cli/src/utils/test/test.js"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
@@ -88,5 +89,19 @@
     "typescript": "^3.4.4",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^8.1.0"
+  },
+  "dependencies": {
+    "@nuxt/builder": "^2.6.3",
+    "@nuxt/core": "^2.6.3",
+    "@nuxt/loading-screen": "^0.5.1",
+    "@nuxt/webpack": "^2.6.3",
+    "boxen": "^3.1.0",
+    "core-js": "^3.0.1",
+    "opener": "^1.5.1",
+    "pretty-bytes": "^5.2.0",
+    "proper-lockfile": "^4.1.1",
+    "serialize-javascript": "^1.7.0",
+    "std-env": "^2.2.1",
+    "ua-parser-js": "^0.7.19"
   }
 }

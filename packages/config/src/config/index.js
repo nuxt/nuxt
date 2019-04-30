@@ -13,7 +13,9 @@ import cli from './cli'
 export const defaultNuxtConfigFile = 'nuxt.config'
 
 export function getDefaultNuxtConfig(options = {}) {
+  // options.env가 없으면
   if (!options.env) {
+    // process.env 넣음
     options.env = process.env
   }
 

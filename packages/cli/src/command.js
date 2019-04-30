@@ -118,11 +118,11 @@ export default class NuxtCommand {
 
     // nuxtConfig 파일 로드함
     const config = await loadNuxtConfig(this.argv)
-    // loadNuxtConfig로 받은 파일과, extraOptions를 합침
+    // loadNuxtConfig로 받은 파일과, 위에서 설정한 extraOptions를 합침 Object.assign은 합치는 거임
     const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
-      // prepare function들 실행
+      // prepare function들 실행, prepare라는 프로퍼티가 있고, 뒤의 인자들 넣어서 각 options name에 맞는 prepare들 실행
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
 
@@ -130,9 +130,10 @@ export default class NuxtCommand {
   }
 
   async getNuxt(options) {
-    // imports의 @nuxt/core에서 ./nuxt.js 가져옴
+    // imports의 @nuxt/core에서 nuxt.js 가져옴
     const { Nuxt } = await imports.core()
 
+    // options가져와서 Nuxt클래스 생성함
     const nuxt = new Nuxt(options)
     await nuxt.ready()
 
@@ -178,8 +179,8 @@ export default class NuxtCommand {
   // /command/build.js의 옵션의 형식을 바꿔줌
   _getMinimistOptions() {
     const minimistOptions = {
-      alias: { 'a':  'analyze' },
-      boolean: [ 'a' ],
+      alias: { },
+      boolean: [],
       string: [],
       default: {}
     }
@@ -201,9 +202,14 @@ export default class NuxtCommand {
         minimistOptions.default[option.alias || name] = this._getDefaultOptionValue(option)
       }
     }
-  
+
 
     return minimistOptions
+  }
+
+  _getDefaultOptionValue(option) {
+    // 자료의 타입을 반환
+    return typeof option.default ? option.default : ''
   }
 
   _getHelp() {

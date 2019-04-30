@@ -10,13 +10,13 @@ import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig(_options) {
   // Prevent duplicate calls
-  // options의 nomalized가 false이면
+  // options의 nomalized가 참이면
   if (_options.__normalized__) {
     return _options
   }
 
   // Clone options to prevent unwanted side-effects
-  // 오브젝트 복사한뒤
+  // 오브젝트 복사한뒤 => 새로운 객체/주소로!
   const options = Object.assign({}, _options)
   // nomalized true로
   options.__normalized__ = true
@@ -27,6 +27,7 @@ export function getNuxtConfig(_options) {
     delete options.loading
   }
 
+  // 아래 조건들이 모두 참일 때(모두 다 값이 있을 때), 
   if (
     options.router &&
     options.router.middleware &&

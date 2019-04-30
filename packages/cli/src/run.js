@@ -4,8 +4,8 @@ import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
 
-
 export default async function run(_argv) {
+  debugger
   // Read from process.argv 
   // Array.from은 받은 인자를 배열의 형태로 리턴
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
