@@ -14,7 +14,7 @@
   "dependencies": {
     "@nuxt/config": "2.6.3",
     "@nuxt/utils": "2.6.3",
-    "boxen": "^3.1.0",
+    "boxen": "^3.2.0",
     "chalk": "^2.4.2",
     "consola": "^2.6.0",
     "esm": "3.2.20",
