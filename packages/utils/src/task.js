@@ -1,4 +1,5 @@
 export const sequence = function sequence(tasks, fn) {
+  // ★질문★
   return tasks.reduce(
     (promise, task) => promise.then(() => fn(task)),
     Promise.resolve()
