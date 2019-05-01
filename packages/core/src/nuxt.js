@@ -71,6 +71,7 @@ export default class Nuxt extends Hookable {
     this._initCalled = true
 
     // Add hooks
+    //  Object constructor or one with a [[Prototype]] of null 인지
     if (isPlainObject(this.options.hooks)) {
       this.addHooks(this.options.hooks)
     } else if (typeof this.options.hooks === 'function') {
