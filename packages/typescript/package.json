@@ -24,7 +24,7 @@
     "consola": "^2.6.0",
     "fork-ts-checker-webpack-plugin": "^1.2.0",
     "fs-extra": "^7.0.1",
-    "ts-loader": "^5.4.4",
+    "ts-loader": "^5.4.5",
     "typescript": "^3.4.5"
   },
   "publishConfig": {
