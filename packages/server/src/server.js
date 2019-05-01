@@ -20,6 +20,7 @@ export default class Server {
     this.options = nuxt.options
 
     // options.globalName이랑 options.globals를 보냄
+    // 보내면 globals 할 스트링들 돌려줌
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
     // publicPath가 url인지 검사

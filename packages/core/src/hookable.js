@@ -23,6 +23,7 @@ export default class Hookable {
     }
 
     this._hooks[name] = this._hooks[name] || []
+    // names가 키인 곳에 fn push 함
     this._hooks[name].push(fn)
   }
 
@@ -32,6 +33,7 @@ export default class Hookable {
     }
 
     try {
+      // ★ 질문 ★
       await sequence(this._hooks[name], fn => fn(...args))
     } catch (err) {
       name !== 'error' && await this.callHook('error', err)

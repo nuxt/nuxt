@@ -76,7 +76,7 @@ export function defineAlias(src, target, prop, opts = {}) {
     return
   }
 
-  // target으로 넘어온 것 중에 지금 array 함수 돌려지고 있는 prop을 키로 넣음
+  // target으로 넘어온 것 중에 지금 for문 돌려지고 있는 prop을 키로 넣어서 그 value를 targetVal로 넣음
   let targetVal = target[prop]
   // tragetVal 은 function인지
   if (bind && typeof targetVal === 'function') {
@@ -86,7 +86,7 @@ export function defineAlias(src, target, prop, opts = {}) {
 
   let warned = false
 
-  // src에 prop을 key로 targetVal 추가
+  // src에 prop을 key로 targetVal을 value로 추가
   Object.defineProperty(src, prop, {
     get: () => {
       if (warn && !warned) {
