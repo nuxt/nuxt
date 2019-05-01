@@ -88,7 +88,7 @@ export default {
 
 ### Example 2. Use core-js@3
 
-**NOTE**: Make sure that all dependencies have upgraded to use core-js@3, because if core-js@2 and core-js@3 are both depended, babel may resolve incorrect core-js package which is hoisted by yarn/npm.
+**NOTE**: Make sure that all dependencies have been upgraded to use core-js@3. If core-js@2 and core-js@3 are both dependent, babel may resolve incorrect core-js package which is hoisted by yarn/npm.
 
 ```sh
 yarn add --dev core-js@2 @babel/runtime-corejs2
