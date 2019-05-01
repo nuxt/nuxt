@@ -177,9 +177,11 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir = '', 
 
 // Guard dir1 from dir2 which can be indiscriminately removed
 export const guardDir = function guardDir(options, key1, key2) {
+  // key1로 options의 value를 가져온다. 만약 undefined라면, default value를 가져온다.
   const dir1 = get(options, key1, false)
   const dir2 = get(options, key2, false)
 
+  // dir1과 dri2가 다 있는데, dir1과 dir2가 같거나 dir1의 path가 dir2의 path 시작하거나
   if (
     dir1 &&
     dir2 &&

@@ -68,6 +68,7 @@ export const relativeTo = function relativeTo(...args) {
 export function defineAlias(src, target, prop, opts = {}) {
   const { bind = true, warn = false } = opts
 
+  // 전달 받은 prop이 arrary 이면 재귀로 함수 돌리겠다
   if (Array.isArray(prop)) {
     for (const p of prop) {
       defineAlias(src, target, p, opts)
@@ -75,13 +76,17 @@ export function defineAlias(src, target, prop, opts = {}) {
     return
   }
 
+  // target으로 넘어온 것 중에 지금 array 함수 돌려지고 있는 prop을 키로 넣음
   let targetVal = target[prop]
+  // tragetVal 은 function인지
   if (bind && typeof targetVal === 'function') {
+    //★ 질문 ★
     targetVal = targetVal.bind(target)
   }
 
   let warned = false
 
+  // src에 prop을 key로 targetVal 추가
   Object.defineProperty(src, prop, {
     get: () => {
       if (warn && !warned) {

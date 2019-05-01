@@ -15,11 +15,14 @@ import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
   constructor(nuxt) {
+    // nuxt 인스턴스를 받아 왔음
     this.nuxt = nuxt
     this.options = nuxt.options
 
+    // options.globalName이랑 options.globals를 보냄
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
+    // publicPath가 url인지 검사
     this.publicPath = isUrl(this.options.build.publicPath)
       ? this.options.build._publicPath
       : this.options.build.publicPath
@@ -31,6 +34,7 @@ export default class Server {
     this.listeners = []
 
     // Create new connect instance
+    // connect 모듈에서 가져옴!
     this.app = connect()
 
     // Close hook

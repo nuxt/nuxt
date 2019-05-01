@@ -14,15 +14,16 @@ import Resolver from './resolver'
 
 // 아까 생성한 options들 받아왔음
 export default class Nuxt extends Hookable {
+  // constructor
   constructor(options = {}) {
     super()
 
     // Assign options and apply defaults
-    // 디폴트로 쓸 NuxtConfig파일 생성
-    // 위에서 받아왔던 options로
+    // 디폴트로 쓸 nuxtConfig 가져옴
     this.options = getNuxtConfig(options)
 
     // Create instance of core components
+    // 아래 두 클래스의 인스턴스 생성함
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
 
@@ -35,9 +36,11 @@ export default class Nuxt extends Hookable {
 
     // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
+    // this showREady 부르면 this callHook 리턴됨, Hookable 클래스의 메소드임
     this.showReady = () => { this.callHook('webpack:done') }
 
     // Init server
+    // server false 아니면
     if (this.options.server !== false) {
       this._initServer()
     }
@@ -92,8 +95,11 @@ export default class Nuxt extends Hookable {
     if (this.server) {
       return
     }
+    // Server 클래스에 해당 Nuxt 인스턴스 넣겠다
     this.server = new Server(this)
+    // renderer는 이제 Server 인스턴스가 됨
     this.renderer = this.server
+    // render는 this.server.app
     this.render = this.server.app
     defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }

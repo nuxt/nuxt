@@ -3,14 +3,16 @@ export const encodeHtml = function encodeHtml(str) {
 }
 
 export const isString = obj => typeof obj === 'string' || obj instanceof String
-// 0, -0, null, false, NaN, undefined, or the empty string ("")
+// 0, -0, null, false, NaN, undefined, or the empty string ("") 인지 아닌지
 export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
 export const isPureObject = function isPureObject(o) {
+  // Array 아니고 오브젝트로 리턴하겠다,,
   return !Array.isArray(o) && typeof o === 'object'
 }
 
 export const isUrl = function isUrl(url) {
+  // ['http', '//']의 하나가 url의 시작 부분이긴 한지
   return ['http', '//'].some(str => url.startsWith(str))
 }
 
