@@ -1,7 +1,6 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
@@ -70,21 +69,28 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
+    const options = {
+      ...this.buildContext.buildOptions.babel,
+      envName: this.name
+    }
+
+    if (options.configFile !== false) {
+      return options
+    }
+
+    const defaultPreset = [
+      require.resolve('@nuxt/babel-preset-app'),
+      {
+        buildTarget: this.isServer ? 'server' : 'client'
+      }
+    ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer })
+      options.presets = options.presets({ isServer: this.isServer }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            buildTarget: this.isServer ? 'server' : 'client'
-          }
-        ]
-      ]
+      options.presets = defaultPreset
     }
 
     return options
