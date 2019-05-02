@@ -90,7 +90,7 @@ export default class WebpackBaseConfig {
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = defaultPreset
+      options.presets = [ defaultPreset ]
     }
 
     return options
