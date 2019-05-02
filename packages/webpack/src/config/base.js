@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs-extra'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import clone from 'lodash/clone'
@@ -70,21 +71,33 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
-
-    if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer })
+    const { rootDir } = this.buildContext.options
+    const options = {
+      root: rootDir,
+      ...this.buildContext.buildOptions.babel
     }
 
-    if (!options.babelrc && !options.presets) {
-      options.presets = [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            buildTarget: this.isServer ? 'server' : 'client'
-          }
+    const babelConfigFile = path.resolve(rootDir, 'babel.config.js' || options.configFile)
+    if (fs.existsSync(babelConfigFile)) {
+      options.babelrc = true
+      options.envName = this.name
+    } else {
+      // TODO: [proposal] deprecate build.babel part in Nuxt 3
+
+      if (typeof options.presets === 'function') {
+        options.presets = options.presets({ isServer: this.isServer })
+      }
+
+      if (!options.babelrc && !options.presets) {
+        options.presets = [
+          [
+            require.resolve('@nuxt/babel-preset-app'),
+            {
+              buildTarget: this.isServer ? 'server' : 'client'
+            }
+          ]
         ]
-      ]
+      }
     }
 
     return options
