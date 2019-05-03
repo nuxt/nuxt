@@ -49,7 +49,7 @@
     "eslint-multiplexer": "^1.0.4",
     "eslint-plugin-import": "^2.17.2",
     "eslint-plugin-jest": "^22.5.1",
-    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-node": "^9.0.0",
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.2.2",
