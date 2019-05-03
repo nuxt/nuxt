@@ -1,3 +1,4 @@
+const path = require('path')
 const coreJsMeta = {
   2: {
     prefixes: {
@@ -48,6 +49,7 @@ module.exports = (context, options = {}) => {
   const plugins = []
 
   const modern = !!options.modern
+  const runtimePath = path.dirname(require.resolve('@babel/runtime/package.json'))
 
   const {
     polyfills: userPolyfills,
@@ -65,10 +67,10 @@ module.exports = (context, options = {}) => {
     forceAllTransforms,
     decoratorsBeforeExport,
     decoratorsLegacy,
-    absoluteRuntime
+    absoluteRuntime = runtimePath
   } = options
 
-  let { corejs = { version: 2 } } = options
+  let { corejs = { version: 3 } } = options
 
   if (typeof corejs !== 'object') {
     corejs = { version: Number(corejs) }
@@ -129,11 +131,25 @@ module.exports = (context, options = {}) => {
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : corejs,
+    // core-js references will be resolved by @babel/preset-env
+    corejs: false,
     helpers: useBuiltIns === 'usage',
     useESModules: buildTarget !== 'server',
     absoluteRuntime
   }])
+
+  // TODO: this extra plugin can be removed once this issue resolves:
+  // https://github.com/babel/babel/issues/9903
+  if (useBuiltIns === 'usage' && corejs.version) {
+    const runtimeCoreJs = `@babel/runtime-corejs${corejs.version}`
+    const runtimeCoreJsPath = path.dirname(require.resolve(`${runtimeCoreJs}/package.json`))
+    plugins.push([require('babel-plugin-module-resolver'), {
+      alias: {
+        '@babel/runtime': runtimeCoreJs,
+        [runtimePath]: runtimeCoreJsPath
+      }
+    }])
+  }
 
   return {
     presets,
