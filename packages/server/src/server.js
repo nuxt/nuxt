@@ -20,7 +20,7 @@ export default class Server {
     this.options = nuxt.options
 
     // options.globalName이랑 options.globals를 보냄
-    // 보내면 globals 할 스트링들 돌려줌
+    // 보내면 globals로 내보낼 스트링들 돌려줌
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
     // publicPath가 url인지 검사
@@ -79,26 +79,33 @@ export default class Server {
 
     // Compression middleware for production
     if (!this.options.dev) {
+      // 여기에 쓰일 compressor는 this.options.render.compressor임
       const { compressor } = this.options.render
+      // object이면 아래 코드 실행
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
         const compression = this.nuxt.resolver.requireModule('compression')
+        // comporession 함수 실행시켜서 리턴된 값 useMiddleware에 넣음
         this.useMiddleware(compression(compressor))
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
         this.useMiddleware(compressor)
       }
     }
-
+    // options.server.timing이 있으면
     if (this.options.server.timing) {
+      // 아래 코드 실행시킴
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 
     // For serving static/ files to /
+    // serveStatic이라는 패키지임
     const staticMiddleware = serveStatic(
+      // 절대경로 두 개 합쳐서 리턴함
       path.resolve(this.options.srcDir, this.options.dir.static),
       this.options.render.static
     )
+    // 계속, options에 있으면 useMiddleware 씀
     staticMiddleware.prefix = this.options.render.static.prefix
     this.useMiddleware(staticMiddleware)
 
@@ -177,11 +184,14 @@ export default class Server {
   }
 
   useMiddleware(middleware) {
+    // middleware.handler 거나 middleware를 handler에 넣음
     let handler = middleware.handler || middleware
 
     // Resolve handler setup as string (path)
+    // handler의 type이 String이면
     if (typeof handler === 'string') {
       try {
+        // handler를 requireModule에 넣어서 아래 변수에 넣어줌
         const requiredModuleFromHandlerPath = this.nuxt.resolver.requireModule(handler)
 
         // In case the "handler" is not derived from an object but is a normal string, another object with

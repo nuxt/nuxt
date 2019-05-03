@@ -1,8 +1,8 @@
 export const sequence = function sequence(tasks, fn) {
-  // ★질문★
+  // map은 하나하나 매핑해서 함수를 실행하는데, reduce의 경우는 array element를 하나로 퉁쳐서 리턴함
   return tasks.reduce(
-    (promise, task) => promise.then(() => fn(task)),
-    Promise.resolve()
+    // Promise.resolve()는 reduce 돌릴 때 최초 인자
+    (promise, task) => promise.then(() => fn(task)), Promise.resolve()
   )
 }
 

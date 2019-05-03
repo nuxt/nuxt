@@ -40,7 +40,7 @@ export async function loadNuxtConfig(argv) {
     if (options.default) {
       options = options.default
     }
-
+    /** 테스트 */
     // options가 function이면
     if (typeof options === 'function') {
       try {
@@ -57,6 +57,7 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
+    /** 테스트 */
 
     // Keep _nuxtConfigFile for watching
     // options의 nuxtConfigFile에 nuxtConfigFile 을 넣음

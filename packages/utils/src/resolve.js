@@ -80,13 +80,13 @@ export function defineAlias(src, target, prop, opts = {}) {
   let targetVal = target[prop]
   // tragetVal 은 function인지
   if (bind && typeof targetVal === 'function') {
-    //★ 질문 ★
+    // targetVal 함수에서 사용할 객체를 target으로 바인딩 해줌
     targetVal = targetVal.bind(target)
   }
 
   let warned = false
 
-  // src에 prop을 key로 targetVal을 value로 추가
+  // src에 프로퍼티 추가를 하는데, prop을 key로 targetVal을 value로 추가
   Object.defineProperty(src, prop, {
     get: () => {
       if (warn && !warned) {

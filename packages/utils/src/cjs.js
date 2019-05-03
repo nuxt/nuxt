@@ -18,7 +18,7 @@ export function clearRequireCache(id) {
   // entry에 부모가 있으면
   if (entry.parent) {
     debugger
-    // 부모에게서 자기 자신 필터링
+    // 부모에게서 자기 자신 빼고 필터링
     entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 

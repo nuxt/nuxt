@@ -24,9 +24,11 @@ export default class Nuxt extends Hookable {
 
     // Create instance of core components
     // 아래 두 클래스의 인스턴스 생성함
+    /** 다시 확인 */
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
-
+    /** 다시 확인 */
+    
     // Deprecated hooks
     this._deprecatedHooks = {
       'render:context': 'render:routeContext',
@@ -34,19 +36,21 @@ export default class Nuxt extends Hookable {
       'showReady': 'webpack:done' // Workaround to deprecate showReady
     }
 
-    // Add Legacy aliases
+    // Add Legacy aliasesx
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
-    // this showREady 부르면 this callHook 리턴됨, Hookable 클래스의 메소드임
+    // this showReady 부르면 this callHook 리턴됨, Hookable 클래스의 메소드임
     this.showReady = () => { this.callHook('webpack:done') }
 
     // Init server
     // server false 아니면
     if (this.options.server !== false) {
+      // server 초기화함
       this._initServer()
     }
 
     // Call ready
     if (this.options._ready !== false) {
+      // 이 nuxt 객체의 ready()함수 실행하는데, catch해서 에러 파악함
       this.ready().catch((err) => {
         consola.fatal(err)
       })
@@ -59,6 +63,7 @@ export default class Nuxt extends Hookable {
 
   ready() {
     if (!this._ready) {
+      // 아래의 this.init 메소드
       this._ready = this._init()
     }
     return this._ready
@@ -73,16 +78,20 @@ export default class Nuxt extends Hookable {
     // Add hooks
     //  Object constructor or one with a [[Prototype]] of null 인지
     if (isPlainObject(this.options.hooks)) {
+      // options.hooks가 javascript object이면 실행
       this.addHooks(this.options.hooks)
     } else if (typeof this.options.hooks === 'function') {
+      // function이면 options.hooks 실행
       this.options.hooks(this.hook)
     }
 
     // Await for modules
+    // 위의 moduleContainer 인스턴스 ready()함수 실행
     await this.moduleContainer.ready()
 
     // Await for server to be ready
     if (this.server) {
+      // 위의 server 인스턴스 ready() 함수 실행
       await this.server.ready()
     }
 

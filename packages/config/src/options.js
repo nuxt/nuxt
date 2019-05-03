@@ -44,8 +44,6 @@ export function getNuxtConfig(_options) {
 
   // TODO: Remove for Nuxt 3
   // transition -> pageTransition
-  // 기본적으로 값이 할당되지 않은 변수는 undefined 타입이며,  undefined 타입은 변수 자체의 값 또한 undefined 입니다.
-  // 초기화되어 있지 않거나 존재하지 않는 객체
   if (typeof options.transition !== 'undefined') {
     consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
     options.pageTransition = options.transition
@@ -135,7 +133,7 @@ export function getNuxtConfig(_options) {
 
   // Watch for config file changes
   // options.watch 프로퍼티에 options_nuxtConfigFiles 배열을 넣어줌
-  options.watch.push(...options._nuxtConfigFiles)
+  options.watch.push(...options._nuxtConfigFiles) // concat
 
   // Protect rootDir against buildDir
   guardDir(options, 'rootDir', 'buildDir')
@@ -368,7 +366,6 @@ export function getNuxtConfig(_options) {
   }
 
   // Vendor backward compatibility with nuxt 1.x
-  // options.build.vender의 type 이 undefined 라면
   if (typeof options.build.vendor !== 'undefined') {
     delete options.build.vendor
     consola.warn('vendor has been deprecated due to webpack4 optimization')
@@ -383,15 +380,12 @@ export function getNuxtConfig(_options) {
   }
 
   // build.extractCSS.allChunks has no effect
-  // build.extractCSS.allChunks가 undefined 이면
-  // ★ 질문 ★ 왜 어쩔땐 typeof 로 검사하고 어쩔 땐 그냥 undefined로 검사하나요..?
   if (typeof options.build.extractCSS.allChunks !== 'undefined') {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
   }
 
   // Enable minimize for production builds
   // options.build.optimization.minimize가 undefined 이면
-  // ★ 질문 ★
   if (options.build.optimization.minimize === undefined) {
     options.build.optimization.minimize = !options.dev
   }
@@ -415,7 +409,7 @@ export function getNuxtConfig(_options) {
   for (const name of styleLoaders) {
     // loaders의 name으로 접근된 자식 loader
     const loader = loaders[name]
-    // loader가 true이고 laoder.sourceMap 이 undefined 이면
+    // loader가 true이고 loader.sourceMap 이 undefined 이면
     if (loader && loader.sourceMap === undefined) {
       // 불린 값 넣음
       loader.sourceMap = Boolean(options.build.cssSourceMap)

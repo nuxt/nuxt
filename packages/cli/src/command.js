@@ -58,7 +58,7 @@ export default class NuxtCommand {
     let cmdError
 
     try {
-      //★
+      // 여기에서 부터 시작
       await this.cmd.run(this)
     } catch (e) {
       cmdError = e
@@ -91,6 +91,7 @@ export default class NuxtCommand {
   showHelp() {
     process.stdout.write(this._getHelp())
   }
+  
 
   // minimist 돌려서 argv 돌려주는 getter 연습☆
   get argv() {

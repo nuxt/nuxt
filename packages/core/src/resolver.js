@@ -36,6 +36,7 @@ export default class Resolver {
   }
 
   resolveAlias(path) {
+    // function인데 여기에 this.options가 사용됨
     if (startsWithRootAlias(path)) {
       return join(this.options.rootDir, path.substr(2))
     }
