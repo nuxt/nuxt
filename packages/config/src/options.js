@@ -99,6 +99,18 @@ export function getNuxtConfig(_options) {
   // Resolve buildDir
   options.buildDir = path.resolve(options.rootDir, options.buildDir)
 
+  // Aliases
+  const { rootDir, srcDir, dir: { assets: assetsDir, static: staticDir } } = options
+  options.alias = {
+    '~~': rootDir,
+    '@@': rootDir,
+    '~': srcDir,
+    '@': srcDir,
+    [assetsDir]: path.join(srcDir, assetsDir),
+    [staticDir]: path.join(srcDir, staticDir),
+    ...options.alias
+  }
+
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
     options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
