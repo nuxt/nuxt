@@ -24,7 +24,7 @@ void (function updateModules() {
 
   <% storeModules.forEach(s => {
     if(s.src.indexOf('index.') !== 0) { %>
-    resolveStoreModules(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= s.src %>')<% }}) %>
+  resolveStoreModules(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= s.src %>')<% }}) %>
 
   // If the environment supports hot reloading...
   <% if (isDev) { %>
