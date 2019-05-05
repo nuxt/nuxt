@@ -29,6 +29,7 @@ describe('config: options', () => {
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
+    path.join.mockRestore()
   })
 
   test('should prevent duplicate calls with same options', () => {
