@@ -23,7 +23,6 @@ export async function loadNuxtConfig(argv) {
     }
   }
 
-  // 20190429 여기서 부터
   if (nuxtConfigFile) {
     // Clear cache
     clearRequireCache(nuxtConfigFile)
@@ -32,7 +31,7 @@ export async function loadNuxtConfig(argv) {
     if (nuxtConfigFile.endsWith('.ts')) {
       options = require(nuxtConfigFile) || {}
     } else {
-      // esm 모듈 로더
+      // ★ esm 모듈 로더
       options = esm(module)(nuxtConfigFile) || {}
     }
 
@@ -40,11 +39,11 @@ export async function loadNuxtConfig(argv) {
     if (options.default) {
       options = options.default
     }
-    /** 테스트 */
+    /** ★테스트 */
     // options가 function이면
     if (typeof options === 'function') {
       try {
-        // options 실행 시켜 놓고
+        // options 실행 시켜 놓고 ★ 다른일 함..!!
         options = await options()
         // 리턴 받은 값에 options.default가 있다면
         if (options.default) {
@@ -57,7 +56,7 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
-    /** 테스트 */
+    /** ★테스트 */
 
     // Keep _nuxtConfigFile for watching
     // options의 nuxtConfigFile에 nuxtConfigFile 을 넣음

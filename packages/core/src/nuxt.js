@@ -36,7 +36,7 @@ export default class Nuxt extends Hookable {
       'showReady': 'webpack:done' // Workaround to deprecate showReady
     }
 
-    // Add Legacy aliasesx
+    // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
     // this showReady 부르면 this callHook 리턴됨, Hookable 클래스의 메소드임
     this.showReady = () => { this.callHook('webpack:done') }

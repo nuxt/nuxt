@@ -195,7 +195,6 @@ export function getNuxtConfig(_options) {
   // [] : 문자 셋
   // [^ ]: 문자 셋에서 포함되지 않는 부분
   // (): 매칭된 값을 기억
-  // ★질문★
   options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
   options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
 
