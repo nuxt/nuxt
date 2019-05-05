@@ -32,7 +32,8 @@ export function clearRequireCache(id) {
   delete require.cache[id]
 }
 
-// Set은 중복되지 않은, 순서들의 자료 구조임
+// Set은 중복되지 않은 자료 구조
+// ★ 3번: Set 객체는 값 콜렉션으로, 삽입 순서대로 요소를 순회할 수 있다
 export function scanRequireTree(id, files = new Set()) {
   // nuxtConfigFiles의 cache 
   const entry = require.cache[id]

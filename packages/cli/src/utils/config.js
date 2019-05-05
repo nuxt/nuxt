@@ -31,7 +31,7 @@ export async function loadNuxtConfig(argv) {
     if (nuxtConfigFile.endsWith('.ts')) {
       options = require(nuxtConfigFile) || {}
     } else {
-      // ★ esm 모듈 로더
+      // ★ 1번: esm(module)
       options = esm(module)(nuxtConfigFile) || {}
     }
 
@@ -39,11 +39,10 @@ export async function loadNuxtConfig(argv) {
     if (options.default) {
       options = options.default
     }
-    /** ★테스트 */
+    /** ★ 2번: 테스트 해보기 */
     // options가 function이면
     if (typeof options === 'function') {
       try {
-        // options 실행 시켜 놓고 ★ 다른일 함..!!
         options = await options()
         // 리턴 받은 값에 options.default가 있다면
         if (options.default) {
@@ -56,7 +55,7 @@ export async function loadNuxtConfig(argv) {
         consola.fatal('Error while fetching async configuration')
       }
     }
-    /** ★테스트 */
+    /** ★ 2번 끝 */
 
     // Keep _nuxtConfigFile for watching
     // options의 nuxtConfigFile에 nuxtConfigFile 을 넣음
@@ -84,6 +83,7 @@ export async function loadNuxtConfig(argv) {
     (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
 
   // Server options
+  // ★ 4번: defaults vs. defaultsDeep
   // defaultsDeep: 앞에 있는 걸 기준으로, 앞에 없으면 뒤에 있는걸 합쳐줌
   options.server = defaultsDeep({
     port: argv.port || undefined,

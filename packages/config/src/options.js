@@ -248,6 +248,7 @@ export function getNuxtConfig(_options) {
   if (options.render.csp) {
     // 아래 objects들을 하나로 합치는 lodash defautls 메소드
     // 오른쪽 기준으로 똑같으면 오른쪽 오브젝트를 우선시함
+    // ★ 4번: defaults vs. defaultsDeep
     options.render.csp = defaults({}, options.render.csp, {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
@@ -312,6 +313,7 @@ export function getNuxtConfig(_options) {
   // merge custom env with variables
   // process.env의 key만 가져오는데 가져올 때 'NUXT_ENV_'로 시작하는 key만 가져옴
   // 그래서 process env의 키들 중에 process.env의 'NUXT_ENV_'로 시작하는 키들의 {키:값}만 pick 함
+  // ★ 5번: pick
   const eligibleEnvVariables = pick(process.env, Object.keys(process.env).filter(k => k.startsWith('NUXT_ENV_')))
   // options.env에 eligibleEnvVariables 합침
   Object.assign(options.env, eligibleEnvVariables)

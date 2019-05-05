@@ -105,7 +105,6 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  // 연습☆
   async getNuxtConfig(extraOptions = {}) {
     // argv에서 첫번째 옵션과 현재 파일을 합친 절대 경로 리턴함
     const rootDir = path.resolve(this.argv._[0] || '.')
