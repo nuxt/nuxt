@@ -196,16 +196,7 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
-
-    return {
-      '~': path.join(srcDir),
-      '~~': path.join(rootDir),
-      '@': path.join(srcDir),
-      '@@': path.join(rootDir),
-      [assetsDir]: path.join(srcDir, assetsDir),
-      [staticDir]: path.join(srcDir, staticDir)
-    }
+    return { ...this.buildContext.options.alias }
   }
 
   rules() {
