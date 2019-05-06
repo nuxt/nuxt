@@ -409,7 +409,13 @@ export default class WebpackBaseConfig {
     }))
 
     if (buildOptions.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, buildOptions.hardSource)))
+      // https://github.com/mzgoddard/hard-source-webpack-plugin
+      plugins.push(new HardSourcePlugin({
+        info: {
+          level: 'warn'
+        },
+        ...buildOptions.hardSource
+      }))
     }
 
     return plugins
