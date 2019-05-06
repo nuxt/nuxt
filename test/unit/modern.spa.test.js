@@ -1,11 +1,10 @@
-import chalk from 'chalk'
 import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let nuxt, port, options
 const url = route => 'http://localhost:' + port + route
 const modernUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
-const modernInfo = mode => `Modern bundles are detected. Modern mode (${chalk.green.bold(mode)}) is enabled now.`
+const modernInfo = mode => `Modern bundles are detected. Modern mode (\`${mode}\`) is enabled now.`
 
 describe('modern client mode (SPA)', () => {
   beforeAll(async () => {

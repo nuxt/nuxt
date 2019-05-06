@@ -663,12 +663,12 @@ export default class Builder {
     this.createFileWatcher(
       nuxtRestartWatch,
       ['all'],
-      (event, fileName) => {
+      async (event, fileName) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
         }
-        this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
-        this.nuxt.callHook('watch:restart', { event, path: fileName })
+        await this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
+        await this.nuxt.callHook('watch:restart', { event, path: fileName })
       },
       this.assignWatcher('restart')
     )

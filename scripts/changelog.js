@@ -35,8 +35,12 @@ async function main() {
   // Get last git tag
   const lastGitTag = await getLastGitTag()
 
-  // Get all commits from last release to current dev
-  let commits = await getGitDiff(lastGitTag, 'dev')
+  // Get current branch
+  const currentGitBranch = await getCurrentGitBranch()
+
+  // Get all commits from last release to current branch
+  consola.log(`${currentGitBranch}...${lastGitTag}`)
+  let commits = await getGitDiff(currentGitBranch, lastGitTag)
 
   // Parse commits as conventional commits
   commits = parseCommits(commits)
@@ -59,8 +63,13 @@ function execCommand(cmd, args) {
 }
 
 async function getLastGitTag() {
-  const r = await execCommand('git', ['describe'])
-  return /^[^-]+/.exec(r)[0]
+  const r = await execCommand('git', ['--no-pager', 'tag', '-l']).then(r => r.split('\n'))
+  return r[r.length - 1]
+}
+
+async function getCurrentGitBranch() {
+  const r = await execCommand('git', ['rev-parse', '--abbrev-ref', 'HEAD'])
+  return r
 }
 
 async function getGitDiff(from, to) {

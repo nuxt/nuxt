@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "Starts Nuxt.js Application in production mode",
   "keywords": [
     "nuxt",
@@ -55,9 +55,9 @@
   "main": "dist/nuxt-start.js",
   "bin": "bin/nuxt-start.js",
   "dependencies": {
-    "@nuxt/cli": "2.6.2",
-    "@nuxt/core": "2.6.2",
-    "node-fetch": "^2.3.0",
+    "@nuxt/cli": "2.6.3",
+    "@nuxt/core": "2.6.3",
+    "node-fetch": "^2.5.0",
     "vue": "^2.6.10",
     "vue-meta": "^1.6.0",
     "vue-no-ssr": "^1.1.1",
