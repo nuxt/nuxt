@@ -49,14 +49,18 @@ export default {
         } else if (watchQuery === true) {
           return this.$route.fullPath
         } else if (Array.isArray(watchQuery)) {
-          const pickedQuery = {}
-          for (const key of watchQuery) {
-              pickedQuery[key] = this.$route.query[key]
+          if (watchQuery.length) {
+            const pickedQuery = {}
+            for (const key of watchQuery) {
+                pickedQuery[key] = this.$route.query[key]
+            }
+            return this.$router.resolve({
+                path: this.$route.path,
+                query: pickedQuery
+            }).href
+          } else {
+            return this.$route.fullPath
           }
-          return this.$router.resolve({
-              path: this.$route.path,
-              query: pickedQuery
-          }).href
         }
       }
 
