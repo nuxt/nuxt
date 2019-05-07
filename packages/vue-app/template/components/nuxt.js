@@ -43,27 +43,20 @@ export default {
 
       const Component = this.$route.matched[0] && this.$route.matched[0].components.default
       if (Component && Component.options) {
-        const options = Component.options
-
-        if (options.key) {
-          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
-        }
-
-        if (options.watchQuery) {
-          const watchQuery = options.watchQuery
-          if (watchQuery === true) {
-            return this.$route.fullPath
-          } else if (Array.isArray(watchQuery)) {
-            const pickedQuery = {}
-            for (const key of watchQuery) {
+        const { key, watchQuery } = Component.options
+        if (key) {
+          return (typeof key === 'function' ? key(this.$route) : key)
+        } else if (watchQuery === true) {
+          return this.$route.fullPath
+        } else if (Array.isArray(watchQuery)) {
+          const pickedQuery = {}
+          for (const key of watchQuery) {
               pickedQuery[key] = this.$route.query[key]
-            }
-
-            return this.$router.resolve({
+          }
+          return this.$router.resolve({
               path: this.$route.path,
               query: pickedQuery
-            }).href
-          }
+          }).href
         }
       }
 
