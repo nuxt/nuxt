@@ -74,6 +74,7 @@ TemplateContext {
       "pageTransition": Object {
         "name": "test_trans",
       },
+      "rootDir": "test_root_dir",
       "router": Object {
         "route": "test",
       },
@@ -90,12 +91,14 @@ TemplateContext {
     "plugins": Array [
       "plugins",
     ],
+    "rootDir": "test_root_dir",
     "router": Object {
       "route": "test",
     },
     "splitChunks": Object {
       "testSC": true,
     },
+    "srcDir": "test_src_dir",
     "store": "test_store",
     "uniqBy": [Function],
     "vue": Object {
