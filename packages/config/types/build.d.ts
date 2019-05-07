@@ -8,7 +8,7 @@ import {
   Options as WebpackOptions,
   Plugin as WebpackPlugin
 } from 'webpack'
-import { TransformOptions } from '@babel/core';
+import { TransformOptions } from '@babel/core'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { Options as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
