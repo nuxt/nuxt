@@ -46,9 +46,7 @@ export default {
         const { key, watchQuery } = Component.options
         if (key) {
           return (typeof key === 'function' ? key(this.$route) : key)
-        } else if (watchQuery === true) {
-          return this.$route.fullPath
-        } else if (Array.isArray(watchQuery)) {
+        } else if (watchQuery) {
           if (watchQuery.length) {
             const pickedQuery = {}
             for (const key of watchQuery) {
