@@ -23,11 +23,13 @@ describe('config: options', () => {
   test('should return default nuxt config', () => {
     jest.spyOn(process, 'cwd').mockReturnValue('/var/nuxt/test')
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
+    jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
     expect(getNuxtConfig({})).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
+    path.join.mockRestore()
   })
 
   test('should prevent duplicate calls with same options', () => {

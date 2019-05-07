@@ -10,7 +10,7 @@ let store = {}
 void (function updateModules() {
   <% storeModules.some(s => {
     if(s.src.indexOf('index.') === 0) { %>
-  store = normalizeRoot(require('@/<%= dir.store %>/<%= s.src %>'), '<%= dir.store %>/<%= s.src %>')
+  store = normalizeRoot(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= dir.store %>/<%= s.src %>')
   <% return true }}) %>
 
   // If store is an exported method = classic mode (deprecated)
@@ -24,14 +24,14 @@ void (function updateModules() {
 
   <% storeModules.forEach(s => {
     if(s.src.indexOf('index.') !== 0) { %>
-  resolveStoreModules(require('@/<%= dir.store %>/<%= s.src %>'), '<%= s.src %>')<% }}) %>
+  resolveStoreModules(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= s.src %>')<% }}) %>
 
   // If the environment supports hot reloading...
   <% if (isDev) { %>
   if (process.client && module.hot) {
     // Whenever any Vuex module is updated...
     module.hot.accept([<% storeModules.forEach(s => { %>
-      '@/<%= dir.store %>/<%= s.src %>',<% }) %>
+      '<%= relativeToBuild(srcDir, dir.store, s.src) %>',<% }) %>
     ], () => {
       // Update `root.modules` with the latest definitions.
       updateModules()

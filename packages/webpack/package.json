@@ -30,7 +30,7 @@
     "memory-fs": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "pify": "^4.0.1",
-    "postcss": "^7.0.14",
+    "postcss": "^7.0.16",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.2.2",
     "postcss-loader": "^3.0.0",

@@ -43,6 +43,7 @@ export default () => ({
   },
   extensions: [],
   styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
+  alias: {},
 
   // Ignores
   ignorePrefix: '-',

@@ -39,6 +39,8 @@ export default class TemplateContext {
           : options.loading,
       pageTransition: options.pageTransition,
       layoutTransition: options.layoutTransition,
+      rootDir: options.rootDir,
+      srcDir: options.srcDir,
       dir: options.dir,
       components: {
         ErrorPage: options.ErrorPage
