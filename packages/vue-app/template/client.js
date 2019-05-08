@@ -41,6 +41,7 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 const logger = consola.withScope('nuxt:ssr')
 const logs = NUXT.logs || []
 logs.forEach(logObj => logger[logObj.type](logObj))
+delete NUXT.logs
 <% } %>
 <% if (debug) { %>
 // Setup global Vue error handler
