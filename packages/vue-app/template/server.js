@@ -45,18 +45,6 @@ const createNext = ssrContext => (opts) => {
 // Since data fetching is async, this function is expected to
 // return a Promise that resolves to the app instance.
 export default async (ssrContext) => {
-  <% if (isDev) { %>
-  const logs = []
-  const devReporter = {
-    log(logObj) {
-      if (logObj.args[0] instanceof Error) {
-        logObj.args[0] = logObj.args[0].stack
-      }
-      logs.push(logObj)
-    }
-  }
-  consola.addReporter(devReporter)
-  <% } %>
   // Create ssrContext.next for simulate next() of beforeEach() when wanted to redirect
   ssrContext.redirected = false
   ssrContext.next = createNext(ssrContext)
@@ -65,7 +53,6 @@ export default async (ssrContext) => {
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { layout: 'default', data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
   // Add Nuxt logs on SSR to browser for better debugging XP
-  <% if (isDev) { %>ssrContext.nuxt.logs = logs<% } %>
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
@@ -82,8 +69,6 @@ export default async (ssrContext) => {
     <% if (store) { %>
       // Add the state from the vuex store
       ssrContext.nuxt.state = store.state
-    <% } if (isDev) { %>
-      consola.removeReporter(devReporter)
     <% } %>
     }
   }
