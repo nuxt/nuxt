@@ -52,7 +52,6 @@ export default async (ssrContext) => {
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { layout: 'default', data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
-  // Add Nuxt logs on SSR to browser for better debugging XP
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
