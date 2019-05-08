@@ -45,12 +45,6 @@ const createNext = ssrContext => (opts) => {
 // Since data fetching is async, this function is expected to
 // return a Promise that resolves to the app instance.
 export default async (ssrContext) => {
-  // const _consoleLog = console.log
-  // const logs = []
-  // console.log = function (message, ...args) {
-  //   logs.push({ message, stack: this.stack})
-  //   _consoleLog(message, ...args)
-  // }
   <% if (isDev) { %>
   const logs = []
   const devReporter = {
