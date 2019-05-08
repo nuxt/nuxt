@@ -44,9 +44,12 @@ export default {
       const Component = this.$route.matched[0] && this.$route.matched[0].components.default
       if (Component && Component.options) {
         const { key, watchQuery } = Component.options
+
         if (key) {
           return (typeof key === 'function' ? key(this.$route) : key)
-        } else if (watchQuery) {
+        }
+
+        if (watchQuery) {
           if (watchQuery.length) {
             const pickedQuery = {}
             for (const key of watchQuery) {
@@ -56,9 +59,8 @@ export default {
                 path: this.$route.path,
                 query: pickedQuery
             }).href
-          } else {
-            return this.$route.fullPath
           }
+          return this.$route.fullPath
         }
       }
 
