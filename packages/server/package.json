@@ -23,7 +23,7 @@
     "on-headers": "^1.0.2",
     "pify": "^4.0.1",
     "serve-placeholder": "^1.2.1",
-    "serve-static": "^1.13.2",
+    "serve-static": "^1.14.0",
     "server-destroy": "^1.0.1"
   },
   "publishConfig": {
