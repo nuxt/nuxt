@@ -17,7 +17,7 @@
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
     "@babel/runtime": "^7.4.4",
-    "@vue/babel-preset-jsx": "^1.0.0-beta.3",
+    "@vue/babel-preset-jsx": "^1.0.0",
     "core-js": "^2.6.5"
   },
   "publishConfig": {
