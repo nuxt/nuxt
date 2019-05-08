@@ -5,6 +5,7 @@ import middleware from './middleware.js'
 import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
+<% if (isDev) { %>import consola from 'consola'<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -47,6 +48,24 @@ const createNext = ssrContext => (opts) => {
 // Since data fetching is async, this function is expected to
 // return a Promise that resolves to the app instance.
 export default async (ssrContext) => {
+  // const _consoleLog = console.log
+  // const logs = []
+  // console.log = function (message, ...args) {
+  //   logs.push({ message, stack: this.stack})
+  //   _consoleLog(message, ...args)
+  // }
+  <% if (isDev) { %>
+  const logs = []
+  const devReporter = {
+    log(logObj) {
+      if (logObj.args[0] instanceof Error) {
+        logObj.args[0] = logObj.args[0].stack
+      }
+      logs.push(logObj)
+    }
+  }
+  consola.addReporter(devReporter)
+  <% } %>
   // Create ssrContext.next for simulate next() of beforeEach() when wanted to redirect
   ssrContext.redirected = false
   ssrContext.next = createNext(ssrContext)
@@ -54,6 +73,8 @@ export default async (ssrContext) => {
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { layout: 'default', data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  // Add Nuxt logs on SSR to browser for better debugging XP
+  <% if (isDev) { %>ssrContext.nuxt.logs = logs<% } %>
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
@@ -69,6 +90,9 @@ export default async (ssrContext) => {
     <% if (store) { %>
     // Add the state from the vuex store
     ssrContext.nuxt.state = store.state
+    <% } %>
+    <% if (isDev) { %>
+    consola.removeReporter(devReporter)
     <% } %>
   }
   const renderErrorPage = async () => {
@@ -219,7 +243,7 @@ export default async (ssrContext) => {
     return Promise.all(promises)
   }))
 
-  <% if (isDev) { %>if (asyncDatas.length) debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
+  <% if (debug) { %>if (asyncDatas.length) debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
 
   // datas are the first row of each
   ssrContext.nuxt.data = asyncDatas.map(r => r[0] || {})
