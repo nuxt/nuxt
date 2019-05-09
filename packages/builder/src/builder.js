@@ -659,7 +659,7 @@ export default class Builder {
         return null
       })
       .filter(_ => _)
-      .map(p => {
+      .map((p) => {
         if (path.extname(p)) return p
         return this.nuxt.resolver.resolvePath(p)
       })
