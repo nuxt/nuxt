@@ -72,6 +72,11 @@ async function getCurrentGitBranch() {
   return r
 }
 
+async function getCurrentGitBranch() {
+  const r = await execCommand('git', ['rev-parse', '--abbrev-ref', 'HEAD'])
+  return r
+}
+
 async function getGitDiff(from, to) {
   // # https://git-scm.com/docs/pretty-formats
   const r = await execCommand('git', ['--no-pager', 'log', `${from}...${to}`, '--pretty=%s|%h|%an|%ae'])
