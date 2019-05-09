@@ -174,13 +174,13 @@ export default class Builder {
 
     if (
       !this._nuxtPages ||
-      await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.pages))
+      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
     ) {
       return
     }
 
     const dir = this.options.srcDir
-    if (await fsExtra.exists(path.resolve(this.options.srcDir, '..', this.options.dir.pages))) {
+    if (await fsExtra.exists(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
       throw new Error(
         `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
       )
@@ -678,7 +678,7 @@ export default class Builder {
     }
     // If store not activated, watch for a file in the directory
     if (!this.options.store) {
-      nuxtRestartWatch.push(path.resolve(this.options.srcDir, this.options.dir.store))
+      nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.store))
     }
 
     this.createFileWatcher(
