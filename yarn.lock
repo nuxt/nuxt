@@ -1495,7 +1495,7 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^0.5.0", "@nuxt/loading-screen@^0.5.2":
+"@nuxt/loading-screen@^0.5.2":
   version "0.5.2"
   resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.5.2.tgz#4226543ca00506a0a61d400f3c5df79548e5eea3"
   integrity sha512-5PfYC0+NvpWi14BbZ10OQVfdWORsfL3llldX8O0TenHFbt3/62DCXYsoDakNj6OUZvkZoDViFXVFJ4/vh1bnQA==
