@@ -52,8 +52,8 @@ export default {
         if (watchQuery) {
           if (watchQuery.length) {
             const pickedQuery = {}
-            for (const key of watchQuery) {
-                pickedQuery[key] = this.$route.query[key]
+            for (const queryKey of watchQuery) {
+                pickedQuery[queryKey] = this.$route.query[queryKey]
             }
             return this.$router.resolve({
                 path: this.$route.path,
