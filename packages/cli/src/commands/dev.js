@@ -41,7 +41,7 @@ export default {
     const nuxt = await cmd.getNuxt(config)
 
     // Setup hooks
-    nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, builder, cmd, argv }))
+    nuxt.hook('watch:restart', payload => this.onWatchRestart(payload, { nuxt, cmd, argv }))
     nuxt.hook('bundler:change', changedFileName => this.onBundlerChange(changedFileName))
 
     // Wait for nuxt to be ready

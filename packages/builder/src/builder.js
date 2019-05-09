@@ -22,7 +22,9 @@ import {
   determineGlobals,
   stripWhitespace,
   isString,
-  isIndexFileAndFolder
+  isIndexFileAndFolder,
+  isPureObject,
+  clearRequireCache
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -30,7 +32,6 @@ import BuildContext from './context/build'
 import TemplateContext from './context/template'
 
 const glob = pify(Glob)
-
 export default class Builder {
   constructor(nuxt, bundleBuilder) {
     this.nuxt = nuxt
@@ -616,10 +617,12 @@ export default class Builder {
 
     let patterns = [
       r(src, this.options.dir.layouts),
-      r(src, this.options.dir.store),
       r(src, this.options.dir.middleware),
       ...rGlob(this.options.dir.layouts)
     ]
+    if (this.options.store) {
+      patterns.push(r(src, this.options.dir.store))
+    }
 
     if (this._nuxtPages) {
       patterns.push(
@@ -648,16 +651,34 @@ export default class Builder {
     this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
   }
 
+  get serverMiddlewarePaths() {
+    return this.options.serverMiddleware
+      .map((serverMiddleware) => {
+        if (isString(serverMiddleware)) return serverMiddleware
+        if (isPureObject(serverMiddleware) && isString(serverMiddleware.handler)) return serverMiddleware.handler
+        return null
+      })
+      .filter(_ => _)
+      .map(p => {
+        if (path.extname(p)) return p
+        return this.nuxt.resolver.resolvePath(p)
+      })
+  }
+
   watchRestart() {
     const nuxtRestartWatch = [
       // Server middleware
-      ...this.options.serverMiddleware.filter(isString),
+      ...this.serverMiddlewarePaths,
       // Custom watchers
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
 
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
+    }
+    // If store not activated, watch for a file in the directory
+    if (!this.options.store) {
+      nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.store))
     }
 
     this.createFileWatcher(
@@ -666,6 +687,10 @@ export default class Builder {
       async (event, fileName) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
+        }
+        if (this.serverMiddlewarePaths.includes(fileName)) {
+          consola.debug(`Clear cache for ${fileName}`)
+          clearRequireCache(fileName)
         }
         await this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
         await this.nuxt.callHook('watch:restart', { event, path: fileName })
