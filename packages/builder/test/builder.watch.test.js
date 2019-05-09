@@ -1,3 +1,4 @@
+import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
 import debounce from 'lodash/debounce'
@@ -267,7 +268,7 @@ describe('builder: builder watch', () => {
         'resolveAlias(resolvePath(/var/nuxt/src/serverMiddleware/test-handler))',
         'resolveAlias(/var/nuxt/src/watch/test)',
         '/var/nuxt/src/.nuxtignore',
-        '/var/nuxt/src/var/nuxt/src/store' // because store == false + using path.join()
+        path.join('/var/nuxt/src/var/nuxt/src/store') // because store == false + using path.join()
       ],
       { test: true }
     )
