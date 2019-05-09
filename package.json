@@ -40,7 +40,7 @@
     "babel-jest": "^24.8.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "cheerio": "^1.0.0-rc.3",
-    "codecov": "^3.3.0",
+    "codecov": "^3.4.0",
     "consola": "^2.6.1",
     "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
