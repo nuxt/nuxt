@@ -84,7 +84,8 @@ async function getGitDiff(from, to) {
 
 function parseCommits(commits) {
   return commits.filter(c => c.message.includes(':')).map((commit) => {
-    let [type, message] = commit.message.split(':')
+    let [type, ...message] = commit.message.split(':')
+    message = message.join(':')
 
     // Extract references from message
     const references = []
