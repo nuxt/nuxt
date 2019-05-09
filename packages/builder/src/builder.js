@@ -688,6 +688,7 @@ export default class Builder {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
         }
+        /* istanbul ignore if */
         if (this.serverMiddlewarePaths.includes(fileName)) {
           consola.debug(`Clear cache for ${fileName}`)
           clearRequireCache(fileName)
