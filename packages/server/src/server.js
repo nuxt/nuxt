@@ -59,8 +59,10 @@ export default class Server {
     this.renderer = new VueRenderer(this.serverContext)
     await this.renderer.ready()
 
-    // Setup nuxt middleware
-    await this.setupMiddleware()
+    // Setup nuxt middleware (only with nuxt dev && nuxt start)
+    if (this.options.dev || this.options._start) {
+      await this.setupMiddleware()
+    }
 
     // Call done hook
     await this.nuxt.callHook('render:done', this)
