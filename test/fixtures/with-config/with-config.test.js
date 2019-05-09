@@ -5,13 +5,6 @@ beforeAll(() => {
   process.env.NUXT_ENV_FOO = 'manniL'
 })
 
-let customCompressionMiddlewareFunctionName
-const hooks = [
-  ['render:errorMiddleware', (app) => {
-    customCompressionMiddlewareFunctionName = app.stack[0].handle.name
-  }]
-]
-
 describe('with-config', () => {
   buildFixture('with-config', () => {
     expect(consola.warn).toHaveBeenCalledTimes(6)
@@ -27,9 +20,7 @@ describe('with-config', () => {
       ['Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.', 'Please use https://github.com/nuxt-community/style-resources-module'],
       ['Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.']
     ])
-    // setupMiddleware() is not called on build only
-    // expect(customCompressionMiddlewareFunctionName).toBe('damn')
-  }, hooks)
+  })
 })
 
 afterAll(() => {
