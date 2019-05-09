@@ -1,6 +1,7 @@
 import path from 'path'
 import crypto from 'crypto'
 import fs from 'fs-extra'
+import consola from 'consola'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -37,12 +38,30 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
+  async devRenderToString(renderContext) {
+    const logs = []
+    const devReporter = {
+      log(logObj) {
+        if (logObj.args[0] instanceof Error) {
+          logObj.args[0] = logObj.args[0].stack
+        }
+        logs.push(logObj)
+      }
+    }
+    consola.addReporter(devReporter)
+    const APP = await this.vueRenderer.renderToString(renderContext)
+    consola.removeReporter(devReporter)
+    renderContext.nuxt.logs = logs
+
+    return APP
+  }
+
   async render(renderContext) {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
     // Call Vue renderer renderToString
-    let APP = await this.vueRenderer.renderToString(renderContext)
+    let APP = await (this.options.dev ? this.devRenderToString(renderContext) : this.vueRenderer.renderToString(renderContext))
 
     // Call ssr:context hook
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)

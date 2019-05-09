@@ -8,6 +8,14 @@ Object {
   "_nuxtConfigFiles": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],
+  "alias": Object {
+    "@": "/var/nuxt/test",
+    "@@": "/var/nuxt/test",
+    "assets": "/var/nuxt/test/assets",
+    "static": "/var/nuxt/test/static",
+    "~": "/var/nuxt/test",
+    "~~": "/var/nuxt/test",
+  },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",

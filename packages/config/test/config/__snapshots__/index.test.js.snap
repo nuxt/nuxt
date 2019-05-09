@@ -4,6 +4,7 @@ exports[`config should return default nuxt configurations 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
     "analyze": false,
     "babel": Object {
@@ -337,6 +338,7 @@ exports[`config should return nuxt configurations with custom env 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
     "analyze": false,
     "babel": Object {

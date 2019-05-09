@@ -18,6 +18,7 @@ import {
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+<% if (isDev) { %>import consola from 'consola'<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -36,6 +37,12 @@ const NUXT = window.<%= globals.context %> || {}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
+<% if (isDev) { %>
+const logger = consola.withScope('nuxt:ssr')
+const logs = NUXT.logs || []
+logs.forEach(logObj => logger[logObj.type](logObj))
+delete NUXT.logs
+<% } %>
 <% if (debug) { %>
 // Setup global Vue error handler
 if (!Vue.config.$nuxt) {

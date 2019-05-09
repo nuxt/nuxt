@@ -1,7 +1,6 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
@@ -70,21 +69,28 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
+    const options = {
+      ...this.buildContext.buildOptions.babel,
+      envName: this.name
+    }
+
+    if (options.configFile !== false) {
+      return options
+    }
+
+    const defaultPreset = [
+      require.resolve('@nuxt/babel-preset-app'),
+      {
+        buildTarget: this.isServer ? 'server' : 'client'
+      }
+    ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer })
+      options.presets = options.presets({ isServer: this.isServer }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            buildTarget: this.isServer ? 'server' : 'client'
-          }
-        ]
-      ]
+      options.presets = [ defaultPreset ]
     }
 
     return options
@@ -196,16 +202,7 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
-
-    return {
-      '~': path.join(srcDir),
-      '~~': path.join(rootDir),
-      '@': path.join(srcDir),
-      '@@': path.join(rootDir),
-      [assetsDir]: path.join(srcDir, assetsDir),
-      [staticDir]: path.join(srcDir, staticDir)
-    }
+    return { ...this.buildContext.options.alias }
   }
 
   rules() {
@@ -408,7 +405,13 @@ export default class WebpackBaseConfig {
     }))
 
     if (buildOptions.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, buildOptions.hardSource)))
+      // https://github.com/mzgoddard/hard-source-webpack-plugin
+      plugins.push(new HardSourcePlugin({
+        info: {
+          level: 'warn'
+        },
+        ...buildOptions.hardSource
+      }))
     }
 
     return plugins
