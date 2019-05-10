@@ -651,7 +651,7 @@ export default class Builder {
     this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
   }
 
-  get serverMiddlewarePaths() {
+  getServerMiddlewarePaths() {
     return this.options.serverMiddleware
       .map((serverMiddleware) => {
         if (isString(serverMiddleware)) {
@@ -666,9 +666,10 @@ export default class Builder {
   }
 
   watchRestart() {
+    const serverMiddlewarePaths = this.getServerMiddlewarePaths()
     const nuxtRestartWatch = [
       // Server middleware
-      ...this.serverMiddlewarePaths,
+      ...serverMiddlewarePaths,
       // Custom watchers
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
@@ -689,7 +690,7 @@ export default class Builder {
           return
         }
         /* istanbul ignore if */
-        if (this.serverMiddlewarePaths.includes(fileName)) {
+        if (serverMiddlewarePaths.includes(fileName)) {
           consola.debug(`Clear cache for ${fileName}`)
           clearRequireCache(fileName)
         }
