@@ -256,7 +256,7 @@ export default class Builder {
 
   normalizePlugins() {
     const modes = ['client', 'server']
-    const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)?$`)
+    const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
     return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {
