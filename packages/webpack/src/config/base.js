@@ -368,8 +368,7 @@ export default class WebpackBaseConfig {
 
     plugins.push(...(buildOptions.plugins || []))
 
-    // Hide warnings about plugins without a default export (#1179)
-    plugins.push(new WarnFixPlugin())
+    plugins.push(new WarnFixPlugin(this.warningFixFilter()))
 
     // Build progress indicator
     plugins.push(new WebpackBar({
@@ -416,6 +415,25 @@ export default class WebpackBaseConfig {
     }
 
     return plugins
+  }
+
+  warningFixFilter() {
+    const { buildOptions, options: { _typescript = {} } } = this.buildContext
+    const filters = [
+      // Hide warnings about plugins without a default export (#1179)
+      warn => warn.name === 'ModuleDependencyWarning' &&
+        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('nuxt_plugin_')
+    ]
+
+    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
+      filters.push(
+        warn => warn.name === 'ModuleDependencyWarning' &&
+          /export .* was not found in /.test(warn.message)
+      )
+    }
+
+    return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }
 
   extendConfig(config) {
