@@ -82,7 +82,7 @@
     "rollup-plugin-replace": "^2.2.0",
     "sort-package-json": "^1.22.1",
     "ts-jest": "^24.0.2",
-    "ts-loader": "^5.4.5",
+    "ts-loader": "^6.0.0",
     "ts-node": "^8.1.0",
     "tslint": "^5.16.0",
     "typescript": "^3.4.5",
