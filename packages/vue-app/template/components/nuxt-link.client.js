@@ -85,7 +85,8 @@ export default {
       const Components = this.getPrefetchComponents()
 
       for (const Component of Components) {
-        Component().then(() => Component.__prefetched = true).catch(() => {})
+        Component().catch(() => {})
+        Component.__prefetched = true
       }<% if (router.linkPrefetchedClass) { %>
       this.addPrefetchedClass()<% } %>
     }<% if (router.linkPrefetchedClass) { %>,
