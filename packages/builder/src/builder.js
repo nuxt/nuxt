@@ -662,7 +662,7 @@ export default class Builder {
         }
       })
       .filter(Boolean)
-      .map((p) => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
+      .map(p => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
   }
 
   watchRestart() {
