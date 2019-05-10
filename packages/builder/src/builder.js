@@ -654,15 +654,15 @@ export default class Builder {
   get serverMiddlewarePaths() {
     return this.options.serverMiddleware
       .map((serverMiddleware) => {
-        if (isString(serverMiddleware)) return serverMiddleware
-        if (isPureObject(serverMiddleware) && isString(serverMiddleware.handler)) return serverMiddleware.handler
-        return null
+        if (isString(serverMiddleware)) {
+          return serverMiddleware
+        }
+        if (isPureObject(serverMiddleware) && isString(serverMiddleware.handler)) {
+          return serverMiddleware.handler
+        }
       })
-      .filter(_ => _)
-      .map((p) => {
-        if (path.extname(p)) return p
-        return this.nuxt.resolver.resolvePath(p)
-      })
+      .filter(Boolean)
+      .map((p) => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
   }
 
   watchRestart() {
