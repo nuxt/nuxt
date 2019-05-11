@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue, { ComponentOptions } from 'vue'
 import VueRouter, { Route } from 'vue-router'
 import { Store } from 'vuex'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -14,7 +14,7 @@ type Dictionary<T> = { [key: string]: T }
 type NuxtState = Dictionary<any>
 
 export interface Context {
-  app: Vue
+  app: NuxtAppOptions
   /**
    * @deprecated Use process.client instead
   */
@@ -81,7 +81,12 @@ export interface NuxtLoading extends Vue {
   start(): NuxtLoading
 }
 
+export interface NuxtAppOptions extends ComponentOptions<Vue> {
+  [key: string]: any // TBD
+}
+
 export interface NuxtApp extends Vue {
+  $options: NuxtAppOptions
   $loading: NuxtLoading
   isOffline: boolean
   isOnline: boolean
