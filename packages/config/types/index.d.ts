@@ -9,7 +9,7 @@ import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './l
 import { NuxtConfigurationModule } from './module'
 import { NuxtConfigurationPlugin } from './plugin'
 import { NuxtConfigurationRender } from './render'
-import { NuxtConfigurationRouter } from './router'
+import { NuxtConfigurationRouter, NuxtRouteConfig } from './router'
 import { NuxtConfigurationServer } from './server'
 import { NuxtConfigurationServerMiddleware } from './server-middleware'
 import { NuxtConfigurationVueConfiguration } from './vue-configuration'
@@ -65,6 +65,7 @@ export {
   NuxtConfigurationPlugin as Plugin,
   NuxtConfigurationRender as Render,
   NuxtConfigurationRouter as Router,
+  NuxtRouteConfig as RouteConfig,
   NuxtConfigurationServer as Server,
   NuxtConfigurationServerMiddleware as ServerMiddleware,
   NuxtConfigurationVueConfiguration as VueConfiguration,
