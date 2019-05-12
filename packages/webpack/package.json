@@ -12,7 +12,7 @@
     "@nuxt/babel-preset-app": "2.6.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.4.0",
     "@nuxt/utils": "2.6.3",
-    "babel-loader": "^8.0.5",
+    "babel-loader": "^8.0.6",
     "cache-loader": "^3.0.0",
     "caniuse-lite": "^1.0.30000967",
     "chalk": "^2.4.2",
