@@ -8501,10 +8501,10 @@ postcss-image-set-function@^3.0.1:
     postcss "^7.0.2"
     postcss-values-parser "^2.0.0"
 
-postcss-import-resolver@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.npmjs.org/postcss-import-resolver/-/postcss-import-resolver-1.2.2.tgz#4d21536a3dd6103d71cca8122a6714b51491e6f5"
-  integrity sha512-8YVRutQbYvQvuQxZHQaRm3/vi/UvYIGH4HxPvgW0zs4MSWC6rjM77qC6sYP/h8Pzj1j7H8GUOSFHRBZ+umI2ig==
+postcss-import-resolver@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.npmjs.org/postcss-import-resolver/-/postcss-import-resolver-1.2.3.tgz#a7f8f034f2b1774c90ae768e5927816ee3d869d7"
+  integrity sha512-7f+RZTagq9AjLYICk5TRLbjYAqGfOngRyNkKoV7MHcSew1FTatHliQuK/lg+eXuxppLy9wAfrFx15nxURMZmEg==
   dependencies:
     enhanced-resolve "^3.4.1"
 
