@@ -201,7 +201,7 @@ export default class Builder {
       if (pkg) {
         const validVersion = semver.satisfies(pkg.version, depVersion)
         if (!validVersion) {
-          consola.warn(`${depName}@${depVersion} is recommanded but ${depName}@${pkg.version} is installed!`)
+          consola.warn(`${depName}@${depVersion} is recommended but ${depName}@${pkg.version} is installed!`)
         }
       } else {
         consola.warn(`${depName}@${depVersion} is required but not installed!`)
