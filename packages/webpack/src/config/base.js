@@ -202,7 +202,10 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    return { ...this.buildContext.options.alias }
+    return {
+      ...this.buildContext.options.alias,
+      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+    }
   }
 
   rules() {
