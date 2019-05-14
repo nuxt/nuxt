@@ -193,37 +193,19 @@ export default class Builder {
   validateTemplate() {
     // Validate template dependencies
     const templateDependencies = this.template.dependencies
-    const dependencyFixes = []
     for (const depName in templateDependencies) {
       const depVersion = templateDependencies[depName]
-      const requiredVersion = `${depName}@${depVersion}`
 
       // Load installed version
       const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'))
       if (pkg) {
         const validVersion = semver.satisfies(pkg.version, depVersion)
         if (!validVersion) {
-          consola.warn(`${requiredVersion} is required but ${depName}@${pkg.version} is installed!`)
-          dependencyFixes.push(requiredVersion)
+          consola.warn(`${depName}@${depVersion} is recommended but ${depName}@${pkg.version} is installed!`)
         }
       } else {
         consola.warn(`${depName}@${depVersion} is required but not installed!`)
-        dependencyFixes.push(requiredVersion)
       }
-    }
-
-    // Suggest dependency fixes (TODO: automate me)
-    if (dependencyFixes.length) {
-      consola.error(
-        'Please install missing dependencies:\n',
-        '\n',
-        'Using yarn:\n',
-        `yarn add ${dependencyFixes.join(' ')}\n`,
-        '\n',
-        'Using npm:\n',
-        `npm i ${dependencyFixes.join(' ')}\n`
-      )
-      throw new Error('Missing App Dependencies')
     }
   }
 
