@@ -28,10 +28,10 @@
     "ts-loader": "^6.0.0",
     "typescript": "^3.4.5"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": ">=8.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
