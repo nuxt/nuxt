@@ -84,6 +84,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }
     }
 
+    aliases.consola = require.resolve('consola/dist/consola.browser.js')
+
     return aliases
   }
 

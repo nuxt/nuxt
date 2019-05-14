@@ -202,10 +202,7 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    return {
-      ...this.buildContext.options.alias,
-      consola: path.dirname(require.resolve('consola/package.json'))
-    }
+    return { ...this.buildContext.options.alias }
   }
 
   rules() {
