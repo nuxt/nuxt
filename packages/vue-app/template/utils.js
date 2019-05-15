@@ -169,16 +169,16 @@ export async function setContext(app, context) {
       // "/absolute/route", "./relative/route" or "../relative/route"
       if (/(^[.]{1,2}\/)|(^\/(?!\/))/.test(path)) {
         app.context.next({
-          path: path,
-          query: query,
-          status: status
+          path,
+          query,
+          status
         })
       } else {
         path = formatUrl(path, query)
         if (process.server) {
           app.context.next({
-            path: path,
-            status: status
+            path,
+            status
           })
         }
         if (process.client) {
@@ -310,7 +310,7 @@ export function normalizeError(err) {
   }
   return {
     ...err,
-    message: message,
+    message,
     statusCode: (err.statusCode || err.status || (err.response && err.response.status) || 500)
   }
 }
@@ -384,10 +384,10 @@ function parse(str, options) {
     tokens.push({
       name: name || key++,
       prefix: prefix || '',
-      delimiter: delimiter,
-      optional: optional,
-      repeat: repeat,
-      partial: partial,
+      delimiter,
+      optional,
+      repeat,
+      partial,
       asterisk: Boolean(asterisk),
       pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
     })
