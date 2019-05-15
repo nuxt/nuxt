@@ -558,8 +558,7 @@ function formatUrl(url, query) {
   let hash
   parts = path.split('#')
   if (parts.length === 2) {
-    path = parts[0]
-    hash = parts[1]
+    [path, hash] = parts
   }
 
   result += path ? '/' + path : ''
