@@ -41,7 +41,7 @@ export default {
         return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)
       }
 
-      const matchedRoute = this.$route.matched[0]
+      const [matchedRoute] = this.$route.matched
       const Component = matchedRoute && matchedRoute.components.default
       if (Component && Component.options) {
         const { key, watchQuery } = Component.options
