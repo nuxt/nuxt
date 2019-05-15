@@ -97,7 +97,7 @@ export default {
     }
 
     if (this.hasNestedError) {
-        return h('h2', {}, 'Error while display error')
+        return h('h2', {}, 'An error was thrown while trying to display an error')
     }
 
     return h('NuxtError', {
