@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "nuxt": "latest",
+    "ts-node": "^8.1.0",
     "vue-property-decorator": "^7.3.0"
   },
   "scripts": {
