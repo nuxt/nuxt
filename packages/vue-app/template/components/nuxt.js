@@ -34,6 +34,24 @@ export default {
       default: 'default'
     }
   },
+  data() {
+    return {
+      hasNestedError: false
+    }
+  },
+  created() {
+    const render = NuxtError.render
+    NuxtError.render = (...args) => {
+      try {
+        return render.call(NuxtError, ...args)
+      } catch (e) {
+        console.error(e)
+        this.hasNestedError = true
+        return false
+      }
+    }
+  },
+
   computed: {
     routerViewKey() {
       // If nuxtChildKey prop is given or current route has children
@@ -71,18 +89,21 @@ export default {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options.nuxt)
   },
   render(h) {
-    // If there is some error
-    if (this.nuxt.err) {
-      return h('NuxtError', {
-        props: {
-          error: this.nuxt.err
-        }
+    if (!this.nuxt.err) {
+      return h('NuxtChild', {
+        key: this.routerViewKey,
+        props: this.$props
       })
     }
-    // Directly return nuxt child
-    return h('NuxtChild', {
-      key: this.routerViewKey,
-      props: this.$props
+
+    if (this.hasNestedError) {
+        return h('h2', {}, 'Error while display error')
+    }
+
+    return h('NuxtError', {
+      props: {
+        error: this.nuxt.err
+      }
     })
   }
 }
