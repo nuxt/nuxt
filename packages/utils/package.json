@@ -8,7 +8,7 @@
   ],
   "main": "dist/utils.js",
   "dependencies": {
-    "consola": "^2.6.1",
+    "consola": "^2.6.2",
     "fs-extra": "^8.0.1",
     "hash-sum": "^1.0.2",
     "proper-lockfile": "^4.1.1",
