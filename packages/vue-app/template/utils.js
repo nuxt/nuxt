@@ -215,7 +215,7 @@ export async function setContext(app, context) {
   app.context.next = context.next
   app.context._redirected = false
   app.context._errored = false
-  app.context.isHMR = !!context.isHMR
+  app.context.isHMR = Boolean(context.isHMR)
   app.context.params = app.context.route.params || {}
   app.context.query = app.context.route.query || {}
 }
@@ -388,7 +388,7 @@ function parse(str, options) {
       optional: optional,
       repeat: repeat,
       partial: partial,
-      asterisk: !!asterisk,
+      asterisk: Boolean(asterisk),
       pattern: pattern ? escapeGroup(pattern) : (asterisk ? '.*' : '[^' + escapeString(delimiter) + ']+?')
     })
   }
