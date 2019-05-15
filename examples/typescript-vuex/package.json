@@ -5,6 +5,7 @@
     "axios": "^0.18.0",
     "nuxt": "latest",
     "tachyons": "^4.11.1",
+    "ts-node": "^8.1.0",
     "vue-property-decorator": "^7.3.0",
     "vuex-class": "^0.3.1"
   },
