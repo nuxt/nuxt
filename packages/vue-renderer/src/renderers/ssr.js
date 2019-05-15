@@ -89,7 +89,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject resource hints
-    if (this.options.render.resourceHints) {
+    if (this.options.render.resourceHints && this.options.render.bundleRenderer.inject) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
@@ -122,7 +122,9 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Prepend scripts
-    APP += this.renderScripts(renderContext)
+    if (this.options.render.bundleRenderer.inject) {
+      APP += this.renderScripts(renderContext)
+    }
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
