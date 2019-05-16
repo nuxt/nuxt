@@ -82,6 +82,7 @@ export default class SSRRenderer extends BaseRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
+    let needInject = this.context.options.render.bundleRenderer.inject !== false;
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
@@ -89,7 +90,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject resource hints
-    if (this.options.render.resourceHints && this.options.render.bundleRenderer.inject) {
+    if (this.options.render.resourceHints && needInject) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
@@ -97,8 +98,10 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     // Serialize state
-    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    APP += `<script>${serializedSession}</script>`
+    if (needInject) {
+      const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+      APP += `<script>${serializedSession}</script>`
+    }
 
     // Calculate CSP hashes
     const { csp } = this.options.render
@@ -122,7 +125,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Prepend scripts
-    if (this.options.render.bundleRenderer.inject) {
+    if (needInject) {
       APP += this.renderScripts(renderContext)
     }
     APP += m.script.text({ body: true })
