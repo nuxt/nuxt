@@ -82,7 +82,7 @@ export default class SSRRenderer extends BaseRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
-    const needInject = this.context.options.render.bundleRenderer.inject !== false
+    const needInject = this.options.render.bundleRenderer.inject !== false
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
