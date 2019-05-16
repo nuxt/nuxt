@@ -13,7 +13,7 @@
     "@nuxt/server": "2.7.1",
     "@nuxt/utils": "2.7.1",
     "@nuxt/vue-renderer": "2.7.1",
-    "consola": "^2.6.1",
+    "consola": "^2.6.2",
     "debug": "^4.1.1",
     "esm": "3.2.20",
     "fs-extra": "^8.0.1",
