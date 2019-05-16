@@ -52,7 +52,7 @@ export default class VueSSRClientPlugin {
       stats.modules.forEach((m) => {
         // Ignore modules duplicated in multiple chunks
         if (m.chunks.length === 1) {
-          const cid = m.chunks[0]
+          const [cid] = m.chunks
           const chunk = stats.chunks.find(c => c.id === cid)
           if (!chunk || !chunk.files) {
             return

@@ -38,7 +38,7 @@ export default class WebpackBaseConfig {
       isDev: this.dev,
       isServer: this.isServer,
       isClient: !this.isServer,
-      isModern: !!this.isModern
+      isModern: Boolean(this.isModern)
     }
   }
 
