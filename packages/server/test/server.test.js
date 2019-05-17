@@ -447,7 +447,7 @@ describe('server: server', () => {
     expect(renderAndGetWindow).toBeCalledWith('/render/window', {}, {
       loadedCallback: globals.loadedCallback,
       ssr: nuxt.options.render.ssr,
-      globals: globals
+      globals
     })
   })
 

@@ -47,7 +47,7 @@ module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
 
-  const modern = !!options.modern
+  const modern = Boolean(options.modern)
 
   const {
     polyfills: userPolyfills,

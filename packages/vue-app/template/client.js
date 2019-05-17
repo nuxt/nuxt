@@ -128,7 +128,7 @@ function mapTransitions(Components, to, from) {
 
 async function loadAsyncComponents(to, from, next) {
   // Check if route path changed (this._pathChanged), only if the page is not an error (for validate())
-  this._pathChanged = !!app.nuxt.err || from.path !== to.path
+  this._pathChanged = Boolean(app.nuxt.err) || from.path !== to.path
   this._queryChanged = JSON.stringify(to.query) !== JSON.stringify(from.query)
   this._diffQuery = (this._queryChanged ? getQueryDiff(to.query, from.query) : [])
 
@@ -267,7 +267,7 @@ async function render(to, from, next) {
     next: _next.bind(this)
   })
   this._dateLastError = app.nuxt.dateErr
-  this._hadError = !!app.nuxt.err
+  this._hadError = Boolean(app.nuxt.err)
 
   // Get route's matched components
   const matches = []
@@ -376,7 +376,7 @@ async function render(to, from, next) {
         Component.options.asyncData &&
         typeof Component.options.asyncData === 'function'
       )
-      const hasFetch = !!Component.options.fetch
+      const hasFetch = Boolean(Component.options.fetch)
       <% if (loading) { %>
       const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
       <% } %>
