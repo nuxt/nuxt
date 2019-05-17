@@ -83,7 +83,7 @@ export default class SSRRenderer extends BaseRenderer {
       m.script.text() +
       m.noscript.text()
     const needInjectScripts = this.options.render.injectScripts !== false
-    const needInjectState = this.context.options.render.injectState !== false
+    const needInjectState = this.options.render.injectState !== false
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
