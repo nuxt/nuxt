@@ -82,7 +82,8 @@ export default class SSRRenderer extends BaseRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
-    const needInject = this.options.render.bundleRenderer.inject !== false
+    const needInjectScripts = this.options.render.injectScripts !== false
+    const needInjectState = this.context.options.render.injectState !== false
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
@@ -90,7 +91,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject resource hints
-    if (this.options.render.resourceHints && needInject) {
+    if (this.options.render.resourceHints && needInjectScripts) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
@@ -99,7 +100,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    if (needInject) {
+    if (needInjectState) {
       APP += `<script>${serializedSession}</script>`
     }
 
@@ -125,7 +126,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Prepend scripts
-    if (needInject) {
+    if (needInjectScripts) {
       APP += this.renderScripts(renderContext)
     }
     APP += m.script.text({ body: true })
