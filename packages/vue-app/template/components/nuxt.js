@@ -43,11 +43,12 @@ export default {
 
       const [matchedRoute] = this.$route.matched
       const Component = matchedRoute && matchedRoute.components.default
-      if (Component && Component.options) {
-        const { key } = Component.options
 
-        if (key) {
-          return (typeof key === 'function' ? key(this.$route) : key)
+      if (Component && Component.options) {
+        const { options } = Component
+
+        if (options.key) {
+          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
         }
       }
 
