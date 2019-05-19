@@ -49,9 +49,6 @@ export default class SSRRenderer extends BaseRenderer {
             if (arg instanceof Error) {
               return arg.stack
             }
-            if (typeof arg === 'string') {
-              return arg
-            }
             return format(arg)
           })
         })
