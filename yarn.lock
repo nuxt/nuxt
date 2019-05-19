@@ -1784,10 +1784,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-12.0.0.tgz#d11813b9c0ff8aaca29f04cbc12817f4c7d656e5"
   integrity sha512-Jrb/x3HT4PTJp6a4avhmJCDEVrPdqLfl3e8GGMbpkGGdwAV5UGlIs4vVEfsHHfylZVOKZWpOqmqFH8CbfOZ6kg==
 
-"@types/node@^11.13.10":
-  version "11.13.10"
-  resolved "https://registry.npmjs.org/@types/node/-/node-11.13.10.tgz#4df59e5966b56f512bac98898bcbee5067411f0f"
-  integrity sha512-leUNzbFTMX94TWaIKz8N15Chu55F9QSH+INKayQr5xpkasBQBRF3qQXfo3/dOnMU/dEIit+Y/SU8HyOjq++GwA==
+"@types/node@^11.13.11":
+  version "11.13.11"
+  resolved "https://registry.npmjs.org/@types/node/-/node-11.13.11.tgz#65766752cbbe198ff353ea861a23b6484cf33df4"
+  integrity sha512-blLeR+KIy26km1OU8yTLUlSyVCOvT6+wPq/77tIA+uSHHa4yYQosn+bbaJqPtWId0wjVClUtD7aXzDbZeKWqig==
 
 "@types/node@^12.0.2":
   version "12.0.2"
@@ -3433,6 +3433,16 @@ connect@^3.6.6:
     parseurl "~1.3.2"
     utils-merge "1.0.1"
 
+connect@^3.7.0:
+  version "3.7.0"
+  resolved "https://registry.npmjs.org/connect/-/connect-3.7.0.tgz#5d49348910caa5e07a01800b030d0c35f20484f8"
+  integrity sha512-ZqRXc+tZukToSNmh5C2iWMSoV3X1YUcPbqEM4DkEG5tNQXrQUZCNVGGv3IuicnkMtPfGf3Xtp8WCXs295iQ1pQ==
+  dependencies:
+    debug "2.6.9"
+    finalhandler "1.1.2"
+    parseurl "~1.3.3"
+    utils-merge "1.0.1"
+
 consola@^2.0.0-1, consola@^2.3.0, consola@^2.5.6, consola@^2.6.0:
   version "2.6.1"
   resolved "https://registry.npmjs.org/consola/-/consola-2.6.1.tgz#d2f2bee385b5dba11907e4e0d17fc563d5fb9fa6"
@@ -4904,10 +4914,10 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-extract-css-chunks-webpack-plugin@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.npmjs.org/extract-css-chunks-webpack-plugin/-/extract-css-chunks-webpack-plugin-4.4.0.tgz#0ae86c2c904461175569f7e74ed284e39cb355cb"
-  integrity sha512-Mah/OD3PvXTMMPGwF9nWVcir8b0OtzpqfyPWQhgFippEZZcPhMLFT4dr7fqZrWM1xgaIThoqOXCRxIaLnaEVdw==
+extract-css-chunks-webpack-plugin@^4.5.1:
+  version "4.5.1"
+  resolved "https://registry.npmjs.org/extract-css-chunks-webpack-plugin/-/extract-css-chunks-webpack-plugin-4.5.1.tgz#b69be9d22297502ae55c77b5b8f2edf82fa47130"
+  integrity sha512-SMTguWPSE3nqLFhf9wVNbGg4LKSOolj2/C/WtWIKNDOh7Cc68leo/270N4HPCwwcnZs7zxw9zS+e5n1gynw1Gw==
   dependencies:
     loader-utils "^1.1.0"
     normalize-url "^2.0.1"
@@ -5064,7 +5074,7 @@ finalhandler@1.1.1:
     statuses "~1.4.0"
     unpipe "~1.0.0"
 
-finalhandler@^1.1.2, finalhandler@~1.1.2:
+finalhandler@1.1.2, finalhandler@^1.1.2, finalhandler@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/finalhandler/-/finalhandler-1.1.2.tgz#b7e7d000ffd11938d0fdb053506f6ebabe9f587d"
   integrity sha512-aAWcW57uxVNrQZqFXjITpW3sIUQmHGG3qSb9mUah9MgMC4NeWhNOlNjXEYq3HjRAvL6arUviZGGJsBg6z0zsWA==
@@ -9924,10 +9934,10 @@ rollup-pluginutils@^2.7.0:
     estree-walker "^0.6.0"
     micromatch "^3.1.10"
 
-rollup@^1.12.1:
-  version "1.12.1"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-1.12.1.tgz#02148d3d79f819b418a2f4c374f859fed56ae40c"
-  integrity sha512-6CL0c+HxqEY9/8G+7mYIvor0tt60mVC64410/1DeaGWZCFAvcY8ClT0bsnTxECd6vR004CMm0X2yBZmod5gWjw==
+rollup@^1.12.3:
+  version "1.12.3"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-1.12.3.tgz#068b1957d5bebf6c0a758cfe42609b512add35a9"
+  integrity sha512-ueWhPijWN+GaPgD3l77hXih/gcDXmYph6sWeQegwBYtaqAE834e8u+MC2wT6FKIUsz1DBOyOXAQXUZB+rjWDoQ==
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "^12.0.2"
@@ -11002,10 +11012,10 @@ ts-jest@^24.0.2:
     semver "^5.5"
     yargs-parser "10.x"
 
-ts-loader@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.npmjs.org/ts-loader/-/ts-loader-6.0.0.tgz#d489f49410725a12e696ad0b67c33937a7c49147"
-  integrity sha512-lszy+D41R0Te2+loZxADWS+E1+Z55A+i3dFfFie1AZHL++65JRKVDBPQgeWgRrlv5tbxdU3zOtXp8b7AFR6KEg==
+ts-loader@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.npmjs.org/ts-loader/-/ts-loader-6.0.1.tgz#abe8ba59356da8cbc85c01ab5feb85ae998db315"
+  integrity sha512-9H5ErTIw5t73sdSoFE0hX0RO45B7cdDA4pW1VIQ2wNFAhxSpZcAlv2fwMcfv6SAYLoI7uGwHuzC5dECzmzqtzA==
   dependencies:
     chalk "^2.3.0"
     enhanced-resolve "^4.0.0"
