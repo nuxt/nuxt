@@ -11,6 +11,9 @@
 export default {
   head: {
     title: 'Home page'
+  },
+  created() {
+    console.log(123, this.$route)
   }
 }
 </script>
