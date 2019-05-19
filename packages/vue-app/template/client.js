@@ -506,6 +506,11 @@ function fixPrepatch(to, ___) {
         for (const key in newData) {
           Vue.set(instance.$data, key, newData[key])
         }
+
+        // Ensure to trigger scroll event after calling scrollBehavior
+        window.<%= globals.nuxt %>.$nextTick(() => {
+          window.<%= globals.nuxt %>.$emit('triggerScroll')
+        })
       }
     })
     showNextPage.call(this, to)

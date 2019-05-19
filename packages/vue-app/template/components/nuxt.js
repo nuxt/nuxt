@@ -43,25 +43,12 @@ export default {
 
       const [matchedRoute] = this.$route.matched
       const Component = matchedRoute && matchedRoute.components.default
+
       if (Component && Component.options) {
-        const { key, watchQuery } = Component.options
+        const { options } = Component
 
-        if (key) {
-          return (typeof key === 'function' ? key(this.$route) : key)
-        }
-
-        if (watchQuery) {
-          if (watchQuery.length) {
-            const pickedQuery = {}
-            for (const queryKey of watchQuery) {
-              pickedQuery[queryKey] = this.$route.query[queryKey]
-            }
-            return this.$router.resolve({
-              path: this.$route.path,
-              query: pickedQuery
-            }).href
-          }
-          return this.$route.fullPath
+        if (options.key) {
+          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
         }
       }
 
