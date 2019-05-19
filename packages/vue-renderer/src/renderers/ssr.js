@@ -45,12 +45,7 @@ export default class SSRRenderer extends BaseRenderer {
       log(logObj) {
         logs.push({
           ...logObj,
-          args: logObj.args.map((arg) => {
-            if (arg instanceof Error) {
-              return arg.stack
-            }
-            return format(arg)
-          })
+          args: logObj.args.map(format)
         })
       }
     }
