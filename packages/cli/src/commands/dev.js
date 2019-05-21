@@ -51,7 +51,9 @@ export default {
     // Start listening
     await nuxt.server.listen(this._usedPort)
     // Keep listening port for restart
-    this._usedPort = nuxt.server.listeners[0].port
+    if (nuxt.server.listeners[0]) {
+      this._usedPort = nuxt.server.listeners[0].port
+    }
 
     // Show banner when listening
     showBanner(nuxt, false)
