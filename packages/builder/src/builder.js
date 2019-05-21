@@ -498,8 +498,8 @@ export default class Builder {
 
     // Interpret and move template files to .nuxt/
     await Promise.all(
-      templateFiles.map(async (template) => {
-        const { src, dst, custom } = template
+      templateFiles.map(async (templateFile) => {
+        const { src, dst, custom } = templateFile
 
         // Add custom templates to watcher
         if (custom) {
@@ -514,10 +514,10 @@ export default class Builder {
           content = stripWhitespace(
             templateFunction({
               ...templateVars,
-              ...template,
+              ...templateFile,
               options: {
                 ...templateVars.options,
-                ...template.options
+                ...templateFile.options
               }
             })
           )
