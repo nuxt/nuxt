@@ -38,10 +38,14 @@ const NUXT = window.<%= globals.context %> || {}
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (isDev) { %>
-const logger = consola.withScope('nuxt:ssr')
 const logs = NUXT.logs || []
-logs.forEach(logObj => logger[logObj.type](logObj))
-delete NUXT.logs
+if (logs.length > 0) {
+  console.group("%c🚀 Nuxt.js SSR Logs", 'font-size: 110%')
+  const logger = consola.withScope('nuxt:ssr')
+  logs.forEach(logObj => logger[logObj.type](logObj))
+  delete NUXT.logs
+  console.groupEnd()
+}
 <% } %>
 <% if (debug) { %>
 // Setup global Vue error handler
