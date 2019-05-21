@@ -1,5 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
+import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxt/devalue'
@@ -42,10 +43,10 @@ export default class SSRRenderer extends BaseRenderer {
     const logs = []
     const devReporter = {
       log(logObj) {
-        if (logObj.args[0] instanceof Error) {
-          logObj.args[0] = logObj.args[0].stack
-        }
-        logs.push(logObj)
+        logs.push({
+          ...logObj,
+          args: logObj.args.map(arg => typeof arg === 'string' ? arg : format(arg))
+        })
       }
     }
     consola.addReporter(devReporter)

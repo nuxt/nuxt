@@ -41,30 +41,19 @@ export default {
         return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)
       }
 
-      const Component = this.$route.matched[0] && this.$route.matched[0].components.default
+      const [matchedRoute] = this.$route.matched
+      const Component = matchedRoute && matchedRoute.components.default
+
       if (Component && Component.options) {
-        const { key, watchQuery } = Component.options
+        const { options } = Component
 
-        if (key) {
-          return (typeof key === 'function' ? key(this.$route) : key)
-        }
-
-        if (watchQuery) {
-          if (watchQuery.length) {
-            const pickedQuery = {}
-            for (const queryKey of watchQuery) {
-              pickedQuery[queryKey] = this.$route.query[queryKey]
-            }
-            return this.$router.resolve({
-              path: this.$route.path,
-              query: pickedQuery
-            }).href
-          }
-          return this.$route.fullPath
+        if (options.key) {
+          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
         }
       }
 
-      return this.$route.path
+      const strict = /\/$/.test(matchedRoute.path)
+      return strict ? this.$route.path : this.$route.path.replace(/\/$/, '')
     }
   },
   beforeCreate() {

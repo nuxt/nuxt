@@ -88,7 +88,7 @@ async function createApp(ssrContext) {
       dateErr: null,
       error(err) {
         err = err || null
-        app.context._errored = !!err
+        app.context._errored = Boolean(err)
         err = err ? normalizeError(err) : null
         const nuxt = this.nuxt || this.$options.nuxt
         nuxt.dateErr = Date.now()
