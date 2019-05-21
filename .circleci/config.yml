@@ -104,7 +104,7 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -i --coverage && yarn coverage
+          command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -131,7 +131,7 @@ jobs:
           at: ~/project
       - run:
           name: Unit Tests
-          command: yarn test:unit -w=2 --coverage && yarn coverage
+          command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
 
   test-e2e:
     <<: *defaults
@@ -150,7 +150,7 @@ jobs:
             sudo ln -s `pwd`/chrome-linux/chrome /bin/chromium
       - run:
           name: E2E Tests
-          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage
+          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
 
   test-types:
     <<: *defaults

@@ -45,6 +45,7 @@ export function serializeFunction(func) {
       }
     })
     .replace(`${func.name || 'function'}(`, 'function (')
+    .replace(`function function`, `function`)
 }
 
 serializeFunction.internalFunctionRE = /^(\s*)(?!(?:if)|(?:for)|(?:while)|(?:switch))(\w+)\s*\((.*?)\)\s*\{/gm
