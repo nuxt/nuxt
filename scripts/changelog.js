@@ -136,14 +136,14 @@ function generateMarkDown(commits) {
     for (const scopeName in scopeGroups) {
       markdown += '- `' + scopeName + '`' + '\n'
       for (const commit of scopeGroups[scopeName]) {
-        markdown += '  - ' + commit.references.join(',') + ' ' + commit.message + '\n'
+        markdown += '  - ' + commit.references.join(', ') + ' ' + commit.message.replace(/^(.)/, v => v.toUpperCase()) + '\n'
       }
     }
   }
 
   const authors = sortBy(uniq(commits.map(commit => commit.authorName).filter(an => !isKnownAuthor(an))))
   if (authors.length) {
-    markdown += '\n\n' + '#### ' + '💖  Thanks to' + '\n\n'
+    markdown += '\n\n' + '#### ' + '💖 Thanks to' + '\n\n'
     markdown += authors.map(name => '- ' + name).join('\n')
   }
 
