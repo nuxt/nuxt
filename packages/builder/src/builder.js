@@ -498,7 +498,9 @@ export default class Builder {
 
     // Interpret and move template files to .nuxt/
     await Promise.all(
-      templateFiles.map(async ({ src, dst, options, custom }) => {
+      templateFiles.map(async (templateFile) => {
+        const { src, dst, custom } = templateFile
+
         // Add custom templates to watcher
         if (custom) {
           this.options.build.watch.push(src)
@@ -510,14 +512,14 @@ export default class Builder {
         try {
           const templateFunction = template(fileContent, templateOptions)
           content = stripWhitespace(
-            templateFunction(
-              Object.assign({}, templateVars, {
-                options: options || {},
-                custom,
-                src,
-                dst
-              })
-            )
+            templateFunction({
+              ...templateVars,
+              ...templateFile,
+              options: {
+                ...templateVars.options,
+                ...templateFile.options
+              }
+            })
           )
         } catch (err) {
           throw new Error(`Could not compile template ${src}: ${err.message}`)
