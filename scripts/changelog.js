@@ -6,14 +6,13 @@ import uniq from 'lodash/uniq'
 import { writeFile } from 'fs-extra'
 
 const types = {
-  fix: { title: 'Fixes' },
-  feat: { title: 'Features' },
-  hotfix: { title: 'HotFixes' },
-  refactor: { title: 'Refactors' },
-  perf: { title: 'Performance Improvements' },
-  examples: { title: 'Examples' },
-  chore: { title: 'Chore' },
-  test: { title: 'Tests' }
+  fix: { title: '🐛 Bug Fix' },
+  feat: { title: '🚀 Features' },
+  refactor: { title: '💅 Refactors' },
+  perf: { title: '🔥 Performance' },
+  examples: { title: '📝 Examples' },
+  chore: { title: '🏡 Chore' },
+  test: { title: '👓 Tests' }
 }
 
 const knownAuthors = [
@@ -88,6 +87,7 @@ function parseCommits(commits) {
     message = message.join(':')
 
     // Extract references from message
+    message = message.replace(/\((fixes) #\d+\)/g, '')
     const references = []
     const referencesRegex = /#[0-9]+/g
     let m
@@ -103,6 +103,9 @@ function parseCommits(commits) {
     if (scope) {
       scope = scope[1]
     }
+    if (!scope) {
+      scope = 'general'
+    }
     type = type.split('(')[0]
 
     return {
@@ -116,38 +119,35 @@ function parseCommits(commits) {
 }
 
 function generateMarkDown(commits) {
-  const commitGroups = groupBy(commits, 'type')
+  const typeGroups = groupBy(commits, 'type')
 
   let markdown = ''
 
   for (const type of allowedTypes) {
-    const group = commitGroups[type]
+    const group = typeGroups[type]
     if (!group || !group.length) {
       continue
     }
 
     const { title } = types[type]
-    markdown += '\n\n' + '## ' + title + '\n\n'
-    markdown += sortBy(group, 'scope').map(formatCommitForMarkdown).join('\n')
+    markdown += '\n\n' + '#### ' + title + '\n\n'
+
+    const scopeGroups = groupBy(group, 'scope')
+    for (const scopeName in scopeGroups) {
+      markdown += '- `' + scopeName + '`' + '\n'
+      for (const commit of scopeGroups[scopeName]) {
+        markdown += '  - ' + commit.references.join(',') + ' ' + commit.message + '\n'
+      }
+    }
   }
 
   const authors = sortBy(uniq(commits.map(commit => commit.authorName).filter(an => !isKnownAuthor(an))))
   if (authors.length) {
-    markdown += '\n\n' + '## ' + 'Thanks to' + '\n\n'
+    markdown += '\n\n' + '#### ' + '💖  Thanks to' + '\n\n'
     markdown += authors.map(name => '- ' + name).join('\n')
   }
 
   return markdown.trim()
-}
-
-function formatCommitForMarkdown({ scope, type, message, references }) {
-  let fMessage = scope ? `**${scope}**: ${message}` : message
-
-  if (references.length) {
-    fMessage += ' ' + references.map(r => `(${r})`).join(' ')
-  }
-
-  return '- ' + fMessage
 }
 
 main().catch(consola.error)
