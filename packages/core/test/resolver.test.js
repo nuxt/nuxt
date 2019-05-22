@@ -73,17 +73,6 @@ describe('core: resolver', () => {
     expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
   })
 
-  test('should throw error when _resolveFilename failed', () => {
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    })
-    Module._resolveFilename = jest.fn(() => {
-      throw new Error('resolve failed')
-    })
-
-    expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
-  })
-
   test('should resolve root alias', () => {
     const resolver = new Resolver({
       options: { rootDir: '/var/nuxt' }
