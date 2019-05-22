@@ -8,7 +8,7 @@ import {
   Options as WebpackOptions,
   Plugin as WebpackPlugin
 } from 'webpack'
-import { TransformOptions } from '@babel/core'
+import { TransformOptions, PluginItem } from '@babel/core'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { Options as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
@@ -18,9 +18,19 @@ import { TerserPluginOptions } from 'terser-webpack-plugin'
 
 type NuxtConfigurationLoaders = any // TBD
 
+interface BabelPresetEnv {
+  isServer: boolean;
+}
+
+interface BabelPresets {
+  presets?: ((env: BabelPresetEnv, presets: [string, object | null]) => PluginItem[] | void) | PluginItem[] | null
+}
+
+type BabelOptions = Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> & BabelPresets
+
 export interface NuxtConfigurationBuild {
   analyze?: BundleAnalyzerPlugin.Options | boolean
-  babel?: TransformOptions
+  babel?: BabelOptions
   cache?: boolean
   crossorigin?: string
   cssSourceMap?: boolean
