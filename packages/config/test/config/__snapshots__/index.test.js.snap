@@ -275,6 +275,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -609,6 +610,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
