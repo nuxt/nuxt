@@ -23,6 +23,6 @@ export interface NuxtConfigurationRender {
   http2?: any // TBD
   resourceHints?: boolean
   ssr?: boolean
-  ssrLog?: true | false | 'collapsed'
+  ssrLog?: boolean | 'collapsed'
   static?: ServeStaticOptions
 }
