@@ -39,7 +39,7 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
-  useSsrLog() {
+  useSSRLog() {
     if (!this.options.render.ssrLog) {
       return
     }
@@ -64,13 +64,13 @@ export default class SSRRenderer extends BaseRenderer {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
-    const getSsrLog = this.useSsrLog()
+    const getSSRLog = this.useSSRLog()
 
     // Call Vue renderer renderToString
     let APP = await this.vueRenderer.renderToString(renderContext)
 
-    if (typeof getSsrLog === 'function') {
-      renderContext.nuxt.logs = getSsrLog()
+    if (typeof getSSRLog === 'function') {
+      renderContext.nuxt.logs = getSSRLog()
     }
 
     // Call ssr:context hook
