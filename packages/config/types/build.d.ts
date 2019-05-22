@@ -18,19 +18,17 @@ import { TerserPluginOptions } from 'terser-webpack-plugin'
 
 type NuxtConfigurationLoaders = any // TBD
 
-interface BabelPresetEnv {
+interface NuxtBabelPresetEnv {
   isServer: boolean;
 }
 
-interface BabelPresets {
-  presets?: ((env: BabelPresetEnv, presets: [string, object | null]) => PluginItem[] | void) | PluginItem[] | null
+interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {
+  presets?: ((env: NuxtBabelPresetEnv, presets: [string, object | null]) => PluginItem[] | void) | PluginItem[] | null
 }
-
-type BabelOptions = Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> & BabelPresets
 
 export interface NuxtConfigurationBuild {
   analyze?: BundleAnalyzerPlugin.Options | boolean
-  babel?: BabelOptions
+  babel?: NuxtBabelOptions
   cache?: boolean
   crossorigin?: string
   cssSourceMap?: boolean
