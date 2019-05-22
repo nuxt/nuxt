@@ -299,9 +299,9 @@ export function getNuxtConfig(_options) {
     options.pageTransition.appear = true
   }
 
-  if (options.render.ssrLog === undefined) {
-    options.render.ssrLog = options.dev
-  }
+  options.render.ssrLog = options.dev
+    ? options.render.ssrLog === undefined || options.render.ssrLog
+    : false
 
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
   if (options.generate.fallback === true) {
