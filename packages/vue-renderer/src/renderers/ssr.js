@@ -39,9 +39,9 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
-  creatSsrLog() {
+  useSsrLog() {
     if (!this.options.render.ssrLog) {
-      return { finish() {} }
+      return
     }
     const logs = []
     const devReporter = {
@@ -54,11 +54,9 @@ export default class SSRRenderer extends BaseRenderer {
     }
     consola.addReporter(devReporter)
 
-    return {
-      finish(renderContext) {
-        consola.removeReporter(devReporter)
-        renderContext.nuxt.logs = logs
-      }
+    return () => {
+      consola.removeReporter(devReporter)
+      return logs
     }
   }
 
@@ -66,12 +64,14 @@ export default class SSRRenderer extends BaseRenderer {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
-    const ssrLogger = this.creatSsrLog()
+    const getSsrLog = this.useSsrLog()
 
     // Call Vue renderer renderToString
     let APP = await this.vueRenderer.renderToString(renderContext)
 
-    ssrLogger.finish(renderContext)
+    if (typeof getSsrLog === 'function') {
+      renderContext.nuxt.logs = getSsrLog()
+    }
 
     // Call ssr:context hook
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)
