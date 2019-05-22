@@ -23,7 +23,7 @@ interface NuxtBabelPresetEnv {
 }
 
 interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {
-  presets?: ((env: NuxtBabelPresetEnv, defaultPreset: [string, object | null]) => PluginItem[] | void) | PluginItem[] | null
+  presets?: ((env: NuxtBabelPresetEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
 }
 
 export interface NuxtConfigurationBuild {
