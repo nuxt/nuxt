@@ -19,7 +19,6 @@ export default {
       description: 'Opens the server listeners url in the default browser'
     }
   },
-  _usedPort: null,
 
   async run(cmd) {
     const { argv } = cmd
@@ -49,11 +48,7 @@ export default {
     await nuxt.ready()
 
     // Start listening
-    await nuxt.server.listen(this._usedPort)
-    // Keep listening port for restart
-    if (nuxt.server.listeners[0]) {
-      this._usedPort = nuxt.server.listeners[0].port
-    }
+    await nuxt.server.listen()
 
     // Show banner when listening
     showBanner(nuxt, false)
