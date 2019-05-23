@@ -1,4 +1,3 @@
-import Module from 'module'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
@@ -27,7 +26,7 @@ export default class Resolver {
         paths: this.options.modulesDir
       })
     } catch (error) {
-      if (error.code === "MODULE_NOT_FOUND" || error.message.includes('Cannot resolve module')) {
+      if (error.code === 'MODULE_NOT_FOUND' || error.message.includes('Cannot resolve module')) {
         return undefined
       } else {
         throw error
