@@ -308,6 +308,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": true,
+    "ssrLog": false,
     "static": Object {
       "prefix": true,
     },
