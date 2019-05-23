@@ -32,12 +32,12 @@ describe('core: resolver', () => {
   })
 
   test('should call require.resolve in resolveModule', () => {
-    require.resolve = jest.fn(() => '/var/nuxt/resolver/module');
+    require.resolve = jest.fn(() => '/var/nuxt/resolver/module')
     const resolver = new Resolver(
       {
         options: { modulesDir: '/var/nuxt/node_modules' }
       },
-      require.resolve,
+      require.resolve
     )
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
@@ -52,7 +52,7 @@ describe('core: resolver', () => {
       const err = new Error()
       err.code = 'MODULE_NOT_FOUND'
       throw err
-    });
+    })
     const resolver = new Resolver({
       options: { modulesDir: '/var/nuxt/node_modules' }
     }, require.resolve)
