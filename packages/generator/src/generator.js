@@ -157,7 +157,7 @@ export default class Generator {
 
     try {
       html = this.minifyHtml(html)
-    } catch(error) {
+    } catch (error) {
       consola.warn(`HTML minification failed for SPA fallback`)
     }
 
