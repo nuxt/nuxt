@@ -10,7 +10,7 @@ export default class TemplateContext {
   constructor(builder, options) {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
-      options,
+      nuxtOptions: options,
       extensions: options.extensions
         .map(ext => ext.replace(/^\./, ''))
         .join('|'),

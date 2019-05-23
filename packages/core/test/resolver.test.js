@@ -428,6 +428,19 @@ describe('core: resolver', () => {
       expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve esm failed')
     })
 
+    test('should display deprecated intropDefault options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = x => x
+      resolver.esm = jest.fn()
+
+      resolver.requireModule('/var/nuxt/resolver/file.js', { intropDefault: true })
+      const warnMsg = 'Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
+    })
+
     test('should display deprecated alias options', () => {
       const resolver = new Resolver({
         options: {}

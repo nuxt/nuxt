@@ -514,11 +514,7 @@ export default class Builder {
           content = stripWhitespace(
             templateFunction({
               ...templateVars,
-              ...templateFile,
-              options: {
-                ...templateVars.options,
-                ...templateFile.options
-              }
+              ...templateFile
             })
           )
         } catch (err) {
