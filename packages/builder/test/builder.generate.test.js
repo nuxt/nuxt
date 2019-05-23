@@ -371,8 +371,7 @@ describe('builder: builder generate', () => {
       ...templateContext.templateVars,
       custom: true,
       dst: 'baz.js',
-      src: '/var/nuxt/src/baz.js',
-      options: {}
+      src: '/var/nuxt/src/baz.js'
     })
     expect(stripWhitespace).toBeCalledTimes(3)
     expect(stripWhitespace).nthCalledWith(1, 'compiled content')
