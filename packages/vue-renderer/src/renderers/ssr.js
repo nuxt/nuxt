@@ -83,7 +83,7 @@ export default class SSRRenderer extends BaseRenderer {
       m.style.text() +
       m.script.text() +
       m.noscript.text()
-    
+
     // Check if we need to inject scripts and state
     const needInjectScripts = this.options.render.injectScripts !== false
     const needInjectState = this.options.render.injectState !== false
