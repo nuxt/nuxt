@@ -514,9 +514,7 @@ export default class Builder {
           content = stripWhitespace(
             templateFunction({
               ...templateVars,
-              ...templateFile,
-              options: templateFile.options || {},
-              nuxtOptions: this.options
+              ...templateFile
             })
           )
         } catch (err) {
