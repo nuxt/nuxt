@@ -515,10 +515,8 @@ export default class Builder {
             templateFunction({
               ...templateVars,
               ...templateFile,
-              options: {
-                ...templateVars.options,
-                ...templateFile.options
-              }
+              options: templateFile.options || {},
+              nuxtOptions: templateVars.options
             })
           )
         } catch (err) {
