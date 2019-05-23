@@ -1,4 +1,3 @@
-import Module from 'module'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
@@ -23,7 +22,7 @@ export default class Resolver {
 
   resolveModule(path) {
     try {
-      return Module._resolveFilename(path, {
+      return require.resolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
