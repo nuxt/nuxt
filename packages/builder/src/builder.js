@@ -516,7 +516,7 @@ export default class Builder {
               ...templateVars,
               ...templateFile,
               options: templateFile.options || {},
-              nuxtOptions: templateVars.options
+              nuxtOptions: this.options
             })
           )
         } catch (err) {
