@@ -153,7 +153,14 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    const { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+    let { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+
+    try {
+      html = this.minifyHtml(html)
+    } catch(error) {
+      consola.warn(`HTML minification failed for SPA fallback`)
+    }
+
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
   }
 
@@ -221,25 +228,13 @@ export default class Generator {
       return false
     }
 
-    let minificationOptions = this.options.build.html.minify
-
-    // Legacy: Override minification options with generate.minify if present
-    // TODO: Remove in Nuxt version 3
-    if (typeof this.options.generate.minify !== 'undefined') {
-      minificationOptions = this.options.generate.minify
-      consola.warn('generate.minify has been deprecated and will be removed in the next major version.' +
-        ' Use build.html.minify instead!')
-    }
-
-    if (minificationOptions) {
-      try {
-        html = htmlMinifier.minify(html, minificationOptions)
-      } catch (err) {
-        const minifyErr = new Error(
-          `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
-        )
-        pageErrors.push({ type: 'unhandled', route, error: minifyErr })
-      }
+    try {
+      html = this.minifyHtml(html)
+    } catch (err) {
+      const minifyErr = new Error(
+        `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
+      )
+      pageErrors.push({ type: 'unhandled', route, error: minifyErr })
     }
 
     let fileName
@@ -275,5 +270,23 @@ export default class Generator {
     }
 
     return true
+  }
+
+  minifyHtml(html) {
+    let minificationOptions = this.options.build.html.minify
+
+    // Legacy: Override minification options with generate.minify if present
+    // TODO: Remove in Nuxt version 3
+    if (typeof this.options.generate.minify !== 'undefined') {
+      minificationOptions = this.options.generate.minify
+      consola.warn('generate.minify has been deprecated and will be removed in the next major version.' +
+        ' Use build.html.minify instead!')
+    }
+
+    if (!minificationOptions) {
+      return html
+    }
+
+    return htmlMinifier.minify(html, minificationOptions)
   }
 }
