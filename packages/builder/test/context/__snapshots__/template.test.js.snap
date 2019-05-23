@@ -38,7 +38,7 @@ TemplateContext {
       "test": "test message",
     },
     "mode": "test mode",
-    "options": Object {
+    "nuxtOptions": Object {
       "ErrorPage": "test_error_page",
       "build": Object {
         "splitChunks": Object {
