@@ -1,4 +1,3 @@
-import Module from 'module'
 import path from 'path'
 import esm from 'esm'
 import fs from 'fs-extra'
@@ -7,7 +6,6 @@ import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 import Resolver from '../src/resolver'
 
-jest.mock('module')
 jest.mock('path')
 jest.mock('esm', () => jest.fn(() => jest.fn()))
 jest.mock('fs-extra')
@@ -33,42 +31,45 @@ describe('core: resolver', () => {
     expect(esm).toBeCalledTimes(1)
   })
 
-  test('should call _resolveFilename in resolveModule', () => {
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    })
-    Module._resolveFilename = jest.fn(() => '/var/nuxt/resolver/module')
+  test('should call require.resolve in resolveModule', () => {
+    require.resolve = jest.fn(() => '/var/nuxt/resolver/module');
+    const resolver = new Resolver(
+      {
+        options: { modulesDir: '/var/nuxt/node_modules' }
+      },
+      require.resolve,
+    )
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toEqual('/var/nuxt/resolver/module')
-    expect(Module._resolveFilename).toBeCalledTimes(1)
-    expect(Module._resolveFilename).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
+    expect(require.resolve).toBeCalledTimes(1)
+    expect(require.resolve).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
   })
 
   test('should return undefined when module is not found', () => {
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    })
-    Module._resolveFilename = jest.fn(() => {
+    require.resolve = jest.fn(() => {
       const err = new Error()
       err.code = 'MODULE_NOT_FOUND'
       throw err
-    })
+    });
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    }, require.resolve)
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toBeUndefined()
-    expect(Module._resolveFilename).toBeCalledTimes(1)
+    expect(require.resolve).toBeCalledTimes(1)
   })
 
-  test('should throw error when _resolveFilename failed', () => {
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    })
-    Module._resolveFilename = jest.fn(() => {
+  test('should throw error when require.resolve failed', () => {
+    require.resolve = jest.fn(() => {
       throw new Error('resolve failed')
     })
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    }, require.resolve)
 
     expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
   })

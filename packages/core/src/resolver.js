@@ -6,7 +6,7 @@ import esm from 'esm'
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 export default class Resolver {
-  constructor(nuxt) {
+  constructor(nuxt, moduleResolver) {
     this.nuxt = nuxt
     this.options = this.nuxt.options
 
@@ -18,11 +18,14 @@ export default class Resolver {
 
     // ESM Loader
     this.esm = esm(module)
+
+    // module resolver
+    this.moduleResolver = moduleResolver || require.resolve
   }
 
   resolveModule(path) {
     try {
-      return require.resolve(path, {
+      return this.moduleResolver(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
