@@ -37,10 +37,10 @@ const NUXT = window.<%= globals.context %> || {}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
-<% if (options.render.ssrLog) { %>
+<% if (nuxtOptions.render.ssrLog) { %>
 const logs = NUXT.logs || []
 if (logs.length > 0) {
-  console.group<%= options.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt.js SSR Logs", 'font-size: 110%')
+  console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt.js SSR Logs", 'font-size: 110%')
   const logger = consola.withScope('nuxt:ssr')
   logs.forEach(logObj => logger[logObj.type](logObj))
   delete NUXT.logs
