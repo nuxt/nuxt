@@ -94,7 +94,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject resource hints
-    if (this.options.render.resourceHints && needInjectScripts) {
+    if (this.options.render.resourceHints && shouldInjectScripts) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
