@@ -43,5 +43,10 @@ module.exports = {
     'ts',
     'js',
     'json'
+  ],
+
+  reporters: [
+    'default',
+    ['jest-junit', { outputDirectory: 'reports/junit' }]
   ]
 }
