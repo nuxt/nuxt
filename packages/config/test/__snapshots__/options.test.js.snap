@@ -83,18 +83,6 @@ Object {
       "stylus": Object {
         "sourceMap": false,
       },
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "productionMode": true,
         "transformAssetUrls": Object {
@@ -143,10 +131,6 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
@@ -170,7 +154,6 @@ Object {
   "extensions": Array [
     "js",
     "mjs",
-    "ts",
   ],
   "fetch": Object {
     "client": true,

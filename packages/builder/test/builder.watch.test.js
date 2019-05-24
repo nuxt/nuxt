@@ -43,21 +43,21 @@ describe('builder: builder watch', () => {
     const patterns = [
       '/var/nuxt/src/layouts',
       '/var/nuxt/src/middleware',
-      '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}',
-      '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}'
+      '/var/nuxt/src/layouts/*.{vue,js}',
+      '/var/nuxt/src/layouts/**/*.{vue,js}'
     ]
 
     expect(r).toBeCalledTimes(4)
     expect(r).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/layouts')
     expect(r).nthCalledWith(2, '/var/nuxt/src', '/var/nuxt/src/middleware')
-    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}')
-    expect(r).nthCalledWith(4, '/var/nuxt/src', '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}')
+    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/layouts/*.{vue,js}')
+    expect(r).nthCalledWith(4, '/var/nuxt/src', '/var/nuxt/src/layouts/**/*.{vue,js}')
 
     expect(upath.normalizeSafe).toBeCalledTimes(4)
     expect(upath.normalizeSafe).nthCalledWith(1, '/var/nuxt/src/layouts', 0, patterns)
     expect(upath.normalizeSafe).nthCalledWith(2, '/var/nuxt/src/middleware', 1, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}', 2, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(4, '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}', 3, patterns)
+    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/layouts/*.{vue,js}', 2, patterns)
+    expect(upath.normalizeSafe).nthCalledWith(4, '/var/nuxt/src/layouts/**/*.{vue,js}', 3, patterns)
 
     expect(builder.createFileWatcher).toBeCalledTimes(1)
     expect(builder.createFileWatcher).toBeCalledWith(patterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
@@ -132,8 +132,8 @@ describe('builder: builder watch', () => {
 
     expect(r).toBeCalledTimes(7)
     expect(r).nthCalledWith(5, '/var/nuxt/src', '/var/nuxt/src/pages')
-    expect(r).nthCalledWith(6, '/var/nuxt/src', '/var/nuxt/src/pages/*.{vue,js,ts,tsx}')
-    expect(r).nthCalledWith(7, '/var/nuxt/src', '/var/nuxt/src/pages/**/*.{vue,js,ts,tsx}')
+    expect(r).nthCalledWith(6, '/var/nuxt/src', '/var/nuxt/src/pages/*.{vue,js}')
+    expect(r).nthCalledWith(7, '/var/nuxt/src', '/var/nuxt/src/pages/**/*.{vue,js}')
   })
 
   test('should invoke generateRoutesAndFiles on file refresh', () => {

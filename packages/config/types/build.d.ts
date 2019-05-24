@@ -67,9 +67,5 @@ export interface NuxtConfigurationBuild {
   templates?: any
   terser?: TerserPluginOptions | boolean
   transpile?: (string | RegExp)[]
-  typescript?: {
-    typeCheck?: { [key: string]: any } | boolean, // TBD - Couldn't find typedefs for the forkTsCheckerWebpackPlugin options
-    ignoreNotFoundWarnings?: boolean
-  }
   watch?: string[]
 }
