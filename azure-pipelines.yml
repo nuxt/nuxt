@@ -30,5 +30,5 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: 'test-*.xml'
+    testResultsFiles: 'reports/junit/*'
   displayName: 'Publish test results to Azure Pipelines'
