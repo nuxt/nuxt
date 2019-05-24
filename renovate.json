@@ -7,8 +7,7 @@
   ],
   "ignoreDeps": [
     "thread-loader",
-    "core-js",
-    "esm"
+    "core-js"
   ],
   "lockFileMaintenance": {
     "enabled": true
