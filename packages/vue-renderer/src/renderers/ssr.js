@@ -129,7 +129,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Prepend scripts
-    if (needInjectScripts) {
+    if (shouldInjectScripts) {
       APP += this.renderScripts(renderContext)
     }
     APP += m.script.text({ body: true })
