@@ -42,7 +42,6 @@
     "cheerio": "^1.0.0-rc.3",
     "codecov": "^3.5.0",
     "consola": "^2.6.2",
-    "cross-env": "^5.2.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
