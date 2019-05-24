@@ -86,7 +86,6 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
-    const shouldInjectState = this.options.render.injectState !== false
 
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
@@ -103,7 +102,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    if (needInjectState) {
+    if (shouldInjectScripts) {
       APP += `<script>${serializedSession}</script>`
     }
 
