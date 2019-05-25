@@ -130,7 +130,7 @@ function generateMarkDown(commits) {
     }
 
     const { title } = types[type]
-    markdown += '\n\n' + '#### ' + title + '\n\n'
+    markdown += '\n\n' + '### ' + title + '\n\n'
 
     const scopeGroups = groupBy(group, 'scope')
     for (const scopeName in scopeGroups) {
@@ -143,7 +143,7 @@ function generateMarkDown(commits) {
 
   const authors = sortBy(uniq(commits.map(commit => commit.authorName).filter(an => !isKnownAuthor(an))))
   if (authors.length) {
-    markdown += '\n\n' + '#### ' + '💖 Thanks to' + '\n\n'
+    markdown += '\n\n' + '### ' + '💖 Thanks to' + '\n\n'
     markdown += authors.map(name => '- ' + name).join('\n')
   }
 
