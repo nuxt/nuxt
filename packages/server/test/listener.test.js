@@ -362,6 +362,28 @@ describe('server: listener', () => {
     expect(listener.listen).toBeCalledTimes(1)
   })
 
+  test('should reuse last random port', async () => {
+    const listener = new Listener({ dev: true, host: 'localhost', port: 3000 })
+    listener.host = 'localhost'
+    listener.close = jest.fn()
+    listener.listen = function () {
+      if (this.port === '0') {
+        this.port = Math.random()
+      }
+    }
+
+    const addressInUse = new Error()
+    addressInUse.code = 'EADDRINUSE'
+
+    await listener.serverErrorHandler(addressInUse).catch(() => { })
+    const port1 = listener.port
+    await listener.serverErrorHandler(addressInUse).catch(() => { })
+    const port2 = listener.port
+
+    expect(port1).not.toBe(3000)
+    expect(port2).toBe(port1)
+  })
+
   test('should close server', async () => {
     const listener = new Listener({})
     const server = mockServer()
