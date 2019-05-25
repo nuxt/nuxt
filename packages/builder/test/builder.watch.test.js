@@ -87,6 +87,29 @@ describe('builder: builder watch', () => {
     expect(r).nthCalledWith(5, '/var/nuxt/src', '/var/nuxt/src/store')
   })
 
+  test('should NOT watch pages files on client if _defaultPage=true', () => {
+    const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
+    nuxt.options.build.watch = []
+    nuxt.options.watchers = {
+      chokidar: { test: true }
+    }
+
+    const builder = new Builder(nuxt, {})
+    builder._nuxtPages = true
+    builder._defaultPage = true
+    r.mockImplementation((dir, src) => src)
+
+    builder.watchClient()
+
+    expect(r).toBeCalledTimes(4)
+  })
   test('should watch pages files', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'

@@ -604,7 +604,7 @@ export default class Builder {
       patterns.push(r(src, this.options.dir.store))
     }
 
-    if (this._nuxtPages) {
+    if (this._nuxtPages && !this._defaultPage) {
       patterns.push(
         r(src, this.options.dir.pages),
         ...rGlob(this.options.dir.pages)
@@ -656,6 +656,10 @@ export default class Builder {
 
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
+    }
+    // If default page displayed, watch for first page creation
+    if (this._nuxtPages && this._defaultPage) {
+      nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))
     }
     // If store not activated, watch for a file in the directory
     if (!this.options.store) {
