@@ -6,7 +6,7 @@ import uniq from 'lodash/uniq'
 import { writeFile } from 'fs-extra'
 
 const types = {
-  fix: { title: '🐛 Bug Fix' },
+  fix: { title: '🐛 Bug Fixes' },
   feat: { title: '🚀 Features' },
   refactor: { title: '💅 Refactors' },
   perf: { title: '🔥 Performance' },
