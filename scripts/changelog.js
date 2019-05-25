@@ -136,7 +136,7 @@ function generateMarkDown(commits) {
     for (const scopeName in scopeGroups) {
       markdown += '- `' + scopeName + '`' + '\n'
       for (const commit of scopeGroups[scopeName]) {
-        markdown += '  - ' + commit.references.join(', ') + ' ' + commit.message.replace(/^(.)/, v => v.toUpperCase()) + '\n'
+        markdown += '  - ' + commit.references.join(', ') + (commit.references.length ? ' ' : '') + commit.message.replace(/^(.)/, v => v.toUpperCase()) + '\n'
       }
     }
   }
