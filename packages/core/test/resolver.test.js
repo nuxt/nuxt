@@ -32,44 +32,39 @@ describe('core: resolver', () => {
   })
 
   test('should call require.resolve in resolveModule', () => {
-    require.resolve = jest.fn(() => '/var/nuxt/resolver/module')
-    const resolver = new Resolver(
-      {
-        options: { modulesDir: '/var/nuxt/node_modules' }
-      },
-      require.resolve
-    )
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    const resolve = resolver._resolve = jest.fn(() => '/var/nuxt/resolver/module')
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toEqual('/var/nuxt/resolver/module')
-    expect(require.resolve).toBeCalledTimes(1)
-    expect(require.resolve).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
+    expect(resolve).toBeCalledTimes(1)
+    expect(resolve).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
   })
 
   test('should return undefined when module is not found', () => {
-    require.resolve = jest.fn(() => {
+    const resolver = new Resolver({
+      options: { modulesDir: '/var/nuxt/node_modules' }
+    })
+    const resolve = resolver._resolve = jest.fn(() => {
       const err = new Error()
       err.code = 'MODULE_NOT_FOUND'
       throw err
     })
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    }, require.resolve)
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toBeUndefined()
-    expect(require.resolve).toBeCalledTimes(1)
+    expect(resolve).toBeCalledTimes(1)
   })
 
   test('should throw error when require.resolve failed', () => {
-    require.resolve = jest.fn(() => {
-      throw new Error('resolve failed')
-    })
     const resolver = new Resolver({
       options: { modulesDir: '/var/nuxt/node_modules' }
-    }, require.resolve)
+    })
+    resolver._resolve = jest.fn(() => { throw new Error('resolve failed') })
 
     expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
   })

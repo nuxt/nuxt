@@ -6,7 +6,7 @@ import esm from 'esm'
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 export default class Resolver {
-  constructor(nuxt, moduleResolver) {
+  constructor(nuxt) {
     this.nuxt = nuxt
     this.options = this.nuxt.options
 
@@ -19,19 +19,23 @@ export default class Resolver {
     // ESM Loader
     this.esm = esm(module)
 
-    // module resolver
-    this.moduleResolver = moduleResolver || require.resolve
+    this._resolve = require.resolve
   }
 
   resolveModule(path) {
     try {
-      return this.moduleResolver(path, {
+      return this._resolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND' || error.message.includes('Cannot resolve module')) {
+      if (error.code === 'MODULE_NOT_FOUND') {
         return undefined
       } else {
+        // TODO: remove after https://github.com/facebook/jest/pull/8487 released
+        if (process.env.NODE_ENV === 'test' &&
+          error.message.startsWith('Cannot resolve module')) {
+          return undefined
+        }
         throw error
       }
     }
