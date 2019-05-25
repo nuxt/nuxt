@@ -28,13 +28,10 @@ export default class Resolver {
         paths: this.options.modulesDir
       })
     } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        return undefined
-      } else {
+      if (error.code !== 'MODULE_NOT_FOUND') {
         // TODO: remove after https://github.com/facebook/jest/pull/8487 released
-        if (process.env.NODE_ENV === 'test' &&
-          error.message.startsWith('Cannot resolve module')) {
-          return undefined
+        if (process.env.NODE_ENV === 'test' && error.message.startsWith('Cannot resolve module')) {
+          return
         }
         throw error
       }
