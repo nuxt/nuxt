@@ -105,6 +105,10 @@ jobs:
       - run:
           name: Build Fixtures
           command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: fixtures.xml
+      - store_test_results:
+          path: reports/junit
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -132,6 +136,10 @@ jobs:
       - run:
           name: Unit Tests
           command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: unit.xml
+      - store_test_results:
+          path: reports/junit
 
   test-e2e:
     <<: *defaults
@@ -151,6 +159,10 @@ jobs:
       - run:
           name: E2E Tests
           command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: e2e.xml
+      - store_test_results:
+          path: reports/junit
 
   test-types:
     <<: *defaults
