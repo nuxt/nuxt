@@ -50,6 +50,7 @@ export default {
 
     // Start listening
     await nuxt.server.listen(this._usedPort)
+
     // Keep listening port for restart
     if (nuxt.server.listeners[0]) {
       this._usedPort = nuxt.server.listeners[0].port
