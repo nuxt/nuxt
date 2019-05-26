@@ -40,9 +40,8 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 <% if (nuxtOptions.render.ssrLog) { %>
 const logs = NUXT.logs || []
 if (logs.length > 0) {
-  console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt.js SSR Logs", 'font-size: 110%')
-  const logger = consola.withScope('nuxt:ssr')
-  logs.forEach(logObj => logger[logObj.type](logObj))
+  console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt SSR Logs", 'font-size: 110%')
+  logs.forEach(logObj => consola[logObj.type](logObj))
   delete NUXT.logs
   console.groupEnd()
 }
