@@ -1,7 +1,7 @@
 <template>
 <transition appear>
   <div class="nuxt__hmr" v-if="building">
-      <div>Building ({{ progress}}%)</div>
+      <div>Building ({{ progress }}%)</div>
   </div>
 </transition>
 </template>
