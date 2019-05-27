@@ -256,7 +256,7 @@ export default class Builder {
     }
 
     // Resolve apps
-    this.apps = [...this.options.apps, mainApp].map((app) => {
+    this.apps = [...(this.options.apps || []), mainApp].map((app) => {
       // String mode
       if (typeof app === 'string') {
         app = { srcDir: app }
