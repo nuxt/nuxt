@@ -401,9 +401,9 @@ export default class Builder {
         this.options.router.routeNameSplitter
       ))
     } else { // If user defined a custom method to create routes
-      templateVars.router.routes.push(...this.options.build.createRoutes(
+      templateVars.router.routes.push(...(this.options.build.createRoutes(
         srcDir
-      ))
+      ) || []))
     }
 
     if (extendRoutes) {
