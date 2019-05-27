@@ -19,7 +19,7 @@ export default {
     if (typeof WebSocket === undefined) {
       return // Unsupported
     }
-    this.wsConnect('/_loading/ws') // TOODO: Add baseURL
+    this.wsConnect('<%= router.base %>_loading/ws')
   },
   methods: {
     wsConnect(path) {
