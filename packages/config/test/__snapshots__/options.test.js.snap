@@ -363,9 +363,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }

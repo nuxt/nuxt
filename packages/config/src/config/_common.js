@@ -66,7 +66,7 @@ export default () => ({
   // Watch
   watch: [],
   watchers: {
-    rewatchOnRawEvents: env.linux ? ['rename'] : undefined,
+    rewatchOnRawEvents: undefined,
     webpack: {},
     chokidar: {
       ignoreInitial: true
