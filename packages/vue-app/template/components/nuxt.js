@@ -12,12 +12,15 @@ import NuxtError from './nuxt-error.vue'
 <% } %>
 import NuxtChild from './nuxt-child'
 
+<%if (isDev) { %>import NuxtHMR from './nuxt-hmr'<% } %>
+
 <%= isTest ? '// @vue/component' : '' %>
 export default {
   name: 'Nuxt',
   components: {
     NuxtChild,
-    NuxtError
+    NuxtError<%if(isDev) { %>,
+    NuxtHMR <% } %>
   },
   props: {
     nuxtChildKey: {
@@ -62,16 +65,24 @@ export default {
   render(h) {
     // If there is some error
     if (this.nuxt.err) {
-      return h('NuxtError', {
+      const el = h('NuxtError', {
         props: {
           error: this.nuxt.err
         }
       })
     }
-    // Directly return nuxt child
-    return h('NuxtChild', {
+    // Return nuxt child
+    const el = h('NuxtChild', {
       key: this.routerViewKey,
       props: this.$props
     })
+    <%if (isDev) { %>
+    return h('div', [
+      el,
+      h(NuxtHMR)
+    ])
+    <% } else { %>
+    return el
+    <% } %>
   }
 }

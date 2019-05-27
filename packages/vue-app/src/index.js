@@ -14,6 +14,7 @@ export const template = {
     'utils.js',
     'empty.js',
     'components/nuxt-error.vue',
+    'components/nuxt-hmr.vue',
     'components/nuxt-loading.vue',
     'components/nuxt-child.js',
     'components/nuxt-link.server.js',
