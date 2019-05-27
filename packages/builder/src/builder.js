@@ -82,6 +82,9 @@ export default class Builder {
     this.ignore = new Ignore({
       rootDir: this.options.srcDir
     })
+
+    // Resolve apps
+    this.resolveApps()
   }
 
   getBundleBuilder(BundleBuilder) {
@@ -221,12 +224,14 @@ export default class Builder {
 
     const templateContext = new TemplateContext(this, this.options)
 
-    await Promise.all([
-      this.resolveLayouts(templateContext),
-      this.resolveRoutes(templateContext),
-      this.resolveStore(templateContext),
-      this.resolveMiddleware(templateContext)
-    ])
+    for (const app of this.apps) {
+      await Promise.all([
+        this.resolveLayouts(templateContext, app),
+        this.resolveRoutes(templateContext, app, app._isMain),
+        (app._isMain && app.store) && this.resolveStore(templateContext, app),
+        (app._isMain) && this.resolveMiddleware(templateContext, app)
+      ])
+    }
 
     await this.resolveCustomTemplates(templateContext)
 
@@ -238,6 +243,51 @@ export default class Builder {
     await this.compileTemplates(templateContext)
 
     consola.success('Nuxt files generated')
+  }
+
+  resolveApps() {
+    // Main app
+    const mainApp = {
+      name: 'main',
+      _isMain: true,
+      store: this.options.store,
+      dir: undefined,
+      srcDir: this.options.srcDir
+    }
+
+    // Resolve apps
+    this.apps = [...this.options.apps, mainApp].map((app) => {
+      // String mode
+      if (typeof app === 'string') {
+        app = { srcDir: app }
+      }
+
+      // Resolve srcDir relative to rootDir if not absolute
+      app.srcDir = this.nuxt.resolver.resolvePath(app.srcDir)
+
+      // Inherit project dirs
+      app.dir = { ...this.options.dir, ...app.dir }
+
+      // Assign a name
+      if (!app.name) {
+        app.name = path.basename(app.srcDir)
+      }
+
+      // Detect store
+      if (app.store === undefined) {
+        app.store = fsExtra.existsSync(path.resolve(app.srcDir, app.dir.store))
+      }
+
+      return app
+    })
+
+    // Add aliases
+    for (const app of this.apps) {
+      const alias = '~' + app.name
+      if (!this.options.alias[alias]) {
+        this.options.alias[alias] = app.srcDir
+      }
+    }
   }
 
   normalizePlugins() {
@@ -284,23 +334,23 @@ export default class Builder {
     }))
   }
 
-  async resolveRelative(dir) {
+  async resolveRelative(dir, cwd = this.options.srcDir) {
     const dirPrefix = new RegExp(`^${dir}/`)
-    return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
+    return (await this.resolveFiles(dir, cwd)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
-  async resolveLayouts({ templateVars, templateFiles }) {
-    if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      for (const file of await this.resolveFiles(this.options.dir.layouts)) {
+  async resolveLayouts({ templateVars, templateFiles }, { srcDir, dir }) {
+    if (await fsExtra.exists(path.resolve(srcDir, dir.layouts))) {
+      for (const file of await this.resolveFiles(dir.layouts, srcDir)) {
         const name = file
-          .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
+          .replace(new RegExp(`^${dir.layouts}/`), '')
           .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
 
         // Layout Priority: module.addLayout > .vue file > other extensions
         if (name === 'error') {
           if (!templateVars.components.ErrorPage) {
             templateVars.components.ErrorPage = this.relativeToBuild(
-              this.options.srcDir,
+              srcDir,
               file
             )
           }
@@ -308,7 +358,7 @@ export default class Builder {
           consola.warn(`Duplicate layout registration, "${name}" has been registered as "${this.options.layouts[name]}"`)
         } else if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
           templateVars.layouts[name] = this.relativeToBuild(
-            this.options.srcDir,
+            srcDir,
             file
           )
         }
@@ -323,54 +373,56 @@ export default class Builder {
     }
   }
 
-  async resolveRoutes({ templateVars }) {
+  async resolveRoutes({ templateVars }, { srcDir, dir }, extendRoutes = false) {
     consola.debug('Generating routes...')
 
     if (this._defaultPage) {
-      templateVars.router.routes = createRoutes(
+      templateVars.router.routes.push(...createRoutes(
         ['index.vue'],
         this.template.dir + '/pages',
         '',
         this.options.router.routeNameSplitter
-      )
+      ))
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
-      for (const page of await this.resolveFiles(this.options.dir.pages)) {
+      for (const page of await this.resolveFiles(dir.pages, srcDir)) {
         const key = page.replace(ext, '')
         // .vue file takes precedence over other extensions
         if (/\.vue$/.test(page) || !files[key]) {
           files[key] = page.replace(/(['"])/g, '\\$1')
         }
       }
-      templateVars.router.routes = createRoutes(
+      templateVars.router.routes.push(...createRoutes(
         Object.values(files),
-        this.options.srcDir,
-        this.options.dir.pages,
+        srcDir,
+        dir.pages,
         this.options.router.routeNameSplitter
-      )
+      ))
     } else { // If user defined a custom method to create routes
-      templateVars.router.routes = this.options.build.createRoutes(
-        this.options.srcDir
-      )
+      templateVars.router.routes.push(...this.options.build.createRoutes(
+        srcDir
+      ))
     }
 
-    await this.nuxt.callHook(
-      'build:extendRoutes',
-      templateVars.router.routes,
-      r
-    )
-    // router.extendRoutes method
-    if (typeof this.options.router.extendRoutes === 'function') {
-      // let the user extend the routes
-      const extendedRoutes = this.options.router.extendRoutes(
+    if (extendRoutes) {
+      await this.nuxt.callHook(
+        'build:extendRoutes',
         templateVars.router.routes,
         r
       )
-      // Only overwrite routes when something is returned for backwards compatibility
-      if (extendedRoutes !== undefined) {
-        templateVars.router.routes = extendedRoutes
+      // router.extendRoutes method
+      if (typeof this.options.router.extendRoutes === 'function') {
+        // let the user extend the routes
+        const extendedRoutes = this.options.router.extendRoutes(
+          templateVars.router.routes,
+          r
+        )
+        // Only overwrite routes when something is returned for backwards compatibility
+        if (extendedRoutes !== undefined) {
+          templateVars.router.routes = extendedRoutes
+        }
       }
     }
 
@@ -378,13 +430,8 @@ export default class Builder {
     this.routes = templateVars.router.routes
   }
 
-  async resolveStore({ templateVars, templateFiles }) {
-    // Add store if needed
-    if (!this.options.store) {
-      return
-    }
-
-    templateVars.storeModules = (await this.resolveRelative(this.options.dir.store))
+  async resolveStore({ templateVars, templateFiles }, { srcDir, dir }) {
+    templateVars.storeModules.push(...(await this.resolveRelative(dir.store, srcDir))
       .sort(({ src: p1 }, { src: p2 }) => {
         // modules are sorted from low to high priority (for overwriting properties)
         let res = p1.split('/').length - p2.split('/').length
@@ -394,14 +441,16 @@ export default class Builder {
           res = 1
         }
         return res
-      })
+      }))
 
-    templateFiles.push('store.js')
+    if (!templateFiles.includes('store.js')) {
+      templateFiles.push('store.js')
+    }
   }
 
-  async resolveMiddleware({ templateVars }) {
+  async resolveMiddleware({ templateVars }, { srcDir, dir }) {
     // -- Middleware --
-    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
+    templateVars.middleware.push(...await this.resolveRelative(dir.middleware, srcDir))
   }
 
   async resolveCustomTemplates(templateContext) {

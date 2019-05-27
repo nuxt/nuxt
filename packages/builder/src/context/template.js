@@ -23,7 +23,10 @@ export default class TemplateContext {
       vue: { config: options.vue.config },
       fetch: options.fetch,
       mode: options.mode,
-      router: options.router,
+      router: {
+        ...options.router,
+        routes: [...options.router.routes]
+      },
       env: options.env,
       head: options.head,
       store: options.store,
@@ -32,7 +35,9 @@ export default class TemplateContext {
       css: options.css,
       plugins: builder.plugins,
       appPath: './App.js',
-      layouts: Object.assign({}, options.layouts),
+      layouts: { ...options.layouts },
+      middleware: [],
+      storeModules: [],
       loading:
         typeof options.loading === 'string'
           ? builder.relativeToBuild(options.srcDir, options.loading)
