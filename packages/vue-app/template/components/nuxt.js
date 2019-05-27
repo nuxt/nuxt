@@ -63,19 +63,21 @@ export default {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options.nuxt)
   },
   render(h) {
+    let el
     // If there is some error
     if (this.nuxt.err) {
-      const el = h('NuxtError', {
+      el = h('NuxtError', {
         props: {
           error: this.nuxt.err
         }
       })
+    } else {
+      // Render nuxt child
+      el = h('NuxtChild', {
+        key: this.routerViewKey,
+        props: this.$props
+      })
     }
-    // Return nuxt child
-    const el = h('NuxtChild', {
-      key: this.routerViewKey,
-      props: this.$props
-    })
     <%if (isDev) { %>
     return h('div', [
       el,
