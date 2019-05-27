@@ -282,10 +282,12 @@ export default class Builder {
     })
 
     // Add aliases
-    for (const app of this.apps) {
-      const alias = '~' + app.name
-      if (!this.options.alias[alias]) {
-        this.options.alias[alias] = app.srcDir
+    if (this.options.alias) { // TODO: update tests and remove guard
+      for (const app of this.apps) {
+        const alias = '~' + app.name
+        if (!this.options.alias[alias]) {
+          this.options.alias[alias] = app.srcDir
+        }
       }
     }
   }
