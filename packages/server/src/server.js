@@ -245,6 +245,8 @@ export default class Server {
     this.listeners.push(listener)
 
     await this.nuxt.callHook('listen', listener.server, listener)
+
+    return listener
   }
 
   async close() {

@@ -6,7 +6,7 @@ import uniq from 'lodash/uniq'
 import { writeFile } from 'fs-extra'
 
 const types = {
-  fix: { title: '🐛 Bug Fix' },
+  fix: { title: '🐛 Bug Fixes' },
   feat: { title: '🚀 Features' },
   refactor: { title: '💅 Refactors' },
   perf: { title: '🔥 Performance' },
@@ -130,20 +130,20 @@ function generateMarkDown(commits) {
     }
 
     const { title } = types[type]
-    markdown += '\n\n' + '#### ' + title + '\n\n'
+    markdown += '\n\n' + '### ' + title + '\n\n'
 
     const scopeGroups = groupBy(group, 'scope')
     for (const scopeName in scopeGroups) {
       markdown += '- `' + scopeName + '`' + '\n'
       for (const commit of scopeGroups[scopeName]) {
-        markdown += '  - ' + commit.references.join(', ') + ' ' + commit.message.replace(/^(.)/, v => v.toUpperCase()) + '\n'
+        markdown += '  - ' + commit.references.join(', ') + (commit.references.length ? ' ' : '') + commit.message.replace(/^(.)/, v => v.toUpperCase()) + '\n'
       }
     }
   }
 
   const authors = sortBy(uniq(commits.map(commit => commit.authorName).filter(an => !isKnownAuthor(an))))
   if (authors.length) {
-    markdown += '\n\n' + '#### ' + '💖 Thanks to' + '\n\n'
+    markdown += '\n\n' + '### ' + '💖 Thanks to' + '\n\n'
     markdown += authors.map(name => '- ' + name).join('\n')
   }
 

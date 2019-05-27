@@ -42,25 +42,24 @@ describe('builder: builder watch', () => {
 
     const patterns = [
       '/var/nuxt/src/layouts',
-      '/var/nuxt/src/middleware',
-      '/var/nuxt/src/layouts/*.{vue,js}',
-      '/var/nuxt/src/layouts/**/*.{vue,js}'
+      '/var/nuxt/src/middleware'
     ]
 
-    expect(r).toBeCalledTimes(4)
-    expect(r).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/layouts')
-    expect(r).nthCalledWith(2, '/var/nuxt/src', '/var/nuxt/src/middleware')
-    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/layouts/*.{vue,js}')
-    expect(r).nthCalledWith(4, '/var/nuxt/src', '/var/nuxt/src/layouts/**/*.{vue,js}')
+    const globbedPatterns = [
+      '/var/nuxt/src/layouts/**/*.{vue,js}',
+      '/var/nuxt/src/middleware/**/*.{vue,js}'
+    ]
 
-    expect(upath.normalizeSafe).toBeCalledTimes(4)
-    expect(upath.normalizeSafe).nthCalledWith(1, '/var/nuxt/src/layouts', 0, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(2, '/var/nuxt/src/middleware', 1, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/layouts/*.{vue,js}', 2, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(4, '/var/nuxt/src/layouts/**/*.{vue,js}', 3, patterns)
+    expect(r).toBeCalledTimes(2)
+    expect(r).nthCalledWith(1, '/var/nuxt/src', patterns[0])
+    expect(r).nthCalledWith(2, '/var/nuxt/src', patterns[1])
+
+    expect(upath.normalizeSafe).toBeCalledTimes(2)
+    expect(upath.normalizeSafe).nthCalledWith(1, globbedPatterns[0], 0, patterns)
+    expect(upath.normalizeSafe).nthCalledWith(2, globbedPatterns[1], 1, patterns)
 
     expect(builder.createFileWatcher).toBeCalledTimes(1)
-    expect(builder.createFileWatcher).toBeCalledWith(patterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
+    expect(builder.createFileWatcher).toBeCalledWith(globbedPatterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
     expect(builder.assignWatcher).toBeCalledTimes(1)
   })
 
@@ -83,8 +82,8 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(r).toBeCalledTimes(5)
-    expect(r).nthCalledWith(5, '/var/nuxt/src', '/var/nuxt/src/store')
+    expect(r).toBeCalledTimes(3)
+    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/store')
   })
 
   test('should NOT watch pages files on client if _defaultPage=true', () => {
@@ -108,7 +107,7 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(r).toBeCalledTimes(4)
+    expect(r).toBeCalledTimes(2)
   })
   test('should watch pages files', () => {
     const nuxt = createNuxt()
@@ -130,10 +129,11 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(r).toBeCalledTimes(7)
-    expect(r).nthCalledWith(5, '/var/nuxt/src', '/var/nuxt/src/pages')
-    expect(r).nthCalledWith(6, '/var/nuxt/src', '/var/nuxt/src/pages/*.{vue,js}')
-    expect(r).nthCalledWith(7, '/var/nuxt/src', '/var/nuxt/src/pages/**/*.{vue,js}')
+    expect(r).toBeCalledTimes(3)
+    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/pages')
+
+    expect(upath.normalizeSafe).toBeCalledTimes(3)
+    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/pages/**/*.{vue,js}', 2, expect.any(Array))
   })
 
   test('should invoke generateRoutesAndFiles on file refresh', () => {

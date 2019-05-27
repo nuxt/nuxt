@@ -1,4 +1,3 @@
-import Module from 'module'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
@@ -19,17 +18,21 @@ export default class Resolver {
 
     // ESM Loader
     this.esm = esm(module)
+
+    this._resolve = require.resolve
   }
 
   resolveModule(path) {
     try {
-      return Module._resolveFilename(path, {
+      return this._resolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        return undefined
-      } else {
+      if (error.code !== 'MODULE_NOT_FOUND') {
+        // TODO: remove after https://github.com/facebook/jest/pull/8487 released
+        if (process.env.NODE_ENV === 'test' && error.message.startsWith('Cannot resolve module')) {
+          return
+        }
         throw error
       }
     }

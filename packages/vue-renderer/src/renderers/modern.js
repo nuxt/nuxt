@@ -109,4 +109,12 @@ export default class ModernRenderer extends SSRRenderer {
       return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
     })
   }
+
+  async render(renderContext) {
+    const result = await super.render(renderContext)
+    if (this.isServerMode) {
+      renderContext.res.setHeader('Vary', 'User-Agent')
+    }
+    return result
+  }
 }
