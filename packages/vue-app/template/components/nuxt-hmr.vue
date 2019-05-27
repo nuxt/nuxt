@@ -12,7 +12,8 @@ export default {
   data() {
     return {
       building: false,
-      progress: 0
+      progress: 0,
+      reconnectAttempts: 0,
     }
   },
   mounted() {
@@ -20,6 +21,9 @@ export default {
       return // Unsupported
     }
     this.wsConnect('<%= router.base %>_loading/ws')
+  },
+  beforeDestroy() {
+    this.wsClose()
   },
   methods: {
     wsConnect(path) {
@@ -35,6 +39,11 @@ export default {
     },
 
     wsReconnect(e) {
+      this.reconnectAttempts++
+      if (this.reconnectAttempts > 10) {
+        return
+      }
+
       setTimeout(() => {
         this.wsConnect()
       }, 1000)
