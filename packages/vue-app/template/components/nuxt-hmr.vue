@@ -62,7 +62,9 @@ export default {
         if (data[0] === '{') {
           data = JSON.parse(data)
         }
-      } catch (e) {}
+      } catch (e) {
+        return
+      }
 
       this.building = !data.allDone
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
