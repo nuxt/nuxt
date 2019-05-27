@@ -69,7 +69,7 @@ export default {
     },
 
     wsClose() {
-        if (this.ws) {
+      if (this.ws) {
         this.ws.close()
         delete this.ws
       }
