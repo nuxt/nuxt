@@ -24,7 +24,7 @@ export default {
     }
   },
   mounted() {
-    if (typeof WebSocket === undefined) {
+    if (WebSocket === undefined) {
       return // Unsupported
     }
     this.wsConnect('<%= router.base %>_loading/ws')
@@ -50,18 +50,13 @@ export default {
       if (this.reconnectAttempts > 10) {
         return
       }
-
-      setTimeout(() => {
-        this.wsConnect()
-      }, 1000)
+      setTimeout(() => { this.wsConnect() }, 1000)
     },
-
 
     onWSClose(e) {
       // https://tools.ietf.org/html/rfc6455#section-11.7
       if (e.code !== 1000 && e.code !== 1005) {
-        // Unkown error
-        this.wsReconnect()
+        this.wsReconnect() // Unkown error
       }
     },
 
