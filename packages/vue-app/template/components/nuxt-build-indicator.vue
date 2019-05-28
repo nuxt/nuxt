@@ -37,9 +37,7 @@ export default {
   watch: {
     progress(val, oldVal) {
       // Cancel old animation
-      if (this._progressAnimation) {
-        clearInterval(this._progressAnimation)
-      }
+      clearInterval(this._progressAnimation)
       // Average progress may decrease but ignore it!
       if (val < oldVal) {
         return
@@ -53,6 +51,8 @@ export default {
         const diff = this.progress - this.animatedProgress
         if (diff > 0) {
           this.animatedProgress++
+        } else {
+          clearInterval(this._progressAnimation)
         }
       }, 50)
     }
@@ -110,6 +110,7 @@ export default {
           this.building = false
           this.animatedProgress = 0
           this.progress = 0
+          clearInterval(this._progressAnimation)
         })
       }
     },
