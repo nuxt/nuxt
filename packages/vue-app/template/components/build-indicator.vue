@@ -9,7 +9,7 @@
           <path d="M79 69v-1-2-3L57 26l-3-6-3 6-21 37-1 3a5 5 0 0 0 0 3c1 1 2 2 5 2h40s3 0 5-2zM54 31l19 35H35l19-35z" fill="#FFF" fill-rule="nonzero"/>
         </g>
       </svg>
-      {{ progress }}%
+      {{ animatedProgress }}%
     </div>
   </transition>
 </template>
@@ -20,6 +20,7 @@ export default {
     return {
       building: false,
       progress: 0,
+      animatedProgress: 0,
       reconnectAttempts: 0,
     }
   },
@@ -31,6 +32,29 @@ export default {
   },
   beforeDestroy() {
     this.wsClose()
+  },
+  watch: {
+    progress(val, oldVal) {
+      // Cancel old animation
+      if (this._progressAnimation) {
+        clearInterval(this._progressAnimation)
+      }
+      // Average progress may decrease but ignore it!
+      if (val < oldVal) {
+        return
+      }
+      // Jump to edge imediately
+      if (val < 10 || val > 90) {
+        this.animatedProgress = val
+      }
+      // Animate to value
+      this._progressAnimation = setInterval(() => {
+        const diff = this.progress - this.animatedProgress
+        if (diff > 0) {
+          this.animatedProgress++
+        }
+      }, 50)
+    }
   },
   methods: {
     wsConnect(path) {
@@ -78,7 +102,15 @@ export default {
       }
 
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
-      this.$nextTick(() => this.building = !data.allDone)
+      if (!data.allDone) {
+        this.building = true
+      } else {
+        this.$nextTick(() => {
+          this.building = false
+          this.animatedProgress = 0
+          this.progress = 0
+        })
+      }
     },
 
     wsClose() {
