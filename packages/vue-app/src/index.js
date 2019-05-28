@@ -13,7 +13,7 @@ export const template = {
     'server.js',
     'utils.js',
     'empty.js',
-    'components/build-indicator.vue',
+    'components/nuxt-build-indicator.vue',
     'components/nuxt-error.vue',
     'components/nuxt-loading.vue',
     'components/nuxt-child.js',

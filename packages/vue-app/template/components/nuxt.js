@@ -12,7 +12,7 @@ import NuxtError from './nuxt-error.vue'
 <% } %>
 import NuxtChild from './nuxt-child'
 
-<%if (buildIndicator) { %>import BuildIndicator from './build-indicator'<% } %>
+<%if (buildIndicator) { %>import NuxtBuildIndicator from './nuxt-build-indicator'<% } %>
 
 <%= isTest ? '// @vue/component' : '' %>
 export default {
@@ -20,7 +20,7 @@ export default {
   components: {
     NuxtChild,
     NuxtError<%if(buildIndicator) { %>,
-    BuildIndicator <% } %>
+    NuxtBuildIndicator <% } %>
   },
   props: {
     nuxtChildKey: {
@@ -81,7 +81,7 @@ export default {
     <%if (buildIndicator) { %>
     return h('div', [
       el,
-      h(BuildIndicator)
+      h(NuxtBuildIndicator)
     ])
     <% } else { %>
     return el
