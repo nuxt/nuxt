@@ -1,5 +1,6 @@
 import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
+<%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
@@ -11,6 +12,7 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
     return `import _${hash(key)} from '${layouts[key]}'`
   }
 }).join('\n') %>
+
 
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
@@ -50,7 +52,8 @@ export default {
         id: '<%= globals.id %>'
       }
     }, [
-      <% if (loading) { %>loadingEl,<% } %>
+      <% if (loading) { %> loadingEl,<% } %>
+      <%if (buildIndicator) { %>h(NuxtBuildIndicator),<% } %>
       transitionEl
     ])
   },

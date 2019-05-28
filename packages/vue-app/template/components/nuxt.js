@@ -12,15 +12,12 @@ import NuxtError from './nuxt-error.vue'
 <% } %>
 import NuxtChild from './nuxt-child'
 
-<%if (buildIndicator) { %>import NuxtBuildIndicator from './nuxt-build-indicator'<% } %>
-
 <%= isTest ? '// @vue/component' : '' %>
 export default {
   name: 'Nuxt',
   components: {
     NuxtChild,
-    NuxtError<%if(buildIndicator) { %>,
-    NuxtBuildIndicator <% } %>
+    NuxtError
   },
   props: {
     nuxtChildKey: {
@@ -63,28 +60,18 @@ export default {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options.nuxt)
   },
   render(h) {
-    let el
     // If there is some error
     if (this.nuxt.err) {
-      el = h('NuxtError', {
+      return h('NuxtError', {
         props: {
           error: this.nuxt.err
         }
       })
-    } else {
-      // Render nuxt child
-      el = h('NuxtChild', {
-        key: this.routerViewKey,
-        props: this.$props
-      })
     }
-    <%if (buildIndicator) { %>
-    return h('div', [
-      el,
-      h(NuxtBuildIndicator)
-    ])
-    <% } else { %>
-    return el
-    <% } %>
+    // Directly return nuxt child
+    return h('NuxtChild', {
+      key: this.routerViewKey,
+      props: this.$props
+    })
   }
 }
