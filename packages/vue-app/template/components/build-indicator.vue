@@ -16,6 +16,7 @@
 
 <script>
 export default {
+  name: 'nuxt-build-indicator',
   data() {
     return {
       building: false,
