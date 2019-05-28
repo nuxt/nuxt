@@ -4,7 +4,7 @@ import TimeFixPlugin from 'time-fix-plugin'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
-import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
@@ -361,10 +361,11 @@ export default class WebpackBaseConfig {
 
     // CSS extraction)
     if (buildOptions.extractCSS) {
-      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+      plugins.push(new MiniCssExtractPlugin({
         filename: this.getFileName('css'),
-        chunkFilename: this.getFileName('css')
-      }, buildOptions.extractCSS)))
+        chunkFilename: this.getFileName('css'),
+        ...buildOptions.extractCSS
+      }))
     }
 
     plugins.push(new VueLoader.VueLoaderPlugin())
