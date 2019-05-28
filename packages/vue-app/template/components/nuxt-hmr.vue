@@ -1,6 +1,6 @@
 <template>
   <transition appear>
-    <div class="nuxt__hmr">
+    <div class="nuxt__hmr" v-if="building">
       <svg viewBox="0 0 96 72" version="1" xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fill-rule="evenodd">
           <path d="M6 66h23l1-3 21-37L40 6 6 66zM79 66h11L62 17l-5 9 22 37v3zM54 31L35 66h38z"/>
@@ -107,6 +107,7 @@ export default {
   border-radius: 2px;
   box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.2);
   color: #00C48D;
+  width: 54px;
 }
 .v-enter-active, .v-leave-active {
   transition-delay: 0.2s;
