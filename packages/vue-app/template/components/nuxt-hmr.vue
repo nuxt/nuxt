@@ -1,13 +1,12 @@
 <template>
-<transition appear>
-  <div class="nuxt__hmr" v-if="building">
-      <div>Building ({{ progress }}%)</div>
-  </div>
-</transition>
+  <transition appear>
+    <div class="nuxt__hmr" v-if="building">
+      Building ({{ progress }}%)
+    </div>
+  </transition>
 </template>
 
 <script>
-import { setTimeout } from 'timers';
 export default {
   data() {
     return {
@@ -75,8 +74,8 @@ export default {
         return
       }
 
-      this.building = !data.allDone
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
+      this.$nextTick(() => this.building = !data.allDone)
     },
 
     wsClose() {
@@ -91,24 +90,23 @@ export default {
 
 <style scopped>
 .nuxt__hmr {
-    position: absolute;
-    font-family: monospace;
-    top: 10px;
-    right: 10px;
-    background-color: rgb(235, 180, 78);
-    padding: 5px;
-    border-radius: 5px;
-    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.4);
+  position: absolute;
+  font-family: monospace;
+  bottom: 0px;
+  right: 0px;
+  background-color: #2E495E;
+  padding: 5px 10px;
+  border-top-left-radius: 2px;
+  box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.2);
+  color: #00C48D;
 }
-
 .v-enter-active, .v-leave-active {
-  transition-delay: 0.5s;
+  transition-delay: 0.2s;
   transition-property: all;
-  transition-duration: 0.6s;
+  transition-duration: 0.3s;
 }
-
 .v-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(10px);
 }
 </style>
