@@ -93,6 +93,7 @@ const errorHandler = Vue.config.errorHandler || console.error
 createApp()
   .then(mountApp)
   .catch((err) => {
+    <% if (isDev) { %>console.error(err)<% } %>
     const wrapperError = new Error(err)
     wrapperError.message = '[nuxt] Error while mounting app: ' + wrapperError.message
     errorHandler(wrapperError)
