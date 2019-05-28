@@ -50,11 +50,7 @@ export default {
       domProps: {
         id: '<%= globals.id %>'
       }
-    }, [
-      <% if (loading) { %> loadingEl,<% } %>
-      <%if (buildIndicator) { %>h(NuxtBuildIndicator),<% } %>
-      transitionEl
-    ])
+    }, [<% if (loading) { %>loadingEl, <% } %><%if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>transitionEl])
   },
   data: () => ({
     isOnline: true,
