@@ -36,15 +36,16 @@ export default {
   },
   watch: {
     progress(val, oldVal) {
-      // Cancel old animation
-      clearInterval(this._progressAnimation)
       // Average progress may decrease but ignore it!
       if (val < oldVal) {
         return
       }
+      // Cancel old animation
+      clearInterval(this._progressAnimation)
       // Jump to edge imediately
       if (val < 10 || val > 90) {
         this.animatedProgress = val
+        return
       }
       // Animate to value
       this._progressAnimation = setInterval(() => {
