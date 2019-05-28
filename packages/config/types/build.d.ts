@@ -28,6 +28,7 @@ interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof Transfor
 
 export interface NuxtConfigurationBuild {
   analyze?: BundleAnalyzerPlugin.Options | boolean
+  indicator?: boolean
   babel?: NuxtBabelOptions
   cache?: boolean
   crossorigin?: string

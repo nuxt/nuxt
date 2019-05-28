@@ -12,14 +12,14 @@ import NuxtError from './nuxt-error.vue'
 <% } %>
 import NuxtChild from './nuxt-child'
 
-<%if (isDev) { %>import NuxtHMR from './nuxt-hmr'<% } %>
+<%if (buildIndicator) { %>import NuxtHMR from './nuxt-hmr'<% } %>
 
 <%= isTest ? '// @vue/component' : '' %>
 export default {
   name: 'Nuxt',
   components: {
     NuxtChild,
-    NuxtError<%if(isDev) { %>,
+    NuxtError<%if(buildIndicator) { %>,
     NuxtHMR <% } %>
   },
   props: {
@@ -78,7 +78,7 @@ export default {
         props: this.$props
       })
     }
-    <%if (isDev) { %>
+    <%if (buildIndicator) { %>
     return h('div', [
       el,
       h(NuxtHMR)
