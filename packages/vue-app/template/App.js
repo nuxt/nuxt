@@ -13,7 +13,6 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
   }
 }).join('\n') %>
 
-
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
