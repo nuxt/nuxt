@@ -87,5 +87,9 @@
     "typescript": "^3.4.5",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^8.1.1"
+  },
+  "dependencies": {
+    "angular": "^1.7.8",
+    "react": "^16.8.6"
   }
 }
