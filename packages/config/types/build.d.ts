@@ -49,6 +49,7 @@ export interface NuxtConfigurationBuild {
   hardSource?: boolean
   hotMiddleware?: WebpackHotMiddlewareOptions
   html?: { minify: HtmlMinifierOptions }
+  indicator?: boolean
   loaders?: NuxtConfigurationLoaders
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
