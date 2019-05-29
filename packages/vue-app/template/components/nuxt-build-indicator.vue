@@ -3,10 +3,20 @@
     <div class="nuxt__build_indicator" v-if="building">
       <svg viewBox="0 0 96 72" version="1" xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fill-rule="evenodd">
-          <path d="M6 66h23l1-3 21-37L40 6 6 66zM79 66h11L62 17l-5 9 22 37v3zM54 31L35 66h38z"/>
-          <path d="M29 69v-1-2H6L40 6l11 20 3-6L44 3s-2-3-4-3-3 1-5 3L1 63c0 1-2 3 0 6 0 1 2 2 5 2h28c-3 0-4-1-5-2z" fill="#00C58E"/>
-          <path d="M95 63L67 14c0-1-2-3-5-3-1 0-3 0-4 3l-4 6 3 6 5-9 28 49H79a5 5 0 0 1 0 3c-2 2-5 2-5 2h16c1 0 4 0 5-2 1-1 2-3 0-6z" fill="#00C58E"/>
-          <path d="M79 69v-1-2-3L57 26l-3-6-3 6-21 37-1 3a5 5 0 0 0 0 3c1 1 2 2 5 2h40s3 0 5-2zM54 31l19 35H35l19-35z" fill="#FFF" fill-rule="nonzero"/>
+          <path d="M6 66h23l1-3 21-37L40 6 6 66zM79 66h11L62 17l-5 9 22 37v3zM54 31L35 66h38z"></path>
+          <path
+            d="M29 69v-1-2H6L40 6l11 20 3-6L44 3s-2-3-4-3-3 1-5 3L1 63c0 1-2 3 0 6 0 1 2 2 5 2h28c-3 0-4-1-5-2z"
+            fill="#00C58E"
+          ></path>
+          <path
+            d="M95 63L67 14c0-1-2-3-5-3-1 0-3 0-4 3l-4 6 3 6 5-9 28 49H79a5 5 0 0 1 0 3c-2 2-5 2-5 2h16c1 0 4 0 5-2 1-1 2-3 0-6z"
+            fill="#00C58E"
+          ></path>
+          <path
+            d="M79 69v-1-2-3L57 26l-3-6-3 6-21 37-1 3a5 5 0 0 0 0 3c1 1 2 2 5 2h40s3 0 5-2zM54 31l19 35H35l19-35z"
+            fill="#FFF"
+            fill-rule="nonzero"
+          ></path>
         </g>
       </svg>
       {{ animatedProgress }}%
@@ -15,6 +25,8 @@
 </template>
 
 <script>
+import { setInterval, setTimeout } from 'timers';
+
 export default {
   name: 'nuxt-build-indicator',
   data() {
@@ -22,17 +34,25 @@ export default {
       building: false,
       progress: 0,
       animatedProgress: 0,
-      reconnectAttempts: 0,
+      reconnectAttempts: 0
     }
   },
   mounted() {
     if (WebSocket === undefined) {
       return // Unsupported
     }
-    this.wsConnect('<%= router.base %>_loading/ws')
+    this.wsConnect()
   },
   beforeDestroy() {
     this.wsClose()
+    clearInterval(this._progressAnimation)
+  },
+  computed: {
+    wsURL() {
+      const _path = '<%= router.base %>_loading/ws'
+      const _protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+      return `${_protocol}://${location.hostname}:${location.port}${_path}`
+    }
   },
   watch: {
     progress(val, oldVal) {
@@ -42,7 +62,7 @@ export default {
       }
       // Cancel old animation
       clearInterval(this._progressAnimation)
-      // Jump to edge imediately
+      // Jump to edge immediately
       if (val < 10 || val > 90) {
         this.animatedProgress = val
         return
@@ -59,51 +79,30 @@ export default {
     }
   },
   methods: {
-    wsConnect(path) {
-      if (path) {
-        const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-        this.wsURL = `${protocol}://${location.hostname}:${location.port}${path}`
-      }
-
+    wsConnect() {
+      this.wsClose()
       this.ws = new WebSocket(this.wsURL)
-      this.ws.onclose = this.onWSClose.bind(this)
-      this.ws.onerror = this.onWSError.bind(this)
       this.ws.onmessage = this.onWSMessage.bind(this)
-    },
-
-    wsReconnect(e) {
-      this.reconnectAttempts++
-      if (this.reconnectAttempts > 10) {
-        return
-      }
-      setTimeout(() => { this.wsConnect() }, 1000)
-    },
-
-    onWSClose(e) {
-      // https://tools.ietf.org/html/rfc6455#section-11.7
-      if (e.code !== 1000 && e.code !== 1005) {
-        this.wsReconnect() // Unkown error
-      }
-    },
-
-    onWSError(error) {
-      if (error.code === 'ECONNREFUSED') {
-        this.wsReconnect(error)
-      }
-    },
-
-    onWSMessage(msg) {
-      let data = msg.data
-
-      try {
-        if (data[0] === '{') {
-          data = JSON.parse(data)
+      this.ws.onclose = this.wsReconnect.bind(this)
+      this.ws.onerror = this.wsReconnect.bind(this)
+      setTimeout(() => {
+        if (this.ws.readyState !== WebSocket.OPEN) {
+          this.wsReconnect()
         }
-      } catch (e) {
-        return
-      }
+      }, 2000)
+    },
+
+    wsReconnect() {
+      setTimeout(() => {
+        this.wsConnect()
+      }, 1000)
+    },
+
+    onWSMessage(message) {
+      const data = JSON.parse(message.data)
 
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
+
       if (!data.allDone) {
         this.building = true
       } else {
