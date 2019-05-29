@@ -54,6 +54,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {
         "sourceMap": false,

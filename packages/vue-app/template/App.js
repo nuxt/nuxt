@@ -1,5 +1,6 @@
 import Vue from 'vue'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
+<%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
@@ -49,10 +50,7 @@ export default {
       domProps: {
         id: '<%= globals.id %>'
       }
-    }, [
-      <% if (loading) { %>loadingEl,<% } %>
-      transitionEl
-    ])
+    }, [<% if (loading) { %>loadingEl, <% } %><%if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>transitionEl])
   },
   data: () => ({
     isOnline: true,

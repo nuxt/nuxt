@@ -20,6 +20,7 @@ export default class TemplateContext {
       isDev: options.dev,
       isTest: options.test,
       debug: options.debug,
+      buildIndicator: options.dev && options.build.indicator,
       vue: { config: options.vue.config },
       fetch: options.fetch,
       mode: options.mode,
