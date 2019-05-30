@@ -3,6 +3,7 @@ import env from 'std-env'
 export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
+  indicator: true,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
   crossorigin: undefined,

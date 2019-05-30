@@ -68,6 +68,14 @@ describe('modern server mode', () => {
     ].join(', '))
   })
 
+  test('Vary header should contain User-Agent', async () => {
+    const { headers: { vary } } = await rp(url('/'), {
+      resolveWithFullResponse: true,
+      headers: { 'user-agent': modernUA }
+    })
+    expect(vary).toContain('User-Agent')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

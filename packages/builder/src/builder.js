@@ -209,6 +209,10 @@ export default class Builder {
     }
   }
 
+  globPathWithExtensions(path) {
+    return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
+  }
+
   async generateRoutesAndFiles() {
     consola.debug('Generating nuxt files')
 
@@ -229,7 +233,7 @@ export default class Builder {
     await this.resolveLoadingIndicator(templateContext)
 
     // Add vue-app template dir to watchers
-    this.options.build.watch.push(this.template.dir)
+    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
 
     await this.compileTemplates(templateContext)
 
@@ -274,7 +278,7 @@ export default class Builder {
   }
 
   async resolveFiles(dir, cwd = this.options.srcDir) {
-    return this.ignore.filter(await glob(`${dir}/**/*.{${this.supportedExtensions.join(',')}}`, {
+    return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
       ignore: this.options.ignore
     }))
@@ -498,7 +502,9 @@ export default class Builder {
 
     // Interpret and move template files to .nuxt/
     await Promise.all(
-      templateFiles.map(async ({ src, dst, options, custom }) => {
+      templateFiles.map(async (templateFile) => {
+        const { src, dst, custom } = templateFile
+
         // Add custom templates to watcher
         if (custom) {
           this.options.build.watch.push(src)
@@ -510,14 +516,10 @@ export default class Builder {
         try {
           const templateFunction = template(fileContent, templateOptions)
           content = stripWhitespace(
-            templateFunction(
-              Object.assign({}, templateVars, {
-                options: options || {},
-                custom,
-                src,
-                dst
-              })
-            )
+            templateFunction({
+              ...templateVars,
+              ...templateFile
+            })
           )
         } catch (err) {
           throw new Error(`Could not compile template ${src}: ${err.message}`)
@@ -570,6 +572,7 @@ export default class Builder {
       watcher.on(event, listener)
     }
 
+    // TODO: due to fixes in chokidar this isnt used anymore and could be removed in Nuxt v3
     const { rewatchOnRawEvents } = this.options.watchers
     if (rewatchOnRawEvents && Array.isArray(rewatchOnRawEvents)) {
       watcher.on('raw', (_event) => {
@@ -594,26 +597,20 @@ export default class Builder {
   }
 
   watchClient() {
-    const src = this.options.srcDir
-    const rGlob = dir => ['*', '**/*'].map(glob => r(src, `${dir}/${glob}.{${this.supportedExtensions.join(',')}}`))
-
     let patterns = [
-      r(src, this.options.dir.layouts),
-      r(src, this.options.dir.middleware),
-      ...rGlob(this.options.dir.layouts)
+      r(this.options.srcDir, this.options.dir.layouts),
+      r(this.options.srcDir, this.options.dir.middleware)
     ]
+
     if (this.options.store) {
-      patterns.push(r(src, this.options.dir.store))
+      patterns.push(r(this.options.srcDir, this.options.dir.store))
     }
 
-    if (this._nuxtPages) {
-      patterns.push(
-        r(src, this.options.dir.pages),
-        ...rGlob(this.options.dir.pages)
-      )
+    if (this._nuxtPages && !this._defaultPage) {
+      patterns.push(r(this.options.srcDir, this.options.dir.pages))
     }
 
-    patterns = patterns.map(upath.normalizeSafe)
+    patterns = patterns.map((path, ...args) => upath.normalizeSafe(this.globPathWithExtensions(path), ...args))
 
     const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 
@@ -658,6 +655,10 @@ export default class Builder {
 
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
+    }
+    // If default page displayed, watch for first page creation
+    if (this._nuxtPages && this._defaultPage) {
+      nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))
     }
     // If store not activated, watch for a file in the directory
     if (!this.options.store) {

@@ -76,7 +76,7 @@ describe('builder: builder generate', () => {
     ])
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
-    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template'])
+    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js,ts,tsx}'])
     expect(builder.compileTemplates).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Nuxt files generated')
@@ -371,8 +371,7 @@ describe('builder: builder generate', () => {
       ...templateContext.templateVars,
       custom: true,
       dst: 'baz.js',
-      src: '/var/nuxt/src/baz.js',
-      options: {}
+      src: '/var/nuxt/src/baz.js'
     })
     expect(stripWhitespace).toBeCalledTimes(3)
     expect(stripWhitespace).nthCalledWith(1, 'compiled content')

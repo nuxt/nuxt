@@ -299,6 +299,10 @@ export function getNuxtConfig(_options) {
     options.pageTransition.appear = true
   }
 
+  options.render.ssrLog = options.dev
+    ? options.render.ssrLog === undefined || options.render.ssrLog
+    : false
+
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
   if (options.generate.fallback === true) {
     options.generate.fallback = '404.html'
@@ -366,6 +370,10 @@ export function getNuxtConfig(_options) {
   // Add loading screen
   if (options.dev) {
     options.devModules.push('@nuxt/loading-screen')
+    // Disable build indicator for programmatic users
+    if (!options._cli) {
+      options.build.indicator = false
+    }
   }
 
   return options

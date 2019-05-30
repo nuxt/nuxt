@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -12,7 +12,7 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
-    "node-fetch": "^2.5.0",
+    "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
     "vue-meta": "^1.6.0",

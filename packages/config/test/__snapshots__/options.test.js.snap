@@ -54,6 +54,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {
         "sourceMap": false,
@@ -308,6 +309,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": true,
+    "ssrLog": false,
     "static": Object {
       "prefix": true,
     },
@@ -362,9 +364,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }

@@ -1,5 +1,6 @@
 import path from 'path'
 import crypto from 'crypto'
+import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxt/devalue'
@@ -38,30 +39,39 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
-  async devRenderToString(renderContext) {
+  useSSRLog() {
+    if (!this.options.render.ssrLog) {
+      return
+    }
     const logs = []
     const devReporter = {
       log(logObj) {
-        if (logObj.args[0] instanceof Error) {
-          logObj.args[0] = logObj.args[0].stack
-        }
-        logs.push(logObj)
+        logs.push({
+          ...logObj,
+          args: logObj.args.map(arg => format(arg))
+        })
       }
     }
     consola.addReporter(devReporter)
-    const APP = await this.vueRenderer.renderToString(renderContext)
-    consola.removeReporter(devReporter)
-    renderContext.nuxt.logs = logs
 
-    return APP
+    return () => {
+      consola.removeReporter(devReporter)
+      return logs
+    }
   }
 
   async render(renderContext) {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
+    const getSSRLog = this.useSSRLog()
+
     // Call Vue renderer renderToString
-    let APP = await (this.options.dev ? this.devRenderToString(renderContext) : this.vueRenderer.renderToString(renderContext))
+    let APP = await this.vueRenderer.renderToString(renderContext)
+
+    if (typeof getSSRLog === 'function') {
+      renderContext.nuxt.logs = getSSRLog()
+    }
 
     // Call ssr:context hook
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)
@@ -83,13 +93,16 @@ export default class SSRRenderer extends BaseRenderer {
       m.script.text() +
       m.noscript.text()
 
+    // Check if we need to inject scripts and state
+    const shouldInjectScripts = this.options.render.injectScripts !== false
+
     // Add <base href=""> meta if router base specified
     if (this.options._routerBaseSpecified) {
       HEAD += `<base href="${this.options.router.base}">`
     }
 
     // Inject resource hints
-    if (this.options.render.resourceHints) {
+    if (this.options.render.resourceHints && shouldInjectScripts) {
       HEAD += this.renderResourceHints(renderContext)
     }
 
@@ -98,7 +111,9 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    APP += `<script>${serializedSession}</script>`
+    if (shouldInjectScripts) {
+      APP += `<script>${serializedSession}</script>`
+    }
 
     // Calculate CSP hashes
     const { csp } = this.options.render
@@ -122,7 +137,9 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Prepend scripts
-    APP += this.renderScripts(renderContext)
+    if (shouldInjectScripts) {
+      APP += this.renderScripts(renderContext)
+    }
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 

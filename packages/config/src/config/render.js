@@ -8,6 +8,7 @@ export default () => ({
   },
   resourceHints: true,
   ssr: undefined,
+  ssrLog: undefined,
   http2: {
     push: false,
     shouldPush: null,

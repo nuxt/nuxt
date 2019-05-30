@@ -10,6 +10,7 @@ jest.mock('std-env', () => ({
   test: false,
   minimalCLI: false
 }))
+jest.mock('boxen', () => text => `[boxen] ${text}`)
 
 describe('cli/utils', () => {
   afterEach(() => jest.resetAllMocks())

@@ -41,6 +41,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
@@ -275,6 +276,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -326,9 +328,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }
@@ -375,6 +375,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
@@ -609,6 +610,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -660,9 +662,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }
