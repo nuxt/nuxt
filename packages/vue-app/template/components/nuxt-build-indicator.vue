@@ -93,7 +93,7 @@ export default {
       setTimeout(() => {
         this._reconnecting = false
         this.wsConnect()
-        }, 1000)
+      }, 1000)
     },
 
     onWSMessage(message) {
