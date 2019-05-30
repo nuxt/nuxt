@@ -68,22 +68,32 @@ export default {
   },
   methods: {
     wsConnect() {
+      if (this._connecting) {
+        return
+      }
+      this._connecting = true
       this.wsClose()
       this.ws = new WebSocket(this.wsURL)
       this.ws.onmessage = this.onWSMessage.bind(this)
       this.ws.onclose = this.wsReconnect.bind(this)
       this.ws.onerror = this.wsReconnect.bind(this)
       setTimeout(() => {
+        this._connecting = false
         if (this.ws.readyState !== WebSocket.OPEN) {
           this.wsReconnect()
         }
-      }, 2000)
+      }, 5000)
     },
 
     wsReconnect() {
+      if (this._reconnecting || this.reconnectAttempts++ > 10) {
+        return
+      }
+      this._reconnecting = true
       setTimeout(() => {
+        this._reconnecting = false
         this.wsConnect()
-      }, 1000)
+        }, 1000)
     },
 
     onWSMessage(message) {
