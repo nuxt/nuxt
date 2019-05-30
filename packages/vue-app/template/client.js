@@ -90,14 +90,7 @@ Vue.config.$nuxt.<%= globals.nuxt %> = true
 const errorHandler = Vue.config.errorHandler || console.error
 
 // Create and mount App
-createApp()
-  .then(mountApp)
-  .catch((err) => {
-    <% if (isDev) { %>console.error(err)<% } %>
-    const wrapperError = new Error(err)
-    wrapperError.message = '[nuxt] Error while mounting app: ' + wrapperError.message
-    errorHandler(wrapperError)
-  })
+createApp().then(mountApp).catch(errorHandler)
 
 function componentOption(component, key, ...args) {
   if (!component || !component.options || !component.options[key]) {
@@ -489,7 +482,7 @@ function showNextPage(to) {
 // Will not update the instance data, so we have to update $data ourselves
 function fixPrepatch(to, ___) {
   if (this._pathChanged === false && this._queryChanged === false) return
-  
+
   const matches = []
   const instances = getMatchedComponentsInstances(to, matches)
   const Components = getMatchedComponents(to, matches)
