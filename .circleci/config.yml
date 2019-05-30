@@ -94,7 +94,7 @@ jobs:
           at: ~/project
       - run:
           name: Security Audit
-          command: yarn audit || true
+          command: yarn audit
 
   build:
     <<: *defaults
