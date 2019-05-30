@@ -29,22 +29,31 @@ export default {
     if (WebSocket === undefined) {
       return // Unsupported
     }
-    this.wsConnect('<%= router.base %>_loading/ws')
+    this.wsConnect()
   },
   beforeDestroy() {
     this.wsClose()
+    clearInterval(this._progressAnimation)
+  },
+  computed: {
+    wsURL() {
+      const _path = '<%= router.base %>_loading/ws'
+      const _protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+      return `${_protocol}://${location.hostname}:${location.port}${_path}`
+    }
   },
   watch: {
     progress(val, oldVal) {
-      // Cancel old animation
-      clearInterval(this._progressAnimation)
       // Average progress may decrease but ignore it!
       if (val < oldVal) {
         return
       }
-      // Jump to edge imediately
+      // Cancel old animation
+      clearInterval(this._progressAnimation)
+      // Jump to edge immediately
       if (val < 10 || val > 90) {
         this.animatedProgress = val
+        return
       }
       // Animate to value
       this._progressAnimation = setInterval(() => {
@@ -58,51 +67,40 @@ export default {
     }
   },
   methods: {
-    wsConnect(path) {
-      if (path) {
-        const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-        this.wsURL = `${protocol}://${location.hostname}:${location.port}${path}`
+    wsConnect() {
+      if (this._connecting) {
+        return
       }
-
+      this._connecting = true
+      this.wsClose()
       this.ws = new WebSocket(this.wsURL)
-      this.ws.onclose = this.onWSClose.bind(this)
-      this.ws.onerror = this.onWSError.bind(this)
       this.ws.onmessage = this.onWSMessage.bind(this)
-    },
-
-    wsReconnect(e) {
-      this.reconnectAttempts++
-      if (this.reconnectAttempts > 10) {
-        return
-      }
-      setTimeout(() => { this.wsConnect() }, 1000)
-    },
-
-    onWSClose(e) {
-      // https://tools.ietf.org/html/rfc6455#section-11.7
-      if (e.code !== 1000 && e.code !== 1005) {
-        this.wsReconnect() // Unkown error
-      }
-    },
-
-    onWSError(error) {
-      if (error.code === 'ECONNREFUSED') {
-        this.wsReconnect(error)
-      }
-    },
-
-    onWSMessage(msg) {
-      let data = msg.data
-
-      try {
-        if (data[0] === '{') {
-          data = JSON.parse(data)
+      this.ws.onclose = this.wsReconnect.bind(this)
+      this.ws.onerror = this.wsReconnect.bind(this)
+      setTimeout(() => {
+        this._connecting = false
+        if (this.ws.readyState !== WebSocket.OPEN) {
+          this.wsReconnect()
         }
-      } catch (e) {
+      }, 5000)
+    },
+
+    wsReconnect() {
+      if (this._reconnecting || this.reconnectAttempts++ > 10) {
         return
       }
+      this._reconnecting = true
+      setTimeout(() => {
+        this._reconnecting = false
+        this.wsConnect()
+      }, 1000)
+    },
+
+    onWSMessage(message) {
+      const data = JSON.parse(message.data)
 
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
+
       if (!data.allDone) {
         this.building = true
       } else {
