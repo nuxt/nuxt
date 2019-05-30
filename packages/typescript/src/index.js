@@ -58,8 +58,11 @@ export async function setupDefaults({ tsConfigPath, srcDir }) {
       tsConfigPath,
       {
         ...defaultTsJsonConfig,
-        ...{
-          paths: createPaths(srcDir)
+        compilerOptions: {
+          ...defaultTsJsonConfig.compilerOptions,
+          ...{
+            paths: createPaths(srcDir)
+          }
         }
       },
       { spaces: 2 }

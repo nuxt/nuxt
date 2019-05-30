@@ -12,7 +12,7 @@ describe('typescript setup', () => {
   })
 
   test('Create tsconfig.json with defaults', async () => {
-    await setupDefaults(tsConfigPath)
+    await setupDefaults({ tsConfigPath })
     expect(await readJSON(tsConfigPath)).toEqual(defaultTsJsonConfig)
   })
 
@@ -20,7 +20,7 @@ describe('typescript setup', () => {
     const fooJSON = '{ "foo": 123 }'
     await writeFile(tsConfigPath, fooJSON, 'utf-8')
 
-    await setupDefaults(tsConfigPath)
+    await setupDefaults({ tsConfigPath })
 
     expect(await readFile(tsConfigPath, 'utf-8')).toEqual(fooJSON)
   })
