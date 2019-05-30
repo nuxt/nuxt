@@ -134,7 +134,7 @@ export default {
   right: 20px;
   background-color: #2E495E;
   padding: 5px 10px;
-  border-radius: 2px;
+  border-radius: 5px;
   box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.2);
   color: #00C48D;
   width: 84px;
