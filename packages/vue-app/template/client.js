@@ -488,14 +488,14 @@ function showNextPage(to) {
 // Will not update the instance data, so we have to update $data ourselves
 function fixPrepatch(to, ___) {
   if (this._pathChanged === false && this._queryChanged === false) return
+  
+  const matches = []
+  const instances = getMatchedComponentsInstances(to, matches)
+  const Components = getMatchedComponents(to, matches)
 
   Vue.nextTick(() => {
-    const matches = []
-    const instances = getMatchedComponentsInstances(to, matches)
-    const Components = getMatchedComponents(to, matches)
-
     instances.forEach((instance, i) => {
-      if (!instance) return
+      if (!instance || instance._isDestroyed) return
       // if (
       //   !this._queryChanged &&
       //   to.matched[matches[i]].path.indexOf(':') === -1 &&
