@@ -94,6 +94,9 @@ export default class NuxtCommand {
   async getNuxtConfig(extraOptions = {}) {
     const rootDir = path.resolve(this.argv._[0] || '.')
 
+    // Flag to indicate nuxt is running with CLI (not programatic)
+    extraOptions._cli = true
+
     // Typescript support
     extraOptions._typescript = await detectTypeScript(rootDir, {
       transpileOnly: this.cmd.name === 'start'
