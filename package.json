@@ -63,7 +63,7 @@
     "is-wsl": "^2.0.0",
     "jest": "^24.8.0",
     "jest-junit": "^6.4.0",
-    "jsdom": "^15.1.0",
+    "jsdom": "^15.1.1",
     "klaw-sync": "^6.0.0",
     "lerna": "^3.14.1",
     "lodash": "^4.17.11",
@@ -84,7 +84,7 @@
     "ts-jest": "^24.0.2",
     "ts-node": "^8.2.0",
     "tslint": "^5.16.0",
-    "typescript": "^3.4.5",
+    "typescript": "^3.5.1",
     "vue-jest": "^4.0.0-beta.2",
     "vue-property-decorator": "^8.1.1"
   }

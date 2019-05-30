@@ -16,10 +16,10 @@
     "fs-extra": "^8.0.1",
     "glob": "^7.1.4",
     "hash-sum": "^1.0.2",
-    "ignore": "^5.1.1",
+    "ignore": "^5.1.2",
     "lodash": "^4.17.11",
     "pify": "^4.0.1",
-    "semver": "^6.1.0",
+    "semver": "^6.1.1",
     "serialize-javascript": "^1.7.0",
     "upath": "^1.1.2"
   },
