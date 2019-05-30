@@ -97,12 +97,14 @@ export default class NuxtCommand {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
+    const config = await loadNuxtConfig(this.argv)
+
     // Typescript support
     extraOptions._typescript = await detectTypeScript(rootDir, {
-      transpileOnly: this.cmd.name === 'start'
+      transpileOnly: this.cmd.name === 'start',
+      srcDir: config ? config.srcDir || null : null
     })
 
-    const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {

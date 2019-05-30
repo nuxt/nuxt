@@ -61,7 +61,7 @@ export async function detectTypeScript(rootDir, options = {}) {
   // If exists do additional setup
   if (nuxtTypeScript) {
     typescript.build = true
-    await nuxtTypeScript.setupDefaults(typescript.tsConfigPath)
+    await nuxtTypeScript.setupDefaults({ tsConfigPath: typescript.tsConfigPath, srcDir: options.srcDir })
   }
 
   return typescript

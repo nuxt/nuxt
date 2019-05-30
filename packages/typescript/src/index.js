@@ -1,6 +1,24 @@
 import { exists, readFile, writeJSON } from 'fs-extra'
 import consola from 'consola'
 
+function createPaths(srcDir) {
+  const path = srcDir ? `${srcDir}/` : ''
+  return {
+    [`~/${path}*`]: [
+      `./${path}*`
+    ],
+    [`@/${path}*`]: [
+      `./${path}*`
+    ],
+    [`~~/${path}*`]: [
+      './*'
+    ],
+    [`@@/${path}*`]: [
+      './*'
+    ]
+  }
+}
+
 export const defaultTsJsonConfig = {
   compilerOptions: {
     target: 'esnext',
@@ -19,14 +37,7 @@ export const defaultTsJsonConfig = {
     noImplicitAny: false,
     noEmit: true,
     baseUrl: '.',
-    paths: {
-      '~/*': [
-        './*'
-      ],
-      '@/*': [
-        './*'
-      ]
-    },
+    paths: createPaths(null),
     types: [
       '@types/node',
       '@nuxt/vue-app'
@@ -34,7 +45,7 @@ export const defaultTsJsonConfig = {
   }
 }
 
-export async function setupDefaults(tsConfigPath) {
+export async function setupDefaults({ tsConfigPath, srcDir }) {
   let contents = ''
 
   if (await exists(tsConfigPath)) {
@@ -43,6 +54,15 @@ export async function setupDefaults(tsConfigPath) {
 
   if (!contents || contents === '{}') {
     consola.info(`Generating ${tsConfigPath.replace(process.cwd(), '')}`)
-    await writeJSON(tsConfigPath, defaultTsJsonConfig, { spaces: 2 })
+    await writeJSON(
+      tsConfigPath,
+      {
+        ...defaultTsJsonConfig,
+        ...{
+          paths: createPaths(srcDir)
+        }
+      },
+      { spaces: 2 }
+    )
   }
 }
