@@ -125,8 +125,9 @@ export default {
 }
 </script>
 
-<style scopped>
+<style scoped>
 .nuxt__build_indicator {
+  box-sizing: border-box;
   position: absolute;
   font-family: monospace;
   bottom: 20px;
@@ -136,7 +137,8 @@ export default {
   border-radius: 2px;
   box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.2);
   color: #00C48D;
-  width: 54px;
+  width: 84px;
+  z-index: 2147483647;
 }
 .v-enter-active, .v-leave-active {
   transition-delay: 0.2s;
