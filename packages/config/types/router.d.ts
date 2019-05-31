@@ -8,7 +8,8 @@
 import { RouterOptions, RouteConfig } from 'vue-router'
 
 export interface NuxtRouteConfig extends RouteConfig {
-  chunkNames: { [key: string]: string }
+  chunkNames: { [key: string]: string },
+  component: string,
 }
 
 export interface NuxtConfigurationRouter extends RouterOptions {
