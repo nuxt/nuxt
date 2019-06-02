@@ -564,7 +564,12 @@ describe('builder: builder generate', () => {
       expect(consola.debug).toBeCalledWith('Generating routes...')
       expect(nuxt.options.build.createRoutes).not.toBeCalled()
       expect(createRoutes).toBeCalledTimes(1)
-      expect(createRoutes).toBeCalledWith([ 'index.vue' ], '/var/nuxt/templates/pages', '', '[splitter]')
+      expect(createRoutes).toBeCalledWith({
+        files: [ 'index.vue' ],
+        srcDir: '/var/nuxt/templates/pages',
+        pagesDir: '',
+        routeNameSplitter: '[splitter]'
+      })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(
         'build:extendRoutes',
@@ -615,12 +620,12 @@ describe('builder: builder generate', () => {
       expect(builder.resolveFiles).toBeCalledWith('/var/nuxt/pages')
 
       expect(createRoutes).toBeCalledTimes(1)
-      expect(createRoutes).toBeCalledWith(
-        [ '/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue' ],
-        '/var/nuxt/src',
-        '/var/nuxt/pages',
-        '[splitter]'
-      )
+      expect(createRoutes).toBeCalledWith({
+        files: [ '/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue' ],
+        srcDir: '/var/nuxt/src',
+        pagesDir: '/var/nuxt/pages',
+        routeNameSplitter: '[splitter]'
+      })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(
         'build:extendRoutes',

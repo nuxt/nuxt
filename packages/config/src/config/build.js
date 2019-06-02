@@ -120,5 +120,11 @@ export default () => ({
       /vue-ssr-(client|modern)-manifest.json/
     ]
   },
-  friendlyErrors: true
+  friendlyErrors: true,
+  warningFixFilters: [
+    // Hide warnings about plugins without a default export (#1179)
+    warn => warn.name === 'ModuleDependencyWarning' &&
+      warn.message.includes(`export 'default'`) &&
+      warn.message.includes('nuxt_plugin_')
+  ]
 })
