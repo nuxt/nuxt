@@ -1,7 +1,7 @@
 {
   "name": "example-plugins-vendor",
   "dependencies": {
-    "axios": "^0.16.2",
+    "axios": "^0.19.0",
     "mini-toastr": "^0.6.5",
     "nuxt": "latest",
     "vue-notifications": "^0.8.0"

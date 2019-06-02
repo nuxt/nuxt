@@ -90,6 +90,9 @@ export default class NuxtCommand {
   }
 
   async getNuxtConfig(extraOptions = {}) {
+    // Flag to indicate nuxt is running with CLI (not programmatic)
+    extraOptions._cli = true
+
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)
 

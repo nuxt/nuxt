@@ -41,6 +41,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
@@ -358,6 +359,7 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": true,
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
