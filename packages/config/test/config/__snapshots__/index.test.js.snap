@@ -6,6 +6,7 @@ Object {
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -341,6 +342,7 @@ Object {
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,

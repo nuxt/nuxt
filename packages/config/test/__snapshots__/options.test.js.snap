@@ -19,6 +19,7 @@ Object {
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,

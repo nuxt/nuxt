@@ -121,5 +121,6 @@ export default () => ({
     ]
   },
   friendlyErrors: true,
+  additionalExtensions: [],
   warningIgnoreFilters: []
 })
