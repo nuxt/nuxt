@@ -425,7 +425,7 @@ export default class WebpackBaseConfig {
 
   warningFixFilter() {
     const { buildOptions, options: { _typescript = {} } } = this.buildContext
-    const filters = this.buildContext.buildOptions.warningFixFilters
+    const filters = buildOptions.warningFixFilters || []
 
     if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
       filters.push(

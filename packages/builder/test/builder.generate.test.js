@@ -567,7 +567,6 @@ describe('builder: builder generate', () => {
       expect(createRoutes).toBeCalledWith({
         files: [ 'index.vue' ],
         srcDir: '/var/nuxt/templates/pages',
-        pagesDir: '',
         routeNameSplitter: '[splitter]'
       })
       expect(nuxt.callHook).toBeCalledTimes(1)
