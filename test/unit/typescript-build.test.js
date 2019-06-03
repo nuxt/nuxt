@@ -5,7 +5,8 @@ const createWebpackBaseConfig = (typescriptBuild, ignoreNotFoundWarnings) => {
     buildContext: {
       buildOptions: {
         typescript: { ignoreNotFoundWarnings },
-        transpile: []
+        transpile: [],
+        warningFixFilters: require('../../packages/config/src/config/build')().warningFixFilters
       },
       options: {
         _typescript: { build: typescriptBuild }
