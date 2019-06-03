@@ -594,7 +594,7 @@ describe('builder: builder generate', () => {
         routeNameSplitter: '[splitter]',
         extendRoutes: jest.fn()
       }
-      createRoutes.mockImplementationOnce(files => files.map(file => ({ path: file })))
+      createRoutes.mockImplementationOnce(({ files }) => files.map(file => ({ path: file })))
       const builder = new Builder(nuxt, {})
       builder._nuxtPages = true
       builder.resolveFiles = jest.fn(dir => [
@@ -623,7 +623,8 @@ describe('builder: builder generate', () => {
         files: [ '/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue' ],
         srcDir: '/var/nuxt/src',
         pagesDir: '/var/nuxt/pages',
-        routeNameSplitter: '[splitter]'
+        routeNameSplitter: '[splitter]',
+        supportedExtensions: ['vue', 'js', 'ts', 'tsx']
       })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(

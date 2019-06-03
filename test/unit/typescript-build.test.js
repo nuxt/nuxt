@@ -1,4 +1,5 @@
 import WebpackBaseConfig from '../../packages/webpack/src/config/base'
+import buildConfig from '../../packages/config/src/config/build'
 
 const createWebpackBaseConfig = (typescriptBuild, ignoreNotFoundWarnings) => {
   const builder = {
@@ -6,7 +7,7 @@ const createWebpackBaseConfig = (typescriptBuild, ignoreNotFoundWarnings) => {
       buildOptions: {
         typescript: { ignoreNotFoundWarnings },
         transpile: [],
-        warningFixFilters: require('../../packages/config/src/config/build')().warningFixFilters
+        warningFixFilters: buildConfig().warningFixFilters
       },
       options: {
         _typescript: { build: typescriptBuild }
