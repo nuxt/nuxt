@@ -128,9 +128,7 @@ Object {
       "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
-    "warningFixFilters": Array [
-      [Function],
-    ],
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -465,9 +463,7 @@ Object {
       "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
-    "warningFixFilters": Array [
-      [Function],
-    ],
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",

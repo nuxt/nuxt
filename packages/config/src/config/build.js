@@ -121,10 +121,5 @@ export default () => ({
     ]
   },
   friendlyErrors: true,
-  warningFixFilters: [
-    // Hide warnings about plugins without a default export (#1179)
-    warn => warn.name === 'ModuleDependencyWarning' &&
-      warn.message.includes(`export 'default'`) &&
-      warn.message.includes('nuxt_plugin_')
-  ]
+  warningIgnoreFilters: []
 })

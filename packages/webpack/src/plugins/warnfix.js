@@ -1,4 +1,4 @@
-export default class WarnFixPlugin {
+export default class WarningIgnorePlugin {
   constructor(filter) {
     this.filter = filter
   }

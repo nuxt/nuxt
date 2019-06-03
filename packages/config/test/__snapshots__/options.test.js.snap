@@ -148,9 +148,7 @@ Object {
       "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
-    "warningFixFilters": Array [
-      [Function],
-    ],
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
