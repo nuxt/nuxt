@@ -76,7 +76,7 @@ describe('builder: builder generate', () => {
     ])
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
-    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js,ts,tsx}'])
+    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
     expect(builder.compileTemplates).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Nuxt files generated')
