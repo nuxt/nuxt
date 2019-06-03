@@ -96,13 +96,6 @@ export default class WebpackBaseConfig {
     return options
   }
 
-  getBabelLoader() {
-    return {
-      loader: require.resolve('babel-loader'),
-      options: this.getBabelOptions()
-    }
-  }
-
   getFileName(key) {
     let fileName = this.buildContext.buildOptions.filenames[key]
     if (typeof fileName === 'function') {
@@ -222,6 +215,11 @@ export default class WebpackBaseConfig {
       { isServer: this.isServer, perfLoader }
     )
 
+    const babelLoader = {
+      loader: require.resolve('babel-loader'),
+      options: this.getBabelOptions()
+    }
+
     return [
       {
         test: /\.vue$/i,
@@ -262,12 +260,12 @@ export default class WebpackBaseConfig {
           // item in transpile can be string or regex object
           return !this.modulesToTranspile.some(module => module.test(file))
         },
-        use: perfLoader.js().concat(this.getBabelLoader())
+        use: perfLoader.js().concat(babelLoader)
       },
       {
         test: /\.ts$/i,
         use: [
-          this.getBabelLoader(),
+          babelLoader,
           {
             loader: 'ts-loader',
             options: this.loaders.ts
@@ -277,7 +275,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.tsx$/i,
         use: [
-          this.getBabelLoader(),
+          babelLoader,
           {
             loader: 'ts-loader',
             options: this.loaders.tsx
@@ -447,7 +445,7 @@ export default class WebpackBaseConfig {
     const { extend } = this.buildContext.buildOptions
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
-        this.builder, config, { babelLoader: this.getBabelLoader(), loaders: this.loaders, ...this.nuxtEnv }
+        this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
       )
       // Only overwrite config when something is returned for backwards compatibility
       if (extendedConfig !== undefined) {
