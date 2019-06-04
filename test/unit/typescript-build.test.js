@@ -16,13 +16,13 @@ const createWebpackBaseConfig = (typescriptBuild, ignoreNotFoundWarnings) => {
   return new WebpackBaseConfig(builder)
 }
 
-describe('warningFixFilter', () => {
+describe('warningIgnoreFilter', () => {
   let filters
   const name = 'ModuleDependencyWarning'
 
   describe('disabled ignoreNotFoundWarnings', () => {
     beforeEach(() => {
-      filters = createWebpackBaseConfig(true, false).warningFixFilter()
+      filters = createWebpackBaseConfig(true, false).warningIgnoreFilter()
     })
 
     test('should be true', () => expect(filters({})).toBe(true))
@@ -33,7 +33,7 @@ describe('warningFixFilter', () => {
 
   describe('enabled ignoreNotFoundWarnings', () => {
     beforeEach(() => {
-      filters = createWebpackBaseConfig(true, true).warningFixFilter()
+      filters = createWebpackBaseConfig(true, true).warningIgnoreFilter()
     })
 
     test('should be true', () => expect(filters({})).toBe(true))

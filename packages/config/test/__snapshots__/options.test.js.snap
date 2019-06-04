@@ -19,6 +19,7 @@ Object {
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -148,6 +149,7 @@ Object {
       "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",

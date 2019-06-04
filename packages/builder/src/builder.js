@@ -44,7 +44,7 @@ export default class Builder {
       restart: null
     }
 
-    this.supportedExtensions = ['vue', 'js', 'ts', 'tsx']
+    this.supportedExtensions = ['vue', 'js', 'ts', 'tsx', ...(this.options.build.additionalExtensions || [])]
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) => relativeTo(this.options.buildDir, ...args)
@@ -327,12 +327,11 @@ export default class Builder {
     consola.debug('Generating routes...')
 
     if (this._defaultPage) {
-      templateVars.router.routes = createRoutes(
-        ['index.vue'],
-        this.template.dir + '/pages',
-        '',
-        this.options.router.routeNameSplitter
-      )
+      templateVars.router.routes = createRoutes({
+        files: ['index.vue'],
+        srcDir: this.template.dir + '/pages',
+        routeNameSplitter: this.options.router.routeNameSplitter
+      })
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
@@ -344,12 +343,13 @@ export default class Builder {
           files[key] = page.replace(/(['"])/g, '\\$1')
         }
       }
-      templateVars.router.routes = createRoutes(
-        Object.values(files),
-        this.options.srcDir,
-        this.options.dir.pages,
-        this.options.router.routeNameSplitter
-      )
+      templateVars.router.routes = createRoutes({
+        files: Object.values(files),
+        srcDir: this.options.srcDir,
+        pagesDir: this.options.dir.pages,
+        routeNameSplitter: this.options.router.routeNameSplitter,
+        supportedExtensions: this.supportedExtensions
+      })
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
         this.options.srcDir

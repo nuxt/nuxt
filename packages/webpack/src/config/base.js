@@ -14,7 +14,7 @@ import { isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
-import WarnFixPlugin from '../plugins/warnfix'
+import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
 
@@ -214,6 +214,7 @@ export default class WebpackBaseConfig {
       this.buildContext,
       { isServer: this.isServer, perfLoader }
     )
+
     const babelLoader = {
       loader: require.resolve('babel-loader'),
       options: this.getBabelOptions()
@@ -371,7 +372,7 @@ export default class WebpackBaseConfig {
 
     plugins.push(...(buildOptions.plugins || []))
 
-    plugins.push(new WarnFixPlugin(this.warningFixFilter()))
+    plugins.push(new WarningIgnorePlugin(this.warningIgnoreFilter()))
 
     // Build progress indicator
     plugins.push(new WebpackBar({
@@ -420,13 +421,14 @@ export default class WebpackBaseConfig {
     return plugins
   }
 
-  warningFixFilter() {
+  warningIgnoreFilter() {
     const { buildOptions, options: { _typescript = {} } } = this.buildContext
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
         warn.message.includes(`export 'default'`) &&
-        warn.message.includes('nuxt_plugin_')
+        warn.message.includes('nuxt_plugin_'),
+      ...(buildOptions.warningIgnoreFilters || [])
     ]
 
     if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {

@@ -120,5 +120,7 @@ export default () => ({
       /vue-ssr-(client|modern)-manifest.json/
     ]
   },
-  friendlyErrors: true
+  friendlyErrors: true,
+  additionalExtensions: [],
+  warningIgnoreFilters: []
 })
