@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -9,9 +9,9 @@
   "main": "dist/webpack.js",
   "dependencies": {
     "@babel/core": "^7.4.5",
-    "@nuxt/babel-preset-app": "2.8.0",
+    "@nuxt/babel-preset-app": "2.8.1",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
-    "@nuxt/utils": "2.8.0",
+    "@nuxt/utils": "2.8.1",
     "babel-loader": "^8.0.6",
     "cache-loader": "^3.0.1",
     "caniuse-lite": "^1.0.30000973",
