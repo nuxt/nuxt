@@ -110,11 +110,10 @@ export default class ModernRenderer extends SSRRenderer {
     })
   }
 
-  async render(renderContext) {
-    const result = await super.render(renderContext)
+  render(renderContext) {
     if (this.isServerMode) {
       renderContext.res.setHeader('Vary', 'User-Agent')
     }
-    return result
+    return super.render(renderContext)
   }
 }

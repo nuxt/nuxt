@@ -20,7 +20,9 @@ import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 <% if (isDev) { %>import consola from 'consola'<% } %>
 
-<% if (isDev) { %>consola.wrapConsole()<% } %>
+<% if (isDev) { %>consola.wrapConsole()
+console.log = console.__log
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)

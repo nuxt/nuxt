@@ -42,6 +42,9 @@ export async function loadNuxtConfig(argv) {
       }
     }
 
+    // Don't mutate options export
+    options = Object.assign({}, options)
+
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = nuxtConfigFile
 

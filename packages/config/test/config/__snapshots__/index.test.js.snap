@@ -6,6 +6,7 @@ Object {
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -112,6 +113,7 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -324,6 +326,7 @@ Object {
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -430,6 +433,7 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
