@@ -624,7 +624,7 @@ describe('builder: builder generate', () => {
         srcDir: '/var/nuxt/src',
         pagesDir: '/var/nuxt/pages',
         routeNameSplitter: '[splitter]',
-        supportedExtensions: ['vue', 'js', 'ts', 'tsx']
+        supportedExtensions: ['vue', 'js']
       })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(
