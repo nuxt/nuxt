@@ -6,9 +6,6 @@
  */
 
 import { RouterOptions, RouteConfig } from 'vue-router'
-import Vue, { ComponentOptions, AsyncComponent } from 'vue'
-
-type Component = ComponentOptions<Vue> | typeof Vue | AsyncComponent;
 
 export interface NuxtRouteConfig extends RouteConfig {
   chunkNames: { [key: string]: string }
