@@ -12,7 +12,7 @@ type Component = ComponentOptions<Vue> | typeof Vue | AsyncComponent;
 
 export interface NuxtRouteConfig extends RouteConfig {
   chunkNames: { [key: string]: string }
-  component: Component | string,
+  component: RouteConfig['component'] | string
   children?: NuxtRouteConfig[]
 }
 
