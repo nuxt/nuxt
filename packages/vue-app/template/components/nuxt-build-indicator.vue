@@ -136,7 +136,7 @@ export default {
 <style scoped>
 .nuxt__build_indicator {
   box-sizing: border-box;
-  position: absolute;
+  position: fixed;
   font-family: monospace;
   padding: 5px 10px;
   border-radius: 5px;
