@@ -42,7 +42,11 @@ Object {
         "useShortDoctype": true,
       },
     },
-    "indicator": true,
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
+    },
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
@@ -378,7 +382,11 @@ Object {
         "useShortDoctype": true,
       },
     },
-    "indicator": true,
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
+    },
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
