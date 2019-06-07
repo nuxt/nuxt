@@ -11,7 +11,7 @@
  <p align="center">
   <a href="#partners" alt="Partner on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/partner/badge.svg" /></a>
   <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
-  <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
+  <a href="#nuxters" alt="Nuxters on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/nuxters/badge.svg" /></a>
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 </p>
 <p align="center">
@@ -68,11 +68,11 @@ Become a sponsor and get your logo on our README on GitHub with a link to your s
 
 [![Open Collective Sponsors][sponsors-src]][sponsors-href]
 
-## Backers
+## Nuxters
 
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
+Support us with a monthly donation and help us continue our activities. [[Become a nuxter](https://opencollective.com/nuxtjs#contribute)]
 
-[![Open Collective Sponsors][backers-src]][backers-href]
+[![Open Collective Nuxters][nuxters-src]][nuxters-href]
 
 ## Getting started
 
@@ -217,7 +217,7 @@ If you discover a security vulnerability regarding Nuxt.js, please send an e-mai
 [partners-href]: https://opencollective.com/nuxtjs#contributors
 [sponsors-src]: https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false
 [sponsors-href]: https://opencollective.com/nuxtjs#contributors
-[backers-src]: https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false
-[backers-href]: https://opencollective.com/nuxtjs#contributors
+[nuxters-src]: https://opencollective.com/nuxtjs/tiers/nuxters.svg?width=890&button=false
+[nuxters-href]: https://opencollective.com/nuxtjs#contributors
 [contributors-src]: https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false
 [contributors-href]: https://github.com/nuxt/nuxt.js/graphs/contributors
