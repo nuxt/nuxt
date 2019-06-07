@@ -48,14 +48,18 @@ export default {
       window.<%= globals.nuxt %>.$nextTick(() => {
         window.<%= globals.nuxt %>.$emit('triggerScroll')
       })
-      if (beforeEnter) return beforeEnter.call(_parent, el)
+      if (beforeEnter) {
+        return beforeEnter.call(_parent, el)
+      }
     }
 
     // make sure that leave is called asynchronous (fix #5703)
     if (transition.css === false) {
       const leave = listeners.leave
       listeners.leave = (el, done) => {
-        if (leave) leave.call(_parent, el)
+        if (leave) {
+          leave.call(_parent, el)
+        }
         return _parent.$nextTick(done)
       }
     }
