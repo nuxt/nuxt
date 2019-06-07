@@ -60,7 +60,8 @@ export default {
         if (leave) {
           leave.call(_parent, el)
         }
-        return _parent.$nextTick(done)
+
+        _parent.$nextTick(done)
       }
     }
 
