@@ -5,10 +5,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import Vue from 'vue'
 
-@Component
-export default class Home extends Vue {
-  title = 'TypeScript + ESLint example'
-}
+export default Vue.extend({
+  data() {
+    return {
+      title: 'TypeScript + ESLint example'
+    }
+  }
+})
 </script>
