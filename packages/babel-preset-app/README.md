@@ -103,7 +103,7 @@ export default {
           [
             require.resolve('@nuxt/babel-preset-app'),
             {
-              buildTarget: isServer ? 'server' : 'client'
+              buildTarget: isServer ? 'server' : 'client',
               corejs: { version: 3 }
             }
           ]
