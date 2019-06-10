@@ -88,7 +88,9 @@ export default class StyleLoader {
         loader: ExtractCssChunksPlugin.loader,
         options: {
           // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
-          reloadAll: true
+          // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/161#issuecomment-500162574
+          reloadAll: true,
+          hot: true
         }
       }
     }
