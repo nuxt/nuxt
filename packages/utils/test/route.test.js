@@ -189,13 +189,19 @@ describe('util: route', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
+  
+    test.posix('createRoutes should work with new syntax in posix system', () => {
+      const f = files.map(file => file.replace(/\/_/g, '/$'))
+      const routesResult = createRoutes({ files: f, srcDir, pagesDir })
+      expect(routesResult).toMatchSnapshot()
+    })
 
     test.win('createRoutes should allow snake case routes in windows system', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
 
-    test.win('createRoutes shouldwork with new syntax', () => {
+    test.win('createRoutes should work with new syntax in windows system', () => {
       const f = files.map(file => file.replace(/\/_/g, '/$'))
       const routesResult = createRoutes({ files: f, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
