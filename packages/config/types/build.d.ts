@@ -23,6 +23,10 @@ interface NuxtBabelPresetEnv {
 }
 
 interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {
+  cacheCompression?: boolean
+  cacheDirectory?: boolean
+  cacheIdentifier?: string
+  customize?: string | null
   presets?: ((env: NuxtBabelPresetEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
 }
 
