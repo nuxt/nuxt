@@ -210,7 +210,7 @@ export const guardDir = function guardDir(options, key1, key2) {
   }
 }
 
-const isWildcardRoute = (key) => (key === '_' || key === '$')
+const isWildcardRoute = key => (key === '_' || key === '$')
 
 const getRoutePathExtension = (key) => {
   if (isWildcardRoute(key)) {
