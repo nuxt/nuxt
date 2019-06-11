@@ -141,6 +141,7 @@ export const createRoutes = function createRoutes({
   const routes = []
   files.forEach((file) => {
     const keys = file
+      .toLowerCase()
       .replace(new RegExp(`^${pagesDir}`), '')
       .replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       .replace(/\/{2,}/g, '/')
@@ -150,12 +151,18 @@ export const createRoutes = function createRoutes({
     let parent = routes
     keys.forEach((key, i) => {
       // remove underscore only, if its the prefix
-      const sanitizedKey = key.startsWith('_') ? key.substr(1) : key
+      const sanitizedKey = (key.startsWith('_') ? key.substr(1) : key).replace(/\$/g, '')
+
+      // Nuxt 3: deprecate old routing
+      if (key.startsWith('_')) {
+        consola.warn(`_ for dynamic route is deprecated, use $ instead: ${file} -> ${file.replace(/\/_/g, '/$')}`)
+        // TODO: prompt to rename
+      }
 
       route.name = route.name
         ? route.name + routeNameSplitter + sanitizedKey
         : sanitizedKey
-      route.name += key === '_' ? 'all' : ''
+      route.name += isWildcardRoute(key) ? 'all' : ''
       route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
 
@@ -166,9 +173,10 @@ export const createRoutes = function createRoutes({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += '/' + getRoutePathExtension(key)
+        const routeExtension = getRoutePathExtension(key)
+        route.path += '/' + routeExtension
 
-        if (key.startsWith('_') && key.length > 1) {
+        if (routeExtension.startsWith(':') && routeExtension.split(':').length === 2 && key.length > 1) {
           route.path += '?'
         }
       }
@@ -202,16 +210,19 @@ export const guardDir = function guardDir(options, key1, key2) {
   }
 }
 
+const isWildcardRoute = (key) => (key === '_' || key === '$')
+
 const getRoutePathExtension = (key) => {
-  if (key === '_') {
+  if (isWildcardRoute(key)) {
     return '*'
   }
 
+  // Old support of dynamic routes with _
   if (key.startsWith('_')) {
     return `:${key.substr(1)}`
   }
 
-  return key
+  return key.replace(/\$/g, ':')
 }
 
 export const promisifyRoute = function promisifyRoute(fn, ...args) {

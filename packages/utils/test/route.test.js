@@ -194,5 +194,11 @@ describe('util: route', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
+
+    test.win('createRoutes shouldwork with new syntax', () => {
+      const f = files.map(file => file.replace(/\/_/g, '/$'))
+      const routesResult = createRoutes({ files: f, srcDir, pagesDir })
+      expect(routesResult).toMatchSnapshot()
+    })
   })
 })
