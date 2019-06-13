@@ -6,11 +6,9 @@
   "files": [
     "dist",
     "template",
-    "types/*.d.ts",
     "vetur"
   ],
   "main": "dist/vue-app.js",
-  "typings": "types/index.d.ts",
   "dependencies": {
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
