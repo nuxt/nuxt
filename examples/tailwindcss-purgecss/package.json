@@ -8,16 +8,14 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "deploy": "surge -p dist/ -d https://nuxt-tailwindcss-purgecss.surge.sh",
+    "deploy": "surge -p dist/ -d https://nuxt-tailwindcss-demo.surge.sh",
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt": "^2.2.0"
+    "nuxt": "^2.8.1"
   },
   "devDependencies": {
-    "@fullhuman/postcss-purgecss": "^1.1.0",
-    "autoprefixer": "^9.3.1",
-    "tailwindcss": "^0.6.6"
+    "@nuxtjs/tailwindcss": "^1.1.0"
   },
   "prettier": {
     "semi": false,
