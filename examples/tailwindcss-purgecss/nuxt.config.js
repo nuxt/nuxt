@@ -11,9 +11,5 @@ export default {
       }
     ]
   },
-  devModules: ['@nuxtjs/tailwindcss'],
-  tailwindcss: {
-    configPath: '~/tailwind.js',
-    cssPath: '~/assets/css/tailwind.css'
-  }
+  devModules: ['@nuxtjs/tailwindcss']
 }
