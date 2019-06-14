@@ -263,24 +263,14 @@ describe('builder: builder build', () => {
       .mockReturnValueOnce({ version: 'alpha' })
       .mockReturnValueOnce(undefined)
 
-    expect(() => builder.validateTemplate()).toThrow('Missing App Dependencies')
+    builder.validateTemplate()
 
     expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
     expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
     expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)')
     expect(consola.warn).toBeCalledTimes(2)
-    expect(consola.warn).nthCalledWith(1, 'vue@latest is required but vue@alpha is installed!')
+    expect(consola.warn).nthCalledWith(1, 'vue@latest is recommended but vue@alpha is installed!')
     expect(consola.warn).nthCalledWith(2, 'nuxt@edge is required but not installed!')
-    expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith(
-      'Please install missing dependencies:\n',
-      '\n',
-      'Using yarn:\n',
-      'yarn add vue@latest nuxt@edge\n',
-      '\n',
-      'Using npm:\n',
-      'npm i vue@latest nuxt@edge\n'
-    )
     expect(semver.satisfies).toBeCalledTimes(1)
     expect(semver.satisfies).nthCalledWith(1, 'alpha', 'latest')
   })

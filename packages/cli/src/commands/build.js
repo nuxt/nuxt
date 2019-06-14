@@ -45,7 +45,7 @@ export default {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
-          options.build.quiet = !!argv.quiet
+          options.build.quiet = Boolean(argv.quiet)
         }
       }
     },

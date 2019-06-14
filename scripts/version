@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-
-./scripts/workspace-run npm publish -q

@@ -3,6 +3,11 @@ import env from 'std-env'
 export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
+  indicator: {
+    position: 'bottom-right',
+    backgroundColor: '#2E495E',
+    color: '#00C48D'
+  },
   profile: process.argv.includes('--profile'),
   extractCSS: false,
   crossorigin: undefined,
@@ -55,7 +60,8 @@ export default () => ({
     vueStyle: {}
   },
   typescript: {
-    typeCheck: true
+    typeCheck: true,
+    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],
@@ -116,5 +122,7 @@ export default () => ({
       /vue-ssr-(client|modern)-manifest.json/
     ]
   },
-  friendlyErrors: true
+  friendlyErrors: true,
+  additionalExtensions: [],
+  warningIgnoreFilters: []
 })

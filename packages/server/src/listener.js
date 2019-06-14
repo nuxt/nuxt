@@ -5,6 +5,8 @@ import ip from 'ip'
 import consola from 'consola'
 import pify from 'pify'
 
+let RANDOM_PORT = '0'
+
 export default class Listener {
   constructor({ port, host, socket, https, app, dev, baseURL }) {
     // Options
@@ -90,7 +92,7 @@ export default class Listener {
     this.listening = true
   }
 
-  serverErrorHandler(error) {
+  async serverErrorHandler(error) {
     // Detect if port is not available
     const addressInUse = error.code === 'EADDRINUSE'
 
@@ -100,11 +102,14 @@ export default class Listener {
       error.message = `Address \`${address}\` is already in use.`
 
       // Listen to a random port on dev as a fallback
-      if (this.dev && !this.socket && this.port !== '0') {
+      if (this.dev && !this.socket && this.port !== RANDOM_PORT) {
         consola.warn(error.message)
         consola.info('Trying a random port...')
-        this.port = '0'
-        return this.close().then(() => this.listen())
+        this.port = RANDOM_PORT
+        await this.close()
+        await this.listen()
+        RANDOM_PORT = this.port
+        return
       }
     }
 

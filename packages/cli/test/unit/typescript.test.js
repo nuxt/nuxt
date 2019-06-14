@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { mkdirp, writeFile, remove } from 'fs-extra'
 import { register } from 'ts-node'
-import { detectTypeScript } from '../../src/utils/typescript'
+import { detectTypeScript, setGuard } from '../../src/utils/typescript'
 
 jest.mock('ts-node')
 
@@ -16,8 +16,12 @@ describe('Typescript Support', () => {
     await writeFile(tsConfigPath, '{}', 'utf-8')
   })
 
-  test('detectTypeScript detects and registers runtime', async () => {
+  beforeEach(() => {
     register.mockReset()
+    setGuard(false)
+  })
+
+  test('detectTypeScript detects and registers runtime', async () => {
     await detectTypeScript(rootDir)
     expect(register).toHaveBeenCalledTimes(1)
     expect(register).toHaveBeenCalledWith({
@@ -28,8 +32,13 @@ describe('Typescript Support', () => {
     })
   })
 
+  test('multiple detectTypeScript calls registers runtime only once', async () => {
+    await detectTypeScript(rootDir)
+    await detectTypeScript(rootDir)
+    expect(register).toHaveBeenCalledTimes(1)
+  })
+
   test('detectTypeScript skips rootDir without tsconfig.json', async () => {
-    register.mockReset()
     await detectTypeScript(rootDir2)
     expect(register).toHaveBeenCalledTimes(0)
   })

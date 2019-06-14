@@ -4,7 +4,9 @@ exports[`config should return default nuxt configurations 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -39,6 +41,11 @@ Object {
         "trimCustomFragments": true,
         "useShortDoctype": true,
       },
+    },
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
     },
     "loaders": Object {
       "css": Object {},
@@ -123,8 +130,10 @@ Object {
     "terser": Object {},
     "transpile": Array [],
     "typescript": Object {
+      "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -273,6 +282,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -324,9 +334,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }
@@ -336,7 +344,9 @@ exports[`config should return nuxt configurations with custom env 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -371,6 +381,11 @@ Object {
         "trimCustomFragments": true,
         "useShortDoctype": true,
       },
+    },
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
     },
     "loaders": Object {
       "css": Object {},
@@ -455,8 +470,10 @@ Object {
     "terser": Object {},
     "transpile": Array [],
     "typescript": Object {
+      "ignoreNotFoundWarnings": false,
       "typeCheck": true,
     },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -605,6 +622,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -656,9 +674,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }

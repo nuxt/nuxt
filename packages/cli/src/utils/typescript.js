@@ -2,7 +2,14 @@ import path from 'path'
 import fs from 'fs-extra'
 import * as imports from '../imports'
 
+let _guard = false
+export const setGuard = (val) => { _guard = val }
+
 async function registerTSNode({ tsConfigPath, options }) {
+  if (_guard) {
+    return
+  }
+
   const { register } = await imports.tsNode()
 
   // https://github.com/TypeStrong/ts-node
@@ -13,6 +20,8 @@ async function registerTSNode({ tsConfigPath, options }) {
     },
     ...options
   })
+
+  _guard = true
 }
 
 async function getNuxtTypeScript() {

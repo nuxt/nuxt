@@ -1,4 +1,3 @@
-import clone from 'lodash/clone'
 import WebpackClientConfig from './client'
 
 export default class WebpackModernConfig extends WebpackClientConfig {
@@ -15,17 +14,17 @@ export default class WebpackModernConfig extends WebpackClientConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
-
-    options.presets = [
-      [
-        require.resolve('@nuxt/babel-preset-app'),
-        {
-          modern: true
-        }
+    return {
+      ...this.buildContext.buildOptions.babel,
+      envName: this.name,
+      presets: [
+        [
+          require.resolve('@nuxt/babel-preset-app'),
+          {
+            modern: true
+          }
+        ]
       ]
-    ]
-
-    return options
+    }
   }
 }

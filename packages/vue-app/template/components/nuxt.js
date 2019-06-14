@@ -40,11 +40,25 @@ export default {
       if (typeof this.nuxtChildKey !== 'undefined' || this.$route.matched.length > 1) {
         return this.nuxtChildKey || compile(this.$route.matched[0].path)(this.$route.params)
       }
-      const Component = this.$route.matched[0] && this.$route.matched[0].components.default
-      if (Component && Component.options && Component.options.key) {
-        return (typeof Component.options.key === 'function' ? Component.options.key(this.$route) : Component.options.key)
+
+      const [matchedRoute] = this.$route.matched
+
+      if (!matchedRoute) {
+        return this.$route.path
       }
-      return this.$route.path
+
+      const Component = matchedRoute.components.default
+
+      if (Component && Component.options) {
+        const { options } = Component
+
+        if (options.key) {
+          return (typeof options.key === 'function' ? options.key(this.$route) : options.key)
+        }
+      }
+
+      const strict = /\/$/.test(matchedRoute.path)
+      return strict ? this.$route.path : this.$route.path.replace(/\/$/, '')
     }
   },
   beforeCreate() {

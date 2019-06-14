@@ -8,6 +8,7 @@ import {
   Options as WebpackOptions,
   Plugin as WebpackPlugin
 } from 'webpack'
+import { TransformOptions, PluginItem } from '@babel/core'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { Options as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
@@ -17,9 +18,21 @@ import { TerserPluginOptions } from 'terser-webpack-plugin'
 
 type NuxtConfigurationLoaders = any // TBD
 
+interface NuxtBabelPresetEnv {
+  isServer: boolean
+}
+
+interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {
+  cacheCompression?: boolean
+  cacheDirectory?: boolean
+  cacheIdentifier?: string
+  customize?: string | null
+  presets?: ((env: NuxtBabelPresetEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
+}
+
 export interface NuxtConfigurationBuild {
   analyze?: BundleAnalyzerPlugin.Options | boolean
-  babel?: any // TBD
+  babel?: NuxtBabelOptions
   cache?: boolean
   crossorigin?: string
   cssSourceMap?: boolean
@@ -40,6 +53,7 @@ export interface NuxtConfigurationBuild {
   hardSource?: boolean
   hotMiddleware?: WebpackHotMiddlewareOptions
   html?: { minify: HtmlMinifierOptions }
+  indicator?: boolean
   loaders?: NuxtConfigurationLoaders
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
@@ -59,7 +73,8 @@ export interface NuxtConfigurationBuild {
   terser?: TerserPluginOptions | boolean
   transpile?: (string | RegExp)[]
   typescript?: {
-    typeCheck?: { [key: string]: any } | boolean // TBD - Couldn't find typedefs for the forkTsCheckerWebpackPlugin options
+    typeCheck?: { [key: string]: any } | boolean, // TBD - Couldn't find typedefs for the forkTsCheckerWebpackPlugin options
+    ignoreNotFoundWarnings?: boolean
   }
   watch?: string[]
 }

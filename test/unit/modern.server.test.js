@@ -1,11 +1,10 @@
-import chalk from 'chalk'
 import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
 const modernUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
-const modernInfo = mode => `Modern bundles are detected. Modern mode (${chalk.green.bold(mode)}) is enabled now.`
+const modernInfo = mode => `Modern bundles are detected. Modern mode (\`${mode}\`) is enabled now.`
 
 describe('modern server mode', () => {
   beforeAll(async () => {
@@ -67,6 +66,14 @@ describe('modern server mode', () => {
       '</_nuxt/modern-app.js>; rel=preload; crossorigin=use-credentials; as=script',
       `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; crossorigin=use-credentials; as=script`
     ].join(', '))
+  })
+
+  test('Vary header should contain User-Agent', async () => {
+    const { headers: { vary } } = await rp(url('/'), {
+      resolveWithFullResponse: true,
+      headers: { 'user-agent': modernUA }
+    })
+    expect(vary).toContain('User-Agent')
   })
 
   // Close server and ask nuxt to stop listening to file changes

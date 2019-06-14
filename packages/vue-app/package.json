@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.6.2",
+  "version": "2.8.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -12,14 +12,14 @@
   "main": "dist/vue-app.js",
   "typings": "types/index.d.ts",
   "dependencies": {
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
     "vue-meta": "^1.6.0",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.6",
     "vue-template-compiler": "^2.6.10",
-    "vuex": "^3.1.0"
+    "vuex": "^3.1.1"
   },
   "publishConfig": {
     "access": "public"

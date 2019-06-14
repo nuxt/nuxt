@@ -6,9 +6,7 @@ export const isString = obj => typeof obj === 'string' || obj instanceof String
 
 export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
-export const isPureObject = function isPureObject(o) {
-  return !Array.isArray(o) && typeof o === 'object'
-}
+export const isPureObject = obj => !Array.isArray(obj) && typeof obj === 'object'
 
 export const isUrl = function isUrl(url) {
   return ['http', '//'].some(str => url.startsWith(str))

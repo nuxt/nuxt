@@ -14,7 +14,7 @@
     </form>
     <div v-else>
       Hello {{ $store.state.authUser.username }}!
-      <pre>I am the secret content, I am shown only when the use is connected.</pre>
+      <pre>I am the secret content, I am shown only when the user is connected.</pre>
       <p><i>You can also refresh this page, you'll still be connected!</i></p>
       <button @click="logout">
         Logout

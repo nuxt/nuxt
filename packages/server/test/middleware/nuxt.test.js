@@ -137,7 +137,7 @@ describe('server: nuxtMiddleware', () => {
     const context = createContext()
     const result = {
       html: 'rendered html',
-      getPreloadFiles: jest.fn(() => ['/nuxt/preload1.js', '/nuxt/preload2.js'])
+      preloadFiles: ['/nuxt/preload1.js', '/nuxt/preload2.js']
     }
     context.renderRoute.mockReturnValue(result)
     const pushAssets = jest.fn((req, res, publicPath, preloadFiles) => preloadFiles)
@@ -158,12 +158,12 @@ describe('server: nuxtMiddleware', () => {
     const context = createContext()
     const result = {
       html: 'rendered html',
-      getPreloadFiles: jest.fn(() => [
+      preloadFiles: [
         { file: '/nuxt/preload1.js', asType: 'script' },
         { file: '/nuxt/preload2.js', asType: 'script' },
         { file: '/nuxt/style.css', asType: 'style' },
         { file: '/nuxt/font.woff', asType: 'font' }
-      ])
+      ]
     }
     context.renderRoute.mockReturnValue(result)
     context.options.render.http2 = { push: true }
@@ -182,12 +182,12 @@ describe('server: nuxtMiddleware', () => {
     const context = createContext()
     const result = {
       html: 'rendered html',
-      getPreloadFiles: jest.fn(() => [
+      preloadFiles: [
         { file: '/nuxt/preload1.js', asType: 'script' },
         { file: '/nuxt/preload2.js', asType: 'script', modern: true },
         { file: '/nuxt/style.css', asType: 'style' },
         { file: '/nuxt/font.woff', asType: 'font' }
-      ])
+      ]
     }
     context.renderRoute.mockReturnValue(result)
     context.options.dev = true
