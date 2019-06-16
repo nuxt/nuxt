@@ -34,7 +34,9 @@ describe('basic dev', () => {
         ],
         loaders: {
           cssModules: {
-            localIdentName: '[hash:base64:6]'
+            modules: {
+              localIdentName: '[hash:base64:6]'
+            }
           }
         },
         extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
@@ -92,7 +94,7 @@ describe('basic dev', () => {
       'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
-    expect(cssModules.localIdentName).toBe('[hash:base64:6]')
+    expect(cssModules.modules.localIdentName).toBe('[hash:base64:6]')
     expect(vueLoader.options).toBe(vue)
   })
 

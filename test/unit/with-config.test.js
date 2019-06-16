@@ -208,7 +208,7 @@ describe('with-config', () => {
     const { headers } = await rp(url('/test'), {
       resolveWithFullResponse: true
     })
-    expect(headers['server-timing']).toMatch(/total;dur=\d+;desc="Nuxt Server Time"/)
+    expect(headers['server-timing']).toMatch(/total;dur=\d+(\.\d+)?;desc="Nuxt Server Time"/)
   })
 
   // Close server and ask nuxt to stop listening to file changes

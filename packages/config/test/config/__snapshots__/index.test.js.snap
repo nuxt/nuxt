@@ -50,7 +50,9 @@ Object {
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {
@@ -374,7 +376,9 @@ Object {
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {

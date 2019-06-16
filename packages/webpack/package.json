@@ -17,7 +17,7 @@
     "caniuse-lite": "^1.0.30000974",
     "chalk": "^2.4.2",
     "consola": "^2.7.1",
-    "css-loader": "^2.1.1",
+    "css-loader": "^3.0.0",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
     "extract-css-chunks-webpack-plugin": "^4.5.2",
@@ -43,12 +43,15 @@
     "time-fix-plugin": "^2.0.6",
     "url-loader": "^2.0.0",
     "vue-loader": "^15.7.0",
-    "webpack": "^4.33.0",
+    "webpack": "^4.34.0",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-dev-middleware": "^3.7.0",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=8.9.0"
   },
   "publishConfig": {
     "access": "public"

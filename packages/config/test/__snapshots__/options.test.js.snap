@@ -65,7 +65,9 @@ Object {
         "sourceMap": false,
       },
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
         "sourceMap": false,
       },
       "file": Object {},
