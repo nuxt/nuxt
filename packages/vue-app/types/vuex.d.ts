@@ -4,7 +4,7 @@ import VueRouter from 'vue-router'
 
 declare module 'vuex/types/index' {
   interface Store<S> {
-    app: Vue;
-    $router: VueRouter;
+    app: Vue
+    $router: VueRouter
   }
 }
