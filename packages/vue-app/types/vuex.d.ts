@@ -1,10 +1,10 @@
 import Store from 'vuex'
-import Vue from 'vue'
 import VueRouter from 'vue-router'
+import { NuxtAppOptions } from '.'
 
 declare module 'vuex/types/index' {
   interface Store<S> {
-    app: Vue
+    app: NuxtAppOptions
     $router: VueRouter
   }
 }
