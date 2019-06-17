@@ -272,6 +272,7 @@ async function render(to, from, next) {
 
   // Get route's matched components
   const matches = []
+  const instances = getMatchedComponentsInstances(to, matches)
   const Components = getMatchedComponents(to, matches)
 
   // If no Components matched, generate 404
@@ -378,12 +379,13 @@ async function render(to, from, next) {
         typeof Component.options.asyncData === 'function'
       )
       const hasFetch = Boolean(Component.options.fetch)
+      const keepAlive = instances[i] && instances[i].$vnode.data.keepAlive
       <% if (loading) { %>
       const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
       <% } %>
 
       // Call asyncData(context)
-      if (hasAsyncData) {
+      if (hasAsyncData && !(keepAlive && Component.options.__hasNuxtData)) {
         const promise = promisify(Component.options.asyncData, app.context)
           .then((asyncDataResult) => {
             applyAsyncData(Component, asyncDataResult)
