@@ -73,6 +73,12 @@ export interface ErrorParams {
   message?: string
 }
 
+export interface NuxtError {
+  message?: string
+  statusCode?: string
+  path?: string
+}
+
 export interface NuxtLoading extends Vue {
   fail?(): NuxtLoading
   finish(): NuxtLoading
