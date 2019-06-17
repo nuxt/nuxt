@@ -9,6 +9,9 @@ import './process'
 // augment typings of Vue.js
 import './vue'
 
+// augment typings of Vuex
+import './vuex'
+
 type Dictionary<T> = { [key: string]: T }
 
 type NuxtState = Dictionary<any>
