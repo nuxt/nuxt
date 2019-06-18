@@ -36,7 +36,7 @@
     "@nuxtjs/eslint-config": "^0.0.1",
     "@vue/server-test-utils": "^1.0.0-beta.29",
     "@vue/test-utils": "^1.0.0-beta.29",
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "cheerio": "^1.0.0-rc.3",
@@ -72,13 +72,13 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "rimraf": "^2.6.3",
-    "rollup": "^1.15.5",
+    "rollup": "^1.15.6",
     "rollup-plugin-alias": "^1.5.2",
     "rollup-plugin-babel": "^4.3.2",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-license": "^0.9.0",
-    "rollup-plugin-node-resolve": "^5.0.2",
+    "rollup-plugin-node-resolve": "^5.0.3",
     "rollup-plugin-replace": "^2.2.0",
     "sort-package-json": "^1.22.1",
     "ts-jest": "^24.0.2",
@@ -86,6 +86,6 @@
     "tslint": "^5.17.0",
     "typescript": "^3.5.2",
     "vue-jest": "^4.0.0-beta.2",
-    "vue-property-decorator": "^8.1.1"
+    "vue-property-decorator": "^8.2.1"
   }
 }
