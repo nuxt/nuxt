@@ -41,7 +41,7 @@
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "cheerio": "^1.0.0-rc.3",
     "codecov": "^3.5.0",
-    "consola": "^2.7.1",
+    "consola": "^2.8.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",

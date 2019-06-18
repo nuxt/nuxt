@@ -3502,10 +3502,15 @@ connect@^3.6.6, connect@^3.7.0:
     parseurl "~1.3.3"
     utils-merge "1.0.1"
 
-consola@^2.3.0, consola@^2.5.6, consola@^2.6.0, consola@^2.7.1:
+consola@^2.3.0, consola@^2.5.6, consola@^2.6.0:
   version "2.7.1"
   resolved "https://registry.npmjs.org/consola/-/consola-2.7.1.tgz#3f7f7c53eb44362240c3aee41b9bb2641d5ca32e"
   integrity sha512-u7JYs+HnMbZPD2cEuS1XHsLeqtazA0kd5lAk8r8DnnGdgNhOdb7DSubJ+QLdQkbtpmmxgp7gs8Ug44sCyY4FCQ==
+
+consola@^2.8.0:
+  version "2.8.0"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.8.0.tgz#c2ceab5bcdfdfc4efa81addeb2529faefb013117"
+  integrity sha512-The6CXSXaunKEF6n48AYNluXbQgwCY86Dv64V9+w4Dh4alXxD1yIpoDCz8yda4hlR+R3whlo1SUgyX4ur4BFig==
 
 console-browserify@^1.1.0:
   version "1.1.0"
