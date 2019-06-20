@@ -70,8 +70,8 @@ export interface Transition {
 
 export interface NuxtError {
   message?: string
-  statusCode?: number
   path?: string
+  statusCode?: number
 }
 
 export interface NuxtLoading extends Vue {
