@@ -8,11 +8,11 @@
   ],
   "main": "dist/utils.js",
   "dependencies": {
-    "consola": "^2.8.0",
+    "consola": "^2.9.0",
     "fs-extra": "^8.0.1",
     "hash-sum": "^1.0.2",
     "proper-lockfile": "^4.1.1",
-    "semver": "^6.1.1",
+    "semver": "^6.1.2",
     "serialize-javascript": "^1.7.0",
     "signal-exit": "^3.0.2",
     "ua-parser-js": "^0.7.20"
