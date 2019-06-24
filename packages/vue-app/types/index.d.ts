@@ -39,7 +39,7 @@ export interface Context {
   res: ServerResponse
   redirect(status: number, path: string, query?: Route['query']): void
   redirect(path: string, query?: Route['query']): void
-  error(params: ErrorParams): void
+  error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
 }
@@ -68,9 +68,10 @@ export interface Transition {
   leaveCancelled?(el: HTMLElement): void
 }
 
-export interface ErrorParams {
-  statusCode?: number
+export interface NuxtError {
   message?: string
+  path?: string
+  statusCode?: number
 }
 
 export interface NuxtLoading extends Vue {
