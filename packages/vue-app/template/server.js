@@ -15,12 +15,12 @@ Vue.component('NLink', NuxtLink)
 const noopApp = () => new Vue({ render: h => h('div') })
 
 const createNext = ssrContext => (opts) => {
-  ssrContext.redirected = opts
-  // If nuxt generate
-  if (!ssrContext.res) {
+  // If static target, render on client-side
+  if (ssrContext.target === 'static') {
     ssrContext.nuxt.serverRendered = false
     return
   }
+  ssrContext.redirected = opts
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
   const routerBase = '<%= router.base %>'
@@ -183,7 +183,7 @@ export default async (ssrContext) => {
   // ...If .validate() returned false
   if (!isValid) {
     // Don't server-render the page in generate mode
-    if (ssrContext._generate) ssrContext.nuxt.serverRendered = false
+    if (ssrContext.target === 'static') ssrContext.nuxt.serverRendered = false
     // Render a 404 error page
     return render404Page()
   }

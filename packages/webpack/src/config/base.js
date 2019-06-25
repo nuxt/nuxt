@@ -46,6 +46,10 @@ export default class WebpackBaseConfig {
     return this.dev ? 'development' : 'production'
   }
 
+  get target() {
+    return this.buildContext.target
+  }
+
   get dev() {
     return this.buildContext.options.dev
   }
@@ -118,7 +122,9 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
-      'process.static': this.buildContext.isStatic
+      'process.static': this.target === 'static',
+      'process.target': JSON.stringify(this.target),
+      'process.dev': this.dev
     }
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =

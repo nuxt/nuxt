@@ -8,6 +8,9 @@ export default () => ({
   debug: undefined, // = dev
   env: {},
 
+  // Target
+  target: 'server', // | 'serverless' | 'static'
+
   // Mode
   mode: 'universal',
   modern: undefined,

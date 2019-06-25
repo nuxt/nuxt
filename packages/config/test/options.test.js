@@ -99,6 +99,17 @@ describe('config: options', () => {
     })
   })
 
+  test('should fallback to server target', () => {
+    const { target } = getNuxtConfig({ target: 0 })
+    expect(target).toEqual('server')
+  })
+
+  test('should check unknown target', () => {
+    const { target } = getNuxtConfig({ target: 'test' })
+    expect(consola.warn).toHaveBeenCalledWith('Unknown target: test. Falling back to server')
+    expect(target).toEqual('server')
+  })
+
   test('should check unknown mode', () => {
     const { build, render } = getNuxtConfig({ mode: 'test' })
     expect(consola.warn).toHaveBeenCalledWith('Unknown mode: test. Falling back to universal')
