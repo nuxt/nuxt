@@ -1842,11 +1842,6 @@
     "@types/istanbul-lib-coverage" "*"
     "@types/istanbul-lib-report" "*"
 
-"@types/loglevel@*":
-  version "1.5.4"
-  resolved "https://registry.npmjs.org/@types/loglevel/-/loglevel-1.5.4.tgz#6e296bf20d9f6b0a3274cfb01a918f1d634e4c32"
-  integrity sha512-8dx4ckP0vndJeN+iKZwdGiapLqFjVQ3JLOt92uqK0C63acs5NcPLbUOpfXCJkKVRjZLBQjw8NIGNBSsnatFnFQ==
-
 "@types/memory-fs@*":
   version "0.3.2"
   resolved "https://registry.npmjs.org/@types/memory-fs/-/memory-fs-0.3.2.tgz#5d4753f9b390cb077c8c8af97bc96463399ceccd"
@@ -1938,15 +1933,15 @@
   dependencies:
     "@types/webpack" "*"
 
-"@types/webpack-dev-middleware@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/@types/webpack-dev-middleware/-/webpack-dev-middleware-2.0.2.tgz#33934f15de582f1a6c21ea21c42f69282e328c76"
-  integrity sha512-uZ1avIbAcnspcDKKm0WfgIdvBYRqUapPmwb0MYGzzB74q2F3T4Xi+qPSoS0Oq5iQvIMVxOm7KMqHQJii4VDCsw==
+"@types/webpack-dev-middleware@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.npmjs.org/@types/webpack-dev-middleware/-/webpack-dev-middleware-2.0.3.tgz#aefb145281b3326a052325d583d2339debbf1be3"
+  integrity sha512-DzNJJ6ah/6t1n8sfAgQyEbZ/OMmFcF9j9P3aesnm7G6/iBFR/qiGin8K89J0RmaWIBzhTMdDg3I5PmKmSv7N9w==
   dependencies:
     "@types/connect" "*"
-    "@types/loglevel" "*"
     "@types/memory-fs" "*"
     "@types/webpack" "*"
+    loglevel "^1.6.2"
 
 "@types/webpack-hot-middleware@^2.16.5":
   version "2.16.5"
@@ -1956,10 +1951,21 @@
     "@types/connect" "*"
     "@types/webpack" "*"
 
-"@types/webpack@*", "@types/webpack@^4.4.33":
+"@types/webpack@*":
   version "4.4.33"
   resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.4.33.tgz#c43936ad0f350fd12fd7df3792a364ab8f64e2fa"
   integrity sha512-MU5Lokm30QHF9Wn0+yq/hnToPlEBRQVa72mgn1/W8OpJu63aRDKy0aEdMI+pCk8F6zwQJfSFaVzx1JN1MLXx8A==
+  dependencies:
+    "@types/anymatch" "*"
+    "@types/node" "*"
+    "@types/tapable" "*"
+    "@types/uglify-js" "*"
+    source-map "^0.6.0"
+
+"@types/webpack@^4.4.34":
+  version "4.4.34"
+  resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.4.34.tgz#e5f88b9a795da11683b4ec4a07d1c2b023b19810"
+  integrity sha512-GnEBgjHsfO1M7DIQ0dAupSofcmDItE3Zsu3reK8SQpl/6N0rtUQxUmQzVFAS5ou/FGjsYKjXAWfItLZ0kNFTfQ==
   dependencies:
     "@types/anymatch" "*"
     "@types/node" "*"
@@ -3128,10 +3134,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000939, caniuse-lite@^1.0.30000971, caniuse-lite@^1.0.30000975, caniuse-lite@^1.0.30000976:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000939, caniuse-lite@^1.0.30000971, caniuse-lite@^1.0.30000975:
   version "1.0.30000976"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000976.tgz#d30fe12662cb2a21e130d307db9907513ca830a2"
   integrity sha512-tleNB1IwPRqZiod6nUNum63xQCMN96BUO2JTeiwuRM7p9d616EHsMBjBWJMudX39qCaPuWY8KEWzMZq7A9XQMQ==
+
+caniuse-lite@^1.0.30000977:
+  version "1.0.30000977"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30000977.tgz#7da2ca14cae2fddb368c05c57ab4a529afd658ff"
+  integrity sha512-RTXL32vdfAc2g9aoDL6vnBzbOO/3sM+T+YX4m7W9iFZnl3qIz7WYoZZpcZpALud8xq4+N56rnruX/NQy9HQu6A==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -4556,10 +4567,10 @@ eslint-plugin-es@^1.4.0:
     eslint-utils "^1.3.0"
     regexpp "^2.0.1"
 
-eslint-plugin-import@^2.17.3:
-  version "2.17.3"
-  resolved "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.17.3.tgz#00548b4434c18faebaba04b24ae6198f280de189"
-  integrity sha512-qeVf/UwXFJbeyLbxuY8RgqDyEKCkqV7YC+E5S5uOjAp4tOc8zj01JP3ucoBM8JcEqd1qRasJSg6LLlisirfy0Q==
+eslint-plugin-import@^2.18.0:
+  version "2.18.0"
+  resolved "https://registry.npmjs.org/eslint-plugin-import/-/eslint-plugin-import-2.18.0.tgz#7a5ba8d32622fb35eb9c8db195c2090bd18a3678"
+  integrity sha512-PZpAEC4gj/6DEMMoU2Df01C5c50r7zdGIN52Yfi7CvvWaYssG7Jt5R9nFG5gmqodxNOz9vQS87xk6Izdtpdrig==
   dependencies:
     array-includes "^3.0.3"
     contains-path "^0.1.0"
@@ -4600,10 +4611,10 @@ eslint-plugin-standard@^4.0.0:
   resolved "https://registry.npmjs.org/eslint-plugin-standard/-/eslint-plugin-standard-4.0.0.tgz#f845b45109c99cd90e77796940a344546c8f6b5c"
   integrity sha512-OwxJkR6TQiYMmt1EsNRMe5qG3GsbjlcOhbGUBY4LtavF9DsLaTcoR+j2Tdjqi23oUwKNUqX7qcn5fPStafMdlA==
 
-eslint-plugin-vue@^5.2.2:
-  version "5.2.2"
-  resolved "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-5.2.2.tgz#86601823b7721b70bc92d54f1728cfc03b36283c"
-  integrity sha512-CtGWH7IB0DA6BZOwcV9w9q3Ri6Yuo8qMjx05SmOGJ6X6E0Yo3y9E/gQ5tuNxg2dEt30tRnBoFTbvtmW9iEoyHA==
+eslint-plugin-vue@^5.2.3:
+  version "5.2.3"
+  resolved "https://registry.npmjs.org/eslint-plugin-vue/-/eslint-plugin-vue-5.2.3.tgz#3ee7597d823b5478804b2feba9863b1b74273961"
+  integrity sha512-mGwMqbbJf0+VvpGR5Lllq0PMxvTdrZ/ZPjmhkacrCHbubJeJOt+T6E3HUzAifa2Mxi7RSdJfC9HFpOeSYVMMIw==
   dependencies:
     vue-eslint-parser "^5.0.0"
 
@@ -7089,6 +7100,11 @@ lodash@4.17.11, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.3
   version "4.17.11"
   resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
+
+loglevel@^1.6.2:
+  version "1.6.3"
+  resolved "https://registry.npmjs.org/loglevel/-/loglevel-1.6.3.tgz#77f2eb64be55a404c9fd04ad16d57c1d6d6b1280"
+  integrity sha512-LoEDv5pgpvWgPF4kNYuIp0qqSJVWak/dML0RY74xlzMZiT9w77teNAwKYKWBTYjlokMirg+o3jBwp+vlLrcfAA==
 
 loose-envify@^1.0.0:
   version "1.4.0"
@@ -9803,10 +9819,10 @@ rollup-plugin-license@^0.9.0:
     mkdirp "0.5.1"
     moment "2.24.0"
 
-rollup-plugin-node-resolve@^5.0.4:
-  version "5.0.4"
-  resolved "https://registry.npmjs.org/rollup-plugin-node-resolve/-/rollup-plugin-node-resolve-5.0.4.tgz#9a09f63618fb1ac46e37cf4e5a13c390b19451af"
-  integrity sha512-L/fGn+uZOCk/e3uNa3MITUCA3tXndcsaH0Bc7rq7v389vEXMXAYnmF0giEUWbhYxE7PyMGglByVrR8AeIP9klw==
+rollup-plugin-node-resolve@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/rollup-plugin-node-resolve/-/rollup-plugin-node-resolve-5.1.0.tgz#49608b6ecaf2b776ab83e317d39b282d65d21b76"
+  integrity sha512-2hwwHNj0s8UEtUNT+lJq8rFWEznP7yJm3GCHBicadF6hiNX1aRARRZIjz2doeTlTGg/hOvJr4C/8+3k9Y/J5Hg==
   dependencies:
     "@types/resolve" "0.0.8"
     builtin-modules "^3.1.0"
