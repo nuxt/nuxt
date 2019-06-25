@@ -6,7 +6,8 @@
     "dev"
   ],
   "ignoreDeps": [
-    "core-js"
+    "core-js",
+    "fs-extra"
   ],
   "lockFileMaintenance": {
     "enabled": true
