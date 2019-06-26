@@ -233,7 +233,8 @@ export function getNuxtConfig(_options) {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,
-      addMeta: Boolean(options.target === 'static'),
+      addMeta: Boolean(options._generate),
+      unsafeInlineCompatiblity: false,
       reportOnly: options.debug
     })
   }
