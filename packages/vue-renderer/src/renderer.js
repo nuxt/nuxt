@@ -286,6 +286,11 @@ export default class VueRenderer {
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
     }
 
+    // renderContext.static (old _generate)
+    if (renderContext.static === true || renderContext._generate === true) {
+      renderContext.target = 'static'
+    }
+
     // Call renderContext hook
     await this.serverContext.nuxt.callHook('vue-renderer:context', renderContext)
 

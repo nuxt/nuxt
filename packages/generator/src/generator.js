@@ -207,7 +207,7 @@ export default class Generator {
     const pageErrors = []
 
     try {
-      const res = await this.nuxt.server.renderRoute(route, { payload })
+      const res = await this.nuxt.server.renderRoute(route, { payload, static: true })
       html = res.html
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
