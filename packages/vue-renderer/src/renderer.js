@@ -255,7 +255,7 @@ export default class VueRenderer {
           case 'error':
             throw this._error
           case 'ready':
-            throw new Error(`Renderer is loaded but not all resources are unavailable! Please check ${this.distPath} existence.`)
+            throw new Error(`Renderer is loaded but not all resources are available! Please check ${this.distPath} existence.`)
           default:
             throw new Error('Renderer is in unknown state!')
         }
