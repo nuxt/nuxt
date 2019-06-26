@@ -6,7 +6,9 @@
     "dev"
   ],
   "ignoreDeps": [
-    "core-js"
+    "core-js",
+    // TODO: https://github.com/jprichardson/node-fs-extra/issues/687
+    "fs-extra"
   ],
   "lockFileMaintenance": {
     "enabled": true

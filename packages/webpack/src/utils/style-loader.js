@@ -20,7 +20,7 @@ export default class StyleLoader {
     return this.buildContext.buildOptions.extractCSS
   }
 
-  get exportOnlyLocals() {
+  get onlyLocals() {
     return Boolean(this.isServer && this.extractCSS)
   }
 
@@ -68,10 +68,10 @@ export default class StyleLoader {
   }
 
   css(options) {
-    options.exportOnlyLocals = this.exportOnlyLocals
+    options.onlyLocals = this.onlyLocals
     const cssLoader = { loader: 'css-loader', options }
 
-    if (options.exportOnlyLocals) {
+    if (options.onlyLocals) {
       return [cssLoader]
     }
 
@@ -79,7 +79,7 @@ export default class StyleLoader {
   }
 
   cssModules(options) {
-    return this.css(Object.assign(options, { modules: true }))
+    return this.css(options)
   }
 
   extract() {
