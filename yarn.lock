@@ -4116,7 +4116,7 @@ deep-is@~0.1.3:
   resolved "https://registry.npmjs.org/deep-is/-/deep-is-0.1.3.tgz#b369d6fb5dbc13eecf524f91b070feedc357cf34"
   integrity sha1-s2nW+128E+7PUk+RsHD+7cNXzzQ=
 
-deepmerge@3.3.0, deepmerge@^3.2.0:
+deepmerge@3.3.0, deepmerge@^3.3.0:
   version "3.3.0"
   resolved "https://registry.npmjs.org/deepmerge/-/deepmerge-3.3.0.tgz#d3c47fd6f3a93d517b14426b0628a17b0125f5f7"
   integrity sha512-GRQOafGHwMHpjPx9iCvTgpu9NojZ49q794EEL94JVEw6VaeA8XTUyBKvAkOOjBX9oJNiV6G3P+T+tihFjo2TqA==
@@ -7072,11 +7072,6 @@ lodash.ismatch@^4.4.0:
   resolved "https://registry.npmjs.org/lodash.ismatch/-/lodash.ismatch-4.4.0.tgz#756cb5150ca3ba6f11085a78849645f188f85f37"
   integrity sha1-dWy1FQyjum8RCFp4hJZF8Yj4Xzc=
 
-lodash.isplainobject@^4.0.6:
-  version "4.0.6"
-  resolved "https://registry.npmjs.org/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
-  integrity sha1-fFJqUtibRcRcxpC4gWO+BJf1UMs=
-
 lodash.kebabcase@^4.1.1:
   version "4.1.1"
   resolved "https://registry.npmjs.org/lodash.kebabcase/-/lodash.kebabcase-4.1.1.tgz#8489b1cb0d29ff88195cceca448ff6d6cc295c36"
@@ -7116,11 +7111,6 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.npmjs.org/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
-
-lodash.uniqueid@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.npmjs.org/lodash.uniqueid/-/lodash.uniqueid-4.0.1.tgz#3268f26a7c88e4f4b1758d679271814e31fa5b26"
-  integrity sha1-MmjyanyI5PSxdY1nknGBTjH6WyY=
 
 lodash@4.17.11, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.3, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.1:
   version "4.17.11"
@@ -11359,15 +11349,12 @@ vue-loader@^15.7.0:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-meta@^1.6.0:
-  version "1.6.0"
-  resolved "https://registry.npmjs.org/vue-meta/-/vue-meta-1.6.0.tgz#89b664f6011a207e098e8ba3b9d32e29c819b65d"
-  integrity sha512-LLHejsOYbJiSEDSgZvjHB3fFY7lUxsDFLkuSqf5eBohEvhhddBTOHa3heoFTcI5sxsZSZt26uUzoLVe4CT6Y4A==
+vue-meta@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.npmjs.org/vue-meta/-/vue-meta-2.0.4.tgz#dcd6ab7f2ad16a8c6bf1ced5ae1e3e3402af0459"
+  integrity sha512-lPAuYblOHbsnwmwrm1C8UQxtFfABgfndK6Sej3VUzYbtTYLYak0TIDMB2KfFKFfdCFhzmfnR+dU+4xfYyVf+Iw==
   dependencies:
-    deepmerge "^3.2.0"
-    lodash.isplainobject "^4.0.6"
-    lodash.uniqueid "^4.0.1"
-    object-assign "^4.1.1"
+    deepmerge "^3.3.0"
 
 vue-no-ssr@^1.1.1:
   version "1.1.1"
