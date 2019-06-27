@@ -1,4 +1,5 @@
 import { extname } from 'path'
+import cloneDeep from 'lodash/cloneDeep'
 import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
@@ -43,7 +44,9 @@ export default class SPARenderer extends BaseRenderer {
     let meta = this.cache.get(cacheKey)
 
     if (meta) {
-      return meta
+      // Return a copy of the content, so that future
+      // modifications do not effect the data in cache
+      return cloneDeep(meta)
     }
 
     meta = {
@@ -149,7 +152,9 @@ export default class SPARenderer extends BaseRenderer {
     // Set meta tags inside cache
     this.cache.set(cacheKey, content)
 
-    return content
+    // Return a copy of the content, so that future
+    // modifications do not effect the data in cache
+    return cloneDeep(content)
   }
 
   static normalizeFile(file) {
