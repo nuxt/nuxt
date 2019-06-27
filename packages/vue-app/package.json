@@ -15,7 +15,7 @@
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
-    "vue-meta": "^1.6.0",
+    "vue-meta": "^2.0.4",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.6",
     "vue-template-compiler": "^2.6.10",
