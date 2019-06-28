@@ -8,7 +8,7 @@
   ],
   "main": "dist/vue-renderer.js",
   "dependencies": {
-    "@nuxt/devalue": "^1.2.3",
+    "@nuxt/devalue": "^1.2.4",
     "@nuxt/utils": "2.8.1",
     "consola": "^2.9.0",
     "fs-extra": "^8.0.1",
