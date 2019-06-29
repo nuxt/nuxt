@@ -120,6 +120,14 @@ describe('children patch (browser)', () => {
     })
   })
 
+  test('should not call asyncData of keepAlive page multiple times', async () => {
+    await page.nuxt.navigate('/patch-keep-alive/keep-alive')
+    await page.nuxt.navigate('/patch-keep-alive')
+    await page.nuxt.navigate('/patch-keep-alive/keep-alive')
+    const { query } = await page.nuxt.routeData()
+    expect(query).not.toHaveProperty('multiple')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
