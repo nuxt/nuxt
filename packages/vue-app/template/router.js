@@ -128,7 +128,6 @@ const scrollBehavior = function (to, from, savedPosition) {
   const nuxt = window.<%= globals.nuxt %>
 
   // triggerScroll is only fired when a new component is loaded
-  console.log(to, from)
   if (to.path === from.path && to.hash !== from.hash) {
     nuxt.$nextTick(() => nuxt.$emit('triggerScroll'))
   }
