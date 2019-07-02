@@ -1,10 +1,21 @@
 import fs from 'fs'
+import path from 'path'
 import execa from 'execa'
+import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
 
+function checkDuplicateNuxt() {
+  const dupPkg = pkgName === '@nuxt/cli' ? 'cli-edge' : 'cli'
+  if (fs.existsSync(path.resolve(__dirname, '..', '..', dupPkg))) {
+    throw new Error('nuxt and nuxt-edge are installed at same time, please remove the unused one.')
+  }
+}
+
 export default async function run(_argv) {
+  checkDuplicateNuxt()
+
   // Read from process.argv
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
