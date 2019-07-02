@@ -37,6 +37,7 @@ export default interface NuxtConfiguration extends ExtendableConfiguration {
   mode?: 'spa' | 'universal' // TBR (To Be Reviewed) - should be a `NuxtMode` interface which should be used in @nuxt/vue-app/types/process.d.ts as well
   modern?: 'client' | 'server' | boolean
   modules?: NuxtConfigurationModule[]
+  devModules?: NuxtConfigurationModule[]
   modulesDir?: string[]
   plugins?: NuxtConfigurationPlugin[]
   render?: NuxtConfigurationRender
