@@ -42,6 +42,8 @@ export default () => ({
 
   loadingIndicator: 'default',
 
+  loadingScreen: true,
+
   pageTransition: {
     name: 'page',
     mode: 'out-in',

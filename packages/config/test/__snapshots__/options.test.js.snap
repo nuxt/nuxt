@@ -239,6 +239,7 @@ Object {
     "loading": "Loading...",
     "name": "default",
   },
+  "loadingScreen": true,
   "messages": Object {
     "back_to_home": "Back to the home page",
     "client_error": "Error",

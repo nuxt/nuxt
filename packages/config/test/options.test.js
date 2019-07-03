@@ -237,6 +237,18 @@ describe('config: options', () => {
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
     })
   })
+
+  describe('config: loading screen', () => {
+    test('should add loading screen', () => {
+      const config = getNuxtConfig({ dev: true })
+      expect(config.devModules).toStrictEqual(['@nuxt/loading-screen'])
+    })
+
+    test('should not add loading screen', () => {
+      const config = getNuxtConfig({ dev: true, loadingScreen: false })
+      expect(config.devModules).toStrictEqual([])
+    })
+  })
 })
 
 describe('config: router', () => {

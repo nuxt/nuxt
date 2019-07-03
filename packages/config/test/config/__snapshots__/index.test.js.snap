@@ -207,6 +207,7 @@ Object {
     "throttle": 200,
   },
   "loadingIndicator": "default",
+  "loadingScreen": true,
   "messages": Object {
     "back_to_home": "Back to the home page",
     "client_error": "Error",
@@ -549,6 +550,7 @@ Object {
     "throttle": 200,
   },
   "loadingIndicator": "default",
+  "loadingScreen": true,
   "messages": Object {
     "back_to_home": "Back to the home page",
     "client_error": "Error",
