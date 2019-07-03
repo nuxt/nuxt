@@ -17,7 +17,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 
 // Component: <NoSsr>
 Vue.component(NoSsr.name, NoSsr)
-Vue.component('ClientOnly', NoSsr)                           
+Vue.component('ClientOnly', NoSsr)
 
 // Component: <NuxtChild>
 Vue.component(NuxtChild.name, NuxtChild)

@@ -5,5 +5,8 @@
 import NoSsr from 'vue-no-ssr'
 export default {
   ...NoSsr,
-  name: 'NoSsr'
+  name: 'NoSsr',
+  created() {
+    console.warn(`deprecation warning in favour of using <client-only>`)
+  }
 }
