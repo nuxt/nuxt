@@ -33,7 +33,7 @@ export default async function run(_argv) {
       stdin: process.stdin
     })
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error.exitCode === 2) {
       throw String(`Command not found: nuxt-${argv[0]}`)
     }
     throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)

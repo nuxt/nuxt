@@ -5,9 +5,9 @@
 </template>
 
 <script>
-import BarChart from '~/components/bar-chart'
 import axios from 'axios'
 import moment from 'moment'
+import BarChart from '~/components/bar-chart'
 
 export default {
   components: {

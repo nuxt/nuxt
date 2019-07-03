@@ -9,10 +9,10 @@
   "main": "dist/utils.js",
   "dependencies": {
     "consola": "^2.9.0",
-    "fs-extra": "^8.0.1",
-    "hash-sum": "^1.0.2",
+    "fs-extra": "^8.1.0",
+    "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",
-    "semver": "^6.1.2",
+    "semver": "^6.2.0",
     "serialize-javascript": "^1.7.0",
     "signal-exit": "^3.0.2",
     "ua-parser-js": "^0.7.20"

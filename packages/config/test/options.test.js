@@ -92,6 +92,7 @@ describe('config: options', () => {
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
+      unsafeInlineCompatiblity: false,
       allowedSources: true,
       policies: undefined,
       reportOnly: false,

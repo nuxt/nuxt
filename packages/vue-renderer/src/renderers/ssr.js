@@ -121,7 +121,7 @@ export default class SSRRenderer extends BaseRenderer {
     if (csp) {
       // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
       const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
-      if (!containsUnsafeInlineScriptSrc) {
+      if (csp.unsafeInlineCompatiblity || !containsUnsafeInlineScriptSrc) {
         const hash = crypto.createHash(csp.hashAlgorithm)
         hash.update(serializedSession)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)

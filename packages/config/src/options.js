@@ -220,6 +220,7 @@ export function getNuxtConfig(_options) {
       allowedSources: undefined,
       policies: undefined,
       addMeta: Boolean(options._generate),
+      unsafeInlineCompatiblity: false,
       reportOnly: options.debug
     })
   }
