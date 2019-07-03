@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import DoughnutChart from '~/components/doughnut-chart'
 import axios from 'axios'
+import DoughnutChart from '~/components/doughnut-chart'
 
 function getRandomColor() {
   const letters = '0123456789ABCDEF'

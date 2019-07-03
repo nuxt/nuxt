@@ -13,7 +13,7 @@ describe('route-name-splitter', () => {
       routerFile = routerFile
         .slice(routerFile.indexOf('routes: ['))
         .replace('routes: [', '[')
-        .replace(/ _[0-9A-z]+,/g, ' "",')
+        .replace(/ _[0-9A-Za-z]+,/g, ' "",')
       routerFile = routerFile.substr(
         routerFile.indexOf('['),
         routerFile.lastIndexOf(']') + 1

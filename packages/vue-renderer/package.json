@@ -8,13 +8,13 @@
   ],
   "main": "dist/vue-renderer.js",
   "dependencies": {
-    "@nuxt/devalue": "^1.2.3",
+    "@nuxt/devalue": "^1.2.4",
     "@nuxt/utils": "2.8.1",
-    "consola": "^2.8.0",
-    "fs-extra": "^8.0.1",
+    "consola": "^2.9.0",
+    "fs-extra": "^8.1.0",
     "lru-cache": "^5.1.1",
     "vue": "^2.6.10",
-    "vue-meta": "^1.6.0",
+    "vue-meta": "^2.0.4",
     "vue-server-renderer": "^2.6.10"
   },
   "publishConfig": {
