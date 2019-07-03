@@ -10,28 +10,32 @@ exports[`cli/command builds help text 1`] = `
 
   Options:
 
-    --spa, -s          Launch in SPA mode
-    --universal, -u    Launch in Universal
-                       mode (default)
-    --config-file, -c  Path to Nuxt.js
-                       config file (default: nuxt.config)
-    --modern, -m       Build/Start app for
-                       modern browsers, e.g. server, client and
-                       false
-    --force-exit       Whether Nuxt.js
-                       should force exit after the command has
-                       finished
-    --version, -v      Display the Nuxt
-                       version
-    --help, -h         Display this message
-    --port, -p         Port number on which
-                       to start the application
-    --hostname, -H     Hostname on which to
-                       start the application
-    --unix-socket, -n  Path to a UNIX socket
-    --foo              very long option that
-                       is longer than the terminal width and
-                       should wrap to the next line
+    --spa, -s            Launch in SPA mode
+    --universal, -u      Launch in Universal
+                         mode (default)
+    --config-file, -c    Path to Nuxt.js
+                         config file (default: nuxt.config)
+    --modern, -m         Build/Start app for
+                         modern browsers, e.g. server, client and
+                         false
+    --force-exit         Whether Nuxt.js
+                         should force exit after the command has
+                         finished
+    --version, -v        Display the Nuxt
+                         version
+    --help, -h           Display this
+                         message
+    --no-loading-screen  Disable the loading
+                         screen (default: false)
+    --port, -p           Port number on
+                         which to start the application
+    --hostname, -H       Hostname on which
+                         to start the application
+    --unix-socket, -n    Path to a UNIX
+                         socket
+    --foo                very long option
+                         that is longer than the terminal width
+                         and should wrap to the next line
 
 "
 `;

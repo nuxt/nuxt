@@ -45,9 +45,9 @@ export default {
     type: 'boolean',
     description: 'Display this message'
   },
-  'loading-screen': {
+  'no-loading-screen': {
     type: 'boolean',
-    default: true,
-    description: 'Show the loading screen (default: true)'
+    default: false,
+    description: 'Disable the loading screen (default: false)'
   }
 }
