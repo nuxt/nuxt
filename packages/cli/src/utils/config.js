@@ -74,5 +74,7 @@ export async function loadNuxtConfig(argv) {
     socket: argv['unix-socket'] || undefined
   }, options.server || {}, getDefaultNuxtConfig().server)
 
+  options.loadingScreen = !!argv['loading-screen']
+
   return options
 }
