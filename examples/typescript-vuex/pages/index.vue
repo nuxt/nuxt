@@ -19,8 +19,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import Card from '~/components/Card.vue'
 import { namespace } from 'vuex-class'
+import Card from '~/components/Card.vue'
 
 import * as people from '~/store/modules/people'
 

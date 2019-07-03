@@ -41,7 +41,9 @@ export default () => ({
     },
     css: {},
     cssModules: {
-      localIdentName: '[local]_[hash:base64:5]'
+      modules: {
+        localIdentName: '[local]_[hash:base64:5]'
+      }
     },
     less: {},
     sass: {
