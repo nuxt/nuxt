@@ -2,7 +2,7 @@
 ** From https://github.com/egoist/vue-no-ssr
 ** With the authorization of @egoist
 */
-import NoSsr from 'vue-no-ssr'
+import NoSsr from 'vue-client-only'
 export default {
   ...NoSsr,
   name: 'NoSsr',
