@@ -369,7 +369,7 @@ export function getNuxtConfig(_options) {
   }
 
   // Add loading screen
-  if (options.dev && options.loadingScreen) {
+  if (options.dev) {
     options.devModules.push('@nuxt/loading-screen')
     // Disable build indicator for programmatic users
     if (!options._cli) {
