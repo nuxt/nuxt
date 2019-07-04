@@ -7,6 +7,6 @@ jest.mock('../../package.json', () => ({
 describe('run in edge', () => {
   test('throws error if nuxt and nuxt-edge are installed', async () => {
     await expect(run())
-      .rejects.toThrow('nuxt and nuxt-edge are installed at same time, please remove the unused one')
+      .rejects.toThrow('Both `nuxt` and `nuxt-edge` are installed! This is unsupported, please choose one and remove the other one from dependencies.')
   })
 })
