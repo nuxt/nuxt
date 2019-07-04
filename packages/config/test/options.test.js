@@ -243,11 +243,6 @@ describe('config: options', () => {
       const config = getNuxtConfig({ dev: true })
       expect(config.devModules).toStrictEqual(['@nuxt/loading-screen'])
     })
-
-    test('should not add loading screen', () => {
-      const config = getNuxtConfig({ dev: true, loadingScreen: false })
-      expect(config.devModules).toStrictEqual([])
-    })
   })
 })
 
