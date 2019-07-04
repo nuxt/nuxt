@@ -31,8 +31,8 @@
     "test:unit": "jest test/unit packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
+    "@babel/core": "^7.5.0",
+    "@babel/preset-env": "^7.5.0",
     "@nuxtjs/eslint-config": "^0.0.1",
     "@vue/server-test-utils": "^1.0.0-beta.29",
     "@vue/test-utils": "^1.0.0-beta.29",
@@ -72,7 +72,7 @@
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "rimraf": "^2.6.3",
-    "rollup": "^1.16.4",
+    "rollup": "^1.16.5",
     "rollup-plugin-alias": "^1.5.2",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.0.1",
