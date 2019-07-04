@@ -28,9 +28,7 @@ export default {
 
   async startDev(cmd, argv) {
     try {
-      const nuxt = await this._startDev(cmd, argv)
-
-      return nuxt
+      return await this._startDev(cmd, argv)
     } catch (error) {
       consola.error(error)
     }
@@ -47,6 +45,28 @@ export default {
     // Wait for nuxt to be ready
     await nuxt.ready()
 
+    if (config.loadingScreen) {
+      this.listen(nuxt, argv)
+    }
+
+    // Create builder instance
+    const builder = await cmd.getBuilder(nuxt)
+
+    // Start Build
+    await builder.build()
+
+    if (!config.loadingScreen) {
+      this.listen(nuxt, argv)
+    }
+
+    // Print memory usage
+    showMemoryUsage()
+
+    // Return instance
+    return nuxt
+  },
+
+  async listen(nuxt, argv) {
     // Start listening
     await nuxt.server.listen()
 
@@ -59,18 +79,6 @@ export default {
       const openerPromises = nuxt.server.listeners.map(listener => opener(listener.url))
       await Promise.all(openerPromises)
     }
-
-    // Create builder instance
-    const builder = await cmd.getBuilder(nuxt)
-
-    // Start Build
-    await builder.build()
-
-    // Print memory usage
-    showMemoryUsage()
-
-    // Return instance
-    return nuxt
   },
 
   logChanged({ event, path }) {

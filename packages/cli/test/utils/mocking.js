@@ -69,7 +69,9 @@ export const mockGetNuxtStart = (ssr) => {
 }
 
 export const mockGetNuxtConfig = () => {
-  const spy = jest.fn()
+  const spy = jest.fn(() => {
+    return {}
+  })
   Command.prototype.getNuxtConfig = spy
   return spy
 }

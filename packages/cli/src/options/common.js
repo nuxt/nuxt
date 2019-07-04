@@ -44,10 +44,5 @@ export default {
     alias: 'h',
     type: 'boolean',
     description: 'Display this message'
-  },
-  'no-loading-screen': {
-    type: 'boolean',
-    default: false,
-    description: 'Disable the loading screen (default: false)'
   }
 }
