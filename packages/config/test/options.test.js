@@ -238,10 +238,12 @@ describe('config: options', () => {
     })
   })
 
-  describe('config: loading screen', () => {
+  describe('loading screen', () => {
     test('should add loading screen', () => {
       const config = getNuxtConfig({ dev: true })
-      expect(config.devModules).toStrictEqual(['@nuxt/loading-screen'])
+      expect(config.devModules).toEqual(
+        expect.arrayContaining(['@nuxt/loading-screen'])
+      )
     })
   })
 })
