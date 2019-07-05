@@ -186,12 +186,12 @@ describe('util: route', () => {
     const pagesDir = 'pages'
 
     test.posix('createRoutes should allow snake case routes in posix system', () => {
-      const routesResult = createRoutes(files, srcDir, pagesDir)
+      const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
 
     test.win('createRoutes should allow snake case routes in windows system', () => {
-      const routesResult = createRoutes(files, srcDir, pagesDir)
+      const routesResult = createRoutes({ files, srcDir, pagesDir })
       expect(routesResult).toMatchSnapshot()
     })
   })

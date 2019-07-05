@@ -47,7 +47,7 @@ module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
 
-  const modern = !!options.modern
+  const modern = Boolean(options.modern)
 
   const {
     polyfills: userPolyfills,
@@ -129,7 +129,7 @@ module.exports = (context, options = {}) => {
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : corejs,
+    corejs: false,
     helpers: useBuiltIns === 'usage',
     useESModules: buildTarget !== 'server',
     absoluteRuntime

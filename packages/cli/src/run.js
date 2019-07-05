@@ -1,10 +1,21 @@
 import fs from 'fs'
+import path from 'path'
 import execa from 'execa'
+import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
 
+function checkDuplicateNuxt() {
+  const dupPkg = pkgName === '@nuxt/cli' ? 'cli-edge' : 'cli'
+  if (fs.existsSync(path.resolve(__dirname, '..', '..', dupPkg))) {
+    throw new Error('Both `nuxt` and `nuxt-edge` are installed! This is unsupported, please choose one and remove the other one from dependencies.')
+  }
+}
+
 export default async function run(_argv) {
+  checkDuplicateNuxt()
+
   // Read from process.argv
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
@@ -33,7 +44,7 @@ export default async function run(_argv) {
       stdin: process.stdin
     })
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error.exitCode === 2) {
       throw String(`Command not found: nuxt-${argv[0]}`)
     }
     throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)

@@ -6,7 +6,8 @@ import ModuleContainer from '../src/module'
 
 jest.mock('fs', () => ({
   existsSync: Boolean,
-  closeSync: Boolean
+  closeSync: Boolean,
+  realpath: jest.fn()
 }))
 
 jest.mock('hash-sum', () => src => `hash(${src})`)

@@ -42,7 +42,7 @@
 - Code splitting for every `pages/`
 - Loading just the critical CSS (page-level)
 
-Learn more at [nuxtjs.org](https://nuxtjs.org).
+Learn more at <https://nuxtjs.org>.
 
 ## Consulting from the Nuxt team
 
@@ -58,25 +58,25 @@ Tidelift gives software development teams a single source for purchasing and mai
 
 ## Partners
 
-Become a partner and get your logo on our README on GitHub and every page of https://nuxtjs.org website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
+Become a partner and get your logo on our README on GitHub and every page of <https://nuxtjs.org> website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
 
-<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false" /></a>
+[![Open Collective Partners][partners-src]][partners-href]
 
 ## Sponsors
 
 Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
 
-<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false" /></a>
+[![Open Collective Sponsors][sponsors-src]][sponsors-href]
 
 ## Backers
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
 
-<a href="https://opencollective.com/nuxtjs#contributors"><img src="https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false" /></a>
+[![Open Collective Sponsors][backers-src]][backers-href]
 
 ## Getting started
 
-```
+```sh
 $ npx create-nuxt-app <project-name>
 ```
 
@@ -87,6 +87,7 @@ It's as simple as that!
 :point_right: We recommend to start directly with our cli [create-nuxt-app](https://github.com/nuxt-community/create-nuxt-app) for the latest updates.
 
 Or you can start by using one of our starter templates:
+
 - [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
 - [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
 - [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
@@ -113,7 +114,7 @@ if (config.dev) {
 // You can use nuxt.render(req, res) or nuxt.renderRoute(route, context)
 ```
 
-Learn more: https://nuxtjs.org/api/nuxt
+Learn more: <https://nuxtjs.org/api/nuxt>
 
 ## Using nuxt.js as a middleware
 
@@ -123,7 +124,7 @@ You might want to use your own server with your configurations, your API and eve
 app.use(nuxt.render)
 ```
 
-Learn more: https://nuxtjs.org/api/nuxt-render
+Learn more: <https://nuxtjs.org/api/nuxt-render>
 
 ## Render a specific route
 
@@ -144,11 +145,11 @@ nuxt.renderRoute('/about', context)
 })
 ```
 
-Learn more: https://nuxtjs.org/api/nuxt-render-route
+Learn more: <https://nuxtjs.org/api/nuxt-render-route>
 
 ## Examples
 
-Please take a look at https://nuxtjs.org/examples or directly in https://github.com/nuxt/nuxt.js/tree/dev/examples.
+Please take a look at <https://nuxtjs.org/examples> or directly in <https://github.com/nuxt/nuxt.js/tree/dev/examples>.
 
 ## Production deployment
 
@@ -160,6 +161,7 @@ nuxt start
 ```
 
 For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like follows is recommended:
+
 ```json
 {
   "name": "my-app",
@@ -173,6 +175,7 @@ For example, to deploy with [`now`](https://zeit.co/now) a `package.json` like f
   }
 }
 ```
+
 Then run `now` and enjoy!
 
 Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
@@ -181,16 +184,15 @@ Note: we recommend putting `.nuxt` in `.npmignore` or `.gitignore`.
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-| [<img src="https://avatars2.githubusercontent.com/u/904724?v=4" width="120px;"/><br /><sub><b>Sébastien Chopin</b></sub>](https://github.com/atinux)<br />[📝](#blog-Atinux "Blogposts") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3AAtinux "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Code") [🎨](#design-Atinux "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=Atinux "Documentation") [💬](#question-Atinux "Answering Questions") [👀](#review-Atinux "Reviewed Pull Requests") [📢](#talk-Atinux "Talks") | [<img src="https://avatars2.githubusercontent.com/u/4084277?v=4" width="120px;"/><br /><sub><b>Alexandre Chopin</b></sub>](https://github.com/alexchopin)<br />[🎨](#design-alexchopin "Design") [📖](https://github.com/Atinux/Nuxt.js/commits?author=alexchopin "Documentation") [📋](#eventOrganizing-alexchopin "Event Organizing") [📦](#platform-alexchopin "Packaging/porting to new platform") [💬](#question-alexchopin "Answering Questions") [📢](#talk-alexchopin "Talks") | [<img src="https://avatars0.githubusercontent.com/u/5158436?v=4" width="120px;"/><br /><sub><b>Pooya Parsa</b></sub>](https://github.com/pi0)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Api0 "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=pi0 "Code") [🔌](#plugin-pi0 "Plugin/utility libraries") [💬](#question-pi0 "Answering Questions") [👀](#review-pi0 "Reviewed Pull Requests") [🔧](#tool-pi0 "Tools") | [<img src="https://avatars3.githubusercontent.com/u/4312154?v=4" width="120px;"/><br /><sub><b>Clark Du</b></sub>](https://github.com/clarkdo)<br />[🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Aclarkdo "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Code") [💡](#example-clarkdo "Examples") [👀](#review-clarkdo "Reviewed Pull Requests") [⚠️](https://github.com/Atinux/Nuxt.js/commits?author=clarkdo "Tests") [🔧](#tool-clarkdo "Tools") |
-| :---: | :---: | :---: | :---: |
-| [<img src="https://avatars0.githubusercontent.com/u/640208?s=460&v=4" width="120px;"/><br /><sub><b>Alexander Lichter</b></sub>](https://github.com/manniL)<br />[💬](#question-manniL "Answering Questions") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3AmanniL "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=manniL "Code") [💡](#example-manniL "Examples") [👀](#review-manniL "Reviewed Pull Requests") [⚠️](https://github.com/Atinux/Nuxt.js/commits?author=manniL "Tests") | [<img src="https://avatars1.githubusercontent.com/u/12291?s=460&v=4" width="120px;"/><br /><sub><b>Jonas Galvez</b></sub>](https://github.com/galvez)<br />[💬](#question-galvez "Answering Questions") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Agalvez "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=galvez "Code") [💡](#example-galvez "Examples") [👀](#review-galvez "Reviewed Pull Requests") [⚠️](https://github.com/Atinux/Nuxt.js/commits?author=galvez "Tests") | [<img src="https://avatars2.githubusercontent.com/u/571159?v=4" width="120px;"/><br /><sub><b>Dmitry Molotkov</b></sub>](https://github.com/aldarund)<br />[💬](#question-aldarund "Answering Questions") [🐛](https://github.com/Atinux/Nuxt.js/issues?q=author%3Aaldarund "Bug reports") [💻](https://github.com/Atinux/Nuxt.js/commits?author=aldarund "Code") [🤔](#ideas-aldarund "Ideas, Planning, & Feedback") [👀](#review-aldarund "Reviewed Pull Requests") | [<img src="https://avatars2.githubusercontent.com/u/25272043?v=4" width="120px;"/><br /><sub><b>Kevin Marrec</b></sub>](https://github.com/kevinmarrec)<br />[💻](https://github.com/Atinux/Nuxt.js/commits?author=kevinmarrec "Code") [🤔](#ideas-kevinmarrec "Ideas, Planning, & Feedback") [📦](#platform-kevinmarrec "Packaging/porting to new platform") [👀](#review-kevinmarrec "Reviewed Pull Requests") |
+<table><tr><td align="center"><a href="https://github.com/atinux"><img src="https://avatars2.githubusercontent.com/u/904724?v=4" width="120px;" alt="Sébastien Chopin"/><br /><sub><b>Sébastien Chopin</b></sub></a><br /><a href="#blog-Atinux" title="Blogposts">📝</a> <a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3AAtinux" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=Atinux" title="Code">💻</a> <a href="#design-Atinux" title="Design">🎨</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=Atinux" title="Documentation">📖</a> <a href="#question-Atinux" title="Answering Questions">💬</a> <a href="#review-Atinux" title="Reviewed Pull Requests">👀</a> <a href="#talk-Atinux" title="Talks">📢</a></td><td align="center"><a href="https://github.com/alexchopin"><img src="https://avatars2.githubusercontent.com/u/4084277?v=4" width="120px;" alt="Alexandre Chopin"/><br /><sub><b>Alexandre Chopin</b></sub></a><br /><a href="#design-alexchopin" title="Design">🎨</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=alexchopin" title="Documentation">📖</a> <a href="#eventOrganizing-alexchopin" title="Event Organizing">📋</a> <a href="#platform-alexchopin" title="Packaging/porting to new platform">📦</a> <a href="#question-alexchopin" title="Answering Questions">💬</a> <a href="#talk-alexchopin" title="Talks">📢</a></td><td align="center"><a href="https://github.com/pi0"><img src="https://avatars0.githubusercontent.com/u/5158436?v=4" width="120px;" alt="Pooya Parsa"/><br /><sub><b>Pooya Parsa</b></sub></a><br /><a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3Api0" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=pi0" title="Code">💻</a> <a href="#plugin-pi0" title="Plugin/utility libraries">🔌</a> <a href="#question-pi0" title="Answering Questions">💬</a> <a href="#review-pi0" title="Reviewed Pull Requests">👀</a> <a href="#tool-pi0" title="Tools">🔧</a></td><td align="center"><a href="https://github.com/clarkdo"><img src="https://avatars3.githubusercontent.com/u/4312154?v=4" width="120px;" alt="Clark Du"/><br /><sub><b>Clark Du</b></sub></a><br /><a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3Aclarkdo" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=clarkdo" title="Code">💻</a> <a href="#example-clarkdo" title="Examples">💡</a> <a href="#review-clarkdo" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=clarkdo" title="Tests">⚠️</a> <a href="#tool-clarkdo" title="Tools">🔧</a></td></tr><tr><td align="center"><a href="https://github.com/manniL"><img src="https://avatars0.githubusercontent.com/u/640208?s=460&v=4" width="120px;" alt="Alexander Lichter"/><br /><sub><b>Alexander Lichter</b></sub></a><br /><a href="#question-manniL" title="Answering Questions">💬</a> <a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3AmanniL" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=manniL" title="Code">💻</a> <a href="#example-manniL" title="Examples">💡</a> <a href="#review-manniL" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=manniL" title="Tests">⚠️</a></td><td align="center"><a href="https://github.com/galvez"><img src="https://avatars1.githubusercontent.com/u/12291?s=460&v=4" width="120px;" alt="Jonas Galvez"/><br /><sub><b>Jonas Galvez</b></sub></a><br /><a href="#question-galvez" title="Answering Questions">💬</a> <a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3Agalvez" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=galvez" title="Code">💻</a> <a href="#example-galvez" title="Examples">💡</a> <a href="#review-galvez" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=galvez" title="Tests">⚠️</a></td><td align="center"><a href="https://github.com/aldarund"><img src="https://avatars2.githubusercontent.com/u/571159?v=4" width="120px;" alt="Dmitry Molotkov"/><br /><sub><b>Dmitry Molotkov</b></sub></a><br /><a href="#question-aldarund" title="Answering Questions">💬</a> <a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3Aaldarund" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=aldarund" title="Code">💻</a> <a href="#ideas-aldarund" title="Ideas, Planning, & Feedback">🤔</a> <a href="#review-aldarund" title="Reviewed Pull Requests">👀</a></td><td align="center"><a href="https://github.com/kevinmarrec"><img src="https://avatars2.githubusercontent.com/u/25272043?v=4" width="120px;" alt="Kevin Marrec"/><br /><sub><b>Kevin Marrec</b></sub></a><br /><a href="https://github.com/Atinux/Nuxt.js/commits?author=kevinmarrec" title="Code">💻</a> <a href="#ideas-kevinmarrec" title="Ideas, Planning, & Feedback">🤔</a> <a href="#platform-kevinmarrec" title="Packaging/porting to new platform">📦</a> <a href="#review-kevinmarrec" title="Reviewed Pull Requests">👀</a></td></tr><tr><td align="center"><a href="https://github.com/pimlie"><img src="https://avatars3.githubusercontent.com/u/1067403?v=4" width="120px;" alt="Pim"/><br /><sub><b>Pim</b></sub></a><br /><a href="https://github.com/Atinux/Nuxt.js/issues?q=author%3Apimlie" title="Bug reports">🐛</a> <a href="https://github.com/Atinux/Nuxt.js/commits?author=pimlie" title="Code">💻</a></td></tr></table>
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Contributors
 
 Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
 
-<a href="https://github.com/nuxt/nuxt.js/graphs/contributors"><img src="https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false" /></a>
+[![Nuxt.js Contributors][contributors-src]][contributors-href]
 
 ## Contributing
 
@@ -202,7 +204,6 @@ Thanks to BrowserStack!
 
 <a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
 
-
 ## Security
 
 If you discover a security vulnerability regarding Nuxt.js, please send an e-mail to the team via security@nuxtjs.org! All security vulnerabilities will be promptly addressed.
@@ -210,3 +211,13 @@ If you discover a security vulnerability regarding Nuxt.js, please send an e-mai
 ## License
 
 [MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE)
+
+<!-- Open Collective Tiers -->
+[partners-src]: https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false
+[partners-href]: https://opencollective.com/nuxtjs#contributors
+[sponsors-src]: https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false
+[sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[backers-src]: https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false
+[backers-href]: https://opencollective.com/nuxtjs#contributors
+[contributors-src]: https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false
+[contributors-href]: https://github.com/nuxt/nuxt.js/graphs/contributors

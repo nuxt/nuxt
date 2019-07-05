@@ -52,13 +52,24 @@ export default class VueSSRClientPlugin {
       stats.modules.forEach((m) => {
         // Ignore modules duplicated in multiple chunks
         if (m.chunks.length === 1) {
-          const cid = m.chunks[0]
+          const [cid] = m.chunks
           const chunk = stats.chunks.find(c => c.id === cid)
           if (!chunk || !chunk.files) {
             return
           }
           const id = m.identifier.replace(/\s\w+$/, '') // remove appended hash
           const files = manifest.modules[hash(id)] = chunk.files.map(fileToIndex)
+
+          // In production mode, modules may be concatenated by scope hoisting
+          // Include ConcatenatedModule for not losing module-component mapping
+          if (Array.isArray(m.modules)) {
+            for (const concatenatedModule of m.modules) {
+              const id = hash(concatenatedModule.identifier.replace(/\s\w+$/, ''))
+              if (!manifest.modules[id]) {
+                manifest.modules[id] = files
+              }
+            }
+          }
 
           // Find all asset modules associated with the same chunk
           assetModules.forEach((m) => {

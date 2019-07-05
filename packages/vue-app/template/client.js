@@ -18,6 +18,11 @@ import {
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.<%= router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+<% if (isDev) { %>import consola from 'consola'<% } %>
+
+<% if (isDev) { %>consola.wrapConsole()
+console.log = console.__log
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -36,6 +41,15 @@ const NUXT = window.<%= globals.context %> || {}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
+<% if (nuxtOptions.render.ssrLog) { %>
+const logs = NUXT.logs || []
+if (logs.length > 0) {
+  console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt SSR Logs", 'font-size: 110%')
+  logs.forEach(logObj => consola[logObj.type](logObj))
+  delete NUXT.logs
+  console.groupEnd()
+}
+<% } %>
 <% if (debug) { %>
 // Setup global Vue error handler
 if (!Vue.config.$nuxt) {
@@ -78,13 +92,7 @@ Vue.config.$nuxt.<%= globals.nuxt %> = true
 const errorHandler = Vue.config.errorHandler || console.error
 
 // Create and mount App
-createApp()
-  .then(mountApp)
-  .catch((err) => {
-    const wrapperError = new Error(err)
-    wrapperError.message = '[nuxt] Error while mounting app: ' + wrapperError.message
-    errorHandler(wrapperError)
-  })
+createApp().then(mountApp).catch(errorHandler)
 
 function componentOption(component, key, ...args) {
   if (!component || !component.options || !component.options[key]) {
@@ -121,7 +129,7 @@ function mapTransitions(Components, to, from) {
 
 async function loadAsyncComponents(to, from, next) {
   // Check if route path changed (this._pathChanged), only if the page is not an error (for validate())
-  this._pathChanged = !!app.nuxt.err || from.path !== to.path
+  this._pathChanged = Boolean(app.nuxt.err) || from.path !== to.path
   this._queryChanged = JSON.stringify(to.query) !== JSON.stringify(from.query)
   this._diffQuery = (this._queryChanged ? getQueryDiff(to.query, from.query) : [])
 
@@ -260,7 +268,7 @@ async function render(to, from, next) {
     next: _next.bind(this)
   })
   this._dateLastError = app.nuxt.dateErr
-  this._hadError = !!app.nuxt.err
+  this._hadError = Boolean(app.nuxt.err)
 
   // Get route's matched components
   const matches = []
@@ -369,7 +377,7 @@ async function render(to, from, next) {
         Component.options.asyncData &&
         typeof Component.options.asyncData === 'function'
       )
-      const hasFetch = !!Component.options.fetch
+      const hasFetch = Boolean(Component.options.fetch)
       <% if (loading) { %>
       const loadingIncrease = (hasAsyncData && hasFetch) ? 30 : 45
       <% } %>
@@ -477,13 +485,13 @@ function showNextPage(to) {
 function fixPrepatch(to, ___) {
   if (this._pathChanged === false && this._queryChanged === false) return
 
-  Vue.nextTick(() => {
-    const matches = []
-    const instances = getMatchedComponentsInstances(to, matches)
-    const Components = getMatchedComponents(to, matches)
+  const matches = []
+  const instances = getMatchedComponentsInstances(to, matches)
+  const Components = getMatchedComponents(to, matches)
 
+  Vue.nextTick(() => {
     instances.forEach((instance, i) => {
-      if (!instance) return
+      if (!instance || instance._isDestroyed) return
       // if (
       //   !this._queryChanged &&
       //   to.matched[matches[i]].path.indexOf(':') === -1 &&
@@ -499,6 +507,11 @@ function fixPrepatch(to, ___) {
         for (const key in newData) {
           Vue.set(instance.$data, key, newData[key])
         }
+
+        // Ensure to trigger scroll event after calling scrollBehavior
+        window.<%= globals.nuxt %>.$nextTick(() => {
+          window.<%= globals.nuxt %>.$emit('triggerScroll')
+        })
       }
     })
     showNextPage.call(this, to)

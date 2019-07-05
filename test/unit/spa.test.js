@@ -138,6 +138,22 @@ describe('spa', () => {
     consola.log.mockClear()
   })
 
+  test('render:route hook does not corrupt the cache', async () => {
+    const window1 = await nuxt.server.renderAndGetWindow(url('/'))
+    const html1 = window1.document.body.innerHTML
+    expect(html1).toContain('extra html from render:route hook')
+    expect(html1.match(/render:route/g).length).toBe(1)
+
+    window1.close()
+
+    const window2 = await nuxt.server.renderAndGetWindow(url('/'))
+    const html2 = window2.document.body.innerHTML
+    expect(html2).toContain('extra html from render:route hook')
+    expect(html2.match(/render:route/g).length).toBe(1)
+
+    window2.close()
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

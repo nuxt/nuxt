@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const boxen = require('boxen').default
+const boxen = require('boxen')
 const chalk = require('chalk').default
 
 const warningBox = boxen([

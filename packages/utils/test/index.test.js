@@ -8,6 +8,7 @@ import * as serialize from '../src/serialize'
 import * as task from '../src/task'
 import * as timer from '../src/timer'
 import * as cjs from '../src/cjs'
+import * as modern from '../src/modern'
 
 describe('util: entry', () => {
   test('should export all methods from utils folder', () => {
@@ -20,7 +21,8 @@ describe('util: entry', () => {
       ...serialize,
       ...task,
       ...timer,
-      ...cjs
+      ...cjs,
+      ...modern
     })
   })
 })

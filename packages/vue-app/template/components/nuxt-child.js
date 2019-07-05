@@ -48,21 +48,33 @@ export default {
       window.<%= globals.nuxt %>.$nextTick(() => {
         window.<%= globals.nuxt %>.$emit('triggerScroll')
       })
-      if (beforeEnter) return beforeEnter.call(_parent, el)
+      if (beforeEnter) {
+        return beforeEnter.call(_parent, el)
+      }
     }
 
-    let routerView = [
-      h('router-view', data)
-    ]
-    if (props.keepAlive) {
-      routerView = [
-        h('keep-alive', { props: props.keepAliveProps }, routerView)
-      ]
+    // make sure that leave is called asynchronous (fix #5703)
+    if (transition.css === false) {
+      const leave = listeners.leave
+      listeners.leave = (el, done) => {
+        if (leave) {
+          leave.call(_parent, el)
+        }
+
+        _parent.$nextTick(done)
+      }
     }
+
+    let routerView = h('routerView', data)
+
+    if (props.keepAlive) {
+      routerView = h('keep-alive', { props: props.keepAliveProps }, [routerView])
+    }
+
     return h('transition', {
       props: transitionProps,
       on: listeners
-    }, routerView)
+    }, [routerView])
   }
 }
 

@@ -125,9 +125,16 @@ const scrollBehavior = function (to, from, savedPosition) {
     position = savedPosition
   }
 
+  const nuxt = window.<%= globals.nuxt %>
+
+  // triggerScroll is only fired when a new component is loaded
+  if (to.path === from.path && to.hash !== from.hash) {
+    nuxt.$nextTick(() => nuxt.$emit('triggerScroll'))
+  }
+
   return new Promise((resolve) => {
     // wait for the out transition to complete (if necessary)
-    window.<%= globals.nuxt %>.$once('triggerScroll', () => {
+    nuxt.$once('triggerScroll', () => {
       // coords will be used if no selector is provided,
       // or if the selector didn't match any element.
       if (to.hash) {

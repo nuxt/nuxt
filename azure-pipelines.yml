@@ -20,9 +20,15 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-    set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:fixtures -i
+    set JEST_JUNIT_OUTPUT_NAME=fixtures.xml && set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:fixtures -i
   displayName: 'Test: Build Fixtures'
 
 - script: |
-    set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:unit -w=2
+    set JEST_JUNIT_OUTPUT_NAME=unit.xml && set NODE_OPTIONS=--max_old_space_size=4096 && yarn test:unit -w=2
   displayName: 'Test: Run unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'reports/junit/*'
+  displayName: 'Publish test results to Azure Pipelines'

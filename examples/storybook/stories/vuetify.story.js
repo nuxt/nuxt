@@ -1,8 +1,7 @@
 import { storiesOf } from '@storybook/vue'
 
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
-
 import Centered from '@storybook/addon-centered'
+import VuetifyLogo from '~/components/VuetifyLogo.vue'
 
 storiesOf('Vuetify/Logo', module)
   .addDecorator(Centered)

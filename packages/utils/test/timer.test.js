@@ -94,7 +94,7 @@ describe('util: timer', () => {
       process.hrtime = hrtime
     })
 
-    if (BigInt) {
+    if (typeof BigInt !== 'undefined') {
       test('should calculate duration with bigint hrtime', () => {
         const timer = new Timer()
         const hrtime = process.hrtime

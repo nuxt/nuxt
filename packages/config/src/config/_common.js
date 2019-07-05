@@ -43,6 +43,7 @@ export default () => ({
   },
   extensions: [],
   styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
+  alias: {},
 
   // Ignores
   ignorePrefix: '-',
@@ -66,7 +67,7 @@ export default () => ({
   // Watch
   watch: [],
   watchers: {
-    rewatchOnRawEvents: env.linux ? ['rename'] : undefined,
+    rewatchOnRawEvents: undefined,
     webpack: {},
     chokidar: {
       ignoreInitial: true

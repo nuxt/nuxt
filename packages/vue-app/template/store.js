@@ -3,20 +3,19 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
-const log = console // on server-side, consola will catch all console.log
 const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
 let store = {}
 
 void (function updateModules() {
   <% storeModules.some(s => {
     if(s.src.indexOf('index.') === 0) { %>
-  store = normalizeRoot(require('@/<%= dir.store %>/<%= s.src %>'), '<%= dir.store %>/<%= s.src %>')
+  store = normalizeRoot(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= dir.store %>/<%= s.src %>')
   <% return true }}) %>
 
   // If store is an exported method = classic mode (deprecated)
   <% if (isDev) { %>
   if (typeof store === 'function') {
-    return log.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
+    return console.warn('Classic mode for store/ is deprecated and will be removed in Nuxt 3.')
   }<% } %>
 
   // Enforce store modules
@@ -24,14 +23,14 @@ void (function updateModules() {
 
   <% storeModules.forEach(s => {
     if(s.src.indexOf('index.') !== 0) { %>
-  resolveStoreModules(require('@/<%= dir.store %>/<%= s.src %>'), '<%= s.src %>')<% }}) %>
+  resolveStoreModules(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= s.src %>')<% }}) %>
 
   // If the environment supports hot reloading...
   <% if (isDev) { %>
   if (process.client && module.hot) {
     // Whenever any Vuex module is updated...
     module.hot.accept([<% storeModules.forEach(s => { %>
-      '@/<%= dir.store %>/<%= s.src %>',<% }) %>
+      '<%= relativeToBuild(srcDir, dir.store, s.src) %>',<% }) %>
     ], () => {
       // Update `root.modules` with the latest definitions.
       updateModules()
@@ -104,7 +103,7 @@ function normalizeRoot(moduleData, filePath) {
 
 function normalizeState(moduleData, filePath) {
   if (typeof moduleData !== 'function') {
-    log.warn(`${filePath} should export a method that returns an object`)
+    console.warn(`${filePath} should export a method that returns an object`)
     const state = Object.assign({}, moduleData)
     return () => state
   }
@@ -113,7 +112,7 @@ function normalizeState(moduleData, filePath) {
 
 function normalizeModule(moduleData, filePath) {
   if (moduleData.state && typeof moduleData.state !== 'function') {
-    log.warn(`'state' should be a method that returns an object in ${filePath}`)
+    console.warn(`'state' should be a method that returns an object in ${filePath}`)
     const state = Object.assign({}, moduleData.state)
     // Avoid TypeError: setting a property that has only a getter when overwriting top level keys
     moduleData = Object.assign({}, moduleData, { state: () => state })

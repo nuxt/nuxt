@@ -7,9 +7,10 @@ const config: NuxtConfiguration = {
         manualInject: true
       },
       css: {
-        modules: true,
-        importLoaders: 1,
-        localIdentName: '[local]_[hash:base64:5]'
+        modules: {
+          localIdentName: '[local]_[hash:base64:5]'
+        },
+        importLoaders: 1
       }
     }
   }

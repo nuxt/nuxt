@@ -9,7 +9,7 @@ import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './l
 import { NuxtConfigurationModule } from './module'
 import { NuxtConfigurationPlugin } from './plugin'
 import { NuxtConfigurationRender } from './render'
-import { NuxtConfigurationRouter } from './router'
+import { NuxtConfigurationRouter, NuxtRouteConfig } from './router'
 import { NuxtConfigurationServer } from './server'
 import { NuxtConfigurationServerMiddleware } from './server-middleware'
 import { NuxtConfigurationVueConfiguration } from './vue-configuration'
@@ -37,6 +37,7 @@ export default interface NuxtConfiguration extends ExtendableConfiguration {
   mode?: 'spa' | 'universal' // TBR (To Be Reviewed) - should be a `NuxtMode` interface which should be used in @nuxt/vue-app/types/process.d.ts as well
   modern?: 'client' | 'server' | boolean
   modules?: NuxtConfigurationModule[]
+  devModules?: NuxtConfigurationModule[]
   modulesDir?: string[]
   plugins?: NuxtConfigurationPlugin[]
   render?: NuxtConfigurationRender
@@ -65,6 +66,7 @@ export {
   NuxtConfigurationPlugin as Plugin,
   NuxtConfigurationRender as Render,
   NuxtConfigurationRouter as Router,
+  NuxtRouteConfig as RouteConfig,
   NuxtConfigurationServer as Server,
   NuxtConfigurationServerMiddleware as ServerMiddleware,
   NuxtConfigurationVueConfiguration as VueConfiguration,

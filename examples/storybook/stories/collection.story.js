@@ -1,4 +1,3 @@
-/* eslint-disable react/react-in-jsx-scope */
 import Vuex from 'vuex'
 import { storiesOf } from '@storybook/vue'
 import { action } from '@storybook/addon-actions'
@@ -226,5 +225,3 @@ storiesOf('Features/  Addon Knobs', module)
         `
     }
   })
-
-/* eslint-enable react/react-in-jsx-scope */

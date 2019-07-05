@@ -5,10 +5,7 @@ export function clearRequireCache(id) {
   }
 
   if (entry.parent) {
-    const i = entry.parent.children.findIndex(e => e.id === id)
-    if (i > -1) {
-      entry.parent.children.splice(i, 1)
-    }
+    entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 
   for (const child of entry.children) {

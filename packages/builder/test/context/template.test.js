@@ -36,6 +36,7 @@ describe('builder: buildContext', () => {
       'test-layout': 'test.template'
     },
     srcDir: 'test_src_dir',
+    rootDir: 'test_root_dir',
     loading: 'test-loading',
     pageTransition: { name: 'test_trans' },
     layoutTransition: { name: 'test_layout_trans' },

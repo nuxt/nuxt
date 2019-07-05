@@ -1,7 +1,6 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
@@ -15,7 +14,7 @@ import { isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
-import WarnFixPlugin from '../plugins/warnfix'
+import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
 
@@ -39,7 +38,7 @@ export default class WebpackBaseConfig {
       isDev: this.dev,
       isServer: this.isServer,
       isClient: !this.isServer,
-      isModern: !!this.isModern
+      isModern: Boolean(this.isModern)
     }
   }
 
@@ -70,21 +69,28 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
+    const options = {
+      ...this.buildContext.buildOptions.babel,
+      envName: this.name
+    }
+
+    if (options.configFile !== false) {
+      return options
+    }
+
+    const defaultPreset = [
+      require.resolve('@nuxt/babel-preset-app'),
+      {
+        buildTarget: this.isServer ? 'server' : 'client'
+      }
+    ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer })
+      options.presets = options.presets({ isServer: this.isServer }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            buildTarget: this.isServer ? 'server' : 'client'
-          }
-        ]
-      ]
+      options.presets = [ defaultPreset ]
     }
 
     return options
@@ -196,15 +202,9 @@ export default class WebpackBaseConfig {
   }
 
   alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
-
     return {
-      '~': path.join(srcDir),
-      '~~': path.join(rootDir),
-      '@': path.join(srcDir),
-      '@@': path.join(rootDir),
-      [assetsDir]: path.join(srcDir, assetsDir),
-      [staticDir]: path.join(srcDir, staticDir)
+      ...this.buildContext.options.alias,
+      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
     }
   }
 
@@ -214,6 +214,7 @@ export default class WebpackBaseConfig {
       this.buildContext,
       { isServer: this.isServer, perfLoader }
     )
+
     const babelLoader = {
       loader: require.resolve('babel-loader'),
       options: this.getBabelOptions()
@@ -371,8 +372,7 @@ export default class WebpackBaseConfig {
 
     plugins.push(...(buildOptions.plugins || []))
 
-    // Hide warnings about plugins without a default export (#1179)
-    plugins.push(new WarnFixPlugin())
+    plugins.push(new WarningIgnorePlugin(this.warningIgnoreFilter()))
 
     // Build progress indicator
     plugins.push(new WebpackBar({
@@ -409,10 +409,36 @@ export default class WebpackBaseConfig {
     }))
 
     if (buildOptions.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, buildOptions.hardSource)))
+      // https://github.com/mzgoddard/hard-source-webpack-plugin
+      plugins.push(new HardSourcePlugin({
+        info: {
+          level: 'warn'
+        },
+        ...buildOptions.hardSource
+      }))
     }
 
     return plugins
+  }
+
+  warningIgnoreFilter() {
+    const { buildOptions, options: { _typescript = {} } } = this.buildContext
+    const filters = [
+      // Hide warnings about plugins without a default export (#1179)
+      warn => warn.name === 'ModuleDependencyWarning' &&
+        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('nuxt_plugin_'),
+      ...(buildOptions.warningIgnoreFilters || [])
+    ]
+
+    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
+      filters.push(
+        warn => warn.name === 'ModuleDependencyWarning' &&
+          /export .* was not found in /.test(warn.message)
+      )
+    }
+
+    return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }
 
   extendConfig(config) {
