@@ -23,18 +23,14 @@ export default {
   async run(cmd) {
     const { argv } = cmd
 
-    await this.startDev(cmd, argv, argv.open)
-  },
-
-  async startDev(cmd, argv) {
     try {
-      return await this._startDev(cmd, argv)
+      await this.startDev(cmd, argv, argv.open)
     } catch (error) {
       consola.error(error)
     }
   },
 
-  async _startDev(cmd, argv) {
+  async startDev(cmd, argv) {
     const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
@@ -46,7 +42,7 @@ export default {
     await nuxt.ready()
 
     if (config.loadingScreen) {
-      this.listen(nuxt, argv)
+      await this.listen(nuxt, argv)
     }
 
     // Create builder instance
@@ -56,7 +52,7 @@ export default {
     await builder.build()
 
     if (!config.loadingScreen) {
-      this.listen(nuxt, argv)
+      await this.listen(nuxt, argv)
     }
 
     // Print memory usage
@@ -96,7 +92,11 @@ export default {
 
     await nuxt.close()
 
-    await this.startDev(cmd, argv)
+    try {
+      await this.startDev(cmd, argv)
+    } catch (error) {
+      consola.error(error)
+    }
   },
 
   onBundlerChange(path) {
