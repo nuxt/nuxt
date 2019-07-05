@@ -91,16 +91,12 @@ export default class ModernModePlugin {
         })
 
         for (const a of legacyAssets) {
-          a.attributes.nomodule = ''
+          a.attributes.nomodule = true
           data.body.push(a)
         }
 
         delete assetsMap[fileName]
         cb()
-      })
-
-      compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tap(ID, (data) => {
-        data.html = data.html.replace(/\snomodule="">/g, ' nomodule>')
       })
     })
   }
