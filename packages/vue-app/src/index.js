@@ -20,7 +20,6 @@ export const template = {
     'components/nuxt-link.server.js',
     'components/nuxt-link.client.js',
     'components/nuxt.js',
-    'components/no-ssr.js',
     'views/app.template.html',
     'views/error.html'
   ]
