@@ -4,12 +4,10 @@
 */
 
 import EventEmitter from 'events'
+import { safariNoModuleFix } from '@nuxt/utils'
 
 const assetsMap = {}
 const watcher = new EventEmitter()
-
-// https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
-const safariFix = `!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();`
 
 export default class ModernModePlugin {
   constructor({ targetDir, isModernBuild }) {
@@ -85,23 +83,20 @@ export default class ModernModePlugin {
         const legacyAssets = (await this.getAssets(fileName))
           .filter(a => a.tagName === 'script' && a.attributes)
 
+        // inject Safari 10 nomodule fix
+        data.body.push({
+          tagName: 'script',
+          closeTag: true,
+          innerHTML: safariNoModuleFix
+        })
+
         for (const a of legacyAssets) {
-          a.attributes.nomodule = ''
+          a.attributes.nomodule = true
           data.body.push(a)
         }
 
         delete assetsMap[fileName]
         cb()
-      })
-
-      compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tap(ID, (data) => {
-        data.html = data.html.replace(/\snomodule="">/g, ' nomodule>')
-
-        // inject Safari 10 nomodule fix
-        data.html = data.html.replace(
-          /(<\/body\s*>)/i,
-          match => `<script>${safariFix}</script>${match}`
-        )
       })
     })
   }

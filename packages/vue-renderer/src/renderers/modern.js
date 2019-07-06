@@ -1,5 +1,5 @@
 import invert from 'lodash/invert'
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {
@@ -52,7 +52,7 @@ export default class ModernRenderer extends SSRRenderer {
 
     const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
 
-    return scripts.replace(scriptPattern, (scriptTag, jsFile) => {
+    const modernScripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
       const legacyJsFile = jsFile.replace(this.publicPath, '')
       const modernJsFile = this.assetsMapping[legacyJsFile]
       const { build: { crossorigin } } = this.options
@@ -66,6 +66,10 @@ export default class ModernRenderer extends SSRRenderer {
 
       return noModuleTag + moduleTag
     })
+
+    const safariNoModuleFixScript = `<script>${safariNoModuleFix}</script>`
+
+    return safariNoModuleFixScript + modernScripts
   }
 
   getModernFiles(legacyFiles = []) {
