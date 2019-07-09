@@ -7,7 +7,7 @@ import setup from './setup'
 import getCommand from './commands'
 
 function checkDuplicateNuxt() {
-  const dupPkg = pkgName === '@nuxt/cli' ? 'cli-edge' : 'cli'
+  const dupPkg = pkgName === '@nuxt/cli-edge' ? 'cli' : 'cli-edge'
   if (fs.existsSync(path.resolve(__dirname, '..', '..', dupPkg))) {
     throw new Error('Both `nuxt` and `nuxt-edge` are installed! This is unsupported, please choose one and remove the other one from dependencies.')
   }
