@@ -26,9 +26,9 @@ describe('util: serialize', () => {
 
   test('should serialize normal function', () => {
     const obj = {
-      fn () {}
+      fn: function () {}
     }
-    expect(serializeFunction(obj.fn)).toEqual('function () {}')
+    expect(serializeFunction(obj.fn)).toEqual('function() {}')
   })
 
   test('should serialize shorthand function', () => {
