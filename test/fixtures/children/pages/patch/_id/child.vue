@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  asyncData() {
+  asyncData () {
     return {
       date: Date.now()
     }

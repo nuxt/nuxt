@@ -39,14 +39,14 @@ export default {
     }
   }),
   computed: {
-    cookies() {
+    cookies () {
       return this.$cookies.cookies
     }
   },
   methods: {
-    addCookie() {
+    addCookie () {
       // Make sure the cookie is not empty
-      if (!this.newCookie.key || !this.newCookie.value) return
+      if (!this.newCookie.key || !this.newCookie.value) { return }
       // Sanitize the key to avoid spaces
       const cookieKey = this.newCookie.key.replace(/\s/g, '-')
       // Add the cookie
@@ -54,7 +54,7 @@ export default {
       // Reset newCookie data
       this.newCookie.key = this.newCookie.value = ''
     },
-    removeCookie(key) {
+    removeCookie (key) {
       this.$cookies.remove(key)
     }
   }

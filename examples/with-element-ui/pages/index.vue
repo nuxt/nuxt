@@ -53,7 +53,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       account: {
         name: '',
@@ -71,7 +71,7 @@ export default {
     }
   },
   methods: {
-    submit(formName) {
+    submit (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$message.success('Create successfully !')
@@ -85,7 +85,7 @@ export default {
         }
       })
     },
-    reset(formName) {
+    reset (formName) {
       this.$refs[formName].resetFields()
     }
   }

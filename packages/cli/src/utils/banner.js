@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
-export function showBanner(nuxt, showMemoryUsage = true) {
+export function showBanner (nuxt, showMemoryUsage = true) {
   if (env.test) {
     return
   }

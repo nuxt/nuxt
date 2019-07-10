@@ -30,7 +30,7 @@ const isKnownAuthor = name => Boolean(knownAuthors.find(n => name.toLowerCase().
 
 const allowedTypes = Object.keys(types)
 
-async function main() {
+async function main () {
   // Get last git tag
   const lastGitTag = await getLastGitTag()
 
@@ -57,21 +57,21 @@ async function main() {
   await writeFile('CHANGELOG.md', markdown, 'utf-8')
 }
 
-function execCommand(cmd, args) {
+function execCommand (cmd, args) {
   return execa(cmd, args).then(r => r.stdout)
 }
 
-async function getLastGitTag() {
+async function getLastGitTag () {
   const r = await execCommand('git', ['--no-pager', 'tag', '-l']).then(r => r.split('\n'))
   return r[r.length - 1]
 }
 
-async function getCurrentGitBranch() {
+async function getCurrentGitBranch () {
   const r = await execCommand('git', ['rev-parse', '--abbrev-ref', 'HEAD'])
   return r
 }
 
-async function getGitDiff(from, to) {
+async function getGitDiff (from, to) {
   // # https://git-scm.com/docs/pretty-formats
   const r = await execCommand('git', ['--no-pager', 'log', `${from}...${to}`, '--pretty=%s|%h|%an|%ae'])
   return r.split('\n').map((line) => {
@@ -81,7 +81,7 @@ async function getGitDiff(from, to) {
   })
 }
 
-function parseCommits(commits) {
+function parseCommits (commits) {
   return commits.filter(c => c.message.includes(':')).map((commit) => {
     let [type, ...message] = commit.message.split(':')
     message = message.join(':')
@@ -118,7 +118,7 @@ function parseCommits(commits) {
   })
 }
 
-function generateMarkDown(commits) {
+function generateMarkDown (commits) {
   const typeGroups = groupBy(commits, 'type')
 
   let markdown = ''

@@ -23,13 +23,13 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       open: false
     }
   },
   methods: {
-    toggle(flag) {
+    toggle (flag) {
       this.open = !this.open
     }
   }

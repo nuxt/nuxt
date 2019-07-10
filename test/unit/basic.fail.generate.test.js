@@ -4,7 +4,7 @@ describe('basic fail generate', () => {
   test('Fail with routes() which throw an error', async () => {
     const options = await loadFixture('basic', {
       generate: {
-        routes() {
+        routes () {
           throw new Error('Not today!')
         }
       }

@@ -19,13 +19,13 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
-  constructor(builder) {
+  constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
     this.modulesToTranspile = this.normalizeTranspile()
   }
 
-  get colors() {
+  get colors () {
     return {
       client: 'green',
       server: 'orange',
@@ -33,7 +33,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  get nuxtEnv() {
+  get nuxtEnv () {
     return {
       isDev: this.dev,
       isServer: this.isServer,
@@ -42,19 +42,19 @@ export default class WebpackBaseConfig {
     }
   }
 
-  get mode() {
+  get mode () {
     return this.dev ? 'development' : 'production'
   }
 
-  get dev() {
+  get dev () {
     return this.buildContext.options.dev
   }
 
-  get loaders() {
+  get loaders () {
     return this.buildContext.buildOptions.loaders
   }
 
-  normalizeTranspile() {
+  normalizeTranspile () {
     // include SFCs in node_modules
     const items = [/\.vue\.js/i]
     for (const pattern of this.buildContext.buildOptions.transpile) {
@@ -68,7 +68,7 @@ export default class WebpackBaseConfig {
     return items
   }
 
-  getBabelOptions() {
+  getBabelOptions () {
     const options = {
       ...this.buildContext.buildOptions.babel,
       envName: this.name
@@ -96,7 +96,7 @@ export default class WebpackBaseConfig {
     return options
   }
 
-  getFileName(key) {
+  getFileName (key) {
     let fileName = this.buildContext.buildOptions.filenames[key]
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
@@ -110,11 +110,11 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool() {
+  get devtool () {
     return false
   }
 
-  env() {
+  env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
@@ -129,7 +129,7 @@ export default class WebpackBaseConfig {
     return env
   }
 
-  output() {
+  output () {
     const {
       options: { buildDir, router },
       buildOptions: { publicPath }
@@ -143,7 +143,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  optimization() {
+  optimization () {
     const optimization = cloneDeep(this.buildContext.buildOptions.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
@@ -153,7 +153,7 @@ export default class WebpackBaseConfig {
     return optimization
   }
 
-  resolve() {
+  resolve () {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
@@ -169,7 +169,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  minimizer() {
+  minimizer () {
     const minimizer = []
     const { terser, cache } = this.buildContext.buildOptions
 
@@ -201,14 +201,14 @@ export default class WebpackBaseConfig {
     return minimizer
   }
 
-  alias() {
+  alias () {
     return {
       ...this.buildContext.options.alias,
       consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
     }
   }
 
-  rules() {
+  rules () {
     const perfLoader = new PerfLoader(this.name, this.buildContext)
     const styleLoader = new StyleLoader(
       this.buildContext,
@@ -351,7 +351,7 @@ export default class WebpackBaseConfig {
     ]
   }
 
-  plugins() {
+  plugins () {
     const plugins = []
     const { nuxt, buildOptions } = this.buildContext
 
@@ -402,7 +402,7 @@ export default class WebpackBaseConfig {
         allDone: () => {
           nuxt.callHook('bundler:done')
         },
-        progress({ statesArray }) {
+        progress ({ statesArray }) {
           nuxt.callHook('bundler:progress', statesArray)
         }
       }
@@ -421,7 +421,7 @@ export default class WebpackBaseConfig {
     return plugins
   }
 
-  warningIgnoreFilter() {
+  warningIgnoreFilter () {
     const { buildOptions, options: { _typescript = {} } } = this.buildContext
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
@@ -441,7 +441,7 @@ export default class WebpackBaseConfig {
     return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }
 
-  extendConfig(config) {
+  extendConfig (config) {
     const { extend } = this.buildContext.buildOptions
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
@@ -455,7 +455,7 @@ export default class WebpackBaseConfig {
     return config
   }
 
-  config() {
+  config () {
     const config = {
       name: this.name,
       mode: this.mode,

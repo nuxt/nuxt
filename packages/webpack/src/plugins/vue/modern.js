@@ -10,12 +10,12 @@ const assetsMap = {}
 const watcher = new EventEmitter()
 
 export default class ModernModePlugin {
-  constructor({ targetDir, isModernBuild }) {
+  constructor ({ targetDir, isModernBuild }) {
     this.targetDir = targetDir
     this.isModernBuild = isModernBuild
   }
 
-  apply(compiler) {
+  apply (compiler) {
     if (!this.isModernBuild) {
       this.applyLegacy(compiler)
     } else {
@@ -23,12 +23,12 @@ export default class ModernModePlugin {
     }
   }
 
-  set assets({ name, content }) {
+  set assets ({ name, content }) {
     assetsMap[name] = content
     watcher.emit(name)
   }
 
-  getAssets(name) {
+  getAssets (name) {
     return assetsMap[name] ||
       new Promise((resolve) => {
         watcher.once(name, () => {
@@ -38,7 +38,7 @@ export default class ModernModePlugin {
       })
   }
 
-  applyLegacy(compiler) {
+  applyLegacy (compiler) {
     const ID = `nuxt-legacy-bundle`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       // For html-webpack-plugin 4.0
@@ -55,7 +55,7 @@ export default class ModernModePlugin {
     })
   }
 
-  applyModern(compiler) {
+  applyModern (compiler) {
     const ID = `nuxt-modern-bundle`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       // For html-webpack-plugin 4.0

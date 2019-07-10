@@ -1,5 +1,5 @@
 export default {
-  add(state, title) {
+  add (state, title) {
     state.list.push(title)
   }
 }

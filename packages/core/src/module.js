@@ -6,13 +6,13 @@ import consola from 'consola'
 import { chainFn, sequence } from '@nuxt/utils'
 
 export default class ModuleContainer {
-  constructor(nuxt) {
+  constructor (nuxt) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.requiredModules = {}
   }
 
-  async ready() {
+  async ready () {
     // Call before hook
     await this.nuxt.callHook('modules:before', this, this.options.modules)
 
@@ -28,11 +28,11 @@ export default class ModuleContainer {
     await this.nuxt.callHook('modules:done', this)
   }
 
-  addVendor() {
+  addVendor () {
     consola.warn('addVendor has been deprecated due to webpack4 optimization')
   }
 
-  addTemplate(template) {
+  addTemplate (template) {
     if (!template) {
       throw new Error('Invalid template: ' + JSON.stringify(template))
     }
@@ -61,7 +61,7 @@ export default class ModuleContainer {
     return templateObj
   }
 
-  addPlugin(template) {
+  addPlugin (template) {
     const { dst } = this.addTemplate(template)
 
     // Add to nuxt plugins
@@ -73,7 +73,7 @@ export default class ModuleContainer {
     })
   }
 
-  addLayout(template, name) {
+  addLayout (template, name) {
     const { dst, src } = this.addTemplate(template)
     const layoutName = name || path.parse(src).name
     const layout = this.options.layouts[layoutName]
@@ -91,31 +91,31 @@ export default class ModuleContainer {
     }
   }
 
-  addErrorLayout(dst) {
+  addErrorLayout (dst) {
     const relativeBuildDir = path.relative(this.options.rootDir, this.options.buildDir)
     this.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
   }
 
-  addServerMiddleware(middleware) {
+  addServerMiddleware (middleware) {
     this.options.serverMiddleware.push(middleware)
   }
 
-  extendBuild(fn) {
+  extendBuild (fn) {
     this.options.build.extend = chainFn(this.options.build.extend, fn)
   }
 
-  extendRoutes(fn) {
+  extendRoutes (fn) {
     this.options.router.extendRoutes = chainFn(
       this.options.router.extendRoutes,
       fn
     )
   }
 
-  requireModule(moduleOpts) {
+  requireModule (moduleOpts) {
     return this.addModule(moduleOpts, true /* require once */)
   }
 
-  async addModule(moduleOpts, requireOnce) {
+  async addModule (moduleOpts, requireOnce) {
     let src
     let options
     let handler
@@ -148,7 +148,7 @@ export default class ModuleContainer {
 
     // Validate handler
     if (typeof handler !== 'function') {
-      throw new Error('Module should export a function: ' + src)
+      throw new TypeError('Module should export a function: ' + src)
     }
 
     // Resolve module meta

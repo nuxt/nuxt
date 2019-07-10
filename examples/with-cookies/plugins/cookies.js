@@ -21,11 +21,11 @@ export default ({ req }, inject) => {
       cookies: getCookies(process.server ? req.headers.cookie : document.cookie)
     }),
     methods: {
-      set(...args) {
+      set (...args) {
         JSCookie.set(...args)
         this.cookies = getCookies(document.cookie)
       },
-      remove(...args) {
+      remove (...args) {
         JSCookie.remove(...args)
         this.cookies = getCookies(document.cookie)
       }

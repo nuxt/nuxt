@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  asyncData() {
+  asyncData () {
     throw new Error('Error mouahahah')
   }
 }

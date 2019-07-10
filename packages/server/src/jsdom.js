@@ -1,7 +1,7 @@
 import consola from 'consola'
 import { timeout } from '@nuxt/utils'
 
-export default async function renderAndGetWindow(
+export default async function renderAndGetWindow (
   url = 'http://localhost:3000',
   jsdomOpts = {},
   {
@@ -28,7 +28,7 @@ export default async function renderAndGetWindow(
     resources: 'usable',
     runScripts: 'dangerously',
     virtualConsole: true,
-    beforeParse(window) {
+    beforeParse (window) {
       // Mock window.scrollTo
       window.scrollTo = () => {}
     }

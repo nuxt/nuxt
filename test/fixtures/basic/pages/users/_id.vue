@@ -4,8 +4,8 @@
 
 <script>
 export default {
-  asyncData({ params, payload }) {
-    if (payload) return payload
+  asyncData ({ params, payload }) {
+    if (payload) { return payload }
     return { id: params.id }
   }
 }

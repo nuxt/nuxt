@@ -1,6 +1,6 @@
 import path from 'path'
 
-export default function basicModule(options) {
+export default function basicModule (options) {
   // Add a plugin
   this.addPlugin(path.resolve(__dirname, 'reverse.js'))
 

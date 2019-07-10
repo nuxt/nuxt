@@ -5,7 +5,7 @@ import * as imports from '../imports'
 let _guard = false
 export const setGuard = (val) => { _guard = val }
 
-async function registerTSNode({ tsConfigPath, options }) {
+async function registerTSNode ({ tsConfigPath, options }) {
   if (_guard) {
     return
   }
@@ -24,7 +24,7 @@ async function registerTSNode({ tsConfigPath, options }) {
   _guard = true
 }
 
-async function getNuxtTypeScript() {
+async function getNuxtTypeScript () {
   try {
     return await imports.nuxtTypescript()
   } catch (error) {
@@ -34,7 +34,7 @@ async function getNuxtTypeScript() {
   }
 }
 
-export async function detectTypeScript(rootDir, options = {}) {
+export async function detectTypeScript (rootDir, options = {}) {
   const typescript = {
     tsConfigPath: path.resolve(rootDir, 'tsconfig.json'),
     tsConfigExists: false,

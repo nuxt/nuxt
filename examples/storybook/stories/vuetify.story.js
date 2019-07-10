@@ -88,7 +88,7 @@ const menuItemsAlt = [
 storiesOf('Vuetify/V-Btn', module)
   .add('Square Button', () => ({
     components: {},
-    data() {
+    data () {
       return {
         items: menuItems
       }
@@ -98,7 +98,7 @@ storiesOf('Vuetify/V-Btn', module)
   }))
   .add('with rounded button', () => ({
     components: {},
-    data() {
+    data () {
       return {
         items: menuItemsAlt
       }

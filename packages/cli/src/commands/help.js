@@ -12,7 +12,7 @@ export default {
     help: common.help,
     version: common.version
   },
-  async run(cmd) {
+  async run (cmd) {
     const [name] = cmd._argv
     if (!name) {
       return listCommands()
