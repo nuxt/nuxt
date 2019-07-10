@@ -1,7 +1,7 @@
 import run from '../../src/run'
 
 jest.mock('../../package.json', () => ({
-  name: 'cli-edge'
+  name: '@nuxt/cli-edge'
 }))
 
 describe('run in edge', () => {
