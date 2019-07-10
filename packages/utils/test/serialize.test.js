@@ -26,9 +26,9 @@ describe('util: serialize', () => {
 
   test('should serialize normal function', () => {
     const obj = {
-      fn: function () {}
+      fn: function () {} // eslint-disable-line object-shorthand
     }
-    expect(serializeFunction(obj.fn)).toEqual('function() {}')
+    expect(serializeFunction(obj.fn)).toEqual('function () {}')
   })
 
   test('should serialize shorthand function', () => {
