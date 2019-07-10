@@ -10,6 +10,7 @@ export const template = {
     'index.js',
     'middleware.js',
     'router.js',
+    'router.scrollBehavior.js',
     'server.js',
     'utils.js',
     'empty.js',
