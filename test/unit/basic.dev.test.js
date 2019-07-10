@@ -39,7 +39,7 @@ describe('basic dev', () => {
             }
           }
         },
-        extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
+        extend ({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)

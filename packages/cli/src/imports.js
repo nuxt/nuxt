@@ -3,7 +3,7 @@ import path from 'path'
 const localNodeModules = path.resolve(process.cwd(), 'node_modules')
 
 // Prefer importing modules from local node_modules (for NPX and global bin)
-async function _import(modulePath) {
+async function _import (modulePath) {
   for (const mp of [
     path.resolve(localNodeModules, modulePath),
     modulePath

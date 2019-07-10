@@ -34,11 +34,11 @@ export default {
   // Key for <NuxtChild> (transitions)
   key: to => to.fullPath,
   // Called to know which transition to apply
-  transition(to, from) {
-    if (!from) return 'slide-left'
+  transition (to, from) {
+    if (!from) { return 'slide-left' }
     return +to.query.page < +from.query.page ? 'slide-right' : 'slide-left'
   },
-  async asyncData({ query }) {
+  async asyncData ({ query }) {
     const page = +query.page || 1
     const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => res.json())
 

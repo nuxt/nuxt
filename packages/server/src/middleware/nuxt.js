@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import { getContext } from '@nuxt/utils'
 
-export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
   const context = getContext(req, res)
 

@@ -18,15 +18,15 @@ const getData = () => fetch(`${baseURL}/test`)
   .then(r => r + ` (From ${name})`)
 
 export default {
-  async asyncData() {
+  async asyncData () {
     const data = await getData()
     return { data }
   },
   methods: {
-    async update() {
+    async update () {
       this.data = await getData()
     },
-    reload() {
+    reload () {
       window.location.reload()
     }
   }

@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  validate({ query }) {
+  validate ({ query }) {
     if (query.error) {
       const err = new Error('Custom Error')
       err.statusCode = parseInt(query.error) || 500

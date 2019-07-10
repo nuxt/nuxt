@@ -6,12 +6,12 @@ export const state = () => {
   }
 }
 export const mutations = {
-  setAuth(state, auth) {
+  setAuth (state, auth) {
     state.auth = auth
   }
 }
 export const actions = {
-  nuxtServerInit({ commit }, { req }) {
+  nuxtServerInit ({ commit }, { req }) {
     let auth = null
     if (req.headers.cookie) {
       const parsed = cookieparser.parse(req.headers.cookie)

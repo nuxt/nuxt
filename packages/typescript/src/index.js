@@ -34,7 +34,7 @@ export const defaultTsJsonConfig = {
   }
 }
 
-export async function setupDefaults(tsConfigPath) {
+export async function setupDefaults (tsConfigPath) {
   let contents = ''
 
   if (await exists(tsConfigPath)) {

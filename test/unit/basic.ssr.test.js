@@ -166,11 +166,11 @@ describe('basic ssr', () => {
     let _headers, _status
     const { html } = await nuxt.server.renderRoute('/redirect-external', {
       res: {
-        writeHead(status, headers) {
+        writeHead (status, headers) {
           _status = status
           _headers = headers
         },
-        end() { }
+        end () { }
       }
     })
     expect(_status).toBe(302)

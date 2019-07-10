@@ -5,7 +5,7 @@ import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
 
-function packageExists(name) {
+function packageExists (name) {
   try {
     require.resolve(name)
     return true
@@ -14,7 +14,7 @@ function packageExists(name) {
   }
 }
 
-export default async function run(_argv) {
+export default async function run (_argv) {
   // Check for not installing both nuxt and nuxt-edge
   const dupPkg = '@nuxt/' + (pkgName === '@nuxt/cli-edge' ? 'cli' : 'cli-edge')
   if (packageExists(dupPkg)) {

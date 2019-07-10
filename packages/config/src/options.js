@@ -8,7 +8,7 @@ import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
-export function getNuxtConfig(_options) {
+export function getNuxtConfig (_options) {
   // Prevent duplicate calls
   if (_options.__normalized__) {
     return _options

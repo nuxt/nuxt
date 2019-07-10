@@ -21,7 +21,7 @@
 import axios from 'axios'
 
 export default {
-  asyncData({ req, params }) {
+  asyncData ({ req, params }) {
     // We can return a Promise instead of calling the callback
     return axios.get('https://jsonplaceholder.typicode.com/posts')
       .then((res) => {

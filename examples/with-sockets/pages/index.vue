@@ -24,7 +24,7 @@ export default {
   watch: {
     'messages': 'scrollToBottom'
   },
-  asyncData(context, callback) {
+  asyncData (context, callback) {
     socket.emit('last-messages', function (messages) {
       callback(null, {
         messages,
@@ -32,17 +32,17 @@ export default {
       })
     })
   },
-  beforeMount() {
+  beforeMount () {
     socket.on('new-message', (message) => {
       this.messages.push(message)
     })
   },
-  mounted() {
+  mounted () {
     this.scrollToBottom()
   },
   methods: {
-    sendMessage() {
-      if (!this.message.trim()) return
+    sendMessage () {
+      if (!this.message.trim()) { return }
       const message = {
         date: new Date().toJSON(),
         text: this.message.trim()
@@ -51,7 +51,7 @@ export default {
       this.message = ''
       socket.emit('send-message', message)
     },
-    scrollToBottom() {
+    scrollToBottom () {
       this.$nextTick(() => {
         this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
       })
