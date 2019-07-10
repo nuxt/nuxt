@@ -36,6 +36,13 @@ export function getNuxtConfig (_options) {
   }
 
   // TODO: Remove for Nuxt 3
+  // router.scrollBehavior -> app/router.scrollBehavior.js
+  if (options.router && typeof options.router !== 'undefined') {
+    consola.warn('`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file')
+  }
+
+
+  // TODO: Remove for Nuxt 3
   // transition -> pageTransition
   if (typeof options.transition !== 'undefined') {
     consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
