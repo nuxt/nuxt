@@ -10,7 +10,7 @@ export default function () {
     // Add CoffeeScruot loader
     config.module.rules.push(coffeeLoader)
     // Add .coffee extension in webpack resolve
-    if (config.resolve.extensions.indexOf('.coffee') === -1) {
+    if (!config.resolve.extensions.includes('.coffee')) {
       config.resolve.extensions.push('.coffee')
     }
   })

@@ -7,7 +7,7 @@ import htmlMinifier from 'html-minifier'
 import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
-  constructor(nuxt, builder) {
+  constructor (nuxt, builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
@@ -22,7 +22,7 @@ export default class Generator {
     )
   }
 
-  async generate({ build = true, init = true } = {}) {
+  async generate ({ build = true, init = true } = {}) {
     consola.debug('Initializing generator...')
 
     await this.initiate({ build, init })
@@ -43,7 +43,7 @@ export default class Generator {
     return { errors }
   }
 
-  async initiate({ build = true, init = true } = {}) {
+  async initiate ({ build = true, init = true } = {}) {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
@@ -64,7 +64,7 @@ export default class Generator {
     }
   }
 
-  async initRoutes(...args) {
+  async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
     if (this.options.router.mode !== 'hash') {
@@ -94,7 +94,7 @@ export default class Generator {
     return routes
   }
 
-  async generateRoutes(routes) {
+  async generateRoutes (routes) {
     const errors = []
 
     // Start generate process
@@ -117,7 +117,7 @@ export default class Generator {
     return errors
   }
 
-  _formatErrors(errors) {
+  _formatErrors (errors) {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
@@ -136,7 +136,7 @@ export default class Generator {
       .join('\n')
   }
 
-  async afterGenerate() {
+  async afterGenerate () {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
@@ -164,7 +164,7 @@ export default class Generator {
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
   }
 
-  async initDist() {
+  async initDist () {
     // Clean destination folder
     await fsExtra.remove(this.distPath)
 
@@ -184,7 +184,7 @@ export default class Generator {
     await this.nuxt.callHook('generate:distCopied', this)
   }
 
-  decorateWithPayloads(routes, generateRoutes) {
+  decorateWithPayloads (routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
@@ -202,7 +202,7 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute({ route, payload = {}, errors = [] }) {
+  async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
 
@@ -272,7 +272,7 @@ export default class Generator {
     return true
   }
 
-  minifyHtml(html) {
+  minifyHtml (html) {
     let minificationOptions = this.options.build.html.minify
 
     // Legacy: Override minification options with generate.minify if present

@@ -11,7 +11,7 @@ import consola from 'consola'
 
 import { builtins } from './builtins'
 
-export default function rollupConfig({
+export default function rollupConfig ({
   rootDir = process.cwd(),
   plugins = [],
   input = 'src/index.js',
@@ -70,7 +70,7 @@ export default function rollupConfig({
         ].join('\n')
       })
     ].concat(plugins),
-    onwarn(warning, warn) {
+    onwarn (warning, warn) {
       if (warning.plugin === 'rollup-plugin-license') {
         return
       }

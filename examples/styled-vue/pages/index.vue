@@ -26,7 +26,7 @@ export default {
       }
     }
   `,
-  data() {
+  data () {
     return {
       fontSize: 60
     }

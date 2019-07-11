@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  fetch({ store }) {
+  fetch ({ store }) {
     store.dispatch('simpleModule/mutate')
   }
 }

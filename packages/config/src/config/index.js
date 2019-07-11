@@ -12,7 +12,7 @@ import cli from './cli'
 
 export const defaultNuxtConfigFile = 'nuxt.config'
 
-export function getDefaultNuxtConfig(options = {}) {
+export function getDefaultNuxtConfig (options = {}) {
   if (!options.env) {
     options.env = process.env
   }

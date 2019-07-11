@@ -8,7 +8,7 @@ import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
-  get rendererOptions() {
+  get rendererOptions () {
     const hasModules = fs.existsSync(path.resolve(this.options.rootDir, 'node_modules'))
 
     return {
@@ -19,19 +19,19 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  renderScripts(renderContext) {
+  renderScripts (renderContext) {
     return renderContext.renderScripts()
   }
 
-  getPreloadFiles(renderContext) {
+  getPreloadFiles (renderContext) {
     return renderContext.getPreloadFiles()
   }
 
-  renderResourceHints(renderContext) {
+  renderResourceHints (renderContext) {
     return renderContext.renderResourceHints()
   }
 
-  createRenderer() {
+  createRenderer () {
     // Create bundle renderer for SSR
     return createBundleRenderer(
       this.serverContext.resources.serverManifest,
@@ -39,13 +39,13 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
-  useSSRLog() {
+  useSSRLog () {
     if (!this.options.render.ssrLog) {
       return
     }
     const logs = []
     const devReporter = {
-      log(logObj) {
+      log (logObj) {
         logs.push({
           ...logObj,
           args: logObj.args.map(arg => format(arg))
@@ -60,7 +60,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  async render(renderContext) {
+  async render (renderContext) {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 

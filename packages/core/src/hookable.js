@@ -4,7 +4,7 @@ import consola from 'consola'
 import { sequence } from '@nuxt/utils'
 
 export default class Hookable {
-  constructor() {
+  constructor () {
     this._hooks = {}
     this._deprecatedHooks = {}
 
@@ -12,7 +12,7 @@ export default class Hookable {
     this.callHook = this.callHook.bind(this)
   }
 
-  hook(name, fn) {
+  hook (name, fn) {
     if (!name || typeof fn !== 'function') {
       return
     }
@@ -26,7 +26,7 @@ export default class Hookable {
     this._hooks[name].push(fn)
   }
 
-  async callHook(name, ...args) {
+  async callHook (name, ...args) {
     if (!this._hooks[name]) {
       return
     }
@@ -39,17 +39,17 @@ export default class Hookable {
     }
   }
 
-  clearHook(name) {
+  clearHook (name) {
     if (name) {
       delete this._hooks[name]
     }
   }
 
-  clearHooks() {
+  clearHooks () {
     this._hooks = {}
   }
 
-  flatHooks(configHooks, hooks = {}, parentName) {
+  flatHooks (configHooks, hooks = {}, parentName) {
     Object.keys(configHooks).forEach((key) => {
       const subHook = configHooks[key]
       const name = parentName ? `${parentName}:${key}` : key
@@ -62,7 +62,7 @@ export default class Hookable {
     return hooks
   }
 
-  addHooks(configHooks) {
+  addHooks (configHooks) {
     const hooks = this.flatHooks(configHooks)
     Object.keys(hooks).filter(Boolean).forEach((key) => {
       [].concat(hooks[key]).forEach(h => this.hook(key, h))

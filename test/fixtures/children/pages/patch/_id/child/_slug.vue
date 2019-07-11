@@ -22,7 +22,7 @@ const countries = [
   'Czech Republic',
   'Netherlands'
 ]
-function search(q) {
+function search (q) {
   q = String(q || '').toLowerCase()
 
   return new Promise((resolve) => {
@@ -32,29 +32,29 @@ function search(q) {
 }
 
 export default {
-  data() {
+  data () {
     return {
       q: this.$route.query.q || ''
     }
   },
   watch: {
-    '$route.query.q': async function (q) {
+    async '$route.query.q' (q) {
       this.searchResults = await search(q)
     }
   },
-  async asyncData({ query }) {
+  async asyncData ({ query }) {
     const searchResults = await search(query.q)
     return {
       searchResults,
       date: Date.now()
     }
   },
-  mounted() {
+  mounted () {
     this.$refs.search.selectionStart = this.$refs.search.selectionEnd = this.$refs.search.value.length
     this.$refs.search.focus()
   },
   methods: {
-    update() {
+    update () {
       this.$router.replace({ query: Object.assign({}, this.$route.query, { q: this.q }) })
     }
   }

@@ -12,14 +12,14 @@ import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
-  constructor(builder) {
+  constructor (builder) {
     super(builder)
     this.name = 'client'
     this.isServer = false
     this.isModern = false
   }
 
-  getFileName(...args) {
+  getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args
       if (['app', 'chunk'].includes(key)) {
@@ -29,7 +29,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return super.getFileName(...args)
   }
 
-  env() {
+  env () {
     return Object.assign(super.env(), {
       'process.env.VUE_ENV': JSON.stringify('client'),
       'process.browser': true,
@@ -39,7 +39,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     })
   }
 
-  optimization() {
+  optimization () {
     const optimization = super.optimization()
 
     // Small, known and common modules which are usually used project-wise
@@ -59,7 +59,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return optimization
   }
 
-  minimizer() {
+  minimizer () {
     const minimizer = super.minimizer()
     const { optimizeCSS } = this.buildContext.buildOptions
 
@@ -73,7 +73,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return minimizer
   }
 
-  alias() {
+  alias () {
     const aliases = super.alias()
 
     for (const p of this.buildContext.plugins) {
@@ -86,7 +86,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return aliases
   }
 
-  plugins() {
+  plugins () {
     const plugins = super.plugins()
     const { buildOptions, options: { appTemplatePath, buildDir, modern } } = this.buildContext
 
@@ -152,7 +152,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return plugins
   }
 
-  config() {
+  config () {
     const config = super.config()
     const {
       options: { router, buildDir },

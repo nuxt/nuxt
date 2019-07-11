@@ -8,7 +8,7 @@ import { isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
-  constructor(serverContext) {
+  constructor (serverContext) {
     super(serverContext)
 
     this.cache = new LRU()
@@ -23,11 +23,11 @@ export default class SPARenderer extends BaseRenderer {
     })
   }
 
-  createRenderer() {
+  createRenderer () {
     return createRenderer()
   }
 
-  async getMeta() {
+  async getMeta () {
     const vm = new Vue({
       render: h => h(), // Render empty html tag
       head: this.options.head || {}
@@ -36,7 +36,7 @@ export default class SPARenderer extends BaseRenderer {
     return vm.$meta().inject()
   }
 
-  async render(renderContext) {
+  async render (renderContext) {
     const { url = '/', req = {}, _generate } = renderContext
     const modernMode = this.options.modern
     const modern = (modernMode && _generate) || isModernRequest(req, modernMode)
@@ -157,7 +157,7 @@ export default class SPARenderer extends BaseRenderer {
     return cloneDeep(content)
   }
 
-  static normalizeFile(file) {
+  static normalizeFile (file) {
     const withoutQuery = file.replace(/\?.*/, '')
     const extension = extname(withoutQuery).slice(1)
     return {
@@ -168,7 +168,7 @@ export default class SPARenderer extends BaseRenderer {
     }
   }
 
-  static getPreloadType(ext) {
+  static getPreloadType (ext) {
     if (ext === 'js') {
       return 'script'
     } else if (ext === 'css') {

@@ -1,15 +1,15 @@
-export const sequence = function sequence(tasks, fn) {
+export const sequence = function sequence (tasks, fn) {
   return tasks.reduce(
     (promise, task) => promise.then(() => fn(task)),
     Promise.resolve()
   )
 }
 
-export const parallel = function parallel(tasks, fn) {
+export const parallel = function parallel (tasks, fn) {
   return Promise.all(tasks.map(fn))
 }
 
-export const chainFn = function chainFn(base, fn) {
+export const chainFn = function chainFn (base, fn) {
   if (typeof fn !== 'function') {
     return base
   }

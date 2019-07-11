@@ -15,7 +15,7 @@ const coreJsMeta = {
   }
 }
 
-function getDefaultPolyfills(corejs) {
+function getDefaultPolyfills (corejs) {
   const { prefixes: { es6, es7 } } = coreJsMeta[corejs.version]
   return [
     // Promise polyfill alone doesn't work in IE,
@@ -31,7 +31,7 @@ function getDefaultPolyfills(corejs) {
   ]
 }
 
-function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
+function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
   const { isPluginRequired } = require('@babel/preset-env')
   const builtInsList = require(coreJsMeta[corejs.version].builtIns)
   const getTargets = require('@babel/preset-env/lib/targets-parser').default

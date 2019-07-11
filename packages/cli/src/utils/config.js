@@ -5,7 +5,7 @@ import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 
-export async function loadNuxtConfig(argv) {
+export async function loadNuxtConfig (argv) {
   const rootDir = path.resolve(argv._[0] || '.')
   let nuxtConfigFile
   let options = {}

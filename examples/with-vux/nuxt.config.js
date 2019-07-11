@@ -24,7 +24,7 @@ export default {
     }
   ],
   build: {
-    extend(config, { isDev, isClient }) {
+    extend (config, { isDev, isClient }) {
       const configs = vuxLoader.merge(config, {
         options: {
           ssr: true

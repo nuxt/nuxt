@@ -22,7 +22,7 @@ const Cookie = process.client ? require('js-cookie') : undefined
 export default {
   middleware: 'notAuthenticated',
   methods: {
-    postLogin() {
+    postLogin () {
       setTimeout(() => { // we simulate the async request with timeout.
         const auth = {
           accessToken: 'someStringGotFromApiServiceWithAjax'
