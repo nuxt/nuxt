@@ -167,6 +167,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",

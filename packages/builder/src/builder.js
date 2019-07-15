@@ -416,7 +416,7 @@ export default class Builder {
         return
       }
       // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = r(this.options.srcDir, 'app', file)
+      const customPath = r(this.options.srcDir, this.options.dir.app, file)
       const customFileExists = await fsExtra.exists(customPath)
 
       return {
@@ -628,6 +628,9 @@ export default class Builder {
     }
 
     this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
+
+    // Watch for app/ files
+    this.createFileWatcher([r(this.options.srcDir, this.options.dir.app)], ['add', 'change', 'unlink'], refreshFiles, this.assignWatcher('app'))
   }
 
   getServerMiddlewarePaths () {
