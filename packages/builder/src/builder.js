@@ -405,42 +405,46 @@ export default class Builder {
   }
 
   async resolveCustomTemplates (templateContext) {
-    // Resolve template files
-    const customTemplateFiles = this.options.build.templates.map(
-      t => t.dst || path.basename(t.src || t)
-    )
+        // Sanitize custom template files
+        this.options.build.templates = this.options.build.templates.map((t) => {
+          const src = t.src || t
 
-    const templateFiles = await Promise.all(templateContext.templateFiles.map(async (file) => {
-      // Skip if custom file was already provided in build.templates[]
-      if (customTemplateFiles.includes(file)) {
-        return
-      }
-      // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = r(this.options.srcDir, this.options.dir.app, file)
-      const customFileExists = await fsExtra.exists(customPath)
-
-      return {
-        src: customFileExists ? customPath : r(this.template.dir, file),
-        dst: file,
-        custom: customFileExists
-      }
-    }))
-
-    templateContext.templateFiles = templateFiles
-      .filter(Boolean)
-      // Add custom template files
-      .concat(
-        this.options.build.templates.map((t) => {
           return Object.assign(
             {
-              src: r(this.options.srcDir, t.src || t),
-              dst: t.dst || path.basename(t.src || t),
+              src: utils.r(this.options.srcDir, src),
+              dst: t.dst || path.basename(src),
               custom: true
             },
             typeof t === 'object' ? t : undefined
           )
         })
-      )
+        const customTemplateFiles = this.options.build.templates.map(
+          t => t.dst || path.basename(t.src || t)
+        );
+        const templatePaths = uniq([
+          // @nuxt/vue-app templates
+          ...templateContext.templateFiles,
+          // Modules & user provided templates
+          ...customTemplateFiles
+        ])
+
+        templateContext.templateFiles = await Promise.all(templatePaths.map(async (file) => {
+          // Use custom file if provided in build.templates[]
+          const customTemplateIndex = customTemplateFiles.indexOf(file)
+          const customTemplate = customTemplateIndex !== -1 ? this.options.build.templates[customTemplateIndex] : null
+          let src = customTemplate ? customTemplate.src || customTemplate : r(this.template.dir, file)
+          // Allow override templates using a file with same name in ${srcDir}/app
+          const customPath = r(this.options.srcDir, this.options.dir.app, file)
+          const customFileExists = await fsExtra.exists(customPath)
+          src = customFileExists ? customPath : src
+
+          return {
+            src,
+            dst: file,
+            custom: Boolean(customFileExists || customTemplate),
+            options: customTemplate && customTemplate.options
+          }
+        }))
   }
 
   async resolveLoadingIndicator ({ templateFiles }) {
