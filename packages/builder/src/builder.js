@@ -411,7 +411,7 @@ export default class Builder {
 
       return Object.assign(
         {
-          src: utils.r(this.options.srcDir, src),
+          src: r(this.options.srcDir, src),
           dst: t.dst || path.basename(src),
           custom: true
         },
@@ -420,7 +420,7 @@ export default class Builder {
     })
     const customTemplateFiles = this.options.build.templates.map(
       t => t.dst || path.basename(t.src || t)
-    );
+    )
     const templatePaths = uniq([
       // @nuxt/vue-app templates
       ...templateContext.templateFiles,
@@ -473,7 +473,7 @@ export default class Builder {
     if (!indicatorPath) {
       consola.error(
         `Could not fetch loading indicator: ${
-        this.options.loadingIndicator.name
+          this.options.loadingIndicator.name
         }`
       )
       return
