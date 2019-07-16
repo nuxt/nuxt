@@ -69,6 +69,7 @@ export interface NuxtConfigurationBuild {
     pages?: boolean
   }
   ssr?: boolean
+  standalone?: boolean
   templates?: any
   terser?: TerserPluginOptions | boolean
   transpile?: (string | RegExp)[]
