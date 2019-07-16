@@ -149,7 +149,7 @@ export class WebpackBundler {
       // non-quiet mode: errors will be printed by webpack itself
       throw new Error(
         options.build.quiet === true
-          ? stats.toString(options.build.stats)
+          ? stats.toString('errors-only')
           : 'Nuxt Build Error'
       )
     }
