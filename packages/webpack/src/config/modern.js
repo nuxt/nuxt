@@ -12,19 +12,4 @@ export default class WebpackModernConfig extends WebpackClientConfig {
       'process.modern': true
     })
   }
-
-  getBabelOptions () {
-    return {
-      ...this.buildContext.buildOptions.babel,
-      envName: this.name,
-      presets: [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            modern: true
-          }
-        ]
-      ]
-    }
-  }
 }
