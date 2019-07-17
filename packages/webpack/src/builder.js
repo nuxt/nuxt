@@ -146,12 +146,12 @@ export class WebpackBundler {
     const stats = await compiler.run()
 
     if (stats.hasErrors()) {
+      // non-quiet mode: errors will be printed by webpack itself
+      const error = new Error('Nuxt build error')
       if (options.build.quiet === true) {
-        return Promise.reject(stats.toString(options.build.stats))
+        error.stack = stats.toString('errors-only')
       }
-
-      // Actual error will be printed by webpack
-      throw new Error('Nuxt Build Error')
+      throw error
     }
 
     // Await for renderer to load resources (programmatic, tests and generate)
