@@ -21,7 +21,7 @@ Usually, no additional configuration is required. If needed though, there is an 
 
 ```js
 babel: {
-  presets({ isServer }) {
+  presets({ envName }, [ preset, options ]) {
     return [
       [ "@nuxt/babel-preset-app", options ]
     ]
@@ -41,7 +41,6 @@ Below is a list of all available parameters:
 
 ### Options
 
-* **buildTarget** - passed in through the Builder, either `"server"` or `"client"`
 * **configPath** - [`@babel/preset-env` parameter](https://babeljs.io/docs/en/babel-preset-env#configpath)
 * **forceAllTransforms** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#forcealltransforms)' parameter
 * **debug**, default  `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#debug)' parameter
@@ -52,7 +51,6 @@ Below is a list of all available parameters:
 * **include** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#include)' parameter
 * **jsx**, default truish, can be a an object passed as params to [@vue/babel-preset-jsx`](https://www.npmjs.com/package/@vue/babel-preset-jsx)
 * **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter and also sets `loose=true` for `@babel/plugin-proposal-class-properties`
-* **modern** passed by builder, either `true` or `false`
 * **modules**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#modules)' parameter
 * **polyfills**, default `core-js@2: ['es6.array.iterator','es6.promise','es6.object.assign','es7.promise.finally']`, `core-js@3: ['es.array.iterator','es.promise','es.object.assign','es.promise.finally']`, more [in the corresponding repository](https://github.com/zloirock/core-js)
 * **shippedProposals** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#shippedproposals)' parameter
@@ -69,14 +67,16 @@ There are [detailed docs](https://babeljs.io/docs/en/babel-preset-env#options) f
 export default {
   build: {
     babel: {
-      presets({ isServer }) {
+      presets({ envName }) {
+        const envTargets = {
+          client: { node: "current" },
+          server: { browsers: ["last 2 versions"], ie: 11 }
+        }
         return [
           [
             "@nuxt/babel-preset-app",
             {
-              targets: isServer
-                ? { node: "current" }
-                : { browsers: ["last 2 versions"], ie: 11 }
+              targets: envTargets[envName]
             }
           ]
         ]
@@ -98,12 +98,12 @@ yarn add --dev core-js@2 @babel/runtime-corejs2
 export default {
   build: {
     babel: {
-      presets({ isServer }) {
+      // envName: server, client, modern
+      presets({ envName }) {
         return [
           [
             require.resolve('@nuxt/babel-preset-app'),
             {
-              buildTarget: isServer ? 'server' : 'client',
               corejs: { version: 3 }
             }
           ]

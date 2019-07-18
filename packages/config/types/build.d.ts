@@ -19,7 +19,7 @@ import { TerserPluginOptions } from 'terser-webpack-plugin'
 type NuxtConfigurationLoaders = any // TBD
 
 interface NuxtBabelPresetEnv {
-  isServer: boolean
+  envName: 'server' | 'client' | 'modern'
 }
 
 interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {

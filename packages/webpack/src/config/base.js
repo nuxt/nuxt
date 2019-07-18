@@ -69,24 +69,20 @@ export default class WebpackBaseConfig {
   }
 
   getBabelOptions () {
+    const envName = this.name
     const options = {
       ...this.buildContext.buildOptions.babel,
-      envName: this.name
+      envName
     }
 
     if (options.configFile !== false) {
       return options
     }
 
-    const defaultPreset = [
-      require.resolve('@nuxt/babel-preset-app'),
-      {
-        buildTarget: this.isServer ? 'server' : 'client'
-      }
-    ]
+    const defaultPreset = [ require.resolve('@nuxt/babel-preset-app'), {} ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer }, defaultPreset)
+      options.presets = options.presets({ envName }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
