@@ -209,12 +209,12 @@ describe('builder: builder generate', () => {
     await builder.resolveCustomTemplates(templateContext)
 
     expect(templateContext.templateFiles).toEqual([
-      { custom: true, dst: 'router.js', src: 'r(/var/nuxt/src, app, router.js)' },
-      { custom: undefined, dst: 'store.js', src: 'r(/var/nuxt/templates, store.js)' },
-      { custom: undefined, dst: 'middleware.js', src: 'r(/var/nuxt/templates, middleware.js)' },
-      { custom: true, dst: 'foo.js', src: 'r(/var/nuxt/src, /var/nuxt/templates/foo.js)' },
-      { custom: true, dst: 'bar.js', src: '/var/nuxt/templates/bar.js' },
-      { custom: true, dst: 'baz.js', src: '/var/nuxt/templates/baz.js' }
+      { custom: true, dst: 'foo.js', src: 'r(/var/nuxt/src, app, foo.js)', options: {} },
+      { custom: true, dst: 'bar.js', src: '/var/nuxt/templates/bar.js', options: {} },
+      { custom: true, dst: 'baz.js', src: '/var/nuxt/templates/baz.js', options: {} },
+      { custom: false, dst: 'router.js', src: 'r(/var/nuxt/templates, router.js)', options: {} },
+      { custom: false, dst: 'store.js', src: 'r(/var/nuxt/templates, store.js)', options: {} },
+      { custom: false, dst: 'middleware.js', src: 'r(/var/nuxt/templates, middleware.js)' , options: {}}
     ])
   })
 

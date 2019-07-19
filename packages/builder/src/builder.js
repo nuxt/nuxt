@@ -422,17 +422,18 @@ export default class Builder {
       t => t.dst || path.basename(t.src || t)
     )
     const templatePaths = uniq([
-      // @nuxt/vue-app templates
-      ...templateContext.templateFiles,
       // Modules & user provided templates
-      ...customTemplateFiles
+      // first custom to keep their index
+      ...customTemplateFiles,
+      // @nuxt/vue-app templates
+      ...templateContext.templateFiles
     ])
 
     templateContext.templateFiles = await Promise.all(templatePaths.map(async (file) => {
       // Use custom file if provided in build.templates[]
       const customTemplateIndex = customTemplateFiles.indexOf(file)
       const customTemplate = customTemplateIndex !== -1 ? this.options.build.templates[customTemplateIndex] : null
-      let src = customTemplate ? customTemplate.src || customTemplate : r(this.template.dir, file)
+      let src = customTemplate ? (customTemplate.src || customTemplate) : r(this.template.dir, file)
       // Allow override templates using a file with same name in ${srcDir}/app
       const customPath = r(this.options.srcDir, this.options.dir.app, file)
       const customFileExists = await fsExtra.exists(customPath)
@@ -442,7 +443,7 @@ export default class Builder {
         src,
         dst: file,
         custom: Boolean(customFileExists || customTemplate),
-        options: customTemplate && customTemplate.options
+        options: customTemplate && customTemplate.options || {}
       }
     }))
   }
