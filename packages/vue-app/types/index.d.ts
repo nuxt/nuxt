@@ -1,5 +1,5 @@
 import Vue, { ComponentOptions } from 'vue'
-import VueRouter, { RawLocation, Route } from 'vue-router'
+import VueRouter, { Location, Route } from 'vue-router'
 import { Store } from 'vuex'
 import { IncomingMessage, ServerResponse } from 'http'
 
@@ -42,7 +42,7 @@ export interface Context {
   res: ServerResponse
   redirect(status: number, path: string, query?: Route['query']): void
   redirect(path: string, query?: Route['query']): void
-  redirect(location: RawLocation): void
+  redirect(location: Location): void
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
