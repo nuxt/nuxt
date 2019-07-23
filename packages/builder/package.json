@@ -17,7 +17,7 @@
     "glob": "^7.1.4",
     "hash-sum": "^2.0.0",
     "ignore": "^5.1.2",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.15",
     "pify": "^4.0.1",
     "semver": "^6.2.0",
     "serialize-javascript": "^1.7.0",
