@@ -443,7 +443,7 @@ export default class Builder {
         src,
         dst: file,
         custom: Boolean(customFileExists || customTemplate),
-        options: customTemplate && customTemplate.options || {}
+        options: (customTemplate && customTemplate.options) || {}
       }
     }))
   }

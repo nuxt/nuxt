@@ -6,7 +6,7 @@ export const createNuxt = () => ({
     router: {},
     dir: {
       app: 'app'
-    },
+    }
   },
   ready: jest.fn(),
   hook: jest.fn(),

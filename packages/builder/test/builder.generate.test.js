@@ -214,7 +214,7 @@ describe('builder: builder generate', () => {
       { custom: true, dst: 'baz.js', src: '/var/nuxt/templates/baz.js', options: {} },
       { custom: false, dst: 'router.js', src: 'r(/var/nuxt/templates, router.js)', options: {} },
       { custom: false, dst: 'store.js', src: 'r(/var/nuxt/templates, store.js)', options: {} },
-      { custom: false, dst: 'middleware.js', src: 'r(/var/nuxt/templates, middleware.js)' , options: {}}
+      { custom: false, dst: 'middleware.js', src: 'r(/var/nuxt/templates, middleware.js)', options: {} }
     ])
   })
 
