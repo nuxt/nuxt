@@ -35,6 +35,7 @@ export default () => ({
   ],
   dir: {
     assets: 'assets',
+    app: 'app',
     layouts: 'layouts',
     middleware: 'middleware',
     pages: 'pages',

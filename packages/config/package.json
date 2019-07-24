@@ -4,11 +4,9 @@
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
-    "dist",
-    "types/*.d.ts"
+    "dist"
   ],
   "main": "dist/config.js",
-  "typings": "types/index.d.ts",
   "dependencies": {
     "@nuxt/utils": "2.8.1",
     "consola": "^2.9.0",
