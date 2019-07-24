@@ -31,7 +31,7 @@ describe('basic dev', () => {
           '@scoped\\packageB',
           'vue.test.js',
           /vue-test/,
-          ({ isModern }) => isModern ? 'modern-test' : 'nosrmal-test'
+          ({ isModern }) => isModern ? 'modern-test' : 'normal-test'
         ],
         loaders: {
           cssModules: {
