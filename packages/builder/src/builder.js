@@ -405,42 +405,47 @@ export default class Builder {
   }
 
   async resolveCustomTemplates (templateContext) {
-    // Resolve template files
+    // Sanitize custom template files
+    this.options.build.templates = this.options.build.templates.map((t) => {
+      const src = t.src || t
+
+      return Object.assign(
+        {
+          src: r(this.options.srcDir, src),
+          dst: t.dst || path.basename(src),
+          custom: true
+        },
+        typeof t === 'object' ? t : undefined
+      )
+    })
     const customTemplateFiles = this.options.build.templates.map(
       t => t.dst || path.basename(t.src || t)
     )
+    const templatePaths = uniq([
+      // Modules & user provided templates
+      // first custom to keep their index
+      ...customTemplateFiles,
+      // @nuxt/vue-app templates
+      ...templateContext.templateFiles
+    ])
 
-    const templateFiles = await Promise.all(templateContext.templateFiles.map(async (file) => {
-      // Skip if custom file was already provided in build.templates[]
-      if (customTemplateFiles.includes(file)) {
-        return
-      }
+    templateContext.templateFiles = await Promise.all(templatePaths.map(async (file) => {
+      // Use custom file if provided in build.templates[]
+      const customTemplateIndex = customTemplateFiles.indexOf(file)
+      const customTemplate = customTemplateIndex !== -1 ? this.options.build.templates[customTemplateIndex] : null
+      let src = customTemplate ? (customTemplate.src || customTemplate) : r(this.template.dir, file)
       // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = r(this.options.srcDir, 'app', file)
+      const customPath = r(this.options.srcDir, this.options.dir.app, file)
       const customFileExists = await fsExtra.exists(customPath)
+      src = customFileExists ? customPath : src
 
       return {
-        src: customFileExists ? customPath : r(this.template.dir, file),
+        src,
         dst: file,
-        custom: customFileExists
+        custom: Boolean(customFileExists || customTemplate),
+        options: (customTemplate && customTemplate.options) || {}
       }
     }))
-
-    templateContext.templateFiles = templateFiles
-      .filter(Boolean)
-      // Add custom template files
-      .concat(
-        this.options.build.templates.map((t) => {
-          return Object.assign(
-            {
-              src: r(this.options.srcDir, t.src || t),
-              dst: t.dst || path.basename(t.src || t),
-              custom: true
-            },
-            typeof t === 'object' ? t : undefined
-          )
-        })
-      )
   }
 
   async resolveLoadingIndicator ({ templateFiles }) {
@@ -628,6 +633,9 @@ export default class Builder {
     }
 
     this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
+
+    // Watch for app/ files
+    this.createFileWatcher([r(this.options.srcDir, this.options.dir.app)], ['add', 'change', 'unlink'], refreshFiles, this.assignWatcher('app'))
   }
 
   getServerMiddlewarePaths () {
