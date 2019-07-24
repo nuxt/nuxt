@@ -32,7 +32,7 @@ describe('builder: builder constructor', () => {
       custom: null,
       restart: null
     })
-    expect(builder.supportedExtensions).toEqual(['vue', 'js', 'ts', 'tsx'])
+    expect(builder.supportedExtensions).toEqual(['vue', 'js'])
     expect(builder.relativeToBuild).toBeInstanceOf(Function)
 
     expect(builder._buildStatus).toEqual(1)

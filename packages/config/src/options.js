@@ -167,7 +167,7 @@ export function getNuxtConfig (_options) {
     )
   )
 
-  const mandatoryExtensions = ['js', 'mjs', 'ts']
+  const mandatoryExtensions = ['js', 'mjs']
 
   options.extensions = mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))

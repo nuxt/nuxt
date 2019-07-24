@@ -165,7 +165,7 @@ export default class WebpackBaseConfig {
 
     return {
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
@@ -267,26 +267,6 @@ export default class WebpackBaseConfig {
           return !this.modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.js().concat(babelLoader)
-      },
-      {
-        test: /\.ts$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.ts
-          }
-        ]
-      },
-      {
-        test: /\.tsx$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.tsx
-          }
-        ]
       },
       {
         test: /\.css$/i,
@@ -428,21 +408,13 @@ export default class WebpackBaseConfig {
   }
 
   warningIgnoreFilter () {
-    const { buildOptions, options: { _typescript = {} } } = this.buildContext
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
         warn.message.includes(`export 'default'`) &&
         warn.message.includes('nuxt_plugin_'),
-      ...(buildOptions.warningIgnoreFilters || [])
+      ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
     ]
-
-    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
-      filters.push(
-        warn => warn.name === 'ModuleDependencyWarning' &&
-          /export .* was not found in /.test(warn.message)
-      )
-    }
 
     return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }

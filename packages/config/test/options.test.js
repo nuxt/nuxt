@@ -74,7 +74,7 @@ describe('config: options', () => {
 
   test('should transform extensions to array', () => {
     const { extensions } = getNuxtConfig({ extensions: 'ext' })
-    expect(extensions).toEqual(['js', 'mjs', 'ts', 'ext'])
+    expect(extensions).toEqual(['js', 'mjs', 'ext'])
   })
 
   test('should support custom global name', () => {

@@ -1,5 +1,4 @@
 
-import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
@@ -7,7 +6,6 @@ import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
-import { detectTypeScript } from './utils/typescript'
 import * as imports from './imports'
 
 export default class NuxtCommand {
@@ -92,15 +90,8 @@ export default class NuxtCommand {
   }
 
   async getNuxtConfig (extraOptions = {}) {
-    const rootDir = path.resolve(this.argv._[0] || '.')
-
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
-
-    // Typescript support
-    extraOptions._typescript = await detectTypeScript(rootDir, {
-      transpileOnly: this.cmd.name === 'start'
-    })
 
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)

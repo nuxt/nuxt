@@ -51,19 +51,7 @@ export default () => ({
     },
     scss: {},
     stylus: {},
-    ts: {
-      transpileOnly: true,
-      appendTsSuffixTo: [/\.vue$/]
-    },
-    tsx: {
-      transpileOnly: true,
-      appendTsxSuffixTo: [/\.vue$/]
-    },
     vueStyle: {}
-  },
-  typescript: {
-    typeCheck: true,
-    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],
