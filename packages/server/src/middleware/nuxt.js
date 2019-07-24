@@ -113,7 +113,9 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
 
     const { crossorigin } = options.build
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
-    const rel = `${(modern && asType === 'script') ? 'module' : ''}preload`
+    // `modulepreload` rel attribute only supports script-like `as` value
+    // https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
+    const rel = modern && asType === 'script' ? 'modulepreload' : 'preload'
 
     links.push(`<${publicPath}${file}>; rel=${rel};${cors} as=${asType}`)
   })
