@@ -44,7 +44,7 @@ export default class Builder {
       restart: null
     }
 
-    this.supportedExtensions = ['vue', 'js', 'ts', 'tsx', ...(this.options.build.additionalExtensions || [])]
+    this.supportedExtensions = ['vue', 'js', ...(this.options.build.additionalExtensions || [])]
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) => relativeTo(this.options.buildDir, ...args)
