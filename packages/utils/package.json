@@ -12,7 +12,7 @@
     "fs-extra": "^8.1.0",
     "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",
-    "semver": "^6.2.0",
+    "semver": "^6.3.0",
     "serialize-javascript": "^1.7.0",
     "signal-exit": "^3.0.2",
     "ua-parser-js": "^0.7.20"
