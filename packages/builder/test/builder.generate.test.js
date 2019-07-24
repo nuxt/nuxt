@@ -76,7 +76,7 @@ describe('builder: builder generate', () => {
     ])
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
-    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js,ts,tsx}'])
+    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
     expect(builder.compileTemplates).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Nuxt files generated')
@@ -95,7 +95,7 @@ describe('builder: builder generate', () => {
 
     expect(Glob).toBeCalledTimes(1)
     expect(Glob).toBeCalledWith(
-      '/var/nuxt/dir/**/*.{vue,js,ts,tsx}',
+      '/var/nuxt/dir/**/*.{vue,js}',
       { cwd: '/var/nuxt/src', ignore: '/var/nuxt/ignore' }
     )
     expect(builder.ignore.filter).toBeCalledTimes(1)
@@ -624,7 +624,7 @@ describe('builder: builder generate', () => {
         srcDir: '/var/nuxt/src',
         pagesDir: '/var/nuxt/pages',
         routeNameSplitter: '[splitter]',
-        supportedExtensions: ['vue', 'js', 'ts', 'tsx']
+        supportedExtensions: ['vue', 'js']
       })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(

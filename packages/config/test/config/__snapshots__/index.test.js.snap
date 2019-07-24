@@ -68,18 +68,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -131,10 +119,6 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
@@ -411,18 +395,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -474,10 +446,6 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },

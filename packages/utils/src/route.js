@@ -136,7 +136,7 @@ export const createRoutes = function createRoutes ({
   srcDir,
   pagesDir = '',
   routeNameSplitter = '-',
-  supportedExtensions = ['vue', 'js', 'ts', 'tsx']
+  supportedExtensions = ['vue', 'js']
 }) {
   const routes = []
   files.forEach((file) => {
