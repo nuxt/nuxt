@@ -113,9 +113,9 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
 
     const { crossorigin } = options.build
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
-    const ref = modern ? 'modulepreload' : 'preload'
+    const rel = `${(modern && asType === 'script') ? 'module' : ''}preload`
 
-    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
+    links.push(`<${publicPath}${file}>; rel=${rel};${cors} as=${asType}`)
   })
   return links
 }
