@@ -30,7 +30,8 @@ describe('basic dev', () => {
           '@scoped/packageA',
           '@scoped\\packageB',
           'vue.test.js',
-          /vue-test/
+          /vue-test/,
+          ({ isModern }) => isModern ? 'modern-test' : 'nosrmal-test'
         ],
         loaders: {
           cssModules: {
@@ -77,6 +78,7 @@ describe('basic dev', () => {
     expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/normal-test'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {

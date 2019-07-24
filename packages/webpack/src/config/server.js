@@ -20,10 +20,13 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const whitelist = [
       /\.(?!js(x|on)?$)/i
     ]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
+    for (let pattern of this.buildContext.buildOptions.transpile) {
+      if (typeof pattern === 'function') {
+        pattern = pattern(this.nuxtEnv)
+      }
       if (pattern instanceof RegExp) {
         whitelist.push(pattern)
-      } else {
+      } else if (pattern) {
         const posixModule = pattern.replace(/\\/g, '/')
         whitelist.push(new RegExp(escapeRegExp(posixModule)))
       }
