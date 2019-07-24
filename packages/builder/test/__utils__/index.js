@@ -3,7 +3,10 @@ export const createNuxt = () => ({
     globalName: 'global_name',
     globals: [],
     build: {},
-    router: {}
+    router: {},
+    dir: {
+      app: 'app'
+    }
   },
   ready: jest.fn(),
   hook: jest.fn(),

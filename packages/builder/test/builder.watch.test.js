@@ -189,9 +189,9 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/style'
     ]
 
-    expect(builder.createFileWatcher).toBeCalledTimes(2)
+    expect(builder.createFileWatcher).toBeCalledTimes(3)
     expect(builder.createFileWatcher).toBeCalledWith(patterns, ['change'], expect.any(Function), expect.any(Function))
-    expect(builder.assignWatcher).toBeCalledTimes(2)
+    expect(builder.assignWatcher).toBeCalledTimes(3)
   })
 
   test('should invoke chokidar to create watcher', () => {

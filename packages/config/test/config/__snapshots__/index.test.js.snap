@@ -131,6 +131,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -457,6 +458,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
