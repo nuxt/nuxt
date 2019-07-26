@@ -121,6 +121,8 @@ module.exports = (context, options = {}) => {
 
   plugins.push(
     require('@babel/plugin-syntax-dynamic-import'),
+    require('@babel/plugin-proposal-optional-chaining'),
+    require('@babel/plugin-proposal-nullish-coalescing-operator'),
     [require('@babel/plugin-proposal-decorators'), {
       decoratorsBeforeExport,
       legacy: decoratorsLegacy !== false
