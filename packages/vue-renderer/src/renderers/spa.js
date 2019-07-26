@@ -122,7 +122,8 @@ export default class SPARenderer extends BaseRenderer {
             if (asType === 'font') {
               extra = ` type="font/${extension}"${cors ? '' : ' crossorigin'}`
             }
-            return `<link rel="${modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
+            const rel = modern && asType === 'script' ? 'modulepreload' : 'preload'
+            return `<link rel="${rel}"${cors} href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
