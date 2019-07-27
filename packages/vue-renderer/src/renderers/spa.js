@@ -18,6 +18,7 @@ export default class SPARenderer extends BaseRenderer {
     Vue.use(VueMeta, {
       keyName: 'head',
       attribute: 'data-n-head',
+      ssrAppId: '1',
       ssrAttribute: 'data-n-head-ssr',
       tagIDKeyName: 'hid'
     })
