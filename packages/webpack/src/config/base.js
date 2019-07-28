@@ -1,5 +1,4 @@
 import path from 'path'
-import crypto from 'crypto'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import cloneDeep from 'lodash/cloneDeep'
