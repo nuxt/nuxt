@@ -1,6 +1,5 @@
 import { extname } from 'path'
 import cloneDeep from 'lodash/cloneDeep'
-import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
@@ -13,27 +12,21 @@ export default class SPARenderer extends BaseRenderer {
 
     this.cache = new LRU()
 
-    // Add VueMeta to Vue (this is only for SPA mode)
-    // See app/index.js
-    Vue.use(VueMeta, {
+    this.vueMetaConfig = {
       keyName: 'head',
       attribute: 'data-n-head',
       ssrAttribute: 'data-n-head-ssr',
+      ssrAppId: '1',
       tagIDKeyName: 'hid'
-    })
+    }
   }
 
   createRenderer () {
     return createRenderer()
   }
 
-  async getMeta () {
-    const vm = new Vue({
-      render: h => h(), // Render empty html tag
-      head: this.options.head || {}
-    })
-    await this.vueRenderer.renderToString(vm)
-    return vm.$meta().inject()
+  getMeta () {
+    return VueMeta.generate(this.options.head || {}, this.vueMetaConfig)
   }
 
   async render (renderContext) {
