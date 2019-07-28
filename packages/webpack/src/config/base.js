@@ -11,7 +11,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { createMd5HashFromString, isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -19,7 +19,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
 
-const BUILD_HASH = crypto.createHash('md5').update(new Date().toISOString()).digest('hex').substr(0, 20)
+const BUILD_HASH = createMd5HashFromString(new Date().toISOString())
 
 export default class WebpackBaseConfig {
   constructor (builder) {
