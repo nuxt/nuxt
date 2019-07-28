@@ -7,6 +7,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -334,6 +335,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
