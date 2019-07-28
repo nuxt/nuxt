@@ -45,8 +45,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         'process.client': false,
         'process.server': true,
         'process.modern': false
-      },
-      ...(this.buildContext.buildOptions.aggressiveClientServerCodeRemoval && { 'typeof window': JSON.stringify('undefined') })
+      }
     )
   }
 
