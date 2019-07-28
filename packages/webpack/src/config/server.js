@@ -37,14 +37,17 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   env () {
-    return Object.assign(super.env(), {
-      'process.env.VUE_ENV': JSON.stringify('server'),
-      'process.browser': false,
-      'process.client': false,
-      'process.server': true,
-      'process.modern': false,
-      'typeof window': JSON.stringify('undefined')
-    })
+    return Object.assign(
+      super.env(),
+      {
+        'process.env.VUE_ENV': JSON.stringify('server'),
+        'process.browser': false,
+        'process.client': false,
+        'process.server': true,
+        'process.modern': false
+      },
+      ...(this.buildContext.buildOptions.aggressiveClientServerCodeRemoval && { 'typeof window': JSON.stringify('undefined') })
+    )
   }
 
   optimization () {
