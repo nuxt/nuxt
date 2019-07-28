@@ -1,4 +1,5 @@
 import path from 'path'
+import crypto from 'crypto'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
 import cloneDeep from 'lodash/cloneDeep'
@@ -17,6 +18,8 @@ import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
+
+const BUILD_HASH = crypto.createHash('md5').update(new Date().toISOString()).digest('hex').substr(0, 20)
 
 export default class WebpackBaseConfig {
   constructor (builder) {
@@ -118,7 +121,8 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
-      'process.static': this.buildContext.isStatic
+      'process.static': this.buildContext.isStatic,
+      'process.BUILD_HASH': JSON.stringify(BUILD_HASH)
     }
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
