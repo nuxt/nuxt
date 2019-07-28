@@ -54,7 +54,7 @@ export default class Generator {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
-    process.EXPORT_HASH = createTimeHash(new Date().toISOString())
+    process.EXPORT_HASH = createTimeHash()
 
     // Call before hook
     await this.nuxt.callHook('generate:before', this, this.options.generate)
