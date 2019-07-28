@@ -35,7 +35,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       'process.browser': true,
       'process.client': true,
       'process.server': false,
-      'process.modern': false
+      'process.modern': false,
+      'typeof window': JSON.stringify('object')
     })
   }
 

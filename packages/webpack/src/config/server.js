@@ -42,7 +42,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       'process.browser': false,
       'process.client': false,
       'process.server': true,
-      'process.modern': false
+      'process.modern': false,
+      'typeof window': JSON.stringify('undefined')
     })
   }
 
