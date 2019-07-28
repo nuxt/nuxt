@@ -4,7 +4,14 @@ import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
-import { createMd5HashFromString, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import {
+  createTimeHash,
+  flatRoutes,
+  isString,
+  isUrl,
+  promisifyRoute,
+  waitFor
+} from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -47,7 +54,7 @@ export default class Generator {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
-    process.EXPORT_HASH = createMd5HashFromString(new Date().toISOString())
+    process.EXPORT_HASH = createTimeHash(new Date().toISOString())
 
     // Call before hook
     await this.nuxt.callHook('generate:before', this, this.options.generate)
