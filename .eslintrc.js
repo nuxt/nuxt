@@ -13,6 +13,10 @@ module.exports = {
   "globals": {
     "BigInt": true
   },
+  rules: {
+    'no-console': 'error',
+    'no-debugger': 'error'
+  },
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
