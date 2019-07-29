@@ -64,7 +64,7 @@ export default class WebpackBaseConfig {
       }
       if (pattern instanceof RegExp) {
         items.push(pattern)
-      } else if (pattern) {
+      } else if (typeof pattern === 'string') {
         const posixModule = pattern.replace(/\\/g, '/')
         items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
       }

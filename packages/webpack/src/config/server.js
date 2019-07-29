@@ -26,7 +26,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }
       if (pattern instanceof RegExp) {
         whitelist.push(pattern)
-      } else if (pattern) {
+      } else if (typeof pattern === 'string') {
         const posixModule = pattern.replace(/\\/g, '/')
         whitelist.push(new RegExp(escapeRegExp(posixModule)))
       }
