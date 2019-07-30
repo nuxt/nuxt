@@ -80,7 +80,7 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
-    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
+    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload, static: true })
     expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:routeFailed', {
       route,
