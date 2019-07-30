@@ -3,7 +3,7 @@ export default class BuildContext {
     this._builder = builder
     this.nuxt = builder.nuxt
     this.options = builder.nuxt.options
-    this.isStatic = false
+    this.target = builder.nuxt.options.target
   }
 
   get buildOptions () {

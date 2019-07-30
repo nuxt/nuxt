@@ -269,19 +269,26 @@ export default class VueRenderer {
 
     // Add url to the renderContext
     renderContext.url = url
+    // Add target to the renderContext
+    renderContext.target = this.serverContext.nuxt.options.target
 
-    const { req = {} } = renderContext
+    const { req = {}, res = {} } = renderContext
 
     // renderContext.spa
     if (renderContext.spa === undefined) {
       // TODO: Remove reading from renderContext.res in Nuxt3
-      renderContext.spa = !this.SSR || req.spa || (renderContext.res && renderContext.res.spa)
+      renderContext.spa = !this.SSR || req.spa || res.spa
     }
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
       const modernMode = this.options.modern
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
+    }
+
+    // renderContext.static (old _generate)
+    if (renderContext.static === true || renderContext._generate === true) {
+      renderContext.target = 'static'
     }
 
     // Call renderContext hook

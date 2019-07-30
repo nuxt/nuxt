@@ -9,7 +9,7 @@ describe('builder: buildContext', () => {
     expect(context._builder).toEqual(builder)
     expect(context.nuxt).toEqual(builder.nuxt)
     expect(context.options).toEqual(builder.nuxt.options)
-    expect(context.isStatic).toEqual(false)
+    expect(context.target).toEqual('server')
   })
 
   test('should return builder plugins context', () => {
