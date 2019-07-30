@@ -244,6 +244,6 @@ export class WebpackBundler {
   }
 
   forGenerate () {
-    this.buildContext.isStatic = true
+    this.buildContext.target = 'static'
   }
 }
