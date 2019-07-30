@@ -39,7 +39,7 @@ export default class SPARenderer extends BaseRenderer {
   async render (renderContext) {
     const { url = '/', req = {} } = renderContext
     const modernMode = this.options.modern
-    const modern = (modernMode && this.options.nuxt.target === 'static') || isModernRequest(req, modernMode)
+    const modern = (modernMode && this.options.target === 'static') || isModernRequest(req, modernMode)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
