@@ -47,7 +47,7 @@ describe('basic generate', () => {
   })
 
   test('Check builder', () => {
-    expect(builder.bundleBuilder.buildContext.isStatic).toBe(true)
+    expect(builder.bundleBuilder.buildContext.target).toBe('static')
     expect(builder.build).toHaveBeenCalledTimes(1)
   })
 
