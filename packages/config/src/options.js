@@ -90,7 +90,7 @@ export function getNuxtConfig (_options) {
 
   // Target
   options.target = options.target || 'server'
-  if (['server', 'serverless', 'static'].indexOf(options.target) === -1) {
+  if (!['server', 'serverless', 'static'].includes(options.target)) {
     consola.warn(`Unknown target: ${options.target}. Falling back to server`)
   }
 

@@ -46,7 +46,7 @@ export default class WebpackBaseConfig {
     return this.dev ? 'development' : 'production'
   }
 
-  get target() {
+  get target () {
     return this.buildContext.target
   }
 
