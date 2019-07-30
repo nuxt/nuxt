@@ -38,11 +38,11 @@ function urlJoin () {
 
 const createNext = ssrContext => (opts) => {
   // If static target, render on client-side
-  if (ssrContext.target === 'static') {
+  ssrContext.redirected = opts
+  if (ssrContext.target === 'static' || !ssrContext.res) {
     ssrContext.nuxt.serverRendered = false
     return
   }
-  ssrContext.redirected = opts
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
   const routerBase = '<%= router.base %>'
