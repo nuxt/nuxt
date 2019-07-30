@@ -3,7 +3,7 @@ export default class BuildContext {
     this._builder = builder
     this.nuxt = builder.nuxt
     this.options = builder.nuxt.options
-    this.target = builder.nuxt.options.target
+    this.target = builder.nuxt.options.target || 'server'
   }
 
   get buildOptions () {
