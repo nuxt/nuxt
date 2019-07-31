@@ -20,10 +20,13 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  titleLines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
+  titleLines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}\n`)
 
   // Running mode
-  titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+  const rendering = nuxt.options.render.ssr ? chalk.bold.yellow('universal') : chalk.bold.yellow('client-side')
+  const envMode = nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')
+  let sentence = `Running in ${envMode}, with ${rendering} rendering and ${chalk.bold.cyan(nuxt.options.target)} target.`
+  titleLines.push(sentence)
 
   if (showMemoryUsage) {
     titleLines.push(getFormattedMemoryUsage())
