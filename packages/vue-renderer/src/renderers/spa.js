@@ -25,10 +25,6 @@ export default class SPARenderer extends BaseRenderer {
     return createRenderer()
   }
 
-  getMeta () {
-    return VueMeta.generate(this.options.head || {}, this.vueMetaConfig)
-  }
-
   async render (renderContext) {
     const { url = '/', req = {}, _generate } = renderContext
     const modernMode = this.options.modern
@@ -52,7 +48,7 @@ export default class SPARenderer extends BaseRenderer {
     }
 
     // Get vue-meta context
-    const m = await this.getMeta()
+    const m = VueMeta.generate(this.options.head || {}, this.vueMetaConfig)
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
