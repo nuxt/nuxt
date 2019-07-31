@@ -28,6 +28,14 @@ export default {
       }
     }
   },
+  target: {
+    alias: 't',
+    type: 'string',
+    description: 'Build/Start app for different target, e.g. server, serverless and static',
+    prepare (cmd, options, argv) {
+      options.target = argv.target
+    }
+  },
   'force-exit': {
     type: 'boolean',
     default (cmd) {

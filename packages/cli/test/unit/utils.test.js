@@ -149,6 +149,9 @@ describe('cli/utils', () => {
 
     showBanner({
       options: {
+        render: {
+          ssr: true
+        },
         cli: {
           badgeMessages,
           bannerColor
@@ -179,6 +182,9 @@ describe('cli/utils', () => {
         cli: {
           badgeMessages: [],
           bannerColor: 'green'
+        },
+        render: {
+          ssr: false
         }
       },
       server: {
@@ -190,6 +196,36 @@ describe('cli/utils', () => {
     expect(stdout).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
     expect(stdout).not.toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
+    stdout.mockRestore()
+  })
+
+  test('showBanner does pint env, rendering mode and target', () => {
+    const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
+    const successBox = jest.fn().mockImplementation((m, t) => t + m)
+    jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
+
+    showBanner({
+      options: {
+        dev: false,
+        target: 'static',
+        render: {
+          ssr: false
+        },
+        cli: {
+          badgeMessages: []
+        }
+      },
+      server: {
+        listeners: []
+      }
+    }, false)
+
+    expect(successBox).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledTimes(1)
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Running in production'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('client-side rendering'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('static target'))
     stdout.mockRestore()
   })
 
