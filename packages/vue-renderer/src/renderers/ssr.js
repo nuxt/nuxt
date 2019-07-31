@@ -161,7 +161,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: m.htmlAttrs.text(true),
+      HTML_ATTRS: m.htmlAttrs.text(true /* addSrrAttribute */),
       HEAD_ATTRS: m.headAttrs.text(),
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,
