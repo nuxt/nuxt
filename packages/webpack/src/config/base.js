@@ -11,12 +11,11 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
-
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
@@ -144,7 +143,7 @@ export default class WebpackBaseConfig {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
       'process.dev': this.dev,
-      'process.static': this.target === 'static',
+      'process.static': this.target === TARGETS.static,
       'process.target': JSON.stringify(this.target)
     }
     if (this.buildContext.buildOptions.aggressiveCodeRemoval) {

@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { isModernRequest } from '@nuxt/utils'
+import { TARGETS, isModernRequest } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -288,7 +288,7 @@ export default class VueRenderer {
 
     // renderContext.static (old _generate) TODO: Remove in Nuxt 3
     if (renderContext.static === true || renderContext._generate === true) {
-      renderContext.target = 'static'
+      renderContext.target = TARGETS.static
     }
 
     // Call renderContext hook

@@ -1,3 +1,4 @@
+import { MODES } from '@nuxt/utils'
 import * as utils from '../../src/utils'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
@@ -23,7 +24,7 @@ describe('build', () => {
 
   test('builds on universal mode', async () => {
     mockGetNuxt({
-      mode: 'universal',
+      mode: MODES.universal,
       build: {
         analyze: true
       }
@@ -37,7 +38,7 @@ describe('build', () => {
 
   test('generates on spa mode', async () => {
     mockGetNuxt({
-      mode: 'spa',
+      mode: MODES.spa,
       build: {
         analyze: false
       }
@@ -51,7 +52,7 @@ describe('build', () => {
 
   test('build with devtools', async () => {
     mockGetNuxt({
-      mode: 'universal'
+      mode: MODES.universal
     })
     const builder = mockGetBuilder(Promise.resolve())
 
@@ -67,7 +68,7 @@ describe('build', () => {
 
   test('build with modern mode', async () => {
     mockGetNuxt({
-      mode: 'universal'
+      mode: MODES.universal
     })
     mockGetBuilder(Promise.resolve())
 
@@ -114,7 +115,7 @@ describe('build', () => {
 
   test('build locks project by default', async () => {
     mockGetNuxt({
-      mode: 'universal'
+      mode: MODES.universal
     })
     mockGetBuilder(Promise.resolve())
 
@@ -131,7 +132,7 @@ describe('build', () => {
 
   test('build can disable locking', async () => {
     mockGetNuxt({
-      mode: 'universal'
+      mode: MODES.universal
     })
     mockGetBuilder(Promise.resolve())
 
