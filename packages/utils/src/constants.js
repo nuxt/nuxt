@@ -1,7 +1,7 @@
 export const TARGETS = {
   server: 'server',
   serverless: 'serverless',
-  static: 'static',
+  static: 'static'
 }
 
 export const MODES = {
