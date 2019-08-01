@@ -1,5 +1,7 @@
+import { MODES } from '@nuxt/utils'
+
 export default () => ({
-  universal: {
+  [MODES.universal]: {
     build: {
       ssr: true
     },
@@ -7,7 +9,7 @@ export default () => ({
       ssr: true
     }
   },
-  spa: {
+  [MODES.spa]: {
     build: {
       ssr: false
     },

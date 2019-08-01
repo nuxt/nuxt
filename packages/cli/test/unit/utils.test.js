@@ -1,4 +1,5 @@
 import { getDefaultNuxtConfig } from '@nuxt/config'
+import { TARGETS, MODES } from '@nuxt/utils'
 import { consola } from '../utils'
 import { loadNuxtConfig } from '../../src/utils/config'
 import * as utils from '../../src/utils'
@@ -24,7 +25,7 @@ describe('cli/utils', () => {
 
     const options = await loadNuxtConfig(argv)
     expect(options.rootDir).toBe(process.cwd())
-    expect(options.mode).toBe('universal')
+    expect(options.mode).toBe(MODES.universal)
     expect(options.server.host).toBe('localhost')
     expect(options.server.port).toBe(3000)
     expect(options.server.socket).not.toBeDefined()
@@ -40,7 +41,7 @@ describe('cli/utils', () => {
     const options = await loadNuxtConfig(argv)
     expect(options.testOption).toBe(true)
     expect(options.rootDir).toBe('/some/path')
-    expect(options.mode).toBe('spa')
+    expect(options.mode).toBe(MODES.spa)
     expect(options.server.host).toBe('nuxt-host')
     expect(options.server.port).toBe(3001)
     expect(options.server.socket).toBe('/var/run/nuxt.sock')
@@ -192,7 +193,7 @@ describe('cli/utils', () => {
     showBanner({
       options: {
         dev: false,
-        target: 'static',
+        target: TARGETS.static,
         render: {
           ssr: false
         },

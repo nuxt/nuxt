@@ -10,7 +10,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -123,7 +123,7 @@ export default class WebpackBaseConfig {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
       'process.dev': this.dev,
-      'process.static': this.target === 'static',
+      'process.static': this.target === TARGETS.static,
       'process.target': JSON.stringify(this.target)
     }
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {

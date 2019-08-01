@@ -1,5 +1,6 @@
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
+import { TARGETS, MODES } from '@nuxt/utils'
 
 export default () => ({
   // Env
@@ -9,10 +10,10 @@ export default () => ({
   env: {},
 
   // Target
-  target: 'server', // | 'serverless' | 'static'
+  target: TARGETS.server,
 
   // Mode
-  mode: 'universal',
+  mode: MODES.universal,
   modern: undefined,
 
   // Globals

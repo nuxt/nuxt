@@ -1,3 +1,4 @@
+import { MODES } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
 
@@ -72,7 +73,7 @@ export default {
       }))
     }
 
-    if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
+    if (nuxt.options.mode !== MODES.spa || cmd.argv.generate === false) {
       // Build only
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()

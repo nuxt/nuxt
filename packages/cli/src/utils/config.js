@@ -2,7 +2,7 @@ import path from 'path'
 import consola from 'consola'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
-import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
+import { MODES, clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 
 export async function loadNuxtConfig (argv) {
@@ -61,7 +61,7 @@ export async function loadNuxtConfig (argv) {
 
   // Nuxt Mode
   options.mode =
-    (argv.spa && 'spa') || (argv.universal && 'universal') || options.mode
+    (argv.spa && MODES.spa) || (argv.universal && MODES.universal) || options.mode
 
   // Server options
   options.server = defaultsDeep({

@@ -1,3 +1,4 @@
+import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
 
@@ -55,7 +56,7 @@ export default {
   async run (cmd) {
     const config = await cmd.getNuxtConfig({
       dev: false,
-      target: 'static',
+      target: TARGETS.static,
       _build: cmd.argv.build
     })
 

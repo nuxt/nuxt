@@ -5,7 +5,7 @@ import defaults from 'lodash/defaults'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -90,23 +90,23 @@ export function getNuxtConfig (_options) {
 
   // Target
   options.target = options.target || 'server'
-  if (!['server', 'serverless', 'static'].includes(options.target)) {
+  if (!Object.values(TARGETS).includes(options.target)) {
     consola.warn(`Unknown target: ${options.target}. Falling back to server`)
     options.target = 'server'
   }
 
   // User server middleware warning if target=static
-  if (options.target === 'static' && options.serverMiddleware.length) {
+  if (options.target === TARGETS.static && options.serverMiddleware.length) {
     consola.warn(`serverMiddleware are not recommended in static target and can lead to side effects`)
   }
 
   // Apply mode preset
-  const modePreset = options.modes[options.mode || 'universal']
+  const modePreset = options.modes[options.mode || MODES.universal]
 
   if (!modePreset) {
-    consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
+    consola.warn(`Unknown mode: ${options.mode}. Falling back to ${MODES.universal}`)
   }
-  defaultsDeep(options, modePreset || options.modes.universal)
+  defaultsDeep(options, modePreset || options.modes[MODES.universal])
 
   // Sanitize router.base
   if (!/\/$/.test(options.router.base)) {
@@ -245,7 +245,7 @@ export function getNuxtConfig (_options) {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,
-      addMeta: Boolean(options.target === 'static'),
+      addMeta: Boolean(options.target === TARGETS.static),
       unsafeInlineCompatiblity: false,
       reportOnly: options.debug
     })
