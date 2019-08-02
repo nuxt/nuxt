@@ -1,6 +1,6 @@
 import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
-import { normalizeArg, createLock } from '../utils'
+import { createLock } from '../utils'
 
 export default {
   name: 'export',
