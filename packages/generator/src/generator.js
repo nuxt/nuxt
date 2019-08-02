@@ -101,7 +101,7 @@ export default class Generator {
     return routes
   }
 
-  getAppRoutes() {
+  getAppRoutes () {
     return require(path.join(this.options.buildDir, 'router/routes.json'))
   }
 
