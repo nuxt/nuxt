@@ -56,6 +56,13 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
+    } else {
+      const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
+      if (!hasBuilt) {
+        throw new Error(
+          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build\` before calling \`nuxt export\``
+        )
+      }
     }
 
     // Initialize dist directory
@@ -78,20 +85,24 @@ export default class Generator {
         throw e // eslint-disable-line no-unreachable
       }
     }
+    let routes = []
     // Generate only index.html for router.mode = 'hash'
-    let routes =
-      this.options.router.mode === 'hash'
-        ? ['/']
-        : flatRoutes(this.options.router.routes)
-
+    if (this.options.router.mode === 'hash') {
+      routes = ['/']
+    } else {
+      routes = flatRoutes(this.getAppRoutes())
+    }
     routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
-
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
     // extendRoutes hook
     await this.nuxt.callHook('generate:extendRoutes', routes)
 
     return routes
+  }
+
+  getAppRoutes() {
+    return require(path.join(this.options.buildDir, 'router/routes.json'))
   }
 
   async generateRoutes (routes) {
@@ -174,6 +185,7 @@ export default class Generator {
     if (await fsExtra.exists(this.staticRoutes)) {
       await fsExtra.copy(this.staticRoutes, this.distPath)
     }
+    // Copy .nuxt/dist/client/ to dist/_nuxt/
     await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder

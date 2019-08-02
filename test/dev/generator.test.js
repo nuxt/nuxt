@@ -11,6 +11,7 @@ describe('generator', () => {
     const nuxt = new Nuxt(config)
     await nuxt.ready()
     const generator = new Generator(nuxt)
+    generator.getAppRoutes = jest.fn(() => [])
     const routes = await generator.initRoutes()
 
     expect(routes.length).toBe(array.length)
@@ -31,6 +32,8 @@ describe('generator', () => {
     const nuxt = new Nuxt(config)
     await nuxt.ready()
     const generator = new Generator(nuxt)
+    generator.getAppRoutes = jest.fn(() => [])
+
     const routes = await generator.initRoutes()
 
     expect(routes.length).toBe(array.length)
@@ -50,6 +53,7 @@ describe('generator', () => {
     const nuxt = new Nuxt(config)
     await nuxt.ready()
     const generator = new Generator(nuxt)
+    generator.getAppRoutes = jest.fn(() => [])
     const array = ['/1', '/2', '/3', '/4']
     const routes = await generator.initRoutes(array)
 
@@ -70,6 +74,7 @@ describe('generator', () => {
     const nuxt = new Nuxt(config)
     await nuxt.ready()
     const generator = new Generator(nuxt)
+    generator.getAppRoutes = jest.fn(() => [])
     const array = ['/1', '/2', '/3', '/4']
     const routes = await generator.initRoutes(...array)
 
