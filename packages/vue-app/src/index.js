@@ -11,6 +11,7 @@ export const template = {
     'middleware.js',
     'router.js',
     'router.scrollBehavior.js',
+    'router/routes.json',
     'server.js',
     'utils.js',
     'empty.js',

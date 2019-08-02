@@ -61,9 +61,7 @@ export default {
     })
 
     // Disable analyze if set by the nuxt config
-    if (!config.build) {
-      config.build = {}
-    }
+    config.build = config.build || {}
     config.build.analyze = false
 
     const nuxt = await cmd.getNuxt(config)

@@ -206,6 +206,7 @@ describe('basic generate', () => {
 
   test('nuxt re-generating with no subfolders', async () => {
     generator.nuxt.options.generate.subFolders = false
+    generator.getAppRoutes = jest.fn(() => [])
     await expect(generator.generate({ build: false })).resolves.toBeTruthy()
   })
 

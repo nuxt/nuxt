@@ -3,6 +3,7 @@ const commands = {
   dev: () => import('./dev'),
   build: () => import('./build'),
   generate: () => import('./generate'),
+  export: () => import('./export'),
   help: () => import('./help')
 }
 
