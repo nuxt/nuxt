@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs'
 import webpack from 'webpack'
-import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
