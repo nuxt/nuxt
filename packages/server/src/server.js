@@ -217,6 +217,7 @@ export default class Server {
 
   renderAndGetWindow (url, opts = {}) {
     return renderAndGetWindow(url, opts, {
+      loadingTimeout: this.globals.loadingTimeout,
       loadedCallback: this.globals.loadedCallback,
       ssr: this.options.render.ssr,
       globals: this.globals
