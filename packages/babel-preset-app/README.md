@@ -69,8 +69,8 @@ export default {
     babel: {
       presets({ envName }) {
         const envTargets = {
-          client: { node: "current" },
-          server: { browsers: ["last 2 versions"], ie: 11 }
+          client: { browsers: ["last 2 versions"], ie: 11 },
+          server: { node: "current" },
         }
         return [
           [
@@ -102,7 +102,7 @@ export default {
       presets({ envName }) {
         return [
           [
-            require.resolve('@nuxt/babel-preset-app'),
+            '@nuxt/babel-preset-app',
             {
               corejs: { version: 3 }
             }

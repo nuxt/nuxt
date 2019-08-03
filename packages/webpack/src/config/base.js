@@ -86,7 +86,9 @@ export default class WebpackBaseConfig {
     const defaultPreset = [ require.resolve('@nuxt/babel-preset-app'), {} ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ envName }, defaultPreset)
+      // TODO: remove isServer in Nuxt 3
+      const isServer = envName === 'server'
+      options.presets = options.presets({ envName, isServer }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
