@@ -14,6 +14,9 @@ export default {
   router: {
     base: '/test/',
     middleware: 'noop',
+    scrollBehavior (to, from, savedPosition) {
+      return { x: 0, y: 0 }
+    },
     extendRoutes (routes) {
       return [
         ...routes,

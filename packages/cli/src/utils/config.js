@@ -24,11 +24,7 @@ export async function loadNuxtConfig (argv) {
     // Clear cache
     clearRequireCache(nuxtConfigFile)
 
-    if (nuxtConfigFile.endsWith('.ts')) {
-      options = require(nuxtConfigFile) || {}
-    } else {
-      options = esm(module)(nuxtConfigFile) || {}
-    }
+    options = esm(module)(nuxtConfigFile) || {}
 
     if (options.default) {
       options = options.default

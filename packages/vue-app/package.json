@@ -6,17 +6,15 @@
   "files": [
     "dist",
     "template",
-    "types/*.d.ts",
     "vetur"
   ],
   "main": "dist/vue-app.js",
-  "typings": "types/index.d.ts",
   "dependencies": {
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
     "vue-client-only": "^2.0.0",
-    "vue-meta": "^2.0.5",
+    "vue-meta": "^2.2.0",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.0.7",
     "vue-template-compiler": "^2.6.10",
