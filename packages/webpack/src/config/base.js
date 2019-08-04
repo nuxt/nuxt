@@ -38,7 +38,8 @@ export default class WebpackBaseConfig {
       isDev: this.dev,
       isServer: this.isServer,
       isClient: !this.isServer,
-      isModern: Boolean(this.isModern)
+      isModern: Boolean(this.isModern),
+      isLegacy: Boolean(!this.isModern)
     }
   }
 
@@ -57,10 +58,13 @@ export default class WebpackBaseConfig {
   normalizeTranspile () {
     // include SFCs in node_modules
     const items = [/\.vue\.js/i]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
+    for (let pattern of this.buildContext.buildOptions.transpile) {
+      if (typeof pattern === 'function') {
+        pattern = pattern(this.nuxtEnv)
+      }
       if (pattern instanceof RegExp) {
         items.push(pattern)
-      } else {
+      } else if (typeof pattern === 'string') {
         const posixModule = pattern.replace(/\\/g, '/')
         items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
       }
