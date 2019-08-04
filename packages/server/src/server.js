@@ -215,12 +215,17 @@ export default class Server {
     return this.renderer.loadResources.apply(this.renderer, arguments)
   }
 
-  renderAndGetWindow (url, opts = {}) {
+  renderAndGetWindow (url, opts = {}, {
+    loadingTimeout = 2000,
+    loadedCallback = this.globals.loadedCallback,
+    ssr = this.options.render.ssr,
+    globals = this.globals
+  } = {}) {
     return renderAndGetWindow(url, opts, {
-      loadingTimeout: this.globals.loadingTimeout,
-      loadedCallback: this.globals.loadedCallback,
-      ssr: this.options.render.ssr,
-      globals: this.globals
+      loadingTimeout,
+      loadedCallback,
+      ssr,
+      globals
     })
   }
 
