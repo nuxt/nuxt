@@ -1,7 +1,8 @@
+import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
 import debounce from 'lodash/debounce'
-import { r, isString } from '@nuxt/utils'
+import { r, isString, isPureObject } from '@nuxt/utils'
 
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
@@ -41,31 +42,73 @@ describe('builder: builder watch', () => {
 
     const patterns = [
       '/var/nuxt/src/layouts',
-      '/var/nuxt/src/store',
-      '/var/nuxt/src/middleware',
-      '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}',
-      '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}'
+      '/var/nuxt/src/middleware'
     ]
 
-    expect(r).toBeCalledTimes(5)
-    expect(r).nthCalledWith(1, '/var/nuxt/src', '/var/nuxt/src/layouts')
-    expect(r).nthCalledWith(2, '/var/nuxt/src', '/var/nuxt/src/store')
-    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/middleware')
-    expect(r).nthCalledWith(4, '/var/nuxt/src', '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}')
-    expect(r).nthCalledWith(5, '/var/nuxt/src', '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}')
+    const globbedPatterns = [
+      '/var/nuxt/src/layouts/**/*.{vue,js}',
+      '/var/nuxt/src/middleware/**/*.{vue,js}'
+    ]
 
-    expect(upath.normalizeSafe).toBeCalledTimes(5)
-    expect(upath.normalizeSafe).nthCalledWith(1, '/var/nuxt/src/layouts', 0, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(2, '/var/nuxt/src/store', 1, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/middleware', 2, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(4, '/var/nuxt/src/layouts/*.{vue,js,ts,tsx}', 3, patterns)
-    expect(upath.normalizeSafe).nthCalledWith(5, '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}', 4, patterns)
+    expect(r).toBeCalledTimes(2)
+    expect(r).nthCalledWith(1, '/var/nuxt/src', patterns[0])
+    expect(r).nthCalledWith(2, '/var/nuxt/src', patterns[1])
+
+    expect(upath.normalizeSafe).toBeCalledTimes(2)
+    expect(upath.normalizeSafe).nthCalledWith(1, globbedPatterns[0], 0, patterns)
+    expect(upath.normalizeSafe).nthCalledWith(2, globbedPatterns[1], 1, patterns)
 
     expect(builder.createFileWatcher).toBeCalledTimes(1)
-    expect(builder.createFileWatcher).toBeCalledWith(patterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
+    expect(builder.createFileWatcher).toBeCalledWith(globbedPatterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
     expect(builder.assignWatcher).toBeCalledTimes(1)
   })
 
+  test('should watch store files', () => {
+    const nuxt = createNuxt()
+    nuxt.options.store = true
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
+    nuxt.options.build.watch = []
+
+    const builder = new Builder(nuxt, {})
+    builder.createFileWatcher = jest.fn()
+    builder.assignWatcher = jest.fn(() => () => {})
+    r.mockImplementation((dir, src) => src)
+
+    builder.watchClient()
+
+    expect(r).toBeCalledTimes(3)
+    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/store')
+  })
+
+  test('should NOT watch pages files on client if _defaultPage=true', () => {
+    const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
+    nuxt.options.build.watch = []
+    nuxt.options.watchers = {
+      chokidar: { test: true }
+    }
+
+    const builder = new Builder(nuxt, {})
+    builder._nuxtPages = true
+    builder._defaultPage = true
+    r.mockImplementation((dir, src) => src)
+
+    builder.watchClient()
+
+    expect(r).toBeCalledTimes(2)
+  })
   test('should watch pages files', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
@@ -86,10 +129,11 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(r).toBeCalledTimes(8)
-    expect(r).nthCalledWith(6, '/var/nuxt/src', '/var/nuxt/src/pages')
-    expect(r).nthCalledWith(7, '/var/nuxt/src', '/var/nuxt/src/pages/*.{vue,js,ts,tsx}')
-    expect(r).nthCalledWith(8, '/var/nuxt/src', '/var/nuxt/src/pages/**/*.{vue,js,ts,tsx}')
+    expect(r).toBeCalledTimes(3)
+    expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/pages')
+
+    expect(upath.normalizeSafe).toBeCalledTimes(3)
+    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/pages/**/*.{vue,js}', 2, expect.any(Array))
   })
 
   test('should invoke generateRoutesAndFiles on file refresh', () => {
@@ -145,9 +189,9 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/style'
     ]
 
-    expect(builder.createFileWatcher).toBeCalledTimes(2)
+    expect(builder.createFileWatcher).toBeCalledTimes(3)
     expect(builder.createFileWatcher).toBeCalledWith(patterns, ['change'], expect.any(Function), expect.any(Function))
-    expect(builder.assignWatcher).toBeCalledTimes(2)
+    expect(builder.assignWatcher).toBeCalledTimes(3)
   })
 
   test('should invoke chokidar to create watcher', () => {
@@ -215,6 +259,13 @@ describe('builder: builder watch', () => {
 
   test('should watch files for restarting server', () => {
     const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
     nuxt.options.watchers = {
       chokidar: { test: true }
     }
@@ -222,21 +273,25 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/watch/test'
     ]
     nuxt.options.serverMiddleware = [
-      '/var/nuxt/src/middleware/test',
+      '/var/nuxt/src/serverMiddleware/test',
+      { path: '/test', handler: '/var/nuxt/src/serverMiddleware/test-handler' },
       { obj: 'test' }
     ]
     const builder = new Builder(nuxt, {})
     builder.ignore.ignoreFile = '/var/nuxt/src/.nuxtignore'
-    isString.mockImplementationOnce(src => typeof src === 'string')
+    isString.mockImplementation(src => typeof src === 'string')
+    isPureObject.mockImplementation(obj => typeof obj === 'object')
 
     builder.watchRestart()
 
     expect(chokidar.watch).toBeCalledTimes(1)
     expect(chokidar.watch).toBeCalledWith(
       [
-        'resolveAlias(/var/nuxt/src/middleware/test)',
+        'resolveAlias(resolvePath(/var/nuxt/src/serverMiddleware/test))',
+        'resolveAlias(resolvePath(/var/nuxt/src/serverMiddleware/test-handler))',
         'resolveAlias(/var/nuxt/src/watch/test)',
-        '/var/nuxt/src/.nuxtignore'
+        '/var/nuxt/src/.nuxtignore',
+        path.join('/var/nuxt/src/var/nuxt/src/store') // because store == false + using path.join()
       ],
       { test: true }
     )
@@ -244,8 +299,15 @@ describe('builder: builder watch', () => {
     expect(chokidar.on).toBeCalledWith('all', expect.any(Function))
   })
 
-  test('should trigger restarting when files changed', () => {
+  test('should trigger restarting when files changed', async () => {
     const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
     nuxt.options.watchers = {
       chokidar: { test: true }
     }
@@ -259,9 +321,9 @@ describe('builder: builder watch', () => {
 
     const restartHandler = chokidar.on.mock.calls[0][1]
     const watchingFile = '/var/nuxt/src/watch/test/index.js'
-    restartHandler('add', watchingFile)
-    restartHandler('change', watchingFile)
-    restartHandler('unlink', watchingFile)
+    await restartHandler('add', watchingFile)
+    await restartHandler('change', watchingFile)
+    await restartHandler('unlink', watchingFile)
 
     expect(nuxt.callHook).toBeCalledTimes(6)
     expect(nuxt.callHook).nthCalledWith(1, 'watch:fileChanged', builder, watchingFile)
@@ -274,6 +336,13 @@ describe('builder: builder watch', () => {
 
   test('should ignore other events in watchRestart', () => {
     const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: '/var/nuxt/src/layouts',
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
     nuxt.options.watchers = {
       chokidar: { test: true }
     }

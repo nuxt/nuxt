@@ -84,9 +84,7 @@ describe('basic ssr', () => {
 
     const html = window.document.body.innerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
-    expect(
-      html.includes('<script data-n-head="true" src="/body.js" data-body="true">')
-    ).toBe(true)
+    expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
@@ -168,11 +166,11 @@ describe('basic ssr', () => {
     let _headers, _status
     const { html } = await nuxt.server.renderRoute('/redirect-external', {
       res: {
-        writeHead(status, headers) {
+        writeHead (status, headers) {
           _status = status
           _headers = headers
         },
-        end() { }
+        end () { }
       }
     })
     expect(_status).toBe(302)

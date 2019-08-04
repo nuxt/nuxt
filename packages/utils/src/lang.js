@@ -1,4 +1,4 @@
-export const encodeHtml = function encodeHtml(str) {
+export const encodeHtml = function encodeHtml (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
@@ -6,15 +6,13 @@ export const isString = obj => typeof obj === 'string' || obj instanceof String
 
 export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
-export const isPureObject = function isPureObject(o) {
-  return !Array.isArray(o) && typeof o === 'object'
-}
+export const isPureObject = obj => !Array.isArray(obj) && typeof obj === 'object'
 
-export const isUrl = function isUrl(url) {
+export const isUrl = function isUrl (url) {
   return ['http', '//'].some(str => url.startsWith(str))
 }
 
-export const urlJoin = function urlJoin() {
+export const urlJoin = function urlJoin () {
   return [].slice
     .call(arguments)
     .join('/')
@@ -38,7 +36,7 @@ const WHITESPACE_REPLACEMENTS = [
   [/\n{2,}$/g, '\n'] // strip blank lines EOF (0 allowed)
 ]
 
-export const stripWhitespace = function stripWhitespace(string) {
+export const stripWhitespace = function stripWhitespace (string) {
   WHITESPACE_REPLACEMENTS.forEach(([regex, newSubstr]) => {
     string = string.replace(regex, newSubstr)
   })

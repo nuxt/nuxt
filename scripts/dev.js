@@ -13,14 +13,7 @@ const stub = {
   es: `export * from '../src/index'`,
   cjs: `const esm = require('esm')
 
-const _require = esm(module, {
-  cache: false,
-  cjs: {
-    cache: true,
-    vars: true,
-    namedExports: true
-  }
-})
+const _require = esm(module)
 
 const execa = require('execa')
 
@@ -55,7 +48,7 @@ Object.defineProperty(global.__NUXT, 'version', {
 module.exports = _require('../src/index')
 ` }
 
-async function main() {
+async function main () {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = await rootPackage.getWorkspacePackages()

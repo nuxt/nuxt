@@ -30,14 +30,17 @@ describe('basic dev', () => {
           '@scoped/packageA',
           '@scoped\\packageB',
           'vue.test.js',
-          /vue-test/
+          /vue-test/,
+          ({ isModern }) => isModern ? 'modern-test' : 'normal-test'
         ],
         loaders: {
           cssModules: {
-            localIdentName: '[hash:base64:6]'
+            modules: {
+              localIdentName: '[hash:base64:6]'
+            }
           }
         },
-        extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
+        extend ({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)
@@ -75,6 +78,7 @@ describe('basic dev', () => {
     expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/normal-test'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
@@ -86,13 +90,13 @@ describe('basic dev', () => {
   })
 
   test('Config: build.loaders', () => {
-    expect(Object.keys(loadersOptions)).toHaveLength(14)
+    expect(Object.keys(loadersOptions)).toHaveLength(12)
     expect(loadersOptions).toHaveProperty(
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
-      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'tsx', 'vueStyle'
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
-    expect(cssModules.localIdentName).toBe('[hash:base64:6]')
+    expect(cssModules.modules.localIdentName).toBe('[hash:base64:6]')
     expect(vueLoader.options).toBe(vue)
   })
 

@@ -7,10 +7,10 @@ import devalue from '@nuxt/devalue'
 import { r, wp, wChunk, serializeFunction } from '@nuxt/utils'
 
 export default class TemplateContext {
-  constructor(builder, options) {
+  constructor (builder, options) {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
-      options: options,
+      nuxtOptions: options,
       extensions: options.extensions
         .map(ext => ext.replace(/^\./, ''))
         .join('|'),
@@ -20,6 +20,7 @@ export default class TemplateContext {
       isDev: options.dev,
       isTest: options.test,
       debug: options.debug,
+      buildIndicator: options.dev && options.build.indicator,
       vue: { config: options.vue.config },
       fetch: options.fetch,
       mode: options.mode,
@@ -39,6 +40,8 @@ export default class TemplateContext {
           : options.loading,
       pageTransition: options.pageTransition,
       layoutTransition: options.layoutTransition,
+      rootDir: options.rootDir,
+      srcDir: options.srcDir,
       dir: options.dir,
       components: {
         ErrorPage: options.ErrorPage
@@ -48,7 +51,7 @@ export default class TemplateContext {
     }
   }
 
-  get templateOptions() {
+  get templateOptions () {
     let lodash = null
 
     return {
@@ -62,7 +65,7 @@ export default class TemplateContext {
         wChunk,
         // Legacy support: https://github.com/nuxt/nuxt.js/issues/4350
         _: new Proxy({}, {
-          get(target, prop) {
+          get (target, prop) {
             if (!lodash) {
               consola.warn('Avoid using _ inside templates')
               lodash = require('lodash')

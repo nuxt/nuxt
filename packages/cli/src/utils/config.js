@@ -5,7 +5,7 @@ import { defaultNuxtConfigFile, getDefaultNuxtConfig } from '@nuxt/config'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 
-export async function loadNuxtConfig(argv) {
+export async function loadNuxtConfig (argv) {
   const rootDir = path.resolve(argv._[0] || '.')
   let nuxtConfigFile
   let options = {}
@@ -21,12 +21,10 @@ export async function loadNuxtConfig(argv) {
   }
 
   if (nuxtConfigFile) {
-    if (nuxtConfigFile.endsWith('.ts')) {
-      options = require(nuxtConfigFile) || {}
-    } else {
-      clearRequireCache(nuxtConfigFile)
-      options = esm(module, { cache: false, cjs: { cache: false } })(nuxtConfigFile) || {}
-    }
+    // Clear cache
+    clearRequireCache(nuxtConfigFile)
+
+    options = esm(module)(nuxtConfigFile) || {}
 
     if (options.default) {
       options = options.default
@@ -44,11 +42,17 @@ export async function loadNuxtConfig(argv) {
       }
     }
 
+    // Don't mutate options export
+    options = Object.assign({}, options)
+
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = nuxtConfigFile
 
     // Keep all related files for watching
     options._nuxtConfigFiles = Array.from(scanRequireTree(nuxtConfigFile))
+    if (!options._nuxtConfigFiles.includes(nuxtConfigFile)) {
+      options._nuxtConfigFiles.unshift(nuxtConfigFile)
+    }
   }
 
   if (typeof options.rootDir !== 'string') {

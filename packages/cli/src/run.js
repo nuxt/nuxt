@@ -1,10 +1,26 @@
 import fs from 'fs'
 import execa from 'execa'
+import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
 
-export default async function run(_argv) {
+function packageExists (name) {
+  try {
+    require.resolve(name)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+export default async function run (_argv) {
+  // Check for not installing both nuxt and nuxt-edge
+  const dupPkg = '@nuxt/' + (pkgName === '@nuxt/cli-edge' ? 'cli' : 'cli-edge')
+  if (packageExists(dupPkg)) {
+    throw new Error('Both `nuxt` and `nuxt-edge` dependencies are installed! This is unsupported, please choose one and remove the other one from dependencies.')
+  }
+
   // Read from process.argv
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
@@ -33,7 +49,7 @@ export default async function run(_argv) {
       stdin: process.stdin
     })
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error.exitCode === 2) {
       throw String(`Command not found: nuxt-${argv[0]}`)
     }
     throw String(`Failed to run command \`nuxt-${argv[0]}\`:\n${error}`)

@@ -3,11 +3,11 @@ import puppeteer from 'puppeteer-core'
 import ChromeDetector from './chrome'
 
 export default class Browser {
-  constructor() {
+  constructor () {
     this.detector = new ChromeDetector()
   }
 
-  async start(options = {}) {
+  async start (options = {}) {
     // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
     const _opts = {
       args: [
@@ -25,13 +25,13 @@ export default class Browser {
     this.browser = await puppeteer.launch(_opts)
   }
 
-  async close() {
-    if (!this.browser) return
+  async close () {
+    if (!this.browser) { return }
     await this.browser.close()
   }
 
-  async page(url, globalName = 'nuxt') {
-    if (!this.browser) throw new Error('Please call start() before page(url)')
+  async page (url, globalName = 'nuxt') {
+    if (!this.browser) { throw new Error('Please call start() before page(url)') }
     const page = await this.browser.newPage()
     await page.goto(url)
     page.$nuxtGlobalHandle = `window.$${globalName}`
@@ -57,7 +57,7 @@ export default class Browser {
     page.$nuxt = await page.evaluateHandle(page.$nuxtGlobalHandle)
 
     page.nuxt = {
-      async navigate(path, waitEnd = true) {
+      async navigate (path, waitEnd = true) {
         const hook = page.evaluate(`
           new Promise(resolve =>
             ${page.$nuxtGlobalHandle}.$once('routeChanged', resolve)
@@ -73,7 +73,23 @@ export default class Browser {
         }
         return { hook }
       },
-      routeData() {
+      async go (n, waitEnd = true) {
+        const hook = page.evaluate(`
+          new Promise(resolve =>
+            ${page.$nuxtGlobalHandle}.$once('routeChanged', resolve)
+          ).then(() => new Promise(resolve => setTimeout(resolve, 50)))
+        `)
+        await page.evaluate(
+          ($nuxt, n) => $nuxt.$router.go(n),
+          page.$nuxt,
+          n
+        )
+        if (waitEnd) {
+          await hook
+        }
+        return { hook }
+      },
+      routeData () {
         return page.evaluate(($nuxt) => {
           return {
             path: $nuxt.$route.path,
@@ -81,13 +97,13 @@ export default class Browser {
           }
         }, page.$nuxt)
       },
-      loadingData() {
+      loadingData () {
         return page.evaluate($nuxt => $nuxt.$loading.$data, page.$nuxt)
       },
-      errorData() {
+      errorData () {
         return page.evaluate($nuxt => $nuxt.nuxt.err, page.$nuxt)
       },
-      storeState() {
+      storeState () {
         return page.evaluate($nuxt => $nuxt.$store.state, page.$nuxt)
       }
     }

@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs'
 import webpack from 'webpack'
-import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
@@ -9,34 +8,24 @@ import VueSSRServerPlugin from '../plugins/vue/server'
 import WebpackBaseConfig from './base'
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
-  constructor(...args) {
+  constructor (...args) {
     super(...args)
     this.name = 'server'
     this.isServer = true
-    this.whitelist = this.normalizeWhitelist()
   }
 
-  normalizeWhitelist() {
-    const whitelist = [
-      /\.(?!js(x|on)?$)/i
-    ]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
-      if (pattern instanceof RegExp) {
-        whitelist.push(pattern)
-      } else {
-        const posixModule = pattern.replace(/\\/g, '/')
-        whitelist.push(new RegExp(escapeRegExp(posixModule)))
-      }
-    }
-
-    return whitelist
-  }
-
-  get devtool() {
+  get devtool () {
     return 'cheap-module-source-map'
   }
 
-  env() {
+  get externalsWhitelist () {
+    return [
+      /\.(?!js(x|on)?$)/i,
+      ...this.normalizeTranspile()
+    ]
+  }
+
+  env () {
     return Object.assign(super.env(), {
       'process.env.VUE_ENV': JSON.stringify('server'),
       'process.browser': false,
@@ -46,14 +35,14 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     })
   }
 
-  optimization() {
+  optimization () {
     return {
       splitChunks: false,
       minimizer: this.minimizer()
     }
   }
 
-  resolve() {
+  resolve () {
     const resolveConfig = super.resolve()
 
     resolveConfig.resolve.mainFields = ['main', 'module']
@@ -61,7 +50,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return resolveConfig
   }
 
-  alias() {
+  alias () {
     const aliases = super.alias()
 
     for (const p of this.buildContext.plugins) {
@@ -74,7 +63,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return aliases
   }
 
-  plugins() {
+  plugins () {
     const plugins = super.plugins()
     plugins.push(
       new VueSSRServerPlugin({
@@ -85,7 +74,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return plugins
   }
 
-  config() {
+  config () {
     const config = super.config()
 
     Object.assign(config, {
@@ -114,7 +103,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({
-              whitelist: this.whitelist,
+              whitelist: this.externalsWhitelist,
               modulesDir: dir
             })
           )

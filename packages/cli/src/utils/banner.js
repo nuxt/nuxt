@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
-export function showBanner(nuxt, showMemoryUsage = true) {
+export function showBanner (nuxt, showMemoryUsage = true) {
   if (env.test) {
     return
   }
@@ -24,10 +24,6 @@ export function showBanner(nuxt, showMemoryUsage = true) {
 
   // Running mode
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
-
-  if (nuxt.options._typescript && nuxt.options._typescript.runtime) {
-    titleLines.push(`TypeScript support is ${chalk.green.bold('enabled')}`)
-  }
 
   if (showMemoryUsage) {
     titleLines.push(getFormattedMemoryUsage())

@@ -1,6 +1,5 @@
 import path from 'path'
 import querystring from 'querystring'
-import consola from 'consola'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
@@ -13,14 +12,14 @@ import VueSSRClientPlugin from '../plugins/vue/client'
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
-  constructor(builder) {
+  constructor (builder) {
     super(builder)
     this.name = 'client'
     this.isServer = false
     this.isModern = false
   }
 
-  getFileName(...args) {
+  getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args
       if (['app', 'chunk'].includes(key)) {
@@ -30,7 +29,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return super.getFileName(...args)
   }
 
-  env() {
+  env () {
     return Object.assign(super.env(), {
       'process.env.VUE_ENV': JSON.stringify('client'),
       'process.browser': true,
@@ -40,7 +39,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     })
   }
 
-  optimization() {
+  optimization () {
     const optimization = super.optimization()
 
     // Small, known and common modules which are usually used project-wise
@@ -60,7 +59,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return optimization
   }
 
-  minimizer() {
+  minimizer () {
     const minimizer = super.minimizer()
     const { optimizeCSS } = this.buildContext.buildOptions
 
@@ -74,7 +73,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return minimizer
   }
 
-  alias() {
+  alias () {
     const aliases = super.alias()
 
     for (const p of this.buildContext.plugins) {
@@ -87,9 +86,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return aliases
   }
 
-  plugins() {
+  plugins () {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern, rootDir, _typescript = {} } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -150,23 +149,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
-    // TypeScript type checker
-    // Only performs once per client compilation and only if `ts-loader` checker is not used (transpileOnly: true)
-    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.typeCheck && !this.isModern && this.loaders.ts.transpileOnly) {
-      const ForkTsCheckerWebpackPlugin = require(this.buildContext.nuxt.resolver.resolveModule('fork-ts-checker-webpack-plugin'))
-      plugins.push(new ForkTsCheckerWebpackPlugin(Object.assign({
-        vue: true,
-        tsconfig: path.resolve(rootDir, 'tsconfig.json'),
-        tslint: false, // We recommend using ESLint so we set this option to `false` by default
-        formatter: 'codeframe',
-        logger: consola
-      }, buildOptions.typescript.typeCheck)))
-    }
-
     return plugins
   }
 
-  config() {
+  config () {
     const config = super.config()
     const {
       options: { router, buildDir },

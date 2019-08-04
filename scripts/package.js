@@ -25,7 +25,7 @@ const glob = pify(_glob)
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
 
 export default class Package {
-  constructor(options) {
+  constructor (options) {
     // Assign options
     this.options = Object.assign({}, DEFAULTS, options)
 
@@ -36,7 +36,7 @@ export default class Package {
     this._init()
   }
 
-  _init() {
+  _init () {
     // Try to read package.json
     this.readPkg()
 
@@ -47,15 +47,15 @@ export default class Package {
     this.loadConfig()
   }
 
-  resolvePath(...args) {
+  resolvePath (...args) {
     return resolve(this.options.rootDir, ...args)
   }
 
-  readPkg() {
+  readPkg () {
     this.pkg = readJSONSync(this.resolvePath(this.options.pkgPath))
   }
 
-  loadConfig() {
+  loadConfig () {
     const configPath = this.resolvePath(this.options.configPath)
 
     if (existsSync(configPath)) {
@@ -66,7 +66,7 @@ export default class Package {
     }
   }
 
-  async callHook(name, ...args) {
+  async callHook (name, ...args) {
     let fns = this.options.hooks[name]
 
     if (!fns) {
@@ -82,13 +82,13 @@ export default class Package {
     }
   }
 
-  load(relativePath, opts) {
+  load (relativePath, opts) {
     return new Package(Object.assign({
       rootDir: this.resolvePath(relativePath)
     }, opts))
   }
 
-  async writePackage() {
+  async writePackage () {
     if (this.options.sortDependencies) {
       this.sortDependencies()
     }
@@ -97,21 +97,21 @@ export default class Package {
     await writeFile(pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
   }
 
-  generateVersion() {
+  generateVersion () {
     const date = Math.round(Date.now() / (1000 * 60))
     const gitCommit = this.gitShortCommit()
     const baseVersion = this.pkg.version.split('-')[0]
     this.pkg.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
-  tryRequire(id) {
+  tryRequire (id) {
     try {
       return require(id)
     } catch (e) {
     }
   }
 
-  suffixAndVersion() {
+  suffixAndVersion () {
     this.logger.info(`Adding suffix ${this.options.suffix}`)
 
     const oldPkgName = this.pkg.name
@@ -143,7 +143,7 @@ export default class Package {
     this.generateVersion()
   }
 
-  syncLinkedDependencies() {
+  syncLinkedDependencies () {
     // Apply suffix to all linkedDependencies
     for (const _name of (this.options.linkedDependencies || [])) {
       const name = _name + (this.options.suffix || '')
@@ -166,7 +166,7 @@ export default class Package {
     }
   }
 
-  async getWorkspacePackages() {
+  async getWorkspacePackages () {
     const packages = []
 
     for (const workspace of this.pkg.workspaces || []) {
@@ -184,7 +184,7 @@ export default class Package {
     return packages
   }
 
-  async build(_watch = false) {
+  async build (_watch = false) {
     // Prepare rollup config
     const config = {
       rootDir: this.options.rootDir,
@@ -278,22 +278,22 @@ export default class Package {
     }
   }
 
-  watch() {
+  watch () {
     return this.build(true)
   }
 
-  async publish(tag = 'latest') {
+  publish (tag = 'latest') {
     this.logger.info(`publishing ${this.pkg.name}@${this.pkg.version} with tag ${tag}`)
-    await this.exec('npm', `publish --tag ${tag}`)
+    this.exec('npm', `publish --tag ${tag}`)
   }
 
-  copyFieldsFrom(source, fields = []) {
+  copyFieldsFrom (source, fields = []) {
     for (const field of fields) {
       this.pkg[field] = source.pkg[field]
     }
   }
 
-  async copyFilesFrom(source, files) {
+  async copyFilesFrom (source, files) {
     for (const file of files || source.pkg.files || []) {
       const src = resolve(source.options.rootDir, file)
       const dst = resolve(this.options.rootDir, file)
@@ -301,12 +301,12 @@ export default class Package {
     }
   }
 
-  autoFix() {
+  autoFix () {
     this.pkg = sortPackageJson(this.pkg)
     this.sortDependencies()
   }
 
-  sortDependencies() {
+  sortDependencies () {
     if (this.pkg.dependencies) {
       this.pkg.dependencies = sortObjectKeys(this.pkg.dependencies)
     }
@@ -316,7 +316,7 @@ export default class Package {
     }
   }
 
-  exec(command, args, silent = false) {
+  exec (command, args, silent = false) {
     const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
 
     if (!silent) {
@@ -342,12 +342,12 @@ export default class Package {
     }
   }
 
-  gitShortCommit() {
+  gitShortCommit () {
     const { stdout } = this.exec('git', 'rev-parse --short HEAD', true)
     return stdout
   }
 
-  gitBranch() {
+  gitBranch () {
     const { stdout } = this.exec('git', 'rev-parse --abbrev-ref HEAD', true)
     return stdout
   }

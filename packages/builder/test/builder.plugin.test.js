@@ -20,6 +20,7 @@ describe('builder: builder plugins', () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
       '/var/nuxt/plugins/test.js',
+      '/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js',
       { src: '/var/nuxt/plugins/test.server', mode: 'server' },
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
@@ -32,6 +33,11 @@ describe('builder: builder plugins', () => {
         mode: 'all',
         name: 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.js)',
         src: 'resolveAlias(/var/nuxt/plugins/test.js)'
+      },
+      {
+        mode: 'client',
+        name: 'nuxt_plugin_foobarpluginclient530b6c6a_hash(/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js)',
+        src: 'resolveAlias(/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js)'
       },
       {
         mode: 'server',
@@ -111,7 +117,7 @@ describe('builder: builder plugins', () => {
     ]
     builder.relativeToBuild = jest.fn(src => `relative(${src})`)
 
-    Glob.mockImplementationOnce(src => [`${src}.js`, `${src}.ts`])
+    Glob.mockImplementationOnce(src => [`${src}.js`])
     isIndexFileAndFolder.mockReturnValueOnce(false)
 
     await builder.resolvePlugins()

@@ -33,13 +33,13 @@
 import axios from 'axios'
 
 export default {
-  data() {
+  data () {
     return {
       transitionName: this.getTransitionName(this.page)
     }
   },
   watch: {
-    '$route.query.page': async function (page) {
+    async '$route.query.page' (page) {
       this.$nuxt.$loading.start()
       const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
       this.users = data.data
@@ -49,7 +49,7 @@ export default {
       this.$nuxt.$loading.finish()
     }
   },
-  async asyncData({ query }) {
+  async asyncData ({ query }) {
     const page = +(query.page || 1)
     const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
     return {
@@ -59,7 +59,7 @@ export default {
     }
   },
   methods: {
-    getTransitionName(newPage) {
+    getTransitionName (newPage) {
       return newPage < this.page ? 'slide-right' : 'slide-left'
     }
   },

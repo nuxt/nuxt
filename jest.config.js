@@ -34,14 +34,17 @@ module.exports = {
   ],
 
   transform: {
-    '^.+\\.ts$': 'ts-jest',
     '^.+\\.js$': 'babel-jest',
     '^.+\\.vue$': 'vue-jest'
   },
 
   moduleFileExtensions: [
-    'ts',
     'js',
     'json'
+  ],
+
+  reporters: [
+    'default',
+    ['jest-junit', { outputDirectory: 'reports/junit' }]
   ]
 }

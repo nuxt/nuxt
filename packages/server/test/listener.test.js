@@ -319,7 +319,7 @@ describe('server: listener', () => {
     const listener = new Listener({})
 
     const error = new Error('server error')
-    expect(() => listener.serverErrorHandler(error)).toThrow(error)
+    expect(listener.serverErrorHandler(error)).rejects.toThrow(error)
   })
 
   test('should throw address in use error', () => {
@@ -329,7 +329,7 @@ describe('server: listener', () => {
 
     const addressInUse = new Error()
     addressInUse.code = 'EADDRINUSE'
-    expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `localhost:3000` is already in use.')
+    expect(listener.serverErrorHandler(addressInUse)).rejects.toThrow('Address `localhost:3000` is already in use.')
   })
 
   test('should throw address in use error for socket', () => {
@@ -338,7 +338,7 @@ describe('server: listener', () => {
 
     const addressInUse = new Error()
     addressInUse.code = 'EADDRINUSE'
-    expect(() => listener.serverErrorHandler(addressInUse)).toThrow('Address `nuxt.socket` is already in use.')
+    expect(listener.serverErrorHandler(addressInUse)).rejects.toThrow('Address `nuxt.socket` is already in use.')
   })
 
   test('should fallback to a random port in address in use error', async () => {
@@ -360,6 +360,28 @@ describe('server: listener', () => {
     expect(listener.port).toEqual('0')
     expect(listener.close).toBeCalledTimes(1)
     expect(listener.listen).toBeCalledTimes(1)
+  })
+
+  test('should reuse last random port', async () => {
+    const listener = new Listener({ dev: true, host: 'localhost', port: 3000 })
+    listener.host = 'localhost'
+    listener.close = jest.fn()
+    listener.listen = function () {
+      if (this.port === '0') {
+        this.port = Math.random()
+      }
+    }
+
+    const addressInUse = new Error()
+    addressInUse.code = 'EADDRINUSE'
+
+    await listener.serverErrorHandler(addressInUse).catch(() => { })
+    const port1 = listener.port
+    await listener.serverErrorHandler(addressInUse).catch(() => { })
+    const port2 = listener.port
+
+    expect(port1).not.toBe(3000)
+    expect(port2).toBe(port1)
   })
 
   test('should close server', async () => {

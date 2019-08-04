@@ -12,7 +12,7 @@ export default
   components: { Child }
 })
 class App extends Vue {
-  asyncData({ req }) {
+  asyncData ({ req }) {
     return { env: req ? 'server' : 'client' }
   }
 }

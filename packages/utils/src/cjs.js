@@ -1,14 +1,11 @@
-export function clearRequireCache(id) {
+export function clearRequireCache (id) {
   const entry = require.cache[id]
   if (!entry || id.includes('node_modules')) {
     return
   }
 
   if (entry.parent) {
-    const i = entry.parent.children.findIndex(e => e.id === id)
-    if (i > -1) {
-      entry.parent.children.splice(i, 1)
-    }
+    entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 
   for (const child of entry.children) {
@@ -18,7 +15,7 @@ export function clearRequireCache(id) {
   delete require.cache[id]
 }
 
-export function scanRequireTree(id, files = new Set()) {
+export function scanRequireTree (id, files = new Set()) {
   const entry = require.cache[id]
   if (!entry || id.includes('node_modules') || files.has(id)) {
     return files

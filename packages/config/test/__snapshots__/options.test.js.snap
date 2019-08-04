@@ -8,9 +8,18 @@ Object {
   "_nuxtConfigFiles": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],
+  "alias": Object {
+    "@": "/var/nuxt/test",
+    "@@": "/var/nuxt/test",
+    "assets": "/var/nuxt/test/assets",
+    "static": "/var/nuxt/test/static",
+    "~": "/var/nuxt/test",
+    "~~": "/var/nuxt/test",
+  },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -46,12 +55,19 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
+    },
     "loaders": Object {
       "css": Object {
         "sourceMap": false,
       },
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
         "sourceMap": false,
       },
       "file": Object {},
@@ -74,18 +90,6 @@ Object {
       },
       "stylus": Object {
         "sourceMap": false,
-      },
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
       },
       "vue": Object {
         "productionMode": true,
@@ -135,9 +139,7 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "typeCheck": true,
-    },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
@@ -149,6 +151,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -161,7 +164,6 @@ Object {
   "extensions": Array [
     "js",
     "mjs",
-    "ts",
   ],
   "fetch": Object {
     "client": true,
@@ -299,6 +301,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": true,
+    "ssrLog": false,
     "static": Object {
       "prefix": true,
     },
@@ -353,9 +356,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }

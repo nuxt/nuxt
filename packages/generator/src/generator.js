@@ -7,7 +7,7 @@ import htmlMinifier from 'html-minifier'
 import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
-  constructor(nuxt, builder) {
+  constructor (nuxt, builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
@@ -22,7 +22,7 @@ export default class Generator {
     )
   }
 
-  async generate({ build = true, init = true } = {}) {
+  async generate ({ build = true, init = true } = {}) {
     consola.debug('Initializing generator...')
 
     await this.initiate({ build, init })
@@ -43,7 +43,7 @@ export default class Generator {
     return { errors }
   }
 
-  async initiate({ build = true, init = true } = {}) {
+  async initiate ({ build = true, init = true } = {}) {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
@@ -64,7 +64,7 @@ export default class Generator {
     }
   }
 
-  async initRoutes(...args) {
+  async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
     if (this.options.router.mode !== 'hash') {
@@ -94,7 +94,7 @@ export default class Generator {
     return routes
   }
 
-  async generateRoutes(routes) {
+  async generateRoutes (routes) {
     const errors = []
 
     // Start generate process
@@ -117,7 +117,7 @@ export default class Generator {
     return errors
   }
 
-  _formatErrors(errors) {
+  _formatErrors (errors) {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
@@ -136,7 +136,7 @@ export default class Generator {
       .join('\n')
   }
 
-  async afterGenerate() {
+  async afterGenerate () {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
@@ -153,11 +153,18 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    const { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+    let { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+
+    try {
+      html = this.minifyHtml(html)
+    } catch (error) {
+      consola.warn(`HTML minification failed for SPA fallback`)
+    }
+
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
   }
 
-  async initDist() {
+  async initDist () {
     // Clean destination folder
     await fsExtra.remove(this.distPath)
 
@@ -177,7 +184,7 @@ export default class Generator {
     await this.nuxt.callHook('generate:distCopied', this)
   }
 
-  decorateWithPayloads(routes, generateRoutes) {
+  decorateWithPayloads (routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
@@ -195,7 +202,7 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute({ route, payload = {}, errors = [] }) {
+  async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
 
@@ -221,38 +228,26 @@ export default class Generator {
       return false
     }
 
-    let minificationOptions = this.options.build.html.minify
-
-    // Legacy: Override minification options with generate.minify if present
-    // TODO: Remove in Nuxt version 3
-    if (typeof this.options.generate.minify !== 'undefined') {
-      minificationOptions = this.options.generate.minify
-      consola.warn('generate.minify has been deprecated and will be removed in the next major version.' +
-        ' Use build.html.minify instead!')
+    try {
+      html = this.minifyHtml(html)
+    } catch (err) {
+      const minifyErr = new Error(
+        `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
+      )
+      pageErrors.push({ type: 'unhandled', route, error: minifyErr })
     }
 
-    if (minificationOptions) {
-      try {
-        html = htmlMinifier.minify(html, minificationOptions)
-      } catch (err) {
-        const minifyErr = new Error(
-          `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
-        )
-        pageErrors.push({ type: 'unhandled', route, error: minifyErr })
-      }
-    }
-
-    let _path
+    let fileName
 
     if (this.options.generate.subFolders) {
-      _path = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      _path = _path === '/404/index.html' ? '/404.html' : _path // /404 -> /404.html
+      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
+      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
     } else {
-      _path = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
+      fileName = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: _path, html }
+    const page = { route, path: fileName, html }
     await this.nuxt.callHook('generate:page', page)
 
     page.path = path.join(this.distPath, page.path)
@@ -275,5 +270,23 @@ export default class Generator {
     }
 
     return true
+  }
+
+  minifyHtml (html) {
+    let minificationOptions = this.options.build.html.minify
+
+    // Legacy: Override minification options with generate.minify if present
+    // TODO: Remove in Nuxt version 3
+    if (typeof this.options.generate.minify !== 'undefined') {
+      minificationOptions = this.options.generate.minify
+      consola.warn('generate.minify has been deprecated and will be removed in the next major version.' +
+        ' Use build.html.minify instead!')
+    }
+
+    if (!minificationOptions) {
+      return html
+    }
+
+    return htmlMinifier.minify(html, minificationOptions)
   }
 }

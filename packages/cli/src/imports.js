@@ -3,7 +3,7 @@ import path from 'path'
 const localNodeModules = path.resolve(process.cwd(), 'node_modules')
 
 // Prefer importing modules from local node_modules (for NPX and global bin)
-async function _import(modulePath) {
+async function _import (modulePath) {
   for (const mp of [
     path.resolve(localNodeModules, modulePath),
     modulePath
@@ -26,8 +26,5 @@ export const builder = () => _import('@nuxt/builder')
 export const webpack = () => _import('@nuxt/webpack')
 export const generator = () => _import('@nuxt/generator')
 export const core = () => _import('@nuxt/core')
-
-export const tsNode = () => _import('ts-node')
-export const nuxtTypescript = () => _import('@nuxt/typescript')
 
 export const importModule = _import

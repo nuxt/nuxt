@@ -7,6 +7,7 @@ TemplateContext {
   ],
   "templateVars": Object {
     "appPath": "./App.js",
+    "buildIndicator": undefined,
     "components": Object {
       "ErrorPage": "relativeBuild(test_error_page)",
     },
@@ -38,7 +39,7 @@ TemplateContext {
       "test": "test message",
     },
     "mode": "test mode",
-    "options": Object {
+    "nuxtOptions": Object {
       "ErrorPage": "test_error_page",
       "build": Object {
         "splitChunks": Object {
@@ -74,6 +75,7 @@ TemplateContext {
       "pageTransition": Object {
         "name": "test_trans",
       },
+      "rootDir": "test_root_dir",
       "router": Object {
         "route": "test",
       },
@@ -90,12 +92,14 @@ TemplateContext {
     "plugins": Array [
       "plugins",
     ],
+    "rootDir": "test_root_dir",
     "router": Object {
       "route": "test",
     },
     "splitChunks": Object {
       "testSC": true,
     },
+    "srcDir": "test_src_dir",
     "store": "test_store",
     "uniqBy": [Function],
     "vue": Object {

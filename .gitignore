@@ -23,6 +23,9 @@ distributions/*/LICENSE
 # Dist folders
 dist
 
+# Junit reports
+reports
+
 # Coverage reports
 coverage
 *.lcov

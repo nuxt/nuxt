@@ -15,7 +15,7 @@ const coreJsMeta = {
   }
 }
 
-function getDefaultPolyfills(corejs) {
+function getDefaultPolyfills (corejs) {
   const { prefixes: { es6, es7 } } = coreJsMeta[corejs.version]
   return [
     // Promise polyfill alone doesn't work in IE,
@@ -31,7 +31,7 @@ function getDefaultPolyfills(corejs) {
   ]
 }
 
-function getPolyfills(targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
+function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
   const { isPluginRequired } = require('@babel/preset-env')
   const builtInsList = require(coreJsMeta[corejs.version].builtIns)
   const getTargets = require('@babel/preset-env/lib/targets-parser').default
@@ -47,7 +47,9 @@ module.exports = (context, options = {}) => {
   const presets = []
   const plugins = []
 
-  const modern = !!options.modern
+  const modern = options.modern === undefined
+    ? context.env('modern')
+    : Boolean(options.modern)
 
   const {
     polyfills: userPolyfills,
@@ -129,7 +131,7 @@ module.exports = (context, options = {}) => {
   // Transform runtime, but only for helpers
   plugins.push([require('@babel/plugin-transform-runtime'), {
     regenerator: useBuiltIns !== 'usage',
-    corejs: useBuiltIns !== false ? false : corejs,
+    corejs: false,
     helpers: useBuiltIns === 'usage',
     useESModules: buildTarget !== 'server',
     absoluteRuntime

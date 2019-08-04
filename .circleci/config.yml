@@ -104,7 +104,11 @@ jobs:
           at: ~/project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -i --coverage && yarn coverage
+          command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: fixtures.xml
+      - store_test_results:
+          path: reports/junit
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -121,7 +125,7 @@ jobs:
           command: yarn lint:app
 
   # --------------------------------------------------------------------------
-  # Phase 3: Unit, E2E and types tests
+  # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
@@ -131,7 +135,11 @@ jobs:
           at: ~/project
       - run:
           name: Unit Tests
-          command: yarn test:unit -w=2 --coverage && yarn coverage
+          command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: unit.xml
+      - store_test_results:
+          path: reports/junit
 
   test-e2e:
     <<: *defaults
@@ -150,17 +158,11 @@ jobs:
             sudo ln -s `pwd`/chrome-linux/chrome /bin/chromium
       - run:
           name: E2E Tests
-          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage
-
-  test-types:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: Types Tests
-          command: yarn test:types
+          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
+          environment:
+            JEST_JUNIT_OUTPUT_NAME: e2e.xml
+      - store_test_results:
+          path: reports/junit
 
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
@@ -188,9 +190,8 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - test-types: { requires: [build] }
       - release-commit:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
           filters:
             <<: *release_branches
 
@@ -204,9 +205,8 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - test-types: { requires: [build] }
       - release-nightly:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
     triggers:
       - schedule:
           cron: "0 0 * * *"

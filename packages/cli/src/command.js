@@ -1,5 +1,4 @@
 
-import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import { name, version } from '../package.json'
@@ -7,11 +6,10 @@ import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
-import { detectTypeScript } from './utils/typescript'
 import * as imports from './imports'
 
 export default class NuxtCommand {
-  constructor(cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
+  constructor (cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
     if (!cmd.options) {
       cmd.options = {}
     }
@@ -21,18 +19,18 @@ export default class NuxtCommand {
     this._parsedArgv = null // Lazy evaluate
   }
 
-  static run(cmd, argv) {
+  static run (cmd, argv) {
     return NuxtCommand.from(cmd, argv).run()
   }
 
-  static from(cmd, argv) {
+  static from (cmd, argv) {
     if (cmd instanceof NuxtCommand) {
       return cmd
     }
     return new NuxtCommand(cmd, argv)
   }
 
-  async run() {
+  async run () {
     if (this.argv.help) {
       this.showHelp()
       return
@@ -75,15 +73,15 @@ export default class NuxtCommand {
     }
   }
 
-  showVersion() {
+  showVersion () {
     process.stdout.write(`${name} v${version}\n`)
   }
 
-  showHelp() {
+  showHelp () {
     process.stdout.write(this._getHelp())
   }
 
-  get argv() {
+  get argv () {
     if (!this._parsedArgv) {
       const minimistOptions = this._getMinimistOptions()
       this._parsedArgv = minimist(this._argv, minimistOptions)
@@ -91,13 +89,9 @@ export default class NuxtCommand {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions = {}) {
-    const rootDir = path.resolve(this.argv._[0] || '.')
-
-    // Typescript support
-    extraOptions._typescript = await detectTypeScript(rootDir, {
-      transpileOnly: this.cmd.name === 'start'
-    })
+  async getNuxtConfig (extraOptions = {}) {
+    // Flag to indicate nuxt is running with CLI (not programmatic)
+    extraOptions._cli = true
 
     const config = await loadNuxtConfig(this.argv)
     const options = Object.assign(config, extraOptions)
@@ -109,7 +103,7 @@ export default class NuxtCommand {
     return options
   }
 
-  async getNuxt(options) {
+  async getNuxt (options) {
     const { Nuxt } = await imports.core()
 
     const nuxt = new Nuxt(options)
@@ -118,19 +112,19 @@ export default class NuxtCommand {
     return nuxt
   }
 
-  async getBuilder(nuxt) {
+  async getBuilder (nuxt) {
     const { Builder } = await imports.builder()
     const { BundleBuilder } = await imports.webpack()
     return new Builder(nuxt, BundleBuilder)
   }
 
-  async getGenerator(nuxt) {
+  async getGenerator (nuxt) {
     const { Generator } = await imports.generator()
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
   }
 
-  async setLock(lockRelease) {
+  async setLock (lockRelease) {
     if (lockRelease) {
       if (this._lockRelease) {
         consola.warn(`A previous unreleased lock was found, this shouldn't happen and is probably an error in 'nuxt ${this.cmd.name}' command. The lock will be removed but be aware of potential strange results`)
@@ -143,22 +137,22 @@ export default class NuxtCommand {
     }
   }
 
-  async releaseLock() {
+  async releaseLock () {
     if (this._lockRelease) {
       await this._lockRelease()
       this._lockRelease = undefined
     }
   }
 
-  isUserSuppliedArg(option) {
+  isUserSuppliedArg (option) {
     return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
   }
 
-  _getDefaultOptionValue(option) {
+  _getDefaultOptionValue (option) {
     return typeof option.default === 'function' ? option.default(this.cmd) : option.default
   }
 
-  _getMinimistOptions() {
+  _getMinimistOptions () {
     const minimistOptions = {
       alias: {},
       boolean: [],
@@ -183,7 +177,7 @@ export default class NuxtCommand {
     return minimistOptions
   }
 
-  _getHelp() {
+  _getHelp () {
     const options = []
     let maxOptionLength = 0
 

@@ -6,7 +6,8 @@ import ModuleContainer from '../src/module'
 
 jest.mock('fs', () => ({
   existsSync: Boolean,
-  closeSync: Boolean
+  closeSync: Boolean,
+  realpath: jest.fn()
 }))
 
 jest.mock('hash-sum', () => src => `hash(${src})`)
@@ -403,7 +404,7 @@ describe('core: module', () => {
     const result = await module.addModule({
       src: 'moduleTest',
       options: { test: true },
-      handler: function objectModule(options) {
+      handler: function objectModule (options) {
         return Promise.resolve(options)
       }
     })

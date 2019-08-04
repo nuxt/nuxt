@@ -4,7 +4,9 @@ exports[`config should return default nuxt configurations 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -40,10 +42,17 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
+    },
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {
@@ -59,18 +68,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -122,9 +119,7 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "typeCheck": true,
-    },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -136,6 +131,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -273,6 +269,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -324,9 +321,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }
@@ -336,7 +331,9 @@ exports[`config should return nuxt configurations with custom env 1`] = `
 Object {
   "ErrorPage": null,
   "_nuxtConfigFile": undefined,
+  "alias": Object {},
   "build": Object {
+    "additionalExtensions": Array [],
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -372,10 +369,17 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": Object {
+      "backgroundColor": "#2E495E",
+      "color": "#00C48D",
+      "position": "bottom-right",
+    },
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {
@@ -391,18 +395,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -454,9 +446,7 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "typeCheck": true,
-    },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
@@ -468,6 +458,7 @@ Object {
   "dev": false,
   "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -605,6 +596,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": undefined,
+    "ssrLog": undefined,
     "static": Object {
       "prefix": true,
     },
@@ -656,9 +648,7 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
+    "rewatchOnRawEvents": undefined,
     "webpack": Object {},
   },
 }

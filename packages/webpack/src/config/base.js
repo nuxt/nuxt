@@ -1,7 +1,6 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import clone from 'lodash/clone'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
@@ -15,18 +14,17 @@ import { isUrl, urlJoin } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
-import WarnFixPlugin from '../plugins/warnfix'
+import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
-  constructor(builder) {
+  constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.modulesToTranspile = this.normalizeTranspile()
   }
 
-  get colors() {
+  get colors () {
     return {
       client: 'green',
       server: 'orange',
@@ -34,63 +32,82 @@ export default class WebpackBaseConfig {
     }
   }
 
-  get nuxtEnv() {
+  get nuxtEnv () {
     return {
       isDev: this.dev,
       isServer: this.isServer,
       isClient: !this.isServer,
-      isModern: !!this.isModern
+      isModern: Boolean(this.isModern),
+      isLegacy: Boolean(!this.isModern)
     }
   }
 
-  get mode() {
+  get mode () {
     return this.dev ? 'development' : 'production'
   }
 
-  get dev() {
+  get dev () {
     return this.buildContext.options.dev
   }
 
-  get loaders() {
+  get loaders () {
     return this.buildContext.buildOptions.loaders
   }
 
-  normalizeTranspile() {
-    // include SFCs in node_modules
-    const items = [/\.vue\.js/i]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
-      if (pattern instanceof RegExp) {
-        items.push(pattern)
-      } else {
-        const posixModule = pattern.replace(/\\/g, '/')
-        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
-      }
-    }
-    return items
+  get modulesToTranspile () {
+    return [
+      /\.vue\.js/i, // include SFCs in node_modules
+      ...this.normalizeTranspile({ pathNormalize: true })
+    ]
   }
 
-  getBabelOptions() {
-    const options = clone(this.buildContext.buildOptions.babel)
+  normalizeTranspile ({ pathNormalize = false } = {}) {
+    const transpile = []
+    for (let pattern of this.buildContext.buildOptions.transpile) {
+      if (typeof pattern === 'function') {
+        pattern = pattern(this.nuxtEnv)
+      }
+      if (pattern instanceof RegExp) {
+        transpile.push(pattern)
+      } else if (typeof pattern === 'string') {
+        const posixModule = pattern.replace(/\\/g, '/')
+        transpile.push(new RegExp(escapeRegExp(
+          pathNormalize ? path.normalize(posixModule) : posixModule
+        )))
+      }
+    }
+    return transpile
+  }
+
+  getBabelOptions () {
+    const options = {
+      ...this.buildContext.buildOptions.babel,
+      envName: this.name
+    }
+
+    if (options.configFile !== false) {
+      return options
+    }
+
+    const defaultPreset = [
+      require.resolve('@nuxt/babel-preset-app'),
+      {
+        buildTarget: this.isServer ? 'server' : 'client'
+      }
+    ]
 
     if (typeof options.presets === 'function') {
-      options.presets = options.presets({ isServer: this.isServer })
+      options.presets = options.presets({ isServer: this.isServer }, defaultPreset)
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [
-        [
-          require.resolve('@nuxt/babel-preset-app'),
-          {
-            buildTarget: this.isServer ? 'server' : 'client'
-          }
-        ]
-      ]
+      options.presets = [ defaultPreset ]
     }
 
     return options
   }
 
-  getFileName(key) {
+  getFileName (key) {
     let fileName = this.buildContext.buildOptions.filenames[key]
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
@@ -104,11 +121,11 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool() {
+  get devtool () {
     return false
   }
 
-  env() {
+  env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
@@ -123,7 +140,7 @@ export default class WebpackBaseConfig {
     return env
   }
 
-  output() {
+  output () {
     const {
       options: { buildDir, router },
       buildOptions: { publicPath }
@@ -137,7 +154,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  optimization() {
+  optimization () {
     const optimization = cloneDeep(this.buildContext.buildOptions.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
@@ -147,13 +164,13 @@ export default class WebpackBaseConfig {
     return optimization
   }
 
-  resolve() {
+  resolve () {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
     return {
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
@@ -163,7 +180,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  minimizer() {
+  minimizer () {
     const minimizer = []
     const { terser, cache } = this.buildContext.buildOptions
 
@@ -195,25 +212,20 @@ export default class WebpackBaseConfig {
     return minimizer
   }
 
-  alias() {
-    const { srcDir, rootDir, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
-
+  alias () {
     return {
-      '~': path.join(srcDir),
-      '~~': path.join(rootDir),
-      '@': path.join(srcDir),
-      '@@': path.join(rootDir),
-      [assetsDir]: path.join(srcDir, assetsDir),
-      [staticDir]: path.join(srcDir, staticDir)
+      ...this.buildContext.options.alias,
+      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
     }
   }
 
-  rules() {
+  rules () {
     const perfLoader = new PerfLoader(this.name, this.buildContext)
     const styleLoader = new StyleLoader(
       this.buildContext,
       { isServer: this.isServer, perfLoader }
     )
+
     const babelLoader = {
       loader: require.resolve('babel-loader'),
       options: this.getBabelOptions()
@@ -260,26 +272,6 @@ export default class WebpackBaseConfig {
           return !this.modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.js().concat(babelLoader)
-      },
-      {
-        test: /\.ts$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.ts
-          }
-        ]
-      },
-      {
-        test: /\.tsx$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.tsx
-          }
-        ]
       },
       {
         test: /\.css$/i,
@@ -350,7 +342,7 @@ export default class WebpackBaseConfig {
     ]
   }
 
-  plugins() {
+  plugins () {
     const plugins = []
     const { nuxt, buildOptions } = this.buildContext
 
@@ -371,8 +363,7 @@ export default class WebpackBaseConfig {
 
     plugins.push(...(buildOptions.plugins || []))
 
-    // Hide warnings about plugins without a default export (#1179)
-    plugins.push(new WarnFixPlugin())
+    plugins.push(new WarningIgnorePlugin(this.warningIgnoreFilter()))
 
     // Build progress indicator
     plugins.push(new WebpackBar({
@@ -402,20 +393,38 @@ export default class WebpackBaseConfig {
         allDone: () => {
           nuxt.callHook('bundler:done')
         },
-        progress({ statesArray }) {
+        progress ({ statesArray }) {
           nuxt.callHook('bundler:progress', statesArray)
         }
       }
     }))
 
     if (buildOptions.hardSource) {
-      plugins.push(new HardSourcePlugin(Object.assign({}, buildOptions.hardSource)))
+      // https://github.com/mzgoddard/hard-source-webpack-plugin
+      plugins.push(new HardSourcePlugin({
+        info: {
+          level: 'warn'
+        },
+        ...buildOptions.hardSource
+      }))
     }
 
     return plugins
   }
 
-  extendConfig(config) {
+  warningIgnoreFilter () {
+    const filters = [
+      // Hide warnings about plugins without a default export (#1179)
+      warn => warn.name === 'ModuleDependencyWarning' &&
+        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('nuxt_plugin_'),
+      ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
+    ]
+
+    return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
+  }
+
+  extendConfig (config) {
     const { extend } = this.buildContext.buildOptions
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
@@ -429,7 +438,7 @@ export default class WebpackBaseConfig {
     return config
   }
 
-  config() {
+  config () {
     const config = {
       name: this.name,
       mode: this.mode,

@@ -6,7 +6,7 @@ const commands = {
   help: () => import('./help')
 }
 
-export default function getCommand(name) {
+export default function getCommand (name) {
   if (!commands[name]) {
     return Promise.resolve(null)
   }

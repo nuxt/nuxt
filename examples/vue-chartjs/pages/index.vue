@@ -5,15 +5,15 @@
 </template>
 
 <script>
-import BarChart from '~/components/bar-chart'
 import axios from 'axios'
 import moment from 'moment'
+import BarChart from '~/components/bar-chart'
 
 export default {
   components: {
     BarChart
   },
-  async asyncData({ env }) {
+  async asyncData ({ env }) {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/commit_activity?access_token=${env.githubToken}`)
     return {
       barChartData: {

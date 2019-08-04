@@ -8,7 +8,7 @@ import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
-export function getNuxtConfig(_options) {
+export function getNuxtConfig (_options) {
   // Prevent duplicate calls
   if (_options.__normalized__) {
     return _options
@@ -33,6 +33,12 @@ export function getNuxtConfig(_options) {
 
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
+  }
+
+  // TODO: Remove for Nuxt 3
+  // router.scrollBehavior -> app/router.scrollBehavior.js
+  if (options.router && typeof options.router.scrollBehavior !== 'undefined') {
+    consola.warn('`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file, learn more: https://nuxtjs.org/api/configuration-router#scrollbehavior')
   }
 
   // TODO: Remove for Nuxt 3
@@ -99,6 +105,18 @@ export function getNuxtConfig(_options) {
   // Resolve buildDir
   options.buildDir = path.resolve(options.rootDir, options.buildDir)
 
+  // Aliases
+  const { rootDir, srcDir, dir: { assets: assetsDir, static: staticDir } } = options
+  options.alias = {
+    '~~': rootDir,
+    '@@': rootDir,
+    '~': srcDir,
+    '@': srcDir,
+    [assetsDir]: path.join(srcDir, assetsDir),
+    [staticDir]: path.join(srcDir, staticDir),
+    ...options.alias
+  }
+
   // Default value for _nuxtConfigFile
   if (!options._nuxtConfigFile) {
     options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
@@ -141,7 +159,7 @@ export function getNuxtConfig(_options) {
     )
   )
 
-  const mandatoryExtensions = ['js', 'mjs', 'ts']
+  const mandatoryExtensions = ['js', 'mjs']
 
   options.extensions = mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))
@@ -208,6 +226,7 @@ export function getNuxtConfig(_options) {
       allowedSources: undefined,
       policies: undefined,
       addMeta: Boolean(options._generate),
+      unsafeInlineCompatiblity: false,
       reportOnly: options.debug
     })
   }
@@ -287,6 +306,10 @@ export function getNuxtConfig(_options) {
     options.pageTransition.appear = true
   }
 
+  options.render.ssrLog = options.dev
+    ? options.render.ssrLog === undefined || options.render.ssrLog
+    : false
+
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
   if (options.generate.fallback === true) {
     options.generate.fallback = '404.html'
@@ -354,6 +377,10 @@ export function getNuxtConfig(_options) {
   // Add loading screen
   if (options.dev) {
     options.devModules.push('@nuxt/loading-screen')
+    // Disable build indicator for programmatic users
+    if (!options._cli) {
+      options.build.indicator = false
+    }
   }
 
   return options

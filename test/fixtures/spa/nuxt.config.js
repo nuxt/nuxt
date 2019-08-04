@@ -1,3 +1,10 @@
+function modifyHtml (html) {
+  return html.replace(
+    '</body>',
+    `<!-- extra html from render:route hook added at ${Date.now()}--></body>`
+  )
+}
+
 export default {
   mode: 'spa',
   pageTransition: false,
@@ -18,7 +25,10 @@ export default {
   router: {
     middleware: 'middleware'
   },
-  plugins: [
-    '~/plugins/error.js'
-  ]
+  plugins: ['~/plugins/error.js'],
+  hooks: {
+    'render:route': (url, page, { req, res }) => {
+      page.html = modifyHtml(page.html)
+    }
+  }
 }

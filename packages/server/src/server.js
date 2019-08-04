@@ -11,11 +11,10 @@ import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
 import errorMiddleware from './middleware/error'
 import Listener from './listener'
-import createModernMiddleware from './middleware/modern'
 import createTimingMiddleware from './middleware/timing'
 
 export default class Server {
-  constructor(nuxt) {
+  constructor (nuxt) {
     this.nuxt = nuxt
     this.options = nuxt.options
 
@@ -45,7 +44,7 @@ export default class Server {
     }
   }
 
-  async ready() {
+  async ready () {
     if (this._readyCalled) {
       return this
     }
@@ -56,8 +55,8 @@ export default class Server {
     // Initialize vue-renderer
     const { VueRenderer } = await import('@nuxt/vue-renderer')
 
-    const context = new ServerContext(this)
-    this.renderer = new VueRenderer(context)
+    this.serverContext = new ServerContext(this)
+    this.renderer = new VueRenderer(this.serverContext)
     await this.renderer.ready()
 
     // Setup nuxt middleware
@@ -69,7 +68,7 @@ export default class Server {
     return this
   }
 
-  async setupMiddleware() {
+  async setupMiddleware () {
     // Apply setupMiddleware from modules first
     await this.nuxt.callHook('render:setupMiddleware', this.app)
 
@@ -110,10 +109,6 @@ export default class Server {
         )
       })
     }
-
-    this.useMiddleware(createModernMiddleware({
-      context: this.renderer.context
-    }))
 
     // Dev middleware
     if (this.options.dev) {
@@ -176,7 +171,7 @@ export default class Server {
     }))
   }
 
-  useMiddleware(middleware) {
+  useMiddleware (middleware) {
     let handler = middleware.handler || middleware
 
     // Resolve handler setup as string (path)
@@ -212,15 +207,15 @@ export default class Server {
     this.app.use(path, handler)
   }
 
-  renderRoute() {
+  renderRoute () {
     return this.renderer.renderRoute.apply(this.renderer, arguments)
   }
 
-  loadResources() {
+  loadResources () {
     return this.renderer.loadResources.apply(this.renderer, arguments)
   }
 
-  renderAndGetWindow(url, opts = {}) {
+  renderAndGetWindow (url, opts = {}) {
     return renderAndGetWindow(url, opts, {
       loadedCallback: this.globals.loadedCallback,
       ssr: this.options.render.ssr,
@@ -228,7 +223,7 @@ export default class Server {
     })
   }
 
-  async listen(port, host, socket) {
+  async listen (port, host, socket) {
     // Ensure nuxt is ready
     await this.nuxt.ready()
 
@@ -250,9 +245,11 @@ export default class Server {
     this.listeners.push(listener)
 
     await this.nuxt.callHook('listen', listener.server, listener)
+
+    return listener
   }
 
-  async close() {
+  async close () {
     if (this.__closed) {
       return
     }

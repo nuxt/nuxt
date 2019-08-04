@@ -1,4 +1,3 @@
-import Module from 'module'
 import path from 'path'
 import esm from 'esm'
 import fs from 'fs-extra'
@@ -7,7 +6,6 @@ import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 import Resolver from '../src/resolver'
 
-jest.mock('module')
 jest.mock('path')
 jest.mock('esm', () => jest.fn(() => jest.fn()))
 jest.mock('fs-extra')
@@ -31,27 +29,26 @@ describe('core: resolver', () => {
     expect(resolver.requireModule).toBeInstanceOf(Function)
     expect(resolver.esm).toEqual(expect.any(Function))
     expect(esm).toBeCalledTimes(1)
-    expect(esm).toBeCalledWith(expect.any(Object), {})
   })
 
-  test('should call _resolveFilename in resolveModule', () => {
+  test('should call require.resolve in resolveModule', () => {
     const resolver = new Resolver({
       options: { modulesDir: '/var/nuxt/node_modules' }
     })
-    Module._resolveFilename = jest.fn(() => '/var/nuxt/resolver/module')
+    const resolve = resolver._resolve = jest.fn(() => '/var/nuxt/resolver/module')
 
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toEqual('/var/nuxt/resolver/module')
-    expect(Module._resolveFilename).toBeCalledTimes(1)
-    expect(Module._resolveFilename).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
+    expect(resolve).toBeCalledTimes(1)
+    expect(resolve).toBeCalledWith('/var/nuxt/resolver', { paths: '/var/nuxt/node_modules' })
   })
 
   test('should return undefined when module is not found', () => {
     const resolver = new Resolver({
       options: { modulesDir: '/var/nuxt/node_modules' }
     })
-    Module._resolveFilename = jest.fn(() => {
+    const resolve = resolver._resolve = jest.fn(() => {
       const err = new Error()
       err.code = 'MODULE_NOT_FOUND'
       throw err
@@ -60,27 +57,14 @@ describe('core: resolver', () => {
     const modulePath = resolver.resolveModule('/var/nuxt/resolver')
 
     expect(modulePath).toBeUndefined()
-    expect(Module._resolveFilename).toBeCalledTimes(1)
+    expect(resolve).toBeCalledTimes(1)
   })
 
-  test('should throw error when _resolveFilename failed', () => {
+  test('should throw error when require.resolve failed', () => {
     const resolver = new Resolver({
       options: { modulesDir: '/var/nuxt/node_modules' }
     })
-    Module._resolveFilename = jest.fn(() => {
-      throw new Error('resolve failed')
-    })
-
-    expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
-  })
-
-  test('should throw error when _resolveFilename failed', () => {
-    const resolver = new Resolver({
-      options: { modulesDir: '/var/nuxt/node_modules' }
-    })
-    Module._resolveFilename = jest.fn(() => {
-      throw new Error('resolve failed')
-    })
+    resolver._resolve = jest.fn(() => { throw new Error('resolve failed') })
 
     expect(() => resolver.resolveModule('/var/nuxt/resolver')).toThrow('resolve failed')
   })
@@ -408,18 +392,6 @@ describe('core: resolver', () => {
       expect(resolvedModule).toBe(path)
     })
 
-    test('should resolve with commonjs for ts module', () => {
-      const resolver = new Resolver({
-        options: {}
-      })
-      resolver.resolvePath = jest.fn(() => '/var/nuxt/resolver/module.ts')
-      resolver.esm = jest.fn(() => ({ default: 'resolved ts module' }))
-
-      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow(
-        "Cannot find module '/var/nuxt/resolver/module.ts'"
-      )
-    })
-
     test('should throw error if resolvePath failed', () => {
       const resolver = new Resolver({
         options: {}
@@ -438,6 +410,19 @@ describe('core: resolver', () => {
       resolver.esm = jest.fn(() => { throw new Error('resolve esm failed') })
 
       expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve esm failed')
+    })
+
+    test('should display deprecated intropDefault options', () => {
+      const resolver = new Resolver({
+        options: {}
+      })
+      resolver.resolvePath = x => x
+      resolver.esm = jest.fn()
+
+      resolver.requireModule('/var/nuxt/resolver/file.js', { intropDefault: true })
+      const warnMsg = 'Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.'
+      expect(consola.warn).toBeCalledTimes(1)
+      expect(consola.warn).toBeCalledWith(warnMsg)
     })
 
     test('should display deprecated alias options', () => {
