@@ -3459,6 +3459,11 @@ connect@^3.6.6, connect@^3.7.0:
     parseurl "~1.3.3"
     utils-merge "1.0.1"
 
+consola@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.10.0.tgz#ec3652d180909671615ef6e6338b931453e5c22a"
+  integrity sha512-CofUpEOdOu5skHYgI/JEYa4qY9Z07ldLFWeQaOHed+mbSxolLQRz7UbF9gdxZCeR3aUOXJDIQo285+WIN0zEig==
+
 consola@^2.3.0, consola@^2.6.0, consola@^2.9.0:
   version "2.9.0"
   resolved "https://registry.npmjs.org/consola/-/consola-2.9.0.tgz#57760e3a65a53ec27337f4add31505802d902278"
