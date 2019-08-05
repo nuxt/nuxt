@@ -22,7 +22,6 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.modulesToTranspile = this.normalizeTranspile()
   }
 
   get colors () {
@@ -55,21 +54,29 @@ export default class WebpackBaseConfig {
     return this.buildContext.buildOptions.loaders
   }
 
-  normalizeTranspile () {
-    // include SFCs in node_modules
-    const items = [/\.vue\.js/i]
+  get modulesToTranspile () {
+    return [
+      /\.vue\.js/i, // include SFCs in node_modules
+      ...this.normalizeTranspile({ pathNormalize: true })
+    ]
+  }
+
+  normalizeTranspile ({ pathNormalize = false } = {}) {
+    const transpile = []
     for (let pattern of this.buildContext.buildOptions.transpile) {
       if (typeof pattern === 'function') {
         pattern = pattern(this.nuxtEnv)
       }
       if (pattern instanceof RegExp) {
-        items.push(pattern)
+        transpile.push(pattern)
       } else if (typeof pattern === 'string') {
         const posixModule = pattern.replace(/\\/g, '/')
-        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
+        transpile.push(new RegExp(escapeRegExp(
+          pathNormalize ? path.normalize(posixModule) : posixModule
+        )))
       }
     }
-    return items
+    return transpile
   }
 
   getBabelOptions () {

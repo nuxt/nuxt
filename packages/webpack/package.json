@@ -16,11 +16,11 @@
     "cache-loader": "^4.1.0",
     "caniuse-lite": "^1.0.30000988",
     "chalk": "^2.4.2",
-    "consola": "^2.9.0",
+    "consola": "^2.10.0",
     "css-loader": "^3.1.0",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
-    "extract-css-chunks-webpack-plugin": "^4.5.6",
+    "extract-css-chunks-webpack-plugin": "^4.6.0",
     "file-loader": "^4.1.0",
     "glob": "^7.1.4",
     "hard-source-webpack-plugin": "^0.13.1",
@@ -47,7 +47,7 @@
     "webpack-dev-middleware": "^3.7.0",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
-    "webpackbar": "^3.2.0"
+    "webpackbar": "^4.0.0"
   },
   "engines": {
     "node": ">=8.9.0"
