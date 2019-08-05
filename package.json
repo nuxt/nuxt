@@ -40,7 +40,7 @@
     "babel-plugin-dynamic-import-node": "^2.3.0",
     "cheerio": "^1.0.0-rc.3",
     "codecov": "^3.5.0",
-    "consola": "^2.9.0",
+    "consola": "^2.10.0",
     "cross-spawn": "^6.0.5",
     "eslint": "^6.1.0",
     "eslint-multiplexer": "^1.0.4",
