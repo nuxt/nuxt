@@ -45,6 +45,7 @@ export default class ModuleContainer {
       throw new Error('Template src not found: ' + src)
     }
 
+    // Mostly for DX, some people prefers `filename` vs `fileName`
     const fileName = template.fileName || template.filename
     // Generate unique and human readable dst filename if not provided
     const dst = fileName || `${path.basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
