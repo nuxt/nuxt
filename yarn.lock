@@ -1637,15 +1637,15 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-0.5.2.tgz#4226543ca00506a0a61d400f3c5df79548e5eea3"
-  integrity sha512-5PfYC0+NvpWi14BbZ10OQVfdWORsfL3llldX8O0TenHFbt3/62DCXYsoDakNj6OUZvkZoDViFXVFJ4/vh1bnQA==
+"@nuxt/loading-screen@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-1.0.0.tgz#8cb22ef992548923c8fa5d8757e3ae91d7709751"
+  integrity sha512-RuTECBAlaEzI90wi5OKdRTH9Y77ocKgLfb3W7wDRnLYIYmWOFiNG9sBVfYYlkLbNsvN84DFQJyT5zvdy7GWklQ==
   dependencies:
-    connect "^3.6.6"
-    fs-extra "^7.0.1"
-    serve-static "^1.13.2"
-    ws "^7.0.0"
+    connect "^3.7.0"
+    fs-extra "^8.1.0"
+    node-res "^5.0.1"
+    serve-static "^1.14.1"
 
 "@nuxt/opencollective@^0.2.2":
   version "0.2.2"
@@ -3439,7 +3439,7 @@ config-chain@^1.1.11:
     ini "^1.3.4"
     proto-list "~1.2.1"
 
-connect@^3.6.6, connect@^3.7.0:
+connect@^3.7.0:
   version "3.7.0"
   resolved "https://registry.npmjs.org/connect/-/connect-3.7.0.tgz#5d49348910caa5e07a01800b030d0c35f20484f8"
   integrity sha512-ZqRXc+tZukToSNmh5C2iWMSoV3X1YUcPbqEM4DkEG5tNQXrQUZCNVGGv3IuicnkMtPfGf3Xtp8WCXs295iQ1pQ==
@@ -4121,7 +4121,7 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-destroy@~1.0.4:
+destroy@^1.0.4, destroy@~1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
   integrity sha1-l4hXRCxEdJ5CBmE+N5RiBYJqvYA=
@@ -5180,15 +5180,6 @@ from2@^2.1.0:
   dependencies:
     inherits "^2.0.1"
     readable-stream "^2.0.0"
-
-fs-extra@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.npmjs.org/fs-extra/-/fs-extra-7.0.1.tgz#4f189c44aa123b895f722804f55ea23eadc348e9"
-  integrity sha512-YJDaCJZEnBmcbw13fvdAM9AwNOJwOzrE4pqMqBq5nFiEqXUqHwlK4B+3pUw6JNvfSPtX05xFHtYy/1ni01eGCw==
-  dependencies:
-    graceful-fs "^4.1.2"
-    jsonfile "^4.0.0"
-    universalify "^0.1.0"
 
 fs-extra@^8.0.1, fs-extra@^8.1.0:
   version "8.1.0"
@@ -7436,7 +7427,7 @@ mime-db@1.40.0, "mime-db@>= 1.40.0 < 2":
   resolved "https://registry.npmjs.org/mime-db/-/mime-db-1.40.0.tgz#a65057e998db090f732a68f6c276d387d4126c32"
   integrity sha512-jYdeOMPy9vnxEqFRRo6ZvTZ8d9oPb+k18PKoYNYUe2stVEBPPwsln/qWzdbmaIvnhZ9v2P+CuecK+fpUfsV2mA==
 
-mime-types@^2.1.12, mime-types@~2.1.19, mime-types@~2.1.24:
+mime-types@^2.1.12, mime-types@^2.1.19, mime-types@~2.1.19, mime-types@~2.1.24:
   version "2.1.24"
   resolved "https://registry.npmjs.org/mime-types/-/mime-types-2.1.24.tgz#b6f8d0b3e951efb77dedeca194cff6d16f676f81"
   integrity sha512-WaFHS3MCl5fapm3oLxU4eYDw77IQM2ACcxQ9RIxfaC3ooc6PFuBMGZZsYpvoXS5D5QTWPieo1jjLdAm3TBP3cQ==
@@ -7802,6 +7793,17 @@ node-releases@^1.1.25:
   dependencies:
     semver "^5.3.0"
 
+node-res@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/node-res/-/node-res-5.0.1.tgz#ffaa462e206509d66d0ba28a4daf1f032daa6460"
+  integrity sha512-YOleO9c7MAqoHC+Ccu2vzvV1fL6Ku49gShq3PIMKWHRgrMSih3XcwL05NbLBi6oU2J471gTBfdpVVxwT6Pfhxg==
+  dependencies:
+    destroy "^1.0.4"
+    etag "^1.8.1"
+    mime-types "^2.1.19"
+    on-finished "^2.3.0"
+    vary "^1.1.2"
+
 "nopt@2 || 3":
   version "3.0.6"
   resolved "https://registry.npmjs.org/nopt/-/nopt-3.0.6.tgz#c6465dbf08abcd4db359317f79ac68a646b28ff9"
@@ -8022,7 +8024,7 @@ octokit-pagination-methods@^1.1.0:
   resolved "https://registry.npmjs.org/octokit-pagination-methods/-/octokit-pagination-methods-1.1.0.tgz#cf472edc9d551055f9ef73f6e42b4dbb4c80bea4"
   integrity sha512-fZ4qZdQ2nxJvtcasX7Ghl+WlWS/d9IgnBIwFZXVNNZUmzpno91SX5bc5vuxiuKoCtK78XxGGNuSCrDC7xYB3OQ==
 
-on-finished@~2.3.0:
+on-finished@^2.3.0, on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
   integrity sha1-IPEzZIGwg811M3mSoWlxqi2QaUc=
@@ -10109,7 +10111,7 @@ serve-placeholder@^1.2.1:
   dependencies:
     defu "^0.0.1"
 
-serve-static@1.14.1, serve-static@^1.13.2, serve-static@^1.14.1:
+serve-static@1.14.1, serve-static@^1.14.1:
   version "1.14.1"
   resolved "https://registry.npmjs.org/serve-static/-/serve-static-1.14.1.tgz#666e636dc4f010f7ef29970a88a674320898b2f9"
   integrity sha512-JMrvUwE54emCYWlTI+hGrGv5I8dEwmco/00EvkzIIsR7MqrHonbD9pO2MOfFnpFntl7ecpZs+3mW+XbQZu9QCg==
@@ -11324,7 +11326,7 @@ validate-npm-package-name@^3.0.0:
   dependencies:
     builtins "^1.0.3"
 
-vary@~1.1.2:
+vary@^1.1.2, vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
