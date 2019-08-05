@@ -4,6 +4,7 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
+import { TARGETS } from '@nuxt/utils'
 import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths, equalOrStartsWith } from '../utils'
 
 let port
@@ -47,7 +48,7 @@ describe('basic generate', () => {
   })
 
   test('Check builder', () => {
-    expect(builder.bundleBuilder.buildContext.target).toBe('static')
+    expect(builder.bundleBuilder.buildContext.target).toBe(TARGETS.static)
     expect(builder.build).toHaveBeenCalledTimes(1)
   })
 
