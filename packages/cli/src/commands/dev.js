@@ -23,10 +23,6 @@ export default {
   async run (cmd) {
     const { argv } = cmd
 
-    await this.startDev(cmd, argv, argv.open)
-  },
-
-  async startDev (cmd, argv) {
     try {
       await this.startDev(cmd, argv, argv.open)
     } catch (error) {
@@ -34,7 +30,7 @@ export default {
     }
   },
 
-  async _startDev (cmd, argv) {
+  async startDev (cmd, argv) {
     const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
@@ -64,6 +60,21 @@ export default {
 
     // Return instance
     return nuxt
+  },
+
+  async listen (nuxt, argv) {
+    // Start listening
+    await nuxt.server.listen()
+
+    // Show banner when listening
+    showBanner(nuxt, false)
+
+    // Opens the server listeners url in the default browser (only once)
+    if (argv.open) {
+      argv.open = false
+      const openerPromises = nuxt.server.listeners.map(listener => opener(listener.url))
+      await Promise.all(openerPromises)
+    }
   },
 
   logChanged ({ event, path }) {
