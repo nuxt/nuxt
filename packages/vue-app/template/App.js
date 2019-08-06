@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { getMatchedComponentsInstances } from './utils'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -102,7 +103,7 @@ export default {
     },
     async refreshPageData(showProgressBar) {
       const context = this.$options.context
-      const pages = this.$route.matched.map((match) => match.instances.default)
+      const pages = getMatchedComponentsInstances(this.$route)
 
       if (!pages.length) {
         return
