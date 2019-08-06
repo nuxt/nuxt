@@ -100,6 +100,28 @@ export default {
         }
       }
     },
+    async refreshPageData(showProgressBar) {
+      const context = this.$options.context
+      const pages = this.$route.matched.map((match) => match.instances.default)
+
+      if (!pages.length) {
+        return
+      }
+      this.$loading && this.$loading.start()
+      const promises = pages.map(async (page) => {
+        if (page.$options.fetch) {
+          await page.$options.fetch(context)
+        }
+        if (page.$options.asyncData) {
+          const newData = await page.$options.asyncData(context)
+          for (const key in newData) {
+            Vue.set(page.$data, key, newData[key])
+          }
+        }
+      })
+      await Promise.all(promises)
+      this.$loading && this.$loading.finish()
+    },
     <% if (loading) { %>
     errorChanged() {
       if (this.nuxt.err && this.$loading) {
