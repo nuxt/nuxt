@@ -17,7 +17,7 @@ jest.setTimeout(60000)
 
 consola.mockTypes(() => jest.fn())
 
-function errorTrap(error) {
+function errorTrap (error) {
   process.stderr.write('\n' + error.stack + '\n')
   exit(1)
 }

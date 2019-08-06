@@ -3,7 +3,7 @@ export const state = () => ({
 })
 
 export const getters = {
-  getVal(state) {
+  getVal (state) {
     return 99
   }
 }

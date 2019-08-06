@@ -4,14 +4,14 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       test: {
         text: null
       }
     }
   },
-  mounted() {
+  mounted () {
     this.test = {
       text: 'updated'
     }

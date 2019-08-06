@@ -3,7 +3,7 @@ import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces } from './utils/constants'
 import getCommand from './commands'
 
-export default async function listCommands() {
+export default async function listCommands () {
   const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
 
   // Load all commands

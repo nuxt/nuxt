@@ -12,17 +12,17 @@ export const defaultLockOptions = {
   onCompromised: err => consola.warn(err)
 }
 
-export function getLockOptions(options) {
+export function getLockOptions (options) {
   return Object.assign({}, defaultLockOptions, options)
 }
 
-export function createLockPath({ id = 'nuxt', dir, root }) {
+export function createLockPath ({ id = 'nuxt', dir, root }) {
   const sum = hash(`${root}-${dir}`)
 
   return path.resolve(root, 'node_modules/.cache/nuxt', `${id}-lock-${sum}`)
 }
 
-export async function getLockPath(config) {
+export async function getLockPath (config) {
   const lockPath = createLockPath(config)
 
   // the lock is created for the lockPath as ${lockPath}.lock
@@ -32,7 +32,7 @@ export async function getLockPath(config) {
   return lockPath
 }
 
-export async function lock({ id, dir, root, options }) {
+export async function lock ({ id, dir, root, options }) {
   const lockPath = await getLockPath({ id, dir, root })
 
   try {
@@ -75,7 +75,7 @@ export async function lock({ id, dir, root, options }) {
 
   lockPaths.add(lockPath)
 
-  return async function lockRelease() {
+  return async function lockRelease () {
     try {
       await fs.remove(lockPath)
       lockPaths.delete(lockPath)

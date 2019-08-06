@@ -1,9 +1,9 @@
 <script>
 
 export default {
-  async asyncData() {
+  async asyncData () {
     await Promise.resolve()
-    throw Error('asyncData error!')
+    throw new Error('asyncData error!')
   }
 }
 </script>

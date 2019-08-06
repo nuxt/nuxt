@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  fetch({ beforeNuxtRender }) {
+  fetch ({ beforeNuxtRender }) {
     if (process.server) {
       beforeNuxtRender(({ nuxtState }) => {
         nuxtState.test = true

@@ -18,19 +18,19 @@ const newLineRegex = /\r?\n/
  * https://github.com/gwuhaolin/chrome-finder
  */
 export default class ChromeDetector {
-  constructor() {
+  constructor () {
     this.platform = isWsl ? 'wsl' : process.platform
   }
 
-  detect(platform = this.platform) {
+  detect (platform = this.platform) {
     const handler = this[platform]
     if (typeof handler !== 'function') {
-      throw new Error(`${platform} is not supported.`)
+      throw new TypeError(`${platform} is not supported.`)
     }
     return this[platform]()[0]
   }
 
-  darwin() {
+  darwin () {
     const suffixes = [
       '/Contents/MacOS/Chromium',
       '/Contents/MacOS/Google Chrome Canary',
@@ -89,7 +89,7 @@ export default class ChromeDetector {
    * 2. Look into the directories where .desktop are saved on gnome based distro's
    * 3. Look for google-chrome-stable & google-chrome executables by using the which command
    */
-  linux() {
+  linux () {
     let installations = []
     // 1. Look into CHROME_PATH env variable
     const customChromePath = this.resolveChromePath()
@@ -148,7 +148,7 @@ export default class ChromeDetector {
     return this.sort(uniq(installations.filter(Boolean)), priorities)
   }
 
-  wsl() {
+  wsl () {
     // Manually populate the environment variables assuming it's the default config
     process.env.LOCALAPPDATA = this.getLocalAppDataPath(process.env.PATH)
     process.env.PROGRAMFILES = '/mnt/c/Program Files'
@@ -156,7 +156,7 @@ export default class ChromeDetector {
     return this.win32()
   }
 
-  win32() {
+  win32 () {
     const installations = []
     const sep = path.sep
     const suffixes = [
@@ -186,7 +186,7 @@ export default class ChromeDetector {
     return installations
   }
 
-  resolveChromePath() {
+  resolveChromePath () {
     if (this.canAccess(process.env.CHROME_PATH)) {
       return process.env.CHROME_PATH
     }
@@ -199,13 +199,13 @@ export default class ChromeDetector {
     }
   }
 
-  getLocalAppDataPath(path) {
+  getLocalAppDataPath (path) {
     const userRegExp = /\/mnt\/([a-z])\/Users\/([^/:]+)\/AppData\//
     const results = userRegExp.exec(path) || []
     return `/mnt/${results[1]}/Users/${results[2]}/AppData/Local`
   }
 
-  sort(installations, priorities) {
+  sort (installations, priorities) {
     const defaultPriority = 10
     return installations
       .map((inst) => {
@@ -220,7 +220,7 @@ export default class ChromeDetector {
       .map(pair => pair.path)
   }
 
-  canAccess(file) {
+  canAccess (file) {
     if (!file) {
       return false
     }
@@ -232,7 +232,7 @@ export default class ChromeDetector {
     }
   }
 
-  findChromeExecutables(folder) {
+  findChromeExecutables (folder) {
     const argumentsRegex = /(^[^ ]+).*/ // Take everything up to the first space
     const chromeExecRegex = '^Exec=/.*/(google-chrome|chrome|chromium)-.*'
     const installations = []

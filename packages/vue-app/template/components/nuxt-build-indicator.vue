@@ -26,21 +26,16 @@ export default {
     }
   },
   mounted() {
-    if (WebSocket === undefined) {
+    if (typeof EventSource === undefined) {
       return // Unsupported
     }
-    this.wsConnect()
+    this.sseConnect()
   },
   beforeDestroy() {
-    this.wsClose()
+    this.sseClose()
     clearInterval(this._progressAnimation)
   },
   computed: {
-    wsURL() {
-      const _path = '<%= router.base %>_loading/ws'
-      const _protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-      return `${_protocol}://${location.hostname}:${location.port}${_path}`
-    },
     options: () => (<%= JSON.stringify(buildIndicator) %>),
     indicatorStyle() {
       const [ d1, d2 ] = this.options.position.split('-')
@@ -77,37 +72,17 @@ export default {
     }
   },
   methods: {
-    wsConnect() {
+    sseConnect() {
       if (this._connecting) {
         return
       }
       this._connecting = true
-      this.wsClose()
-      this.ws = new WebSocket(this.wsURL)
-      this.ws.onmessage = this.onWSMessage.bind(this)
-      this.ws.onclose = this.wsReconnect.bind(this)
-      this.ws.onerror = this.wsReconnect.bind(this)
-      setTimeout(() => {
-        this._connecting = false
-        if (this.ws.readyState !== WebSocket.OPEN) {
-          this.wsReconnect()
-        }
-      }, 5000)
+      this.sse = new EventSource('<%= router.base %>_loading/sse')
+      this.sse.addEventListener('message', (event) => this.onSseMessage(event))
     },
-
-    wsReconnect() {
-      if (this._reconnecting || this.reconnectAttempts++ > 10) {
-        return
-      }
-      this._reconnecting = true
-      setTimeout(() => {
-        this._reconnecting = false
-        this.wsConnect()
-      }, 1000)
-    },
-
-    onWSMessage(message) {
+    onSseMessage(message) {
       const data = JSON.parse(message.data)
+      if (!data.states) return
 
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
 
@@ -123,10 +98,10 @@ export default {
       }
     },
 
-    wsClose() {
-      if (this.ws) {
-        this.ws.close()
-        delete this.ws
+    sseClose() {
+      if (this.sse) {
+        this.sse.close()
+        delete this.sse
       }
     }
   }

@@ -13,7 +13,7 @@ import Hookable from './hookable'
 import Resolver from './resolver'
 
 export default class Nuxt extends Hookable {
-  constructor(options = {}) {
+  constructor (options = {}) {
     super()
 
     // Assign options and apply defaults
@@ -47,18 +47,18 @@ export default class Nuxt extends Hookable {
     }
   }
 
-  static get version() {
+  static get version () {
     return (global.__NUXT && global.__NUXT.version) || `v${version}`
   }
 
-  ready() {
+  ready () {
     if (!this._ready) {
       this._ready = this._init()
     }
     return this._ready
   }
 
-  async _init() {
+  async _init () {
     if (this._initCalled) {
       return this
     }
@@ -85,7 +85,7 @@ export default class Nuxt extends Hookable {
     return this
   }
 
-  _initServer() {
+  _initServer () {
     if (this.server) {
       return
     }
@@ -95,7 +95,7 @@ export default class Nuxt extends Hookable {
     defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
-  async close(callback) {
+  async close (callback) {
     await this.callHook('close', this)
 
     if (typeof callback === 'function') {

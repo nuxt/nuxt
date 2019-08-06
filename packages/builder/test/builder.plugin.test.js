@@ -117,7 +117,7 @@ describe('builder: builder plugins', () => {
     ]
     builder.relativeToBuild = jest.fn(src => `relative(${src})`)
 
-    Glob.mockImplementationOnce(src => [`${src}.js`, `${src}.ts`])
+    Glob.mockImplementationOnce(src => [`${src}.js`])
     isIndexFileAndFolder.mockReturnValueOnce(false)
 
     await builder.resolvePlugins()

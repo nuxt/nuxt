@@ -94,7 +94,7 @@ jobs:
           at: ~/project
       - run:
           name: Security Audit
-          command: yarn audit
+          command: yarn audit || true
 
   build:
     <<: *defaults
@@ -125,7 +125,7 @@ jobs:
           command: yarn lint:app
 
   # --------------------------------------------------------------------------
-  # Phase 3: Unit, E2E and types tests
+  # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
   test-unit:
     <<: *defaults
@@ -164,16 +164,6 @@ jobs:
       - store_test_results:
           path: reports/junit
 
-  test-types:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
-      - run:
-          name: Types Tests
-          command: yarn test:types
-
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
   # --------------------------------------------------------------------------
@@ -200,9 +190,8 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - test-types: { requires: [build] }
       - release-commit:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
           filters:
             <<: *release_branches
 
@@ -216,9 +205,8 @@ workflows:
       - lint-app:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
-      - test-types: { requires: [build] }
       - release-nightly:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e, test-types]
+          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
     triggers:
       - schedule:
           cron: "0 0 * * *"

@@ -4,7 +4,7 @@ const purgecss = require('@fullhuman/postcss-purgecss')
 const tailwindConfig = path.join(__dirname, 'tailwind.js')
 
 class TailwindExtractor {
-  static extract(content) {
+  static extract (content) {
     return content.match(/[A-Za-z0-9-_:\/]+/g) || [] // eslint-disable-line no-useless-escape
   }
 }

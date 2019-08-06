@@ -4,7 +4,7 @@ const execa = require('execa')
 const fs = require('fs-extra')
 const glob = require('pify')(require('glob').glob)
 
-async function main() {
+async function main () {
   const packageDirs = await glob('+(packages|distributions)/*')
 
   const packages = packageDirs.map(pkgDir => ({

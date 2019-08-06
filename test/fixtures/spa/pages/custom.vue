@@ -5,10 +5,10 @@
 <script>
 export default {
   layout: 'custom',
-  created() {
+  created () {
     console.log('created') // eslint-disable-line no-console
   },
-  mounted() {
+  mounted () {
     console.log('mounted') // eslint-disable-line no-console
   }
 }

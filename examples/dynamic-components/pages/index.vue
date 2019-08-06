@@ -24,7 +24,7 @@ export default {
   data: () => ({
     messages: []
   }),
-  mounted() {
+  mounted () {
     // Listen for incoming messages
     streamMessages(async (message) => {
       // Wait for the component to load before displaying it

@@ -7,11 +7,11 @@
 <script>
 export default {
   computed: {
-    debug() {
+    debug () {
       return JSON.stringify(this.$data, null, 2)
     }
   },
-  asyncData() {
+  asyncData () {
     return {
       [Math.random()]: true
     }

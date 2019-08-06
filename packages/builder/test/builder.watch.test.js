@@ -46,8 +46,8 @@ describe('builder: builder watch', () => {
     ]
 
     const globbedPatterns = [
-      '/var/nuxt/src/layouts/**/*.{vue,js,ts,tsx}',
-      '/var/nuxt/src/middleware/**/*.{vue,js,ts,tsx}'
+      '/var/nuxt/src/layouts/**/*.{vue,js}',
+      '/var/nuxt/src/middleware/**/*.{vue,js}'
     ]
 
     expect(r).toBeCalledTimes(2)
@@ -133,7 +133,7 @@ describe('builder: builder watch', () => {
     expect(r).nthCalledWith(3, '/var/nuxt/src', '/var/nuxt/src/pages')
 
     expect(upath.normalizeSafe).toBeCalledTimes(3)
-    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/pages/**/*.{vue,js,ts,tsx}', 2, expect.any(Array))
+    expect(upath.normalizeSafe).nthCalledWith(3, '/var/nuxt/src/pages/**/*.{vue,js}', 2, expect.any(Array))
   })
 
   test('should invoke generateRoutesAndFiles on file refresh', () => {
@@ -189,9 +189,9 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/style'
     ]
 
-    expect(builder.createFileWatcher).toBeCalledTimes(2)
+    expect(builder.createFileWatcher).toBeCalledTimes(3)
     expect(builder.createFileWatcher).toBeCalledWith(patterns, ['change'], expect.any(Function), expect.any(Function))
-    expect(builder.assignWatcher).toBeCalledTimes(2)
+    expect(builder.assignWatcher).toBeCalledTimes(3)
   })
 
   test('should invoke chokidar to create watcher', () => {

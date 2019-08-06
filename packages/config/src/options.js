@@ -8,7 +8,7 @@ import consola from 'consola'
 import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
-export function getNuxtConfig(_options) {
+export function getNuxtConfig (_options) {
   // Prevent duplicate calls
   if (_options.__normalized__) {
     return _options
@@ -33,6 +33,12 @@ export function getNuxtConfig(_options) {
 
   if (options.router && typeof options.router.base === 'string') {
     options._routerBaseSpecified = true
+  }
+
+  // TODO: Remove for Nuxt 3
+  // router.scrollBehavior -> app/router.scrollBehavior.js
+  if (options.router && typeof options.router.scrollBehavior !== 'undefined') {
+    consola.warn('`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file, learn more: https://nuxtjs.org/api/configuration-router#scrollbehavior')
   }
 
   // TODO: Remove for Nuxt 3
@@ -153,7 +159,7 @@ export function getNuxtConfig(_options) {
     )
   )
 
-  const mandatoryExtensions = ['js', 'mjs', 'ts']
+  const mandatoryExtensions = ['js', 'mjs']
 
   options.extensions = mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))

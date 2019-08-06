@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => async function errorMiddleware(err, req, res, next) {
+export default ({ resources, options }) => async function errorMiddleware (err, req, res, next) {
   // ensure statusCode, message and name fields
 
   const error = {
@@ -85,7 +85,7 @@ export default ({ resources, options }) => async function errorMiddleware(err, r
   sendResponse(html)
 }
 
-const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource(frame) {
+const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource (frame) {
   // Remove webpack:/// & query string from the end
   const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
   frame.fileName = sanitizeName(frame.fileName)
