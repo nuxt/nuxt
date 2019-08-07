@@ -101,8 +101,8 @@ export default {
         }
       }
     },
-    async refreshPage() {
-      const context = this.$options.context
+    async refresh() {
+      const { context } = this.$options
       const pages = getMatchedComponentsInstances(this.$route)
 
       if (!pages.length) {

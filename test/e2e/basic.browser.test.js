@@ -295,7 +295,7 @@ describe('basic browser', () => {
     const page = await browser.page(url('/refresh-page-data'))
     let h1 = await page.$text('h1')
     expect(h1).toContain('Hello from server')
-    await page.evaluate($nuxt => $nuxt.refreshPage(), page.$nuxt)
+    await page.evaluate($nuxt => $nuxt.refresh(), page.$nuxt)
     h1 = await page.$text('h1')
     expect(h1).toContain('Hello from client')
     page.close()
