@@ -95,11 +95,6 @@ export function getNuxtConfig (_options) {
     options.target = 'server'
   }
 
-  // User server middleware warning if target=static
-  if (options.target === TARGETS.static && options.serverMiddleware.length) {
-    consola.warn(`serverMiddleware are not recommended in static target and can lead to side effects`)
-  }
-
   // Apply mode preset
   const modePreset = options.modes[options.mode || MODES.universal]
 
