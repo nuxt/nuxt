@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { getMatchedComponentsInstances, promisify } from './utils'
+import { getMatchedComponentsInstances, promisify, globalHandleError } from './utils'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -86,6 +86,9 @@ export default {
   computed: {
     isOffline() {
       return !this.isOnline
+    },
+    '$context'() {
+      return this.$options.context
     }
   },
   methods: {
@@ -102,7 +105,6 @@ export default {
       }
     },
     async refresh() {
-      const { context } = this.$options
       const pages = getMatchedComponentsInstances(this.$route)
 
       if (!pages.length) {
@@ -113,11 +115,11 @@ export default {
         const p = []
 
         if (page.$options.fetch) {
-          p.push(promisify(page.$options.fetch, context))
+          p.push(promisify(page.$options.fetch, this.$context))
         }
         if (page.$options.asyncData) {
           p.push(
-            promisify(page.$options.asyncData, context)
+            promisify(page.$options.asyncData, this.$context)
               .then((newData) => {
                 for (const key in newData) {
                   Vue.set(page.$data, key, newData[key])
@@ -127,7 +129,13 @@ export default {
         }
         return Promise.all(p)
       })
-      await Promise.all(promises)
+      try {
+        await Promise.all(promises)
+      } catch (error) {
+        <% if (loading) { %>this.$loading.fail()<% } %>
+        globalHandleError(error)
+        this.error(error)
+      }
       <% if (loading) { %>this.$loading.finish()<% } %>
     },
     <% if (loading) { %>
