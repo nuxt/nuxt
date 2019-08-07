@@ -291,6 +291,16 @@ describe('basic browser', () => {
     expect(p).toBe('Nuxt.js')
   })
 
+  test('/refresh-page-data', async () => {
+    const page = await browser.page(url('/refresh-page-data'))
+    let h1 = await page.$text('h1')
+    expect(h1).toContain('Hello from server')
+    await page.evaluate($nuxt => $nuxt.refresh(), page.$nuxt)
+    h1 = await page.$text('h1')
+    expect(h1).toContain('Hello from client')
+    page.close()
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
