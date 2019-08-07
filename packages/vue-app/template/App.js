@@ -74,6 +74,8 @@ export default {
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
+    // Add $nuxt.context
+    this.context = this.$options.context
   },
   <% if (loading) { %>
   mounted() {
@@ -86,9 +88,6 @@ export default {
   computed: {
     isOffline() {
       return !this.isOnline
-    },
-    '$context'() {
-      return this.$options.context
     }
   },
   methods: {
@@ -115,11 +114,11 @@ export default {
         const p = []
 
         if (page.$options.fetch) {
-          p.push(promisify(page.$options.fetch, this.$context))
+          p.push(promisify(page.$options.fetch, this.context))
         }
         if (page.$options.asyncData) {
           p.push(
-            promisify(page.$options.asyncData, this.$context)
+            promisify(page.$options.asyncData, this.context)
               .then((newData) => {
                 for (const key in newData) {
                   Vue.set(page.$data, key, newData[key])
