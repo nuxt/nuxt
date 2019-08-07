@@ -37,7 +37,6 @@
     "@vue/test-utils": "^1.0.0-beta.29",
     "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
-    "babel-plugin-dynamic-import-node": "^2.3.0",
     "cheerio": "^1.0.0-rc.3",
     "codecov": "^3.5.0",
     "consola": "^2.10.0",
