@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { getMatchedComponentsInstances } from './utils'
+import { getMatchedComponentsInstances, promisify } from './utils'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -101,27 +101,34 @@ export default {
         }
       }
     },
-    async refreshPageData(showProgressBar) {
+    async refreshPage() {
       const context = this.$options.context
       const pages = getMatchedComponentsInstances(this.$route)
 
       if (!pages.length) {
         return
       }
-      this.$loading && this.$loading.start()
+      <% if (loading) { %>this.$loading.start()<% } %>
       const promises = pages.map(async (page) => {
+        const p = []
+
         if (page.$options.fetch) {
-          await page.$options.fetch(context)
+          p.push(promisify(page.$options.fetch, context))
         }
         if (page.$options.asyncData) {
-          const newData = await page.$options.asyncData(context)
-          for (const key in newData) {
-            Vue.set(page.$data, key, newData[key])
-          }
+          p.push(
+            promisify(page.$options.asyncData, context)
+              .then((newData) => {
+                for (const key in newData) {
+                  Vue.set(page.$data, key, newData[key])
+                }
+              })
+          )
         }
+        return Promise.all(p)
       })
       await Promise.all(promises)
-      this.$loading && this.$loading.finish()
+      <% if (loading) { %>this.$loading.finish()<% } %>
     },
     <% if (loading) { %>
     errorChanged() {
