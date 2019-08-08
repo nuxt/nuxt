@@ -6,6 +6,7 @@ export const template = {
   dir: path.join(__dirname, '..', 'template'),
   files: [
     'App.js',
+    'head.js',
     'client.js',
     'index.js',
     'middleware.js',
