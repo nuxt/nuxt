@@ -11,8 +11,7 @@ module.exports = function (api) {
             node: 'current'
           }
         }]
-      ],
-      plugins: ['dynamic-import-node']
+      ]
     }
   }
   return {}
