@@ -338,7 +338,7 @@ export function getNuxtConfig (_options) {
 
   // devModules has been renamed to buildModules
   if (typeof options.devModules !== 'undefined') {
-    consola.warn('`devModules` has been renamed to `buildModules` and will be removed in nuxt 3.')
+    consola.warn('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
     options.buildModules.push(...options.devModules)
     delete options.devModules
   }

@@ -234,7 +234,7 @@ describe('config: options', () => {
 
     test('should deprecate devModules', () => {
       const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
-      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in nuxt 3.')
+      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
       expect(config.devModules).toBe(undefined)
       expect(config.buildModules).toEqual(['bar', 'foo'])
     })
