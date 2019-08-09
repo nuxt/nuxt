@@ -336,7 +336,7 @@ export function getNuxtConfig (_options) {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
   }
 
-  // devModules renamed to buildModules
+  // devModules has been renamed to buildModules
   if (typeof options.devModules !== 'undefined') {
     consola.warn('`devModules` has been renamed to `buildModules` and will be removed in nuxt 3.')
     options.buildModules.push(...options.devModules)
