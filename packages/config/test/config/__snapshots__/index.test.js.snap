@@ -129,7 +129,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
+  "buildModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
@@ -456,7 +456,7 @@ Object {
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
+  "buildModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
