@@ -143,13 +143,13 @@ Object {
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": false,
   "dev": false,
-  "buildModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
