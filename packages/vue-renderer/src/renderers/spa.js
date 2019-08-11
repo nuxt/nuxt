@@ -48,7 +48,14 @@ export default class SPARenderer extends BaseRenderer {
     }
 
     // Get vue-meta context
-    const m = VueMeta.generate(this.options.head || {}, this.vueMetaConfig)
+    let head
+    if (typeof this.options.head === 'function') {
+      head = this.options.head()
+    } else {
+      head = this.options.head
+    }
+
+    const m = VueMeta.generate(head || {}, this.vueMetaConfig)
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
