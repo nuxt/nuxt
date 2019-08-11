@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs'
 import webpack from 'webpack'
-import escapeRegExp from 'lodash/escapeRegExp'
 import nodeExternals from 'webpack-node-externals'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
@@ -13,27 +12,17 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     super(...args)
     this.name = 'server'
     this.isServer = true
-    this.whitelist = this.normalizeWhitelist()
-  }
-
-  normalizeWhitelist () {
-    const whitelist = [
-      /\.(?!js(x|on)?$)/i
-    ]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
-      if (pattern instanceof RegExp) {
-        whitelist.push(pattern)
-      } else {
-        const posixModule = pattern.replace(/\\/g, '/')
-        whitelist.push(new RegExp(escapeRegExp(posixModule)))
-      }
-    }
-
-    return whitelist
   }
 
   get devtool () {
     return 'cheap-module-source-map'
+  }
+
+  get externalsWhitelist () {
+    return [
+      /\.(?!js(x|on)?$)/i,
+      ...this.normalizeTranspile()
+    ]
   }
 
   env () {
@@ -114,7 +103,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({
-              whitelist: this.whitelist,
+              whitelist: this.externalsWhitelist,
               modulesDir: dir
             })
           )

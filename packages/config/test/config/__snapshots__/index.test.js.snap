@@ -123,13 +123,13 @@ Object {
     "watch": Array [],
   },
   "buildDir": ".nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
@@ -450,13 +450,13 @@ Object {
     "watch": Array [],
   },
   "buildDir": ".nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
