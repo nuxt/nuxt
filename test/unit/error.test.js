@@ -19,7 +19,7 @@ describe('error', () => {
   })
 
   test('/ should display an error', async () => {
-    await expect(nuxt.server.renderRoute('/')).rejects.toMatchObject({
+    await expect(nuxt.server.renderRoute('/error')).rejects.toMatchObject({
       message: expect.stringContaining('not_defined is not defined')
     })
   })
@@ -30,14 +30,14 @@ describe('error', () => {
   })
 
   test('/ with renderAndGetWindow()', async () => {
-    await expect(nuxt.server.renderAndGetWindow(url('/'))).rejects.toMatchObject({
+    await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
       statusCode: 500
     })
   })
 
   test('Error: resolvePath()', () => {
     expect(() => nuxt.resolver.resolvePath()).toThrowError()
-    expect(() => nuxt.resolver.resolvePath('@/pages/about.vue')).toThrowError('Cannot resolve "@/pages/about.vue"')
+    expect(() => nuxt.resolver.resolvePath('@/pages/not-found.vue')).toThrowError('Cannot resolve "@/pages/not-found.vue"')
   })
 
   test('Error: callHook()', async () => {
@@ -54,6 +54,24 @@ describe('error', () => {
     expect(errorHook).toHaveBeenCalledWith(error)
     expect(consola.fatal).toHaveBeenCalledTimes(1)
     expect(consola.fatal).toHaveBeenCalledWith(error)
+  })
+
+  test('/info should display an error', async () => {
+    await expect(nuxt.server.renderRoute('/info')).rejects.toMatchObject({
+      message: expect.stringContaining(`Cannot read property 'title' of undefined`)
+    })
+  })
+
+  test('/about should work', async () => {
+    await expect(nuxt.server.renderRoute('/about')).resolves.toMatchObject({
+      html: expect.stringContaining('About')
+    })
+  })
+
+  test('/error-square should display an error and not loop', async () => {
+    await expect(nuxt.server.renderRoute('/error-square')).rejects.toMatchObject({
+      message: expect.stringContaining(`Cannot read property 'data' of undefined`)
+    })
   })
 
   // Close server and ask nuxt to stop listening to file changes
