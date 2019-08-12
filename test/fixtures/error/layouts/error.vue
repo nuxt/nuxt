@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Error</h1>
-    <p>Details: {{ errorData }}</p>
+    <p>Details: {{ this.$route.path === '/squared' ? error.response.data : error.message }}</p>
 
     <nuxt-link to="/">
       back
@@ -12,15 +12,6 @@
 <script>
 export default {
   // eslint-disable-next-line vue/require-prop-types
-  props: ['error'],
-  computed: {
-    errorData () {
-      if (['/squared'].includes(this.$route.path)) {
-        return this.error.response.data
-      }
-
-      return this.error.message
-    }
-  }
+  props: ['error']
 }
 </script>
