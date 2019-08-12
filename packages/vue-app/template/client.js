@@ -150,7 +150,7 @@ async function loadAsyncComponents(to, from, next) {
           return true
         } else if (Array.isArray(watchQuery)) {
           return watchQuery.some(key => this._diffQuery[key])
-        } else if (typeof watchQuery) {
+        } else if (typeof watchQuery === 'function') {
           return watchQuery(from.query, to.query)
         }
         return false
