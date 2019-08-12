@@ -1,13 +1,13 @@
 <template>
   <div>
     <h1>Error Loop incoming page</h1>
-    <nuxt-link to="/error-square">
+    <nuxt-link id="squared" to="/squared">
       Error during error
     </nuxt-link>
-    <nuxt-link to="/about">
+    <nuxt-link id="about" to="/about">
       About
     </nuxt-link>
-    <nuxt-link to="/info">
+    <nuxt-link id="info" to="/info">
       Info (with error)
     </nuxt-link>
   </div>

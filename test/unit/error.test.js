@@ -68,8 +68,8 @@ describe('error', () => {
     })
   })
 
-  test('/error-square should display an error and not loop', async () => {
-    await expect(nuxt.server.renderRoute('/error-square')).rejects.toMatchObject({
+  test('/error-square should display an error', async () => {
+    await expect(nuxt.server.renderRoute('/squared')).rejects.toMatchObject({
       message: expect.stringContaining(`Cannot read property 'data' of undefined`)
     })
   })

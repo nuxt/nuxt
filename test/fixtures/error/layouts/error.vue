@@ -15,7 +15,7 @@ export default {
   props: ['error'],
   computed: {
     errorData () {
-      if (['/error-square'].includes(this.$route.path)) {
+      if (['/squared'].includes(this.$route.path)) {
         return this.error.response.data
       }
 
