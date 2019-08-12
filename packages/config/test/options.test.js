@@ -232,6 +232,13 @@ describe('config: options', () => {
       expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
     })
 
+    test('should deprecate devModules', () => {
+      const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
+      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+      expect(config.devModules).toBe(undefined)
+      expect(config.buildModules).toEqual(['bar', 'foo'])
+    })
+
     test('should deprecate build.extractCSS.allChunks', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
