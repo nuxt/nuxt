@@ -84,8 +84,8 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 
 Vue.use(Router)
 
-export function createRouter() {
-  return new Router({
+export function routerOptions() {
+  return {
     mode: '<%= router.mode %>',
     base: decodeURI('<%= router.base %>'),
     linkActiveClass: '<%= router.linkActiveClass %>',
@@ -97,5 +97,9 @@ export function createRouter() {
     <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
     <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
     fallback: <%= router.fallback %>
-  })
+  }
+}
+
+export function createRouter() {
+  return new Router(routerOptions())
 }
