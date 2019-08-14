@@ -100,6 +100,10 @@ export function routerOptions() {
   }
 }
 
-export function createRouter() {
-  return new Router(routerOptions())
+export async function createRouter(ssrContext, options = routerOptions()) {
+  if (typeof options === 'function') {
+    options = await options(ssrContext)
+  }
+
+  return new Router(options)
 }
