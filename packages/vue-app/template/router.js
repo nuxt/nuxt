@@ -98,6 +98,6 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-export async function createRouter() {
+export function createRouter() {
   return new Router(routerOptions)
 }
