@@ -1,3 +1,9 @@
-export { default as common } from './common'
-export { default as server } from './server'
-export { default as locking } from './locking'
+import common from './common'
+import server from './server'
+import locking from './locking'
+
+export {
+  common,
+  server,
+  locking
+}
