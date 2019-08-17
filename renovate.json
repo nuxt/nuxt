@@ -6,8 +6,7 @@
     "dev"
   ],
   "ignoreDeps": [
-    "core-js",
-    "vue-router"
+    "core-js"
   ],
   "lockFileMaintenance": {
     "enabled": true
