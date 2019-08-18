@@ -135,7 +135,7 @@ async function loadAsyncComponents(to, from, next) {
   this._diffQuery = (this._queryChanged ? getQueryDiff(to.query, from.query) : [])
 
   <% if (loading) { %>
-  if (this._routeChanged && this.$loading.start && !this.$loading.manual) {
+  if ((this._routeChanged || this._paramChanged) && this.$loading.start && !this.$loading.manual) {
     this.$loading.start()
   }
   <% } %>
@@ -146,7 +146,7 @@ async function loadAsyncComponents(to, from, next) {
       (Component, instance) => ({ Component, instance })
     )
     <% if (loading) { %>
-    if (this._paramChanged || this._queryChanged) {
+    if (this._queryChanged) {
       // Add a marker on each component that it needs to refresh or not
       const startLoader = Components.some(({Component, instance}) => {
         const watchQuery = Component.options.watchQuery
@@ -366,7 +366,10 @@ async function render(to, from, next) {
       // Only if its slug has changed or is watch query changes
       if (this._routeChanged || Component._path !== _lastPaths[i]) {
         Component._dataRefresh = true
-      } else if (this._paramChanged || this._queryChanged) {
+      } else if (this._paramChanged) {
+        const watchParam = Component.options.watchParam
+        Component._dataRefresh = watchParam !== false
+      } else if (this._queryChanged) {
         const watchQuery = Component.options.watchQuery
         if (watchQuery === true) {
           Component._dataRefresh = true
