@@ -364,7 +364,7 @@ async function render(to, from, next) {
       Component._dataRefresh = false
       // Check if Component need to be refreshed (call asyncData & fetch)
       // Only if its slug has changed or is watch query changes
-      if (this._routeChanged || Component._path !== _lastPaths[i]) {
+      if (this._routeChanged && Component._path !== _lastPaths[i]) {
         Component._dataRefresh = true
       } else if (this._paramChanged) {
         const watchParam = Component.options.watchParam
