@@ -240,7 +240,7 @@ function callMiddleware(Components, context, layout) {
 }
 
 async function render(to, from, next) {
-  if (!this._routeChanged && !this._paramChanged && !this._queryChanged) return next()
+  if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) return next()
   // Handle first render on SPA mode
   if (to === from) _lastPaths = []
   else {
@@ -493,7 +493,7 @@ function showNextPage(to) {
 // When navigating on a different route but the same component is used, Vue.js
 // Will not update the instance data, so we have to update $data ourselves
 function fixPrepatch(to, ___) {
-  if (!this._routeChanged && !this._paramChanged && !this._queryChanged)  return
+  if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) return next()
 
   const matches = []
   const instances = getMatchedComponentsInstances(to, matches)
