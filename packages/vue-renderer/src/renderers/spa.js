@@ -1,6 +1,5 @@
 import { extname } from 'path'
 import cloneDeep from 'lodash/cloneDeep'
-import Vue from 'vue'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
@@ -13,27 +12,17 @@ export default class SPARenderer extends BaseRenderer {
 
     this.cache = new LRU()
 
-    // Add VueMeta to Vue (this is only for SPA mode)
-    // See app/index.js
-    Vue.use(VueMeta, {
+    this.vueMetaConfig = {
       keyName: 'head',
       attribute: 'data-n-head',
       ssrAttribute: 'data-n-head-ssr',
+      ssrAppId: '1',
       tagIDKeyName: 'hid'
-    })
+    }
   }
 
   createRenderer () {
     return createRenderer()
-  }
-
-  async getMeta () {
-    const vm = new Vue({
-      render: h => h(), // Render empty html tag
-      head: this.options.head || {}
-    })
-    await this.vueRenderer.renderToString(vm)
-    return vm.$meta().inject()
   }
 
   async render (renderContext) {
@@ -54,11 +43,19 @@ export default class SPARenderer extends BaseRenderer {
       HEAD_ATTRS: '',
       BODY_ATTRS: '',
       HEAD: '',
+      BODY_SCRIPTS_PREPEND: '',
       BODY_SCRIPTS: ''
     }
 
     // Get vue-meta context
-    const m = await this.getMeta()
+    let head
+    if (typeof this.options.head === 'function') {
+      head = this.options.head()
+    } else {
+      head = this.options.head
+    }
+
+    const m = VueMeta.generate(head || {}, this.vueMetaConfig)
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
@@ -78,11 +75,23 @@ export default class SPARenderer extends BaseRenderer {
       m.script.text() +
       m.noscript.text()
 
-    // BODY_SCRIPTS
-    meta.BODY_SCRIPTS = m.script.text({ body: true }) + m.noscript.text({ body: true })
+    // BODY_SCRIPTS (PREPEND)
+    meta.BODY_SCRIPTS_PREPEND =
+      m.meta.text({ pbody: true }) +
+      m.link.text({ pbody: true }) +
+      m.style.text({ pbody: true }) +
+      m.script.text({ pbody: true }) +
+      m.noscript.text({ pbody: true })
+
+    // BODY_SCRIPTS (APPEND)
+    meta.BODY_SCRIPTS =
+      m.meta.text({ body: true }) +
+      m.link.text({ body: true }) +
+      m.style.text({ body: true }) +
+      m.script.text({ body: true }) +
+      m.noscript.text({ body: true })
 
     // Resources Hints
-
     meta.resourceHints = ''
 
     const { resources: { modernManifest, clientManifest } } = this.serverContext
@@ -131,7 +140,7 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {
