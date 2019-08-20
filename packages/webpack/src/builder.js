@@ -168,35 +168,25 @@ export class WebpackBundler {
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
-        compiler,
-        Object.assign(
-          {
-            publicPath: buildOptions.publicPath,
-            stats: false,
-            logLevel: 'silent',
-            watchOptions: this.buildContext.options.watchers.webpack
-          },
-          buildOptions.devMiddleware
-        )
-      )
+        compiler, {
+          publicPath: buildOptions.publicPath,
+          stats: false,
+          logLevel: 'silent',
+          watchOptions: this.buildContext.options.watchers.webpack,
+          ...buildOptions.devMiddleware
+        })
     )
 
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
-        compiler,
-        Object.assign(
-          {
-            log: false,
-            heartbeat: 10000
-          },
-          hotMiddlewareOptions,
-          {
-            path: `/__webpack_hmr/${name}`
-          }
-        )
-      )
+        compiler, {
+          log: false,
+          heartbeat: 10000,
+          path: `/__webpack_hmr/${name}`,
+          ...hotMiddlewareOptions
+        })
     )
 
     // Register devMiddleware on server
@@ -219,6 +209,14 @@ export class WebpackBundler {
 
   async unwatch () {
     await Promise.all(this.compilersWatching.map(watching => watching.close()))
+  }
+
+  pauseWatch () {
+    this.compilersWatching.forEach(watching => watching.suspend())
+  }
+
+  resumeWatch () {
+    this.compilersWatching.forEach(watching => watching.resume())
   }
 
   async close () {
