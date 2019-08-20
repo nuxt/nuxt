@@ -9,8 +9,8 @@
     "vetur",
     "index.d.ts"
   ],
-  "typings": "index.d.ts",
   "main": "dist/vue-app.js",
+  "typings": "index.d.ts",
   "dependencies": {
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
