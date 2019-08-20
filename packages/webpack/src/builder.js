@@ -179,6 +179,8 @@ export class WebpackBundler {
 
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
+    this.compilersWatching.push(this.devMiddleware[name].context.watching)
+
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
         compiler, {
