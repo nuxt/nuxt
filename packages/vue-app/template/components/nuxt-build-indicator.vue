@@ -119,6 +119,7 @@ export default {
   width: 88px;
   z-index: 2147483647;
   font-size: 16px;
+  line-height: 1.2rem;
 }
 .v-enter-active, .v-leave-active {
   transition-delay: 0.2s;
@@ -130,6 +131,8 @@ export default {
   transform: translateY(20px);
 }
 svg {
+  display: inline-block;
+  vertical-align: baseline;
   width: 1.1em;
   position: relative;
   top: 1px;
