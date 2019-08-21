@@ -29,6 +29,15 @@ describe('run', () => {
     expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), ['--foo'])
   })
 
+  test('setup hook', async () => {
+    const setup = jest.fn()
+    await run(['--foo'], { setup })
+    expect(setup).toHaveBeenCalledWith(expect.objectContaining({
+      argv: ['dev', '--foo'],
+      dev: true
+    }))
+  })
+
   test('nuxt <dir> aliases to nuxt dev <dir>', async () => {
     await run([__dirname])
     expect(getCommand).toHaveBeenCalledWith('dev')
