@@ -20,7 +20,7 @@
     "lodash": "^4.17.15",
     "pify": "^4.0.1",
     "semver": "^6.3.0",
-    "serialize-javascript": "^1.7.0",
+    "serialize-javascript": "^1.8.0",
     "upath": "^1.1.2"
   },
   "publishConfig": {
