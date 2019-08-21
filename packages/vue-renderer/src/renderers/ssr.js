@@ -109,6 +109,17 @@ export default class SSRRenderer extends BaseRenderer {
     // Inject styles
     HEAD += renderContext.renderStyles()
 
+    const BODY_PREPEND =
+      m.meta.text({ pbody: true }) +
+      m.link.text({ pbody: true }) +
+      m.style.text({ pbody: true }) +
+      m.script.text({ pbody: true }) +
+      m.noscript.text({ pbody: true })
+
+    if (BODY_PREPEND) {
+      APP = `${BODY_PREPEND}${APP}`
+    }
+
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
     if (shouldInjectScripts) {
@@ -140,12 +151,17 @@ export default class SSRRenderer extends BaseRenderer {
     if (shouldInjectScripts) {
       APP += this.renderScripts(renderContext)
     }
+
+    // Append body scripts
+    APP += m.meta.text({ body: true })
+    APP += m.link.text({ body: true })
+    APP += m.style.text({ body: true })
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
+      HTML_ATTRS: m.htmlAttrs.text(true /* addSrrAttribute */),
       HEAD_ATTRS: m.headAttrs.text(),
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,

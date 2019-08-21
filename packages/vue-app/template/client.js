@@ -140,15 +140,21 @@ async function loadAsyncComponents(to, from, next) {
   <% } %>
 
   try {
-    const Components = await resolveRouteComponents(to)
+    const Components = await resolveRouteComponents(
+      to,
+      (Component, instance) => ({ Component, instance })
+    )
     <% if (loading) { %>
     if (!this._pathChanged && this._queryChanged) {
       // Add a marker on each component that it needs to refresh or not
-      const startLoader = Components.some((Component) => {
+      const startLoader = Components.some(({Component, instance}) => {
         const watchQuery = Component.options.watchQuery
-        if (watchQuery === true) return true
-        if (Array.isArray(watchQuery)) {
+        if (watchQuery === true) {
+          return true
+        } else if (Array.isArray(watchQuery)) {
           return watchQuery.some(key => this._diffQuery[key])
+        } else if (typeof watchQuery === 'function') {
+          return watchQuery.apply(instance, [to.query, from.query])
         }
         return false
       })
