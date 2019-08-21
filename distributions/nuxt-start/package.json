@@ -59,6 +59,7 @@
     "@nuxt/core": "2.9.1",
     "node-fetch": "^2.6.0",
     "vue": "^2.6.10",
+    "vue-client-only": "^2.0.0",
     "vue-meta": "^2.2.1",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "~3.0.7",
