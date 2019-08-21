@@ -14,7 +14,7 @@ import Resolver from './resolver'
 
 export default class Nuxt extends Hookable {
   constructor (options = {}) {
-    super()
+    super(consola)
 
     // Assign options and apply defaults
     this.options = getNuxtConfig(options)

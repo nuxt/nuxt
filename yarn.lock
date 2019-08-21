@@ -3457,7 +3457,7 @@ connect@^3.7.0:
     parseurl "~1.3.3"
     utils-merge "1.0.1"
 
-consola@^2.10.0, consola@^2.10.1, consola@^2.3.0, consola@^2.4.0, consola@^2.6.0, consola@^2.9.0:
+consola@^2.10.0, consola@^2.10.1, consola@^2.3.0, consola@^2.6.0, consola@^2.9.0:
   version "2.10.1"
   resolved "https://registry.npmjs.org/consola/-/consola-2.10.1.tgz#4693edba714677c878d520e4c7e4f69306b4b927"
   integrity sha512-4sxpH6SGFYLADfUip4vuY65f/gEogrzJoniVhNUYkJHtng0l8ZjnDCqxxrSVRHOHwKxsy8Vm5ONZh1wOR3/l/w==
@@ -5436,13 +5436,10 @@ gzip-size@^5.0.0:
     duplexer "^0.1.1"
     pify "^4.0.1"
 
-hable@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/hable/-/hable-1.0.1.tgz#bb3251e830ce083c85cf45216f92a588df1e9028"
-  integrity sha512-7OM/78kpwkNRPRniuQ9qdq8iXZmvzv/j2d2BRWX+3NeLWZ9hqiPZSyI38bWCs2BAiat+a1tWjGVdSu9iiKKunw==
-  dependencies:
-    consola "^2.4.0"
-    items-promise "^1.0.0"
+hable@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/hable/-/hable-2.1.0.tgz#281a372b4af7336a15029d5c293aa4cbc402808e"
+  integrity sha512-vL8ljDBY193nFJNjzV290KGVXF97P0xfBfeRFlArW3FfbTgbqkpRjqTpS0JJnRynnVm7AjSTIrDMCtWF8Ymtxw==
 
 handlebars@^4.1.2:
   version "4.1.2"
@@ -6326,11 +6323,6 @@ istanbul-reports@^2.2.6:
   integrity sha512-SKi4rnMyLBKe0Jy2uUdx28h8oG7ph2PPuQPvIAh31d+Ci+lSiEu4C+h3oBPuJ9+mPKhOyW0M8gY4U5NM1WLeXA==
   dependencies:
     handlebars "^4.1.2"
-
-items-promise@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/items-promise/-/items-promise-1.0.0.tgz#a71ff03063078eb82db468f1e2f12df4da34dc01"
-  integrity sha512-t+3w4E51IlviTn1b/gesEsH9Jf0gEs2+VhSbwgMaVyK2IxXYSwZkL6sOmr+FBhMT0sSFzcc4Rn5X7sz6NvS2GQ==
 
 jest-changed-files@^24.9.0:
   version "24.9.0"
