@@ -1,14 +1,16 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
     "dist",
     "template",
-    "vetur"
+    "vetur",
+    "index.d.ts"
   ],
   "main": "dist/vue-app.js",
+  "typings": "index.d.ts",
   "dependencies": {
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
