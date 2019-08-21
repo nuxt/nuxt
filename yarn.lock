@@ -5436,10 +5436,10 @@ gzip-size@^5.0.0:
     duplexer "^0.1.1"
     pify "^4.0.1"
 
-hable@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/hable/-/hable-2.1.0.tgz#281a372b4af7336a15029d5c293aa4cbc402808e"
-  integrity sha512-vL8ljDBY193nFJNjzV290KGVXF97P0xfBfeRFlArW3FfbTgbqkpRjqTpS0JJnRynnVm7AjSTIrDMCtWF8Ymtxw==
+hable@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.npmjs.org/hable/-/hable-2.2.1.tgz#714ef141a7eda5bd8530d6e4e3b37c6807716290"
+  integrity sha512-CuGRGMNnCp8RJ70zeoTX37sX4ctoT8BpmkStI2TYQwBBtWzQQFXQ/jsBUCqd34grt3IJQ+hkUXAU84/IuErVLQ==
 
 handlebars@^4.1.2:
   version "4.1.2"

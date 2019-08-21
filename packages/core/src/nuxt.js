@@ -24,11 +24,11 @@ export default class Nuxt extends Hookable {
     this.moduleContainer = new ModuleContainer(this)
 
     // Deprecated hooks
-    this._deprecatedHooks = {
+    this.deprecateHooks({
       'render:context': 'render:routeContext',
       'render:routeContext': 'vue-renderer:afterRender',
       'showReady': 'webpack:done' // Workaround to deprecate showReady
-    }
+    })
 
     // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
