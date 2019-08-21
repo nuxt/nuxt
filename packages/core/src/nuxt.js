@@ -1,6 +1,7 @@
 
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
+import Hookable from 'hable'
 
 import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
@@ -9,12 +10,11 @@ import { Server } from '@nuxt/server'
 import { version } from '../package.json'
 
 import ModuleContainer from './module'
-import Hookable from './hookable'
 import Resolver from './resolver'
 
 export default class Nuxt extends Hookable {
   constructor (options = {}) {
-    super()
+    super(consola)
 
     // Assign options and apply defaults
     this.options = getNuxtConfig(options)
@@ -24,11 +24,11 @@ export default class Nuxt extends Hookable {
     this.moduleContainer = new ModuleContainer(this)
 
     // Deprecated hooks
-    this._deprecatedHooks = {
+    this.deprecateHooks({
       'render:context': 'render:routeContext',
       'render:routeContext': 'vue-renderer:afterRender',
       'showReady': 'webpack:done' // Workaround to deprecate showReady
-    }
+    })
 
     // Add Legacy aliases
     defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])

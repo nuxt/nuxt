@@ -4,6 +4,7 @@ import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
 import { r, createRoutes, stripWhitespace } from '@nuxt/utils'
+import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import TemplateContext from '../src/context/template'
 import { createNuxt } from './__utils__'
@@ -17,6 +18,7 @@ jest.mock('../src/context/template', () => jest.fn())
 jest.mock('../src/ignore', () => function () {
   this.filter = jest.fn(files => files)
 })
+jest.mock('@nuxt/webpack')
 
 describe('builder: builder generate', () => {
   beforeAll(() => {
@@ -45,7 +47,7 @@ describe('builder: builder generate', () => {
       },
       watch: []
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.normalizePlugins = jest.fn(() => [{ name: 'test_plugin', src: '/var/somesrc' }])
     builder.resolveLayouts = jest.fn(() => 'resolveLayouts')
     builder.resolveRoutes = jest.fn(() => 'resolveRoutes')
@@ -88,7 +90,7 @@ describe('builder: builder generate', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.ignore = '/var/nuxt/ignore'
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     Glob.mockReturnValue('matched files')
 
     const files = await builder.resolveFiles('/var/nuxt/dir')
@@ -105,7 +107,7 @@ describe('builder: builder generate', () => {
 
   test('should resolve relative files', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.resolveFiles = jest.fn(dir => [ `${dir}/foo.vue`, `${dir}/bar.vue`, `${dir}/baz.vue` ])
 
     const files = await builder.resolveRelative('/var/nuxt/dir')
@@ -125,7 +127,7 @@ describe('builder: builder generate', () => {
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.resolveRelative = jest.fn(dir => [
       { src: `${dir}/index.js` },
       { src: `${dir}/bar.js` },
@@ -155,7 +157,7 @@ describe('builder: builder generate', () => {
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     const templateVars = {}
     const templateFiles = []
@@ -171,7 +173,7 @@ describe('builder: builder generate', () => {
     nuxt.options.dir = {
       middleware: '/var/nuxt/src/middleware'
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.resolveRelative = jest.fn(dir => [
       { src: `${dir}/midd.js` }
     ])
@@ -193,7 +195,7 @@ describe('builder: builder generate', () => {
         { src: '/var/nuxt/templates/baz.js', dst: 'baz.js' }
       ]
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fs.exists.mockReturnValueOnce(true)
 
     const templateContext = {
@@ -226,7 +228,7 @@ describe('builder: builder generate', () => {
     nuxt.options.build = {
       template: { dir: '/var/nuxt/templates' }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fs.exists.mockReturnValueOnce(true)
 
     const templateFiles = []
@@ -252,7 +254,7 @@ describe('builder: builder generate', () => {
     nuxt.options.build = {
       template: { dir: '/var/nuxt/templates' }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fs.exists
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true)
@@ -281,7 +283,7 @@ describe('builder: builder generate', () => {
     nuxt.options.build = {
       template: { dir: '/var/nuxt/templates' }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fs.exists
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false)
@@ -304,7 +306,7 @@ describe('builder: builder generate', () => {
     nuxt.options.loadingIndicator = {
       name: false
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     await builder.resolveLoadingIndicator({ templateFiles: [] })
 
@@ -315,7 +317,7 @@ describe('builder: builder generate', () => {
     const nuxt = createNuxt()
     nuxt.options.build.watch = []
     nuxt.options.buildDir = '/var/nuxt/build'
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.relativeToBuild = jest.fn()
     const templateFn = jest.fn(() => 'compiled content')
     template.mockImplementation(() => templateFn)
@@ -385,7 +387,7 @@ describe('builder: builder generate', () => {
 
   test('should throw error if compile failed', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.relativeToBuild = jest.fn()
     template.mockImplementation(() => {
       throw new Error('compile failed')
@@ -412,7 +414,7 @@ describe('builder: builder generate', () => {
       nuxt.options.layouts = {
         foo: '/var/nuxt/layouts/foo/index.vue'
       }
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
       builder.resolveFiles = jest.fn(layouts => [
         `${layouts}/foo.vue`,
         `${layouts}/bar.js`,
@@ -460,7 +462,7 @@ describe('builder: builder generate', () => {
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
       }
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
       builder.resolveFiles = jest.fn(layouts => [
         `${layouts}/error.vue`
       ])
@@ -487,7 +489,7 @@ describe('builder: builder generate', () => {
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
       }
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
       builder.resolveFiles = jest.fn()
       fs.exists.mockReturnValueOnce(false)
 
@@ -513,7 +515,7 @@ describe('builder: builder generate', () => {
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.build.createRoutes = jest.fn(() => [ { name: 'default_route' } ])
       nuxt.options.router.extendRoutes = jest.fn(routes => [ ...routes, { name: 'extend_route' } ])
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
 
       const templateVars = {
         router: {
@@ -550,7 +552,7 @@ describe('builder: builder generate', () => {
       }
       nuxt.options.router.routeNameSplitter = '[splitter]'
       createRoutes.mockReturnValueOnce([ { name: 'default_route' } ])
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
       builder._defaultPage = true
 
       const templateVars = {
@@ -595,7 +597,7 @@ describe('builder: builder generate', () => {
         extendRoutes: jest.fn()
       }
       createRoutes.mockImplementationOnce(({ files }) => files.map(file => ({ path: file })))
-      const builder = new Builder(nuxt, {})
+      const builder = new Builder(nuxt, BundleBuilder)
       builder._nuxtPages = true
       builder.resolveFiles = jest.fn(dir => [
         `${dir}/foo.js`,
