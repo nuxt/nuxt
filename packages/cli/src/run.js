@@ -14,7 +14,7 @@ function packageExists (name) {
   }
 }
 
-export default async function run (_argv) {
+export default async function run (_argv, hooks = {}) {
   // Check for not installing both nuxt and nuxt-edge
   const dupPkg = '@nuxt/' + (pkgName === '@nuxt/cli-edge' ? 'cli' : 'cli-edge')
   if (packageExists(dupPkg)) {
@@ -33,8 +33,16 @@ export default async function run (_argv) {
     cmd = await getCommand('dev')
   }
 
+  // Check for dev
+  const dev = argv[0] === 'dev'
+
+  // Call setup hook
+  if (typeof hooks.setup === 'function') {
+    await hooks.setup({ cmd, dev, argv })
+  }
+
   // Setup env
-  setup({ dev: argv[0] === 'dev' })
+  setup({ dev })
 
   // Try internal command
   if (cmd) {
