@@ -443,16 +443,16 @@ export default class Builder {
       let src = customTemplate ? (customTemplate.src || customTemplate) : r(this.template.dir, file)
 
       // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = path.resolve(this.options.srcDir, this.options.dir.app, file)
-      const customFileExists = customPath.indexOf(appDir) === 0 && await fsExtra.exists(customPath)
-      if (customFileExists) {
-        src = customPath
+      const customAppFile = path.resolve(this.options.srcDir, this.options.dir.app, file)
+      const customAppFileExists = customAppFile.indexOf(appDir) === 0 && await fsExtra.exists(customAppFile)
+      if (customAppFileExists) {
+        src = customAppFile
       }
 
       return {
         src,
         dst: file,
-        custom: Boolean(customFileExists || customTemplate),
+        custom: Boolean(customAppFileExists || customTemplate),
         options: (customTemplate && customTemplate.options) || {}
       }
     }))
