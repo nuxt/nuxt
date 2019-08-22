@@ -222,6 +222,9 @@ export default class Builder {
 
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
+    if (typeof this.nuxt.options.extendPlugins === 'function') {
+      this.nuxt.options.build.extendPlugins(this.plugins)
+    }
 
     const templateContext = new TemplateContext(this, this.options)
 

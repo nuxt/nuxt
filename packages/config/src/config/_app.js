@@ -20,6 +20,8 @@ export default () => ({
 
   plugins: [],
 
+  extendPlugins: null,
+
   css: [],
 
   modules: [],
