@@ -21,11 +21,16 @@ describe('builder: builder plugins', () => {
   test('should normalize plugins', () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
-      '/var/nuxt/plugins/test.js',
       '/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js',
       { src: '/var/nuxt/plugins/test.server', mode: 'server' },
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
+    nuxt.options.hooks = {
+      'build:extendRoutes'(plugins) {
+        plugins.unshift('/var/nuxt/plugins/test.js')
+      }
+    }
+
     const builder = new Builder(nuxt, BundleBuilder)
 
     const plugins = builder.normalizePlugins()
