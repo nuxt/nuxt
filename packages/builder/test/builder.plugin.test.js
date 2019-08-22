@@ -18,7 +18,7 @@ describe('builder: builder plugins', () => {
     jest.clearAllMocks()
   })
 
-  test('should normalize plugins', () => {
+  test('should normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
       '/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js',
@@ -26,13 +26,13 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
     nuxt.options.hooks = {
-      'build:extendRoutes'(plugins) {
+      'build:extendPlugins'(plugins) {
         plugins.unshift('/var/nuxt/plugins/test.js')
       }
     }
 
     const builder = new Builder(nuxt, BundleBuilder)
-
+    await builder.nuxt.callHook('build:extendPlugins', nuxt.options.plugins)
     const plugins = builder.normalizePlugins()
 
     expect(plugins).toEqual([

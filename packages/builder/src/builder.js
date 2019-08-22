@@ -221,8 +221,8 @@ export default class Builder {
     }
 
     // Plugins
+    await this.nuxt.callHook('build:extendPlugins', this.options.plugins)
     this.plugins = Array.from(this.normalizePlugins())
-    await this.nuxt.callHook('build:extendPlugins', this.plugins)
 
     const templateContext = new TemplateContext(this, this.options)
 
