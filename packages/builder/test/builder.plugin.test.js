@@ -26,7 +26,7 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
     nuxt.options.hooks = {
-      'build:extendPlugins'(plugins) {
+      'build:extendPlugins' (plugins) {
         plugins.unshift('/var/nuxt/plugins/test.js')
       }
     }
