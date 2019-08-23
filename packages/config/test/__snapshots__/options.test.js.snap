@@ -358,7 +358,9 @@ Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;
