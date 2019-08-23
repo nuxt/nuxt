@@ -1,6 +1,6 @@
 export default function () {
   // Add .coffee extension for store, middleware and more
-  this.nuxt.options.extensions.push('coffee')
+  this.nuxt.options.build.additionalExtensions.push('coffee')
   // Extend build
   const coffeeLoader = {
     test: /\.coffee$/,

@@ -143,13 +143,13 @@ Object {
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": false,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
     "app": "app",
     "assets": "assets",
@@ -357,7 +357,9 @@ Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;

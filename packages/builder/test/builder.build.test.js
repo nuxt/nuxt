@@ -3,6 +3,7 @@ import consola from 'consola'
 import fsExtra from 'fs-extra'
 import semver from 'semver'
 import { r, waitFor } from '@nuxt/utils'
+import { BundleBuilder } from '@nuxt/webpack'
 
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
@@ -12,6 +13,7 @@ jest.mock('semver')
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
+jest.mock('@nuxt/webpack')
 
 describe('builder: builder build', () => {
   beforeAll(() => {
@@ -77,7 +79,7 @@ describe('builder: builder build', () => {
   test('should prevent duplicate build in dev mode', async () => {
     const nuxt = createNuxt()
     nuxt.options.dev = true
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder._buildStatus = 3
 
     waitFor.mockImplementationOnce(() => {
@@ -96,7 +98,7 @@ describe('builder: builder build', () => {
   test('should wait 1000ms and retry if building is in progress', async () => {
     const nuxt = createNuxt()
     nuxt.options.dev = true
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder._buildStatus = 2
 
     const buildReturn = await builder.build()
@@ -134,7 +136,7 @@ describe('builder: builder build', () => {
 
   test('should throw error when validateTemplate failed', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.validatePages = jest.fn()
     builder.validateTemplate = jest.fn(() => {
       throw new Error('validate failed')
@@ -154,7 +156,7 @@ describe('builder: builder build', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fsExtra.exists.mockReturnValue(false)
 
     await builder.validatePages()
@@ -175,7 +177,7 @@ describe('builder: builder build', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fsExtra.exists
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true)
@@ -197,7 +199,7 @@ describe('builder: builder build', () => {
   test('should pass validation if createRoutes is function', async () => {
     const nuxt = createNuxt()
     nuxt.options.build.createRoutes = jest.fn()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     await builder.validatePages()
 
@@ -209,7 +211,7 @@ describe('builder: builder build', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     fsExtra.exists.mockReturnValueOnce(true)
 
     await builder.validatePages()
@@ -230,7 +232,7 @@ describe('builder: builder build', () => {
         nuxt: 'edge'
       }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     semver.satisfies
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true)
@@ -256,7 +258,7 @@ describe('builder: builder build', () => {
         nuxt: 'edge'
       }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     semver.satisfies
       .mockReturnValueOnce(false)
     nuxt.resolver.requireModule
