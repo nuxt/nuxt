@@ -165,6 +165,28 @@ Object {
     "js",
     "mjs",
   ],
+  "features": Object {
+    "asyncData": true,
+    "client": Object {
+      "online": true,
+      "prefetch": true,
+      "useUrl": false,
+    },
+    "components": Object {
+      "aliases": true,
+      "clientOnly": true,
+      "noSsr": true,
+    },
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "router": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
