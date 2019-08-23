@@ -83,15 +83,18 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
+    let HEAD = ''
+
     // Inject head meta
-    const m = renderContext.meta.inject()
-    let HEAD =
-      m.title.text() +
-      m.meta.text() +
-      m.link.text() +
-      m.style.text() +
-      m.script.text() +
-      m.noscript.text()
+    const m = renderContext.meta && renderContext.meta.inject()
+    if (m) {
+      HEAD += m.title.text() +
+        m.meta.text() +
+        m.link.text() +
+        m.style.text() +
+        m.script.text() +
+        m.noscript.text()
+    }
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
@@ -109,15 +112,17 @@ export default class SSRRenderer extends BaseRenderer {
     // Inject styles
     HEAD += renderContext.renderStyles()
 
-    const BODY_PREPEND =
-      m.meta.text({ pbody: true }) +
-      m.link.text({ pbody: true }) +
-      m.style.text({ pbody: true }) +
-      m.script.text({ pbody: true }) +
-      m.noscript.text({ pbody: true })
+    if (m) {
+      const BODY_PREPEND =
+        m.meta.text({ pbody: true }) +
+        m.link.text({ pbody: true }) +
+        m.style.text({ pbody: true }) +
+        m.script.text({ pbody: true }) +
+        m.noscript.text({ pbody: true })
 
-    if (BODY_PREPEND) {
-      APP = `${BODY_PREPEND}${APP}`
+      if (BODY_PREPEND) {
+        APP = `${BODY_PREPEND}${APP}`
+      }
     }
 
     // Serialize state
@@ -152,18 +157,20 @@ export default class SSRRenderer extends BaseRenderer {
       APP += this.renderScripts(renderContext)
     }
 
-    // Append body scripts
-    APP += m.meta.text({ body: true })
-    APP += m.link.text({ body: true })
-    APP += m.style.text({ body: true })
-    APP += m.script.text({ body: true })
-    APP += m.noscript.text({ body: true })
+    if (m) {
+      // Append body scripts
+      APP += m.meta.text({ body: true })
+      APP += m.link.text({ body: true })
+      APP += m.style.text({ body: true })
+      APP += m.script.text({ body: true })
+      APP += m.noscript.text({ body: true })
+    }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: m.htmlAttrs.text(true /* addSrrAttribute */),
-      HEAD_ATTRS: m.headAttrs.text(),
-      BODY_ATTRS: m.bodyAttrs.text(),
+      HTML_ATTRS: m ? m.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HEAD_ATTRS: m ? m.headAttrs.text() : '',
+      BODY_ATTRS: m ? m.bodyAttrs.text() : '',
       HEAD,
       APP,
       ENV: this.options.env

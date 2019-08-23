@@ -232,6 +232,14 @@ export default class Builder {
       this.resolveMiddleware(templateContext)
     ])
 
+    if (this.options.dev && this.options.build.indicator) {
+      templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
+    }
+
+    if (this.options.loading !== false) {
+      templateContext.templateFiles.push('components/nuxt-loading.vue')
+    }
+
     await this.resolveCustomTemplates(templateContext)
 
     await this.resolveLoadingIndicator(templateContext)
@@ -407,9 +415,15 @@ export default class Builder {
     templateFiles.push('store.js')
   }
 
-  async resolveMiddleware ({ templateVars }) {
+  async resolveMiddleware ({ templateVars, templateFiles }) {
+    if (!this.options.features.middleware) {
+      return
+    }
+
     // -- Middleware --
     templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
+
+    templateFiles.push('middleware.js')
   }
 
   async resolveCustomTemplates (templateContext) {

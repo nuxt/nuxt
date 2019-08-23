@@ -1,7 +1,13 @@
 import Vue from 'vue'
-import { getMatchedComponentsInstances, promisify, globalHandleError } from './utils'
+<% if (features.asyncData || features.fetch) { %>
+import {
+  getMatchedComponentsInstances,
+  promisify,
+  globalHandleError
+} from './utils'
+<% } %>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
-<%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
+<% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
@@ -19,9 +25,11 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 
 export default {
+  <% if (features.meta) { %>
   <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
   head: <%= serializeFunction(head) %>,
   <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren */' : '' %>
+  <% } %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     const layoutEl = h(this.layout || 'nuxt')
@@ -32,6 +40,7 @@ export default {
       key: this.layoutName
     }, [ layoutEl ])
 
+    <% if (features.transitions) { %>
     const transitionEl = h('transition', {
       props: {
         name: '<%= layoutTransition.name %>',
@@ -46,15 +55,22 @@ export default {
         }
       }
     }, [ templateEl ])
+    <% } %>
 
     return h('div', {
       domProps: {
         id: '<%= globals.id %>'
       }
-    }, [<% if (loading) { %>loadingEl, <% } %><%if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>transitionEl])
+    }, [
+      <% if (loading) { %>loadingEl, <% } %>
+      <% if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>
+      <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
+    ])
   },
   data: () => ({
+    <% if (features.client.online) { %>
     isOnline: true,
+    <% } %>
     layout: null,
     layoutName: ''
   }),
@@ -67,10 +83,12 @@ export default {
     // add to window so we can listen when ready
     if (process.client) {
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
+      <% if (features.client.online) { %>
       this.refreshOnlineStatus()
       // Setup the listeners
       window.addEventListener('online', this.refreshOnlineStatus)
       window.addEventListener('offline', this.refreshOnlineStatus)
+      <% } %>
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
@@ -85,12 +103,15 @@ export default {
     'nuxt.err': 'errorChanged'
   },
   <% } %>
+  <% if (features.client.online) { %>
   computed: {
     isOffline() {
       return !this.isOnline
     }
   },
+  <% } %>
   methods: {
+    <% if (features.client.online) { %>
     refreshOnlineStatus() {
       if (process.client) {
         if (typeof window.navigator.onLine === 'undefined') {
@@ -103,19 +124,25 @@ export default {
         }
       }
     },
+    <% } %>
     async refresh() {
+      <% if (features.asyncData || features.fetch) { %>
       const pages = getMatchedComponentsInstances(this.$route)
 
       if (!pages.length) {
         return
       }
       <% if (loading) { %>this.$loading.start()<% } %>
+
       const promises = pages.map(async (page) => {
         const p = []
 
+        <% if (features.fetch) { %>
         if (page.$options.fetch) {
           p.push(promisify(page.$options.fetch, this.context))
         }
+        <% } %>
+        <% if (features.asyncData) { %>
         if (page.$options.asyncData) {
           p.push(
             promisify(page.$options.asyncData, this.context)
@@ -126,6 +153,7 @@ export default {
               })
           )
         }
+        <% } %>
         return Promise.all(p)
       })
       try {
@@ -136,6 +164,7 @@ export default {
         this.error(error)
       }
       <% if (loading) { %>this.$loading.finish()<% } %>
+      <% } %>
     },
     <% if (loading) { %>
     errorChanged() {
@@ -195,7 +224,9 @@ export default {
     }
     <% } %>
   },
+  <% if (loading) { %>
   components: {
-    <%= (loading ? 'NuxtLoading' : '') %>
+    NuxtLoading
   }
+  <% } %>
 }

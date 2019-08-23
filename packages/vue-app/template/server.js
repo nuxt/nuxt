@@ -1,18 +1,28 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
-import middleware from './middleware.js'
-import { applyAsyncData, getMatchedComponents, middlewareSeries, promisify, urlJoin, sanitizeComponent } from './utils.js'
+<% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
+import {
+  <% if (features.asyncData) { %>applyAsyncData,<% } %>
+  <% if (features.middleware) { %>middlewareSeries,<% } %>
+  getMatchedComponents,
+  promisify,
+  sanitizeComponent
+} from './utils.js'
 import { createApp, NuxtError } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
-Vue.component('NLink', NuxtLink)
+<% if (features.components.aliases) { %>Vue.component('NLink', NuxtLink)<% } %>
 
 <% if (fetch.server) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
 const noopApp = () => new Vue({ render: h => h('div') })
+
+function urlJoin() {
+  return Array.prototype.slice.call(arguments).join('/').replace(/\/+/g, '/')
+}
 
 const createNext = ssrContext => (opts) => {
   ssrContext.redirected = opts
@@ -55,20 +65,24 @@ export default async (ssrContext) => {
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
 
+  <% if (features.meta) { %>
   // Add meta infos (used in renderer.js)
   ssrContext.meta = _app.$meta()
+  <% } %>
+  <% if (features.asyncData) { %>
   // Keep asyncData for each matched component in ssrContext (used in app/utils.js via this.$ssrContext)
   ssrContext.asyncData = {}
+  <% } %>
 
   const beforeRender = async () => {
     // Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
-    ssrContext.rendered = () => {
     <% if (store) { %>
+    ssrContext.rendered = () => {
       // Add the state from the vuex store
       ssrContext.nuxt.state = store.state
-    <% } %>
     }
+    <% } %>
   }
   const renderErrorPage = async () => {
     // Load layout for error page
@@ -106,6 +120,7 @@ export default async (ssrContext) => {
   if (ssrContext.nuxt.error) return renderErrorPage()
   <% } %>
 
+  <% if (features.middleware) { %>
   /*
   ** Call global middleware (nuxt.config.js)
   */
@@ -121,7 +136,7 @@ export default async (ssrContext) => {
   // ...If there is a redirect or an error, stop the process
   if (ssrContext.redirected) return noopApp()
   if (ssrContext.nuxt.error) return renderErrorPage()
-
+  <% } %>
   /*
   ** Set layout
   */
@@ -132,6 +147,7 @@ export default async (ssrContext) => {
   layout = _app.setLayout(layout)
   ssrContext.nuxt.layout = _app.layoutName
 
+  <% if (features.middleware) { %>
   /*
   ** Call middleware (layout + pages)
   */
@@ -154,7 +170,9 @@ export default async (ssrContext) => {
   // ...If there is a redirect or an error, stop the process
   if (ssrContext.redirected) return noopApp()
   if (ssrContext.nuxt.error) return renderErrorPage()
+  <% } %>
 
+  <% if (features.validate) { %>
   /*
   ** Call .validate()
   */
@@ -187,14 +205,17 @@ export default async (ssrContext) => {
     // Render a 404 error page
     return render404Page()
   }
+  <% } %>
 
   // If no Components found, returns 404
   if (!Components.length) return render404Page()
 
+  <% if (features.asyncData || features.fetch) { %>
   // Call asyncData & fetch hooks on components matched by the route.
   const asyncDatas = await Promise.all(Components.map((Component) => {
     const promises = []
 
+    <% if (features.asyncData) { %>
     // Call asyncData(context)
     if (Component.options.asyncData && typeof Component.options.asyncData === 'function') {
       const promise = promisify(Component.options.asyncData, app.context)
@@ -207,13 +228,16 @@ export default async (ssrContext) => {
     } else {
       promises.push(null)
     }
+    <% } %>
 
+    <% if (features.fetch) { %>
     // Call fetch(context)
     if (Component.options.fetch) {
       promises.push(Component.options.fetch(app.context))
     } else {
       promises.push(null)
     }
+    <% } %>
 
     return Promise.all(promises)
   }))
@@ -222,6 +246,7 @@ export default async (ssrContext) => {
 
   // datas are the first row of each
   ssrContext.nuxt.data = asyncDatas.map(r => r[0] || {})
+  <% } %>
 
   // ...If there is a redirect or an error, stop the process
   if (ssrContext.redirected) return noopApp()

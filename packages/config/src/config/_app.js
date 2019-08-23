@@ -54,5 +54,28 @@ export default () => ({
   layoutTransition: {
     name: 'layout',
     mode: 'out-in'
+  },
+
+  features: {
+    router: true, // not implemented
+    store: true, // not implemented
+    layouts: true, // not implemented
+    meta: true,
+    middleware: true,
+    transitions: true,
+    deprecations: true,
+    validate: true,
+    asyncData: true,
+    fetch: true,
+    client: {
+      online: true,
+      prefetch: true,
+      useUrl: false
+    },
+    components: {
+      aliases: true,
+      clientOnly: true,
+      noSsr: true
+    }
   }
 })

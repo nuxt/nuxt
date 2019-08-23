@@ -11,6 +11,7 @@ export default class TemplateContext {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
       nuxtOptions: options,
+      features: options.features,
       extensions: options.extensions
         .map(ext => ext.replace(/^\./, ''))
         .join('|'),

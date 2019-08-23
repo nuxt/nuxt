@@ -21,6 +21,7 @@ export function interopDefault(promise) {
   return promise.then(m => m.default || m)
 }
 
+<% if (features.asyncData) { %>
 export function applyAsyncData(Component, asyncData) {
   if (
     // For SSR, we once all this function without second param to just apply asyncData
@@ -47,6 +48,7 @@ export function applyAsyncData(Component, asyncData) {
     Component._Ctor.options.data = Component.options.data
   }
 }
+<% } %>
 
 export function sanitizeComponent(Component) {
   // If Component already sanitized
@@ -67,22 +69,17 @@ export function sanitizeComponent(Component) {
   return Component
 }
 
-export function getMatchedComponents(route, matches = false) {
+export function getMatchedComponents(route, matches = false, prop = 'components') {
   return Array.prototype.concat.apply([], route.matched.map((m, index) => {
-    return Object.keys(m.components).map((key) => {
+    return Object.keys(m[prop]).map((key) => {
       matches && matches.push(index)
-      return m.components[key]
+      return m[prop][key]
     })
   }))
 }
 
 export function getMatchedComponentsInstances(route, matches = false) {
-  return Array.prototype.concat.apply([], route.matched.map((m, index) => {
-    return Object.keys(m.instances).map((key) => {
-      matches && matches.push(index)
-      return m.instances[key]
-    })
-  }))
+  return getMatchedComponents(route, matches, 'instances')
 }
 
 export function flatMapComponents(route, fn) {
@@ -215,11 +212,11 @@ export async function setContext(app, context) {
   app.context.next = context.next
   app.context._redirected = false
   app.context._errored = false
-  app.context.isHMR = Boolean(context.isHMR)
+  app.context.isHMR = <% if(isDev) { %>Boolean(context.isHMR)<% } else { %>false<% } %>
   app.context.params = app.context.route.params || {}
   app.context.query = app.context.route.query || {}
 }
-
+<% if (features.middleware) { %>
 export function middlewareSeries(promises, appContext) {
   if (!promises.length || appContext._redirected || appContext._errored) {
     return Promise.resolve()
@@ -229,8 +226,9 @@ export function middlewareSeries(promises, appContext) {
       return middlewareSeries(promises.slice(1), appContext)
     })
 }
-
+<% } %>
 export function promisify(fn, context) {
+  <% if (features.deprecations) { %>
   let promise
   if (fn.length === 2) {
     <% if (isDev) { %>
@@ -251,10 +249,13 @@ export function promisify(fn, context) {
   } else {
     promise = fn(context)
   }
-  if (!promise || (!(promise instanceof Promise) && (typeof promise.then !== 'function'))) {
-    promise = Promise.resolve(promise)
+  <% } else { %>
+    const promise = fn(context)
+  <% } %>
+  if (promise && promise instanceof Promise && typeof promise.then === 'function') {
+    return promise
   }
-  return promise
+  return Promise.resolve(promise)
 }
 
 // Imported from vue-router
@@ -267,10 +268,6 @@ export function getLocation(base, mode) {
     path = path.slice(base.length)
   }
   return (path || '/') + window.location.search + window.location.hash
-}
-
-export function urlJoin() {
-  return Array.prototype.slice.call(arguments).join('/').replace(/\/+/g, '/')
 }
 
 // Imported from path-to-regexp
@@ -412,8 +409,9 @@ function parse(str, options) {
  * @param  {string}
  * @return {string}
  */
-function encodeURIComponentPretty(str) {
-  return encodeURI(str).replace(/[/?#]/g, (c) => {
+function encodeURIComponentPretty(str, slashAllowed) {
+  const re = slashAllowed ? /[?#]/g : /[/?#]/g
+  return encodeURI(str).replace(re, (c) => {
     return '%' + c.charCodeAt(0).toString(16).toUpperCase()
   })
 }
@@ -425,9 +423,27 @@ function encodeURIComponentPretty(str) {
  * @return {string}
  */
 function encodeAsterisk(str) {
-  return encodeURI(str).replace(/[?#]/g, (c) => {
-    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
-  })
+  return encodeURIComponentPretty(str, true)
+}
+
+/**
+ * Escape a regular expression string.
+ *
+ * @param  {string} str
+ * @return {string}
+ */
+function escapeString(str) {
+  return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
+}
+
+/**
+ * Escape the capturing group by escaping special characters and meaning.
+ *
+ * @param  {string} group
+ * @return {string}
+ */
+function escapeGroup(group) {
+  return group.replace(/([=!:$/()])/g, '\\$1')
 }
 
 /**
@@ -515,26 +531,6 @@ function tokensToFunction(tokens) {
 }
 
 /**
- * Escape a regular expression string.
- *
- * @param  {string} str
- * @return {string}
- */
-function escapeString(str) {
-  return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
-}
-
-/**
- * Escape the capturing group by escaping special characters and meaning.
- *
- * @param  {string} group
- * @return {string}
- */
-function escapeGroup(group) {
-  return group.replace(/([=!:$/()])/g, '\\$1')
-}
-
-/**
  * Format given url, append query to url query string
  *
  * @param  {string} url
@@ -542,6 +538,24 @@ function escapeGroup(group) {
  * @return {string}
  */
 function formatUrl(url, query) {
+  <% if (features.client.useUrl) { %>
+  url = new URL(url, top.location.href)
+  for (const key in query) {
+    const value = query[key]
+    if (value == null) {
+      continue
+    }
+    if (Array.isArray(value)) {
+      for (const arrayValue of value) {
+        url.searchParams.append(key, arrayValue)
+      }
+      continue
+    }
+    url.searchParams.append(key, value)
+  }
+  url.searchParams.sort()
+  return url.toString()
+  <% } else { %>
   let protocol
   const index = url.indexOf('://')
   if (index !== -1) {
@@ -569,8 +583,9 @@ function formatUrl(url, query) {
   result += hash ? '#' + hash : ''
 
   return result
+  <% } %>
 }
-
+<% if (!features.client.useUrl) { %>
 /**
  * Transform data object to query string
  *
@@ -589,3 +604,4 @@ function formatQuery(query) {
     return key + '=' + val
   }).filter(Boolean).join('&')
 }
+<% } %>
