@@ -1,5 +1,3 @@
-import util from 'util'
-
 export default {
   loading: false,
   loadingIndicator: false,
@@ -30,7 +28,7 @@ export default {
   },
   build: {
     indicator: false,
-    terser: false,
+    terser: true,
     cache: false,
     hardSource: false,
     parallel: false
