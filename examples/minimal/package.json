@@ -1,5 +1,5 @@
 {
-  "name": "example-hello-world",
+  "name": "example-minimal",
   "dependencies": {
     "nuxt": "latest"
   },
