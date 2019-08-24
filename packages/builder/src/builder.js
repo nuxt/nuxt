@@ -310,6 +310,10 @@ export default class Builder {
   }
 
   async resolveLayouts ({ templateVars, templateFiles }) {
+    if (!this.options.features.layouts) {
+      return
+    }
+
     if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
