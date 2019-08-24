@@ -25,9 +25,9 @@ describe('builder: builder generate', () => {
     r.mockImplementation((...args) => `r(${args.join(', ')})`)
     fs.readFile.mockImplementation((...args) => `readFile(${args.join(', ')})`)
     fs.outputFile.mockImplementation((...args) => `outputFile(${args.join(', ')})`)
-    const { join, resolve } = path
-    jest.spyOn(path, 'join').mockImplementation((...args) => join(...args).replace(/\\/g, '/'))
-    jest.spyOn(path, 'resolve').mockImplementation((...args) => resolve(...args).replace(/\\/g, '/'))
+    const { join, resolve } = path.posix
+    jest.spyOn(path, 'join').mockImplementation((...args) => join(...args))
+    jest.spyOn(path, 'resolve').mockImplementation((...args) => resolve(...args))
   })
 
   afterAll(() => {
