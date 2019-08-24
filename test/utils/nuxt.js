@@ -33,5 +33,14 @@ export const loadFixture = async function (fixture, overrides) {
   config.dev = false
   config.test = true
 
+  // disable terser to speed-up fixture builds
+  if (config.build) {
+    if (!config.build.hasOwnProperty('terser')) {
+      config.build.terser = false
+    }
+  } else {
+    config.build = { terser: false }
+  }
+
   return defaultsDeep({}, overrides, config)
 }
