@@ -21,6 +21,7 @@
       "exact",
       "event",
       "exact-active-class",
+      "prefetch",
       "no-prefetch"
     ],
     "description": "Component for navigating between Nuxt pages."
@@ -35,6 +36,7 @@
       "exact",
       "event",
       "exact-active-class",
+      "prefetch",
       "no-prefetch"
     ],
     "description": "Component for navigating between Nuxt pages."

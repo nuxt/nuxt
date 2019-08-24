@@ -17,7 +17,7 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
-import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch && router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
 <% if (isDev) { %>import consola from 'consola'<% } %>
 
 <% if (isDev) { %>consola.wrapConsole()

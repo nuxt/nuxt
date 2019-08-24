@@ -24,6 +24,10 @@ export default {
   name: 'NuxtLink',
   extends: Vue.component('RouterLink'),
   props: {
+    prefetch: {
+      type: Boolean,
+      default: <%= router.prefetchLinks ? 'true' : 'false' %>
+    },
     noPrefetch: {
       type: Boolean,
       default: false
@@ -34,7 +38,7 @@ export default {
     }<% } %>
   },
   mounted () {
-    if (!this.noPrefetch) {
+    if (this.prefetch && !this.noPrefetch) {
       requestIdleCallback(this.observe, { timeout: 2e3 })
     }
   },

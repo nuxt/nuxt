@@ -5,6 +5,10 @@
   "to": {
     "description": "Denotes the target route of the link. When clicked, the value of the to prop will be passed to router.push() internally, so the value can be either a string or a location descriptor object."
   },
+  "prefetch": {
+    "type": "boolean",
+    "description": "Prefetch route target (overrides router.prefetchLinks value in nuxt.config.js)."
+  },
   "no-prefetch": {
     "description": "Avoid prefetching route target."
   },
