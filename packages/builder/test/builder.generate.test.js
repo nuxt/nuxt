@@ -451,6 +451,7 @@ describe('builder: builder generate', () => {
   describe('builder: builder resolveLayouts', () => {
     test('should resolve layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.buildDir = '/var/nuxt/build'
       nuxt.options.dir = {
@@ -503,6 +504,7 @@ describe('builder: builder generate', () => {
 
     test('should resolve error layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
@@ -530,6 +532,7 @@ describe('builder: builder generate', () => {
 
     test('should not resolve layouts if layouts dir does not exist', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
