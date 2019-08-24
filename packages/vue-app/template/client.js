@@ -358,7 +358,7 @@ async function render(to, from, next) {
     <% } %>
 
 
-    <% if (features.client.validate) { %>
+    <% if (features.validate) { %>
     // Call .validate()
     let isValid = true
     try {
