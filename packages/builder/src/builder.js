@@ -444,7 +444,7 @@ export default class Builder {
 
       // Allow override templates using a file with same name in ${srcDir}/app
       const customAppFile = path.resolve(this.options.srcDir, this.options.dir.app, file)
-      const customAppFileExists = customAppFile.indexOf(appDir) === 0 && await fsExtra.exists(customAppFile)
+      const customAppFileExists = customAppFile.startsWith(appDir) && await fsExtra.exists(customAppFile)
       if (customAppFileExists) {
         src = customAppFile
       }
