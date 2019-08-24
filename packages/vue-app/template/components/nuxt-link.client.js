@@ -78,7 +78,7 @@ export default {
       if (!this.canPrefetch()) {
         return
       }
-      // Stop obersing this link (in case of internet connection changes)
+      // Stop observing this link (in case of internet connection changes)
       observer.unobserve(this.$el)
       const Components = this.getPrefetchComponents()
 
