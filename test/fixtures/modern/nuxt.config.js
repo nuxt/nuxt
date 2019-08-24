@@ -1,7 +1,6 @@
 export default {
   modern: true,
   build: {
-    terser: true,
     crossorigin: 'use-credentials',
     filenames: {
       app: ({ isModern }) => {
