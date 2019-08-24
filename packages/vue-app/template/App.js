@@ -233,7 +233,7 @@ export default {
       }
       return Promise.resolve(layouts['_' + layout])
     }
-    <% } /* splutChunks.layouts */ %>
+    <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
   },
   <% if (loading) { %>

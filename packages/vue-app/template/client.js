@@ -244,7 +244,7 @@ function callMiddleware(Components, context, layout) {
 }
 <% } else if (isDev) {
 // This is a placeholder function mainly so we dont have to
-//  refactor the promise chain in addHotReload()
+// refactor the promise chain in addHotReload()
 %>
 function callMiddleware() {
   return Promise.resolve(true)
