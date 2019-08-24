@@ -52,7 +52,7 @@ export default {
       }
       // Add to observer
       if (this.shouldPrefetch()) {
-        this.$el.__prefetch = this.prefetch.bind(this)
+        this.$el.__prefetch = this.prefetchLink.bind(this)
         observer.observe(this.$el)
         this.__observed = true
       }<% if (router.linkPrefetchedClass) { %> else {
@@ -74,7 +74,7 @@ export default {
 
       return Components.filter(Component => typeof Component === 'function' && !Component.options && !Component.__prefetched)
     },
-    prefetch () {
+    prefetchLink () {
       if (!this.canPrefetch()) {
         return
       }
