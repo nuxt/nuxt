@@ -1,7 +1,7 @@
 import Vue from 'vue'
 <% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
 <% if (features.components.clientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
-<% if (features.components.noSsr) { %>import NoSsr from 'vue-no-ssr'<% } %>
+<% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
 import { createRouter } from './router.js'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
@@ -20,7 +20,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 // Component: <ClientOnly>
 Vue.component(ClientOnly.name, ClientOnly)
 <% } %>
-<% if (features.components.noSsr) { %>
+<% if (features.deprecations) { %>
 // TODO: Remove in Nuxt 3: <NoSsr>
 Vue.component(NoSsr.name, {
   ...NoSsr,

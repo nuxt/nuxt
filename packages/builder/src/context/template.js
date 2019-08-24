@@ -28,7 +28,7 @@ export default class TemplateContext {
       router: options.router,
       env: options.env,
       head: options.head,
-      store: options.store,
+      store: options.features.store ? options.store : false,
       globalName: options.globalName,
       globals: builder.globals,
       css: options.css,

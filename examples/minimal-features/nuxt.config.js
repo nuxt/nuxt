@@ -6,24 +6,23 @@ export default {
     server: false
   },
   features: {
+    store: false,
+    layouts: false,
+    meta: false,
     middleware: false,
     transitions: false,
-    meta: false,
-    router: true,
-    store: true,
     deprecations: false,
+    validate: false,
+    asyncData: false,
+    fetch: false,
     client: {
-      validate: false,
-      asyncData: false,
-      fetch: false,
       online: false,
       prefetch: false,
       useUrl: true
     },
     components: {
       aliases: false,
-      clientOnly: false,
-      noSsr: false
+      clientOnly: false
     }
   },
   build: {

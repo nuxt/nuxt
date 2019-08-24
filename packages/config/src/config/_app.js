@@ -57,9 +57,8 @@ export default () => ({
   },
 
   features: {
-    router: true, // not implemented
-    store: true, // not implemented
-    layouts: true, // not implemented
+    store: true,
+    layouts: true,
     meta: true,
     middleware: true,
     transitions: true,
@@ -74,8 +73,7 @@ export default () => ({
     },
     components: {
       aliases: true,
-      clientOnly: true,
-      noSsr: true
+      clientOnly: true
     }
   }
 })

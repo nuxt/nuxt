@@ -60,7 +60,7 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { layout: 'default', data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
@@ -85,11 +85,13 @@ export default async (ssrContext) => {
     <% } %>
   }
   const renderErrorPage = async () => {
+    <% if (features.layouts) { %>
     // Load layout for error page
     const errLayout = (typeof NuxtError.layout === 'function' ? NuxtError.layout(app.context) : NuxtError.layout)
     ssrContext.nuxt.layout = errLayout || 'default'
     await _app.loadLayout(errLayout)
     _app.setLayout(errLayout)
+    <% } %>
     await beforeRender()
     return _app
   }
@@ -137,6 +139,8 @@ export default async (ssrContext) => {
   if (ssrContext.redirected) return noopApp()
   if (ssrContext.nuxt.error) return renderErrorPage()
   <% } %>
+
+  <% if (features.layouts) { %>
   /*
   ** Set layout
   */
@@ -146,14 +150,19 @@ export default async (ssrContext) => {
   if (ssrContext.nuxt.error) return renderErrorPage()
   layout = _app.setLayout(layout)
   ssrContext.nuxt.layout = _app.layoutName
+  <% } %>
 
   <% if (features.middleware) { %>
   /*
   ** Call middleware (layout + pages)
   */
   midd = []
+  <% if (features.layouts) { %>
   layout = sanitizeComponent(layout)
-  if (layout.options.middleware) midd = midd.concat(layout.options.middleware)
+  if (layout.options.middleware) {
+    midd = midd.concat(layout.options.middleware)
+  }
+  <% } %>
   Components.forEach((Component) => {
     if (Component.options.middleware) {
       midd = midd.concat(Component.options.middleware)

@@ -232,13 +232,7 @@ export default class Builder {
       this.resolveMiddleware(templateContext)
     ])
 
-    if (this.options.dev && this.options.build.indicator) {
-      templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
-    }
-
-    if (this.options.loading !== false) {
-      templateContext.templateFiles.push('components/nuxt-loading.vue')
-    }
+    this.addOptionalTemplates(templateContext)
 
     await this.resolveCustomTemplates(templateContext)
 
@@ -291,6 +285,16 @@ export default class Builder {
       }),
       p => p.name
     )
+  }
+
+  addOptionalTemplates (templateContext) {
+    if (this.options.build.indicator) {
+      templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
+    }
+
+    if (this.options.loading !== false) {
+      templateContext.templateFiles.push('components/nuxt-loading.vue')
+    }
   }
 
   async resolveFiles (dir, cwd = this.options.srcDir) {
@@ -396,7 +400,7 @@ export default class Builder {
 
   async resolveStore ({ templateVars, templateFiles }) {
     // Add store if needed
-    if (!this.options.store) {
+    if (!this.options.features.store || !this.options.store) {
       return
     }
 

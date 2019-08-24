@@ -12,6 +12,7 @@ import {
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
 
+<% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
   if (splitChunks.layouts) {
     return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => m.default || m)`
@@ -23,6 +24,7 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
+<% } %>
 
 export default {
   <% if (features.meta) { %>
@@ -32,6 +34,7 @@ export default {
   <% } %>
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
+    <% if (features.layouts) { %>
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
@@ -39,6 +42,9 @@ export default {
       },
       key: this.layoutName
     }, [ layoutEl ])
+    <% } else { %>
+    const templateEl = h('nuxt')
+    <% } %>
 
     <% if (features.transitions) { %>
     const transitionEl = h('transition', {
@@ -67,13 +73,17 @@ export default {
       <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
     ])
   },
+  <% if (features.client.online || features.layouts) { %>
   data: () => ({
     <% if (features.client.online) { %>
     isOnline: true,
     <% } %>
+    <% if (features.layouts) { %>
     layout: null,
     layoutName: ''
+    <% } %>
   }),
+  <% } %>
   beforeCreate() {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
   },
@@ -174,6 +184,7 @@ export default {
       }
     },
     <% } %>
+    <% if (features.layouts) { %>
     <% if (splitChunks.layouts) { %>
     setLayout(layout) {
       <% if (debug) { %>
@@ -222,7 +233,8 @@ export default {
       }
       return Promise.resolve(layouts['_' + layout])
     }
-    <% } %>
+    <% } /* splutChunks.layouts */ %>
+    <% } /* features.layouts */ %>
   },
   <% if (loading) { %>
   components: {

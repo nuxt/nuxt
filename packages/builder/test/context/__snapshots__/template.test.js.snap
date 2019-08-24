@@ -20,7 +20,9 @@ TemplateContext {
     ],
     "env": "test_env",
     "extensions": "test|ext",
-    "features": undefined,
+    "features": Object {
+      "store": true,
+    },
     "fetch": undefined,
     "globalName": "test_global",
     "globals": Array [
@@ -60,6 +62,9 @@ TemplateContext {
         "test",
         "ext",
       ],
+      "features": Object {
+        "store": true,
+      },
       "globalName": "test_global",
       "head": "test_head",
       "layoutTransition": Object {
