@@ -213,6 +213,10 @@ export default class Builder {
     return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
   }
 
+  createTemplateContext () {
+    return new TemplateContext(this, this.options)
+  }
+
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
@@ -223,7 +227,7 @@ export default class Builder {
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
 
-    const templateContext = new TemplateContext(this, this.options)
+    const templateContext = this.createTemplateContext()
 
     await Promise.all([
       this.resolveLayouts(templateContext),
@@ -527,6 +531,7 @@ export default class Builder {
 
         // Render template to dst
         const fileContent = await fsExtra.readFile(src, 'utf8')
+
         let content
         try {
           const templateFunction = template(fileContent, templateOptions)
