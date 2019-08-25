@@ -57,6 +57,7 @@ export default class WebpackBaseConfig {
   get modulesToTranspile () {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
+      /consola\/src/,
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -215,7 +216,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+      consola: require.resolve(`consola/src/${this.isServer ? 'node' : 'browser'}.js`)
     }
   }
 
