@@ -112,9 +112,19 @@ describe('config: options', () => {
     expect(pageTransition.appear).toEqual(true)
   })
 
-  test('should return 404.html as default generate.fallback', () => {
+  test('should return 200.html as default generate.fallback', () => {
+    const { generate: { fallback } } = getNuxtConfig()
+    expect(fallback).toEqual('200.html')
+  })
+
+  test('should return 404.html when generate.fallback is true', () => {
     const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: true } })
     expect(fallback).toEqual('404.html')
+  })
+
+  test('should return fallback html when generate.fallback is string', () => {
+    const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
   })
 
   test('should disable parallel if extractCSS is enabled', () => {
