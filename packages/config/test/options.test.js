@@ -113,7 +113,7 @@ describe('config: options', () => {
   })
 
   test('should return 200.html as default generate.fallback', () => {
-    const { generate: { fallback } } = getNuxtConfig()
+    const { generate: { fallback } } = getNuxtConfig({})
     expect(fallback).toEqual('200.html')
   })
 
