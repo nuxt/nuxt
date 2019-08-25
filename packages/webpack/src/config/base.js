@@ -216,7 +216,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/src/${this.isServer ? 'node' : 'browser'}.js`)
+      consola: require.resolve(`consola/${this.isServer ? 'dist/consola' : 'src/browser'}.js`)
     }
   }
 
