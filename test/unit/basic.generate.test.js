@@ -204,15 +204,6 @@ describe('basic generate', () => {
     })
   })
 
-  test('/users/1.html', async () => {
-    const html = await rp(url('/users/1.html'))
-    expect(html).toContain('<h1>User: 1</h1>')
-    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
-    expect(
-      existsSync(resolve(distDir, 'users/1/index.html'))
-    ).toBe(false)
-  })
-
   test('/-ignored', async () => {
     await expect(rp(url('/-ignored'))).rejects.toMatchObject({
       statusCode: 404,
