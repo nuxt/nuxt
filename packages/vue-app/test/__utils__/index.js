@@ -37,11 +37,11 @@ export async function compileTemplate (template, destination, options = {}) {
       }
     }
 
-    if (!template.dst || !template.dst.startsWith(config.rootDir)) {
-      template.dst = path.join(config.rootDir, '.nuxt', template.dst || template.src)
+    return {
+      src: path.resolve(rootDir, '../template', template.src),
+      dst: path.join(rootDir, '.nuxt', template.dst),
+      custom: template.custom
     }
-
-    return template
   })
 
   try {
