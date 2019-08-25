@@ -6,8 +6,8 @@ module.exports = {
   forceExit: true,
 
   roots: [
-    "<rootDir>/packages",
-    "<rootDir>/test"
+    '<rootDir>/packages',
+    '<rootDir>/test'
   ],
 
   // https://github.com/facebook/jest/pull/6747 fix warning here
