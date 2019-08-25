@@ -180,24 +180,6 @@ describe('basic browser', () => {
     page.close()
   })
 
-  test('/scroll-to-top in the same page with watchQuery function', async () => {
-    const page = await browser.page(url('/scroll-to-top/watch-query-fn'))
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
-    await page.nuxt.navigate('/scroll-to-top/watch-query-fn?other=1')
-    let pageYOffset = await page.evaluate(() => window.pageYOffset)
-    expect(pageYOffset).toBeGreaterThan(0)
-    await page.nuxt.go(-1)
-    pageYOffset = await page.evaluate(() => window.pageYOffset)
-    expect(pageYOffset).toBeGreaterThan(0)
-    await page.nuxt.navigate('/scroll-to-top/watch-query-fn?test=1')
-    pageYOffset = await page.evaluate(() => window.pageYOffset)
-    expect(pageYOffset).toBe(0)
-    await page.nuxt.go(-1)
-    pageYOffset = await page.evaluate(() => window.pageYOffset)
-    expect(pageYOffset).toBe(0)
-    page.close()
-  })
-
   test('/validate should display a 404', async () => {
     await page.nuxt.navigate('/validate')
 
