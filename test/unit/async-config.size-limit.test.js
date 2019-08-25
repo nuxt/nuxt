@@ -5,7 +5,26 @@ import { getPort, loadFixture, Nuxt } from '../utils'
 let port
 let nuxt = null
 const url = route => 'http://localhost:' + port + route
-let responseSizes
+
+const getScriptsSize = async (html) => {
+  // Get all script URLs from the HTML
+  const $ = cheerio.load(html)
+  const scriptsUrls = $('script[src]')
+    .map((_, el) => $(el).attr('src'))
+    .get()
+    .map(url)
+  const resourceUrls = [url('/'), ...scriptsUrls]
+
+  // Fetch all resources and get their size (bytes)
+  const responseSizes = await Promise.all(resourceUrls.map(async (url) => {
+    const response = await fetch(url).then(res => res.text())
+    return response.length
+  }))
+
+  const responseSizeBytes = responseSizes.reduce((bytes, responseLength) => bytes + responseLength, 0)
+  const responseSizeKilobytes = Math.ceil(responseSizeBytes / 1024)
+  return responseSizeKilobytes
+}
 
 describe('size-limit test', () => {
   beforeAll(async () => {
@@ -15,27 +34,19 @@ describe('size-limit test', () => {
 
     port = await getPort()
     await nuxt.server.listen(port, '0.0.0.0')
-
-    const { html } = await nuxt.server.renderRoute('/')
-    // Get all script URLs from the HTML
-    const $ = cheerio.load(html)
-    const scriptsUrls = $('script[src]')
-      .map((_, el) => $(el).attr('src'))
-      .get()
-      .map(url)
-    const resourceUrls = [url('/'), ...scriptsUrls]
-
-    // Fetch all resources and get their size (bytes)
-    responseSizes = await Promise.all(resourceUrls.map(async (url) => {
-      const response = await fetch(url).then(res => res.text())
-      return response.length
-    }))
   })
 
-  it('should stay within the size boundaries', () => {
-    const responseSizeBytes = responseSizes.reduce((bytes, responseLength) => bytes + responseLength, 0)
-    const responseSizeKilobytes = Math.ceil(responseSizeBytes / 1024)
+  it('should stay within the size boundaries in legacy mode', async () => {
     // Without gzip!
-    expect(responseSizeKilobytes).toBeLessThanOrEqual(196)
+    const { html } = await nuxt.server.renderRoute('/')
+    const legacySizeKilobytes = await getScriptsSize(html)
+    expect(legacySizeKilobytes).toBeLessThanOrEqual(196)
+  })
+
+  it('should stay within the size boundaries in modern mode', async () => {
+    // Without gzip!
+    const { html } = await nuxt.server.renderRoute('/', { modern: true, res: { setHeader: () => {} } })
+    const modernSizeKilobytes = await getScriptsSize(html)
+    expect(modernSizeKilobytes).toBeLessThanOrEqual(174)
   })
 })
