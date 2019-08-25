@@ -1,6 +1,7 @@
 import Glob from 'glob'
 import consola from 'consola'
 import { isIndexFileAndFolder } from '@nuxt/utils'
+import { BundleBuilder } from '@nuxt/webpack'
 
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
@@ -10,6 +11,7 @@ jest.mock('pify', () => fn => fn)
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
+jest.mock('@nuxt/webpack')
 
 describe('builder: builder plugins', () => {
   beforeEach(() => {
@@ -24,7 +26,7 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.server', mode: 'server' },
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     const plugins = builder.normalizePlugins()
 
@@ -57,7 +59,7 @@ describe('builder: builder plugins', () => {
     nuxt.options.plugins = [
       { src: '/var/nuxt/plugins/test', mode: 'abc' }
     ]
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     const plugins = builder.normalizePlugins()
 
@@ -74,7 +76,7 @@ describe('builder: builder plugins', () => {
 
   test('should resolve plugins', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' },
       { src: '/var/nuxt/plugins/test.client', mode: 'client' },
@@ -100,7 +102,7 @@ describe('builder: builder plugins', () => {
 
   test('should throw error if plugin no existed', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' }
     ]
@@ -111,7 +113,7 @@ describe('builder: builder plugins', () => {
 
   test('should warn if there are multiple files and not index', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test', mode: 'all' }
     ]
@@ -129,7 +131,7 @@ describe('builder: builder plugins', () => {
 
   test('should detect plugin mode for client/server plugins', () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.options.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' },
       { src: '/var/nuxt/plugins/test.client' },

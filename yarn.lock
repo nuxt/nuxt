@@ -5436,6 +5436,11 @@ gzip-size@^5.0.0:
     duplexer "^0.1.1"
     pify "^4.0.1"
 
+hable@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.npmjs.org/hable/-/hable-2.2.1.tgz#714ef141a7eda5bd8530d6e4e3b37c6807716290"
+  integrity sha512-CuGRGMNnCp8RJ70zeoTX37sX4ctoT8BpmkStI2TYQwBBtWzQQFXQ/jsBUCqd34grt3IJQ+hkUXAU84/IuErVLQ==
+
 handlebars@^4.1.2:
   version "4.1.2"
   resolved "https://registry.npmjs.org/handlebars/-/handlebars-4.1.2.tgz#b6b37c1ced0306b221e094fc7aca3ec23b131b67"
@@ -9862,10 +9867,10 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
     hash-base "^3.0.0"
     inherits "^2.0.1"
 
-rollup-plugin-alias@^1.5.2:
-  version "1.5.2"
-  resolved "https://registry.npmjs.org/rollup-plugin-alias/-/rollup-plugin-alias-1.5.2.tgz#f15a1cc8ee0debf74ab5c2bb68a944a66b568411"
-  integrity sha512-ODeZXhTxpD48sfcYLAFc1BGrsXKDj7o1CSNH3uYbdK3o0NxyMmaQPTNgW+ko+am92DLC8QSTe4kyxTuEkI5S5w==
+rollup-plugin-alias@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/rollup-plugin-alias/-/rollup-plugin-alias-2.0.0.tgz#eea77466a8a8a063007c8edb2e9d7a3d06cbb889"
+  integrity sha512-JVwxV9nwzjc0q7JmrV9jvZlJ8FykNd5r7RmYps8i/7v+vcmmVpeMvXrljhCboYErf4VZ2z9FEj+fP7eJlEGfug==
   dependencies:
     slash "^3.0.0"
 
@@ -9933,10 +9938,10 @@ rollup-pluginutils@^2.5.0, rollup-pluginutils@^2.6.0, rollup-pluginutils@^2.8.1:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@^1.20.0:
-  version "1.20.0"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-1.20.0.tgz#3799e4cd2f48c0a068d87af575956d8d72c9447a"
-  integrity sha512-zW80j9RSJ0VV0VOxP1i7cF279+IlAaD49Ihwqb87PDR0555Fvk10HKmh2yUtXCdBb37bELuhHWZTJc4uoCo8Vw==
+rollup@^1.20.1:
+  version "1.20.1"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-1.20.1.tgz#fc66f356c5afbd7c62434f1e7a53a1e7da5a2b32"
+  integrity sha512-8DV8eWLq84fbJFRqkjWg8BWX4NTTdHpx9bxjmTl/83z54o6Ygo1OgUDjJGFq/xe5i0kDspnbjzw2V+ZPXD/BrQ==
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "^12.7.2"
