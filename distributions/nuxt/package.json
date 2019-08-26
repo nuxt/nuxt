@@ -66,7 +66,7 @@
     "@nuxt/webpack": "2.9.1"
   },
   "engines": {
-    "node": ">=8.0.0",
+    "node": ">=8.9.0",
     "npm": ">=5.0.0"
   },
   "collective": {
