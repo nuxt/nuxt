@@ -167,13 +167,11 @@ jobs:
   release-commit:
     executor: node
     steps:
-      - attach-project
       - release
 
   release-nightly:
     executor: node
     steps:
-      - attach-project
       - release
     environment:
         COMMIT_MSG: '[release]'
