@@ -19,7 +19,7 @@ commands:
       - checkout
       - attach_workspace:
           at: ~/project
-  store-coverage:
+  store-test-results:
     steps:
       - store_test_results:
           path: reports/junit
@@ -113,7 +113,7 @@ jobs:
           command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
           environment:
             JEST_JUNIT_OUTPUT_NAME: fixtures.xml
-      - store-coverage
+      - store-test-results
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -139,7 +139,7 @@ jobs:
           command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
           environment:
             JEST_JUNIT_OUTPUT_NAME: unit.xml
-      - store-coverage
+      - store-test-results
 
   test-e2e:
     executor:
@@ -159,7 +159,7 @@ jobs:
           command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
           environment:
             JEST_JUNIT_OUTPUT_NAME: e2e.xml
-      - store-coverage
+      - store-test-results
 
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
