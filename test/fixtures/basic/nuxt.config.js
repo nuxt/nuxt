@@ -34,8 +34,7 @@ export default {
       '/тест雨',
       { route: '/users/3', payload: { id: 3000 } }
     ],
-    interval: 200,
-    subFolders: true
+    interval: 200
   },
   head () {
     return {
