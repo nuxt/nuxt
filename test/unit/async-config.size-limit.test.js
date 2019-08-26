@@ -1,52 +1,33 @@
-import cheerio from 'cheerio'
-import fetch from 'node-fetch'
-import { getPort, loadFixture, Nuxt } from '../utils'
 
-let port
-let nuxt = null
-const url = route => 'http://localhost:' + port + route
+import { resolve } from 'path'
+import fs from 'fs-extra'
 
-const getScriptsSize = async (html) => {
-  // Get all script URLs from the HTML
-  const $ = cheerio.load(html)
-  const scriptsUrls = $('script[src]')
-    .map((_, el) => $(el).attr('src'))
-    .get()
-    .map(url)
-  const resourceUrls = [url('/'), ...scriptsUrls]
+const distDir = resolve(__dirname, '../fixtures/async-config/.nuxt/dist')
 
-  // Fetch all resources and get their size (bytes)
-  const responseSizes = await Promise.all(resourceUrls.map(async (url) => {
-    const response = await fetch(url).then(res => res.text())
-    return response.length
-  }))
-
-  const responseSizeBytes = responseSizes.reduce((bytes, responseLength) => bytes + responseLength, 0)
-  const responseSizeKilobytes = Math.ceil(responseSizeBytes / 1024)
-  return responseSizeKilobytes
+const getResourcesSize = async (mode) => {
+  const manifestFile = resolve(distDir, 'server', `${mode}.manifest.json`)
+  const { all } = await import(manifestFile)
+  const resources = all.filter(filename => filename.endsWith('.js'))
+  let size = 0
+  for (const resource of resources) {
+    const stat = await fs.stat(resolve(distDir, 'client', resource))
+    size += stat.size / 1024
+  }
+  return size
 }
 
-describe('size-limit test', () => {
-  beforeAll(async () => {
-    const options = await loadFixture('async-config')
-    nuxt = new Nuxt(options)
-    await nuxt.ready()
-
-    port = await getPort()
-    await nuxt.server.listen(port, '0.0.0.0')
+describe('nuxt basic resources size limit', () => {
+  it('should stay within the size limit range in legacy mode', async () => {
+    const LEGACY_JS_RESOURCES_KB_SIZE = 195
+    const legacyResourcesSize = await getResourcesSize('client')
+    expect(legacyResourcesSize).toBeLessThanOrEqual(LEGACY_JS_RESOURCES_KB_SIZE * 1.05)
+    expect(legacyResourcesSize).toBeGreaterThanOrEqual(LEGACY_JS_RESOURCES_KB_SIZE * 0.95)
   })
 
-  it('should stay within the size boundaries in legacy mode', async () => {
-    // Without gzip!
-    const { html } = await nuxt.server.renderRoute('/')
-    const legacySizeKilobytes = await getScriptsSize(html)
-    expect(legacySizeKilobytes).toBeLessThanOrEqual(196)
-  })
-
-  it('should stay within the size boundaries in modern mode', async () => {
-    // Without gzip!
-    const { html } = await nuxt.server.renderRoute('/', { modern: true, res: { setHeader: () => {} } })
-    const modernSizeKilobytes = await getScriptsSize(html)
-    expect(modernSizeKilobytes).toBeLessThanOrEqual(174)
+  it('should stay within the size limit range in modern mode', async () => {
+    const MODERN_JS_RESOURCES_KB_SIZE = 172
+    const modernResourcesSize = await getResourcesSize('modern')
+    expect(modernResourcesSize).toBeLessThanOrEqual(MODERN_JS_RESOURCES_KB_SIZE * 1.05)
+    expect(modernResourcesSize).toBeGreaterThanOrEqual(MODERN_JS_RESOURCES_KB_SIZE * 0.95)
   })
 })
