@@ -27,9 +27,9 @@ const getResourcesSize = async (mode) => {
 
 describe('nuxt basic resources size limit', () => {
   expect.extend({
-    toBeWithinSize (received, size, rate) {
-      const maxSize = size * (1 + rate)
-      const minSize = size * (1 - rate)
+    toBeWithinSize (received, size) {
+      const maxSize = size * 1.05
+      const minSize = size * 0.95
       const pass = received >= minSize && received <= maxSize
       return {
         pass,
@@ -43,25 +43,25 @@ describe('nuxt basic resources size limit', () => {
     const legacyResourcesSize = await getResourcesSize('client')
 
     const LEGACY_JS_RESOURCES_KB_SIZE = 194
-    expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE, 0.05)
+    expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
 
     const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 66
-    expect(legacyResourcesSize.gzip).toBeWithinSize(LEGACY_JS_RESOURCES_GZIP_KB_SIZE, 0.05)
+    expect(legacyResourcesSize.gzip).toBeWithinSize(LEGACY_JS_RESOURCES_GZIP_KB_SIZE)
 
     const LEGACY_JS_RESOURCES_BROTLI_KB_SIZE = 58
-    expect(legacyResourcesSize.brotli).toBeWithinSize(LEGACY_JS_RESOURCES_BROTLI_KB_SIZE, 0.05)
+    expect(legacyResourcesSize.brotli).toBeWithinSize(LEGACY_JS_RESOURCES_BROTLI_KB_SIZE)
   })
 
   it('should stay within the size limit range in modern mode', async () => {
     const modernResourcesSize = await getResourcesSize('modern')
 
     const MODERN_JS_RESOURCES_KB_SIZE = 172
-    expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE, 0.05)
+    expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE)
 
     const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 59
-    expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE, 0.05)
+    expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE)
 
     const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 52
-    expect(modernResourcesSize.brotli).toBeWithinSize(MODERN_JS_RESOURCES_BROTLI_KB_SIZE, 0.05)
+    expect(modernResourcesSize.brotli).toBeWithinSize(MODERN_JS_RESOURCES_BROTLI_KB_SIZE)
   })
 })
