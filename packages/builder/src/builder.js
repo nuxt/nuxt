@@ -221,8 +221,7 @@ export default class Builder {
     }
 
     // Plugins
-    await this.nuxt.callHook('build:extendPlugins', this.options.plugins)
-    this.plugins = Array.from(this.normalizePlugins())
+    this.plugins = Array.from(await this.normalizePlugins())
 
     const templateContext = new TemplateContext(this, this.options)
 
@@ -249,9 +248,10 @@ export default class Builder {
     consola.success('Nuxt files generated')
   }
 
-  normalizePlugins () {
+  async normalizePlugins () {
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
+    await this.nuxt.callHook('build:extendPlugins', this.options.plugins)
     return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {

@@ -21,19 +21,17 @@ describe('builder: builder plugins', () => {
   test('should normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
+      '/var/nuxt/plugins/test.js',
       '/var/nuxt/.nuxt/foo-bar.plugin.client.530b6c6a.js',
       { src: '/var/nuxt/plugins/test.server', mode: 'server' },
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
-    nuxt.options.hooks = {
-      'build:extendPlugins' (plugins) {
-        plugins.unshift('/var/nuxt/plugins/test.js')
-      }
-    }
 
     const builder = new Builder(nuxt, BundleBuilder)
-    await builder.nuxt.callHook('build:extendPlugins', nuxt.options.plugins)
-    const plugins = builder.normalizePlugins()
+    const plugins = await builder.normalizePlugins()
+
+    expect(nuxt.callHook).toBeCalledTimes(1)
+    expect(nuxt.callHook).toBeCalledWith('build:extendPlugins', nuxt.options.plugins)
 
     expect(plugins).toEqual([
       {
@@ -59,14 +57,14 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should warning and fallback invalid mode when normalize plugins', () => {
+  test('should warning and fallback invalid mode when normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
       { src: '/var/nuxt/plugins/test', mode: 'abc' }
     ]
     const builder = new Builder(nuxt, BundleBuilder)
 
-    const plugins = builder.normalizePlugins()
+    const plugins = await builder.normalizePlugins()
 
     expect(plugins).toEqual([
       {
@@ -134,7 +132,7 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should detect plugin mode for client/server plugins', () => {
+  test('should detect plugin mode for client/server plugins', async () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, BundleBuilder)
     builder.options.plugins = [
@@ -143,7 +141,7 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.server' }
     ]
 
-    const plugins = builder.normalizePlugins()
+    const plugins = await builder.normalizePlugins()
 
     expect(plugins).toEqual([
       { mode: 'all',
