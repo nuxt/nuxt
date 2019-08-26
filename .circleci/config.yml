@@ -1,12 +1,47 @@
-version: 2
+version: 2.1
 
-defaults: &defaults
-  working_directory: ~/project
-  docker:
-    - image: circleci/node:latest
-  environment:
-    NODE_ENV: test
-    NODE_OPTIONS: --max_old_space_size=4096
+executors:
+  node:
+    parameters:
+      browsers:
+        type: boolean
+        default: false
+    docker:
+      - image: circleci/node:latest<<# parameters.browsers >>-browsers<</ parameters.browsers >>
+    working_directory: ~/project
+    environment:
+      NODE_ENV: test
+      NODE_OPTIONS: --max_old_space_size=4096
+
+commands:
+  attach-project:
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/project
+  store-test-results:
+    steps:
+      - store_test_results:
+          path: reports/junit
+  release:
+    steps:
+      - attach-project
+      - run:
+          name: release
+          command: |
+            if [ -z "$COMMIT_MSG" ]; then
+              COMMIT_MSG=$(git --no-pager log --pretty=full -n1 $CIRCLE_SHA1)
+            fi
+            if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              yarn lerna version --yes --no-git-tag-version --no-push
+              PACKAGE_SUFFIX=edge yarn build
+              if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
+              ./scripts/workspace-run npm publish $tag -q
+            else
+              echo "Release phase is skipped."
+            fi
 
 release_branches: &release_branches
   branches:
@@ -14,35 +49,12 @@ release_branches: &release_branches
       - dev
       - next
 
-release: &release
-  <<: *defaults
-  steps:
-    - checkout
-    - attach_workspace:
-        at: ~/project
-    - run:
-        name: release
-        command: |
-          if [ -z "$COMMIT_MSG" ]; then
-            COMMIT_MSG=$(git --no-pager log --pretty=full -n1 $CIRCLE_SHA1)
-          fi
-          if echo "$COMMIT_MSG" | grep -o "\[release\]"; then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            echo "//registry.yarnpkg.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            yarn lerna version --yes --no-git-tag-version --no-push
-            PACKAGE_SUFFIX=edge yarn build
-            if [ "$CIRCLE_BRANCH" = "next" ]; then tag="--tag next"; fi
-            ./scripts/workspace-run npm publish $tag -q
-          else
-            echo "Release phase is skipped."
-          fi
-
 jobs:
   # --------------------------------------------------------------------------
   # Phase 1: Setup
   # --------------------------------------------------------------------------
   setup:
-    <<: *defaults
+    executor: node
     steps:
       # Checkout repository
       - checkout
@@ -77,49 +89,40 @@ jobs:
   # Phase 2: Lint + Audit + Build Nuxt and fixtures
   # --------------------------------------------------------------------------
   lint:
-    <<: *defaults
+    executor: node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Lint
           command: yarn test:lint
 
   audit:
-    <<: *defaults
+    executor: node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Security Audit
           command: yarn audit || true
 
   build:
-    <<: *defaults
+    executor: node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Build Fixtures
           command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
           environment:
             JEST_JUNIT_OUTPUT_NAME: fixtures.xml
-      - store_test_results:
-          path: reports/junit
+      - store-test-results
       - persist_to_workspace:
           root: ~/project
           paths:
             - test/fixtures
 
   lint-app:
-    <<: *defaults
+    executor: node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Lint vue-app templates
           command: yarn lint:app
@@ -128,27 +131,22 @@ jobs:
   # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
   test-unit:
-    <<: *defaults
+    executor: node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Unit Tests
           command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
           environment:
             JEST_JUNIT_OUTPUT_NAME: unit.xml
-      - store_test_results:
-          path: reports/junit
+      - store-test-results
 
   test-e2e:
-    <<: *defaults
-    docker:
-      - image: circleci/node:latest-browsers
+    executor:
+      name: node
+      browsers: true
     steps:
-      - checkout
-      - attach_workspace:
-          at: ~/project
+      - attach-project
       - run:
           name: Download Chromium
           command: |
@@ -161,17 +159,20 @@ jobs:
           command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
           environment:
             JEST_JUNIT_OUTPUT_NAME: e2e.xml
-      - store_test_results:
-          path: reports/junit
+      - store-test-results
 
   # --------------------------------------------------------------------------
   # Phase 4: Release (dev branch only)
   # --------------------------------------------------------------------------
   release-commit:
-    <<: *release
+    executor: node
+    steps:
+      - release
 
   release-nightly:
-    <<: *release
+    executor: node
+    steps:
+      - release
     environment:
         COMMIT_MSG: '[release]'
 
