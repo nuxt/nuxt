@@ -6473,10 +6473,10 @@ jest-jasmine2@^24.9.0:
     pretty-format "^24.9.0"
     throat "^4.0.0"
 
-jest-junit@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.npmjs.org/jest-junit/-/jest-junit-7.0.0.tgz#e2ab2dc3f4eb2768f3e4c43e4e4cd841133a8c0e"
-  integrity sha512-ljUdO0hLyu0A92xk7R2Wet3kj99fmazTo+ZFYQP6b7AGOBxJUj8ZkJWzJ632ajpXko2Y5oNoGR2kvOwiDdu6hg==
+jest-junit@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.npmjs.org/jest-junit/-/jest-junit-8.0.0.tgz#d4f7ff67e292a5426dc60bc38694c9f77cb94178"
+  integrity sha512-cuD2XM2youMjrOxOu/7H2pLfsO8LfAG4D3WsBxd9fFyI9U0uPpmr/CORH64kbIyZ47X5x1Rbzb9ovUkAEvhEEA==
   dependencies:
     jest-validate "^24.0.0"
     mkdirp "^0.5.1"
