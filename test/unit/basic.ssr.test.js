@@ -262,6 +262,19 @@ describe('basic ssr', () => {
     expect(redirected.status === 302).toBe(true)
   })
 
+  test('/client-only', async () => {
+    const { html } = await nuxt.server.renderRoute('/client-only')
+    expect(html.includes(
+      '<p class="client-only-placeholder">Loading...</p>'
+    )).toBe(true)
+  })
+
+  test('/client-only (client-side)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/client-only'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Displayed only on client-side</h1>')
+  })
+
   test('/no-ssr', async () => {
     const { html } = await nuxt.server.renderRoute('/no-ssr')
     expect(html.includes(
@@ -273,6 +286,10 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html).toContain('Displayed only on client-side</h1>')
+    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('<no-ssr> has been deprecated')
+    )
   })
 
   test('ETag Header', async () => {
