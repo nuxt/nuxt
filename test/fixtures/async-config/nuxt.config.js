@@ -7,7 +7,8 @@ const createData = async () => {
     },
     head: {
       title: 'Async Config!'
-    }
+    },
+    modern: 'server'
   }
 }
 
