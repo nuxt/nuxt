@@ -136,7 +136,8 @@ export const createRoutes = function createRoutes ({
   srcDir,
   pagesDir = '',
   routeNameSplitter = '-',
-  supportedExtensions = ['vue', 'js']
+  supportedExtensions = ['vue', 'js'],
+  trailingSlashes = undefined
 }) {
   const routes = []
   files.forEach((file) => {
@@ -173,6 +174,18 @@ export const createRoutes = function createRoutes ({
         }
       }
     })
+    if (typeof trailingSlashes !== 'undefined') {
+      route.pathToRegexpOptions = { strict: true }
+    }
+
+    if (trailingSlashes) {
+      route.path = route.path.endsWith('/') ? route.path : `${route.path}/`
+    }
+
+    if (trailingSlashes === false) {
+      route.path = route.path.endsWith('/') ? route.path.slice(0, -1) : route.path
+    }
+
     parent.push(route)
   })
 
