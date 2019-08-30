@@ -178,13 +178,13 @@ export const createRoutes = function createRoutes ({
       route.pathToRegexpOptions = { strict: true }
     }
 
-    if (trailingSlashes) {
-      route.path = route.path.endsWith('/') ? route.path : `${route.path}/`
-    }
-
-    if (trailingSlashes === false) {
-      route.path = route.path.endsWith('/') ? route.path.slice(0, -1) : route.path
-    }
+    route.path = trailingSlashes === false
+      ? route.path.endsWith('/')
+        ? route.path.slice(0, -1)
+        : route.path
+      : route.path.endsWith('/')
+        ? route.path
+        : `${route.path}/`
 
     parent.push(route)
   })
