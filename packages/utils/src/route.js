@@ -176,15 +176,15 @@ export const createRoutes = function createRoutes ({
     })
     if (typeof trailingSlashes !== 'undefined') {
       route.pathToRegexpOptions = { strict: true }
-    }
 
-    route.path = trailingSlashes === false
-      ? route.path.endsWith('/')
-        ? route.path.slice(0, -1)
-        : route.path
-      : route.path.endsWith('/')
-        ? route.path
-        : `${route.path}/`
+      route.path = trailingSlashes === false
+        ? route.path.endsWith('/')
+          ? route.path.slice(0, -1)
+          : route.path
+        : route.path.endsWith('/')
+          ? route.path
+          : `${route.path}/`
+    }
 
     parent.push(route)
   })
