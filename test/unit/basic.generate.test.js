@@ -204,20 +204,6 @@ describe('basic generate', () => {
     })
   })
 
-  test('nuxt re-generating with no subfolders', async () => {
-    generator.nuxt.options.generate.subFolders = false
-    await expect(generator.generate({ build: false })).resolves.toBeTruthy()
-  })
-
-  test('/users/1.html', async () => {
-    const html = await rp(url('/users/1.html'))
-    expect(html).toContain('<h1>User: 1</h1>')
-    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
-    expect(
-      existsSync(resolve(distDir, 'users/1/index.html'))
-    ).toBe(false)
-  })
-
   test('/-ignored', async () => {
     await expect(rp(url('/-ignored'))).rejects.toMatchObject({
       statusCode: 404,
@@ -234,6 +220,14 @@ describe('basic generate', () => {
         body: expect.stringContaining('Cannot GET /ignored.test')
       }
     })
+  })
+
+  test('creates /200.html as fallback', async () => {
+    const html = await rp(url('/200.html'))
+    expect(html.includes('<h1>Index page</h1>')).toBe(false)
+    expect(html.includes('data-server-rendered')).toBe(false)
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(true)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
   })
 
   // Close server and ask nuxt to stop listening to file changes
