@@ -24,7 +24,7 @@
     "file-loader": "^4.2.0",
     "glob": "^7.1.4",
     "hash-sum": "^2.0.0",
-    "html-webpack-plugin": "^4.0.0-beta.5",
+    "html-webpack-plugin": "^4.0.0-beta.8",
     "memory-fs": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "pify": "^4.0.1",
