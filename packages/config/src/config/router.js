@@ -13,5 +13,5 @@ export default () => ({
   stringifyQuery: false,
   fallback: false,
   prefetchLinks: true,
-  trailingSlashes: undefined
+  trailingSlash: undefined
 })

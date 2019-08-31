@@ -196,12 +196,12 @@ describe('util: route', () => {
     })
 
     test.posix('createRoutes should enforce trailing slashes when configured to', () => {
-      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlashes: true })
+      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: true })
       expect(routesResult).toMatchSnapshot()
     })
 
     test.posix('createRoutes should remove trailing slashes when configured to', () => {
-      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlashes: false })
+      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: false })
       expect(routesResult).toMatchSnapshot()
     })
   })
