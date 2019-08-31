@@ -162,6 +162,9 @@ export default class WebpackBaseConfig {
     return {
       type: 'filesystem',
       cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
+      buildDependencies: {
+        config: [...this.buildContext.options._nuxtConfigFiles]
+      },
       ...this.options.build.cache,
       name: this.name
     }
