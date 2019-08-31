@@ -279,7 +279,6 @@ async function render(to, from, next) {
   // Get route's matched components
   const matches = []
   const Components = getMatchedComponents(to, matches)
-  const instances = getMatchedComponentsInstances(to)
 
   // If no Components matched, generate 404
   if (!Components.length) {
@@ -357,6 +356,7 @@ async function render(to, from, next) {
       return next()
     }
 
+    let instances
     // Call asyncData & fetch hooks on components matched by the route.
     await Promise.all(Components.map((Component, i) => {
       // Check if only children route changed
@@ -373,6 +373,9 @@ async function render(to, from, next) {
         } else if (Array.isArray(watchQuery)) {
           Component._dataRefresh = watchQuery.some(key => this._diffQuery[key])
         } else if (typeof watchQuery === 'function') {
+          if (!instances) {
+            instances = getMatchedComponentsInstances(to)
+          }
           Component._dataRefresh = watchQuery.apply(instances[i], [to.query, from.query])
         }
       }
