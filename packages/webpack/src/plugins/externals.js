@@ -1,13 +1,13 @@
 import fs from 'fs'
 import path from 'path'
 
-function contains(arr, val) {
-  return arr && arr.indexOf(val) !== -1
+function contains (arr, val) {
+  return arr && arr.includes(val)
 }
 
 const atPrefix = new RegExp('^@', 'g')
 
-function readDir(dirName) {
+function readDir (dirName) {
   if (!fs.existsSync(dirName)) {
     return []
   }
@@ -39,7 +39,7 @@ function readDir(dirName) {
   }
 }
 
-function readFromPackageJson(options) {
+function readFromPackageJson (options) {
   if (typeof options !== 'object') {
     options = {}
   }
@@ -67,7 +67,7 @@ function readFromPackageJson(options) {
   }
   if (options.exclude) {
     sections = sections.filter(function (section) {
-      return [].concat(options.exclude).indexOf(section) === -1
+      return ![].concat(options.exclude).includes(section)
     })
   }
   // collect dependencies
@@ -80,7 +80,7 @@ function readFromPackageJson(options) {
   return Object.keys(deps)
 }
 
-function containsPattern(arr, val) {
+function containsPattern (arr, val) {
   return (
     arr &&
     arr.some(function (pattern) {
@@ -100,7 +100,7 @@ const scopedModuleRegex = new RegExp(
   'g'
 )
 
-function getModuleName(request, includeAbsolutePaths) {
+function getModuleName (request, includeAbsolutePaths) {
   let req = request
   const delimiter = '/'
 
@@ -116,7 +116,7 @@ function getModuleName(request, includeAbsolutePaths) {
   return req.split(delimiter)[0]
 }
 
-export default function nodeExternals(options) {
+export default function nodeExternals (options) {
   options = options || {}
   const whitelist = [].concat(options.whitelist || [])
   const binaryDirs = [].concat(options.binaryDirs || ['.bin'])
@@ -126,7 +126,7 @@ export default function nodeExternals(options) {
   const includeAbsolutePaths = !!options.includeAbsolutePaths
 
   // helper function
-  function isNotBinary(x) {
+  function isNotBinary (x) {
     return !contains(binaryDirs, x)
   }
 

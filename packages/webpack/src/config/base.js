@@ -32,11 +32,11 @@ export default class WebpackBaseConfig {
     }
   }
 
-  get devtool() {
+  get devtool () {
     return false
   }
 
-  get nuxtEnv() {
+  get nuxtEnv () {
     return {
       isDev: this.dev,
       isServer: this.isServer,
@@ -125,7 +125,7 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  env() {
+  env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
