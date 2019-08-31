@@ -174,7 +174,10 @@ export const createRoutes = function createRoutes ({
         }
       }
     })
-    if (typeof trailingSlashes !== 'undefined') {
+    if (trailingSlashes !== undefined) {
+        route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
+        route.path = route.path.replace(/\/+$/, '') + (trailingSlashes ? '/' : '')
+    }
       route.pathToRegexpOptions = { strict: true }
 
       route.path = trailingSlashes === false
