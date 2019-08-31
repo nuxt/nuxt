@@ -46,7 +46,7 @@ export default {
   data: () => ({
     loaded: false
   }),
-  beforeMount() {
+  beforeMount () {
     // Preload image
     const img = new Image()
     img.onload = () => {

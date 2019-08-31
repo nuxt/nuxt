@@ -1,4 +1,4 @@
-export function clearRequireCache(id) {
+export function clearRequireCache (id) {
   const entry = require.cache[id]
   if (!entry || id.includes('node_modules')) {
     return
@@ -15,7 +15,7 @@ export function clearRequireCache(id) {
   delete require.cache[id]
 }
 
-export function scanRequireTree(id, files = new Set()) {
+export function scanRequireTree (id, files = new Set()) {
   const entry = require.cache[id]
   if (!entry || id.includes('node_modules') || files.has(id)) {
     return files

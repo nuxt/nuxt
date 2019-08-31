@@ -4,7 +4,7 @@ export default {
   generate: {
     dir: '.nuxt-generate/generate'
   },
-  hooks(hook) {
+  hooks (hook) {
     hook('generate:done', (generator, errors) => {
       if (!errors || errors.length === 0) {
         process.stdout.write('Generated successfully')

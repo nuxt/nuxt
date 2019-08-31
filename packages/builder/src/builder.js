@@ -33,7 +33,7 @@ import TemplateContext from './context/template'
 
 const glob = pify(Glob)
 export default class Builder {
-  constructor(nuxt, bundleBuilder) {
+  constructor (nuxt, bundleBuilder) {
     this.nuxt = nuxt
     this.plugins = []
     this.options = nuxt.options
@@ -44,7 +44,7 @@ export default class Builder {
       restart: null
     }
 
-    this.supportedExtensions = ['vue', 'js', 'ts', 'tsx', ...(this.options.build.additionalExtensions || [])]
+    this.supportedExtensions = ['vue', 'js', ...(this.options.build.additionalExtensions || [])]
 
     // Helper to resolve build paths
     this.relativeToBuild = (...args) => relativeTo(this.options.buildDir, ...args)
@@ -84,7 +84,7 @@ export default class Builder {
     })
   }
 
-  getBundleBuilder(BundleBuilder) {
+  getBundleBuilder (BundleBuilder) {
     if (typeof BundleBuilder === 'object') {
       return BundleBuilder
     }
@@ -98,11 +98,11 @@ export default class Builder {
     return new BundleBuilder(context)
   }
 
-  forGenerate() {
+  forGenerate () {
     this.bundleBuilder.forGenerate()
   }
 
-  async build() {
+  async build () {
     // Avoid calling build() method multiple times when dev:true
     if (this._buildStatus === STATUS.BUILD_DONE && this.options.dev) {
       return this
@@ -169,7 +169,7 @@ export default class Builder {
   }
 
   // Check if pages dir exists and warn if not
-  async validatePages() {
+  async validatePages () {
     this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
 
     if (
@@ -190,7 +190,7 @@ export default class Builder {
     consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
   }
 
-  validateTemplate() {
+  validateTemplate () {
     // Validate template dependencies
     const templateDependencies = this.template.dependencies
     for (const depName in templateDependencies) {
@@ -209,17 +209,25 @@ export default class Builder {
     }
   }
 
-  globPathWithExtensions(path) {
+  globPathWithExtensions (path) {
     return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
   }
 
-  async generateRoutesAndFiles() {
+  createTemplateContext () {
+    return new TemplateContext(this, this.options)
+  }
+
+  async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
+
+    if (this.bundleBuilder) {
+      this.bundleBuilder.pauseWatch()
+    }
 
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
 
-    const templateContext = new TemplateContext(this, this.options)
+    const templateContext = this.createTemplateContext()
 
     await Promise.all([
       this.resolveLayouts(templateContext),
@@ -237,10 +245,14 @@ export default class Builder {
 
     await this.compileTemplates(templateContext)
 
+    if (this.bundleBuilder) {
+      this.bundleBuilder.resumeWatch()
+    }
+
     consola.success('Nuxt files generated')
   }
 
-  normalizePlugins() {
+  normalizePlugins () {
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
     return uniqBy(
@@ -277,19 +289,19 @@ export default class Builder {
     )
   }
 
-  async resolveFiles(dir, cwd = this.options.srcDir) {
+  async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
       ignore: this.options.ignore
     }))
   }
 
-  async resolveRelative(dir) {
+  async resolveRelative (dir) {
     const dirPrefix = new RegExp(`^${dir}/`)
     return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
-  async resolveLayouts({ templateVars, templateFiles }) {
+  async resolveLayouts ({ templateVars, templateFiles }) {
     if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
@@ -323,7 +335,7 @@ export default class Builder {
     }
   }
 
-  async resolveRoutes({ templateVars }) {
+  async resolveRoutes ({ templateVars }) {
     consola.debug('Generating routes...')
 
     if (this._defaultPage) {
@@ -378,7 +390,7 @@ export default class Builder {
     this.routes = templateVars.router.routes
   }
 
-  async resolveStore({ templateVars, templateFiles }) {
+  async resolveStore ({ templateVars, templateFiles }) {
     // Add store if needed
     if (!this.options.store) {
       return
@@ -399,51 +411,58 @@ export default class Builder {
     templateFiles.push('store.js')
   }
 
-  async resolveMiddleware({ templateVars }) {
+  async resolveMiddleware ({ templateVars }) {
     // -- Middleware --
     templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
   }
 
-  async resolveCustomTemplates(templateContext) {
-    // Resolve template files
-    const customTemplateFiles = this.options.build.templates.map(
-      t => t.dst || path.basename(t.src || t)
-    )
-
-    const templateFiles = await Promise.all(templateContext.templateFiles.map(async (file) => {
-      // Skip if custom file was already provided in build.templates[]
-      if (customTemplateFiles.includes(file)) {
-        return
+  async resolveCustomTemplates (templateContext) {
+    // Sanitize custom template files
+    this.options.build.templates = this.options.build.templates.map((t) => {
+      const src = t.src || t
+      return {
+        src: r(this.options.srcDir, src),
+        dst: t.dst || path.basename(src),
+        custom: true,
+        ...(typeof t === 'object' ? t : undefined)
       }
+    })
+
+    const customTemplateFiles = this.options.build.templates.map(t => t.dst || path.basename(t.src || t))
+
+    const templatePaths = uniq([
+      // Modules & user provided templates
+      // first custom to keep their index
+      ...customTemplateFiles,
+      // @nuxt/vue-app templates
+      ...templateContext.templateFiles
+    ])
+
+    const appDir = path.resolve(this.options.srcDir, this.options.dir.app)
+
+    templateContext.templateFiles = await Promise.all(templatePaths.map(async (file) => {
+      // Use custom file if provided in build.templates[]
+      const customTemplateIndex = customTemplateFiles.indexOf(file)
+      const customTemplate = customTemplateIndex !== -1 ? this.options.build.templates[customTemplateIndex] : null
+      let src = customTemplate ? (customTemplate.src || customTemplate) : r(this.template.dir, file)
+
       // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = r(this.options.srcDir, 'app', file)
-      const customFileExists = await fsExtra.exists(customPath)
+      const customAppFile = path.resolve(this.options.srcDir, this.options.dir.app, file)
+      const customAppFileExists = customAppFile.startsWith(appDir) && await fsExtra.exists(customAppFile)
+      if (customAppFileExists) {
+        src = customAppFile
+      }
 
       return {
-        src: customFileExists ? customPath : r(this.template.dir, file),
+        src,
         dst: file,
-        custom: customFileExists
+        custom: Boolean(customAppFileExists || customTemplate),
+        options: (customTemplate && customTemplate.options) || {}
       }
     }))
-
-    templateContext.templateFiles = templateFiles
-      .filter(Boolean)
-      // Add custom template files
-      .concat(
-        this.options.build.templates.map((t) => {
-          return Object.assign(
-            {
-              src: r(this.options.srcDir, t.src || t),
-              dst: t.dst || path.basename(t.src || t),
-              custom: true
-            },
-            typeof t === 'object' ? t : undefined
-          )
-        })
-      )
   }
 
-  async resolveLoadingIndicator({ templateFiles }) {
+  async resolveLoadingIndicator ({ templateFiles }) {
     if (!this.options.loadingIndicator.name) {
       return
     }
@@ -483,7 +502,7 @@ export default class Builder {
     })
   }
 
-  async compileTemplates(templateContext) {
+  async compileTemplates (templateContext) {
     // Prepare template options
     const { templateVars, templateFiles, templateOptions } = templateContext
 
@@ -512,6 +531,7 @@ export default class Builder {
 
         // Render template to dst
         const fileContent = await fsExtra.readFile(src, 'utf8')
+
         let content
         try {
           const templateFunction = template(fileContent, templateOptions)
@@ -532,7 +552,7 @@ export default class Builder {
     )
   }
 
-  resolvePlugins() {
+  resolvePlugins () {
     // Check plugins exist then set alias to their real path
     return Promise.all(this.plugins.map(async (p) => {
       const ext = '{?(.+([^.])),/index.+([^.])}'
@@ -564,7 +584,7 @@ export default class Builder {
   //   )
   // }
 
-  createFileWatcher(patterns, events, listener, watcherCreatedCallback) {
+  createFileWatcher (patterns, events, listener, watcherCreatedCallback) {
     const options = this.options.watchers.chokidar
     const watcher = chokidar.watch(patterns, options)
 
@@ -590,13 +610,13 @@ export default class Builder {
     }
   }
 
-  assignWatcher(key) {
+  assignWatcher (key) {
     return (watcher) => {
       this.watchers[key] = watcher
     }
   }
 
-  watchClient() {
+  watchClient () {
     let patterns = [
       r(this.options.srcDir, this.options.dir.layouts),
       r(this.options.srcDir, this.options.dir.middleware)
@@ -628,9 +648,12 @@ export default class Builder {
     }
 
     this.createFileWatcher(customPatterns, ['change'], refreshFiles, this.assignWatcher('custom'))
+
+    // Watch for app/ files
+    this.createFileWatcher([r(this.options.srcDir, this.options.dir.app)], ['add', 'change', 'unlink'], refreshFiles, this.assignWatcher('app'))
   }
 
-  getServerMiddlewarePaths() {
+  getServerMiddlewarePaths () {
     return this.options.serverMiddleware
       .map((serverMiddleware) => {
         if (isString(serverMiddleware)) {
@@ -644,7 +667,7 @@ export default class Builder {
       .map(p => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
   }
 
-  watchRestart() {
+  watchRestart () {
     const serverMiddlewarePaths = this.getServerMiddlewarePaths()
     const nuxtRestartWatch = [
       // Server middleware
@@ -684,13 +707,13 @@ export default class Builder {
     )
   }
 
-  unwatch() {
+  unwatch () {
     for (const watcher in this.watchers) {
       this.watchers[watcher].close()
     }
   }
 
-  async close() {
+  async close () {
     if (this.__closed) {
       return
     }

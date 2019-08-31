@@ -5,7 +5,7 @@ export default {
       manifest: 'manifest.[fullhash].js', // default: manifest.[fullhash].js
       app: 'app.[chunkhash].js' // default: nuxt.bundle.[chunkhash].js
     },
-    extend(config, { isDev }) {
+    extend (config, { isDev }) {
       if (isDev) {
         config.devtool = 'eval-source-map'
       }

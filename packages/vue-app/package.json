@@ -1,23 +1,24 @@
 {
   "name": "@nuxt/vue-app",
-  "version": "2.8.1",
+  "version": "2.9.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
     "dist",
     "template",
-    "types/*.d.ts",
-    "vetur"
+    "vetur",
+    "index.d.ts"
   ],
   "main": "dist/vue-app.js",
-  "typings": "types/index.d.ts",
+  "typings": "index.d.ts",
   "dependencies": {
     "node-fetch": "^2.6.0",
     "unfetch": "^4.1.0",
     "vue": "^2.6.10",
-    "vue-meta": "^1.6.0",
+    "vue-client-only": "^2.0.0",
+    "vue-meta": "^2.2.2",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.0.6",
+    "vue-router": "~3.0.7",
     "vue-template-compiler": "^2.6.10",
     "vuex": "^3.1.1"
   },

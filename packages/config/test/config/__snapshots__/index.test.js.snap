@@ -50,7 +50,9 @@ Object {
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {
@@ -66,18 +68,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -129,22 +119,19 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -335,7 +322,9 @@ Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;
@@ -390,7 +379,9 @@ Object {
     "loaders": Object {
       "css": Object {},
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
       },
       "file": Object {},
       "fontUrl": Object {
@@ -406,18 +397,6 @@ Object {
       },
       "scss": Object {},
       "stylus": Object {},
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
       "vue": Object {
         "transformAssetUrls": Object {
           "embed": "src",
@@ -469,22 +448,19 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": ".nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
   },
   "css": Array [],
   "debug": undefined,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -675,7 +651,9 @@ Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;

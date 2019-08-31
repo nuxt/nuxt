@@ -19,13 +19,12 @@ import WP5FixPlugin from '../plugins/wp5-fix'
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
-  constructor(builder) {
+  constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.modulesToTranspile = this.normalizeTranspile()
   }
 
-  get colors() {
+  get colors () {
     return {
       client: 'green',
       server: 'orange',
@@ -42,37 +41,49 @@ export default class WebpackBaseConfig {
       isDev: this.dev,
       isServer: this.isServer,
       isClient: !this.isServer,
-      isModern: Boolean(this.isModern)
+      isModern: Boolean(this.isModern),
+      isLegacy: Boolean(!this.isModern)
     }
   }
 
-  get mode() {
+  get mode () {
     return this.dev ? 'development' : 'production'
   }
 
-  get dev() {
+  get dev () {
     return this.buildContext.options.dev
   }
 
-  get loaders() {
+  get loaders () {
     return this.buildContext.buildOptions.loaders
   }
 
-  normalizeTranspile() {
-    // include SFCs in node_modules
-    const items = [/\.vue\.js/i]
-    for (const pattern of this.buildContext.buildOptions.transpile) {
-      if (pattern instanceof RegExp) {
-        items.push(pattern)
-      } else {
-        const posixModule = pattern.replace(/\\/g, '/')
-        items.push(new RegExp(escapeRegExp(path.normalize(posixModule))))
-      }
-    }
-    return items
+  get modulesToTranspile () {
+    return [
+      /\.vue\.js/i, // include SFCs in node_modules
+      ...this.normalizeTranspile({ pathNormalize: true })
+    ]
   }
 
-  getBabelOptions() {
+  normalizeTranspile ({ pathNormalize = false } = {}) {
+    const transpile = []
+    for (let pattern of this.buildContext.buildOptions.transpile) {
+      if (typeof pattern === 'function') {
+        pattern = pattern(this.nuxtEnv)
+      }
+      if (pattern instanceof RegExp) {
+        transpile.push(pattern)
+      } else if (typeof pattern === 'string') {
+        const posixModule = pattern.replace(/\\/g, '/')
+        transpile.push(new RegExp(escapeRegExp(
+          pathNormalize ? path.normalize(posixModule) : posixModule
+        )))
+      }
+    }
+    return transpile
+  }
+
+  getBabelOptions () {
     const options = {
       ...this.buildContext.buildOptions.babel,
       envName: this.name
@@ -100,7 +111,7 @@ export default class WebpackBaseConfig {
     return options
   }
 
-  getFileName(key) {
+  getFileName (key) {
     let fileName = this.buildContext.buildOptions.filenames[key]
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
@@ -129,7 +140,7 @@ export default class WebpackBaseConfig {
     return env
   }
 
-  output() {
+  output () {
     const {
       options: { buildDir, router },
       buildOptions: { publicPath }
@@ -142,7 +153,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  cache() {
+  cache () {
     if (!this.options.build.cache) {
       return false
     }
@@ -155,7 +166,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  optimization() {
+  optimization () {
     const optimization = cloneDeep(this.buildContext.buildOptions.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
@@ -165,13 +176,13 @@ export default class WebpackBaseConfig {
     return optimization
   }
 
-  resolve() {
+  resolve () {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
     return {
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx', '.ts', '.tsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
@@ -181,7 +192,7 @@ export default class WebpackBaseConfig {
     }
   }
 
-  minimizer() {
+  minimizer () {
     const minimizer = []
     const { terser, cache } = this.buildContext.buildOptions
 
@@ -213,14 +224,14 @@ export default class WebpackBaseConfig {
     return minimizer
   }
 
-  alias() {
+  alias () {
     return {
       ...this.buildContext.options.alias,
       consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
     }
   }
 
-  rules() {
+  rules () {
     const perfLoader = new PerfLoader(this.name, this.buildContext)
     const styleLoader = new StyleLoader(
       this.buildContext,
@@ -273,26 +284,6 @@ export default class WebpackBaseConfig {
           return !this.modulesToTranspile.some(module => module.test(file))
         },
         use: perfLoader.js().concat(babelLoader)
-      },
-      {
-        test: /\.ts$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.ts
-          }
-        ]
-      },
-      {
-        test: /\.tsx$/i,
-        use: [
-          babelLoader,
-          {
-            loader: 'ts-loader',
-            options: this.loaders.tsx
-          }
-        ]
       },
       {
         test: /\.css$/i,
@@ -363,7 +354,7 @@ export default class WebpackBaseConfig {
     ]
   }
 
-  plugins() {
+  plugins () {
     const plugins = []
     const { nuxt, buildOptions } = this.buildContext
 
@@ -417,7 +408,7 @@ export default class WebpackBaseConfig {
         allDone: () => {
           nuxt.callHook('bundler:done')
         },
-        progress({ statesArray }) {
+        progress ({ statesArray }) {
           nuxt.callHook('bundler:progress', statesArray)
         }
       }
@@ -436,27 +427,19 @@ export default class WebpackBaseConfig {
     return plugins
   }
 
-  warningIgnoreFilter() {
-    const { buildOptions, options: { _typescript = {} } } = this.buildContext
+  warningIgnoreFilter () {
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
         warn.message.includes(`export 'default'`) &&
         warn.message.includes('nuxt_plugin_'),
-      ...(buildOptions.warningIgnoreFilters || [])
+      ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
     ]
-
-    if (_typescript.build && buildOptions.typescript && buildOptions.typescript.ignoreNotFoundWarnings) {
-      filters.push(
-        warn => warn.name === 'ModuleDependencyWarning' &&
-          /export .* was not found in /.test(warn.message)
-      )
-    }
 
     return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }
 
-  extendConfig(config) {
+  extendConfig (config) {
     const { extend } = this.buildContext.buildOptions
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
@@ -470,7 +453,7 @@ export default class WebpackBaseConfig {
     return config
   }
 
-  config() {
+  config () {
     const config = {
       name: this.name,
       mode: this.mode,

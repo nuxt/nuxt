@@ -1,5 +1,5 @@
 export default {
-  render(h) {
+  render (h) {
     return h('div',
       [
         h('h1', 'JS Layout'),

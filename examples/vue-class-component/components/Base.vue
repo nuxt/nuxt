@@ -30,17 +30,17 @@ class Base extends Vue {
   msg = 123
 
   // lifecycle hook
-  mounted() {
+  mounted () {
     this.greet()
   }
 
   // computed
-  get computedMsg() {
+  get computedMsg () {
     return 'computed ' + this.msg
   }
 
   // method
-  greet() {
+  greet () {
     console.log('base greeting: ' + this.msg) // eslint-disable-line no-console
   }
 }

@@ -3,7 +3,7 @@
 </template>
 <script>
 export default {
-  mounted() {
+  mounted () {
     window.indexMounted = (+window.indexMounted) + 1
     console.log('mounted') // eslint-disable-line no-console
   }

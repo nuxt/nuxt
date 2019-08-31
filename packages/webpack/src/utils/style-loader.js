@@ -6,7 +6,7 @@ import { wrapArray } from '@nuxt/utils'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor(buildContext, { isServer, perfLoader }) {
+  constructor (buildContext, { isServer, perfLoader }) {
     this.buildContext = buildContext
     this.isServer = isServer
     this.perfLoader = perfLoader
@@ -16,20 +16,20 @@ export default class StyleLoader {
     }
   }
 
-  get extractCSS() {
+  get extractCSS () {
     return this.buildContext.buildOptions.extractCSS
   }
 
-  get exportOnlyLocals() {
+  get onlyLocals () {
     return Boolean(this.isServer && this.extractCSS)
   }
 
-  normalize(loaders) {
+  normalize (loaders) {
     loaders = wrapArray(loaders)
     return loaders.map(loader => (typeof loader === 'string' ? { loader } : loader))
   }
 
-  styleResource(ext) {
+  styleResource (ext) {
     const { buildOptions: { styleResources }, options: { rootDir } } = this.buildContext
     const extResource = styleResources[ext]
     // style-resources-loader
@@ -48,7 +48,7 @@ export default class StyleLoader {
     }
   }
 
-  postcss() {
+  postcss () {
     // postcss-loader
     // https://github.com/postcss/postcss-loader
     if (!this.postcssConfig) {
@@ -67,22 +67,22 @@ export default class StyleLoader {
     }
   }
 
-  css(options) {
-    options.exportOnlyLocals = this.exportOnlyLocals
+  css (options) {
+    options.onlyLocals = this.onlyLocals
     const cssLoader = { loader: 'css-loader', options }
 
-    if (options.exportOnlyLocals) {
+    if (options.onlyLocals) {
       return [cssLoader]
     }
 
     return [this.styleLoader(), cssLoader]
   }
 
-  cssModules(options) {
-    return this.css(Object.assign(options, { modules: true }))
+  cssModules (options) {
+    return this.css(options)
   }
 
-  extract() {
+  extract () {
     if (this.extractCSS) {
       return {
         loader: ExtractCssChunksPlugin.loader,
@@ -96,14 +96,14 @@ export default class StyleLoader {
     }
   }
 
-  styleLoader() {
+  styleLoader () {
     return this.extract() || {
       loader: 'vue-style-loader',
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }
 
-  apply(ext, loaders = []) {
+  apply (ext, loaders = []) {
     const { css, cssModules } = this.buildContext.buildOptions.loaders
 
     const customLoaders = [].concat(

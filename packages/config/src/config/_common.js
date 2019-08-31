@@ -35,6 +35,7 @@ export default () => ({
   ],
   dir: {
     assets: 'assets',
+    app: 'app',
     layouts: 'layouts',
     middleware: 'middleware',
     pages: 'pages',
@@ -67,7 +68,9 @@ export default () => ({
   watch: [],
   watchers: {
     rewatchOnRawEvents: undefined,
-    webpack: {},
+    webpack: {
+      aggregateTimeout: 1000
+    },
     chokidar: {
       ignoreInitial: true
     }

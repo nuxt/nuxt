@@ -11,7 +11,7 @@
 <script>
 export default {
   layout: 'custom',
-  asyncData({ route }) {
+  asyncData ({ route }) {
     return { meta: route.meta || 'empty-meta' }
   }
 }

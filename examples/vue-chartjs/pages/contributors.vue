@@ -5,10 +5,10 @@
 </template>
 
 <script>
-import DoughnutChart from '~/components/doughnut-chart'
 import axios from 'axios'
+import DoughnutChart from '~/components/doughnut-chart'
 
-function getRandomColor() {
+function getRandomColor () {
   const letters = '0123456789ABCDEF'
   let color = '#'
   for (let i = 0; i < 6; i++) {
@@ -21,7 +21,7 @@ export default {
   components: {
     DoughnutChart
   },
-  async asyncData({ env }) {
+  async asyncData ({ env }) {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/contributors?access_token=${env.githubToken}`)
     return {
       doughnutChartData: {

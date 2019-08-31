@@ -41,7 +41,9 @@ export default () => ({
     },
     css: {},
     cssModules: {
-      localIdentName: '[local]_[fullhash:base64:5]'
+      modules: {
+        localIdentName: '[local]_[hash:base64:5]'
+      }
     },
     less: {},
     sass: {
@@ -49,19 +51,7 @@ export default () => ({
     },
     scss: {},
     stylus: {},
-    ts: {
-      transpileOnly: true,
-      appendTsSuffixTo: [/\.vue$/]
-    },
-    tsx: {
-      transpileOnly: true,
-      appendTsxSuffixTo: [/\.vue$/]
-    },
     vueStyle: {}
-  },
-  typescript: {
-    typeCheck: true,
-    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],

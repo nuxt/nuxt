@@ -6,7 +6,7 @@ import esm from 'esm'
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 export default class Resolver {
-  constructor(nuxt) {
+  constructor (nuxt) {
     this.nuxt = nuxt
     this.options = this.nuxt.options
 
@@ -22,7 +22,7 @@ export default class Resolver {
     this._resolve = require.resolve
   }
 
-  resolveModule(path) {
+  resolveModule (path) {
     try {
       return this._resolve(path, {
         paths: this.options.modulesDir
@@ -38,7 +38,7 @@ export default class Resolver {
     }
   }
 
-  resolveAlias(path) {
+  resolveAlias (path) {
     if (startsWithRootAlias(path)) {
       return join(this.options.rootDir, path.substr(2))
     }
@@ -50,7 +50,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath(path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
+  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
@@ -114,7 +114,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
+  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 

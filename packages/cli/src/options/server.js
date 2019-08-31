@@ -5,7 +5,7 @@ export default {
     alias: 'p',
     type: 'string',
     description: 'Port number on which to start the application',
-    prepare(cmd, options, argv) {
+    prepare (cmd, options, argv) {
       if (argv.port) {
         options.server.port = +argv.port
       }
@@ -15,7 +15,7 @@ export default {
     alias: 'H',
     type: 'string',
     description: 'Hostname on which to start the application',
-    prepare(cmd, options, argv) {
+    prepare (cmd, options, argv) {
       if (argv.hostname === '') {
         consola.fatal('Provided hostname argument has no value')
       }

@@ -1,5 +1,5 @@
 export default {
-  render() {
+  render () {
     return <div class='container'>
       <h1>JSX Page</h1>
     </div>

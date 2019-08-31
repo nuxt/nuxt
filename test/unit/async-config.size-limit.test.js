@@ -1,41 +1,67 @@
-import cheerio from 'cheerio'
-import fetch from 'node-fetch'
-import { getPort, loadFixture, Nuxt } from '../utils'
 
-let port
-let nuxt = null
-const url = route => 'http://localhost:' + port + route
-let responseSizes
+import { resolve } from 'path'
+import zlib from 'zlib'
+import fs from 'fs-extra'
+import pify from 'pify'
 
-describe('size-limit test', () => {
-  beforeAll(async () => {
-    const options = await loadFixture('async-config')
-    nuxt = new Nuxt(options)
-    await nuxt.ready()
+const gzip = pify(zlib.gzip)
+const brotli = pify(zlib.brotliCompress)
+const compressSize = (input, compressor) => compressor(input).then(data => data.length)
 
-    port = await getPort()
-    await nuxt.server.listen(port, '0.0.0.0')
+const distDir = resolve(__dirname, '../fixtures/async-config/.nuxt/dist')
 
-    const { html } = await nuxt.server.renderRoute('/')
-    // Get all script URLs from the HTML
-    const $ = cheerio.load(html)
-    const scriptsUrls = $('script[src]')
-      .map((_, el) => $(el).attr('src'))
-      .get()
-      .map(url)
-    const resourceUrls = [url('/'), ...scriptsUrls]
+const getResourcesSize = async (mode) => {
+  const { all } = await import(resolve(distDir, 'server', `${mode}.manifest.json`))
+  const resources = all.filter(filename => filename.endsWith('.js'))
+  const sizes = { uncompressed: 0, gzip: 0, brotli: 0 }
+  for (const resource of resources) {
+    const file = resolve(distDir, 'client', resource)
+    const stat = await fs.stat(file)
+    sizes.uncompressed += stat.size / 1024
+    const fileContent = await fs.readFile(file)
+    sizes.gzip += await compressSize(fileContent, gzip) / 1024
+    sizes.brotli += await compressSize(fileContent, brotli) / 1024
+  }
+  return sizes
+}
 
-    // Fetch all resources and get their size (bytes)
-    responseSizes = await Promise.all(resourceUrls.map(async (url) => {
-      const response = await fetch(url).then(res => res.text())
-      return response.length
-    }))
+describe('nuxt basic resources size limit', () => {
+  expect.extend({
+    toBeWithinSize (received, size) {
+      const maxSize = size * 1.05
+      const minSize = size * 0.95
+      const pass = received >= minSize && received <= maxSize
+      return {
+        pass,
+        message: () =>
+          `expected ${received} to be within range ${minSize} - ${maxSize}`
+      }
+    }
   })
 
-  it('should stay within the size boundaries', () => {
-    const responseSizeBytes = responseSizes.reduce((bytes, responseLength) => bytes + responseLength, 0)
-    const responseSizeKilobytes = Math.ceil(responseSizeBytes / 1024)
-    // Without gzip!
-    expect(responseSizeKilobytes).toBeLessThanOrEqual(191)
+  it('should stay within the size limit range in legacy mode', async () => {
+    const legacyResourcesSize = await getResourcesSize('client')
+
+    const LEGACY_JS_RESOURCES_KB_SIZE = 194
+    expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
+
+    const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 66
+    expect(legacyResourcesSize.gzip).toBeWithinSize(LEGACY_JS_RESOURCES_GZIP_KB_SIZE)
+
+    const LEGACY_JS_RESOURCES_BROTLI_KB_SIZE = 58
+    expect(legacyResourcesSize.brotli).toBeWithinSize(LEGACY_JS_RESOURCES_BROTLI_KB_SIZE)
+  })
+
+  it('should stay within the size limit range in modern mode', async () => {
+    const modernResourcesSize = await getResourcesSize('modern')
+
+    const MODERN_JS_RESOURCES_KB_SIZE = 172
+    expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE)
+
+    const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 59
+    expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE)
+
+    const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 52
+    expect(modernResourcesSize.brotli).toBeWithinSize(MODERN_JS_RESOURCES_BROTLI_KB_SIZE)
   })
 })

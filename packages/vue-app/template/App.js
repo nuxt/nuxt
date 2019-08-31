@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { getMatchedComponentsInstances, promisify, globalHandleError } from './utils'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -73,6 +74,8 @@ export default {
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
+    // Add $nuxt.context
+    this.context = this.$options.context
   },
   <% if (loading) { %>
   mounted() {
@@ -99,6 +102,40 @@ export default {
           this.isOnline = window.navigator.onLine
         }
       }
+    },
+    async refresh() {
+      const pages = getMatchedComponentsInstances(this.$route)
+
+      if (!pages.length) {
+        return
+      }
+      <% if (loading) { %>this.$loading.start()<% } %>
+      const promises = pages.map(async (page) => {
+        const p = []
+
+        if (page.$options.fetch) {
+          p.push(promisify(page.$options.fetch, this.context))
+        }
+        if (page.$options.asyncData) {
+          p.push(
+            promisify(page.$options.asyncData, this.context)
+              .then((newData) => {
+                for (const key in newData) {
+                  Vue.set(page.$data, key, newData[key])
+                }
+              })
+          )
+        }
+        return Promise.all(p)
+      })
+      try {
+        await Promise.all(promises)
+      } catch (error) {
+        <% if (loading) { %>this.$loading.fail()<% } %>
+        globalHandleError(error)
+        this.error(error)
+      }
+      <% if (loading) { %>this.$loading.finish()<% } %>
     },
     <% if (loading) { %>
     errorChanged() {

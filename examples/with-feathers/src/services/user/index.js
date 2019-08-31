@@ -11,7 +11,7 @@ export default function () {
     autoload: true
   })
 
-  let options = {
+  const options = {
     Model: db,
     paginate: {
       default: 5,

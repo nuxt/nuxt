@@ -8,7 +8,7 @@ import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
-  get rendererOptions() {
+  get rendererOptions () {
     const hasModules = fs.existsSync(path.resolve(this.options.rootDir, 'node_modules'))
 
     return {
@@ -19,19 +19,19 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  renderScripts(renderContext) {
+  renderScripts (renderContext) {
     return renderContext.renderScripts()
   }
 
-  getPreloadFiles(renderContext) {
+  getPreloadFiles (renderContext) {
     return renderContext.getPreloadFiles()
   }
 
-  renderResourceHints(renderContext) {
+  renderResourceHints (renderContext) {
     return renderContext.renderResourceHints()
   }
 
-  createRenderer() {
+  createRenderer () {
     // Create bundle renderer for SSR
     return createBundleRenderer(
       this.serverContext.resources.serverManifest,
@@ -39,13 +39,13 @@ export default class SSRRenderer extends BaseRenderer {
     )
   }
 
-  useSSRLog() {
+  useSSRLog () {
     if (!this.options.render.ssrLog) {
       return
     }
     const logs = []
     const devReporter = {
-      log(logObj) {
+      log (logObj) {
         logs.push({
           ...logObj,
           args: logObj.args.map(arg => format(arg))
@@ -60,7 +60,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  async render(renderContext) {
+  async render (renderContext) {
     // Call ssr:context hook to extend context from modules
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:prepareContext', renderContext)
 
@@ -109,6 +109,17 @@ export default class SSRRenderer extends BaseRenderer {
     // Inject styles
     HEAD += renderContext.renderStyles()
 
+    const BODY_PREPEND =
+      m.meta.text({ pbody: true }) +
+      m.link.text({ pbody: true }) +
+      m.style.text({ pbody: true }) +
+      m.script.text({ pbody: true }) +
+      m.noscript.text({ pbody: true })
+
+    if (BODY_PREPEND) {
+      APP = `${BODY_PREPEND}${APP}`
+    }
+
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
     if (shouldInjectScripts) {
@@ -121,7 +132,7 @@ export default class SSRRenderer extends BaseRenderer {
     if (csp) {
       // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
       const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
-      if (!containsUnsafeInlineScriptSrc) {
+      if (csp.unsafeInlineCompatiblity || !containsUnsafeInlineScriptSrc) {
         const hash = crypto.createHash(csp.hashAlgorithm)
         hash.update(serializedSession)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
@@ -140,12 +151,17 @@ export default class SSRRenderer extends BaseRenderer {
     if (shouldInjectScripts) {
       APP += this.renderScripts(renderContext)
     }
+
+    // Append body scripts
+    APP += m.meta.text({ body: true })
+    APP += m.link.text({ body: true })
+    APP += m.style.text({ body: true })
     APP += m.script.text({ body: true })
     APP += m.noscript.text({ body: true })
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
+      HTML_ATTRS: m.htmlAttrs.text(true /* addSrrAttribute */),
       HEAD_ATTRS: m.headAttrs.text(),
       BODY_ATTRS: m.bodyAttrs.text(),
       HEAD,

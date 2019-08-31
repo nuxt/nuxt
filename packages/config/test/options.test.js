@@ -74,7 +74,7 @@ describe('config: options', () => {
 
   test('should transform extensions to array', () => {
     const { extensions } = getNuxtConfig({ extensions: 'ext' })
-    expect(extensions).toEqual(['js', 'mjs', 'ts', 'ext'])
+    expect(extensions).toEqual(['js', 'mjs', 'ext'])
   })
 
   test('should support custom global name', () => {
@@ -92,6 +92,7 @@ describe('config: options', () => {
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
+      unsafeInlineCompatiblity: false,
       allowedSources: true,
       policies: undefined,
       reportOnly: false,
@@ -111,9 +112,19 @@ describe('config: options', () => {
     expect(pageTransition.appear).toEqual(true)
   })
 
-  test('should return 404.html as default generate.fallback', () => {
+  test('should return 200.html as default generate.fallback', () => {
+    const { generate: { fallback } } = getNuxtConfig({})
+    expect(fallback).toEqual('200.html')
+  })
+
+  test('should return 404.html when generate.fallback is true', () => {
     const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: true } })
     expect(fallback).toEqual('404.html')
+  })
+
+  test('should return fallback html when generate.fallback is string', () => {
+    const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
   })
 
   test('should disable parallel if extractCSS is enabled', () => {
@@ -229,6 +240,13 @@ describe('config: options', () => {
     test('should deprecate build.vendor', () => {
       getNuxtConfig({ build: { vendor: ['lodash'] } })
       expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
+    })
+
+    test('should deprecate devModules', () => {
+      const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
+      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+      expect(config.devModules).toBe(undefined)
+      expect(config.buildModules).toEqual(['bar', 'foo'])
     })
 
     test('should deprecate build.extractCSS.allChunks', () => {

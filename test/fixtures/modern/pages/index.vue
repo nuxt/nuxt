@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  test() {
+  test () {
     const test = {
       build: true,
       test: true,

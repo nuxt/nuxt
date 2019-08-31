@@ -22,7 +22,7 @@
 
 <script>
 export default {
-  asyncData({ env }) {
+  asyncData ({ env }) {
     return { users: env.users }
   }
 }

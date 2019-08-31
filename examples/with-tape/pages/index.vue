@@ -11,11 +11,11 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return { name: 'world', className: 'red' }
   },
   methods: {
-    changeColor() {
+    changeColor () {
       this.className = this.className === 'red' ? 'blue' : 'green'
     }
   }

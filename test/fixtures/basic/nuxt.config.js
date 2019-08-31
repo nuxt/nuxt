@@ -9,7 +9,7 @@ export default {
     }
   },
   router: {
-    extendRoutes(routes, resolve) {
+    extendRoutes (routes, resolve) {
       return [{
         path: '/before-enter',
         name: 'before-enter',
@@ -34,29 +34,28 @@ export default {
       '/тест雨',
       { route: '/users/3', payload: { id: 3000 } }
     ],
-    interval: 200,
-    subFolders: true
+    interval: 200
   },
-  head() {
+  head () {
     return {
-      titleTemplate(titleChunk) {
+      titleTemplate (titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
       }
     }
   },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
   hooks: {
-    ready(nuxt) {
+    ready (nuxt) {
       _nuxt = nuxt
       nuxt.__hook_ready_called__ = true
     },
     build: {
-      done(builder) {
+      done (builder) {
         builder.__hook_built_called__ = true
       }
     },
     render: {
-      routeDone(url) {
+      routeDone (url) {
         _nuxt.__hook_render_routeDone__ = url
       }
     },

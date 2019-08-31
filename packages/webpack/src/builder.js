@@ -15,7 +15,7 @@ import PerfLoader from './utils/perf-loader'
 const glob = pify(Glob)
 
 export class WebpackBundler {
-  constructor(buildContext) {
+  constructor (buildContext) {
     this.buildContext = buildContext
 
     // Class fields
@@ -33,7 +33,7 @@ export class WebpackBundler {
     }
   }
 
-  getWebpackConfig(name) {
+  getWebpackConfig (name) {
     const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
     if (!Config) {
       throw new Error(`Unsupported webpack config ${name}`)
@@ -42,7 +42,7 @@ export class WebpackBundler {
     return config.config()
   }
 
-  async build() {
+  async build () {
     const { options } = this.buildContext
 
     const webpackConfigs = [
@@ -100,7 +100,7 @@ export class WebpackBundler {
     await runner(this.compilers, compiler => this.webpackCompile(compiler))
   }
 
-  async webpackCompile(compiler) {
+  async webpackCompile (compiler) {
     const { name } = compiler.options
     const { nuxt, options } = this.buildContext
 
@@ -146,19 +146,19 @@ export class WebpackBundler {
     const stats = await compiler.run()
 
     if (stats.hasErrors()) {
+      // non-quiet mode: errors will be printed by webpack itself
+      const error = new Error('Nuxt build error')
       if (options.build.quiet === true) {
-        return Promise.reject(stats.toString(options.build.stats))
+        error.stack = stats.toString('errors-only')
       }
-
-      // Actual error will be printed by webpack
-      throw new Error('Nuxt Build Error')
+      throw error
     }
 
     // Await for renderer to load resources (programmatic, tests and generate)
     await nuxt.callHook('build:resources')
   }
 
-  async webpackDev(compiler) {
+  async webpackDev (compiler) {
     consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
@@ -168,42 +168,34 @@ export class WebpackBundler {
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
-        compiler,
-        Object.assign(
-          {
-            publicPath: buildOptions.publicPath,
-            stats: false,
-            logLevel: 'silent',
-            watchOptions: this.buildContext.options.watchers.webpack
-          },
-          buildOptions.devMiddleware
-        )
-      )
+        compiler, {
+          publicPath: buildOptions.publicPath,
+          stats: false,
+          logLevel: 'silent',
+          watchOptions: this.buildContext.options.watchers.webpack,
+          ...buildOptions.devMiddleware
+        })
     )
 
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
+    this.compilersWatching.push(this.devMiddleware[name].context.watching)
+
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
-        compiler,
-        Object.assign(
-          {
-            log: false,
-            heartbeat: 10000
-          },
-          hotMiddlewareOptions,
-          {
-            path: `/__webpack_hmr/${name}`
-          }
-        )
-      )
+        compiler, {
+          log: false,
+          heartbeat: 10000,
+          path: `/__webpack_hmr/${name}`,
+          ...hotMiddlewareOptions
+        })
     )
 
     // Register devMiddleware on server
     await this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
   }
 
-  async middleware(req, res, next) {
+  async middleware (req, res, next) {
     const name = isModernRequest(req, this.buildContext.options.modern) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
@@ -217,11 +209,19 @@ export class WebpackBundler {
     next()
   }
 
-  async unwatch() {
+  async unwatch () {
     await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
-  async close() {
+  pauseWatch () {
+    this.compilersWatching.forEach(watching => watching.suspend())
+  }
+
+  resumeWatch () {
+    this.compilersWatching.forEach(watching => watching.resume())
+  }
+
+  async close () {
     if (this.__closed) {
       return
     }
@@ -252,7 +252,7 @@ export class WebpackBundler {
     delete this.hotMiddleware
   }
 
-  forGenerate() {
+  forGenerate () {
     this.buildContext.isStatic = true
   }
 }

@@ -14,7 +14,10 @@ export default {
   router: {
     base: '/test/',
     middleware: 'noop',
-    extendRoutes(routes) {
+    scrollBehavior (to, from, savedPosition) {
+      return { x: 0, y: 0 }
+    },
+    extendRoutes (routes) {
       return [
         ...routes,
         {
@@ -73,12 +76,12 @@ export default {
       css: './assets/pre-process.css'
     },
     babel: {
-      presets({ isServer }) {
+      presets ({ isServer }) {
         return null // Coverage: Return null, so defaults will be used.
       }
     },
     transpile: 'vue-test',
-    extend(config, options) {
+    extend (config, options) {
       return Object.assign({}, config, {
         devtool: '#source-map'
       })
@@ -96,7 +99,7 @@ export default {
         return ['script', 'style', 'font'].includes(type)
       }
     },
-    compressor: function damn(...args) { return compression({ threshold: 9 })(...args) },
+    compressor: function damn (...args) { return compression({ threshold: 9 })(...args) },
     static: {
       maxAge: '1y'
     }

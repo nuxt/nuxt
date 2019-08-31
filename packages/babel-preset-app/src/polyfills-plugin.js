@@ -4,7 +4,7 @@ module.exports = ({ types }) => {
   return {
     name: 'inject-polyfills',
     visitor: {
-      Program(path, state) {
+      Program (path, state) {
         if (!entryFile) {
           entryFile = state.filename
         } else if (state.filename !== entryFile) {

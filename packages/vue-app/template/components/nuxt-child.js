@@ -56,12 +56,17 @@ export default {
     // make sure that leave is called asynchronous (fix #5703)
     if (transition.css === false) {
       const leave = listeners.leave
-      listeners.leave = (el, done) => {
-        if (leave) {
-          leave.call(_parent, el)
-        }
 
-        _parent.$nextTick(done)
+      // only add leave listener when user didnt provide one
+      // or when it misses the done argument
+      if (!leave || leave.length < 2) {
+        listeners.leave = (el, done) => {
+          if (leave) {
+            leave.call(_parent, el)
+          }
+
+          _parent.$nextTick(done)
+        }
       }
     }
 

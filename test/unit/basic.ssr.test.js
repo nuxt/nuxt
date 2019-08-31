@@ -84,9 +84,7 @@ describe('basic ssr', () => {
 
     const html = window.document.body.innerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
-    expect(
-      html.includes('<script data-n-head="true" src="/body.js" data-body="true">')
-    ).toBe(true)
+    expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
@@ -168,11 +166,11 @@ describe('basic ssr', () => {
     let _headers, _status
     const { html } = await nuxt.server.renderRoute('/redirect-external', {
       res: {
-        writeHead(status, headers) {
+        writeHead (status, headers) {
           _status = status
           _headers = headers
         },
-        end() { }
+        end () { }
       }
     })
     expect(_status).toBe(302)
@@ -264,6 +262,19 @@ describe('basic ssr', () => {
     expect(redirected.status === 302).toBe(true)
   })
 
+  test('/client-only', async () => {
+    const { html } = await nuxt.server.renderRoute('/client-only')
+    expect(html.includes(
+      '<p class="client-only-placeholder">Loading...</p>'
+    )).toBe(true)
+  })
+
+  test('/client-only (client-side)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/client-only'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Displayed only on client-side</h1>')
+  })
+
   test('/no-ssr', async () => {
     const { html } = await nuxt.server.renderRoute('/no-ssr')
     expect(html.includes(
@@ -275,6 +286,10 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html).toContain('Displayed only on client-side</h1>')
+    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('<no-ssr> has been deprecated')
+    )
   })
 
   test('ETag Header', async () => {

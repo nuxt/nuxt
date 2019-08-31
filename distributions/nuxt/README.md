@@ -9,9 +9,11 @@
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#partners" alt="Partner on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/partner/badge.svg" /></a>
-  <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/sponsors/badge.svg" /></a>
-  <a href="#backers" alt="Backers on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/backers/badge.svg" /></a>
+  <a href="#platinium-sponsors" alt="Platinium Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/platinium-sponsors/badge.svg" /></a>
+  <a href="#gold-sponsors" alt="Gold Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/gold-sponsors/badge.svg" /></a>
+  <a href="#silver-sponsors" alt="Silver Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/silver-sponsors/badge.svg" /></a>
+  <a href="#bronze-sponsors" alt="Bronze Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/bronze-sponsors/badge.svg" /></a>
+  <a href="#nuxters" alt="Nuxters on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/nuxters/badge.svg" /></a>
   <a href="https://oc.nuxtjs.org/"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 </p>
 <p align="center">
@@ -56,23 +58,32 @@ Tidelift gives software development teams a single source for purchasing and mai
 
 [Get supported Nuxt with the Tidelift Subscription](https://tidelift.com/subscription/pkg/npm-nuxt?utm_source=npm-nuxt&utm_medium=readme).
 
-## Partners
+## Supporting Nuxt.js
 
-Become a partner and get your logo on our README on GitHub and every page of <https://nuxtjs.org> website with a link to your site. [[Become a partner](https://opencollective.com/nuxtjs#partner)]
+Nuxt.js is an MIT-licensed open source project with its ongoing development made possible entirely by the support of these awesome backers.
+Funds donated via OpenCollective are managed with transparent expenses and will be used for compensating work and expenses for core team members or sponsoring community events.
 
-[![Open Collective Partners][partners-src]][partners-href]
+Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#contribute)]
 
-## Sponsors
+### Platinium Sponsors
 
-Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/nuxtjs#sponsor)]
+[![Open Collective Platinium Sponsors][platinium-sponsors-src]][platinium-sponsors-href]
 
-[![Open Collective Sponsors][sponsors-src]][sponsors-href]
+### Gold Sponsors
 
-## Backers
+[![Open Collective Gold Sponsors][gold-sponsors-src]][gold-sponsors-href]
 
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#backer)]
+### Silver Sponsors
 
-[![Open Collective Sponsors][backers-src]][backers-href]
+[![Open Collective Silver Sponsors][silver-sponsors-src]][silver-sponsors-href]
+
+### Bronze Sponsors
+
+[![Open Collective Bronze Sponsors][bronze-sponsors-src]][bronze-sponsors-href]
+
+### Nuxters
+
+[![Open Collective Nuxters][nuxters-src]][nuxters-href]
 
 ## Getting started
 
@@ -213,11 +224,15 @@ If you discover a security vulnerability regarding Nuxt.js, please send an e-mai
 [MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE)
 
 <!-- Open Collective Tiers -->
-[partners-src]: https://opencollective.com/nuxtjs/tiers/partner.svg?avatarHeight=96&width=890&button=false
-[partners-href]: https://opencollective.com/nuxtjs#contributors
-[sponsors-src]: https://opencollective.com/nuxtjs/tiers/sponsors.svg?avatarHeight=72&width=890&button=false
-[sponsors-href]: https://opencollective.com/nuxtjs#contributors
-[backers-src]: https://opencollective.com/nuxtjs/tiers/backers.svg?width=890&button=false
-[backers-href]: https://opencollective.com/nuxtjs#contributors
+[platinium-sponsors-src]: https://opencollective.com/nuxtjs/tiers/platinium-sponsors.svg?avatarHeight=96&width=890
+[platinium-sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[gold-sponsors-src]: https://opencollective.com/nuxtjs/tiers/gold-sponsors.svg?avatarHeight=80&width=890
+[gold-sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[silver-sponsors-src]: https://opencollective.com/nuxtjs/tiers/silver-sponsors.svg?avatarHeight=64&width=890
+[silver-sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[bronze-sponsors-src]: https://opencollective.com/nuxtjs/tiers/bronze-sponsors.svg?avatarHeight=48&width=890
+[bronze-sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[nuxters-src]: https://opencollective.com/nuxtjs/tiers/nuxters.svg?width=890&button=false
+[nuxters-href]: https://opencollective.com/nuxtjs#contributors
 [contributors-src]: https://opencollective.com/nuxtjs/contributors.svg?width=890&button=false
 [contributors-href]: https://github.com/nuxt/nuxt.js/graphs/contributors

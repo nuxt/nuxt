@@ -7,10 +7,10 @@ let date
 
 export default {
   middleware: ({ query, error }) => {
-    if (!query.please) return error({ message: 'You need to ask the permission', statusCode: 403 })
+    if (!query.please) { return error({ message: 'You need to ask the permission', statusCode: 403 }) }
     date = Date.now()
   },
-  asyncData() {
+  asyncData () {
     return { date }
   }
 }

@@ -1,11 +1,11 @@
 import HTMLPlugin from 'html-webpack-plugin'
 
 export default class CorsPlugin {
-  constructor({ crossorigin }) {
+  constructor ({ crossorigin }) {
     this.crossorigin = crossorigin
   }
 
-  apply(compiler) {
+  apply (compiler) {
     const ID = `vue-cors-plugin`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data, cb) => {

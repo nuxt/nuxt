@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import { r } from './resolve'
 
-export const flatRoutes = function flatRoutes(router, fileName = '', routes = []) {
+export const flatRoutes = function flatRoutes (router, fileName = '', routes = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
@@ -25,7 +25,7 @@ export const flatRoutes = function flatRoutes(router, fileName = '', routes = []
   return routes
 }
 
-function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
+function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') {
   let start = -1
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const routesIndex = []
@@ -74,7 +74,7 @@ function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
 
 const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
 
-const sortRoutes = function sortRoutes(routes) {
+const sortRoutes = function sortRoutes (routes) {
   routes.sort((a, b) => {
     if (!a.path.length) {
       return -1
@@ -131,12 +131,12 @@ const sortRoutes = function sortRoutes(routes) {
   return routes
 }
 
-export const createRoutes = function createRoutes({
+export const createRoutes = function createRoutes ({
   files,
   srcDir,
   pagesDir = '',
   routeNameSplitter = '-',
-  supportedExtensions = ['vue', 'js', 'ts', 'tsx']
+  supportedExtensions = ['vue', 'js']
 }) {
   const routes = []
   files.forEach((file) => {
@@ -181,7 +181,7 @@ export const createRoutes = function createRoutes({
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed
-export const guardDir = function guardDir(options, key1, key2) {
+export const guardDir = function guardDir (options, key1, key2) {
   const dir1 = get(options, key1, false)
   const dir2 = get(options, key2, false)
 
@@ -214,7 +214,7 @@ const getRoutePathExtension = (key) => {
   return key
 }
 
-export const promisifyRoute = function promisifyRoute(fn, ...args) {
+export const promisifyRoute = function promisifyRoute (fn, ...args) {
   // If routes is an array
   if (Array.isArray(fn)) {
     return Promise.resolve(fn)

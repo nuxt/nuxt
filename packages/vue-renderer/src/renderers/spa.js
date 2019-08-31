@@ -1,5 +1,5 @@
 import { extname } from 'path'
-import Vue from 'vue'
+import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
@@ -7,35 +7,25 @@ import { isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
-  constructor(serverContext) {
+  constructor (serverContext) {
     super(serverContext)
 
     this.cache = new LRU()
 
-    // Add VueMeta to Vue (this is only for SPA mode)
-    // See app/index.js
-    Vue.use(VueMeta, {
+    this.vueMetaConfig = {
       keyName: 'head',
       attribute: 'data-n-head',
       ssrAttribute: 'data-n-head-ssr',
+      ssrAppId: '1',
       tagIDKeyName: 'hid'
-    })
+    }
   }
 
-  createRenderer() {
+  createRenderer () {
     return createRenderer()
   }
 
-  async getMeta() {
-    const vm = new Vue({
-      render: h => h(), // Render empty html tag
-      head: this.options.head || {}
-    })
-    await this.vueRenderer.renderToString(vm)
-    return vm.$meta().inject()
-  }
-
-  async render(renderContext) {
+  async render (renderContext) {
     const { url = '/', req = {}, _generate } = renderContext
     const modernMode = this.options.modern
     const modern = (modernMode && _generate) || isModernRequest(req, modernMode)
@@ -43,7 +33,9 @@ export default class SPARenderer extends BaseRenderer {
     let meta = this.cache.get(cacheKey)
 
     if (meta) {
-      return meta
+      // Return a copy of the content, so that future
+      // modifications do not effect the data in cache
+      return cloneDeep(meta)
     }
 
     meta = {
@@ -51,11 +43,19 @@ export default class SPARenderer extends BaseRenderer {
       HEAD_ATTRS: '',
       BODY_ATTRS: '',
       HEAD: '',
+      BODY_SCRIPTS_PREPEND: '',
       BODY_SCRIPTS: ''
     }
 
     // Get vue-meta context
-    const m = await this.getMeta()
+    let head
+    if (typeof this.options.head === 'function') {
+      head = this.options.head()
+    } else {
+      head = this.options.head
+    }
+
+    const m = VueMeta.generate(head || {}, this.vueMetaConfig)
 
     // HTML_ATTRS
     meta.HTML_ATTRS = m.htmlAttrs.text()
@@ -75,11 +75,23 @@ export default class SPARenderer extends BaseRenderer {
       m.script.text() +
       m.noscript.text()
 
-    // BODY_SCRIPTS
-    meta.BODY_SCRIPTS = m.script.text({ body: true }) + m.noscript.text({ body: true })
+    // BODY_SCRIPTS (PREPEND)
+    meta.BODY_SCRIPTS_PREPEND =
+      m.meta.text({ pbody: true }) +
+      m.link.text({ pbody: true }) +
+      m.style.text({ pbody: true }) +
+      m.script.text({ pbody: true }) +
+      m.noscript.text({ pbody: true })
+
+    // BODY_SCRIPTS (APPEND)
+    meta.BODY_SCRIPTS =
+      m.meta.text({ body: true }) +
+      m.link.text({ body: true }) +
+      m.style.text({ body: true }) +
+      m.script.text({ body: true }) +
+      m.noscript.text({ body: true })
 
     // Resources Hints
-
     meta.resourceHints = ''
 
     const { resources: { modernManifest, clientManifest } } = this.serverContext
@@ -106,7 +118,8 @@ export default class SPARenderer extends BaseRenderer {
             if (asType === 'font') {
               extra = ` type="font/${extension}"${cors ? '' : ' crossorigin'}`
             }
-            return `<link rel="${modern ? 'module' : ''}preload"${cors} href="${publicPath}${file}"${
+            const rel = modern && asType === 'script' ? 'modulepreload' : 'preload'
+            return `<link rel="${rel}"${cors} href="${publicPath}${file}"${
               asType !== '' ? ` as="${asType}"` : ''}${extra}>`
           })
           .join('')
@@ -127,7 +140,7 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {
@@ -149,10 +162,12 @@ export default class SPARenderer extends BaseRenderer {
     // Set meta tags inside cache
     this.cache.set(cacheKey, content)
 
-    return content
+    // Return a copy of the content, so that future
+    // modifications do not effect the data in cache
+    return cloneDeep(content)
   }
 
-  static normalizeFile(file) {
+  static normalizeFile (file) {
     const withoutQuery = file.replace(/\?.*/, '')
     const extension = extname(withoutQuery).slice(1)
     return {
@@ -163,7 +178,7 @@ export default class SPARenderer extends BaseRenderer {
     }
   }
 
-  static getPreloadType(ext) {
+  static getPreloadType (ext) {
     if (ext === 'js') {
       return 'script'
     } else if (ext === 'css') {

@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  asyncData() {
+  asyncData () {
     return {
       name: process.static ? 'static' : (process.server ? 'server' : 'client')
     }

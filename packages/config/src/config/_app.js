@@ -23,7 +23,7 @@ export default () => ({
   css: [],
 
   modules: [],
-  devModules: [],
+  buildModules: [],
 
   layouts: {},
 
