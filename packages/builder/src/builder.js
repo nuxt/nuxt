@@ -338,12 +338,14 @@ export default class Builder {
 
   async resolveRoutes ({ templateVars }) {
     consola.debug('Generating routes...')
+    const { routeNameSplitter, trailingSlash } = this.options.router
 
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes({
         files: ['index.vue'],
         srcDir: this.template.dir + '/pages',
-        routeNameSplitter: this.options.router.routeNameSplitter
+        routeNameSplitter,
+        trailingSlash
       })
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
@@ -360,8 +362,9 @@ export default class Builder {
         files: Object.values(files),
         srcDir: this.options.srcDir,
         pagesDir: this.options.dir.pages,
-        routeNameSplitter: this.options.router.routeNameSplitter,
-        supportedExtensions: this.supportedExtensions
+        routeNameSplitter,
+        supportedExtensions: this.supportedExtensions,
+        trailingSlash
       })
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
