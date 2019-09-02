@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/core",
-  "version": "2.8.1",
+  "version": "2.9.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -8,15 +8,16 @@
   ],
   "main": "dist/core.js",
   "dependencies": {
-    "@nuxt/config": "2.8.1",
+    "@nuxt/config": "2.9.2",
     "@nuxt/devalue": "^1.2.4",
-    "@nuxt/server": "2.8.1",
-    "@nuxt/utils": "2.8.1",
-    "@nuxt/vue-renderer": "2.8.1",
+    "@nuxt/server": "2.9.2",
+    "@nuxt/utils": "2.9.2",
+    "@nuxt/vue-renderer": "2.9.2",
     "consola": "^2.10.1",
     "debug": "^4.1.1",
     "esm": "^3.2.25",
     "fs-extra": "^8.1.0",
+    "hable": "^2.3.2",
     "hash-sum": "^2.0.0",
     "std-env": "^2.2.1"
   },

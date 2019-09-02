@@ -140,15 +140,21 @@ async function loadAsyncComponents(to, from, next) {
   <% } %>
 
   try {
-    const Components = await resolveRouteComponents(to)
+    const Components = await resolveRouteComponents(
+      to,
+      (Component, instance) => ({ Component, instance })
+    )
     <% if (loading) { %>
     if (!this._pathChanged && this._queryChanged) {
       // Add a marker on each component that it needs to refresh or not
-      const startLoader = Components.some((Component) => {
+      const startLoader = Components.some(({Component, instance}) => {
         const watchQuery = Component.options.watchQuery
-        if (watchQuery === true) return true
-        if (Array.isArray(watchQuery)) {
+        if (watchQuery === true) {
+          return true
+        } else if (Array.isArray(watchQuery)) {
           return watchQuery.some(key => this._diffQuery[key])
+        } else if (typeof watchQuery === 'function') {
+          return watchQuery.apply(instance, [to.query, from.query])
         }
         return false
       })
@@ -350,6 +356,7 @@ async function render(to, from, next) {
       return next()
     }
 
+    let instances
     // Call asyncData & fetch hooks on components matched by the route.
     await Promise.all(Components.map((Component, i) => {
       // Check if only children route changed
@@ -365,6 +372,11 @@ async function render(to, from, next) {
           Component._dataRefresh = true
         } else if (Array.isArray(watchQuery)) {
           Component._dataRefresh = watchQuery.some(key => this._diffQuery[key])
+        } else if (typeof watchQuery === 'function') {
+          if (!instances) {
+            instances = getMatchedComponentsInstances(to)
+          }
+          Component._dataRefresh = watchQuery.apply(instances[i], [to.query, from.query])
         }
       }
       if (!this._hadError && this._isMounted && !Component._dataRefresh) {
@@ -485,18 +497,13 @@ function showNextPage(to) {
 function fixPrepatch(to, ___) {
   if (this._pathChanged === false && this._queryChanged === false) return
 
-  const matches = []
-  const instances = getMatchedComponentsInstances(to, matches)
-  const Components = getMatchedComponents(to, matches)
+  const instances = getMatchedComponentsInstances(to)
+  const Components = getMatchedComponents(to)
 
   Vue.nextTick(() => {
     instances.forEach((instance, i) => {
       if (!instance || instance._isDestroyed) return
-      // if (
-      //   !this._queryChanged &&
-      //   to.matched[matches[i]].path.indexOf(':') === -1 &&
-      //   to.matched[matches[i]].path.indexOf('*') === -1
-      // ) return // If not a dynamic route, skip
+
       if (
         instance.constructor._dataRefresh &&
         Components[i] === instance.constructor &&

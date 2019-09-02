@@ -32,6 +32,7 @@ describe('generator: generate route', () => {
     const nuxt = createNuxt()
     nuxt.options.build.html = { minify: false }
     nuxt.options.generate.minify = undefined
+    nuxt.options.generate.subFolders = false
     const generator = new Generator(nuxt)
     path.join.mockClear()
 

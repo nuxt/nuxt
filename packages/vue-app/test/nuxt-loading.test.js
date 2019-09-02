@@ -1,11 +1,9 @@
 /**
  * @jest-environment jsdom
  */
-import { resolve } from 'path'
 import { mount, createLocalVue } from '@vue/test-utils'
 import { renderToString } from '@vue/server-test-utils'
-import { loadFixture } from '../../../test/utils'
-import { vmTick } from './__utils__'
+import { compileTemplate, importComponent, vmTick } from './__utils__'
 
 jest.useFakeTimers()
 
@@ -14,11 +12,10 @@ describe('nuxt-loading', () => {
   let Component
 
   beforeAll(async () => {
-    const config = await loadFixture('basic')
-    const componentDir = resolve(config.rootDir, '.nuxt/components')
+    const compiledTemplate = await compileTemplate('components/nuxt-loading.vue')
+    Component = await importComponent(compiledTemplate)
 
     localVue = createLocalVue()
-    Component = (await import(resolve(componentDir, 'nuxt-loading.vue'))).default
   })
 
   afterEach(() => jest.clearAllTimers())
