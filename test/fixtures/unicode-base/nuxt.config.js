@@ -1,5 +1,5 @@
 export default {
-  modern: 'server',
+  modern: false,
   router: {
     base: '/%C3%B6/'
   },
@@ -27,6 +27,17 @@ export default {
   },
   build: {
     indicator: false,
-    terser: true
+    terser: true,
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          nuxtApp: {
+            test: /[\\/]\.nuxt[\\/]/,
+            filename: 'vue-app.nuxt.js',
+            enforce: true
+          }
+        }
+      }
+    }
   }
 }

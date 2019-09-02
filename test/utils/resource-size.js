@@ -7,9 +7,12 @@ const gzip = pify(zlib.gzip)
 const brotli = pify(zlib.brotliCompress)
 const compressSize = (input, compressor) => compressor(input).then(data => data.length)
 
-export const getResourcesSize = async (distDir, mode) => {
+export const getResourcesSize = async (distDir, mode, filter) => {
+  if (!filter) {
+    filter = filename => filename.endsWith('.js')
+  }
   const { all } = await import(resolve(distDir, 'server', `${mode}.manifest.json`))
-  const resources = all.filter(filename => filename.endsWith('.js'))
+  const resources = all.filter(filter)
   const sizes = { uncompressed: 0, gzip: 0, brotli: 0 }
   for (const resource of resources) {
     const file = resolve(distDir, 'client', resource)
