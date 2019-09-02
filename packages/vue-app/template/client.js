@@ -666,7 +666,7 @@ function addHotReload($component, depth) {
       <% if (features.layouts) { %>
       // If layout changed
       if (depth !== 0) {
-        return true
+        return
       }
 
       let layout = Component.options.layout || 'default'
@@ -674,7 +674,7 @@ function addHotReload($component, depth) {
         layout = layout(context)
       }
       if (this.layoutName === layout) {
-        return true
+        return
       }
       let promise = this.loadLayout(layout)
       promise.then(() => {
@@ -683,7 +683,7 @@ function addHotReload($component, depth) {
       })
       return promise
       <% } else { %>
-      return true
+      return
       <% } %>
     })
     <% if (features.layouts) { %>
