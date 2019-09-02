@@ -31,7 +31,7 @@ describe('builder: builder plugins', () => {
     const plugins = await builder.normalizePlugins()
 
     expect(nuxt.callHook).toBeCalledTimes(1)
-    expect(nuxt.callHook).toBeCalledWith('build:extendPlugins', nuxt.options.plugins)
+    expect(nuxt.callHook).toBeCalledWith('builder:extendPlugins', nuxt.options.plugins)
 
     expect(plugins).toEqual([
       {

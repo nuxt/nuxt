@@ -251,7 +251,7 @@ export default class Builder {
   async normalizePlugins () {
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
-    await this.nuxt.callHook('build:extendPlugins', this.options.plugins)
+    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
     return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {
