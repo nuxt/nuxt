@@ -51,7 +51,7 @@ describe('builder: builder build', () => {
     expect(nuxt.ready).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledTimes(3)
     expect(nuxt.callHook).nthCalledWith(1, 'build:before', builder, nuxt.options.build)
-    expect(nuxt.callHook).nthCalledWith(2, 'build:ready', builder, nuxt.options.build)
+    expect(nuxt.callHook).nthCalledWith(2, 'builder:prepared', builder, nuxt.options.build)
     expect(builder.validatePages).toBeCalledTimes(1)
     expect(builder.validateTemplate).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)

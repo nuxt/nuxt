@@ -152,7 +152,7 @@ export default class Builder {
     await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
 
     // Call ready hook
-    await this.nuxt.callHook('build:ready', this, this.options.build)
+    await this.nuxt.callHook('builder:prepared', this, this.options.build)
 
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
