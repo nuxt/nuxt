@@ -66,14 +66,10 @@ export default () => ({
     validate: true,
     asyncData: true,
     fetch: true,
-    client: {
-      online: true,
-      prefetch: true,
-      useUrl: false
-    },
-    components: {
-      aliases: true,
-      clientOnly: true
-    }
+    clientOnline: true,
+    clientPrefetch: true,
+    clientUseUrl: false,
+    componentAliases: true,
+    componentClientOnly: true
   }
 })

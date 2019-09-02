@@ -73,9 +73,9 @@ export default {
       <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
     ])
   },
-  <% if (features.client.online || features.layouts) { %>
+  <% if (features.clientOnline || features.layouts) { %>
   data: () => ({
-    <% if (features.client.online) { %>
+    <% if (features.clientOnline) { %>
     isOnline: true,
     <% } %>
     <% if (features.layouts) { %>
@@ -93,7 +93,7 @@ export default {
     // add to window so we can listen when ready
     if (process.client) {
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
-      <% if (features.client.online) { %>
+      <% if (features.clientOnline) { %>
       this.refreshOnlineStatus()
       // Setup the listeners
       window.addEventListener('online', this.refreshOnlineStatus)
@@ -113,7 +113,7 @@ export default {
     'nuxt.err': 'errorChanged'
   },
   <% } %>
-  <% if (features.client.online) { %>
+  <% if (features.clientOnline) { %>
   computed: {
     isOffline() {
       return !this.isOnline
@@ -121,7 +121,7 @@ export default {
   },
   <% } %>
   methods: {
-    <% if (features.client.online) { %>
+    <% if (features.clientOnline) { %>
     refreshOnlineStatus() {
       if (process.client) {
         if (typeof window.navigator.onLine === 'undefined') {

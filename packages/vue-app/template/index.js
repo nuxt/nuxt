@@ -1,6 +1,6 @@
 import Vue from 'vue'
 <% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
-<% if (features.components.clientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
+<% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
 <% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
 import { createRouter } from './router.js'
 import NuxtChild from './components/nuxt-child.js'
@@ -16,7 +16,7 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
-<% if (features.components.clientOnly) { %>
+<% if (features.componentClientOnly) { %>
 // Component: <ClientOnly>
 Vue.component(ClientOnly.name, ClientOnly)
 <% } %>
@@ -35,7 +35,7 @@ Vue.component(NoSsr.name, {
 <% } %>
 // Component: <NuxtChild>
 Vue.component(NuxtChild.name, NuxtChild)
-<% if (features.components.aliases) { %>Vue.component('NChild', NuxtChild)<% } %>
+<% if (features.componentAliases) { %>Vue.component('NChild', NuxtChild)<% } %>
 
 // Component NuxtLink is imported in server.js or client.js
 

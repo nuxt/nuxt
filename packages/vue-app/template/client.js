@@ -17,7 +17,7 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp, NuxtError } from './index.js'
-import NuxtLink from './components/nuxt-link.<%= features.client.prefetch && router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch && router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
 <% if (isDev) { %>import consola from 'consola'<% } %>
 
 <% if (isDev) { %>consola.wrapConsole()
@@ -26,7 +26,7 @@ console.log = console.__log
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
-<% if (features.components.aliases) { %>Vue.component('NLink', NuxtLink)<% } %>
+<% if (features.componentAliases) { %>Vue.component('NLink', NuxtLink)<% } %>
 
 <% if (fetch.client) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 

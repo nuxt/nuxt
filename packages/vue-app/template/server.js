@@ -14,7 +14,7 @@ import NuxtLink from './components/nuxt-link.server.js' // should be included af
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
-<% if (features.components.aliases) { %>Vue.component('NLink', NuxtLink)<% } %>
+<% if (features.componentAliases) { %>Vue.component('NLink', NuxtLink)<% } %>
 
 <% if (fetch.server) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
@@ -84,6 +84,7 @@ export default async (ssrContext) => {
     }
     <% } %>
   }
+
   const renderErrorPage = async () => {
     <% if (features.layouts) { %>
     // Load layout for error page

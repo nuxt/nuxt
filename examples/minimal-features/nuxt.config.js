@@ -15,21 +15,14 @@ export default {
     validate: false,
     asyncData: false,
     fetch: false,
-    client: {
-      online: false,
-      prefetch: false,
-      useUrl: true
-    },
-    components: {
-      aliases: false,
-      clientOnly: false
-    }
+    clientOnline: false,
+    clientPrefetch: false,
+    clientUseUrl: true,
+    componentAliases: false,
+    componentClientOnly: false
   },
   build: {
     indicator: false,
-    terser: true,
-    cache: false,
-    hardSource: false,
-    parallel: false
+    terser: true
   }
 }

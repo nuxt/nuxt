@@ -167,15 +167,11 @@ Object {
   ],
   "features": Object {
     "asyncData": true,
-    "client": Object {
-      "online": true,
-      "prefetch": true,
-      "useUrl": false,
-    },
-    "components": Object {
-      "aliases": true,
-      "clientOnly": true,
-    },
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
     "deprecations": true,
     "fetch": true,
     "layouts": true,

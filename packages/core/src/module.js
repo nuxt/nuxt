@@ -14,15 +14,15 @@ export default class ModuleContainer {
 
   async ready () {
     // Call before hook
-    await this.nuxt.callHook('modules:before', this, this.options.modules)
+    await this.nuxt.callHook('modules:before', this, this.nuxt.options.modules)
 
-    if (this.options.buildModules && !this.options._start) {
+    if (this.nuxt.options.buildModules && !this.nuxt.options._start) {
       // Load every devModule in sequence
-      await sequence(this.options.buildModules, this.addModule.bind(this))
+      await sequence(this.nuxt.options.buildModules, this.addModule.bind(this))
     }
 
     // Load every module in sequence
-    await sequence(this.options.modules, this.addModule.bind(this))
+    await sequence(this.nuxt.options.modules, this.addModule.bind(this))
 
     // Call done hook
     await this.nuxt.callHook('modules:done', this)
@@ -57,7 +57,7 @@ export default class ModuleContainer {
       options: template.options
     }
 
-    this.options.build.templates.push(templateObj)
+    this.nuxt.options.build.templates.push(templateObj)
     return templateObj
   }
 
@@ -65,8 +65,8 @@ export default class ModuleContainer {
     const { dst } = this.addTemplate(template)
 
     // Add to nuxt plugins
-    this.options.plugins.unshift({
-      src: path.join(this.options.buildDir, dst),
+    this.nuxt.options.plugins.unshift({
+      src: path.join(this.nuxt.options.buildDir, dst),
       // TODO: remove deprecated option in Nuxt 3
       ssr: template.ssr,
       mode: template.mode
@@ -76,14 +76,14 @@ export default class ModuleContainer {
   addLayout (template, name) {
     const { dst, src } = this.addTemplate(template)
     const layoutName = name || path.parse(src).name
-    const layout = this.options.layouts[layoutName]
+    const layout = this.nuxt.options.layouts[layoutName]
 
     if (layout) {
       consola.warn(`Duplicate layout registration, "${layoutName}" has been registered as "${layout}"`)
     }
 
     // Add to nuxt layouts
-    this.options.layouts[layoutName] = `./${dst}`
+    this.nuxt.options.layouts[layoutName] = `./${dst}`
 
     // If error layout, set ErrorPage
     if (name === 'error') {
@@ -92,21 +92,21 @@ export default class ModuleContainer {
   }
 
   addErrorLayout (dst) {
-    const relativeBuildDir = path.relative(this.options.rootDir, this.options.buildDir)
-    this.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
+    const relativeBuildDir = path.relative(this.nuxt.options.rootDir, this.nuxt.options.buildDir)
+    this.nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
   }
 
   addServerMiddleware (middleware) {
-    this.options.serverMiddleware.push(middleware)
+    this.nuxt.options.serverMiddleware.push(middleware)
   }
 
   extendBuild (fn) {
-    this.options.build.extend = chainFn(this.options.build.extend, fn)
+    this.nuxt.options.build.extend = chainFn(this.nuxt.options.build.extend, fn)
   }
 
   extendRoutes (fn) {
-    this.options.router.extendRoutes = chainFn(
-      this.options.router.extendRoutes,
+    this.nuxt.options.router.extendRoutes = chainFn(
+      this.nuxt.options.router.extendRoutes,
       fn
     )
   }
@@ -137,7 +137,7 @@ export default class ModuleContainer {
     }
 
     // Prevent adding buildModules-listed entries in production
-    if (this.options.buildModules.includes(handler) && this.options._start) {
+    if (this.nuxt.options.buildModules.includes(handler) && this.nuxt.options._start) {
       return
     }
 

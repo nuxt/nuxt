@@ -538,7 +538,7 @@ function tokensToFunction(tokens) {
  * @return {string}
  */
 function formatUrl(url, query) {
-  <% if (features.client.useUrl) { %>
+  <% if (features.clientUseUrl) { %>
   url = new URL(url, top.location.href)
   for (const key in query) {
     const value = query[key]
@@ -585,7 +585,7 @@ function formatUrl(url, query) {
   return result
   <% } %>
 }
-<% if (!features.client.useUrl) { %>
+<% if (!features.clientUseUrl) { %>
 /**
  * Transform data object to query string
  *
