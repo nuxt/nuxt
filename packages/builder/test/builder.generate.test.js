@@ -171,18 +171,25 @@ describe('builder: builder generate', () => {
   test('should resolve middleware', async () => {
     const nuxt = createNuxt()
     nuxt.options.store = false
+    nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = {
-      middleware: '/var/nuxt/src/middleware'
+      middleware: 'middleware'
     }
+    const middlewarePath = 'subfolder/midd.js'
     const builder = new Builder(nuxt, BundleBuilder)
     builder.resolveRelative = jest.fn(dir => [
-      { src: `${dir}/midd.js` }
+      { src: middlewarePath }
     ])
+    builder.relativeToBuild = jest.fn().mockReturnValue(middlewarePath)
 
     const templateVars = {}
     await builder.resolveMiddleware({ templateVars })
 
-    expect(templateVars.middleware).toEqual([ { src: '/var/nuxt/src/middleware/midd.js' } ])
+    expect(templateVars.middleware).toEqual([{
+      name: 'subfolder/midd',
+      src: 'subfolder/midd.js',
+      dst: 'subfolder/midd.js'
+    }])
   })
 
   test('should custom templates', async () => {

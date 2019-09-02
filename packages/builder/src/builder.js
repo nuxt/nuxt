@@ -419,7 +419,15 @@ export default class Builder {
 
   async resolveMiddleware ({ templateVars }) {
     // -- Middleware --
-    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
+    const middleware = await this.resolveRelative(this.options.dir.middleware)
+
+    const extRE = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
+
+    templateVars.middleware = middleware.map(({ src }) => {
+      const name = src.replace(extRE, '')
+      const dst = this.relativeToBuild(this.options.srcDir, this.options.dir.middleware, src)
+      return { name, src, dst }
+    })
   }
 
   async resolveCustomTemplates (templateContext) {
