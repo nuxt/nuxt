@@ -309,6 +309,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -658,6 +659,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",

@@ -25,8 +25,9 @@ describe('builder: builder generate', () => {
     r.mockImplementation((...args) => `r(${args.join(', ')})`)
     fs.readFile.mockImplementation((...args) => `readFile(${args.join(', ')})`)
     fs.outputFile.mockImplementation((...args) => `outputFile(${args.join(', ')})`)
-    jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
-    jest.spyOn(path, 'resolve').mockImplementation((...args) => `resolve(${args.join(', ')})`)
+    const { join, resolve } = path.posix
+    jest.spyOn(path, 'join').mockImplementation((...args) => join(...args))
+    jest.spyOn(path, 'resolve').mockImplementation((...args) => resolve(...args))
   })
 
   afterAll(() => {
@@ -256,7 +257,7 @@ describe('builder: builder generate', () => {
     await builder.resolveCustomTemplates(templateContext)
 
     expect(templateContext.templateFiles).toEqual([
-      { custom: true, dst: 'foo.js', src: 'r(/var/nuxt/src, app, foo.js)', options: {} },
+      { custom: true, dst: 'foo.js', src: '/var/nuxt/src/app/foo.js', options: {} },
       { custom: true, dst: 'bar.js', src: '/var/nuxt/templates/bar.js', options: {} },
       { custom: true, dst: 'baz.js', src: '/var/nuxt/templates/baz.js', options: {} },
       { custom: false, dst: 'router.js', src: 'r(/var/nuxt/templates, router.js)', options: {} },
@@ -282,12 +283,12 @@ describe('builder: builder generate', () => {
     expect(path.resolve).toBeCalledTimes(1)
     expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', 'test_loading_indicator.html')
     expect(fs.exists).toBeCalledTimes(1)
-    expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/templates, views/loading, test_loading_indicator.html)')
+    expect(fs.exists).toBeCalledWith('/var/nuxt/templates/views/loading/test_loading_indicator.html')
     expect(templateFiles).toEqual([{
       custom: false,
       dst: 'loading.html',
       options: { name: 'test_loading_indicator' },
-      src: 'resolve(/var/nuxt/templates, views/loading, test_loading_indicator.html)'
+      src: '/var/nuxt/templates/views/loading/test_loading_indicator.html'
     }])
   })
 
@@ -310,7 +311,7 @@ describe('builder: builder generate', () => {
     expect(path.resolve).toBeCalledTimes(1)
     expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', '@/app/template.vue.html')
     expect(fs.exists).toBeCalledTimes(2)
-    expect(fs.exists).nthCalledWith(1, 'resolve(/var/nuxt/templates, views/loading, @/app/template.vue.html)')
+    expect(fs.exists).nthCalledWith(1, '/var/nuxt/templates/views/loading/@/app/template.vue.html')
     expect(fs.exists).nthCalledWith(2, 'resolveAlias(@/app/template.vue)')
     expect(templateFiles).toEqual([{
       custom: true,
@@ -339,7 +340,7 @@ describe('builder: builder generate', () => {
     expect(path.resolve).toBeCalledTimes(1)
     expect(path.resolve).toBeCalledWith('/var/nuxt/templates', 'views/loading', '@/app/empty.vue.html')
     expect(fs.exists).toBeCalledTimes(2)
-    expect(fs.exists).nthCalledWith(1, 'resolve(/var/nuxt/templates, views/loading, @/app/empty.vue.html)')
+    expect(fs.exists).nthCalledWith(1, '/var/nuxt/templates/views/loading/@/app/empty.vue.html')
     expect(fs.exists).nthCalledWith(2, 'resolveAlias(@/app/empty.vue)')
     expect(consola.error).toBeCalledTimes(1)
     expect(consola.error).toBeCalledWith('Could not fetch loading indicator: @/app/empty.vue')
@@ -482,7 +483,7 @@ describe('builder: builder generate', () => {
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
       expect(fs.exists).toBeCalledTimes(1)
-      expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
+      expect(fs.exists).toBeCalledWith('/var/nuxt/src/layouts')
       expect(builder.resolveFiles).toBeCalledTimes(1)
       expect(builder.resolveFiles).toBeCalledWith('/var/nuxt/src/layouts')
       expect(builder.relativeToBuild).toBeCalledTimes(2)
@@ -551,7 +552,7 @@ describe('builder: builder generate', () => {
       expect(path.resolve).toBeCalledTimes(1)
       expect(path.resolve).toBeCalledWith('/var/nuxt/src', '/var/nuxt/src/layouts')
       expect(fs.exists).toBeCalledTimes(1)
-      expect(fs.exists).toBeCalledWith('resolve(/var/nuxt/src, /var/nuxt/src/layouts)')
+      expect(fs.exists).toBeCalledWith('/var/nuxt/src/layouts')
       expect(builder.resolveFiles).not.toBeCalled()
       expect(fs.mkdirp).not.toBeCalled()
     })

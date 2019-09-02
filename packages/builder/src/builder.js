@@ -213,6 +213,10 @@ export default class Builder {
     return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
   }
 
+  createTemplateContext () {
+    return new TemplateContext(this, this.options)
+  }
+
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
@@ -223,7 +227,7 @@ export default class Builder {
     // Plugins
     this.plugins = Array.from(this.normalizePlugins())
 
-    const templateContext = new TemplateContext(this, this.options)
+    const templateContext = this.createTemplateContext()
 
     await Promise.all([
       this.resolveLayouts(templateContext),
@@ -349,12 +353,14 @@ export default class Builder {
 
   async resolveRoutes ({ templateVars }) {
     consola.debug('Generating routes...')
+    const { routeNameSplitter, trailingSlash } = this.options.router
 
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes({
         files: ['index.vue'],
         srcDir: this.template.dir + '/pages',
-        routeNameSplitter: this.options.router.routeNameSplitter
+        routeNameSplitter,
+        trailingSlash
       })
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
@@ -371,8 +377,9 @@ export default class Builder {
         files: Object.values(files),
         srcDir: this.options.srcDir,
         pagesDir: this.options.dir.pages,
-        routeNameSplitter: this.options.router.routeNameSplitter,
-        supportedExtensions: this.supportedExtensions
+        routeNameSplitter,
+        supportedExtensions: this.supportedExtensions,
+        trailingSlash
       })
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = this.options.build.createRoutes(
@@ -438,19 +445,16 @@ export default class Builder {
     // Sanitize custom template files
     this.options.build.templates = this.options.build.templates.map((t) => {
       const src = t.src || t
-
-      return Object.assign(
-        {
-          src: r(this.options.srcDir, src),
-          dst: t.dst || path.basename(src),
-          custom: true
-        },
-        typeof t === 'object' ? t : undefined
-      )
+      return {
+        src: r(this.options.srcDir, src),
+        dst: t.dst || path.basename(src),
+        custom: true,
+        ...(typeof t === 'object' ? t : undefined)
+      }
     })
-    const customTemplateFiles = this.options.build.templates.map(
-      t => t.dst || path.basename(t.src || t)
-    )
+
+    const customTemplateFiles = this.options.build.templates.map(t => t.dst || path.basename(t.src || t))
+
     const templatePaths = uniq([
       // Modules & user provided templates
       // first custom to keep their index
@@ -459,20 +463,25 @@ export default class Builder {
       ...templateContext.templateFiles
     ])
 
+    const appDir = path.resolve(this.options.srcDir, this.options.dir.app)
+
     templateContext.templateFiles = await Promise.all(templatePaths.map(async (file) => {
       // Use custom file if provided in build.templates[]
       const customTemplateIndex = customTemplateFiles.indexOf(file)
       const customTemplate = customTemplateIndex !== -1 ? this.options.build.templates[customTemplateIndex] : null
       let src = customTemplate ? (customTemplate.src || customTemplate) : r(this.template.dir, file)
+
       // Allow override templates using a file with same name in ${srcDir}/app
-      const customPath = r(this.options.srcDir, this.options.dir.app, file)
-      const customFileExists = await fsExtra.exists(customPath)
-      src = customFileExists ? customPath : src
+      const customAppFile = path.resolve(this.options.srcDir, this.options.dir.app, file)
+      const customAppFileExists = customAppFile.startsWith(appDir) && await fsExtra.exists(customAppFile)
+      if (customAppFileExists) {
+        src = customAppFile
+      }
 
       return {
         src,
         dst: file,
-        custom: Boolean(customFileExists || customTemplate),
+        custom: Boolean(customAppFileExists || customTemplate),
         options: (customTemplate && customTemplate.options) || {}
       }
     }))
@@ -547,6 +556,7 @@ export default class Builder {
 
         // Render template to dst
         const fileContent = await fsExtra.readFile(src, 'utf8')
+
         let content
         try {
           const templateFunction = template(fileContent, templateOptions)
