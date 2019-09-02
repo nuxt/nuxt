@@ -1,5 +1,5 @@
 export default {
-  modern: false,
+  modern: 'server',
   router: {
     base: '/%C3%B6/'
   },
