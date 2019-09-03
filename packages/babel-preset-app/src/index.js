@@ -74,9 +74,9 @@ module.exports = (api, options = {}) => {
   }
 
   const defaultTargets = {
-    'server': { node: 'current' },
-    'client': { ie: 9 },
-    'modern': { esmodules: true }
+    server: { node: 'current' },
+    client: { ie: 9 },
+    modern: { esmodules: true }
   }
 
   let { targets = defaultTargets[envName] } = options
