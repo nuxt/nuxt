@@ -21,13 +21,17 @@ Usually, no additional configuration is required. If needed though, there is an 
 
 ```js
 babel: {
-  presets({ envName }, [ preset, options ]) {
+  presets(env, [ preset, options ]) {
     return [
       [ "@nuxt/babel-preset-app", options ]
     ]
   }
 }
 ```
+
+`env` is an object which contains `envName` (`server`, `client`, `modern`) and all `nuxtEnv` properties (`isDev`, `isServer`, `isClient`, `isModern`, `isLegacy`)
+
+`preset` is the preset package name `@nuxt/babel-preset-app`
 
 `options` is an object with parameters, for example:
 
@@ -37,7 +41,7 @@ const options = {
 }
 ```
 
-Below is a list of all available parameters:
+Below is a list of all available `options` parameters:
 
 ### Options
 
@@ -49,7 +53,7 @@ Below is a list of all available parameters:
 * **exclude** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#exclude)' parameter
 * **ignoreBrowserslistConfig**, defaults to value of `modern` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#ignorebrowserslistconfig)' parameter
 * **include** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#include)' parameter
-* **jsx**, default truish, can be a an object passed as params to [@vue/babel-preset-jsx`](https://www.npmjs.com/package/@vue/babel-preset-jsx)
+* **jsx**, default true, can be a an object passed as params to [@vue/babel-preset-jsx`](https://www.npmjs.com/package/@vue/babel-preset-jsx)
 * **loose**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#loose)' parameter and also sets `loose=true` for `@babel/plugin-proposal-class-properties`
 * **modules**, default `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#modules)' parameter
 * **polyfills**, default `core-js@2: ['es6.array.iterator','es6.promise','es6.object.assign','es7.promise.finally']`, `core-js@3: ['es.array.iterator','es.promise','es.object.assign','es.promise.finally']`, more [in the corresponding repository](https://github.com/zloirock/core-js)
