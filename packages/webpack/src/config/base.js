@@ -96,9 +96,7 @@ export default class WebpackBaseConfig {
       options.presets = options.presets(
         {
           envName,
-          isServer: envName === 'server',
-          isClient: envName === 'client',
-          isModern: envName === 'modern'
+          ...this.nuxtEnv
         },
         defaultPreset
       )
