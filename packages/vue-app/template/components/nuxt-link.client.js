@@ -39,7 +39,7 @@ export default {
   },
   mounted () {
     if (this.prefetch && !this.noPrefetch) {
-      requestIdleCallback(this.observe, { timeout: 2e3 })
+      requestIdleCallback(this.observe)
     }
   },
   beforeDestroy () {
