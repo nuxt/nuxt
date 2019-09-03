@@ -227,10 +227,6 @@ describe('builder: builder generate', () => {
       middleware: '/var/nuxt/src/middleware'
     }
     const builder = new Builder(nuxt, BundleBuilder)
-    builder.resolveRelative = jest.fn(dir => [
-      { src: `${dir}/midd.js` }
-    ])
-
     const templateVars = {}
     const templateFiles = []
     await builder.resolveMiddleware({ templateVars, templateFiles })
