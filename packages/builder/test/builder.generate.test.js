@@ -209,7 +209,13 @@ describe('builder: builder generate', () => {
     const templateFiles = []
     await builder.resolveMiddleware({ templateVars, templateFiles })
 
-    expect(templateVars.middleware).toEqual([ { src: '/var/nuxt/src/middleware/midd.js' } ])
+    expect(templateVars.middleware).toEqual([
+      {
+        name: 'subfolder/midd',
+        src: 'subfolder/midd.js',
+        dst: 'subfolder/midd.js'
+      }
+    ])
     expect(templateFiles).toEqual(['middleware.js'])
   })
 
@@ -229,11 +235,6 @@ describe('builder: builder generate', () => {
     const templateFiles = []
     await builder.resolveMiddleware({ templateVars, templateFiles })
     expect(templateFiles).toEqual([])
-    expect(templateVars.middleware).toEqual([{
-      name: 'subfolder/midd',
-      src: 'subfolder/midd.js',
-      dst: 'subfolder/midd.js'
-    }])
   })
 
   test('should custom templates', async () => {
