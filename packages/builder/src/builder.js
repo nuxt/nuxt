@@ -369,7 +369,7 @@ export default class Builder {
         trailingSlash
       })
     } else { // If user defined a custom method to create routes
-      templateVars.router.routes = this.options.build.createRoutes(
+      templateVars.router.routes = await this.options.build.createRoutes(
         this.options.srcDir
       )
     }
