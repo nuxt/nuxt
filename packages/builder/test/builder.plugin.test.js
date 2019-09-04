@@ -57,6 +57,31 @@ describe('builder: builder plugins', () => {
     ])
   })
 
+  test('should overwrite plugins from options', async () => {
+    const nuxt = createNuxt()
+
+    nuxt.options.plugins = [ '/var/nuxt/plugins/foo-bar.js' ]
+    nuxt.options.extendPlugins = jest.fn().mockReturnValue([
+      '/var/nuxt/plugins/fizz-fuzz.js'
+    ])
+
+    const builder = new Builder(nuxt, BundleBuilder)
+    const plugins = await builder.normalizePlugins()
+
+    expect(nuxt.options.extendPlugins).toHaveBeenCalledTimes(1)
+    expect(nuxt.options.extendPlugins).toHaveBeenCalledWith([
+      '/var/nuxt/plugins/foo-bar.js'
+    ])
+
+    expect(plugins).toEqual([
+      {
+        mode: 'all',
+        name: 'nuxt_plugin_fizzfuzz_hash(/var/nuxt/plugins/fizz-fuzz.js)',
+        src: 'resolveAlias(/var/nuxt/plugins/fizz-fuzz.js)'
+      }
+    ])
+  })
+
   test('should warning and fallback invalid mode when normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [

@@ -224,7 +224,6 @@ export default class Builder {
       this.bundleBuilder.pauseWatch()
     }
 
-    // Plugins
     this.plugins = Array.from(await this.normalizePlugins())
 
     const templateContext = this.createTemplateContext()
@@ -253,9 +252,20 @@ export default class Builder {
   }
 
   async normalizePlugins () {
+    // options.extendPlugins allows for returning a new plugins array
+    if (typeof this.options.extendPlugins === 'function') {
+      const extendedPlugins = this.options.extendPlugins(this.options.plugins)
+
+      if (Array.isArray(extendedPlugins)) {
+        this.options.plugins = extendedPlugins
+      }
+    }
+
+    // extendPlugins hook only supports in-place modifying
+    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
+
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
-    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
     return uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {
