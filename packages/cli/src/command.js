@@ -1,4 +1,5 @@
 
+import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import Hookable from 'hable'
@@ -35,6 +36,12 @@ export default class NuxtCommand extends Hookable {
   }
 
   async run () {
+    await this.callHook('setup', {
+      argv: this._argv,
+      cmd: this.cmd,
+      rootDir: path.resolve(this.argv._[0] || '.')
+    })
+
     if (this.argv.help) {
       this.showHelp()
       return
