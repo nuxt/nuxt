@@ -141,6 +141,7 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
   "fetch": Object {
     "client": true,
@@ -471,6 +472,7 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
   "fetch": Object {
     "client": true,

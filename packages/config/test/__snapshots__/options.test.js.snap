@@ -161,6 +161,7 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [
     "js",
     "mjs",
