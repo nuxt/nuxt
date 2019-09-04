@@ -151,6 +151,9 @@ export default class Builder {
     }
     await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
 
+    // Call ready hook
+    await this.nuxt.callHook('builder:prepared', this, this.options.build)
+
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
@@ -377,7 +380,7 @@ export default class Builder {
         trailingSlash
       })
     } else { // If user defined a custom method to create routes
-      templateVars.router.routes = this.options.build.createRoutes(
+      templateVars.router.routes = await this.options.build.createRoutes(
         this.options.srcDir
       )
     }
@@ -427,7 +430,15 @@ export default class Builder {
 
   async resolveMiddleware ({ templateVars }) {
     // -- Middleware --
-    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
+    const middleware = await this.resolveRelative(this.options.dir.middleware)
+
+    const extRE = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
+
+    templateVars.middleware = middleware.map(({ src }) => {
+      const name = src.replace(extRE, '')
+      const dst = this.relativeToBuild(this.options.srcDir, this.options.dir.middleware, src)
+      return { name, src, dst }
+    })
   }
 
   async resolveCustomTemplates (templateContext) {
