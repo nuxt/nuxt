@@ -1,6 +1,8 @@
 
+import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
+import Hookable from 'hable'
 import { name, version } from '../package.json'
 import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'
@@ -8,8 +10,11 @@ import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
 import * as imports from './imports'
 
-export default class NuxtCommand {
-  constructor (cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2)) {
+export default class NuxtCommand extends Hookable {
+  constructor (cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks = {}) {
+    super(consola)
+    this.addHooks(hooks)
+
     if (!cmd.options) {
       cmd.options = {}
     }
@@ -19,18 +24,24 @@ export default class NuxtCommand {
     this._parsedArgv = null // Lazy evaluate
   }
 
-  static run (cmd, argv) {
-    return NuxtCommand.from(cmd, argv).run()
+  static run (cmd, argv, hooks) {
+    return NuxtCommand.from(cmd, argv, hooks).run()
   }
 
-  static from (cmd, argv) {
+  static from (cmd, argv, hooks) {
     if (cmd instanceof NuxtCommand) {
       return cmd
     }
-    return new NuxtCommand(cmd, argv)
+    return new NuxtCommand(cmd, argv, hooks)
   }
 
   async run () {
+    await this.callHook('setup', {
+      argv: this._argv,
+      cmd: this.cmd,
+      rootDir: path.resolve(this.argv._[0] || '.')
+    })
+
     if (this.argv.help) {
       this.showHelp()
       return
@@ -99,6 +110,8 @@ export default class NuxtCommand {
     for (const name of Object.keys(this.cmd.options)) {
       this.cmd.options[name].prepare && this.cmd.options[name].prepare(this, options, this.argv)
     }
+
+    await this.callHook('config', options)
 
     return options
   }

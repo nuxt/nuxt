@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.9.1",
+  "version": "2.9.2",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "files": [
@@ -9,9 +9,9 @@
   "main": "dist/webpack.js",
   "dependencies": {
     "@babel/core": "^7.5.5",
-    "@nuxt/babel-preset-app": "2.9.1",
+    "@nuxt/babel-preset-app": "2.9.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
-    "@nuxt/utils": "2.9.1",
+    "@nuxt/utils": "2.9.2",
     "babel-loader": "^8.0.6",
     "cache-loader": "^4.1.0",
     "caniuse-lite": "^1.0.30000989",
@@ -42,9 +42,9 @@
     "time-fix-plugin": "^2.0.6",
     "url-loader": "^2.1.0",
     "vue-loader": "^15.7.1",
-    "webpack": "^4.39.2",
+    "webpack": "^4.39.3",
     "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-dev-middleware": "^3.7.0",
+    "webpack-dev-middleware": "^3.7.1",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^4.0.0"
