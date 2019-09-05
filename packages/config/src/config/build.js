@@ -116,5 +116,6 @@ export default () => ({
   },
   friendlyErrors: true,
   additionalExtensions: [],
-  warningIgnoreFilters: []
+  warningIgnoreFilters: [],
+  followSymlinks: false
 })

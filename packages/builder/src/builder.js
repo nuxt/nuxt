@@ -306,7 +306,8 @@ export default class Builder {
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore
+      ignore: this.options.ignore,
+      follow: this.options.build.followSymlinks
     }))
   }
 
