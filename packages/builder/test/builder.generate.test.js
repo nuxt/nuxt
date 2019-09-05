@@ -48,12 +48,14 @@ describe('builder: builder generate', () => {
       },
       watch: []
     }
+
     const builder = new Builder(nuxt, BundleBuilder)
     builder.normalizePlugins = jest.fn(() => [{ name: 'test_plugin', src: '/var/somesrc' }])
     builder.resolveLayouts = jest.fn(() => 'resolveLayouts')
     builder.resolveRoutes = jest.fn(() => 'resolveRoutes')
     builder.resolveStore = jest.fn(() => 'resolveStore')
     builder.resolveMiddleware = jest.fn(() => 'resolveMiddleware')
+    builder.addOptionalTemplates = jest.fn()
     builder.resolveCustomTemplates = jest.fn()
     builder.resolveLoadingIndicator = jest.fn()
     builder.compileTemplates = jest.fn()
@@ -77,6 +79,7 @@ describe('builder: builder generate', () => {
       'resolveStore',
       'resolveMiddleware'
     ])
+    expect(builder.addOptionalTemplates).toBeCalledTimes(1)
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
     expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
@@ -124,6 +127,7 @@ describe('builder: builder generate', () => {
 
   test('should resolve store modules', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { store: true }
     nuxt.options.store = true
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
@@ -153,8 +157,26 @@ describe('builder: builder generate', () => {
     expect(templateFiles).toEqual(['store.js'])
   })
 
-  test('should disable store resolving', async () => {
+  test('should disable store resolving when not set', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { store: false }
+    nuxt.options.dir = {
+      store: '/var/nuxt/src/store'
+    }
+    const builder = new Builder(nuxt, BundleBuilder)
+
+    const templateVars = {}
+    const templateFiles = []
+    await builder.resolveStore({ templateVars, templateFiles })
+
+    expect(templateVars.storeModules).toBeUndefined()
+    expect(templateFiles).toEqual([])
+  })
+
+  test('should disable store resolving when feature disabled', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.features = { store: false }
+    nuxt.options.store = true
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
     }
@@ -170,6 +192,7 @@ describe('builder: builder generate', () => {
 
   test('should resolve middleware', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { middleware: true }
     nuxt.options.store = false
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = {
@@ -183,13 +206,31 @@ describe('builder: builder generate', () => {
     builder.relativeToBuild = jest.fn().mockReturnValue(middlewarePath)
 
     const templateVars = {}
-    await builder.resolveMiddleware({ templateVars })
+    const templateFiles = []
+    await builder.resolveMiddleware({ templateVars, templateFiles })
 
-    expect(templateVars.middleware).toEqual([{
-      name: 'subfolder/midd',
-      src: 'subfolder/midd.js',
-      dst: 'subfolder/midd.js'
-    }])
+    expect(templateVars.middleware).toEqual([
+      {
+        name: 'subfolder/midd',
+        src: 'subfolder/midd.js',
+        dst: 'subfolder/midd.js'
+      }
+    ])
+    expect(templateFiles).toEqual(['middleware.js'])
+  })
+
+  test('should disable middleware when feature disabled', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.features = { middleware: false }
+    nuxt.options.store = false
+    nuxt.options.dir = {
+      middleware: '/var/nuxt/src/middleware'
+    }
+    const builder = new Builder(nuxt, BundleBuilder)
+    const templateVars = {}
+    const templateFiles = []
+    await builder.resolveMiddleware({ templateVars, templateFiles })
+    expect(templateFiles).toEqual([])
   })
 
   test('should custom templates', async () => {
@@ -414,6 +455,7 @@ describe('builder: builder generate', () => {
   describe('builder: builder resolveLayouts', () => {
     test('should resolve layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.buildDir = '/var/nuxt/build'
       nuxt.options.dir = {
@@ -466,6 +508,7 @@ describe('builder: builder generate', () => {
 
     test('should resolve error layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
@@ -493,6 +536,7 @@ describe('builder: builder generate', () => {
 
     test('should not resolve layouts if layouts dir does not exist', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
