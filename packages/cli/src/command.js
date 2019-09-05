@@ -36,7 +36,7 @@ export default class NuxtCommand extends Hookable {
   }
 
   async run () {
-    await this.callHook('setup', {
+    await this.callHook('run:before', {
       argv: this._argv,
       cmd: this.cmd,
       rootDir: path.resolve(this.argv._[0] || '.')
