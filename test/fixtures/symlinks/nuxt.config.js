@@ -1,5 +1,5 @@
 export default {
-  build:{
+  build: {
     followSymlinks: true
   }
 }

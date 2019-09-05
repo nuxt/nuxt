@@ -39,6 +39,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
