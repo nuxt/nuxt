@@ -170,6 +170,8 @@ export function getNuxtConfig (_options) {
     options.appTemplatePath = path.resolve(options.buildDir, 'views/app.template.html')
     if (fs.existsSync(path.join(options.srcDir, 'app.html'))) {
       options.appTemplatePath = path.join(options.srcDir, 'app.html')
+    } else if (fs.existsSync(path.join(options.rootDir, 'app.html'))) {
+      options.appTemplatePath = path.join(options.rootDir, 'app.html')
     }
   } else {
     options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
