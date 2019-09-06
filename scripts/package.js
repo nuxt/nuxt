@@ -1,69 +1,27 @@
-import { resolve } from 'path'
-import consola from 'consola'
 import spawn from 'cross-spawn'
-import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
-import _ from 'lodash'
+import { existsSync, remove } from 'fs-extra'
 import { rollup, watch } from 'rollup'
 import { glob as _glob } from 'glob'
 import pify from 'pify'
-import sortPackageJson from 'sort-package-json'
+
+// FIXME
+// @renoirb: I’m unsure how we should refer from here.
+//           (It's the kind of thing that made me look elsewhere than lerna)
+import { Package as BasePackage } from '../packages/normalize-package-json'
 
 import rollupConfig from './rollup.config'
 
 const DEFAULTS = {
-  rootDir: process.cwd(),
-  pkgPath: 'package.json',
-  configPath: 'package.js',
-  distDir: 'dist',
   build: false,
-  suffix: process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : '',
-  hooks: {}
+  hooks: {},
+  suffix: process.env.PACKAGE_SUFFIX ? `-${process.env.PACKAGE_SUFFIX}` : ''
 }
 
 const glob = pify(_glob)
 
-const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
-
-export default class Package {
+export default class Package extends BasePackage {
   constructor (options) {
-    // Assign options
-    this.options = Object.assign({}, DEFAULTS, options)
-
-    // Basic logger
-    this.logger = consola
-
-    // Init (sync)
-    this._init()
-  }
-
-  _init () {
-    // Try to read package.json
-    this.readPkg()
-
-    // Use tagged logger
-    this.logger = consola.withTag(this.pkg.name)
-
-    // Try to load config
-    this.loadConfig()
-  }
-
-  resolvePath (...args) {
-    return resolve(this.options.rootDir, ...args)
-  }
-
-  readPkg () {
-    this.pkg = readJSONSync(this.resolvePath(this.options.pkgPath))
-  }
-
-  loadConfig () {
-    const configPath = this.resolvePath(this.options.configPath)
-
-    if (existsSync(configPath)) {
-      let config = require(configPath)
-      config = config.default || config
-
-      Object.assign(this.options, config)
-    }
+    super(Object.assign({}, DEFAULTS, options))
   }
 
   async callHook (name, ...args) {
@@ -82,33 +40,11 @@ export default class Package {
     }
   }
 
-  load (relativePath, opts) {
-    return new Package(Object.assign({
-      rootDir: this.resolvePath(relativePath)
-    }, opts))
-  }
-
-  async writePackage () {
-    if (this.options.sortDependencies) {
-      this.sortDependencies()
-    }
-    const pkgPath = this.resolvePath(this.options.pkgPath)
-    this.logger.debug('Writing', pkgPath)
-    await writeFile(pkgPath, JSON.stringify(this.pkg, null, 2) + '\n')
-  }
-
   generateVersion () {
     const date = Math.round(Date.now() / (1000 * 60))
     const gitCommit = this.gitShortCommit()
     const baseVersion = this.pkg.version.split('-')[0]
     this.pkg.version = `${baseVersion}-${date}.${gitCommit}`
-  }
-
-  tryRequire (id) {
-    try {
-      return require(id)
-    } catch (e) {
-    }
   }
 
   suffixAndVersion () {
@@ -176,7 +112,8 @@ export default class Package {
           const pkg = new Package({ rootDir: this.resolvePath(dir) })
           packages.push(pkg)
         } else {
-          consola.warn('Invalid workspace package:', dir)
+          // @renoirb: This was calling global consola. Was it deliberate?
+          this.logger.warn('Invalid workspace package:', dir)
         }
       }
     }
@@ -285,35 +222,6 @@ export default class Package {
   publish (tag = 'latest') {
     this.logger.info(`publishing ${this.pkg.name}@${this.pkg.version} with tag ${tag}`)
     this.exec('npm', `publish --tag ${tag}`)
-  }
-
-  copyFieldsFrom (source, fields = []) {
-    for (const field of fields) {
-      this.pkg[field] = source.pkg[field]
-    }
-  }
-
-  async copyFilesFrom (source, files) {
-    for (const file of files || source.pkg.files || []) {
-      const src = resolve(source.options.rootDir, file)
-      const dst = resolve(this.options.rootDir, file)
-      await copy(src, dst)
-    }
-  }
-
-  autoFix () {
-    this.pkg = sortPackageJson(this.pkg)
-    this.sortDependencies()
-  }
-
-  sortDependencies () {
-    if (this.pkg.dependencies) {
-      this.pkg.dependencies = sortObjectKeys(this.pkg.dependencies)
-    }
-
-    if (this.pkg.devDependencies) {
-      this.pkg.devDependencies = sortObjectKeys(this.pkg.devDependencies)
-    }
   }
 
   exec (command, args, silent = false) {

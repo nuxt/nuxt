@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "private": true,
+  "license": "LicenseRef-LICENSE",
+  "author": {
+    "email": "alpha-team@acme-corp.example.org",
+    "name": "Alpha Product Team",
+    "url": "https://acme-corp.example.org/product/alpha"
+  },
+  "name": "alpha"
+}

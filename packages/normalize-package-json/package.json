@@ -1,0 +1,23 @@
+{
+  "name": "normalize-package-json",
+  "version": "2.9.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nuxt/nuxt.js",
+    "directory": "packages/normalize-package-json"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "dependencies": {
+    "consola": "^2.10.1",
+    "fs-extra": "^8.1.0",
+    "lodash": "^4.17.15",
+    "sort-package-json": "^1.22.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

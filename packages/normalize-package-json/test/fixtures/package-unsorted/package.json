@@ -1,0 +1,10 @@
+{
+  "license": "MIT",
+  "private": true,
+  "version": "1.0.0",
+  "bin": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "name": "package-unsorted"
+}
