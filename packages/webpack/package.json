@@ -8,7 +8,7 @@
   ],
   "main": "dist/webpack.js",
   "dependencies": {
-    "@babel/core": "^7.5.5",
+    "@babel/core": "^7.6.0",
     "@nuxt/babel-preset-app": "2.9.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/utils": "2.9.2",
@@ -29,7 +29,7 @@
     "memory-fs": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "pify": "^4.0.1",
-    "postcss": "^7.0.17",
+    "postcss": "^7.0.18",
     "postcss-import": "^12.0.1",
     "postcss-import-resolver": "^1.2.3",
     "postcss-loader": "^3.0.0",
