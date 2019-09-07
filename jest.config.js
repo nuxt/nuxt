@@ -39,12 +39,13 @@ module.exports = {
   ],
 
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.(j|t)s$': 'babel-jest',
     '^.+\\.vue$': 'vue-jest'
   },
 
   moduleFileExtensions: [
     'js',
+    'ts',
     'json'
   ],
 

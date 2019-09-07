@@ -26,7 +26,7 @@ export default function rollupConfig ({
   }
 
   const name = path.basename(pkg.name.replace('-edge', ''))
-  const extensions = ['.ts', '.js']
+  const extensions = ['.js', '.ts']
 
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),

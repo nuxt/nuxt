@@ -1,5 +1,5 @@
-function isBabelLoader (caller) {
-  return caller && caller.name === 'babel-loader'
+function isRollupPluginBabel (caller) {
+  return caller && caller.name === 'rollup-plugin-babel'
 }
 
 function presetEnv (nodeVersion) {
@@ -7,15 +7,15 @@ function presetEnv (nodeVersion) {
 }
 
 module.exports = function (api) {
-  if (api.env('test') && !api.caller(isBabelLoader)) {
-    return { presets: [ presetEnv('current') ] }
+  if (api.env('test') || api.caller(isRollupPluginBabel)) {
+    return {
+      presets: [
+        presetEnv('8.9.0'),
+        '@babel/typescript'
+      ],
+      exclude: 'node_modules/**'
+    }
   }
 
-  return {
-    presets: [
-      presetEnv('8.9.0'),
-      '@babel/typescript'
-    ],
-    exclude: 'node_modules/**'
-  }
+  return {}
 }
