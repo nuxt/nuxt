@@ -5,7 +5,8 @@ import commonjsPlugin from 'rollup-plugin-commonjs'
 import licensePlugin from 'rollup-plugin-license'
 import replacePlugin from 'rollup-plugin-replace'
 import aliasPlugin from 'rollup-plugin-alias'
-import nodeResolvePlugin from 'rollup-plugin-node-resolve'
+import babel from 'rollup-plugin-babel'
+import resolve from 'rollup-plugin-node-resolve'
 import defaultsDeep from 'lodash/defaultsDeep'
 import consola from 'consola'
 
@@ -17,11 +18,7 @@ export default function rollupConfig ({
   input = 'src/index.js',
   replace = {},
   alias = {},
-  resolve = {
-    only: [
-      /lodash/
-    ]
-  },
+  resolve: resolveOptions,
   ...options
 }, pkg) {
   if (!pkg) {
@@ -29,6 +26,7 @@ export default function rollupConfig ({
   }
 
   const name = path.basename(pkg.name.replace('-edge', ''))
+  const extensions = ['.ts', '.js']
 
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
@@ -55,7 +53,14 @@ export default function rollupConfig ({
           ...replace
         }
       }),
-      nodeResolvePlugin(resolve),
+      resolve({
+        extensions,
+        only: [
+          /\/src\//,
+          /lodash/
+        ],
+        ...resolveOptions
+      }),
       commonjsPlugin(),
       jsonPlugin(),
       licensePlugin({
@@ -68,7 +73,8 @@ export default function rollupConfig ({
           ` * Website: https://nuxtjs.org`,
           `*/`
         ].join('\n')
-      })
+      }),
+      babel({ extensions })
     ].concat(plugins),
     onwarn (warning, warn) {
       if (warning.plugin === 'rollup-plugin-license') {
