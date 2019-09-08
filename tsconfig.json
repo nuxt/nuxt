@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "outDir": "dist",
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "strictNullChecks": true,
+    "target": "esnext",
+    "paths": {
+      "@nuxt/babel-preset-app": ["packages/babel-preset-app/src"],
+      "@nuxt/builder": ["packages/builder/src"],
+      "@nuxt/cli": ["packages/cli/src"],
+      "@nuxt/config": ["packages/config/src"],
+      "@nuxt/core": ["packages/core/src"],
+      "@nuxt/generator": ["packages/generator/src"],
+      "@nuxt/server": ["packages/server/src"],
+      "@nuxt/utils": ["packages/utils/src"],
+      "@nuxt/vue-app": ["packages/vue-app/src"],
+      "@nuxt/vue-renderer": ["packages/vue-renderer/src"],
+      "@nuxt/webpack": ["packages/webpack/src"]
+    }
+  },
+}
