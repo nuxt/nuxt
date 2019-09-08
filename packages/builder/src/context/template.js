@@ -11,6 +11,7 @@ export default class TemplateContext {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
       nuxtOptions: options,
+      features: options.features,
       extensions: options.extensions
         .map(ext => ext.replace(/^\./, ''))
         .join('|'),
@@ -27,7 +28,7 @@ export default class TemplateContext {
       router: options.router,
       env: options.env,
       head: options.head,
-      store: options.store,
+      store: options.features.store ? options.store : false,
       globalName: options.globalName,
       globals: builder.globals,
       css: options.css,
