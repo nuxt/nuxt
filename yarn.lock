@@ -4615,10 +4615,10 @@ eslint-module-utils@^2.4.0:
     debug "^2.6.8"
     pkg-dir "^2.0.0"
 
-eslint-multiplexer@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/eslint-multiplexer/-/eslint-multiplexer-1.0.4.tgz#4dde202fa2c9edc2ee802ab4b8fdb02a49b6d596"
-  integrity sha512-KdakcevBFb6n4VQBRY7u+wFqyREzz1QYJRuuPNHUcK5hN1XOikJIEC5Qf+28ZRIvHkoxiw/CW//LNAAyQzxaiQ==
+eslint-multiplexer@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/eslint-multiplexer/-/eslint-multiplexer-2.0.0.tgz#34d00218f5027b417b89a4add81f1536d4197a7d"
+  integrity sha512-hZA86lQ6d3srMwVlEjYVsX24mk/AImm4zL0r0AR8jNsJYoznQT7O2xgeaT6gNsLIxzRP79VkpeMVRxu4+GRWOA==
   dependencies:
     cross-spawn "^6.0.5"
     minimist "^1.2.0"
