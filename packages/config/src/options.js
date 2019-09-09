@@ -390,5 +390,10 @@ export function getNuxtConfig (_options) {
     }
   }
 
+  const { timing } = options.server
+  if (timing) {
+    options.server.timing = { total: true, ...timing }
+  }
+
   return options
 }
