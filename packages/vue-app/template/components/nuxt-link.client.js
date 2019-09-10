@@ -6,9 +6,7 @@ const requestIdleCallback = window.requestIdleCallback ||
     return setTimeout(function () {
       cb({
         didTimeout: false,
-        timeRemaining: function () {
-          return Math.max(0, 50 - (Date.now() - start))
-        }
+        timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
       })
     }, 1)
   }
@@ -35,19 +33,19 @@ export default {
       default: '<%= router.linkPrefetchedClass %>'
     }<% } %>
   },
-  mounted() {
+  mounted () {
     if (!this.noPrefetch) {
       requestIdleCallback(this.observe, { timeout: 2e3 })
     }
   },
-  beforeDestroy() {
+  beforeDestroy () {
     if (this.__observed) {
       observer.unobserve(this.$el)
       delete this.$el.__prefetch
     }
   },
   methods: {
-    observe() {
+    observe () {
       // If no IntersectionObserver, avoid prefetching
       if (!observer) {
         return
@@ -61,22 +59,22 @@ export default {
         this.addPrefetchedClass()
       }<% } %>
     },
-    shouldPrefetch() {
+    shouldPrefetch () {
       return this.getPrefetchComponents().length > 0
     },
-    canPrefetch() {
+    canPrefetch () {
       const conn = navigator.connection
       const hasBadConnection = this.<%= globals.nuxt %>.isOffline || (conn && ((conn.effectiveType || '').includes('2g') || conn.saveData))
 
       return !hasBadConnection
     },
-    getPrefetchComponents() {
+    getPrefetchComponents () {
       const ref = this.$router.resolve(this.to, this.$route, this.append)
       const Components = ref.resolved.matched.map(r => r.components.default)
 
       return Components.filter(Component => typeof Component === 'function' && !Component.options && !Component.__prefetched)
     },
-    prefetch() {
+    prefetch () {
       if (!this.canPrefetch()) {
         return
       }
@@ -93,7 +91,7 @@ export default {
       }<% if (router.linkPrefetchedClass) { %>
       this.addPrefetchedClass()<% } %>
     }<% if (router.linkPrefetchedClass) { %>,
-    addPrefetchedClass() {
+    addPrefetchedClass () {
       if (this.prefetchedClass !== 'false') {
         this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
       }

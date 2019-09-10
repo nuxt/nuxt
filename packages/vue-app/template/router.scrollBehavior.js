@@ -1,5 +1,7 @@
 <% if (router.scrollBehavior) { %>
+<%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
 export default <%= serializeFunction(router.scrollBehavior) %>
+<%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
 <% } else { %>import { getMatchedComponents } from './utils'
 
 if (process.client) {
@@ -67,6 +69,7 @@ export default function (to, from, savedPosition) {
             position = { selector: hash }
           }
         } catch (e) {
+          <%= isTest ? '// eslint-disable-next-line no-console' : '' %>
           console.warn('Failed to save scroll position. Please add CSS.escape() polyfill (https://github.com/mathiasbynens/CSS.escape).')
         }
       }

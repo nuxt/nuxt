@@ -5,11 +5,11 @@ import Vue from 'vue'
 import {
   <% if (features.asyncData) { %>applyAsyncData,<% } %>
   <% if (features.middleware) { %>middlewareSeries,<% } %>
+  <% if (features.middleware && features.layouts) { %>sanitizeComponent,<% } %>
   getMatchedComponents,
-  promisify,
-  sanitizeComponent
+  promisify
 } from './utils.js'
-import { createApp, NuxtError } from './index.js'
+import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
 
 // Component: <NuxtLink>
@@ -20,7 +20,7 @@ Vue.component(NuxtLink.name, NuxtLink)
 
 const noopApp = () => new Vue({ render: h => h('div') })
 
-function urlJoin() {
+function urlJoin () {
   return Array.prototype.slice.call(arguments).join('/').replace(/\/+/g, '/')
 }
 
@@ -114,13 +114,17 @@ export default async (ssrContext) => {
     try {
       await store.dispatch('nuxtServerInit', app.context)
     } catch (err) {
-      console.debug('Error occurred when calling nuxtServerInit: ', err.message)
+      console.debug('Error occurred when calling nuxtServerInit: ', err.message)<%= isTest ? '// eslint-disable-line no-console' : '' %>
       throw err
     }
   }
   // ...If there is a redirect or an error, stop the process
-  if (ssrContext.redirected) return noopApp()
-  if (ssrContext.nuxt.error) return renderErrorPage()
+  if (ssrContext.redirected) {
+    return noopApp()
+  }
+  if (ssrContext.nuxt.error) {
+    return renderErrorPage()
+  }
   <% } %>
 
   <% if (features.middleware) { %>
@@ -129,7 +133,9 @@ export default async (ssrContext) => {
   */
   let midd = <%= serialize(router.middleware).replace('middleware(', 'function(') %><%= isTest ? '// eslint-disable-line' : '' %>
   midd = midd.map((name) => {
-    if (typeof name === 'function') return name
+    if (typeof name === 'function') {
+      return name
+    }
     if (typeof middleware[name] !== 'function') {
       app.context.error({ statusCode: 500, message: 'Unknown middleware ' + name })
     }
@@ -137,8 +143,12 @@ export default async (ssrContext) => {
   })
   await middlewareSeries(midd, app.context)
   // ...If there is a redirect or an error, stop the process
-  if (ssrContext.redirected) return noopApp()
-  if (ssrContext.nuxt.error) return renderErrorPage()
+  if (ssrContext.redirected) {
+    return noopApp()
+  }
+  if (ssrContext.nuxt.error) {
+    return renderErrorPage()
+  }
   <% } %>
 
   <% if (features.layouts) { %>
@@ -146,9 +156,13 @@ export default async (ssrContext) => {
   ** Set layout
   */
   let layout = Components.length ? Components[0].options.layout : NuxtError.layout
-  if (typeof layout === 'function') layout = layout(app.context)
+  if (typeof layout === 'function') {
+    layout = layout(app.context)
+  }
   await _app.loadLayout(layout)
-  if (ssrContext.nuxt.error) return renderErrorPage()
+  if (ssrContext.nuxt.error) {
+    return renderErrorPage()
+  }
   layout = _app.setLayout(layout)
   ssrContext.nuxt.layout = _app.layoutName
   <% } %>
@@ -170,7 +184,9 @@ export default async (ssrContext) => {
     }
   })
   midd = midd.map((name) => {
-    if (typeof name === 'function') return name
+    if (typeof name === 'function') {
+      return name
+    }
     if (typeof middleware[name] !== 'function') {
       app.context.error({ statusCode: 500, message: 'Unknown middleware ' + name })
     }
@@ -178,8 +194,12 @@ export default async (ssrContext) => {
   })
   await middlewareSeries(midd, app.context)
   // ...If there is a redirect or an error, stop the process
-  if (ssrContext.redirected) return noopApp()
-  if (ssrContext.nuxt.error) return renderErrorPage()
+  if (ssrContext.redirected) {
+    return noopApp()
+  }
+  if (ssrContext.nuxt.error) {
+    return renderErrorPage()
+  }
   <% } %>
 
   <% if (features.validate) { %>
@@ -211,14 +231,18 @@ export default async (ssrContext) => {
   // ...If .validate() returned false
   if (!isValid) {
     // Don't server-render the page in generate mode
-    if (ssrContext._generate) ssrContext.nuxt.serverRendered = false
+    if (ssrContext._generate) {
+      ssrContext.nuxt.serverRendered = false
+    }
     // Render a 404 error page
     return render404Page()
   }
   <% } %>
 
   // If no Components found, returns 404
-  if (!Components.length) return render404Page()
+  if (!Components.length) {
+    return render404Page()
+  }
 
   <% if (features.asyncData || features.fetch) { %>
   // Call asyncData & fetch hooks on components matched by the route.
@@ -252,15 +276,19 @@ export default async (ssrContext) => {
     return Promise.all(promises)
   }))
 
-  <% if (debug) { %>if (process.env.DEBUG && asyncDatas.length)console.debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
+  <% if (debug) { %>if (process.env.DEBUG && asyncDatas.length) console.debug('Data fetching ' + ssrContext.url + ': ' + (Date.now() - s) + 'ms')<% } %>
 
   // datas are the first row of each
   ssrContext.nuxt.data = asyncDatas.map(r => r[0] || {})
   <% } %>
 
   // ...If there is a redirect or an error, stop the process
-  if (ssrContext.redirected) return noopApp()
-  if (ssrContext.nuxt.error) return renderErrorPage()
+  if (ssrContext.redirected) {
+    return noopApp()
+  }
+  if (ssrContext.nuxt.error) {
+    return renderErrorPage()
+  }
 
   // Call beforeNuxtRender methods & add store state
   await beforeRender()

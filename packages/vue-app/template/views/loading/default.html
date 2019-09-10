@@ -98,7 +98,9 @@
 <script>
 window.addEventListener('error', function () {
   var e = document.getElementById('nuxt-loading');
-  if (e) e.className += ' error';
+  if (e) {
+    e.className += ' error';
+  }
 });
 </script>
 
