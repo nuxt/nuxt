@@ -3,6 +3,11 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+<%
+const willResolveStoreModules = storeModules.some(s => s.src.indexOf('index.') !== 0)
+if (willResolveStoreModules) { %>
+const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
+<% } %>
 let store = {}
 
 void (function updateModules () {
@@ -73,9 +78,7 @@ function normalizeModule (moduleData, filePath) {
   return moduleData
 }
 
-<% if (storeModules.some(s => s.src.indexOf('index.') !== 0)) { %>
-const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
-
+<% if (willResolveStoreModules) { %>
 function resolveStoreModules (moduleData, filename) {
   moduleData = moduleData.default || moduleData
   // Remove store src + extension (./foo/index.js -> foo/index)
