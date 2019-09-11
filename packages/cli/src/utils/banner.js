@@ -20,7 +20,8 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  titleLines.push(`${chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`)
+  const isTypescript = nuxt.options.extensions.includes('ts')
+  titleLines.push(`${isTypescript ? chalk.blue.bold('Nuxt.js') : chalk.green.bold('Nuxt.js')} ${nuxt.constructor.version}`);
 
   // Running mode
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
