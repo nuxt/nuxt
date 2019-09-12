@@ -4,6 +4,7 @@
 import { mount, RouterLinkStub } from '@vue/test-utils'
 import { vmTick, compileTemplate, importComponent } from './__utils__'
 
+/* eslint-disable no-console */
 describe('nuxt-link prefetch', () => {
   beforeAll(() => {
     jest.useFakeTimers()
@@ -159,3 +160,4 @@ describe('nuxt-link prefetch', () => {
       expect(methods.observe).not.toHaveBeenCalled()
     })
 })
+/* eslint-enable no-console */
