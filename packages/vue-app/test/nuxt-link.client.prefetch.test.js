@@ -1,12 +1,14 @@
 /**
  * @jest-environment jsdom
  */
-import { mount } from '@vue/test-utils'
-import { compileTemplate, importComponent } from './__utils__'
+import { mount, RouterLinkStub } from '@vue/test-utils'
+import { vmTick, compileTemplate, importComponent } from './__utils__'
 
 describe('nuxt-link prefetch', () => {
+  beforeAll(() => jest.useFakeTimers())
+
   test('when router.prefetchLinks is set to false, link with no prop should not be prefetched',
-    async (done) => {
+    async () => {
       const compiledTemplatePath = await compileTemplate(
         'components/nuxt-link.client.js',
         'nuxt-link.client.prefetch.0.js',
@@ -14,25 +16,25 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      Component.extends = RouterLinkStub
 
       const methods = { observe: jest.fn() }
 
       const wrapper = mount(Component, {
-        stubs: ['router-link'],
+        propsData: { to: '/link' },
         methods
       })
 
+      jest.runAllTimers()
+      await vmTick(wrapper.vm)
+
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
-
-      setTimeout(() => {
-        expect(methods.observe).not.toHaveBeenCalled()
-        done()
-      }, 1)
+      expect(methods.observe).not.toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to false, link with prefetch prop set to true should be prefetched',
-    async (done) => {
+    async () => {
       const compiledTemplatePath = await compileTemplate(
         'components/nuxt-link.client.js',
         'nuxt-link.client.prefetch.1.js',
@@ -40,26 +42,25 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      Component.extends = RouterLinkStub
 
       const methods = { observe: jest.fn() }
 
       const wrapper = mount(Component, {
-        stubs: ['router-link'],
-        propsData: { prefetch: true },
+        propsData: { to: '/link', prefetch: true },
         methods
       })
 
+      jest.runAllTimers()
+      await vmTick(wrapper.vm)
+
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
-
-      setTimeout(() => {
-        expect(methods.observe).toHaveBeenCalled()
-        done()
-      }, 1)
+      expect(methods.observe).toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with no prop should be prefetched',
-    async (done) => {
+    async () => {
       const compiledTemplatePath = await compileTemplate(
         'components/nuxt-link.client.js',
         'nuxt-link.client.prefetch.2.js',
@@ -67,25 +68,25 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      Component.extends = RouterLinkStub
 
       const methods = { observe: jest.fn() }
 
       const wrapper = mount(Component, {
-        stubs: ['router-link'],
+        propsData: { to: '/link' },
         methods
       })
 
+      jest.runAllTimers()
+      await vmTick(wrapper.vm)
+
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
-
-      setTimeout(() => {
-        expect(methods.observe).toHaveBeenCalled()
-        done()
-      }, 1)
+      expect(methods.observe).toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with prefetch prop set to false should not be prefetched',
-    async (done) => {
+    async () => {
       const compiledTemplatePath = await compileTemplate(
         'components/nuxt-link.client.js',
         'nuxt-link.client.prefetch.3.js',
@@ -93,26 +94,25 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      Component.extends = RouterLinkStub
 
       const methods = { observe: jest.fn() }
 
       const wrapper = mount(Component, {
-        stubs: ['router-link'],
-        propsData: { prefetch: false },
+        propsData: { to: '/link', prefetch: false },
         methods
       })
 
+      jest.runAllTimers()
+      await vmTick(wrapper.vm)
+
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
-
-      setTimeout(() => {
-        expect(methods.observe).not.toHaveBeenCalled()
-        done()
-      }, 1)
+      expect(methods.observe).not.toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with noPrefetch prop should not be prefetched',
-    async (done) => {
+    async () => {
       const compiledTemplatePath = await compileTemplate(
         'components/nuxt-link.client.js',
         'nuxt-link.client.prefetch.4.js',
@@ -120,21 +120,20 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      Component.extends = RouterLinkStub
 
       const methods = { observe: jest.fn() }
 
       const wrapper = mount(Component, {
-        stubs: ['router-link'],
-        propsData: { noPrefetch: true },
+        propsData: { to: '/link', noPrefetch: true },
         methods
       })
 
+      jest.runAllTimers()
+      await vmTick(wrapper.vm)
+
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(true)
-
-      setTimeout(() => {
-        expect(methods.observe).not.toHaveBeenCalled()
-        done()
-      }, 1)
+      expect(methods.observe).not.toHaveBeenCalled()
     })
 })
