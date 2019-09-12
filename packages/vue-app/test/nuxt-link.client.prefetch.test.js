@@ -5,7 +5,14 @@ import { mount, RouterLinkStub } from '@vue/test-utils'
 import { vmTick, compileTemplate, importComponent } from './__utils__'
 
 describe('nuxt-link prefetch', () => {
-  beforeAll(() => jest.useFakeTimers())
+  beforeAll(() => {
+    jest.useFakeTimers()
+
+    jest.spyOn(console, 'warn')
+    jest.spyOn(console, 'error')
+  })
+
+  afterAll(() => jest.restoreAllMocks())
 
   test('when router.prefetchLinks is set to false, link with no prop should not be prefetched',
     async () => {
@@ -27,6 +34,9 @@ describe('nuxt-link prefetch', () => {
 
       jest.runAllTimers()
       await vmTick(wrapper.vm)
+
+      expect(console.warn).not.toHaveBeenCalled()
+      expect(console.error).not.toHaveBeenCalled()
 
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
@@ -54,6 +64,9 @@ describe('nuxt-link prefetch', () => {
       jest.runAllTimers()
       await vmTick(wrapper.vm)
 
+      expect(console.warn).not.toHaveBeenCalled()
+      expect(console.error).not.toHaveBeenCalled()
+
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
       expect(methods.observe).toHaveBeenCalled()
@@ -79,6 +92,9 @@ describe('nuxt-link prefetch', () => {
 
       jest.runAllTimers()
       await vmTick(wrapper.vm)
+
+      expect(console.warn).not.toHaveBeenCalled()
+      expect(console.error).not.toHaveBeenCalled()
 
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
@@ -106,6 +122,9 @@ describe('nuxt-link prefetch', () => {
       jest.runAllTimers()
       await vmTick(wrapper.vm)
 
+      expect(console.warn).not.toHaveBeenCalled()
+      expect(console.error).not.toHaveBeenCalled()
+
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
       expect(methods.observe).not.toHaveBeenCalled()
@@ -131,6 +150,9 @@ describe('nuxt-link prefetch', () => {
 
       jest.runAllTimers()
       await vmTick(wrapper.vm)
+
+      expect(console.warn).not.toHaveBeenCalled()
+      expect(console.error).not.toHaveBeenCalled()
 
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(true)
