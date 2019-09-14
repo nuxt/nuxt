@@ -3,8 +3,10 @@ import path from 'path'
 import consola from 'consola'
 import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
+import { getNuxtConfig } from '../../../test/utils'
 
 jest.mock('fs', () => ({
+  readFileSync: jest.fn(),
   existsSync: Boolean,
   closeSync: Boolean,
   realpath: jest.fn()
@@ -256,19 +258,27 @@ describe('core: module', () => {
     expect(module.options.ErrorPage).toEqual('~/build/error.template')
   })
 
-  test('should add server middleware', () => {
+  test('should normalize and add server middleware', () => {
     const module = new ModuleContainer({
-      options: {
+      options: getNuxtConfig({
         ...defaultOptions,
-        serverMiddleware: []
-      }
+        serverMiddleware: {
+          '/dummy': () => {}
+        }
+      })
     })
 
     module.addServerMiddleware(() => {})
     module.addServerMiddleware(() => {})
 
-    expect(module.options.serverMiddleware).toHaveLength(2)
-    expect(module.options.serverMiddleware).toEqual([expect.any(Function), expect.any(Function)])
+    expect(module.options.serverMiddleware).toHaveLength(3)
+    expect(module.options.serverMiddleware).toEqual([
+      {
+        '/dummy': () => {}
+      },
+      expect.any(Function),
+      expect.any(Function)
+    ])
   })
 
   test('should chain build.extend', () => {
