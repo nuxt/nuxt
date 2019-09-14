@@ -6,7 +6,6 @@ import ModuleContainer from '../src/module'
 import { getNuxtConfig } from '../../../test/utils'
 
 jest.mock('fs', () => ({
-  readFileSync: jest.fn(),
   existsSync: Boolean,
   closeSync: Boolean,
   realpath: jest.fn()
