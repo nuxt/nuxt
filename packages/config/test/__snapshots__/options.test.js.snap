@@ -381,3 +381,5 @@ Object {
   },
 }
 `;
+
+exports[`config: serverMiddleware should transform serverMiddleware hash 1`] = `[Function]`;
