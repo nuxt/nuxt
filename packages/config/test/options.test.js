@@ -264,7 +264,7 @@ describe('config: serverMiddleware', () => {
     }
     const config = getNuxtConfig({ serverMiddleware })
     expect(config.serverMiddleware[0].path).toBe('/resource')
-    expect(config.serverMiddleware[0].handler).toMatchSnapshot()
+    expect(config.serverMiddleware[0].handler).toBe(expect.any(Function))
   })
 })
 
