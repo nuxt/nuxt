@@ -256,6 +256,18 @@ describe('config: options', () => {
   })
 })
 
+describe('config: serverMiddleware', () => {
+  test('should transform serverMiddleware hash', () => {
+    const serverMiddleware = {
+      '/resource' (req, res, next) {
+      }
+    }
+    const config = getNuxtConfig({ serverMiddleware })
+    expect(config.serverMiddleware[0].path).toBe('/resource')
+    expect(config.serverMiddleware[0].handler).toMatchSnapshot()
+  })
+})
+
 describe('config: router', () => {
   test('should sanitize router.base', () => {
     const config = getNuxtConfig({ router: { base: '/foo' } })
