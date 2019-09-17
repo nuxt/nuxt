@@ -53,7 +53,7 @@ export default class SPARenderer extends BaseRenderer {
       if (typeof this.options.head === 'function') {
         head = this.options.head()
       } else {
-        head = this.options.head
+        head = cloneDeep(this.options.head)
       }
 
       const m = VueMeta.generate(head || {}, this.vueMetaConfig)
