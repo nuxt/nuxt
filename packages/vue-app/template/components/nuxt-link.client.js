@@ -10,6 +10,11 @@ const requestIdleCallback = window.requestIdleCallback ||
       })
     }, 1)
   }
+
+const cancelIdleCallback = window.cancelIdleCallback || function (id) {
+  clearTimeout(id)
+}
+
 const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
   entries.forEach(({ intersectionRatio, target: link }) => {
     if (intersectionRatio <= 0) {
@@ -35,10 +40,12 @@ export default {
   },
   mounted () {
     if (!this.noPrefetch) {
-      requestIdleCallback(this.observe, { timeout: 2e3 })
+      this.handleId = requestIdleCallback(this.observe, { timeout: 2e3 })
     }
   },
   beforeDestroy () {
+    cancelIdleCallback(this.handleId)
+
     if (this.__observed) {
       observer.unobserve(this.$el)
       delete this.$el.__prefetch
