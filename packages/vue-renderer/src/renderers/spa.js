@@ -13,10 +13,11 @@ export default class SPARenderer extends BaseRenderer {
     this.cache = new LRU()
 
     this.vueMetaConfig = {
+      ssrAppId: '1',
+      ...this.options.vueMeta,
       keyName: 'head',
       attribute: 'data-n-head',
       ssrAttribute: 'data-n-head-ssr',
-      ssrAppId: '1',
       tagIDKeyName: 'hid'
     }
   }
