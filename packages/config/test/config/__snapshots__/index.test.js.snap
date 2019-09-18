@@ -334,6 +334,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {
@@ -681,6 +682,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {

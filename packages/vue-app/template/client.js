@@ -11,7 +11,7 @@ import {
   getMatchedComponentsInstances,
   flatMapComponents,
   setContext,
-  <% if (features.transitions) { %>getLocation,<% } %>
+  <% if (features.transitions || features.asyncData || features.fetch) { %>getLocation,<% } %>
   compile,
   getQueryDiff,
   globalHandleError
@@ -186,7 +186,7 @@ function mapTransitions (Components, to, from) {
   }
 }
 
-<% if (features.transitions) { %>
+<% if (features.transitions || features.asyncData || features.fetch) { %>
 function applySSRData (Component, ssrData) {
   <% if (features.asyncData) { %>
   if (NUXT.serverRendered && ssrData) {
@@ -796,6 +796,8 @@ function addHotReload ($component, depth) {
     _app.setTransitions(mapTransitions(Components, router.currentRoute))
     _lastPaths = router.currentRoute.matched.map(route => compile(route.path)(router.currentRoute.params))
   }
+  <% } else if (features.asyncData || features.fetch) { %>
+  await Promise.all(resolveComponents(router))
   <% } %>
   // Initialize error handler
   _app.$loading = {} // To avoid error while _app.$nuxt does not exist

@@ -11,6 +11,9 @@ export default {
       total: true
     }
   },
+  vueMeta: {
+    ssrAppId: 'test-ssr-app-id'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
