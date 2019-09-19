@@ -9,7 +9,7 @@ import NuxtError from '<%= "../" + components.ErrorPage %>'
   <% } %>
 <% } else { %>
 import NuxtError from './nuxt-error.vue'
-<% } %>
+<% } /* components */ %>
 import NuxtChild from './nuxt-child'
 
 <%= isTest ? '// @vue/component' : '' %>

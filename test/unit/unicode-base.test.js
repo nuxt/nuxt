@@ -1,7 +1,7 @@
-import { getPort, loadFixture, Nuxt } from '../utils'
+import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://localhost:' + port + encodeURI(route)
 
 let nuxt = null
 
@@ -16,10 +16,9 @@ describe('unicode-base', () => {
   })
 
   test('/ö/ (router base)', async () => {
-    const window = await nuxt.server.renderAndGetWindow(url('/ö/'))
+    const response = await rp(url('/ö/'))
 
-    const html = window.document.body.innerHTML
-    expect(html).toContain('<h1>Unicode base works!</h1>')
+    expect(response).toContain('<h1>Unicode base works!</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

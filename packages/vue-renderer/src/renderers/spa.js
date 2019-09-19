@@ -47,49 +47,51 @@ export default class SPARenderer extends BaseRenderer {
       BODY_SCRIPTS: ''
     }
 
-    // Get vue-meta context
-    let head
-    if (typeof this.options.head === 'function') {
-      head = this.options.head()
-    } else {
-      head = this.options.head
+    if (this.options.features.meta) {
+      // Get vue-meta context
+      let head
+      if (typeof this.options.head === 'function') {
+        head = this.options.head()
+      } else {
+        head = this.options.head
+      }
+
+      const m = VueMeta.generate(head || {}, this.vueMetaConfig)
+
+      // HTML_ATTRS
+      meta.HTML_ATTRS = m.htmlAttrs.text()
+
+      // HEAD_ATTRS
+      meta.HEAD_ATTRS = m.headAttrs.text()
+
+      // BODY_ATTRS
+      meta.BODY_ATTRS = m.bodyAttrs.text()
+
+      // HEAD tags
+      meta.HEAD =
+        m.title.text() +
+        m.meta.text() +
+        m.link.text() +
+        m.style.text() +
+        m.script.text() +
+        m.noscript.text()
+
+      // BODY_SCRIPTS (PREPEND)
+      meta.BODY_SCRIPTS_PREPEND =
+        m.meta.text({ pbody: true }) +
+        m.link.text({ pbody: true }) +
+        m.style.text({ pbody: true }) +
+        m.script.text({ pbody: true }) +
+        m.noscript.text({ pbody: true })
+
+      // BODY_SCRIPTS (APPEND)
+      meta.BODY_SCRIPTS =
+        m.meta.text({ body: true }) +
+        m.link.text({ body: true }) +
+        m.style.text({ body: true }) +
+        m.script.text({ body: true }) +
+        m.noscript.text({ body: true })
     }
-
-    const m = VueMeta.generate(head || {}, this.vueMetaConfig)
-
-    // HTML_ATTRS
-    meta.HTML_ATTRS = m.htmlAttrs.text()
-
-    // HEAD_ATTRS
-    meta.HEAD_ATTRS = m.headAttrs.text()
-
-    // BODY_ATTRS
-    meta.BODY_ATTRS = m.bodyAttrs.text()
-
-    // HEAD tags
-    meta.HEAD =
-      m.title.text() +
-      m.meta.text() +
-      m.link.text() +
-      m.style.text() +
-      m.script.text() +
-      m.noscript.text()
-
-    // BODY_SCRIPTS (PREPEND)
-    meta.BODY_SCRIPTS_PREPEND =
-      m.meta.text({ pbody: true }) +
-      m.link.text({ pbody: true }) +
-      m.style.text({ pbody: true }) +
-      m.script.text({ pbody: true }) +
-      m.noscript.text({ pbody: true })
-
-    // BODY_SCRIPTS (APPEND)
-    meta.BODY_SCRIPTS =
-      m.meta.text({ body: true }) +
-      m.link.text({ body: true }) +
-      m.style.text({ body: true }) +
-      m.script.text({ body: true }) +
-      m.noscript.text({ body: true })
 
     // Resources Hints
     meta.resourceHints = ''

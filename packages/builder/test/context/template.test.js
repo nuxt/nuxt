@@ -16,6 +16,7 @@ describe('builder: buildContext', () => {
     relativeToBuild: jest.fn((...args) => `relativeBuild(${args.join(', ')})`)
   }
   const options = {
+    features: { store: true },
     extensions: [ 'test', 'ext' ],
     messages: { test: 'test message' },
     build: {

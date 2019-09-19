@@ -1,7 +1,7 @@
 import Vue from 'vue'
-import Meta from 'vue-meta'
-import ClientOnly from 'vue-client-only'
-import NoSsr from 'vue-no-ssr'
+<% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
+<% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
+<% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
 import { createRouter } from './router.js'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
@@ -16,8 +16,11 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
+<% if (features.componentClientOnly) { %>
 // Component: <ClientOnly>
 Vue.component(ClientOnly.name, ClientOnly)
+<% } %>
+<% if (features.deprecations) { %>
 // TODO: Remove in Nuxt 3: <NoSsr>
 Vue.component(NoSsr.name, {
   ...NoSsr,
@@ -29,16 +32,17 @@ Vue.component(NoSsr.name, {
     return NoSsr.render(h, ctx)
   }
 })
-
+<% } %>
 // Component: <NuxtChild>
 Vue.component(NuxtChild.name, NuxtChild)
-Vue.component('NChild', NuxtChild)
+<% if (features.componentAliases) { %>Vue.component('NChild', NuxtChild)<% } %>
 
 // Component NuxtLink is imported in server.js or client.js
 
 // Component: <Nuxt>`
 Vue.component(Nuxt.name, Nuxt)
 
+<% if (features.meta) { %>
 // vue-meta configuration
 Vue.use(Meta, {
   keyName: 'head', // the component option name that vue-meta looks for meta info on.
@@ -46,7 +50,9 @@ Vue.use(Meta, {
   ssrAttribute: 'data-n-head-ssr', // the attribute name that lets vue-meta know that meta info has already been server-rendered
   tagIDKeyName: 'hid' // the property name that vue-meta uses to determine whether to overwrite or append a tag
 })
+<% } %>
 
+<% if (features.transitions) { %>
 const defaultTransition = <%=
   serialize(pageTransition)
   .replace('beforeEnter(', 'function(').replace('enter(', 'function(').replace('afterEnter(', 'function(')
@@ -54,6 +60,7 @@ const defaultTransition = <%=
   .replace('afterLeave(', 'function(').replace('leaveCancelled(', 'function(').replace('beforeAppear(', 'function(')
   .replace('appear(', 'function(').replace('afterAppear(', 'function(').replace('appearCancelled(', 'function(')
 %><%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
 async function createApp(ssrContext) {
   const router = await createRouter(ssrContext)
@@ -74,9 +81,10 @@ async function createApp(ssrContext) {
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
   const app = {
-    router,
     <% if (store) { %>store,<%  } %>
+    router,
     nuxt: {
+      <% if (features.transitions) { %>
       defaultTransition,
       transitions: [ defaultTransition ],
       setTransitions(transitions) {
@@ -96,6 +104,7 @@ async function createApp(ssrContext) {
         this.$options.nuxt.transitions = transitions
         return transitions
       },
+      <% } %>
       err: null,
       dateErr: null,
       error(err) {
@@ -128,10 +137,10 @@ async function createApp(ssrContext) {
 
   // Set context to app.context
   await setContext(app, {
+    <% if (store) { %>store,<% } %>
     route,
     next,
     error: app.nuxt.error.bind(app),
-    <% if (store) { %>store,<% } %>
     payload: ssrContext ? ssrContext.payload : undefined,
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
@@ -213,8 +222,8 @@ async function createApp(ssrContext) {
   }
 
   return {
-    app,
     <% if(store) { %>store,<%  } %>
+    app,
     router
   }
 }
