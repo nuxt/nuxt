@@ -354,6 +354,16 @@ describe('basic ssr', () => {
     expect(html).toMatch('<h1>JS Layout</h1>')
     expect(html).toMatch('<h2>custom page</h2>')
   })
+  /* Testing symlinks functionality */
+  test('/symlink/symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/symlinked')
+    expect(html).toContain('<h1>Symlinked page</h1>')
+  })
+
+  test('/symlink/deep/nested-symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/deep/nested-symlinked')
+    expect(html).toContain('<h1>Nested symlink page</h1>')
+  })
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
