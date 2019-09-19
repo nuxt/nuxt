@@ -38,7 +38,10 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     // Add ETag header
     if (!error && options.render.etag) {
-      const etag = generateETag(html, options.render.etag)
+      const etagArg = { value: undefined }
+      await nuxt.callHook('render:generateETag', html, etagArg)
+
+      const etag = etagArg.value || generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()

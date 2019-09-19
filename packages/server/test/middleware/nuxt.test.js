@@ -117,6 +117,25 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(1, 'ETag', 'etag-hash')
   })
 
+  test('should set etag after rendering through hook', async () => {
+    const context = createContext()
+    context.nuxt.callHook.mockImplementation((name, html, etagArg) => {
+      if (name === 'render:generateETag') {
+        etagArg.value = 'etag-hook'
+      }
+    })
+    const result = { html: 'rendered html' }
+    context.renderRoute.mockReturnValue(result)
+    context.options.render.etag = true
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+
+    await nuxtMiddleware(req, res, next)
+
+    expect(context.nuxt.callHook).toBeCalledWith('render:generateETag', 'rendered html', { value: expect.anything() })
+    expect(res.setHeader).nthCalledWith(1, 'ETag', 'etag-hook')
+  })
+
   test('should return 304 if request is fresh', async () => {
     const context = createContext()
     const result = { html: 'rendered html' }
