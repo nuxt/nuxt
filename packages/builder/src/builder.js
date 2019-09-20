@@ -157,6 +157,9 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
+    // Add vue-app template dir to watchers
+    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
+
     await this.resolvePlugins()
 
     // Start bundle build: webpack, rollup, parcel...
@@ -243,9 +246,6 @@ export default class Builder {
     await this.resolveCustomTemplates(templateContext)
 
     await this.resolveLoadingIndicator(templateContext)
-
-    // Add vue-app template dir to watchers
-    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
 
     await this.compileTemplates(templateContext)
 
