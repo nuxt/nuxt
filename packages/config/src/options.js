@@ -224,9 +224,12 @@ export function getNuxtConfig (_options) {
     const { hash } = options.render.etag
     if (hash) {
       const isFn = typeof hash === 'function'
-      if (options.dev && !isFn) {
+      if (!isFn) {
         options.render.etag.hash = undefined
-        consola.warn(`render.etag.hash should be a function, received ${typeof hash} instead`)
+
+        if (options.dev) {
+          consola.warn(`render.etag.hash should be a function, received ${typeof hash} instead`)
+        }
       }
     }
   }
