@@ -129,7 +129,7 @@ describe('server: nuxtMiddleware', () => {
 
     await nuxtMiddleware(req, res, next)
 
-    expect(hash).toBeCalledWith('rendered html')
+    expect(hash).toBeCalledWith('rendered html', expect.any(Object))
     expect(res.setHeader).nthCalledWith(1, 'ETag', 'etag-hook')
   })
 
