@@ -190,18 +190,14 @@ export default class WebpackBaseConfig {
     if (terser) {
       minimizer.push(
         new TerserWebpackPlugin(Object.assign({
-          parallel: true,
           cache,
-          sourceMap: this.devtool && /source-?map/.test(this.devtool),
           extractComments: {
+            condition: 'some',
             filename: 'LICENSES'
           },
           terserOptions: {
             compress: {
               ecma: this.isModern ? 6 : undefined
-            },
-            output: {
-              comments: /^\**!|@preserve|@license|@cc_on/
             },
             mangle: {
               reserved: reservedVueTags
@@ -460,14 +456,6 @@ export default class WebpackBaseConfig {
 
     // Clone deep avoid leaking config between Client and Server
     const extendedConfig = cloneDeep(this.extendConfig(config))
-    const { optimization } = extendedConfig
-    // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
-    if (optimization && optimization.minimizer && extendedConfig.devtool) {
-      const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
-      if (terser) {
-        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
-      }
-    }
 
     return extendedConfig
   }
