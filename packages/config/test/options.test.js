@@ -87,6 +87,16 @@ describe('config: options', () => {
     expect(store).toEqual(true)
   })
 
+  test('should unset and warn when etag.hash not a function', () => {
+    const { render: { etag } } = getNuxtConfig({ render: { etag: { hash: true } } })
+    expect(etag).toMatchObject({ hash: undefined })
+    expect(consola.warn).not.toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+
+    const { render: { etag: etagDev } } = getNuxtConfig({ dev: true, render: { etag: { hash: true } } })
+    expect(etagDev).toMatchObject({ hash: undefined })
+    expect(consola.warn).toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+  })
+
   test('should enable csp', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({
@@ -112,9 +122,19 @@ describe('config: options', () => {
     expect(pageTransition.appear).toEqual(true)
   })
 
-  test('should return 404.html as default generate.fallback', () => {
+  test('should return 200.html as default generate.fallback', () => {
+    const { generate: { fallback } } = getNuxtConfig({})
+    expect(fallback).toEqual('200.html')
+  })
+
+  test('should return 404.html when generate.fallback is true', () => {
     const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: true } })
     expect(fallback).toEqual('404.html')
+  })
+
+  test('should return fallback html when generate.fallback is string', () => {
+    const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
   })
 
   test('should disable parallel if extractCSS is enabled', () => {

@@ -36,12 +36,6 @@ export default async function run (_argv, hooks = {}) {
   // Check for dev
   const dev = argv[0] === 'dev'
 
-  // Call setup hook
-  if (typeof hooks.setup === 'function') {
-    await hooks.setup({ cmd, dev, argv })
-    delete hooks.setup
-  }
-
   // Setup env
   setup({ dev })
 

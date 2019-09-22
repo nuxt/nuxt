@@ -57,6 +57,8 @@ export class WebpackBundler {
       webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
+    await this.buildContext.nuxt.callHook('webpack:config', webpackConfigs)
+
     // Check styleResource existence
     const { styleResources } = this.buildContext.options.build
     if (styleResources && Object.keys(styleResources).length) {

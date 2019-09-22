@@ -141,7 +141,24 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
@@ -289,6 +306,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -316,6 +334,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {
@@ -470,7 +489,24 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
@@ -618,6 +654,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -645,6 +682,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {

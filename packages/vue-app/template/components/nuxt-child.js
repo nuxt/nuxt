@@ -13,7 +13,8 @@ export default {
       default: undefined
     }
   },
-  render(h, { parent, data, props }) {
+  render (h, { parent, data, props }) {
+    <% if (features.transitions) { %>
     data.nuxtChild = true
     const _parent = parent
     const transitions = parent.<%= globals.nuxt %>.nuxt.transitions
@@ -69,20 +70,25 @@ export default {
         }
       }
     }
-
+    <% } %>
     let routerView = h('routerView', data)
 
     if (props.keepAlive) {
       routerView = h('keep-alive', { props: props.keepAliveProps }, [routerView])
     }
 
+    <% if (features.transitions) { %>
     return h('transition', {
       props: transitionProps,
       on: listeners
     }, [routerView])
+    <% } else { %>
+    return routerView
+    <% } %>
   }
 }
 
+<% if (features.transitions) { %>
 const transitionsKeys = [
   'name',
   'mode',
@@ -116,3 +122,4 @@ const listenersKeys = [
   'afterAppear',
   'appearCancelled'
 ]
+<% } %>

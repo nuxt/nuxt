@@ -219,6 +219,21 @@ export function getNuxtConfig (_options) {
     options.debug = options.dev
   }
 
+  // Validate that etag.hash is a function, if not unset it
+  if (options.render.etag) {
+    const { hash } = options.render.etag
+    if (hash) {
+      const isFn = typeof hash === 'function'
+      if (!isFn) {
+        options.render.etag.hash = undefined
+
+        if (options.dev) {
+          consola.warn(`render.etag.hash should be a function, received ${typeof hash} instead`)
+        }
+      }
+    }
+  }
+
   // Apply default hash to CSP option
   if (options.render.csp) {
     options.render.csp = defaults({}, options.render.csp, {
@@ -388,6 +403,11 @@ export function getNuxtConfig (_options) {
     if (!options._cli) {
       options.build.indicator = false
     }
+  }
+
+  const { timing } = options.server
+  if (timing) {
+    options.server.timing = { total: true, ...timing }
   }
 
   return options
