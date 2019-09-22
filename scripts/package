@@ -1,10 +1,11 @@
 #!/usr/bin/env node -r esm
 
 import consola from 'consola'
+import spawn from 'cross-spawn'
 
 import Package from './package.js'
 
-async function main() {
+async function main () {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = await rootPackage.getWorkspacePackages()
@@ -43,7 +44,13 @@ async function main() {
     }
   }
 
-  // Step 3: Link dependencies and Fix packages
+  // Step 3: Generate ts types
+  spawn.sync(
+    'tsc',
+    ['--emitDeclarationOnly', '--declaration', '--declarationDir', 'types']
+  )
+
+  // Step 4: Link dependencies and Fix packages
   for (const pkg of workspacePackages) {
     pkg.syncLinkedDependencies()
     pkg.autoFix()

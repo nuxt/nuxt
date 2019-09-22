@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "baseUrl": ".",
     "esModuleInterop": true,
     "module": "esnext",
@@ -27,5 +26,5 @@
       "@nuxt/vue-renderer": ["packages/vue-renderer/src"],
       "@nuxt/webpack": ["packages/webpack/src"]
     }
-  },
+  }
 }
