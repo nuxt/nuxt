@@ -136,10 +136,11 @@ export class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          watching.close = pify(watching.close)
-          this.compilersWatching.push(watching)
           resolve()
         })
+
+        watching.close = pify(watching.close)
+        this.compilersWatching.push(watching)
       })
     }
 
