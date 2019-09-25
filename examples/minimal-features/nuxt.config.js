@@ -1,8 +1,4 @@
 export default {
-  modern: 'server',
-  router: {
-    base: '/%C3%B6/'
-  },
   loading: false,
   loadingIndicator: false,
   fetch: {
@@ -27,17 +23,6 @@ export default {
   },
   build: {
     indicator: false,
-    terser: true,
-    optimization: {
-      splitChunks: {
-        cacheGroups: {
-          nuxtApp: {
-            test: /[\\/]\.nuxt[\\/]/,
-            filename: 'vue-app.nuxt.js',
-            enforce: true
-          }
-        }
-      }
-    }
+    terser: true
   }
 }

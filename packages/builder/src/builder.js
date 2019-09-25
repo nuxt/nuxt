@@ -238,6 +238,8 @@ export default class Builder {
       this.resolveMiddleware(templateContext)
     ])
 
+    this.addOptionalTemplates(templateContext)
+
     await this.resolveCustomTemplates(templateContext)
 
     await this.resolveLoadingIndicator(templateContext)
@@ -303,6 +305,16 @@ export default class Builder {
     )
   }
 
+  addOptionalTemplates (templateContext) {
+    if (this.options.build.indicator) {
+      templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
+    }
+
+    if (this.options.loading !== false) {
+      templateContext.templateFiles.push('components/nuxt-loading.vue')
+    }
+  }
+
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
@@ -316,6 +328,10 @@ export default class Builder {
   }
 
   async resolveLayouts ({ templateVars, templateFiles }) {
+    if (!this.options.features.layouts) {
+      return
+    }
+
     if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
@@ -409,7 +425,7 @@ export default class Builder {
 
   async resolveStore ({ templateVars, templateFiles }) {
     // Add store if needed
-    if (!this.options.store) {
+    if (!this.options.features.store || !this.options.store) {
       return
     }
 
@@ -428,17 +444,20 @@ export default class Builder {
     templateFiles.push('store.js')
   }
 
-  async resolveMiddleware ({ templateVars }) {
-    // -- Middleware --
+  async resolveMiddleware ({ templateVars, templateFiles }) {
+    if (!this.options.features.middleware) {
+      return
+    }
+
     const middleware = await this.resolveRelative(this.options.dir.middleware)
-
     const extRE = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
-
     templateVars.middleware = middleware.map(({ src }) => {
       const name = src.replace(extRE, '')
       const dst = this.relativeToBuild(this.options.srcDir, this.options.dir.middleware, src)
       return { name, src, dst }
     })
+
+    templateFiles.push('middleware.js')
   }
 
   async resolveCustomTemplates (templateContext) {
