@@ -74,7 +74,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
 
 const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
 
-const sortRoutes = function sortRoutes (routes) {
+export const sortRoutes = function sortRoutes (routes) {
   routes.sort((a, b) => {
     if (!a.path.length) {
       return -1
@@ -136,7 +136,8 @@ export const createRoutes = function createRoutes ({
   srcDir,
   pagesDir = '',
   routeNameSplitter = '-',
-  supportedExtensions = ['vue', 'js']
+  supportedExtensions = ['vue', 'js'],
+  trailingSlash
 }) {
   const routes = []
   files.forEach((file) => {
@@ -173,6 +174,11 @@ export const createRoutes = function createRoutes ({
         }
       }
     })
+    if (trailingSlash !== undefined) {
+      route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
+      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '')
+    }
+
     parent.push(route)
   })
 

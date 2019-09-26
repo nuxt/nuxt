@@ -33,6 +33,7 @@ describe('builder: builder build', () => {
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.buildDir = '/var/nuxt/build'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
+    nuxt.options.build.template = { dir: '/var/nuxt/src/template' }
     nuxt.options.build.createRoutes = jest.fn()
 
     const bundleBuilder = { build: jest.fn() }
@@ -49,8 +50,9 @@ describe('builder: builder build', () => {
     expect(consola.info).toBeCalledTimes(1)
     expect(consola.info).toBeCalledWith('Production build')
     expect(nuxt.ready).toBeCalledTimes(1)
-    expect(nuxt.callHook).toBeCalledTimes(2)
+    expect(nuxt.callHook).toBeCalledTimes(3)
     expect(nuxt.callHook).nthCalledWith(1, 'build:before', builder, nuxt.options.build)
+    expect(nuxt.callHook).nthCalledWith(2, 'builder:prepared', builder, nuxt.options.build)
     expect(builder.validatePages).toBeCalledTimes(1)
     expect(builder.validateTemplate).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
@@ -69,10 +71,11 @@ describe('builder: builder build', () => {
     expect(r).nthCalledWith(3, '/var/nuxt/build', 'dist', 'client')
     expect(r).nthCalledWith(4, '/var/nuxt/build', 'dist', 'server')
     expect(builder.generateRoutesAndFiles).toBeCalledTimes(1)
+    expect(nuxt.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
     expect(builder.resolvePlugins).toBeCalledTimes(1)
     expect(bundleBuilder.build).toBeCalledTimes(1)
     expect(builder._buildStatus).toEqual(2)
-    expect(nuxt.callHook).nthCalledWith(2, 'build:done', builder)
+    expect(nuxt.callHook).nthCalledWith(3, 'build:done', builder)
     expect(buildReturn).toBe(builder)
   })
 
