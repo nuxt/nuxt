@@ -216,14 +216,6 @@ export class WebpackBundler {
     await Promise.all(this.compilersWatching.map(watching => watching.close()))
   }
 
-  pauseWatch () {
-    this.compilersWatching.forEach(watching => watching.suspend())
-  }
-
-  resumeWatch () {
-    this.compilersWatching.forEach(watching => watching.resume())
-  }
-
   async close () {
     if (this.__closed) {
       return
