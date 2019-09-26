@@ -367,6 +367,7 @@ Object {
       "silent": true,
     },
   },
+  "vueMeta": null,
   "watch": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],

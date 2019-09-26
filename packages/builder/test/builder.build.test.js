@@ -33,6 +33,7 @@ describe('builder: builder build', () => {
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.buildDir = '/var/nuxt/build'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
+    nuxt.options.build.template = { dir: '/var/nuxt/src/template' }
     nuxt.options.build.createRoutes = jest.fn()
 
     const bundleBuilder = { build: jest.fn() }
@@ -70,6 +71,7 @@ describe('builder: builder build', () => {
     expect(r).nthCalledWith(3, '/var/nuxt/build', 'dist', 'client')
     expect(r).nthCalledWith(4, '/var/nuxt/build', 'dist', 'server')
     expect(builder.generateRoutesAndFiles).toBeCalledTimes(1)
+    expect(nuxt.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
     expect(builder.resolvePlugins).toBeCalledTimes(1)
     expect(bundleBuilder.build).toBeCalledTimes(1)
     expect(builder._buildStatus).toEqual(2)
