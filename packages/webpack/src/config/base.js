@@ -56,8 +56,8 @@ export default class WebpackBaseConfig {
       this._loaders = cloneDeep(this.buildContext.buildOptions.loaders)
       // sass-loader<8 support (#6460)
       const sassLoaderPKG = getPKG('sass-loader')
-      const { sass } = this._loaders
       if (sassLoaderPKG && semver.lt(sassLoaderPKG.version, '8.0.0')) {
+        const { sass } = this._loaders
         sass.indentedSyntax = sass.sassOptions.indentedSyntax
         delete sass.sassOptions.indentedSyntax
       }
