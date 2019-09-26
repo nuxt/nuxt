@@ -139,6 +139,9 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
+    "ui": Object {
+      "titleColor": "green",
+    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
