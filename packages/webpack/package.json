@@ -44,7 +44,7 @@
     "url-loader": "^2.1.0",
     "vue-loader": "^15.7.1",
     "webpack": "^4.41.0",
-    "webpack-bundle-analyzer": "^3.5.1",
+    "webpack-bundle-analyzer": "^3.5.2",
     "webpack-dev-middleware": "^3.7.1",
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^1.7.2",
