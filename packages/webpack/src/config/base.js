@@ -9,8 +9,9 @@ import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
+import semver from 'semver'
 
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -51,7 +52,17 @@ export default class WebpackBaseConfig {
   }
 
   get loaders () {
-    return this.buildContext.buildOptions.loaders
+    if (!this._loaders) {
+      this._loaders = cloneDeep(this.buildContext.buildOptions.loaders)
+      // sass-loader<8 support (#6460)
+      const sassLoaderPKG = getPKG('sass-loader')
+      const { sass } = this._loaders
+      if (sassLoaderPKG && semver.lt(sassLoaderPKG.version, '8.0.0')) {
+        sass.indentedSyntax = sass.sassOptions.indentedSyntax
+        delete sass.sassOptions.indentedSyntax
+      }
+    }
+    return this._loaders
   }
 
   get modulesToTranspile () {
