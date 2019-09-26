@@ -115,6 +115,9 @@ export default () => ({
     ]
   },
   friendlyErrors: true,
+  ui: {
+    titleColor: 'green'
+  },
   additionalExtensions: [],
   warningIgnoreFilters: []
 })
