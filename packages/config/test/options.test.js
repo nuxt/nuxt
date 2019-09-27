@@ -269,7 +269,7 @@ describe('config: options', () => {
 describe('config: serverMiddleware', () => {
   test('should transform serverMiddleware hash', () => {
     const serverMiddleware = {
-      '/resource' (req, res, next) {
+      '/resource': (req, res, next) => {
       }
     }
     const config = getNuxtConfig({ serverMiddleware })
