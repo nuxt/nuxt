@@ -11,13 +11,13 @@ import {
   getMatchedComponentsInstances,
   flatMapComponents,
   setContext,
-  <% if (features.transitions) { %>getLocation,<% } %>
+  <% if (features.transitions || features.asyncData || features.fetch) { %>getLocation,<% } %>
   compile,
   getQueryDiff,
   globalHandleError
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
-import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch && router.prefetchLinks ? "client" : "server" %>.js' // should be included after ./index.js
+import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
 <% if (isDev) { %>import consola from 'consola'<% } %>
 
 <% if (isDev) { %>consola.wrapConsole()
@@ -186,7 +186,7 @@ function mapTransitions (Components, to, from) {
   }
 }
 
-<% if (features.transitions) { %>
+<% if (features.transitions || features.asyncData || features.fetch) { %>
 function applySSRData (Component, ssrData) {
   <% if (features.asyncData) { %>
   if (NUXT.serverRendered && ssrData) {
@@ -796,6 +796,8 @@ function addHotReload ($component, depth) {
     _app.setTransitions(mapTransitions(Components, router.currentRoute))
     _lastPaths = router.currentRoute.matched.map(route => compile(route.path)(router.currentRoute.params))
   }
+  <% } else if (features.asyncData || features.fetch) { %>
+  await Promise.all(resolveComponents(router))
   <% } %>
   // Initialize error handler
   _app.$loading = {} // To avoid error while _app.$nuxt does not exist

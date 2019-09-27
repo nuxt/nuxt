@@ -87,6 +87,16 @@ describe('config: options', () => {
     expect(store).toEqual(true)
   })
 
+  test('should unset and warn when etag.hash not a function', () => {
+    const { render: { etag } } = getNuxtConfig({ render: { etag: { hash: true } } })
+    expect(etag).toMatchObject({ hash: undefined })
+    expect(consola.warn).not.toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+
+    const { render: { etag: etagDev } } = getNuxtConfig({ dev: true, render: { etag: { hash: true } } })
+    expect(etagDev).toMatchObject({ hash: undefined })
+    expect(consola.warn).toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+  })
+
   test('should enable csp', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({

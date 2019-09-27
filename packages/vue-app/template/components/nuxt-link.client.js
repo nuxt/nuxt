@@ -10,6 +10,11 @@ const requestIdleCallback = window.requestIdleCallback ||
       })
     }, 1)
   }
+
+const cancelIdleCallback = window.cancelIdleCallback || function (id) {
+  clearTimeout(id)
+}
+
 const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
   entries.forEach(({ intersectionRatio, target: link }) => {
     if (intersectionRatio <= 0) {
@@ -24,6 +29,10 @@ export default {
   name: 'NuxtLink',
   extends: Vue.component('RouterLink'),
   props: {
+    prefetch: {
+      type: Boolean,
+      default: <%= router.prefetchLinks ? 'true' : 'false' %>
+    },
     noPrefetch: {
       type: Boolean,
       default: false
@@ -34,11 +43,13 @@ export default {
     }<% } %>
   },
   mounted () {
-    if (!this.noPrefetch) {
-      requestIdleCallback(this.observe, { timeout: 2e3 })
+    if (this.prefetch && !this.noPrefetch) {
+      this.handleId = requestIdleCallback(this.observe, { timeout: 2e3 })
     }
   },
   beforeDestroy () {
+    cancelIdleCallback(this.handleId)
+
     if (this.__observed) {
       observer.unobserve(this.$el)
       delete this.$el.__prefetch
@@ -52,7 +63,7 @@ export default {
       }
       // Add to observer
       if (this.shouldPrefetch()) {
-        this.$el.__prefetch = this.prefetch.bind(this)
+        this.$el.__prefetch = this.prefetchLink.bind(this)
         observer.observe(this.$el)
         this.__observed = true
       }<% if (router.linkPrefetchedClass) { %> else {
@@ -74,11 +85,11 @@ export default {
 
       return Components.filter(Component => typeof Component === 'function' && !Component.options && !Component.__prefetched)
     },
-    prefetch () {
+    prefetchLink () {
       if (!this.canPrefetch()) {
         return
       }
-      // Stop obersing this link (in case of internet connection changes)
+      // Stop observing this link (in case of internet connection changes)
       observer.unobserve(this.$el)
       const Components = this.getPrefetchComponents()
 

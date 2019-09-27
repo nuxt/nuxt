@@ -82,13 +82,17 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
-    const html = window.document.body.innerHTML
+    const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
+
+    expect(html).toContain('<html foo="baz" data-n-head="foo">')
+    expect(html).toContain('<head bar="foo" data-n-head="bar">')
+    expect(html).toContain('<body baz="bar" data-n-head="baz">')
   })
 
   test('/async-data', async () => {

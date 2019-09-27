@@ -82,7 +82,9 @@ Object {
       },
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
         "sourceMap": false,
       },
       "scss": Object {
@@ -367,6 +369,7 @@ Object {
       "silent": true,
     },
   },
+  "vueMeta": null,
   "watch": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],

@@ -136,10 +136,11 @@ export class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          watching.close = pify(watching.close)
-          this.compilersWatching.push(watching)
           resolve()
         })
+
+        watching.close = pify(watching.close)
+        this.compilersWatching.push(watching)
       })
     }
 
@@ -213,14 +214,6 @@ export class WebpackBundler {
 
   async unwatch () {
     await Promise.all(this.compilersWatching.map(watching => watching.close()))
-  }
-
-  pauseWatch () {
-    this.compilersWatching.forEach(watching => watching.suspend())
-  }
-
-  resumeWatch () {
-    this.compilersWatching.forEach(watching => watching.resume())
   }
 
   async close () {

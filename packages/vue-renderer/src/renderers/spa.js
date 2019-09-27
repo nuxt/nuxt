@@ -13,10 +13,11 @@ export default class SPARenderer extends BaseRenderer {
     this.cache = new LRU()
 
     this.vueMetaConfig = {
+      ssrAppId: '1',
+      ...this.options.vueMeta,
       keyName: 'head',
       attribute: 'data-n-head',
       ssrAttribute: 'data-n-head-ssr',
-      ssrAppId: '1',
       tagIDKeyName: 'hid'
     }
   }
@@ -53,7 +54,7 @@ export default class SPARenderer extends BaseRenderer {
       if (typeof this.options.head === 'function') {
         head = this.options.head()
       } else {
-        head = this.options.head
+        head = cloneDeep(this.options.head)
       }
 
       const m = VueMeta.generate(head || {}, this.vueMetaConfig)
