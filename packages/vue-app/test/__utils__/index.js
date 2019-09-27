@@ -32,7 +32,7 @@ export async function compileTemplate (template, destination, options = {}) {
     if (typeof template === 'string') {
       return {
         src: path.resolve(rootDir, '../template', template),
-        dst: path.join(rootDir, '.nuxt', path.basename(template)),
+        dst: path.join(rootDir, '.nuxt', destination || path.basename(template)),
         custom: false
       }
     }

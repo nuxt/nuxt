@@ -28,11 +28,11 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 
 export default {
   <% if (features.meta) { %>
-  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
+  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
   head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren */' : '' %>
+  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
   <% } %>
-  render(h, props) {
+  render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
     const layoutEl = h(this.layout || 'nuxt')
@@ -53,7 +53,7 @@ export default {
         mode: '<%= layoutTransition.mode %>'
       },
       on: {
-        beforeEnter(el) {
+        beforeEnter (el) {
           // Ensure to trigger scroll event after calling scrollBehavior
           window.<%= globals.nuxt %>.$nextTick(() => {
             window.<%= globals.nuxt %>.$emit('triggerScroll')
@@ -84,10 +84,10 @@ export default {
     <% } %>
   }),
   <% } %>
-  beforeCreate() {
+  beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
   },
-  created() {
+  created () {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
@@ -106,7 +106,7 @@ export default {
     this.context = this.$options.context
   },
   <% if (loading) { %>
-  mounted() {
+  mounted () {
     this.$loading = this.$refs.loading
   },
   watch: {
@@ -115,14 +115,15 @@ export default {
   <% } %>
   <% if (features.clientOnline) { %>
   computed: {
-    isOffline() {
+    isOffline () {
       return !this.isOnline
     }
   },
   <% } %>
   methods: {
+    <%= isTest ? '/* eslint-disable comma-dangle */' : '' %>
     <% if (features.clientOnline) { %>
-    refreshOnlineStatus() {
+    refreshOnlineStatus () {
       if (process.client) {
         if (typeof window.navigator.onLine === 'undefined') {
           // If the browser doesn't support connection status reports
@@ -135,7 +136,7 @@ export default {
       }
     },
     <% } %>
-    async refresh() {
+    async refresh () {
       <% if (features.asyncData || features.fetch) { %>
       const pages = getMatchedComponentsInstances(this.$route)
 
@@ -144,7 +145,7 @@ export default {
       }
       <% if (loading) { %>this.$loading.start()<% } %>
 
-      const promises = pages.map(async (page) => {
+      const promises = pages.map((page) => {
         const p = []
 
         <% if (features.fetch) { %>
@@ -177,26 +178,34 @@ export default {
       <% } %>
     },
     <% if (loading) { %>
-    errorChanged() {
+    errorChanged () {
       if (this.nuxt.err && this.$loading) {
-        if (this.$loading.fail) this.$loading.fail()
-        if (this.$loading.finish) this.$loading.finish()
+        if (this.$loading.fail) {
+          this.$loading.fail()
+        }
+        if (this.$loading.finish) {
+          this.$loading.finish()
+        }
       }
     },
     <% } %>
     <% if (features.layouts) { %>
     <% if (splitChunks.layouts) { %>
-    setLayout(layout) {
+    setLayout (layout) {
       <% if (debug) { %>
-      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      if(layout && typeof layout !== 'string') {
+        throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      }
       <% } %>
-      if (!layout || !resolvedLayouts['_' + layout]) layout = 'default'
+      if (!layout || !resolvedLayouts['_' + layout]) {
+        layout = 'default'
+      }
       this.layoutName = layout
       let _layout = '_' + layout
       this.layout = resolvedLayouts[_layout]
       return this.layout
     },
-    loadLayout(layout) {
+    loadLayout (layout) {
       const undef = !layout
       const nonexistent = !(layouts['_' + layout] || resolvedLayouts['_' + layout])
       let _layout = '_' + ((undef || nonexistent) ? 'default' : layout)
@@ -216,9 +225,11 @@ export default {
         })
     }
     <% } else { %>
-    setLayout(layout) {
+    setLayout (layout) {
       <% if (debug) { %>
-      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      if(layout && typeof layout !== 'string') {
+        throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      }
       <% } %>
       if (!layout || !layouts['_' + layout]) {
         layout = 'default'
@@ -227,7 +238,7 @@ export default {
       this.layout = layouts['_' + layout]
       return this.layout
     },
-    loadLayout(layout) {
+    loadLayout (layout) {
       if (!layout || !layouts['_' + layout]) {
         layout = 'default'
       }
@@ -241,4 +252,5 @@ export default {
     NuxtLoading
   }
   <% } %>
+  <%= isTest ? '/* eslint-enable comma-dangle */' : '' %>
 }

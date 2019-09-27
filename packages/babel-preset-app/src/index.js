@@ -132,7 +132,7 @@ module.exports = (api, options = {}) => {
       decoratorsBeforeExport,
       legacy: decoratorsLegacy !== false
     }],
-    [require('@babel/plugin-proposal-class-properties'), { loose }]
+    [require('@babel/plugin-proposal-class-properties'), { loose: true }]
   )
 
   // Transform runtime, but only for helpers

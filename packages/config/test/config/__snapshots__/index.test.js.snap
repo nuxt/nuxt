@@ -65,7 +65,9 @@ Object {
       "less": Object {},
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
       },
       "scss": Object {},
       "stylus": Object {},
@@ -335,6 +337,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {
@@ -413,7 +416,9 @@ Object {
       "less": Object {},
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
       },
       "scss": Object {},
       "stylus": Object {},
@@ -683,6 +688,7 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {

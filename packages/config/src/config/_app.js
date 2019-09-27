@@ -6,6 +6,8 @@ export default () => ({
     }
   },
 
+  vueMeta: null,
+
   head: {
     meta: [],
     link: [],
