@@ -83,7 +83,9 @@ Object {
       },
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
         "sourceMap": false,
       },
       "scss": Object {

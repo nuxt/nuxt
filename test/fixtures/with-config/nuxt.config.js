@@ -90,7 +90,10 @@ export default {
       })
     }
   },
-  css: [{ src: '~/assets/app' }],
+  css: [
+    '~/assets/app.pcss',
+    '~/assets/app.sass'
+  ],
   render: {
     csp: true,
     http2: {

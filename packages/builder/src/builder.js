@@ -226,10 +226,6 @@ export default class Builder {
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
-    if (this.bundleBuilder) {
-      this.bundleBuilder.pauseWatch()
-    }
-
     this.plugins = Array.from(await this.normalizePlugins())
 
     const templateContext = this.createTemplateContext()
@@ -248,10 +244,6 @@ export default class Builder {
     await this.resolveLoadingIndicator(templateContext)
 
     await this.compileTemplates(templateContext)
-
-    if (this.bundleBuilder) {
-      this.bundleBuilder.resumeWatch()
-    }
 
     consola.success('Nuxt files generated')
   }
