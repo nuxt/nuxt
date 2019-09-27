@@ -35,7 +35,7 @@ export function applyAsyncData (Component, asyncData) {
   Component.options._originDataFn = ComponentData
 
   Component.options.data = function () {
-    const data = ComponentData.call(this)
+    const data = ComponentData.call(this, this)
     if (this.$ssrContext) {
       asyncData = this.$ssrContext.asyncData[Component.cid]
     }
