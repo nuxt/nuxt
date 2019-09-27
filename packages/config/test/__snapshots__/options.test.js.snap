@@ -26,6 +26,7 @@ Object {
       "cacheDirectory": false,
       "configFile": false,
     },
+    "bannerColor": "green",
     "cache": false,
     "crossorigin": undefined,
     "cssSourceMap": false,
@@ -139,9 +140,6 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "ui": Object {
-      "titleColor": "green",
-    },
     "warningIgnoreFilters": Array [],
     "watch": Array [],
   },

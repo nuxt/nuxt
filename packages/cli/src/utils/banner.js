@@ -20,11 +20,11 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  let titleColor = 'green'
-  if (nuxt.options.build && nuxt.options.build.ui) {
-    titleColor = nuxt.options.build.ui.titleColor
+  let bannerColor = 'green'
+  if (nuxt.options.build) {
+    bannerColor = nuxt.options.build.bannerColor
   }
-  titleLines.push(`${chalk[titleColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
+  titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
   titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
