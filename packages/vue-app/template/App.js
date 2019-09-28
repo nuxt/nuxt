@@ -6,6 +6,7 @@ import {
   globalHandleError
 } from './utils'
 <% } %>
+<% if (components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -35,6 +36,15 @@ export default {
   render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
+    <% if (components.ErrorPage) { %>
+    if (this.nuxt.err && NuxtError.layout){
+      this.setLayout(
+        typeof NuxtError.layout === 'function'
+          ? NuxtError.layout(this.context)
+          : NuxtError.layout
+      )
+    }
+    <% } %>
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
