@@ -37,7 +37,7 @@ export default {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
     <% if (components.ErrorPage) { %>
-    if (this.nuxt.err && NuxtError.layout){
+    if (this.nuxt.err && NuxtError.layout) {
       this.setLayout(
         typeof NuxtError.layout === 'function'
           ? NuxtError.layout(this.context)
