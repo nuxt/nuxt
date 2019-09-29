@@ -28,6 +28,10 @@ export default class TemplateContext {
       router: options.router,
       env: options.env,
       head: options.head,
+      render: {
+        serializer: options.render.serializer,
+        deserializer: options.render.deserializer
+      },
       store: options.features.store ? options.store : false,
       globalName: options.globalName,
       globals: builder.globals,
