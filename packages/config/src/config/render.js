@@ -7,6 +7,7 @@ export default () => ({
     runInNewContext: undefined
   },
   serializer: undefined,
+  deserializer: undefined,
   resourceHints: true,
   ssr: undefined,
   ssrLog: undefined,
