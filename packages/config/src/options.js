@@ -410,5 +410,10 @@ export function getNuxtConfig (_options) {
     options.server.timing = { total: true, ...timing }
   }
 
+  if (isPureObject(options.serverMiddleware)) {
+    options.serverMiddleware = Object.entries(options.serverMiddleware)
+      .map(([ path, handler ]) => ({ path, handler }))
+  }
+
   return options
 }
