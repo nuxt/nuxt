@@ -36,8 +36,14 @@ let app
 let router
 <% if (store) { %>let store<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %><% } %>
 
+
 // Try to rehydrate SSR data from window
+<% if (render.deserializer) { %>
+const deserialize = <%= serializeFunction(render.deserializer) %>
+const NUXT = deserialize()
+<% } else { %>
 const NUXT = window.<%= globals.context %> || {}
+<% } %>
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 
