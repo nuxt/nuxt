@@ -127,9 +127,14 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Serialize state
-    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    if (shouldInjectScripts) {
-      APP += `<script>${serializedSession}</script>`
+    const { serializer } = this.options.render
+    if (serializer) {
+      APP += serializer(renderContext.nuxt)
+    } else {
+      const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+      if (shouldInjectScripts) {
+        APP += `<script>${serializedSession}</script>`
+      }
     }
 
     // Calculate CSP hashes
