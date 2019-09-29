@@ -224,7 +224,8 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`),
+      'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 
