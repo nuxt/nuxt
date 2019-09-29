@@ -13,7 +13,6 @@ Object {
       "cacheDirectory": undefined,
       "configFile": false,
     },
-    "bannerColor": "green",
     "cache": false,
     "crossorigin": undefined,
     "cssSourceMap": undefined,
@@ -129,6 +128,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": undefined,
@@ -364,7 +364,6 @@ Object {
       "cacheDirectory": undefined,
       "configFile": false,
     },
-    "bannerColor": "green",
     "cache": false,
     "crossorigin": undefined,
     "cssSourceMap": undefined,
@@ -480,6 +479,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": undefined,

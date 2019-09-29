@@ -117,7 +117,6 @@ export default () => ({
     ]
   },
   friendlyErrors: true,
-  bannerColor: 'green',
   additionalExtensions: [],
   warningIgnoreFilters: []
 })

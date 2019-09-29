@@ -26,7 +26,6 @@ Object {
       "cacheDirectory": false,
       "configFile": false,
     },
-    "bannerColor": "green",
     "cache": false,
     "crossorigin": undefined,
     "cssSourceMap": false,
@@ -149,6 +148,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": false,
