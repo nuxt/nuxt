@@ -82,7 +82,7 @@ describe('builder: builder generate', () => {
     expect(builder.addOptionalTemplates).toBeCalledTimes(1)
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
-    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
+    expect(builder.options.build.watch).toEqual([])
     expect(builder.compileTemplates).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Nuxt files generated')
@@ -237,6 +237,7 @@ describe('builder: builder generate', () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' },
       templates: [
         '/var/nuxt/templates/foo.js',
@@ -275,6 +276,7 @@ describe('builder: builder generate', () => {
       name: 'test_loading_indicator'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -301,6 +303,7 @@ describe('builder: builder generate', () => {
       name: '@/app/template.vue'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -330,6 +333,7 @@ describe('builder: builder generate', () => {
       name: '@/app/empty.vue'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -599,6 +603,7 @@ describe('builder: builder generate', () => {
       const nuxt = createNuxt()
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.build = {
+        watch: [],
         createRoutes: jest.fn(),
         template: { dir: '/var/nuxt/templates' }
       }
@@ -642,6 +647,7 @@ describe('builder: builder generate', () => {
         pages: '/var/nuxt/pages'
       }
       nuxt.options.build = {
+        watch: [],
         createRoutes: jest.fn()
       }
       nuxt.options.router = {
