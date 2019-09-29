@@ -127,9 +127,12 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Serialize state
+    let serializedSession
     const { serializer } = this.options.render
     if (serializer) {
-      APP += serializer(renderContext.nuxt)
+      const serializationResult = serializer(renderContext.nuxt)
+      serializedSession = serializationResult.data
+      APP += serializationResult.script
     } else {
       const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
       if (shouldInjectScripts) {
