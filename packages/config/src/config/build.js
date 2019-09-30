@@ -47,7 +47,9 @@ export default () => ({
     },
     less: {},
     sass: {
-      indentedSyntax: true
+      sassOptions: {
+        indentedSyntax: true
+      }
     },
     scss: {},
     stylus: {},
@@ -116,5 +118,6 @@ export default () => ({
   },
   friendlyErrors: true,
   additionalExtensions: [],
-  warningIgnoreFilters: []
+  warningIgnoreFilters: [],
+  followSymlinks: false
 })

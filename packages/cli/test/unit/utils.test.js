@@ -129,6 +129,7 @@ describe('cli/utils', () => {
     jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
 
     const badgeMessages = [ 'badgeMessage' ]
+    const bannerColor = 'green'
     const listeners = [
       { url: 'first' },
       { url: 'second' }
@@ -137,7 +138,8 @@ describe('cli/utils', () => {
     showBanner({
       options: {
         cli: {
-          badgeMessages
+          badgeMessages,
+          bannerColor
         }
       },
       server: {
@@ -163,7 +165,8 @@ describe('cli/utils', () => {
     showBanner({
       options: {
         cli: {
-          badgeMessages: []
+          badgeMessages: [],
+          bannerColor: 'green'
         }
       },
       server: {

@@ -29,3 +29,14 @@ export function scanRequireTree (id, files = new Set()) {
 
   return files
 }
+
+export function tryRequire (id) {
+  try {
+    return require(id)
+  } catch (e) {
+  }
+}
+
+export function getPKG (id) {
+  return tryRequire(id + '/package.json')
+}

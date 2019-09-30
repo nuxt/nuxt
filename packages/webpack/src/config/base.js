@@ -9,8 +9,9 @@ import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
+import semver from 'semver'
 
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -51,12 +52,23 @@ export default class WebpackBaseConfig {
   }
 
   get loaders () {
-    return this.buildContext.buildOptions.loaders
+    if (!this._loaders) {
+      this._loaders = cloneDeep(this.buildContext.buildOptions.loaders)
+      // sass-loader<8 support (#6460)
+      const sassLoaderPKG = getPKG('sass-loader')
+      if (sassLoaderPKG && semver.lt(sassLoaderPKG.version, '8.0.0')) {
+        const { sass } = this._loaders
+        sass.indentedSyntax = sass.sassOptions.indentedSyntax
+        delete sass.sassOptions.indentedSyntax
+      }
+    }
+    return this._loaders
   }
 
   get modulesToTranspile () {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
+      /consola\/src/,
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -213,7 +225,8 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+      consola: require.resolve(`consola/${this.isServer ? 'dist/consola' : 'src/browser'}.js`),
+      'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 

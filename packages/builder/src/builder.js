@@ -157,6 +157,9 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
+    // Add vue-app template dir to watchers
+    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
+
     await this.resolvePlugins()
 
     // Start bundle build: webpack, rollup, parcel...
@@ -223,10 +226,6 @@ export default class Builder {
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
-    if (this.bundleBuilder) {
-      this.bundleBuilder.pauseWatch()
-    }
-
     this.plugins = Array.from(await this.normalizePlugins())
 
     const templateContext = this.createTemplateContext()
@@ -244,14 +243,7 @@ export default class Builder {
 
     await this.resolveLoadingIndicator(templateContext)
 
-    // Add vue-app template dir to watchers
-    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
-
     await this.compileTemplates(templateContext)
-
-    if (this.bundleBuilder) {
-      this.bundleBuilder.resumeWatch()
-    }
 
     consola.success('Nuxt files generated')
   }
@@ -318,7 +310,8 @@ export default class Builder {
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore
+      ignore: this.options.ignore,
+      follow: this.options.build.followSymlinks
     }))
   }
 
