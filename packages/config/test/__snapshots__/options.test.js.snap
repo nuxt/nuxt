@@ -149,6 +149,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": false,
