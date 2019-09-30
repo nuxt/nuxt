@@ -238,6 +238,14 @@ describe('basic generate', () => {
     })
   })
 
+  test('creates /200.html as fallback', async () => {
+    const html = await rp(url('/200.html'))
+    expect(html.includes('<h1>Index page</h1>')).toBe(false)
+    expect(html.includes('data-server-rendered')).toBe(false)
+    expect(existsSync(resolve(distDir, '200.html'))).toBe(true)
+    expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await server.close()

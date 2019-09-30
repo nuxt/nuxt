@@ -87,6 +87,16 @@ describe('config: options', () => {
     expect(store).toEqual(true)
   })
 
+  test('should unset and warn when etag.hash not a function', () => {
+    const { render: { etag } } = getNuxtConfig({ render: { etag: { hash: true } } })
+    expect(etag).toMatchObject({ hash: undefined })
+    expect(consola.warn).not.toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+
+    const { render: { etag: etagDev } } = getNuxtConfig({ dev: true, render: { etag: { hash: true } } })
+    expect(etagDev).toMatchObject({ hash: undefined })
+    expect(consola.warn).toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+  })
+
   test('should enable csp', () => {
     const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
     expect(csp).toEqual({
@@ -123,9 +133,19 @@ describe('config: options', () => {
     expect(pageTransition.appear).toEqual(true)
   })
 
-  test('should return 404.html as default generate.fallback', () => {
+  test('should return 200.html as default generate.fallback', () => {
+    const { generate: { fallback } } = getNuxtConfig({})
+    expect(fallback).toEqual('200.html')
+  })
+
+  test('should return 404.html when generate.fallback is true', () => {
     const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: true } })
     expect(fallback).toEqual('404.html')
+  })
+
+  test('should return fallback html when generate.fallback is string', () => {
+    const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
   })
 
   test('should disable parallel if extractCSS is enabled', () => {
@@ -243,10 +263,29 @@ describe('config: options', () => {
       expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
     })
 
+    test('should deprecate devModules', () => {
+      const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
+      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+      expect(config.devModules).toBe(undefined)
+      expect(config.buildModules).toEqual(['bar', 'foo'])
+    })
+
     test('should deprecate build.extractCSS.allChunks', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
     })
+  })
+})
+
+describe('config: serverMiddleware', () => {
+  test('should transform serverMiddleware hash', () => {
+    const serverMiddleware = {
+      '/resource': (req, res, next) => {
+      }
+    }
+    const config = getNuxtConfig({ serverMiddleware })
+    expect(config.serverMiddleware[0].path).toBe('/resource')
+    expect(config.serverMiddleware[0].handler).toBe(serverMiddleware['/resource'])
   })
 })
 

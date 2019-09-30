@@ -1,10 +1,19 @@
 import Vue from 'vue'
+<% if (features.asyncData || features.fetch) { %>
+import {
+  getMatchedComponentsInstances,
+  promisify,
+  globalHandleError
+} from './utils'
+<% } %>
+<% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
-<%if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
+<% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
 
+<% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
   if (splitChunks.layouts) {
     return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => m.default || m)`
@@ -16,13 +25,26 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
+<% } %>
 
 export default {
-  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
+  <% if (features.meta) { %>
+  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
   head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren */' : '' %>
-  render(h, props) {
+  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+  <% } %>
+  render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
+    <% if (features.layouts) { %>
+    <% if (components.ErrorPage) { %>
+    if (this.nuxt.err && NuxtError.layout) {
+      this.setLayout(
+        typeof NuxtError.layout === 'function'
+          ? NuxtError.layout(this.context)
+          : NuxtError.layout
+      )
+    }
+    <% } %>
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
@@ -30,14 +52,18 @@ export default {
       },
       key: this.layoutName
     }, [ layoutEl ])
+    <% } else { %>
+    const templateEl = h('nuxt')
+    <% } %>
 
+    <% if (features.transitions) { %>
     const transitionEl = h('transition', {
       props: {
         name: '<%= layoutTransition.name %>',
         mode: '<%= layoutTransition.mode %>'
       },
       on: {
-        beforeEnter(el) {
+        beforeEnter (el) {
           // Ensure to trigger scroll event after calling scrollBehavior
           window.<%= globals.nuxt %>.$nextTick(() => {
             window.<%= globals.nuxt %>.$emit('triggerScroll')
@@ -45,50 +71,69 @@ export default {
         }
       }
     }, [ templateEl ])
+    <% } %>
 
     return h('div', {
       domProps: {
         id: '<%= globals.id %>'
       }
-    }, [<% if (loading) { %>loadingEl, <% } %><%if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>transitionEl])
+    }, [
+      <% if (loading) { %>loadingEl, <% } %>
+      <% if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>
+      <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
+    ])
   },
+  <% if (features.clientOnline || features.layouts) { %>
   data: () => ({
+    <% if (features.clientOnline) { %>
     isOnline: true,
+    <% } %>
+    <% if (features.layouts) { %>
     layout: null,
     layoutName: ''
+    <% } %>
   }),
-  beforeCreate() {
+  <% } %>
+  beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
   },
-  created() {
+  created () {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
     // add to window so we can listen when ready
     if (process.client) {
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
+      <% if (features.clientOnline) { %>
       this.refreshOnlineStatus()
       // Setup the listeners
       window.addEventListener('online', this.refreshOnlineStatus)
       window.addEventListener('offline', this.refreshOnlineStatus)
+      <% } %>
     }
     // Add $nuxt.error()
     this.error = this.nuxt.error
+    // Add $nuxt.context
+    this.context = this.$options.context
   },
   <% if (loading) { %>
-  mounted() {
+  mounted () {
     this.$loading = this.$refs.loading
   },
   watch: {
     'nuxt.err': 'errorChanged'
   },
   <% } %>
+  <% if (features.clientOnline) { %>
   computed: {
-    isOffline() {
+    isOffline () {
       return !this.isOnline
     }
   },
+  <% } %>
   methods: {
-    refreshOnlineStatus() {
+    <%= isTest ? '/* eslint-disable comma-dangle */' : '' %>
+    <% if (features.clientOnline) { %>
+    refreshOnlineStatus () {
       if (process.client) {
         if (typeof window.navigator.onLine === 'undefined') {
           // If the browser doesn't support connection status reports
@@ -100,26 +145,77 @@ export default {
         }
       }
     },
+    <% } %>
+    async refresh () {
+      <% if (features.asyncData || features.fetch) { %>
+      const pages = getMatchedComponentsInstances(this.$route)
+
+      if (!pages.length) {
+        return
+      }
+      <% if (loading) { %>this.$loading.start()<% } %>
+
+      const promises = pages.map((page) => {
+        const p = []
+
+        <% if (features.fetch) { %>
+        if (page.$options.fetch) {
+          p.push(promisify(page.$options.fetch, this.context))
+        }
+        <% } %>
+        <% if (features.asyncData) { %>
+        if (page.$options.asyncData) {
+          p.push(
+            promisify(page.$options.asyncData, this.context)
+              .then((newData) => {
+                for (const key in newData) {
+                  Vue.set(page.$data, key, newData[key])
+                }
+              })
+          )
+        }
+        <% } %>
+        return Promise.all(p)
+      })
+      try {
+        await Promise.all(promises)
+      } catch (error) {
+        <% if (loading) { %>this.$loading.fail()<% } %>
+        globalHandleError(error)
+        this.error(error)
+      }
+      <% if (loading) { %>this.$loading.finish()<% } %>
+      <% } %>
+    },
     <% if (loading) { %>
-    errorChanged() {
+    errorChanged () {
       if (this.nuxt.err && this.$loading) {
-        if (this.$loading.fail) this.$loading.fail()
-        if (this.$loading.finish) this.$loading.finish()
+        if (this.$loading.fail) {
+          this.$loading.fail()
+        }
+        if (this.$loading.finish) {
+          this.$loading.finish()
+        }
       }
     },
     <% } %>
+    <% if (features.layouts) { %>
     <% if (splitChunks.layouts) { %>
-    setLayout(layout) {
+    setLayout (layout) {
       <% if (debug) { %>
-      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      if(layout && typeof layout !== 'string') {
+        throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      }
       <% } %>
-      if (!layout || !resolvedLayouts['_' + layout]) layout = 'default'
+      if (!layout || !resolvedLayouts['_' + layout]) {
+        layout = 'default'
+      }
       this.layoutName = layout
       let _layout = '_' + layout
       this.layout = resolvedLayouts[_layout]
       return this.layout
     },
-    loadLayout(layout) {
+    loadLayout (layout) {
       const undef = !layout
       const nonexistent = !(layouts['_' + layout] || resolvedLayouts['_' + layout])
       let _layout = '_' + ((undef || nonexistent) ? 'default' : layout)
@@ -139,9 +235,11 @@ export default {
         })
     }
     <% } else { %>
-    setLayout(layout) {
+    setLayout (layout) {
       <% if (debug) { %>
-      if(layout && typeof layout !== 'string') throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      if(layout && typeof layout !== 'string') {
+        throw new Error('[nuxt] Avoid using non-string value as layout property.')
+      }
       <% } %>
       if (!layout || !layouts['_' + layout]) {
         layout = 'default'
@@ -150,15 +248,19 @@ export default {
       this.layout = layouts['_' + layout]
       return this.layout
     },
-    loadLayout(layout) {
+    loadLayout (layout) {
       if (!layout || !layouts['_' + layout]) {
         layout = 'default'
       }
       return Promise.resolve(layouts['_' + layout])
     }
-    <% } %>
+    <% } /* splitChunks.layouts */ %>
+    <% } /* features.layouts */ %>
   },
+  <% if (loading) { %>
   components: {
-    <%= (loading ? 'NuxtLoading' : '') %>
+    NuxtLoading
   }
+  <% } %>
+  <%= isTest ? '/* eslint-enable comma-dangle */' : '' %>
 }

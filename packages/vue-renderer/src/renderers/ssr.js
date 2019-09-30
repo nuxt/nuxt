@@ -83,15 +83,19 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
+    let HEAD = ''
+
     // Inject head meta
-    const m = renderContext.meta.inject()
-    let HEAD =
-      m.title.text() +
-      m.meta.text() +
-      m.link.text() +
-      m.style.text() +
-      m.script.text() +
-      m.noscript.text()
+    // (this is unset when features.meta is false in server template)
+    const meta = renderContext.meta && renderContext.meta.inject()
+    if (meta) {
+      HEAD += meta.title.text() +
+        meta.meta.text() +
+        meta.link.text() +
+        meta.style.text() +
+        meta.script.text() +
+        meta.noscript.text()
+    }
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
@@ -108,6 +112,19 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject styles
     HEAD += renderContext.renderStyles()
+
+    if (meta) {
+      const BODY_PREPEND =
+        meta.meta.text({ pbody: true }) +
+        meta.link.text({ pbody: true }) +
+        meta.style.text({ pbody: true }) +
+        meta.script.text({ pbody: true }) +
+        meta.noscript.text({ pbody: true })
+
+      if (BODY_PREPEND) {
+        APP = `${BODY_PREPEND}${APP}`
+      }
+    }
 
     // Serialize state
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
@@ -140,14 +157,21 @@ export default class SSRRenderer extends BaseRenderer {
     if (shouldInjectScripts) {
       APP += this.renderScripts(renderContext)
     }
-    APP += m.script.text({ body: true })
-    APP += m.noscript.text({ body: true })
+
+    if (meta) {
+      // Append body scripts
+      APP += meta.meta.text({ body: true })
+      APP += meta.link.text({ body: true })
+      APP += meta.style.text({ body: true })
+      APP += meta.script.text({ body: true })
+      APP += meta.noscript.text({ body: true })
+    }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: 'data-n-head-ssr ' + m.htmlAttrs.text(),
-      HEAD_ATTRS: m.headAttrs.text(),
-      BODY_ATTRS: m.bodyAttrs.text(),
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
+      BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,
       APP,
       ENV: this.options.env

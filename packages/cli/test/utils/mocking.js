@@ -83,6 +83,7 @@ export const mockNuxt = (implementation) => {
       }
     },
     options: {},
+    callHook: jest.fn(),
     clearHook: jest.fn(),
     clearHooks: jest.fn(),
     close: jest.fn(),

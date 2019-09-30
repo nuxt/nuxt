@@ -57,6 +57,8 @@ export class WebpackBundler {
       webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
+    await this.buildContext.nuxt.callHook('webpack:config', webpackConfigs)
+
     // Check styleResource existence
     const { styleResources } = this.buildContext.options.build
     if (styleResources && Object.keys(styleResources).length) {
@@ -134,10 +136,11 @@ export class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          watching.close = pify(watching.close)
-          this.compilersWatching.push(watching)
           resolve()
         })
+
+        watching.close = pify(watching.close)
+        this.compilersWatching.push(watching)
       })
     }
 
@@ -168,35 +171,27 @@ export class WebpackBundler {
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
-        compiler,
-        Object.assign(
-          {
-            publicPath: buildOptions.publicPath,
-            stats: false,
-            logLevel: 'silent',
-            watchOptions: this.buildContext.options.watchers.webpack
-          },
-          buildOptions.devMiddleware
-        )
-      )
+        compiler, {
+          publicPath: buildOptions.publicPath,
+          stats: false,
+          logLevel: 'silent',
+          watchOptions: this.buildContext.options.watchers.webpack,
+          ...buildOptions.devMiddleware
+        })
     )
 
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
+    this.compilersWatching.push(this.devMiddleware[name].context.watching)
+
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
-        compiler,
-        Object.assign(
-          {
-            log: false,
-            heartbeat: 10000
-          },
-          hotMiddlewareOptions,
-          {
-            path: `/__webpack_hmr/${name}`
-          }
-        )
-      )
+        compiler, {
+          log: false,
+          heartbeat: 10000,
+          path: `/__webpack_hmr/${name}`,
+          ...hotMiddlewareOptions
+        })
     )
 
     // Register devMiddleware on server

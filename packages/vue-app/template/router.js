@@ -68,7 +68,7 @@ import scrollBehavior from './router.scrollBehavior.js'
   return res
 }
 const _components = []
-const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
+const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
 %><%= uniqBy(_components, '_name').map((route) => {
   if (!route.component) return ''
   const path = relativeToBuild(route.component)
@@ -84,18 +84,20 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
 
 Vue.use(Router)
 
-export function createRouter() {
-  return new Router({
-    mode: '<%= router.mode %>',
-    base: decodeURI('<%= router.base %>'),
-    linkActiveClass: '<%= router.linkActiveClass %>',
-    linkExactActiveClass: '<%= router.linkExactActiveClass %>',
-    scrollBehavior,
-    <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
-    routes: [<%= _routes %>],
-    <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
-    <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
-    <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
-    fallback: <%= router.fallback %>
-  })
+export const routerOptions = {
+  mode: '<%= router.mode %>',
+  base: decodeURI('<%= router.base %>'),
+  linkActiveClass: '<%= router.linkActiveClass %>',
+  linkExactActiveClass: '<%= router.linkExactActiveClass %>',
+  scrollBehavior,
+  <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
+  routes: [<%= _routes %>],
+  <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
+  <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
+  <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
+  fallback: <%= router.fallback %>
+}
+
+export function createRouter () {
+  return new Router(routerOptions)
 }

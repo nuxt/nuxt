@@ -128,13 +128,13 @@ export default class VueRenderer {
     // Load templates
     await this.loadTemplates()
 
+    await this.serverContext.nuxt.callHook('render:resourcesLoaded', this.serverContext.resources)
+
     // Detect if any resource updated
     if (updated.length > 0) {
       // Create new renderer
       this.createRenderer()
     }
-
-    return this.serverContext.nuxt.callHook('render:resourcesLoaded', this.serverContext.resources)
   }
 
   async loadTemplates () {

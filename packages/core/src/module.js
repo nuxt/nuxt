@@ -16,9 +16,9 @@ export default class ModuleContainer {
     // Call before hook
     await this.nuxt.callHook('modules:before', this, this.options.modules)
 
-    if (this.options.devModules && !this.options._start) {
+    if (this.options.buildModules && !this.options._start) {
       // Load every devModule in sequence
-      await sequence(this.options.devModules, this.addModule.bind(this))
+      await sequence(this.options.buildModules, this.addModule.bind(this))
     }
 
     // Load every module in sequence
@@ -136,8 +136,8 @@ export default class ModuleContainer {
       handler = src
     }
 
-    // Prevent adding devModules-listed entries in production
-    if (this.options.devModules.includes(handler) && this.options._start) {
+    // Prevent adding buildModules-listed entries in production
+    if (this.options.buildModules.includes(handler) && this.options._start) {
       return
     }
 

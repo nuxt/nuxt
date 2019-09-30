@@ -234,6 +234,21 @@ export function getNuxtConfig (_options) {
     options.debug = options.dev
   }
 
+  // Validate that etag.hash is a function, if not unset it
+  if (options.render.etag) {
+    const { hash } = options.render.etag
+    if (hash) {
+      const isFn = typeof hash === 'function'
+      if (!isFn) {
+        options.render.etag.hash = undefined
+
+        if (options.dev) {
+          consola.warn(`render.etag.hash should be a function, received ${typeof hash} instead`)
+        }
+      }
+    }
+  }
+
   // Apply default hash to CSP option
   if (options.render.csp) {
     options.render.csp = defaults({}, options.render.csp, {
@@ -343,6 +358,13 @@ export function getNuxtConfig (_options) {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
   }
 
+  // devModules has been renamed to buildModules
+  if (typeof options.devModules !== 'undefined') {
+    consola.warn('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+    options.buildModules.push(...options.devModules)
+    delete options.devModules
+  }
+
   // Enable minimize for production builds
   if (options.build.optimization.minimize === undefined) {
     options.build.optimization.minimize = !options.dev
@@ -383,11 +405,21 @@ export function getNuxtConfig (_options) {
 
   // Add loading screen
   if (options.dev) {
-    options.devModules.push('@nuxt/loading-screen')
+    options.buildModules.push('@nuxt/loading-screen')
     // Disable build indicator for programmatic users
     if (!options._cli) {
       options.build.indicator = false
     }
+  }
+
+  const { timing } = options.server
+  if (timing) {
+    options.server.timing = { total: true, ...timing }
+  }
+
+  if (isPureObject(options.serverMiddleware)) {
+    options.serverMiddleware = Object.entries(options.serverMiddleware)
+      .map(([ path, handler ]) => ({ path, handler }))
   }
 
   return options
