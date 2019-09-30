@@ -188,7 +188,7 @@ describe('cli/utils', () => {
     stdout.mockRestore()
   })
 
-  test('showBanner does pint env, rendering mode and target', () => {
+  test('showBanner does print env, rendering mode and target', () => {
     const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => {})
     const successBox = jest.fn().mockImplementation((m, t) => t + m)
     jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
@@ -201,6 +201,7 @@ describe('cli/utils', () => {
           ssr: false
         },
         cli: {
+          bannerColor: 'green',
           badgeMessages: []
         }
       },
