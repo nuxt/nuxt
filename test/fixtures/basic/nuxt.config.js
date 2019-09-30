@@ -77,6 +77,7 @@ export default {
   build: {
     scopeHoisting: true,
     publicPath: '',
+    followSymlinks: true,
     postcss: {
       preset: {
         features: {
