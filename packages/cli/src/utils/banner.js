@@ -20,7 +20,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  const { bannerColor } = nuxt.options.cli.bannerColor
+  const { bannerColor } = nuxt.options.cli
   titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
