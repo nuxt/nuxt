@@ -39,6 +39,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
@@ -82,7 +83,9 @@ Object {
       },
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
         "sourceMap": false,
       },
       "scss": Object {
@@ -146,6 +149,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": false,

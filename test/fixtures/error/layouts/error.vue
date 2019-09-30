@@ -11,6 +11,7 @@
 
 <script>
 export default {
+  layout: 'error-layout',
   // eslint-disable-next-line vue/require-prop-types
   props: ['error']
 }
