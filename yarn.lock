@@ -1640,10 +1640,10 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-1.1.0.tgz#577e56c0d6462afc37b9d3e4de0cc963ec926654"
-  integrity sha512-BjafbPlZ5jrrukohbNKH9vJyWa5fAvHC7p9uevV7QgCF6YlJeZw6cXiLYVTWmmNL3Uor91Yyi3hzBDLocrKBRw==
+"@nuxt/loading-screen@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-1.2.0.tgz#9cfab1e5e421bbaedadb26f7f27a68bcde313c24"
+  integrity sha512-l7nXgwkuX2/lDxEDAyIe3013MS8Jhja29uDVka21gyEbRnL68XOkoV3ws4dkk6QfhT2bcPwtu2C8tYvAhhhUzA==
   dependencies:
     connect "^3.7.0"
     fs-extra "^8.1.0"
@@ -3206,10 +3206,10 @@ chokidar@^2.0.2, chokidar@^2.0.4:
   optionalDependencies:
     fsevents "^1.2.7"
 
-chokidar@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.npmjs.org/chokidar/-/chokidar-3.2.0.tgz#a0b08f9b770c082def0100e0fbcef322ad156a8a"
-  integrity sha512-ViJAmAatEHwGCbBa8coPyRY6yiQ+yryuHT9XnkV6l0ct140Tf6JguJ0LtgoJrjxr9I9utL8IRuqbjhDJAeWIeg==
+chokidar@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.npmjs.org/chokidar/-/chokidar-3.2.1.tgz#4634772a1924512d990d4505957bf3a510611387"
+  integrity sha512-/j5PPkb5Feyps9e+jo07jUZGvkB5Aj953NrI4s8xSVScrAo/RHeILrtdb4uzR7N6aaFFxxJ+gt8mA8HfNpw76w==
   dependencies:
     anymatch "~3.1.1"
     braces "~3.0.2"
