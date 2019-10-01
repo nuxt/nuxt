@@ -147,8 +147,8 @@ export default class Resolver {
     }
 
     // By default use esm only for js,mjs files outside of node_modules
-    if (useESM === undefined && !isExternal) {
-      useESM = /.(js|mjs)$/.test(resolvedPath)
+    if (useESM === undefined) {
+      useESM = !isExternal && /.(js|mjs)$/.test(resolvedPath)
     }
 
     // Try to require
