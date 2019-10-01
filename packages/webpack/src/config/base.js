@@ -135,10 +135,6 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool () {
-    return false
-  }
-
   env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
