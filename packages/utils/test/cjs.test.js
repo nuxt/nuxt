@@ -1,19 +1,9 @@
-import path from 'path'
 import { isExternalDependency, getPKG } from '../src/cjs'
 
-jest.mock('path')
-
-describe('util: context', () => {
-  test('isExternalDependency works on linux', () => {
-    path.sep = '/'
-
+describe('util: cjs', () => {
+  test('isExternalDependency works', () => {
     expect(isExternalDependency('/var/nuxt/node_modules/dependency.js')).toBe(true)
     expect(isExternalDependency('/var/nuxt/dependency.js')).toBe(false)
-  })
-
-  test('isExternalDependency works on windows', () => {
-    path.sep = '\\'
-
     expect(isExternalDependency('C:\\nuxt\\node_modules\\dependency.js')).toBe(true)
     expect(isExternalDependency('C:\\nuxt\\dependency.js')).toBe(false)
   })
