@@ -138,9 +138,17 @@ export default class Resolver {
       lastError = e
     }
 
+    const isExternal = resolvedPath.includes('/node_modules/')
+
+    // in dev mode make sure to clear the require cache so after
+    // a dev server restart any changed file is reloaded
+    if (this.options.dev && !isExternal && require.cache[resolvedPath]) {
+      delete require.cache[resolvedPath]
+    }
+
     // By default use esm only for js,mjs files outside of node_modules
-    if (useESM === undefined) {
-      useESM = /.(js|mjs)$/.test(resolvedPath) && !/node_modules/.test(resolvedPath)
+    if (useESM === undefined && !isExternal) {
+      useESM = /.(js|mjs)$/.test(resolvedPath)
     }
 
     // Try to require
