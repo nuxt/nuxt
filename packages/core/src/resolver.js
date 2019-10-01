@@ -3,7 +3,12 @@ import fs from 'fs-extra'
 import consola from 'consola'
 import esm from 'esm'
 
-import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
+import {
+  startsWithRootAlias,
+  startsWithSrcAlias,
+  isExternalDependency,
+  clearRequireCache
+} from '@nuxt/utils'
 
 export default class Resolver {
   constructor (nuxt) {
@@ -138,12 +143,12 @@ export default class Resolver {
       lastError = e
     }
 
-    const isExternal = resolvedPath.includes('/node_modules/')
+    const isExternal = isExternalDependency(resolvedPath)
 
     // in dev mode make sure to clear the require cache so after
     // a dev server restart any changed file is reloaded
-    if (this.options.dev && !isExternal && require.cache[resolvedPath]) {
-      delete require.cache[resolvedPath]
+    if (this.options.dev && !isExternal) {
+      clearRequireCache(resolvedPath)
     }
 
     // By default use esm only for js,mjs files outside of node_modules

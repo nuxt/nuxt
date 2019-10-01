@@ -1,6 +1,10 @@
+export function isExternalDependency (id) {
+  return id.includes('/node_modules/')
+}
+
 export function clearRequireCache (id) {
   const entry = require.cache[id]
-  if (!entry || id.includes('node_modules')) {
+  if (!entry || isExternalDependency(id)) {
     return
   }
 
@@ -17,7 +21,7 @@ export function clearRequireCache (id) {
 
 export function scanRequireTree (id, files = new Set()) {
   const entry = require.cache[id]
-  if (!entry || id.includes('node_modules') || files.has(id)) {
+  if (!entry || isExternalDependency(id) || files.has(id)) {
     return files
   }
 
