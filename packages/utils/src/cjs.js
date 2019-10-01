@@ -1,5 +1,7 @@
+import { sep } from 'path'
+
 export function isExternalDependency (id) {
-  return id.includes('/node_modules/')
+  return id.includes(`${sep}node_modules${sep}`)
 }
 
 export function clearRequireCache (id) {
