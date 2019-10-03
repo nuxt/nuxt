@@ -99,7 +99,6 @@ It's as simple as that!
 
 Or you can start by using one of our starter templates:
 
-- [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
 - [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
 - [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
 - [adonuxt](https://github.com/nuxt-community/adonuxt-template): Nuxt.js + AdonisJS
