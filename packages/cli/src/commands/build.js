@@ -62,8 +62,7 @@ export default {
   },
   async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
-    const shouldGenerate = config.mode === 'spa' && cmd.argv.generate !== false
-    config.server = shouldGenerate
+    config.server = config.mode === 'spa' && cmd.argv.generate !== false
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
@@ -74,7 +73,7 @@ export default {
       }))
     }
 
-    if (shouldGenerate) {
+    if (nuxt.options.mode === 'spa' && cmd.argv.generate !== false) {
       // Build + Generate for static deployment
       const generator = await cmd.getGenerator(nuxt)
       await generator.generate({ build: true })
