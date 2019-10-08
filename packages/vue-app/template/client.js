@@ -18,11 +18,6 @@ import {
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
-<% if (isDev) { %>import consola from 'consola'<% } %>
-
-<% if (isDev) { %>consola.wrapConsole()
-console.log = console.__log
-<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -43,9 +38,10 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 
 <% if (nuxtOptions.render.ssrLog) { %>
 const logs = NUXT.logs || []
-if (logs.length > 0) {
-  console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %>("%c🚀 Nuxt SSR Logs", 'font-size: 110%')
-  logs.forEach(logObj => consola[logObj.type](logObj))
+  if (logs.length > 0) {
+  const ssrLogSyle = 'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
+  console.group <%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ("%cNuxt SSR", ssrLogSyle)
+  logs.forEach(logObj => (console[logObj.type] || console.log)(...logObj.args))
   delete NUXT.logs
   console.groupEnd()
 }
