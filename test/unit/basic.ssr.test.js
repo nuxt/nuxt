@@ -90,9 +90,9 @@ describe('basic ssr', () => {
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
 
-    expect(html).toContain('<html foo="baz" data-n-head="foo">')
-    expect(html).toContain('<head bar="foo" data-n-head="bar">')
-    expect(html).toContain('<body baz="bar" data-n-head="baz">')
+    expect(html).toContain('<html foo="baz" data-n-head="%7B%22foo%22:%7B%22ssr%22:%22baz%22%7D%7D">')
+    expect(html).toContain('<head bar="foo" data-n-head="%7B%22bar%22:%7B%22ssr%22:%22foo%22%7D%7D">')
+    expect(html).toContain('<body baz="bar" data-n-head="%7B%22baz%22:%7B%22ssr%22:%22bar%22%7D%7D">')
   })
 
   test('/async-data', async () => {
