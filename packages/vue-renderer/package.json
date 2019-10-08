@@ -14,7 +14,7 @@
     "fs-extra": "^8.1.0",
     "lru-cache": "^5.1.1",
     "vue": "^2.6.10",
-    "vue-meta": "^2.2.2",
+    "vue-meta": "^2.3.0",
     "vue-server-renderer": "^2.6.10"
   },
   "publishConfig": {
