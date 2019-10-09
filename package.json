@@ -43,7 +43,7 @@
     "eslint": "6.4.0",
     "eslint-multiplexer": "^2.0.0",
     "esm": "^3.2.25",
-    "execa": "^2.0.5",
+    "execa": "^2.1.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fork-ts-checker-webpack-plugin": "^1.5.0",
