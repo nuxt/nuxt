@@ -7,6 +7,7 @@ describe('cli build', () => {
 
     const argv = [
       __dirname,
+      '--no-force-exit',
       '-c',
       'cli.build.config.js'
     ]

@@ -7,6 +7,7 @@ describe('cli generate', () => {
 
     const argv = [
       __dirname,
+      '--no-force-exit',
       '-c',
       'cli.gen.config.js'
     ]
