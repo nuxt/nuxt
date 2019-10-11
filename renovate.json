@@ -8,7 +8,7 @@
   "ignoreDeps": [
     "core-js",
     "vue-router",
-    "eslint"
+    "memory-fs"
   ],
   "lockFileMaintenance": {
     "enabled": true
