@@ -1,3 +1,8 @@
+const fs = require('fs')
+const path = require('path')
+
+const corePackages = fs.readdirSync(path.resolve(__dirname, 'packages'))
+
 module.exports = {
   testEnvironment: 'node',
 
@@ -47,6 +52,10 @@ module.exports = {
     'js',
     'json'
   ],
+
+  moduleNameMapper: {
+    [`@nuxt/(${corePackages.join('|')})(/?.*)$`]: '<rootDir>/packages/$1/src/$2'
+  },
 
   reporters: [
     'default',

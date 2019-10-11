@@ -1,11 +1,17 @@
+import consola from 'consola'
+
 export default {
   test: true,
+  mode: 'spa',
   hooks (hook) {
     hook('build:done', () => {
-      process.stdout.write('Compiled successfully')
+      consola.log('Compiled successfully')
     })
     hook('listen', (server, { port, host }) => {
-      process.stdout.write(`Listening on http://${host}:${port}`)
+      consola.log(`Listening on http://${host}:${port}`)
     })
+  },
+  build: {
+    terser: false
   }
 }
