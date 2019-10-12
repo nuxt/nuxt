@@ -85,7 +85,8 @@ export default {
 
     const { errors } = await generator.generate({
       init: true,
-      build: cmd.argv.build
+      build: cmd.argv.build,
+      ssr: true
     })
 
     if (cmd.argv['fail-on-error'] && errors.length > 0) {

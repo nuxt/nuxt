@@ -22,7 +22,7 @@ export default class Generator {
     )
   }
 
-  async generate ({ build = true, init = true } = {}) {
+  async generate ({ build = true, init = true, ssr = false } = {}) {
     consola.debug('Initializing generator...')
 
     await this.initiate({ build, init })
@@ -31,7 +31,7 @@ export default class Generator {
 
     const routes = await this.initRoutes()
 
-    consola.info('Generating pages')
+    consola.info(`Generating pages for your ${ssr ? 'server-rendered site' : 'SPA'}.`)
 
     const errors = await this.generateRoutes(routes)
 

@@ -53,7 +53,7 @@ describe('generator: generate routes', () => {
     expect(generator.initiate).toBeCalledWith({ build: true, init: true })
     expect(generator.initRoutes).toBeCalledTimes(1)
     expect(consola.info).toBeCalledTimes(1)
-    expect(consola.info).toBeCalledWith('Generating pages')
+    expect(consola.info).toBeCalledWith('Generating pages for your SPA.')
     expect(generator.generateRoutes).toBeCalledTimes(1)
     expect(generator.generateRoutes).toBeCalledWith(routes)
     expect(generator.afterGenerate).toBeCalledTimes(1)
