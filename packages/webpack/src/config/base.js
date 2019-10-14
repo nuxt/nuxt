@@ -207,6 +207,7 @@ export default class WebpackBaseConfig {
             condition: 'some',
             filename: 'LICENSES'
           },
+          sourceMap: this.devtool && /((inline|hidden|nosources)-)?source-?map/.test(this.devtool),
           terserOptions: {
             compress: {
               ecma: this.isModern ? 6 : undefined
