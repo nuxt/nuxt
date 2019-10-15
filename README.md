@@ -210,9 +210,15 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-g
 
 ## Cross-browser testing
 
-Thanks to BrowserStack!
+Thanks to [BrowserStack](http://browserstack.com)!
 
 <a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+
+## Automated testing
+
+Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
+
+<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
 
 ## Security
 
