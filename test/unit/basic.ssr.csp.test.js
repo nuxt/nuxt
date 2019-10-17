@@ -198,14 +198,14 @@ describe('basic ssr csp', () => {
     )
 
     test(
-      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatiblity is enabled',
+      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
           'script-src': [`'unsafe-inline'`]
         }
 
         nuxt = await startCspServer({
-          unsafeInlineCompatiblity: true,
+          unsafeInlineCompatibility: true,
           policies
         })
 
@@ -419,14 +419,14 @@ describe('basic ssr csp', () => {
     )
 
     test(
-      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatiblity is enabled',
+      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
           'script-src': [`'unsafe-inline'`]
         }
 
         nuxt = await startCspServer({
-          unsafeInlineCompatiblity: true,
+          unsafeInlineCompatibility: true,
           policies
         })
 
