@@ -22,5 +22,5 @@ export default function () {
         socket.broadcast.emit('new-message', message)
       })
     })
-  }
+  })
 }
