@@ -10100,10 +10100,10 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
     hash-base "^3.0.0"
     inherits "^2.0.1"
 
-rollup-plugin-alias@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/rollup-plugin-alias/-/rollup-plugin-alias-2.0.1.tgz#2f11b0a09e0bab1bbd1f130536fe99ef8f35c0dd"
-  integrity sha512-/wOySYmFzR1TPijsiNBOAV12HYPs7GZtAuim2LKdk5V6RnQSZ34ueVgkFfjJffe/HIFR6Jdwc4+7YOlY5uty4w==
+rollup-plugin-alias@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/rollup-plugin-alias/-/rollup-plugin-alias-2.1.0.tgz#5976ec890a95ce060f190b0d5cc5edcb5b23b916"
+  integrity sha512-fbPLCkulSyNAqMvyvucGxlWCVE/+cqkFsFXN4exCX2Poti/+R0LgkhwOj/zqaytaZ4i1rCSXh+zZkVjgxlUBGg==
   dependencies:
     slash "^3.0.0"
 
@@ -10171,10 +10171,10 @@ rollup-pluginutils@^2.5.0, rollup-pluginutils@^2.6.0, rollup-pluginutils@^2.8.1:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@^1.24.0:
-  version "1.24.0"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-1.24.0.tgz#0ace969508babb7a5fcb228e831e9c9a2873c2b0"
-  integrity sha512-PiFETY/rPwodQ8TTC52Nz2DSCYUATznGh/ChnxActCr8rV5FIk3afBUb3uxNritQW/Jpbdn3kq1Rwh1HHYMwdQ==
+rollup@^1.25.0:
+  version "1.25.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-1.25.0.tgz#0c293d16be13000fa69c5a3035ab21a852d04bd7"
+  integrity sha512-tcf5ThhnhOUaNrxBSABvaaX9uC8hNxgyJpJmDIXaCkKHq/nPocaDz/4F/KBDiUpOt/ThvUxFrUq3XkyWiyXQiQ==
   dependencies:
     "@types/estree" "*"
     "@types/node" "*"
