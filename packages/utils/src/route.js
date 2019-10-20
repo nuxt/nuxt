@@ -66,10 +66,8 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
       const indexRoutePath = trailingSlash !== false ? '' : '/'
       const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
       if (defaultChildRoute) {
-        console.log('has default', defaultChildRoute, route)
         defaultChildRoute.name = route.name
         delete route.name
-        console.log(defaultChildRoute.name)
       }
       route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash)
     }
