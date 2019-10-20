@@ -47,7 +47,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('inxdex') - start //  children names
+        const i = r.indexOf('index') - start //  children names
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
