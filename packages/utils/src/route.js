@@ -25,7 +25,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
   return routes
 }
 
-function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') {
+function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash) {
   let start = -1
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const routesIndex = []
@@ -47,7 +47,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('index') - start //  children names
+        const i = r.indexOf('inxdex') - start //  children names
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
@@ -63,10 +63,15 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      if (route.children.find(child => child.path === '')) {
+      const indexRoutePath = trailingSlash !== false ? '' : '/'
+      const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      if (defaultChildRoute) {
+        console.log('has default', defaultChildRoute, route)
+        defaultChildRoute.name = route.name
         delete route.name
+        console.log(defaultChildRoute.name)
       }
-      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter)
+      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash)
     }
   })
   return routes
@@ -183,7 +188,7 @@ export const createRoutes = function createRoutes ({
   })
 
   sortRoutes(routes)
-  return cleanChildrenRoutes(routes, false, routeNameSplitter)
+  return cleanChildrenRoutes(routes, false, routeNameSplitter, trailingSlash)
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed
