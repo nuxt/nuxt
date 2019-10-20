@@ -47,6 +47,7 @@ export default () => ({
   alias: {},
 
   // Ignores
+  ignoreOptions: undefined,
   ignorePrefix: '-',
   ignore: [
     '**/*.test.*',
