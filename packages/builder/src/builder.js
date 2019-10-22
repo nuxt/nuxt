@@ -1,4 +1,5 @@
 import path from 'path'
+import chalk from 'chalk'
 import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -23,7 +24,8 @@ import {
   determineGlobals,
   stripWhitespace,
   isIndexFileAndFolder,
-  scanRequireTree
+  scanRequireTree,
+  TARGETS
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -101,6 +103,7 @@ export default class Builder {
   }
 
   forGenerate () {
+    this.options.target = TARGETS.static
     this.bundleBuilder.forGenerate()
   }
 
@@ -121,6 +124,10 @@ export default class Builder {
       consola.info('Initial build may take a while')
     } else {
       consola.info('Production build')
+      const rendering = this.options.render.ssr ? 'universal' : 'client-side'
+      consola.info(`Rendering: ${chalk.bold.yellow(rendering)}`)
+      const target = this.options.target === TARGETS.static && this.options.generate.static ? 'full static' : this.options.target
+      consola.info(`Target: ${chalk.bold.cyan(target)}`)
     }
 
     // Wait for nuxt ready

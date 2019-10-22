@@ -5,6 +5,7 @@ export const template = {
   dependencies,
   dir: path.join(__dirname, '..', 'template'),
   files: [
+    'nuxt/config.json',
     'App.js',
     'client.js',
     'index.js',

@@ -199,6 +199,7 @@ Object {
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "static": false,
     "subFolders": true,
   },
   "globalName": "nuxt",

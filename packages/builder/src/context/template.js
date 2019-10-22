@@ -4,7 +4,7 @@ import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
-import { r, wp, wChunk, serializeFunction } from '@nuxt/utils'
+import { r, wp, wChunk, serializeFunction, TARGETS } from '@nuxt/utils'
 
 export default class TemplateContext {
   constructor (builder, options) {
@@ -20,6 +20,7 @@ export default class TemplateContext {
       uniqBy,
       isDev: options.dev,
       isTest: options.test,
+      isFullStatic: !options.dev && options.target === TARGETS.static && options.generate.static === true,
       debug: options.debug,
       buildIndicator: options.dev && options.build.indicator,
       vue: { config: options.vue.config },

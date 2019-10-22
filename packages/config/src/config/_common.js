@@ -65,7 +65,8 @@ export default () => ({
     concurrency: 500,
     interval: 0,
     subFolders: true,
-    fallback: '200.html'
+    fallback: '200.html',
+    static: false
   },
 
   // Watch

@@ -3,8 +3,9 @@ import Chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
+import devalue from '@nuxt/devalue'
 
-import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -23,6 +24,13 @@ export default class Generator {
   }
 
   async generate ({ build = true, init = true } = {}) {
+    // Paylods for full static
+    if (this.options.generate.static) {
+      consola.info('Full static mode activated')
+      const exportTime = String(Date.now())
+      this.payloadDir = path.join(this.distNuxtPath, 'payloads', exportTime)
+      this.payloadPath = urlJoin(this.options.build.publicPath, 'payloads', exportTime)
+    }
     consola.debug('Initializing generator...')
 
     await this.initiate({ build, init })
@@ -32,7 +40,6 @@ export default class Generator {
     const routes = await this.initRoutes()
 
     consola.info('Generating pages')
-
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()
@@ -61,6 +68,12 @@ export default class Generator {
       if (!hasBuilt) {
         throw new Error(
           `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build\` before calling \`nuxt export\``
+        )
+      }
+      const config = this.getBuildConfig()
+      if (config.target !== TARGETS.static) {
+        throw new Error(
+          `In order to use \`nuxt export\`, you need to run \`nuxt build --target=static\``
         )
       }
     }
@@ -99,6 +112,10 @@ export default class Generator {
     await this.nuxt.callHook('generate:extendRoutes', routes)
 
     return routes
+  }
+
+  getBuildConfig () {
+    return require(path.join(this.options.buildDir, 'nuxt/config.json'))
   }
 
   getAppRoutes () {
@@ -188,6 +205,10 @@ export default class Generator {
     // Copy .nuxt/dist/client/ to dist/_nuxt/
     await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
 
+    if (this.payloadDir) {
+      await fsExtra.ensureDir(this.payloadDir)
+    }
+
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
     const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
@@ -219,8 +240,24 @@ export default class Generator {
     const pageErrors = []
 
     try {
-      const res = await this.nuxt.server.renderRoute(route, { payload, static: true })
+      const renderContext = {
+        payload,
+        static: true,
+        payloadPath: this.payloadPath
+      }
+      const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
+
+      // Save payload
+      if (this.payloadDir) {
+        const payloadFilePath = path.join(this.payloadDir, route, 'payload.json')
+
+        await fsExtra.ensureDir(path.join(this.payloadDir, route))
+        renderContext.nuxt.data = renderContext.nuxt.data || []
+        await fsExtra.writeFile(payloadFilePath, JSON.stringify(renderContext.nuxt.data.slice(-1)[0]), 'utf-8')
+        html = await this.addPayloadScript(route, html)
+      }
+
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }
@@ -280,6 +317,19 @@ export default class Generator {
     }
 
     return true
+  }
+
+  async addPayloadScript (route, html) {
+    const windowNamespace = this.options.globals.context(this.options.globalName)
+    const chunks = html.split(`<script>window.${windowNamespace}=`)
+    const [pre] = chunks
+    const payload = chunks[1].split('</script>').shift()
+    const post = chunks[1].split('</script>').slice(1).join('</script>')
+
+    // Write payload.js file
+    await fsExtra.writeFile(path.join(this.payloadDir, route, 'payload.js'), `window.${windowNamespace}=${payload}`, 'utf-8')
+
+    return `${pre}<script defer src="${urlJoin(this.payloadPath, route, 'payload.js')}"></script>${post}`
   }
 
   minifyHtml (html) {
