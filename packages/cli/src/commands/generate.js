@@ -17,7 +17,7 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Enable Vue devtools',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
         if (argv.devtools) {
@@ -29,7 +29,7 @@ export default {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
@@ -40,7 +40,7 @@ export default {
     modern: {
       ...common.modern,
       description: 'Generate app in modern build (modern mode can be only client)',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         if (normalizeArg(argv.modern)) {
           options.modern = 'client'
         }
@@ -52,7 +52,7 @@ export default {
       description: 'Exit with non-zero status code if there are errors when generating pages'
     }
   },
-  async run(cmd) {
+  async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, _generate: true, _build: cmd.argv.build })
 
     // Disable analyze if set by the nuxt config

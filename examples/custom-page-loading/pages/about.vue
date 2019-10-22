@@ -14,21 +14,21 @@
 <script>
 export default {
   loading: false,
-  asyncData() {
+  asyncData () {
     return new Promise((resolve) => {
       setTimeout(function () {
         resolve({})
       }, 1000)
     })
   },
-  mounted() {
+  mounted () {
     setTimeout(() => {
       // Extend loader for an additional 5s
       this.$nuxt.$loading.finish()
     }, 5000)
   },
   methods: {
-    goToFinal() {
+    goToFinal () {
       // Start loader immediately
       this.$nuxt.$loading.start()
       // Actually change route 5s later

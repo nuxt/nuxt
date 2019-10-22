@@ -13,7 +13,7 @@ export default {
   components: {
     BarChart
   },
-  async asyncData({ env }) {
+  async asyncData ({ env }) {
     const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/commit_activity?access_token=${env.githubToken}`)
     return {
       barChartData: {

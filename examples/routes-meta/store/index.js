@@ -3,7 +3,7 @@ export const state = () => ({
 })
 
 export const mutations = {
-  SET_THEME(state, theme) {
+  SET_THEME (state, theme) {
     state.theme = theme
   }
 }

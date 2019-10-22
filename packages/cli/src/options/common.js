@@ -22,7 +22,7 @@ export default {
     alias: 'm',
     type: 'string',
     description: 'Build/Start app for modern browsers, e.g. server, client and false',
-    prepare(cmd, options, argv) {
+    prepare (cmd, options, argv) {
       if (argv.modern !== undefined) {
         options.modern = normalizeArg(argv.modern)
       }
@@ -30,7 +30,7 @@ export default {
   },
   'force-exit': {
     type: 'boolean',
-    default(cmd) {
+    default (cmd) {
       return ['build', 'generate'].includes(cmd.name)
     },
     description: 'Whether Nuxt.js should force exit after the command has finished'

@@ -1,4 +1,5 @@
 import path from 'path'
+import jsdom from 'jsdom'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp, waitFor } from '../utils'
 
@@ -30,7 +31,8 @@ describe('basic dev', () => {
           '@scoped/packageA',
           '@scoped\\packageB',
           'vue.test.js',
-          /vue-test/
+          /vue-test/,
+          ({ isModern }) => isModern ? 'modern-test' : 'normal-test'
         ],
         loaders: {
           cssModules: {
@@ -39,7 +41,7 @@ describe('basic dev', () => {
             }
           }
         },
-        extend({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
+        extend ({ module: { rules }, output: wpOutput }, { isClient, loaders }) {
           if (isClient) {
             const babelLoader = rules.find(loader => loader.test.test('.jsx'))
             transpile = file => !babelLoader.exclude(file)
@@ -50,6 +52,14 @@ describe('basic dev', () => {
             postcssLoader = cssLoaders[cssLoaders.length - 1]
           }
         }
+      },
+      hooks: {
+        'vue-renderer:ssr:context': ({ nuxt }) => {
+          nuxt.logs = [{ type: 'log', args: ['This is a test ssr log'] }]
+        }
+      },
+      render: {
+        ssrLog: 'collapsed'
       }
     })
 
@@ -77,6 +87,7 @@ describe('basic dev', () => {
     expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
     expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('node_modules/normal-test'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
@@ -88,10 +99,10 @@ describe('basic dev', () => {
   })
 
   test('Config: build.loaders', () => {
-    expect(Object.keys(loadersOptions)).toHaveLength(14)
+    expect(Object.keys(loadersOptions)).toHaveLength(12)
     expect(loadersOptions).toHaveProperty(
       'file', 'fontUrl', 'imgUrl', 'pugPlain', 'vue',
-      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'ts', 'tsx', 'vueStyle'
+      'css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.modules.localIdentName).toBe('[hash:base64:6]')
@@ -165,6 +176,27 @@ describe('basic dev', () => {
         }
       }
     })
+  })
+
+  test('/ should display ssr log in collapsed group', async () => {
+    const virtualConsole = new jsdom.VirtualConsole()
+    const groupCollapsed = jest.fn()
+    const groupEnd = jest.fn()
+    const log = jest.fn()
+    virtualConsole.on('groupCollapsed', groupCollapsed)
+    virtualConsole.on('groupEnd', groupEnd)
+    virtualConsole.on('log', log)
+
+    await nuxt.server.renderAndGetWindow(url('/'), {
+      virtualConsole
+    })
+
+    expect(groupCollapsed).toHaveBeenCalledWith(
+      '%cNuxt SSR',
+      'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
+    )
+    expect(groupEnd).toHaveBeenCalled()
+    expect(log).toHaveBeenCalledWith('This is a test ssr log')
   })
 
   // Close server and ask nuxt to stop listening to file changes

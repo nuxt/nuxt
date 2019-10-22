@@ -1,12 +1,12 @@
 <template>
   <transition appear>
-    <div class="nuxt__build_indicator" :style="indicatorStyle" v-if="building">
+    <div v-if="building" class="nuxt__build_indicator" :style="indicatorStyle">
       <svg viewBox="0 0 96 72" version="1" xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fill-rule="evenodd">
-          <path d="M6 66h23l1-3 21-37L40 6 6 66zM79 66h11L62 17l-5 9 22 37v3zM54 31L35 66h38z"/>
-          <path d="M29 69v-1-2H6L40 6l11 20 3-6L44 3s-2-3-4-3-3 1-5 3L1 63c0 1-2 3 0 6 0 1 2 2 5 2h28c-3 0-4-1-5-2z" fill="#00C58E"/>
-          <path d="M95 63L67 14c0-1-2-3-5-3-1 0-3 0-4 3l-4 6 3 6 5-9 28 49H79a5 5 0 0 1 0 3c-2 2-5 2-5 2h16c1 0 4 0 5-2 1-1 2-3 0-6z" fill="#00C58E"/>
-          <path d="M79 69v-1-2-3L57 26l-3-6-3 6-21 37-1 3a5 5 0 0 0 0 3c1 1 2 2 5 2h40s3 0 5-2zM54 31l19 35H35l19-35z" fill="#FFF" fill-rule="nonzero"/>
+          <path d="M6 66h23l1-3 21-37L40 6 6 66zM79 66h11L62 17l-5 9 22 37v3zM54 31L35 66h38z" />
+          <path d="M29 69v-1-2H6L40 6l11 20 3-6L44 3s-2-3-4-3-3 1-5 3L1 63c0 1-2 3 0 6 0 1 2 2 5 2h28c-3 0-4-1-5-2z" fill="#00C58E" />
+          <path d="M95 63L67 14c0-1-2-3-5-3-1 0-3 0-4 3l-4 6 3 6 5-9 28 49H79a5 5 0 0 1 0 3c-2 2-5 2-5 2h16c1 0 4 0 5-2 1-1 2-3 0-6z" fill="#00C58E" />
+          <path d="M79 69v-1-2-3L57 26l-3-6-3 6-21 37-1 3a5 5 0 0 0 0 3c1 1 2 2 5 2h40s3 0 5-2zM54 31l19 35H35l19-35z" fill="#FFF" fill-rule="nonzero" />
         </g>
       </svg>
       {{ animatedProgress }}%
@@ -16,44 +16,29 @@
 
 <script>
 export default {
-  name: 'nuxt-build-indicator',
-  data() {
+  name: 'NuxtBuildIndicator',
+  data () {
     return {
       building: false,
       progress: 0,
       animatedProgress: 0,
-      reconnectAttempts: 0,
+      reconnectAttempts: 0
     }
-  },
-  mounted() {
-    if (WebSocket === undefined) {
-      return // Unsupported
-    }
-    this.wsConnect()
-  },
-  beforeDestroy() {
-    this.wsClose()
-    clearInterval(this._progressAnimation)
   },
   computed: {
-    wsURL() {
-      const _path = '<%= router.base %>_loading/ws'
-      const _protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-      return `${_protocol}://${location.hostname}:${location.port}${_path}`
-    },
     options: () => (<%= JSON.stringify(buildIndicator) %>),
-    indicatorStyle() {
+    indicatorStyle () {
       const [ d1, d2 ] = this.options.position.split('-')
       return {
         [d1]: '20px',
         [d2]: '20px',
         'background-color': this.options.backgroundColor,
-        color: this.options.color,
+        color: this.options.color
       }
     }
   },
   watch: {
-    progress(val, oldVal) {
+    progress (val, oldVal) {
       // Average progress may decrease but ignore it!
       if (val < oldVal) {
         return
@@ -76,38 +61,30 @@ export default {
       }, 50)
     }
   },
+  mounted () {
+    if (EventSource === undefined) {
+      return // Unsupported
+    }
+    this.sseConnect()
+  },
+  beforeDestroy () {
+    this.sseClose()
+    clearInterval(this._progressAnimation)
+  },
   methods: {
-    wsConnect() {
+    sseConnect () {
       if (this._connecting) {
         return
       }
       this._connecting = true
-      this.wsClose()
-      this.ws = new WebSocket(this.wsURL)
-      this.ws.onmessage = this.onWSMessage.bind(this)
-      this.ws.onclose = this.wsReconnect.bind(this)
-      this.ws.onerror = this.wsReconnect.bind(this)
-      setTimeout(() => {
-        this._connecting = false
-        if (this.ws.readyState !== WebSocket.OPEN) {
-          this.wsReconnect()
-        }
-      }, 5000)
+      this.sse = new EventSource('<%= router.base %>_loading/sse')
+      this.sse.addEventListener('message', event => this.onSseMessage(event))
     },
-
-    wsReconnect() {
-      if (this._reconnecting || this.reconnectAttempts++ > 10) {
+    onSseMessage (message) {
+      const data = JSON.parse(message.data)
+      if (!data.states) {
         return
       }
-      this._reconnecting = true
-      setTimeout(() => {
-        this._reconnecting = false
-        this.wsConnect()
-      }, 1000)
-    },
-
-    onWSMessage(message) {
-      const data = JSON.parse(message.data)
 
       this.progress = Math.round(data.states.reduce((p, s) => p + s.progress, 0) / data.states.length)
 
@@ -123,10 +100,10 @@ export default {
       }
     },
 
-    wsClose() {
-      if (this.ws) {
-        this.ws.close()
-        delete this.ws
+    sseClose () {
+      if (this.sse) {
+        this.sse.close()
+        delete this.sse
       }
     }
   }
@@ -144,6 +121,7 @@ export default {
   width: 88px;
   z-index: 2147483647;
   font-size: 16px;
+  line-height: 1.2rem;
 }
 .v-enter-active, .v-leave-active {
   transition-delay: 0.2s;
@@ -155,6 +133,8 @@ export default {
   transform: translateY(20px);
 }
 svg {
+  display: inline-block;
+  vertical-align: baseline;
   width: 1.1em;
   position: relative;
   top: 1px;

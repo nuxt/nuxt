@@ -10,7 +10,7 @@
 <script>
 export default {
   layout: ({ isMobile }) => isMobile ? 'mobile' : 'default',
-  asyncData({ req }) {
+  asyncData ({ req }) {
     return {
       name: req ? 'server' : 'client'
     }

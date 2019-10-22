@@ -12,7 +12,7 @@
 <script>
 export default {
   layout: 'patch',
-  asyncData() {
+  asyncData () {
     return {
       date: Date.now()
     }

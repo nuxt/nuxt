@@ -9,7 +9,6 @@ coverage
 ## cofeescript
 examples/coffeescript/pages/index.vue
 examples/pug-stylus-coffee/
-examples/typescript-eslint/
 # Packages
 
 # vue-app

@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  fetch({ redirect }) {
+  fetch ({ redirect }) {
     return redirect({ name: 'stateless' })
   }
 }

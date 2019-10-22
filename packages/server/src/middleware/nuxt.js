@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import { getContext } from '@nuxt/utils'
 
-export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
   const context = getContext(req, res)
 
@@ -38,7 +38,8 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     // Add ETag header
     if (!error && options.render.etag) {
-      const etag = generateETag(html, options.render.etag)
+      const { hash } = options.render.etag
+      const etag = hash ? hash(html, options.render.etag) : generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
@@ -113,9 +114,11 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
 
     const { crossorigin } = options.build
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
-    const ref = modern ? 'modulepreload' : 'preload'
+    // `modulepreload` rel attribute only supports script-like `as` value
+    // https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
+    const rel = modern && asType === 'script' ? 'modulepreload' : 'preload'
 
-    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
+    links.push(`<${publicPath}${file}>; rel=${rel};${cors} as=${asType}`)
   })
   return links
 }

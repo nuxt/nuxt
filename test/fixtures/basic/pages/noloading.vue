@@ -8,7 +8,7 @@
 <script>
 export default {
   loading: false,
-  asyncData() {
+  asyncData () {
     return new Promise((resolve) => {
       setTimeout(() => resolve({
         loaded: false,
@@ -16,7 +16,7 @@ export default {
       }), 300)
     })
   },
-  mounted() {
+  mounted () {
     this.$nuxt.$loading.finish()
     setTimeout(() => {
       this.$nuxt.$loading.start()

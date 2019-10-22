@@ -10,7 +10,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       model: 'I am index'
     }

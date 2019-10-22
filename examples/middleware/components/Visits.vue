@@ -9,12 +9,12 @@
 <script>
 export default {
   filters: {
-    hours(date) {
+    hours (date) {
       return date.split('T')[1].split('.')[0]
     }
   },
   computed: {
-    visits() {
+    visits () {
       return this.$store.state.visits.slice().reverse()
     }
   }

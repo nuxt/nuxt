@@ -17,7 +17,7 @@ export default {
     clicked: false
   }),
   methods: {
-    handleClick() {
+    handleClick () {
       this.clicked = true
     }
   }

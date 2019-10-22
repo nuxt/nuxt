@@ -23,7 +23,7 @@ export default
 @Component
 class Child extends Base {
   // override parent method
-  greet() {
+  greet () {
     console.log('child greeting: ' + this.msg) // eslint-disable-line no-console
   }
 }

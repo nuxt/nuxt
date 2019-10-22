@@ -26,7 +26,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       drawer: false
     }

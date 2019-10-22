@@ -1,2 +1,0 @@
-import './vue'
-import './process'

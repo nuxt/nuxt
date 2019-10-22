@@ -5,11 +5,11 @@
 <script>
 export default {
   layout: 'default',
-  created() {
+  created () {
     // eslint-disable-next-line no-console
     console.log('redirect-done created')
   },
-  mounted() {
+  mounted () {
     // eslint-disable-next-line no-console
     console.log('redirect-done mounted')
   }

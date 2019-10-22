@@ -1,4 +1,4 @@
-function modifyHtml(html) {
+function modifyHtml (html) {
   return html.replace(
     '</body>',
     `<!-- extra html from render:route hook added at ${Date.now()}--></body>`

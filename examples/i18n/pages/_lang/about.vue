@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  head() {
+  head () {
     return { title: this.$t('about.title') }
   }
 }

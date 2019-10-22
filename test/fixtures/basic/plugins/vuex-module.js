@@ -5,12 +5,12 @@ export default function ({ store }) {
       mutateMe: 'not mutated'
     }),
     actions: {
-      mutate({ commit }) {
+      mutate ({ commit }) {
         commit('mutate')
       }
     },
     mutations: {
-      mutate(state) {
+      mutate (state) {
         state.mutateMe = 'mutated'
       }
     }

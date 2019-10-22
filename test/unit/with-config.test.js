@@ -182,6 +182,12 @@ describe('with-config', () => {
       .rejects.toMatchObject({ statusCode: 404 })
   })
 
+  test('/test/head', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/test/head'))
+    const html = window.document.querySelector('head').innerHTML
+    expect(html).toContain('<noscript data-n-head="test-ssr-app-id">noscript</noscript>')
+  })
+
   test('should ignore files in .nuxtignore', async () => {
     await expect(rp(url('/test-ignore')))
       .rejects.toMatchObject({ statusCode: 404 })

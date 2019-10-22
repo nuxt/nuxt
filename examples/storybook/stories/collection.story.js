@@ -21,7 +21,7 @@ storiesOf('Features/Method for rendering Vue', module)
     render: h => h('div', ['renders a div with some text in it..'])
   }))
   .add('render + component', () => ({
-    render(h) {
+    render (h) {
       return h(MyButton, { props: { color: 'pink' } }, ['renders component: MyButton'])
     }
   }))
@@ -49,7 +49,7 @@ storiesOf('Features/Method for rendering Vue', module)
   }))
   .add('JSX', () => ({
     components: { MyButton },
-    render() {
+    render () {
       return <my-button>MyButton rendered with JSX</my-button>
     }
   }))
@@ -59,14 +59,14 @@ storiesOf('Features/Method for rendering Vue', module)
     store: new Vuex.Store({
       state: { count: 0 },
       mutations: {
-        increment(state) {
+        increment (state) {
           state.count += 1; // eslint-disable-line
           action('vuex state')(state)
         }
       }
     }),
     methods: {
-      log() {
+      log () {
         this.$store.commit('increment')
       }
     }
@@ -78,14 +78,14 @@ storiesOf('Features/Method for rendering Vue', module)
     store: new Vuex.Store({
       state: { count: 0 },
       mutations: {
-        increment(state) {
+        increment (state) {
           state.count += 1; // eslint-disable-line
           action('vuex state')(state)
         }
       }
     }),
     methods: {
-      log() {
+      log () {
         this.$store.commit('increment')
       }
     }
@@ -108,7 +108,7 @@ storiesOf('Features/Decorator for Vue', module)
     return {
       components: { WrapButton },
       template: '<div :style="{ border: borderStyle }"><wrap-button/></div>',
-      data() {
+      data () {
         return { borderStyle: 'medium solid red' }
       }
     }
@@ -116,7 +116,7 @@ storiesOf('Features/Decorator for Vue', module)
   .addDecorator(() => ({
     // Decorated with `story` component
     template: '<div :style="{ border: borderStyle }"><story/></div>',
-    data() {
+    data () {
       return {
         borderStyle: 'medium solid blue'
       }
@@ -126,7 +126,7 @@ storiesOf('Features/Decorator for Vue', module)
     template: '<my-button>MyButton with template</my-button>'
   }))
   .add('render', () => ({
-    render(h) {
+    render (h) {
       return h(MyButton, { props: { color: 'pink' } }, ['renders component: MyButton'])
     }
   }))

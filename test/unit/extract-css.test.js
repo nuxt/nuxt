@@ -5,7 +5,7 @@ import { loadFixture, getPort, Nuxt } from '../utils'
 
 let nuxt = null
 const readFile = promisify(fs.readFile)
-const isWindows = /^win/.test(process.platform)
+const isWindows = process.platform.startsWith('win')
 
 describe('extract css', () => {
   beforeAll(async () => {

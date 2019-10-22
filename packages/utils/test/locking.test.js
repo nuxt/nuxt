@@ -168,7 +168,7 @@ describe('util: locking', () => {
       ...lockConfig,
       options: {
         // overwrite default compromised which calls consola.warn
-        onCompromised() {}
+        onCompromised () {}
       }
     })
 

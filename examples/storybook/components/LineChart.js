@@ -3,7 +3,7 @@ import { Line } from 'vue-chartjs'
 export default {
   extends: Line,
   props: ['data', 'options'],
-  mounted() {
+  mounted () {
     this.renderChart(this.data, this.options)
   }
 }

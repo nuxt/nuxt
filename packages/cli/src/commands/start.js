@@ -9,7 +9,7 @@ export default {
     ...common,
     ...server
   },
-  async run(cmd) {
+  async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, _start: true })
     const nuxt = await cmd.getNuxt(config)
 

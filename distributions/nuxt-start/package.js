@@ -1,7 +1,7 @@
 export default {
   build: true,
   hooks: {
-    async 'build:done'(pkg) {
+    async 'build:done' (pkg) {
       const mono = pkg.load('../..')
       const nuxt = pkg.load('../nuxt')
 

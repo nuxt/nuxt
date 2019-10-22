@@ -19,7 +19,7 @@ jest.mock('@nuxt/utils', () => ({
 
 const defaultOptions = {
   modules: [],
-  devModules: []
+  buildModules: []
 }
 
 describe('core: module', () => {
@@ -404,7 +404,7 @@ describe('core: module', () => {
     const result = await module.addModule({
       src: 'moduleTest',
       options: { test: true },
-      handler: function objectModule(options) {
+      handler: function objectModule (options) {
         return Promise.resolve(options)
       }
     })

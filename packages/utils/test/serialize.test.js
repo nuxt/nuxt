@@ -26,14 +26,14 @@ describe('util: serialize', () => {
 
   test('should serialize normal function', () => {
     const obj = {
-      fn: function () {}
+      fn: function () {} // eslint-disable-line object-shorthand
     }
     expect(serializeFunction(obj.fn)).toEqual('function () {}')
   })
 
   test('should serialize shorthand function', () => {
     const obj = {
-      fn() {}
+      fn () {}
     }
     expect(serializeFunction(obj.fn)).toEqual('function() {}')
   })
@@ -74,7 +74,7 @@ describe('util: serialize', () => {
 
   test('should not replace custom scripts', () => {
     const obj = {
-      fn() {
+      fn () {
         return 'function xyz(){};a=false?true:xyz();'
       }
     }
@@ -86,10 +86,10 @@ describe('util: serialize', () => {
 
   test('should serialize internal function', () => {
     const obj = {
-      fn(arg) {
+      fn (arg) {
         if (arg) {
           return {
-            title() {
+            title () {
               return 'test'
             }
           }

@@ -12,7 +12,7 @@ export default {
       alias: 'a',
       type: 'boolean',
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         // Analyze option
         options.build = options.build || {}
         if (argv.analyze && typeof options.build.analyze !== 'object') {
@@ -24,7 +24,7 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Enable Vue devtools',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
         if (argv.devtools) {
@@ -41,7 +41,7 @@ export default {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
@@ -53,15 +53,16 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Bundle all server dependencies (useful for nuxt-start)',
-      prepare(cmd, options, argv) {
+      prepare (cmd, options, argv) {
         if (argv.standalone) {
           options.build.standalone = true
         }
       }
     }
   },
-  async run(cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false, _build: true })
+  async run (cmd) {
+    const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
+    config.server = config.mode === 'spa' && cmd.argv.generate !== false
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
@@ -72,15 +73,14 @@ export default {
       }))
     }
 
-    if (nuxt.options.mode !== 'spa' || cmd.argv.generate === false) {
+    if (nuxt.options.mode === 'spa' && cmd.argv.generate !== false) {
+      // Build + Generate for static deployment
+      const generator = await cmd.getGenerator(nuxt)
+      await generator.generate({ build: true })
+    } else {
       // Build only
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()
-      return
     }
-
-    // Build + Generate for static deployment
-    const generator = await cmd.getGenerator(nuxt)
-    await generator.generate({ build: true })
   }
 }

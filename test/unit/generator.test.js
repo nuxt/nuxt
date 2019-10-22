@@ -23,7 +23,7 @@ describe('generator', () => {
     const array = ['/1', '/2', '/3', '/4']
     const config = {
       generate: {
-        routes() {
+        routes () {
           return array
         }
       }
@@ -42,7 +42,7 @@ describe('generator', () => {
   test('initRoutes with routes (fn(args))', async () => {
     const config = {
       generate: {
-        routes(array) {
+        routes (array) {
           return array
         }
       }
@@ -62,7 +62,7 @@ describe('generator', () => {
   test('initRoutes with routes (fn(cb, args))', async () => {
     const config = {
       generate: {
-        routes(cb, arg1, arg2, arg3, arg4) {
+        routes (cb, arg1, arg2, arg3, arg4) {
           cb(null, [arg1, arg2, arg3, arg4])
         }
       }

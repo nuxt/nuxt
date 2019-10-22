@@ -48,7 +48,7 @@ Object.defineProperty(global.__NUXT, 'version', {
 module.exports = _require('../src/index')
 ` }
 
-async function main() {
+async function main () {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = await rootPackage.getWorkspacePackages()

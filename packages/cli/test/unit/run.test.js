@@ -20,19 +20,26 @@ describe('run', () => {
   test('nuxt aliases to nuxt dev', async () => {
     await run([])
     expect(getCommand).toHaveBeenCalledWith('dev')
-    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [])
+    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [], {})
   })
 
   test('nuxt --foo aliases to nuxt dev --foo', async () => {
     await run(['--foo'])
     expect(getCommand).toHaveBeenCalledWith('dev')
-    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), ['--foo'])
+    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), ['--foo'], {})
+  })
+
+  test('all hooks passed to NuxtCommand', async () => {
+    const hooks = { foo: jest.fn() }
+    await run([], hooks)
+
+    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [], hooks)
   })
 
   test('nuxt <dir> aliases to nuxt dev <dir>', async () => {
     await run([__dirname])
     expect(getCommand).toHaveBeenCalledWith('dev')
-    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [__dirname])
+    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [__dirname], {})
   })
 
   test('external commands', async () => {

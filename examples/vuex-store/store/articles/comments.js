@@ -7,7 +7,7 @@ export const state = () => ({
 })
 
 export const getters = {
-  get(state) {
+  get (state) {
     return state.list
   }
 }

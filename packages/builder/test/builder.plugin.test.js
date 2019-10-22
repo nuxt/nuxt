@@ -1,6 +1,7 @@
 import Glob from 'glob'
 import consola from 'consola'
 import { isIndexFileAndFolder } from '@nuxt/utils'
+import { BundleBuilder } from '@nuxt/webpack'
 
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
@@ -10,13 +11,14 @@ jest.mock('pify', () => fn => fn)
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
+jest.mock('@nuxt/webpack')
 
 describe('builder: builder plugins', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  test('should normalize plugins', () => {
+  test('should normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
       '/var/nuxt/plugins/test.js',
@@ -24,9 +26,12 @@ describe('builder: builder plugins', () => {
       { src: '/var/nuxt/plugins/test.server', mode: 'server' },
       { src: '/var/nuxt/plugins/test.client', ssr: false }
     ]
-    const builder = new Builder(nuxt, {})
 
-    const plugins = builder.normalizePlugins()
+    const builder = new Builder(nuxt, BundleBuilder)
+    const plugins = await builder.normalizePlugins()
+
+    expect(nuxt.callHook).toBeCalledTimes(1)
+    expect(nuxt.callHook).toBeCalledWith('builder:extendPlugins', nuxt.options.plugins)
 
     expect(plugins).toEqual([
       {
@@ -52,14 +57,39 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should warning and fallback invalid mode when normalize plugins', () => {
+  test('should overwrite plugins from options', async () => {
+    const nuxt = createNuxt()
+
+    nuxt.options.plugins = [ '/var/nuxt/plugins/foo-bar.js' ]
+    nuxt.options.extendPlugins = jest.fn().mockReturnValue([
+      '/var/nuxt/plugins/fizz-fuzz.js'
+    ])
+
+    const builder = new Builder(nuxt, BundleBuilder)
+    const plugins = await builder.normalizePlugins()
+
+    expect(nuxt.options.extendPlugins).toHaveBeenCalledTimes(1)
+    expect(nuxt.options.extendPlugins).toHaveBeenCalledWith([
+      '/var/nuxt/plugins/foo-bar.js'
+    ])
+
+    expect(plugins).toEqual([
+      {
+        mode: 'all',
+        name: 'nuxt_plugin_fizzfuzz_hash(/var/nuxt/plugins/fizz-fuzz.js)',
+        src: 'resolveAlias(/var/nuxt/plugins/fizz-fuzz.js)'
+      }
+    ])
+  })
+
+  test('should warning and fallback invalid mode when normalize plugins', async () => {
     const nuxt = createNuxt()
     nuxt.options.plugins = [
       { src: '/var/nuxt/plugins/test', mode: 'abc' }
     ]
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
-    const plugins = builder.normalizePlugins()
+    const plugins = await builder.normalizePlugins()
 
     expect(plugins).toEqual([
       {
@@ -74,7 +104,7 @@ describe('builder: builder plugins', () => {
 
   test('should resolve plugins', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' },
       { src: '/var/nuxt/plugins/test.client', mode: 'client' },
@@ -100,7 +130,7 @@ describe('builder: builder plugins', () => {
 
   test('should throw error if plugin no existed', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' }
     ]
@@ -111,13 +141,13 @@ describe('builder: builder plugins', () => {
 
   test('should warn if there are multiple files and not index', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.plugins = [
       { src: '/var/nuxt/plugins/test', mode: 'all' }
     ]
     builder.relativeToBuild = jest.fn(src => `relative(${src})`)
 
-    Glob.mockImplementationOnce(src => [`${src}.js`, `${src}.ts`])
+    Glob.mockImplementationOnce(src => [`${src}.js`])
     isIndexFileAndFolder.mockReturnValueOnce(false)
 
     await builder.resolvePlugins()
@@ -127,16 +157,16 @@ describe('builder: builder plugins', () => {
     ])
   })
 
-  test('should detect plugin mode for client/server plugins', () => {
+  test('should detect plugin mode for client/server plugins', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.options.plugins = [
       { src: '/var/nuxt/plugins/test.js', mode: 'all' },
       { src: '/var/nuxt/plugins/test.client' },
       { src: '/var/nuxt/plugins/test.server' }
     ]
 
-    const plugins = builder.normalizePlugins()
+    const plugins = await builder.normalizePlugins()
 
     expect(plugins).toEqual([
       { mode: 'all',

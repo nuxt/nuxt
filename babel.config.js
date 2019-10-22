@@ -1,4 +1,4 @@
-function isBabelLoader(caller) {
+function isBabelLoader (caller) {
   return caller && caller.name === 'babel-loader'
 }
 
@@ -11,8 +11,7 @@ module.exports = function (api) {
             node: 'current'
           }
         }]
-      ],
-      plugins: ['dynamic-import-node']
+      ]
     }
   }
   return {}

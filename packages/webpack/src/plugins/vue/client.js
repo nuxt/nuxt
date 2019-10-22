@@ -9,13 +9,13 @@ import uniq from 'lodash/uniq'
 import { isJS, isCSS } from './util'
 
 export default class VueSSRClientPlugin {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.options = Object.assign({
       filename: null
     }, options)
   }
 
-  apply(compiler) {
+  apply (compiler) {
     compiler.hooks.emit.tapAsync('vue-client-plugin', (compilation, cb) => {
       const stats = compilation.getStats().toJson()
 

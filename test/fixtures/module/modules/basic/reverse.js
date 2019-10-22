@@ -2,7 +2,7 @@
 
 import Vue from 'vue'
 
-function $reverseStr(str) {
+function $reverseStr (str) {
   return str.split('').reverse().join('')
 }
 

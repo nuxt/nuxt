@@ -7,7 +7,7 @@ let port
 let nuxt = null
 
 expect.extend({
-  toFileExist(file) {
+  toFileExist (file) {
     if (existsSync(file)) {
       return {
         message: () => `expected '${file}' not exist`,

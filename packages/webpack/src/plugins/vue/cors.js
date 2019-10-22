@@ -1,9 +1,9 @@
 export default class CorsPlugin {
-  constructor({ crossorigin }) {
+  constructor ({ crossorigin }) {
     this.crossorigin = crossorigin
   }
 
-  apply(compiler) {
+  apply (compiler) {
     const ID = `vue-cors-plugin`
     compiler.hooks.compilation.tap(ID, (compilation) => {
       compilation.hooks.htmlWebpackPluginAlterAssetTags.tap(ID, (data) => {

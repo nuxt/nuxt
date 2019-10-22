@@ -8,7 +8,7 @@
 
 <script>
 export default {
-  head() {
+  head () {
     return {
       title: this.$route.name
     }

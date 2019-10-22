@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       model: '## Title h2\n### title h3\n\nLong text Long text Long text Long text Long text Long text Long text Long text Long text \n\n* gimme a list item\n* and one more yeehaw'
     }

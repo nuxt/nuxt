@@ -9,7 +9,7 @@
 
 export default {
 
-  async asyncData({ app }) {
+  async asyncData ({ app }) {
     const { data: { message: dog } } = await app.$axios.get('/dog')
     return { dog }
   }

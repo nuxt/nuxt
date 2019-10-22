@@ -392,18 +392,6 @@ describe('core: resolver', () => {
       expect(resolvedModule).toBe(path)
     })
 
-    test('should resolve with commonjs for ts module', () => {
-      const resolver = new Resolver({
-        options: {}
-      })
-      resolver.resolvePath = jest.fn(() => '/var/nuxt/resolver/module.ts')
-      resolver.esm = jest.fn(() => ({ default: 'resolved ts module' }))
-
-      expect(() => resolver.requireModule('/var/nuxt/resolver/module')).toThrow(
-        "Cannot find module '/var/nuxt/resolver/module.ts'"
-      )
-    })
-
     test('should throw error if resolvePath failed', () => {
       const resolver = new Resolver({
         options: {}
@@ -454,7 +442,7 @@ describe('core: resolver', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = jest.fn().mockReturnValue('/var/nuxt/resolver/file.js')
       resolver.esm = jest.fn()
 
       resolver.requireModule('/var/nuxt/resolver/file.js', { esm: true })

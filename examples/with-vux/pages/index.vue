@@ -8,13 +8,13 @@
 
 <script>
 export default {
-  head() {
+  head () {
     return {
       title: 'vux demo'
     }
   },
   methods: {
-    alert() {
+    alert () {
       this.$vux.alert.show('This is a Alert example.')
     }
   }

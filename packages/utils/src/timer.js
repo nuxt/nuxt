@@ -1,4 +1,4 @@
-async function promiseFinally(fn, finalFn) {
+async function promiseFinally (fn, finalFn) {
   let result
   try {
     if (typeof fn === 'function') {
@@ -12,7 +12,7 @@ async function promiseFinally(fn, finalFn) {
   return result
 }
 
-export const timeout = function timeout(fn, ms, msg) {
+export const timeout = function timeout (fn, ms, msg) {
   let timerId
   const warpPromise = promiseFinally(fn, () => clearTimeout(timerId))
   const timerPromise = new Promise((resolve, reject) => {
@@ -21,15 +21,15 @@ export const timeout = function timeout(fn, ms, msg) {
   return Promise.race([warpPromise, timerPromise])
 }
 
-export const waitFor = function waitFor(ms) {
+export const waitFor = function waitFor (ms) {
   return new Promise(resolve => setTimeout(resolve, ms || 0))
 }
 export class Timer {
-  constructor() {
+  constructor () {
     this._times = new Map()
   }
 
-  start(name, description) {
+  start (name, description) {
     const time = {
       name,
       description,
@@ -39,7 +39,7 @@ export class Timer {
     return time
   }
 
-  end(name) {
+  end (name) {
     if (this._times.has(name)) {
       const time = this._times.get(name)
       time.duration = this.hrtime(time.start)
@@ -48,7 +48,7 @@ export class Timer {
     }
   }
 
-  hrtime(start) {
+  hrtime (start) {
     const useBigInt = typeof process.hrtime.bigint === 'function'
     if (start) {
       const end = useBigInt ? process.hrtime.bigint() : process.hrtime(start)
@@ -59,7 +59,7 @@ export class Timer {
     return useBigInt ? process.hrtime.bigint() : process.hrtime()
   }
 
-  clear() {
+  clear () {
     this._times.clear()
   }
 }

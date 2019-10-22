@@ -1,13 +1,13 @@
 import { validate, isJS, extractQueryPartJS } from './util'
 
 export default class VueSSRServerPlugin {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.options = Object.assign({
       filename: null
     }, options)
   }
 
-  apply(compiler) {
+  apply (compiler) {
     validate(compiler)
 
     compiler.hooks.emit.tapAsync('vue-server-plugin', (compilation, cb) => {

@@ -47,23 +47,13 @@ export default () => ({
     },
     less: {},
     sass: {
-      indentedSyntax: true
+      sassOptions: {
+        indentedSyntax: true
+      }
     },
     scss: {},
     stylus: {},
-    ts: {
-      transpileOnly: true,
-      appendTsSuffixTo: [/\.vue$/]
-    },
-    tsx: {
-      transpileOnly: true,
-      appendTsxSuffixTo: [/\.vue$/]
-    },
     vueStyle: {}
-  },
-  typescript: {
-    typeCheck: true,
-    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],
@@ -128,5 +118,6 @@ export default () => ({
   },
   friendlyErrors: true,
   additionalExtensions: [],
-  warningIgnoreFilters: []
+  warningIgnoreFilters: [],
+  followSymlinks: false
 })

@@ -4,7 +4,7 @@ import { fatalBox } from './utils/formatting'
 
 let _setup = false
 
-export default function setup({ dev }) {
+export default function setup ({ dev }) {
   // Apply default NODE_ENV if not provided
   if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = dev ? 'development' : 'production'
@@ -24,7 +24,7 @@ export default function setup({ dev }) {
   // Exit process on fatal errors
   /* istanbul ignore next */
   consola.addReporter({
-    log(logObj) {
+    log (logObj) {
       if (logObj.type === 'fatal') {
         const errorMessage = String(logObj.args[0])
         process.stderr.write(fatalBox(errorMessage))

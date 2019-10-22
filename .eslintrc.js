@@ -13,6 +13,10 @@ module.exports = {
   "globals": {
     "BigInt": true
   },
+  rules: {
+    'no-console': 'error',
+    'no-debugger': 'error'
+  },
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
     rules: {
@@ -32,7 +36,7 @@ module.exports = {
       'vue/component-name-in-template-casing': ['warn', 'kebab-case']
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/+(App|index|server|client).js' ],
+    files: [ 'test/fixtures/*/.nuxt*/**/+(App|index|server|client|nuxt).js' ],
     rules: {
       'import/order': 'off'
     }

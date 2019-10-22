@@ -8,7 +8,7 @@ import pify from 'pify'
 let RANDOM_PORT = '0'
 
 export default class Listener {
-  constructor({ port, host, socket, https, app, dev, baseURL }) {
+  constructor ({ port, host, socket, https, app, dev, baseURL }) {
     // Options
     this.port = port
     this.host = host
@@ -26,7 +26,7 @@ export default class Listener {
     this.url = null
   }
 
-  async close() {
+  async close () {
     // Destroy server by forcing every connection to be closed
     if (this.server && this.server.listening) {
       await this.server.destroy()
@@ -41,7 +41,7 @@ export default class Listener {
     this.url = null
   }
 
-  computeURL() {
+  computeURL () {
     const address = this.server.address()
     if (!this.socket) {
       switch (address.address) {
@@ -55,7 +55,7 @@ export default class Listener {
     this.url = `unix+http://${address}`
   }
 
-  async listen() {
+  async listen () {
     // Prevent multi calls
     if (this.listening) {
       return
@@ -63,7 +63,7 @@ export default class Listener {
 
     // Initialize underlying http(s) server
     const protocol = this.https ? https : http
-    const protocolOpts = typeof this.https === 'object' ? [this.https] : []
+    const protocolOpts = this.https ? [this.https] : []
     this._server = protocol.createServer.apply(protocol, protocolOpts.concat(this.app))
 
     // Call server.listen
@@ -92,7 +92,7 @@ export default class Listener {
     this.listening = true
   }
 
-  async serverErrorHandler(error) {
+  async serverErrorHandler (error) {
     // Detect if port is not available
     const addressInUse = error.code === 'EADDRINUSE'
 

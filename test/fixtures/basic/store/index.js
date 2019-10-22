@@ -4,10 +4,10 @@ export const state = () => ({
 })
 
 export const mutations = {
-  increment(state) {
+  increment (state) {
     state.counter++
   },
-  setMeta(state, meta) {
+  setMeta (state, meta) {
     state.meta = meta
   }
 }

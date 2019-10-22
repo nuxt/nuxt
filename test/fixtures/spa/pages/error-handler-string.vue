@@ -1,7 +1,7 @@
 <script>
 
 export default {
-  fetch() {
+  fetch () {
     throw 'fetch error!' // eslint-disable-line
   }
 }
