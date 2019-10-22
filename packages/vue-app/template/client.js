@@ -327,6 +327,7 @@ async function render (to, from, next) {
     <% } %>
 
     <% if (features.middleware) { %>
+    <% if (isFullStatic) { %>await fullStaticMiddleware(this, Components, app.context)<% } %>
     await callMiddleware.call(this, Components, app.context, layout)
     if (nextCalled) {
       return

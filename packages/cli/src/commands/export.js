@@ -21,7 +21,6 @@ export default {
       target: TARGETS.static,
       _build: cmd.argv.build
     })
-
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {

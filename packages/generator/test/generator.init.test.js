@@ -77,6 +77,7 @@ describe('generator: initialize', () => {
 
     generator.initDist = jest.fn()
     fsExtra.exists.mockReturnValueOnce(true)
+    generator.getBuildConfig = jest.fn(() => ({ ssr: true, target: 'static' }))
 
     await generator.initiate({ build: false, init: false })
 
