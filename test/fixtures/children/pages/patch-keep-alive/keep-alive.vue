@@ -8,12 +8,16 @@
 export default {
   name: 'KeepAlive',
   layout: 'patch-keep-alive',
-  asyncData({ route, redirect }) {
+  asyncData ({ route, redirect }) {
     const instance = route.matched[0].instances.default
-    if (!instance) return
+    if (!instance) {
+      return
+    }
     const { keepAlive } = instance.$vnode.data
     const { name } = instance.$options
-    if (name !== 'KeepAlive' || !keepAlive) return
+    if (name !== 'KeepAlive' || !keepAlive) {
+      return
+    }
     redirect({ query: { multiple: 'happened' } })
   }
 }
