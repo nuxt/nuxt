@@ -99,7 +99,6 @@ It's as simple as that!
 
 Or you can start by using one of our starter templates:
 
-- [starter](https://github.com/nuxt-community/starter-template): Basic Nuxt.js project template
 - [express](https://github.com/nuxt-community/express-template): Nuxt.js + Express
 - [koa](https://github.com/nuxt-community/koa-template): Nuxt.js + Koa
 - [adonuxt](https://github.com/nuxt-community/adonuxt-template): Nuxt.js + AdonisJS
@@ -211,9 +210,15 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-g
 
 ## Cross-browser testing
 
-Thanks to BrowserStack!
+Thanks to [BrowserStack](http://browserstack.com)!
 
 <a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+
+## Automated testing
+
+Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
+
+<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
 
 ## Security
 

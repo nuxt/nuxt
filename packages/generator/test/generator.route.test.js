@@ -36,7 +36,7 @@ describe('generator: generate route', () => {
     const generator = new Generator(nuxt)
     path.join.mockClear()
 
-    const route = '/foo'
+    const route = '/foo/'
     const payload = {}
     const errors = []
 
