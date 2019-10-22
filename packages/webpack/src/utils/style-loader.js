@@ -84,13 +84,14 @@ export default class StyleLoader {
 
   extract () {
     if (this.extractCSS) {
+      const isDev = this.buildContext.options.dev
       return {
         loader: ExtractCssChunksPlugin.loader,
         options: {
           // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
           // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/161#issuecomment-500162574
-          reloadAll: true,
-          hot: true
+          reloadAll: isDev,
+          hot: isDev
         }
       }
     }
