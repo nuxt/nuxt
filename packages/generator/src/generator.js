@@ -3,7 +3,6 @@ import Chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
-import devalue from '@nuxt/devalue'
 
 import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS } from '@nuxt/utils'
 
