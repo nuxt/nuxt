@@ -66,13 +66,13 @@ export default class Generator {
       const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
       if (!hasBuilt) {
         throw new Error(
-          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build\` before calling \`nuxt export\``
+          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt static build\` before calling \`nuxt static export\``
         )
       }
       const config = this.getBuildConfig()
       if (config.target !== TARGETS.static) {
         throw new Error(
-          `In order to use \`nuxt export\`, you need to run \`nuxt build --target=static\``
+          `In order to use \`nuxt static export\`, you need to run \`nuxt static build\``
         )
       }
     }
