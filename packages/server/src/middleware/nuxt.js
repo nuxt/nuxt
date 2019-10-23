@@ -2,7 +2,7 @@ import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
 
-import { getContext } from '@nuxt/utils'
+import { getContext, TARGETS } from '@nuxt/utils'
 
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
@@ -28,7 +28,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       preloadFiles
     } = result
 
-    if (redirected) {
+    if (redirected && context.target !== TARGETS.static) {
       await nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
