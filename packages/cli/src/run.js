@@ -4,6 +4,7 @@ import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
+import { TARGETS } from '@nuxt/utils'
 
 function packageExists (name) {
   try {
@@ -23,6 +24,12 @@ export default async function run (_argv, hooks = {}) {
 
   // Read from process.argv
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
+
+  // Check if first arg is a target
+  if (TARGETS[argv[0]]) {
+    argv.push(`--target=${argv[0]}`)
+    argv.shift()
+  }
 
   // Check for internal command
   let cmd = await getCommand(argv[0])
