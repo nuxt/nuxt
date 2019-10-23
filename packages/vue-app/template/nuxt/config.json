@@ -1,4 +1,3 @@
 <%= JSON.stringify({
-  ssr: nuxtOptions.render.ssr,
   target: nuxtOptions.target
 }, null, 2) %>
