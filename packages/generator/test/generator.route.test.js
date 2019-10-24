@@ -36,14 +36,14 @@ describe('generator: generate route', () => {
     const generator = new Generator(nuxt)
     path.join.mockClear()
 
-    const route = '/foo'
+    const route = '/foo/'
     const payload = {}
     const errors = []
 
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
-    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { _generate: true, payload })
+    expect(nuxt.server.renderRoute).toBeCalledWith('/foo/', { _generate: true, payload })
     expect(path.join).toBeCalledTimes(2)
     expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
     expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')

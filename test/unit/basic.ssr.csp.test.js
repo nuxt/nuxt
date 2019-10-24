@@ -198,7 +198,34 @@ describe('basic ssr csp', () => {
     )
 
     test(
-      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatiblity is enabled',
+      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
+      async () => {
+        const policies = {
+          'script-src': [`'unsafe-inline'`]
+        }
+
+        nuxt = await startCspServer({
+          unsafeInlineCompatibility: true,
+          policies
+        })
+
+        for (let i = 0; i < 5; i++) {
+          await rp(url('/stateless'), {
+            resolveWithFullResponse: true
+          })
+        }
+
+        const { headers } = await rp(url('/stateful'), {
+          resolveWithFullResponse: true
+        })
+
+        expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
+      }
+    )
+
+    // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
+    test(
+      'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
           'script-src': [`'unsafe-inline'`]
@@ -419,7 +446,34 @@ describe('basic ssr csp', () => {
     )
 
     test(
-      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatiblity is enabled',
+      'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
+      async () => {
+        const policies = {
+          'script-src': [`'unsafe-inline'`]
+        }
+
+        nuxt = await startCspServer({
+          unsafeInlineCompatibility: true,
+          policies
+        })
+
+        for (let i = 0; i < 5; i++) {
+          await rp(url('/stateless'), {
+            resolveWithFullResponse: true
+          })
+        }
+
+        const { headers } = await rp(url('/stateful'), {
+          resolveWithFullResponse: true
+        })
+
+        expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
+      }
+    )
+
+    // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
+    test(
+      'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
           'script-src': [`'unsafe-inline'`]

@@ -176,7 +176,7 @@ export const createRoutes = function createRoutes ({
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '')
+      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
     }
 
     parent.push(route)

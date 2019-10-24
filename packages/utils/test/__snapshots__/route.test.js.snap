@@ -211,15 +211,6 @@ Array [
 exports[`util: route util: route create createRoutes should remove trailing slashes when configured to 1`] = `
 Array [
   Object {
-    "chunkName": "pages/index",
-    "component": "/some/nuxt/app/pages/index.vue",
-    "name": "index",
-    "path": "",
-    "pathToRegexpOptions": Object {
-      "strict": true,
-    },
-  },
-  Object {
     "chunkName": "pages/parent/index",
     "component": "/some/nuxt/app/pages/parent/index.vue",
     "name": "parent",
@@ -269,6 +260,7 @@ Array [
     ],
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
+    "name": "another_route-id",
     "path": "/another_route/:id?",
     "pathToRegexpOptions": Object {
       "strict": true,
@@ -279,6 +271,15 @@ Array [
     "component": "/some/nuxt/app/pages/subpage/_param.vue",
     "name": "subpage-param",
     "path": "/subpage/:param?",
+    "pathToRegexpOptions": Object {
+      "strict": true,
+    },
+  },
+  Object {
+    "chunkName": "pages/index",
+    "component": "/some/nuxt/app/pages/index.vue",
+    "name": "index",
+    "path": "/",
     "pathToRegexpOptions": Object {
       "strict": true,
     },
