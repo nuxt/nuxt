@@ -63,7 +63,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      const indexRoutePath = trailingSlash !== false ? '' : '/'
+      const indexRoutePath = trailingSlash === false ? '/' : ''
       const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
       if (defaultChildRoute) {
         defaultChildRoute.name = route.name
