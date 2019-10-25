@@ -1,3 +1,5 @@
+import flatstr from 'flatstr'
+
 export default class BaseRenderer {
   constructor (serverContext) {
     this.serverContext = serverContext
@@ -16,7 +18,7 @@ export default class BaseRenderer {
     opts.head_attrs = opts.HEAD_ATTRS
     opts.body_attrs = opts.BODY_ATTRS
 
-    return templateFn(opts)
+    return flatstr(templateFn(opts))
   }
 
   render () {
