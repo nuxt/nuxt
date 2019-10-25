@@ -1,6 +1,7 @@
 import path from 'path'
 import crypto from 'crypto'
 import { format } from 'util'
+import flatstr from 'flatstr'
 import fs from 'fs-extra'
 import consola from 'consola'
 import devalue from '@nuxt/devalue'
@@ -172,8 +173,8 @@ export default class SSRRenderer extends BaseRenderer {
       HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
       HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
       BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
-      HEAD,
-      APP,
+      HEAD: flatstr(HEAD),
+      APP: flatstr(APP),
       ENV: this.options.env
     }
 
