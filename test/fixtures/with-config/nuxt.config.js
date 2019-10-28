@@ -86,7 +86,7 @@ export default {
     transpile: 'vue-test',
     extend (config, options) {
       return Object.assign({}, config, {
-        devtool: '#source-map'
+        devtool: 'source-map'
       })
     }
   },

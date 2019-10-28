@@ -19,6 +19,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     this.isModern = false
   }
 
+  get devtool () {
+    return this.dev ? 'cheap-module-eval-source-map' : false
+  }
+
   getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args

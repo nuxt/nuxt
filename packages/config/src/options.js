@@ -241,9 +241,16 @@ export function getNuxtConfig (_options) {
       allowedSources: undefined,
       policies: undefined,
       addMeta: Boolean(options._generate),
-      unsafeInlineCompatiblity: false,
+      unsafeInlineCompatibility: false,
       reportOnly: options.debug
     })
+
+    // TODO: Remove this if statement in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
+    if (options.render.csp.unsafeInlineCompatiblity) {
+      consola.warn('Using `unsafeInlineCompatiblity` is deprecated and will be removed in Nuxt 3. Use `unsafeInlineCompatibility` instead.')
+      options.render.csp.unsafeInlineCompatibility = options.render.csp.unsafeInlineCompatiblity
+      delete options.render.csp.unsafeInlineCompatiblity
+    }
   }
 
   // cssSourceMap
@@ -408,6 +415,11 @@ export function getNuxtConfig (_options) {
   const { timing } = options.server
   if (timing) {
     options.server.timing = { total: true, ...timing }
+  }
+
+  if (isPureObject(options.serverMiddleware)) {
+    options.serverMiddleware = Object.entries(options.serverMiddleware)
+      .map(([ path, handler ]) => ({ path, handler }))
   }
 
   return options

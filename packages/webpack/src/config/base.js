@@ -68,6 +68,7 @@ export default class WebpackBaseConfig {
   get modulesToTranspile () {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
+      /consola\/src/,
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -132,10 +133,6 @@ export default class WebpackBaseConfig {
       }
     }
     return fileName
-  }
-
-  get devtool () {
-    return false
   }
 
   env () {
@@ -230,7 +227,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+      'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 
@@ -444,11 +441,16 @@ export default class WebpackBaseConfig {
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
         this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
-      )
-      // Only overwrite config when something is returned for backwards compatibility
-      if (extendedConfig !== undefined) {
-        return extendedConfig
+      ) || config
+
+      const pragma = /@|#/
+      const { devtool } = extendedConfig
+      if (typeof devtool === 'string' && pragma.test(devtool)) {
+        extendedConfig.devtool = devtool.replace(pragma, '')
+        consola.warn(`devtool has been normalized to ${extendedConfig.devtool} as webpack documented value`)
       }
+
+      return extendedConfig
     }
     return config
   }

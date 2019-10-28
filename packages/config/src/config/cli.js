@@ -1,3 +1,4 @@
 export default () => ({
-  badgeMessages: []
+  badgeMessages: [],
+  bannerColor: 'green'
 })

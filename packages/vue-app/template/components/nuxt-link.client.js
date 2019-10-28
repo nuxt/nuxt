@@ -92,15 +92,18 @@ export default {
       // Stop observing this link (in case of internet connection changes)
       observer.unobserve(this.$el)
       const Components = this.getPrefetchComponents()
+      <% if (router.linkPrefetchedClass) { %>const promises = []<% } %>
 
       for (const Component of Components) {
         const componentOrPromise = Component()
         if (componentOrPromise instanceof Promise) {
           componentOrPromise.catch(() => {})
+          <% if (router.linkPrefetchedClass) { %>promises.push(componentOrPromise)<% } %>
         }
         Component.__prefetched = true
       }<% if (router.linkPrefetchedClass) { %>
-      this.addPrefetchedClass()<% } %>
+        return Promise.all(promises).then(() => this.addPrefetchedClass())
+      <% } %>
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass () {
       if (this.prefetchedClass !== 'false') {
