@@ -226,7 +226,7 @@ export default class Builder {
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
-    this.plugins = Array.from(await this.normalizePlugins())
+    this.plugins = await this.normalizePlugins()
 
     const templateContext = this.createTemplateContext()
 
@@ -249,21 +249,10 @@ export default class Builder {
   }
 
   async normalizePlugins () {
-    // options.extendPlugins allows for returning a new plugins array
-    if (typeof this.options.extendPlugins === 'function') {
-      const extendedPlugins = this.options.extendPlugins(this.options.plugins)
-
-      if (Array.isArray(extendedPlugins)) {
-        this.options.plugins = extendedPlugins
-      }
-    }
-
-    // extendPlugins hook only supports in-place modifying
-    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
-
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
-    return uniqBy(
+
+    this.options.plugins = uniqBy(
       this.options.plugins.map((p) => {
         if (typeof p === 'string') {
           p = { src: p }
@@ -295,6 +284,18 @@ export default class Builder {
       }),
       p => p.name
     )
+    // options.extendPlugins allows for returning a new plugins array
+    if (typeof this.options.extendPlugins === 'function') {
+      const extendedPlugins = this.options.extendPlugins(this.options.plugins)
+
+      if (Array.isArray(extendedPlugins)) {
+        this.options.plugins = extendedPlugins
+      }
+    }
+    // extendPlugins hook only supports in-place modifying
+    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
+
+    return this.options.plugins
   }
 
   addOptionalTemplates (templateContext) {
