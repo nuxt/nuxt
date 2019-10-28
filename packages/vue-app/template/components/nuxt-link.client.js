@@ -102,7 +102,7 @@ export default {
         }
         Component.__prefetched = true
       }<% if (router.linkPrefetchedClass) { %>
-        Promise.all(promises).then(() => this.addPrefetchedClass())
+        return Promise.all(promises).then(() => this.addPrefetchedClass())
       <% } %>
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass () {
