@@ -15,12 +15,12 @@ describe('config: build', () => {
   test('should return prod filenames', () => {
     const { filenames } = buildConfig()
     const env = { isDev: false }
-    expect(filenames.app(env)).toEqual('[chunkhash].js')
-    expect(filenames.chunk(env)).toEqual('[chunkhash].js')
+    expect(filenames.app(env)).toEqual('[contenthash].js')
+    expect(filenames.chunk(env)).toEqual('[contenthash].js')
     expect(filenames.css(env)).toEqual('[contenthash].css')
-    expect(filenames.img(env)).toEqual('img/[hash:7].[ext]')
-    expect(filenames.font(env)).toEqual('fonts/[hash:7].[ext]')
-    expect(filenames.video(env)).toEqual('videos/[hash:7].[ext]')
+    expect(filenames.img(env)).toEqual('img/[contenthash:7].[ext]')
+    expect(filenames.font(env)).toEqual('fonts/[contenthash:7].[ext]')
+    expect(filenames.video(env)).toEqual('videos/[contenthash:7].[ext]')
   })
 
   test('should return modern filenames', () => {
