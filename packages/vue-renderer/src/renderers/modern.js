@@ -55,14 +55,12 @@ export default class ModernRenderer extends SSRRenderer {
     const modernScripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
       const legacyJsFile = jsFile.replace(this.publicPath, '')
       const modernJsFile = this.assetsMapping[legacyJsFile]
-      const { build: { crossorigin } } = this.options
-      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
       const moduleTag = modernJsFile
         ? scriptTag
-          .replace('<script', `<script type="module"${cors}`)
+          .replace('<script', `<script type="module"`)
           .replace(legacyJsFile, modernJsFile)
         : ''
-      const noModuleTag = scriptTag.replace('<script', `<script nomodule${cors}`)
+      const noModuleTag = scriptTag.replace('<script', `<script nomodule`)
 
       return noModuleTag + moduleTag
     })
@@ -108,9 +106,7 @@ export default class ModernRenderer extends SSRRenderer {
       if (!modernJsFile) {
         return ''
       }
-      const { crossorigin } = this.options.build
-      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-      return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
+      return linkTag.replace('rel="preload"', `rel="modulepreload"`).replace(legacyJsFile, modernJsFile)
     })
   }
 
