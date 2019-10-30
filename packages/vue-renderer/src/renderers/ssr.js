@@ -20,7 +20,18 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return renderContext.renderScripts()
+    let scripts = renderContext.renderScripts()
+    const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
+
+    scripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
+      const { build: { crossorigin } } = this.options
+      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
+      const realTag = scriptTag.replace('<script', `<script${cors}`)
+
+      return realTag
+    })
+
+    return scripts
   }
 
   getPreloadFiles (renderContext) {
@@ -28,7 +39,17 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderResourceHints (renderContext) {
-    return renderContext.renderResourceHints()
+    let resourceHints = renderContext.renderResourceHints()
+
+    const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
+
+    resourceHints = resourceHints.replace(linkPattern, (linkTag, jsFile) => {
+      const { crossorigin } = this.options.build
+      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
+      return linkTag.replace('rel="preload"', `rel="preload"${cors}`)
+    })
+
+    return resourceHints
   }
 
   createRenderer () {
@@ -107,17 +128,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
-      let resourceHints = this.renderResourceHints(renderContext)
-
-      const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
-
-      resourceHints = resourceHints.replace(linkPattern, (linkTag, jsFile) => {
-        const { crossorigin } = this.options.build
-        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-        return linkTag.replace('rel="preload"', `rel="preload"${cors}`)
-      })
-
-      HEAD += resourceHints
+      HEAD += this.renderResourceHints(renderContext)
     }
 
     // Inject styles
@@ -165,18 +176,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Prepend scripts
     if (shouldInjectScripts) {
-      let scripts = this.renderScripts(renderContext)
-      const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
-
-      scripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
-        const { build: { crossorigin } } = this.options
-        const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-        const realTag = scriptTag.replace('<script', `<script ${cors}`)
-
-        return realTag
-      })
-
-      APP += scripts
+      APP += this.renderScripts(renderContext)
     }
 
     if (meta) {
