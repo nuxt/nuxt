@@ -45,7 +45,7 @@ export default class SSRRenderer extends BaseRenderer {
     resourceHints = resourceHints.replace(linkPattern, (linkTag) => {
       const { crossorigin } = this.options.build
       if (crossorigin) {
-        return linkTag.replace('rel="preload"', `rel="preload" crossorigin="${crossorigin}`)
+        return linkTag.replace('rel="preload"', `rel="preload" crossorigin="${crossorigin}"`)
       }
       return linkTag
     })
