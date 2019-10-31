@@ -23,7 +23,7 @@ export default class SSRRenderer extends BaseRenderer {
     let scripts = renderContext.renderScripts()
     const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
 
-    scripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
+    scripts = scripts.replace(scriptPattern, (scriptTag) => {
       const { crossorigin } = this.options.build
       if (crossorigin) {
         return scriptTag.replace('<script', `<script crossorigin="${crossorigin}"`)
@@ -42,7 +42,7 @@ export default class SSRRenderer extends BaseRenderer {
     let resourceHints = renderContext.renderResourceHints()
     const linkPattern = /<link[^>]*?href="([^"]*?)"[^>]*?as="script"[^>]*?>/g
 
-    resourceHints = resourceHints.replace(linkPattern, (linkTag, jsFile) => {
+    resourceHints = resourceHints.replace(linkPattern, (linkTag) => {
       const { crossorigin } = this.options.build
       if (crossorigin) {
         return linkTag.replace('rel="preload"', `rel="preload" crossorigin="${crossorigin}`)
