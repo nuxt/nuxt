@@ -135,10 +135,6 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool () {
-    return false
-  }
-
   env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
@@ -439,11 +435,16 @@ export default class WebpackBaseConfig {
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
         this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
-      )
-      // Only overwrite config when something is returned for backwards compatibility
-      if (extendedConfig !== undefined) {
-        return extendedConfig
+      ) || config
+
+      const pragma = /@|#/
+      const { devtool } = extendedConfig
+      if (typeof devtool === 'string' && pragma.test(devtool)) {
+        extendedConfig.devtool = devtool.replace(pragma, '')
+        consola.warn(`devtool has been normalized to ${extendedConfig.devtool} as webpack documented value`)
       }
+
+      return extendedConfig
     }
     return config
   }

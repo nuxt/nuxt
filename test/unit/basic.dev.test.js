@@ -1,4 +1,5 @@
 import path from 'path'
+import jsdom from 'jsdom'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp, waitFor } from '../utils'
 
@@ -51,6 +52,14 @@ describe('basic dev', () => {
             postcssLoader = cssLoaders[cssLoaders.length - 1]
           }
         }
+      },
+      hooks: {
+        'vue-renderer:ssr:context': ({ nuxt }) => {
+          nuxt.logs = [{ type: 'log', args: ['This is a test ssr log'] }]
+        }
+      },
+      render: {
+        ssrLog: 'collapsed'
       }
     })
 
@@ -167,6 +176,27 @@ describe('basic dev', () => {
         }
       }
     })
+  })
+
+  test('/ should display ssr log in collapsed group', async () => {
+    const virtualConsole = new jsdom.VirtualConsole()
+    const groupCollapsed = jest.fn()
+    const groupEnd = jest.fn()
+    const log = jest.fn()
+    virtualConsole.on('groupCollapsed', groupCollapsed)
+    virtualConsole.on('groupEnd', groupEnd)
+    virtualConsole.on('log', log)
+
+    await nuxt.server.renderAndGetWindow(url('/'), {
+      virtualConsole
+    })
+
+    expect(groupCollapsed).toHaveBeenCalledWith(
+      '%cNuxt SSR',
+      'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
+    )
+    expect(groupEnd).toHaveBeenCalled()
+    expect(log).toHaveBeenCalledWith('This is a test ssr log')
   })
 
   // Close server and ask nuxt to stop listening to file changes

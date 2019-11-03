@@ -2,7 +2,7 @@
 <p align="center">
   <a href="https://circleci.com/gh/nuxt/nuxt.js"><img src="https://badgen.net/circleci/github/nuxt/nuxt.js/dev" alt="Build Status"></a>
   <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
-  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/dev" alt="Coverage Status"></a>
+  <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
@@ -210,9 +210,15 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-g
 
 ## Cross-browser testing
 
-Thanks to BrowserStack!
+Thanks to [BrowserStack](http://browserstack.com)!
 
 <a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+
+## Automated testing
+
+Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
+
+<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
 
 ## Security
 

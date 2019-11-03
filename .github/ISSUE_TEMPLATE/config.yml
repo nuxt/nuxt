@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🚨 Bug report
+    url: https://bug.nuxtjs.org/
+    about: Please report bugs here.
+  - name: 🙋 Feature request
+    url: https://feature.nuxtjs.org/
+    about: Please request features here.
+  - name: 🤔 Consulting from the Nuxt team
+    url: https://otechie.com/nuxt
+    about: Get technical support, project audits, app deployments, and custom development from the core Nuxt.js team.
+  - name: ❗️ All other issues
+    url: https://cmty.nuxtjs.org/
+    about: Please create all other issues here.
