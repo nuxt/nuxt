@@ -524,7 +524,7 @@ async function render (to, from, next) {
 
     <% if (features.layouts) { %>
     // Load error layout
-    let errorLayout = (NuxtError.options || NuxtError).layout
+    let layout = (NuxtError.options || NuxtError).layout
     if (typeof layout === 'function') {
       layout = layout(app.context)
     }

@@ -89,7 +89,7 @@ export default async (ssrContext) => {
     <% if (features.layouts) { %>
     // Load layout for error page
     const layout = (NuxtError.options || NuxtError).layout
-    const errLayout = typeof layout=== 'function' ? layout.call(NuxtError, app.context) : layout
+    const errLayout = typeof layout === 'function' ? layout.call(NuxtError, app.context) : layout
     ssrContext.nuxt.layout = errLayout || 'default'
     await _app.loadLayout(errLayout)
     _app.setLayout(errLayout)
