@@ -7,6 +7,8 @@ exemptLabels:
   - "WIP"
   - "pending"
   - "discussion"
+exemptAssignees: true
+only: issues
 markComment: >
   Thanks for your contribution to Nuxt.js!
 
@@ -19,4 +21,3 @@ markComment: >
    1. Comment the steps to reproduce it
 
   Issues that are labeled as `pending` will not be automatically marked as stale.
-only: issues
