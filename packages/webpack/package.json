@@ -8,7 +8,7 @@
   ],
   "main": "dist/webpack.js",
   "dependencies": {
-    "@babel/core": "^7.7.0",
+    "@babel/core": "^7.7.2",
     "@nuxt/babel-preset-app": "2.10.2",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/utils": "2.10.2",
@@ -22,7 +22,7 @@
     "eventsource-polyfill": "^0.9.6",
     "extract-css-chunks-webpack-plugin": "^4.6.0",
     "file-loader": "^4.2.0",
-    "glob": "^7.1.5",
+    "glob": "^7.1.6",
     "hard-source-webpack-plugin": "^0.13.1",
     "hash-sum": "^2.0.0",
     "html-webpack-plugin": "^3.2.0",
