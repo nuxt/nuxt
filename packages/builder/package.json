@@ -12,7 +12,7 @@
     "@nuxt/utils": "2.10.2",
     "@nuxt/vue-app": "2.10.2",
     "chokidar": "^3.3.0",
-    "consola": "^2.10.1",
+    "consola": "^2.11.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
     "hash-sum": "^2.0.0",
