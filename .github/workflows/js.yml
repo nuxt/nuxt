@@ -30,8 +30,9 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '10.x'
+
     - name: 'Install dependencies'
-      run: npm install --frozen-lockfile --non-interactive
+      run: yarn install --frozen-lockfile --non-interactive
 
     - name: 'Test: Build Fixtures'
       run: yarn test:fixtures -i
