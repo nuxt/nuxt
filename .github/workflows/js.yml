@@ -23,6 +23,7 @@ jobs:
         if [[ "$DEBUG" == "true" ]]; then
           env
         fi
+      if: matrix.os == 'ubuntu-latest'
       env:
         DEBUG: ${{secrets.DEBUG}}
 
