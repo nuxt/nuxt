@@ -33,8 +33,8 @@ jobs:
     - name: 'Install dependencies'
       run: npm install --frozen-lockfile --non-interactive
 
-    - name: 'Build'
-      run: yarn test:fixtures --coverage && yarn coverage
+    - name: 'Test: Build Fixtures'
+      run: yarn test:fixtures -i
 
     - name: 'Unit tests'
       run: yarn test:unit --coverage && yarn coverage
