@@ -1,14 +1,14 @@
 ## Release Plan
 
 Starting with version `v2.4`, Nuxt will adhere to a formalized release plan (as good as possible).
-Also, an end of life for older major versions is defined with this document
+Also, an end of life for older major versions is defined with this document.
 
 ### Major versions (3.x -> 4.0)
 
 Nuxt major releases are planned every **6 months**. This depends on a few factors though:
 
-* If there are no breaking changes waiting for a release, no new major version will be published. Instead, another minor one will be released. 
-* In case of unexpected major updates of important dependencies like Vue, Webpack, and so on, major versions might be released *earlier* than planned.
+* If there are no breaking changes waiting for a release, no new major version will be published. Instead, another minor one will be released
+* In case of unexpected major updates of important dependencies like Vue, Webpack, and so on, major versions might be released *earlier* than planned
 
 The goal is to provide a **migration guide** for each major version as well, as escape hatches, so existing code
 won't "just break".
@@ -27,7 +27,7 @@ Features that aren't ready will be moved to the next cycle. "Waiting" for featur
 ### Patch releases (2.2.3 -> 2.2.4)
 
 The last patch releases were mostly *bundled* fixes or single *hotfixes*. 
-In the future, fixes will be released **as soon as possible** after the actual PR/commit so people won't have to switch to `nuxt-edge` for bugfixes. This should improve the stability of Nuxt
+In the future, fixes will be released **as soon as possible** after the actual PR/commit so people won't have to switch to `nuxt-edge` for bugfixes. This should improve the stability of Nuxt.
 
 Fixes can or will include:
 
