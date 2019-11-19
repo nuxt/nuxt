@@ -49,7 +49,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
-    res += (route.component) ? nextIndent + 'component: ' + (splitChunks.pages ? route._name : `() => ${route._name}.default || ${route._name}`) : ''
+    res += (route.component) ? nextIndent + 'component: ' + route._name : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
     res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
