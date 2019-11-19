@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxt/utils": "2.10.2",
     "chalk": "^2.4.2",
-    "consola": "^2.10.1",
+    "consola": "^2.11.0",
     "fs-extra": "^8.1.0",
     "html-minifier": "^4.0.0"
   },
