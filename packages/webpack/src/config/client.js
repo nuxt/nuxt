@@ -6,9 +6,11 @@ import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
+import SpeedMeasurePlugin from 'speed-measure-webpack-plugin'
 import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
 import VueSSRClientPlugin from '../plugins/vue/client'
+
 import WebpackBaseConfig from './base'
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
@@ -160,7 +162,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     const config = super.config()
     const {
       options: { router, buildDir },
-      buildOptions: { hotMiddleware, quiet, friendlyErrors }
+      buildOptions: { hotMiddleware, quiet, friendlyErrors, profileBuild }
     } = this.buildContext
 
     const { client = {} } = hotMiddleware || {}
@@ -201,6 +203,11 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           logLevel: 'WARNING'
         })
       )
+    }
+
+    if (profileBuild === true) {
+      const smp = new SpeedMeasurePlugin()
+      return smp.wrap(config)
     }
 
     return config
