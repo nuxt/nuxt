@@ -7,6 +7,7 @@ export const template = {
   files: [
     'App.js',
     'client.js',
+    'plugins.js',
     'index.js',
     'router.js',
     'router.scrollBehavior.js',

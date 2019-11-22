@@ -70,6 +70,8 @@ export default () => ({
     validate: true,
     asyncData: true,
     fetch: true,
+    hookablePlugins: false,
+    parallelPlugins: false,
     clientOnline: true,
     clientPrefetch: true,
     clientUseUrl: false,

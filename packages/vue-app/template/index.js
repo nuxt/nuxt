@@ -8,13 +8,8 @@ import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./comp
 import Nuxt from './components/nuxt.js'
 import App from '<%= appPath %>'
 import { setContext, getLocation, getRouteData, normalizeError } from './utils'
+<% if (plugins.length) { %>import executePlugins from './plugins.js'<% } %>
 <% if (store) { %>import { createStore } from './store.js'<% } %>
-
-/* Plugins */
-<%= isTest ? '/* eslint-disable camelcase */' : '' %>
-<% plugins.forEach((plugin) => { %>import <%= plugin.name %> from '<%= plugin.name %>' // Source: <%= relativeToBuild(plugin.src) %> (mode: '<%= plugin.mode %>')
-<% }) %>
-<%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
 <% if (features.componentClientOnly) { %>
 // Component: <ClientOnly>
@@ -154,41 +149,6 @@ async function createApp (ssrContext) {
     ssrContext
   })
 
-  <% if (plugins.length) { %>
-  const inject = function (key, value) {
-    if (!key) {
-      throw new Error('inject(key, value) has no key provided')
-    }
-    if (value === undefined) {
-      throw new Error('inject(key, value) has no value provided')
-    }
-
-    key = '$' + key
-    // Add into app
-    app[key] = value
-    <% if (store) { %>
-    // Add into store
-    store[key] = app[key]
-    <% } %>
-    // Check if plugin not already installed
-    const installKey = '__<%= globals.pluginPrefix %>_' + key + '_installed__'
-    if (Vue[installKey]) {
-      return
-    }
-    Vue[installKey] = true
-    // Call Vue.use() to install the plugin into vm
-    Vue.use(() => {
-      if (!Vue.prototype.hasOwnProperty(key)) {
-        Object.defineProperty(Vue.prototype, key, {
-          get () {
-            return this.$root.$options[key]
-          }
-        })
-      }
-    })
-  }
-  <% } %>
-
   <% if (store) { %>
   if (process.client) {
     // Replace store state before plugins execution
@@ -198,24 +158,10 @@ async function createApp (ssrContext) {
   }
   <% } %>
 
+  <% if (plugins.length) { %>
   // Plugin execution
-  <%= isTest ? '/* eslint-disable camelcase */' : '' %>
-  <% plugins.forEach((plugin) => { %>
-  <% if (plugin.mode == 'client') { %>
-  if (process.client && typeof <%= plugin.name %> === 'function') {
-    await <%= plugin.name %>(app.context, inject)
-  }
-  <% } else if (plugin.mode == 'server') { %>
-  if (process.server && typeof <%= plugin.name %> === 'function') {
-    await <%= plugin.name %>(app.context, inject)
-  }
-  <% } else { %>
-  if (typeof <%= plugin.name %> === 'function') {
-    await <%= plugin.name %>(app.context, inject)
-  }
+  await executePlugins(app<%= store ? ', store' : '' %>)
   <% } %>
-  <% }) %>
-  <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
