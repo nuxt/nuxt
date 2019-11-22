@@ -45,28 +45,6 @@ if (features.parallelPlugins) {
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 <% } %>
 
-<% if (features.hookablePlugins) { %>
-class PluginHooks extends Hookable {
-  callHookSync(name, ...args) {
-    if (!this._hooks[name]) {
-      return
-    }
-    try {
-      this._hooks[name].forEach(fn => fn(...args))
-    } catch (err) {
-      if (name !== 'error') {
-        this.callHookSync('error', err)
-      }
-      if (this._logger.fatal) {
-        this._logger.fatal(err)
-      } else {
-        this._logger.error(err)
-      }
-    }
-  }
-}
-<% } %>
-
 export default async function executePlugins(app<%= store ? ', store' : '' %>) {
   <% if (features.hookablePlugins) { %>
   const hooks = new Hookable()
