@@ -18,7 +18,8 @@ if (features.parallelPlugins) {
       %>const pluginImports = [
 <%
     } else {
-      %>pluginImports.concat([
+      %>if (process.<%= pluginMode %>) {
+  pluginImports.concat([
 <%
     }
 
@@ -34,7 +35,8 @@ if (features.parallelPlugins) {
       %>]
 <%
     } else {
-      %>])
+      %>  ])
+}
 <%
     }
   }
