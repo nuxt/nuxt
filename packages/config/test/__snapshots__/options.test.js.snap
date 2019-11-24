@@ -20,6 +20,7 @@ Object {
   "build": Object {
     "_publicPath": "/_nuxt/",
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
