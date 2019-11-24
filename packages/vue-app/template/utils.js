@@ -280,7 +280,7 @@ export function getLocation (base, mode) {
  * @return {!function(Object=, Object=)}
  */
 export function compile (str, options) {
-  return tokensToFunction(parse(str, options))
+  return tokensToFunction(parse(str, options), options)
 }
 
 export function getQueryDiff (toQuery, fromQuery) {
@@ -449,14 +449,14 @@ function escapeGroup (group) {
 /**
  * Expose a method for transforming tokens into the path function.
  */
-function tokensToFunction (tokens) {
+function tokensToFunction (tokens, options) {
   // Compile all the tokens into regexps.
   const matches = new Array(tokens.length)
 
   // Compile all the patterns before compilation.
   for (let i = 0; i < tokens.length; i++) {
     if (typeof tokens[i] === 'object') {
-      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
+      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$', flags(options))
     }
   }
 
@@ -528,6 +528,16 @@ function tokensToFunction (tokens) {
 
     return path
   }
+}
+
+/**
+ * Get the flags for a regexp from the options.
+ *
+ * @param  {Object} options
+ * @return {string}
+ */
+function flags (options) {
+  return options && options.sensitive ? '' : 'i'
 }
 
 /**

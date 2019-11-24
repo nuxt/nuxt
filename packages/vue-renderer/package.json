@@ -10,7 +10,7 @@
   "dependencies": {
     "@nuxt/devalue": "^1.2.4",
     "@nuxt/utils": "2.10.2",
-    "consola": "^2.10.1",
+    "consola": "^2.11.0",
     "fs-extra": "^8.1.0",
     "lru-cache": "^5.1.1",
     "vue": "^2.6.10",

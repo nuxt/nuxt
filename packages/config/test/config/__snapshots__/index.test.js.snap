@@ -197,6 +197,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -550,6 +551,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
