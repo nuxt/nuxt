@@ -67,7 +67,7 @@ module.exports = (api, options = {}) => {
     absoluteRuntime
   } = options
 
-  let { corejs = { version: 2 } } = options
+  let { corejs = { version: 3 } } = options
 
   if (typeof corejs !== 'object') {
     corejs = { version: Number(corejs) }
