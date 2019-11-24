@@ -220,6 +220,7 @@ Object {
     "**/*.spec.*",
     "**/-*.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
