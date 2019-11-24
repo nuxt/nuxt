@@ -354,7 +354,8 @@ export default class VueRenderer {
 
   parseTemplate (templateStr) {
     return template(templateStr, {
-      interpolate: /{{([\s\S]+?)}}/g
+      interpolate: /{{([\s\S]+?)}}/g,
+      evaluate: /{%([\s\S]+?)%}/g
     })
   }
 
