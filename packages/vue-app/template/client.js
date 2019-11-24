@@ -315,10 +315,11 @@ async function render (to, from, next) {
 
     <% if (features.layouts) { %>
     // Load layout for error page
+    const errorLayout = (NuxtError.options || NuxtError).layout
     const layout = await this.loadLayout(
-      typeof NuxtError.layout === 'function'
-        ? NuxtError.layout(app.context)
-        : NuxtError.layout
+      typeof errorLayout === 'function'
+        ? errorLayout.call(NuxtError, app.context)
+        : errorLayout
     )
     <% } %>
 
@@ -523,7 +524,7 @@ async function render (to, from, next) {
 
     <% if (features.layouts) { %>
     // Load error layout
-    let layout = NuxtError.layout
+    let layout = (NuxtError.options || NuxtError).layout
     if (typeof layout === 'function') {
       layout = layout(app.context)
     }
@@ -558,7 +559,7 @@ function showNextPage (to) {
   <% if (features.layouts) { %>
   // Set layout
   let layout = this.$options.nuxt.err
-    ? NuxtError.layout
+    ? (NuxtError.options || NuxtError).layout
     : to.matched[0].components.default.options.layout
 
   if (typeof layout === 'function') {
