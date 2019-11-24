@@ -1,7 +1,7 @@
 <script>
 export default {
   name: 'NuxtLoading',
-  data() {
+  data () {
     return {
       percent: 0,
       show: false,
@@ -15,7 +15,7 @@ export default {
     }
   },
   computed: {
-    left() {
+    left () {
       if (!this.continuous && !this.rtl) {
         return false
       }
@@ -24,16 +24,16 @@ export default {
         : (!this.reversed ? '0px' : 'auto')
     }
   },
-  beforeDestroy() {
+  beforeDestroy () {
     this.clear()
   },
   methods: {
-    clear() {
+    clear () {
       clearInterval(this._timer)
       clearTimeout(this._throttle)
       this._timer = null
     },
-    start() {
+    start () {
       this.clear()
       this.percent = 0
       this.reversed = false
@@ -47,37 +47,37 @@ export default {
       }
       return this
     },
-    set(num) {
+    set (num) {
       this.show = true
       this.canSucceed = true
       this.percent = Math.min(100, Math.max(0, Math.floor(num)))
       return this
     },
-    get() {
+    get () {
       return this.percent
     },
-    increase(num) {
+    increase (num) {
       this.percent = Math.min(100, Math.floor(this.percent + num))
       return this
     },
-    decrease(num) {
+    decrease (num) {
       this.percent = Math.max(0, Math.floor(this.percent - num))
       return this
     },
-    pause() {
+    pause () {
       clearInterval(this._timer)
       return this
     },
-    resume() {
+    resume () {
       this.startTimer()
       return this
     },
-    finish() {
+    finish () {
       this.percent = this.reversed ? 0 : 100
       this.hide()
       return this
     },
-    hide() {
+    hide () {
       this.clear()
       setTimeout(() => {
         this.show = false
@@ -88,11 +88,11 @@ export default {
       }, 500)
       return this
     },
-    fail() {
+    fail () {
       this.canSucceed = false
       return this
     },
-    startTimer() {
+    startTimer () {
       if (!this.show) {
         this.show = true
       }
@@ -133,7 +133,7 @@ export default {
       }, 100)
     }
   },
-  render(h) {
+  render (h) {
     let el = h(false)
     if (this.show) {
       el = h('div', {

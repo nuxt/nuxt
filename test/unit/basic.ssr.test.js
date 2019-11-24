@@ -82,13 +82,17 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
-    const html = window.document.body.innerHTML
+    const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
+
+    expect(html).toContain('<html foo="baz" data-n-head="%7B%22foo%22:%7B%22ssr%22:%22baz%22%7D%7D">')
+    expect(html).toContain('<head bar="foo" data-n-head="%7B%22bar%22:%7B%22ssr%22:%22foo%22%7D%7D">')
+    expect(html).toContain('<body baz="bar" data-n-head="%7B%22baz%22:%7B%22ssr%22:%22bar%22%7D%7D">')
   })
 
   test('/async-data', async () => {
@@ -262,6 +266,19 @@ describe('basic ssr', () => {
     expect(redirected.status === 302).toBe(true)
   })
 
+  test('/client-only', async () => {
+    const { html } = await nuxt.server.renderRoute('/client-only')
+    expect(html.includes(
+      '<p class="client-only-placeholder">Loading...</p>'
+    )).toBe(true)
+  })
+
+  test('/client-only (client-side)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/client-only'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Displayed only on client-side</h1>')
+  })
+
   test('/no-ssr', async () => {
     const { html } = await nuxt.server.renderRoute('/no-ssr')
     expect(html.includes(
@@ -273,6 +290,10 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/no-ssr'))
     const html = window.document.body.innerHTML
     expect(html).toContain('Displayed only on client-side</h1>')
+    expect(consola.warn).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledWith(
+      expect.stringContaining('<no-ssr> has been deprecated')
+    )
   })
 
   test('ETag Header', async () => {
@@ -336,6 +357,16 @@ describe('basic ssr', () => {
     const html = window.document.body.innerHTML
     expect(html).toMatch('<h1>JS Layout</h1>')
     expect(html).toMatch('<h2>custom page</h2>')
+  })
+  /* Testing symlinks functionality */
+  test('/symlink/symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/symlinked')
+    expect(html).toContain('<h1>Symlinked page</h1>')
+  })
+
+  test('/symlink/deep/nested-symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/deep/nested-symlinked')
+    expect(html).toContain('<h1>Nested symlink page</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

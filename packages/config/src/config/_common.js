@@ -47,6 +47,7 @@ export default () => ({
   alias: {},
 
   // Ignores
+  ignoreOptions: undefined,
   ignorePrefix: '-',
   ignore: [
     '**/*.test.*',
@@ -68,7 +69,9 @@ export default () => ({
   watch: [],
   watchers: {
     rewatchOnRawEvents: undefined,
-    webpack: {},
+    webpack: {
+      aggregateTimeout: 1000
+    },
     chokidar: {
       ignoreInitial: true
     }

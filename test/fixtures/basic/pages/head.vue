@@ -8,6 +8,15 @@
 export default {
   head: {
     title: 'My title',
+    htmlAttrs: {
+      foo: 'baz'
+    },
+    headAttrs: {
+      bar: 'foo'
+    },
+    bodyAttrs: {
+      baz: 'bar'
+    },
     meta: [
       { content: 'my meta' }
     ],

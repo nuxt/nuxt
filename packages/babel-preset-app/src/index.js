@@ -43,23 +43,20 @@ function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath
   return includes.filter(item => isPluginRequired(builtInTargets, builtInsList[item]))
 }
 
-module.exports = (context, options = {}) => {
+module.exports = (api, options = {}) => {
   const presets = []
   const plugins = []
 
-  const modern = options.modern === undefined
-    ? context.env('modern')
-    : Boolean(options.modern)
+  const envName = api.env()
 
   const {
     polyfills: userPolyfills,
-    buildTarget,
     loose = false,
     debug = false,
     useBuiltIns = 'usage',
     modules = false,
     spec,
-    ignoreBrowserslistConfig = modern,
+    ignoreBrowserslistConfig = envName === 'modern',
     configPath,
     include,
     exclude,
@@ -76,23 +73,34 @@ module.exports = (context, options = {}) => {
     corejs = { version: Number(corejs) }
   }
 
-  let { targets } = options
-  if (modern === true) {
-    targets = { esmodules: true }
-  } else if (targets === undefined && typeof buildTarget === 'string') {
-    targets = buildTarget === 'server' ? { node: 'current' } : { ie: 9 }
+  const defaultTargets = {
+    server: { node: 'current' },
+    client: { ie: 9 },
+    modern: { esmodules: true }
   }
 
-  let polyfills
-  if (modern === false && useBuiltIns === 'usage' && buildTarget === 'client') {
-    polyfills = getPolyfills(targets, userPolyfills || getDefaultPolyfills(corejs), {
-      ignoreBrowserslistConfig,
-      configPath,
-      corejs
-    })
+  let { targets = defaultTargets[envName] } = options
+
+  // modern mode can only be { esmodules: true }
+  if (envName === 'modern') {
+    targets = defaultTargets.modern
+  }
+
+  const polyfills = []
+
+  if (envName === 'client' && useBuiltIns === 'usage') {
+    polyfills.push(
+      ...getPolyfills(
+        targets,
+        userPolyfills || getDefaultPolyfills(corejs),
+        {
+          ignoreBrowserslistConfig,
+          configPath,
+          corejs
+        }
+      )
+    )
     plugins.push([require('./polyfills-plugin'), { polyfills }])
-  } else {
-    polyfills = []
   }
 
   // Pass options along to babel-preset-env
@@ -124,7 +132,7 @@ module.exports = (context, options = {}) => {
       decoratorsBeforeExport,
       legacy: decoratorsLegacy !== false
     }],
-    [require('@babel/plugin-proposal-class-properties'), { loose }]
+    [require('@babel/plugin-proposal-class-properties'), { loose: true }]
   )
 
   // Transform runtime, but only for helpers
@@ -132,7 +140,7 @@ module.exports = (context, options = {}) => {
     regenerator: useBuiltIns !== 'usage',
     corejs: false,
     helpers: useBuiltIns === 'usage',
-    useESModules: buildTarget !== 'server',
+    useESModules: envName !== 'server',
     absoluteRuntime
   }])
 

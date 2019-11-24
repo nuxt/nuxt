@@ -47,8 +47,8 @@ export default class ChromeDetector {
     }
     execSync(
       `${LSREGISTER} -dump` +
-        ' | grep -E -i \'(google chrome( canary)?|chromium).app$\'' +
-        ' | awk \'{$1=""; print $0}\''
+      " | grep -E -i -o '/.+(google chrome( canary)?|chromium)\\.app(\\s|$)'" +
+      " | grep -E -v 'Caches|TimeMachine|Temporary|/Volumes|\\.Trash'"
     )
       .toString()
       .split(newLineRegex)

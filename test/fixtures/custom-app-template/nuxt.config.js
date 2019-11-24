@@ -1,3 +1,6 @@
 export default {
-  appTemplatePath: './test/mytemplate.html'
+  appTemplatePath: './test/mytemplate.html',
+  env: {
+    tracker: 'ga'
+  }
 }

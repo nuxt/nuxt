@@ -4,8 +4,10 @@ import upath from 'upath'
 import debounce from 'lodash/debounce'
 import { r, isString, isPureObject } from '@nuxt/utils'
 
+import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
+jest.mock('@nuxt/webpack')
 
 jest.mock('chokidar', () => ({
   watch: jest.fn().mockReturnThis(),
@@ -16,6 +18,7 @@ jest.mock('upath', () => ({ normalizeSafe: jest.fn(src => src) }))
 jest.mock('lodash/debounce', () => jest.fn(fn => fn))
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
+jest.mock('@nuxt/webpack')
 
 describe('builder: builder watch', () => {
   beforeEach(() => {
@@ -33,7 +36,7 @@ describe('builder: builder watch', () => {
     }
     nuxt.options.build.watch = []
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
     builder.assignWatcher = jest.fn(() => () => {})
     r.mockImplementation((dir, src) => src)
@@ -75,7 +78,7 @@ describe('builder: builder watch', () => {
     }
     nuxt.options.build.watch = []
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
     builder.assignWatcher = jest.fn(() => () => {})
     r.mockImplementation((dir, src) => src)
@@ -100,7 +103,7 @@ describe('builder: builder watch', () => {
       chokidar: { test: true }
     }
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder._nuxtPages = true
     builder._defaultPage = true
     r.mockImplementation((dir, src) => src)
@@ -123,7 +126,7 @@ describe('builder: builder watch', () => {
       chokidar: { test: true }
     }
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder._nuxtPages = true
     r.mockImplementation((dir, src) => src)
 
@@ -149,7 +152,7 @@ describe('builder: builder watch', () => {
     nuxt.options.watchers = {
       chokidar: { test: true }
     }
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.watchCustom = jest.fn()
     r.mockImplementation((dir, src) => src)
 
@@ -179,7 +182,7 @@ describe('builder: builder watch', () => {
     nuxt.options.build.styleResources = [
       '/var/nuxt/src/style'
     ]
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
     builder.assignWatcher = jest.fn(() => () => {})
     builder.watchClient()
@@ -212,7 +215,7 @@ describe('builder: builder watch', () => {
     const listener = jest.fn()
     const watcherCreatedCallback = jest.fn()
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher(patterns, events, listener, watcherCreatedCallback)
 
     expect(chokidar.watch).toBeCalledTimes(1)
@@ -242,7 +245,7 @@ describe('builder: builder watch', () => {
     const listener = jest.fn()
     const watcherCreatedCallback = jest.fn()
 
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher(patterns, events, listener, watcherCreatedCallback)
 
     expect(chokidar.on).toBeCalledTimes(2)
@@ -277,7 +280,7 @@ describe('builder: builder watch', () => {
       { path: '/test', handler: '/var/nuxt/src/serverMiddleware/test-handler' },
       { obj: 'test' }
     ]
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.ignore.ignoreFile = '/var/nuxt/src/.nuxtignore'
     isString.mockImplementation(src => typeof src === 'string')
     isPureObject.mockImplementation(obj => typeof obj === 'object')
@@ -315,7 +318,7 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/watch/test'
     ]
     nuxt.options.serverMiddleware = []
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     builder.watchRestart()
 
@@ -350,7 +353,7 @@ describe('builder: builder watch', () => {
       '/var/nuxt/src/watch/test'
     ]
     nuxt.options.serverMiddleware = []
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     builder.watchRestart()
 
@@ -363,7 +366,7 @@ describe('builder: builder watch', () => {
 
   test('should unwatch every watcher', () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.watchers = {
       files: { close: jest.fn() },
       custom: { close: jest.fn() },
@@ -379,8 +382,7 @@ describe('builder: builder watch', () => {
 
   test('should close watch and bundle builder', async () => {
     const nuxt = createNuxt()
-    const bundleBuilderClose = jest.fn()
-    const builder = new Builder(nuxt, { close: bundleBuilderClose })
+    const builder = new Builder(nuxt, BundleBuilder)
     builder.unwatch = jest.fn()
 
     expect(builder.__closed).toBeUndefined()
@@ -389,7 +391,7 @@ describe('builder: builder watch', () => {
 
     expect(builder.__closed).toEqual(true)
     expect(builder.unwatch).toBeCalledTimes(1)
-    expect(bundleBuilderClose).toBeCalledTimes(1)
+    expect(builder.bundleBuilder.close).toBeCalledTimes(1)
   })
 
   test('should close bundleBuilder only if close api exists', async () => {
@@ -420,7 +422,7 @@ describe('builder: builder watch', () => {
 
   test('should assign watcher with key', () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, {})
+    const builder = new Builder(nuxt, BundleBuilder)
 
     const key = 'key'
     const watcher = 'watcher'

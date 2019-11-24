@@ -49,7 +49,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
-    res += (route.component) ? nextIndent + 'component: ' + (splitChunks.pages ? route._name : `() => ${route._name}.default || ${route._name}`) : ''
+    res += (route.component) ? nextIndent + 'component: ' + route._name : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
     res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
@@ -68,7 +68,7 @@ import scrollBehavior from './router.scrollBehavior.js'
   return res
 }
 const _components = []
-const _routes = recursiveRoutes(router.routes, '  ', _components, 2)
+const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
 %><%= uniqBy(_components, '_name').map((route) => {
   if (!route.component) return ''
   const path = relativeToBuild(route.component)
@@ -98,6 +98,6 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-export function createRouter() {
+export function createRouter () {
   return new Router(routerOptions)
 }

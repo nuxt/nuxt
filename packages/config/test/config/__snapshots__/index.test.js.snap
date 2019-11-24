@@ -7,6 +7,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -26,6 +27,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
@@ -64,7 +66,9 @@ Object {
       "less": Object {},
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
       },
       "scss": Object {},
       "stylus": Object {},
@@ -126,6 +130,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": undefined,
@@ -141,7 +146,24 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
@@ -175,6 +197,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -289,6 +312,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -316,13 +340,16 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;
@@ -334,6 +361,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -353,6 +381,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
@@ -391,7 +420,9 @@ Object {
       "less": Object {},
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
       },
       "scss": Object {},
       "stylus": Object {},
@@ -453,6 +484,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": undefined,
@@ -468,7 +500,24 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
@@ -502,6 +551,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -616,6 +666,7 @@ Object {
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -643,13 +694,16 @@ Object {
       "silent": undefined,
     },
   },
+  "vueMeta": null,
   "watch": Array [],
   "watchers": Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
     "rewatchOnRawEvents": undefined,
-    "webpack": Object {},
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;
