@@ -421,14 +421,14 @@ async function render (to, from, next) {
       // Check if only children route changed
       Component._path = compile(to.matched[matches[i]].path)(to.params)
       Component._dataRefresh = false
-      const pathChanged = Component._path !== _lastPaths[i]
+      const childPathChanged = Component._path !== _lastPaths[i]
       // Refresh component (call asyncData & fetch) when:
       // Route path changed part includes current component
       // Or route param changed part includes current component and watchParam is not `false`
       // Or route query is changed and watchQuery returns `true`
-      if (this._routeChanged && pathChanged) {
+      if (this._routeChanged && childPathChanged) {
         Component._dataRefresh = true
-      } else if (this._paramChanged && pathChanged) {
+      } else if (this._paramChanged && childPathChanged) {
         const watchParam = Component.options.watchParam
         Component._dataRefresh = watchParam !== false
       } else if (this._queryChanged) {
