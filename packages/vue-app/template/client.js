@@ -123,7 +123,7 @@ function mapTransitions (Components, to, from) {
     return transitions
   })
 }
-
+<% } %>
 <% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
   // Check if route changed (this._routeChanged), only if the page is not an error (for validate())
   this._routeChanged = Boolean(app.nuxt.err) || from.name !== to.name
