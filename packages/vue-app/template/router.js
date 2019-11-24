@@ -85,7 +85,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
 // TODO: remove in Nuxt 3
 const emptyFn = () => {}
 const originalPush = Router.prototype.push
-Router.prototype.push = function push(location, onComplete = emptyFn, onAbort) {
+Router.prototype.push = function push (location, onComplete = emptyFn, onAbort) {
   return originalPush.call(this, location, onComplete, onAbort)
 }
 
