@@ -19,6 +19,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     this.isModern = false
   }
 
+  get devtool () {
+    return this.dev ? 'cheap-module-eval-source-map' : false
+  }
+
   getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args
@@ -30,13 +34,16 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   env () {
-    return Object.assign(super.env(), {
-      'process.env.VUE_ENV': JSON.stringify('client'),
-      'process.browser': true,
-      'process.client': true,
-      'process.server': false,
-      'process.modern': false
-    })
+    return Object.assign(
+      super.env(),
+      {
+        'process.env.VUE_ENV': JSON.stringify('client'),
+        'process.browser': true,
+        'process.client': true,
+        'process.server': false,
+        'process.modern': false
+      }
+    )
   }
 
   optimization () {
