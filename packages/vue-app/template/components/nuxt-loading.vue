@@ -143,8 +143,8 @@ export default {
           'nuxt-progress-failed': !this.canSucceed
         },
         style: {
-          'width': this.percent + '%',
-          'left': this.left
+          width: this.percent + '%',
+          left: this.left
         }
       })
     }

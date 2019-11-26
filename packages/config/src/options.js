@@ -63,7 +63,7 @@ export function getNuxtConfig (_options) {
 
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
-    : `nuxt`
+    : 'nuxt'
 
   // Resolve rootDir
   options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
@@ -419,7 +419,7 @@ export function getNuxtConfig (_options) {
 
   if (isPureObject(options.serverMiddleware)) {
     options.serverMiddleware = Object.entries(options.serverMiddleware)
-      .map(([ path, handler ]) => ({ path, handler }))
+      .map(([path, handler]) => ({ path, handler }))
   }
 
   return options

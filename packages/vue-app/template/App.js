@@ -29,9 +29,9 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 
 export default {
   <% if (features.meta) { %>
-  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
+  <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
   head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+  <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
   <% } %>
   render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
@@ -54,7 +54,7 @@ export default {
         id: '__layout'
       },
       key: this.layoutName
-    }, [ layoutEl ])
+    }, [layoutEl])
     <% } else { %>
     const templateEl = h('nuxt')
     <% } %>
@@ -73,7 +73,7 @@ export default {
           })
         }
       }
-    }, [ templateEl ])
+    }, [templateEl])
     <% } %>
 
     return h('div', {

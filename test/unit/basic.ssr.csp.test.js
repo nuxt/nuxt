@@ -105,7 +105,7 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`],
+            'default-src': ['\'none\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
@@ -128,7 +128,7 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`]
+            'default-src': ['\'none\'']
           }
         }
 
@@ -146,9 +146,9 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp.policies is set',
       async () => {
         const policies = {
-          'default-src': [`'self'`],
-          'script-src': [`'self'`],
-          'style-src': [`'self'`]
+          'default-src': ['\'self\''],
+          'script-src': ['\'self\''],
+          'style-src': ['\'self\'']
         }
 
         nuxt = await startCspServer({
@@ -176,7 +176,7 @@ describe('basic ssr csp', () => {
       'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -201,7 +201,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -228,7 +228,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -327,7 +327,7 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`],
+            'default-src': ['\'none\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
@@ -350,7 +350,7 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`]
+            'default-src': ['\'none\'']
           }
         }
 
@@ -368,9 +368,9 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp.policies is set',
       async () => {
         const policies = {
-          'default-src': [`'self'`],
-          'script-src': [`'self'`],
-          'style-src': [`'self'`]
+          'default-src': ['\'self\''],
+          'script-src': ['\'self\''],
+          'style-src': ['\'self\'']
         }
 
         nuxt = await startCspDevServer({
@@ -400,7 +400,7 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'self'`],
+            'default-src': ['\'self\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
@@ -424,7 +424,7 @@ describe('basic ssr csp', () => {
       'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspDevServer({
@@ -449,7 +449,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -476,7 +476,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({

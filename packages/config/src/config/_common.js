@@ -13,7 +13,7 @@ export default () => ({
   modern: undefined,
 
   // Globals
-  globalName: `nuxt`,
+  globalName: 'nuxt',
   globals: {
     id: globalName => `__${globalName}`,
     nuxt: globalName => `$${globalName}`,
