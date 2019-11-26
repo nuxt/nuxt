@@ -60,7 +60,7 @@ describe('builder: builder plugins', () => {
   test('should overwrite plugins from options', async () => {
     const nuxt = createNuxt()
 
-    nuxt.options.plugins = [ '/var/nuxt/plugins/foo-bar.js' ]
+    nuxt.options.plugins = ['/var/nuxt/plugins/foo-bar.js']
     nuxt.options.extendPlugins = jest.fn().mockReturnValue([
       '/var/nuxt/plugins/fizz-fuzz.js'
     ])
@@ -99,7 +99,7 @@ describe('builder: builder plugins', () => {
       }
     ])
     expect(consola.warn).toBeCalledTimes(1)
-    expect(consola.warn).toBeCalledWith("Invalid plugin mode (server/client/all): 'abc'. Falling back to 'all'")
+    expect(consola.warn).toBeCalledWith('Invalid plugin mode (server/client/all): \'abc\'. Falling back to \'all\'')
   })
 
   test('should resolve plugins', async () => {
@@ -169,15 +169,21 @@ describe('builder: builder plugins', () => {
     const plugins = await builder.normalizePlugins()
 
     expect(plugins).toEqual([
-      { mode: 'all',
+      {
+        mode: 'all',
         src: 'resolveAlias(/var/nuxt/plugins/test.js)',
-        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.js)' },
-      { mode: 'client',
+        name: 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.js)'
+      },
+      {
+        mode: 'client',
         src: 'resolveAlias(/var/nuxt/plugins/test.client)',
-        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.client)' },
-      { mode: 'server',
+        name: 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.client)'
+      },
+      {
+        mode: 'server',
         src: 'resolveAlias(/var/nuxt/plugins/test.server)',
-        'name': 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.server)' }
+        name: 'nuxt_plugin_test_hash(/var/nuxt/plugins/test.server)'
+      }
     ])
   })
 })

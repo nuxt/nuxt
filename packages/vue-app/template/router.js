@@ -97,9 +97,9 @@ export const routerOptions = {
   linkActiveClass: '<%= router.linkActiveClass %>',
   linkExactActiveClass: '<%= router.linkExactActiveClass %>',
   scrollBehavior,
-  <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
+  <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, object-curly-spacing, key-spacing */' : '' %>
   routes: [<%= _routes %>],
-  <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
+  <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, object-curly-spacing, key-spacing */' : '' %>
   <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
   <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
   fallback: <%= router.fallback %>

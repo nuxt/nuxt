@@ -158,7 +158,7 @@ export default class Generator {
     try {
       html = this.minifyHtml(html)
     } catch (error) {
-      consola.warn(`HTML minification failed for SPA fallback`)
+      consola.warn('HTML minification failed for SPA fallback')
     }
 
     await fsExtra.writeFile(fallbackPath, html, 'utf8')

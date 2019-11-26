@@ -40,7 +40,7 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 const logs = NUXT.logs || []
   if (logs.length > 0) {
   const ssrLogSyle = 'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
-  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ("%cNuxt SSR", ssrLogSyle)
+  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ('%cNuxt SSR', ssrLogSyle)
   logs.forEach(logObj => (console[logObj.type] || console.log)(...logObj.args))
   delete NUXT.logs
   console.groupEnd && console.groupEnd()
@@ -331,7 +331,7 @@ async function render (to, from, next) {
     <% } %>
 
     // Show error page
-    app.context.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
+    app.context.error({ statusCode: 404, message: '<%= messages.error_404 %>' })
     return next()
   }
 
@@ -408,7 +408,7 @@ async function render (to, from, next) {
 
     // ...If .validate() returned false
     if (!isValid) {
-      this.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
+      this.error({ statusCode: 404, message: '<%= messages.error_404 %>' })
       return next()
     }
     <% } %>

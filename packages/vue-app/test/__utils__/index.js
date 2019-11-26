@@ -57,7 +57,7 @@ export async function compileTemplate (template, destination, options = {}) {
     const [template] = templateContext.templateFiles
     return template.dst
   } catch (err) {
-    consola.error(`Could not compile template`, err.message, template)
+    consola.error('Could not compile template', err.message, template)
     return false
   }
 }
