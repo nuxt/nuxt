@@ -59,6 +59,7 @@ export default () => ({
   plugins: [],
   terser: {},
   hardSource: false,
+  aggressiveCodeRemoval: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',

@@ -43,7 +43,7 @@ const createNext = ssrContext => (opts) => {
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    'Location': opts.path
+    Location: opts.path
   })
   ssrContext.res.end()
 }
@@ -98,7 +98,7 @@ export default async (ssrContext) => {
     return _app
   }
   const render404Page = () => {
-    app.context.error({ statusCode: 404, path: ssrContext.url, message: `<%= messages.error_404 %>` })
+    app.context.error({ statusCode: 404, path: ssrContext.url, message: '<%= messages.error_404 %>' })
     return renderErrorPage()
   }
 

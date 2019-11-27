@@ -14,7 +14,7 @@ jest.mock('@nuxtjs/youch', () => jest.fn(() => ({
 })))
 
 const createParams = () => ({
-  resources: { errorTemplate: jest.fn(() => `error template`) },
+  resources: { errorTemplate: jest.fn(() => 'error template') },
   options: {
     srcDir: '/var/nuxt/src',
     rootDir: '/var/nuxt',

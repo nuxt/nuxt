@@ -12,12 +12,12 @@
 <script>
 export default {
   layout: 'custom-env',
-  data () {
-    return { processEnv: process.env.object }
-  },
   asyncData ({ env }) {
     delete env.object
     return { env }
+  },
+  data () {
+    return { processEnv: process.env.object }
   }
 }
 </script>

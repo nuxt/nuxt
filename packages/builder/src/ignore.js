@@ -5,6 +5,7 @@ import ignore from 'ignore'
 export default class Ignore {
   constructor (options) {
     this.rootDir = options.rootDir
+    this.ignoreOptions = options.ignoreOptions
     this.addIgnoresRules()
   }
 
@@ -17,7 +18,7 @@ export default class Ignore {
       const ignoreFile = path.resolve(this.rootDir, Ignore.IGNORE_FILENAME)
       if (fs.existsSync(ignoreFile) && fs.statSync(ignoreFile).isFile()) {
         this.ignoreFile = ignoreFile
-        this.ignore = ignore()
+        this.ignore = ignore(this.ignoreOptions)
       }
     }
     return this.ignoreFile
