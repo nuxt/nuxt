@@ -177,7 +177,7 @@ Object {
     "routes": Array [],
     "subFolders": true,
   },
-  "globalName": "nuxt",
+  "globalName": undefined,
   "globals": Object {
     "context": [Function],
     "id": [Function],
@@ -531,7 +531,7 @@ Object {
     "routes": Array [],
     "subFolders": true,
   },
-  "globalName": "nuxt",
+  "globalName": undefined,
   "globals": Object {
     "context": [Function],
     "id": [Function],

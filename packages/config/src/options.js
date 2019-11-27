@@ -63,7 +63,8 @@ export function getNuxtConfig (_options) {
 
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
-    : 'nuxt'
+    // use `` for preventing replacing to nuxt-edge
+    : `nuxt`
 
   // Resolve rootDir
   options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
