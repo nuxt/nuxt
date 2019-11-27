@@ -136,10 +136,18 @@ jobs:
       - attach-project
       - run:
           name: Unit Tests
-          command: yarn test:unit -w=2 --coverage && yarn coverage -F unit
+          command: yarn test:unit --coverage && yarn coverage -F unit
           environment:
             JEST_JUNIT_OUTPUT_NAME: unit.xml
       - store-test-results
+
+  test-dev:
+    executor: node
+    steps:
+      - attach-project
+      - run:
+          name: Dev Tests
+          command: yarn test:dev -w=2
 
   test-e2e:
     executor:
@@ -189,6 +197,7 @@ workflows:
       - audit:      { requires: [setup] }
       - build:      { requires: [setup] }
       - lint-app:   { requires: [build] }
+      - test-dev:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-commit:
@@ -204,6 +213,7 @@ workflows:
       - audit:      { requires: [setup] }
       - build:      { requires: [setup] }
       - lint-app:   { requires: [build] }
+      - test-dev:   { requires: [build] }
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-nightly:
