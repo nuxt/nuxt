@@ -200,7 +200,7 @@ workflows:
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-commit:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-dev, test-unit, test-e2e]
           filters:
             <<: *release_branches
 
@@ -216,7 +216,7 @@ workflows:
       - test-unit:  { requires: [build] }
       - test-e2e:   { requires: [build] }
       - release-nightly:
-          requires: [build, lint, lint-app, audit, test-unit, test-e2e]
+          requires: [build, lint, lint-app, audit, test-dev, test-unit, test-e2e]
     triggers:
       - schedule:
           cron: "0 0 * * *"
