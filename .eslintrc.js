@@ -16,7 +16,7 @@ module.exports = {
   rules: {
     'no-console': 'error',
     'no-debugger': 'error',
-    quotes: ["error", "single", { "allowTemplateLiterals": true }]
+    quotes: ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }]
   },
   overrides: [{
     files: [ 'test/fixtures/*/.nuxt*/**' ],
