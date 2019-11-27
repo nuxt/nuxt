@@ -130,6 +130,14 @@ jobs:
   # --------------------------------------------------------------------------
   # Phase 3: Unit and E2E tests
   # --------------------------------------------------------------------------
+  test-dev:
+    executor: node
+    steps:
+      - attach-project
+      - run:
+          name: Dev Tests
+          command: yarn test:dev -w=2
+
   test-unit:
     executor: node
     steps:
@@ -140,14 +148,6 @@ jobs:
           environment:
             JEST_JUNIT_OUTPUT_NAME: unit.xml
       - store-test-results
-
-  test-dev:
-    executor: node
-    steps:
-      - attach-project
-      - run:
-          name: Dev Tests
-          command: yarn test:dev -w=2
 
   test-e2e:
     executor:
