@@ -110,9 +110,7 @@ jobs:
       - attach-project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
-          environment:
-            JEST_JUNIT_OUTPUT_NAME: fixtures.xml
+          command: yarn test:fixtures -i
       - store-test-results
       - persist_to_workspace:
           root: ~/project
@@ -137,6 +135,7 @@ jobs:
       - run:
           name: Dev Tests
           command: yarn test:dev -w=2
+      - store-test-results
 
   test-unit:
     executor: node
