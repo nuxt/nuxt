@@ -24,7 +24,7 @@
     "nuxt": "node -r esm ./packages/cli/bin/nuxt-cli.js",
     "pkg": "node -r esm ./scripts/package",
     "test": "yarn test:fixtures && yarn test:dev && yarn test:unit",
-    "test:dev": "jest -i test/unit --forceExit",
+    "test:dev": "jest test/unit --forceExit",
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
