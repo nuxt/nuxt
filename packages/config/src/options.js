@@ -401,7 +401,7 @@ export function getNuxtConfig (_options) {
   // Use runInNewContext for dev mode by default
   const { bundleRenderer } = options.render
   if (typeof bundleRenderer.runInNewContext === 'undefined') {
-    bundleRenderer.runInNewContext = options.dev
+    bundleRenderer.runInNewContext = options.dev ? true : 'once'
   }
 
   // Add loading screen
