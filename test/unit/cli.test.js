@@ -74,7 +74,7 @@ describe.posix('cli', () => {
 
     expect(error).toBe(undefined)
 
-    const html = await rp(url('/'))
+    const { body: html } = await rp(url('/'))
     expect(html).toMatch(('<div>CLI Test</div>'))
 
     await close(nuxtStart)

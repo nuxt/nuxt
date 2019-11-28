@@ -22,31 +22,29 @@ describe('modern server mode', () => {
   })
 
   test('should use legacy resources by default', async () => {
-    const response = await rp(url('/'))
+    const { body: response } = await rp(url('/'))
     expect(response).toContain('/_nuxt/app.js')
     expect(response).toContain('/_nuxt/commons.app.js')
   })
 
   test('should use modern resources for modern resources', async () => {
-    const response = await rp(url('/'), { headers: { 'user-agent': modernUA } })
+    const { body: response } = await rp(url('/'), { headers: { 'user-agent': modernUA } })
     expect(response).toContain('/_nuxt/modern-app.js')
     expect(response).toContain('/_nuxt/modern-commons.app.js')
   })
 
   test('should include es6 syntax in modern resources', async () => {
-    const response = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
+    const { body: response } = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
     expect(response).toContain('arrow: () => {')
   })
 
   test('should not include es6 syntax in normal resources', async () => {
-    const response = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
+    const { body: response } = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
     expect(response).toContain('arrow: function arrow() {')
   })
 
   test('should contain legacy http2 pushed resources', async () => {
-    const { headers: { link } } = await rp(url('/'), {
-      resolveWithFullResponse: true
-    })
+    const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
       '</_nuxt/commons.app.js>; rel=preload; crossorigin=use-credentials; as=script',
@@ -57,8 +55,7 @@ describe('modern server mode', () => {
 
   test('should contain module http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'), {
-      headers: { 'user-agent': modernUA },
-      resolveWithFullResponse: true
+      headers: { 'user-agent': modernUA }
     })
     expect(link).toEqual([
       '</_nuxt/modern-runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
@@ -70,7 +67,6 @@ describe('modern server mode', () => {
 
   test('Vary header should contain User-Agent', async () => {
     const { headers: { vary } } = await rp(url('/'), {
-      resolveWithFullResponse: true,
       headers: { 'user-agent': modernUA }
     })
     expect(vary).toContain('User-Agent')

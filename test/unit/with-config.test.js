@@ -171,9 +171,7 @@ describe('with-config', () => {
   })
 
   test('Check /test/test.txt with custom serve-static options', async () => {
-    const { headers } = await rp(url('/test/test.txt'), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url('/test/test.txt'))
     expect(headers['cache-control']).toBe('public, max-age=31536000')
   })
 
@@ -211,9 +209,7 @@ describe('with-config', () => {
   })
 
   test('/ with Server-Timing header', async () => {
-    const { headers } = await rp(url('/test'), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url('/test'))
     expect(headers['server-timing']).toMatch(/total;dur=\d+(\.\d+)?;desc="Nuxt Server Time"/)
   })
 

@@ -53,17 +53,17 @@ describe('module', () => {
   // })
 
   test('Middleware', async () => {
-    const response = await rp(url('/api'))
+    const { body: response } = await rp(url('/api'))
     expect(response).toBe('It works!')
   })
 
   test('serverMiddleware with path', async () => {
-    const response = await rp(url('/midd3'))
+    const { body: response } = await rp(url('/midd3'))
     expect(response).toBe('Be creative when writing test strings! Hey Mama :wave:')
   })
 
   test('Hooks - Use external middleware before render', async () => {
-    const response = await rp(url('/use-middleware'))
+    const { body: response } = await rp(url('/use-middleware'))
     expect(response).toBe('Use external middleware')
   })
 
