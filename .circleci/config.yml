@@ -7,7 +7,7 @@ executors:
         type: boolean
         default: false
     docker:
-      - image: circleci/node:latest<<# parameters.browsers >>-browsers<</ parameters.browsers >>
+      - image: circleci/node:lts<<# parameters.browsers >>-browsers<</ parameters.browsers >>
     working_directory: ~/project
     environment:
       NODE_ENV: test
