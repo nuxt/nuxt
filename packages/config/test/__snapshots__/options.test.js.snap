@@ -292,7 +292,7 @@ Object {
   "plugins": Array [],
   "render": Object {
     "bundleRenderer": Object {
-      "runInNewContext": false,
+      "runInNewContext": "once",
       "shouldPrefetch": [Function],
       "shouldPreload": [Function],
     },
