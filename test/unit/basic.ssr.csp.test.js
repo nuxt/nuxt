@@ -22,7 +22,7 @@ const reportOnlyHeader = getHeader(true)
 
 const startCspDevServer = csp => startCspServer(csp, false)
 
-describe('basic ssr csp', () => {
+describe.skip('basic ssr csp', () => {
   let nuxt
 
   afterEach(async () => {
