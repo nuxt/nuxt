@@ -260,7 +260,7 @@ export function promisify (fn, context) {
 
 // Imported from vue-router
 export function getLocation (base, mode) {
-  let path = decodeURI(window.location.pathname)
+  let path = decodeURI(window.location.pathname + '/').replace('//', '/') // to get matched with sanitized router.base
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
