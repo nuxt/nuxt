@@ -7,7 +7,7 @@ executors:
         type: boolean
         default: false
     docker:
-      - image: circleci/node:latest<<# parameters.browsers >>-browsers<</ parameters.browsers >>
+      - image: circleci/node:lts<<# parameters.browsers >>-browsers<</ parameters.browsers >>
     working_directory: ~/project
     environment:
       NODE_ENV: test
@@ -110,9 +110,7 @@ jobs:
       - attach-project
       - run:
           name: Build Fixtures
-          command: yarn test:fixtures -i --coverage && yarn coverage -F fixtures
-          environment:
-            JEST_JUNIT_OUTPUT_NAME: fixtures.xml
+          command: yarn test:fixtures -i
       - store-test-results
       - persist_to_workspace:
           root: ~/project
