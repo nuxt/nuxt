@@ -262,7 +262,7 @@ export function promisify (fn, context) {
 export function getLocation (base, mode) {
   let path = decodeURI(window.location.pathname)
   // To get matched with sanitized router.base
-  if (!/\/$/.test(path)) {
+  if (!path.endsWith('/')) {
     path += '/'
   }
   if (mode === 'hash') {
