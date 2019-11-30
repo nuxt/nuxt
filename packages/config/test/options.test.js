@@ -98,12 +98,12 @@ describe('config: options', () => {
   })
 
   test('should enable csp', () => {
-    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
+    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: [], test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
       unsafeInlineCompatibility: false,
-      allowedSources: true,
+      allowedSources: [],
       policies: undefined,
       reportOnly: false,
       test: true
@@ -112,12 +112,12 @@ describe('config: options', () => {
 
   // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
   test('should enable csp with old typo property name, avoiding breaking changes', () => {
-    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true, unsafeInlineCompatiblity: true } } })
+    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: [], test: true, unsafeInlineCompatiblity: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
       unsafeInlineCompatibility: true,
-      allowedSources: true,
+      allowedSources: [],
       policies: undefined,
       reportOnly: false,
       test: true
