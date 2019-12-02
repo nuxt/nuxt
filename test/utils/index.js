@@ -2,7 +2,7 @@ import klawSync from 'klaw-sync'
 
 export { getNuxtConfig } from '../../packages/config'
 export { default as getPort } from 'get-port'
-export { default as rp } from 'request-promise-native'
+export { default as rp } from 'got'
 
 export * from './nuxt'
 export * from './resource-size'

@@ -223,8 +223,7 @@ describe('basic ssr', () => {
     const opts = {
       headers: {
         accept: 'application/json'
-      },
-      resolveWithFullResponse: true
+      }
     }
     await expect(rp(url('/error'), opts)).rejects.toMatchObject({
       statusCode: 500,
@@ -247,7 +246,7 @@ describe('basic ssr', () => {
   test('/error2 status code', async () => {
     await expect(rp(url('/error2'))).rejects.toMatchObject({
       statusCode: 500,
-      message: expect.stringContaining('Custom error')
+      body: expect.stringContaining('Custom error')
     })
   })
 
@@ -297,12 +296,11 @@ describe('basic ssr', () => {
   })
 
   test('ETag Header', async () => {
-    const { headers: { etag } } = await rp(url('/stateless'), {
-      resolveWithFullResponse: true
-    })
+    const { headers: { etag } } = await rp(url('/stateless'))
+
     // Verify functionality
-    await expect(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
-      .rejects.toMatchObject({ statusCode: 304 })
+    const response = await rp(url('/stateless'), { headers: { 'If-None-Match': etag } })
+    await expect(response).toMatchObject({ statusCode: 304 })
   })
 
   test('/_nuxt/ should return 404', async () => {
