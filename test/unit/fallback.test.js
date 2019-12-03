@@ -19,24 +19,21 @@ describe('fallback', () => {
   test('robots.txt handled', async () => {
     await expect(rp(url('/test/robots.txt')))
       .rejects.toMatchObject({
-        statusCode: 404,
-        response: { body: '' }
+        response: { body: '', statusCode: 404 }
       })
   })
 
   test('normal html routes should be rendered using SSR', async () => {
     await expect(rp(url('/test/index.html')))
       .rejects.toMatchObject({
-        statusCode: 404,
-        response: { body: expect.stringContaining('data-n-head-ssr') }
+        response: { body: expect.stringContaining('data-n-head-ssr'), statusCode: 404 }
       })
   })
 
   test('uknown assets handled in dist', async () => {
     await expect(rp(url('/test/orion/foo.xyz')))
       .rejects.toMatchObject({
-        statusCode: 404,
-        response: { body: '' }
+        response: { body: '', statusCode: 404 }
       })
   })
 
