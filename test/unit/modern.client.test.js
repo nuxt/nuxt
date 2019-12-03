@@ -14,25 +14,25 @@ describe('modern client mode (SSR)', () => {
   })
 
   test('should contain nomodule legacy resources', async () => {
-    const response = await rp(url('/'))
+    const { body: response } = await rp(url('/'))
     expect(response).toContain('script nomodule crossorigin="use-credentials" src="/_nuxt/app.js')
     expect(response).toContain('script nomodule crossorigin="use-credentials" src="/_nuxt/commons.app.js')
   })
 
   test('should contain module modern resources', async () => {
-    const response = await rp(url('/'))
+    const { body: response } = await rp(url('/'))
     expect(response).toContain('<script type="module" crossorigin="use-credentials" src="/_nuxt/modern-app.js"')
     expect(response).toContain('<script type="module" crossorigin="use-credentials" src="/_nuxt/modern-commons.app.js"')
   })
 
   test('should contain module preload resources', async () => {
-    const response = await rp(url('/'))
+    const { body: response } = await rp(url('/'))
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-app.js" as="script">')
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-commons.app.js" as="script">')
   })
 
   test('should contain module http2 pushed resources', async () => {
-    const { headers: { link } } = await rp(url('/'), { resolveWithFullResponse: true })
+    const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/modern-runtime.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       '</_nuxt/modern-commons.app.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
@@ -42,7 +42,7 @@ describe('modern client mode (SSR)', () => {
   })
 
   test('should contain safari fix script', async () => {
-    const response = await rp(url('/'))
+    const { body: response } = await rp(url('/'))
     expect(response).toContain('"noModule"')
   })
 

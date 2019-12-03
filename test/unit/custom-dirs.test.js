@@ -44,9 +44,7 @@ describe('custom-dirs', () => {
   })
 
   test('custom static directory', async () => {
-    const { headers } = await rp(url('/test.txt'), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url('/test.txt'))
     expect(headers['cache-control']).toBe('public, max-age=0')
   })
 

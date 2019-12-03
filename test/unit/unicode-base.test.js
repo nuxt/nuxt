@@ -16,7 +16,7 @@ describe('unicode-base', () => {
   })
 
   test('/ö/ (router base)', async () => {
-    const response = await rp(url('/ö/'))
+    const { body: response } = await rp(url('/ö/'))
 
     expect(response).toContain('<h1>Unicode base works!</h1>')
   })
