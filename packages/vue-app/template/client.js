@@ -806,8 +806,8 @@ function addHotReload ($component, depth) {
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
 
-  // If page already is server rendered
-  if (NUXT.serverRendered) {
+  // If page already is server rendered and it was done on the same route path as client side render
+  if (NUXT.serverRendered && NUXT.routePath === _app.context.route.path) {
     mount()
     return
   }
