@@ -215,7 +215,7 @@ describe('basic ssr', () => {
 
   test('/error status code', async () => {
     await expect(rp(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
+      response: { statusCode: 500 }
     })
   })
 
@@ -226,8 +226,8 @@ describe('basic ssr', () => {
       }
     }
     await expect(rp(url('/error'), opts)).rejects.toMatchObject({
-      statusCode: 500,
       response: {
+        statusCode: 500,
         headers: {
           'content-type': 'text/json; charset=utf-8'
         }
@@ -245,13 +245,15 @@ describe('basic ssr', () => {
 
   test('/error2 status code', async () => {
     await expect(rp(url('/error2'))).rejects.toMatchObject({
-      statusCode: 500,
-      body: expect.stringContaining('Custom error')
+      response: {
+        statusCode: 500,
+        body: expect.stringContaining('Custom error')
+      }
     })
   })
 
   test('/error-midd', async () => {
-    await expect(rp(url('/error-midd'))).rejects.toMatchObject({ statusCode: 505 })
+    await expect(rp(url('/error-midd'))).rejects.toMatchObject({ response: { statusCode: 505 } })
   })
 
   test('/redirect-middleware', async () => {
@@ -305,7 +307,7 @@ describe('basic ssr', () => {
 
   test('/_nuxt/ should return 404', async () => {
     await expect(rp(url('/_nuxt/')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('/meta', async () => {
@@ -315,7 +317,7 @@ describe('basic ssr', () => {
 
   test('/fn-midd', async () => {
     await expect(rp(url('/fn-midd')))
-      .rejects.toMatchObject({ statusCode: 403 })
+      .rejects.toMatchObject({ response: { statusCode: 403 } })
   })
 
   test('/fn-midd?please=true', async () => {
