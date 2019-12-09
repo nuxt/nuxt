@@ -157,8 +157,8 @@ describe('basic generate', () => {
 
   test('/users/4 -> Not found', async () => {
     await expect(rp(url('/users/4'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /users/4')
       }
     })
@@ -197,8 +197,8 @@ describe('basic generate', () => {
   test('/users/1 not found', async () => {
     await remove(resolve(distDir, 'users'))
     await expect(rp(url('/users/1'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /users/1')
       }
     })
@@ -206,8 +206,8 @@ describe('basic generate', () => {
 
   test('/-ignored', async () => {
     await expect(rp(url('/-ignored'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /-ignored')
       }
     })
@@ -215,8 +215,8 @@ describe('basic generate', () => {
 
   test('/ignored.test', async () => {
     await expect(rp(url('/ignored.test'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /ignored.test')
       }
     })

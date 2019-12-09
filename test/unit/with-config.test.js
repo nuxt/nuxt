@@ -157,7 +157,7 @@ describe('with-config', () => {
 
   test('/test/not-existed should return 404', async () => {
     await expect(rp(url('/test/not-existed')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
@@ -177,7 +177,7 @@ describe('with-config', () => {
 
   test('Check /test.txt should return 404', async () => {
     await expect(rp(url('/test.txt')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('/test/head', async () => {
@@ -188,7 +188,7 @@ describe('with-config', () => {
 
   test('should ignore files in .nuxtignore', async () => {
     await expect(rp(url('/test-ignore')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('renderAndGetWindow options', async () => {
