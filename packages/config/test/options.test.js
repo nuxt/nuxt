@@ -98,7 +98,7 @@ describe('config: options', () => {
   })
 
   test('should enable csp', () => {
-    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: '/nuxt/*', test: true } } })
+    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: ['/nuxt/*'], test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
