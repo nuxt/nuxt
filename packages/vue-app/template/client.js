@@ -336,7 +336,6 @@ async function render (to, from, next) {
     <% } %>
 
     <% if (features.middleware) { %>
-    <% if (isFullStatic) { %>await fullStaticMiddleware(this, Components, app.context)<% } %>
     await callMiddleware.call(this, Components, app.context, layout)
     if (nextCalled) {
       return
@@ -481,6 +480,12 @@ async function render (to, from, next) {
       <% if (features.asyncData) { %>
       // Call asyncData(context)
       if (hasAsyncData) {
+        <% if (isFullStatic) { %>
+          const path = to.path.replace(/\/$/, '')
+          const payloadPath = (`${window.<%= globals.context %>.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
+
+          console.log('Fake async data', payloadPath)
+        <% } else { %>
         const promise = promisify(Component.options.asyncData, app.context)
           .then((asyncDataResult) => {
             applyAsyncData(Component, asyncDataResult)
@@ -490,6 +495,7 @@ async function render (to, from, next) {
             }
             <% } %>
           })
+        <% } %>
         promises.push(promise)
       }
       <% } %>

@@ -11,6 +11,7 @@ export default class Generator {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
+    this.isFullStatic = false
 
     // Set variables
     this.staticRoutes = path.resolve(this.options.srcDir, this.options.dir.static)
@@ -23,19 +24,18 @@ export default class Generator {
   }
 
   async generate ({ build = true, init = true } = {}) {
+    consola.debug('Initializing generator...')
+    await this.initiate({ build, init })
+
     // Paylods for full static
-    if (this.options.generate.static) {
+    if (this.isFullStatic) {
       consola.info('Full static mode activated')
       const exportTime = String(Date.now())
       this.payloadDir = path.join(this.distNuxtPath, 'payloads', exportTime)
       this.payloadPath = urlJoin(this.options.build.publicPath, 'payloads', exportTime)
     }
-    consola.debug('Initializing generator...')
-
-    await this.initiate({ build, init })
 
     consola.debug('Preparing routes for generate...')
-
     const routes = await this.initRoutes()
 
     consola.info('Generating pages')
@@ -62,6 +62,7 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
+      this.isFullStatic = this.options.target === TARGETS.static && this.options.render.ssr === true
     } else {
       const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
       if (!hasBuilt) {
@@ -75,6 +76,7 @@ export default class Generator {
           `In order to use \`nuxt static export\`, you need to run \`nuxt static build\``
         )
       }
+      this.isFullStatic = config.target === TARGETS.static && config.ssr === true
     }
 
     // Initialize dist directory

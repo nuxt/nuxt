@@ -32,12 +32,14 @@ export default {
     }
 
     const generator = await cmd.getGenerator(nuxt)
+    await nuxt.server.listen()
 
     const { errors } = await generator.generate({
       init: true,
       build: false
     })
 
+    await nuxt.close()
     if (cmd.argv['fail-on-error'] && errors.length > 0) {
       throw new Error('Error exporting pages, exiting with non-zero code')
     }
