@@ -3955,10 +3955,10 @@ css-has-pseudo@^0.10.0:
     postcss "^7.0.6"
     postcss-selector-parser "^5.0.0-rc.4"
 
-css-loader@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.npmjs.org/css-loader/-/css-loader-3.2.1.tgz#62849b45a414b7bde0bfba17325a026471040eae"
-  integrity sha512-q40kYdcBNzMvkIImCL2O+wk8dh+RGwPPV9Dfz3n7XtOYPXqe2Z6VgtvoxjkLHz02gmhepG9sOAJOUlx+3hHsBg==
+css-loader@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.npmjs.org/css-loader/-/css-loader-3.3.0.tgz#65f889807baec3197313965d6cda9899f936734d"
+  integrity sha512-x9Y1vvHe5RR+4tzwFdWExPueK00uqFTCw7mZy+9aE/X1SKWOArm5luaOrtJ4d05IpOwJ6S86b/tVcIdhw1Bu4A==
   dependencies:
     camelcase "^5.3.1"
     cssesc "^3.0.0"
@@ -5704,10 +5704,10 @@ globule@^1.0.0:
     lodash "~4.17.10"
     minimatch "~3.0.2"
 
-got@^10.0.2:
-  version "10.0.2"
-  resolved "https://registry.npmjs.org/got/-/got-10.0.2.tgz#f03040d966e0ff8da516d92e8689a3f9def44a3c"
-  integrity sha512-ojjUBCvrhkbEiQRAI8OIcSsCpM+EiVEX5xaoUAS6wFGlnoNa3KnDTiavRfAWXO9x29rA7sl2igh3E7z8glq9Gg==
+got@^10.0.3:
+  version "10.0.3"
+  resolved "https://registry.npmjs.org/got/-/got-10.0.3.tgz#0bd93429fd2891de0026ed731a16143e6193e7ac"
+  integrity sha512-5QBO/EhIq3nbt2madWsez9aTPc0k1oWBzXipfqLdb6JmnrWNxcHEvnxuWErec/PE67Jy/QAgacq6XzGbyzXCzg==
   dependencies:
     "@sindresorhus/is" "^1.0.0"
     "@szmarczak/http-timer" "^3.1.1"
@@ -10694,6 +10694,11 @@ serialize-javascript@^2.1.1:
   version "2.1.1"
   resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-2.1.1.tgz#952907a04a3e3a75af7f73d92d15e233862048b2"
   integrity sha512-MPLPRpD4FNqWq9tTIjYG5LesFouDhdyH0EPY3gVK4DRD5+g4aDqdNSzLIwceulo3Yj+PL1bPh6laE5+H6LTcrQ==
+
+serialize-javascript@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-2.1.2.tgz#ecec53b0e0317bdc95ef76ab7074b7384785fa61"
+  integrity sha512-rs9OggEUF0V4jUSecXazOYsLfu7OGK2qIn3c7IPBiffz32XniEp/TX9Xmc9LQfK2nQ2QKHvZ2oygKUGU0lG4jQ==
 
 serve-placeholder@^1.2.1:
   version "1.2.1"
