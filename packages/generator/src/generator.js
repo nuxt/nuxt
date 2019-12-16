@@ -167,6 +167,7 @@ export default class Generator {
   async initDist () {
     // Clean destination folder
     await fsExtra.remove(this.distPath)
+    await fsExtra.mkdirp(this.distPath)
 
     await this.nuxt.callHook('generate:distRemoved', this)
 
@@ -174,7 +175,9 @@ export default class Generator {
     if (await fsExtra.exists(this.staticRoutes)) {
       await fsExtra.copy(this.staticRoutes, this.distPath)
     }
-    await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
+    if (!isUrl(this.options.build.publicPath)) {
+      await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
+    }
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
