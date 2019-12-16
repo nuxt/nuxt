@@ -127,7 +127,7 @@ const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) =
   const joinedHashes = cspScriptSrcHashes.join(' ')
   const baseCspStr = `script-src 'self'${isDev ? ' \'unsafe-eval\'' : ''} ${joinedHashes}`
 
-  if (Array.isArray(allowedSources)) {
+  if (Array.isArray(allowedSources) && allowedSources.length) {
     return `${baseCspStr} ${allowedSources.join(' ')}`
   }
 
