@@ -19,7 +19,7 @@
     "ignore": "^5.1.4",
     "lodash": "^4.17.15",
     "pify": "^4.0.1",
-    "semver": "^6.3.0",
+    "semver": "^7.0.0",
     "serialize-javascript": "^2.1.2",
     "upath": "^1.2.0"
   },
