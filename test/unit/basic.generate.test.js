@@ -138,7 +138,7 @@ describe('basic generate', () => {
   })
 
   test('/users/1/index.html', async () => {
-    const html = await rp(url('/users/1/index.html'))
+    const { body: html } = await rp(url('/users/1/index.html'))
     expect(html).toContain('<h1>User: 1</h1>')
     expect(
       existsSync(resolve(distDir, 'users/1/index.html'))
@@ -147,26 +147,26 @@ describe('basic generate', () => {
   })
 
   test('/users/2', async () => {
-    const html = await rp(url('/users/2'))
+    const { body: html } = await rp(url('/users/2'))
     expect(html).toContain('<h1>User: 2</h1>')
   })
 
   test('/users/3 (payload given)', async () => {
-    const html = await rp(url('/users/3'))
+    const { body: html } = await rp(url('/users/3'))
     expect(html).toContain('<h1>User: 3000</h1>')
   })
 
   test('/users/4 -> Not found', async () => {
     await expect(rp(url('/users/4'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /users/4')
       }
     })
   })
 
   test('/validate should not be server-rendered', async () => {
-    const html = await rp(url('/validate'))
+    const { body: html } = await rp(url('/validate'))
     expect(html).toContain('<div id="__nuxt"></div>')
     expect(html).toContain('serverRendered:!1')
   })
@@ -184,7 +184,7 @@ describe('basic generate', () => {
   })
 
   test('/redirect should not be server-rendered', async () => {
-    const html = await rp(url('/redirect'))
+    const { body: html } = await rp(url('/redirect'))
     expect(html).toContain('<div id="__nuxt"></div>')
     expect(html).toContain('serverRendered:!1')
   })
@@ -198,8 +198,8 @@ describe('basic generate', () => {
   test('/users/1 not found', async () => {
     await remove(resolve(distDir, 'users'))
     await expect(rp(url('/users/1'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /users/1')
       }
     })
@@ -222,8 +222,8 @@ describe('basic generate', () => {
 
   test('/-ignored', async () => {
     await expect(rp(url('/-ignored'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /-ignored')
       }
     })
@@ -231,15 +231,15 @@ describe('basic generate', () => {
 
   test('/ignored.test', async () => {
     await expect(rp(url('/ignored.test'))).rejects.toMatchObject({
-      statusCode: 404,
       response: {
+        statusCode: 404,
         body: expect.stringContaining('Cannot GET /ignored.test')
       }
     })
   })
 
   test('creates /200.html as fallback', async () => {
-    const html = await rp(url('/200.html'))
+    const { body: html } = await rp(url('/200.html'))
     expect(html.includes('<h1>Index page</h1>')).toBe(false)
     expect(html.includes('data-server-rendered')).toBe(false)
     expect(existsSync(resolve(distDir, '200.html'))).toBe(true)

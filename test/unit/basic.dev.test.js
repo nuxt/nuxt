@@ -141,23 +141,22 @@ describe('basic dev', () => {
   // })
 
   test('/__open-in-editor (open-in-editor)', async () => {
-    const { body } = await rp(
-      url('/__open-in-editor?file=pages/index.vue'),
-      { resolveWithFullResponse: true }
-    )
+    const { body } = await rp(url('/__open-in-editor?file=pages/index.vue'))
     expect(body).toBe('')
   })
 
   test('/__open-in-editor should return error (open-in-editor)', async () => {
     await expect(rp(url('/__open-in-editor?file='))).rejects.toMatchObject({
-      statusCode: 500,
-      error: 'launch-editor-middleware: required query param "file" is missing.'
+      response: {
+        statusCode: 500,
+        body: 'launch-editor-middleware: required query param "file" is missing.'
+      }
     })
   })
 
   test('/error should return error stack trace (Youch)', async () => {
     await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
+      response: { statusCode: 500 }
     })
   })
 
@@ -165,12 +164,11 @@ describe('basic dev', () => {
     const opts = {
       headers: {
         accept: 'application/json'
-      },
-      resolveWithFullResponse: true
+      }
     }
     await expect(rp(url('/error'), opts)).rejects.toMatchObject({
-      statusCode: 500,
       response: {
+        statusCode: 500,
         headers: {
           'content-type': 'text/json; charset=utf-8'
         }

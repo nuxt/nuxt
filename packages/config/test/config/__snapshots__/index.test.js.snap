@@ -7,6 +7,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -177,7 +178,7 @@ Object {
     "static": false,
     "subFolders": true,
   },
-  "globalName": "nuxt",
+  "globalName": undefined,
   "globals": Object {
     "context": [Function],
     "id": [Function],
@@ -197,6 +198,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -361,6 +363,7 @@ Object {
   "alias": Object {},
   "build": Object {
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -531,7 +534,7 @@ Object {
     "static": false,
     "subFolders": true,
   },
-  "globalName": "nuxt",
+  "globalName": undefined,
   "globals": Object {
     "context": [Function],
     "id": [Function],
@@ -551,6 +554,7 @@ Object {
     "**/*.test.*",
     "**/*.spec.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",

@@ -16,20 +16,14 @@ describe('dist options', () => {
   })
 
   test('Specify maxAge/index in render.dist options', async () => {
-    const { body } = await rp(url('/'), {
-      resolveWithFullResponse: true
-    })
+    const { body } = await rp(url('/'))
     try {
-      await rp(url('/_nuxt/'), {
-        resolveWithFullResponse: true
-      })
+      await rp(url('/_nuxt/'))
     } catch (err) {
       expect(err.toString().includes('StatusCodeError'))
     }
     const distFile = body.match(/\/_nuxt\/.+?\.js/)[0]
-    const { headers } = await rp(url(distFile), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url(distFile))
     const twoYears = (((60 * 60 * 24 * 365) * 2) / 1000).toString()
     expect(headers['cache-control']).toContain(twoYears)
   })

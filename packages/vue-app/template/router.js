@@ -49,7 +49,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     res += '{'
     res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
-    res += (route.component) ? nextIndent + 'component: ' + (splitChunks.pages ? route._name : `() => ${route._name}.default || ${route._name}`) : ''
+    res += (route.component) ? nextIndent + 'component: ' + route._name : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
     res += (route.meta) ? nextIndent + 'meta: ' + JSON.stringify(route.meta) : ''
     res += (typeof route.props !== 'undefined') ? nextIndent + 'props: ' + (typeof route.props === 'function' ? serialize(route.props) : JSON.stringify(route.props)) : ''
@@ -82,6 +82,13 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
   }
 }).join('\n')%>
 
+// TODO: remove in Nuxt 3
+const emptyFn = () => {}
+const originalPush = Router.prototype.push
+Router.prototype.push = function push (location, onComplete = emptyFn, onAbort) {
+  return originalPush.call(this, location, onComplete, onAbort)
+}
+
 Vue.use(Router)
 
 export const routerOptions = {
@@ -90,9 +97,9 @@ export const routerOptions = {
   linkActiveClass: '<%= router.linkActiveClass %>',
   linkExactActiveClass: '<%= router.linkExactActiveClass %>',
   scrollBehavior,
-  <%= isTest ? '/* eslint-disable quotes, object-curly-spacing, key-spacing */' : '' %>
+  <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, object-curly-spacing, key-spacing */' : '' %>
   routes: [<%= _routes %>],
-  <%= isTest ? '/* eslint-enable quotes, object-curly-spacing, key-spacing */' : '' %>
+  <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, object-curly-spacing, key-spacing */' : '' %>
   <% if (router.parseQuery) { %>parseQuery: <%= serializeFunction(router.parseQuery) %>,<% } %>
   <% if (router.stringifyQuery) { %>stringifyQuery: <%= serializeFunction(router.stringifyQuery) %>,<% } %>
   fallback: <%= router.fallback %>

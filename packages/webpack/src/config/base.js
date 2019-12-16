@@ -104,7 +104,7 @@ export default class WebpackBaseConfig {
       return options
     }
 
-    const defaultPreset = [ require.resolve('@nuxt/babel-preset-app'), {} ]
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets(
@@ -117,7 +117,7 @@ export default class WebpackBaseConfig {
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [ defaultPreset ]
+      options.presets = [defaultPreset]
     }
 
     return options
@@ -145,6 +145,12 @@ export default class WebpackBaseConfig {
       'process.static': this.target === TARGETS.static,
       'process.target': JSON.stringify(this.target)
     }
+    if (this.buildContext.buildOptions.aggressiveCodeRemoval) {
+      env['typeof process'] = JSON.stringify(this.isServer ? 'object' : 'undefined')
+      env['typeof window'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
+      env['typeof document'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
+    }
+
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
         ['boolean', 'number'].includes(typeof value)
@@ -426,7 +432,7 @@ export default class WebpackBaseConfig {
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
-        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('export \'default\'') &&
         warn.message.includes('nuxt_plugin_'),
       ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
     ]

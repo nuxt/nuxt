@@ -72,7 +72,7 @@ describe('generator: generate route', () => {
       throw error
     })
     const generator = new Generator(nuxt)
-    generator._formatErrors = jest.fn(() => `formatted errors`)
+    generator._formatErrors = jest.fn(() => 'formatted errors')
 
     const route = '/foo'
     const payload = {}

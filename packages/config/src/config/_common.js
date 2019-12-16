@@ -16,8 +16,7 @@ export default () => ({
   mode: MODES.universal,
   modern: undefined,
 
-  // Globals
-  globalName: `nuxt`,
+  globalName: undefined,
   globals: {
     id: globalName => `__${globalName}`,
     nuxt: globalName => `$${globalName}`,
@@ -51,6 +50,7 @@ export default () => ({
   alias: {},
 
   // Ignores
+  ignoreOptions: undefined,
   ignorePrefix: '-',
   ignore: [
     '**/*.test.*',

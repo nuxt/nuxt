@@ -15,14 +15,14 @@
 import TwitterHeadCard from '~/components/twitter-head-card.vue'
 
 export default {
+  components: {
+    TwitterHeadCard
+  },
   head: {
     title: 'About Page',
     meta: [
       { hid: 'description', name: 'description', content: 'About page description' }
     ]
-  },
-  components: {
-    TwitterHeadCard
   }
 }
 </script>

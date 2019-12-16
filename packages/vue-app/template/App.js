@@ -29,20 +29,23 @@ const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`
 
 export default {
   <% if (features.meta) { %>
-  <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
+  <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
   head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+  <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
   <% } %>
   render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
     <% if (components.ErrorPage) { %>
-    if (this.nuxt.err && NuxtError.layout) {
-      this.setLayout(
-        typeof NuxtError.layout === 'function'
-          ? NuxtError.layout(this.context)
-          : NuxtError.layout
-      )
+    if (this.nuxt.err && NuxtError) {
+      const errorLayout = (NuxtError.options || NuxtError).layout
+      if (errorLayout) {
+        this.setLayout(
+          typeof errorLayout === 'function'
+            ? errorLayout.call(NuxtError, this.context)
+            : errorLayout
+        )
+      }
     }
     <% } %>
     const layoutEl = h(this.layout || 'nuxt')
@@ -51,7 +54,7 @@ export default {
         id: '__layout'
       },
       key: this.layoutName
-    }, [ layoutEl ])
+    }, [layoutEl])
     <% } else { %>
     const templateEl = h('nuxt')
     <% } %>
@@ -70,7 +73,7 @@ export default {
           })
         }
       }
-    }, [ templateEl ])
+    }, [templateEl])
     <% } %>
 
     return h('div', {

@@ -43,7 +43,7 @@ const createNext = ssrContext => (opts) => {
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    'Location': opts.path
+    Location: opts.path
   })
   ssrContext.res.end()
 }
@@ -92,7 +92,8 @@ export default async (ssrContext) => {
   const renderErrorPage = async () => {
     <% if (features.layouts) { %>
     // Load layout for error page
-    const errLayout = (typeof NuxtError.layout === 'function' ? NuxtError.layout(app.context) : NuxtError.layout)
+    const layout = (NuxtError.options || NuxtError).layout
+    const errLayout = typeof layout === 'function' ? layout.call(NuxtError, app.context) : layout
     ssrContext.nuxt.layout = errLayout || 'default'
     await _app.loadLayout(errLayout)
     _app.setLayout(errLayout)
@@ -101,7 +102,7 @@ export default async (ssrContext) => {
     return _app
   }
   const render404Page = () => {
-    app.context.error({ statusCode: 404, path: ssrContext.url, message: `<%= messages.error_404 %>` })
+    app.context.error({ statusCode: 404, path: ssrContext.url, message: '<%= messages.error_404 %>' })
     return renderErrorPage()
   }
 

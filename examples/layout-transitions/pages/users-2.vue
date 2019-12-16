@@ -33,6 +33,15 @@
 import axios from 'axios'
 
 export default {
+  async asyncData ({ query }) {
+    const page = +(query.page || 1)
+    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+    return {
+      page,
+      totalPages: data.total_pages,
+      users: data.data
+    }
+  },
   data () {
     return {
       transitionName: this.getTransitionName(this.page)
@@ -47,15 +56,6 @@ export default {
       this.page = +(page || 1)
       this.totalPages = data.total_pages
       this.$nuxt.$loading.finish()
-    }
-  },
-  async asyncData ({ query }) {
-    const page = +(query.page || 1)
-    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
-    return {
-      page,
-      totalPages: data.total_pages,
-      users: data.data
     }
   },
   methods: {
