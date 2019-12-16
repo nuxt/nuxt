@@ -79,7 +79,8 @@ describe('cli/command', () => {
 
   test('returns Builder instance', async () => {
     const cmd = new Command()
-    const builder = await cmd.getBuilder()
+    const nuxt = await cmd.getNuxt()
+    const builder = await cmd.getBuilder(nuxt)
 
     expect(builder.constructor.name).toBe('Builder')
     expect(typeof builder.build).toBe('function')
@@ -87,7 +88,8 @@ describe('cli/command', () => {
 
   test('returns Generator instance', async () => {
     const cmd = new Command()
-    const generator = await cmd.getGenerator()
+    const nuxt = await cmd.getNuxt()
+    const generator = await cmd.getGenerator(nuxt)
 
     expect(generator.constructor.name).toBe('Generator')
     expect(typeof generator.generate).toBe('function')
