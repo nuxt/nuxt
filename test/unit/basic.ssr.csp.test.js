@@ -34,9 +34,7 @@ describe('basic ssr csp', () => {
       'Not contain Content-Security-Policy header, when csp is false',
       async () => {
         nuxt = await startCspServer(false)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toBe(undefined)
       }
@@ -46,9 +44,7 @@ describe('basic ssr csp', () => {
       'Contain Content-Security-Policy header, when csp is set',
       async () => {
         nuxt = await startCspServer(true)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*'$/)
       }
@@ -58,9 +54,7 @@ describe('basic ssr csp', () => {
       'Contain Content-Security-Policy-Report-Only header, when explicitly asked for',
       async () => {
         nuxt = await startCspDevServer({ reportOnly: true })
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'$/)
       }
@@ -70,9 +64,7 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp is set',
       async () => {
         nuxt = await startCspServer(true)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
@@ -89,9 +81,7 @@ describe('basic ssr csp', () => {
         }
 
         nuxt = await startCspServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
         expect(headers[cspHeader]).toContain('https://example.com')
@@ -105,15 +95,13 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`],
+            'default-src': ['\'none\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
 
         nuxt = await startCspServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toMatch(/default-src 'none'/)
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-(.*)?' 'self'/)
@@ -128,14 +116,12 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`]
+            'default-src': ['\'none\'']
           }
         }
 
         nuxt = await startCspServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toMatch(/default-src 'none'/)
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self'$/)
@@ -146,9 +132,9 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp.policies is set',
       async () => {
         const policies = {
-          'default-src': [`'self'`],
-          'script-src': [`'self'`],
-          'style-src': [`'self'`]
+          'default-src': ['\'self\''],
+          'script-src': ['\'self\''],
+          'style-src': ['\'self\'']
         }
 
         nuxt = await startCspServer({
@@ -156,14 +142,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
@@ -176,7 +158,7 @@ describe('basic ssr csp', () => {
       'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -184,14 +166,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[cspHeader]).toMatch(/script-src 'self' 'unsafe-inline'$/)
       }
@@ -201,7 +179,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -210,14 +188,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
       }
@@ -228,7 +202,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -237,14 +211,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
       }
@@ -256,9 +226,7 @@ describe('basic ssr csp', () => {
       'Not contain Content-Security-Policy-Report-Only header, when csp is false',
       async () => {
         nuxt = await startCspDevServer(false)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toBe(undefined)
       }
@@ -268,9 +236,7 @@ describe('basic ssr csp', () => {
       'Contain Content-Security-Policy header, when explicitly asked for',
       async () => {
         nuxt = await startCspDevServer({ reportOnly: false })
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*'$/)
       }
@@ -280,9 +246,7 @@ describe('basic ssr csp', () => {
       'Contain Content-Security-Policy header, when csp is set',
       async () => {
         nuxt = await startCspDevServer(true)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'$/)
       }
@@ -292,9 +256,7 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp is set',
       async () => {
         nuxt = await startCspDevServer(true)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         const hashes = headers[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
@@ -311,9 +273,7 @@ describe('basic ssr csp', () => {
         }
 
         nuxt = await startCspDevServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
         expect(headers[reportOnlyHeader]).toContain('https://example.com')
@@ -327,15 +287,13 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`],
+            'default-src': ['\'none\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
 
         nuxt = await startCspDevServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toMatch(/default-src 'none'/)
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-(.*)?' 'self'/)
@@ -350,14 +308,12 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'none'`]
+            'default-src': ['\'none\'']
           }
         }
 
         nuxt = await startCspDevServer(cspOption)
-        const { headers } = await rp(url('/stateless'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateless'))
 
         expect(headers[reportOnlyHeader]).toMatch(/default-src 'none'/)
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-.*' 'self'$/)
@@ -368,9 +324,9 @@ describe('basic ssr csp', () => {
       'Contain only unique hashes in header when csp.policies is set',
       async () => {
         const policies = {
-          'default-src': [`'self'`],
-          'script-src': [`'self'`],
-          'style-src': [`'self'`]
+          'default-src': ['\'self\''],
+          'script-src': ['\'self\''],
+          'style-src': ['\'self\'']
         }
 
         nuxt = await startCspDevServer({
@@ -378,14 +334,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         const hashes = headers[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
@@ -400,19 +352,15 @@ describe('basic ssr csp', () => {
         const cspOption = {
           enabled: true,
           policies: {
-            'default-src': [`'self'`],
+            'default-src': ['\'self\''],
             'script-src': ['https://example.com', 'https://example.io']
           }
         }
         nuxt = await startCspDevServer(cspOption)
-        const { headers: user1Header } = await rp(url('/users/1'), {
-          resolveWithFullResponse: true
-        })
+        const { headers: user1Header } = await rp(url('/users/1'))
         const user1Hashes = user1Header[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
 
-        const { headers: user2Header } = await rp(url('/users/2'), {
-          resolveWithFullResponse: true
-        })
+        const { headers: user2Header } = await rp(url('/users/2'))
         const user2Hashes = new Set(user2Header[reportOnlyHeader].split(' ').filter(s => s.startsWith('\'sha256-')))
 
         const intersection = new Set(user1Hashes.filter(x => user2Hashes.has(x)))
@@ -424,7 +372,7 @@ describe('basic ssr csp', () => {
       'Not contain hash when \'unsafe-inline\' option is present in script-src policy',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspDevServer({
@@ -432,14 +380,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'self' 'unsafe-inline'$/)
       }
@@ -449,7 +393,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when unsafeInlineCompatibility is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -458,14 +402,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
       }
@@ -476,7 +416,7 @@ describe('basic ssr csp', () => {
       'Contain hash and \'unsafe-inline\' when the typo property unsafeInlineCompatiblity is enabled',
       async () => {
         const policies = {
-          'script-src': [`'unsafe-inline'`]
+          'script-src': ['\'unsafe-inline\'']
         }
 
         nuxt = await startCspServer({
@@ -485,14 +425,10 @@ describe('basic ssr csp', () => {
         })
 
         for (let i = 0; i < 5; i++) {
-          await rp(url('/stateless'), {
-            resolveWithFullResponse: true
-          })
+          await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'), {
-          resolveWithFullResponse: true
-        })
+        const { headers } = await rp(url('/stateful'))
 
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
       }

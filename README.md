@@ -9,7 +9,7 @@
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
-  <a href="#platinium-sponsors" alt="Platinium Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/platinium-sponsors/badge.svg" /></a>
+  <a href="#platinum-sponsors" alt="Platinum Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/platinum-sponsors/badge.svg" /></a>
   <a href="#gold-sponsors" alt="Gold Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/gold-sponsors/badge.svg" /></a>
   <a href="#silver-sponsors" alt="Silver Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/silver-sponsors/badge.svg" /></a>
   <a href="#bronze-sponsors" alt="Bronze Sponsors on Open Collective"><img src="https://opencollective.com/nuxtjs/tiers/bronze-sponsors/badge.svg" /></a>
@@ -65,9 +65,9 @@ Funds donated via OpenCollective are managed with transparent expenses and will 
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#contribute)]
 
-### Platinium Sponsors
+### Platinum Sponsors
 
-[![Open Collective Platinium Sponsors][platinium-sponsors-src]][platinium-sponsors-href]
+[![Open Collective Platinum Sponsors][platinum-sponsors-src]][platinum-sponsors-href]
 
 ### Gold Sponsors
 
@@ -229,8 +229,8 @@ If you discover a security vulnerability regarding Nuxt.js, please send an e-mai
 [MIT](https://github.com/nuxt/nuxt.js/blob/dev/LICENSE)
 
 <!-- Open Collective Tiers -->
-[platinium-sponsors-src]: https://opencollective.com/nuxtjs/tiers/platinium-sponsors.svg?avatarHeight=96&width=890
-[platinium-sponsors-href]: https://opencollective.com/nuxtjs#contributors
+[platinum-sponsors-src]: https://opencollective.com/nuxtjs/tiers/platinum-sponsors.svg?avatarHeight=96&width=890
+[platinum-sponsors-href]: https://opencollective.com/nuxtjs#contributors
 [gold-sponsors-src]: https://opencollective.com/nuxtjs/tiers/gold-sponsors.svg?avatarHeight=80&width=890
 [gold-sponsors-href]: https://opencollective.com/nuxtjs#contributors
 [silver-sponsors-src]: https://opencollective.com/nuxtjs/tiers/silver-sponsors.svg?avatarHeight=64&width=890

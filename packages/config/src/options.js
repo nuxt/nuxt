@@ -63,6 +63,7 @@ export function getNuxtConfig (_options) {
 
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
+    // use `` for preventing replacing to nuxt-edge
     : `nuxt`
 
   // Resolve rootDir
@@ -419,7 +420,7 @@ export function getNuxtConfig (_options) {
 
   if (isPureObject(options.serverMiddleware)) {
     options.serverMiddleware = Object.entries(options.serverMiddleware)
-      .map(([ path, handler ]) => ({ path, handler }))
+      .map(([path, handler]) => ({ path, handler }))
   }
 
   return options

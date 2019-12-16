@@ -21,7 +21,7 @@ describe('nuxt minimal vue-app bundle size limit', () => {
     const filter = filename => filename === 'vue-app.nuxt.js'
     const legacyResourcesSize = await getResourcesSize(distDir, 'client', { filter })
 
-    const LEGACY_JS_RESOURCES_KB_SIZE = 15.2
+    const LEGACY_JS_RESOURCES_KB_SIZE = 15.4
     expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
   })
 })

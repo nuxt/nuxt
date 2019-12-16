@@ -128,7 +128,7 @@ describe('cli/utils', () => {
     const successBox = jest.fn().mockImplementation((m, t) => t + m)
     jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
 
-    const badgeMessages = [ 'badgeMessage' ]
+    const badgeMessages = ['badgeMessage']
     const bannerColor = 'green'
     const listeners = [
       { url: 'first' },

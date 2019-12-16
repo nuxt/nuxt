@@ -38,10 +38,10 @@ describe('basic browser', () => {
     loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await page.waitForFunction(
-      `$nuxt.$loading.$data.show === false`
+      '$nuxt.$loading.$data.show === false'
     )
     await page.waitForFunction(
-      `document.querySelector('p').innerText === 'true'`
+      'document.querySelector(\'p\').innerText === \'true\''
     )
   })
 

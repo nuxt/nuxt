@@ -102,7 +102,7 @@ export default class WebpackBaseConfig {
       return options
     }
 
-    const defaultPreset = [ require.resolve('@nuxt/babel-preset-app'), {} ]
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets(
@@ -428,7 +428,7 @@ export default class WebpackBaseConfig {
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
-        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('export \'default\'') &&
         warn.message.includes('nuxt_plugin_'),
       ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
     ]
