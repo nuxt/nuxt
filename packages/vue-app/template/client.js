@@ -107,14 +107,19 @@ function mapTransitions (Components, to, from) {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
+  const tComponents = [].concat(Components)
 
-  return Components.map((Component) => {
+  // If leaving a child route to a parent, keep the child leave transition
+  while (from && from.matched.length > tComponents.length) {
+    tComponents.push({})
+  }
+  return tComponents.map((Component, i) => {
     // Clone original object to prevent overrides
     const transitions = Object.assign({}, componentTransitions(Component))
 
     // Combine transitions & prefer `leave` transitions of 'from' route
-    if (from && from.matched.length && from.matched[0].components.default) {
-      const fromTransitions = componentTransitions(from.matched[0].components.default)
+    if (from && from.matched.length && from.matched[i].components.default) {
+      const fromTransitions = componentTransitions(from.matched[i].components.default)
       Object.keys(fromTransitions)
         .filter(key => fromTransitions[key] && key.toLowerCase().includes('leave'))
         .forEach((key) => { transitions[key] = fromTransitions[key] })
