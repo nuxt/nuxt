@@ -16,7 +16,7 @@
     "cache-loader": "^4.1.0",
     "caniuse-lite": "^1.0.30001016",
     "chalk": "^2.4.2",
-    "consola": "^2.11.0",
+    "consola": "^2.11.1",
     "css-loader": "^3.3.2",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
