@@ -25,12 +25,6 @@ export default {
   render(h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     const layoutEl = h(this.layout || 'nuxt')
-    const templateEl = h('div', {
-      domProps: {
-        id: '__layout'
-      },
-      key: this.layoutName
-    }, [ layoutEl ])
 
     const transitionEl = h('transition', {
       props: {
@@ -45,7 +39,7 @@ export default {
           })
         }
       }
-    }, [ templateEl ])
+    }, [ layoutEl ])
 
     return h('div', {
       domProps: {
