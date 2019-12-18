@@ -1,19 +1,19 @@
 {
-  "name": "example-with-vuetify",
-  "dependencies": {
-    "nuxt": "latest",
-    "vuetify": "latest",
-    "vuetify-loader": "latest"
-  },
+  "name": "with-vuetify",
+  "version": "1.0.0",
+  "description": "Nuxt example with vuetify module",
+  "author": "",
+  "private": true,
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate",
-    "post-update": "yarn upgrade --latest"
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "nuxt": "^2.0.0"
   },
   "devDependencies": {
-    "stylus": "^0.54.5",
-    "stylus-loader": "^3.0.1"
+    "@nuxtjs/vuetify": "^1.0.0"
   }
 }
