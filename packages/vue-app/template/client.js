@@ -118,7 +118,7 @@ function mapTransitions (Components, to, from) {
     const transitions = Object.assign({}, componentTransitions(Component))
 
     // Combine transitions & prefer `leave` transitions of 'from' route
-    if (from && from.matched.length && from.matched[i].components.default) {
+    if (from && from.matched[i] && from.matched[i].components.default) {
       const fromTransitions = componentTransitions(from.matched[i].components.default)
       Object.keys(fromTransitions)
         .filter(key => fromTransitions[key] && key.toLowerCase().includes('leave'))
