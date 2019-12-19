@@ -110,7 +110,7 @@ function mapTransitions (Components, to, from) {
   const tComponents = [].concat(Components)
 
   // If leaving a child route to a parent, keep the child leave transition
-  while (from && from.matched.length > tComponents.length) {
+  while (from && from.matched.length > tComponents.length) { // eslint-disable-line no-unmodified-loop-condition
     tComponents.push({})
   }
   return tComponents.map((Component, i) => {
