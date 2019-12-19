@@ -3,5 +3,6 @@ image:
 
 tasks:
   - init: >
-      yarn
-      yarn build
+      npm install yarn;
+      yarn;
+      yarn build;
