@@ -9,7 +9,7 @@ import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
 
 jest.mock('fs-extra')
-jest.mock('semver')
+jest.mock('semver/functions/satisfies')
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')

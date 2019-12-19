@@ -1,13 +1,10 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.10.2",
+  "version": "2.11.0",
   "description": "babel-preset-app for nuxt.js",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "author": "Evan You",
-  "contributors": [
-    "Clark Du"
-  ],
   "main": "src/index.js",
   "dependencies": {
     "@babel/core": "^7.7.5",
@@ -21,5 +18,8 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "contributors": [
+    "Clark Du"
+  ]
 }
