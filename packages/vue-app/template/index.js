@@ -85,6 +85,11 @@ async function createApp (ssrContext) {
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
   const app = {
+    <% if (features.meta) { %>
+    <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
+    head: <%= serializeFunction(head) %>,
+    <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+    <% } %>
     <% if (store) { %>store,<%  } %>
     router,
     nuxt: {
