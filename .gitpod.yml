@@ -6,3 +6,4 @@ tasks:
       npm install yarn;
       yarn;
       yarn build;
+      yarn test;
