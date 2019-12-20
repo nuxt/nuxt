@@ -98,12 +98,17 @@ export default {
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
+    <% if (features.asyncData && isFullStatic) { %>
+    if (process.client) {
+      Vue.util.defineReactive(this, 'payloadPath', window.<%= globals.context %>.payloadPath)
+    }
+    <% } %>
   },
   created () {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
-    // add to window so we can listen when ready
     if (process.client) {
+      // add to window so we can listen when ready
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
       <% if (features.clientOnline) { %>
       this.refreshOnlineStatus()

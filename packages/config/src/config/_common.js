@@ -66,7 +66,7 @@ export default () => ({
     interval: 0,
     subFolders: true,
     fallback: '200.html',
-    static: false
+    static: true
   },
 
   // Watch

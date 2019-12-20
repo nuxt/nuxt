@@ -20,7 +20,7 @@ export default class TemplateContext {
       uniqBy,
       isDev: options.dev,
       isTest: options.test,
-      isFullStatic: !options.dev && options.target === TARGETS.static && options.render.ssr === true,
+      isFullStatic: !options.dev && options.target === TARGETS.static && options.render.ssr === true && options.generate.static === true,
       debug: options.debug,
       buildIndicator: options.dev && options.build.indicator,
       vue: { config: options.vue.config },
