@@ -63,6 +63,11 @@ export default {
     // Disable analyze if set by the nuxt config
     config.build = config.build || {}
     config.build.analyze = false
+    // Set generate.static = false by default to avoid breaking changes
+    config.generate = config.generate || {}
+    if (config.generate.static !== true) {
+      config.generate.static = false
+    }
 
     const nuxt = await cmd.getNuxt(config)
 
@@ -85,12 +90,14 @@ export default {
     }
 
     const generator = await cmd.getGenerator(nuxt)
+    await nuxt.server.listen()
 
     const { errors } = await generator.generate({
       init: true,
       build: cmd.argv.build
     })
 
+    await nuxt.close()
     if (cmd.argv['fail-on-error'] && errors.length > 0) {
       throw new Error('Error generating pages, exiting with non-zero code')
     }

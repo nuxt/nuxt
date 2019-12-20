@@ -467,20 +467,34 @@ async function render (to, from, next) {
       if (hasAsyncData) {
         <% if (isFullStatic) { %>
           const path = to.path.replace(/\/$/, '')
-          const payloadPath = (`${window.<%= globals.context %>.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
+          const payloadPath = (`${this.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
+          let promise
 
-          console.log('Fake async data', payloadPath)
+          if (Component.options.static === false || this.$isPreview) {
+            promise = promisify(Component.options.asyncData, app.context)
+          } else if (Component._payloadData && Component._payloadPath === this.payloadPath) {
+            promise = Promise.resolve(Component._payloadData)
+          } else {
+            promise = fetch(payloadPath).then((res) => {
+              if (!res.ok) throw new Error(res.statusText)
+              return res.json()
+            }).then((payloadData) => {
+              Component._payloadData = payloadData
+              Component._payloadPath = this.payloadPath
+              return payloadData
+            })
+          }
         <% } else { %>
         const promise = promisify(Component.options.asyncData, app.context)
-          .then((asyncDataResult) => {
-            applyAsyncData(Component, asyncDataResult)
-            <% if (loading) { %>
-            if (this.$loading.increase) {
-              this.$loading.increase(loadingIncrease)
-            }
-            <% } %>
-          })
         <% } %>
+        promise.then((asyncDataResult) => {
+          applyAsyncData(Component, asyncDataResult)
+          <% if (loading) { %>
+          if (this.$loading.increase) {
+            this.$loading.increase(loadingIncrease)
+          }
+          <% } %>
+        })
         promises.push(promise)
       }
       <% } %>
