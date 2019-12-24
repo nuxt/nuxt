@@ -26,6 +26,10 @@ export default {
    */
   css: [],
   /*
+   * Vuetify custom variables
+   */
+  customVariables: ['~/assets/variables.scss'],
+  /*
    ** Plugins to load before mounting the App
    */
   plugins: [],
