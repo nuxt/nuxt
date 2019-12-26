@@ -86,7 +86,7 @@ const _routes = recursiveRoutes(router.routes, '  ', _components, 1)
 const emptyFn = () => {}
 const originalPush = Router.prototype.push
 Router.prototype.push = function push (location, onComplete = emptyFn, onAbort) {
-  return originalPush.call(this, location, onComplete, onAbort)
+  return onAbort ? originalPush.call(this, location, onComplete, onAbort) : originalPush.call(this, location, onComplete).catch(err => err)
 }
 
 Vue.use(Router)
