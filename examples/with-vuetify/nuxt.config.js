@@ -64,8 +64,7 @@ export default {
           success: colors.green.accent3
         }
       }
-    },
-
+    }
   },
   /*
    ** Build configuration
