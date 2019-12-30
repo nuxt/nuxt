@@ -44,7 +44,7 @@
     "eslint": "6.8.0",
     "eslint-multiplexer": "^2.0.0",
     "esm": "^3.2.25",
-    "execa": "^3.4.0",
+    "execa": "^4.0.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^8.1.0",
