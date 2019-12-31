@@ -71,7 +71,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "sass-loader": "^8.0.0",
-    "sort-package-json": "^1.32.2",
+    "sort-package-json": "^1.35.0",
     "vue-jest": "^4.0.0-beta.2"
   }
 }
