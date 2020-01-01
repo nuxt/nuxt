@@ -158,7 +158,7 @@ export default class Generator {
     try {
       html = this.minifyHtml(html)
     } catch (error) {
-      consola.warn(`HTML minification failed for SPA fallback`)
+      consola.warn('HTML minification failed for SPA fallback')
     }
 
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
@@ -243,7 +243,8 @@ export default class Generator {
       fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
       fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
     } else {
-      fileName = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
+      const normalizedRoute = route.replace(/\/$/, '')
+      fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')
     }
 
     // Call hook to let user update the path & html

@@ -24,11 +24,11 @@
 import Byline from '../components/Byline'
 
 export default {
-  head: {
-    title: 'The Dog'
-  },
   components: {
     Byline
+  },
+  head: {
+    title: 'The Dog'
   }
 }
 </script>

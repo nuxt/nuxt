@@ -49,7 +49,7 @@ const stressTest = async (_url, concurrency = 2, steps = 4) => {
 
   await sequence(range(steps), async () => {
     await parallel(range(concurrency), async () => {
-      const response = await rp(url(_url), { resolveWithFullResponse: true })
+      const response = await rp(url(_url))
       // Status Code
       const code = response.statusCode
       if (!statusCodes[code]) {

@@ -442,7 +442,7 @@ describe('core: resolver', () => {
       const resolver = new Resolver({
         options: {}
       })
-      resolver.resolvePath = jest.fn()
+      resolver.resolvePath = jest.fn().mockReturnValue('/var/nuxt/resolver/file.js')
       resolver.esm = jest.fn()
 
       resolver.requireModule('/var/nuxt/resolver/file.js', { esm: true })

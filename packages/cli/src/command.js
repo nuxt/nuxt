@@ -1,4 +1,5 @@
 
+import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
 import Hookable from 'hable'
@@ -35,6 +36,12 @@ export default class NuxtCommand extends Hookable {
   }
 
   async run () {
+    await this.callHook('run:before', {
+      argv: this._argv,
+      cmd: this.cmd,
+      rootDir: path.resolve(this.argv._[0] || '.')
+    })
+
     if (this.argv.help) {
       this.showHelp()
       return
@@ -198,7 +205,7 @@ export default class NuxtCommand extends Hookable {
       }
 
       maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-      options.push([ optionHelp, option.description ])
+      options.push([optionHelp, option.description])
     }
 
     const _opts = options.map(([option, description]) => {
@@ -212,7 +219,7 @@ export default class NuxtCommand extends Hookable {
 
     const usage = foldLines(`Usage: nuxt ${this.cmd.usage} [options]`, startSpaces)
     const description = foldLines(this.cmd.description, startSpaces)
-    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
+    const opts = foldLines('Options:', startSpaces) + '\n\n' + _opts
 
     let helpText = colorize(`${usage}\n\n`)
     if (this.cmd.description) {

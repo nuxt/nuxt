@@ -6,14 +6,14 @@
 
 <script>
 export default {
-  computed: {
-    debug () {
-      return JSON.stringify(this.$data, null, 2)
-    }
-  },
   asyncData () {
     return {
       [Math.random()]: true
+    }
+  },
+  computed: {
+    debug () {
+      return JSON.stringify(this.$data, null, 2)
     }
   }
 }

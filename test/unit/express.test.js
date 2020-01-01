@@ -28,7 +28,7 @@ describe('express', () => {
   })
 
   test('/stateless with express', async () => {
-    const html = await rp(url('/stateless'))
+    const { body: html } = await rp(url('/stateless'))
 
     expect(html).toContain('<h1>My component!</h1>')
   })

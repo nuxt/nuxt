@@ -157,7 +157,7 @@ describe('with-config', () => {
 
   test('/test/not-existed should return 404', async () => {
     await expect(rp(url('/test/not-existed')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('/test/redirect/about-bis (redirect with extendRoutes)', async () => {
@@ -171,20 +171,24 @@ describe('with-config', () => {
   })
 
   test('Check /test/test.txt with custom serve-static options', async () => {
-    const { headers } = await rp(url('/test/test.txt'), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url('/test/test.txt'))
     expect(headers['cache-control']).toBe('public, max-age=31536000')
   })
 
   test('Check /test.txt should return 404', async () => {
     await expect(rp(url('/test.txt')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
+  })
+
+  test('/test/head', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/test/head'))
+    const html = window.document.querySelector('head').innerHTML
+    expect(html).toContain('<noscript data-n-head="test-ssr-app-id">noscript</noscript>')
   })
 
   test('should ignore files in .nuxtignore', async () => {
     await expect(rp(url('/test-ignore')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('renderAndGetWindow options', async () => {
@@ -205,9 +209,7 @@ describe('with-config', () => {
   })
 
   test('/ with Server-Timing header', async () => {
-    const { headers } = await rp(url('/test'), {
-      resolveWithFullResponse: true
-    })
+    const { headers } = await rp(url('/test'))
     expect(headers['server-timing']).toMatch(/total;dur=\d+(\.\d+)?;desc="Nuxt Server Time"/)
   })
 

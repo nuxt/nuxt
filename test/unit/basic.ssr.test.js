@@ -82,13 +82,17 @@ describe('basic ssr', () => {
     const window = await nuxt.server.renderAndGetWindow(url('/head'))
     expect(window.document.title).toBe('My title - Nuxt.js')
 
-    const html = window.document.body.innerHTML
+    const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
     expect(metas[0].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
+
+    expect(html).toContain('<html foo="baz" data-n-head="%7B%22foo%22:%7B%22ssr%22:%22baz%22%7D%7D">')
+    expect(html).toContain('<head bar="foo" data-n-head="%7B%22bar%22:%7B%22ssr%22:%22foo%22%7D%7D">')
+    expect(html).toContain('<body baz="bar" data-n-head="%7B%22baz%22:%7B%22ssr%22:%22bar%22%7D%7D">')
   })
 
   test('/async-data', async () => {
@@ -211,7 +215,7 @@ describe('basic ssr', () => {
 
   test('/error status code', async () => {
     await expect(rp(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
+      response: { statusCode: 500 }
     })
   })
 
@@ -219,12 +223,11 @@ describe('basic ssr', () => {
     const opts = {
       headers: {
         accept: 'application/json'
-      },
-      resolveWithFullResponse: true
+      }
     }
     await expect(rp(url('/error'), opts)).rejects.toMatchObject({
-      statusCode: 500,
       response: {
+        statusCode: 500,
         headers: {
           'content-type': 'text/json; charset=utf-8'
         }
@@ -242,13 +245,15 @@ describe('basic ssr', () => {
 
   test('/error2 status code', async () => {
     await expect(rp(url('/error2'))).rejects.toMatchObject({
-      statusCode: 500,
-      message: expect.stringContaining('Custom error')
+      response: {
+        statusCode: 500,
+        body: expect.stringContaining('Custom error')
+      }
     })
   })
 
   test('/error-midd', async () => {
-    await expect(rp(url('/error-midd'))).rejects.toMatchObject({ statusCode: 505 })
+    await expect(rp(url('/error-midd'))).rejects.toMatchObject({ response: { statusCode: 505 } })
   })
 
   test('/redirect-middleware', async () => {
@@ -293,17 +298,16 @@ describe('basic ssr', () => {
   })
 
   test('ETag Header', async () => {
-    const { headers: { etag } } = await rp(url('/stateless'), {
-      resolveWithFullResponse: true
-    })
+    const { headers: { etag } } = await rp(url('/stateless'))
+
     // Verify functionality
-    await expect(rp(url('/stateless'), { headers: { 'If-None-Match': etag } }))
-      .rejects.toMatchObject({ statusCode: 304 })
+    const response = await rp(url('/stateless'), { headers: { 'If-None-Match': etag } })
+    await expect(response).toMatchObject({ statusCode: 304 })
   })
 
   test('/_nuxt/ should return 404', async () => {
     await expect(rp(url('/_nuxt/')))
-      .rejects.toMatchObject({ statusCode: 404 })
+      .rejects.toMatchObject({ response: { statusCode: 404 } })
   })
 
   test('/meta', async () => {
@@ -313,7 +317,7 @@ describe('basic ssr', () => {
 
   test('/fn-midd', async () => {
     await expect(rp(url('/fn-midd')))
-      .rejects.toMatchObject({ statusCode: 403 })
+      .rejects.toMatchObject({ response: { statusCode: 403 } })
   })
 
   test('/fn-midd?please=true', async () => {
@@ -353,6 +357,16 @@ describe('basic ssr', () => {
     const html = window.document.body.innerHTML
     expect(html).toMatch('<h1>JS Layout</h1>')
     expect(html).toMatch('<h2>custom page</h2>')
+  })
+  /* Testing symlinks functionality */
+  test('/symlink/symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/symlinked')
+    expect(html).toContain('<h1>Symlinked page</h1>')
+  })
+
+  test('/symlink/deep/nested-symlinked', async () => {
+    const { html } = await nuxt.server.renderRoute('/symlink/deep/nested-symlinked')
+    expect(html).toContain('<h1>Nested symlink page</h1>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

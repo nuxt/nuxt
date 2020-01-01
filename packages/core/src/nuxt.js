@@ -27,7 +27,7 @@ export default class Nuxt extends Hookable {
     this.deprecateHooks({
       'render:context': 'render:routeContext',
       'render:routeContext': 'vue-renderer:afterRender',
-      'showReady': 'webpack:done' // Workaround to deprecate showReady
+      showReady: 'webpack:done' // Workaround to deprecate showReady
     })
 
     // Add Legacy aliases

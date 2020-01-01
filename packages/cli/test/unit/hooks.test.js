@@ -1,3 +1,4 @@
+import path from 'path'
 import { NuxtCommand } from '../utils'
 
 describe('dev', () => {
@@ -8,6 +9,34 @@ describe('dev', () => {
   })
 
   afterEach(() => jest.clearAllMocks())
+
+  test('run:before hook', async () => {
+    const hooks = {
+      'run:before': jest.fn()
+    }
+
+    await NuxtCommand.run(dev, [], hooks)
+
+    expect(hooks['run:before']).toHaveBeenCalledWith({
+      argv: [],
+      cmd: dev,
+      rootDir: path.resolve('.')
+    })
+  })
+
+  test('run:before hook (custom CLI options & rootDir)', async () => {
+    const hooks = {
+      'run:before': jest.fn()
+    }
+
+    await NuxtCommand.run(dev, ['-p', '3001', 'path/to/project'], hooks)
+
+    expect(hooks['run:before']).toHaveBeenCalledWith({
+      argv: ['-p', '3001', 'path/to/project'],
+      cmd: dev,
+      rootDir: path.resolve('path/to/project')
+    })
+  })
 
   test('config hook', async () => {
     const hooks = {

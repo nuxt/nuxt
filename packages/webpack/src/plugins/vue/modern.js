@@ -40,7 +40,7 @@ export default class ModernModePlugin {
   }
 
   applyLegacy (compiler) {
-    const ID = `nuxt-legacy-bundle`
+    const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
       HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, (data, cb) => {
         // get stats, write to disk
@@ -54,7 +54,7 @@ export default class ModernModePlugin {
   }
 
   applyModern (compiler) {
-    const ID = `nuxt-modern-bundle`
+    const ID = 'nuxt-modern-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
       HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, async (data, cb) => {
         // use <script type="module"> for modern assets

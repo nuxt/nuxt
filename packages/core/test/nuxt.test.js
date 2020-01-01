@@ -39,7 +39,7 @@ describe('core: nuxt', () => {
     expect(nuxt._deprecatedHooks).toEqual({
       'render:context': 'render:routeContext',
       'render:routeContext': 'vue-renderer:afterRender',
-      'showReady': 'webpack:done'
+      showReady: 'webpack:done'
     })
 
     expect(defineAlias).toBeCalledTimes(2)

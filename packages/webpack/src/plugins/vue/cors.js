@@ -6,7 +6,7 @@ export default class CorsPlugin {
   }
 
   apply (compiler) {
-    const ID = `vue-cors-plugin`
+    const ID = 'vue-cors-plugin'
     compiler.hooks.compilation.tap(ID, (compilation) => {
       HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data, cb) => {
         if (this.crossorigin != null) {

@@ -32,6 +32,13 @@ function search (q) {
 }
 
 export default {
+  async asyncData ({ query }) {
+    const searchResults = await search(query.q)
+    return {
+      searchResults,
+      date: Date.now()
+    }
+  },
   data () {
     return {
       q: this.$route.query.q || ''
@@ -40,13 +47,6 @@ export default {
   watch: {
     async '$route.query.q' (q) {
       this.searchResults = await search(q)
-    }
-  },
-  async asyncData ({ query }) {
-    const searchResults = await search(query.q)
-    return {
-      searchResults,
-      date: Date.now()
     }
   },
   mounted () {

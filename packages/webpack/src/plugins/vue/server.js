@@ -24,8 +24,8 @@ export default class VueSSRServerPlugin {
 
       if (entryAssets.length > 1) {
         throw new Error(
-          `Server-side bundle should have one single entry file. ` +
-          `Avoid using CommonsChunkPlugin in the server config.`
+          'Server-side bundle should have one single entry file. ' +
+          'Avoid using CommonsChunkPlugin in the server config.'
         )
       }
 

@@ -88,9 +88,9 @@ describe('core: module', () => {
 
     const template = module.addTemplate('/var/nuxt/test')
     const expected = {
-      'dst': 'nuxt.test.hash(/var/nuxt/test)',
-      'options': undefined,
-      'src': '/var/nuxt/test'
+      dst: 'nuxt.test.hash(/var/nuxt/test)',
+      options: undefined,
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -111,9 +111,9 @@ describe('core: module', () => {
       options: { test: true }
     })
     const expected = {
-      'dst': 'nuxt.test.hash(/var/nuxt/test)',
-      'options': { test: true },
-      'src': '/var/nuxt/test'
+      dst: 'nuxt.test.hash(/var/nuxt/test)',
+      options: { test: true },
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -134,9 +134,9 @@ describe('core: module', () => {
       fileName: '/var/nuxt/dist/test'
     })
     const expected = {
-      'dst': '/var/nuxt/dist/test',
-      'options': undefined,
-      'src': '/var/nuxt/test'
+      dst: '/var/nuxt/dist/test',
+      options: undefined,
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -236,7 +236,7 @@ describe('core: module', () => {
 
     module.addLayout({}, 'error')
 
-    expect(module.options.layouts).toEqual({ 'error': './nuxt.test.template' })
+    expect(module.options.layouts).toEqual({ error: './nuxt.test.template' })
     expect(module.addErrorLayout).toBeCalledTimes(1)
     expect(module.addErrorLayout).toBeCalledWith('nuxt.test.template')
   })

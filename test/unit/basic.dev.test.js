@@ -1,4 +1,5 @@
 import path from 'path'
+import jsdom from 'jsdom'
 import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp, waitFor } from '../utils'
 
@@ -51,6 +52,14 @@ describe('basic dev', () => {
             postcssLoader = cssLoaders[cssLoaders.length - 1]
           }
         }
+      },
+      hooks: {
+        'vue-renderer:ssr:context': ({ nuxt }) => {
+          nuxt.logs = [{ type: 'log', args: ['This is a test ssr log'] }]
+        }
+      },
+      render: {
+        ssrLog: 'collapsed'
       }
     })
 
@@ -132,23 +141,22 @@ describe('basic dev', () => {
   // })
 
   test('/__open-in-editor (open-in-editor)', async () => {
-    const { body } = await rp(
-      url('/__open-in-editor?file=pages/index.vue'),
-      { resolveWithFullResponse: true }
-    )
+    const { body } = await rp(url('/__open-in-editor?file=pages/index.vue'))
     expect(body).toBe('')
   })
 
   test('/__open-in-editor should return error (open-in-editor)', async () => {
     await expect(rp(url('/__open-in-editor?file='))).rejects.toMatchObject({
-      statusCode: 500,
-      error: 'launch-editor-middleware: required query param "file" is missing.'
+      response: {
+        statusCode: 500,
+        body: 'launch-editor-middleware: required query param "file" is missing.'
+      }
     })
   })
 
   test('/error should return error stack trace (Youch)', async () => {
     await expect(nuxt.server.renderAndGetWindow(url('/error'))).rejects.toMatchObject({
-      statusCode: 500
+      response: { statusCode: 500 }
     })
   })
 
@@ -156,17 +164,37 @@ describe('basic dev', () => {
     const opts = {
       headers: {
         accept: 'application/json'
-      },
-      resolveWithFullResponse: true
+      }
     }
     await expect(rp(url('/error'), opts)).rejects.toMatchObject({
-      statusCode: 500,
       response: {
+        statusCode: 500,
         headers: {
           'content-type': 'text/json; charset=utf-8'
         }
       }
     })
+  })
+
+  test('/ should display ssr log in collapsed group', async () => {
+    const virtualConsole = new jsdom.VirtualConsole()
+    const groupCollapsed = jest.fn()
+    const groupEnd = jest.fn()
+    const log = jest.fn()
+    virtualConsole.on('groupCollapsed', groupCollapsed)
+    virtualConsole.on('groupEnd', groupEnd)
+    virtualConsole.on('log', log)
+
+    await nuxt.server.renderAndGetWindow(url('/'), {
+      virtualConsole
+    })
+
+    expect(groupCollapsed).toHaveBeenCalledWith(
+      '%cNuxt SSR',
+      'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
+    )
+    expect(groupEnd).toHaveBeenCalled()
+    expect(log).toHaveBeenCalledWith('This is a test ssr log')
   })
 
   // Close server and ask nuxt to stop listening to file changes
