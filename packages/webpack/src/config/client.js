@@ -20,7 +20,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   get devtool () {
-    return this.dev ? 'cheap-module-eval-source-map' : false
+    return this.dev ? 'eval-cheap-module-source-map' : false
   }
 
   getFileName (...args) {
