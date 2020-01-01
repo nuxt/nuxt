@@ -175,7 +175,7 @@ export default class WebpackBaseConfig {
   }
 
   cache () {
-    if (!this.options.build.cache) {
+    if (!this.buildContext.buildOptions.cache) {
       return false
     }
 
@@ -185,7 +185,7 @@ export default class WebpackBaseConfig {
       buildDependencies: {
         config: [...this.buildContext.options._nuxtConfigFiles]
       },
-      ...this.options.build.cache,
+      ...this.buildContext.buildOptions.cache,
       name: this.name
     }
   }
@@ -435,13 +435,13 @@ export default class WebpackBaseConfig {
     }))
 
     // CSS extraction
-    if (this.options.build.extractCSS) {
+    if (this.buildContext.buildOptions.extractCSS) {
       plugins.push(new ExtractCssChunksPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
         reloadAll: true
-      }, this.options.build.extractCSS)))
+      }, this.buildContext.buildOptions.extractCSS)))
     }
 
     return plugins

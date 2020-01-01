@@ -113,7 +113,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       new HTMLPlugin({
         filename: '../server/index.spa.html',
         template: appTemplatePath,
-        minify: this.options.build.html.minify,
+        minify: this.buildContext.buildOptions,
         inject: true
       }),
       new VueSSRClientPlugin({

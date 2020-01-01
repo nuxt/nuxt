@@ -38,7 +38,7 @@ export default class PerfLoader {
   use (poolName) {
     const loaders = []
 
-    if (this.options.build.parallel) {
+    if (this.buildContext.buildOptions) {
       const pool = this.workerPools[poolName]
       if (pool) {
         loaders.push({
