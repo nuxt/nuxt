@@ -130,7 +130,7 @@ export default class SSRRenderer extends BaseRenderer {
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
-    let serializedSession = '';
+    let serializedSession = ''
 
     // Serialize state
     if (shouldInjectScripts || shouldHashCspScriptSrc) {
