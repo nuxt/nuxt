@@ -27,7 +27,7 @@ export default class Generator {
     consola.debug('Initializing generator...')
     await this.initiate({ build, init })
 
-    // Paylods for full static
+    // Payloads for full static
     if (this.isFullStatic) {
       consola.info('Full static mode activated')
       const exportTime = String(Date.now())
