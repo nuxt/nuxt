@@ -120,7 +120,7 @@ async function createApp (ssrContext) {
         err = err || null
         app.context._errored = Boolean(err)
         err = err ? normalizeError(err) : null
-        const nuxt = this.nuxt || this.$options.nuxt
+        const nuxt = (this && (this.nuxt || (this.$options && this.$options.nuxt))) || app.nuxt
         nuxt.dateErr = Date.now()
         nuxt.err = err
         // Used in src/server.js
