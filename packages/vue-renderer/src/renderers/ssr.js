@@ -126,19 +126,26 @@ export default class SSRRenderer extends BaseRenderer {
       }
     }
 
+    const { csp } = this.options.render
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+    const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
+    const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
+    let serializedSession = ''
+
     // Serialize state
-    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    if (shouldInjectScripts || shouldHashCspScriptSrc) {
+      // Only serialized session if need inject scripts or csp hash
+      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    }
+
     if (shouldInjectScripts) {
       APP += `<script>${serializedSession}</script>`
     }
 
     // Calculate CSP hashes
-    const { csp } = this.options.render
     const cspScriptSrcHashes = []
     if (csp) {
-      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-      const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
-      if (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc) {
+      if (shouldHashCspScriptSrc) {
         const hash = crypto.createHash(csp.hashAlgorithm)
         hash.update(serializedSession)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
