@@ -38,12 +38,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
 
       - name: install
-        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
-        run: yarn --frozen-lockfile --non-interactive
-
-      - name: postinstall
-        if: steps.node_modules_cache_id.outputs.cache-hit == 'true'
-        run: yarn postinstall
+        run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
         uses: actions/cache@v1
