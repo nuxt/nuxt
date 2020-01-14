@@ -73,5 +73,8 @@
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.39.0",
     "vue-jest": "^4.0.0-beta.2"
+  },
+  "resolutions": {
+    "@babel/parser": "7.7.5"
   }
 }
