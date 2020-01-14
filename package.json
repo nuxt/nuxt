@@ -28,11 +28,12 @@
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
-    "test:unit": "jest packages --forceExit"
+    "test:unit": "jest packages --forceExit",
+    "audit": "improved-yarn-audit --min-severity moderate"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.0",
-    "@babel/preset-env": "^7.8.2",
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
     "@nuxtjs/eslint-config": "^2.0.0",
     "@vue/server-test-utils": "^1.0.0-beta.30",
     "@vue/test-utils": "^1.0.0-beta.30",
@@ -51,6 +52,7 @@
     "get-port": "^5.1.0",
     "glob": "^7.1.6",
     "got": "^10.2.2",
+    "improved-yarn-audit": "^1.0.1",
     "is-wsl": "^2.1.1",
     "jest": "^24.9.0",
     "jest-junit": "^10.0.0",
@@ -73,5 +75,8 @@
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.39.0",
     "vue-jest": "^4.0.0-beta.2"
+  },
+  "resolutions": {
+    "@babel/parser": "7.7.5"
   }
 }

@@ -95,7 +95,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: audit
-        run: yarn audit
+        run: yarn run audit
     needs: setup
 
   build:
