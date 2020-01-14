@@ -28,7 +28,8 @@
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
-    "test:unit": "jest packages --forceExit"
+    "test:unit": "jest packages --forceExit",
+    "audit": "improved-yarn-audit --min-severity moderate"
   },
   "devDependencies": {
     "@babel/core": "^7.8.3",
@@ -51,6 +52,7 @@
     "get-port": "^5.1.0",
     "glob": "^7.1.6",
     "got": "^10.2.2",
+    "improved-yarn-audit": "^1.0.1",
     "is-wsl": "^2.1.1",
     "jest": "^24.9.0",
     "jest-junit": "^10.0.0",

@@ -95,8 +95,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: audit
-        # exclude low severity vulnerabilities for now
-        run: yarn audit; [[ $? -ge 4 ]] && exit 1 || exit 0
+        run: yarn run audit
     needs: setup
 
   build:
