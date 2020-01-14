@@ -31,8 +31,8 @@
     "test:unit": "jest packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.0",
-    "@babel/preset-env": "^7.8.2",
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
     "@nuxtjs/eslint-config": "^2.0.0",
     "@vue/server-test-utils": "^1.0.0-beta.30",
     "@vue/test-utils": "^1.0.0-beta.30",
