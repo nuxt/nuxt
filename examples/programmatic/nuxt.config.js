@@ -1,5 +1,5 @@
 export default {
-  meta: {
+  head: {
     title: 'Programmatic Works'
   }
 }
