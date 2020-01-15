@@ -7,8 +7,7 @@ import { defaultNuxtConfigFile } from './config'
 export async function loadNuxtConfig ({
   rootDir = '.',
   configFile,
-  context = {},
-  dev
+  configContext = {}
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -38,7 +37,7 @@ export async function loadNuxtConfig ({
 
     if (typeof options === 'function') {
       try {
-        options = await options(context)
+        options = await options(configContext)
         if (options.default) {
           options = options.default
         }
@@ -63,10 +62,6 @@ export async function loadNuxtConfig ({
 
   if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
-  }
-
-  if (typeof dev !== 'undefined') {
-    options.dev = dev
   }
 
   return options
