@@ -102,7 +102,7 @@ jobs:
       - attach-project
       - run:
           name: Security Audit
-          command: yarn audit || true
+          command: yarn run audit
 
   build:
     executor: node
