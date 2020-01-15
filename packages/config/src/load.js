@@ -6,7 +6,7 @@ import { defaultNuxtConfigFile } from './config'
 
 export async function loadNuxtConfig ({
   rootDir = '.',
-  configFile,
+  configFile = defaultNuxtConfigFile,
   configContext = {}
 } = {}) {
   rootDir = path.resolve(rootDir)

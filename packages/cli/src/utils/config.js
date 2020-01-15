@@ -2,7 +2,7 @@ import path from 'path'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
 
-export async function loadNuxtConfig (argv, context) {
+export async function loadNuxtConfig (argv, configContext) {
   const rootDir = path.resolve(argv._[0] || '.')
   const configFile = argv['config-file']
 
@@ -10,7 +10,7 @@ export async function loadNuxtConfig (argv, context) {
   const options = await _loadNuxtConfig({
     rootDir,
     configFile,
-    context
+    configContext
   })
 
   // Nuxt Mode
