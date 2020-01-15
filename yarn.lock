@@ -12250,10 +12250,10 @@ vue-no-ssr@^1.1.1:
   resolved "https://registry.npmjs.org/vue-no-ssr/-/vue-no-ssr-1.1.1.tgz#875f3be6fb0ae41568a837f3ac1a80eaa137b998"
   integrity sha512-ZMjqRpWabMPqPc7gIrG0Nw6vRf1+itwf0Itft7LbMXs2g3Zs/NFmevjZGN1x7K3Q95GmIjWbQZTVerxiBxI+0g==
 
-vue-router@^3.1.4:
-  version "3.1.4"
-  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.1.4.tgz#98a6a4dd38fca0db3b9f3c04bfbd008a3b6d958d"
-  integrity sha512-pX2BGvZg5/MOXbJoYsRppoZM+0B4LSszvIXQvLPZ7govbgbBorYQ4JHx99lDTjzEBkbTyKfRG+ru1VCnMuVcUg==
+vue-router@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.1.5.tgz#ff29b8a1e1306c526b52d4dc0532109f16c41231"
+  integrity sha512-BszkPvhl7I9h334GjckCh7sVFyjTPMMJFJ4Bsrem/Ik+B/9gt5tgrk8k4gGLO4ZpdvciVdg7O41gW4DisQWurg==
 
 vue-server-renderer@^2.6.11:
   version "2.6.11"
