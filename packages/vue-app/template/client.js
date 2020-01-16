@@ -17,7 +17,16 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -453,7 +462,7 @@ async function render (to, from, next) {
       <% } %>
 
       <% if (features.fetch) { %>
-      const hasFetch = Boolean(Component.options.fetch)
+      const hasFetch = Boolean(Component.options.fetch) && Component.options.fetch.length > 0
       <% } else { %>
       const hasFetch = false
       <% } %>
@@ -733,7 +742,7 @@ function addHotReload ($component, depth) {
       <% if (features.fetch) { %>
       // Call fetch()
       Component.options.fetch = Component.options.fetch || noopFetch
-      let pFetch = Component.options.fetch(context)
+      let pFetch = Component.options.fetch.length > 0 && Component.options.fetch(context)
       if (!pFetch || (!(pFetch instanceof Promise) && (typeof pFetch.then !== 'function'))) { pFetch = Promise.resolve(pFetch) }
       <%= (loading ? 'pFetch.then(() => this.$loading.increase && this.$loading.increase(30))' : '') %>
       promises.push(pFetch)

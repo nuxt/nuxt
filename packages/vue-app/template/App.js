@@ -88,9 +88,12 @@ export default {
     <% } %>
     <% if (features.layouts) { %>
     layout: null,
-    layoutName: ''
+    layoutName: '',
     <% } %>
-  }),
+    <% if (features.fetch) { %>
+    nbFetching: 0
+    <% } %>
+    }),
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -125,7 +128,12 @@ export default {
   computed: {
     isOffline () {
       return !this.isOnline
+    },
+    <% if (features.fetch) { %>
+      isFetching() {
+      return this.nbFetching > 0
     }
+    <% } %>
   },
   <% } %>
   methods: {

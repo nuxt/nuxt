@@ -9,8 +9,20 @@ import {
   getMatchedComponents,
   promisify
 } from './utils.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Update serverPrefetch strategy
+Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
+
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -267,7 +279,7 @@ export default async (ssrContext) => {
 
     <% if (features.fetch) { %>
     // Call fetch(context)
-    if (Component.options.fetch) {
+    if (Component.options.fetch && Component.options.fetch.length) {
       promises.push(Component.options.fetch(app.context))
     } else {
       promises.push(null)

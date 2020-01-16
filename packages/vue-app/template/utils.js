@@ -21,6 +21,11 @@ export function interopDefault (promise) {
   return promise.then(m => m.default || m)
 }
 
+<% if (features.fetch) { %>
+export function hasFetch(vm) {
+  return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
+}
+<% } %>
 <% if (features.asyncData) { %>
 export function applyAsyncData (Component, asyncData) {
   if (
