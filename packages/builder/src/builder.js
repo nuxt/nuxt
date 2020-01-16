@@ -702,13 +702,13 @@ export default class Builder {
     }
 
     // Get registered server middleware with path
-    const entires = this.nuxt.server.serverMiddlewarePaths()
+    const entries = this.nuxt.server.serverMiddlewarePaths()
 
     // Resolve dependency tree
     const deps = new Set()
     const dep2Entry = {}
 
-    for (const entry of entires) {
+    for (const entry of entries) {
       for (const dep of scanRequireTree(entry)) {
         deps.add(dep)
         if (!dep2Entry[dep]) {
