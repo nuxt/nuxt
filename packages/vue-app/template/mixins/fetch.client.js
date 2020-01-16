@@ -5,7 +5,7 @@ const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.datas
 const nuxtState = window.<%= globals.context %>
 
 export default {
-  beforeCreate() {
+  beforeCreate () {
     if (hasFetch(this)) {
       Vue.util.defineReactive(this, '$isFetching', false)
       Vue.util.defineReactive(this, '$fetchError', null)
@@ -30,13 +30,13 @@ export default {
       }
     }
   },
-  beforeMount() {
+  beforeMount () {
     if (!this._hydrated && hasFetch(this)) {
       this.$fetch()
     }
   },
   methods: {
-    async '$fetch'() {
+    async '$fetch' () {
       this.$nuxt.nbFetching++
       this.$isFetching = true
       this.$fetchError = null

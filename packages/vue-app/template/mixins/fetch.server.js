@@ -14,14 +14,14 @@ function getDataDiff(o1, o2) {
 }
 
 export default {
-  beforeCreate() {
+  beforeCreate () {
     if (hasFetch(this)) {
       this._fetchOnServer = this.$options.fetchOnServer !== false
       this.$isFetching = !this._fetchOnServer
       Vue.util.defineReactive(this, '$fetchError', null)
     }
   },
-  async serverPrefetch() {
+  async serverPrefetch () {
     if (hasFetch(this) && this._fetchOnServer) {
       const data = Object.assign({}, this.$data)
 
