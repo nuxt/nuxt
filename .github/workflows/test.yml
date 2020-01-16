@@ -1,0 +1,263 @@
+name: test
+
+on:
+  push:
+    branches:
+      - dev
+      - 2.x
+      - next
+  pull_request:
+    branches:
+      - dev
+      - 2.x
+      - next
+
+jobs:
+  setup:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        node: [10, 12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: cache node_modules
+        id: node_modules_cache_id
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+
+      - name: install
+        run: yarn --check-files --frozen-lockfile --non-interactive
+
+      - name: cache workspace
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+  lint:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: lint
+        run: yarn test:lint
+    needs: setup
+
+  audit:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: audit
+        run: yarn run audit
+    needs: setup
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        node: [10, 12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: build
+        run: yarn test:fixtures -i
+
+      - name: cache fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+    needs: setup
+
+  lint-app:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+
+      - name: lint app
+        run: yarn lint:app
+    needs: build
+
+  test-dev:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        node: [10, 12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+
+      - name: test dev
+        run: yarn test:dev -w=2
+    needs: build
+
+  test-unit:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        node: [10, 12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+
+      - name: test unit
+        run: yarn test:unit --coverage
+    needs: build
+
+  test-e2e:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
+        node: [10, 12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+
+      - name: test e2e
+        run: yarn test:e2e
+    needs: build
