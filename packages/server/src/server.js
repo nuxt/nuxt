@@ -199,6 +199,13 @@ export default class Server {
       Object.assign(middleware, this._requireMiddleware(middleware.handle))
     }
 
+    // No handle
+    if (!middleware.handle) {
+      middleware.handle = (req, res, next) => {
+        next(new Error('Invalid ServerMiddle at ' + middleware.entry))
+      }
+    }
+
     return middleware
   }
 
