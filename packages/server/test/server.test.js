@@ -392,7 +392,7 @@ describe('server: server', () => {
     server.useMiddleware('test-middleware')
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith('Server Middleware Error:', error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should only log error when module resolves failed in dev mode', () => {
@@ -408,7 +408,7 @@ describe('server: server', () => {
     server.useMiddleware('test-middleware')
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith('Server Middleware Error:', error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should render route via renderer', () => {

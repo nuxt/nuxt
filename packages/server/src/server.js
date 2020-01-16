@@ -212,7 +212,7 @@ export default class Server {
       middleware = this.nuxt.resolver.requireModule(entry)
     } catch (error) {
       // Show full error
-      consola.error('Server Middleware Error:', error)
+      consola.error('ServerMiddleware Error:', error)
 
       // Placeholder for error
       middleware = {
