@@ -76,6 +76,18 @@ describe('cli/utils', () => {
     expect(options.server.socket).toBe('/var/run/async.sock')
   })
 
+  test('loadNuxtConfig: passes context to config fn', async () => {
+    const argv = {
+      _: [__dirname],
+      'config-file': '../fixtures/nuxt.fn-config.js'
+    }
+
+    const context = { command: 'test', dev: true }
+    const options = await loadNuxtConfig(argv, context)
+    expect(options.context.command).toBe('test')
+    expect(options.context.dev).toBe(true)
+  })
+
   test('loadNuxtConfig: async config-file with error', async () => {
     const argv = {
       _: [__dirname],
