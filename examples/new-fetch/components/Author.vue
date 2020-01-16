@@ -1,7 +1,11 @@
 <template>
-  <p v-if="$fetchError">Could not fetch Author</p>
+  <p v-if="$fetchError">
+    Could not fetch Author
+  </p>
   <p v-else>
-    Written by {{ $isFetching ? '...' : user.name }} <button @click="$fetch">Refresh</button>
+    Written by {{ $isFetching ? '...' : user.name }} <button @click="$fetch">
+      Refresh
+    </button>
   </p>
 </template>
 
@@ -13,14 +17,14 @@ export default {
       required: true
     }
   },
-  data() {
+  async fetch () {
+    this.user = await this.$http.$get(`https://jsonplaceholder.typicode.com/users/${this.userId}`)
+  },
+  data () {
     return {
       user: {}
     }
   },
-  fetchOnServer: false,
-  async fetch() {
-    this.user = await this.$http.$get(`https://jsonplaceholder.typicode.com/users/${this.userId}`)
-  }
+  fetchOnServer: false
 }
 </script>

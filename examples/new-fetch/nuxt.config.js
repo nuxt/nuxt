@@ -8,7 +8,7 @@ export default {
     '@nuxt/http'
   ],
   generate: {
-    async routes() {
+    async routes () {
       const posts = await fetch('https://jsonplaceholder.typicode.com/posts').then(res => res.json()).then(d => d.slice(0, 20))
       const routes = posts.map(post => `/posts/${post.id}`)
 
