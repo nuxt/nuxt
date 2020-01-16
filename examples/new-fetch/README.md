@@ -108,7 +108,7 @@ You can use `keep-alive` directive in `<nuxt/>` and `<nuxt-child/>` component to
 ```
 
 > **INFO** 💡<br>
-> You can also specify `keep-alive-props` directive (see [props](https://vuejs.org/v2/api/#keep-alive)).<br>
+> You can also specify the [props](https://vuejs.org/v2/api/#keep-alive) passed to `<keep-alive>` by passing a prop `keep-alive-props` to the `<nuxt>` component.<br>
 > Example: `<nuxt keep-alive :keep-alive-props="{ max: 10 }" />` to keep only 10 page components in memory.
 
 ### Using `activated` hook
