@@ -202,7 +202,7 @@ export default class Server {
     // No handle
     if (!middleware.handle) {
       middleware.handle = (req, res, next) => {
-        next(new Error('Invalid ServerMiddle at ' + middleware.entry))
+        next(new Error('ServerMiddleware should expose a handle: ' + middleware.entry))
       }
     }
 
