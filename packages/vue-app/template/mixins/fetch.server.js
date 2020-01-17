@@ -17,8 +17,11 @@ export default {
   beforeCreate () {
     if (hasFetch(this)) {
       this._fetchOnServer = this.$options.fetchOnServer !== false
-      this.$isFetching = !this._fetchOnServer
-      Vue.util.defineReactive(this, '$fetchError', null)
+      Vue.util.defineReactive(this, '$fetchState', {
+        pending: !this._fetchOnServer,
+        error: null,
+        timestamp: Date.now()
+      })
     }
   },
   async serverPrefetch () {
@@ -28,7 +31,7 @@ export default {
       try {
         await this.$options.fetch.call(this)
       } catch (err) {
-        this.$fetchError = err
+        this.$fetchState.error = err
       }
       // Define and ssrKey for hydration
       this._ssrKey = this.$ssrContext.nuxt.data.length
@@ -38,7 +41,7 @@ export default {
       attrs['data-ssr-key'] = this._ssrKey
 
       // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
-      this.$ssrContext.nuxt.data.push(this.$fetchError ? { _error: this.$fetchError } : getDataDiff(data, this.$data))
+      this.$ssrContext.nuxt.data.push(this.$fetchState.error ? { _error: this.$fetchState.error } : getDataDiff(data, this.$data))
     }
   }
 }

@@ -12,13 +12,14 @@ See [live demo](https://nuxt-new-fetch.surge.sh).
 
 Every time you need to fetch **asynchronous** data. `fetch` is called on server-side when rendering the route, and on client-side when navigating.
 
-It also introduces `$isFetching` at the component level, letting you display a placeholder while `fetch` is being called *on client-side*.
+It also introduces `$fetchState` at the component level:
+- `$fetchState.pending`: `Boolean`, let you display a placeholder when `fetch` is being called *on client-side*.
+- `$fetchState.error`: `null` or `Error`, let you show an error message
+- `$fetchState.timestamp`: `Integer`, timestamp of the last fetch, useful for caching with `keep-alive`
 
 > **INFO** 💡<br>
 > You can tell Nuxt to call `fetch` only on client-side by specifing `fetchOnServer: false`.<br>
-> With it, `$isFetching` will be `true` when server-rendering the component.
-
-It also add `$fetchError` at the component level if an error occured in the `fetch` hook.
+> With it, `$fetchState.pending` will be `true` when server-rendering the component.
 
 ## Example
 
@@ -32,7 +33,8 @@ Let's have a blog with our home page listing our posts:
 <template>
   <div>
     <h1>Blog posts</h1>
-    <p v-if="$isFetching">Fetching posts...</p>
+    <p v-if="$fetchState.pending">Fetching posts...</p>
+    <p v-else-if="$fetchState.error">Error while fetching posts: {{ $fetchState.error.message }}</p>
     <ul v-else>
       <li v-for="post of posts" :key="post.id">
         <n-link :to="`/posts/${post.id}`">{{ post.title }}</n-link>
@@ -67,7 +69,7 @@ Now, let's add `pages/posts/_id.vue` page to display a post on `/posts/:id`.
 `pages/posts/_id.vue`
 ```vue
 <template>
-  <div v-if="$isFetching">Fetching post #{{$route.params.id}}...</div>
+  <div v-if="$fetchState.pending">Fetching post #{{$route.params.id}}...</div>
   <div v-else>
     <h1>{{ post.title }}</h1>
     <pre>{{ post.body }}</pre>
@@ -94,7 +96,7 @@ When navigating, you should now see `"Loading post #..."` on client-side, and no
 <img width="669" alt="fetch-nuxt3" src="https://user-images.githubusercontent.com/904724/54161844-d3544380-4453-11e9-9586-7428597db40e.gif">
 
 > **INFO** 💡<br>
-> In the component having `fetch` hook, you will also have access to `this.$fetch()` to re-call `fetch` hook (`$isFetching` will become `true` again).
+> In the component having `fetch` hook, you will also have access to `this.$fetch()` to re-call `fetch` hook (`$fetchState.pending` will become `true` again).
 
 ## Caching
 
@@ -113,7 +115,7 @@ You can use `keep-alive` directive in `<nuxt/>` and `<nuxt-child/>` component to
 
 ### Using `activated` hook
 
-Nuxt will directly fill `this._lastFetchAt` (timestamp) of the last `fetch` call (ssr included). You can use this property combined with `activated` hook to add a 30 seconds cache to `fetch`:
+Nuxt will directly fill `this.$fetchState.timestamp` (timestamp) of the last `fetch` call (ssr included). You can use this property combined with `activated` hook to add a 30 seconds cache to `fetch`:
 
 `pages/posts/_id.vue`
 
@@ -131,7 +133,7 @@ export default {
   },
   activated() {
     // Call fetch again if last fetch more than 30 sec ago
-    if (this._lastFetchAt <= (Date.now() - 30000)) {
+    if (this.$fetchState.timestamp <= (Date.now() - 30000)) {
       this.$fetch()
     }
   },

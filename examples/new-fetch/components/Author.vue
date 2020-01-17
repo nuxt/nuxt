@@ -1,9 +1,9 @@
 <template>
-  <p v-if="$fetchError">
+  <p v-if="$fetchState.error">
     Could not fetch Author
   </p>
   <p v-else>
-    Written by {{ $isFetching ? '...' : user.name }} <button @click="$fetch">
+    Written by {{ $fetchState.pending ? '...' : user.name }} <button @click="$fetch">
       Refresh
     </button>
   </p>

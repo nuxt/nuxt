@@ -3,14 +3,18 @@
     <button @click="$fetch">
       Refresh
     </button>
-    <content-placeholders v-if="$isFetching">
-      <content-placeholders-heading />
-      <content-placeholders-text :lines="10" />
-    </content-placeholders>
-    <h1 v-else-if="$fetchError">
-      Post #{{ $route.params.id }} found
-    </h1>
-    <div v-else>
+    <template v-if="$fetchState.pending">
+      <content-placeholders>
+        <content-placeholders-heading />
+        <content-placeholders-text :lines="10" />
+      </content-placeholders>
+    </template>
+    <template v-else-if="$fetchState.error">
+      <h1>
+        Post #{{ $route.params.id }} found
+      </h1>
+    </template>
+    <template v-else>
       <h1>{{ post.title }}</h1>
       <author :user-id="post.userId" />
       <pre>{{ post.body }}</pre>
@@ -19,7 +23,7 @@
           Next article
         </n-link>
       </p>
-    </div>
+    </template>
     <p>
       <n-link to="/">
         Home
