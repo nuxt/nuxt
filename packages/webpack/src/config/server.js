@@ -70,12 +70,18 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     const plugins = super.plugins()
     plugins.push(
       new VueSSRServerPlugin({ filename: `${this.name}.manifest.json` }),
-      new DefinePlugin(this.env()),
-      new ProvidePlugin({
-        URL: ['url', 'URL'],
-        URLSearchParams: ['url', 'URLSearchParams']
-      })
+      new DefinePlugin(this.env())
     )
+
+    const { serverURLPolyfill } = this.buildContext.options.build
+
+    if (serverURLPolyfill) {
+      plugins.push(new ProvidePlugin({
+        URL: [serverURLPolyfill, 'URL'],
+        URLSearchParams: [serverURLPolyfill, 'URLSearchParams']
+      }))
+    }
+
     return plugins
   }
 
