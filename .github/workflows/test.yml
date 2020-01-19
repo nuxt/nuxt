@@ -233,7 +233,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
           flags: unittests
     needs: build
 
