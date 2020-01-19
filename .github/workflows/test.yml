@@ -227,6 +227,13 @@ jobs:
 
       - name: test unit
         run: yarn test:unit --coverage
+
+      - name: codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: unittests
     needs: build
 
   test-e2e:
