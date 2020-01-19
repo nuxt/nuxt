@@ -56,7 +56,7 @@ describe('cli/utils', () => {
     expect(options.testOption).not.toBeDefined()
 
     expect(consola.fatal).toHaveBeenCalledTimes(1)
-    expect(consola.fatal).toHaveBeenCalledWith(expect.stringMatching(/Could not load config file/))
+    expect(consola.fatal).toHaveBeenCalledWith(expect.stringMatching(/Config file not found/))
   })
 
   test('loadNuxtConfig: async config-file', async () => {
