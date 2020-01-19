@@ -209,7 +209,6 @@ describe('cli/utils', () => {
     expect(exit).not.toHaveBeenCalled()
     jest.runAllTimers()
 
-    expect(stderr).toHaveBeenCalledTimes(1)
     expect(stderr).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js will now force exit'))
     expect(exit).toHaveBeenCalledTimes(1)
 
