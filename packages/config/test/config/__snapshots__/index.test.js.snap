@@ -104,6 +104,7 @@ Object {
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
+    "serverURLPolyfill": "url",
     "splitChunks": Object {
       "commons": true,
       "layouts": false,
@@ -458,6 +459,7 @@ Object {
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
+    "serverURLPolyfill": "url",
     "splitChunks": Object {
       "commons": true,
       "layouts": false,

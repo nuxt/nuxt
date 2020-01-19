@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import webpack from 'webpack'
+import { DefinePlugin, ProvidePlugin } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
@@ -69,11 +69,19 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   plugins () {
     const plugins = super.plugins()
     plugins.push(
-      new VueSSRServerPlugin({
-        filename: `${this.name}.manifest.json`
-      }),
-      new webpack.DefinePlugin(this.env())
+      new VueSSRServerPlugin({ filename: `${this.name}.manifest.json` }),
+      new DefinePlugin(this.env())
     )
+
+    const { serverURLPolyfill } = this.buildContext.options.build
+
+    if (serverURLPolyfill) {
+      plugins.push(new ProvidePlugin({
+        URL: [serverURLPolyfill, 'URL'],
+        URLSearchParams: [serverURLPolyfill, 'URLSearchParams']
+      }))
+    }
+
     return plugins
   }
 
