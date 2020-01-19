@@ -55,7 +55,6 @@
     "improved-yarn-audit": "^1.0.1",
     "is-wsl": "^2.1.1",
     "jest": "^24.9.0",
-    "jest-junit": "^10.0.0",
     "jsdom": "^15.2.1",
     "klaw-sync": "^6.0.0",
     "lerna": "^3.20.2",
