@@ -199,6 +199,6 @@ describe('basic dev', () => {
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
-    await nuxt.close()
+    await builder.close()
   })
 })
