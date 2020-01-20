@@ -57,6 +57,9 @@ export default class SPARenderer extends BaseRenderer {
         head = cloneDeep(this.options.head)
       }
 
+      // Allow the head meta passed to VueMeta to be overridden
+      await this.serverContext.nuxt.callHook('vue-renderer:spa:meta', { head, renderContext });
+
       const m = VueMeta.generate(head || {}, this.vueMetaConfig)
 
       // HTML_ATTRS
