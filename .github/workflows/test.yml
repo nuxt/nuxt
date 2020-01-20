@@ -296,12 +296,10 @@ jobs:
         run: PACKAGE_SUFFIX=edge yarn build
 
       - name: publish
-        run: ./scripts/workspace-run npm publish -q
-
-      - name: publish
         run: |
           if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
           ./scripts/workspace-run npm publish -q
         env:
           ref: ${{ github.ref }}
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
     needs: [lint-app, test-dev, test-unit, test-e2e]
