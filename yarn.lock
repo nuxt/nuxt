@@ -2138,18 +2138,18 @@
     source-map "~0.6.1"
     vue-template-es2015-compiler "^1.9.0"
 
-"@vue/server-test-utils@^1.0.0-beta.30":
-  version "1.0.0-beta.30"
-  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.0-beta.30.tgz#960a6383de81ba5ff763bdd6e961b9443e98fa82"
-  integrity sha512-H5vABB3uWbr+JlpN9pA7OpepYsHSmocbIHJQA00Xz0s4Qqmg4jX93GArO4KVC7zs/QS12w3mXfmMlYV8w7DwEg==
+"@vue/server-test-utils@^1.0.0-beta.31":
+  version "1.0.0-beta.31"
+  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.0-beta.31.tgz#d91960ca2e3521d518c95d9a103b9011de967704"
+  integrity sha512-9X1wIwZNaNTts3pd+v7wgCycF9So2DAvagRTCwAqw/IcKTLF/ZL40jGL2DZKIiwSDGgaq4Teq/9IJ6UncG9C6Q==
   dependencies:
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.0.0-beta.30":
-  version "1.0.0-beta.30"
-  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.0-beta.30.tgz#d5f26d1e2411fdb7fa7fdedb61b4b4ea4194c49d"
-  integrity sha512-Wyvcha9fNk8+kzTDwb3xWGjPkCPzHSYSwKP6MplrPTG/auhqoad7JqUEceZLc6u7AU4km2pPQ8/m9s0RgCZ0NA==
+"@vue/test-utils@^1.0.0-beta.31":
+  version "1.0.0-beta.31"
+  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.0-beta.31.tgz#580d6e45f07452e497d69807d80986e713949b73"
+  integrity sha512-IlhSx5hyEVnbvDZ3P98R1jNmy88QAd/y66Upn4EcvxSD5D4hwOutl3dIdfmSTSXs4b9DIMDnEVjX7t00cvOnvg==
   dependencies:
     dom-event-types "^1.0.0"
     lodash "^4.17.15"
