@@ -270,24 +270,23 @@ jobs:
     needs: build
 
   release-commit:
-    runs-on: ${{ matrix.os }}
-
     if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         node: [12]
 
     steps:
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
       - name: restore workspace cache
         uses: actions/cache@v1
         with:
           path: ${{ github.workspace }}
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
 
       - name: bump version
         run: yarn lerna version --yes --no-git-tag-version --no-push
