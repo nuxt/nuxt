@@ -206,6 +206,12 @@ export default class Server {
       }
     }
 
+    // SubApp (Express)
+    if (typeof middleware.handle.handle === 'function') {
+      const server = middleware.handle
+      middleware.handle = server.handle.bind(server)
+    }
+
     return middleware
   }
 
