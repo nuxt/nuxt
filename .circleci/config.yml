@@ -102,7 +102,7 @@ jobs:
       - attach-project
       - run:
           name: Security Audit
-          command: yarn audit || true
+          command: yarn run audit
 
   build:
     executor: node
@@ -191,7 +191,9 @@ workflows:
   # Manually release on release branches
   commit:
     jobs:
-      - setup
+      - setup:
+         filters:
+             <<: *release_branches
       - lint:       { requires: [setup] }
       - audit:      { requires: [setup] }
       - build:      { requires: [setup] }
@@ -202,8 +204,8 @@ workflows:
       - release-commit:
           requires: [build, lint, lint-app, audit, test-dev, test-unit, test-e2e]
           filters:
-            <<: *release_branches
-
+             <<: *release_branches
+    
   # Release nightly builds on release branches
   nightly:
     jobs:

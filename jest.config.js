@@ -55,10 +55,5 @@ module.exports = {
 
   moduleNameMapper: {
     [`@nuxt/(${corePackages.join('|')})(/?.*)$`]: '<rootDir>/packages/$1/src/$2'
-  },
-
-  reporters: [
-    'default',
-    ['jest-junit', { outputDirectory: 'reports/junit' }]
-  ]
+  }
 }
