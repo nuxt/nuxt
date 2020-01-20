@@ -222,10 +222,7 @@ export default class Server {
       consola.error('ServerMiddleware Error:', error)
 
       // Placeholder for error
-      middleware = {
-        route: '#error',
-        handle: (req, res, next) => { next(error) }
-      }
+      middleware = (req, res, next) => { next(error) }
     }
 
     // Normalize
@@ -237,9 +234,14 @@ export default class Server {
     return middleware
   }
 
-  resolveMiddleware (middleware) {
+  resolveMiddleware (middleware, fallbackRoute = '/') {
     // Ensure middleware is normalized
     middleware = this._normalizeMiddleware(middleware)
+
+    // Fallback route
+    if (!middleware.route) {
+      middleware.route = fallbackRoute
+    }
 
     // Resolve final route
     middleware.route = (
@@ -255,7 +257,7 @@ export default class Server {
 
   useMiddleware (middleware) {
     const { route, handle } = this.resolveMiddleware(middleware)
-    this.app.use(route.includes('#error') ? '/' : route, handle)
+    this.app.use(route, handle)
   }
 
   replaceMiddleware (query, middleware) {
@@ -275,7 +277,7 @@ export default class Server {
     }
 
     // Resolve middleware
-    const { route, handle } = this.resolveMiddleware(middleware)
+    const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
 
     // Update serverStackItem
     serverStackItem.handle = handle
