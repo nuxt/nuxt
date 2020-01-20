@@ -282,6 +282,22 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: bump version
+        run: yarn lerna version --yes --no-git-tag-version --no-push
+
+      - name: build
+        run: PACKAGE_SUFFIX=edge yarn build
+
+      - name: publish
+        run: ./scripts/workspace-run npm publish -q
+
       - name: publish
         run: |
           if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
