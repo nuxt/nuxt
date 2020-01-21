@@ -1,6 +1,6 @@
 export default {
   serverMiddleware: [
-    '~/middleware.js',
+    { route: '/empty', handle: '~/middleware.js' },
     (req, res, next) => next()
   ],
   watch: ['~/custom.file'],
