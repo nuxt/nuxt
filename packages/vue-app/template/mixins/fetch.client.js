@@ -23,7 +23,8 @@ export default {
 
       // If fetch error
       if (data && data._error) {
-        return this.$fetchState.error = data._error
+        this.$fetchState.error = data._error
+        return
       }
       for (const key in data) {
         this[key] = data[key]
