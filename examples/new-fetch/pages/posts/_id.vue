@@ -11,7 +11,7 @@
     </template>
     <template v-else-if="$fetchState.error">
       <h1>
-        Post #{{ $route.params.id }} found
+        Post #{{ $route.params.id }} not found
       </h1>
     </template>
     <template v-else>
