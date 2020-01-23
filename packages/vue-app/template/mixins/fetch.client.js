@@ -23,13 +23,13 @@ export default {
         try {
           await this.$options.fetch.call(this)
         } catch (err) {
-          error = err
+          error = normalizeError(err)
         }
         const delayLeft = this._fetchDelay - (Date.now() - startTime)
         if (delayLeft > 0) {
           await new Promise(resolve => setTimeout(resolve, delayLeft))
         }
-        this.$fetchState.error = normalizeError(error)
+        this.$fetchState.error = error
         this.$fetchState.pending = false
         this.$fetchState.timestamp = Date.now()
         this.$nextTick(() => this.$nuxt.nbFetching--)
