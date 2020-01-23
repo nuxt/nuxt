@@ -25,6 +25,19 @@ export function interopDefault (promise) {
 export function hasFetch(vm) {
   return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
 }
+export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
+  const children = vm.$children || []
+  for (const child of children) {
+    if (child.$fetch) {
+      instances.push(child)
+      continue; // Don't get the children since it will reload the template
+    }
+    if (child.$children) {
+      getChildrenComponentInstancesUsingFetch(child, instances)
+    }
+  }
+  return instances
+}
 <% } %>
 <% if (features.asyncData) { %>
 export function applyAsyncData (Component, asyncData) {

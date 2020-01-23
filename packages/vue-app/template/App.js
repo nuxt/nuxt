@@ -2,6 +2,7 @@ import Vue from 'vue'
 <% if (features.asyncData || features.fetch) { %>
 import {
   getMatchedComponentsInstances,
+  getChildrenComponentInstancesUsingFetch,
   promisify,
   globalHandleError
 } from './utils'
@@ -165,8 +166,17 @@ export default {
         const p = []
 
         <% if (features.fetch) { %>
-        if (page.$options.fetch) {
+        // Old fetch
+        if (page.$options.fetch && page.$options.fetch.length > 0) {
           p.push(promisify(page.$options.fetch, this.context))
+        }
+        if (page.$fetch) {
+          p.push(page.$fetch())
+        } else {
+          // Get all component instance to call $fetch
+          for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
+            p.push(component.$fetch())
+          }
         }
         <% } %>
         <% if (features.asyncData) { %>
