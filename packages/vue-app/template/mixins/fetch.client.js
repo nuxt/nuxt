@@ -7,6 +7,7 @@ const nuxtState = window.<%= globals.context %>
 export default {
   beforeCreate () {
     if (hasFetch(this)) {
+      this._fetchDelay = typeof this.$options.fetchDelay === 'number' ? this.$options.fetchDelay : 200
       Vue.util.defineReactive(this, '$fetchState', {
         pending: false,
         error: null,
@@ -39,14 +40,19 @@ export default {
   methods: {
     async '$fetch' () {
       if (!this.$options.fetch) {
-        return console.warning('$fetch: fetch() hook is not implemented')
+        return console.warn('$fetch: fetch() hook is not implemented')
       }
       this.$nuxt.nbFetching++
       this.$fetchState.pending = true
       this.$fetchState.error = null
       this._hydrated = false
       try {
-        await this.$options.fetch.call(this, this.$nuxt.$options.context)
+        const startTime = Date.now()
+        await this.$options.fetch.call(this)
+        const delayLeft = this._fetchDelay - (Date.now() - startTime)
+        if (delayLeft > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayLeft))
+        }
       } catch (err) {
         this.$fetchState.error = err
       }

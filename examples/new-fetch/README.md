@@ -21,6 +21,11 @@ It also introduces `$fetchState` at the component level:
 > You can tell Nuxt to call `fetch` only on client-side by specifing `fetchOnServer: false`.<br>
 > With it, `$fetchState.pending` will be `true` when server-rendering the component.
 
+### Options
+
+- `fetchOnServer`: `Boolean` (default: `true`), call fetch() when server-rendering the page
+- `fetchDelay`: `Integer` (default: `200`), set the minimum executing time in milliseconds (to avoid quick flashes)
+
 ## Example
 
 > **INFO** 💡<br>
