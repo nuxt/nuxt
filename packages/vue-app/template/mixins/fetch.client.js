@@ -13,6 +13,27 @@ export default {
         error: null,
         timestamp: Date.now()
       })
+      this.$fetch = async () => {
+        this.$nuxt.nbFetching++
+        this.$fetchState.pending = true
+        this.$fetchState.error = null
+        this._hydrated = false
+        let error = null
+        const startTime = Date.now()
+        try {
+          await this.$options.fetch.call(this)
+        } catch (err) {
+          error = err
+        }
+        const delayLeft = this._fetchDelay - (Date.now() - startTime)
+        if (delayLeft > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayLeft))
+        }
+        this.$fetchState.error = error
+        this.$fetchState.pending = false
+        this.$fetchState.timestamp = Date.now()
+        this.$nextTick(() => this.$nuxt.nbFetching--)
+      }
     }
   },
   created () {
@@ -35,30 +56,6 @@ export default {
   beforeMount () {
     if (!this._hydrated && hasFetch(this)) {
       this.$fetch()
-    }
-  },
-  methods: {
-    async '$fetch' () {
-      if (!this.$options.fetch) {
-        return console.warn('$fetch: fetch() hook is not implemented')
-      }
-      this.$nuxt.nbFetching++
-      this.$fetchState.pending = true
-      this.$fetchState.error = null
-      this._hydrated = false
-      try {
-        const startTime = Date.now()
-        await this.$options.fetch.call(this)
-        const delayLeft = this._fetchDelay - (Date.now() - startTime)
-        if (delayLeft > 0) {
-          await new Promise(resolve => setTimeout(resolve, delayLeft))
-        }
-      } catch (err) {
-        this.$fetchState.error = err
-      }
-      this.$fetchState.pending = false
-      this.$fetchState.timestamp = Date.now()
-      this.$nextTick(() => this.$nuxt.nbFetching--)
     }
   }
 }
