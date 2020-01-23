@@ -3,7 +3,7 @@
     <p v-if="$fetchState.pending">
       Fetching...
     </p>
-    <p v-else-if="$fetchState.error">
+    <p v-else-if="$fetchState.error" id="error">
       {{ $fetchState.error.message }}
     </p>
     <pre v-else>{{ team }}</pre>
