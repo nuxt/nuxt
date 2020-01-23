@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch } from '../utils'
+import { hasFetch, normalizeError } from '../utils'
 
 const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.ssrKey
 const nuxtState = window.<%= globals.context %>
@@ -29,7 +29,7 @@ export default {
         if (delayLeft > 0) {
           await new Promise(resolve => setTimeout(resolve, delayLeft))
         }
-        this.$fetchState.error = error
+        this.$fetchState.error = normalizeError(error)
         this.$fetchState.pending = false
         this.$fetchState.timestamp = Date.now()
         this.$nextTick(() => this.$nuxt.nbFetching--)

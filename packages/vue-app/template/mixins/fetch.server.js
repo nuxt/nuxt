@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch } from '../utils'
+import { hasFetch, normalizeError } from '../utils'
 
 function getDataDiff(o1, o2) {
   return Object.keys(o2).reduce((diff, key) => {
@@ -31,7 +31,7 @@ export default {
       try {
         await this.$options.fetch.call(this)
       } catch (err) {
-        this.$fetchState.error = err
+        this.$fetchState.error = normalizeError(err)
       }
       // Define and ssrKey for hydration
       this._ssrKey = this.$ssrContext.nuxt.data.length
