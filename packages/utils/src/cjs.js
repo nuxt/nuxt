@@ -3,15 +3,14 @@ export function isExternalDependency (id) {
 }
 
 export function clearRequireCache (id) {
-  let entry
-  try {
-    entry = require.cache[id]
-  } catch (e) {
-    delete require.cache[id]
+  if (isExternalDependency(id)) {
     return
   }
 
-  if (!entry || isExternalDependency(id)) {
+  const entry = getRequireCacheItem(id)
+
+  if (!entry) {
+    delete require.cache[id]
     return
   }
 
@@ -27,15 +26,14 @@ export function clearRequireCache (id) {
 }
 
 export function scanRequireTree (id, files = new Set()) {
-  let entry
-  try {
-    entry = require.cache[id]
-  } catch (e) {
-    files.add(id)
+  if (isExternalDependency(id) || files.has(id)) {
     return files
   }
 
-  if (!entry || isExternalDependency(id) || files.has(id)) {
+  const entry = getRequireCacheItem(id)
+
+  if (!entry) {
+    files.add(id)
     return files
   }
 
@@ -46,6 +44,13 @@ export function scanRequireTree (id, files = new Set()) {
   }
 
   return files
+}
+
+export function getRequireCacheItem (id) {
+  try {
+    return require.cache[id]
+  } catch (e) {
+  }
 }
 
 export function tryRequire (id) {
