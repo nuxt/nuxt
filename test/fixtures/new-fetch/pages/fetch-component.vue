@@ -1,7 +1,6 @@
 <template>
-  <team/>
+  <team />
 </template>
-
 
 <script>
 import Team from '@/components/Team.vue'

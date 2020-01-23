@@ -4,16 +4,15 @@
   </div>
 </template>
 
-
 <script>
 export default {
-  data() {
+  async fetch (context) {
+    // Should display a warning
+  },
+  data () {
     return {
       team: []
     }
-  },
-  async fetch(context) {
-    // Should display a warning
   }
 }
 </script>
