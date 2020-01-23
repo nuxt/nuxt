@@ -280,6 +280,7 @@ export default async (ssrContext) => {
     <% if (features.fetch) { %>
     // Call fetch(context)
     if (Component.options.fetch && Component.options.fetch.length) {
+      console.warn('fetch(context) has been deprecated, please use middleware(context)')
       promises.push(Component.options.fetch(app.context))
     } else {
       promises.push(null)

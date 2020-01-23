@@ -468,6 +468,7 @@ async function render (to, from, next) {
 
       <% if (features.fetch) { %>
       const hasFetch = Boolean(Component.options.fetch) && Component.options.fetch.length > 0
+      console.warn('fetch(context) has been deprecated, please use middleware(context)')
       <% } else { %>
       const hasFetch = false
       <% } %>
