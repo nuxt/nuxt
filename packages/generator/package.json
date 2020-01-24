@@ -9,7 +9,7 @@
   "main": "dist/generator.js",
   "dependencies": {
     "@nuxt/utils": "2.11.0",
-    "chalk": "^2.4.2",
+    "chalk": "^3.0.0",
     "consola": "^2.11.3",
     "fs-extra": "^8.1.0",
     "html-minifier": "^4.0.0"
