@@ -11,7 +11,7 @@
     "@nuxt/config": "2.11.0",
     "@nuxt/utils": "2.11.0",
     "@nuxtjs/youch": "^4.2.3",
-    "chalk": "^2.4.2",
+    "chalk": "^3.0.0",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "consola": "^2.11.3",
