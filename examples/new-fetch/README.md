@@ -1,4 +1,4 @@
-# Fetch with Nuxt.js 3
+# New fetch() with Nuxt.js
 
 Nuxt.js introduces a new hook called `fetch` in any of your Vue components. 
 
