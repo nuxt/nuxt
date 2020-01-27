@@ -6,7 +6,10 @@ export default <%= serializeFunction(router.scrollBehavior) %>
 
 if (process.client) {
   if ('scrollRestoration' in window.history) {
-    window.history.scrollRestoration = 'manual'
+    // let the browser handle initial scroll position if the url contains a hash
+    if (!window.location.hash) {
+      window.history.scrollRestoration = 'manual'
+    }
 
     // reset scrollRestoration to auto when leaving page, allowing page reload
     // and back-navigation from other pages to use the browser to restore the
