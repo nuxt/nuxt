@@ -143,7 +143,7 @@ jobs:
       - attach-project
       - run:
           name: Unit Tests
-          command: yarn test:unit --coverage && yarn coverage -F unit
+          command: yarn test:unit --coverage
           environment:
             JEST_JUNIT_OUTPUT_NAME: unit.xml
       - store-test-results
@@ -163,7 +163,7 @@ jobs:
             sudo ln -s `pwd`/chrome-linux/chrome /bin/chromium
       - run:
           name: E2E Tests
-          command: CHROME_PATH=/bin/chromium yarn test:e2e && yarn coverage -F e2e
+          command: CHROME_PATH=/bin/chromium yarn test:e2e
           environment:
             JEST_JUNIT_OUTPUT_NAME: e2e.xml
       - store-test-results
@@ -205,7 +205,7 @@ workflows:
           requires: [build, lint, lint-app, audit, test-dev, test-unit, test-e2e]
           filters:
              <<: *release_branches
-    
+
   # Release nightly builds on release branches
   nightly:
     jobs:

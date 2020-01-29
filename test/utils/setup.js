@@ -11,7 +11,7 @@ test.win = isWin ? test : test.skip
 describe.posix = !isWin ? describe : describe.skip
 test.posix = !isWin ? test : test.skip
 
-chalk.enabled = false
+chalk.level = 0
 
 jest.setTimeout(60000)
 

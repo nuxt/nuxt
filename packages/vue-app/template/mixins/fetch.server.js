@@ -33,7 +33,7 @@ export default {
       } catch (err) {
         this.$fetchState.error = normalizeError(err)
       }
-      // Define and ssrKey for hydration
+      // Define an ssrKey for hydration
       this._ssrKey = this.$ssrContext.nuxt.data.length
 
       // Add data-ssr-key on parent element of Component
