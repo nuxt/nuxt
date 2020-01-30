@@ -6,7 +6,8 @@ const nuxtState = window.<%= globals.context %>
 
 export default {
   beforeCreate () {
-    if (!hasFetch(this)) {
+    this._hasFetch = hasFetch(this)
+    if (!this._hasFetch) {
       return
     }
 
@@ -17,31 +18,9 @@ export default {
       error: null,
       timestamp: Date.now()
     })
-
-    this.$fetch = async () => {
-      this.$nuxt.nbFetching++
-      this.$fetchState.pending = true
-      this.$fetchState.error = null
-      this._hydrated = false
-      let error = null
-      const startTime = Date.now()
-      try {
-        await this.$options.fetch.call(this)
-      } catch (err) {
-        error = normalizeError(err)
-      }
-      const delayLeft = this._fetchDelay - (Date.now() - startTime)
-      if (delayLeft > 0) {
-        await new Promise(resolve => setTimeout(resolve, delayLeft))
-      }
-      this.$fetchState.error = error
-      this.$fetchState.pending = false
-      this.$fetchState.timestamp = Date.now()
-      this.$nextTick(() => this.$nuxt.nbFetching--)
-    }
   },
-  created () {
-    if (!hasFetch(this) || !isSsrHydration(this)) {
+  created() {
+    if (!this._hasFetch|| !isSsrHydration(this)) {
       return
     }
 
@@ -61,8 +40,39 @@ export default {
     }
   },
   beforeMount () {
-    if (!this._hydrated && hasFetch(this)) {
-      this.$fetch()
+    if (this._hasFetch && !this._hydrated) {
+      return this.$fetch()
+    }
+  },
+  methods: {
+    async $fetch() {
+      if (!this._hasFetch) {
+        return
+      }
+
+      this.$nuxt.nbFetching++
+      this.$fetchState.pending = true
+      this.$fetchState.error = null
+      this._hydrated = false
+      let error = null
+      const startTime = Date.now()
+
+      try {
+        await this.$options.fetch.call(this)
+      } catch (err) {
+        error = normalizeError(err)
+      }
+
+      const delayLeft = this._fetchDelay - (Date.now() - startTime)
+      if (delayLeft > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayLeft))
+      }
+
+      this.$fetchState.error = error
+      this.$fetchState.pending = false
+      this.$fetchState.timestamp = Date.now()
+
+      this.$nextTick(() => this.$nuxt.nbFetching--)
     }
   }
 }

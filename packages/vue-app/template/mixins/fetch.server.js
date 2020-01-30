@@ -2,8 +2,9 @@ import Vue from 'vue'
 import { hasFetch, normalizeError, getDataDiff } from '../utils'
 
 export default {
-  beforeCreate () {
-    if (!hasFetch(this)) {
+  beforeCreate() {
+    this._hasFetch = hasFetch(this)
+    if (!this._hasFetch) {
       return
     }
 
@@ -16,7 +17,7 @@ export default {
     })
   },
   async serverPrefetch () {
-    if (!this._fetchOnServer || !hasFetch(this)) {
+    if (!this._hasFetch || !this._fetchOnServer) {
       return
     }
 
@@ -27,6 +28,7 @@ export default {
     } catch (err) {
       this.$fetchState.error = normalizeError(err)
     }
+
     // Define an ssrKey for hydration
     this._ssrKey = this.$ssrContext.nuxt.data.length
 
