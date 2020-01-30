@@ -6,15 +6,18 @@ const nuxtState = window.<%= globals.context %>
 
 export default {
   beforeCreate () {
-    if (hasFetch(this)) {
+    if (!hasFetch(this)) {
       return
     }
+
     this._fetchDelay = typeof this.$options.fetchDelay === 'number' ? this.$options.fetchDelay : 200
+
     Vue.util.defineReactive(this, '$fetchState', {
       pending: false,
       error: null,
       timestamp: Date.now()
     })
+
     this.$fetch = async () => {
       this.$nuxt.nbFetching++
       this.$fetchState.pending = true
@@ -38,20 +41,23 @@ export default {
     }
   },
   created () {
-    if (hasFetch(this) && isSsrHydration(this)) {
-      // Hydrate component
-      this._hydrated = true
-      this._ssrKey = +this.$vnode.elm.dataset.ssrKey
-      const data = nuxtState.data[this._ssrKey]
+    if (!hasFetch(this) || !isSsrHydration(this)) {
+      return
+    }
 
-      // If fetch error
-      if (data && data._error) {
-        this.$fetchState.error = data._error
-        return
-      }
-      for (const key in data) {
-        this[key] = data[key]
-      }
+    // Hydrate component
+    this._hydrated = true
+    this._ssrKey = +this.$vnode.elm.dataset.ssrKey
+    const data = nuxtState.data[this._ssrKey]
+
+    // If fetch error
+    if (data && data._error) {
+      this.$fetchState.error = data._error
+      return
+    }
+
+    for (const key in data) {
+      this[key] = data[key]
     }
   },
   beforeMount () {
