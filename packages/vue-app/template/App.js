@@ -167,7 +167,7 @@ export default {
 
         <% if (features.fetch) { %>
         // Old fetch
-        if (page.$options.fetch && page.$options.fetch.length > 0) {
+        if (page.$options.fetch && page.$options.fetch.length) {
           p.push(promisify(page.$options.fetch, this.context))
         }
         if (page.$fetch) {
