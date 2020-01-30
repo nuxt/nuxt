@@ -110,8 +110,41 @@ export default class SSRRenderer extends BaseRenderer {
       HEAD += this.renderResourceHints(renderContext)
     }
 
+    const { csp } = this.options.render
+
     // Inject styles
-    HEAD += renderContext.renderStyles()
+
+    var css = ''
+    var styles = renderContext._styles
+
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts
+    const containsUnsafeInlineStyleSrc = csp.policies && csp.policies['style-src'] && csp.policies['style-src'].includes('\'unsafe-inline\'')
+    const shouldHashCspStyleSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineStyleSrc)
+
+    const cspStyleSrcHashes = []
+
+    if (styles) {
+      for (var key in styles) {
+        var style = styles[key]
+
+        css += '<style' 
+
+        css +=
+            (style.ids ? ( ' data-vue-ssr-id="' + style.ids.join(' ') + '"' ) : '')
+
+        css +=
+            (style.media ? ( ' media="' + style.media + '"' ) : '') + '>' +
+            style.css + '</style>'
+
+        if (style.css && csp && shouldHashCspStyleSrc) {
+          const stylehash = crypto.createHash(csp.hashAlgorithm)
+          stylehash.update(style.css)
+          cspStyleSrcHashes.push(`'${csp.hashAlgorithm}-${stylehash.digest('base64')}'`)
+        }
+      }
+    }
+
+    HEAD += css
 
     if (meta) {
       const BODY_PREPEND =
@@ -126,7 +159,6 @@ export default class SSRRenderer extends BaseRenderer {
       }
     }
 
-    const { csp } = this.options.render
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
@@ -198,6 +230,7 @@ export default class SSRRenderer extends BaseRenderer {
     return {
       html,
       cspScriptSrcHashes,
+      cspStyleSrcHashes,
       preloadFiles,
       error: renderContext.nuxt.error,
       redirected: renderContext.redirected

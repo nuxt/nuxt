@@ -3,14 +3,14 @@
   "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
-  "files": [
-    "bin",
-    "dist"
-  ],
   "main": "dist/cli.js",
   "bin": {
     "nuxt-cli": "bin/nuxt-cli.js"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "dependencies": {
     "@nuxt/config": "2.11.0",
     "@nuxt/utils": "2.11.0",

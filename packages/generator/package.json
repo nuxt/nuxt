@@ -3,10 +3,10 @@
   "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/generator.js",
   "files": [
     "dist"
   ],
-  "main": "dist/generator.js",
   "dependencies": {
     "@nuxt/utils": "2.11.0",
     "chalk": "^3.0.0",

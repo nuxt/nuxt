@@ -6,7 +6,7 @@ const url = route => 'http://localhost:' + port + route
 const startCspServer = async (csp, isProduction = true) => {
   const options = await loadFixture('basic', {
     debug: !isProduction,
-    render: { csp }
+    render: { csp, ssrLog: true }
   })
   const nuxt = new Nuxt(options)
   await nuxt.ready()
@@ -145,7 +145,11 @@ describe('basic ssr csp', () => {
           await rp(url('/stateless'))
         }
 
-        const { headers } = await rp(url('/stateful'))
+        const response = await rp(url('/stateful'))
+        const headers = response.headers
+
+        console.log(response.headers)
+        console.log(response.body)
 
         const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]

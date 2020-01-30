@@ -3,10 +3,10 @@
   "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/server.js",
   "files": [
     "dist"
   ],
-  "main": "dist/server.js",
   "dependencies": {
     "@nuxt/config": "2.11.0",
     "@nuxt/utils": "2.11.0",
