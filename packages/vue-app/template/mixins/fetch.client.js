@@ -7,33 +7,34 @@ const nuxtState = window.<%= globals.context %>
 export default {
   beforeCreate () {
     if (hasFetch(this)) {
-      this._fetchDelay = typeof this.$options.fetchDelay === 'number' ? this.$options.fetchDelay : 200
-      Vue.util.defineReactive(this, '$fetchState', {
-        pending: false,
-        error: null,
-        timestamp: Date.now()
-      })
-      this.$fetch = async () => {
-        this.$nuxt.nbFetching++
-        this.$fetchState.pending = true
-        this.$fetchState.error = null
-        this._hydrated = false
-        let error = null
-        const startTime = Date.now()
-        try {
-          await this.$options.fetch.call(this)
-        } catch (err) {
-          error = normalizeError(err)
-        }
-        const delayLeft = this._fetchDelay - (Date.now() - startTime)
-        if (delayLeft > 0) {
-          await new Promise(resolve => setTimeout(resolve, delayLeft))
-        }
-        this.$fetchState.error = error
-        this.$fetchState.pending = false
-        this.$fetchState.timestamp = Date.now()
-        this.$nextTick(() => this.$nuxt.nbFetching--)
+      return
+    }
+    this._fetchDelay = typeof this.$options.fetchDelay === 'number' ? this.$options.fetchDelay : 200
+    Vue.util.defineReactive(this, '$fetchState', {
+      pending: false,
+      error: null,
+      timestamp: Date.now()
+    })
+    this.$fetch = async () => {
+      this.$nuxt.nbFetching++
+      this.$fetchState.pending = true
+      this.$fetchState.error = null
+      this._hydrated = false
+      let error = null
+      const startTime = Date.now()
+      try {
+        await this.$options.fetch.call(this)
+      } catch (err) {
+        error = normalizeError(err)
       }
+      const delayLeft = this._fetchDelay - (Date.now() - startTime)
+      if (delayLeft > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayLeft))
+      }
+      this.$fetchState.error = error
+      this.$fetchState.pending = false
+      this.$fetchState.timestamp = Date.now()
+      this.$nextTick(() => this.$nuxt.nbFetching--)
     }
   },
   created () {
