@@ -2,15 +2,13 @@ import Vue from 'vue'
 import { hasFetch, normalizeError } from '../utils'
 
 function getDataDiff(o1, o2) {
-  return Object.keys(o2).reduce((diff, key) => {
-    if (o1[key] === o2[key]) {
-      return diff
+  const diff = {}
+  for (const key in o2) {
+    if (o1[key] !== o2[key]) {
+      diff[key] = o2[key]
     }
-    return {
-      ...diff,
-      [key]: o2[key]
-    }
-  }, {})
+  }
+  return diff
 }
 
 export default {
