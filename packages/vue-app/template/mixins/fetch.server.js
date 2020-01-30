@@ -25,7 +25,7 @@ export default {
     }
   },
   async serverPrefetch () {
-    if (hasFetch(this) && this._fetchOnServer) {
+    if (this._fetchOnServer && hasFetch(this)) {
       const data = Object.assign({}, this.$data)
 
       try {
