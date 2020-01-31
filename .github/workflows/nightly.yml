@@ -21,6 +21,8 @@ jobs:
         run: yarn run audit
       - name: build
         run: yarn test:fixtures -i
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
       - name: lint app
         run: yarn lint:app
       - name: test dev
