@@ -643,3 +643,10 @@ export function getDataDiff(o1, o2) {
   }
   return diff
 }
+
+export function addLifecycleHook(vm, hook, fn) {
+  if (!vm.$options[hook]) {
+    vm.$options[hook] = []
+  }
+  vm.$options[hook].push(fn)
+}
