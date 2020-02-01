@@ -6,7 +6,7 @@ const url = route => 'http://localhost:' + port + route
 const startCspServer = async (csp, isProduction = true) => {
   const options = await loadFixture('basic', {
     debug: !isProduction,
-    render: { csp, ssrLog: true }
+    render: { csp }
   })
   const nuxt = new Nuxt(options)
   await nuxt.ready()
@@ -83,7 +83,7 @@ describe('basic ssr csp', () => {
         nuxt = await startCspServer(cspOption)
         const { headers } = await rp(url('/stateless'))
 
-        expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
+        expect(headers[cspHeader]).toMatch(/^script-src 'self' 'sha256-.*/)
         expect(headers[cspHeader]).toContain('https://example.com')
         expect(headers[cspHeader]).toContain('https://example.io')
       }
@@ -147,9 +147,6 @@ describe('basic ssr csp', () => {
 
         const response = await rp(url('/stateful'))
         const headers = response.headers
-
-        console.log(response.headers)
-        console.log(response.body)
 
         const hashes = headers[cspHeader].split(' ').filter(s => s.startsWith('\'sha256-'))
         const uniqueHashes = [...new Set(hashes)]
@@ -321,6 +318,24 @@ describe('basic ssr csp', () => {
 
         expect(headers[reportOnlyHeader]).toMatch(/default-src 'none'/)
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-.*' 'self'$/)
+      }
+    )
+
+    test(
+      'Contain style hash when csp.policies is set with style-src',
+      async () => {
+        const policies = {
+          'script-src': ['\'self\''],
+          'style-src': ['\'self\'']
+        }
+
+        nuxt = await startCspDevServer({
+          policies
+        })
+
+        const { headers } = await rp(url('/stateful'))
+
+        expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-.*' 'self'; style-src 'sha256-.*' 'self'$/)
       }
     )
 
