@@ -147,16 +147,14 @@ const getCspString = ({ cspScriptSrcHashes, cspStyleSrcHashes, allowedSources, p
 const transformPolicyObject = (policies, cspScriptSrcHashes, cspStyleSrcHashes) => {
   const userHasDefinedScriptSrc = policies['script-src'] && Array.isArray(policies['script-src'])
 
-  let additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
+  const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
 
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
-  
   let scriptHashAndPolicyList = cspScriptSrcHashes
-  
   if (!additionalPolicies.includes('\'self\'')) {
     scriptHashAndPolicyList.push('\'self\'')
   }
-  
+
   scriptHashAndPolicyList = scriptHashAndPolicyList.concat(additionalPolicies)
 
   const userHasDefinedStyleSrc = policies['style-src'] && Array.isArray(policies['style-src'])

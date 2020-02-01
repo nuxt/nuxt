@@ -114,8 +114,8 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject styles
 
-    var css = ''
-    var styles = renderContext._styles
+    let css = ''
+    const styles = renderContext._styles
 
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts
     const containsUnsafeInlineStyleSrc = csp.policies && csp.policies['style-src'] && csp.policies['style-src'].includes('\'unsafe-inline\'')
@@ -124,16 +124,15 @@ export default class SSRRenderer extends BaseRenderer {
     const cspStyleSrcHashes = []
 
     if (styles) {
-      for (var key in styles) {
-        var style = styles[key]
+      for (const key in styles) {
+        const style = styles[key]
 
-        css += '<style' 
+        css += '<style'
+
+        css += (style.ids ? (' data-vue-ssr-id="' + style.ids.join(' ') + '"') : '')
 
         css +=
-            (style.ids ? ( ' data-vue-ssr-id="' + style.ids.join(' ') + '"' ) : '')
-
-        css +=
-            (style.media ? ( ' media="' + style.media + '"' ) : '') + '>' +
+            (style.media ? (' media="' + style.media + '"') : '') + '>' +
             style.css + '</style>'
 
         if (style.css && csp && shouldHashCspStyleSrc) {
