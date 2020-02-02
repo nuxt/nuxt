@@ -6,7 +6,6 @@
     "dev"
   ],
   "ignoreDeps": [
-    "core-js",
     "memory-fs"
   ],
   "lockFileMaintenance": {
