@@ -1,5 +1,3 @@
-import path from 'path'
-
 const coreJsMeta = {
   2: {
     prefixes: {
@@ -46,6 +44,7 @@ function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath
 }
 
 function isPackageHoisted (packageName) {
+  const path = require('path')
   const installedPath = require.resolve(packageName)
   const relativePath = path.resolve(__dirname, '..', 'node_modules', packageName)
   return installedPath !== relativePath
