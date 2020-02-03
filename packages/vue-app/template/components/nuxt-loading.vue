@@ -89,7 +89,6 @@ export default {
       return this
     },
     fail (error) {
-      //the error may not be passed in so it'll be undefined in that case
       this.canSucceed = false
       return this
     },
