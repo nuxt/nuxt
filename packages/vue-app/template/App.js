@@ -196,7 +196,7 @@ export default {
       try {
         await Promise.all(promises)
       } catch (error) {
-        <% if (loading) { %>this.$loading.fail()<% } %>
+        <% if (loading) { %>this.$loading.fail(error)<% } %>
         globalHandleError(error)
         this.error(error)
       }
@@ -207,7 +207,7 @@ export default {
     errorChanged () {
       if (this.nuxt.err && this.$loading) {
         if (this.$loading.fail) {
-          this.$loading.fail()
+          this.$loading.fail(this.nuxt.err)
         }
         if (this.$loading.finish) {
           this.$loading.finish()
