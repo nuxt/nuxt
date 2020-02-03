@@ -32,6 +32,11 @@
         </n-link>
       </li>
       <li>
+        <n-link to="/fetch-deep">
+          Fetch with deep update updates
+        </n-link>
+      </li>
+      <li>
         <n-link to="/old-fetch">
           Deprecated fetch
         </n-link>

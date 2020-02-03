@@ -92,6 +92,46 @@ describe('basic browser', () => {
     page.close()
   })
 
+  test('ssr: /fetch-deep', async () => {
+    const page = await browser.page(url('/fetch-deep'))
+    const expectedState = {
+      foo: 'bar',
+      user: {
+        name: 'Potato',
+        inventory: {
+          // type: 'green',
+          items: ['A', 'B']
+        },
+        foo: 'barbar'
+      },
+      async: 'data',
+      async2: 'data2fetch'
+    }
+
+    // SSR Rendered HTML
+    const renderedData = await page.$text('#data').then(t => JSON.parse(t))
+    expect(renderedData).toMatchObject(expectedState)
+
+    // Fragments
+    const dataFragments = await page.evaluate(() => window.__NUXT__.data)
+    expect(dataFragments.length).toBe(2)
+
+    // asyncData mutations
+    expect(dataFragments[0]).toMatchObject({ async: 'data', async2: 'data2' })
+
+    // fetch mutations
+    expect(dataFragments[1]).toMatchObject({
+      user: {
+        inventory: { items: ['A', 'B'] },
+        name: 'Potato'
+      },
+      foo: 'barbar',
+      async2: 'data2fetch'
+    })
+
+    page.close()
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
