@@ -107,7 +107,7 @@ describe('basic browser', () => {
       async2: 'data2fetch'
     }
 
-    // SSR Rendered HTML
+    // Hydrated HTML
     const renderedData = await page.$text('#data').then(t => JSON.parse(t))
     expect(renderedData).toMatchObject(expectedState)
 

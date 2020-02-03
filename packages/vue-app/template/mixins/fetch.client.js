@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, mergeDeep } from '../utils'
 
 const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.ssrKey
 const nuxtState = window.<%= globals.context %>
@@ -46,9 +46,8 @@ function created() {
     return
   }
 
-  for (const key in data) {
-    this[key] = data[key]
-  }
+  // Merge data
+  mergeDeep(this, data)
 }
 
 async function $fetch() {

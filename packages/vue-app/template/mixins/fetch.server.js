@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, getDataDiff, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, getDataDiff, addLifecycleHook, isObject, isPrimitive } from '../utils'
 
 async function serverPrefetch() {
   if (!this._fetchOnServer) {
@@ -26,14 +26,6 @@ async function serverPrefetch() {
 
   // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
   this.$ssrContext.nuxt.data.push(this.$fetchState.error ? { _error: this.$fetchState.error } : diff)
-}
-
-function isObject(obj) {
-  return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
-}
-
-function isPrimitive(val) {
-  return val !== Object(val);
 }
 
 function watchDiff(obj) {
