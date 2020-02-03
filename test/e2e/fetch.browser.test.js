@@ -95,14 +95,13 @@ describe('basic browser', () => {
   test('ssr: /fetch-deep', async () => {
     const page = await browser.page(url('/fetch-deep'))
     const expectedState = {
-      foo: 'bar',
+      foo: 'barbar',
       user: {
         name: 'Potato',
         inventory: {
-          // type: 'green',
+          type: 'green',
           items: ['A', 'B']
-        },
-        foo: 'barbar'
+        }
       },
       async: 'data',
       async2: 'data2fetch'
