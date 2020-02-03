@@ -9,7 +9,7 @@
 export default {
   head: {
     link: [
-      { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/light.min.css' }
+      { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/gh/kognise/water.css@1.4.0/dist/light.min.css' }
     ]
   }
 }
