@@ -7,8 +7,8 @@ async function serverPrefetch() {
   }
 
   // Watch data mutations during fetch call
-  const [data, diff] = watchDiff(vm._data)
-  vm._data = data
+  const [data, diff] = watchDiff(this._data)
+  this._data = data
 
   // Call and await on $fetch
   try {
@@ -52,7 +52,7 @@ function watchDiff(obj) {
 
       // Lazy deep-watch
       if (isObject(value)) {
-        const [_value, _diff] = _watchDiff(value)
+        const [_value, _diff] = watchDiff(value)
         watchedProps.add(prop)
         obj[prop] = _value
         diff[prop] = _diff
