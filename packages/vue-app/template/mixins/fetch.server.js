@@ -1,13 +1,12 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, getDataDiff, addLifecycleHook } from '../utils'
+import { watchDiff, hasFetch, normalizeError, getDataDiff, addLifecycleHook } from '../utils'
 
 async function serverPrefetch() {
   if (!this._fetchOnServer) {
     return
   }
 
-  const data = Object.assign({}, this.$data)
-
+  const diff = watchDiff(this)
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
@@ -22,7 +21,7 @@ async function serverPrefetch() {
   attrs['data-ssr-key'] = this._ssrKey
 
   // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
-  this.$ssrContext.nuxt.data.push(this.$fetchState.error ? { _error: this.$fetchState.error } : getDataDiff(data, this.$data))
+  this.$ssrContext.nuxt.data.push(this.$fetchState.error ? { _error: this.$fetchState.error } : diff)
 }
 
 export default {

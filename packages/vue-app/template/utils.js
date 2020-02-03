@@ -634,19 +634,63 @@ function formatQuery (query) {
 }
 <% } %>
 
-export function getDataDiff(o1, o2) {
-  const diff = {}
-  for (const key in o2) {
-    if (o1[key] !== o2[key]) {
-      diff[key] = o2[key]
-    }
-  }
-  return diff
-}
-
 export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
   }
   vm.$options[hook].push(fn)
+}
+
+export function isObject (obj) {
+  return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
+}
+
+export function isPrimitive(val) {
+  return val !== Object(val);
+};
+
+function _watchDiff(obj) {
+  const diff = {}
+
+  const watchedProps = new Set()
+
+  const proxy = new Proxy(obj, {
+    get(_, prop) {
+      const value = obj[prop]
+
+      // Skip already watched props and hidden props like __ob__
+      if (prop[0] == '_' || watchedProps.has(prop)) {
+        return value
+      }
+
+      // Lazy deep-watch
+      if (isObject(value)) {
+        const [_value, _diff] = _watchDiff(value)
+        watchedProps.add(prop)
+        obj[prop] = _value
+        diff[prop] = _diff
+        return _value
+      } else if (value !== undefined && !isPrimitive(value)) {
+        // We can't predict mutations so always mark as dirty
+        diff[prop] = value
+      }
+
+      return value
+    },
+    set(_, prop, val) {
+      obj[prop] = val
+      if (prop[0] !== '_') {
+        diff[prop] = val
+      }
+      return true
+    }
+  })
+
+  return [proxy, diff]
+}
+
+export function watchDiff(vm) {
+  const [data, diff] = _watchDiff(vm._data)
+  vm._data = data
+  return diff
 }
