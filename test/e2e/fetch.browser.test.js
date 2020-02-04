@@ -86,6 +86,20 @@ describe('basic browser', () => {
     page.close()
   })
 
+  test('ssr: /fetch-conditional', async () => {
+    const page = await browser.page(url('/fetch-conditional'))
+    expect(await page.$text('pre')).toContain('galvez')
+    page.close()
+  })
+
+  test('ssr: /fetch-conditional?fetch_client=true', async () => {
+    const page = await browser.page(url('/fetch-conditional?fetch_client=true'))
+    expect(await page.$text('p')).toContain('Fetching...')
+    await page.waitForSelector('pre')
+    expect(await page.$text('pre')).toContain('pimlie')
+    page.close()
+  })
+
   test('ssr: /fetch-error', async () => {
     const page = await browser.page(url('/fetch-error'))
     expect(await page.$text('#error')).toContain('fetch-error')

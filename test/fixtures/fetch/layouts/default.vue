@@ -12,6 +12,11 @@
         </n-link>
       </li>
       <li>
+        <n-link to="/fetch-conditional">
+          Fetch conditional
+        </n-link>
+      </li>
+      <li>
         <n-link to="/fetch-error">
           Fetch error
         </n-link>
