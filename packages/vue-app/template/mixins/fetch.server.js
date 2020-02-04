@@ -6,10 +6,6 @@ async function serverPrefetch() {
     return
   }
 
-  // Watch data mutations during fetch call
-  const [data, diff] = watchDiff(this._data)
-  this._data = data
-
   // Call and await on $fetch
   try {
     await this.$options.fetch.call(this)
