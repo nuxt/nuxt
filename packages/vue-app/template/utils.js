@@ -634,27 +634,11 @@ function formatQuery (query) {
 }
 <% } %>
 
-export function addLifecycleHook(vm, hook, fn) {
+<% if (features.fetch) { %>
+  export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
   }
   vm.$options[hook].push(fn)
 }
-
-export function isObject(obj) {
-  return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
-}
-
-export function isPrimitive(val) {
-  return val !== Object(val);
-}
-
-export function mergeDeep(target, source) {
-  for (const key in source) {
-    if (isObject(target[key])) {
-      mergeDeep(target[key], source[key])
-    } else {
-      target[key] = source[key]
-    }
-  }
-}
+<% } %>

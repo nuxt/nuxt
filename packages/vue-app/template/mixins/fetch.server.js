@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, getDataDiff, addLifecycleHook, isObject, isPrimitive } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
 
 async function serverPrefetch() {
   if (!this._fetchOnServer) {
@@ -16,69 +16,34 @@ async function serverPrefetch() {
   } catch (err) {
     this.$fetchState.error = normalizeError(err)
   }
+  this.$fetchState.pending = false
+
 
   // Define an ssrKey for hydration
-  this._ssrKey = this.$ssrContext.nuxt.data.length
+  this._ssrKey = this.$ssrContext.nuxt.fetch.length
 
   // Add data-ssr-key on parent element of Component
   const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
   attrs['data-ssr-key'] = this._ssrKey
 
-  // Call asyncData & add to ssrContext for window.__NUXT__.asyncData
-  this.$ssrContext.nuxt.data.push(this.$fetchState.error ? { _error: this.$fetchState.error } : diff)
-}
-
-function watchDiff(obj) {
-  const diff = {}
-
-  const watchedProps = new Set()
-
-  const proxy = new Proxy(obj, {
-    get(_, prop) {
-      const value = obj[prop]
-
-      // Skip already watched props and hidden props like __ob__
-      if (prop[0] == '_' || watchedProps.has(prop)) {
-        return value
-      }
-
-      // Lazy deep-watch
-      if (isObject(value)) {
-        const [_value, _diff] = watchDiff(value)
-        watchedProps.add(prop)
-        obj[prop] = _value
-        diff[prop] = _diff
-        return _value
-      } else if (value !== undefined && !isPrimitive(value)) {
-        // We can't predict mutations so always mark as dirty
-        diff[prop] = value
-      }
-
-      return value
-    },
-    set(_, prop, val) {
-      obj[prop] = val
-      if (prop[0] !== '_') {
-        diff[prop] = val
-      }
-      return true
-    }
-  })
-
-  return [proxy, diff]
+  // Call asyncData & add to ssrContext for window.__NUXT__.fetch
+  this.$ssrContext.nuxt.fetch.push(this.$fetchState.error ? { _error: this.$fetchState.error } : this._data)
 }
 
 export default {
   beforeCreate() {
-    this._hasFetch = hasFetch(this)
-    if (!this._hasFetch) {
+    if (!hasFetch(this)) {
       return
     }
 
-    this._fetchOnServer = this.$options.fetchOnServer !== false
+    if (typeof this.$options.fetchOnServer === 'function') {
+      this._fetchOnServer = this.$options.fetchOnServer.call(this) !== false
+    } else {
+      this._fetchOnServer = this.$options.fetchOnServer !== false
+    }
 
     Vue.util.defineReactive(this, '$fetchState', {
-      pending: !this._fetchOnServer,
+      pending: true,
       error: null,
       timestamp: Date.now()
     })
