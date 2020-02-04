@@ -112,14 +112,15 @@ describe('basic browser', () => {
     expect(renderedData).toMatchObject(expectedState)
 
     // Fragments
-    const dataFragments = await page.evaluate(() => window.__NUXT__.data)
-    expect(dataFragments.length).toBe(2)
+    const { data, fetch } = await page.evaluate(() => window.__NUXT__)
+    expect(data.length).toBe(1)
+    expect(fetch.length).toBe(1)
 
     // asyncData mutations
-    expect(dataFragments[0]).toMatchObject({ async: 'data', async2: 'data2' })
+    expect(data[0]).toMatchObject({ async: 'data', async2: 'data2' })
 
     // fetch mutations
-    expect(dataFragments[1]).toMatchObject({
+    expect(fetch[0]).toMatchObject({
       user: {
         inventory: { items: ['A', 'B'] },
         name: 'Potato'
