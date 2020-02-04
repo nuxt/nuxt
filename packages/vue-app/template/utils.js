@@ -634,11 +634,9 @@ function formatQuery (query) {
 }
 <% } %>
 
-<% if (features.fetch) { %>
-  export function addLifecycleHook(vm, hook, fn) {
+export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
   }
   vm.$options[hook].push(fn)
 }
-<% } %>
