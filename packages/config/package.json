@@ -3,12 +3,12 @@
   "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/config.js",
+  "typings": "index.d.ts",
   "files": [
     "dist",
     "index.d.ts"
   ],
-  "main": "dist/config.js",
-  "typings": "index.d.ts",
   "dependencies": {
     "@nuxt/utils": "2.11.0",
     "consola": "^2.11.3",
