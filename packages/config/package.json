@@ -12,6 +12,7 @@
   "dependencies": {
     "@nuxt/utils": "2.11.0",
     "consola": "^2.11.3",
+    "esm": "^3.2.25",
     "std-env": "^2.2.1"
   },
   "publishConfig": {
