@@ -17,6 +17,7 @@ export default function rollupConfig ({
   input = 'src/index.js',
   replace = {},
   alias = {},
+  externals = [],
   resolve = {
     only: [
       /lodash/
@@ -43,7 +44,9 @@ export default function rollupConfig ({
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
       // Builtin node modules
-      ...builtins
+      ...builtins,
+      // Explicit externals
+      ...externals
     ],
     plugins: [
       aliasPlugin(alias),
