@@ -102,31 +102,29 @@ function componentOption (component, key, ...args) {
   return option
 }
 
-function mapTransitions (Components, to, from) {
+function mapTransitions (toComponents, to, from) {
   const componentTransitions = (component) => {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
-  const tComponents = [].concat(Components)
+  
+  const fromComponents = from ? getMatchedComponents(from) : []
+  const maxDepth = Math.max(toComponents.length, fromComponents.length)
 
-  // If leaving a child route to a parent, keep the child leave transition
-  while (from && from.matched.length > tComponents.length) { // eslint-disable-line no-unmodified-loop-condition
-    tComponents.push({})
+  const mergedTransitions = []
+  for (let i=0; i<maxDepth; i++) {
+    // Clone original objects to prevent overrides
+    const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
+    const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
+    
+    // Combine transitions & prefer `enter` callbacks and name of "to" route
+    Object.keys(toTransitions)
+        .filter(key => toTransitions[key] && (key.toLowerCase().includes('enter') || key === 'name'))
+        .forEach((key) => { transitions[key] = toTransitions[key] })
+
+    mergedTransitions.push(transitions)
   }
-  return tComponents.map((Component, i) => {
-    // Clone original object to prevent overrides
-    const transitions = Object.assign({}, componentTransitions(Component))
-
-    // Combine transitions & prefer `leave` transitions of 'from' route
-    if (from && from.matched[i] && from.matched[i].components.default) {
-      const fromTransitions = componentTransitions(from.matched[i].components.default)
-      Object.keys(fromTransitions)
-        .filter(key => fromTransitions[key] && key.toLowerCase().includes('leave'))
-        .forEach((key) => { transitions[key] = fromTransitions[key] })
-    }
-
-    return transitions
-  })
+  return mergedTransitions
 }
 <% } %>
 <% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
