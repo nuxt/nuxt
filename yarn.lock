@@ -5971,10 +5971,10 @@ globule@^1.0.0:
     lodash "~4.17.10"
     minimatch "~3.0.2"
 
-got@^10.5.4:
-  version "10.5.4"
-  resolved "https://registry.npmjs.org/got/-/got-10.5.4.tgz#1cf7bee3436a80be48a314c197d22df3f7dee7e0"
-  integrity sha512-DiyqjDt0yvN3HoGALtOHBGkl6cEZX24DgSm51eDgUk0JvVQF4oqhjDbFnLm81G/pOEl1sn7W0V5tDWkBfBYf+A==
+got@^10.5.5:
+  version "10.5.5"
+  resolved "https://registry.npmjs.org/got/-/got-10.5.5.tgz#9ab2702c2a6b354ff95585144546d3e304a5022f"
+  integrity sha512-B13HHkCkTA7KxyxTrFoZfrurBX1fZxjMTKpmIfoVzh0Xfs9aZV7xEfI6EKuERQOIPbomh5LE4xDkfK6o2VXksw==
   dependencies:
     "@sindresorhus/is" "^1.0.0"
     "@szmarczak/http-timer" "^4.0.0"
