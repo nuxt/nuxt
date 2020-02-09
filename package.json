@@ -66,7 +66,7 @@
     "node-sass": "^4.13.1",
     "puppeteer-core": "^2.1.1",
     "request": "^2.88.0",
-    "rimraf": "^3.0.1",
+    "rimraf": "^3.0.2",
     "rollup": "^1.31.0",
     "rollup-plugin-license": "^0.13.0",
     "sass-loader": "^8.0.2",
