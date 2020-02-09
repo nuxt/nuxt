@@ -1,3 +1,6 @@
+
+import UAParser from 'ua-parser-js'
+
 export const ModernBrowsers = {
   Edge: '16',
   Firefox: '60',
@@ -12,28 +15,38 @@ export const ModernBrowsers = {
   'Mobile Safari': '10.3'
 }
 
-const modernBrowsers = new Proxy(ModernBrowsers, {
-  get (browsers, prop) {
-    if (browsers[prop] && !browsers[prop].version) {
-      const coerce = require('semver/functions/coerce')
-      browsers[prop] = coerce(browsers[prop])
-    }
-    return browsers[prop]
+let coerce
+let gte
+let __modernBrowsers
+
+const getModernBrowsers = () => {
+  if (__modernBrowsers) {
+    return __modernBrowsers
   }
-})
+
+  const coerce = require('semver/functions/coerce')
+  __modernBrowsers = Object.keys(ModernBrowsers)
+    .reduce((allBrowsers, browser) => {
+      allBrowsers[browser] = coerce(ModernBrowsers[browser])
+      return allBrowsers
+    }, {})
+  return __modernBrowsers
+}
 
 export const isModernBrowser = (ua) => {
   if (!ua) {
     return false
   }
-  const coerce = require('semver/functions/coerce')
-  const gte = require('semver/functions/gte')
-  const UAParser = require('ua-parser-js')
+  if (!coerce) {
+    coerce = require('semver/functions/coerce')
+    gte = require('semver/functions/gte')
+  }
   const { browser } = UAParser(ua)
   const browserVersion = coerce(browser.version)
   if (!browserVersion) {
     return false
   }
+  const modernBrowsers = getModernBrowsers()
   return Boolean(modernBrowsers[browser.name] && gte(browserVersion, modernBrowsers[browser.name]))
 }
 
