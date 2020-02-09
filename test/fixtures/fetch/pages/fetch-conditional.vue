@@ -1,6 +1,8 @@
 <template>
   <div>
-    <nuxt-link to="/fetch-conditional?fetch_client=true">Fetch on client</nuxt-link>
+    <nuxt-link to="/fetch-conditional?fetch_client=true">
+      Fetch on client
+    </nuxt-link>
     <p v-if="$fetchState.pending">
       Fetching...
     </p>
