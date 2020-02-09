@@ -14,8 +14,7 @@ export const ModernBrowsers = {
   'Mobile Safari': '10.3'
 }
 
-let coerce
-let gte
+let semver
 let __modernBrowsers
 
 const getModernBrowsers = () => {
@@ -23,10 +22,9 @@ const getModernBrowsers = () => {
     return __modernBrowsers
   }
 
-  const coerce = require('semver/functions/coerce')
   __modernBrowsers = Object.keys(ModernBrowsers)
     .reduce((allBrowsers, browser) => {
-      allBrowsers[browser] = coerce(ModernBrowsers[browser])
+      allBrowsers[browser] = semver.coerce(ModernBrowsers[browser])
       return allBrowsers
     }, {})
   return __modernBrowsers
@@ -36,17 +34,16 @@ export const isModernBrowser = (ua) => {
   if (!ua) {
     return false
   }
-  if (!coerce) {
-    coerce = require('semver/functions/coerce')
-    gte = require('semver/functions/gte')
+  if (!semver) {
+    semver = require('semver')
   }
   const { browser } = UAParser(ua)
-  const browserVersion = coerce(browser.version)
+  const browserVersion = semver.coerce(browser.version)
   if (!browserVersion) {
     return false
   }
   const modernBrowsers = getModernBrowsers()
-  return Boolean(modernBrowsers[browser.name] && gte(browserVersion, modernBrowsers[browser.name]))
+  return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
 export const isModernRequest = (req, modernMode = false) => {
