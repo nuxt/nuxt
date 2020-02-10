@@ -117,7 +117,7 @@ function mapTransitions (toComponents, to, from) {
     const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
     const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
     
-    // Combine transitions & prefer `enter` callbacks and name of "to" route
+    // Combine transitions & prefer `leave` properties of "from" route
     Object.keys(toTransitions)
         .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
         .forEach((key) => { transitions[key] = toTransitions[key] })
