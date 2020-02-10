@@ -73,23 +73,27 @@ describe('page transitions (browser)', () => {
     )
   })
 
-  test('Root page transition name', async () => {
-    await page.nuxt.navigate('/transition-name')
+  test('Root page transition properties', async () => {
+    await page.nuxt.navigate('/transition-properties')
     const transitionsData = await page.nuxt.transitionsData()
     expect(transitionsData.length).toBe(1)
     expect(transitionsData[0].name).toBe('custom')
+    expect(transitionsData[0].appear).toBe(true)
+    expect(transitionsData[0].css).toBe(false)
+    expect(transitionsData[0].mode).toBe('in-out')
+    expect(transitionsData[0].duration).toBe(3000)
   })
 
-  test('Parent -> child transition name', async () => {
-    await page.nuxt.navigate('/transition-name/child')
+  test('Parent -> child transition properties', async () => {
+    await page.nuxt.navigate('/transition-properties/child')
     const transitionsData = await page.nuxt.transitionsData()
     expect(transitionsData.length).toBe(2)
     expect(transitionsData[0].name).toBe('custom')
     expect(transitionsData[1].name).toBe('custom-child')
   })
 
-  test('Child -> parent transition name', async () => {
-    await page.nuxt.navigate('/transition-name')
+  test('Child -> parent transition properties', async () => {
+    await page.nuxt.navigate('/transition-properties')
     const transitionsData = await page.nuxt.transitionsData()
     expect(transitionsData.length).toBe(2)
     expect(transitionsData[0].name).toBe('custom')

@@ -119,7 +119,7 @@ function mapTransitions (toComponents, to, from) {
     
     // Combine transitions & prefer `enter` callbacks and name of "to" route
     Object.keys(toTransitions)
-        .filter(key => toTransitions[key] && (key.toLowerCase().includes('enter') || key === 'name'))
+        .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
         .forEach((key) => { transitions[key] = toTransitions[key] })
 
     mergedTransitions.push(transitions)
