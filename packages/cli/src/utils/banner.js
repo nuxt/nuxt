@@ -20,7 +20,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  const { bannerColor } = nuxt.options.cli
+  const { bannerColor, badgeMessages } = nuxt.options.cli
   titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
@@ -39,8 +39,8 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   }
 
   // Add custom badge messages
-  if (nuxt.options.cli.badgeMessages.length) {
-    messageLines.push('', ...nuxt.options.cli.badgeMessages)
+  if (badgeMessages.length) {
+    messageLines.push('', ...badgeMessages)
   }
 
   process.stdout.write(successBox(messageLines.join('\n'), titleLines.join('\n')))

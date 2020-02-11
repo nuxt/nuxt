@@ -257,7 +257,7 @@ export function getNuxtConfig (_options) {
       allowedSources: undefined,
       policies: undefined,
       addMeta: Boolean(options.target === TARGETS.static),
-      unsafeInlineCompatiblity: false,
+      unsafeInlineCompatibility: false,
       reportOnly: options.debug
     })
 
