@@ -88,7 +88,7 @@ export default {
       }, 500)
       return this
     },
-    fail () {
+    fail (error) {
       this.canSucceed = false
       return this
     },
