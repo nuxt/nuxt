@@ -168,7 +168,6 @@ describe('basic generate', () => {
   test('/validate should not be server-rendered', async () => {
     const { body: html } = await rp(url('/validate'))
     expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).toContain('serverRendered:!1')
   })
 
   test('/validate -> should display a 404', async () => {
@@ -186,7 +185,6 @@ describe('basic generate', () => {
   test('/redirect should not be server-rendered', async () => {
     const { body: html } = await rp(url('/redirect'))
     expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).toContain('serverRendered:!1')
   })
 
   test('/redirect -> check redirected source', async () => {
@@ -212,8 +210,8 @@ describe('basic generate', () => {
   })
 
   test('/users/1.html', async () => {
-    const html = await rp(url('/users/1.html'))
-    expect(html).toContain('<h1>User: 1</h1>')
+    const { body } = await rp(url('/users/1.html'))
+    expect(body).toContain('<h1>User: 1</h1>')
     expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
     expect(
       existsSync(resolve(distDir, 'users/1/index.html'))
