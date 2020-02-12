@@ -102,6 +102,10 @@ export default async (ssrContext) => {
   }
 
   const renderErrorPage = async () => {
+    // Don't server-render the page in static target
+    if (ssrContext.target === 'static' || !ssrContext.res) {
+      ssrContext.nuxt.serverRendered = false
+    }
     <% if (features.layouts) { %>
     // Load layout for error page
     const layout = (NuxtError.options || NuxtError).layout
@@ -247,10 +251,6 @@ export default async (ssrContext) => {
 
   // ...If .validate() returned false
   if (!isValid) {
-    // Don't server-render the page in generate mode
-    if (ssrContext.target === 'static') {
-      ssrContext.nuxt.serverRendered = false
-    }
     // Render a 404 error page
     return render404Page()
   }
