@@ -18,7 +18,7 @@ exports[`cli/command builds help text 1`] = `
     --modern, -m       Build/Start app for
                        modern browsers, e.g. server, client and
                        false
-    --target, -t       Build/Start app for
+    --target, -t       Build/start app for a
                        different target, e.g. server,
                        serverless and static
     --force-exit       Whether Nuxt.js

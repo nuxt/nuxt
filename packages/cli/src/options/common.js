@@ -39,7 +39,7 @@ export default {
   'force-exit': {
     type: 'boolean',
     default (cmd) {
-      return ['build', 'generate'].includes(cmd.name)
+      return ['build', 'generate', 'export'].includes(cmd.name)
     },
     description: 'Whether Nuxt.js should force exit after the command has finished'
   },
