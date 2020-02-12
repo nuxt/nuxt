@@ -8,7 +8,6 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
-import chalk from 'chalk'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'

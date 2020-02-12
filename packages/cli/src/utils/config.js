@@ -1,7 +1,6 @@
 import path from 'path'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
-import { getDefaultNuxtConfig } from '@nuxt/config'
 import { MODES } from '@nuxt/utils'
 
 export async function loadNuxtConfig (argv, configContext) {
