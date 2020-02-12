@@ -16,13 +16,13 @@ async function serverPrefetch() {
 
 
   // Define an ssrKey for hydration
-  this._ssrKey = this.$ssrContext.nuxt.fetch.length
+  this._fetchKey = this.$ssrContext.nuxt.fetch.length
 
-  // Add data-ssr-key on parent element of Component
+  // Add data-fetch-key on parent element of Component
   const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
-  attrs['data-ssr-key'] = this._ssrKey
+  attrs['data-fetch-key'] = this._fetchKey
 
-  // Call asyncData & add to ssrContext for window.__NUXT__.fetch
+  // Add to ssrContext for window.__NUXT__.fetch
   this.$ssrContext.nuxt.fetch.push(this.$fetchState.error ? { _error: this.$fetchState.error } : this._data)
 }
 
