@@ -69,7 +69,6 @@ describe('export', () => {
     const createLock = jest.fn(() => releaseLock)
     jest.spyOn(utils, 'createLock').mockImplementation(createLock)
 
-    let buildDone
     mockGetNuxt({ generate: {} })
     mockGetGenerator()
 
