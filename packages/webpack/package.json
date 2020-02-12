@@ -3,10 +3,10 @@
   "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/webpack.js",
   "files": [
     "dist"
   ],
-  "main": "dist/webpack.js",
   "dependencies": {
     "@babel/core": "^7.8.4",
     "@nuxt/babel-preset-app": "2.11.0",
@@ -14,7 +14,7 @@
     "@nuxt/utils": "2.11.0",
     "babel-loader": "^8.0.6",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001023",
+    "caniuse-lite": "^1.0.30001025",
     "chalk": "^3.0.0",
     "consola": "^2.11.3",
     "css-loader": "^3.4.2",
