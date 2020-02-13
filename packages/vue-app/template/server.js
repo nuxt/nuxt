@@ -103,7 +103,7 @@ export default async (ssrContext) => {
 
   const renderErrorPage = async () => {
     // Don't server-render the page in static target
-    if (ssrContext.target === 'static' || !ssrContext.res) {
+    if (ssrContext.target === 'static') {
       ssrContext.nuxt.serverRendered = false
     }
     <% if (features.layouts) { %>
