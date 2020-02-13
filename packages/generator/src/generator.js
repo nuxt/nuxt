@@ -1,8 +1,9 @@
 import path from 'path'
-import Chalk from 'chalk'
+import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
+import { parse } from 'node-html-parser'
 
 import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS } from '@nuxt/utils'
 
@@ -21,6 +22,7 @@ export default class Generator {
       this.distPath,
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
+    this.generatedRoutes = new Set()
   }
 
   async generate ({ build = true, init = true } = {}) {
@@ -106,13 +108,17 @@ export default class Generator {
     } else {
       routes = flatRoutes(this.getAppRoutes())
     }
-    routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
+    routes = routes.filter(route => this.shouldGenerateRoute(route))
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
     // extendRoutes hook
     await this.nuxt.callHook('generate:extendRoutes', routes)
 
     return routes
+  }
+
+  shouldGenerateRoute (route) {
+    return this.options.generate.exclude.every(regex => !regex.test(route))
   }
 
   getBuildConfig () {
@@ -126,6 +132,8 @@ export default class Generator {
   async generateRoutes (routes) {
     const errors = []
 
+    // Add routes to the tracked generated routes (for crawler)
+    routes.forEach(({ route }) => this.generatedRoutes.add(route))
     // Start generate process
     while (routes.length) {
       let n = 0
@@ -134,7 +142,7 @@ export default class Generator {
           .splice(0, this.options.generate.concurrency)
           .map(async ({ route, payload }) => {
             await waitFor(n++ * this.options.generate.interval)
-            await this.generateRoute({ route, payload, errors })
+            await this.generateRoute({ route, payload, errors }, routes)
           })
       )
     }
@@ -152,12 +160,12 @@ export default class Generator {
         const isHandled = type === 'handled'
         const color = isHandled ? 'yellow' : 'red'
 
-        let line = Chalk[color](` ${route}\n\n`)
+        let line = chalk[color](` ${route}\n\n`)
 
         if (isHandled) {
-          line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
+          line += chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
         } else {
-          line += Chalk.grey(error.stack || error.message || `${error}`)
+          line += chalk.grey(error.stack || error.message || `${error}`)
         }
 
         return line
@@ -236,7 +244,7 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute ({ route, payload = {}, errors = [] }) {
+  async generateRoute ({ route, payload = {}, errors = [] }, routes) {
     let html
     const pageErrors = []
 
@@ -246,8 +254,20 @@ export default class Generator {
         static: true,
         payloadPath: this.payloadPath
       }
+      this.generatedRoutes.add(route) // add the route to the tracked list
       const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
+
+      // If crawler activated and called from generateRoutes()
+      if (this.options.generate.crawler && routes) {
+        parse(html).querySelectorAll('a').map(el => {
+          const href = (el.getAttribute('href') || '').split('?')[0].trim()
+
+          if (href.startsWith('/') && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
+            routes.push({ route: href })
+          }
+        })
+      }
 
       // Save payload
       if (this.payloadDir) {
