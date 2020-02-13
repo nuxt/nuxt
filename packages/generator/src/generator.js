@@ -64,7 +64,7 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
-      this.isFullStatic = this.options.target === TARGETS.static && this.options.render.ssr === true
+      this.isFullStatic = this.options.target === TARGETS.static && this.options.render.ssr && this.options.generate.static
     } else {
       const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
       if (!hasBuilt) {
@@ -78,7 +78,8 @@ export default class Generator {
           `In order to use \`nuxt static export\`, you need to run \`nuxt static build\``
         )
       }
-      this.isFullStatic = config.target === TARGETS.static && config.ssr === true
+      this.isFullStatic = config.isFullStatic
+      this.options.render.ssr = config.ssr
     }
 
     // Initialize dist directory
@@ -102,7 +103,7 @@ export default class Generator {
       }
     }
     let routes = []
-    // Generate only index.html for router.mode = 'hash'
+    // Generate only index.html for router.mode = 'hash' or client-side apps
     if (this.options.router.mode === 'hash') {
       routes = ['/']
     } else {
@@ -254,16 +255,16 @@ export default class Generator {
         static: true,
         payloadPath: this.payloadPath
       }
-      this.generatedRoutes.add(route) // add the route to the tracked list
       const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
 
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && routes) {
         parse(html).querySelectorAll('a').map(el => {
-          const href = (el.getAttribute('href') || '').split('?')[0].trim()
+          const href = (el.getAttribute('href') || '').split('?')[0].split('#')[0].trim()
 
           if (href.startsWith('/') && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
+            this.generatedRoutes.add(href) // add the route to the tracked list
             routes.push({ route: href })
           }
         })
