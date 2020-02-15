@@ -83,6 +83,14 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
+    if (renderContext.redirected && !renderContext._generate) {
+      return {
+        html: APP,
+        error: renderContext.nuxt.error,
+        redirected: renderContext.redirected
+      }
+    }
+
     let HEAD = ''
 
     // Inject head meta
