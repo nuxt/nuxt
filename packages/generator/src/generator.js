@@ -275,8 +275,10 @@ export default class Generator {
         const payloadFilePath = path.join(this.payloadDir, route, 'payload.json')
 
         await fsExtra.ensureDir(path.join(this.payloadDir, route))
-        renderContext.nuxt.data = renderContext.nuxt.data || []
-        await fsExtra.writeFile(payloadFilePath, JSON.stringify(renderContext.nuxt.data.slice(-1)[0]), 'utf-8')
+        await fsExtra.writeFile(payloadFilePath, JSON.stringify({
+          data: renderContext.nuxt.data,
+          fetch: renderContext.nuxt.fetch
+        }), 'utf-8')
         html = await this.addPayloadScript(route, html)
       }
 

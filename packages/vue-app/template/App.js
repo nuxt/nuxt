@@ -274,9 +274,44 @@ export default {
         layout = 'default'
       }
       return Promise.resolve(layouts['_' + layout])
-    }
+    },
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
+    <% if (isFullStatic) { %>
+    setPagePayload(payload) {
+      this._pagePayload = payload
+      this._payloadFetchIndex = 0
+    },
+    async fetchPayload (path) {
+      this._payloadCache = this._payloadCache || {}
+      path = path.replace(/\/$/, '')
+      const payloadPath = (`${this.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
+      let payload = this._payloadCache[payloadPath]
+
+      // If payload is a promise, returns it
+      if (payload && payload instanceof Promise && typeof payload.then === 'function') {
+        return payload
+      }
+      // if payload is in cache
+      else if (payload) {
+        this.setPagePayload(payload)
+        return payload
+      }
+      // fetch payload
+      this._payloadCache[payloadPath] = fetch(payloadPath)
+        .then(res => {
+          if (!res.ok) throw new Error(res.statusText)
+          return res.json()
+        })
+        .then(payload => {
+          this._payloadCache[payloadPath] = payload
+          this.setPagePayload(payload)
+          return payload
+        })
+      // return promise
+      return this._payloadCache[payloadPath]
+    }
+    <% } %>
   },
   <% if (loading) { %>
   components: {

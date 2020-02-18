@@ -32,6 +32,7 @@ function beforeMount() {
 
 function created() {
   if (!isSsrHydration(this)) {
+    <% if (isFullStatic) { %>createdFullStatic.call(this)<% } %>
     return
   }
 
@@ -51,6 +52,33 @@ function created() {
     Vue.set(this.$data, key, data[key])
   }
 }
+
+<% if (isFullStatic) { %>
+function createdFullStatic() {
+  // Check if component has been fetched on server
+  let fetchedOnServer = this.$options.fetchOnServer !== false
+  if (typeof this.$options.fetchOnServer === 'function') {
+    fetchedOnServer = this.$options.fetchOnServer.call(this) !== false
+  }
+  if (!fetchedOnServer || this.$nuxt.isPreview || this.$options.static === false) {
+    return
+  }
+  this._hydrated = true
+  this._fetchKey = this.$nuxt._payloadFetchIndex++
+  const data = this.$nuxt._pagePayload.fetch[this._fetchKey]
+
+  // If fetch error
+  if (data && data._error) {
+    this.$fetchState.error = data._error
+    return
+  }
+
+  // Merge data
+  for (const key in data) {
+    Vue.set(this.$data, key, data[key])
+  }
+}
+<% } %>
 
 async function $fetch() {
   this.$nuxt.nbFetching++
@@ -77,4 +105,3 @@ async function $fetch() {
 
   this.$nextTick(() => this.$nuxt.nbFetching--)
 }
-

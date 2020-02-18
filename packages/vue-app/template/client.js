@@ -116,7 +116,7 @@ function mapTransitions (toComponents, to, from) {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
-  
+
   const fromComponents = from ? getMatchedComponents(from) : []
   const maxDepth = Math.max(toComponents.length, fromComponents.length)
 
@@ -125,7 +125,7 @@ function mapTransitions (toComponents, to, from) {
     // Clone original objects to prevent overrides
     const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
     const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
-    
+
     // Combine transitions & prefer `leave` properties of "from" route
     Object.keys(toTransitions)
         .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
@@ -481,23 +481,12 @@ async function render (to, from, next) {
       // Call asyncData(context)
       if (hasAsyncData) {
         <% if (isFullStatic) { %>
-          const path = to.path.replace(/\/$/, '')
-          const payloadPath = (`${this.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
           let promise
 
           if (Component.options.static === false || this.$isPreview) {
             promise = promisify(Component.options.asyncData, app.context)
-          } else if (Component._payloadData && Component._payloadPath === this.payloadPath) {
-            promise = Promise.resolve(Component._payloadData)
           } else {
-            promise = fetch(payloadPath).then((res) => {
-              if (!res.ok) throw new Error(res.statusText)
-              return res.json()
-            }).then((payloadData) => {
-              Component._payloadData = payloadData
-              Component._payloadPath = this.payloadPath
-              return payloadData
-            })
+            promise = this.fetchPayload(to.path).then((payloadData) => payloadData.data[i])
           }
         <% } else { %>
         const promise = promisify(Component.options.asyncData, app.context)
@@ -518,6 +507,11 @@ async function render (to, from, next) {
       this.$loading.manual = Component.options.loading === false
 
       <% if (features.fetch) { %>
+        <% if (isFullStatic) { %>
+        if (!this.$isPreview) {
+          promises.push(this.fetchPayload(to.path))
+        }
+        <% } %>
       // Call fetch(context)
       if (hasFetch) {
         let p = Component.options.fetch(app.context)
