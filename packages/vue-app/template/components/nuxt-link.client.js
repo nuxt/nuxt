@@ -101,7 +101,13 @@ export default {
           <% if (router.linkPrefetchedClass) { %>promises.push(componentOrPromise)<% } %>
         }
         Component.__prefetched = true
-      }<% if (router.linkPrefetchedClass) { %>
+      }
+      <% if (isFullStatic && router.prefetchPayloads) { %>
+        // Preload the data
+        const { href } = this.$router.resolve(this.to, this.$route, this.append)
+        this.$nuxt.fetchPayload(href).catch(() => {})
+      <% } %>
+      <% if (router.linkPrefetchedClass) { %>
         return Promise.all(promises).then(() => this.addPrefetchedClass())
       <% } %>
     }<% if (router.linkPrefetchedClass) { %>,
