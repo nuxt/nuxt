@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
 
-const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.ssrKey
+const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.fetchKey
 const nuxtState = window.<%= globals.context %>
 
 export default {
@@ -37,8 +37,8 @@ function created() {
 
   // Hydrate component
   this._hydrated = true
-  this._ssrKey = +this.$vnode.elm.dataset.ssrKey
-  const data = nuxtState.fetch[this._ssrKey]
+  this._fetchKey = +this.$vnode.elm.dataset.fetchKey
+  const data = nuxtState.fetch[this._fetchKey]
 
   // If fetch error
   if (data && data._error) {
