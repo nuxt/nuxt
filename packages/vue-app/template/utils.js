@@ -165,7 +165,7 @@ export async function setContext (app, context) {
     if (context.ssrContext) {
       app.context.ssrContext = context.ssrContext
     }
-    app.context.redirect = (status, path, query) => {
+    app.context.redirect = (status, path, query, replace) => {
       if (!status) {
         return
       }
@@ -173,6 +173,7 @@ export async function setContext (app, context) {
       // if only 1 or 2 arguments: redirect('/') or redirect('/', { foo: 'bar' })
       let pathType = typeof path
       if (typeof status !== 'number' && (pathType === 'undefined' || pathType === 'object')) {
+        replace = query || false
         query = path || {}
         path = status
         pathType = typeof path
@@ -186,7 +187,8 @@ export async function setContext (app, context) {
         app.context.next({
           path,
           query,
-          status
+          status,
+          replace
         })
       } else {
         path = formatUrl(path, query)
