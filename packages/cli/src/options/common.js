@@ -33,7 +33,9 @@ export default {
     type: 'string',
     description: 'Build/start app for a different target, e.g. server, serverless and static',
     prepare (cmd, options, argv) {
-      options.target = argv.target
+      if (argv.target) {
+        options.target = argv.target
+      }
     }
   },
   'force-exit': {
