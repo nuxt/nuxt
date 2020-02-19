@@ -27,7 +27,7 @@ async function serverPrefetch() {
 }
 
 export default {
-  beforeCreate() {
+  created() {
     if (!hasFetch(this)) {
       return
     }
