@@ -282,10 +282,15 @@ export default {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
-    async fetchPayload (path) {
+    getPayloadPath(href) {
+      return (`${this.payloadPath}/${href.replace(/\/$/, '')}/payload.json`).replace(/\/+/g, '/')
+    },
+    hasPayload(href) {
+      return !!(this._payloadCache && this._payloadCache[this.getPayloadPath(href)])
+    },
+    async fetchPayload (href) {
       this._payloadCache = this._payloadCache || {}
-      path = path.replace(/\/$/, '')
-      const payloadPath = (`${this.payloadPath}/${path}/payload.json`).replace(/\/+/g, '/')
+      const payloadPath = this.getPayloadPath(href)
       let payload = this._payloadCache[payloadPath]
 
       // If payload is a promise, returns it

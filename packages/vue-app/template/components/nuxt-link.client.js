@@ -71,7 +71,12 @@ export default {
       }<% } %>
     },
     shouldPrefetch () {
-      return this.getPrefetchComponents().length > 0
+      <% if (isFullStatic && router.prefetchPayloads) { %>
+      const ref = this.$router.resolve(this.to, this.$route, this.append)
+      const Components = ref.resolved.matched.map(r => r.components.default)
+
+      return Components.filter(Component => !this.$nuxt.hasPayload(ref.href) || (typeof Component === 'function' && !Component.options && !Component.__prefetched)).length
+      <% } else { %>return this.getPrefetchComponents().length > 0<% } %>
     },
     canPrefetch () {
       const conn = navigator.connection
@@ -103,12 +108,12 @@ export default {
         Component.__prefetched = true
       }
       <% if (isFullStatic && router.prefetchPayloads) { %>
-        // Preload the data
-        const { href } = this.$router.resolve(this.to, this.$route, this.append)
-        this.$nuxt.fetchPayload(href).catch(() => {})
+      // Preload the data
+      const { href } = this.$router.resolve(this.to, this.$route, this.append)
+      this.$nuxt.fetchPayload(href).catch(() => {})
       <% } %>
       <% if (router.linkPrefetchedClass) { %>
-        return Promise.all(promises).then(() => this.addPrefetchedClass())
+      return Promise.all(promises).then(() => this.addPrefetchedClass())
       <% } %>
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass () {
