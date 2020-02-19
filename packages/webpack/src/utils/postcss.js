@@ -46,13 +46,16 @@ export default class PostcssConfig {
   }
 
   get postcssImportAlias () {
-    const { alias, dir: { assets: assetsDir, static: staticDir } } = this.buildContext.options
+    const { alias } = this.buildContext.options
 
-    return {
-      ...alias,
-      [`~${assetsDir}`]: alias[assetsDir],
-      [`~${staticDir}`]: alias[staticDir]
-    }
+    return Object.keys(alias).reduce((newAlias, name) => {
+      const value = alias[name]
+      newAlias[name] = value
+      if (!name.startsWith('~')) {
+        newAlias[`~${name}`] = value
+      }
+      return newAlias
+    }, {})
   }
 
   get defaultConfig () {
