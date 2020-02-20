@@ -38,7 +38,7 @@ describe('core: nuxt', () => {
 
     expect(nuxt._deprecatedHooks).toEqual({
       'render:context': 'render:routeContext',
-      'render:routeContext': 'vue-renderer:afterRender',
+      'render:routeContext': 'vue-renderer:ssr:context',
       showReady: 'webpack:done'
     })
 

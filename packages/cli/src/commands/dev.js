@@ -83,6 +83,11 @@ export default {
     // Print memory usage
     showMemoryUsage()
 
+    // Display server urls after the build
+    for (const listener of nuxt.server.listeners) {
+      consola.info(chalk.bold('Listening on: ') + listener.url)
+    }
+
     // Return instance
     return nuxt
   },
