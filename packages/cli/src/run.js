@@ -25,12 +25,6 @@ export default async function run (_argv, hooks = {}) {
   // Read from process.argv
   const argv = _argv ? Array.from(_argv) : process.argv.slice(2)
 
-  // Check if first arg is a target
-  if (TARGETS[argv[0]]) {
-    argv.push(`--target=${argv[0]}`)
-    argv.shift()
-  }
-
   // Check for internal command
   let cmd = await getCommand(argv[0])
 
