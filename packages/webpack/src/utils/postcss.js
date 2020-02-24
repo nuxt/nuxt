@@ -49,7 +49,7 @@ export default class PostcssConfig {
     const alias = { ...this.buildContext.options.alias }
 
     for (const key in alias) {
-      if ((key.startsWith('~'))) {
+      if (key.startsWith('~')) {
         continue
       }
       for (const prefix of ['~', '@']) {
