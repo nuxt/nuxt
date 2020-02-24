@@ -20,7 +20,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return renderContext.renderScripts()
+    const scripts = renderContext.renderScripts()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return scripts
+    }
+    return scripts.replace(
+      /<script/g,
+      `<script crossorigin="${crossorigin}"`
+    )
   }
 
   getPreloadFiles (renderContext) {
@@ -28,7 +36,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderResourceHints (renderContext) {
-    return renderContext.renderResourceHints()
+    const resourceHints = renderContext.renderResourceHints()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return resourceHints
+    }
+    return resourceHints.replace(
+      /rel="preload"/g,
+      `rel="preload" crossorigin="${crossorigin}"`
+    )
   }
 
   createRenderer () {
@@ -81,6 +97,14 @@ export default class SSRRenderer extends BaseRenderer {
     // Fallback to empty response
     if (!renderContext.nuxt.serverRendered) {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
+    }
+
+    if (renderContext.redirected && !renderContext._generate) {
+      return {
+        html: APP,
+        error: renderContext.nuxt.error,
+        redirected: renderContext.redirected
+      }
     }
 
     let HEAD = ''
