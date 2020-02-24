@@ -52,11 +52,9 @@ export default class PostcssConfig {
       if (key.startsWith('~')) {
         continue
       }
-      for (const prefix of ['~', '@']) {
-        const newKey = prefix + key
-        if (!alias[newKey]) {
-          alias[newKey] = alias[key]
-        }
+      const newKey = '~' + key
+      if (!alias[newKey]) {
+        alias[newKey] = alias[key]
       }
     }
 
