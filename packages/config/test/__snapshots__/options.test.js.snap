@@ -116,7 +116,6 @@ Object {
         "automaticNameDelimiter": ".",
         "cacheGroups": Object {},
         "chunks": "all",
-        "name": undefined,
       },
     },
     "optimizeCSS": false,
