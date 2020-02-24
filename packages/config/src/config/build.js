@@ -17,6 +17,7 @@ export default () => ({
   cache: false,
   standalone: false,
   publicPath: '/_nuxt/',
+  serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
     app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',

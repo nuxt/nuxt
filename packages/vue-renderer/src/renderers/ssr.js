@@ -20,7 +20,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return renderContext.renderScripts()
+    const scripts = renderContext.renderScripts()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return scripts
+    }
+    return scripts.replace(
+      /<script/g,
+      `<script crossorigin="${crossorigin}"`
+    )
   }
 
   getPreloadFiles (renderContext) {
@@ -28,7 +36,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderResourceHints (renderContext) {
-    return renderContext.renderResourceHints()
+    const resourceHints = renderContext.renderResourceHints()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return resourceHints
+    }
+    return resourceHints.replace(
+      /rel="preload"/g,
+      `rel="preload" crossorigin="${crossorigin}"`
+    )
   }
 
   createRenderer () {
@@ -83,6 +99,14 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
+    if (renderContext.redirected && !renderContext._generate) {
+      return {
+        html: APP,
+        error: renderContext.nuxt.error,
+        redirected: renderContext.redirected
+      }
+    }
+
     let HEAD = ''
 
     // Inject head meta
@@ -126,19 +150,26 @@ export default class SSRRenderer extends BaseRenderer {
       }
     }
 
+    const { csp } = this.options.render
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+    const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
+    const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
+    let serializedSession = ''
+
     // Serialize state
-    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    if (shouldInjectScripts || shouldHashCspScriptSrc) {
+      // Only serialized session if need inject scripts or csp hash
+      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    }
+
     if (shouldInjectScripts) {
       APP += `<script>${serializedSession}</script>`
     }
 
     // Calculate CSP hashes
-    const { csp } = this.options.render
     const cspScriptSrcHashes = []
     if (csp) {
-      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-      const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
-      if (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc) {
+      if (shouldHashCspScriptSrc) {
         const hash = crypto.createHash(csp.hashAlgorithm)
         hash.update(serializedSession)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
