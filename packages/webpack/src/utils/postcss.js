@@ -59,6 +59,8 @@ export default class PostcssConfig {
         }
       }
     }
+
+    return alias
   }
 
   get defaultConfig () {
