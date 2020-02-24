@@ -46,16 +46,19 @@ export default class PostcssConfig {
   }
 
   get postcssImportAlias () {
-    const { alias } = this.buildContext.options
+    const alias = { ...this.buildContext.options.alias }
 
-    return Object.keys(alias).reduce((newAlias, name) => {
-      const value = alias[name]
-      newAlias[name] = value
-      if (!name.startsWith('~')) {
-        newAlias[`~${name}`] = value
+    for (const key in alias) {
+      if ((key.startsWith('~'))) {
+        continue
       }
-      return newAlias
-    }, {})
+      for (const prefix of ['~', '@']) {
+        const newKey = prefix + key
+        if (!alias[newKey]) {
+          alias[newKey] = alias[key]
+        }
+      }
+    }
   }
 
   get defaultConfig () {
