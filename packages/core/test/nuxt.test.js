@@ -59,11 +59,11 @@ describe('core: nuxt', () => {
   })
 
   for (const name of ['render:context', 'render:routeContext']) {
-    test('should deprecate ' + name, () => {
+    test('should deprecate ' + name, async () => {
       const nuxt = new Nuxt()
       const fn = jest.fn()
-      nuxt.hook(name, fn())
-      nuxt.callHook('vue-renderer:ssr:context_nuxt')
+      nuxt.hook(name, fn)
+      await nuxt.callHook('vue-renderer:ssr:context_nuxt')
       expect(fn).toBeCalledTimes(1)
       expect(fn).toBeCalledWith()
     })
