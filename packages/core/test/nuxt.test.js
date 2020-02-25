@@ -63,7 +63,7 @@ describe('core: nuxt', () => {
       const nuxt = new Nuxt()
       const fn = jest.fn()
       nuxt.hook(name, fn)
-      await nuxt.callHook('vue-renderer:ssr:context_nuxt')
+      await nuxt.callHook('_render:context')
       expect(fn).toBeCalledTimes(1)
       expect(fn).toBeCalledWith()
     })
