@@ -25,9 +25,17 @@ export default class Nuxt extends Hookable {
 
     // Deprecated hooks
     this.deprecateHooks({
-      'render:context': 'render:routeContext',
-      'render:routeContext': 'vue-renderer:ssr:context',
-      showReady: 'webpack:done' // Workaround to deprecate showReady
+      // #3294 - 7514db73b25c23b8c14ebdafbb4e129ac282aabd
+      'render:context': {
+        to: 'vue-renderer:ssr:context_nuxt',
+        message: '`render:context(nuxt)` is deprecated, Please use `vue-renderer:ssr:context(context)`'
+      },
+      // #3773
+      'render:routeContext': {
+        to: 'vue-renderer:ssr:context_nuxt',
+        message: '`render:routeContext(nuxt)` is deprecated, Please use `vue-renderer:ssr:context(context)`'
+      },
+      showReady: 'webpack:done'
     })
 
     // Add Legacy aliases

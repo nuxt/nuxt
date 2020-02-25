@@ -91,8 +91,9 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Call ssr:context hook
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)
-    // TODO: Remove in next major release
-    await this.serverContext.nuxt.callHook('render:routeContext', renderContext.nuxt)
+
+    // TODO: Remove in next major release (#4722)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:context_nuxt', renderContext.nuxt)
 
     // Fallback to empty response
     if (!renderContext.nuxt.serverRendered) {
