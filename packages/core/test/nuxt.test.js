@@ -36,12 +36,6 @@ describe('core: nuxt', () => {
     expect(nuxt.moduleContainer).toBeInstanceOf(ModuleContainer)
     expect(nuxt.server).toBeInstanceOf(Server)
 
-    expect(nuxt._deprecatedHooks).toEqual({
-      'render:context': 'render:routeContext',
-      'render:routeContext': 'vue-renderer:ssr:context',
-      showReady: 'webpack:done'
-    })
-
     expect(defineAlias).toBeCalledTimes(2)
     expect(defineAlias).nthCalledWith(1, nuxt, nuxt.resolver, ['resolveAlias', 'resolvePath'])
     expect(defineAlias).nthCalledWith(2, nuxt, nuxt.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
@@ -63,6 +57,17 @@ describe('core: nuxt', () => {
     expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('webpack:done')
   })
+
+  for (const name of ['render:context', 'render:routeContext']) {
+    test('should deprecate ' + name, () => {
+      const nuxt = new Nuxt()
+      const fn = jest.fn()
+      nuxt.hook(name, fn())
+      nuxt.callHook('vue-renderer:ssr:context_nuxt')
+      expect(fn).toBeCalledTimes(1)
+      expect(fn).toBeCalledWith()
+    })
+  }
 
   test('should display fatal message if ready failed', async () => {
     const err = new Error('nuxt ready failed')
