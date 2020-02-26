@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@master
         with:
           ref: 'refs/heads/dev'
+          fetch-depth: 0 # All history
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -50,6 +51,7 @@ jobs:
       - uses: actions/checkout@master
         with:
           ref: 'refs/heads/next'
+          fetch-depth: 0 # All history
       - uses: actions/setup-node@v1
         with:
           node-version: 12
