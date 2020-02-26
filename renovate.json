@@ -3,7 +3,8 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev"
+    "dev",
+    "next"
   ],
   "ignoreDeps": [
     "memory-fs",

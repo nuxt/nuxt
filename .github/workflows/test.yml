@@ -295,7 +295,7 @@ jobs:
       - name: publish
         run: |
           if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
-          ./scripts/workspace-run npm publish -q
+          ./scripts/workspace-run npm publish $tag -q
         env:
           ref: ${{ github.ref }}
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
