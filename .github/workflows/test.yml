@@ -29,6 +29,8 @@ jobs:
 
       - name: checkout
         uses: actions/checkout@master
+        with:
+          fetch-depth: 100
 
       - name: cache node_modules
         id: node_modules_cache_id
