@@ -13,6 +13,8 @@ export const template = {
     'server.js',
     'utils.js',
     'empty.js',
+    'mixins/fetch.server.js',
+    'mixins/fetch.client.js',
     'components/nuxt-error.vue',
     'components/nuxt-child.js',
     'components/nuxt-link.server.js',

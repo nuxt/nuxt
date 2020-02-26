@@ -6,7 +6,8 @@
     "dev"
   ],
   "ignoreDeps": [
-    "memory-fs"
+    "memory-fs",
+    "@rollup/plugin-node-resolve"
   ],
   "lockFileMaintenance": {
     "enabled": true

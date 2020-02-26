@@ -189,7 +189,8 @@ export default class Package {
     const config = {
       rootDir: this.options.rootDir,
       alias: {},
-      replace: {}
+      replace: {},
+      ...this.options.rollup
     }
 
     // Replace linkedDependencies with their suffixed version

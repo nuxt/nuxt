@@ -1,7 +1,7 @@
 <script>
 
 export default {
-  fetch () {
+  middleware (context) {
     throw { error: 'fetch error!' } // eslint-disable-line
   }
 }
