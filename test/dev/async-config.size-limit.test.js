@@ -20,26 +20,35 @@ describe('nuxt basic resources size limit', () => {
   it('should stay within the size limit range in legacy mode', async () => {
     const legacyResourcesSize = await getResourcesSize(distDir, 'client', { gzip: true, brotli: true })
 
-    const LEGACY_JS_RESOURCES_KB_SIZE = 194
+    const LEGACY_JS_RESOURCES_KB_SIZE = 209
     expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
 
-    const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 66
+    const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 72
     expect(legacyResourcesSize.gzip).toBeWithinSize(LEGACY_JS_RESOURCES_GZIP_KB_SIZE)
 
-    const LEGACY_JS_RESOURCES_BROTLI_KB_SIZE = 58
+    const LEGACY_JS_RESOURCES_BROTLI_KB_SIZE = 63
     expect(legacyResourcesSize.brotli).toBeWithinSize(LEGACY_JS_RESOURCES_BROTLI_KB_SIZE)
   })
 
   it('should stay within the size limit range in modern mode', async () => {
     const modernResourcesSize = await getResourcesSize(distDir, 'modern', { gzip: true, brotli: true })
 
-    const MODERN_JS_RESOURCES_KB_SIZE = 172
+    const MODERN_JS_RESOURCES_KB_SIZE = 186
     expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE)
 
-    const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 59
+    const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 64
     expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE)
 
-    const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 52
+    const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 57
     expect(modernResourcesSize.brotli).toBeWithinSize(MODERN_JS_RESOURCES_BROTLI_KB_SIZE)
+  })
+
+  it('modern should be smaller than legacy', async () => {
+    const legacyResourcesSize = await getResourcesSize(distDir, 'client', { gzip: true, brotli: true })
+    const modernResourcesSize = await getResourcesSize(distDir, 'modern', { gzip: true, brotli: true })
+
+    expect(modernResourcesSize.uncompressed < legacyResourcesSize.uncompressed)
+    expect(modernResourcesSize.gzip < legacyResourcesSize.gzip)
+    expect(modernResourcesSize.brotli < legacyResourcesSize.brotli)
   })
 })

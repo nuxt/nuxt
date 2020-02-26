@@ -6,6 +6,8 @@
 
 This is the default preset used by Nuxt, which is mainly a wrapper around the `@babel/preset-env` preset. It also optionally uses the `@vue/babel-preset-jsx` preset as well as `@babel/plugin-proposal-decorators`, `@babel/plugin-proposal-class-properties`, `@babel/plugin-transform-runtime`. Furthermore the preset is adding polyfills.
 
+**Note**: Nuxt has migrated default `core-js` to v3 as `core-js@<3.0 is no longer maintained and not recommended for usage due to the number of issues.`.
+
 **Note**: Since `core-js@2` and `core-js@3` are both supported from Babel 7.4.0, we recommend directly adding `core-js` and setting the version via the [`corejs`](#corejs) option.
 
 ```sh
@@ -61,7 +63,7 @@ Below is a list of all available `options` parameters:
 * **spec** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#spec)' parameter
 * **targets** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#targets)' parameter
 * **useBuiltIns**, default `"usage"` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#usebuiltins)' parameter
-* **corejs**, default `{ version: 2 }` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#corejs)' parameter
+* **corejs**, default `{ version: 3 }` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#corejs)' parameter
 
 There are [detailed docs](https://babeljs.io/docs/en/babel-preset-env#options) for the parameters of '@babel/preset-env'.
 
@@ -90,30 +92,3 @@ export default {
 }
 ```
 
-### Example 2. Use core-js@3
-
-**NOTE**: Make sure that all dependencies have been upgraded to use core-js@3. If core-js@2 and core-js@3 are both dependent, babel may resolve incorrect core-js package which is hoisted by yarn/npm.
-
-```sh
-yarn add --dev core-js@3 @babel/runtime-corejs3
-```
-
-```js
-export default {
-  build: {
-    babel: {
-      // envName: server, client, modern
-      presets({ envName }) {
-        return [
-          [
-            '@nuxt/babel-preset-app',
-            {
-              corejs: { version: 3 }
-            }
-          ]
-        ]
-      }
-    }
-  }
-}
-```

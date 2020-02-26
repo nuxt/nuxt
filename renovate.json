@@ -7,7 +7,6 @@
     "next"
   ],
   "ignoreDeps": [
-    "core-js",
     "memory-fs",
     "@rollup/plugin-node-resolve"
   ],

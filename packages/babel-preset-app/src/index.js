@@ -43,6 +43,13 @@ function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath
   return includes.filter(item => isPluginRequired(builtInTargets, builtInsList[item]))
 }
 
+function isPackageHoisted (packageName) {
+  const path = require('path')
+  const installedPath = require.resolve(packageName)
+  const relativePath = path.resolve(__dirname, '..', 'node_modules', packageName)
+  return installedPath !== relativePath
+}
+
 module.exports = (api, options = {}) => {
   const presets = []
   const plugins = []
@@ -67,10 +74,19 @@ module.exports = (api, options = {}) => {
     absoluteRuntime
   } = options
 
-  let { corejs = { version: 2 } } = options
+  let { corejs = { version: 3 } } = options
 
   if (typeof corejs !== 'object') {
     corejs = { version: Number(corejs) }
+  }
+
+  const isCorejs3Hoisted = isPackageHoisted('core-js')
+  if (
+    (corejs.version === 3 && !isCorejs3Hoisted) ||
+    (corejs.version === 2 && isCorejs3Hoisted)
+  ) {
+    // eslint-disable-next-line no-console
+    (console.fatal || console.error)(`babel corejs option is ${corejs.version}, please directlly install core-js@${corejs.version}.`)
   }
 
   const defaultTargets = {
