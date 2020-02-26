@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - dev
-      - 2.x
       - next
 
 jobs:
