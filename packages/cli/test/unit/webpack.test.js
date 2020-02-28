@@ -14,6 +14,10 @@ const tests = [
 ]
 
 describe('webpack', () => {
+  beforeAll(() => {
+    process.stdout.isTTY = false
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })

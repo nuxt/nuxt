@@ -959,55 +959,55 @@ exports[`webpack getWebpackConfig() 1`] = `
 exports[`webpack nuxt webpack  1`] = `
 Array [
   "{
-  name: [32m'client'[39m,
-  mode: [32m'production'[39m,
-  devtool: [33mfalse[39m,
+  name: 'client',
+  mode: 'production',
+  devtool: false,
   optimization: {
-    runtimeChunk: [32m'single'[39m,
-    minimize: [33mtrue[39m,
+    runtimeChunk: 'single',
+    minimize: true,
     minimizer: [
       TerserPlugin {
         options: {
-          test: [31m/\\\\.m?js(\\\\?.*)?$/i[39m,
-          chunkFilter: [36m[Function: chunkFilter][39m,
-          warningsFilter: [36m[Function: warningsFilter][39m,
-          extractComments: { condition: [32m'some'[39m, filename: [32m'LICENSES'[39m },
-          sourceMap: [90mundefined[39m,
-          cache: [33mfalse[39m,
-          cacheKeys: [36m[Function: cacheKeys][39m,
-          parallel: [33mtrue[39m,
-          include: [90mundefined[39m,
-          exclude: [90mundefined[39m,
-          minify: [90mundefined[39m,
+          test: /\\\\.m?js(\\\\?.*)?$/i,
+          chunkFilter: [Function: chunkFilter],
+          warningsFilter: [Function: warningsFilter],
+          extractComments: { condition: 'some', filename: 'LICENSES' },
+          sourceMap: undefined,
+          cache: false,
+          cacheKeys: [Function: cacheKeys],
+          parallel: true,
+          include: undefined,
+          exclude: undefined,
+          minify: undefined,
           terserOptions: {
-            compress: { ecma: [90mundefined[39m },
+            compress: { ecma: undefined },
             mangle: {
               reserved: [
-                [32m'html'[39m,     [32m'body'[39m,    [32m'base'[39m,       [32m'head'[39m,
-                [32m'link'[39m,     [32m'meta'[39m,    [32m'style'[39m,      [32m'title'[39m,
-                [32m'address'[39m,  [32m'article'[39m, [32m'aside'[39m,      [32m'footer'[39m,
-                [32m'header'[39m,   [32m'h1'[39m,      [32m'h2'[39m,         [32m'h3'[39m,
-                [32m'h4'[39m,       [32m'h5'[39m,      [32m'h6'[39m,         [32m'hgroup'[39m,
-                [32m'nav'[39m,      [32m'section'[39m, [32m'div'[39m,        [32m'dd'[39m,
-                [32m'dl'[39m,       [32m'dt'[39m,      [32m'figcaption'[39m, [32m'figure'[39m,
-                [32m'picture'[39m,  [32m'hr'[39m,      [32m'img'[39m,        [32m'li'[39m,
-                [32m'main'[39m,     [32m'ol'[39m,      [32m'p'[39m,          [32m'pre'[39m,
-                [32m'ul'[39m,       [32m'a'[39m,       [32m'b'[39m,          [32m'abbr'[39m,
-                [32m'bdi'[39m,      [32m'bdo'[39m,     [32m'br'[39m,         [32m'cite'[39m,
-                [32m'code'[39m,     [32m'data'[39m,    [32m'dfn'[39m,        [32m'em'[39m,
-                [32m'i'[39m,        [32m'kbd'[39m,     [32m'mark'[39m,       [32m'q'[39m,
-                [32m'rp'[39m,       [32m'rt'[39m,      [32m'rtc'[39m,        [32m'ruby'[39m,
-                [32m's'[39m,        [32m'samp'[39m,    [32m'small'[39m,      [32m'span'[39m,
-                [32m'strong'[39m,   [32m'sub'[39m,     [32m'sup'[39m,        [32m'time'[39m,
-                [32m'u'[39m,        [32m'var'[39m,     [32m'wbr'[39m,        [32m'area'[39m,
-                [32m'audio'[39m,    [32m'map'[39m,     [32m'track'[39m,      [32m'video'[39m,
-                [32m'embed'[39m,    [32m'object'[39m,  [32m'param'[39m,      [32m'source'[39m,
-                [32m'canvas'[39m,   [32m'script'[39m,  [32m'noscript'[39m,   [32m'del'[39m,
-                [32m'ins'[39m,      [32m'caption'[39m, [32m'col'[39m,        [32m'colgroup'[39m,
-                [32m'table'[39m,    [32m'thead'[39m,   [32m'tbody'[39m,      [32m'td'[39m,
-                [32m'th'[39m,       [32m'tr'[39m,      [32m'button'[39m,     [32m'datalist'[39m,
-                [32m'fieldset'[39m, [32m'form'[39m,    [32m'input'[39m,      [32m'label'[39m,
-                [32m'legend'[39m,   [32m'meter'[39m,   [32m'optgroup'[39m,   [32m'option'[39m,
+                'html',     'body',    'base',       'head',
+                'link',     'meta',    'style',      'title',
+                'address',  'article', 'aside',      'footer',
+                'header',   'h1',      'h2',         'h3',
+                'h4',       'h5',      'h6',         'hgroup',
+                'nav',      'section', 'div',        'dd',
+                'dl',       'dt',      'figcaption', 'figure',
+                'picture',  'hr',      'img',        'li',
+                'main',     'ol',      'p',          'pre',
+                'ul',       'a',       'b',          'abbr',
+                'bdi',      'bdo',     'br',         'cite',
+                'code',     'data',    'dfn',        'em',
+                'i',        'kbd',     'mark',       'q',
+                'rp',       'rt',      'rtc',        'ruby',
+                's',        'samp',    'small',      'span',
+                'strong',   'sub',     'sup',        'time',
+                'u',        'var',     'wbr',        'area',
+                'audio',    'map',     'track',      'video',
+                'embed',    'object',  'param',      'source',
+                'canvas',   'script',  'noscript',   'del',
+                'ins',      'caption', 'col',        'colgroup',
+                'table',    'thead',   'tbody',      'td',
+                'th',       'tr',      'button',     'datalist',
+                'fieldset', 'form',    'input',      'label',
+                'legend',   'meter',   'optgroup',   'option',
                 ... 48 more items
               ]
             }
@@ -1016,66 +1016,66 @@ Array [
       }
     ],
     splitChunks: {
-      chunks: [32m'all'[39m,
-      automaticNameDelimiter: [32m'.'[39m,
-      name: [90mundefined[39m,
+      chunks: 'all',
+      automaticNameDelimiter: '.',
+      name: undefined,
       cacheGroups: {
         commons: {
-          test: [31m/node_modules[\\\\\\\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\\\\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\\\\.js)[\\\\\\\\/]/[39m,
-          chunks: [32m'all'[39m,
-          priority: [33m10[39m,
-          name: [33mtrue[39m
+          test: /node_modules[\\\\\\\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\\\\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\\\\.js)[\\\\\\\\/]/,
+          chunks: 'all',
+          priority: 10,
+          name: true
         }
       }
     }
   },
   output: {
-    path: [32m'/home/pooya/Code/nuxt.js/.nuxt/dist/client'[39m,
-    filename: [32m'[contenthash].js'[39m,
-    futureEmitAssets: [33mtrue[39m,
-    chunkFilename: [32m'[contenthash].js'[39m,
-    publicPath: [32m'/_nuxt/'[39m
+    path: '/home/pooya/Code/nuxt.js/.nuxt/dist/client',
+    filename: '[contenthash].js',
+    futureEmitAssets: true,
+    chunkFilename: '[contenthash].js',
+    publicPath: '/_nuxt/'
   },
-  performance: { maxEntrypointSize: [33m1024000[39m, hints: [32m'warning'[39m },
+  performance: { maxEntrypointSize: 1024000, hints: 'warning' },
   module: {
     rules: [
       {
-        test: [31m/\\\\.vue$/i[39m,
-        loader: [32m'vue-loader'[39m,
+        test: /\\\\.vue$/i,
+        loader: 'vue-loader',
         options: {
-          transformAssetUrls: { video: [32m'src'[39m, source: [32m'src'[39m, object: [32m'src'[39m, embed: [32m'src'[39m },
-          productionMode: [33mtrue[39m
+          transformAssetUrls: { video: 'src', source: 'src', object: 'src', embed: 'src' },
+          productionMode: true
         }
       },
       {
-        test: [31m/\\\\.pug$/i[39m,
+        test: /\\\\.pug$/i,
         oneOf: [
           {
-            resourceQuery: [31m/^\\\\?vue/i[39m,
-            use: [ { loader: [32m'pug-plain-loader'[39m, options: {} } ]
+            resourceQuery: /^\\\\?vue/i,
+            use: [ { loader: 'pug-plain-loader', options: {} } ]
           },
           {
             use: [
-              [32m'raw-loader'[39m,
-              { loader: [32m'pug-plain-loader'[39m, options: {} }
+              'raw-loader',
+              { loader: 'pug-plain-loader', options: {} }
             ]
           }
         ]
       },
       {
-        test: [31m/\\\\.jsx?$/i[39m,
-        exclude: [36m[Function: exclude][39m,
+        test: /\\\\.jsx?$/i,
+        exclude: [Function: exclude],
         use: [
           {
-            loader: [32m'/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js'[39m,
+            loader: '/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js',
             options: {
-              configFile: [33mfalse[39m,
-              babelrc: [33mfalse[39m,
-              cacheDirectory: [33mfalse[39m,
-              envName: [32m'client'[39m,
+              configFile: false,
+              babelrc: false,
+              cacheDirectory: false,
+              envName: 'client',
               presets: [
                 [
-                  [32m'/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js'[39m,
+                  '/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js',
                   {}
                 ]
               ]
@@ -1084,47 +1084,47 @@ Array [
         ]
       },
       {
-        test: [31m/\\\\.css$/i[39m,
+        test: /\\\\.css$/i,
         oneOf: [
           {
-            resourceQuery: [31m/module/[39m,
+            resourceQuery: /module/,
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               }
             ]
@@ -1132,40 +1132,40 @@ Array [
           {
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               }
             ]
@@ -1173,47 +1173,47 @@ Array [
         ]
       },
       {
-        test: [31m/\\\\.p(ost)?css$/i[39m,
+        test: /\\\\.p(ost)?css$/i,
         oneOf: [
           {
-            resourceQuery: [31m/module/[39m,
+            resourceQuery: /module/,
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               }
             ]
@@ -1221,40 +1221,40 @@ Array [
           {
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               }
             ]
@@ -1262,411 +1262,411 @@ Array [
         ]
       },
       {
-        test: [31m/\\\\.less$/i[39m,
+        test: /\\\\.less$/i,
         oneOf: [
           {
-            resourceQuery: [31m/module/[39m,
+            resourceQuery: /module/,
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               },
-              { loader: [32m'less-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+              { loader: 'less-loader', options: { sourceMap: false } }
             ]
           },
           {
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               },
-              { loader: [32m'less-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+              { loader: 'less-loader', options: { sourceMap: false } }
             ]
           }
         ]
       },
       {
-        test: [31m/\\\\.sass$/i[39m,
+        test: /\\\\.sass$/i,
         oneOf: [
           {
-            resourceQuery: [31m/module/[39m,
+            resourceQuery: /module/,
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               },
               {
-                loader: [32m'sass-loader'[39m,
+                loader: 'sass-loader',
                 options: {
-                  sassOptions: { indentedSyntax: [33mtrue[39m },
-                  sourceMap: [33mfalse[39m
+                  sassOptions: { indentedSyntax: true },
+                  sourceMap: false
                 }
-              }
-            ]
-          },
-          {
-            use: [
-              {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
-              },
-              {
-                loader: [32m'css-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
-                }
-              },
-              {
-                loader: [32m'postcss-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  plugins: [
-                    [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    }
-                  ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
-                }
-              },
-              {
-                loader: [32m'sass-loader'[39m,
-                options: {
-                  sassOptions: { indentedSyntax: [33mtrue[39m },
-                  sourceMap: [33mfalse[39m
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        test: [31m/\\\\.scss$/i[39m,
-        oneOf: [
-          {
-            resourceQuery: [31m/module/[39m,
-            use: [
-              {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
-              },
-              {
-                loader: [32m'css-loader'[39m,
-                options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
-                }
-              },
-              {
-                loader: [32m'postcss-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  plugins: [
-                    [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    }
-                  ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
-                }
-              },
-              { loader: [32m'sass-loader'[39m, options: { sourceMap: [33mfalse[39m } }
-            ]
-          },
-          {
-            use: [
-              {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
-              },
-              {
-                loader: [32m'css-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
-                }
-              },
-              {
-                loader: [32m'postcss-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  plugins: [
-                    [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    }
-                  ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
-                }
-              },
-              { loader: [32m'sass-loader'[39m, options: { sourceMap: [33mfalse[39m } }
-            ]
-          }
-        ]
-      },
-      {
-        test: [31m/\\\\.styl(us)?$/i[39m,
-        oneOf: [
-          {
-            resourceQuery: [31m/module/[39m,
-            use: [
-              {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
-              },
-              {
-                loader: [32m'css-loader'[39m,
-                options: {
-                  modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
-                }
-              },
-              {
-                loader: [32m'postcss-loader'[39m,
-                options: {
-                  sourceMap: [33mfalse[39m,
-                  plugins: [
-                    [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    },
-                    [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
-                    }
-                  ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
-                }
-              },
-              {
-                loader: [32m'stylus-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
               }
             ]
           },
           {
             use: [
               {
-                loader: [32m'vue-style-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
               },
               {
-                loader: [32m'css-loader'[39m,
+                loader: 'css-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
-                  importLoaders: [33m2[39m,
-                  onlyLocals: [33mfalse[39m
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
                 }
               },
               {
-                loader: [32m'postcss-loader'[39m,
+                loader: 'postcss-loader',
                 options: {
-                  sourceMap: [33mfalse[39m,
+                  sourceMap: false,
                   plugins: [
                     [Function] {
-                      postcssPlugin: [32m'postcss-import'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-url'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'postcss-preset-env'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
                     },
                     [Function] {
-                      postcssPlugin: [32m'cssnano'[39m,
-                      postcssVersion: [32m'7.0.27'[39m
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
                     }
                   ],
-                  order: [32m'presetEnvAndCssnanoLast'[39m
+                  order: 'presetEnvAndCssnanoLast'
                 }
               },
               {
-                loader: [32m'stylus-loader'[39m,
-                options: { sourceMap: [33mfalse[39m }
+                loader: 'sass-loader',
+                options: {
+                  sassOptions: { indentedSyntax: true },
+                  sourceMap: false
+                }
               }
             ]
           }
         ]
       },
       {
-        test: [31m/\\\\.(png|jpe?g|gif|svg|webp)$/i[39m,
+        test: /\\\\.scss$/i,
+        oneOf: [
+          {
+            resourceQuery: /module/,
+            use: [
+              {
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
+              },
+              {
+                loader: 'css-loader',
+                options: {
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
+                }
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  sourceMap: false,
+                  plugins: [
+                    [Function] {
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
+                    }
+                  ],
+                  order: 'presetEnvAndCssnanoLast'
+                }
+              },
+              { loader: 'sass-loader', options: { sourceMap: false } }
+            ]
+          },
+          {
+            use: [
+              {
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
+              },
+              {
+                loader: 'css-loader',
+                options: {
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
+                }
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  sourceMap: false,
+                  plugins: [
+                    [Function] {
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
+                    }
+                  ],
+                  order: 'presetEnvAndCssnanoLast'
+                }
+              },
+              { loader: 'sass-loader', options: { sourceMap: false } }
+            ]
+          }
+        ]
+      },
+      {
+        test: /\\\\.styl(us)?$/i,
+        oneOf: [
+          {
+            resourceQuery: /module/,
+            use: [
+              {
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
+              },
+              {
+                loader: 'css-loader',
+                options: {
+                  modules: { localIdentName: '[local]_[hash:base64:5]' },
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
+                }
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  sourceMap: false,
+                  plugins: [
+                    [Function] {
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
+                    }
+                  ],
+                  order: 'presetEnvAndCssnanoLast'
+                }
+              },
+              {
+                loader: 'stylus-loader',
+                options: { sourceMap: false }
+              }
+            ]
+          },
+          {
+            use: [
+              {
+                loader: 'vue-style-loader',
+                options: { sourceMap: false }
+              },
+              {
+                loader: 'css-loader',
+                options: {
+                  sourceMap: false,
+                  importLoaders: 2,
+                  onlyLocals: false
+                }
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  sourceMap: false,
+                  plugins: [
+                    [Function] {
+                      postcssPlugin: 'postcss-import',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-url',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'postcss-preset-env',
+                      postcssVersion: '7.0.27'
+                    },
+                    [Function] {
+                      postcssPlugin: 'cssnano',
+                      postcssVersion: '7.0.27'
+                    }
+                  ],
+                  order: 'presetEnvAndCssnanoLast'
+                }
+              },
+              {
+                loader: 'stylus-loader',
+                options: { sourceMap: false }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        test: /\\\\.(png|jpe?g|gif|svg|webp)$/i,
         use: [
           {
-            loader: [32m'url-loader'[39m,
-            options: { limit: [33m1000[39m, name: [32m'img/[contenthash:7].[ext]'[39m }
+            loader: 'url-loader',
+            options: { limit: 1000, name: 'img/[contenthash:7].[ext]' }
           }
         ]
       },
       {
-        test: [31m/\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i[39m,
+        test: /\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i,
         use: [
           {
-            loader: [32m'url-loader'[39m,
-            options: { limit: [33m1000[39m, name: [32m'fonts/[contenthash:7].[ext]'[39m }
+            loader: 'url-loader',
+            options: { limit: 1000, name: 'fonts/[contenthash:7].[ext]' }
           }
         ]
       },
       {
-        test: [31m/\\\\.(webm|mp4|ogv)$/i[39m,
+        test: /\\\\.(webm|mp4|ogv)$/i,
         use: [
           {
-            loader: [32m'file-loader'[39m,
-            options: { name: [32m'videos/[contenthash:7].[ext]'[39m }
+            loader: 'file-loader',
+            options: { name: 'videos/[contenthash:7].[ext]' }
           }
         ]
       }
@@ -1674,151 +1674,151 @@ Array [
   },
   plugins: [
     VueLoaderPlugin {},
-    WarningIgnorePlugin { filter: [36m[Function][39m },
+    WarningIgnorePlugin { filter: [Function] },
     WebpackBarPlugin {
-      profile: [33mfalse[39m,
-      handler: [36m[Function][39m,
-      modulesCount: [33m500[39m,
-      showEntries: [33mfalse[39m,
-      showModules: [33mtrue[39m,
-      showActiveModules: [33mtrue[39m,
+      profile: false,
+      handler: [Function],
+      modulesCount: 500,
+      showEntries: false,
+      showModules: true,
+      showActiveModules: true,
       options: {
-        name: [32m'client'[39m,
-        color: [32m'green'[39m,
-        reporters: [ [32m'basic'[39m, [32m'fancy'[39m, [32m'profile'[39m, [32m'stats'[39m ],
+        name: 'client',
+        color: 'green',
+        reporters: [ 'basic', 'fancy', 'profile', 'stats' ],
         reporter: {
-          change: [36m[Function: change][39m,
-          done: [36m[Function: done][39m,
-          allDone: [36m[Function: allDone][39m,
-          progress: [36m[Function: progress][39m
+          change: [Function: change],
+          done: [Function: done],
+          allDone: [Function: allDone],
+          progress: [Function: progress]
         },
-        basic: [33mfalse[39m,
-        fancy: [33mfalse[39m,
-        profile: [33mfalse[39m,
-        stats: [33mfalse[39m
+        basic: false,
+        fancy: false,
+        profile: false,
+        stats: false
       },
       reporters: [
         {
-          change: [36m[Function: change][39m,
-          done: [36m[Function: done][39m,
-          allDone: [36m[Function: allDone][39m,
-          progress: [36m[Function: progress][39m
+          change: [Function: change],
+          done: [Function: done],
+          allDone: [Function: allDone],
+          progress: [Function: progress]
         }
       ]
     },
     HtmlWebpackPlugin {
       options: {
-        template: [32m'/home/pooya/Code/nuxt.js/.nuxt/views/app.template.html'[39m,
-        templateParameters: [36m[Function: templateParametersGenerator][39m,
-        filename: [32m'../server/index.ssr.html'[39m,
-        hash: [33mfalse[39m,
-        inject: [33mfalse[39m,
-        compile: [33mtrue[39m,
-        favicon: [33mfalse[39m,
+        template: '/home/pooya/Code/nuxt.js/.nuxt/views/app.template.html',
+        templateParameters: [Function: templateParametersGenerator],
+        filename: '../server/index.ssr.html',
+        hash: false,
+        inject: false,
+        compile: true,
+        favicon: false,
         minify: {
-          collapseBooleanAttributes: [33mtrue[39m,
-          decodeEntities: [33mtrue[39m,
-          minifyCSS: [33mtrue[39m,
-          minifyJS: [33mtrue[39m,
-          processConditionalComments: [33mtrue[39m,
-          removeEmptyAttributes: [33mtrue[39m,
-          removeRedundantAttributes: [33mtrue[39m,
-          trimCustomFragments: [33mtrue[39m,
-          useShortDoctype: [33mtrue[39m
+          collapseBooleanAttributes: true,
+          decodeEntities: true,
+          minifyCSS: true,
+          minifyJS: true,
+          processConditionalComments: true,
+          removeEmptyAttributes: true,
+          removeRedundantAttributes: true,
+          trimCustomFragments: true,
+          useShortDoctype: true
         },
-        cache: [33mtrue[39m,
-        showErrors: [33mtrue[39m,
-        chunks: [32m'all'[39m,
+        cache: true,
+        showErrors: true,
+        chunks: 'all',
         excludeChunks: [],
-        chunksSortMode: [32m'auto'[39m,
+        chunksSortMode: 'auto',
         meta: {},
-        title: [32m'Webpack App'[39m,
-        xhtml: [33mfalse[39m
+        title: 'Webpack App',
+        xhtml: false
       }
     },
     HtmlWebpackPlugin {
       options: {
-        template: [32m'/home/pooya/Code/nuxt.js/.nuxt/views/app.template.html'[39m,
-        templateParameters: [36m[Function: templateParametersGenerator][39m,
-        filename: [32m'../server/index.spa.html'[39m,
-        hash: [33mfalse[39m,
-        inject: [33mtrue[39m,
-        compile: [33mtrue[39m,
-        favicon: [33mfalse[39m,
+        template: '/home/pooya/Code/nuxt.js/.nuxt/views/app.template.html',
+        templateParameters: [Function: templateParametersGenerator],
+        filename: '../server/index.spa.html',
+        hash: false,
+        inject: true,
+        compile: true,
+        favicon: false,
         minify: {
-          collapseBooleanAttributes: [33mtrue[39m,
-          decodeEntities: [33mtrue[39m,
-          minifyCSS: [33mtrue[39m,
-          minifyJS: [33mtrue[39m,
-          processConditionalComments: [33mtrue[39m,
-          removeEmptyAttributes: [33mtrue[39m,
-          removeRedundantAttributes: [33mtrue[39m,
-          trimCustomFragments: [33mtrue[39m,
-          useShortDoctype: [33mtrue[39m
+          collapseBooleanAttributes: true,
+          decodeEntities: true,
+          minifyCSS: true,
+          minifyJS: true,
+          processConditionalComments: true,
+          removeEmptyAttributes: true,
+          removeRedundantAttributes: true,
+          trimCustomFragments: true,
+          useShortDoctype: true
         },
-        cache: [33mtrue[39m,
-        showErrors: [33mtrue[39m,
-        chunks: [32m'all'[39m,
+        cache: true,
+        showErrors: true,
+        chunks: 'all',
         excludeChunks: [],
-        chunksSortMode: [32m'dependency'[39m,
+        chunksSortMode: 'dependency',
         meta: {},
-        title: [32m'Webpack App'[39m,
-        xhtml: [33mfalse[39m
+        title: 'Webpack App',
+        xhtml: false
       }
     },
     VueSSRClientPlugin {
-      options: { filename: [32m'../server/client.manifest.json'[39m }
+      options: { filename: '../server/client.manifest.json' }
     },
     DefinePlugin {
       definitions: {
-        [32m'process.env.NODE_ENV'[39m: [32m'\\"production\\"'[39m,
-        [32m'process.mode'[39m: [32m'\\"production\\"'[39m,
-        [32m'process.static'[39m: [33mfalse[39m,
-        [32m'process.env.VUE_ENV'[39m: [32m'\\"client\\"'[39m,
-        [32m'process.browser'[39m: [33mtrue[39m,
-        [32m'process.client'[39m: [33mtrue[39m,
-        [32m'process.server'[39m: [33mfalse[39m,
-        [32m'process.modern'[39m: [33mfalse[39m
+        'process.env.NODE_ENV': '\\"production\\"',
+        'process.mode': '\\"production\\"',
+        'process.static': false,
+        'process.env.VUE_ENV': '\\"client\\"',
+        'process.browser': true,
+        'process.client': true,
+        'process.server': false,
+        'process.modern': false
       }
     }
   ],
   resolve: {
-    extensions: [ [32m'.wasm'[39m, [32m'.mjs'[39m, [32m'.js'[39m, [32m'.json'[39m, [32m'.vue'[39m, [32m'.jsx'[39m ],
+    extensions: [ '.wasm', '.mjs', '.js', '.json', '.vue', '.jsx' ],
     alias: {
-      [32m'~~'[39m: [32m'/home/pooya/Code/nuxt.js'[39m,
-      [32m'@@'[39m: [32m'/home/pooya/Code/nuxt.js'[39m,
-      [32m'~'[39m: [32m'/home/pooya/Code/nuxt.js'[39m,
-      [32m'@'[39m: [32m'/home/pooya/Code/nuxt.js'[39m,
-      assets: [32m'/home/pooya/Code/nuxt.js/assets'[39m,
-      static: [32m'/home/pooya/Code/nuxt.js/static'[39m,
-      [32m'vue-meta'[39m: [32m'/home/pooya/Code/nuxt.js/node_modules/vue-meta/dist/vue-meta.esm.browser.js'[39m
+      '~~': '/home/pooya/Code/nuxt.js',
+      '@@': '/home/pooya/Code/nuxt.js',
+      '~': '/home/pooya/Code/nuxt.js',
+      '@': '/home/pooya/Code/nuxt.js',
+      assets: '/home/pooya/Code/nuxt.js/assets',
+      static: '/home/pooya/Code/nuxt.js/static',
+      'vue-meta': '/home/pooya/Code/nuxt.js/node_modules/vue-meta/dist/vue-meta.esm.browser.js'
     },
     modules: [
-      [32m'node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/utils/src/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/utils/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/node_modules'[39m,
-      [32m'/home/pooya/Code/node_modules'[39m,
-      [32m'/home/pooya/node_modules'[39m,
-      [32m'/home/node_modules'[39m,
-      [32m'/node_modules'[39m
+      'node_modules',
+      '/home/pooya/Code/nuxt.js/packages/utils/src/node_modules',
+      '/home/pooya/Code/nuxt.js/packages/utils/node_modules',
+      '/home/pooya/Code/nuxt.js/packages/node_modules',
+      '/home/pooya/Code/nuxt.js/node_modules',
+      '/home/pooya/Code/node_modules',
+      '/home/pooya/node_modules',
+      '/home/node_modules',
+      '/node_modules'
     ]
   },
   resolveLoader: {
     modules: [
-      [32m'node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/utils/src/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/utils/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/packages/node_modules'[39m,
-      [32m'/home/pooya/Code/nuxt.js/node_modules'[39m,
-      [32m'/home/pooya/Code/node_modules'[39m,
-      [32m'/home/pooya/node_modules'[39m,
-      [32m'/home/node_modules'[39m,
-      [32m'/node_modules'[39m
+      'node_modules',
+      '/home/pooya/Code/nuxt.js/packages/utils/src/node_modules',
+      '/home/pooya/Code/nuxt.js/packages/utils/node_modules',
+      '/home/pooya/Code/nuxt.js/packages/node_modules',
+      '/home/pooya/Code/nuxt.js/node_modules',
+      '/home/pooya/Code/node_modules',
+      '/home/pooya/node_modules',
+      '/home/node_modules',
+      '/node_modules'
     ]
   },
-  entry: { app: [ [32m'/home/pooya/Code/nuxt.js/.nuxt/client.js'[39m ] }
+  entry: { app: [ '/home/pooya/Code/nuxt.js/.nuxt/client.js' ] }
 }
 ",
 ]
@@ -1826,7 +1826,7 @@ Array [
 
 exports[`webpack nuxt webpack devtool 1`] = `
 Array [
-  "[33mfalse[39m
+  "false
 ",
 ]
 `;
@@ -1835,39 +1835,39 @@ exports[`webpack nuxt webpack module.rules 1`] = `
 Array [
   "[
   {
-    test: [31m/\\\\.vue$/i[39m,
-    loader: [32m'vue-loader'[39m,
+    test: /\\\\.vue$/i,
+    loader: 'vue-loader',
     options: {
-      transformAssetUrls: { video: [32m'src'[39m, source: [32m'src'[39m, object: [32m'src'[39m, embed: [32m'src'[39m },
-      productionMode: [33mtrue[39m
+      transformAssetUrls: { video: 'src', source: 'src', object: 'src', embed: 'src' },
+      productionMode: true
     }
   },
   {
-    test: [31m/\\\\.pug$/i[39m,
+    test: /\\\\.pug$/i,
     oneOf: [
       {
-        resourceQuery: [31m/^\\\\?vue/i[39m,
-        use: [ { loader: [32m'pug-plain-loader'[39m, options: {} } ]
+        resourceQuery: /^\\\\?vue/i,
+        use: [ { loader: 'pug-plain-loader', options: {} } ]
       },
       {
-        use: [ [32m'raw-loader'[39m, { loader: [32m'pug-plain-loader'[39m, options: {} } ]
+        use: [ 'raw-loader', { loader: 'pug-plain-loader', options: {} } ]
       }
     ]
   },
   {
-    test: [31m/\\\\.jsx?$/i[39m,
-    exclude: [36m[Function: exclude][39m,
+    test: /\\\\.jsx?$/i,
+    exclude: [Function: exclude],
     use: [
       {
-        loader: [32m'/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js'[39m,
+        loader: '/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js',
         options: {
-          configFile: [33mfalse[39m,
-          babelrc: [33mfalse[39m,
-          cacheDirectory: [33mfalse[39m,
-          envName: [32m'client'[39m,
+          configFile: false,
+          babelrc: false,
+          cacheDirectory: false,
+          envName: 'client',
           presets: [
             [
-              [32m'/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js'[39m,
+              '/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js',
               {}
             ]
           ]
@@ -1876,157 +1876,78 @@ Array [
     ]
   },
   {
-    test: [31m/\\\\.css$/i[39m,
+    test: /\\\\.css$/i,
     oneOf: [
       {
-        resourceQuery: [31m/module/[39m,
+        resourceQuery: /module/,
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
+            loader: 'css-loader',
             options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
             }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           }
         ]
       },
       {
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    test: [31m/\\\\.p(ost)?css$/i[39m,
-    oneOf: [
-      {
-        resourceQuery: [31m/module/[39m,
-        use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
-          {
-            loader: [32m'css-loader'[39m,
-            options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
-            }
-          },
-          {
-            loader: [32m'postcss-loader'[39m,
-            options: {
-              sourceMap: [33mfalse[39m,
-              plugins: [
-                [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                }
-              ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
-            }
-          }
-        ]
-      },
-      {
-        use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
-          {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
-          },
-          {
-            loader: [32m'postcss-loader'[39m,
-            options: {
-              sourceMap: [33mfalse[39m,
-              plugins: [
-                [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                }
-              ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           }
         ]
@@ -2034,359 +1955,438 @@ Array [
     ]
   },
   {
-    test: [31m/\\\\.less$/i[39m,
+    test: /\\\\.p(ost)?css$/i,
     oneOf: [
       {
-        resourceQuery: [31m/module/[39m,
+        resourceQuery: /module/,
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
+            loader: 'css-loader',
             options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
             }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
-          },
-          { loader: [32m'less-loader'[39m, options: { sourceMap: [33mfalse[39m } }
-        ]
-      },
-      {
-        use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
-          {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
-          },
-          {
-            loader: [32m'postcss-loader'[39m,
-            options: {
-              sourceMap: [33mfalse[39m,
-              plugins: [
-                [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                }
-              ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
-            }
-          },
-          { loader: [32m'less-loader'[39m, options: { sourceMap: [33mfalse[39m } }
-        ]
-      }
-    ]
-  },
-  {
-    test: [31m/\\\\.sass$/i[39m,
-    oneOf: [
-      {
-        resourceQuery: [31m/module/[39m,
-        use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
-          {
-            loader: [32m'css-loader'[39m,
-            options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
-            }
-          },
-          {
-            loader: [32m'postcss-loader'[39m,
-            options: {
-              sourceMap: [33mfalse[39m,
-              plugins: [
-                [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                },
-                [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
-                }
-              ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
-            }
-          },
-          {
-            loader: [32m'sass-loader'[39m,
-            options: { sassOptions: { indentedSyntax: [33mtrue[39m }, sourceMap: [33mfalse[39m }
           }
         ]
       },
       {
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
-          },
-          {
-            loader: [32m'sass-loader'[39m,
-            options: { sassOptions: { indentedSyntax: [33mtrue[39m }, sourceMap: [33mfalse[39m }
           }
         ]
       }
     ]
   },
   {
-    test: [31m/\\\\.scss$/i[39m,
+    test: /\\\\.less$/i,
     oneOf: [
       {
-        resourceQuery: [31m/module/[39m,
+        resourceQuery: /module/,
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
+            loader: 'css-loader',
             options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
             }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           },
-          { loader: [32m'sass-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+          { loader: 'less-loader', options: { sourceMap: false } }
         ]
       },
       {
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           },
-          { loader: [32m'sass-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+          { loader: 'less-loader', options: { sourceMap: false } }
         ]
       }
     ]
   },
   {
-    test: [31m/\\\\.styl(us)?$/i[39m,
+    test: /\\\\.sass$/i,
     oneOf: [
       {
-        resourceQuery: [31m/module/[39m,
+        resourceQuery: /module/,
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
+            loader: 'css-loader',
             options: {
-              modules: { localIdentName: [32m'[local]_[hash:base64:5]'[39m },
-              sourceMap: [33mfalse[39m,
-              importLoaders: [33m2[39m,
-              onlyLocals: [33mfalse[39m
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
             }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           },
-          { loader: [32m'stylus-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+          {
+            loader: 'sass-loader',
+            options: { sassOptions: { indentedSyntax: true }, sourceMap: false }
+          }
         ]
       },
       {
         use: [
-          { loader: [32m'vue-style-loader'[39m, options: { sourceMap: [33mfalse[39m } },
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
           {
-            loader: [32m'css-loader'[39m,
-            options: { sourceMap: [33mfalse[39m, importLoaders: [33m2[39m, onlyLocals: [33mfalse[39m }
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
           },
           {
-            loader: [32m'postcss-loader'[39m,
+            loader: 'postcss-loader',
             options: {
-              sourceMap: [33mfalse[39m,
+              sourceMap: false,
               plugins: [
                 [Function] {
-                  postcssPlugin: [32m'postcss-import'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-url'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'postcss-preset-env'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
                 },
                 [Function] {
-                  postcssPlugin: [32m'cssnano'[39m,
-                  postcssVersion: [32m'7.0.27'[39m
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
                 }
               ],
-              order: [32m'presetEnvAndCssnanoLast'[39m
+              order: 'presetEnvAndCssnanoLast'
             }
           },
-          { loader: [32m'stylus-loader'[39m, options: { sourceMap: [33mfalse[39m } }
+          {
+            loader: 'sass-loader',
+            options: { sassOptions: { indentedSyntax: true }, sourceMap: false }
+          }
         ]
       }
     ]
   },
   {
-    test: [31m/\\\\.(png|jpe?g|gif|svg|webp)$/i[39m,
+    test: /\\\\.scss$/i,
+    oneOf: [
+      {
+        resourceQuery: /module/,
+        use: [
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: false,
+              plugins: [
+                [Function] {
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
+                }
+              ],
+              order: 'presetEnvAndCssnanoLast'
+            }
+          },
+          { loader: 'sass-loader', options: { sourceMap: false } }
+        ]
+      },
+      {
+        use: [
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
+          {
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: false,
+              plugins: [
+                [Function] {
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
+                }
+              ],
+              order: 'presetEnvAndCssnanoLast'
+            }
+          },
+          { loader: 'sass-loader', options: { sourceMap: false } }
+        ]
+      }
+    ]
+  },
+  {
+    test: /\\\\.styl(us)?$/i,
+    oneOf: [
+      {
+        resourceQuery: /module/,
+        use: [
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: { localIdentName: '[local]_[hash:base64:5]' },
+              sourceMap: false,
+              importLoaders: 2,
+              onlyLocals: false
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: false,
+              plugins: [
+                [Function] {
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
+                }
+              ],
+              order: 'presetEnvAndCssnanoLast'
+            }
+          },
+          { loader: 'stylus-loader', options: { sourceMap: false } }
+        ]
+      },
+      {
+        use: [
+          { loader: 'vue-style-loader', options: { sourceMap: false } },
+          {
+            loader: 'css-loader',
+            options: { sourceMap: false, importLoaders: 2, onlyLocals: false }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: false,
+              plugins: [
+                [Function] {
+                  postcssPlugin: 'postcss-import',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-url',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'postcss-preset-env',
+                  postcssVersion: '7.0.27'
+                },
+                [Function] {
+                  postcssPlugin: 'cssnano',
+                  postcssVersion: '7.0.27'
+                }
+              ],
+              order: 'presetEnvAndCssnanoLast'
+            }
+          },
+          { loader: 'stylus-loader', options: { sourceMap: false } }
+        ]
+      }
+    ]
+  },
+  {
+    test: /\\\\.(png|jpe?g|gif|svg|webp)$/i,
     use: [
       {
-        loader: [32m'url-loader'[39m,
-        options: { limit: [33m1000[39m, name: [32m'img/[contenthash:7].[ext]'[39m }
+        loader: 'url-loader',
+        options: { limit: 1000, name: 'img/[contenthash:7].[ext]' }
       }
     ]
   },
   {
-    test: [31m/\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i[39m,
+    test: /\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i,
     use: [
       {
-        loader: [32m'url-loader'[39m,
-        options: { limit: [33m1000[39m, name: [32m'fonts/[contenthash:7].[ext]'[39m }
+        loader: 'url-loader',
+        options: { limit: 1000, name: 'fonts/[contenthash:7].[ext]' }
       }
     ]
   },
   {
-    test: [31m/\\\\.(webm|mp4|ogv)$/i[39m,
+    test: /\\\\.(webm|mp4|ogv)$/i,
     use: [
       {
-        loader: [32m'file-loader'[39m,
-        options: { name: [32m'videos/[contenthash:7].[ext]'[39m }
+        loader: 'file-loader',
+        options: { name: 'videos/[contenthash:7].[ext]' }
       }
     ]
   }
@@ -2398,11 +2398,11 @@ Array [
 exports[`webpack nuxt webpack module.rules loader=.*-loader 1`] = `
 Array [
   "{
-  test: [31m/\\\\.vue$/i[39m,
-  loader: [32m'vue-loader'[39m,
+  test: /\\\\.vue$/i,
+  loader: 'vue-loader',
   options: {
-    transformAssetUrls: { video: [32m'src'[39m, source: [32m'src'[39m, object: [32m'src'[39m, embed: [32m'src'[39m },
-    productionMode: [33mtrue[39m
+    transformAssetUrls: { video: 'src', source: 'src', object: 'src', embed: 'src' },
+    productionMode: true
   }
 }
 ",
@@ -2412,11 +2412,11 @@ Array [
 exports[`webpack nuxt webpack module.rules loader=vue- 1`] = `
 Array [
   "{
-  test: [31m/\\\\.vue$/i[39m,
-  loader: [32m'vue-loader'[39m,
+  test: /\\\\.vue$/i,
+  loader: 'vue-loader',
   options: {
-    transformAssetUrls: { video: [32m'src'[39m, source: [32m'src'[39m, object: [32m'src'[39m, embed: [32m'src'[39m },
-    productionMode: [33mtrue[39m
+    transformAssetUrls: { video: 'src', source: 'src', object: 'src', embed: 'src' },
+    productionMode: true
   }
 }
 ",
@@ -2426,19 +2426,19 @@ Array [
 exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
 Array [
   "{
-  test: [31m/\\\\.jsx?$/i[39m,
-  exclude: [36m[Function: exclude][39m,
+  test: /\\\\.jsx?$/i,
+  exclude: [Function: exclude],
   use: [
     {
-      loader: [32m'/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js'[39m,
+      loader: '/home/pooya/Code/nuxt.js/node_modules/babel-loader/lib/index.js',
       options: {
-        configFile: [33mfalse[39m,
-        babelrc: [33mfalse[39m,
-        cacheDirectory: [33mfalse[39m,
-        envName: [32m'client'[39m,
+        configFile: false,
+        babelrc: false,
+        cacheDirectory: false,
+        envName: 'client',
         presets: [
           [
-            [32m'/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js'[39m,
+            '/home/pooya/Code/nuxt.js/packages/babel-preset-app/src/index.js',
             {}
           ]
         ]
@@ -2453,13 +2453,13 @@ Array [
 exports[`webpack nuxt webpack resolve alias 1`] = `
 Array [
   "{
-  [32m'~~'[39m: [32m'/home/pooya/Code/nuxt.js/resolve'[39m,
-  [32m'@@'[39m: [32m'/home/pooya/Code/nuxt.js/resolve'[39m,
-  [32m'~'[39m: [32m'/home/pooya/Code/nuxt.js/resolve'[39m,
-  [32m'@'[39m: [32m'/home/pooya/Code/nuxt.js/resolve'[39m,
-  assets: [32m'/home/pooya/Code/nuxt.js/resolve/assets'[39m,
-  static: [32m'/home/pooya/Code/nuxt.js/resolve/static'[39m,
-  [32m'vue-meta'[39m: [32m'/home/pooya/Code/nuxt.js/node_modules/vue-meta/dist/vue-meta.esm.browser.js'[39m
+  '~~': '/home/pooya/Code/nuxt.js/resolve',
+  '@@': '/home/pooya/Code/nuxt.js/resolve',
+  '~': '/home/pooya/Code/nuxt.js/resolve',
+  '@': '/home/pooya/Code/nuxt.js/resolve',
+  assets: '/home/pooya/Code/nuxt.js/resolve/assets',
+  static: '/home/pooya/Code/nuxt.js/resolve/static',
+  'vue-meta': '/home/pooya/Code/nuxt.js/node_modules/vue-meta/dist/vue-meta.esm.browser.js'
 }
 ",
 ]
