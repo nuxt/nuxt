@@ -1,5 +1,4 @@
 import consola from 'consola'
-import prettyFormat from 'pretty-format'
 import { NuxtCommand, getWebpackConfig } from '../..'
 import webpackCommand from '../../src/commands/webpack'
 
@@ -24,7 +23,7 @@ describe('webpack', () => {
 
   test('getWebpackConfig()', async () => {
     const webpackConfig = await getWebpackConfig('Client')
-    expect(formatWebpackConfig(webpackConfig)).toMatchSnapshot()
+    expect(webpackConfig.module.rules[0]).toMatchSnapshot()
   })
 
   test('nuxt webpack no match', async () => {
@@ -38,11 +37,7 @@ describe('webpack', () => {
     test('nuxt webpack ' + testCase, async () => {
       const cmd = NuxtCommand.from(webpackCommand, testCase.split(' '))
       await cmd.run()
-      expect(consola.log.mock.calls[0]).toMatchSnapshot()
+      expect(consola.log.mock.calls[0][0]).toMatchSnapshot()
     })
   }
 })
-
-function formatWebpackConfig (obj) {
-  return prettyFormat(obj).split(process.cwd()).join('<root>')
-}
