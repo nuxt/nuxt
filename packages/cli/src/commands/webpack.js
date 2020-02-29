@@ -25,13 +25,18 @@ export default {
       type: 'boolean',
       default: process.stdout.isTTY,
       description: 'Output with ANSI colors'
+    },
+    dev: {
+      type: 'boolean',
+      default: false,
+      description: 'Inspect development mode webpack config'
     }
   },
   async run (cmd) {
     const { name } = cmd.argv
     const queries = [...cmd.argv._]
 
-    const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
+    const config = await cmd.getNuxtConfig({ dev: cmd.argv.dev, server: false })
     const nuxt = await cmd.getNuxt(config)
     const builder = await cmd.getBuilder(nuxt)
     const { bundleBuilder } = builder
