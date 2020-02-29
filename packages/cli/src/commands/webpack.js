@@ -6,7 +6,7 @@ import { common } from '../options'
 export default {
   name: 'webpack',
   description: 'Inspect Nuxt webpack config',
-  usage: 'webpack [path] [prop=value]',
+  usage: 'webpack [query...]',
   options: {
     ...common,
     name: {
