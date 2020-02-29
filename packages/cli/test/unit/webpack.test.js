@@ -28,12 +28,12 @@ describe('webpack', () => {
     jest.resetAllMocks()
   })
 
-  test('getWebpackConfig()', async () => {
+  test.posix('getWebpackConfig()', async () => {
     const webpackConfig = await getWebpackConfig('Client')
     expect(maskDir(prettyFormat(webpackConfig.module.rules[0]))).toMatchSnapshot()
   })
 
-  test('nuxt webpack no match', async () => {
+  test.posix('nuxt webpack no match', async () => {
     const cmd = NuxtCommand.from(webpackCommand, ['module.rules', 'loader=foobar'])
     process.exit = jest.fn()
     await expect(cmd.run()).rejects
@@ -41,7 +41,7 @@ describe('webpack', () => {
   })
 
   for (const testCase of tests) {
-    test('nuxt webpack ' + testCase, async () => {
+    test.posix('nuxt webpack ' + testCase, async () => {
       const cmd = NuxtCommand.from(webpackCommand, testCase.split(' '))
       await cmd.run()
       expect(maskDir(consola.log.mock.calls[0][0])).toMatchSnapshot()
