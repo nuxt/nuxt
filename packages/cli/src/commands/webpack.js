@@ -57,23 +57,16 @@ function advancedGet (obj = {}, path = '', query = '') {
   result = result.filter((i) => {
     const v = get(i, l)
 
-    if (v === r) {
-      return true
-    }
-
     if (!v) {
       return
     }
 
-    if (typeof v.test === 'function' && v.test(r)) {
-      return true
-    }
-
-    if (typeof v.match === 'function' && v.match(r)) {
-      return true
-    }
-
-    if (r.match(v)) {
+    if (
+      (v === r) ||
+      (typeof v.test === 'function' && v.test(r)) ||
+      (typeof v.match === 'function' && v.match(r)) ||
+      (r.match(v))
+    ) {
       return true
     }
   })
