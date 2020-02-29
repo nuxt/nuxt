@@ -1,4 +1,5 @@
 import path from 'path'
+import util from 'util'
 import consola from 'consola'
 import prettyFormat from 'pretty-format'
 import { NuxtCommand, getWebpackConfig } from '../..'
@@ -20,6 +21,7 @@ const tests = [
 describe('webpack', () => {
   beforeAll(() => {
     process.stdout.isTTY = false
+    util.formatWithOptions = (opts, obj) => prettyFormat(obj)
   })
 
   afterEach(() => {
