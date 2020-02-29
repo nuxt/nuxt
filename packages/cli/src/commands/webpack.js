@@ -40,10 +40,11 @@ export default {
     let queryError
     const match = queries.reduce((result, query) => {
       const m = advancedGet(result, query)
-      if (!m) {
+      if (m === undefined) {
         queryError = query
+        return result
       }
-      return m || result
+      return m
     }, webpackConfig)
 
     consola.log(formatObj(match, {
