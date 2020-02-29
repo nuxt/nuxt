@@ -17,7 +17,961 @@ exports[`webpack getWebpackConfig() 1`] = `
 `;
 
 exports[`webpack nuxt webpack devtool 1`] = `
-"false
+"Object {
+  \\"devtool\\": false,
+  \\"entry\\": Object {
+    \\"app\\": Array [
+      \\"<nuxtDir>/devtool/.nuxt/client.js\\",
+    ],
+  },
+  \\"mode\\": \\"production\\",
+  \\"module\\": Object {
+    \\"rules\\": Array [
+      Object {
+        \\"loader\\": \\"vue-loader\\",
+        \\"options\\": Object {
+          \\"productionMode\\": true,
+          \\"transformAssetUrls\\": Object {
+            \\"embed\\": \\"src\\",
+            \\"object\\": \\"src\\",
+            \\"source\\": \\"src\\",
+            \\"video\\": \\"src\\",
+          },
+        },
+        \\"test\\": /\\\\.vue$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /^\\\\?vue/i,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"pug-plain-loader\\",
+                \\"options\\": Object {},
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              \\"raw-loader\\",
+              Object {
+                \\"loader\\": \\"pug-plain-loader\\",
+                \\"options\\": Object {},
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.pug$/i,
+      },
+      Object {
+        \\"exclude\\": [Function exclude],
+        \\"test\\": /\\\\.jsx?$/i,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
+            \\"options\\": Object {
+              \\"babelrc\\": false,
+              \\"cacheDirectory\\": false,
+              \\"configFile\\": false,
+              \\"envName\\": \\"client\\",
+              \\"presets\\": Array [
+                Array [
+                  \\"<nuxtDir>/packages/babel-preset-app/src/index.js\\",
+                  Object {},
+                ],
+              ],
+            },
+          },
+        ],
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.css$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.p(ost)?css$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"less-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"less-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.less$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"sass-loader\\",
+                \\"options\\": Object {
+                  \\"sassOptions\\": Object {
+                    \\"indentedSyntax\\": true,
+                  },
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"sass-loader\\",
+                \\"options\\": Object {
+                  \\"sassOptions\\": Object {
+                    \\"indentedSyntax\\": true,
+                  },
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.sass$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"sass-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"sass-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.scss$/i,
+      },
+      Object {
+        \\"oneOf\\": Array [
+          Object {
+            \\"resourceQuery\\": /module/,
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"modules\\": Object {
+                    \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+                  },
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"stylus-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+          Object {
+            \\"use\\": Array [
+              Object {
+                \\"loader\\": \\"vue-style-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"css-loader\\",
+                \\"options\\": Object {
+                  \\"importLoaders\\": 2,
+                  \\"onlyLocals\\": false,
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"postcss-loader\\",
+                \\"options\\": Object {
+                  \\"order\\": \\"presetEnvAndCssnanoLast\\",
+                  \\"plugins\\": Array [
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                    [Function anonymous],
+                  ],
+                  \\"sourceMap\\": false,
+                },
+              },
+              Object {
+                \\"loader\\": \\"stylus-loader\\",
+                \\"options\\": Object {
+                  \\"sourceMap\\": false,
+                },
+              },
+            ],
+          },
+        ],
+        \\"test\\": /\\\\.styl(us)?$/i,
+      },
+      Object {
+        \\"test\\": /\\\\.(png|jpe?g|gif|svg|webp)$/i,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"url-loader\\",
+            \\"options\\": Object {
+              \\"limit\\": 1000,
+              \\"name\\": \\"img/[contenthash:7].[ext]\\",
+            },
+          },
+        ],
+      },
+      Object {
+        \\"test\\": /\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"url-loader\\",
+            \\"options\\": Object {
+              \\"limit\\": 1000,
+              \\"name\\": \\"fonts/[contenthash:7].[ext]\\",
+            },
+          },
+        ],
+      },
+      Object {
+        \\"test\\": /\\\\.(webm|mp4|ogv)$/i,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"file-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"videos/[contenthash:7].[ext]\\",
+            },
+          },
+        ],
+      },
+    ],
+  },
+  \\"name\\": \\"client\\",
+  \\"optimization\\": Object {
+    \\"minimize\\": true,
+    \\"minimizer\\": Array [
+      TerserPlugin {
+        \\"options\\": Object {
+          \\"cache\\": false,
+          \\"cacheKeys\\": [Function cacheKeys],
+          \\"chunkFilter\\": [Function chunkFilter],
+          \\"exclude\\": undefined,
+          \\"extractComments\\": Object {
+            \\"condition\\": \\"some\\",
+            \\"filename\\": \\"LICENSES\\",
+          },
+          \\"include\\": undefined,
+          \\"minify\\": undefined,
+          \\"parallel\\": true,
+          \\"sourceMap\\": undefined,
+          \\"terserOptions\\": Object {
+            \\"compress\\": Object {
+              \\"ecma\\": undefined,
+            },
+            \\"mangle\\": Object {
+              \\"reserved\\": Array [
+                \\"html\\",
+                \\"body\\",
+                \\"base\\",
+                \\"head\\",
+                \\"link\\",
+                \\"meta\\",
+                \\"style\\",
+                \\"title\\",
+                \\"address\\",
+                \\"article\\",
+                \\"aside\\",
+                \\"footer\\",
+                \\"header\\",
+                \\"h1\\",
+                \\"h2\\",
+                \\"h3\\",
+                \\"h4\\",
+                \\"h5\\",
+                \\"h6\\",
+                \\"hgroup\\",
+                \\"nav\\",
+                \\"section\\",
+                \\"div\\",
+                \\"dd\\",
+                \\"dl\\",
+                \\"dt\\",
+                \\"figcaption\\",
+                \\"figure\\",
+                \\"picture\\",
+                \\"hr\\",
+                \\"img\\",
+                \\"li\\",
+                \\"main\\",
+                \\"ol\\",
+                \\"p\\",
+                \\"pre\\",
+                \\"ul\\",
+                \\"a\\",
+                \\"b\\",
+                \\"abbr\\",
+                \\"bdi\\",
+                \\"bdo\\",
+                \\"br\\",
+                \\"cite\\",
+                \\"code\\",
+                \\"data\\",
+                \\"dfn\\",
+                \\"em\\",
+                \\"i\\",
+                \\"kbd\\",
+                \\"mark\\",
+                \\"q\\",
+                \\"rp\\",
+                \\"rt\\",
+                \\"rtc\\",
+                \\"ruby\\",
+                \\"s\\",
+                \\"samp\\",
+                \\"small\\",
+                \\"span\\",
+                \\"strong\\",
+                \\"sub\\",
+                \\"sup\\",
+                \\"time\\",
+                \\"u\\",
+                \\"var\\",
+                \\"wbr\\",
+                \\"area\\",
+                \\"audio\\",
+                \\"map\\",
+                \\"track\\",
+                \\"video\\",
+                \\"embed\\",
+                \\"object\\",
+                \\"param\\",
+                \\"source\\",
+                \\"canvas\\",
+                \\"script\\",
+                \\"noscript\\",
+                \\"del\\",
+                \\"ins\\",
+                \\"caption\\",
+                \\"col\\",
+                \\"colgroup\\",
+                \\"table\\",
+                \\"thead\\",
+                \\"tbody\\",
+                \\"td\\",
+                \\"th\\",
+                \\"tr\\",
+                \\"button\\",
+                \\"datalist\\",
+                \\"fieldset\\",
+                \\"form\\",
+                \\"input\\",
+                \\"label\\",
+                \\"legend\\",
+                \\"meter\\",
+                \\"optgroup\\",
+                \\"option\\",
+                \\"output\\",
+                \\"progress\\",
+                \\"select\\",
+                \\"textarea\\",
+                \\"details\\",
+                \\"dialog\\",
+                \\"menu\\",
+                \\"menuitem\\",
+                \\"summary\\",
+                \\"content\\",
+                \\"element\\",
+                \\"shadow\\",
+                \\"template\\",
+                \\"blockquote\\",
+                \\"iframe\\",
+                \\"tfoot\\",
+                \\"svg\\",
+                \\"animate\\",
+                \\"circle\\",
+                \\"clippath\\",
+                \\"cursor\\",
+                \\"defs\\",
+                \\"desc\\",
+                \\"ellipse\\",
+                \\"filter\\",
+                \\"font-face\\",
+                \\"foreignObject\\",
+                \\"g\\",
+                \\"glyph\\",
+                \\"image\\",
+                \\"line\\",
+                \\"marker\\",
+                \\"mask\\",
+                \\"missing-glyph\\",
+                \\"path\\",
+                \\"pattern\\",
+                \\"polygon\\",
+                \\"polyline\\",
+                \\"rect\\",
+                \\"switch\\",
+                \\"symbol\\",
+                \\"text\\",
+                \\"textpath\\",
+                \\"tspan\\",
+                \\"use\\",
+                \\"view\\",
+                \\"slot\\",
+                \\"component\\",
+              ],
+            },
+          },
+          \\"test\\": /\\\\.m?js(\\\\?.*)?$/i,
+          \\"warningsFilter\\": [Function warningsFilter],
+        },
+      },
+    ],
+    \\"runtimeChunk\\": \\"single\\",
+    \\"splitChunks\\": Object {
+      \\"automaticNameDelimiter\\": \\".\\",
+      \\"cacheGroups\\": Object {
+        \\"commons\\": Object {
+          \\"chunks\\": \\"all\\",
+          \\"name\\": true,
+          \\"priority\\": 10,
+          \\"test\\": /node_modules[\\\\\\\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\\\\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\\\\.js)[\\\\\\\\/]/,
+        },
+      },
+      \\"chunks\\": \\"all\\",
+      \\"name\\": undefined,
+    },
+  },
+  \\"output\\": Object {
+    \\"chunkFilename\\": \\"[contenthash].js\\",
+    \\"filename\\": \\"[contenthash].js\\",
+    \\"futureEmitAssets\\": true,
+    \\"path\\": \\"<nuxtDir>/devtool/.nuxt/dist/client\\",
+    \\"publicPath\\": \\"/_nuxt/\\",
+  },
+  \\"performance\\": Object {
+    \\"hints\\": \\"warning\\",
+    \\"maxEntrypointSize\\": 1024000,
+  },
+  \\"plugins\\": Array [
+    VueLoaderPlugin {},
+    WarningIgnorePlugin {
+      \\"filter\\": [Function anonymous],
+    },
+    WebpackBarPlugin {
+      \\"handler\\": [Function anonymous],
+      \\"modulesCount\\": 500,
+      \\"options\\": Object {
+        \\"basic\\": false,
+        \\"color\\": \\"green\\",
+        \\"fancy\\": false,
+        \\"name\\": \\"client\\",
+        \\"profile\\": false,
+        \\"reporter\\": Object {
+          \\"allDone\\": [Function allDone],
+          \\"change\\": [Function change],
+          \\"done\\": [Function done],
+          \\"progress\\": [Function progress],
+        },
+        \\"reporters\\": Array [
+          \\"basic\\",
+          \\"fancy\\",
+          \\"profile\\",
+          \\"stats\\",
+        ],
+        \\"stats\\": false,
+      },
+      \\"profile\\": false,
+      \\"reporters\\": Array [
+        Object {
+          \\"allDone\\": [Function allDone],
+          \\"change\\": [Function change],
+          \\"done\\": [Function done],
+          \\"progress\\": [Function progress],
+        },
+      ],
+      \\"showActiveModules\\": true,
+      \\"showEntries\\": false,
+      \\"showModules\\": true,
+    },
+    HtmlWebpackPlugin {
+      \\"options\\": Object {
+        \\"cache\\": true,
+        \\"chunks\\": \\"all\\",
+        \\"chunksSortMode\\": \\"auto\\",
+        \\"compile\\": true,
+        \\"excludeChunks\\": Array [],
+        \\"favicon\\": false,
+        \\"filename\\": \\"../server/index.ssr.html\\",
+        \\"hash\\": false,
+        \\"inject\\": false,
+        \\"meta\\": Object {},
+        \\"minify\\": Object {
+          \\"collapseBooleanAttributes\\": true,
+          \\"decodeEntities\\": true,
+          \\"minifyCSS\\": true,
+          \\"minifyJS\\": true,
+          \\"processConditionalComments\\": true,
+          \\"removeEmptyAttributes\\": true,
+          \\"removeRedundantAttributes\\": true,
+          \\"trimCustomFragments\\": true,
+          \\"useShortDoctype\\": true,
+        },
+        \\"showErrors\\": true,
+        \\"template\\": \\"<nuxtDir>/devtool/.nuxt/views/app.template.html\\",
+        \\"templateParameters\\": [Function templateParametersGenerator],
+        \\"title\\": \\"Webpack App\\",
+        \\"xhtml\\": false,
+      },
+    },
+    HtmlWebpackPlugin {
+      \\"options\\": Object {
+        \\"cache\\": true,
+        \\"chunks\\": \\"all\\",
+        \\"chunksSortMode\\": \\"dependency\\",
+        \\"compile\\": true,
+        \\"excludeChunks\\": Array [],
+        \\"favicon\\": false,
+        \\"filename\\": \\"../server/index.spa.html\\",
+        \\"hash\\": false,
+        \\"inject\\": true,
+        \\"meta\\": Object {},
+        \\"minify\\": Object {
+          \\"collapseBooleanAttributes\\": true,
+          \\"decodeEntities\\": true,
+          \\"minifyCSS\\": true,
+          \\"minifyJS\\": true,
+          \\"processConditionalComments\\": true,
+          \\"removeEmptyAttributes\\": true,
+          \\"removeRedundantAttributes\\": true,
+          \\"trimCustomFragments\\": true,
+          \\"useShortDoctype\\": true,
+        },
+        \\"showErrors\\": true,
+        \\"template\\": \\"<nuxtDir>/devtool/.nuxt/views/app.template.html\\",
+        \\"templateParameters\\": [Function templateParametersGenerator],
+        \\"title\\": \\"Webpack App\\",
+        \\"xhtml\\": false,
+      },
+    },
+    VueSSRClientPlugin {
+      \\"options\\": Object {
+        \\"filename\\": \\"../server/client.manifest.json\\",
+      },
+    },
+    DefinePlugin {
+      \\"definitions\\": Object {
+        \\"process.browser\\": true,
+        \\"process.client\\": true,
+        \\"process.env.NODE_ENV\\": \\"\\\\\\"production\\\\\\"\\",
+        \\"process.env.VUE_ENV\\": \\"\\\\\\"client\\\\\\"\\",
+        \\"process.mode\\": \\"\\\\\\"production\\\\\\"\\",
+        \\"process.modern\\": false,
+        \\"process.server\\": false,
+        \\"process.static\\": false,
+      },
+    },
+  ],
+  \\"resolve\\": Object {
+    \\"alias\\": Object {
+      \\"@\\": \\"<nuxtDir>/devtool\\",
+      \\"@@\\": \\"<nuxtDir>/devtool\\",
+      \\"assets\\": \\"<nuxtDir>/devtool/assets\\",
+      \\"static\\": \\"<nuxtDir>/devtool/static\\",
+      \\"vue-meta\\": \\"<nuxtDir>/node_modules/vue-meta/dist/vue-meta.esm.browser.js\\",
+      \\"~\\": \\"<nuxtDir>/devtool\\",
+      \\"~~\\": \\"<nuxtDir>/devtool\\",
+    },
+    \\"extensions\\": Array [
+      \\".wasm\\",
+      \\".mjs\\",
+      \\".js\\",
+      \\".json\\",
+      \\".vue\\",
+      \\".jsx\\",
+    ],
+    \\"modules\\": Array [
+      \\"node_modules\\",
+      \\"<nuxtDir>/packages/utils/src/node_modules\\",
+      \\"<nuxtDir>/packages/utils/node_modules\\",
+      \\"<nuxtDir>/packages/node_modules\\",
+      \\"<nuxtDir>/node_modules\\",
+      \\"/home/pooya/Code/node_modules\\",
+      \\"/home/pooya/node_modules\\",
+      \\"/home/node_modules\\",
+      \\"/node_modules\\",
+      \\"<nuxtDir>/devtool/node_modules\\",
+    ],
+  },
+  \\"resolveLoader\\": Object {
+    \\"modules\\": Array [
+      \\"node_modules\\",
+      \\"<nuxtDir>/packages/utils/src/node_modules\\",
+      \\"<nuxtDir>/packages/utils/node_modules\\",
+      \\"<nuxtDir>/packages/node_modules\\",
+      \\"<nuxtDir>/node_modules\\",
+      \\"/home/pooya/Code/node_modules\\",
+      \\"/home/pooya/node_modules\\",
+      \\"/home/node_modules\\",
+      \\"/node_modules\\",
+      \\"<nuxtDir>/devtool/node_modules\\",
+    ],
+  },
+}
 "
 `;
 
@@ -652,6 +1606,19 @@ exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
           ],
         ],
       },
+    },
+  ],
+}
+"
+`;
+
+exports[`webpack nuxt webpack nuxt webpack module rules test=.pug oneOf use.0=raw 1`] = `
+"Object {
+  \\"use\\": Array [
+    \\"raw-loader\\",
+    Object {
+      \\"loader\\": \\"pug-plain-loader\\",
+      \\"options\\": Object {},
     },
   ],
 }

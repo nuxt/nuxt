@@ -15,7 +15,8 @@ const tests = [
   'module.rules',
   'module.rules test=.jsx',
   'module.rules loader=vue-',
-  'module.rules loader=.*-loader'
+  'module.rules loader=.*-loader',
+  'nuxt webpack module rules test=.pug oneOf use.0=raw'
 ]
 
 describe('webpack', () => {
@@ -35,9 +36,8 @@ describe('webpack', () => {
 
   test.posix('nuxt webpack no match', async () => {
     const cmd = NuxtCommand.from(webpackCommand, ['module.rules', 'loader=foobar'])
-    process.exit = jest.fn()
-    await expect(cmd.run()).rejects
-      .toThrow('No match in webpack config for path:module.rules query:loader=foobar. Try inspecting without query and path.')
+    await cmd.run()
+    expect(maskDir(consola.warn.mock.calls[0][0])).toBe('No match in webpack config for `loader=foobar`')
   })
 
   for (const testCase of tests) {
