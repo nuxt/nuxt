@@ -5,7 +5,7 @@ import { common } from '../options'
 
 export default {
   name: 'webpack',
-  description: 'Inspect webpack config',
+  description: 'Inspect Nuxt webpack config',
   usage: 'webpack [path] [prop=value]',
   options: {
     ...common,
@@ -13,18 +13,18 @@ export default {
       alias: 'n',
       type: 'string',
       default: 'client',
-      description: 'Webpack bundle name. Can be one of: Client, Server and Modern'
+      description: 'Webpack bundle name: server, client, modern'
     },
     depth: {
       alias: 'd',
       type: 'string',
-      default: 4,
-      description: 'Inspection Depth'
+      default: 2,
+      description: 'Inspection depth'
     },
     colors: {
       type: 'boolean',
       default: process.stdout.isTTY,
-      description: 'Output with Ansi Colors'
+      description: 'Output with ANSI colors'
     }
   },
   async run (cmd) {
@@ -47,10 +47,16 @@ export default {
       return m
     }, webpackConfig)
 
-    consola.log(formatObj(match, {
+    const serialized = formatObj(match, {
       depth: parseInt(cmd.argv.depth),
       colors: cmd.argv.colors
-    }) + '\n')
+    })
+
+    consola.log(serialized + '\n')
+
+    if (serialized.includes('[Object]' || serialized.includes('[Array'))) {
+      consola.info('You can use `--depth` or add more queries to inspect `[Object]` and `[Array]` fields.')
+    }
 
     if (queryError) {
       consola.warn(`No match in webpack config for \`${queryError}\``)
