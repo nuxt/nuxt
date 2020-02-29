@@ -29,9 +29,9 @@ export default {
 
     if (match === undefined) {
       throw new Error(`No match in webpack config for path:${path}${query ? ` query:${query}` : ''}. Try inspecting without query and path.`)
-    } else {
-      consola.log(formatObj(match) + '\n')
     }
+
+    consola.log(formatObj(match) + '\n')
   }
 }
 
@@ -44,41 +44,45 @@ function advancedGet (obj = {}, path = '', query = '') {
 
   result = get(obj, path)
 
-  if (!query || result === undefined) {
+  if (!query || !result) {
     return result
   }
 
   const [l, r] = query.split('=')
 
-  if (Array.isArray(result)) {
-    result = result.filter((i) => {
-      const v = get(i, l)
-      if (v === r) {
-        return true
-      }
-      if (v) {
-        if (v && typeof v.test === 'function' && v.test(r)) {
-          return true
-        }
-        if (v && typeof v.match === 'function' && v.match(r)) {
-          return true
-        }
-        if (r.match(v)) {
-          return true
-        }
-      }
-    })
-
-    if (result.length === 1) {
-      result = result[0]
-    } else if (!result.length) {
-      result = undefined
-    }
-  } else if (typeof result === 'object') {
-    result = get(result, l)
+  if (!Array.isArray(result)) {
+    return typeof result === 'object' ? get(result, l) : result
   }
 
-  return result
+  result = result.filter((i) => {
+    const v = get(i, l)
+
+    if (v === r) {
+      return true
+    }
+
+    if (!v) {
+      return
+    }
+
+    if (typeof v.test === 'function' && v.test(r)) {
+      return true
+    }
+
+    if (typeof v.match === 'function' && v.match(r)) {
+      return true
+    }
+
+    if (r.match(v)) {
+      return true
+    }
+  })
+
+  if (result.length === 1) {
+    return result[0]
+  }
+
+  return result.length ? result : undefined
 }
 
 function formatObj (obj) {
