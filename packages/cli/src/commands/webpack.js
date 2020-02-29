@@ -12,7 +12,7 @@ export default {
     name: {
       alias: 'n',
       type: 'string',
-      default: 'Client',
+      default: 'client',
       description: 'Webpack bundle name. Can be one of: Client, Server and Modern'
     }
   },

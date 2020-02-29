@@ -1,6 +1,6 @@
 import { core as importCore, builder as importBuilder } from '../imports'
 
-export async function getWebpackConfig (name = 'Client', loadOptions = {}) {
+export async function getWebpackConfig (name = 'client', loadOptions = {}) {
   const { loadNuxt } = await importCore()
   const { getBuilder } = await importBuilder()
 
