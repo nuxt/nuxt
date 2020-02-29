@@ -1,9 +1,14 @@
+import path from 'path'
 import consola from 'consola'
+import prettyFormat from 'pretty-format'
 import { NuxtCommand, getWebpackConfig } from '../..'
 import webpackCommand from '../../src/commands/webpack'
 
+const replaceAll = (str, a, b) => str.split(a).join(b)
+const nuxtDir = path.join(__dirname, '../../../..')
+const maskDir = str => replaceAll(str, nuxtDir, '<nuxtDir>')
+
 const tests = [
-  '',
   'devtool',
   'resolve alias',
   'module.rules',
@@ -23,7 +28,7 @@ describe('webpack', () => {
 
   test('getWebpackConfig()', async () => {
     const webpackConfig = await getWebpackConfig('Client')
-    expect(webpackConfig.module.rules[0]).toMatchSnapshot()
+    expect(maskDir(prettyFormat(webpackConfig.module.rules[0]))).toMatchSnapshot()
   })
 
   test('nuxt webpack no match', async () => {
@@ -37,7 +42,7 @@ describe('webpack', () => {
     test('nuxt webpack ' + testCase, async () => {
       const cmd = NuxtCommand.from(webpackCommand, testCase.split(' '))
       await cmd.run()
-      expect(consola.log.mock.calls[0][0]).toMatchSnapshot()
+      expect(maskDir(consola.log.mock.calls[0][0])).toMatchSnapshot()
     })
   }
 })
