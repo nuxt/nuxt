@@ -51,7 +51,8 @@
   "bin": "bin/nuxt.js",
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "webpack.config.js"
   ],
   "scripts": {
     "postinstall": "opencollective || exit 0"

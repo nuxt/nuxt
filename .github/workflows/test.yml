@@ -15,6 +15,7 @@ on:
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' || !(github.base_ref == '2.x' && github.head_ref == 'dev')
 
     strategy:
       matrix:

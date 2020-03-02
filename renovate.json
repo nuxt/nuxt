@@ -8,7 +8,11 @@
   ],
   "ignoreDeps": [
     "memory-fs",
-    "@rollup/plugin-node-resolve"
+    "@rollup/plugin-node-resolve",
+    "execa",
+    "pify",
+    "file-loader",
+    "url-loader"
   ],
   "lockFileMaintenance": {
     "enabled": true
