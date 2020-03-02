@@ -3518,10 +3518,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001020, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001028.tgz#f2241242ac70e0fa9cda55c2776d32a0867971c2"
   integrity sha512-Vnrq+XMSHpT7E+LWoIYhs3Sne8h9lx9YJV3acH3THNCwU/9zV93/ta4xVfzTtnqd3rvnuVpVjE3DFqf56tr3aQ==
 
-caniuse-lite@^1.0.30001030:
-  version "1.0.30001030"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001030.tgz#78076c4c6d67d3e41d6eb9399853fb27fe6e44ee"
-  integrity sha512-QGK0W4Ft/Ac+zTjEiRJfwDNATvS3fodDczBXrH42784kcfqcDKpEPfN08N0HQjrAp8He/Jw8QiSS9QRn7XAbUw==
+caniuse-lite@^1.0.30001031:
+  version "1.0.30001031"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001031.tgz#76f1bdd39e19567b855302f65102d9a8aaad5930"
+  integrity sha512-DpAP5a1NGRLgYfaNCaXIRyGARi+3tJA2quZXNNA1Du26VyVkqvy2tznNu5ANyN1Y5aX44QDotZSVSUSi2uMGjg==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -6535,10 +6535,10 @@ import-modules@^2.0.0:
   resolved "https://registry.npmjs.org/import-modules/-/import-modules-2.0.0.tgz#9c1e13b4e7a15682f70a6e3fa29534e4540cfc5d"
   integrity sha512-iczM/v9drffdNnABOKwj0f9G3cFDon99VcG1mxeBsdqnbd+vnQ5c2uAiCHNQITqFTOPaEvwg3VjoWCur0uHLEw==
 
-improved-yarn-audit@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/improved-yarn-audit/-/improved-yarn-audit-1.0.1.tgz#8cdffd835f2e195930361bc16641f72fd4b90539"
-  integrity sha512-lwsN0SoA+WO+KlGYc6Wy0R9+exRLl1kYcZf7tM+v+CBSdCYnpPK9KudcJS/e9QcWhq9lQ83D88iHCHe+OmoPZg==
+improved-yarn-audit@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/improved-yarn-audit/-/improved-yarn-audit-1.1.1.tgz#72078e146726f332eaafb7cfd8af928e335a846c"
+  integrity sha512-pZ1hrKuOy1bk7LDPWv3By3B0gdO5WPbkTfLf3K52DxxfvpbQR7aiZhBs2Ps9jRi8dI63DKW07Sx/0EMB5PG07g==
 
 imurmurhash@^0.1.4:
   version "0.1.4"
@@ -12752,10 +12752,10 @@ webpack-sources@^1.0.1, webpack-sources@^1.1.0, webpack-sources@^1.4.0, webpack-
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@^4.41.6:
-  version "4.41.6"
-  resolved "https://registry.npmjs.org/webpack/-/webpack-4.41.6.tgz#12f2f804bf6542ef166755050d4afbc8f66ba7e1"
-  integrity sha512-yxXfV0Zv9WMGRD+QexkZzmGIh54bsvEs+9aRWxnN8erLWEOehAKUTeNBoUbA6HPEZPlRo7KDi2ZcNveoZgK9MA==
+webpack@^4.42.0:
+  version "4.42.0"
+  resolved "https://registry.npmjs.org/webpack/-/webpack-4.42.0.tgz#b901635dd6179391d90740a63c93f76f39883eb8"
+  integrity sha512-EzJRHvwQyBiYrYqhyjW9AqM90dE4+s1/XtCfn7uWg6cS72zH+2VPFAlsnW0+W0cDi0XRjNKUMoJtpSi50+Ph6w==
   dependencies:
     "@webassemblyjs/ast" "1.8.5"
     "@webassemblyjs/helper-module-context" "1.8.5"
