@@ -35,13 +35,13 @@ jobs:
       - name: test e2e
         run: yarn test:e2e
       - name: bump version
-        run: yarn lerna version --yes --no-git-tag-version --no-push
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build
-      - name: publish
-        run: ./scripts/workspace-run npm publish -q
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      # - name: publish
+      #   run: ./scripts/workspace-run npm publish -q
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
   # Anchors still not supported :(
   # https://github.community/t5/GitHub-Actions/Support-for-YAML-anchors/td-p/30336
@@ -75,12 +75,12 @@ jobs:
       - name: test e2e
         run: yarn test:e2e
       - name: bump version
-        run: yarn lerna version --yes --no-git-tag-version --no-push
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build
-      - name: publish
-        run: ./scripts/workspace-run npm publish --tag next -q
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      # - name: publish
+      #   run: ./scripts/workspace-run npm publish --tag next -q
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
 
