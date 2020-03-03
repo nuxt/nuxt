@@ -1,6 +1,16 @@
+export function isExternalDependency (id) {
+  return /[/\\]node_modules[/\\]/.test(id)
+}
+
 export function clearRequireCache (id) {
-  const entry = require.cache[id]
-  if (!entry || id.includes('node_modules')) {
+  if (isExternalDependency(id)) {
+    return
+  }
+
+  const entry = getRequireCacheItem(id)
+
+  if (!entry) {
+    delete require.cache[id]
     return
   }
 
@@ -16,8 +26,14 @@ export function clearRequireCache (id) {
 }
 
 export function scanRequireTree (id, files = new Set()) {
-  const entry = require.cache[id]
-  if (!entry || id.includes('node_modules') || files.has(id)) {
+  if (isExternalDependency(id) || files.has(id)) {
+    return files
+  }
+
+  const entry = getRequireCacheItem(id)
+
+  if (!entry) {
+    files.add(id)
     return files
   }
 
@@ -28,4 +44,22 @@ export function scanRequireTree (id, files = new Set()) {
   }
 
   return files
+}
+
+export function getRequireCacheItem (id) {
+  try {
+    return require.cache[id]
+  } catch (e) {
+  }
+}
+
+export function tryRequire (id) {
+  try {
+    return require(id)
+  } catch (e) {
+  }
+}
+
+export function getPKG (id) {
+  return tryRequire(id + '/package.json')
 }

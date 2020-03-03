@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "2.9.2",
+  "version": "2.11.0",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "keywords": [
     "nuxt",
@@ -47,27 +47,28 @@
       "name": "Pim (@pimlie)"
     }
   ],
-  "files": [
-    "bin",
-    "dist"
-  ],
   "main": "dist/nuxt.js",
   "bin": "bin/nuxt.js",
+  "files": [
+    "bin",
+    "dist",
+    "webpack.config.js"
+  ],
   "scripts": {
     "postinstall": "opencollective || exit 0"
   },
   "dependencies": {
-    "@nuxt/builder": "2.9.2",
-    "@nuxt/cli": "2.9.2",
-    "@nuxt/core": "2.9.2",
-    "@nuxt/generator": "2.9.2",
-    "@nuxt/loading-screen": "^1.0.1",
+    "@nuxt/builder": "2.11.0",
+    "@nuxt/cli": "2.11.0",
+    "@nuxt/core": "2.11.0",
+    "@nuxt/generator": "2.11.0",
+    "@nuxt/loading-screen": "^1.2.0",
     "@nuxt/opencollective": "^0.3.0",
-    "@nuxt/webpack": "2.9.2"
+    "@nuxt/webpack": "2.11.0"
   },
   "engines": {
-    "node": ">=8.9.0",
-    "npm": ">=5.0.0"
+    "node": ">=10.19.0",
+    "npm": ">=6.14.1"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

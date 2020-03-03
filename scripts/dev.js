@@ -10,7 +10,7 @@ const useCjs = [
 ]
 
 const stub = {
-  es: `export * from '../src/index'`,
+  es: 'export * from \'../src/index\'',
   cjs: `const esm = require('esm')
 
 const _require = esm(module)
@@ -46,7 +46,8 @@ Object.defineProperty(global.__NUXT, 'version', {
 })
 
 module.exports = _require('../src/index')
-` }
+`
+}
 
 async function main () {
   // Read package at current directory

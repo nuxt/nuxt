@@ -21,9 +21,6 @@
 import socket from '~/plugins/socket.io.js'
 
 export default {
-  watch: {
-    'messages': 'scrollToBottom'
-  },
   asyncData (context, callback) {
     socket.emit('last-messages', function (messages) {
       callback(null, {
@@ -31,6 +28,9 @@ export default {
         message: ''
       })
     })
+  },
+  watch: {
+    messages: 'scrollToBottom'
   },
   beforeMount () {
     socket.on('new-message', (message) => {

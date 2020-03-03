@@ -34,7 +34,7 @@ export class WebpackBundler {
   }
 
   getWebpackConfig (name) {
-    const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
+    const Config = WebpackConfigs[name.toLowerCase()] // eslint-disable-line import/namespace
     if (!Config) {
       throw new Error(`Unsupported webpack config ${name}`)
     }
@@ -56,6 +56,8 @@ export class WebpackBundler {
     if (options.build.ssr) {
       webpackConfigs.push(this.getWebpackConfig('Server'))
     }
+
+    await this.buildContext.nuxt.callHook('webpack:config', webpackConfigs)
 
     // Check styleResource existence
     const { styleResources } = this.buildContext.options.build
@@ -134,10 +136,11 @@ export class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          watching.close = pify(watching.close)
-          this.compilersWatching.push(watching)
           resolve()
         })
+
+        watching.close = pify(watching.close)
+        this.compilersWatching.push(watching)
       })
     }
 
@@ -211,14 +214,6 @@ export class WebpackBundler {
 
   async unwatch () {
     await Promise.all(this.compilersWatching.map(watching => watching.close()))
-  }
-
-  pauseWatch () {
-    this.compilersWatching.forEach(watching => watching.suspend())
-  }
-
-  resumeWatch () {
-    this.compilersWatching.forEach(watching => watching.resume())
   }
 
   async close () {

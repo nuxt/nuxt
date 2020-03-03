@@ -56,7 +56,7 @@ describe('cli/utils', () => {
     expect(options.testOption).not.toBeDefined()
 
     expect(consola.fatal).toHaveBeenCalledTimes(1)
-    expect(consola.fatal).toHaveBeenCalledWith(expect.stringMatching(/Could not load config file/))
+    expect(consola.fatal).toHaveBeenCalledWith(expect.stringMatching(/Config file not found/))
   })
 
   test('loadNuxtConfig: async config-file', async () => {
@@ -74,6 +74,18 @@ describe('cli/utils', () => {
     expect(options.server.host).toBe('async-host')
     expect(options.server.port).toBe(3002)
     expect(options.server.socket).toBe('/var/run/async.sock')
+  })
+
+  test('loadNuxtConfig: passes context to config fn', async () => {
+    const argv = {
+      _: [__dirname],
+      'config-file': '../fixtures/nuxt.fn-config.js'
+    }
+
+    const context = { command: 'test', dev: true }
+    const options = await loadNuxtConfig(argv, context)
+    expect(options.context.command).toBe('test')
+    expect(options.context.dev).toBe(true)
   })
 
   test('loadNuxtConfig: async config-file with error', async () => {
@@ -128,7 +140,8 @@ describe('cli/utils', () => {
     const successBox = jest.fn().mockImplementation((m, t) => t + m)
     jest.spyOn(fmt, 'successBox').mockImplementation(successBox)
 
-    const badgeMessages = [ 'badgeMessage' ]
+    const badgeMessages = ['badgeMessage']
+    const bannerColor = 'green'
     const listeners = [
       { url: 'first' },
       { url: 'second' }
@@ -137,7 +150,8 @@ describe('cli/utils', () => {
     showBanner({
       options: {
         cli: {
-          badgeMessages
+          badgeMessages,
+          bannerColor
         }
       },
       server: {
@@ -163,7 +177,8 @@ describe('cli/utils', () => {
     showBanner({
       options: {
         cli: {
-          badgeMessages: []
+          badgeMessages: [],
+          bannerColor: 'green'
         }
       },
       server: {
@@ -194,7 +209,6 @@ describe('cli/utils', () => {
     expect(exit).not.toHaveBeenCalled()
     jest.runAllTimers()
 
-    expect(stderr).toHaveBeenCalledTimes(1)
     expect(stderr).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js will now force exit'))
     expect(exit).toHaveBeenCalledTimes(1)
 

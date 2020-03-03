@@ -74,9 +74,13 @@ export default {
       handler: (_, res) => res.end('Works!')
     }
   ],
+  css: [
+    '~assets/app.css'
+  ],
   build: {
     scopeHoisting: true,
     publicPath: '',
+    followSymlinks: true,
     postcss: {
       preset: {
         features: {

@@ -9,7 +9,7 @@ describe('imports', () => {
   })
   test('should throw error with proper code when module not found', async () => {
     await expect(importModule('not-found-module')).rejects.toMatchObject({
-      message: `Cannot import module 'not-found-module'`,
+      message: 'Cannot import module \'not-found-module\'',
       code: 'MODULE_NOT_FOUND'
     })
   })

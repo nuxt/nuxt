@@ -6,6 +6,8 @@ export default () => ({
     }
   },
 
+  vueMeta: null,
+
   head: {
     meta: [],
     link: [],
@@ -19,6 +21,8 @@ export default () => ({
   },
 
   plugins: [],
+
+  extendPlugins: null,
 
   css: [],
 
@@ -54,5 +58,22 @@ export default () => ({
   layoutTransition: {
     name: 'layout',
     mode: 'out-in'
+  },
+
+  features: {
+    store: true,
+    layouts: true,
+    meta: true,
+    middleware: true,
+    transitions: true,
+    deprecations: true,
+    validate: true,
+    asyncData: true,
+    fetch: true,
+    clientOnline: true,
+    clientPrefetch: true,
+    clientUseUrl: false,
+    componentAliases: true,
+    componentClientOnly: true
   }
 })

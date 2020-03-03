@@ -45,16 +45,32 @@ export default class PostcssConfig {
     return this.buildContext.buildOptions.postcss
   }
 
+  get postcssImportAlias () {
+    const alias = { ...this.buildContext.options.alias }
+
+    for (const key in alias) {
+      if (key.startsWith('~')) {
+        continue
+      }
+      const newKey = '~' + key
+      if (!alias[newKey]) {
+        alias[newKey] = alias[key]
+      }
+    }
+
+    return alias
+  }
+
   get defaultConfig () {
-    const { dev, alias, srcDir, rootDir, modulesDir } = this.buildContext.options
+    const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
       sourceMap: this.buildContext.buildOptions.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
           resolve: createResolver({
-            alias: { ...alias },
-            modules: [ srcDir, rootDir, ...modulesDir ]
+            alias: this.postcssImportAlias,
+            modules: [srcDir, rootDir, ...modulesDir]
           })
         },
 
@@ -63,7 +79,7 @@ export default class PostcssConfig {
 
         // https://github.com/csstools/postcss-preset-env
         'postcss-preset-env': this.preset || {},
-        'cssnano': dev ? false : { preset: 'default' }
+        cssnano: dev ? false : { preset: 'default' }
       },
       // Array, String or Function
       order: 'presetEnvAndCssnanoLast'
@@ -75,7 +91,7 @@ export default class PostcssConfig {
     // https://github.com/michael-ciniawsky/postcss-load-config
     // TODO: Remove in Nuxt 3
     const { srcDir, rootDir } = this.buildContext.options
-    for (const dir of [ srcDir, rootDir ]) {
+    for (const dir of [srcDir, rootDir]) {
       for (const file of [
         'postcss.config.js',
         '.postcssrc.js',

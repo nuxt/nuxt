@@ -25,7 +25,10 @@ export default {
   router: {
     middleware: 'middleware'
   },
-  plugins: ['~/plugins/error.js'],
+  plugins: [
+    '~/plugins/error.js',
+    '~/plugins/path.js'
+  ],
   hooks: {
     'render:route': (url, page, { req, res }) => {
       page.html = modifyHtml(page.html)

@@ -20,7 +20,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return renderContext.renderScripts()
+    const scripts = renderContext.renderScripts()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return scripts
+    }
+    return scripts.replace(
+      /<script/g,
+      `<script crossorigin="${crossorigin}"`
+    )
   }
 
   getPreloadFiles (renderContext) {
@@ -28,7 +36,15 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderResourceHints (renderContext) {
-    return renderContext.renderResourceHints()
+    const resourceHints = renderContext.renderResourceHints()
+    const { build: { crossorigin } } = this.options
+    if (!crossorigin) {
+      return resourceHints
+    }
+    return resourceHints.replace(
+      /rel="preload"/g,
+      `rel="preload" crossorigin="${crossorigin}"`
+    )
   }
 
   createRenderer () {
@@ -75,23 +91,36 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Call ssr:context hook
     await this.serverContext.nuxt.callHook('vue-renderer:ssr:context', renderContext)
-    // TODO: Remove in next major release
-    await this.serverContext.nuxt.callHook('render:routeContext', renderContext.nuxt)
+
+    // TODO: Remove in next major release (#4722)
+    await this.serverContext.nuxt.callHook('_render:context', renderContext.nuxt)
 
     // Fallback to empty response
     if (!renderContext.nuxt.serverRendered) {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
+    if (renderContext.redirected && !renderContext._generate) {
+      return {
+        html: APP,
+        error: renderContext.nuxt.error,
+        redirected: renderContext.redirected
+      }
+    }
+
+    let HEAD = ''
+
     // Inject head meta
-    const m = renderContext.meta.inject()
-    let HEAD =
-      m.title.text() +
-      m.meta.text() +
-      m.link.text() +
-      m.style.text() +
-      m.script.text() +
-      m.noscript.text()
+    // (this is unset when features.meta is false in server template)
+    const meta = renderContext.meta && renderContext.meta.inject()
+    if (meta) {
+      HEAD += meta.title.text() +
+        meta.meta.text() +
+        meta.link.text() +
+        meta.style.text() +
+        meta.script.text() +
+        meta.noscript.text()
+    }
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
@@ -109,30 +138,39 @@ export default class SSRRenderer extends BaseRenderer {
     // Inject styles
     HEAD += renderContext.renderStyles()
 
-    const BODY_PREPEND =
-      m.meta.text({ pbody: true }) +
-      m.link.text({ pbody: true }) +
-      m.style.text({ pbody: true }) +
-      m.script.text({ pbody: true }) +
-      m.noscript.text({ pbody: true })
+    if (meta) {
+      const BODY_PREPEND =
+        meta.meta.text({ pbody: true }) +
+        meta.link.text({ pbody: true }) +
+        meta.style.text({ pbody: true }) +
+        meta.script.text({ pbody: true }) +
+        meta.noscript.text({ pbody: true })
 
-    if (BODY_PREPEND) {
-      APP = `${BODY_PREPEND}${APP}`
+      if (BODY_PREPEND) {
+        APP = `${BODY_PREPEND}${APP}`
+      }
     }
 
+    const { csp } = this.options.render
+    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+    const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
+    const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
+    let serializedSession = ''
+
     // Serialize state
-    const serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    if (shouldInjectScripts || shouldHashCspScriptSrc) {
+      // Only serialized session if need inject scripts or csp hash
+      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+    }
+
     if (shouldInjectScripts) {
       APP += `<script>${serializedSession}</script>`
     }
 
     // Calculate CSP hashes
-    const { csp } = this.options.render
     const cspScriptSrcHashes = []
     if (csp) {
-      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-      const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes(`'unsafe-inline'`)
-      if (csp.unsafeInlineCompatiblity || !containsUnsafeInlineScriptSrc) {
+      if (shouldHashCspScriptSrc) {
         const hash = crypto.createHash(csp.hashAlgorithm)
         hash.update(serializedSession)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
@@ -152,18 +190,20 @@ export default class SSRRenderer extends BaseRenderer {
       APP += this.renderScripts(renderContext)
     }
 
-    // Append body scripts
-    APP += m.meta.text({ body: true })
-    APP += m.link.text({ body: true })
-    APP += m.style.text({ body: true })
-    APP += m.script.text({ body: true })
-    APP += m.noscript.text({ body: true })
+    if (meta) {
+      // Append body scripts
+      APP += meta.meta.text({ body: true })
+      APP += meta.link.text({ body: true })
+      APP += meta.style.text({ body: true })
+      APP += meta.script.text({ body: true })
+      APP += meta.noscript.text({ body: true })
+    }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: m.htmlAttrs.text(true /* addSrrAttribute */),
-      HEAD_ATTRS: m.headAttrs.text(),
-      BODY_ATTRS: m.bodyAttrs.text(),
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
+      BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,
       APP,
       ENV: this.options.env

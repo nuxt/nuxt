@@ -7,6 +7,7 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
+import chalk from 'chalk'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'
@@ -21,10 +22,8 @@ import {
   waitFor,
   determineGlobals,
   stripWhitespace,
-  isString,
   isIndexFileAndFolder,
-  isPureObject,
-  clearRequireCache
+  scanRequireTree
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -60,13 +59,16 @@ export default class Builder {
         this.watchRestart()
       })
 
+      // Enable HMR for serverMiddleware
+      this.serverMiddlewareHMR()
+
       // Close hook
       this.nuxt.hook('close', () => this.close())
     }
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
+        consola.warn('Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.')
       })
     }
 
@@ -151,8 +153,14 @@ export default class Builder {
     }
     await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
 
+    // Call ready hook
+    await this.nuxt.callHook('builder:prepared', this, this.options.build)
+
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
+
+    // Add vue-app template dir to watchers
+    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
 
     await this.resolvePlugins()
 
@@ -220,12 +228,7 @@ export default class Builder {
   async generateRoutesAndFiles () {
     consola.debug('Generating nuxt files')
 
-    if (this.bundleBuilder) {
-      this.bundleBuilder.pauseWatch()
-    }
-
-    // Plugins
-    this.plugins = Array.from(this.normalizePlugins())
+    this.plugins = Array.from(await this.normalizePlugins())
 
     const templateContext = this.createTemplateContext()
 
@@ -236,23 +239,30 @@ export default class Builder {
       this.resolveMiddleware(templateContext)
     ])
 
+    this.addOptionalTemplates(templateContext)
+
     await this.resolveCustomTemplates(templateContext)
 
     await this.resolveLoadingIndicator(templateContext)
 
-    // Add vue-app template dir to watchers
-    this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
-
     await this.compileTemplates(templateContext)
-
-    if (this.bundleBuilder) {
-      this.bundleBuilder.resumeWatch()
-    }
 
     consola.success('Nuxt files generated')
   }
 
-  normalizePlugins () {
+  async normalizePlugins () {
+    // options.extendPlugins allows for returning a new plugins array
+    if (typeof this.options.extendPlugins === 'function') {
+      const extendedPlugins = this.options.extendPlugins(this.options.plugins)
+
+      if (Array.isArray(extendedPlugins)) {
+        this.options.plugins = extendedPlugins
+      }
+    }
+
+    // extendPlugins hook only supports in-place modifying
+    await this.nuxt.callHook('builder:extendPlugins', this.options.plugins)
+
     const modes = ['client', 'server']
     const modePattern = new RegExp(`\\.(${modes.join('|')})(\\.\\w+)*$`)
     return uniqBy(
@@ -289,10 +299,21 @@ export default class Builder {
     )
   }
 
+  addOptionalTemplates (templateContext) {
+    if (this.options.build.indicator) {
+      templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
+    }
+
+    if (this.options.loading !== false) {
+      templateContext.templateFiles.push('components/nuxt-loading.vue')
+    }
+  }
+
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore
+      ignore: this.options.ignore,
+      follow: this.options.build.followSymlinks
     }))
   }
 
@@ -302,6 +323,10 @@ export default class Builder {
   }
 
   async resolveLayouts ({ templateVars, templateFiles }) {
+    if (!this.options.features.layouts) {
+      return
+    }
+
     if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
       for (const file of await this.resolveFiles(this.options.dir.layouts)) {
         const name = file
@@ -337,12 +362,14 @@ export default class Builder {
 
   async resolveRoutes ({ templateVars }) {
     consola.debug('Generating routes...')
+    const { routeNameSplitter, trailingSlash } = this.options.router
 
     if (this._defaultPage) {
       templateVars.router.routes = createRoutes({
         files: ['index.vue'],
         srcDir: this.template.dir + '/pages',
-        routeNameSplitter: this.options.router.routeNameSplitter
+        routeNameSplitter,
+        trailingSlash
       })
     } else if (this._nuxtPages) {
       // Use nuxt.js createRoutes bases on pages/
@@ -359,11 +386,12 @@ export default class Builder {
         files: Object.values(files),
         srcDir: this.options.srcDir,
         pagesDir: this.options.dir.pages,
-        routeNameSplitter: this.options.router.routeNameSplitter,
-        supportedExtensions: this.supportedExtensions
+        routeNameSplitter,
+        supportedExtensions: this.supportedExtensions,
+        trailingSlash
       })
     } else { // If user defined a custom method to create routes
-      templateVars.router.routes = this.options.build.createRoutes(
+      templateVars.router.routes = await this.options.build.createRoutes(
         this.options.srcDir
       )
     }
@@ -392,7 +420,7 @@ export default class Builder {
 
   async resolveStore ({ templateVars, templateFiles }) {
     // Add store if needed
-    if (!this.options.store) {
+    if (!this.options.features.store || !this.options.store) {
       return
     }
 
@@ -411,9 +439,20 @@ export default class Builder {
     templateFiles.push('store.js')
   }
 
-  async resolveMiddleware ({ templateVars }) {
-    // -- Middleware --
-    templateVars.middleware = await this.resolveRelative(this.options.dir.middleware)
+  async resolveMiddleware ({ templateVars, templateFiles }) {
+    if (!this.options.features.middleware) {
+      return
+    }
+
+    const middleware = await this.resolveRelative(this.options.dir.middleware)
+    const extRE = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
+    templateVars.middleware = middleware.map(({ src }) => {
+      const name = src.replace(extRE, '')
+      const dst = this.relativeToBuild(this.options.srcDir, this.options.dir.middleware, src)
+      return { name, src, dst }
+    })
+
+    templateFiles.push('middleware.js')
   }
 
   async resolveCustomTemplates (templateContext) {
@@ -612,6 +651,9 @@ export default class Builder {
 
   assignWatcher (key) {
     return (watcher) => {
+      if (this.watchers[key]) {
+        this.watchers[key].close()
+      }
       this.watchers[key] = watcher
     }
   }
@@ -653,25 +695,61 @@ export default class Builder {
     this.createFileWatcher([r(this.options.srcDir, this.options.dir.app)], ['add', 'change', 'unlink'], refreshFiles, this.assignWatcher('app'))
   }
 
-  getServerMiddlewarePaths () {
-    return this.options.serverMiddleware
-      .map((serverMiddleware) => {
-        if (isString(serverMiddleware)) {
-          return serverMiddleware
+  serverMiddlewareHMR () {
+    // Check nuxt.server dependency
+    if (!this.nuxt.server) {
+      return
+    }
+
+    // Get registered server middleware with path
+    const entries = this.nuxt.server.serverMiddlewarePaths()
+
+    // Resolve dependency tree
+    const deps = new Set()
+    const dep2Entry = {}
+
+    for (const entry of entries) {
+      for (const dep of scanRequireTree(entry)) {
+        deps.add(dep)
+        if (!dep2Entry[dep]) {
+          dep2Entry[dep] = new Set()
         }
-        if (isPureObject(serverMiddleware) && isString(serverMiddleware.handler)) {
-          return serverMiddleware.handler
+        dep2Entry[dep].add(entry)
+      }
+    }
+
+    // Create watcher
+    this.createFileWatcher(
+      Array.from(deps),
+      ['all'],
+      debounce((event, fileName) => {
+        for (const entry of dep2Entry[fileName]) {
+          // Reload entry
+          let newItem
+          try {
+            newItem = this.nuxt.server.replaceMiddleware(entry, entry)
+          } catch (error) {
+            consola.error(error)
+            consola.error(`[HMR Error]: ${error}`)
+          }
+
+          if (!newItem) {
+            // Full reload if HMR failed
+            return this.nuxt.callHook('watch:restart', { event, path: fileName })
+          }
+
+          // Log
+          consola.info(`[HMR] ${chalk.cyan(newItem.route)} (${chalk.grey(fileName)})`)
         }
-      })
-      .filter(Boolean)
-      .map(p => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
+        // Tree may be changed so recreate watcher
+        this.serverMiddlewareHMR()
+      }, 200),
+      this.assignWatcher('serverMiddleware')
+    )
   }
 
   watchRestart () {
-    const serverMiddlewarePaths = this.getServerMiddlewarePaths()
     const nuxtRestartWatch = [
-      // Server middleware
-      ...serverMiddlewarePaths,
       // Custom watchers
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
@@ -694,11 +772,6 @@ export default class Builder {
       async (event, fileName) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
-        }
-        /* istanbul ignore if */
-        if (serverMiddlewarePaths.includes(fileName)) {
-          consola.debug(`Clear cache for ${fileName}`)
-          clearRequireCache(fileName)
         }
         await this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
         await this.nuxt.callHook('watch:restart', { event, path: fileName })

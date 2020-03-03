@@ -38,7 +38,8 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     // Add ETag header
     if (!error && options.render.etag) {
-      const etag = generateETag(html, options.render.etag)
+      const { hash } = options.render.etag
+      const etag = hash ? hash(html, options.render.etag) : generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
         res.end()
@@ -124,9 +125,9 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
 
 const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
   const joinedHashes = cspScriptSrcHashes.join(' ')
-  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashes}`
+  const baseCspStr = `script-src 'self'${isDev ? ' \'unsafe-eval\'' : ''} ${joinedHashes}`
 
-  if (Array.isArray(allowedSources)) {
+  if (Array.isArray(allowedSources) && allowedSources.length) {
     return `${baseCspStr} ${allowedSources.join(' ')}`
   }
 
@@ -147,7 +148,7 @@ const transformPolicyObject = (policies, cspScriptSrcHashes) => {
   const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
 
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
-  const hashAndPolicyList = cspScriptSrcHashes.concat(`'self'`, additionalPolicies)
+  const hashAndPolicyList = cspScriptSrcHashes.concat('\'self\'', additionalPolicies)
 
   return { ...policies, 'script-src': hashAndPolicyList }
 }

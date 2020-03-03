@@ -11,12 +11,13 @@ jest.mock('lodash', () => ({ test: 'test lodash', warn: 'only once' }))
 describe('builder: buildContext', () => {
   const builder = {
     template: { files: ['template.js'] },
-    globals: [ 'globals' ],
-    plugins: [ 'plugins' ],
+    globals: ['globals'],
+    plugins: ['plugins'],
     relativeToBuild: jest.fn((...args) => `relativeBuild(${args.join(', ')})`)
   }
   const options = {
-    extensions: [ 'test', 'ext' ],
+    features: { store: true },
+    extensions: ['test', 'ext'],
     messages: { test: 'test message' },
     build: {
       splitChunks: { testSC: true }
@@ -31,7 +32,7 @@ describe('builder: buildContext', () => {
     head: 'test_head',
     store: 'test_store',
     globalName: 'test_global',
-    css: [ 'test.css' ],
+    css: ['test.css'],
     layouts: {
       'test-layout': 'test.template'
     },

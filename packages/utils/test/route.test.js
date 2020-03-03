@@ -5,7 +5,8 @@ describe('util: route', () => {
     const routes = flatRoutes([
       { name: 'login', path: '/login' },
       { name: 'about', path: '/about' },
-      { name: 'posts',
+      {
+        name: 'posts',
         path: '',
         children: [
           { name: 'posts-list', path: '' },
@@ -13,7 +14,7 @@ describe('util: route', () => {
         ]
       }
     ])
-    expect(routes).toEqual([ '/login', '/about', '', '/post' ])
+    expect(routes).toEqual(['/login', '/about', '', '/post'])
   })
 
   test('should ignore route with * and :', () => {
@@ -22,12 +23,13 @@ describe('util: route', () => {
       { name: 'foo', path: '/foo/:id' },
       { name: 'bar', path: '/bar/*' }
     ])
-    expect(routes).toEqual([ '/login' ])
+    expect(routes).toEqual(['/login'])
   })
 
   test('should resolve route with /', () => {
     const routes = flatRoutes([
-      { name: 'foo',
+      {
+        name: 'foo',
         path: '/',
         children: [
           { name: 'foo-bar', path: 'foo/bar' },
@@ -35,7 +37,7 @@ describe('util: route', () => {
         ]
       }
     ])
-    expect(routes).toEqual([ '/', '/foo/bar', '/foo/baz' ])
+    expect(routes).toEqual(['/', '/foo/bar', '/foo/baz'])
   })
 
   describe('util: route guard', () => {
@@ -192,6 +194,16 @@ describe('util: route', () => {
 
     test.win('createRoutes should allow snake case routes in windows system', () => {
       const routesResult = createRoutes({ files, srcDir, pagesDir })
+      expect(routesResult).toMatchSnapshot()
+    })
+
+    test.posix('createRoutes should enforce trailing slashes when configured to', () => {
+      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: true })
+      expect(routesResult).toMatchSnapshot()
+    })
+
+    test.posix('createRoutes should remove trailing slashes when configured to', () => {
+      const routesResult = createRoutes({ files, srcDir, pagesDir, trailingSlash: false })
       expect(routesResult).toMatchSnapshot()
     })
   })

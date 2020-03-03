@@ -17,14 +17,15 @@ export default () => ({
   cache: false,
   standalone: false,
   publicPath: '/_nuxt/',
+  serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
-    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
+    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
+    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
     css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
-    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[hash:7].[ext]',
-    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[hash:7].[ext]',
-    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[hash:7].[ext]'
+    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[contenthash:7].[ext]',
+    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[contenthash:7].[ext]',
+    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[contenthash:7].[ext]'
   },
   loaders: {
     file: {},
@@ -47,7 +48,9 @@ export default () => ({
     },
     less: {},
     sass: {
-      indentedSyntax: true
+      sassOptions: {
+        indentedSyntax: true
+      }
     },
     scss: {},
     stylus: {},
@@ -57,6 +60,7 @@ export default () => ({
   plugins: [],
   terser: {},
   hardSource: false,
+  aggressiveCodeRemoval: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',
@@ -116,5 +120,6 @@ export default () => ({
   },
   friendlyErrors: true,
   additionalExtensions: [],
-  warningIgnoreFilters: []
+  warningIgnoreFilters: [],
+  followSymlinks: false
 })

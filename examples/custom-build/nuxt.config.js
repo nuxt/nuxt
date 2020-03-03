@@ -1,9 +1,9 @@
 export default {
   build: {
     filenames: {
-      css: 'styles.[chunkhash].css', // default: common.[chunkhash].css
-      manifest: 'manifest.[hash].js', // default: manifest.[hash].js
-      app: 'app.[chunkhash].js' // default: nuxt.bundle.[chunkhash].js
+      css: 'styles.[contenthash].css', // default: common.[contenthash].css
+      manifest: 'manifest.[contenthash].js', // default: manifest.[contenthash].js
+      app: 'app.[contenthash].js' // default: nuxt.bundle.[contenthash].js
     },
     extend (config, { isDev }) {
       if (isDev) {

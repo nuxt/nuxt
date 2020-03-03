@@ -1,6 +1,6 @@
 {
   "name": "nuxt-start",
-  "version": "2.9.2",
+  "version": "2.11.0",
   "description": "Starts Nuxt.js Application in production mode",
   "keywords": [
     "nuxt",
@@ -48,25 +48,25 @@
       "name": "Pim (@pimlie)"
     }
   ],
+  "main": "dist/nuxt-start.js",
+  "bin": "bin/nuxt-start.js",
   "files": [
     "bin",
     "dist"
   ],
-  "main": "dist/nuxt-start.js",
-  "bin": "bin/nuxt-start.js",
   "dependencies": {
-    "@nuxt/cli": "2.9.2",
-    "@nuxt/core": "2.9.2",
+    "@nuxt/cli": "2.11.0",
+    "@nuxt/core": "2.11.0",
     "node-fetch": "^2.6.0",
-    "vue": "^2.6.10",
+    "vue": "^2.6.11",
     "vue-client-only": "^2.0.0",
-    "vue-meta": "^2.2.2",
+    "vue-meta": "^2.3.3",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "~3.0.7",
-    "vuex": "^3.1.1"
+    "vue-router": "^3.1.6",
+    "vuex": "^3.1.2"
   },
   "engines": {
-    "node": ">=8.9.0",
-    "npm": ">=5.0.0"
+    "node": ">=10.19.0",
+    "npm": ">=6.14.1"
   }
 }

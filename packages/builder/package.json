@@ -1,27 +1,29 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.9.2",
+  "version": "2.11.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/builder.js",
   "files": [
     "dist"
   ],
-  "main": "dist/builder.js",
   "dependencies": {
     "@nuxt/devalue": "^1.2.4",
-    "@nuxt/utils": "2.9.2",
-    "@nuxt/vue-app": "2.9.2",
-    "chokidar": "^3.0.2",
-    "consola": "^2.10.1",
+    "@nuxt/utils": "2.11.0",
+    "@nuxt/vue-app": "2.11.0",
+    "@nuxt/webpack": "2.11.0",
+    "chalk": "^3.0.0",
+    "chokidar": "^3.3.1",
+    "consola": "^2.11.3",
     "fs-extra": "^8.1.0",
-    "glob": "^7.1.4",
+    "glob": "^7.1.6",
     "hash-sum": "^2.0.0",
     "ignore": "^5.1.4",
     "lodash": "^4.17.15",
-    "pify": "^4.0.1",
-    "semver": "^6.3.0",
-    "serialize-javascript": "^1.9.0",
-    "upath": "^1.1.2"
+    "pify": "^5.0.0",
+    "semver": "^7.1.3",
+    "serialize-javascript": "^3.0.0",
+    "upath": "^1.2.0"
   },
   "publishConfig": {
     "access": "public"
