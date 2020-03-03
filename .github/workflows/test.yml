@@ -29,9 +29,12 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@2
         with:
-          fetch-depth: 100
+          fetch-depth: 0 # All history
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - name: cache node_modules
         id: node_modules_cache_id
