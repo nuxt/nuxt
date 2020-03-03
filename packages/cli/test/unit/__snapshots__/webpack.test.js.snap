@@ -1,0 +1,685 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`webpack getWebpackConfig() 1`] = `
+"Object {
+  \\"loader\\": \\"vue-loader\\",
+  \\"options\\": Object {
+    \\"productionMode\\": true,
+    \\"transformAssetUrls\\": Object {
+      \\"embed\\": \\"src\\",
+      \\"object\\": \\"src\\",
+      \\"source\\": \\"src\\",
+      \\"video\\": \\"src\\",
+    },
+  },
+  \\"test\\": /\\\\.vue$/i,
+}"
+`;
+
+exports[`webpack nuxt webpack devtool 1`] = `
+"false
+"
+`;
+
+exports[`webpack nuxt webpack module.rules 1`] = `
+"Array [
+  Object {
+    \\"loader\\": \\"vue-loader\\",
+    \\"options\\": Object {
+      \\"productionMode\\": true,
+      \\"transformAssetUrls\\": Object {
+        \\"embed\\": \\"src\\",
+        \\"object\\": \\"src\\",
+        \\"source\\": \\"src\\",
+        \\"video\\": \\"src\\",
+      },
+    },
+    \\"test\\": /\\\\.vue$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /^\\\\?vue/i,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"pug-plain-loader\\",
+            \\"options\\": Object {},
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          \\"raw-loader\\",
+          Object {
+            \\"loader\\": \\"pug-plain-loader\\",
+            \\"options\\": Object {},
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.pug$/i,
+  },
+  Object {
+    \\"exclude\\": [Function exclude],
+    \\"test\\": /\\\\.jsx?$/i,
+    \\"use\\": Array [
+      Object {
+        \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
+        \\"options\\": Object {
+          \\"babelrc\\": false,
+          \\"cacheDirectory\\": false,
+          \\"configFile\\": false,
+          \\"envName\\": \\"client\\",
+          \\"presets\\": Array [
+            Array [
+              \\"<nuxtDir>/packages/babel-preset-app/src/index.js\\",
+              Object {},
+            ],
+          ],
+        },
+      },
+    ],
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.css$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.p(ost)?css$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"less-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"less-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.less$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"sass-loader\\",
+            \\"options\\": Object {
+              \\"sassOptions\\": Object {
+                \\"indentedSyntax\\": true,
+              },
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"sass-loader\\",
+            \\"options\\": Object {
+              \\"sassOptions\\": Object {
+                \\"indentedSyntax\\": true,
+              },
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.sass$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"sass-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"sass-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.scss$/i,
+  },
+  Object {
+    \\"oneOf\\": Array [
+      Object {
+        \\"resourceQuery\\": /module/,
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
+              },
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"stylus-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+      Object {
+        \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"vue-style-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"css-loader\\",
+            \\"options\\": Object {
+              \\"importLoaders\\": 2,
+              \\"onlyLocals\\": false,
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"postcss-loader\\",
+            \\"options\\": Object {
+              \\"order\\": \\"presetEnvAndCssnanoLast\\",
+              \\"plugins\\": Array [
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+                [Function anonymous],
+              ],
+              \\"sourceMap\\": false,
+            },
+          },
+          Object {
+            \\"loader\\": \\"stylus-loader\\",
+            \\"options\\": Object {
+              \\"sourceMap\\": false,
+            },
+          },
+        ],
+      },
+    ],
+    \\"test\\": /\\\\.styl(us)?$/i,
+  },
+  Object {
+    \\"test\\": /\\\\.(png|jpe?g|gif|svg|webp)$/i,
+    \\"use\\": Array [
+      Object {
+        \\"loader\\": \\"url-loader\\",
+        \\"options\\": Object {
+          \\"limit\\": 1000,
+          \\"name\\": \\"img/[contenthash:7].[ext]\\",
+        },
+      },
+    ],
+  },
+  Object {
+    \\"test\\": /\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i,
+    \\"use\\": Array [
+      Object {
+        \\"loader\\": \\"url-loader\\",
+        \\"options\\": Object {
+          \\"limit\\": 1000,
+          \\"name\\": \\"fonts/[contenthash:7].[ext]\\",
+        },
+      },
+    ],
+  },
+  Object {
+    \\"test\\": /\\\\.(webm|mp4|ogv)$/i,
+    \\"use\\": Array [
+      Object {
+        \\"loader\\": \\"file-loader\\",
+        \\"options\\": Object {
+          \\"name\\": \\"videos/[contenthash:7].[ext]\\",
+        },
+      },
+    ],
+  },
+]
+"
+`;
+
+exports[`webpack nuxt webpack module.rules loader=.*-loader 1`] = `
+"Object {
+  \\"loader\\": \\"vue-loader\\",
+  \\"options\\": Object {
+    \\"productionMode\\": true,
+    \\"transformAssetUrls\\": Object {
+      \\"embed\\": \\"src\\",
+      \\"object\\": \\"src\\",
+      \\"source\\": \\"src\\",
+      \\"video\\": \\"src\\",
+    },
+  },
+  \\"test\\": /\\\\.vue$/i,
+}
+"
+`;
+
+exports[`webpack nuxt webpack module.rules loader=vue- 1`] = `
+"Object {
+  \\"loader\\": \\"vue-loader\\",
+  \\"options\\": Object {
+    \\"productionMode\\": true,
+    \\"transformAssetUrls\\": Object {
+      \\"embed\\": \\"src\\",
+      \\"object\\": \\"src\\",
+      \\"source\\": \\"src\\",
+      \\"video\\": \\"src\\",
+    },
+  },
+  \\"test\\": /\\\\.vue$/i,
+}
+"
+`;
+
+exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
+"Object {
+  \\"exclude\\": [Function exclude],
+  \\"test\\": /\\\\.jsx?$/i,
+  \\"use\\": Array [
+    Object {
+      \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
+      \\"options\\": Object {
+        \\"babelrc\\": false,
+        \\"cacheDirectory\\": false,
+        \\"configFile\\": false,
+        \\"envName\\": \\"client\\",
+        \\"presets\\": Array [
+          Array [
+            \\"<nuxtDir>/packages/babel-preset-app/src/index.js\\",
+            Object {},
+          ],
+        ],
+      },
+    },
+  ],
+}
+"
+`;
+
+exports[`webpack nuxt webpack nuxt webpack module rules test=.pug oneOf use.0=raw 1`] = `
+"Object {
+  \\"use\\": Array [
+    \\"raw-loader\\",
+    Object {
+      \\"loader\\": \\"pug-plain-loader\\",
+      \\"options\\": Object {},
+    },
+  ],
+}
+"
+`;
+
+exports[`webpack nuxt webpack resolve alias 1`] = `
+"Object {
+  \\"@\\": \\"<nuxtDir>/resolve\\",
+  \\"@@\\": \\"<nuxtDir>/resolve\\",
+  \\"assets\\": \\"<nuxtDir>/resolve/assets\\",
+  \\"static\\": \\"<nuxtDir>/resolve/static\\",
+  \\"vue-meta\\": \\"<nuxtDir>/node_modules/vue-meta/dist/vue-meta.esm.browser.js\\",
+  \\"~\\": \\"<nuxtDir>/resolve\\",
+  \\"~~\\": \\"<nuxtDir>/resolve\\",
+}
+"
+`;
