@@ -34,7 +34,7 @@ export class WebpackBundler {
   }
 
   getWebpackConfig (name) {
-    const Config = WebpackConfigs[name] // eslint-disable-line import/namespace
+    const Config = WebpackConfigs[name.toLowerCase()] // eslint-disable-line import/namespace
     if (!Config) {
       throw new Error(`Unsupported webpack config ${name}`)
     }

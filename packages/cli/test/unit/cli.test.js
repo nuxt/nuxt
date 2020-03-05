@@ -26,7 +26,7 @@ describe('cli', () => {
     const nodeEnv = process.env.NODE_ENV
     process.env.NODE_ENV = ''
 
-    getCommand.mockImplementationOnce(() => Promise.resolve({}))
+    getCommand.mockImplementationOnce(() => Promise.resolve({ run () { } }))
 
     await run(['dev'])
     expect(process.env.NODE_ENV).toBe('development')
@@ -37,7 +37,7 @@ describe('cli', () => {
     const nodeEnv = process.env.NODE_ENV
     process.env.NODE_ENV = ''
 
-    getCommand.mockImplementationOnce(() => Promise.resolve({}))
+    getCommand.mockImplementationOnce(() => Promise.resolve({ run () { } }))
 
     await run(['', '', 'build'])
     expect(process.env.NODE_ENV).toBe('production')

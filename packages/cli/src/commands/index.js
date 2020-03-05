@@ -4,6 +4,7 @@ const commands = {
   build: () => import('./build'),
   generate: () => import('./generate'),
   export: () => import('./export'),
+  webpack: () => import('./webpack'),
   help: () => import('./help')
 }
 
