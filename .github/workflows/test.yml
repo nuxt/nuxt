@@ -15,6 +15,7 @@ on:
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' || !((github.base_ref == '2.x' || github.base_ref == 'next') && github.head_ref == 'dev')
 
     strategy:
       matrix:
@@ -28,7 +29,12 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # All history
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - name: cache node_modules
         id: node_modules_cache_id
@@ -295,7 +301,7 @@ jobs:
       - name: publish
         run: |
           if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
-          ./scripts/workspace-run npm publish -q
+          ./scripts/workspace-run npm publish $tag -q
         env:
           ref: ${{ github.ref }}
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}

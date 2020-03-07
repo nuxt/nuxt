@@ -22,7 +22,7 @@ describe('with-config', () => {
 
   test('inject fails if value is undefined', async () => {
     // inject('injectedProperty', undefined)
-    await expect(nuxt.renderRoute('/?injectValue=undefined')).rejects.toThrowError('inject(key, value) has no value provided')
+    await expect(nuxt.renderRoute('/?injectValue=undefined')).rejects.toThrowError('inject(\'injectedProperty\', value) has no value provided')
   })
 
   test('inject succeeds if value is defined but evaluates to false', async () => {

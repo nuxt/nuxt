@@ -26,7 +26,7 @@ describe('with-config', () => {
       }],
       ['Please use `build.postcss` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3 as they remove all defaults set by Nuxt and can cause severe problems with features like alias resolving inside your CSS.'],
       ['Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.', 'Please use https://github.com/nuxt-community/style-resources-module'],
-      ['Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.']
+      ['Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.']
     ])
     expect(customCompressionMiddlewareFunctionName).toBe('damn')
   }, hooks)
