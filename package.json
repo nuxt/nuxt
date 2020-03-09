@@ -28,7 +28,7 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
     "test:unit": "jest packages --forceExit",
-    "audit": "improved-yarn-audit --min-severity moderate"
+    "audit": "improved-yarn-audit --min-severity moderate -e 1488"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
