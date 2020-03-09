@@ -18,7 +18,7 @@
     invariant "^2.2.4"
     semver "^5.5.0"
 
-"@babel/core@^7.1.0", "@babel/core@^7.7.5", "@babel/core@^7.8.6":
+"@babel/core@^7.1.0", "@babel/core@^7.7.5", "@babel/core@^7.8.7":
   version "7.8.7"
   resolved "https://registry.npmjs.org/@babel/core/-/core-7.8.7.tgz#b69017d221ccdeb203145ae9da269d72cf102f3b"
   integrity sha512-rBlqF3Yko9cynC5CCFy6+K/w2N+Sq/ff2BPy+Krp7rHlABIr5epbA7OxVeKoMHB39LZOp1UY5SuLjy6uWi35yA==
@@ -674,7 +674,7 @@
     "@babel/helper-create-regexp-features-plugin" "^7.8.3"
     "@babel/helper-plugin-utils" "^7.8.3"
 
-"@babel/preset-env@^7.8.6":
+"@babel/preset-env@^7.8.7":
   version "7.8.7"
   resolved "https://registry.npmjs.org/@babel/preset-env/-/preset-env-7.8.7.tgz#1fc7d89c7f75d2d70c2b6768de6c2e049b3cb9db"
   integrity sha512-BYftCVOdAYJk5ASsznKAUl53EMhfBbr8CJ1X+AJLfGPscQkwJFiaV/Wn9DPH/7fzm2v6iRYJKYHSqyynTGw0nw==
@@ -737,7 +737,7 @@
     levenary "^1.1.1"
     semver "^5.5.0"
 
-"@babel/runtime@^7.8.4":
+"@babel/runtime@^7.8.4", "@babel/runtime@^7.8.7":
   version "7.8.7"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.8.7.tgz#8fefce9802db54881ba59f90bb28719b4996324d"
   integrity sha512-+AATMUFppJDw6aiR5NVPHqIQBlV/Pj8wY/EZH+lmvRdUo9xBaz/rF3alAwFJQavvKfeOlPE7oaaDHVbcySbCsg==
@@ -2267,7 +2267,7 @@
     source-map "~0.6.1"
     vue-template-es2015-compiler "^1.9.0"
 
-"@vue/server-test-utils@^1.0.0-beta.31":
+"@vue/server-test-utils@^1.0.0-beta.32":
   version "1.0.0-beta.32"
   resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.0-beta.32.tgz#698424d5d76fea10ee3d2ec45f2416e31681f01e"
   integrity sha512-1dxJyrO805pr4tyNckAwRojxby3g37IHpmBURInz4yccsiwHsOhSi1tR23HovOocqmu1/NttiI5rHtv9MtL9Ig==
@@ -2275,7 +2275,7 @@
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.0.0-beta.31":
+"@vue/test-utils@^1.0.0-beta.32":
   version "1.0.0-beta.32"
   resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.0-beta.32.tgz#38c3947886236201a3f24b583c73598eb95ccc69"
   integrity sha512-ywhe7PATMAk/ZGdsrcuQIliQusOyfe0OOHjKKCCERqgHh1g/kqPtmSMT5Jx4sErx53SYbNucr8QOK6/u5ianAw==
@@ -3436,7 +3436,7 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001020, caniuse-lite@^1.0.30001030, caniuse-lite@^1.0.30001031:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001020, caniuse-lite@^1.0.30001030, caniuse-lite@^1.0.30001033:
   version "1.0.30001033"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001033.tgz#60c328fb56860de60f9a2cb419c31fb80587cba0"
   integrity sha512-8Ibzxee6ibc5q88cM1usPsMpJOG5CTq0s/dKOmlekPbDGKt+UrnOOTPSjQz3kVo6yL7N4SB5xd+FGLHQmbzh6A==
@@ -12543,10 +12543,10 @@ vue@^2.6.11:
   resolved "https://registry.npmjs.org/vue/-/vue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
   integrity sha512-VfPwgcGABbGAue9+sfrD4PuwFar7gPb1yl1UK1MwXoQPAw0BKSqWfoYCT/ThFrdEVWoI51dBuyCoiNU9bZDZxQ==
 
-vuex@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.npmjs.org/vuex/-/vuex-3.1.2.tgz#a2863f4005aa73f2587e55c3fadf3f01f69c7d4d"
-  integrity sha512-ha3jNLJqNhhrAemDXcmMJMKf1Zu4sybMPr9KxJIuOpVcsDQlTBYLLladav2U+g1AvdYDG5Gs0xBTb0M5pXXYFQ==
+vuex@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.npmjs.org/vuex/-/vuex-3.1.3.tgz#f2ad73e3fb73691698b38c93f66e58e267947180"
+  integrity sha512-k8vZqNMSNMgKelVZAPYw5MNb2xWSmVgCKtYKAptvm9YtZiOXnRXFWu//Y9zQNORTrm3dNj1n/WaZZI26tIX6Mw==
 
 w3c-hr-time@^1.0.1:
   version "1.0.2"
