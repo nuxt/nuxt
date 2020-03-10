@@ -9,6 +9,7 @@
   "ignoreDeps": [
     "memory-fs",
     "@rollup/plugin-node-resolve",
+    "@babel/parser",
     "execa",
     "pify",
     "file-loader",
