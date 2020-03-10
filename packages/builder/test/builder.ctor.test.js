@@ -102,7 +102,7 @@ describe('builder: builder constructor', () => {
     const doneHook = nuxt.hook.mock.calls[0][1]
     doneHook()
     expect(consola.warn).toBeCalledTimes(1)
-    expect(consola.warn).toBeCalledWith('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
+    expect(consola.warn).toBeCalledWith('Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.')
   })
 
   test('should support function template', () => {
