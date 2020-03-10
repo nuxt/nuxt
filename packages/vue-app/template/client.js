@@ -17,7 +17,16 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -40,7 +49,7 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 const logs = NUXT.logs || []
   if (logs.length > 0) {
   const ssrLogSyle = 'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
-  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ("%cNuxt SSR", ssrLogSyle)
+  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ('%cNuxt SSR', ssrLogSyle)
   logs.forEach(logObj => (console[logObj.type] || console.log)(...logObj.args))
   delete NUXT.logs
   console.groupEnd && console.groupEnd()
@@ -102,26 +111,29 @@ function componentOption (component, key, ...args) {
   return option
 }
 
-function mapTransitions (Components, to, from) {
+function mapTransitions (toComponents, to, from) {
   const componentTransitions = (component) => {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
+  
+  const fromComponents = from ? getMatchedComponents(from) : []
+  const maxDepth = Math.max(toComponents.length, fromComponents.length)
 
-  return Components.map((Component) => {
-    // Clone original object to prevent overrides
-    const transitions = Object.assign({}, componentTransitions(Component))
+  const mergedTransitions = []
+  for (let i=0; i<maxDepth; i++) {
+    // Clone original objects to prevent overrides
+    const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
+    const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
+    
+    // Combine transitions & prefer `leave` properties of "from" route
+    Object.keys(toTransitions)
+        .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
+        .forEach((key) => { transitions[key] = toTransitions[key] })
 
-    // Combine transitions & prefer `leave` transitions of 'from' route
-    if (from && from.matched.length && from.matched[0].components.default) {
-      const fromTransitions = componentTransitions(from.matched[0].components.default)
-      Object.keys(fromTransitions)
-        .filter(key => fromTransitions[key] && key.toLowerCase().includes('leave'))
-        .forEach((key) => { transitions[key] = fromTransitions[key] })
-    }
-
-    return transitions
-  })
+    mergedTransitions.push(transitions)
+  }
+  return mergedTransitions
 }
 <% } %>
 <% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
@@ -332,7 +344,7 @@ async function render (to, from, next) {
     <% } %>
 
     // Show error page
-    app.context.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
+    app.context.error({ statusCode: 404, message: '<%= messages.error_404 %>' })
     return next()
   }
 
@@ -409,7 +421,7 @@ async function render (to, from, next) {
 
     // ...If .validate() returned false
     if (!isValid) {
-      this.error({ statusCode: 404, message: `<%= messages.error_404 %>` })
+      this.error({ statusCode: 404, message: '<%= messages.error_404 %>' })
       return next()
     }
     <% } %>
@@ -460,7 +472,10 @@ async function render (to, from, next) {
       <% } %>
 
       <% if (features.fetch) { %>
-      const hasFetch = Boolean(Component.options.fetch)
+      const hasFetch = Boolean(Component.options.fetch) && Component.options.fetch.length
+      if (hasFetch) {
+        console.warn('fetch(context) has been deprecated, please use middleware(context)')
+      }
       <% } else { %>
       const hasFetch = false
       <% } %>
@@ -740,7 +755,7 @@ function addHotReload ($component, depth) {
       <% if (features.fetch) { %>
       // Call fetch()
       Component.options.fetch = Component.options.fetch || noopFetch
-      let pFetch = Component.options.fetch(context)
+      let pFetch = Component.options.fetch.length && Component.options.fetch(context)
       if (!pFetch || (!(pFetch instanceof Promise) && (typeof pFetch.then !== 'function'))) { pFetch = Promise.resolve(pFetch) }
       <%= (loading ? 'pFetch.then(() => this.$loading.increase && this.$loading.increase(30))' : '') %>
       promises.push(pFetch)

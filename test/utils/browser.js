@@ -105,6 +105,9 @@ export default class Browser {
       },
       storeState () {
         return page.evaluate($nuxt => $nuxt.$store.state, page.$nuxt)
+      },
+      transitionsData () {
+        return page.evaluate($nuxt => $nuxt.nuxt.transitions, page.$nuxt)
       }
     }
     return page

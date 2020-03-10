@@ -1,5 +1,4 @@
 import UAParser from 'ua-parser-js'
-import semver from 'semver'
 
 export const ModernBrowsers = {
   Edge: '16',
@@ -15,21 +14,35 @@ export const ModernBrowsers = {
   'Mobile Safari': '10.3'
 }
 
-const modernBrowsers = Object.keys(ModernBrowsers)
-  .reduce((allBrowsers, browser) => {
-    allBrowsers[browser] = semver.coerce(ModernBrowsers[browser])
-    return allBrowsers
-  }, {})
+let semver
+let __modernBrowsers
+
+const getModernBrowsers = () => {
+  if (__modernBrowsers) {
+    return __modernBrowsers
+  }
+
+  __modernBrowsers = Object.keys(ModernBrowsers)
+    .reduce((allBrowsers, browser) => {
+      allBrowsers[browser] = semver.coerce(ModernBrowsers[browser])
+      return allBrowsers
+    }, {})
+  return __modernBrowsers
+}
 
 export const isModernBrowser = (ua) => {
   if (!ua) {
     return false
+  }
+  if (!semver) {
+    semver = require('semver')
   }
   const { browser } = UAParser(ua)
   const browserVersion = semver.coerce(browser.version)
   if (!browserVersion) {
     return false
   }
+  const modernBrowsers = getModernBrowsers()
   return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
 }
 
@@ -48,4 +61,4 @@ export const isModernRequest = (req, modernMode = false) => {
 }
 
 // https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
-export const safariNoModuleFix = `!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();`
+export const safariNoModuleFix = '!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();'

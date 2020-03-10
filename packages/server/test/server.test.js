@@ -61,7 +61,8 @@ describe('server: server', () => {
     ready: jest.fn(),
     callHook: jest.fn(),
     resolver: {
-      requireModule: jest.fn()
+      requireModule: jest.fn(),
+      resolvePath: jest.fn().mockImplementation(p => p)
     }
   })
 
@@ -379,7 +380,7 @@ describe('server: server', () => {
     expect(server.app.use).toBeCalledWith('/middleware', handler)
   })
 
-  test('should throw error when module resolves failed', () => {
+  test('should show error when module require failed', () => {
     const nuxt = createNuxt()
     nuxt.options.router = { base: '/' }
     const server = new Server(nuxt)
@@ -388,9 +389,10 @@ describe('server: server', () => {
       throw error
     })
 
-    expect(() => server.useMiddleware('test-middleware')).toThrow(error)
+    server.useMiddleware('test-middleware')
+
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith(error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should only log error when module resolves failed in dev mode', () => {
@@ -406,7 +408,7 @@ describe('server: server', () => {
     server.useMiddleware('test-middleware')
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith(error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should render route via renderer', () => {
@@ -475,7 +477,7 @@ describe('server: server', () => {
       baseURL: '/foo/'
     })
     expect(listener.listen).toBeCalledTimes(1)
-    expect(server.listeners).toEqual([ listener ])
+    expect(server.listeners).toEqual([listener])
     expect(server.nuxt.callHook).toBeCalledTimes(1)
     expect(server.nuxt.callHook).toBeCalledWith('listen', listener.server, listener)
   })
@@ -506,7 +508,7 @@ describe('server: server', () => {
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     const listener = { close: jest.fn() }
-    server.listeners = [ listener ]
+    server.listeners = [listener]
     server.renderer = { close: jest.fn() }
     server.resources = { id: 'test-resources' }
 

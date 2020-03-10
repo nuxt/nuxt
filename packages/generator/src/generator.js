@@ -128,7 +128,7 @@ export default class Generator {
         if (isHandled) {
           line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
         } else {
-          line += Chalk.grey(error.stack)
+          line += Chalk.grey(error.stack || error.message || `${error}`)
         }
 
         return line
@@ -158,7 +158,7 @@ export default class Generator {
     try {
       html = this.minifyHtml(html)
     } catch (error) {
-      consola.warn(`HTML minification failed for SPA fallback`)
+      consola.warn('HTML minification failed for SPA fallback')
     }
 
     await fsExtra.writeFile(fallbackPath, html, 'utf8')

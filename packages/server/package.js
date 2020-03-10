@@ -1,3 +1,6 @@
 export default {
-  build: true
+  build: true,
+  rollup: {
+    externals: ['jsdom']
+  }
 }

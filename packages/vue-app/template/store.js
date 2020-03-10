@@ -8,9 +8,9 @@ const willResolveStoreModules = storeModules.some(s => s.src.indexOf('index.') !
 if (willResolveStoreModules) { %>
 const VUEX_PROPERTIES = ['state', 'getters', 'actions', 'mutations']
 <% } %>
-let store = {}
+let store = {};
 
-void (function updateModules () {
+(function updateModules () {
   <% storeModules.some(s => {
     if(s.src.indexOf('index.') === 0) { %>
   store = normalizeRoot(require('<%= relativeToBuild(srcDir, dir.store, s.src) %>'), '<%= dir.store %>/<%= s.src %>')
