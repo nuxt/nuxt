@@ -70,14 +70,6 @@ describe('basic browser', () => {
     expect(await page.$text('pre')).toContain('kevinmarrec')
   })
 
-  test('/old-fetch', async () => {
-    const msg = new Promise(resolve =>
-      page.on('console', msg => resolve(msg.text()))
-    )
-    await page.nuxt.navigate('/old-fetch')
-    expect(await msg).toBe('fetch(context) has been deprecated, please use middleware(context)')
-  })
-
   test('ssr: /fetch-client', async () => {
     const page = await browser.page(url('/fetch-client'))
     expect(await page.$text('p')).toContain('Fetching...')
