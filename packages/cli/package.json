@@ -22,7 +22,7 @@
     "exit": "^0.1.2",
     "fs-extra": "^8.1.0",
     "hable": "^3.0.0",
-    "minimist": "^1.2.3",
+    "minimist": "^1.2.4",
     "opener": "1.5.1",
     "pretty-bytes": "^5.3.0",
     "std-env": "^2.2.1",
