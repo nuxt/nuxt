@@ -150,6 +150,7 @@ module.exports = (api, options = {}) => {
   }])
 
   return {
+    sourceType: 'unambiguous',
     presets,
     plugins
   }

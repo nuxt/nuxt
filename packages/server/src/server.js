@@ -206,7 +206,12 @@ export default class Server {
       }
     }
 
-    // SubApp (Express)
+    // Prefix on handle (proxy-module)
+    if (middleware.handle.prefix !== undefined && middleware.prefix === undefined) {
+      middleware.prefix = middleware.handle.prefix
+    }
+
+    // sub-app (express)
     if (typeof middleware.handle.handle === 'function') {
       const server = middleware.handle
       middleware.handle = server.handle.bind(server)
