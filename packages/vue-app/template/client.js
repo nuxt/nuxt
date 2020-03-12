@@ -116,7 +116,7 @@ function mapTransitions (toComponents, to, from) {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
-  
+
   const fromComponents = from ? getMatchedComponents(from) : []
   const maxDepth = Math.max(toComponents.length, fromComponents.length)
 
@@ -125,7 +125,7 @@ function mapTransitions (toComponents, to, from) {
     // Clone original objects to prevent overrides
     const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
     const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
-    
+
     // Combine transitions & prefer `leave` properties of "from" route
     Object.keys(toTransitions)
         .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
@@ -466,9 +466,6 @@ async function render (to, from, next) {
 
       <% if (features.fetch) { %>
       const hasFetch = Boolean(Component.options.fetch) && Component.options.fetch.length
-      if (hasFetch) {
-        console.warn('fetch(context) has been deprecated, please use middleware(context)')
-      }
       <% } else { %>
       const hasFetch = false
       <% } %>

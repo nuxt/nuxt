@@ -8,10 +8,12 @@ jobs:
   nightly:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
         with:
           ref: 'refs/heads/dev'
           fetch-depth: 0 # All history
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -38,20 +40,22 @@ jobs:
         run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build
-      # - name: publish
-      #   run: ./scripts/workspace-run npm publish -q
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      - name: publish
+        run: ./scripts/workspace-run npm publish -q
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
   # Anchors still not supported :(
   # https://github.community/t5/GitHub-Actions/Support-for-YAML-anchors/td-p/30336
   nightly-next:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
         with:
           ref: 'refs/heads/next'
           fetch-depth: 0 # All history
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
       - uses: actions/setup-node@v1
         with:
           node-version: 12
@@ -78,9 +82,9 @@ jobs:
         run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build
-      # - name: publish
-      #   run: ./scripts/workspace-run npm publish --tag next -q
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+      - name: publish
+        run: ./scripts/workspace-run npm publish --tag next -q
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
 
