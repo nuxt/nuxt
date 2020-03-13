@@ -42,6 +42,21 @@
           /patch/2/child/1?query=true#test
         </NuxtLink>
       </li>
+      <li>
+        <NuxtLink data-test-id="patch-id-2-reuse" to="/patch/2/reuse">
+          /patch/2/reuse
+        </NuxtLink>
+      </li>
+      <li>
+        <NuxtLink data-test-id="patch-id-2-reuse-2" to="/patch/2/reuse/1">
+          /patch/2/reuse/1
+        </NuxtLink>
+      </li>
+      <li>
+        <NuxtLink data-test-id="patch-id-2-reuse-2" to="/patch/2/reuse/2">
+          /patch/2/reuse/2
+        </NuxtLink>
+      </li>
     </ul>
   </div>
 </template>
