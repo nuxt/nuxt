@@ -1,13 +1,13 @@
 <template>
-  <div>
-    Display a warning in the console
+  <div id="old-fetch">
+    oldFetchData: {{ $store.state.oldFetchData }}
   </div>
 </template>
 
 <script>
 export default {
-  async fetch (context) {
-    // Should display a warning
+  fetch ({ store, route }) {
+    store.commit('setOldFetchData', route.name)
   },
   data () {
     return {
