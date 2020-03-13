@@ -454,4 +454,25 @@ describe('core: module', () => {
     expect(handler).toBeCalledTimes(1)
     expect(module.requiredModules.moduleTest).toBeDefined()
   })
+
+  test('should prevent adding not installed buildModules', async () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {
+        ...defaultOptions,
+        buildModules: ['test-build-module']
+      }
+    })
+
+    requireModule.mockImplementationOnce(() => {
+      const moduleNotFound = new Error()
+      moduleNotFound.code = 'MODULE_NOT_FOUND'
+      throw moduleNotFound
+    })
+
+    const result = await module.addModule('test-build-module', true)
+
+    expect(result).toBeUndefined()
+    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used. Silently ignoring module as programatic usage detected.')
+  })
 })
