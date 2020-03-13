@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { isModernRequest } from '@nuxt/utils'
+import { isModernRequest, waitFor } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -238,19 +238,23 @@ export default class VueRenderer {
     return renderer.render(renderContext)
   }
 
-  async renderRoute (url, renderContext = {}, _retried) {
+  async renderRoute (url, renderContext = {}, _retried = 0) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      if (this.options.dev) {
-        // Tell nuxt middleware to use `server:nuxt:renderLoading   hook
+      // Fall-back to loading-screen if enabled
+      if (this.options.build.loadingScreen) {
+        // Tell nuxt middleware to use `server:nuxt:renderLoading hook
         return false
       }
 
-      // Production
-      if (!_retried && ['loading', 'created'].includes(this._state)) {
-        await this.ready()
-        return this.renderRoute(url, renderContext, true)
+      // Retry
+      const retryLimit = this.options.dev ? 60 : 3
+      if (_retried < retryLimit && this._state !== 'error') {
+        await this.ready().then(() => waitFor(1000))
+        return this.renderRoute(url, renderContext, _retried + 1)
       }
+
+      // Throw Error
       switch (this._state) {
         case 'created':
           throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
@@ -259,7 +263,7 @@ export default class VueRenderer {
         case 'error':
           throw this._error
         case 'ready':
-          throw new Error(`Renderer is loaded but not all resources are available! Please check ${this.distPath} existence.`)
+          throw new Error(`Renderer resources are not loaded! Please check possible console errors and ensure dist (${this.distPath}) exists.`)
         default:
           throw new Error('Renderer is in unknown state!')
       }
