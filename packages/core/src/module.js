@@ -143,7 +143,14 @@ export default class ModuleContainer {
 
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      try {
+        handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      } catch (error) {
+        if (this.options.buildModules.includes(src) && error.code === 'MODULE_NOT_FOUND') {
+          consola.info(`Build-only module \`${src}\` will be disabled in production installation.`)
+          return
+        }
+      }
     }
 
     // Validate handler
