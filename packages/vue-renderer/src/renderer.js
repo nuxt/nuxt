@@ -241,27 +241,28 @@ export default class VueRenderer {
   async renderRoute (url, renderContext = {}, _retried) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      // Production
-      if (!this.options.dev) {
-        if (!_retried && ['loading', 'created'].includes(this._state)) {
-          await this.ready()
-          return this.renderRoute(url, renderContext, true)
-        }
-        switch (this._state) {
-          case 'created':
-            throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
-          case 'loading':
-            throw new Error('Renderer is loading.')
-          case 'error':
-            throw this._error
-          case 'ready':
-            throw new Error(`Renderer is loaded but not all resources are available! Please check ${this.distPath} existence.`)
-          default:
-            throw new Error('Renderer is in unknown state!')
-        }
+      if (this.options.dev) {
+        // Tell nuxt middleware to use `server:nuxt:renderLoading   hook
+        return false
       }
-      // Tell nuxt middleware to render UI
-      return false
+
+      // Production
+      if (!_retried && ['loading', 'created'].includes(this._state)) {
+        await this.ready()
+        return this.renderRoute(url, renderContext, true)
+      }
+      switch (this._state) {
+        case 'created':
+          throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
+        case 'loading':
+          throw new Error('Renderer is loading.')
+        case 'error':
+          throw this._error
+        case 'ready':
+          throw new Error(`Renderer is loaded but not all resources are available! Please check ${this.distPath} existence.`)
+        default:
+          throw new Error('Renderer is in unknown state!')
+      }
     }
 
     // Log rendered url
