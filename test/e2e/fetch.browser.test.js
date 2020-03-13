@@ -35,6 +35,12 @@ describe('basic browser', () => {
     expect(await page.$text('pre')).toContain('pi0')
   })
 
+  test('/old-fetch', async () => {
+    await page.nuxt.navigate('/old-fetch')
+    const storeState = await page.nuxt.storeState()
+    expect(storeState).toMatchObject({ oldFetchData: 'old-fetch' })
+  })
+
   test('/fetch-error', async () => {
     await page.nuxt.navigate('/fetch-error')
     expect(await page.$text('p')).toContain('Fetching...')
