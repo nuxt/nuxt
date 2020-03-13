@@ -150,7 +150,7 @@ export default class ModuleContainer {
           throw error
         }
 
-        let message = 'Module `{name}` is not installed.'
+        let message = 'Module `{name}` not found.'
 
         if (this.options.buildModules.includes(src)) {
           message += ' Please ensure `{name}` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.'.replace('{name}', src)
