@@ -36,7 +36,7 @@ export default class NuxtCommand extends Hookable {
   }
 
   async run () {
-    await this.callHook('setup', {
+    await this.callHook('run:before', {
       argv: this._argv,
       cmd: this.cmd,
       rootDir: path.resolve(this.argv._[0] || '.')
@@ -53,7 +53,7 @@ export default class NuxtCommand extends Hookable {
     }
 
     if (typeof this.cmd.run !== 'function') {
-      return
+      throw new TypeError('Invalid command! Commands should at least implement run() function.')
     }
 
     let cmdError
@@ -104,7 +104,12 @@ export default class NuxtCommand extends Hookable {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
-    const config = await loadNuxtConfig(this.argv)
+    const context = {
+      command: this.cmd.name,
+      dev: !!extraOptions.dev
+    }
+
+    const config = await loadNuxtConfig(this.argv, context)
     const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
@@ -205,7 +210,7 @@ export default class NuxtCommand extends Hookable {
       }
 
       maxOptionLength = Math.max(maxOptionLength, optionHelp.length)
-      options.push([ optionHelp, option.description ])
+      options.push([optionHelp, option.description])
     }
 
     const _opts = options.map(([option, description]) => {
@@ -219,7 +224,7 @@ export default class NuxtCommand extends Hookable {
 
     const usage = foldLines(`Usage: nuxt ${this.cmd.usage} [options]`, startSpaces)
     const description = foldLines(this.cmd.description, startSpaces)
-    const opts = foldLines(`Options:`, startSpaces) + '\n\n' + _opts
+    const opts = foldLines('Options:', startSpaces) + '\n\n' + _opts
 
     let helpText = colorize(`${usage}\n\n`)
     if (this.cmd.description) {

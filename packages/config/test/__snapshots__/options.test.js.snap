@@ -20,6 +20,7 @@ Object {
   "build": Object {
     "_publicPath": "/_nuxt/",
     "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -39,6 +40,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
@@ -78,7 +80,9 @@ Object {
       },
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
         "sourceMap": false,
       },
       "scss": Object {
@@ -123,6 +127,7 @@ Object {
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
+    "serverURLPolyfill": "url",
     "splitChunks": Object {
       "commons": true,
       "layouts": false,
@@ -143,6 +148,7 @@ Object {
   "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
   "css": Array [],
   "debug": false,
@@ -158,10 +164,27 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [
     "js",
     "mjs",
   ],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
@@ -196,6 +219,7 @@ Object {
     "**/*.spec.*",
     "**/-*.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -347,6 +371,7 @@ Object {
       "silent": true,
     },
   },
+  "vueMeta": null,
   "watch": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],

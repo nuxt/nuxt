@@ -44,16 +44,18 @@ describe('builder: builder generate', () => {
     nuxt.options.build = {
       template: {
         dir: '/var/nuxt/src/template',
-        files: [ 'App.js', 'index.js' ]
+        files: ['App.js', 'index.js']
       },
       watch: []
     }
+
     const builder = new Builder(nuxt, BundleBuilder)
     builder.normalizePlugins = jest.fn(() => [{ name: 'test_plugin', src: '/var/somesrc' }])
     builder.resolveLayouts = jest.fn(() => 'resolveLayouts')
     builder.resolveRoutes = jest.fn(() => 'resolveRoutes')
     builder.resolveStore = jest.fn(() => 'resolveStore')
     builder.resolveMiddleware = jest.fn(() => 'resolveMiddleware')
+    builder.addOptionalTemplates = jest.fn()
     builder.resolveCustomTemplates = jest.fn()
     builder.resolveLoadingIndicator = jest.fn()
     builder.compileTemplates = jest.fn()
@@ -77,9 +79,10 @@ describe('builder: builder generate', () => {
       'resolveStore',
       'resolveMiddleware'
     ])
+    expect(builder.addOptionalTemplates).toBeCalledTimes(1)
     expect(builder.resolveCustomTemplates).toBeCalledTimes(1)
     expect(builder.resolveLoadingIndicator).toBeCalledTimes(1)
-    expect(builder.options.build.watch).toEqual(['/var/nuxt/src/template/**/*.{vue,js}'])
+    expect(builder.options.build.watch).toEqual([])
     expect(builder.compileTemplates).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Nuxt files generated')
@@ -109,7 +112,7 @@ describe('builder: builder generate', () => {
   test('should resolve relative files', async () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, BundleBuilder)
-    builder.resolveFiles = jest.fn(dir => [ `${dir}/foo.vue`, `${dir}/bar.vue`, `${dir}/baz.vue` ])
+    builder.resolveFiles = jest.fn(dir => [`${dir}/foo.vue`, `${dir}/bar.vue`, `${dir}/baz.vue`])
 
     const files = await builder.resolveRelative('/var/nuxt/dir')
 
@@ -124,6 +127,7 @@ describe('builder: builder generate', () => {
 
   test('should resolve store modules', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { store: true }
     nuxt.options.store = true
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
@@ -143,18 +147,36 @@ describe('builder: builder generate', () => {
     await builder.resolveStore({ templateVars, templateFiles })
 
     expect(templateVars.storeModules).toEqual([
-      { 'src': '/var/nuxt/src/store/index.js' },
-      { 'src': '/var/nuxt/src/store/bar.js' },
-      { 'src': '/var/nuxt/src/store/baz.js' },
-      { 'src': '/var/nuxt/src/store/foo/index.js' },
-      { 'src': '/var/nuxt/src/store/foo/bar.js' },
-      { 'src': '/var/nuxt/src/store/foo/baz.js' }]
+      { src: '/var/nuxt/src/store/index.js' },
+      { src: '/var/nuxt/src/store/bar.js' },
+      { src: '/var/nuxt/src/store/baz.js' },
+      { src: '/var/nuxt/src/store/foo/index.js' },
+      { src: '/var/nuxt/src/store/foo/bar.js' },
+      { src: '/var/nuxt/src/store/foo/baz.js' }]
     )
     expect(templateFiles).toEqual(['store.js'])
   })
 
-  test('should disable store resolving', async () => {
+  test('should disable store resolving when not set', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { store: false }
+    nuxt.options.dir = {
+      store: '/var/nuxt/src/store'
+    }
+    const builder = new Builder(nuxt, BundleBuilder)
+
+    const templateVars = {}
+    const templateFiles = []
+    await builder.resolveStore({ templateVars, templateFiles })
+
+    expect(templateVars.storeModules).toBeUndefined()
+    expect(templateFiles).toEqual([])
+  })
+
+  test('should disable store resolving when feature disabled', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.features = { store: false }
+    nuxt.options.store = true
     nuxt.options.dir = {
       store: '/var/nuxt/src/store'
     }
@@ -170,6 +192,7 @@ describe('builder: builder generate', () => {
 
   test('should resolve middleware', async () => {
     const nuxt = createNuxt()
+    nuxt.options.features = { middleware: true }
     nuxt.options.store = false
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.dir = {
@@ -183,19 +206,38 @@ describe('builder: builder generate', () => {
     builder.relativeToBuild = jest.fn().mockReturnValue(middlewarePath)
 
     const templateVars = {}
-    await builder.resolveMiddleware({ templateVars })
+    const templateFiles = []
+    await builder.resolveMiddleware({ templateVars, templateFiles })
 
-    expect(templateVars.middleware).toEqual([{
-      name: 'subfolder/midd',
-      src: 'subfolder/midd.js',
-      dst: 'subfolder/midd.js'
-    }])
+    expect(templateVars.middleware).toEqual([
+      {
+        name: 'subfolder/midd',
+        src: 'subfolder/midd.js',
+        dst: 'subfolder/midd.js'
+      }
+    ])
+    expect(templateFiles).toEqual(['middleware.js'])
+  })
+
+  test('should disable middleware when feature disabled', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.features = { middleware: false }
+    nuxt.options.store = false
+    nuxt.options.dir = {
+      middleware: '/var/nuxt/src/middleware'
+    }
+    const builder = new Builder(nuxt, BundleBuilder)
+    const templateVars = {}
+    const templateFiles = []
+    await builder.resolveMiddleware({ templateVars, templateFiles })
+    expect(templateFiles).toEqual([])
   })
 
   test('should custom templates', async () => {
     const nuxt = createNuxt()
     nuxt.options.srcDir = '/var/nuxt/src'
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' },
       templates: [
         '/var/nuxt/templates/foo.js',
@@ -234,6 +276,7 @@ describe('builder: builder generate', () => {
       name: 'test_loading_indicator'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -260,6 +303,7 @@ describe('builder: builder generate', () => {
       name: '@/app/template.vue'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -289,6 +333,7 @@ describe('builder: builder generate', () => {
       name: '@/app/empty.vue'
     }
     nuxt.options.build = {
+      watch: [],
       template: { dir: '/var/nuxt/templates' }
     }
     const builder = new Builder(nuxt, BundleBuilder)
@@ -353,7 +398,7 @@ describe('builder: builder generate', () => {
       resolveAlias: nuxt.resolver.resolveAlias,
       relativeToBuild: builder.relativeToBuild
     })
-    expect(nuxt.options.build.watch).toEqual([ '/var/nuxt/src/baz.js' ])
+    expect(nuxt.options.build.watch).toEqual(['/var/nuxt/src/baz.js'])
     expect(fs.readFile).toBeCalledTimes(3)
     expect(fs.readFile).nthCalledWith(1, '/var/nuxt/src/foo.js', 'utf8')
     expect(fs.readFile).nthCalledWith(2, '/var/nuxt/src/bar.js', 'utf8')
@@ -403,7 +448,7 @@ describe('builder: builder generate', () => {
 
     const templateContext = {
       templateVars: { test: 'template_vars' },
-      templateFiles: [ { src: '/var/nuxt/src/foo.js' } ],
+      templateFiles: [{ src: '/var/nuxt/src/foo.js' }],
       templateOptions: {}
     }
     await expect(builder.compileTemplates(templateContext)).rejects.toThrow(
@@ -414,6 +459,7 @@ describe('builder: builder generate', () => {
   describe('builder: builder resolveLayouts', () => {
     test('should resolve layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.buildDir = '/var/nuxt/build'
       nuxt.options.dir = {
@@ -466,6 +512,7 @@ describe('builder: builder generate', () => {
 
     test('should resolve error layouts', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
@@ -493,6 +540,7 @@ describe('builder: builder generate', () => {
 
     test('should not resolve layouts if layouts dir does not exist', async () => {
       const nuxt = createNuxt()
+      nuxt.options.features = { layouts: true }
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
         layouts: '/var/nuxt/src/layouts'
@@ -521,8 +569,8 @@ describe('builder: builder generate', () => {
     test('should resolve routes via build.createRoutes', async () => {
       const nuxt = createNuxt()
       nuxt.options.srcDir = '/var/nuxt/src'
-      nuxt.options.build.createRoutes = jest.fn(() => [ { name: 'default_route' } ])
-      nuxt.options.router.extendRoutes = jest.fn(routes => [ ...routes, { name: 'extend_route' } ])
+      nuxt.options.build.createRoutes = jest.fn(() => [{ name: 'default_route' }])
+      nuxt.options.router.extendRoutes = jest.fn(routes => [...routes, { name: 'extend_route' }])
       const builder = new Builder(nuxt, BundleBuilder)
 
       const templateVars = {
@@ -539,11 +587,11 @@ describe('builder: builder generate', () => {
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(
         'build:extendRoutes',
-        [ { name: 'default_route' } ],
+        [{ name: 'default_route' }],
         r
       )
       expect(nuxt.options.router.extendRoutes).toBeCalledTimes(1)
-      expect(nuxt.options.router.extendRoutes).toBeCalledWith([ { name: 'default_route' } ], r)
+      expect(nuxt.options.router.extendRoutes).toBeCalledWith([{ name: 'default_route' }], r)
       expect(templateVars.router.routes).toEqual([
         { name: 'default_route' },
         { name: 'extend_route' }
@@ -555,11 +603,12 @@ describe('builder: builder generate', () => {
       const nuxt = createNuxt()
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.build = {
+        watch: [],
         createRoutes: jest.fn(),
         template: { dir: '/var/nuxt/templates' }
       }
       nuxt.options.router.routeNameSplitter = '[splitter]'
-      createRoutes.mockReturnValueOnce([ { name: 'default_route' } ])
+      createRoutes.mockReturnValueOnce([{ name: 'default_route' }])
       const builder = new Builder(nuxt, BundleBuilder)
       builder._defaultPage = true
 
@@ -575,14 +624,14 @@ describe('builder: builder generate', () => {
       expect(nuxt.options.build.createRoutes).not.toBeCalled()
       expect(createRoutes).toBeCalledTimes(1)
       expect(createRoutes).toBeCalledWith({
-        files: [ 'index.vue' ],
+        files: ['index.vue'],
         srcDir: '/var/nuxt/templates/pages',
         routeNameSplitter: '[splitter]'
       })
       expect(nuxt.callHook).toBeCalledTimes(1)
       expect(nuxt.callHook).toBeCalledWith(
         'build:extendRoutes',
-        [ { name: 'default_route' } ],
+        [{ name: 'default_route' }],
         r
       )
       expect(templateVars.router.routes).toEqual([
@@ -598,6 +647,7 @@ describe('builder: builder generate', () => {
         pages: '/var/nuxt/pages'
       }
       nuxt.options.build = {
+        watch: [],
         createRoutes: jest.fn()
       }
       nuxt.options.router = {
@@ -630,7 +680,7 @@ describe('builder: builder generate', () => {
 
       expect(createRoutes).toBeCalledTimes(1)
       expect(createRoutes).toBeCalledWith({
-        files: [ '/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue' ],
+        files: ['/var/nuxt/pages/foo.vue', '/var/nuxt/pages/bar.vue', '/var/nuxt/pages/baz.vue'],
         srcDir: '/var/nuxt/src',
         pagesDir: '/var/nuxt/pages',
         routeNameSplitter: '[splitter]',

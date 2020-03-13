@@ -2,6 +2,11 @@
 <html {{ HTML_ATTRS }}>
 <head>
   {{ HEAD }}
+  {% if (ENV.tracker === 'ga') { %}
+    <!-- Google Analytics -->
+  {% } else if (ENV.tracker === 'heap') { %}
+    <!-- Heap Analytics -->
+  {% } %}
 </head>
 <body {{ BODY_ATTRS }}>
 {{ APP }}

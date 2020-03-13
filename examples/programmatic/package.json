@@ -1,0 +1,12 @@
+{
+  "name": "example-programmatic",
+  "dependencies": {
+    "nuxt": "latest"
+  },
+  "scripts": {
+    "dev": "node scripts/dev",
+    "build": "node scripts/build",
+    "start": "node scripts/start",
+    "post-update": "yarn upgrade --latest"
+  }
+}

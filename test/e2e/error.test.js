@@ -32,6 +32,7 @@ describe('basic browser', () => {
   test('/squared doesnt loop due to error on error page', async () => {
     await page.nuxt.navigate('/squared')
 
+    expect(await page.$text('header')).toBe('Error layout')
     expect(await page.$text('h2')).toBe('An error occured while showing the error page')
   })
 

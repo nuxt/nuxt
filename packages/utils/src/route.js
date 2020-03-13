@@ -15,7 +15,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
       }
       return flatRoutes(r.children, fileName + r.path + '/', routes)
     }
-    fileName = fileName.replace(/^\/+$/, '/')
+    fileName = fileName.replace(/\/+/g, '/')
     routes.push(
       (r.path === '' && fileName[fileName.length - 1] === '/'
         ? fileName.slice(0, -1)
@@ -176,7 +176,7 @@ export const createRoutes = function createRoutes ({
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '')
+      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
     }
 
     parent.push(route)

@@ -11,6 +11,9 @@ export default {
       total: true
     }
   },
+  vueMeta: {
+    ssrAppId: 'test-ssr-app-id'
+  },
   router: {
     base: '/test/',
     middleware: 'noop',
@@ -83,11 +86,14 @@ export default {
     transpile: 'vue-test',
     extend (config, options) {
       return Object.assign({}, config, {
-        devtool: '#source-map'
+        devtool: 'source-map'
       })
     }
   },
-  css: [{ src: '~/assets/app' }],
+  css: [
+    '~/assets/app.pcss',
+    '~/assets/app.sass'
+  ],
   render: {
     csp: true,
     http2: {

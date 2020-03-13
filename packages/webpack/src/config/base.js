@@ -9,8 +9,9 @@ import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
+import semver from 'semver'
 
-import { isUrl, urlJoin } from '@nuxt/utils'
+import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -51,12 +52,23 @@ export default class WebpackBaseConfig {
   }
 
   get loaders () {
-    return this.buildContext.buildOptions.loaders
+    if (!this._loaders) {
+      this._loaders = cloneDeep(this.buildContext.buildOptions.loaders)
+      // sass-loader<8 support (#6460)
+      const sassLoaderPKG = getPKG('sass-loader')
+      if (sassLoaderPKG && semver.lt(sassLoaderPKG.version, '8.0.0')) {
+        const { sass } = this._loaders
+        sass.indentedSyntax = sass.sassOptions.indentedSyntax
+        delete sass.sassOptions.indentedSyntax
+      }
+    }
+    return this._loaders
   }
 
   get modulesToTranspile () {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
+      /consola\/src/,
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -90,7 +102,7 @@ export default class WebpackBaseConfig {
       return options
     }
 
-    const defaultPreset = [ require.resolve('@nuxt/babel-preset-app'), {} ]
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets(
@@ -103,7 +115,7 @@ export default class WebpackBaseConfig {
     }
 
     if (!options.babelrc && !options.presets) {
-      options.presets = [ defaultPreset ]
+      options.presets = [defaultPreset]
     }
 
     return options
@@ -123,16 +135,18 @@ export default class WebpackBaseConfig {
     return fileName
   }
 
-  get devtool () {
-    return false
-  }
-
   env () {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
       'process.static': this.buildContext.isStatic
     }
+    if (this.buildContext.buildOptions.aggressiveCodeRemoval) {
+      env['typeof process'] = JSON.stringify(this.isServer ? 'object' : 'undefined')
+      env['typeof window'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
+      env['typeof document'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
+    }
+
     Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
         ['boolean', 'number'].includes(typeof value)
@@ -190,18 +204,14 @@ export default class WebpackBaseConfig {
     if (terser) {
       minimizer.push(
         new TerserWebpackPlugin(Object.assign({
-          parallel: true,
           cache,
-          sourceMap: this.devtool && /source-?map/.test(this.devtool),
           extractComments: {
+            condition: 'some',
             filename: 'LICENSES'
           },
           terserOptions: {
             compress: {
               ecma: this.isModern ? 6 : undefined
-            },
-            output: {
-              comments: /^\**!|@preserve|@license|@cc_on/
             },
             mangle: {
               reserved: reservedVueTags
@@ -217,7 +227,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      consola: require.resolve(`consola/dist/consola${this.isServer ? '' : '.browser'}.js`)
+      'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 
@@ -418,7 +428,7 @@ export default class WebpackBaseConfig {
     const filters = [
       // Hide warnings about plugins without a default export (#1179)
       warn => warn.name === 'ModuleDependencyWarning' &&
-        warn.message.includes(`export 'default'`) &&
+        warn.message.includes('export \'default\'') &&
         warn.message.includes('nuxt_plugin_'),
       ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
     ]
@@ -431,11 +441,16 @@ export default class WebpackBaseConfig {
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
         this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
-      )
-      // Only overwrite config when something is returned for backwards compatibility
-      if (extendedConfig !== undefined) {
-        return extendedConfig
+      ) || config
+
+      const pragma = /@|#/
+      const { devtool } = extendedConfig
+      if (typeof devtool === 'string' && pragma.test(devtool)) {
+        extendedConfig.devtool = devtool.replace(pragma, '')
+        consola.warn(`devtool has been normalized to ${extendedConfig.devtool} as webpack documented value`)
       }
+
+      return extendedConfig
     }
     return config
   }
@@ -460,14 +475,6 @@ export default class WebpackBaseConfig {
 
     // Clone deep avoid leaking config between Client and Server
     const extendedConfig = cloneDeep(this.extendConfig(config))
-    const { optimization } = extendedConfig
-    // Todo remove in nuxt 3 in favor of devtool config property or https://webpack.js.org/plugins/source-map-dev-tool-plugin
-    if (optimization && optimization.minimizer && extendedConfig.devtool) {
-      const terser = optimization.minimizer.find(p => p instanceof TerserWebpackPlugin)
-      if (terser) {
-        terser.options.sourceMap = /source-?map/.test(extendedConfig.devtool)
-      }
-    }
 
     return extendedConfig
   }

@@ -4,7 +4,7 @@ import consola from 'consola'
 
 import Package from './package.js'
 
-async function main() {
+async function main () {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = await rootPackage.getWorkspacePackages()

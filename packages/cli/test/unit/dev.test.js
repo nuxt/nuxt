@@ -41,7 +41,7 @@ describe('dev', () => {
     expect(consola.error).not.toHaveBeenCalled()
   })
 
-  test('catches build error', async () => {
+  test('catches build error and calls hook', async () => {
     const Nuxt = mockNuxt()
     const Builder = mockBuilder()
 
@@ -55,6 +55,7 @@ describe('dev', () => {
     await Nuxt.fileRestartHook(builder)
 
     expect(Nuxt.prototype.close).toHaveBeenCalled()
+    expect(Nuxt.prototype.callHook).toHaveBeenCalledWith('cli:buildError', expect.any(Error))
     expect(consola.error).toHaveBeenCalledWith(new Error('Build Error'))
   })
 
@@ -88,7 +89,7 @@ describe('dev', () => {
     builder.nuxt = new Nuxt()
     await Nuxt.fileRestartHook(builder)
 
-    expect(consola.error).toHaveBeenCalledWith(new Error('Config Error'))
+    expect(consola.fatal).toHaveBeenCalledWith(new Error('Config Error'))
     // expect(Builder.prototype.watchRestart).toHaveBeenCalledTimes(1)
   })
 
@@ -104,7 +105,7 @@ describe('dev', () => {
 
     await NuxtCommand.from(dev).run()
 
-    expect(consola.error).toHaveBeenCalledWith(new Error('Listen Error'))
+    expect(consola.fatal).toHaveBeenCalledWith(new Error('Listen Error'))
   })
 
   test('dev doesnt force-exit by default', async () => {

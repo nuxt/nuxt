@@ -9,19 +9,38 @@ if (process.client) {
   }
 }
 
-export function empty() {}
+export function empty () {}
 
-export function globalHandleError(error) {
+export function globalHandleError (error) {
   if (Vue.config.errorHandler) {
     Vue.config.errorHandler(error)
   }
 }
 
-export function interopDefault(promise) {
+export function interopDefault (promise) {
   return promise.then(m => m.default || m)
 }
 
-export function applyAsyncData(Component, asyncData) {
+<% if (features.fetch) { %>
+export function hasFetch(vm) {
+  return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
+}
+export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
+  const children = vm.$children || []
+  for (const child of children) {
+    if (child.$fetch) {
+      instances.push(child)
+      continue; // Don't get the children since it will reload the template
+    }
+    if (child.$children) {
+      getChildrenComponentInstancesUsingFetch(child, instances)
+    }
+  }
+  return instances
+}
+<% } %>
+<% if (features.asyncData) { %>
+export function applyAsyncData (Component, asyncData) {
   if (
     // For SSR, we once all this function without second param to just apply asyncData
     // Prevent doing this for each SSR request
@@ -34,7 +53,7 @@ export function applyAsyncData(Component, asyncData) {
   Component.options._originDataFn = ComponentData
 
   Component.options.data = function () {
-    const data = ComponentData.call(this)
+    const data = ComponentData.call(this, this)
     if (this.$ssrContext) {
       asyncData = this.$ssrContext.asyncData[Component.cid]
     }
@@ -47,8 +66,9 @@ export function applyAsyncData(Component, asyncData) {
     Component._Ctor.options.data = Component.options.data
   }
 }
+<% } %>
 
-export function sanitizeComponent(Component) {
+export function sanitizeComponent (Component) {
   // If Component already sanitized
   if (Component.options && Component._Ctor === Component) {
     return Component
@@ -67,25 +87,20 @@ export function sanitizeComponent(Component) {
   return Component
 }
 
-export function getMatchedComponents(route, matches = false) {
+export function getMatchedComponents (route, matches = false, prop = 'components') {
   return Array.prototype.concat.apply([], route.matched.map((m, index) => {
-    return Object.keys(m.components).map((key) => {
+    return Object.keys(m[prop]).map((key) => {
       matches && matches.push(index)
-      return m.components[key]
+      return m[prop][key]
     })
   }))
 }
 
-export function getMatchedComponentsInstances(route, matches = false) {
-  return Array.prototype.concat.apply([], route.matched.map((m, index) => {
-    return Object.keys(m.instances).map((key) => {
-      matches && matches.push(index)
-      return m.instances[key]
-    })
-  }))
+export function getMatchedComponentsInstances (route, matches = false) {
+  return getMatchedComponents(route, matches, 'instances')
 }
 
-export function flatMapComponents(route, fn) {
+export function flatMapComponents (route, fn) {
   return Array.prototype.concat.apply([], route.matched.map((m, index) => {
     return Object.keys(m.components).reduce((promises, key) => {
       if (m.components[key]) {
@@ -98,7 +113,7 @@ export function flatMapComponents(route, fn) {
   }))
 }
 
-export function resolveRouteComponents(route, fn) {
+export function resolveRouteComponents (route, fn) {
   return Promise.all(
     flatMapComponents(route, async (Component, instance, match, key) => {
       // If component is a function, resolve it
@@ -111,7 +126,7 @@ export function resolveRouteComponents(route, fn) {
   )
 }
 
-export async function getRouteData(route) {
+export async function getRouteData (route) {
   if (!route) {
     return
   }
@@ -126,7 +141,7 @@ export async function getRouteData(route) {
   }
 }
 
-export async function setContext(app, context) {
+export async function setContext (app, context) {
   // If context not defined, create it
   if (!app.context) {
     app.context = {
@@ -215,12 +230,12 @@ export async function setContext(app, context) {
   app.context.next = context.next
   app.context._redirected = false
   app.context._errored = false
-  app.context.isHMR = Boolean(context.isHMR)
+  app.context.isHMR = <% if(isDev) { %>Boolean(context.isHMR)<% } else { %>false<% } %>
   app.context.params = app.context.route.params || {}
   app.context.query = app.context.route.query || {}
 }
-
-export function middlewareSeries(promises, appContext) {
+<% if (features.middleware) { %>
+export function middlewareSeries (promises, appContext) {
   if (!promises.length || appContext._redirected || appContext._errored) {
     return Promise.resolve()
   }
@@ -229,8 +244,9 @@ export function middlewareSeries(promises, appContext) {
       return middlewareSeries(promises.slice(1), appContext)
     })
 }
-
-export function promisify(fn, context) {
+<% } %>
+export function promisify (fn, context) {
+  <% if (features.deprecations) { %>
   let promise
   if (fn.length === 2) {
     <% if (isDev) { %>
@@ -251,14 +267,17 @@ export function promisify(fn, context) {
   } else {
     promise = fn(context)
   }
-  if (!promise || (!(promise instanceof Promise) && (typeof promise.then !== 'function'))) {
-    promise = Promise.resolve(promise)
+  <% } else { %>
+  const promise = fn(context)
+  <% } %>
+  if (promise && promise instanceof Promise && typeof promise.then === 'function') {
+    return promise
   }
-  return promise
+  return Promise.resolve(promise)
 }
 
 // Imported from vue-router
-export function getLocation(base, mode) {
+export function getLocation (base, mode) {
   let path = decodeURI(window.location.pathname)
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
@@ -267,10 +286,6 @@ export function getLocation(base, mode) {
     path = path.slice(base.length)
   }
   return (path || '/') + window.location.search + window.location.hash
-}
-
-export function urlJoin() {
-  return Array.prototype.slice.call(arguments).join('/').replace(/\/+/g, '/')
 }
 
 // Imported from path-to-regexp
@@ -282,11 +297,11 @@ export function urlJoin() {
  * @param  {Object=}            options
  * @return {!function(Object=, Object=)}
  */
-export function compile(str, options) {
-  return tokensToFunction(parse(str, options))
+export function compile (str, options) {
+  return tokensToFunction(parse(str, options), options)
 }
 
-export function getQueryDiff(toQuery, fromQuery) {
+export function getQueryDiff (toQuery, fromQuery) {
   const diff = {}
   const queries = { ...toQuery, ...fromQuery }
   for (const k in queries) {
@@ -297,7 +312,7 @@ export function getQueryDiff(toQuery, fromQuery) {
   return diff
 }
 
-export function normalizeError(err) {
+export function normalizeError (err) {
   let message
   if (!(err.message || typeof err === 'string')) {
     try {
@@ -340,7 +355,7 @@ const PATH_REGEXP = new RegExp([
  * @param  {Object=} options
  * @return {!Array}
  */
-function parse(str, options) {
+function parse (str, options) {
   const tokens = []
   let key = 0
   let index = 0
@@ -412,8 +427,9 @@ function parse(str, options) {
  * @param  {string}
  * @return {string}
  */
-function encodeURIComponentPretty(str) {
-  return encodeURI(str).replace(/[/?#]/g, (c) => {
+function encodeURIComponentPretty (str, slashAllowed) {
+  const re = slashAllowed ? /[?#]/g : /[/?#]/g
+  return encodeURI(str).replace(re, (c) => {
     return '%' + c.charCodeAt(0).toString(16).toUpperCase()
   })
 }
@@ -424,23 +440,41 @@ function encodeURIComponentPretty(str) {
  * @param  {string}
  * @return {string}
  */
-function encodeAsterisk(str) {
-  return encodeURI(str).replace(/[?#]/g, (c) => {
-    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
-  })
+function encodeAsterisk (str) {
+  return encodeURIComponentPretty(str, true)
+}
+
+/**
+ * Escape a regular expression string.
+ *
+ * @param  {string} str
+ * @return {string}
+ */
+function escapeString (str) {
+  return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
+}
+
+/**
+ * Escape the capturing group by escaping special characters and meaning.
+ *
+ * @param  {string} group
+ * @return {string}
+ */
+function escapeGroup (group) {
+  return group.replace(/([=!:$/()])/g, '\\$1')
 }
 
 /**
  * Expose a method for transforming tokens into the path function.
  */
-function tokensToFunction(tokens) {
+function tokensToFunction (tokens, options) {
   // Compile all the tokens into regexps.
   const matches = new Array(tokens.length)
 
   // Compile all the patterns before compilation.
   for (let i = 0; i < tokens.length; i++) {
     if (typeof tokens[i] === 'object') {
-      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
+      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$', flags(options))
     }
   }
 
@@ -515,23 +549,13 @@ function tokensToFunction(tokens) {
 }
 
 /**
- * Escape a regular expression string.
+ * Get the flags for a regexp from the options.
  *
- * @param  {string} str
+ * @param  {Object} options
  * @return {string}
  */
-function escapeString(str) {
-  return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
-}
-
-/**
- * Escape the capturing group by escaping special characters and meaning.
- *
- * @param  {string} group
- * @return {string}
- */
-function escapeGroup(group) {
-  return group.replace(/([=!:$/()])/g, '\\$1')
+function flags (options) {
+  return options && options.sensitive ? '' : 'i'
 }
 
 /**
@@ -541,7 +565,25 @@ function escapeGroup(group) {
  * @param  {string} query
  * @return {string}
  */
-function formatUrl(url, query) {
+function formatUrl (url, query) {
+  <% if (features.clientUseUrl) { %>
+  url = new URL(url, top.location.href)
+  for (const key in query) {
+    const value = query[key]
+    if (value == null) {
+      continue
+    }
+    if (Array.isArray(value)) {
+      for (const arrayValue of value) {
+        url.searchParams.append(key, arrayValue)
+      }
+      continue
+    }
+    url.searchParams.append(key, value)
+  }
+  url.searchParams.sort()
+  return url.toString()
+  <% } else { %>
   let protocol
   const index = url.indexOf('://')
   if (index !== -1) {
@@ -569,15 +611,16 @@ function formatUrl(url, query) {
   result += hash ? '#' + hash : ''
 
   return result
+  <% } %>
 }
-
+<% if (!features.clientUseUrl) { %>
 /**
  * Transform data object to query string
  *
  * @param  {object} query
  * @return {string}
  */
-function formatQuery(query) {
+function formatQuery (query) {
   return Object.keys(query).sort().map((key) => {
     const val = query[key]
     if (val == null) {
@@ -588,4 +631,12 @@ function formatQuery(query) {
     }
     return key + '=' + val
   }).filter(Boolean).join('&')
+}
+<% } %>
+
+export function addLifecycleHook(vm, hook, fn) {
+  if (!vm.$options[hook]) {
+    vm.$options[hook] = []
+  }
+  vm.$options[hook].push(fn)
 }

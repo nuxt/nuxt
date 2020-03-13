@@ -17,7 +17,9 @@ describe('cli/utils', () => {
 
     showBanner({
       options: {
-        cli: {}
+        cli: {
+          bannerColor: 'green'
+        }
       },
       server: {
         listeners

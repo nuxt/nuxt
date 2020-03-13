@@ -3,12 +3,18 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev"
+    "dev",
+    "next"
   ],
   "ignoreDeps": [
     "core-js",
-    "vue-router",
-    "eslint"
+    "memory-fs",
+    "@rollup/plugin-node-resolve",
+    "@babel/parser",
+    "execa",
+    "pify",
+    "file-loader",
+    "url-loader"
   ],
   "lockFileMaintenance": {
     "enabled": true
