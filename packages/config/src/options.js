@@ -404,16 +404,18 @@ export function getNuxtConfig (_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
-  // Add loading-screen
-  if (!options.dev) {
+  // Loading screen
+  // disable for production and programmatic users
+  if (!options.dev || !options._cli) {
     options.build.loadingScreen = false
   }
+  // Add loading-screen module
   if (options.build.loadingScreen) {
     options.buildModules.push(['@nuxt/loading-screen', options.build.loadingScreen])
   }
 
-  // Disable build indicator for programmatic users or when loadingScreen is disabled
-  if (!options._cli || !options.build.loadingScreen) {
+  // When loadingScreen is disabled we should also disable build indicator
+  if (!options.build.loadingScreen) {
     options.build.indicator = false
   }
 
