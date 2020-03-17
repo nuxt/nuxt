@@ -6,6 +6,7 @@
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/v/nuxt" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/license/nuxt" alt="License"></a>
+  <a href="https://gitpod.io/#https://github.com/nuxt/nuxt.js"><img src="https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod" alt="Gitpod Ready-to-Code"></a>
   <a href="https://discord.nuxtjs.org/"><img src="https://badgen.net/badge/Discord/join-us/7289DA" alt="Discord"></a>
  </p>
  <p align="center">
@@ -205,6 +206,10 @@ Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contr
 [![Nuxt.js Contributors][contributors-src]][contributors-href]
 
 ## Contributing
+
+Open it in Gitpod!
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/nuxt/nuxt.js)
 
 Please refer to our [Contribution Guide](https://nuxtjs.org/guide/contribution-guide#codefund_ad)
 
