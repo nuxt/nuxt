@@ -74,6 +74,6 @@
     "vue-jest": "^4.0.0-beta.2"
   },
   "resolutions": {
-    "@babel/parser": "7.7.5"
+    "@babel/parser": "7.8.8"
   }
 }
