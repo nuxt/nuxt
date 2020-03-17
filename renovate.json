@@ -10,7 +10,6 @@
     "core-js",
     "memory-fs",
     "@rollup/plugin-node-resolve",
-    "@babel/parser",
     "execa",
     "pify",
     "file-loader",
