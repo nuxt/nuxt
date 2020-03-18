@@ -13,7 +13,8 @@
     "execa",
     "pify",
     "file-loader",
-    "url-loader"
+    "url-loader",
+    "@babel/parser"
   ],
   "lockFileMaintenance": {
     "enabled": true
