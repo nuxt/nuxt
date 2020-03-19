@@ -53,8 +53,10 @@ function created() {
 }
 
 async function $fetch() {
-  // skip already pending fetch
-  if(this.$fetchState.pending) return
+  // Skip already pending fetch
+  if (this.$fetchState.pending) {
+    return
+  }
 
   this.<%= globals.nuxt %>.nbFetching++
   this.$fetchState.pending = true
