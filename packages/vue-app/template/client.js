@@ -17,7 +17,16 @@ import {
   globalHandleError
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -102,43 +111,47 @@ function componentOption (component, key, ...args) {
   return option
 }
 
-function mapTransitions (Components, to, from) {
+function mapTransitions (toComponents, to, from) {
   const componentTransitions = (component) => {
     const transition = componentOption(component, 'transition', to, from) || {}
     return (typeof transition === 'string' ? { name: transition } : transition)
   }
 
-  return Components.map((Component) => {
-    // Clone original object to prevent overrides
-    const transitions = Object.assign({}, componentTransitions(Component))
+  const fromComponents = from ? getMatchedComponents(from) : []
+  const maxDepth = Math.max(toComponents.length, fromComponents.length)
 
-    // Combine transitions & prefer `leave` transitions of 'from' route
-    if (from && from.matched.length && from.matched[0].components.default) {
-      const fromTransitions = componentTransitions(from.matched[0].components.default)
-      Object.keys(fromTransitions)
-        .filter(key => fromTransitions[key] && key.toLowerCase().includes('leave'))
-        .forEach((key) => { transitions[key] = fromTransitions[key] })
-    }
+  const mergedTransitions = []
+  for (let i=0; i<maxDepth; i++) {
+    // Clone original objects to prevent overrides
+    const toTransitions = Object.assign({}, componentTransitions(toComponents[i]))
+    const transitions = Object.assign({}, componentTransitions(fromComponents[i]))
 
-    return transitions
-  })
+    // Combine transitions & prefer `leave` properties of "from" route
+    Object.keys(toTransitions)
+        .filter(key => typeof toTransitions[key] !== 'undefined' && !key.toLowerCase().includes('leave'))
+        .forEach((key) => { transitions[key] = toTransitions[key] })
+
+    mergedTransitions.push(transitions)
+  }
+  return mergedTransitions
 }
 <% } %>
 <% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
-  // Check if route path changed (this._pathChanged), only if the page is not an error (for validate())
-  this._pathChanged = Boolean(app.nuxt.err) || from.path !== to.path
-  this._queryChanged = JSON.stringify(to.query) !== JSON.stringify(from.query)
+  // Check if route changed (this._routeChanged), only if the page is not an error (for validate())
+  this._routeChanged = Boolean(app.nuxt.err) || from.name !== to.name
+  this._paramChanged = !this._routeChanged && from.path !== to.path
+  this._queryChanged = !this._paramChanged && from.fullPath !== to.fullPath
   this._diffQuery = (this._queryChanged ? getQueryDiff(to.query, from.query) : [])
 
   <% if (loading) { %>
-  if (this._pathChanged && this.$loading.start && !this.$loading.manual) {
+  if ((this._routeChanged || this._paramChanged) && this.$loading.start && !this.$loading.manual) {
     this.$loading.start()
   }
   <% } %>
 
   try {
     <% if (loading) { %>
-    if (!this._pathChanged && this._queryChanged) {
+    if (this._queryChanged) {
       const Components = await resolveRouteComponents(
         to,
         (Component, instance) => ({ Component, instance })
@@ -256,7 +269,7 @@ function callMiddleware () {
 }
 <% } %>
 async function render (to, from, next) {
-  if (this._pathChanged === false && this._queryChanged === false) {
+  if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) {
     return next()
   }
   // Handle first render on SPA mode
@@ -420,11 +433,17 @@ async function render (to, from, next) {
       // Check if only children route changed
       Component._path = compile(to.matched[matches[i]].path)(to.params)
       Component._dataRefresh = false
-      // Check if Component need to be refreshed (call asyncData & fetch)
-      // Only if its slug has changed or is watch query changes
-      if ((this._pathChanged && this._queryChanged) || Component._path !== _lastPaths[i]) {
+      const childPathChanged = Component._path !== _lastPaths[i]
+      // Refresh component (call asyncData & fetch) when:
+      // Route path changed part includes current component
+      // Or route param changed part includes current component and watchParam is not `false`
+      // Or route query is changed and watchQuery returns `true`
+      if (this._routeChanged && childPathChanged) {
         Component._dataRefresh = true
-      } else if (!this._pathChanged && this._queryChanged) {
+      } else if (this._paramChanged && childPathChanged) {
+        const watchParam = Component.options.watchParam
+        Component._dataRefresh = watchParam !== false
+      } else if (this._queryChanged) {
         const watchQuery = Component.options.watchQuery
         if (watchQuery === true) {
           Component._dataRefresh = true
@@ -453,7 +472,7 @@ async function render (to, from, next) {
       <% } %>
 
       <% if (features.fetch) { %>
-      const hasFetch = Boolean(Component.options.fetch)
+      const hasFetch = Boolean(Component.options.fetch) && Component.options.fetch.length
       <% } else { %>
       const hasFetch = false
       <% } %>
@@ -572,7 +591,7 @@ function showNextPage (to) {
 // When navigating on a different route but the same component is used, Vue.js
 // Will not update the instance data, so we have to update $data ourselves
 function fixPrepatch (to, ___) {
-  if (this._pathChanged === false && this._queryChanged === false) {
+  if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) {
     return
   }
 
@@ -733,7 +752,7 @@ function addHotReload ($component, depth) {
       <% if (features.fetch) { %>
       // Call fetch()
       Component.options.fetch = Component.options.fetch || noopFetch
-      let pFetch = Component.options.fetch(context)
+      let pFetch = Component.options.fetch.length && Component.options.fetch(context)
       if (!pFetch || (!(pFetch instanceof Promise) && (typeof pFetch.then !== 'function'))) { pFetch = Promise.resolve(pFetch) }
       <%= (loading ? 'pFetch.then(() => this.$loading.increase && this.$loading.increase(30))' : '') %>
       promises.push(pFetch)
@@ -806,8 +825,8 @@ function addHotReload ($component, depth) {
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
 
-  // If page already is server rendered
-  if (NUXT.serverRendered) {
+  // If page already is server rendered and it was done on the same route path as client side render
+  if (NUXT.serverRendered && NUXT.routePath === _app.context.route.path) {
     mount()
     return
   }

@@ -143,7 +143,32 @@ export default class ModuleContainer {
 
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      try {
+        handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      } catch (error) {
+        if (error.code !== 'MODULE_NOT_FOUND') {
+          throw error
+        }
+
+        let message = 'Module `{name}` not found.'
+
+        if (this.options.buildModules.includes(src)) {
+          message += ' Please ensure `{name}` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.'.replace('{name}', src)
+        } else if (this.options.modules.includes(src)) {
+          message += ' Please ensure `{name}` is in `dependencies` and installed.'
+        }
+
+        message = message.replace(/{name}/g, src)
+
+        if (this.options._cli) {
+          throw new Error(message)
+        } else {
+          // TODO: Remove in next major version
+          message += ' Silently ignoring module as programatic usage detected.'
+          consola.warn(message)
+          return
+        }
+      }
     }
 
     // Validate handler

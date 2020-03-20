@@ -128,7 +128,7 @@ export default class Generator {
         if (isHandled) {
           line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
         } else {
-          line += Chalk.grey(error.stack)
+          line += Chalk.grey(error.stack || error.message || `${error}`)
         }
 
         return line

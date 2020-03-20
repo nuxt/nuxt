@@ -85,6 +85,11 @@ async function createApp (ssrContext) {
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
   const app = {
+    <% if (features.meta) { %>
+    <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
+    head: <%= serializeFunction(head) %>,
+    <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+    <% } %>
     <% if (store) { %>store,<%  } %>
     router,
     nuxt: {
@@ -115,7 +120,10 @@ async function createApp (ssrContext) {
         err = err || null
         app.context._errored = Boolean(err)
         err = err ? normalizeError(err) : null
-        const nuxt = this.nuxt || this.$options.nuxt
+        let nuxt = app.nuxt // to work with @vue/composition-api, see https://github.com/nuxt/nuxt.js/issues/6517#issuecomment-573280207
+        if (this) {
+          nuxt = this.nuxt || this.$options.nuxt
+        }
         nuxt.dateErr = Date.now()
         nuxt.err = err
         // Used in src/server.js
@@ -160,7 +168,7 @@ async function createApp (ssrContext) {
       throw new Error('inject(key, value) has no key provided')
     }
     if (value === undefined) {
-      throw new Error('inject(key, value) has no value provided')
+      throw new Error(`inject('${key}', value) has no value provided`)
     }
 
     key = '$' + key

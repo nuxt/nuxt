@@ -16,6 +16,8 @@ describe('error', () => {
 
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
+
+    consola.wrapConsole()
   })
 
   test('/ should display an error', async () => {

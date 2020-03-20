@@ -290,8 +290,6 @@ describe('builder: builder watch', () => {
     expect(chokidar.watch).toBeCalledTimes(1)
     expect(chokidar.watch).toBeCalledWith(
       [
-        'resolveAlias(resolvePath(/var/nuxt/src/serverMiddleware/test))',
-        'resolveAlias(resolvePath(/var/nuxt/src/serverMiddleware/test-handler))',
         'resolveAlias(/var/nuxt/src/watch/test)',
         '/var/nuxt/src/.nuxtignore',
         path.join('/var/nuxt/src/var/nuxt/src/store') // because store == false + using path.join()

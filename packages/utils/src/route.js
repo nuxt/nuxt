@@ -15,7 +15,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
       }
       return flatRoutes(r.children, fileName + r.path + '/', routes)
     }
-    fileName = fileName.replace(/^\/+$/, '/')
+    fileName = fileName.replace(/\/+/g, '/')
     routes.push(
       (r.path === '' && fileName[fileName.length - 1] === '/'
         ? fileName.slice(0, -1)
