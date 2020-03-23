@@ -7,7 +7,7 @@ let nuxt = null
 const readFile = promisify(fs.readFile)
 const isWindows = process.platform.startsWith('win')
 
-describe('extract css', () => {
+describe.skip('extract css', () => {
   beforeAll(async () => {
     const options = await loadFixture('extract-css')
     nuxt = new Nuxt(options)

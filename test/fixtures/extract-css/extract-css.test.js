@@ -1,3 +1,3 @@
-import { buildFixture } from '../../utils/build'
+// import { buildFixture } from '../../utils/build'
 
-buildFixture('extract-css')
+// buildFixture('extract-css')
