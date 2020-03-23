@@ -80,7 +80,7 @@ export default class ModernModePlugin {
           .filter(a => a.tagName === 'script' && a.attributes)
 
         // inject Safari 10 nomodule fix
-        data.body.push({
+        data.bodyTags.push({
           tagName: 'script',
           closeTag: true,
           innerHTML: safariNoModuleFix
