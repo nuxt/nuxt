@@ -68,7 +68,7 @@ export default class Builder {
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
+        consola.warn('Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.')
       })
     }
 
@@ -723,6 +723,9 @@ export default class Builder {
       Array.from(deps),
       ['all'],
       debounce((event, fileName) => {
+        if (!dep2Entry[fileName]) {
+          return // #7097
+        }
         for (const entry of dep2Entry[fileName]) {
           // Reload entry
           let newItem

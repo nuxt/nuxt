@@ -168,7 +168,7 @@ async function createApp (ssrContext) {
       throw new Error('inject(key, value) has no key provided')
     }
     if (value === undefined) {
-      throw new Error('inject(key, value) has no value provided')
+      throw new Error(`inject('${key}', value) has no value provided`)
     }
 
     key = '$' + key

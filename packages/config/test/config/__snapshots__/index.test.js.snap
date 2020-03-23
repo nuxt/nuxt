@@ -82,6 +82,7 @@ Object {
       },
       "vueStyle": Object {},
     },
+    "loadingScreen": Object {},
     "optimization": Object {
       "minimize": undefined,
       "minimizer": undefined,
@@ -436,6 +437,7 @@ Object {
       },
       "vueStyle": Object {},
     },
+    "loadingScreen": Object {},
     "optimization": Object {
       "minimize": undefined,
       "minimizer": undefined,

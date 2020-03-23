@@ -3,11 +3,6 @@ import env from 'std-env'
 export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
-  indicator: {
-    position: 'bottom-right',
-    backgroundColor: '#2E495E',
-    color: '#00C48D'
-  },
   profile: process.argv.includes('--profile'),
   extractCSS: false,
   crossorigin: undefined,
@@ -120,5 +115,13 @@ export default () => ({
   friendlyErrors: true,
   additionalExtensions: [],
   warningIgnoreFilters: [],
-  followSymlinks: false
+
+  followSymlinks: false,
+
+  loadingScreen: {},
+  indicator: {
+    position: 'bottom-right',
+    backgroundColor: '#2E495E',
+    color: '#00C48D'
+  }
 })

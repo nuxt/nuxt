@@ -53,7 +53,7 @@ function created() {
 }
 
 async function $fetch() {
-  this.$nuxt.nbFetching++
+  this.<%= globals.nuxt %>.nbFetching++
   this.$fetchState.pending = true
   this.$fetchState.error = null
   this._hydrated = false
@@ -75,6 +75,6 @@ async function $fetch() {
   this.$fetchState.pending = false
   this.$fetchState.timestamp = Date.now()
 
-  this.$nextTick(() => this.$nuxt.nbFetching--)
+  this.$nextTick(() => this.<%= globals.nuxt %>.nbFetching--)
 }
 
