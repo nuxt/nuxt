@@ -64,6 +64,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
     \\"test\\": /\\\\.jsx?$/i,
     \\"use\\": Array [
       Object {
+        \\"loader\\": \\"thread-loader\\",
+        \\"options\\": Object {
+          \\"name\\": \\"js\\",
+          \\"poolTimeout\\": 2000,
+        },
+      },
+      Object {
         \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
         \\"options\\": Object {
           \\"babelrc\\": false,
@@ -85,6 +92,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -119,6 +133,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -157,6 +178,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
+          Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
@@ -190,6 +218,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -227,6 +262,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -267,6 +309,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -311,6 +360,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
+          Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
@@ -353,6 +409,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -400,6 +463,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
+          Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
@@ -439,6 +509,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -483,6 +560,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
+          Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
@@ -522,6 +606,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       },
       Object {
         \\"use\\": Array [
+          Object {
+            \\"loader\\": \\"thread-loader\\",
+            \\"options\\": Object {
+              \\"name\\": \\"css\\",
+              \\"poolTimeout\\": 2000,
+            },
+          },
           Object {
             \\"loader\\": \\"vue-style-loader\\",
             \\"options\\": Object {
@@ -638,6 +729,13 @@ exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
   \\"exclude\\": [Function exclude],
   \\"test\\": /\\\\.jsx?$/i,
   \\"use\\": Array [
+    Object {
+      \\"loader\\": \\"thread-loader\\",
+      \\"options\\": Object {
+        \\"name\\": \\"js\\",
+        \\"poolTimeout\\": 2000,
+      },
+    },
     Object {
       \\"loader\\": \\"<nuxtDir>/node_modules/babel-loader/lib/index.js\\",
       \\"options\\": Object {
