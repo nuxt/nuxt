@@ -8,8 +8,8 @@
   ],
   "ignoreDeps": [
     "memory-fs",
-    "@babel/parser",
-    "fs-extra"
+    "@rollup/plugin-node-resolve",
+    "@babel/parser"
   ],
   "lockFileMaintenance": {
     "enabled": true
