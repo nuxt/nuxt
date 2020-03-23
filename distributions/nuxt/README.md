@@ -1,6 +1,6 @@
 <p align="center"><img align="center" style="width:320px" src="https://nuxtjs.org/meta_400.png"/></p><br/>
 <p align="center">
-  <a href="https://github.com/nuxt/nuxt.js/actions?query=workflow%3Atest"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev" alt="Tests Status"></a>
+  <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
   <a href="https://dev.azure.com/nuxt/nuxt.js/_build/latest?definitionId=1"><img src="https://dev.azure.com/nuxt/nuxt.js/_apis/build/status/nuxt.js" alt="Azure Build Status"></a>
   <a href="https://codecov.io/gh/nuxt/nuxt.js"><img src="https://badgen.net/codecov/c/github/nuxt/nuxt.js/master" alt="Coverage Status"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://badgen.net/npm/dm/nuxt" alt="Downloads"></a>

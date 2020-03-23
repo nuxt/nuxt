@@ -72,10 +72,12 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
+  // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
+  ssrContext.nuxt.routePath = app.context.route.path
 
   <% if (features.meta) { %>
   // Add meta infos (used in renderer.js)

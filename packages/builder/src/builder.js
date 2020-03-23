@@ -723,6 +723,9 @@ export default class Builder {
       Array.from(deps),
       ['all'],
       debounce((event, fileName) => {
+        if (!dep2Entry[fileName]) {
+          return // #7097
+        }
         for (const entry of dep2Entry[fileName]) {
           // Reload entry
           let newItem

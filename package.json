@@ -28,7 +28,7 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint",
     "test:unit": "jest packages --forceExit",
-    "audit": "improved-yarn-audit --min-severity moderate -e 1488"
+    "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1488"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
@@ -74,6 +74,6 @@
     "vue-jest": "^4.0.0-beta.2"
   },
   "resolutions": {
-    "@babel/parser": "7.7.5"
+    "babel-eslint/@babel/parser": "7.7.5"
   }
 }
