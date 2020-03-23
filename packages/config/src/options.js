@@ -429,5 +429,11 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
+  // TODO: extractCSS
+  if (options.build.extractCSS && !options.build._extractCSS) {
+    consola.warn('`build.extractCSS` is currently not supported with this version.')
+    options.build.extractCSS = false
+  }
+
   return options
 }
