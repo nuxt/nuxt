@@ -6053,7 +6053,7 @@ html-tags@^2.0.0:
   resolved "https://registry.npmjs.org/html-tags/-/html-tags-2.0.0.tgz#10b30a386085f43cede353cc8fa7cb0deeea668b"
   integrity sha1-ELMKOGCF9Dzt41PMj6fLDe7qZos=
 
-html-webpack-plugin@^4.0.0-beta.11:
+html-webpack-plugin@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-4.0.0.tgz#5b3343312554d16ba98d9b1a85348c77bf733b3a"
   integrity sha512-CcSN3T6gpugW5fpktj/pp1jjst6d4+d+jIU9zrkMblprVfF8JF5Z+kuSiizss/ZHQW/QCnFRxvoBu9V8z2P6BQ==
