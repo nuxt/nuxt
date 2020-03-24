@@ -14,7 +14,8 @@
     "pify",
     "file-loader",
     "url-loader",
-    "@babel/parser"
+    "@babel/parser",
+    "fs-extra"
   ],
   "lockFileMaintenance": {
     "enabled": true
