@@ -40,7 +40,7 @@ export default class Ignore {
       if (!this.ignore) {
         this.ignore = ignore(this.ignoreOptions)
       }
-      this.ignore.add(this.ignoreOptions)
+      this.ignore.add(this.ignoreArray)
     }
   }
 
