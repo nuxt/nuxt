@@ -105,9 +105,9 @@ export default class Resolver {
         return resolvedPath + '.' + ext
       }
 
-      const indexjsPath = join(resolvedPath, 'index.' + ext)
-      if (isDirectory && fs.existsSync(indexjsPath)) {
-        return indexjsPath
+      const resolvedPathwithIndex = join(resolvedPath, 'index.' + ext)
+      if (isDirectory && fs.existsSync(resolvedPathwithIndex)) {
+        return resolvedPathwithIndex
       }
     }
 
