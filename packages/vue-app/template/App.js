@@ -4,7 +4,8 @@ import {
   getMatchedComponentsInstances,
   getChildrenComponentInstancesUsingFetch,
   promisify,
-  globalHandleError
+  globalHandleError,
+  sanitizeComponent
 } from './utils'
 <% } %>
 <% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
@@ -23,7 +24,7 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
   }
 }).join('\n') %>
 
-const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": sanitizeComponent(_${hash(key)})`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
 
 <% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 <% } %>
