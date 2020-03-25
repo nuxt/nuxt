@@ -638,5 +638,7 @@ export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
   }
-  vm.$options[hook].push(fn)
+  if (!vm.$options[hook].includes(fn)) {
+    vm.$options[hook].push(fn)
+  }
 }

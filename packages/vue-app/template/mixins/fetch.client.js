@@ -52,7 +52,15 @@ function created() {
   }
 }
 
-async function $fetch() {
+function $fetch() {
+  if (!this._fetchPromise) {
+    this._fetchPromise = $_fetch.call(this)
+      .then(() => { delete this._fetchPromise })
+  }
+  return this._fetchPromise
+}
+
+async function $_fetch() {
   this.<%= globals.nuxt %>.nbFetching++
   this.$fetchState.pending = true
   this.$fetchState.error = null
