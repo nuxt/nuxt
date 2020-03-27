@@ -6,6 +6,7 @@ export default class Ignore {
   constructor (options) {
     this.rootDir = options.rootDir
     this.ignoreOptions = options.ignoreOptions
+    this.ignoreArray = options.ignoreArray
     this.addIgnoresRules()
   }
 
@@ -34,6 +35,12 @@ export default class Ignore {
     const content = this.readIgnoreFile()
     if (content) {
       this.ignore.add(content)
+    }
+    if (this.ignoreArray && this.ignoreArray.length > 0) {
+      if (!this.ignore) {
+        this.ignore = ignore(this.ignoreOptions)
+      }
+      this.ignore.add(this.ignoreArray)
     }
   }
 

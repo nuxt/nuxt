@@ -82,7 +82,8 @@ export default class Builder {
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
 
     this.ignore = new Ignore({
-      rootDir: this.options.srcDir
+      rootDir: this.options.srcDir,
+      ignoreArray: this.options.ignore
     })
   }
 
@@ -312,7 +313,6 @@ export default class Builder {
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore,
       follow: this.options.build.followSymlinks
     }))
   }
