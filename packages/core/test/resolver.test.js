@@ -14,6 +14,10 @@ jest.spyOn(path, 'join')
 jest.spyOn(path, 'resolve')
 
 describe.posix('core: resolver', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   test('should construct resolver', () => {
     const nuxt = jest.fn()
     nuxt.options = jest.fn()
