@@ -102,7 +102,7 @@ describe('builder: builder generate', () => {
     expect(Glob).toBeCalledTimes(1)
     expect(Glob).toBeCalledWith(
       '/var/nuxt/dir/**/*.{vue,js}',
-      { cwd: '/var/nuxt/src', ignore: '/var/nuxt/ignore' }
+      { cwd: '/var/nuxt/src' }
     )
     expect(builder.ignore.filter).toBeCalledTimes(1)
     expect(builder.ignore.filter).toBeCalledWith('matched files')
