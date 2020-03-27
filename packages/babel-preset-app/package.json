@@ -10,6 +10,7 @@
   ],
   "main": "src/index.js",
   "dependencies": {
+    "@babel/compat-data": "^7.9.0",
     "@babel/core": "^7.9.0",
     "@babel/helper-compilation-targets": "^7.8.7",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
@@ -18,7 +19,8 @@
     "@babel/preset-env": "^7.9.5",
     "@babel/runtime": "^7.9.2",
     "@vue/babel-preset-jsx": "^1.1.2",
-    "core-js": "^2.6.5"
+    "core-js": "^2.6.5",
+    "core-js-compat": "^3.6.4"
   },
   "publishConfig": {
     "access": "public"
