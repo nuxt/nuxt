@@ -13,22 +13,7 @@ jest.mock('@nuxt/utils')
 jest.spyOn(path, 'join')
 jest.spyOn(path, 'resolve')
 
-const origiSep = path.sep
-
-describe('core: resolver', () => {
-  beforeAll(() => {
-    // TODO: Ensure all resolutions follow this sep by for example using a custom sep like %%
-    path.sep = '/'
-  })
-
-  afterAll(() => {
-    path.sep = origiSep
-  })
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
+describe.posix('core: resolver', () => {
   test('should construct resolver', () => {
     const nuxt = jest.fn()
     nuxt.options = jest.fn()
