@@ -742,7 +742,7 @@ export default class Builder {
           }
 
           // Log
-          consola.info(`[HMR] ${chalk.cyan(newItem.route)} (${chalk.grey(fileName)})`)
+          consola.info(`[HMR] ${chalk.cyan(newItem.route || '/')} (${chalk.grey(fileName)})`)
         }
         // Tree may be changed so recreate watcher
         this.serverMiddlewareHMR()
