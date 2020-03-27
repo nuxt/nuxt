@@ -299,11 +299,7 @@ export default class Server {
     serverStackItem.handle = handle
 
     // Error State
-    if (route.includes('#error')) {
-      serverStackItem.route = serverStackItem.route || '/'
-    } else {
-      serverStackItem.route = route
-    }
+    serverStackItem.route = route
 
     // Return updated item
     return serverStackItem
