@@ -13,6 +13,9 @@ jest.mock('@nuxt/utils')
 jest.spyOn(path, 'join')
 jest.spyOn(path, 'resolve')
 
+// TODO: Ensure all resolutions follow this sep by for example using a custom sep like %%
+path.sep = '/'
+
 describe('core: resolver', () => {
   beforeEach(() => {
     jest.clearAllMocks()
