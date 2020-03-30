@@ -9,8 +9,20 @@ import {
   getMatchedComponents,
   promisify
 } from './utils.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Update serverPrefetch strategy
+Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
+
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -60,10 +72,12 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
+  // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
+  ssrContext.nuxt.routePath = app.context.route.path
 
   <% if (features.meta) { %>
   // Add meta infos (used in renderer.js)
@@ -267,7 +281,7 @@ export default async (ssrContext) => {
 
     <% if (features.fetch) { %>
     // Call fetch(context)
-    if (Component.options.fetch) {
+    if (Component.options.fetch && Component.options.fetch.length) {
       promises.push(Component.options.fetch(app.context))
     } else {
       promises.push(null)

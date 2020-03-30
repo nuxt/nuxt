@@ -74,10 +74,16 @@ export default {
       handler: (_, res) => res.end('Works!')
     }
   ],
+  css: [
+    '~assets/app.css'
+  ],
   build: {
     scopeHoisting: true,
     publicPath: '',
     followSymlinks: true,
+    splitChunks: {
+      layouts: true
+    },
     postcss: {
       preset: {
         features: {

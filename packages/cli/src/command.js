@@ -53,7 +53,7 @@ export default class NuxtCommand extends Hookable {
     }
 
     if (typeof this.cmd.run !== 'function') {
-      return
+      throw new TypeError('Invalid command! Commands should at least implement run() function.')
     }
 
     let cmdError

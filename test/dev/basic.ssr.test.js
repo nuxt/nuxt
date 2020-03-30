@@ -155,6 +155,7 @@ describe('basic ssr', () => {
   test('/redirect', async () => {
     const { html, redirected } = await nuxt.server.renderRoute('/redirect')
     expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).not.toContain('window.__NUXT__')
     expect(redirected.path === '/').toBe(true)
     expect(redirected.status === 302).toBe(true)
   })

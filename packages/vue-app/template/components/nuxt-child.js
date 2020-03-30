@@ -13,7 +13,8 @@ export default {
       default: undefined
     }
   },
-  render (h, { parent, data, props }) {
+  render (_, { parent, data, props }) {
+    const h = parent.$createElement
     <% if (features.transitions) { %>
     data.nuxtChild = true
     const _parent = parent
@@ -42,15 +43,17 @@ export default {
         listeners[key] = transition[key].bind(_parent)
       }
     })
-    // Add triggerScroll event on beforeEnter (fix #1376)
-    const beforeEnter = listeners.beforeEnter
-    listeners.beforeEnter = (el) => {
-      // Ensure to trigger scroll event after calling scrollBehavior
-      window.<%= globals.nuxt %>.$nextTick(() => {
-        window.<%= globals.nuxt %>.$emit('triggerScroll')
-      })
-      if (beforeEnter) {
-        return beforeEnter.call(_parent, el)
+    if (process.client) {
+      // Add triggerScroll event on beforeEnter (fix #1376)
+      const beforeEnter = listeners.beforeEnter
+      listeners.beforeEnter = (el) => {
+        // Ensure to trigger scroll event after calling scrollBehavior
+        window.<%= globals.nuxt %>.$nextTick(() => {
+          window.<%= globals.nuxt %>.$emit('triggerScroll')
+        })
+        if (beforeEnter) {
+          return beforeEnter.call(_parent, el)
+        }
       }
     }
 

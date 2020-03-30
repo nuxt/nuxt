@@ -1,11 +1,11 @@
 import path from 'path'
 import { readJSONSync } from 'fs-extra'
-import jsonPlugin from 'rollup-plugin-json'
-import commonjsPlugin from 'rollup-plugin-commonjs'
+import jsonPlugin from '@rollup/plugin-json'
+import commonjsPlugin from '@rollup/plugin-commonjs'
+import replacePlugin from '@rollup/plugin-replace'
+import aliasPlugin from '@rollup/plugin-alias'
+import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 import licensePlugin from 'rollup-plugin-license'
-import replacePlugin from 'rollup-plugin-replace'
-import aliasPlugin from 'rollup-plugin-alias'
-import nodeResolvePlugin from 'rollup-plugin-node-resolve'
 import defaultsDeep from 'lodash/defaultsDeep'
 import consola from 'consola'
 
@@ -17,6 +17,7 @@ export default function rollupConfig ({
   input = 'src/index.js',
   replace = {},
   alias = {},
+  externals = [],
   resolve = {
     only: [
       /lodash/
@@ -43,7 +44,9 @@ export default function rollupConfig ({
       // Dependencies that will be installed alongise with the nuxt package
       ...Object.keys(pkg.dependencies || {}),
       // Builtin node modules
-      ...builtins
+      ...builtins,
+      // Explicit externals
+      ...externals
     ],
     plugins: [
       aliasPlugin(alias),

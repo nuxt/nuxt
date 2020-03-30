@@ -2,8 +2,10 @@ import Vue from 'vue'
 <% if (features.asyncData || features.fetch) { %>
 import {
   getMatchedComponentsInstances,
+  getChildrenComponentInstancesUsingFetch,
   promisify,
-  globalHandleError
+  globalHandleError,
+  sanitizeComponent
 } from './utils'
 <% } %>
 <% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
@@ -16,15 +18,19 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
   if (splitChunks.layouts) {
-    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => m.default || m)`
+    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => sanitizeComponent(m.default || m))`
   } else {
     return `import _${hash(key)} from '${layouts[key]}'`
   }
 }).join('\n') %>
 
+<% if (splitChunks.layouts) { %>
+let resolvedLayouts = {}
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } else { %>
+const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": sanitizeComponent(_${hash(key)})`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
-<% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 <% } %>
 
 export default {
@@ -88,9 +94,12 @@ export default {
     <% } %>
     <% if (features.layouts) { %>
     layout: null,
-    layoutName: ''
+    layoutName: '',
     <% } %>
-  }),
+    <% if (features.fetch) { %>
+    nbFetching: 0
+    <% } %>
+    }),
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -125,7 +134,12 @@ export default {
   computed: {
     isOffline () {
       return !this.isOnline
+    },
+    <% if (features.fetch) { %>
+      isFetching() {
+      return this.nbFetching > 0
     }
+    <% } %>
   },
   <% } %>
   methods: {
@@ -157,8 +171,17 @@ export default {
         const p = []
 
         <% if (features.fetch) { %>
-        if (page.$options.fetch) {
+        // Old fetch
+        if (page.$options.fetch && page.$options.fetch.length) {
           p.push(promisify(page.$options.fetch, this.context))
+        }
+        if (page.$fetch) {
+          p.push(page.$fetch())
+        } else {
+          // Get all component instance to call $fetch
+          for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
+            p.push(component.$fetch())
+          }
         }
         <% } %>
         <% if (features.asyncData) { %>
@@ -178,7 +201,7 @@ export default {
       try {
         await Promise.all(promises)
       } catch (error) {
-        <% if (loading) { %>this.$loading.fail()<% } %>
+        <% if (loading) { %>this.$loading.fail(error)<% } %>
         globalHandleError(error)
         this.error(error)
       }
@@ -189,7 +212,7 @@ export default {
     errorChanged () {
       if (this.nuxt.err && this.$loading) {
         if (this.$loading.fail) {
-          this.$loading.fail()
+          this.$loading.fail(this.nuxt.err)
         }
         if (this.$loading.finish) {
           this.$loading.finish()

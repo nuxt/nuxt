@@ -206,7 +206,12 @@ export default class Server {
       }
     }
 
-    // SubApp (Express)
+    // Prefix on handle (proxy-module)
+    if (middleware.handle.prefix !== undefined && middleware.prefix === undefined) {
+      middleware.prefix = middleware.handle.prefix
+    }
+
+    // sub-app (express)
     if (typeof middleware.handle.handle === 'function') {
       const server = middleware.handle
       middleware.handle = server.handle.bind(server)
@@ -255,6 +260,11 @@ export default class Server {
       (typeof middleware.route === 'string' ? middleware.route : '')
     ).replace(/\/\//g, '/')
 
+    // Strip trailing slash
+    if (middleware.route.endsWith('/')) {
+      middleware.route = middleware.route.slice(0, -1)
+    }
+
     // Assign _middleware to handle to make accessable from app.stack
     middleware.handle._middleware = middleware
 
@@ -289,11 +299,7 @@ export default class Server {
     serverStackItem.handle = handle
 
     // Error State
-    if (route.includes('#error')) {
-      serverStackItem.route = serverStackItem.route || '/'
-    } else {
-      serverStackItem.route = route
-    }
+    serverStackItem.route = route
 
     // Return updated item
     return serverStackItem

@@ -3,11 +3,19 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev"
+    "dev",
+    "next"
   ],
   "ignoreDeps": [
     "core-js",
-    "memory-fs"
+    "memory-fs",
+    "@rollup/plugin-node-resolve",
+    "execa",
+    "pify",
+    "file-loader",
+    "url-loader",
+    "@babel/parser",
+    "fs-extra"
   ],
   "lockFileMaintenance": {
     "enabled": true

@@ -4,7 +4,7 @@ const coreJsMeta = {
       es6: 'es6',
       es7: 'es7'
     },
-    builtIns: '@babel/preset-env/data/built-ins.json.js'
+    builtIns: '@babel/compat-data/corejs2-built-ins'
   },
   3: {
     prefixes: {
@@ -32,15 +32,20 @@ function getDefaultPolyfills (corejs) {
 }
 
 function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
-  const { isPluginRequired } = require('@babel/preset-env')
+  const { default: getTargets, isRequired } = require('@babel/helper-compilation-targets')
   const builtInsList = require(coreJsMeta[corejs.version].builtIns)
-  const getTargets = require('@babel/preset-env/lib/targets-parser').default
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
     configPath
   })
 
-  return includes.filter(item => isPluginRequired(builtInTargets, builtInsList[item]))
+  return includes.filter(item => isRequired(
+    'nuxt-polyfills',
+    builtInTargets,
+    {
+      compatData: { 'nuxt-polyfills': builtInsList[item] }
+    }
+  ))
 }
 
 module.exports = (api, options = {}) => {
@@ -50,6 +55,7 @@ module.exports = (api, options = {}) => {
   const envName = api.env()
 
   const {
+    bugfixes,
     polyfills: userPolyfills,
     loose = false,
     debug = false,
@@ -106,6 +112,7 @@ module.exports = (api, options = {}) => {
   // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
+      bugfixes,
       spec,
       loose,
       debug,
@@ -145,6 +152,7 @@ module.exports = (api, options = {}) => {
   }])
 
   return {
+    sourceType: 'unambiguous',
     presets,
     plugins
   }
