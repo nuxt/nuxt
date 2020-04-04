@@ -210,7 +210,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Call ssr:templateParams hook
-    await this.serverContext.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams, renderContext)
 
     // Render with SSR template
     const html = this.renderTemplate(this.serverContext.resources.ssrTemplate, templateParams)

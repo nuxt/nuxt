@@ -10,11 +10,12 @@
     "core-js",
     "memory-fs",
     "@rollup/plugin-node-resolve",
-    "@babel/parser",
     "execa",
     "pify",
     "file-loader",
-    "url-loader"
+    "url-loader",
+    "@babel/parser",
+    "fs-extra"
   ],
   "lockFileMaintenance": {
     "enabled": true
