@@ -30,9 +30,16 @@
     "test:unit": "jest packages --forceExit",
     "audit": "improved-yarn-audit --min-severity moderate -e 1488"
   },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.8.7",
     "@babel/preset-env": "^7.8.7",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
     "@nuxtjs/eslint-config": "^2.0.2",
     "@rollup/plugin-alias": "^3.0.1",
     "@rollup/plugin-commonjs": "^11.0.2",
@@ -55,6 +62,7 @@
     "get-port": "^5.1.1",
     "glob": "^7.1.6",
     "got": "^10.6.0",
+    "husky": "^4.2.3",
     "improved-yarn-audit": "^1.1.1",
     "is-wsl": "^2.1.1",
     "jest": "^25.1.0",
