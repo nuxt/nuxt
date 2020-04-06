@@ -62,6 +62,7 @@ module.exports = (api, options = {}) => {
   const envName = api.env()
 
   const {
+    bugfixes,
     polyfills: userPolyfills,
     loose = false,
     debug = false,
@@ -127,6 +128,7 @@ module.exports = (api, options = {}) => {
   // Pass options along to babel-preset-env
   presets.push([
     require('@babel/preset-env'), {
+      bugfixes,
       spec,
       loose,
       debug,

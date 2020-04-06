@@ -6,12 +6,14 @@ import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 import Resolver from '../src/resolver'
 
-jest.mock('path')
 jest.mock('esm', () => jest.fn(() => jest.fn()))
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
-describe('core: resolver', () => {
+jest.spyOn(path, 'join')
+jest.spyOn(path, 'resolve')
+
+describe.posix('core: resolver', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -107,7 +109,7 @@ describe('core: resolver', () => {
     startsWithRootAlias.mockReturnValue(false)
     startsWithSrcAlias.mockReturnValue(false)
 
-    const aliasPath = { substr: jest.fn(p => String(p)) }
+    const aliasPath = 'x'
     resolver.resolveAlias(aliasPath)
 
     expect(path.resolve).toBeCalledTimes(1)
