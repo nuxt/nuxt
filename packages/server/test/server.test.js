@@ -333,7 +333,7 @@ describe('server: server', () => {
 
   test('should use object middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
 
@@ -348,7 +348,7 @@ describe('server: server', () => {
 
   test('should use function module middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
     nuxt.resolver.requireModule.mockReturnValueOnce(handler)
