@@ -95,7 +95,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins () {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, render } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -150,9 +150,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }))
     }
 
-    if (buildOptions.crossorigin) {
+    if (render.crossorigin) {
       plugins.push(new CorsPlugin({
-        crossorigin: buildOptions.crossorigin
+        crossorigin: render.crossorigin
       }))
     }
 
