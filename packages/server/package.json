@@ -12,7 +12,7 @@
     "@nuxt/utils": "2.12.0",
     "@nuxt/vue-renderer": "2.12.0",
     "@nuxtjs/youch": "^4.2.3",
-    "chalk": "^3.0.0",
+    "chalk": "^4.0.0",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "consola": "^2.11.3",
