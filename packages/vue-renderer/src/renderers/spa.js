@@ -77,6 +77,11 @@ export default class SPARenderer extends BaseRenderer {
         m.script.text() +
         m.noscript.text()
 
+      // Add <base href=""> meta if router base specified
+      if (this.options._routerBaseSpecified) {
+        meta.HEAD += `<base href="${this.options.router.base}">`
+      }
+
       // BODY_SCRIPTS (PREPEND)
       meta.BODY_SCRIPTS_PREPEND =
         m.meta.text({ pbody: true }) +
