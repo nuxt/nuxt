@@ -207,7 +207,7 @@ describe('server: nuxtMiddleware', () => {
     }
     context.renderRoute.mockReturnValue(result)
     context.options.dev = true
-    context.options.build.crossorigin = 'use-credentials'
+    context.options.render.crossorigin = 'use-credentials'
     context.options.render.http2 = {
       push: true,
       shouldPush: jest.fn((fileWithoutQuery, asType) => asType === 'script')

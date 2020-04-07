@@ -112,7 +112,7 @@ export default class SPARenderer extends BaseRenderer {
 
       // Preload initial resources
       if (Array.isArray(manifest.initial)) {
-        const { crossorigin } = this.options.build
+        const { crossorigin } = this.options.render
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
 
         meta.preloadFiles = manifest.initial
