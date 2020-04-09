@@ -15,7 +15,8 @@
     "file-loader",
     "url-loader",
     "@babel/parser",
-    "fs-extra"
+    "fs-extra",
+    "chalk"
   ],
   "lockFileMaintenance": {
     "enabled": true

@@ -419,6 +419,13 @@ export function getNuxtConfig (_options) {
     options.build.indicator = false
   }
 
+  // TODO: Remove this if statement in Nuxt 3
+  if (options.build.crossorigin) {
+    consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    options.render.crossorigin = options.build.crossorigin
+    delete options.build.crossorigin
+  }
+
   const { timing } = options.server
   if (timing) {
     options.server.timing = { total: true, ...timing }

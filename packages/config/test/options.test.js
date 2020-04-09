@@ -277,6 +277,11 @@ describe('config: options', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
     })
+
+    test('should deprecate build.crossorigin', () => {
+      getNuxtConfig({ build: { crossorigin: 'use-credentials' } })
+      expect(consola.warn).toHaveBeenCalledWith('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    })
   })
 })
 
