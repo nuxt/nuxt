@@ -28,6 +28,12 @@
     "std-env": "^2.2.1",
     "wrap-ansi": "^6.2.0"
   },
+  "peerDependencies": {
+    "@nuxt/builder": "*",
+    "@nuxt/core": "*",
+    "@nuxt/generator": "*",
+    "@nuxt/webpack": "*"
+  },
   "publishConfig": {
     "access": "public"
   }
