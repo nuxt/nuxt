@@ -111,11 +111,11 @@ export default class ModuleContainer {
     )
   }
 
-  requireModule (moduleOpts) {
-    return this.addModule(moduleOpts, true /* require once */)
+  requireModule (moduleOpts, { requirePath } = {}) {
+    return this.addModule(moduleOpts, true /* require once */, { requirePath })
   }
 
-  async addModule (moduleOpts, requireOnce) {
+  async addModule (moduleOpts, requireOnce, { requirePath } = {}) {
     let src
     let options
     let handler
@@ -144,7 +144,7 @@ export default class ModuleContainer {
     // Resolve handler
     if (!handler) {
       try {
-        handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+        handler = this.nuxt.resolver.requireModule(src, { useESM: true, requirePath })
       } catch (error) {
         if (error.code !== 'MODULE_NOT_FOUND') {
           throw error

@@ -1,4 +1,5 @@
 import { resolve, join } from 'path'
+import { createRequire } from 'module'
 import fs from 'fs-extra'
 import consola from 'consola'
 import esm from 'esm'
@@ -27,9 +28,11 @@ export default class Resolver {
     this._resolve = require.resolve
   }
 
-  resolveModule (path) {
+  resolveModule (path, { requirePath } = {}) {
     try {
-      return this._resolve(path, {
+      const pathResolve = requirePath ? createRequire(requirePath).resolve : this._resolve
+
+      return pathResolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
@@ -55,7 +58,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
+  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle, requirePath } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
@@ -73,7 +76,7 @@ export default class Resolver {
 
     // Try to resolve it as a regular module
     if (isModule !== false) {
-      resolvedPath = this.resolveModule(path)
+      resolvedPath = this.resolveModule(path, { requirePath })
     }
 
     // Try to resolve alias
@@ -120,7 +123,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
+  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault, requirePath } = {}) {
     let resolvedPath = path
     let requiredModule
 
@@ -139,7 +142,7 @@ export default class Resolver {
 
     // Try to resolve path
     try {
-      resolvedPath = this.resolvePath(path, { isAlias })
+      resolvedPath = this.resolvePath(path, { isAlias, requirePath })
     } catch (e) {
       lastError = e
     }
@@ -162,7 +165,9 @@ export default class Resolver {
       if (useESM) {
         requiredModule = this.esm(resolvedPath)
       } else {
-        requiredModule = require(resolvedPath)
+        const pathRequire = requirePath ? createRequire(requirePath) : require
+
+        requiredModule = pathRequire(resolvedPath)
       }
     } catch (e) {
       lastError = e
