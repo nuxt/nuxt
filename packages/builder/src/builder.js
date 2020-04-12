@@ -75,7 +75,7 @@ export default class Builder {
     // Resolve template
     this.template = this.options.build.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
-      this.template = this.nuxt.resolver.requireModule(this.template).template
+      this.template = this.nuxt.resolver.requireModule(this.template, { requirePath: __filename }).template
     }
 
     // Create a new bundle builder
@@ -206,7 +206,9 @@ export default class Builder {
       const depVersion = templateDependencies[depName]
 
       // Load installed version
-      const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'))
+      const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'), {
+        requirePath: this.template.dir
+      })
       if (pkg) {
         const validVersion = semver.satisfies(pkg.version, depVersion)
         if (!validVersion) {

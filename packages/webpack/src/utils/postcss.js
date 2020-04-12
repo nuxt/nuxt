@@ -144,7 +144,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = this.buildContext.nuxt.resolver.requireModule(p)
+          const plugin = this.buildContext.nuxt.resolver.requireModule(p, { requirePath: __filename })
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled
