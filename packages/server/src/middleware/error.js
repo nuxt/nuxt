@@ -10,7 +10,8 @@ export default ({ resources, options }) => async function errorMiddleware (err, 
   const error = {
     statusCode: err.statusCode || 500,
     message: err.message || 'Nuxt Server Error',
-    name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name
+    name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name,
+    headers: err.headers || {}
   }
 
   const sendResponse = (content, type = 'text/html') => {
@@ -20,6 +21,9 @@ export default ({ resources, options }) => async function errorMiddleware (err, 
     res.setHeader('Content-Type', type + '; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(content))
     res.setHeader('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+    Object.entries(error.headers).forEach(([name, value]) => {
+      res.setHeader(name, value)
+    })
 
     // Send Response
     res.end(content, 'utf-8')
