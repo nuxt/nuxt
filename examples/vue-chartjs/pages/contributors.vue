@@ -7,7 +7,7 @@
 <script>
 import DoughnutChart from '~/components/doughnut-chart'
 
-function isBot(username) {
+function isBot (username) {
   return username.includes('[bot]') || username.includes('-bot')
 }
 
@@ -30,7 +30,7 @@ export default {
         Authorization: `token ${env.githubToken}`
       }
     })
-    contributors = contributors.filter((c) => c.contributions >= 10 && !isBot(c.login))
+    contributors = contributors.filter(c => c.contributions >= 10 && !isBot(c.login))
     return {
       doughnutChartData: {
         labels: contributors.map(c => c.login),
@@ -38,7 +38,7 @@ export default {
           {
             label: 'Nuxt.js Contributors',
             backgroundColor: contributors.map(getRandomColor),
-            data: contributors.map((c) => c.contributions)
+            data: contributors.map(c => c.contributions)
           }
         ]
       }
