@@ -1,11 +1,11 @@
 {
   "name": "example-vue-chartjs",
   "dependencies": {
-    "axios": "^0.19.0",
-    "chart.js": "^2.7.1",
-    "moment": "^2.18.1",
+    "@nuxt/http": "^0.4.0",
+    "chart.js": "^2.9.3",
+    "moment": "^2.24.0",
     "nuxt": "latest",
-    "vue-chartjs": "^3.1.0"
+    "vue-chartjs": "^3.5.0"
   },
   "scripts": {
     "dev": "nuxt",
