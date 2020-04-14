@@ -164,7 +164,7 @@ export default class ModuleContainer {
           throw new Error(message)
         } else {
           // TODO: Remove in next major version
-          message += ' Silently ignoring module as programatic usage detected.'
+          message += ' Silently ignoring module as programmatic usage detected.'
           consola.warn(message)
           return
         }

@@ -38,7 +38,7 @@ Bugfixes for upcoming features won't be ported of course.
 
 ### Edge Release Channel
 
-After experimenting with `nuxt-edge` releases in the last time, the decisiion to do **nightly releases** for now instead of
+After experimenting with `nuxt-edge` releases in the last time, the decision to do **nightly releases** for now instead of
 releasing a version after _each commit_ was made.
 
 ## End of Life
