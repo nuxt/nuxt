@@ -55,7 +55,7 @@
     "get-port": "^5.1.1",
     "glob": "^7.1.6",
     "got": "^10.7.0",
-    "improved-yarn-audit": "^1.2.0",
+    "improved-yarn-audit": "^2.0.0",
     "is-wsl": "^2.1.1",
     "jest": "^25.2.7",
     "jsdom": "^16.2.2",
