@@ -224,7 +224,7 @@ describe('generator: generate route', () => {
     expect(returned).toEqual(true)
   })
 
-  test('should generate file in flat folder if route is epmty', async () => {
+  test('should generate file in flat folder if route is empty', async () => {
     const nuxt = createNuxt()
     nuxt.options.build.html = { minify: false }
     const generator = new Generator(nuxt)

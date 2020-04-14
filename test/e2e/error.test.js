@@ -33,7 +33,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/squared')
 
     expect(await page.$text('header')).toBe('Error layout')
-    expect(await page.$text('h2')).toBe('An error occured while showing the error page')
+    expect(await page.$text('h2')).toBe('An error occurred while showing the error page')
   })
 
   test('/about loads normally', async () => {
