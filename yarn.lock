@@ -1873,6 +1873,11 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@ls-lint/ls-lint@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.npmjs.org/@ls-lint/ls-lint/-/ls-lint-1.8.0.tgz#508fe32d4dbdd90d61c8ea156c20af33c294a22e"
+  integrity sha512-XaItB+/qOMdCJbTuT/mT6yDlzUSClOtPx9S/dUBETUHxmcOlvdLOXoIiSvZBlpmux81qtz6pVvkmzWNK0SpojQ==
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.npmjs.org/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
