@@ -64,7 +64,7 @@
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
     "node-sass": "^4.13.1",
-    "puppeteer-core": "^2.1.1",
+    "puppeteer-core": "^3.0.0",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.3.3",
