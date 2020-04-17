@@ -6675,10 +6675,10 @@ import-modules@^2.0.0:
   resolved "https://registry.npmjs.org/import-modules/-/import-modules-2.0.0.tgz#9c1e13b4e7a15682f70a6e3fa29534e4540cfc5d"
   integrity sha512-iczM/v9drffdNnABOKwj0f9G3cFDon99VcG1mxeBsdqnbd+vnQ5c2uAiCHNQITqFTOPaEvwg3VjoWCur0uHLEw==
 
-improved-yarn-audit@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/improved-yarn-audit/-/improved-yarn-audit-1.2.0.tgz#6d523a8be812e580b7107b7c683bbe8776412e5e"
-  integrity sha512-cVfaGyVMnI1zRu1q9n/iUbUP3j9EQZ3bhuTybYYn5LQ1JfaknPJobmSMSA9NdVOeDlLvjhLJ3p8rXTRzHjcNXg==
+improved-yarn-audit@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/improved-yarn-audit/-/improved-yarn-audit-2.0.0.tgz#8819a7c22c0fd9c6df4b49a4c2f88a33e31c469e"
+  integrity sha512-IfySlTAOEEdI/MDSgH0WO8K28K1z4KQr5eEpUJyvuF1aAfWp/PTxuonboRxd0oKWuPZcrUsMZxwKvN4jpEIJeg==
 
 imurmurhash@^0.1.4:
   version "0.1.4"
