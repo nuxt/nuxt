@@ -21,7 +21,7 @@ export default class SSRRenderer extends BaseRenderer {
 
   renderScripts (renderContext) {
     const scripts = renderContext.renderScripts()
-    const { build: { crossorigin } } = this.options
+    const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return scripts
     }
@@ -37,7 +37,7 @@ export default class SSRRenderer extends BaseRenderer {
 
   renderResourceHints (renderContext) {
     const resourceHints = renderContext.renderResourceHints()
-    const { build: { crossorigin } } = this.options
+    const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return resourceHints
     }
