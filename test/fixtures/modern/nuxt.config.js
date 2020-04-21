@@ -1,7 +1,6 @@
 export default {
   modern: true,
   build: {
-    crossorigin: 'use-credentials',
     filenames: {
       app: ({ isModern }) => {
         return `${isModern ? 'modern-' : ''}[name].js`
@@ -12,6 +11,7 @@ export default {
     }
   },
   render: {
+    crossorigin: 'use-credentials',
     http2: {
       push: true
     }

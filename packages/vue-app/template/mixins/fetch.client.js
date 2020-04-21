@@ -84,8 +84,16 @@ function createdFullStatic() {
 }
 <% } %>
 
-async function $fetch() {
-  this.$nuxt.nbFetching++
+function $fetch() {
+  if (!this._fetchPromise) {
+    this._fetchPromise = $_fetch.call(this)
+      .then(() => { delete this._fetchPromise })
+  }
+  return this._fetchPromise
+}
+
+async function $_fetch() {
+  this.<%= globals.nuxt %>.nbFetching++
   this.$fetchState.pending = true
   this.$fetchState.error = null
   this._hydrated = false
@@ -110,5 +118,5 @@ async function $fetch() {
   this.$fetchState.pending = false
   this.$fetchState.timestamp = Date.now()
 
-  this.$nextTick(() => this.$nuxt.nbFetching--)
+  this.$nextTick(() => this.<%= globals.nuxt %>.nbFetching--)
 }

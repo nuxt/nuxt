@@ -182,13 +182,13 @@ export default class Server {
       middleware = this._requireMiddleware(middleware)
     }
 
-    // Normalize handler to handle (backward compatiblity)
+    // Normalize handler to handle (backward compatibility)
     if (middleware.handler && !middleware.handle) {
       middleware.handle = middleware.handler
       delete middleware.handler
     }
 
-    // Normalize path to route (backward compatiblity)
+    // Normalize path to route (backward compatibility)
     if (middleware.path && !middleware.route) {
       middleware.route = middleware.path
       delete middleware.path
@@ -206,7 +206,12 @@ export default class Server {
       }
     }
 
-    // SubApp (Express)
+    // Prefix on handle (proxy-module)
+    if (middleware.handle.prefix !== undefined && middleware.prefix === undefined) {
+      middleware.prefix = middleware.handle.prefix
+    }
+
+    // sub-app (express)
     if (typeof middleware.handle.handle === 'function') {
       const server = middleware.handle
       middleware.handle = server.handle.bind(server)
@@ -255,7 +260,12 @@ export default class Server {
       (typeof middleware.route === 'string' ? middleware.route : '')
     ).replace(/\/\//g, '/')
 
-    // Assign _middleware to handle to make accessable from app.stack
+    // Strip trailing slash
+    if (middleware.route.endsWith('/')) {
+      middleware.route = middleware.route.slice(0, -1)
+    }
+
+    // Assign _middleware to handle to make accessible from app.stack
     middleware.handle._middleware = middleware
 
     return middleware
@@ -289,11 +299,7 @@ export default class Server {
     serverStackItem.handle = handle
 
     // Error State
-    if (route.includes('#error')) {
-      serverStackItem.route = serverStackItem.route || '/'
-    } else {
-      serverStackItem.route = route
-    }
+    serverStackItem.route = route
 
     // Return updated item
     return serverStackItem

@@ -65,7 +65,7 @@ export async function lock ({ id, dir, root, options }) {
   }
 
   if (!lockPaths.size) {
-    // make sure to always cleanup our temporate lockPaths
+    // make sure to always cleanup our temporary lockPaths
     onExit(() => {
       for (const lockPath of lockPaths) {
         fs.removeSync(lockPath)

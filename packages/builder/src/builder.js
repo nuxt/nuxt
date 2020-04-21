@@ -83,7 +83,8 @@ export default class Builder {
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
 
     this.ignore = new Ignore({
-      rootDir: this.options.srcDir
+      rootDir: this.options.srcDir,
+      ignoreArray: this.options.ignore
     })
   }
 
@@ -318,7 +319,6 @@ export default class Builder {
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore,
       follow: this.options.build.followSymlinks
     }))
   }
@@ -729,6 +729,9 @@ export default class Builder {
       Array.from(deps),
       ['all'],
       debounce((event, fileName) => {
+        if (!dep2Entry[fileName]) {
+          return // #7097
+        }
         for (const entry of dep2Entry[fileName]) {
           // Reload entry
           let newItem
@@ -745,7 +748,7 @@ export default class Builder {
           }
 
           // Log
-          consola.info(`[HMR] ${chalk.cyan(newItem.route)} (${chalk.grey(fileName)})`)
+          consola.info(`[HMR] ${chalk.cyan(newItem.route || '/')} (${chalk.grey(fileName)})`)
         }
         // Tree may be changed so recreate watcher
         this.serverMiddlewareHMR()

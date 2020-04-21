@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.11.0",
+  "version": "2.12.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/cli.js",
@@ -12,8 +12,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.11.0",
-    "@nuxt/utils": "2.11.0",
+    "@nuxt/config": "2.12.1",
+    "@nuxt/utils": "2.12.1",
     "boxen": "^4.2.0",
     "chalk": "^3.0.0",
     "consola": "^2.11.3",
@@ -22,7 +22,7 @@
     "exit": "^0.1.2",
     "fs-extra": "^8.1.0",
     "hable": "^3.0.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.5",
     "opener": "1.5.1",
     "pretty-bytes": "^5.3.0",
     "std-env": "^2.2.1",

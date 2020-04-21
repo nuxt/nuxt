@@ -35,6 +35,12 @@ describe('basic browser', () => {
     expect(await page.$text('pre')).toContain('pi0')
   })
 
+  test('/old-fetch', async () => {
+    await page.nuxt.navigate('/old-fetch')
+    const storeState = await page.nuxt.storeState()
+    expect(storeState).toMatchObject({ oldFetchData: 'old-fetch' })
+  })
+
   test('/fetch-error', async () => {
     await page.nuxt.navigate('/fetch-error')
     expect(await page.$text('p')).toContain('Fetching...')
@@ -68,14 +74,6 @@ describe('basic browser', () => {
     expect(await page.$text('p')).toContain('Fetching...')
     await page.waitForSelector('pre')
     expect(await page.$text('pre')).toContain('kevinmarrec')
-  })
-
-  test('/old-fetch', async () => {
-    const msg = new Promise(resolve =>
-      page.on('console', msg => resolve(msg.text()))
-    )
-    await page.nuxt.navigate('/old-fetch')
-    expect(await msg).toBe('fetch(context) has been deprecated, please use middleware(context)')
   })
 
   test('ssr: /fetch-client', async () => {

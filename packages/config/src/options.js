@@ -411,13 +411,26 @@ export function getNuxtConfig (_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
-  // Add loading screen
-  if (options.dev) {
-    options.buildModules.push('@nuxt/loading-screen')
-    // Disable build indicator for programmatic users
-    if (!options._cli) {
-      options.build.indicator = false
-    }
+  // Loading screen
+  // disable for production and programmatic users
+  if (!options.dev || !options._cli) {
+    options.build.loadingScreen = false
+  }
+  // Add loading-screen module
+  if (options.build.loadingScreen) {
+    options.buildModules.push(['@nuxt/loading-screen', options.build.loadingScreen])
+  }
+
+  // When loadingScreen is disabled we should also disable build indicator
+  if (!options.build.loadingScreen) {
+    options.build.indicator = false
+  }
+
+  // TODO: Remove this if statement in Nuxt 3
+  if (options.build.crossorigin) {
+    consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    options.render.crossorigin = options.build.crossorigin
+    delete options.build.crossorigin
   }
 
   const { timing } = options.server

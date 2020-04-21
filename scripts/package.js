@@ -239,7 +239,7 @@ export default class Package {
           case 'ERROR':
             return this.logger.error(event.error)
 
-          // Eencountered an unrecoverable error
+          // Encountered an unrecoverable error
           case 'FATAL':
             return this.logger.fatal(event.error)
 

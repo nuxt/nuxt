@@ -15,7 +15,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": undefined,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -82,6 +81,7 @@ Object {
       },
       "vueStyle": Object {},
     },
+    "loadingScreen": Object {},
     "optimization": Object {
       "minimize": undefined,
       "minimizer": undefined,
@@ -269,6 +269,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,
@@ -372,7 +373,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": undefined,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -439,6 +439,7 @@ Object {
       },
       "vueStyle": Object {},
     },
+    "loadingScreen": Object {},
     "optimization": Object {
       "minimize": undefined,
       "minimizer": undefined,
@@ -626,6 +627,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,

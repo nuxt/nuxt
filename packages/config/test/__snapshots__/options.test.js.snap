@@ -28,7 +28,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -57,11 +56,7 @@ Object {
         "useShortDoctype": true,
       },
     },
-    "indicator": Object {
-      "backgroundColor": "#2E495E",
-      "color": "#00C48D",
-      "position": "bottom-right",
-    },
+    "indicator": false,
     "loaders": Object {
       "css": Object {
         "sourceMap": false,
@@ -108,6 +103,7 @@ Object {
         "sourceMap": false,
       },
     },
+    "loadingScreen": false,
     "optimization": Object {
       "minimize": true,
       "minimizer": undefined,
@@ -301,6 +297,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,

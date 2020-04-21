@@ -4,7 +4,8 @@ import {
   getMatchedComponentsInstances,
   getChildrenComponentInstancesUsingFetch,
   promisify,
-  globalHandleError
+  globalHandleError,
+  sanitizeComponent
 } from './utils'
 <% } %>
 <% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
@@ -17,15 +18,19 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
   if (splitChunks.layouts) {
-    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => m.default || m)`
+    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => sanitizeComponent(m.default || m))`
   } else {
     return `import _${hash(key)} from '${layouts[key]}'`
   }
 }).join('\n') %>
 
+<% if (splitChunks.layouts) { %>
+let resolvedLayouts = {}
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } else { %>
+const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": sanitizeComponent(_${hash(key)})`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
-<% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 <% } %>
 
 export default {
