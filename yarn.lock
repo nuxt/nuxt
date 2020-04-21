@@ -3691,10 +3691,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001020, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001035.tgz#2bb53b8aa4716b2ed08e088d4dc816a5fe089a1e"
   integrity sha512-C1ZxgkuA4/bUEdMbU5WrGY4+UhMFFiXrgNAfxiMIqWgFTWfv/xsZCS2xEHT2LMq7xAZfuAnu6mcqyDl0ZR6wLQ==
 
-caniuse-lite@^1.0.30001043:
-  version "1.0.30001043"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001043.tgz#1b561de27aefbe6ff99e41866b8d7d87840c513b"
-  integrity sha512-MrBDRPJPDBYwACtSQvxg9+fkna5jPXhJlKmuxenl/ml9uf8LHKlDmLpElu+zTW/bEz7lC1m0wTDD7jiIB+hgFg==
+caniuse-lite@^1.0.30001045:
+  version "1.0.30001045"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001045.tgz#a770df9de36ad6ca0c34f90eaa797a2dbbb1b619"
+  integrity sha512-Y8o2Iz1KPcD6FjySbk1sPpvJqchgxk/iow0DABpGyzA1UeQAuxh63Xh0Enj5/BrsYbXtCN32JmR4ZxQTCQ6E6A==
 
 capture-exit@^2.0.0:
   version "2.0.0"
