@@ -1,6 +1,5 @@
 import fs from 'fs'
 import execa from 'execa'
-import { TARGETS } from '@nuxt/utils'
 import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'

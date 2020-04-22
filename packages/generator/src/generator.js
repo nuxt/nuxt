@@ -259,8 +259,8 @@ export default class Generator {
       html = res.html
 
       // If crawler activated and called from generateRoutes()
-      if (this.options.generate.crawler && routes) {
-        parse(html).querySelectorAll('a').map(el => {
+      if (this.options.generate.crawler && Array.isArray(routes)) {
+        parse(html).querySelectorAll('a').map((el) => {
           const href = (el.getAttribute('href') || '').split('?')[0].split('#')[0].trim()
 
           if (href.startsWith('/') && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
