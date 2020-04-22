@@ -1,5 +1,6 @@
 const commands = {
   start: () => import('./start'),
+  serve: () => import('./serve'),
   dev: () => import('./dev'),
   build: () => import('./build'),
   generate: () => import('./generate'),

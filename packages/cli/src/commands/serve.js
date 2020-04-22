@@ -1,0 +1,71 @@
+import { promises as fs } from 'fs'
+import { join } from 'path'
+import connect from 'connect'
+import serveStatic from 'serve-static'
+import { getNuxtConfig } from '@nuxt/config'
+import { TARGETS } from '@nuxt/utils'
+import { Listener } from '@nuxt/server'
+import { common, server } from '../options'
+import { showBanner } from '../utils/banner'
+import * as imports from '../imports'
+
+export default {
+  name: 'serve',
+  description: 'Serve the exported static application (should be compiled with `nuxt build` and `nuxt export` first)',
+  usage: 'serve <dir>',
+  options: {
+    'config-file': common['config-file'],
+    version: common.version,
+    help: common.help,
+    ...server
+  },
+  async run (cmd) {
+    let options = await cmd.getNuxtConfig({ dev: false })
+    // add default options
+    options = getNuxtConfig(options)
+
+    if (options.target === TARGETS.server) {
+      throw new Error('You cannot use `nuxt serve` with '+TARGETS.server+' target, please use `nuxt start`')
+    }
+    const distStat = await fs.stat(options.generate.dir).catch(err => null)
+    if (!distStat || !distStat.isDirectory()) {
+      throw new Error('Output directory `'+options.generate.dir.replace(options.rootDir, '.')+'` does not exists, please run `nuxt export` before `nuxt serve`.')
+    }
+    const app = connect()
+    app.use(
+      serveStatic(options.generate.dir, {
+        extensions: ['html']
+      }
+    ))
+    if (options.generate.fallback) {
+      const fallbackFile = await fs.readFile(join(options.generate.dir, options.generate.fallback), 'utf-8')
+      app.use((req, res) => {
+        res.writeHeader(200, {
+          'Content-Type': 'text/html'
+        })
+        res.write(fallbackFile)
+        res.end()
+      })
+    }
+
+    const { port, host, socket, https } = options.server
+    const listener = new Listener({
+      port,
+      host,
+      socket,
+      https,
+      app,
+      dev: true, // try another port if taken
+      baseURL: options.router.base
+    })
+    await listener.listen()
+    const { Nuxt } = await imports.core()
+    showBanner({
+      constructor: Nuxt,
+      options,
+      server: {
+        listeners: [ listener ]
+      }
+    }, false)
+  }
+}
