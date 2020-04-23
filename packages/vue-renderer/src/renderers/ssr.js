@@ -198,6 +198,10 @@ export default class SSRRenderer extends BaseRenderer {
       APP += meta.script.text({ body: true })
       APP += meta.noscript.text({ body: true })
     }
+    if (renderContext.payloadPath) {
+      // Full static, add window.__PAYLOAD_PATH__
+      APP += `<script>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
+    }
 
     // Template params
     const templateParams = {

@@ -191,7 +191,7 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    let { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+    let { html } = await this.nuxt.server.renderRoute('/', { spa: true, payloadPath: this.payloadPath })
 
     try {
       html = this.minifyHtml(html)

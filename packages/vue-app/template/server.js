@@ -73,10 +73,6 @@ export default async (ssrContext) => {
   ssrContext.beforeRenderFns = []
   // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
-  // Static generation
-  if (ssrContext.payloadPath) {
-    ssrContext.nuxt.payloadPath = ssrContext.payloadPath
-  }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)

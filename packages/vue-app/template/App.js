@@ -103,9 +103,9 @@ export default {
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
-    <% if (features.asyncData && isFullStatic) { %>
+    <% if ((features.asyncData || features.fetch) && isFullStatic) { %>
     if (process.client) {
-      Vue.util.defineReactive(this, 'payloadPath', window.<%= globals.context %>.payloadPath)
+      Vue.util.defineReactive(this, 'payloadPath', window.__PAYLOAD_PATH__)
     }
     <% } %>
   },

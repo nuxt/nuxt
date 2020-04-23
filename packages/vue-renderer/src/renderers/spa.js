@@ -148,7 +148,11 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    if (renderContext.payloadPath) {
+      // Full static, add window.__PAYLOAD_PATH__
+      APP += `<script>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
+    }
 
     // Prepare template params
     const templateParams = {
