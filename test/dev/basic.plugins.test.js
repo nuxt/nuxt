@@ -35,6 +35,14 @@ describe('with-config', () => {
     // inject('injectedProperty', '')
     await expect(nuxt.renderRoute('/?injectValue=empty')).resolves.not.toThrowError()
   })
+  test('inject should add to context and prototypes', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/?injectValue=foo'))
+    // inject('injectedProperty', 'bar')
+    await expect(window.$nuxt.$injectedProperty).toBe('bar')
+    await expect(window.$nuxt.context.$injectedProperty).toBe('bar')
+    await expect(window.$nuxt.context.app.$injectedProperty).toBe('bar')
+    await expect(window.$nuxt.$store.$injectedProperty).toBe('bar')
+  })
 
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
