@@ -26,7 +26,7 @@ export default {
     // We can return a Promise instead of calling the callback
     return fetch('https://jsonplaceholder.typicode.com/posts')
       .then(res => res.json())
-      .then(data => {
+      .then((data) => {
         return { posts: data.slice(0, 5) }
       })
   },
