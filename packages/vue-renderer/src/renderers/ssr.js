@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
+import { TARGETS } from '@nuxt/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -160,7 +161,11 @@ export default class SSRRenderer extends BaseRenderer {
     // Serialize state
     if (shouldInjectScripts || shouldHashCspScriptSrc) {
       // Only serialized session if need inject scripts or csp hash
-      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+      if (this.options.target === TARGETS.static) {
+        serializedSession = `window.${this.serverContext.globals.context}=${JSON.stringify(renderContext.nuxt)};`
+      } else {
+        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+      }
     }
 
     if (shouldInjectScripts) {
