@@ -159,6 +159,9 @@ export default class ModuleContainer {
         }
 
         message = message.replace(/{name}/g, src)
+        
+        // add this extra warning that points to the original error for debuging purposes
+        consola.warn('originalError:', error)
 
         if (this.options._cli) {
           throw new Error(message)
