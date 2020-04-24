@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs'
-import { join } from 'path'
+import { join, extname } from 'path'
 import connect from 'connect'
 import serveStatic from 'serve-static'
 import { getNuxtConfig } from '@nuxt/config'
@@ -23,6 +23,11 @@ export default {
     let options = await cmd.getNuxtConfig({ dev: false })
     // add default options
     options = getNuxtConfig(options)
+    try {
+      // overwrites with build config
+      const buildConfig = require(join(options.buildDir, 'nuxt/config.json'))
+      options.target = buildConfig.target
+    } catch (err) {}
 
     if (options.target === TARGETS.server) {
       throw new Error('You cannot use `nuxt serve` with ' + TARGETS.server + ' target, please use `nuxt start`')
@@ -39,7 +44,12 @@ export default {
     )
     if (options.generate.fallback) {
       const fallbackFile = await fs.readFile(join(options.generate.dir, options.generate.fallback), 'utf-8')
-      app.use((req, res) => {
+      app.use((req, res, next) => {
+        const ext = extname(req.url) || '.html'
+
+        if (ext !== '.html') {
+          return next()
+        }
         res.writeHeader(200, {
           'Content-Type': 'text/html'
         })
