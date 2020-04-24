@@ -429,7 +429,7 @@ async function render (to, from, next) {
     <% if (features.asyncData || features.fetch) { %>
     let instances
     // Call asyncData & fetch hooks on components matched by the route.
-    await Promise.all(Components.map((Component, i) => {
+    await Promise.all(Components.map(async (Component, i) => {
       // Check if only children route changed
       Component._path = compile(to.matched[matches[i]].path)(to.params)
       Component._dataRefresh = false
@@ -490,7 +490,13 @@ async function render (to, from, next) {
           if (Component.options.static === false || this.$isPreview) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
-            promise = this.fetchPayload(to.path).then((payloadData) => payloadData.data[i])
+            try {
+              const payload = await this.fetchPayload(to.path).then((payloadData) => payloadData.data[i])
+              promise = Promise.resolve(payload)
+            } catch (err) {
+              // fallback
+              promise = promisify(Component.options.asyncData, app.context)
+            }
           }
         <% } else { %>
         const promise = promisify(Component.options.asyncData, app.context)
@@ -513,7 +519,7 @@ async function render (to, from, next) {
       <% if (features.fetch) { %>
         <% if (isFullStatic) { %>
         if (!this.$isPreview) {
-          promises.push(this.fetchPayload(to.path))
+          promises.push(this.fetchPayload(to.path).catch(err => null))
         }
         <% } %>
       // Call fetch(context)

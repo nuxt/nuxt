@@ -303,14 +303,19 @@ export default {
         return payload
       }
       // if payload is in cache
-      else if (payload) {
+      else if (typeof payload !== 'undefined') {
         this.setPagePayload(payload)
         return payload
       }
       // fetch payload
       this._payloadCache[payloadPath] = fetch(payloadPath)
         .then(res => {
-          if (!res.ok) throw new Error(res.statusText)
+          if (!res.ok) {
+            // used for spa fallback
+            this._payloadCache[payloadPath] = false
+            this.setPagePayload(false)
+            throw new Error(res.statusText)
+          }
           return res.json()
         })
         .then(payload => {
