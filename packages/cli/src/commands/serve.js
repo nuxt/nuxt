@@ -25,18 +25,18 @@ export default {
     options = getNuxtConfig(options)
 
     if (options.target === TARGETS.server) {
-      throw new Error('You cannot use `nuxt serve` with '+TARGETS.server+' target, please use `nuxt start`')
+      throw new Error('You cannot use `nuxt serve` with ' + TARGETS.server + ' target, please use `nuxt start`')
     }
-    const distStat = await fs.stat(options.generate.dir).catch(err => null)
+    const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line handle-callback-err
     if (!distStat || !distStat.isDirectory()) {
-      throw new Error('Output directory `'+options.generate.dir.replace(options.rootDir, '.')+'` does not exists, please run `nuxt export` before `nuxt serve`.')
+      throw new Error('Output directory `' + options.generate.dir.replace(options.rootDir, '.') + '` does not exists, please run `nuxt export` before `nuxt serve`.')
     }
     const app = connect()
     app.use(
       serveStatic(options.generate.dir, {
         extensions: ['html']
-      }
-    ))
+      })
+    )
     if (options.generate.fallback) {
       const fallbackFile = await fs.readFile(join(options.generate.dir, options.generate.fallback), 'utf-8')
       app.use((req, res) => {
@@ -64,7 +64,7 @@ export default {
       constructor: Nuxt,
       options,
       server: {
-        listeners: [ listener ]
+        listeners: [listener]
       }
     }, false)
   }
