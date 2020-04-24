@@ -119,7 +119,12 @@ export default class Generator {
   }
 
   shouldGenerateRoute (route) {
-    return this.options.generate.exclude.every(regex => !regex.test(route))
+    return this.options.generate.exclude.every(regex => {
+      if (typeof regex === 'string') {
+        return regex !== route
+      }
+      return !regex.test(route)
+    })
   }
 
   getBuildConfig () {
