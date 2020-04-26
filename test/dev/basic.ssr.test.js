@@ -359,6 +359,13 @@ describe('basic ssr', () => {
     expect(html).toMatch('<h1>JS Layout</h1>')
     expect(html).toMatch('<h2>custom page</h2>')
   })
+
+  test('/with-props (from layout)', async () => {
+    const window = await nuxt.server.renderAndGetWindow(url('/with-props'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Foo: bar')
+  })
+
   /* Testing symlinks functionality */
   test('/symlink/symlinked', async () => {
     const { html } = await nuxt.server.renderRoute('/symlink/symlinked')

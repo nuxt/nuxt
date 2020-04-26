@@ -136,6 +136,12 @@ describe('basic generate', () => {
     expect(html).toContain('Hello unicode')
   })
 
+  test('/with-prop (from layout)', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/with-prop'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('Foo: bar')
+  })
+
   test('/users/1/index.html', async () => {
     const { body: html } = await rp(url('/users/1/index.html'))
     expect(html).toContain('<h1>User: 1</h1>')

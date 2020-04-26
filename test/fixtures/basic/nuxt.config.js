@@ -32,6 +32,7 @@ export default {
       '/users/1',
       '/users/2',
       '/тест雨',
+      '/with-props',
       { route: '/users/3', payload: { id: 3000 } }
     ],
     interval: 200
