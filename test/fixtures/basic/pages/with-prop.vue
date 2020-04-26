@@ -3,8 +3,8 @@
 </template>
 
 <script>
-  export default {
-    layout: 'with-page-prop',
-    props: ['foo']
-  }
+export default {
+  layout: 'with-page-prop',
+  props: ['foo']
+}
 </script>
