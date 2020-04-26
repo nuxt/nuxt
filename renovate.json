@@ -17,7 +17,8 @@
     "@babel/parser",
     "fs-extra",
     "chalk",
-    "wrap-ansi"
+    "wrap-ansi",
+    "@rollup/plugin-commonjs"
   ],
   "lockFileMaintenance": {
     "enabled": true
