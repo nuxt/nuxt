@@ -79,7 +79,7 @@ export default {
       // Directly return nuxt child
       return h('NuxtChild', {
         key: this.routerViewKey,
-        props: this.$props
+        props: { ...this.$props, ...this.$attrs }
       })
     }
 

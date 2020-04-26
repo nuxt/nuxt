@@ -55,6 +55,12 @@ function spaTests ({ isHashMode }) {
       consola.log.mockClear()
     })
 
+    test('/with-props (layout)', async () => {
+      const { html } = await renderRoute('/with-props')
+      expect(html).toMatch('Foo: bar')
+      consola.log.mockClear()
+    })
+
     test('/mounted', async () => {
       const { html } = await renderRoute('/mounted')
       expect(html).toMatch('<h1>Test: updated</h1>')
