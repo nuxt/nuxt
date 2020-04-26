@@ -6,10 +6,10 @@
 </template>
 
 <script>
-  export default {
-    data: () => ({ bar: 1 }),
-    mounted () {
-      setInterval(() => this.bar++, 1000);
-    }
+export default {
+  data: () => ({ bar: 1 }),
+  mounted () {
+    setInterval(() => this.bar++, 1000)
   }
+}
 </script>

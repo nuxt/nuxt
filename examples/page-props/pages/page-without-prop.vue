@@ -6,10 +6,10 @@
 </template>
 
 <script>
-  import navigation from '@/components/navigation';
+import navigation from '@/components/navigation'
 
-  export default {
-    components: { navigation },
-    layout: (context) => context.route.query.layout || 'default'
-  }
+export default {
+  components: { navigation },
+  layout: context => context.route.query.layout || 'default'
+}
 </script>
