@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
-import defaults from 'lodash/defaults'
+import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
@@ -252,7 +252,7 @@ export function getNuxtConfig (_options) {
 
   // Apply default hash to CSP option
   if (options.render.csp) {
-    options.render.csp = defaults({}, options.render.csp, {
+    options.render.csp = defu(options.render.csp, {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,

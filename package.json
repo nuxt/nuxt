@@ -37,7 +37,7 @@
     "@babel/preset-env": "^7.9.5",
     "@nuxtjs/eslint-config": "^2.0.2",
     "@rollup/plugin-alias": "^3.1.0",
-    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.3",
     "@rollup/plugin-node-resolve": "7.0.0",
     "@rollup/plugin-replace": "^2.3.2",
@@ -56,7 +56,7 @@
     "fs-extra": "^8.1.0",
     "get-port": "^5.1.1",
     "glob": "^7.1.6",
-    "got": "^11.0.1",
+    "got": "^11.0.2",
     "improved-yarn-audit": "^2.0.0",
     "is-wsl": "^2.1.1",
     "jest": "^25.4.0",
@@ -65,17 +65,18 @@
     "lerna": "^3.20.2",
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
-    "node-sass": "^4.13.1",
-    "puppeteer-core": "^3.0.0",
+    "node-sass": "^4.14.0",
+    "puppeteer-core": "^3.0.1",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
-    "rollup": "^2.6.1",
+    "rollup": "^2.7.2",
     "rollup-plugin-license": "^2.0.0",
     "sass-loader": "^8.0.2",
-    "sort-package-json": "^1.42.0",
+    "sort-package-json": "^1.42.1",
     "vue-jest": "^4.0.0-beta.2"
   },
   "resolutions": {
-    "babel-eslint/@babel/parser": "7.7.5"
+    "babel-eslint/@babel/parser": "7.7.5",
+    "@rollup/plugin-commonjs": "11.0.2"
   }
 }

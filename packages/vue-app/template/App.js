@@ -1,13 +1,16 @@
 import Vue from 'vue'
-<% if (features.asyncData || features.fetch) { %>
-import {
-  getMatchedComponentsInstances,
-  getChildrenComponentInstancesUsingFetch,
-  promisify,
-  globalHandleError,
-  sanitizeComponent
-} from './utils'
-<% } %>
+<% utilsImports = [
+  ...(features.asyncData || features.fetch) ? [
+    'getMatchedComponentsInstances',
+    'getChildrenComponentInstancesUsingFetch',
+    'promisify',
+    'globalHandleError'
+  ] : [],
+  ...features.layouts ? [
+    'sanitizeComponent'
+  ]: []
+] %>
+<% if (utilsImports.length) { %>import { <%= utilsImports.join(', ') %> } from './utils'<% } %>
 <% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
