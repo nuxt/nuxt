@@ -20,7 +20,8 @@
     "@babel/runtime": "^7.9.2",
     "@vue/babel-preset-jsx": "^1.1.2",
     "core-js": "^2.6.5",
-    "core-js-compat": "^3.6.4"
+    "core-js-compat": "^3.6.4",
+    "regenerator-runtime": "^0.13.5"
   },
   "publishConfig": {
     "access": "public"
