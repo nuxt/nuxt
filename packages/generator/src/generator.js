@@ -96,8 +96,8 @@ export default class Generator {
 
   async generateRoutes (routes) {
     const errors = []
-    const routesTotal = routes.length;
-    let currentRoute = 0;
+    const routesTotal = routes.length
+    let currentRoute = 0
 
     // Start generate process
     while (routes.length) {
