@@ -189,9 +189,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.dev) {
       config.entry.app.unshift(
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-        'eventsource-polyfill',
+        require.resolve('eventsource-polyfill'),
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+        `${require.resolve('webpack-hot-middleware/client')}?${hotMiddlewareClientOptionsStr}`
       )
     }
 
