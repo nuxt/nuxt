@@ -191,6 +191,8 @@ export default class WebpackBaseConfig {
         alias: this.alias(),
         modules: webpackModulesDir,
         plugins: [
+          PnpWebpackPlugin.bind(path.join(process.cwd(), `.nuxt`), module, '@nuxt/babel-preset-app'),
+          PnpWebpackPlugin.bind(path.join(process.cwd(), `.nuxt`), module, '@nuxt/vue-app'),
           PnpWebpackPlugin
         ]
       },
