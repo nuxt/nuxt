@@ -185,14 +185,23 @@ export default class WebpackBaseConfig {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
+    const {
+      options: {
+        buildDir,
+        build: {
+          template = '@nuxt/vue-app'
+        }
+      }
+    } = this.buildContext
+
     return {
       resolve: {
         extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir,
         plugins: [
-          PnpWebpackPlugin.bind(path.join(process.cwd(), `.nuxt`), module, '@nuxt/babel-preset-app'),
-          PnpWebpackPlugin.bind(path.join(process.cwd(), `.nuxt`), module, '@nuxt/vue-app'),
+          PnpWebpackPlugin.bind(buildDir, module, '@nuxt/babel-preset-app'),
+          PnpWebpackPlugin.bind(buildDir, module, template),
           PnpWebpackPlugin
         ]
       },
