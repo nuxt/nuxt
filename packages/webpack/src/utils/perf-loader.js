@@ -31,7 +31,7 @@ export default class PerfLoader {
       require.resolve('babel-loader'),
       require.resolve('@babel/preset-env')
     ])
-    PerfLoader.warmup(pools.css, ['css-loader'])
+    PerfLoader.warmup(pools.css, [require.resolve('css-loader')])
   }
 
   static warmup (...args) {
@@ -43,7 +43,7 @@ export default class PerfLoader {
 
     if (this.buildContext.buildOptions.cache) {
       loaders.push({
-        loader: 'cache-loader',
+        loader: require.resolve('cache-loader'),
         options: {
           cacheDirectory: path.resolve(`node_modules/.cache/cache-loader/${this.name}`)
         }
@@ -54,7 +54,7 @@ export default class PerfLoader {
       const pool = this.workerPools[poolName]
       if (pool) {
         loaders.push({
-          loader: 'thread-loader',
+          loader: require.resolve('thread-loader'),
           options: pool
         })
       }

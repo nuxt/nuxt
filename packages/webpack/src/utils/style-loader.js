@@ -5,6 +5,8 @@ import { wrapArray } from '@nuxt/utils'
 
 import PostcssConfig from './postcss'
 
+import { maybeResolve } from './maybe-resolve'
+
 export default class StyleLoader {
   constructor (buildContext, { isServer, perfLoader }) {
     this.buildContext = buildContext
@@ -40,7 +42,7 @@ export default class StyleLoader {
     const patterns = wrapArray(extResource).map(p => path.resolve(rootDir, p))
 
     return {
-      loader: 'style-resources-loader',
+      loader: require.resolve('style-resources-loader'),
       options: Object.assign(
         { patterns },
         styleResources.options || {}
@@ -62,14 +64,14 @@ export default class StyleLoader {
     }
 
     return {
-      loader: 'postcss-loader',
+      loader: require.resolve('postcss-loader'),
       options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
     }
   }
 
   css (options) {
     options.onlyLocals = this.onlyLocals
-    const cssLoader = { loader: 'css-loader', options }
+    const cssLoader = { loader: require.resolve('css-loader'), options }
 
     if (options.onlyLocals) {
       return [cssLoader]
@@ -99,7 +101,7 @@ export default class StyleLoader {
 
   styleLoader () {
     return this.extract() || {
-      loader: 'vue-style-loader',
+      loader: maybeResolve('vue-style-loader'),
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }

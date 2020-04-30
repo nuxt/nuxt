@@ -19,6 +19,7 @@ import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
+import { maybeResolve } from '../utils/maybe-resolve'
 
 export default class WebpackBaseConfig {
   constructor (builder) {
@@ -264,7 +265,7 @@ export default class WebpackBaseConfig {
     return [
       {
         test: /\.vue$/i,
-        loader: 'vue-loader',
+        loader: require.resolve('vue-loader'),
         options: this.loaders.vue
       },
       {
@@ -273,15 +274,15 @@ export default class WebpackBaseConfig {
           {
             resourceQuery: /^\?vue/i,
             use: [{
-              loader: 'pug-plain-loader',
+              loader: maybeResolve('pug-plain-loader'),
               options: this.loaders.pugPlain
             }]
           },
           {
             use: [
-              'raw-loader',
+              maybeResolve('raw-loader'),
               {
-                loader: 'pug-plain-loader',
+                loader: maybeResolve('pug-plain-loader'),
                 options: this.loaders.pugPlain
               }
             ]
@@ -314,35 +315,35 @@ export default class WebpackBaseConfig {
       {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
-          loader: 'less-loader',
+          loader: maybeResolve('less-loader'),
           options: this.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
-          loader: 'sass-loader',
+          loader: maybeResolve('sass-loader'),
           options: this.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
-          loader: 'sass-loader',
+          loader: maybeResolve('sass-loader'),
           options: this.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
-          loader: 'stylus-loader',
+          loader: maybeResolve('stylus-loader'),
           options: this.loaders.stylus
         })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp)$/i,
         use: [{
-          loader: 'url-loader',
+          loader: require.resolve('url-loader'),
           options: Object.assign(
             this.loaders.imgUrl,
             { name: this.getFileName('img') }
@@ -352,7 +353,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
         use: [{
-          loader: 'url-loader',
+          loader: require.resolve('url-loader'),
           options: Object.assign(
             this.loaders.fontUrl,
             { name: this.getFileName('font') }
@@ -362,7 +363,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(webm|mp4|ogv)$/i,
         use: [{
-          loader: 'file-loader',
+          loader: require.resolve('file-loader'),
           options: Object.assign(
             this.loaders.file,
             { name: this.getFileName('video') }

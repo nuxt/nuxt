@@ -56,6 +56,26 @@
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^4.0.0"
   },
+  "peerDependenciesMeta": {
+    "less-loader": {
+      "optional": true
+    },
+    "pug-plain-loader": {
+      "optional": true
+    },
+    "raw-loader": {
+      "optional": true
+    },
+    "sass-loader": {
+      "optional": true
+    },
+    "stylus-loader": {
+      "optional": true
+    },
+    "vue-style-loader": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=8.9.0"
   },
