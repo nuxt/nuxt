@@ -1,6 +1,9 @@
 
 import path from 'path'
+import { createRequire } from '../../packages/core/src/resolver'
 import PerfLoader from '../../packages/webpack/src/utils/perf-loader'
+
+const webpackRequire = createRequire(path.resolve(__dirname, '../../packages/webpack'))
 
 describe('webpack configuration', () => {
   test('performance loader', () => {
@@ -10,10 +13,10 @@ describe('webpack configuration', () => {
     PerfLoader.warmupAll({ dev: true })
     expect(PerfLoader.warmup).toHaveBeenCalledTimes(2)
     expect(PerfLoader.warmup).toHaveBeenCalledWith(js, [
-      require.resolve('babel-loader'),
-      require.resolve('@babel/preset-env')
+      webpackRequire.resolve('babel-loader'),
+      webpackRequire.resolve('@babel/preset-env')
     ])
-    expect(PerfLoader.warmup).toHaveBeenCalledWith(css, [require.resolve('css-loader')])
+    expect(PerfLoader.warmup).toHaveBeenCalledWith(css, [webpackRequire.resolve('css-loader')])
 
     const perfLoader = new PerfLoader(
       'test-perf',
