@@ -13,7 +13,7 @@ describe('webpack configuration', () => {
       require.resolve('babel-loader'),
       require.resolve('@babel/preset-env')
     ])
-    expect(PerfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
+    expect(PerfLoader.warmup).toHaveBeenCalledWith(css, [require.resolve('css-loader')])
 
     const perfLoader = new PerfLoader(
       'test-perf',
