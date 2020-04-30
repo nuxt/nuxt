@@ -50,6 +50,7 @@
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.7.0",
     "vue-meta": "^2.3.3",
+    "vue-style-loader": "^4.1.0",
     "vue-template-compiler": "^2.6.11",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
@@ -72,9 +73,6 @@
     "stylus-loader": {
       "optional": true
     },
-    "vue-style-loader": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=8.9.0"
