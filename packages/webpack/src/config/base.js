@@ -19,7 +19,14 @@ import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
-import { maybeResolve } from '../utils/maybe-resolve'
+
+function maybeResolve (name) {
+  try {
+    return require.resolve(name)
+  } catch {
+    return name
+  }
+}
 
 export default class WebpackBaseConfig {
   constructor (builder) {

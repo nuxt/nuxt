@@ -5,8 +5,6 @@ import { wrapArray } from '@nuxt/utils'
 
 import PostcssConfig from './postcss'
 
-import { maybeResolve } from './maybe-resolve'
-
 export default class StyleLoader {
   constructor (buildContext, { isServer, perfLoader }) {
     this.buildContext = buildContext
@@ -101,7 +99,7 @@ export default class StyleLoader {
 
   styleLoader () {
     return this.extract() || {
-      loader: maybeResolve('vue-style-loader'),
+      loader: require.resolve('vue-style-loader'),
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }
