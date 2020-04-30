@@ -60,6 +60,7 @@
     "@nuxt/core": "2.12.1",
     "@nuxt/generator": "2.12.1",
     "@nuxt/webpack": "2.12.1",
+    "consola": "^2.11.3",
     "node-fetch": "^2.6.0",
     "vue": "^2.6.11",
     "vue-client-only": "^2.0.0",
