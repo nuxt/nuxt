@@ -97,7 +97,7 @@ Vue.config.$nuxt.<%= globals.nuxt %> = true
 const errorHandler = Vue.config.errorHandler || console.error
 
 // Create and mount App
-createApp().then(mountApp).catch(errorHandler)
+createApp(null, NUXT.config).then(mountApp).catch(errorHandler)
 
 <% if (features.transitions) { %>
 function componentOption (component, key, ...args) {

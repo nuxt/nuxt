@@ -289,6 +289,12 @@ export default class VueRenderer {
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
     }
 
+    // Set runtime config on renderContext
+    renderContext.runtimeConfig = {
+      server: renderContext.spa ? {} : { ...this.options.runtimeConfig.server },
+      public: { ...this.options.runtimeConfig.public }
+    }
+
     // Call renderContext hook
     await this.serverContext.nuxt.callHook('vue-renderer:context', renderContext)
 
