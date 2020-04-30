@@ -1,3 +1,4 @@
+import path from 'path'
 import consola from 'consola'
 import { relativeTo, determineGlobals } from '@nuxt/utils'
 
@@ -38,7 +39,9 @@ describe('builder: builder constructor', () => {
     expect(builder._buildStatus).toEqual(1)
 
     expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
-    expect(nuxt.resolver.requireModule).toBeCalledWith('@nuxt/vue-app')
+    expect(nuxt.resolver.requireModule).toBeCalledWith('@nuxt/vue-app', expect.objectContaining({
+      requirePath: path.resolve(__dirname, '../src/builder.js')
+    }))
     expect(builder.template).toEqual('builder-template')
 
     expect(builder.bundleBuilder).toBe(bundleBuilder)

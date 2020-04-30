@@ -246,8 +246,8 @@ describe('builder: builder build', () => {
     builder.validateTemplate()
 
     expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
-    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)')
+    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)', {})
+    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)', {})
     expect(semver.satisfies).toBeCalledTimes(2)
     expect(semver.satisfies).nthCalledWith(1, 'alpha', 'latest')
     expect(semver.satisfies).nthCalledWith(2, 'beta', 'edge')
@@ -271,8 +271,8 @@ describe('builder: builder build', () => {
     builder.validateTemplate()
 
     expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
-    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)')
+    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)', {})
+    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)', {})
     expect(consola.warn).toBeCalledTimes(2)
     expect(consola.warn).nthCalledWith(1, 'vue@latest is recommended but vue@alpha is installed!')
     expect(consola.warn).nthCalledWith(2, 'nuxt@edge is required but not installed!')

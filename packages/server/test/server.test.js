@@ -234,7 +234,10 @@ describe('server: server', () => {
       ...options
     })))
     await server.setupMiddleware()
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'compression')
+    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'compression', expect.objectContaining({
+      // Jest doesn't like `path.resolve(__dirname, '../src/server.js')` here
+      requirePath: expect.any(String)
+    }))
     expect(server.useMiddleware).nthCalledWith(1, {
       id: 'test-render-compressor',
       name: 'compression'

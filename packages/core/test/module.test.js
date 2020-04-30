@@ -317,7 +317,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts, true)
+    expect(module.addModule).toBeCalledWith(moduleOpts, true, {})
   })
 
   test('should add string module', async () => {
