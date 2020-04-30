@@ -316,6 +316,10 @@ Object {
     "stringifyQuery": false,
     "trailingSlash": undefined,
   },
+  "runtimeConfig": Object {
+    "public": Object {},
+    "server": Object {},
+  },
   "server": Object {
     "host": "localhost",
     "https": false,
@@ -671,6 +675,10 @@ Object {
     "scrollBehavior": null,
     "stringifyQuery": false,
     "trailingSlash": undefined,
+  },
+  "runtimeConfig": Object {
+    "public": Object {},
+    "server": Object {},
   },
   "server": Object {
     "host": "localhost",
