@@ -3,6 +3,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
+import devalue from '@nuxt/devalue'
 import { isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
@@ -148,7 +149,12 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    // Serialize state (runtime config)
+    const serializedSession = `window.${this.serverContext.globals.context}=${devalue({
+      config: renderContext.runtimeConfig.public
+    })};`
+
+    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div><script>${serializedSession}</script>${meta.BODY_SCRIPTS}`
 
     // Prepare template params
     const templateParams = {
