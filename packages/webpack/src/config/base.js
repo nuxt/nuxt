@@ -98,7 +98,7 @@ export default class WebpackBaseConfig {
       envName
     }
 
-    if (options.configFile !== false) {
+    if (options.configFile || options.babelrc) {
       return options
     }
 
@@ -114,7 +114,7 @@ export default class WebpackBaseConfig {
       )
     }
 
-    if (!options.babelrc && !options.presets) {
+    if (!options.presets) {
       options.presets = [defaultPreset]
     }
 
