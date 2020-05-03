@@ -23,9 +23,19 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (!this.dev) {
       return false
     }
-    return this.buildContext.options.render.csp
+    const scriptPolicy = this.getCspScriptPolicy()
+    const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
+    return noUnsafeEval
       ? 'cheap-module-source-map'
       : 'cheap-module-eval-source-map'
+  }
+
+  getCspScriptPolicy () {
+    const { csp } = this.buildContext.options.render
+    if (csp) {
+      const { policies = {} } = csp
+      return policies['script-src'] || policies['default-src'] || []
+    }
   }
 
   getFileName (...args) {
