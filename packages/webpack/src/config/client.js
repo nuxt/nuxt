@@ -20,7 +20,14 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   get devtool () {
-    return this.dev ? 'cheap-module-eval-source-map' : false
+    if (!this.dev) {
+      return false
+    }
+    const scriptPolicy = this.getCspScriptPolicy()
+    const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
+    return noUnsafeEval
+      ? 'cheap-module-source-map'
+      : 'cheap-module-eval-source-map'
   }
 
   getCspScriptPolicy () {
