@@ -38,14 +38,6 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
   }
 
-  getCspScriptPolicy () {
-    const { csp } = this.buildContext.options.render
-    if (csp) {
-      const { policies = {} } = csp
-      return policies['script-src'] || policies['default-src'] || []
-    }
-  }
-
   getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args
