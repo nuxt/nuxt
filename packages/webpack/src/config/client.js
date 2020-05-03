@@ -23,6 +23,14 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     return this.dev ? 'cheap-module-eval-source-map' : false
   }
 
+  getCspScriptPolicy () {
+    const { csp } = this.buildContext.options.render
+    if (csp) {
+      const { policies = {} } = csp
+      return policies['script-src'] || policies['default-src'] || []
+    }
+  }
+
   getFileName (...args) {
     if (this.buildContext.buildOptions.analyze) {
       const [key] = args
@@ -144,13 +152,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     if (modern) {
-      let noUnsafeInline = false
-      const { csp } = this.buildContext.options.render
-      if (csp) {
-        const { policies = {} } = csp
-        const scriptPolicy = policies['script-src'] || policies['default-src'] || []
-        noUnsafeInline = !scriptPolicy.includes('\'unsafe-inline\'')
-      }
+      const scriptPolicy = this.getCspScriptPolicy()
+      const noUnsafeInline = scriptPolicy && !scriptPolicy.includes('\'unsafe-inline\'')
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(buildDir, 'dist', 'client'),
         isModernBuild: this.isModern,
