@@ -20,7 +20,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   get devtool () {
-    return this.dev ? 'cheap-module-eval-source-map' : false
+    if (!this.dev) {
+      return false
+    }
+    return this.buildContext.options.render.csp
+      ? 'cheap-module-source-map'
+      : 'cheap-module-eval-source-map'
   }
 
   getFileName (...args) {
