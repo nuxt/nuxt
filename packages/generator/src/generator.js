@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS } from '@nuxt/utils'
+import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS, MODES } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -91,7 +91,7 @@ export default class Generator {
   async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
-    if (this.options.router.mode !== 'hash') {
+    if (this.options.mode === MODES.universal && this.options.router.mode !== 'hash') {
       try {
         generateRoutes = await promisifyRoute(
           this.options.generate.routes || [],
@@ -104,7 +104,7 @@ export default class Generator {
     }
     let routes = []
     // Generate only index.html for router.mode = 'hash' or client-side apps
-    if (this.options.router.mode === 'hash') {
+    if (this.options.mode === MODES.spa || this.options.router.mode === 'hash') {
       routes = ['/']
     } else {
       routes = flatRoutes(this.getAppRoutes())
@@ -212,6 +212,7 @@ export default class Generator {
     // Clean destination folder
     await fsExtra.remove(this.distPath)
 
+    consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)
 
     // Copy static and built files
@@ -265,7 +266,7 @@ export default class Generator {
       html = res.html
 
       // If crawler activated and called from generateRoutes()
-      if (this.options.generate.crawler) {
+      if (this.options.generate.crawler && this.options.render.ssr) {
         parse(html).querySelectorAll('a').map((el) => {
           const href = (el.getAttribute('href') || '').split('?')[0].split('#')[0].trim()
 
