@@ -1,4 +1,4 @@
-import { MODES } from '@nuxt/utils'
+import { MODES, TARGETS } from '@nuxt/utils'
 import * as utils from '../../src/utils'
 import { mockGetNuxt, mockGetBuilder, mockGetGenerator, NuxtCommand } from '../utils'
 
@@ -39,6 +39,7 @@ describe('build', () => {
   test('generates on spa mode', async () => {
     mockGetNuxt({
       mode: MODES.spa,
+      target: TARGETS.server,
       build: {
         analyze: false
       }
