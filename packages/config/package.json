@@ -14,7 +14,6 @@
     "consola": "^2.11.3",
     "defu": "^2.0.2",
     "esm": "^3.2.25",
-    "lodash": "^4.17.15",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

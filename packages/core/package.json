@@ -19,7 +19,6 @@
     "fs-extra": "^8.1.0",
     "hable": "^3.0.0",
     "hash-sum": "^2.0.0",
-    "lodash": "^4.17.15",
     "std-env": "^2.2.1"
   },
   "publishConfig": {
