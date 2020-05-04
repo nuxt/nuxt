@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs'
-import { join, extname } from 'path'
+import { join, extname, basename } from 'path'
 import connect from 'connect'
 import serveStatic from 'serve-static'
 import { getNuxtConfig } from '@nuxt/config'
@@ -34,7 +34,7 @@ export default {
     }
     const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line handle-callback-err
     if (!distStat || !distStat.isDirectory()) {
-      throw new Error('Output directory `' + options.generate.dir.replace(options.rootDir, '.') + '` does not exists, please run `nuxt export` before `nuxt serve`.')
+      throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please run `nuxt export` before `nuxt serve`.')
     }
     const app = connect()
     app.use(
