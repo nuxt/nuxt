@@ -5,6 +5,7 @@ export const createNuxt = () => ({
     renderRoute: jest.fn(() => ({ html: 'rendered html' }))
   },
   options: {
+    mode: 'universal',
     srcDir: '/var/nuxt/src',
     buildDir: '/var/nuxt/build',
     generate: { dir: '/var/nuxt/generate' },
