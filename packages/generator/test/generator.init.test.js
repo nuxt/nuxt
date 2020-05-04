@@ -89,7 +89,7 @@ describe('generator: initialize', () => {
     expect(generator.initDist).not.toBeCalled()
   })
 
-  test('should init routes with generate.routes and router/routes.json', async () => {
+  test('should init routes with generate.routes and routes.json', async () => {
     const nuxt = createNuxt()
     nuxt.options = {
       ...nuxt.options,

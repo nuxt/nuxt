@@ -132,7 +132,7 @@ export default class Generator {
   }
 
   getAppRoutes () {
-    return require(path.join(this.options.buildDir, 'router/routes.json'))
+    return require(path.join(this.options.buildDir, 'routes.json'))
   }
 
   async generateRoutes (routes) {
