@@ -26,7 +26,7 @@ export default {
 
     if (cmd.argv.lock) {
       await cmd.setLock(await createLock({
-        id: 'generate',
+        id: 'export',
         dir: nuxt.options.generate.dir,
         root: config.rootDir
       }))
