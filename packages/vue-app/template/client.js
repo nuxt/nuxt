@@ -519,6 +519,7 @@ async function render (to, from, next) {
       <% if (features.fetch) { %>
         <% if (isFullStatic) { %>
         if (!this.$isPreview) {
+          // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
         }
         <% } %>
