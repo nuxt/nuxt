@@ -12,6 +12,10 @@ export default () => ({
   // Target
   target: TARGETS.server,
 
+  // Rendering
+  ssr: true,
+
+  // TODO: remove in Nuxt 3
   // Mode
   mode: MODES.universal,
   modern: undefined,
