@@ -302,7 +302,7 @@ export default {
       let payload = this._payloadCache[payloadPath]
 
       // If payload is a promise, returns it
-      if (payload && payload instanceof Promise && typeof payload.then === 'function') {
+      if (payload && payload instanceof Promise) {
         return payload
       }
       // if payload is in cache
