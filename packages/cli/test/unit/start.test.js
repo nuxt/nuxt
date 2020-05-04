@@ -36,7 +36,7 @@ describe('start', () => {
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test('error if starts with static target', async () => {
+  test('error if starts with static target', () => {
     mockGetNuxtStart()
     mockGetNuxtConfig({ target: TARGETS.static })
     const cmd = NuxtCommand.from(start)
