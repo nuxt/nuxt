@@ -138,17 +138,18 @@ export default class Generator {
   async generateRoutes (routes) {
     const errors = []
 
+    this.routes = routes
     // Add routes to the tracked generated routes (for crawler)
-    routes.forEach(({ route }) => this.generatedRoutes.add(route))
+    this.routes.forEach(({ route }) => this.generatedRoutes.add(route))
     // Start generate process
-    while (routes.length) {
+    while (this.routes.length) {
       let n = 0
       await Promise.all(
-        routes
+        this.routes
           .splice(0, this.options.generate.concurrency)
           .map(async ({ route, payload }) => {
             await waitFor(n++ * this.options.generate.interval)
-            await this.generateRoute({ route, payload, errors }, routes)
+            await this.generateRoute({ route, payload, errors })
           })
       )
     }
@@ -250,7 +251,7 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute ({ route, payload = {}, errors = [] }, routes) {
+  async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
 
@@ -264,13 +265,13 @@ export default class Generator {
       html = res.html
 
       // If crawler activated and called from generateRoutes()
-      if (this.options.generate.crawler && Array.isArray(routes)) {
+      if (this.options.generate.crawler) {
         parse(html).querySelectorAll('a').map((el) => {
           const href = (el.getAttribute('href') || '').split('?')[0].split('#')[0].trim()
 
           if (href.startsWith('/') && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
             this.generatedRoutes.add(href) // add the route to the tracked list
-            routes.push({ route: href })
+            this.routes.push({ route: href })
           }
         })
       }

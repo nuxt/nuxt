@@ -190,6 +190,7 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
@@ -340,6 +341,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,

@@ -9,6 +9,7 @@ export const createNuxt = () => ({
     buildDir: '/var/nuxt/build',
     generate: { dir: '/var/nuxt/generate' },
     build: { publicPath: '__public' },
-    dir: { static: '/var/nuxt/static' }
+    dir: { static: '/var/nuxt/static' },
+    render: {}
   }
 })
