@@ -291,8 +291,8 @@ export default class VueRenderer {
 
     // Set runtime config on renderContext
     renderContext.runtimeConfig = {
-      server: renderContext.spa ? {} : { ...this.options.runtimeConfig.server },
-      public: { ...this.options.runtimeConfig.public }
+      private: renderContext.spa ? {} : { ...this.options.privateRuntimeConfig },
+      public: { ...this.options.publicRuntimeConfig }
     }
 
     // Call renderContext hook

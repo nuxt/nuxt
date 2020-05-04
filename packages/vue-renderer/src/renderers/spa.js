@@ -151,7 +151,7 @@ export default class SPARenderer extends BaseRenderer {
 
     // Serialize state (runtime config)
     const serializedSession = `window.${this.serverContext.globals.context}=${devalue({
-      config: renderContext.runtimeConfig.public
+      config: renderContext.publicRuntimeConfig
     })};`
 
     const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div><script>${serializedSession}</script>${meta.BODY_SCRIPTS}`

@@ -83,8 +83,6 @@ export default () => ({
   hooks: null,
 
   // runtimeConfig
-  runtimeConfig: {
-    public: {},
-    server: {}
-  }
+  privateRuntimeConfig: {},
+  publicRuntimeConfig: {}
 })
