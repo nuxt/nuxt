@@ -75,8 +75,8 @@ export default {
       }))
     }
 
-    if (nuxt.options.mode === MODES.spa && cmd.argv.generate !== false) {
-      // TODO: remove in Nuxt 3
+    // TODO: remove if in Nuxt 3
+    if (nuxt.options.mode === MODES.spa && nuxt.options.target === TARGETS.server && cmd.argv.generate !== false) {
       // Build + Generate for static deployment
       const generator = await cmd.getGenerator(nuxt)
       await generator.generate({ build: true })
