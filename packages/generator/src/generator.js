@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS, MODES } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS, MODES } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -64,7 +64,7 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
-      this.isFullStatic = this.options.target === TARGETS.static && this.options.render.ssr && this.options.generate.static
+      this.isFullStatic = isFullStatic(this.options)
     } else {
       const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
       if (!hasBuilt) {

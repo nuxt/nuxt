@@ -24,7 +24,8 @@ import {
   stripWhitespace,
   isIndexFileAndFolder,
   scanRequireTree,
-  TARGETS
+  TARGETS,
+  isFullStatic
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -126,7 +127,7 @@ export default class Builder {
       consola.info('Production build')
       const rendering = this.options.render.ssr ? 'server-side' : 'client-side'
       consola.info(`Rendering: ${chalk.bold.yellow(rendering)}`)
-      const target = this.options.target === TARGETS.static && this.options.generate.static && this.options.render.ssr ? 'full static' : this.options.target
+      const target = isFullStatic(this.options) ? 'full static' : this.options.target
       consola.info(`Target: ${chalk.bold.cyan(target)}`)
     }
 
