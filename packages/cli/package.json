@@ -33,10 +33,18 @@
     "pretty-format": "^25.4.0"
   },
   "peerDependencies": {
-    "@nuxt/builder": "*",
-    "@nuxt/core": "*",
-    "@nuxt/generator": "*",
-    "@nuxt/webpack": "*"
+    "@nuxt/core": "*"
+  },
+  "peerDependenciesMeta": {
+    "@nuxt/builder": {
+      "optional": true
+    },
+    "@nuxt/generator": {
+      "optional": true
+    },
+    "@nuxt/webpack": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
