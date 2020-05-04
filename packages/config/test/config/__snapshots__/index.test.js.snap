@@ -259,6 +259,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,
@@ -315,10 +317,6 @@ Object {
     "scrollBehavior": null,
     "stringifyQuery": false,
     "trailingSlash": undefined,
-  },
-  "runtimeConfig": Object {
-    "public": Object {},
-    "server": Object {},
   },
   "server": Object {
     "host": "localhost",
@@ -619,6 +617,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,
@@ -675,10 +675,6 @@ Object {
     "scrollBehavior": null,
     "stringifyQuery": false,
     "trailingSlash": undefined,
-  },
-  "runtimeConfig": Object {
-    "public": Object {},
-    "server": Object {},
   },
   "server": Object {
     "host": "localhost",
