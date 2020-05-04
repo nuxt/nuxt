@@ -1,10 +1,9 @@
-const prefix = process.env.PREFIX || ''
-
 export default {
-  privateRuntimeConfig: {
-    secret: prefix + '#123'
-  },
   publicRuntimeConfig: {
-    baseURL: prefix + '#/foo/bar'
+    baseURL: process.env.BASE_URL
+  },
+  privateRuntimeConfig: {
+    baseURL: '${PUBLIC_URL}${BASE_URL}',
+    API_SECRET: ''
   }
 }

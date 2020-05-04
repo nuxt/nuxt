@@ -16,6 +16,7 @@ module.exports = {
   rules: {
     'no-console': 'error',
     'no-debugger': 'error',
+    'no-template-curly-in-string': 0,
     quotes: ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }]
   },
   overrides: [{
