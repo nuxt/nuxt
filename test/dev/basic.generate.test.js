@@ -20,7 +20,12 @@ let changedFileName
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
+    const config = await loadFixture('basic', {
+      generate: {
+        static: false,
+        dir: '.nuxt-generate'
+      }
+    })
     const nuxt = new Nuxt(config)
     await nuxt.ready()
 

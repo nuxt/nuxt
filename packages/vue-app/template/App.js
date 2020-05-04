@@ -262,7 +262,7 @@ export default {
             return this.<%= globals.nuxt %>.error({ statusCode: 500, message: e.message })
           }
         })
-    }
+    },
     <% } else { %>
     setLayout (layout) {
       <% if (debug) { %>
