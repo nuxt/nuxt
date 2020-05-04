@@ -34,7 +34,7 @@ export async function loadNuxtConfig ({
 
   // Fill process.env so it is accessible in nuxt.config
   for (const key in env) {
-    if (key[0] !== '_' && process.env[key] === undefined) {
+    if (!key.startsWith('_') && process.env[key] === undefined) {
       process.env[key] = env[key]
     }
   }
