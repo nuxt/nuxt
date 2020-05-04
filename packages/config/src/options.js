@@ -96,6 +96,11 @@ export function getNuxtConfig (_options) {
     options.target = 'server'
   }
 
+  // SSR root option
+  if (options.ssr === false) {
+    options.mode = MODES.spa
+  }
+
   // Apply mode preset
   const modePreset = options.modes[options.mode || MODES.universal]
 
