@@ -60,6 +60,14 @@ export function tryRequire (id) {
   }
 }
 
+export function tryResolve (id) {
+  try {
+    return require.resolve(id)
+  } catch {
+    return id
+  }
+}
+
 export function getPKG (id) {
   return tryRequire(id + '/package.json')
 }

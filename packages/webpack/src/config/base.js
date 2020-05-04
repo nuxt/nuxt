@@ -12,21 +12,13 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { isUrl, urlJoin, getPKG, tryResolve } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 
 import { reservedVueTags } from '../utils/reserved-tags'
-
-function maybeResolve (name) {
-  try {
-    return require.resolve(name)
-  } catch {
-    return name
-  }
-}
 
 export default class WebpackBaseConfig {
   constructor (builder) {
@@ -281,15 +273,15 @@ export default class WebpackBaseConfig {
           {
             resourceQuery: /^\?vue/i,
             use: [{
-              loader: maybeResolve('pug-plain-loader'),
+              loader: tryResolve('pug-plain-loader'),
               options: this.loaders.pugPlain
             }]
           },
           {
             use: [
-              maybeResolve('raw-loader'),
+              tryResolve('raw-loader'),
               {
-                loader: maybeResolve('pug-plain-loader'),
+                loader: tryResolve('pug-plain-loader'),
                 options: this.loaders.pugPlain
               }
             ]
@@ -322,28 +314,28 @@ export default class WebpackBaseConfig {
       {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
-          loader: maybeResolve('less-loader'),
+          loader: tryResolve('less-loader'),
           options: this.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
-          loader: maybeResolve('sass-loader'),
+          loader: tryResolve('sass-loader'),
           options: this.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
-          loader: maybeResolve('sass-loader'),
+          loader: tryResolve('sass-loader'),
           options: this.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
-          loader: maybeResolve('stylus-loader'),
+          loader: tryResolve('stylus-loader'),
           options: this.loaders.stylus
         })
       },
