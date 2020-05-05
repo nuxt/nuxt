@@ -70,9 +70,10 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     if (options.render.csp && cspScriptSrcHashes) {
       const { allowedSources, policies } = options.render.csp
-      const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+      const isReportOnly = !!options.render.csp.reportOnly
+      const cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev, isReportOnly }))
     }
 
     // Send response
@@ -123,20 +124,18 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
+const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev, isReportOnly }) => {
   const joinedHashes = cspScriptSrcHashes.join(' ')
   const baseCspStr = `script-src 'self'${isDev ? ' \'unsafe-eval\'' : ''} ${joinedHashes}`
+  const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
 
   if (Array.isArray(allowedSources) && allowedSources.length) {
-    return `${baseCspStr} ${allowedSources.join(' ')}`
+    return isReportOnly && policyObjectAvailable && !!policies['report-uri'] ? `${baseCspStr} ${allowedSources.join(' ')}; report-uri ${policies['report-uri']};` : `${baseCspStr} ${allowedSources.join(' ')}`
   }
-
-  const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
 
   if (policyObjectAvailable) {
     const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes)
-
-    return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${v.join(' ')}`).join('; ')
+    return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' ') : v}`).join('; ')
   }
 
   return baseCspStr
