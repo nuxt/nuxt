@@ -185,7 +185,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     } = this.buildContext
 
     const { client = {} } = hotMiddleware || {}
-    const { ansiColors, overlayStyles, path, ...options } = client
+    const { ansiColors, overlayStyles, path: pathFromOptions, ...options } = client
 
     const hotMiddlewareClientOptions = {
       reload: true,
@@ -195,7 +195,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       ...options,
       name: this.name
     }
-    const clientPath = path || `${router.base}/__webpack_hmr/${this.name}`
+    const clientPath = pathFromOptions || `${router.base}/__webpack_hmr/${this.name}`
 
     const hotMiddlewareClientOptionsStr =
       `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
