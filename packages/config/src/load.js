@@ -9,11 +9,7 @@ import { defaultNuxtConfigFile } from './config'
 
 export async function loadNuxtConfig ({
   rootDir = '.',
-  envConfig = {
-    dotenv: '.env',
-    systemVars: true,
-    expand: true
-  },
+  envConfig = {},
   configFile = defaultNuxtConfigFile,
   configContext = {},
   configOverrides = {}
@@ -35,6 +31,11 @@ export async function loadNuxtConfig ({
   }
 
   // Load env
+  envConfig = defu(envConfig, {
+    dotenv: '.env',
+    systemVars: true,
+    expand: true
+  })
   const env = loadEnv(envConfig, rootDir)
 
   // Fill process.env so it is accessible in nuxt.config
