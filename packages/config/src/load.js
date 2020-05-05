@@ -86,6 +86,7 @@ export async function loadNuxtConfig ({
   // Load env to options._env
   options._env = env
   options._envConfig = envConfig
+  if (configContext) { configContext.env = env }
 
   // Expand and interpolate runtimeConfig from _env
   if (envConfig.expand) {
