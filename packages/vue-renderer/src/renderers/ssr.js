@@ -159,17 +159,15 @@ export default class SSRRenderer extends BaseRenderer {
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
     let serializedSession = ''
 
+    const isStatic = this.options.target === TARGETS.static
+
     // Serialize state
-    if (shouldInjectScripts || shouldHashCspScriptSrc) {
+    if (!isStatic && (shouldInjectScripts || shouldHashCspScriptSrc)) {
       // Only serialized session if need inject scripts or csp hash
-      if (this.options.target === TARGETS.static) {
-        serializedSession = `window.${this.serverContext.globals.context}=${JSON.stringify(renderContext.nuxt)};`
-      } else {
-        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-      }
+      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
     }
 
-    if (shouldInjectScripts) {
+    if (!isStatic && shouldInjectScripts) {
       APP += `<script>${serializedSession}</script>`
     }
 

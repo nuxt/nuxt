@@ -279,14 +279,20 @@ export default class Generator {
 
       // Save payload
       if (this.payloadDir) {
-        const payloadFilePath = path.join(this.payloadDir, route, 'payload.json')
+        // Serialize payload
+        const payload = renderContext.nuxt
+        const serializedPayload = JSON.stringify({
+          data: payload.data,
+          fetch: payload.fetch
+        })
 
-        await fsExtra.ensureDir(path.join(this.payloadDir, route))
-        await fsExtra.writeFile(payloadFilePath, JSON.stringify({
-          data: renderContext.nuxt.data,
-          fetch: renderContext.nuxt.fetch
-        }), 'utf-8')
-        html = await this.addPayloadScript(route, html)
+        // Ensure payload dir exists
+        const payloadDir = path.join(this.payloadDir, route)
+        await fsExtra.ensureDir(payloadDir)
+
+        // Write payload.js
+        const payloadJSFile = path.join(payloadDir, 'payload.js')
+        await fsExtra.writeFile(payloadJSFile, `__NUXT_JSONP__('${route}', ${serializedPayload})`, 'utf-8')
       }
 
       if (res.error) {
@@ -348,19 +354,6 @@ export default class Generator {
     }
 
     return true
-  }
-
-  async addPayloadScript (route, html) {
-    const windowNamespace = this.options.globals.context(this.options.globalName)
-    const chunks = html.split(`<script>window.${windowNamespace}=`)
-    const [pre] = chunks
-    const payload = chunks[1].split('</script>').shift()
-    const post = chunks[1].split('</script>').slice(1).join('</script>')
-
-    // Write payload.js file
-    await fsExtra.writeFile(path.join(this.payloadDir, route, 'payload.js'), `window.${windowNamespace}=${payload}`, 'utf-8')
-
-    return `${pre}<script defer src="${urlJoin(this.payloadPath, route, 'payload.js')}"></script>${post}`
   }
 
   minifyHtml (html) {

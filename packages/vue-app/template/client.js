@@ -19,6 +19,7 @@ import {
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+<% if (isFullStatic) { %>import './jsonp'<% } %>
 
 <% if (features.fetch) { %>
 // Fetch mixin

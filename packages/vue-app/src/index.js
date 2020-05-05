@@ -9,6 +9,7 @@ export const template = {
     'App.js',
     'client.js',
     'index.js',
+    'jsonp.js',
     'router.js',
     'router.scrollBehavior.js',
     'routes.json',

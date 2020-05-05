@@ -75,7 +75,7 @@ export default {
       const ref = this.$router.resolve(this.to, this.$route, this.append)
       const Components = ref.resolved.matched.map(r => r.components.default)
 
-      return Components.filter(Component => !this.$nuxt.hasPayload(ref.href) || (typeof Component === 'function' && !Component.options && !Component.__prefetched)).length
+      return Components.filter(Component => ref.href || (typeof Component === 'function' && !Component.options && !Component.__prefetched)).length
       <% } else { %>return this.getPrefetchComponents().length > 0<% } %>
     },
     canPrefetch () {

@@ -290,44 +290,9 @@ export default {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
-    getPayloadPath(href) {
-      return (`${this.payloadPath}/${href.replace(/\/$/, '')}/payload.json`).replace(/\/+/g, '/')
-    },
-    hasPayload(href) {
-      return !!(this._payloadCache && this._payloadCache[this.getPayloadPath(href)])
-    },
-    async fetchPayload (href) {
-      this._payloadCache = this._payloadCache || {}
-      const payloadPath = this.getPayloadPath(href)
-      let payload = this._payloadCache[payloadPath]
-
-      // If payload is a promise, returns it
-      if (payload && payload instanceof Promise) {
-        return payload
-      }
-      // if payload is in cache
-      else if (typeof payload !== 'undefined') {
-        this.setPagePayload(payload)
-        return payload
-      }
-      // fetch payload
-      this._payloadCache[payloadPath] = fetch(payloadPath)
-        .then(res => {
-          if (!res.ok) {
-            // used for spa fallback
-            this._payloadCache[payloadPath] = false
-            this.setPagePayload(false)
-            throw new Error(res.statusText)
-          }
-          return res.json()
-        })
-        .then(payload => {
-          this._payloadCache[payloadPath] = payload
-          this.setPagePayload(payload)
-          return payload
-        })
-      // return promise
-      return this._payloadCache[payloadPath]
+    fetchPayload(route) {
+      route = route.replace(/\/$/, '')
+      return window.__NUXT_IMPORT__(route, this.payloadPath + route + '/payload.js')
     }
     <% } %>
   },
