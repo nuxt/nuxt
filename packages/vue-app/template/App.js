@@ -290,9 +290,16 @@ export default {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
-    fetchPayload(route) {
+    async fetchPayload(route) {
       route = route.replace(/\/$/, '')
-      return window.__NUXT_IMPORT__(route, this.payloadPath + route + '/payload.js')
+      try {
+        const payload = await window.__NUXT_IMPORT__(route, this.payloadPath + route + '/payload.js')
+        this.setPagePayload(payload)
+        return payload
+      } catch (err) {
+        this.setPagePayload(false)
+        throw err
+      }
     }
     <% } %>
   },
