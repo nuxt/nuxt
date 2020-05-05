@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
+import devalue from '@nuxt/devalue'
 import { parse } from 'node-html-parser'
 
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS, MODES } from '@nuxt/utils'
@@ -280,11 +281,7 @@ export default class Generator {
       // Save payload
       if (this.payloadDir) {
         // Serialize payload
-        const payload = renderContext.nuxt
-        const serializedPayload = JSON.stringify({
-          data: payload.data,
-          fetch: payload.fetch
-        })
+        const serializedData = devalue(renderContext.nuxt)
 
         // Ensure payload dir exists
         const payloadDir = path.join(this.payloadDir, route)
@@ -292,7 +289,7 @@ export default class Generator {
 
         // Write payload.js
         const payloadJSFile = path.join(payloadDir, 'payload.js')
-        await fsExtra.writeFile(payloadJSFile, `__NUXT_JSONP__('${route}', ${serializedPayload})`, 'utf-8')
+        await fsExtra.writeFile(payloadJSFile, `__NUXT_JSONP__("${route}", ${serializedData});`, 'utf-8')
       }
 
       if (res.error) {
