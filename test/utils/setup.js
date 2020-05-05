@@ -15,6 +15,8 @@ chalk.level = 0
 
 jest.setTimeout(60000)
 
+jest.mock('esm', () => () => require)
+
 consola.mockTypes(() => jest.fn())
 
 function errorTrap (error) {
