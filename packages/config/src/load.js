@@ -9,6 +9,11 @@ import { defaultNuxtConfigFile } from './config'
 
 export async function loadNuxtConfig ({
   rootDir = '.',
+  envConfig = {
+    dotenv: '.env',
+    systemVars: true,
+    expand: true
+  },
   configFile = defaultNuxtConfigFile,
   configContext = {},
   configOverrides = {}
@@ -30,7 +35,7 @@ export async function loadNuxtConfig ({
   }
 
   // Load env
-  const env = loadEnv(rootDir)
+  const env = loadEnv(envConfig, rootDir)
 
   // Fill process.env so it is accessible in nuxt.config
   for (const key in env) {
@@ -80,33 +85,42 @@ export async function loadNuxtConfig ({
 
   // Load env to options._env
   options._env = env
+  options._envConfig = envConfig
 
   // Expand and interpolate runtimeConfig from _env
-  for (const c of ['publicRuntimeConfig', 'privateRuntimeConfig']) {
-    if (options[c]) {
-      expand(options[c], options._env)
+  if (envConfig.expand) {
+    for (const c of ['publicRuntimeConfig', 'privateRuntimeConfig']) {
+      if (options[c]) {
+        expand(options[c], env)
+      }
     }
   }
 
   return options
 }
 
-function loadEnv (rootDir) {
+function loadEnv (envConfig, rootDir = process.cwd()) {
   const env = Object.create(null)
 
   // Read dotenv
-  const dotenvFile = path.resolve(rootDir, '.env')
-
-  if (fs.existsSync(dotenvFile)) {
-    const parsed = dotenv.parse(fs.readFileSync(dotenvFile, 'utf-8'))
-    Object.assign(env, parsed)
+  if (envConfig.dotenv) {
+    envConfig.dotenv = path.resolve(rootDir, envConfig.dotenv)
+    if (fs.existsSync(envConfig.dotenv)) {
+      const parsed = dotenv.parse(fs.readFileSync(envConfig.dotenv, 'utf-8'))
+      Object.assign(env, parsed)
+    }
   }
 
   // Apply process.env
-  Object.assign(env, process.env)
+  // https://github.com/motdotla/dotenv#what-happens-to-environment-variables-that-were-already-set
+  if (envConfig.systemVars) {
+    Object.assign(env, process.env)
+  }
 
   // Interpolate env
-  expand(env)
+  if (envConfig.expand) {
+    expand(env)
+  }
 
   return env
 }
