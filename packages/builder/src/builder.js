@@ -125,8 +125,11 @@ export default class Builder {
       consola.info('Initial build may take a while')
     } else {
       consola.info('Production build')
-      const rendering = this.options.render.ssr ? 'server-side' : 'client-side'
-      consola.info(`Rendering: ${chalk.bold.yellow(rendering)}`)
+      if (this.options.render.ssr) {
+        consola.info(`Bundling for ${chalk.bold.yellow('server')} and ${chalk.bold.green('client')} side`)
+      } else {
+        consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
+      }
       const target = isFullStatic(this.options) ? 'full static' : this.options.target
       consola.info(`Target: ${chalk.bold.cyan(target)}`)
     }
