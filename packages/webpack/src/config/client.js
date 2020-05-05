@@ -185,20 +185,19 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     } = this.buildContext
 
     const { client = {} } = hotMiddleware || {}
-    const { ansiColors, overlayStyles, path: pathFromOptions, ...options } = client
+    const { ansiColors, overlayStyles, ...options } = client
 
     const hotMiddlewareClientOptions = {
       reload: true,
       timeout: 30000,
       ansiColors: JSON.stringify(ansiColors),
       overlayStyles: JSON.stringify(overlayStyles),
+      path: `${router.base}/__webpack_hmr/${this.name}`.replace(/\/\//g, '/'),
       ...options,
       name: this.name
     }
-    const clientPath = pathFromOptions || `${router.base}/__webpack_hmr/${this.name}`
 
-    const hotMiddlewareClientOptionsStr =
-      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
+    const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
     // Entry points
     config.entry = Object.assign({}, config.entry, {
