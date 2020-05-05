@@ -71,7 +71,13 @@ describe('cli/command', () => {
     expect(options.server.port).toBe(3001)
     expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
     expect(loadConfigSpy).toHaveBeenCalledTimes(1)
-    expect(loadConfigSpy).toHaveBeenCalledWith(expect.any(Object), { command: 'test', dev: false })
+    expect(loadConfigSpy).toHaveBeenCalledWith(expect.any(Object), {
+      command: 'test',
+      dev: false,
+      env: expect.objectContaining({
+        NODE_ENV: 'test'
+      })
+    })
 
     loadConfigSpy.mockRestore()
   })
