@@ -1,4 +1,5 @@
 import consola from 'consola'
+import path from 'path'
 import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
@@ -44,6 +45,6 @@ export default {
     if (cmd.argv['fail-on-error'] && errors.length > 0) {
       throw new Error('Error exporting pages, exiting with non-zero code')
     }
-    consola.info('Ready to run `nuxt serve`')
+    consola.info('Ready to run `nuxt serve` or deploy `' + path.basename(nuxt.options.generate.dir) + '/` directory')
   }
 }
