@@ -642,3 +642,11 @@ export function addLifecycleHook(vm, hook, fn) {
     vm.$options[hook].push(fn)
   }
 }
+
+export const urlJoin = function urlJoin () {
+  return [].slice
+    .call(arguments)
+    .join('/')
+    .replace(/\/+/g, '/')
+    .replace(':/', '://')
+}

@@ -4,7 +4,8 @@ import Vue from 'vue'
     'getMatchedComponentsInstances',
     'getChildrenComponentInstancesUsingFetch',
     'promisify',
-    'globalHandleError'
+    'globalHandleError',
+    'urlJoin'
   ] : [],
   ...features.layouts ? [
     'sanitizeComponent'
@@ -57,7 +58,8 @@ export default {
       domProps: {
         id: '__layout'
       },
-      key: this.layoutName
+
+          key: this.layoutName
     }, [layoutEl])
     <% } else { %>
     const templateEl = h('nuxt')
@@ -291,10 +293,10 @@ export default {
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
-      route = route.replace(/\/$/, '')
+      route = (route.replace(/\/$/, '') || '/').split('?')[0]
       try {
-        const payload = await window.__NUXT_IMPORT__(route, this.payloadPath + route + '/payload.js')
-        this.setPagePayload(payload)
+        const src = urlJoin(this.payloadPath, route, 'payload.js')
+        const payload = await window.__NUXT_IMPORT__(route, src)
         return payload
       } catch (err) {
         this.setPagePayload(false)

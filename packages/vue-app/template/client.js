@@ -791,7 +791,7 @@ function addHotReload ($component, depth) {
 }
 <% } %>
 
-<% if (features.layouts || features.transitions) { %>async <% } %>function mountApp (__app) {
+async function mountApp (__app) {
   // Set global variables
   app = __app.app
   router = __app.router
@@ -799,6 +799,13 @@ function addHotReload ($component, depth) {
 
   // Create Vue instance
   const _app = new Vue(app)
+
+  <% if (isFullStatic) { %>
+  // -- full static --
+  // Load page chunk
+  const payload = await _app.fetchPayload(_app.context.route.path)
+  Object.assign(NUXT, payload)
+  <% } %>
 
   <% if (features.layouts && mode !== 'spa') { %>
   // Load layout
