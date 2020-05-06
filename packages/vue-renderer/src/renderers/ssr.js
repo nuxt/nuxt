@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
-import { TARGETS } from '@nuxt/utils'
+import { TARGETS, urlJoin } from '@nuxt/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -163,8 +163,8 @@ export default class SSRRenderer extends BaseRenderer {
 
     if (extractPayload) {
       // TODO: CSP
-      const stateUrl = `${renderContext.payloadPath}${renderContext.url}/state.js`
-      const payloadUrl = `${renderContext.payloadPath}${renderContext.url}/payload.js`
+      const stateUrl = urlJoin(renderContext.payloadPath, renderContext.url, 'state.js')
+      const payloadUrl = urlJoin(renderContext.payloadPath, renderContext.url, 'payload.js')
 
       APP += `<script defer>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
       APP += `<script defer src="${stateUrl}"></script>` // TODO: proper join

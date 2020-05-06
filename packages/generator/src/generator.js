@@ -291,8 +291,7 @@ export default class Generator {
         await fsExtra.writeFile(path.join(payloadDir, 'payload.js'), `__NUXT_JSONP__("${route}", ${devalue(payload)});`, 'utf-8')
 
         // Write state.js
-        // TODO: globalName
-        await fsExtra.writeFile(path.join(payloadDir, 'state.js'), `window.__NUXT__=${devalue(state)};`, 'utf-8')
+        await fsExtra.writeFile(path.join(payloadDir, 'state.js'), `window.${this.builder.globals.context}=${devalue(state)};`, 'utf-8')
       }
 
       if (res.error) {
