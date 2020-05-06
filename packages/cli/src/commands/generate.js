@@ -56,14 +56,21 @@ export default {
   async run (cmd) {
     const config = await cmd.getNuxtConfig({
       dev: false,
-      target: TARGETS.static,
       _build: cmd.argv.build
     })
+
+    if (config.target === TARGETS.static) {
+      throw new Error('For new static target, please use `nuxt export`')
+    }
+
+    // Forcing static target anyway
+    config.target = TARGETS.static
 
     // Disable analyze if set by the nuxt config
     config.build = config.build || {}
     config.build.analyze = false
-    // Set generate.static = false by default to avoid breaking changes
+
+    // Set generate.static = false by default to keep the only prerendering behaviour
     config.generate = config.generate || {}
     if (config.generate.static !== true) {
       config.generate.static = false
