@@ -163,7 +163,7 @@ export default {
     },<% } %>
     <% if (nuxtOptions.target === 'static') { %>
     isPreview () {
-      return this.$options.isPreview || false
+      return Boolean(this.$options.previewData)
     },<% } %>
   },
   <% } %>

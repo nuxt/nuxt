@@ -210,10 +210,11 @@ async function createApp (ssrContext) {
   }
   <% } %>
 
-  // Add previewMode in context for plugins
+  // Add enablePreview(previewData = {}) in context for plugins
   if (process.static && process.client) {
-    app.context.previewMode = function () {
-      app.isPreview = true
+    app.context.enablePreview = function (previewData = {}) {
+      app.previewData = Object.assign({}, previewData)
+      inject('preview', previewData)
     }
   }
   // Plugin execution
@@ -234,10 +235,10 @@ async function createApp (ssrContext) {
   <% } %>
   <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
-  // Add previewMode in context for plugins
+  // Lock enablePreview in context
   if (process.static && process.client) {
-    app.context.previewMode = function () {
-      console.warn('You cannot call previewMode() outside a plugin.')
+    app.context.enablePreview = function () {
+      console.warn('You cannot call enablePreview() outside a plugin.')
     }
   }
 
