@@ -159,16 +159,22 @@ export default class SSRRenderer extends BaseRenderer {
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
     let serializedSession = ''
 
-    const extractPayload = !!renderContext.payloadPath
+    const extractPayload = renderContext.payloadPath
 
-    // Serialize state
-    if (!extractPayload && (shouldInjectScripts || shouldHashCspScriptSrc)) {
-      // Only serialized session if need inject scripts or csp hash
-      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    }
+    if (extractPayload) {
+      // TODO: preload and CSP
+      APP += `<script defer>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
+      APP += `<script defer src="${renderContext.payloadPath}${renderContext.url}/state.js"></script>` // TODO: proper join
+    } else {
+      // Serialize state
+      if (shouldInjectScripts || shouldHashCspScriptSrc) {
+        // Only serialized session if need inject scripts or csp hash
+        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+      }
 
-    if (!extractPayload && shouldInjectScripts) {
-      APP += `<script>${serializedSession}</script>`
+      if (shouldInjectScripts) {
+        APP += `<script>${serializedSession}</script>`
+      }
     }
 
     // Calculate CSP hashes
@@ -201,11 +207,6 @@ export default class SSRRenderer extends BaseRenderer {
       APP += meta.style.text({ body: true })
       APP += meta.script.text({ body: true })
       APP += meta.noscript.text({ body: true })
-    }
-
-    if (extractPayload) {
-      // Full static, add window.__PAYLOAD_PATH__
-      APP += `<script>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
     }
 
     // Template params

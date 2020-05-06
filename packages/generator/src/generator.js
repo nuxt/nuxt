@@ -280,16 +280,20 @@ export default class Generator {
 
       // Save payload
       if (this.payloadDir) {
-        // Serialize payload
-        const serializedData = devalue(renderContext.nuxt)
+        // Extract payload from state
+        const { data, fetch, ...state } = renderContext.nuxt
+        const payload = { data, fetch }
 
         // Ensure payload dir exists
         const payloadDir = path.join(this.payloadDir, route)
         await fsExtra.ensureDir(payloadDir)
 
         // Write payload.js
-        const payloadJSFile = path.join(payloadDir, 'payload.js')
-        await fsExtra.writeFile(payloadJSFile, `__NUXT_JSONP__("${route}", ${serializedData});`, 'utf-8')
+        await fsExtra.writeFile(path.join(payloadDir, 'payload.js'), `__NUXT_JSONP__("${route}", ${devalue(payload)});`, 'utf-8')
+
+        // Write state.js
+        // TODO: globalName
+        await fsExtra.writeFile(path.join(payloadDir, 'state.js'), `window.__NUXT__=${devalue(state)};`, 'utf-8')
       }
 
       if (res.error) {
