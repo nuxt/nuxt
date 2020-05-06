@@ -1,6 +1,5 @@
 export const TARGETS = {
   server: 'server',
-  serverless: 'serverless',
   static: 'static'
 }
 
