@@ -137,7 +137,7 @@ function mapTransitions (toComponents, to, from) {
   return mergedTransitions
 }
 <% } %>
-<% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
+async function loadAsyncComponents (to, from, next) {
   // Check if route changed (this._routeChanged), only if the page is not an error (for validate())
   this._routeChanged = Boolean(app.nuxt.err) || from.name !== to.name
   this._paramChanged = !this._routeChanged && from.path !== to.path
@@ -151,7 +151,6 @@ function mapTransitions (toComponents, to, from) {
   <% } %>
 
   try {
-    <% if (loading) { %>
     if (this._queryChanged) {
       const Components = await resolveRouteComponents(
         to,
@@ -171,11 +170,12 @@ function mapTransitions (toComponents, to, from) {
         }
         return false
       })
+      <% if (loading) { %>
       if (startLoader && this.$loading.start && !this.$loading.manual) {
         this.$loading.start()
       }
+      <% } %>
     }
-    <% } %>
     // Call next()
     next()
   } catch (error) {
@@ -273,6 +273,7 @@ async function render (to, from, next) {
   if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) {
     return next()
   }
+  console.log('render', this._routeChanged, this._paramChanged, this._queryChanged)
   // Handle first render on SPA mode
   if (to === from) {
     _lastPaths = []
@@ -848,6 +849,10 @@ function addHotReload ($component, depth) {
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
 
+  // Fix in static: remove trailing slash to force hydration
+  if (process.static && NUXT.serverRendered && NUXT.routePath !== '/' && NUXT.routePath.slice(-1) !== '/' && _app.context.route.path.slice(-1) === '/') {
+    _app.context.route.path = _app.context.route.path.replace(/\/+$/, '')
+  }
   // If page already is server rendered and it was done on the same route path as client side render
   if (NUXT.serverRendered && NUXT.routePath === _app.context.route.path) {
     mount()
