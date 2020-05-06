@@ -22,7 +22,7 @@ describe('export', () => {
   })
 
   test('init by default, build false', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     const generator = mockGetGenerator()
 
     await NuxtCommand.from(exportCommand).run()
@@ -33,7 +33,7 @@ describe('export', () => {
   })
 
   test('force-exits by default', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.'])
@@ -44,7 +44,7 @@ describe('export', () => {
   })
 
   test('can set force exit explicitly', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.', '--force-exit'])
@@ -55,7 +55,7 @@ describe('export', () => {
   })
 
   test('can disable force exit explicitly', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const cmd = NuxtCommand.from(exportCommand, ['generate', '.', '--no-force-exit'])
@@ -69,7 +69,7 @@ describe('export', () => {
     const createLock = jest.fn(() => releaseLock)
     jest.spyOn(utils, 'createLock').mockImplementation(createLock)
 
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.'])
@@ -80,7 +80,7 @@ describe('export', () => {
   })
 
   test('can disable locking', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const createLock = jest.fn(() => Promise.resolve())
@@ -93,7 +93,7 @@ describe('export', () => {
   })
 
   test('throw an error when fail-on-error enabled and page errors', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator(() => ({ errors: [{ type: 'dummy' }] }))
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.', '--fail-on-error'])
@@ -101,7 +101,7 @@ describe('export', () => {
   })
 
   test('do not throw an error when fail-on-error disabled and page errors', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator(() => ({ errors: [{ type: 'dummy' }] }))
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.'])
@@ -109,7 +109,7 @@ describe('export', () => {
   })
 
   test('do not throw an error when fail-on-error enabled and no page errors', async () => {
-    mockGetNuxt({ generate: {} })
+    mockGetNuxt({ generate: { dir: 'dist' } })
     mockGetGenerator()
 
     const cmd = NuxtCommand.from(exportCommand, ['export', '.', '--fail-on-error'])
