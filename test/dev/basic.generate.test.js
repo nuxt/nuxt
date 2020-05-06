@@ -175,7 +175,7 @@ describe('basic generate', () => {
     expect(html).toContain('<div id="__nuxt"></div>')
   })
 
-  test('/validate -> should display a 404', async () => {
+  test.posix('/validate -> should display a 404', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/validate'))
     const html = window.document.body.innerHTML
     expect(html).toContain('This page could not be found')
