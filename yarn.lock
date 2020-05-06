@@ -2372,18 +2372,18 @@
   optionalDependencies:
     prettier "^1.18.2"
 
-"@vue/server-test-utils@^1.0.0-beta.33":
-  version "1.0.0-beta.33"
-  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.0-beta.33.tgz#d3e284c0646d404ec6a4192b96ace99dd90a3033"
-  integrity sha512-vXZHy3Wh+Dj4Yn5jGll3m0DYdq3sZVwEsLViP/5CpBYQmqJKn55Y7ZMP07A+dAGcilXwL6MgP5/vCKnQkhUs7Q==
+"@vue/server-test-utils@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.0.tgz#bef19655157f1fd689ed5cbdf28a6a159b6b8d75"
+  integrity sha512-VCenIoRhPPpdD1UBklqk9LQP9uKVd9Yu6jHxWb5dhGG+SmJp6Z2IQWGefqe/HamNrgCe7rjERZG/569PX3qVUw==
   dependencies:
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.0.0-beta.33":
-  version "1.0.0-beta.33"
-  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.0-beta.33.tgz#627511afbd4307e7557634f860a1b985bd25d9cd"
-  integrity sha512-Xzqoe0lTLn3QRWfjhmKPOXYR86l0Y+g/zPHaheJQOkPLj5ojJl3rG0t4F3kXFWuLD88YzUVRMIBWOG7v9KOJQQ==
+"@vue/test-utils@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.0.tgz#02e81ec674a45c694e95be2e06116a7275819c7b"
+  integrity sha512-lB0xDlOAGrmQZXZEWDbmfTWy2zE1BKfbbyR6dxlgiunm149it1JTghD6zfruBU+ujm7vW8YHWgx62O57VK4JOg==
   dependencies:
     dom-event-types "^1.0.0"
     lodash "^4.17.15"

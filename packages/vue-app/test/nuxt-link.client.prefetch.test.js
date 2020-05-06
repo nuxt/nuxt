@@ -24,13 +24,11 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      const observe = jest.spyOn(Component.methods, 'observe')
       Component.extends = RouterLinkStub
 
-      const methods = { observe: jest.fn() }
-
       const wrapper = mount(Component, {
-        propsData: { to: '/link' },
-        methods
+        propsData: { to: '/link' }
       })
 
       jest.runAllTimers()
@@ -41,7 +39,7 @@ describe('nuxt-link prefetch', () => {
 
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
-      expect(methods.observe).not.toHaveBeenCalled()
+      expect(observe).not.toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to false, link with prefetch prop set to true should be prefetched',
@@ -53,13 +51,11 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      const observe = jest.spyOn(Component.methods, 'observe')
       Component.extends = RouterLinkStub
 
-      const methods = { observe: jest.fn() }
-
       const wrapper = mount(Component, {
-        propsData: { to: '/link', prefetch: true },
-        methods
+        propsData: { to: '/link', prefetch: true }
       })
 
       jest.runAllTimers()
@@ -70,7 +66,7 @@ describe('nuxt-link prefetch', () => {
 
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
-      expect(methods.observe).toHaveBeenCalled()
+      expect(observe).toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with no prop should be prefetched',
@@ -82,13 +78,11 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      const observe = jest.spyOn(Component.methods, 'observe')
       Component.extends = RouterLinkStub
 
-      const methods = { observe: jest.fn() }
-
       const wrapper = mount(Component, {
-        propsData: { to: '/link' },
-        methods
+        propsData: { to: '/link' }
       })
 
       jest.runAllTimers()
@@ -99,7 +93,7 @@ describe('nuxt-link prefetch', () => {
 
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(false)
-      expect(methods.observe).toHaveBeenCalled()
+      expect(observe).toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with prefetch prop set to false should not be prefetched',
@@ -111,13 +105,11 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      const observe = jest.spyOn(Component.methods, 'observe')
       Component.extends = RouterLinkStub
 
-      const methods = { observe: jest.fn() }
-
       const wrapper = mount(Component, {
-        propsData: { to: '/link', prefetch: false },
-        methods
+        propsData: { to: '/link', prefetch: false }
       })
 
       jest.runAllTimers()
@@ -128,7 +120,7 @@ describe('nuxt-link prefetch', () => {
 
       expect(wrapper.props('prefetch')).toBe(false)
       expect(wrapper.props('noPrefetch')).toBe(false)
-      expect(methods.observe).not.toHaveBeenCalled()
+      expect(observe).not.toHaveBeenCalled()
     })
 
   test('when router.prefetchLinks is set to true (default), link with noPrefetch prop should not be prefetched',
@@ -140,13 +132,11 @@ describe('nuxt-link prefetch', () => {
       )
 
       const Component = await importComponent(compiledTemplatePath)
+      const observe = jest.spyOn(Component.methods, 'observe')
       Component.extends = RouterLinkStub
 
-      const methods = { observe: jest.fn() }
-
       const wrapper = mount(Component, {
-        propsData: { to: '/link', noPrefetch: true },
-        methods
+        propsData: { to: '/link', noPrefetch: true }
       })
 
       jest.runAllTimers()
@@ -157,7 +147,7 @@ describe('nuxt-link prefetch', () => {
 
       expect(wrapper.props('prefetch')).toBe(true)
       expect(wrapper.props('noPrefetch')).toBe(true)
-      expect(methods.observe).not.toHaveBeenCalled()
+      expect(observe).not.toHaveBeenCalled()
     })
 })
 /* eslint-enable no-console */
