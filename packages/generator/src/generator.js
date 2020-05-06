@@ -260,7 +260,6 @@ export default class Generator {
     try {
       const renderContext = {
         payload,
-        static: true,
         payloadPath: this.payloadPath
       }
       const res = await this.nuxt.server.renderRoute(route, renderContext)

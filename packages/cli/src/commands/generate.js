@@ -60,7 +60,7 @@ export default {
     })
 
     if (config.target === TARGETS.static) {
-      throw new Error('For new static target, please use `nuxt export`')
+      throw new Error("Please use `nuxt export` when using `target: 'static'`")
     }
 
     // Forcing static target anyway
@@ -70,11 +70,8 @@ export default {
     config.build = config.build || {}
     config.build.analyze = false
 
-    // Set generate.static = false by default to keep the only prerendering behaviour
-    config.generate = config.generate || {}
-    if (config.generate.static !== true) {
-      config.generate.static = false
-    }
+    // Set flag to keep the prerendering behaviour
+    config._legacyGenerate = true
 
     const nuxt = await cmd.getNuxt(config)
 

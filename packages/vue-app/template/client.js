@@ -488,7 +488,7 @@ async function render (to, from, next) {
         <% if (isFullStatic) { %>
           let promise
 
-          if (Component.options.static === false || this.$isPreview) {
+          if (this.$isPreview) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
             try {

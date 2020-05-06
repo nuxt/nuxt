@@ -63,10 +63,6 @@ function createdFullStatic() {
   if (!fetchedOnServer || this.$nuxt.$isPreview || !this.$nuxt._pagePayload) {
     return
   }
-  if (this.$options.static === false) {
-    this.$nuxt._payloadFetchIndex++
-    return
-  }
   this._hydrated = true
   this._fetchKey = this.$nuxt._payloadFetchIndex++
   const data = this.$nuxt._pagePayload.fetch[this._fetchKey]
