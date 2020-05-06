@@ -132,10 +132,22 @@ export default {
     // Add $nuxt.context
     this.context = this.$options.context
   },
-  <% if (loading) { %>
-  mounted () {
-    this.$loading = this.$refs.loading
+  <% if (loading || isFullStatic) { %>
+  async mounted () {
+    <% if (loading) { %>this.$loading = this.$refs.loading<% } %>
+    <% if (isFullStatic) {%>
+    if (this.isPreview) {
+      if (this.$store && this.$store._actions.nuxtServerInit) {
+        <% if (loading) { %>this.$loading.start()<% } %>
+        await app.$store.dispatch('nuxtServerInit', this.context)
+      }
+      await this.refresh()
+      <% if (loading) { %>this.$loading.finish()<% } %>
+    }
+    <% } %>
   },
+  <% } %>
+  <% if (loading) { %>
   watch: {
     'nuxt.err': 'errorChanged'
   },
@@ -146,10 +158,13 @@ export default {
       return !this.isOnline
     },
     <% if (features.fetch) { %>
-      isFetching() {
+    isFetching () {
       return this.nbFetching > 0
-    }
-    <% } %>
+    },<% } %>
+    <% if (nuxtOptions.target === 'static') { %>
+    isPreview () {
+      return this.$options.isPreview || false
+    },<% } %>
   },
   <% } %>
   methods: {
@@ -297,6 +312,7 @@ export default {
       try {
         const src = urlJoin(this.payloadPath, route, 'payload.js')
         const payload = await window.__NUXT_IMPORT__(route, src)
+        this.setPagePayload(payload)
         return payload
       } catch (err) {
         this.setPagePayload(false)

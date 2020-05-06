@@ -60,7 +60,7 @@ function createdFullStatic() {
   if (typeof this.$options.fetchOnServer === 'function') {
     fetchedOnServer = this.$options.fetchOnServer.call(this) !== false
   }
-  if (!fetchedOnServer || this.$nuxt.$isPreview || !this.$nuxt._pagePayload) {
+  if (!fetchedOnServer || this.$nuxt.isPreview || !this.$nuxt._pagePayload) {
     return
   }
   this._hydrated = true

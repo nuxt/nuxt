@@ -488,7 +488,7 @@ async function render (to, from, next) {
         <% if (isFullStatic) { %>
           let promise
 
-          if (this.$isPreview) {
+          if (this.isPreview) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
             try {
@@ -519,7 +519,7 @@ async function render (to, from, next) {
 
       <% if (features.fetch) { %>
         <% if (isFullStatic) { %>
-        if (!this.$isPreview) {
+        if (!this.isPreview) {
           // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
         }

@@ -108,9 +108,11 @@ export default {
         Component.__prefetched = true
       }
       <% if (isFullStatic && router.prefetchPayloads) { %>
-      // Preload the data
-      const { href } = this.$router.resolve(this.to, this.$route, this.append)
-      this.$nuxt.fetchPayload(href).catch(() => {})
+      // Preload the data only if not in preview mode
+      if (!this.$root.isPreview) {
+        const { href } = this.$router.resolve(this.to, this.$route, this.append)
+        this.$nuxt.fetchPayload(href).catch(() => {})
+      }
       <% } %>
       <% if (router.linkPrefetchedClass) { %>
       return Promise.all(promises).then(() => this.addPrefetchedClass())

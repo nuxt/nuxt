@@ -210,6 +210,12 @@ async function createApp (ssrContext) {
   }
   <% } %>
 
+  // Add previewMode in context for plugins
+  if (process.static && process.client) {
+    app.context.previewMode = function () {
+      app.isPreview = true
+    }
+  }
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.forEach((plugin) => { %>
@@ -228,6 +234,12 @@ async function createApp (ssrContext) {
   <% } %>
   <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
+  // Add previewMode in context for plugins
+  if (process.static && process.client) {
+    app.context.previewMode = function () {
+      console.warn('You cannot call previewMode() outside a plugin.')
+    }
+  }
 
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
