@@ -273,7 +273,6 @@ async function render (to, from, next) {
   if (this._routeChanged === false && this._paramChanged === false && this._queryChanged === false) {
     return next()
   }
-  console.log('render', this._routeChanged, this._paramChanged, this._queryChanged)
   // Handle first render on SPA mode
   if (to === from) {
     _lastPaths = []
