@@ -162,9 +162,16 @@ export default class SSRRenderer extends BaseRenderer {
     const extractPayload = renderContext.payloadPath
 
     if (extractPayload) {
-      // TODO: preload and CSP
+      // TODO: CSP
+      const stateUrl = `${renderContext.payloadPath}${renderContext.url}/state.js`
+      const payloadUrl = `${renderContext.payloadPath}${renderContext.url}/payload.js`
+
       APP += `<script defer>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
-      APP += `<script defer src="${renderContext.payloadPath}${renderContext.url}/state.js"></script>` // TODO: proper join
+      APP += `<script defer src="${stateUrl}"></script>` // TODO: proper join
+
+      for (const href of [stateUrl, payloadUrl]) {
+        HEAD += `<link rel="preload" href="${href}" as="script">`
+      }
     } else {
       // Serialize state
       if (shouldInjectScripts || shouldHashCspScriptSrc) {
