@@ -43,11 +43,11 @@ export default class ModernModePlugin {
   applyLegacy (compiler) {
     const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, (data, cb) => {
         // get stats, write to disk
         this.assets = {
           name: data.plugin.options.filename,
-          content: data.body
+          content: data.bodyTags
         }
 
         cb()
@@ -58,9 +58,9 @@ export default class ModernModePlugin {
   applyModern (compiler) {
     const ID = 'nuxt-modern-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, async (data, cb) => {
         // use <script type="module"> for modern assets
-        data.body.forEach((tag) => {
+        data.bodyTags.forEach((tag) => {
           if (tag.tagName === 'script' && tag.attributes) {
             tag.attributes.type = 'module'
           }
@@ -68,7 +68,7 @@ export default class ModernModePlugin {
 
         // use <link rel="modulepreload"> instead of <link rel="preload">
         // for modern assets
-        data.head.forEach((tag) => {
+        data.headTags.forEach((tag) => {
           if (tag.tagName === 'link' &&
               tag.attributes.rel === 'preload' &&
               tag.attributes.as === 'script') {
@@ -83,7 +83,7 @@ export default class ModernModePlugin {
 
         for (const a of legacyAssets) {
           a.attributes.nomodule = true
-          data.body.push(a)
+          data.bodyTags.push(a)
         }
 
         if (this.noUnsafeInline) {
@@ -99,7 +99,7 @@ export default class ModernModePlugin {
             source: () => Buffer.from(safariNoModuleFix),
             size: () => Buffer.byteLength(safariNoModuleFix)
           }
-          data.body.push({
+          data.bodyTags.push({
             tagName: 'script',
             closeTag: true,
             attributes: {
@@ -108,7 +108,7 @@ export default class ModernModePlugin {
           })
         } else {
           // inject Safari 10 nomodule fix
-          data.body.push({
+          data.bodyTags.push({
             tagName: 'script',
             closeTag: true,
             innerHTML: safariNoModuleFix
