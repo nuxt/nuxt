@@ -450,6 +450,9 @@ export function getNuxtConfig (_options) {
 
   // Generate staticAssets
   const { staticAssets } = options.generate
+  if (!staticAssets.version) {
+    staticAssets.version = String(Math.round(Date.now() / 1000))
+  }
   if (!staticAssets.base) {
     const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
     staticAssets.base = urlJoin(publicPath, staticAssets.dir)
