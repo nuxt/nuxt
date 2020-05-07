@@ -160,28 +160,37 @@ export default class SSRRenderer extends BaseRenderer {
     const inlineScripts = []
 
     if (renderContext.staticAssetsBase) {
+      const preloadScripts = []
       renderContext.staticAssets = []
-      const { staticAssetsBase, url, nuxt: { data, fetch, ...state }, staticAssets } = renderContext
+      const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
+      const { data, fetch, ...state } = nuxt
 
-      // Add __NUXT_STATIC__
-      const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}'`
-      APP += `<script defer>${nuxtStaticScript}</script>`
-
-      // state.js
-      const statePath = urlJoin(url, 'state.js')
-      const stateUrl = urlJoin(staticAssetsBase, statePath)
+      // Initial state
+      const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}';`
       const stateScript = `window.${this.serverContext.globals.context}=${devalue(state)};`
-      staticAssets.push({ path: statePath, src: stateScript })
-      APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
 
-      // payload.js
+      // Make chunk for initial state > 10 KB
+      const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
+      if (stateScriptKb > 10) {
+        const statePath = urlJoin(url, 'state.js')
+        const stateUrl = urlJoin(staticAssetsBase, statePath)
+        staticAssets.push({ path: statePath, src: stateScript })
+        APP += `<script defer>${nuxtStaticScript}</script>`
+        APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
+        preloadScripts.push(stateUrl)
+      } else {
+        APP += `<script defer>${nuxtStaticScript}${stateScript}</script>`
+      }
+
+      // Page level payload.js (async loaded for CSR)
       const payloadPath = urlJoin(url, 'payload.js')
       const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
       const payloadScript = `__NUXT_JSONP__("${url}", ${devalue({ data, fetch })});`
       staticAssets.push({ path: payloadPath, src: payloadScript })
+      preloadScripts.push(payloadUrl)
 
-      // Prefetch links
-      for (const href of [stateUrl, payloadUrl]) {
+      // Preload links
+      for (const href of preloadScripts) {
         HEAD += `<link rel="preload" href="${href}" as="script">`
       }
     } else {
