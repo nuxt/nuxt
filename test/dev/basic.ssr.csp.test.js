@@ -129,6 +129,26 @@ describe('basic ssr csp', () => {
     )
 
     test(
+      'Contain report-uri in Content-Security-Policy-Report-Only header, when explicitly asked for CSRP, allowedSources, csp.report-url',
+      async () => {
+        const cspOption = {
+          allowedSources: ['https://example.com', 'https://example.io'],
+          reportOnly: true,
+          policies: {
+            'report-uri': '/csp_report_uri'
+          }
+        }
+        nuxt = await startCspDevServer(cspOption)
+        const { headers } = await rp(url('/stateless'))
+
+        expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
+        expect(headers[reportOnlyHeader]).toContain('https://example.com')
+        expect(headers[reportOnlyHeader]).toContain('https://example.io')
+        expect(headers[reportOnlyHeader]).toContain('report-uri /csp_report_uri')
+      }
+    )
+
+    test(
       'Contain only unique hashes in header when csp.policies is set',
       async () => {
         const policies = {
@@ -299,6 +319,26 @@ describe('basic ssr csp', () => {
         expect(headers[reportOnlyHeader]).toMatch(/script-src 'sha256-(.*)?' 'self'/)
         expect(headers[reportOnlyHeader]).toContain('https://example.com')
         expect(headers[reportOnlyHeader]).toContain('https://example.io')
+      }
+    )
+
+    test(
+      'Contain report-uri in Content-Security-Policy-Report-Only header, when explicitly asked for CSRP, allowedSources, csp.report-url',
+      async () => {
+        const cspOption = {
+          allowedSources: ['https://example.com', 'https://example.io'],
+          reportOnly: true,
+          policies: {
+            'report-uri': '/csp_report_uri'
+          }
+        }
+        nuxt = await startCspDevServer(cspOption)
+        const { headers } = await rp(url('/stateless'))
+
+        expect(headers[reportOnlyHeader]).toMatch(/^script-src 'self' 'sha256-.*'/)
+        expect(headers[reportOnlyHeader]).toContain('https://example.com')
+        expect(headers[reportOnlyHeader]).toContain('https://example.io')
+        expect(headers[reportOnlyHeader]).toContain('report-uri /csp_report_uri')
       }
     )
 

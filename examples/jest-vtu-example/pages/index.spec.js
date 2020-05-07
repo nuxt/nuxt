@@ -4,7 +4,7 @@ import index from './index'
 describe('index', () => {
   test('mounts properly', () => {
     const wrapper = shallowMount(index)
-    expect(wrapper.isVueInstance()).toBeTruthy()
+    expect(wrapper.vm).toBeTruthy()
   })
 
   test('renders properly', () => {
