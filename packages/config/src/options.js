@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
-import defaults from 'lodash/defaults'
+import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
@@ -237,7 +237,7 @@ export function getNuxtConfig (_options) {
 
   // Apply default hash to CSP option
   if (options.render.csp) {
-    options.render.csp = defaults({}, options.render.csp, {
+    options.render.csp = defu(options.render.csp, {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,
@@ -417,6 +417,13 @@ export function getNuxtConfig (_options) {
   // When loadingScreen is disabled we should also disable build indicator
   if (!options.build.loadingScreen) {
     options.build.indicator = false
+  }
+
+  // TODO: Remove this if statement in Nuxt 3
+  if (options.build.crossorigin) {
+    consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    options.render.crossorigin = options.build.crossorigin
+    delete options.build.crossorigin
   }
 
   const { timing } = options.server

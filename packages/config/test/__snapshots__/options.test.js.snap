@@ -28,7 +28,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -297,6 +296,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,

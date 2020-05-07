@@ -1,4 +1,5 @@
 import path from 'path'
+import defu from 'defu'
 import consola from 'consola'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
@@ -7,7 +8,8 @@ import { defaultNuxtConfigFile } from './config'
 export async function loadNuxtConfig ({
   rootDir = '.',
   configFile = defaultNuxtConfigFile,
-  configContext = {}
+  configContext = {},
+  configOverrides = {}
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -48,7 +50,7 @@ export async function loadNuxtConfig ({
     }
 
     // Don't mutate options export
-    options = Object.assign({}, options)
+    options = defu(configOverrides, options)
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = configFile
