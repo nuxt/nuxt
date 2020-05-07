@@ -152,7 +152,7 @@ export default class SPARenderer extends BaseRenderer {
 
     if (renderContext.staticAssetsBase) {
       // Full static, add window.__NUXT_STATIC__
-      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}'</script>`
+      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}';window.${this.serverContext.globals.context}={spa:!0}</script>`
     }
 
     // Prepare template params

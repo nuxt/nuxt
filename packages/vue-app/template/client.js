@@ -801,12 +801,13 @@ async function mountApp (__app) {
   const _app = new Vue(app)
 
   <% if (isFullStatic) { %>
-  // -- full static --
   // Load page chunk
-  try {
-    const payload = await _app.fetchPayload(_app.context.route.path)
-    Object.assign(NUXT, payload)
-  } catch (err) {}
+  if (!NUXT.data && !NUXT.spa) {
+    try {
+      const payload = await _app.fetchPayload(_app.context.route.path)
+      Object.assign(NUXT, payload)
+    } catch (err) {}
+  }
   <% } %>
 
   <% if (features.layouts && mode !== 'spa') { %>
