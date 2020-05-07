@@ -5,7 +5,7 @@ import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -446,6 +446,16 @@ export function getNuxtConfig (_options) {
   if (isPureObject(options.serverMiddleware)) {
     options.serverMiddleware = Object.entries(options.serverMiddleware)
       .map(([path, handler]) => ({ path, handler }))
+  }
+
+  // Generate staticAssets
+  const { staticAssets } = options.generate
+  if (!staticAssets.base) {
+    const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
+    staticAssets.base = urlJoin(publicPath, staticAssets.dir)
+  }
+  if (!staticAssets.versionBase) {
+    staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
   }
 
   return options

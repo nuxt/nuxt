@@ -149,9 +149,10 @@ export default class SPARenderer extends BaseRenderer {
     }
 
     let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
-    if (renderContext.payloadPath) {
-      // Full static, add window.__PAYLOAD_PATH__
-      APP += `<script>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
+
+    if (renderContext.staticAssetsBase) {
+      // Full static, add window.__NUXT_STATIC__
+      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}'</script>`
     }
 
     // Prepare template params

@@ -3,10 +3,9 @@ import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
-import devalue from '@nuxt/devalue'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, urlJoin, TARGETS, MODES } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS, MODES } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -33,9 +32,8 @@ export default class Generator {
     // Payloads for full static
     if (this.isFullStatic) {
       consola.info('Full static mode activated')
-      const exportTime = String(Date.now())
-      this.payloadDir = path.join(this.distNuxtPath, 'payloads', exportTime)
-      this.payloadPath = urlJoin(this.options.build.publicPath, 'payloads', exportTime)
+      const { staticAssets } = this.options.generate
+      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
     }
 
     consola.debug('Preparing routes for generate...')
@@ -198,7 +196,10 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    let { html } = await this.nuxt.server.renderRoute('/', { spa: true, payloadPath: this.payloadPath })
+    let { html } = await this.nuxt.server.renderRoute('/', {
+      spa: true,
+      staticAssetsBase: this.options.generate.staticAssets.versionBase
+    })
 
     try {
       html = this.minifyHtml(html)
@@ -260,7 +261,7 @@ export default class Generator {
     try {
       const renderContext = {
         payload,
-        payloadPath: this.payloadPath
+        staticAssetsBase: this.options.generate.staticAssets.versionBase
       }
       const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
@@ -277,21 +278,13 @@ export default class Generator {
         })
       }
 
-      // Save payload
-      if (this.payloadDir) {
-        // Extract payload from state
-        const { data, fetch, ...state } = renderContext.nuxt
-        const payload = { data, fetch }
-
-        // Ensure payload dir exists
-        const payloadDir = path.join(this.payloadDir, route)
-        await fsExtra.ensureDir(payloadDir)
-
-        // Write payload.js
-        await fsExtra.writeFile(path.join(payloadDir, 'payload.js'), `__NUXT_JSONP__("${route}", ${devalue(payload)});`, 'utf-8')
-
-        // Write state.js
-        await fsExtra.writeFile(path.join(payloadDir, 'state.js'), `window.${this.builder.globals.context}=${devalue(state)};`, 'utf-8')
+      // Save Static Assets
+      if (this.staticAssetsDir && renderContext.staticAssets) {
+        for (const asset of renderContext.staticAssets) {
+          const assetPath = path.join(this.staticAssetsDir, asset.path)
+          await fsExtra.ensureDir(path.dirname(assetPath))
+          await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
+        }
       }
 
       if (res.error) {

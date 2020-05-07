@@ -157,26 +157,40 @@ export default class SSRRenderer extends BaseRenderer {
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
-    let serializedSession = ''
+    const inlineScripts = []
 
-    const extractPayload = renderContext.payloadPath
+    if (renderContext.staticAssetsBase) {
+      renderContext.staticAssets = []
+      const { staticAssetsBase, url, nuxt: { data, fetch, ...state }, staticAssets } = renderContext
 
-    if (extractPayload) {
-      // TODO: CSP
-      const stateUrl = urlJoin(renderContext.payloadPath, renderContext.url, 'state.js')
-      const payloadUrl = urlJoin(renderContext.payloadPath, renderContext.url, 'payload.js')
+      // Add __NUXT_STATIC__
+      const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}'`
+      APP += `<script defer>${nuxtStaticScript}</script>`
 
-      APP += `<script defer>window.__PAYLOAD_PATH__='${renderContext.payloadPath}'</script>`
-      APP += `<script defer src="${stateUrl}"></script>` // TODO: proper join
+      // state.js
+      const statePath = urlJoin(url, 'state.js')
+      const stateUrl = urlJoin(staticAssetsBase, statePath)
+      const stateScript = `window.${this.serverContext.globals.context}=${devalue(state)};`
+      staticAssets.push({ path: statePath, src: stateScript })
+      APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
 
+      // payload.js
+      const payloadPath = urlJoin(url, 'payload.js')
+      const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
+      const payloadScript = `__NUXT_JSONP__("${url}", ${devalue({ data, fetch })});`
+      staticAssets.push({ path: payloadPath, src: payloadScript })
+
+      // Prefetch links
       for (const href of [stateUrl, payloadUrl]) {
         HEAD += `<link rel="preload" href="${href}" as="script">`
       }
     } else {
       // Serialize state
+      let serializedSession
       if (shouldInjectScripts || shouldHashCspScriptSrc) {
         // Only serialized session if need inject scripts or csp hash
         serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+        inlineScripts.push(serializedSession)
       }
 
       if (shouldInjectScripts) {
@@ -187,9 +201,9 @@ export default class SSRRenderer extends BaseRenderer {
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (csp) {
-      if (shouldHashCspScriptSrc) {
+      for (const script of inlineScripts) {
         const hash = crypto.createHash(csp.hashAlgorithm)
-        hash.update(serializedSession)
+        hash.update(script)
         cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
       }
 

@@ -61,18 +61,6 @@ export default () => ({
     '**/*.spec.*'
   ],
 
-  // Generate
-  generate: {
-    dir: 'dist',
-    routes: [],
-    exclude: [],
-    concurrency: 500,
-    interval: 0,
-    subFolders: true,
-    fallback: '200.html',
-    crawler: true
-  },
-
   // Watch
   watch: [],
   watchers: {

@@ -9,6 +9,7 @@ import render from './render'
 import router from './router'
 import server from './server'
 import cli from './cli'
+import generate from './generate'
 
 export const defaultNuxtConfigFile = 'nuxt.config'
 
@@ -26,6 +27,7 @@ export function getDefaultNuxtConfig (options = {}) {
     render: render(),
     router: router(),
     server: server(options),
-    cli: cli()
+    cli: cli(),
+    generate: generate()
   }
 }

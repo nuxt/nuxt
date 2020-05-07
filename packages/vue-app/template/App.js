@@ -108,11 +108,6 @@ export default {
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
-    <% if ((features.asyncData || features.fetch) && isFullStatic) { %>
-    if (process.client) {
-      Vue.util.defineReactive(this, 'payloadPath', window.__PAYLOAD_PATH__)
-    }
-    <% } %>
   },
   created () {
     // Add this.$nuxt in child instances
@@ -310,7 +305,7 @@ export default {
     async fetchPayload(route) {
       route = (route.replace(/\/$/, '') || '/').split('?')[0]
       try {
-        const src = urlJoin(this.payloadPath, route, 'payload.js')
+        const src = urlJoin(window.__NUXT_STATIC__, route, 'payload.js')
         const payload = await window.__NUXT_IMPORT__(route, src)
         this.setPagePayload(payload)
         return payload
