@@ -1,10 +1,16 @@
 const chunks = {} // chunkId => exports
 const chunksInstalling = {} // chunkId => Promise
+const failedChunks = {}
 
 function importChunk(chunkId, src) {
   // Already installed
   if (chunks[chunkId]) {
     return Promise.resolve(chunks[chunkId])
+  }
+
+  // Failed loading
+  if (failedChunks[chunkId]) {
+    return Promise.reject(failedChunks[chunkId])
   }
 
   // Installing
@@ -53,6 +59,7 @@ function importChunk(chunkId, src) {
     error.name = 'ChunkLoadError'
     error.type = errorType
     error.request = realSrc
+    failedChunks[chunkId] = error
     reject(error)
   }
 
