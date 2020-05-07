@@ -210,10 +210,12 @@ export default class SSRRenderer extends BaseRenderer {
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (csp) {
-      for (const script of inlineScripts) {
-        const hash = crypto.createHash(csp.hashAlgorithm)
-        hash.update(script)
-        cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+      if (shouldHashCspScriptSrc) {
+        for (const script of inlineScripts) {
+          const hash = crypto.createHash(csp.hashAlgorithm)
+          hash.update(script)
+          cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        }
       }
 
       // Call ssr:csp hook
