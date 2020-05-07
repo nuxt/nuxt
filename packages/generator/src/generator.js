@@ -209,6 +209,7 @@ export default class Generator {
     }
 
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
+    consola.success('Client-side fallback created: `' + fallback + '`')
   }
 
   async initDist () {
