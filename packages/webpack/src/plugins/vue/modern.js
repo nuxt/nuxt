@@ -43,7 +43,7 @@ export default class ModernModePlugin {
   applyLegacy (compiler) {
     const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, (data, cb) => {
         // get stats, write to disk
         this.assets = {
           name: data.plugin.options.filename,
