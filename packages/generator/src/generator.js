@@ -34,6 +34,7 @@ export default class Generator {
       consola.info('Full static mode activated')
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
+      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
     }
 
     consola.debug('Preparing routes for generate...')
@@ -198,7 +199,7 @@ export default class Generator {
     // Render and write the SPA template to the fallback path
     let { html } = await this.nuxt.server.renderRoute('/', {
       spa: true,
-      staticAssetsBase: this.options.generate.staticAssets.versionBase
+      staticAssetsBase: this.staticAssetsBase
     })
 
     try {
@@ -261,7 +262,7 @@ export default class Generator {
     try {
       const renderContext = {
         payload,
-        staticAssetsBase: this.options.generate.staticAssets.versionBase
+        staticAssetsBase: this.staticAssetsBase
       }
       const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
