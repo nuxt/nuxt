@@ -17,7 +17,7 @@ const url = route => 'http://localhost:' + port + route
 // == Uniq Test ==
 // The idea behind is pages using a shared nextId() which returns an incrementing id
 // So all responses should strictly be different and length of unique responses should equal to responses
-// We strictly compare <foorbar>{id}</foorbar> section
+// We strictly compare <Foobar>{id}</Foobar> section
 // Because other response parts such as window.__NUXT may be different resulting false positive passes.
 const uniqueTest = async (url) => {
   const results = []

@@ -5,8 +5,11 @@
 </template>
 
 <script>
-import axios from 'axios'
 import DoughnutChart from '~/components/doughnut-chart'
+
+function isBot (username) {
+  return username.includes('[bot]') || username.includes('-bot')
+}
 
 function getRandomColor () {
   const letters = '0123456789ABCDEF'
@@ -21,16 +24,21 @@ export default {
   components: {
     DoughnutChart
   },
-  async asyncData ({ env }) {
-    const res = await axios.get(`https://api.github.com/repos/nuxt/nuxt.js/stats/contributors?access_token=${env.githubToken}`)
+  async asyncData ({ $http, env }) {
+    let contributors = await $http.$get('https://api.github.com/repos/nuxt/nuxt.js/contributors', {
+      headers: {
+        Authorization: `token ${env.githubToken}`
+      }
+    })
+    contributors = contributors.filter(c => c.contributions >= 10 && !isBot(c.login))
     return {
       doughnutChartData: {
-        labels: res.data.map(stat => stat.author.login),
+        labels: contributors.map(c => c.login),
         datasets: [
           {
             label: 'Nuxt.js Contributors',
-            backgroundColor: res.data.map(getRandomColor),
-            data: res.data.map(() => 1)
+            backgroundColor: contributors.map(getRandomColor),
+            data: contributors.map(c => c.contributions)
           }
         ]
       }
@@ -41,10 +49,9 @@ export default {
 
 <style scoped>
 .doughnut-chart {
-  position: fixed;
-  left: 10%;
-  top: 10%;
   width: 80%;
   height: 80%;
+  margin: auto;
+  margin-top: 30px;
 }
 </style>

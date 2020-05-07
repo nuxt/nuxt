@@ -174,6 +174,10 @@ async function createApp (ssrContext) {
     key = '$' + key
     // Add into app
     app[key] = value
+    // Add into context
+    if (!app.context[key]) {
+      app.context[key] = value
+    }
     <% if (store) { %>
     // Add into store
     store[key] = app[key]

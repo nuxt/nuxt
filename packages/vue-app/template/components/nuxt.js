@@ -83,14 +83,14 @@ export default {
       })
     }
 
-    // if an error occured within NuxtError show a simple
+    // if an error occurred within NuxtError show a simple
     // error message instead to prevent looping
     if (this.errorFromNuxtError) {
       this.$nextTick(() => (this.errorFromNuxtError = false))
 
       return h('div', {}, [
-        h('h2', 'An error occured while showing the error page'),
-        h('p', 'Unfortunately an error occured and while showing the error page another error occured'),
+        h('h2', 'An error occurred while showing the error page'),
+        h('p', 'Unfortunately an error occurred and while showing the error page another error occurred'),
         h('p', `Error details: ${this.errorFromNuxtError.toString()}`),
         h('nuxt-link', { props: { to: '/' } }, 'Go back to home')
       ])

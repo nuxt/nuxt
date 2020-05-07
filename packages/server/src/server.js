@@ -182,13 +182,13 @@ export default class Server {
       middleware = this._requireMiddleware(middleware)
     }
 
-    // Normalize handler to handle (backward compatiblity)
+    // Normalize handler to handle (backward compatibility)
     if (middleware.handler && !middleware.handle) {
       middleware.handle = middleware.handler
       delete middleware.handler
     }
 
-    // Normalize path to route (backward compatiblity)
+    // Normalize path to route (backward compatibility)
     if (middleware.path && !middleware.route) {
       middleware.route = middleware.path
       delete middleware.path
@@ -265,7 +265,7 @@ export default class Server {
       middleware.route = middleware.route.slice(0, -1)
     }
 
-    // Assign _middleware to handle to make accessable from app.stack
+    // Assign _middleware to handle to make accessible from app.stack
     middleware.handle._middleware = middleware
 
     return middleware
