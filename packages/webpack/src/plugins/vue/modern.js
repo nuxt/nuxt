@@ -4,6 +4,7 @@
 */
 
 import EventEmitter from 'events'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
 import { safariNoModuleFix } from '@nuxt/utils'
 
 const assetsMap = {}
@@ -42,9 +43,7 @@ export default class ModernModePlugin {
   applyLegacy (compiler) {
     const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      // For html-webpack-plugin 4.0
-      // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(ID, (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
         // get stats, write to disk
         this.assets = {
           name: data.plugin.options.filename,
@@ -59,9 +58,7 @@ export default class ModernModePlugin {
   applyModern (compiler) {
     const ID = 'nuxt-modern-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      // For html-webpack-plugin 4.0
-      // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(ID, async (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
         // use <script type="module"> for modern assets
         data.body.forEach((tag) => {
           if (tag.tagName === 'script' && tag.attributes) {
