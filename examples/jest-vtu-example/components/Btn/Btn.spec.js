@@ -10,7 +10,7 @@ const factory = () => shallowMount(Btn, {
 describe('Btn', () => {
   test('mounts properly', () => {
     const wrapper = factory()
-    expect(wrapper.isVueInstance()).toBeTruthy()
+    expect(wrapper.vm).toBeTruthy()
   })
 
   test('renders properly', () => {
@@ -19,13 +19,11 @@ describe('Btn', () => {
   })
 
   test('calls handleClick on click', () => {
+    const handleClickMock = jest.spyOn(Btn.methods, 'handleClick')
     const wrapper = factory()
-    const handleClickMock = jest.fn()
-    wrapper.setMethods({
-      handleClick: handleClickMock
-    })
     wrapper.find('button').trigger('click')
     expect(handleClickMock).toHaveBeenCalled()
+    handleClickMock.mockRestore()
   })
 
   test('clicked is true after click', () => {
