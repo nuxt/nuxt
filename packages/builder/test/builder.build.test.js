@@ -35,6 +35,7 @@ describe('builder: builder build', () => {
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
     nuxt.options.build.template = { dir: '/var/nuxt/src/template' }
     nuxt.options.build.createRoutes = jest.fn()
+    nuxt.options.render = { ssr: true }
 
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)
@@ -47,7 +48,7 @@ describe('builder: builder build', () => {
 
     const buildReturn = await builder.build()
 
-    expect(consola.info).toBeCalledTimes(1)
+    expect(consola.info).toBeCalledTimes(3)
     expect(consola.info).toBeCalledWith('Production build')
     expect(nuxt.ready).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledTimes(3)
@@ -117,6 +118,7 @@ describe('builder: builder build', () => {
     nuxt.options.buildDir = '/var/nuxt/build'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
     nuxt.options.build.createRoutes = jest.fn()
+    nuxt.options.render = { ssr: true }
 
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)

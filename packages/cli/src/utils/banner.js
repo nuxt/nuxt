@@ -20,11 +20,14 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  const { bannerColor } = nuxt.options.cli
+  const { bannerColor, badgeMessages } = nuxt.options.cli
   titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
 
   // Running mode
-  titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+  const rendering = nuxt.options.render.ssr ? chalk.bold.yellow('server-side') : chalk.bold.yellow('client-side')
+  const envMode = nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')
+  const sentence = `Running in ${envMode}, with ${rendering} rendering and ${chalk.bold.cyan(nuxt.options.target)} target.`
+  titleLines.push(sentence)
 
   if (showMemoryUsage) {
     titleLines.push(getFormattedMemoryUsage())
@@ -36,8 +39,8 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   }
 
   // Add custom badge messages
-  if (nuxt.options.cli.badgeMessages.length) {
-    messageLines.push('', ...nuxt.options.cli.badgeMessages)
+  if (badgeMessages.length) {
+    messageLines.push('', ...badgeMessages)
   }
 
   process.stdout.write(successBox(messageLines.join('\n'), titleLines.join('\n')))

@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import { parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
+import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
 import * as WebpackConfigs from './config'
@@ -244,6 +244,6 @@ export class WebpackBundler {
   }
 
   forGenerate () {
-    this.buildContext.isStatic = true
+    this.buildContext.target = TARGETS.static
   }
 }

@@ -171,11 +171,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": undefined,
+      "dir": "static",
+      "version": undefined,
+      "versionBase": undefined,
+    },
     "subFolders": true,
   },
   "globalName": undefined,
@@ -310,6 +317,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -325,6 +333,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": undefined,
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -335,6 +344,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {
@@ -527,11 +537,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": undefined,
+      "dir": "static",
+      "version": undefined,
+      "versionBase": undefined,
+    },
     "subFolders": true,
   },
   "globalName": undefined,
@@ -666,6 +683,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -681,6 +699,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": undefined,
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -691,6 +710,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {
