@@ -2,6 +2,7 @@ import { promises as fs } from 'fs'
 import { join, extname, basename } from 'path'
 import connect from 'connect'
 import serveStatic from 'serve-static'
+import compression from 'compression'
 import { getNuxtConfig } from '@nuxt/config'
 import { TARGETS } from '@nuxt/utils'
 import { Listener } from '@nuxt/server'
@@ -37,6 +38,7 @@ export default {
       throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please run `nuxt export` before `nuxt serve`.')
     }
     const app = connect()
+    app.use(compression({ threshold: 0 }))
     app.use(
       serveStatic(options.generate.dir, {
         extensions: ['html']
