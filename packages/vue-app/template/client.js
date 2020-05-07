@@ -803,8 +803,10 @@ async function mountApp (__app) {
   <% if (isFullStatic) { %>
   // -- full static --
   // Load page chunk
-  const payload = await _app.fetchPayload(_app.context.route.path)
-  Object.assign(NUXT, payload)
+  try {
+    const payload = await _app.fetchPayload(_app.context.route.path)
+    Object.assign(NUXT, payload)
+  } catch (err) {}
   <% } %>
 
   <% if (features.layouts && mode !== 'spa') { %>
