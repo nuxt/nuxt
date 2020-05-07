@@ -199,8 +199,8 @@ Object {
     "staticAssets": Object {
       "base": "/_nuxt/static",
       "dir": "static",
-      "version": "1588859366",
-      "versionBase": "/_nuxt/static/1588859366",
+      "version": "x",
+      "versionBase": "/_nuxt/static/x",
     },
     "subFolders": true,
   },

@@ -180,7 +180,7 @@ Object {
     "staticAssets": Object {
       "base": undefined,
       "dir": "static",
-      "version": "1588859366",
+      "version": "1588859870",
       "versionBase": undefined,
     },
     "subFolders": true,
@@ -546,7 +546,7 @@ Object {
     "staticAssets": Object {
       "base": undefined,
       "dir": "static",
-      "version": "1588859366",
+      "version": "1588859870",
       "versionBase": undefined,
     },
     "subFolders": true,
