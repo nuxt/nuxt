@@ -196,6 +196,12 @@ Object {
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": "/_nuxt/static",
+      "dir": "static",
+      "version": "1588859366",
+      "versionBase": "/_nuxt/static/1588859366",
+    },
     "subFolders": true,
   },
   "globalName": "nuxt",
