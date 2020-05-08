@@ -56,7 +56,8 @@ export default {
   async run (cmd) {
     const config = await cmd.getNuxtConfig({
       dev: false,
-      _build: cmd.argv.build
+      _build: cmd.argv.build,
+      _generate: true
     })
 
     if (config.target === TARGETS.static) {

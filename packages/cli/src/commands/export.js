@@ -21,7 +21,7 @@ export default {
     const config = await cmd.getNuxtConfig({
       dev: false,
       target: TARGETS.static,
-      _build: cmd.argv.build
+      _export: true
     })
     const nuxt = await cmd.getNuxt(config)
 
