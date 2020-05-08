@@ -303,7 +303,7 @@ export default {
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
-      route = (route.replace(/\/$/, '') || '/').split('?')[0]
+      route = (route.replace(/\/+$/, '') || '/').split('?')[0]
       try {
         const src = urlJoin(window.__NUXT_STATIC__, route, 'payload.js')
         const payload = await window.__NUXT_IMPORT__(route, src)
