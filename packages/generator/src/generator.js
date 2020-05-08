@@ -68,8 +68,9 @@ export default class Generator {
     } else {
       const hasBuilt = await fsExtra.exists(this.srcBuiltPath)
       if (!hasBuilt) {
+        const fullStaticArgs = isFullStatic(this.options) ? ' --target static' : ''
         throw new Error(
-          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build --target static\` before calling \`nuxt export\``
+          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build${fullStaticArgs}\` before calling \`nuxt export\``
         )
       }
       const config = this.getBuildConfig()
