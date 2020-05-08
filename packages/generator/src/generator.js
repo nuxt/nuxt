@@ -73,7 +73,7 @@ export default class Generator {
         )
       }
       const config = this.getBuildConfig()
-      if (config.target !== TARGETS.static) {
+      if (!config || config.target !== TARGETS.static) {
         throw new Error(
           `In order to use \`nuxt export\`, you need to run \`nuxt build --target static\``
         )
@@ -128,7 +128,11 @@ export default class Generator {
   }
 
   getBuildConfig () {
-    return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+    try {
+      return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+    } catch (err) {
+      return null
+    }
   }
 
   getAppRoutes () {
