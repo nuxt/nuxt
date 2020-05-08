@@ -277,7 +277,7 @@ export default class Generator {
         parse(html).querySelectorAll('a').map((el) => {
           const href = (el.getAttribute('href') || '').split('?')[0].split('#')[0].trim()
 
-          if (href.startsWith('/') && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
+          if (href.startsWith('/') && !path.extname(href) && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
             this.generatedRoutes.add(href) // add the route to the tracked list
             this.routes.push({ route: href })
           }
