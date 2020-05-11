@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "consola": "^2.11.3",
+    "consola": "^2.12.1",
     "fs-extra": "^9.0.0",
     "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",
