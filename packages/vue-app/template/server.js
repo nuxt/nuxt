@@ -93,12 +93,6 @@ export default async (ssrContext) => {
   ssrContext.asyncData = {}
   <% } %>
 
-  <% if (isFullStatic && store) { %>
-  // Record store mutations for full-static
-  ssrContext.nuxt.mutations = []
-  const unsubscribe = store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
-  <% } %>
-
   const beforeRender = async () => {
     // Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
@@ -108,7 +102,7 @@ export default async (ssrContext) => {
       ssrContext.nuxt.state = store.state
       <% if (isFullStatic && store) { %>
       // Stop recording store mutations
-      unsubscribe()
+      ssrContext.unsetMutationObserver()
       <% } %>
     }
     <% } %>
@@ -183,6 +177,12 @@ export default async (ssrContext) => {
   if (ssrContext.nuxt.error) {
     return renderErrorPage()
   }
+  <% } %>
+
+  <% if (isFullStatic && store) { %>
+  // Record store mutations for full-static after nuxtServerInit and Middleware
+  ssrContext.nuxt.mutations =[]
+  ssrContext.unsetMutationObserver = store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
   <% } %>
 
   <% if (features.layouts) { %>
