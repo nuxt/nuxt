@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@nuxt/utils": "2.12.1",
-    "consola": "^2.11.3",
+    "consola": "^2.12.1",
     "defu": "^2.0.2",
     "esm": "^3.2.25",
     "std-env": "^2.2.1"
