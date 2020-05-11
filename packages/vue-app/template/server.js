@@ -96,7 +96,7 @@ export default async (ssrContext) => {
   <% if (isFullStatic && store) { %>
   // Record store mutations for full-static
   ssrContext.nuxt.mutations = []
-  store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
+  const unsubscribe = store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
   <% } %>
 
   const beforeRender = async () => {
@@ -106,6 +106,10 @@ export default async (ssrContext) => {
     ssrContext.rendered = () => {
       // Add the state from the vuex store
       ssrContext.nuxt.state = store.state
+      <% if (isFullStatic && store) { %>
+      // Stop recording store mutations
+      unsubscribe()
+      <% } %>
     }
     <% } %>
   }
