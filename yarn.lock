@@ -2033,7 +2033,7 @@
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
 
-"@sindresorhus/is@^2.1.0":
+"@sindresorhus/is@^2.1.1":
   version "2.1.1"
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-2.1.1.tgz#ceff6a28a5b4867c2dd4a1ba513de278ccbe8bb1"
   integrity sha512-/aPsuoj/1Dw/kzhkgz+ES6TxG0zfTMGLwuK2ZG00k/iJzYHTLCE8mVU8EPqEOp/lmxPoq1C1C9RYToRKb2KEfg==
@@ -2052,7 +2052,7 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@szmarczak/http-timer@^4.0.0":
+"@szmarczak/http-timer@^4.0.5":
   version "4.0.5"
   resolved "https://registry.npmjs.org/@szmarczak/http-timer/-/http-timer-4.0.5.tgz#bfbd50211e9dfa51ba07da58a14cdfd333205152"
   integrity sha512-PyRA9sm1Yayuj5OIoJ1hGt2YISX45w9WcFbh6ddT0Z/0yaFxOtGLInr4jUfU1EAFVs0Yfyfev4RNwBlUaHdlDQ==
@@ -2176,11 +2176,6 @@
   integrity sha512-MPtoySlAZQ37VoLaPcTHCu1RWJ4llDkULYZIzOYxlhxBqYPB0RsRlmMU0R6tahtFe27mIdkHV+551ZWV4PLmVw==
   dependencies:
     "@types/node" "*"
-
-"@types/mime-types@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/@types/mime-types/-/mime-types-2.1.0.tgz#9ca52cda363f699c69466c2a6ccdaad913ea7a73"
-  integrity sha1-nKUs2jY/aZxpRmwqbM2q2RPqenM=
 
 "@types/minimatch@*":
   version "3.0.3"
@@ -3479,10 +3474,10 @@ cache-loader@^4.1.0:
     neo-async "^2.6.1"
     schema-utils "^2.0.0"
 
-cacheable-lookup@^4.1.1:
-  version "4.2.3"
-  resolved "https://registry.npmjs.org/cacheable-lookup/-/cacheable-lookup-4.2.3.tgz#8d8a6021addb6b0d21711ba80797cdc636761cc3"
-  integrity sha512-NdruD8iCwUSqPeacly+fxbi71wjPuIbh9wsBhLdRmpXDFPgQtX+xWytveqDyFYQ1tDR5POAxH4jIkkoit3arXw==
+cacheable-lookup@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.npmjs.org/cacheable-lookup/-/cacheable-lookup-4.3.0.tgz#86ff1cb38f648cc6aba28feffe008f808b403550"
+  integrity sha512-PTUoCeIjj2awloqyVRUL33SjquU1Qv5xuDalYY8WAzd9NnUMUivZnGsOzVsMfg2YuMsWXaXkd/hjnsVoWc/3YA==
 
 cacheable-request@^7.0.1:
   version "7.0.1"
@@ -3581,10 +3576,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001039, caniuse-lite@^1.0.30001043, caniuse-lite@^1.0.30001053:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001039, caniuse-lite@^1.0.30001043:
   version "1.0.30001053"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001053.tgz#b7ae027567ce2665b965b0437e4512b296ccd20d"
   integrity sha512-HtV4wwIZl6GA4Oznse8aR274XUOYGZnQLcf/P8vHgmlfqSNelwD+id8CyHOceqLqt9yfKmo7DUZTh1EuS9pukg==
+
+caniuse-lite@^1.0.30001055:
+  version "1.0.30001055"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001055.tgz#7b52c3537f7a8c0408aca867e83d2b04268b54cd"
+  integrity sha512-MbwsBmKrBSKIWldfdIagO5OJWZclpJtS4h0Jrk/4HFrXJxTdVdH23Fd+xCiHriVGvYcWyW8mR/CPsYajlH8Iuw==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -4019,10 +4019,15 @@ connect@^3.7.0:
     parseurl "~1.3.3"
     utils-merge "1.0.1"
 
-consola@^2.10.0, consola@^2.10.1, consola@^2.11.3, consola@^2.6.0, consola@^2.9.0:
+consola@^2.10.0, consola@^2.10.1, consola@^2.6.0, consola@^2.9.0:
   version "2.11.3"
   resolved "https://registry.npmjs.org/consola/-/consola-2.11.3.tgz#f7315836224c143ac5094b47fd4c816c2cd1560e"
   integrity sha512-aoW0YIIAmeftGR8GSpw6CGQluNdkWMWh3yEFjH/hmynTYnMtibXszii3lxCXmk8YxJtI3FAK5aTiquA5VH68Gw==
+
+consola@^2.12.1:
+  version "2.12.1"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.12.1.tgz#88e9311a02cb88a7f6f9488239dd30b6ba99cbb0"
+  integrity sha512-aEkkju9ZcEa9y2MhzNhfmTUws/CEZZ0LKu0FxftSU3HygPfVMMIMSYyYct+xBN6XNRhsaDZjw2HAv3m2ammXSA==
 
 console-browserify@^1.1.0:
   version "1.2.0"
@@ -6155,20 +6160,20 @@ globule@^1.0.0:
     lodash "~4.17.12"
     minimatch "~3.0.2"
 
-got@^11.1.1:
-  version "11.1.1"
-  resolved "https://registry.npmjs.org/got/-/got-11.1.1.tgz#11f83049df8155b384413547fe163dd4b35b4240"
-  integrity sha512-7WxfuTyT02hMZZdDvaAprEoxsU13boxI8rWMpqk/5Mq6t+YVbExVB2L6yRLh2Nw3TeJyFpanId41+ZyXGesmbw==
+got@^11.1.3:
+  version "11.1.3"
+  resolved "https://registry.npmjs.org/got/-/got-11.1.3.tgz#bcb624c636f9c4da5a82a7d7c9017fcad6e2905a"
+  integrity sha512-JnGxEHZiy0ZArb/zhfu1Gxoksy9PjhQ4GAk6N4UArV/m1JdE7cGNVXbUDnrQk+nU7UPMDX+BHQAP0daMjsnTtQ==
   dependencies:
-    "@sindresorhus/is" "^2.1.0"
-    "@szmarczak/http-timer" "^4.0.0"
+    "@sindresorhus/is" "^2.1.1"
+    "@szmarczak/http-timer" "^4.0.5"
     "@types/cacheable-request" "^6.0.1"
     "@types/responselike" "^1.0.0"
-    cacheable-lookup "^4.1.1"
+    cacheable-lookup "^4.3.0"
     cacheable-request "^7.0.1"
     decompress-response "^5.0.0"
-    get-stream "^5.0.0"
-    http2-wrapper "^1.0.0-beta.4.4"
+    get-stream "^5.1.0"
+    http2-wrapper "^1.0.0-beta.4.5"
     lowercase-keys "^2.0.0"
     p-cancelable "^2.0.0"
     responselike "^2.0.0"
@@ -6498,10 +6503,10 @@ http-signature@~1.2.0:
     jsprim "^1.2.2"
     sshpk "^1.7.0"
 
-http2-wrapper@^1.0.0-beta.4.4:
-  version "1.0.0-beta.4.5"
-  resolved "https://registry.npmjs.org/http2-wrapper/-/http2-wrapper-1.0.0-beta.4.5.tgz#ac8e8f1cbf4aa79e3274c89e954d18697ab31e85"
-  integrity sha512-hRoAcIg26mAenbhZH4yQKpHzdbjHGM2a8JCtGJUIwFtqP82IeuMcmJwXHD6eFkILxDp0AyvaRMNrnV4aSaq9pg==
+http2-wrapper@^1.0.0-beta.4.5:
+  version "1.0.0-beta.4.6"
+  resolved "https://registry.npmjs.org/http2-wrapper/-/http2-wrapper-1.0.0-beta.4.6.tgz#9438f0fceb946c8cbd365076c228a4d3bd4d0143"
+  integrity sha512-9oB4BiGDTI1FmIBlOF9OJ5hwJvcBEmPCqk/hy314Uhy2uq5TjekUZM8w8SPLLlUEM+mxNhXdPAXfrJN2Zbb/GQ==
   dependencies:
     quick-lru "^5.0.0"
     resolve-alpn "^1.0.0"
@@ -8303,7 +8308,7 @@ mime-db@1.44.0, "mime-db@>= 1.43.0 < 2":
   resolved "https://registry.npmjs.org/mime-db/-/mime-db-1.44.0.tgz#fa11c5eb0aca1334b4233cb4d52f10c5a6272f92"
   integrity sha512-/NOTfLrsPBVeH7YtFPgsVWveuL+4SjjYxaQ1xtM1KMFj7HdxlBlxeyNLzhyJVx7r4rZGJAZ/6lkKCitSc/Nmpg==
 
-mime-types@^2.1.12, mime-types@^2.1.19, mime-types@^2.1.25, mime-types@~2.1.19, mime-types@~2.1.24:
+mime-types@^2.1.12, mime-types@^2.1.19, mime-types@~2.1.19, mime-types@~2.1.24:
   version "2.1.27"
   resolved "https://registry.npmjs.org/mime-types/-/mime-types-2.1.27.tgz#47949f98e279ea53119f5722e0f34e529bec009f"
   integrity sha512-JIhqnCasI9yD+SsmkquHBxTSEuZdQX5BuQnS2Vc7puQQQ+8yiP5AY5uWhpdv4YL4VM5c6iliiYWPgJ/nJQLp7w==
@@ -10345,17 +10350,15 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-3.0.3.tgz#bd24e93cc065c57091f3173d7f356116c4e3ae19"
-  integrity sha512-R4YGSrb4r4CSiJxw58IUYRENlPmCPEvI7oFJIDGx2ltHhuezxS7pLwo/whqw0e7NwvAB7+/wVONYVWMEjHf13A==
+puppeteer-core@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-3.0.4.tgz#2948b31c83a46500bdf4b6f1024180039e65fd09"
+  integrity sha512-DhsR97T84FguRBuWJbNXMIOzrO64a80CMFOoLyiQWX7MGu+ZlhcqAagZyvRDRYfSoyqYUiIqH0vgtfQkfRgQFg==
   dependencies:
-    "@types/mime-types" "^2.1.0"
     debug "^4.1.0"
     extract-zip "^2.0.0"
     https-proxy-agent "^4.0.0"
     mime "^2.0.3"
-    mime-types "^2.1.25"
     progress "^2.0.1"
     proxy-from-env "^1.0.0"
     rimraf "^3.0.2"
@@ -10931,10 +10934,10 @@ rollup-plugin-license@^2.0.0:
     spdx-expression-validate "2.0.0"
     spdx-satisfies "5.0.0"
 
-rollup@^2.8.2:
-  version "2.8.2"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.8.2.tgz#08427a8eb118e6e4ac8d80eba22774bc1d059c81"
-  integrity sha512-LRzMcB8V1M69pSvf6uCbR+W9OPCy5FuxcIwqioWg5RKidrrqKbzjJF9pEGXceaMVkbptNFZgIVJlUokCU0sfng==
+rollup@^2.9.1:
+  version "2.9.1"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-2.9.1.tgz#3038ba1378e2ee614b5c9385b8379d7bec4c69ea"
+  integrity sha512-kEZn76R0j+WD4AActu5Np4RShNlewTtJhdUaWNtHwHnAA8AOapyXgH6O7NL2RkcQLHnl49oz1xW1VrDcu5yP+Q==
   optionalDependencies:
     fsevents "~2.1.2"
 
