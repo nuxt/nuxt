@@ -25,19 +25,26 @@ export default class ModernModePlugin {
     }
   }
 
+  get assets () {
+    return assetsMap
+  }
+
   set assets ({ name, content }) {
     assetsMap[name] = content
     watcher.emit(name)
   }
 
   getAssets (name) {
-    return assetsMap[name] ||
-      new Promise((resolve) => {
-        watcher.once(name, () => {
-          return assetsMap[name] && resolve(assetsMap[name])
-        })
-        return assetsMap[name] && resolve(assetsMap[name])
+    const asset = this.assets[name]
+    if (!asset) {
+      return
+    }
+    return new Promise((resolve) => {
+      watcher.once(name, () => {
+        return asset && resolve(asset)
       })
+      return asset && resolve(asset)
+    })
   }
 
   applyLegacy (compiler) {
