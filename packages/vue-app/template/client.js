@@ -491,13 +491,9 @@ async function render (to, from, next) {
           if (this.isPreview) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
-            try {
-              const payload = await this.fetchPayload(to.path).then((payloadData) => payloadData.data[i])
-              promise = Promise.resolve(payload)
-            } catch (err) {
-              // fallback
-              promise = promisify(Component.options.asyncData, app.context)
-            }
+              promise = this.fetchPayload(to.path)
+                .then(payload => payload.data[i])
+                .catch(_err => promisify(Component.options.asyncData, app.context)) // Fallback
           }
         <% } else { %>
         const promise = promisify(Component.options.asyncData, app.context)
@@ -514,6 +510,13 @@ async function render (to, from, next) {
       }
       <% } %>
 
+      <% if (isFullStatic && store) { %>
+      // Replay store mutations
+      promises.push(this.fetchPayload(to.path).then(payload => {
+        payload.mutations.forEach(m => { this.$store.commit(m[0], m[1]) })
+      }))
+      <% } %>
+
       // Check disabled page loading
       this.$loading.manual = Component.options.loading === false
 
@@ -523,7 +526,7 @@ async function render (to, from, next) {
           // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
         }
-        <% } %>
+      <% } %>
       // Call fetch(context)
       if (hasFetch) {
         let p = Component.options.fetch(app.context)

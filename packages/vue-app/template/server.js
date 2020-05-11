@@ -93,6 +93,12 @@ export default async (ssrContext) => {
   ssrContext.asyncData = {}
   <% } %>
 
+  <% if (isFullStatic && store) { %>
+  // Record store mutations for full-static
+  ssrContext.nuxt.mutations = []
+  store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
+  <% } %>
+
   const beforeRender = async () => {
     // Call beforeNuxtRender() methods
     await Promise.all(ssrContext.beforeRenderFns.map(fn => promisify(fn, { Components, nuxtState: ssrContext.nuxt })))
