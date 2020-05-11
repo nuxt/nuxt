@@ -1,3 +1,4 @@
+import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
 
@@ -53,13 +54,25 @@ export default {
     }
   },
   async run (cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false, _generate: true, _build: cmd.argv.build })
+    const config = await cmd.getNuxtConfig({
+      dev: false,
+      _build: cmd.argv.build,
+      _generate: true
+    })
+
+    if (config.target === TARGETS.static) {
+      throw new Error("Please use `nuxt export` when using `target: 'static'`")
+    }
+
+    // Forcing static target anyway
+    config.target = TARGETS.static
 
     // Disable analyze if set by the nuxt config
-    if (!config.build) {
-      config.build = {}
-    }
+    config.build = config.build || {}
     config.build.analyze = false
+
+    // Set flag to keep the prerendering behaviour
+    config._legacyGenerate = true
 
     const nuxt = await cmd.getNuxt(config)
 
@@ -82,12 +95,14 @@ export default {
     }
 
     const generator = await cmd.getGenerator(nuxt)
+    await nuxt.server.listen()
 
     const { errors } = await generator.generate({
       init: true,
       build: cmd.argv.build
     })
 
+    await nuxt.close()
     if (cmd.argv['fail-on-error'] && errors.length > 0) {
       throw new Error('Error generating pages, exiting with non-zero code')
     }

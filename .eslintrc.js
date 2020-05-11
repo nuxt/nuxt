@@ -10,16 +10,16 @@ module.exports = {
   extends: [
     '@nuxtjs'
   ],
-  "globals": {
-    "BigInt": true
+  globals: {
+    BigInt: true
   },
   rules: {
     'no-console': 'error',
     'no-debugger': 'error',
-    quotes: ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }]
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }]
   },
   overrides: [{
-    files: [ 'test/fixtures/*/.nuxt*/**' ],
+    files: ['test/fixtures/*/.nuxt*/**'],
     rules: {
       'vue/name-property-casing': 'error'
     }
@@ -31,40 +31,40 @@ module.exports = {
       'examples/with-vue-material/**',
       'examples/with-vuetify/**',
       'examples/with-vuikit/**',
-      'examples/with-vux/**',
+      'examples/with-vux/**'
     ],
     rules: {
       'vue/component-name-in-template-casing': ['warn', 'kebab-case']
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/+(App|index|server|client|nuxt).js' ],
+    files: ['test/fixtures/*/.nuxt*/**/+(App|index|server|client|nuxt).js'],
     rules: {
       'import/order': 'off'
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/client.js' ],
+    files: ['test/fixtures/*/.nuxt*/**/client.js'],
     rules: {
       'no-console': ['error', { allow: ['error'] }]
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/router.js' ],
+    files: ['test/fixtures/*/.nuxt*/**/router.js'],
     rules: {
       'no-console': ['error', { allow: ['warn'] }]
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/*.html' ],
+    files: ['test/fixtures/*/.nuxt*/**/*.html'],
     rules: {
-      'semi': ['error', 'always', { 'omitLastInOneLineBlock': true }],
+      semi: ['error', 'always', { omitLastInOneLineBlock: true }],
       'no-var': 'off'
     }
   }, {
-    files: [ 'test/fixtures/*/.nuxt*/**/nuxt-error.vue' ],
+    files: ['test/fixtures/*/.nuxt*/**/nuxt-error.vue'],
     rules: {
       'vue/singleline-html-element-content-newline': 'off'
     }
   }, {
     // might be removed in the future, see https://github.com/standard/eslint-plugin-standard/issues/27
-    files: [ 'test/fixtures/*/.nuxt*/**/nuxt-link.client.js' ],
+    files: ['test/fixtures/*/.nuxt*/**/nuxt-link.client.js'],
     rules: {
       'standard/no-callback-literal': 'off'
     }

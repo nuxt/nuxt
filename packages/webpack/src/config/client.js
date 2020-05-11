@@ -129,8 +129,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         filename: '../server/index.spa.html',
         template: appTemplatePath,
         minify: buildOptions.html.minify,
-        inject: true,
-        chunksSortMode: 'dependency'
+        inject: true
       }),
       new VueSSRClientPlugin({
         filename: `../server/${this.name}.manifest.json`

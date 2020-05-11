@@ -1,3 +1,5 @@
+import consola from 'consola'
+import { MODES, TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
 
@@ -62,7 +64,7 @@ export default {
   },
   async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
-    config.server = config.mode === 'spa' && cmd.argv.generate !== false
+    config.server = (config.mode === MODES.spa || config.ssr === false) && cmd.argv.generate !== false
     const nuxt = await cmd.getNuxt(config)
 
     if (cmd.argv.lock) {
@@ -73,7 +75,8 @@ export default {
       }))
     }
 
-    if (nuxt.options.mode === 'spa' && cmd.argv.generate !== false) {
+    // TODO: remove if in Nuxt 3
+    if (nuxt.options.mode === MODES.spa && nuxt.options.target === TARGETS.server && cmd.argv.generate !== false) {
       // Build + Generate for static deployment
       const generator = await cmd.getGenerator(nuxt)
       await generator.generate({ build: true })
@@ -81,6 +84,9 @@ export default {
       // Build only
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()
+
+      const nextCommand = nuxt.options.target === TARGETS.static ? 'nuxt export' : 'nuxt start'
+      consola.info('Ready to run `' + (nextCommand) + '`')
     }
   }
 }

@@ -320,13 +320,11 @@ export default class Server {
   renderAndGetWindow (url, opts = {}, {
     loadingTimeout = 2000,
     loadedCallback = this.globals.loadedCallback,
-    ssr = this.options.render.ssr,
     globals = this.globals
   } = {}) {
     return renderAndGetWindow(url, opts, {
       loadingTimeout,
       loadedCallback,
-      ssr,
       globals
     })
   }
