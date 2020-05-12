@@ -35,13 +35,13 @@ describe('modern server mode', () => {
 
   test('should include es6 syntax in modern resources', async () => {
     const { body: response } = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
-    expect(response).toContain(')=>')
+    expect(response).toMatch(/\)\s*=>/)
   })
 
   // TODO: Currently arrow syntax is not transpiled for any build
   test.skip('should not include es6 syntax in normal resources', async () => {
     const { body: response } = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
-    expect(response).not.toContain(')=>')
+    expect(response).not.toMatch(/\)\s*=>/)
   })
 
   test('should contain legacy http2 pushed resources', async () => {
