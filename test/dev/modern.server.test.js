@@ -35,12 +35,12 @@ describe('modern server mode', () => {
 
   test('should include es6 syntax in modern resources', async () => {
     const { body: response } = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
-    expect(response).toContain('arrow: () => {')
+    expect(response).toContain('()=>')
   })
 
   test('should not include es6 syntax in normal resources', async () => {
     const { body: response } = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
-    expect(response).toContain('arrow: function arrow() {')
+    expect(response).not.toContain('()=>')
   })
 
   test('should contain legacy http2 pushed resources', async () => {
