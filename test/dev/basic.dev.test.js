@@ -22,9 +22,7 @@ describe('basic dev', () => {
       buildDir: '.nuxt-dev',
       build: {
         filenames: {
-          app: ({ isDev }) => {
-            return isDev ? 'test-app.js' : 'test-app.[contenthash].js'
-          },
+          app: ({ isDev }) => isDev ? 'test-[name].js' : 'test-[name].[contenthash].js',
           chunk: 'test-[name].[contenthash].js'
         },
         transpile: [
@@ -91,7 +89,7 @@ describe('basic dev', () => {
   })
 
   test('Config: build.filenames', () => {
-    expect(output.filename).toBe('test-app.js')
+    expect(output.filename).toBe('test-[name].js')
     expect(output.chunkFilename).toBe('test-[name].[contenthash].js')
     expect(consola.warn).toBeCalledWith(
       'Notice: Please do not use contenthash in dev mode to prevent memory leak'
