@@ -122,11 +122,13 @@ export class WebpackBundler {
 
     // --- Dev Build ---
     if (options.dev) {
-      // Client Build, watch is started by dev-middleware
+      // Client buiild
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
-          compiler.hooks.done.tap('nuxt-dev', () => resolve())
-          return this.webpackDev(compiler)
+          compiler.hooks.done.tap('nuxt-dev', () => { resolve() })
+          compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
+          // Start watch
+          this.webpackDev(compiler)
         })
       }
 
