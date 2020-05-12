@@ -40,7 +40,7 @@ export default class Generator {
     consola.debug('Preparing routes for generate...')
     const routes = await this.initRoutes()
 
-    consola.info('Generating pages')
+    consola.info(`Generating pages in ${this.options.render.ssr ? 'SSR' : 'SPA'} mode`)
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()

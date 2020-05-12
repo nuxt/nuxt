@@ -53,7 +53,6 @@ describe('generator: generate routes', () => {
     expect(generator.initiate).toBeCalledWith({ build: true, init: true })
     expect(generator.initRoutes).toBeCalledTimes(1)
     expect(consola.info).toBeCalledTimes(1)
-    expect(consola.info).toBeCalledWith('Generating pages')
     expect(generator.generateRoutes).toBeCalledTimes(1)
     expect(generator.generateRoutes).toBeCalledWith(routes)
     expect(generator.afterGenerate).toBeCalledTimes(1)
@@ -216,5 +215,37 @@ grey:bar failed`)
     expect(path.join).not.toBeCalled()
     expect(fsExtra.exists).not.toBeCalled()
     expect(fsExtra.writeFile).not.toBeCalled()
+  })
+
+  describe('log render mode', () => {
+    let generator
+    let nuxt
+
+    beforeEach(() => {
+      nuxt = createNuxt()
+      const builder = jest.fn()
+      generator = new Generator(nuxt, builder)
+
+      const routes = ['routes']
+      const errors = ['errors']
+      generator.initiate = jest.fn()
+      generator.initRoutes = jest.fn(() => routes)
+      generator.generateRoutes = jest.fn(() => errors)
+      generator.afterGenerate = jest.fn()
+    })
+
+    test('should log in SPA mode by default', async () => {
+      await generator.generate()
+
+      expect(consola.info).toBeCalledWith('Generating pages in SPA mode')
+    })
+
+    test('should log in SSR mode', async () => {
+      nuxt.options.render = { ssr: true }
+
+      await generator.generate()
+
+      expect(consola.info).toBeCalledWith('Generating pages in SSR mode')
+    })
   })
 })
