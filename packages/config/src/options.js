@@ -452,6 +452,7 @@ export function getNuxtConfig (_options) {
   if (options.build.extractCSS && !options.build._extractCSS) {
     consola.warn('`build.extractCSS` is currently not supported with this version.')
     options.build.extractCSS = false
+  }
 
   // Generate staticAssets
   const { staticAssets } = options.generate
@@ -464,7 +465,6 @@ export function getNuxtConfig (_options) {
   }
   if (!staticAssets.versionBase) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
-
   }
 
   return options

@@ -1,6 +1,5 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 
-
 export default class CorsPlugin {
   constructor ({ crossorigin }) {
     this.crossorigin = crossorigin
@@ -18,8 +17,8 @@ export default class CorsPlugin {
             if (tag.attributes) {
               tag.attributes.crossorigin = this.crossorigin
             }
-          })
-        }
+          }
+        })
         return data
       })
     })
