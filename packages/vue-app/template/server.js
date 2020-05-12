@@ -37,9 +37,9 @@ function urlJoin () {
 }
 
 const createNext = ssrContext => (opts) => {
+  // If static target, render on client-side
   ssrContext.redirected = opts
-  // If nuxt generate
-  if (!ssrContext.res) {
+  if (ssrContext.target === 'static' || !ssrContext.res) {
     ssrContext.nuxt.serverRendered = false
     return
   }
@@ -71,8 +71,13 @@ export default async (ssrContext) => {
   ssrContext.next = createNext(ssrContext)
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
-  // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
+  // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
   ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
+  // Remove query from url is static target
+  if (process.static && ssrContext.url) {
+    ssrContext.url = ssrContext.url.split('?')[0]
+  }
+
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
   const _app = new Vue(app)
@@ -100,6 +105,10 @@ export default async (ssrContext) => {
   }
 
   const renderErrorPage = async () => {
+    // Don't server-render the page in static target
+    if (ssrContext.target === 'static') {
+      ssrContext.nuxt.serverRendered = false
+    }
     <% if (features.layouts) { %>
     // Load layout for error page
     const layout = (NuxtError.options || NuxtError).layout
@@ -245,10 +254,6 @@ export default async (ssrContext) => {
 
   // ...If .validate() returned false
   if (!isValid) {
-    // Don't server-render the page in generate mode
-    if (ssrContext._generate) {
-      ssrContext.nuxt.serverRendered = false
-    }
     // Render a 404 error page
     return render404Page()
   }

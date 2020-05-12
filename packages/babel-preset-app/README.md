@@ -47,6 +47,7 @@ Below is a list of all available `options` parameters:
 
 ### Options
 
+* **bugfixes** - [`@babel/preset-env`](https://babeljs.io/docs/en/babel-preset-env#bugfixes)
 * **configPath** - [`@babel/preset-env` parameter](https://babeljs.io/docs/en/babel-preset-env#configpath)
 * **forceAllTransforms** - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#forcealltransforms)' parameter
 * **debug**, default  `false` - '[@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env#debug)' parameter

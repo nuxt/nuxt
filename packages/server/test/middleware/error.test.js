@@ -49,6 +49,7 @@ describe('server: errorMiddleware', () => {
     const params = createParams()
     const errorMiddleware = createErrorMiddleware(params)
     const error = new Error()
+    error.headers = { 'Custom-Header': 'test' }
     const ctx = createServerContext()
 
     await errorMiddleware(error, ctx.req, ctx.res, ctx.next)
@@ -56,10 +57,11 @@ describe('server: errorMiddleware', () => {
     expect(consola.error).toBeCalledWith(error)
     expect(ctx.res.statusCode).toEqual(500)
     expect(ctx.res.statusMessage).toEqual('NuxtServerError')
-    expect(ctx.res.setHeader).toBeCalledTimes(3)
+    expect(ctx.res.setHeader).toBeCalledTimes(4)
     expect(ctx.res.setHeader).nthCalledWith(1, 'Content-Type', 'text/html; charset=utf-8')
     expect(ctx.res.setHeader).nthCalledWith(2, 'Content-Length', Buffer.byteLength('error template'))
     expect(ctx.res.setHeader).nthCalledWith(3, 'Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+    expect(ctx.res.setHeader).nthCalledWith(4, 'Custom-Header', 'test')
     expect(params.resources.errorTemplate).toBeCalledTimes(1)
     expect(params.resources.errorTemplate).toBeCalledWith({
       status: 500,

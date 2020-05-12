@@ -1,4 +1,5 @@
-import HTMLPlugin from 'html-webpack-plugin'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+
 
 export default class CorsPlugin {
   constructor ({ crossorigin }) {
@@ -8,13 +9,14 @@ export default class CorsPlugin {
   apply (compiler) {
     const ID = 'vue-cors-plugin'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HTMLPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data) => {
-        if (this.crossorigin != null) {
-          [...data.headTags, ...data.bodyTags].forEach((tag) => {
-            if (['script', 'link'].includes(tag.tagName)) {
-              if (tag.attributes) {
-                tag.attributes.crossorigin = this.crossorigin
-              }
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data) => {
+        if (!this.crossorigin) {
+          return
+        }
+        [...data.headTags, ...data.bodyTags].forEach((tag) => {
+          if (['script', 'link'].includes(tag.tagName)) {
+            if (tag.attributes) {
+              tag.attributes.crossorigin = this.crossorigin
             }
           })
         }

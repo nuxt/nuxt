@@ -174,6 +174,10 @@ async function createApp (ssrContext) {
     key = '$' + key
     // Add into app
     app[key] = value
+    // Add into context
+    if (!app.context[key]) {
+      app.context[key] = value
+    }
     <% if (store) { %>
     // Add into store
     store[key] = app[key]
@@ -206,6 +210,13 @@ async function createApp (ssrContext) {
   }
   <% } %>
 
+  // Add enablePreview(previewData = {}) in context for plugins
+  if (process.static && process.client) {
+    app.context.enablePreview = function (previewData = {}) {
+      app.previewData = Object.assign({}, previewData)
+      inject('preview', previewData)
+    }
+  }
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.forEach((plugin) => { %>
@@ -224,6 +235,12 @@ async function createApp (ssrContext) {
   <% } %>
   <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
+  // Lock enablePreview in context
+  if (process.static && process.client) {
+    app.context.enablePreview = function () {
+      console.warn('You cannot call enablePreview() outside a plugin.')
+    }
+  }
 
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {

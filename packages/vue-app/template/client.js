@@ -19,6 +19,7 @@ import {
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
+<% if (isFullStatic) { %>import './jsonp'<% } %>
 
 <% if (features.fetch) { %>
 // Fetch mixin
@@ -48,8 +49,8 @@ Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-d
 <% if (nuxtOptions.render.ssrLog) { %>
 const logs = NUXT.logs || []
   if (logs.length > 0) {
-  const ssrLogSyle = 'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
-  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ('%cNuxt SSR', ssrLogSyle)
+  const ssrLogStyle = 'background: #2E495E;border-radius: 0.5em;color: white;font-weight: bold;padding: 2px 0.5em;'
+  console.group && console.group<%= nuxtOptions.render.ssrLog === 'collapsed' ? 'Collapsed' : '' %> ('%cNuxt SSR', ssrLogStyle)
   logs.forEach(logObj => (console[logObj.type] || console.log)(...logObj.args))
   delete NUXT.logs
   console.groupEnd && console.groupEnd()
@@ -136,7 +137,7 @@ function mapTransitions (toComponents, to, from) {
   return mergedTransitions
 }
 <% } %>
-<% if (loading) { %>async <% } %>function loadAsyncComponents (to, from, next) {
+async function loadAsyncComponents (to, from, next) {
   // Check if route changed (this._routeChanged), only if the page is not an error (for validate())
   this._routeChanged = Boolean(app.nuxt.err) || from.name !== to.name
   this._paramChanged = !this._routeChanged && from.path !== to.path
@@ -150,7 +151,6 @@ function mapTransitions (toComponents, to, from) {
   <% } %>
 
   try {
-    <% if (loading) { %>
     if (this._queryChanged) {
       const Components = await resolveRouteComponents(
         to,
@@ -170,11 +170,12 @@ function mapTransitions (toComponents, to, from) {
         }
         return false
       })
+      <% if (loading) { %>
       if (startLoader && this.$loading.start && !this.$loading.manual) {
         this.$loading.start()
       }
+      <% } %>
     }
-    <% } %>
     // Call next()
     next()
   } catch (error) {
@@ -429,7 +430,7 @@ async function render (to, from, next) {
     <% if (features.asyncData || features.fetch) { %>
     let instances
     // Call asyncData & fetch hooks on components matched by the route.
-    await Promise.all(Components.map((Component, i) => {
+    await Promise.all(Components.map(async (Component, i) => {
       // Check if only children route changed
       Component._path = compile(to.matched[matches[i]].path)(to.params)
       Component._dataRefresh = false
@@ -484,15 +485,31 @@ async function render (to, from, next) {
       <% if (features.asyncData) { %>
       // Call asyncData(context)
       if (hasAsyncData) {
-        const promise = promisify(Component.options.asyncData, app.context)
-          .then((asyncDataResult) => {
-            applyAsyncData(Component, asyncDataResult)
-            <% if (loading) { %>
-            if (this.$loading.increase) {
-              this.$loading.increase(loadingIncrease)
+        <% if (isFullStatic) { %>
+          let promise
+
+          if (this.isPreview) {
+            promise = promisify(Component.options.asyncData, app.context)
+          } else {
+            try {
+              const payload = await this.fetchPayload(to.path).then((payloadData) => payloadData.data[i])
+              promise = Promise.resolve(payload)
+            } catch (err) {
+              // fallback
+              promise = promisify(Component.options.asyncData, app.context)
             }
-            <% } %>
-          })
+          }
+        <% } else { %>
+        const promise = promisify(Component.options.asyncData, app.context)
+        <% } %>
+        promise.then((asyncDataResult) => {
+          applyAsyncData(Component, asyncDataResult)
+          <% if (loading) { %>
+          if (this.$loading.increase) {
+            this.$loading.increase(loadingIncrease)
+          }
+          <% } %>
+        })
         promises.push(promise)
       }
       <% } %>
@@ -501,6 +518,12 @@ async function render (to, from, next) {
       this.$loading.manual = Component.options.loading === false
 
       <% if (features.fetch) { %>
+        <% if (isFullStatic) { %>
+        if (!this.isPreview) {
+          // Catching the error here for letting the SPA fallback and normal fetch behaviour
+          promises.push(this.fetchPayload(to.path).catch(err => null))
+        }
+        <% } %>
       // Call fetch(context)
       if (hasFetch) {
         let p = Component.options.fetch(app.context)
@@ -768,7 +791,7 @@ function addHotReload ($component, depth) {
 }
 <% } %>
 
-<% if (features.layouts || features.transitions) { %>async <% } %>function mountApp (__app) {
+async function mountApp (__app) {
   // Set global variables
   app = __app.app
   router = __app.router
@@ -776,6 +799,16 @@ function addHotReload ($component, depth) {
 
   // Create Vue instance
   const _app = new Vue(app)
+
+  <% if (isFullStatic) { %>
+  // Load page chunk
+  if (!NUXT.data && !NUXT.spa) {
+    try {
+      const payload = await _app.fetchPayload(_app.context.route.path)
+      Object.assign(NUXT, payload)
+    } catch (err) {}
+  }
+  <% } %>
 
   <% if (features.layouts && mode !== 'spa') { %>
   // Load layout
@@ -825,6 +858,10 @@ function addHotReload ($component, depth) {
   router.beforeEach(loadAsyncComponents.bind(_app))
   router.beforeEach(render.bind(_app))
 
+  // Fix in static: remove trailing slash to force hydration
+  if (process.static && NUXT.serverRendered && NUXT.routePath !== '/' && NUXT.routePath.slice(-1) !== '/' && _app.context.route.path.slice(-1) === '/') {
+    _app.context.route.path = _app.context.route.path.replace(/\/+$/, '')
+  }
   // If page already is server rendered and it was done on the same route path as client side render
   if (NUXT.serverRendered && NUXT.routePath === _app.context.route.path) {
     mount()
@@ -839,6 +876,8 @@ function addHotReload ($component, depth) {
     mount()
   }
 
+  // fix: force next tick to avoid having same timestamp when an error happen on spa fallback
+  await new Promise(resolve => setTimeout(resolve, 0))
   render.call(_app, router.currentRoute, router.currentRoute, (path) => {
     // If not redirected
     if (!path) {

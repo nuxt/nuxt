@@ -7,7 +7,6 @@ export default async function renderAndGetWindow (
   {
     loadedCallback,
     loadingTimeout = 2000,
-    ssr,
     globals
   } = {}
 ) {
@@ -49,9 +48,7 @@ export default async function renderAndGetWindow (
   const { window } = await jsdom.JSDOM.fromURL(url, options)
 
   // If Nuxt could not be loaded (error from the server-side)
-  const nuxtExists = window.document.body.innerHTML.includes(
-    ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
-  )
+  const nuxtExists = window.document.body.innerHTML.includes(`id="${globals.id}"`)
 
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')

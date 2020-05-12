@@ -4,16 +4,17 @@
 */
 
 import EventEmitter from 'events'
-import HTMLPlugin from 'html-webpack-plugin'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
 import { safariNoModuleFix } from '@nuxt/utils'
 
 const assetsMap = {}
 const watcher = new EventEmitter()
 
 export default class ModernModePlugin {
-  constructor ({ targetDir, isModernBuild }) {
+  constructor ({ targetDir, isModernBuild, noUnsafeInline }) {
     this.targetDir = targetDir
     this.isModernBuild = isModernBuild
+    this.noUnsafeInline = noUnsafeInline
   }
 
   apply (compiler) {
@@ -24,19 +25,26 @@ export default class ModernModePlugin {
     }
   }
 
+  get assets () {
+    return assetsMap
+  }
+
   set assets ({ name, content }) {
     assetsMap[name] = content
     watcher.emit(name)
   }
 
   getAssets (name) {
-    return assetsMap[name] ||
-      new Promise((resolve) => {
-        watcher.once(name, () => {
-          return assetsMap[name] && resolve(assetsMap[name])
-        })
-        return assetsMap[name] && resolve(assetsMap[name])
+    const asset = this.assets[name]
+    if (!asset) {
+      return
+    }
+    return new Promise((resolve) => {
+      watcher.once(name, () => {
+        return asset && resolve(asset)
       })
+      return asset && resolve(asset)
+    })
   }
 
   applyLegacy (compiler) {
@@ -79,16 +87,38 @@ export default class ModernModePlugin {
         const legacyAssets = (await this.getAssets(fileName))
           .filter(a => a.tagName === 'script' && a.attributes)
 
-        // inject Safari 10 nomodule fix
-        data.bodyTags.push({
-          tagName: 'script',
-          closeTag: true,
-          innerHTML: safariNoModuleFix
-        })
-
         for (const a of legacyAssets) {
           a.attributes.nomodule = true
           data.bodyTags.push(a)
+        }
+
+        if (this.noUnsafeInline) {
+          // inject the fix as an external script
+          const safariFixFilename = 'safari-nomodule-fix.js'
+          const safariFixPath = legacyAssets[0].attributes.src
+            .split('/')
+            .slice(0, -1)
+            .concat([safariFixFilename])
+            .join('/')
+
+          compilation.assets[safariFixFilename] = {
+            source: () => Buffer.from(safariNoModuleFix),
+            size: () => Buffer.byteLength(safariNoModuleFix)
+          }
+          data.bodyTags.push({
+            tagName: 'script',
+            closeTag: true,
+            attributes: {
+              src: safariFixPath
+            }
+          })
+        } else {
+          // inject Safari 10 nomodule fix
+          data.bodyTags.push({
+            tagName: 'script',
+            closeTag: true,
+            innerHTML: safariNoModuleFix
+          })
         }
 
         delete assetsMap[fileName]

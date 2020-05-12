@@ -10,7 +10,7 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -49,6 +49,10 @@ export default class WebpackBaseConfig {
 
   get mode () {
     return this.dev ? 'development' : 'production'
+  }
+
+  get target () {
+    return this.buildContext.target
   }
 
   get dev () {
@@ -102,7 +106,7 @@ export default class WebpackBaseConfig {
       envName
     }
 
-    if (options.configFile !== false) {
+    if (options.configFile || options.babelrc) {
       return options
     }
 
@@ -118,7 +122,7 @@ export default class WebpackBaseConfig {
       )
     }
 
-    if (!options.babelrc && !options.presets) {
+    if (!options.presets) {
       options.presets = [defaultPreset]
     }
 
@@ -144,7 +148,9 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
-      'process.static': this.buildContext.isStatic
+      'process.dev': this.dev,
+      'process.static': this.target === TARGETS.static,
+      'process.target': JSON.stringify(this.target)
     }
     if (this.buildContext.buildOptions.aggressiveCodeRemoval) {
       env['typeof process'] = JSON.stringify(this.isServer ? 'object' : 'undefined')
@@ -291,7 +297,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.jsx?$/i,
+        test: /\.m?jsx?$/i,
         exclude: (file) => {
           file = file.split('node_modules', 2)[1]
 

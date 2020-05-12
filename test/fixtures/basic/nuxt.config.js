@@ -81,6 +81,9 @@ export default {
     scopeHoisting: true,
     publicPath: '',
     followSymlinks: true,
+    splitChunks: {
+      layouts: true
+    },
     postcss: {
       preset: {
         features: {

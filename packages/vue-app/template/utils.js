@@ -80,7 +80,7 @@ export function sanitizeComponent (Component) {
     Component._Ctor = Component
     Component.extendOptions = Component.options
   }
-  // For debugging purpose
+  // If no component name defined, set file path as name, (also fixes #5703)
   if (!Component.options.name && Component.options.__file) {
     Component.options.name = Component.options.__file
   }
@@ -156,10 +156,10 @@ export async function setContext (app, context) {
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
-    if (context.req) {
+    if (!process.static && context.req) {
       app.context.req = context.req
     }
-    if (context.res) {
+    if (!process.static && context.res) {
       app.context.res = context.res
     }
     if (context.ssrContext) {
@@ -638,5 +638,15 @@ export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
   }
-  vm.$options[hook].push(fn)
+  if (!vm.$options[hook].includes(fn)) {
+    vm.$options[hook].push(fn)
+  }
+}
+
+export const urlJoin = function urlJoin () {
+  return [].slice
+    .call(arguments)
+    .join('/')
+    .replace(/\/+/g, '/')
+    .replace(':/', '://')
 }

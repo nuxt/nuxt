@@ -25,7 +25,7 @@ describe('config: options', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
     jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
-    expect(getNuxtConfig({})).toMatchSnapshot()
+    expect(getNuxtConfig({ generate: { staticAssets: { version: 'x' } } })).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
@@ -122,6 +122,17 @@ describe('config: options', () => {
       reportOnly: false,
       test: true
     })
+  })
+
+  test('should fallback to server target', () => {
+    const { target } = getNuxtConfig({ target: 0 })
+    expect(target).toEqual('server')
+  })
+
+  test('should check unknown target', () => {
+    const { target } = getNuxtConfig({ target: 'test' })
+    expect(consola.warn).toHaveBeenCalledWith('Unknown target: test. Falling back to server')
+    expect(target).toEqual('server')
   })
 
   test('should check unknown mode', () => {
@@ -276,6 +287,11 @@ describe('config: options', () => {
     test('should deprecate build.extractCSS.allChunks', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
+    })
+
+    test('should deprecate build.crossorigin', () => {
+      getNuxtConfig({ build: { crossorigin: 'use-credentials' } })
+      expect(consola.warn).toHaveBeenCalledWith('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
     })
   })
 })

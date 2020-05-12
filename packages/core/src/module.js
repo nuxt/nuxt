@@ -45,11 +45,10 @@ export default class ModuleContainer {
       throw new Error('Template src not found: ' + src)
     }
 
-    // Generate unique and human readable dst filename
-    const dst =
-      template.fileName ||
-      path.basename(srcPath.dir) + `.${srcPath.name}.${hash(src)}` + srcPath.ext
-
+    // Mostly for DX, some people prefers `filename` vs `fileName`
+    const fileName = template.fileName || template.filename
+    // Generate unique and human readable dst filename if not provided
+    const dst = fileName || `${path.basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
     // Add to templates list
     const templateObj = {
       src,
@@ -58,6 +57,7 @@ export default class ModuleContainer {
     }
 
     this.options.build.templates.push(templateObj)
+
     return templateObj
   }
 
@@ -164,7 +164,7 @@ export default class ModuleContainer {
           throw new Error(message)
         } else {
           // TODO: Remove in next major version
-          message += ' Silently ignoring module as programatic usage detected.'
+          message += ' Silently ignoring module as programmatic usage detected.'
           consola.warn(message)
           return
         }

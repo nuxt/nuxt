@@ -61,7 +61,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
   },
   Object {
     \\"exclude\\": [Function exclude],
-    \\"test\\": /\\\\.jsx?$/i,
+    \\"test\\": /\\\\.m?jsx?$/i,
     \\"use\\": Array [
       Object {
         \\"loader\\": \\"thread-loader\\",
@@ -727,7 +727,7 @@ exports[`webpack nuxt webpack module.rules loader=vue- 1`] = `
 exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
 "Object {
   \\"exclude\\": [Function exclude],
-  \\"test\\": /\\\\.jsx?$/i,
+  \\"test\\": /\\\\.m?jsx?$/i,
   \\"use\\": Array [
     Object {
       \\"loader\\": \\"thread-loader\\",

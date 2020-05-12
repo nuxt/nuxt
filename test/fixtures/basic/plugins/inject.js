@@ -9,7 +9,8 @@ export default ({ route, params }, inject) => {
     null: null,
     false: false,
     0: 0,
-    empty: ''
+    empty: '',
+    foo: 'bar'
   }
   const value = map[injectValue]
   inject(key, value)

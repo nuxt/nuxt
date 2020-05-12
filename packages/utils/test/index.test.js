@@ -9,6 +9,7 @@ import * as task from '../src/task'
 import * as timer from '../src/timer'
 import * as cjs from '../src/cjs'
 import * as modern from '../src/modern'
+import * as constants from '../src/constants'
 
 describe('util: entry', () => {
   test('should export all methods from utils folder', () => {
@@ -22,7 +23,8 @@ describe('util: entry', () => {
       ...task,
       ...timer,
       ...cjs,
-      ...modern
+      ...modern,
+      ...constants
     })
   })
 })
