@@ -163,7 +163,7 @@ export default class SSRRenderer extends BaseRenderer {
       const preloadScripts = []
       renderContext.staticAssets = []
       const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
-      const { data, fetch, ...state } = nuxt
+      const { data, fetch, mutations, ...state } = nuxt
 
       // Initial state
       const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}';`
@@ -186,7 +186,7 @@ export default class SSRRenderer extends BaseRenderer {
       const payloadPath = urlJoin(url, 'payload.js')
       const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
       const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
-      const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch })});`
+      const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
       staticAssets.push({ path: payloadPath, src: payloadScript })
       preloadScripts.push(payloadUrl)
 
