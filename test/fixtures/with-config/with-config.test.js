@@ -1,10 +1,6 @@
 import consola from 'consola'
 import { buildFixture } from '../../utils/build'
 
-beforeAll(() => {
-  process.env.NUXT_ENV_FOO = 'manniL'
-})
-
 let customCompressionMiddlewareFunctionName
 const hooks = [
   ['render:errorMiddleware', (app) => {
@@ -30,8 +26,4 @@ describe('with-config', () => {
     ])
     expect(customCompressionMiddlewareFunctionName).toBe('damn')
   }, hooks)
-})
-
-afterAll(() => {
-  delete process.env.NUXT_ENV_FOO
 })
