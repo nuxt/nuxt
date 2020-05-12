@@ -176,6 +176,7 @@ export class WebpackBundler {
           stats: false,
           logLevel: 'silent',
           watchOptions: this.buildContext.options.watchers.webpack,
+          fs: this.mfs,
           ...buildOptions.devMiddleware
         })
     )
