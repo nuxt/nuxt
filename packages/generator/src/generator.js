@@ -219,7 +219,7 @@ export default class Generator {
 
   async initDist () {
     // Clean destination folder
-    await fsExtra.remove(this.distPath)
+    await fsExtra.emptyDir(this.distPath)
 
     consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)

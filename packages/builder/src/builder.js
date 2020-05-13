@@ -153,8 +153,8 @@ export default class Builder {
 
     consola.debug(`App root: ${this.options.srcDir}`)
 
-    // Create .nuxt/, .nuxt/components and .nuxt/dist folders
-    await fsExtra.remove(r(this.options.buildDir))
+    // Create or empty .nuxt/, .nuxt/components and .nuxt/dist folders
+    await fsExtra.emptyDir(r(this.options.buildDir))
     const buildDirs = [r(this.options.buildDir, 'components')]
     if (!this.options.dev) {
       buildDirs.push(
@@ -162,7 +162,7 @@ export default class Builder {
         r(this.options.buildDir, 'dist', 'server')
       )
     }
-    await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
+    await Promise.all(buildDirs.map(dir => fsExtra.emptyDir(dir)))
 
     // Call ready hook
     await this.nuxt.callHook('builder:prepared', this, this.options.build)
