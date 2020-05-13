@@ -182,8 +182,8 @@ describe('generator: initialize', () => {
 
     await generator.initDist()
 
-    expect(fsExtra.remove).toBeCalledTimes(1)
-    expect(fsExtra.remove).toBeCalledWith(generator.distPath)
+    expect(fsExtra.emptyDir).toBeCalledTimes(1)
+    expect(fsExtra.emptyDir).toBeCalledWith(generator.distPath)
     expect(nuxt.callHook).toBeCalledTimes(2)
     expect(nuxt.callHook).nthCalledWith(1, 'generate:distRemoved', generator)
     expect(fsExtra.exists).toBeCalledTimes(1)
