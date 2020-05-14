@@ -33,15 +33,15 @@ export async function loadNuxtConfig ({
   // Load env
   envConfig = defu(envConfig, {
     dotenv: '.env',
-    systemVars: true,
+    env: process.env,
     expand: true
   })
   const env = loadEnv(envConfig, rootDir)
 
   // Fill process.env so it is accessible in nuxt.config
   for (const key in env) {
-    if (!key.startsWith('_') && process.env[key] === undefined) {
-      process.env[key] = env[key]
+    if (!key.startsWith('_') && envConfig.env[key] === undefined) {
+      envConfig.env[key] = env[key]
     }
   }
 
@@ -114,10 +114,7 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
   }
 
   // Apply process.env
-  // https://github.com/motdotla/dotenv#what-happens-to-environment-variables-that-were-already-set
-  if (envConfig.systemVars) {
-    Object.assign(env, process.env)
-  }
+  Object.assign(env, envConfig.env)
 
   // Interpolate env
   if (envConfig.expand) {
