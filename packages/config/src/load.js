@@ -116,7 +116,10 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
   }
 
   // Apply process.env
-  Object.assign(env, envConfig.env)
+  if (!envConfig.env._applied) {
+    Object.assign(env, envConfig.env)
+    envConfig.env._applied = true
+  }
 
   // Interpolate env
   if (envConfig.expand) {
