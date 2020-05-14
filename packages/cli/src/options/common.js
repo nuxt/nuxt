@@ -44,5 +44,15 @@ export default {
     alias: 'h',
     type: 'boolean',
     description: 'Display this message'
+  },
+  processenv: {
+    type: 'boolean',
+    default: true,
+    description: 'Disable reading from `process.env` and updating it with dotenv'
+  },
+  dotenv: {
+    type: 'string',
+    default: '.env',
+    description: 'Specify path to dotenv file (default: `.env`). Use `false` to disable'
   }
 }

@@ -31,11 +31,13 @@ export async function loadNuxtConfig ({
   }
 
   // Load env
-  envConfig = defu(envConfig, {
+  envConfig = {
     dotenv: '.env',
     env: process.env,
-    expand: true
-  })
+    expand: true,
+    ...envConfig
+  }
+
   const env = loadEnv(envConfig, rootDir)
 
   // Fill process.env so it is accessible in nuxt.config

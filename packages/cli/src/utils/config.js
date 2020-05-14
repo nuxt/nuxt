@@ -10,7 +10,11 @@ export async function loadNuxtConfig (argv, configContext) {
   const options = await _loadNuxtConfig({
     rootDir,
     configFile,
-    configContext
+    configContext,
+    envConfig: {
+      dotenv: argv.dotenv === 'false' ? false : argv.dotenv,
+      env: argv.processenv ? process.env : {}
+    }
   })
 
   // Nuxt Mode
