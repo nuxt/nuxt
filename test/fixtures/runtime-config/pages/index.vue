@@ -1,12 +1,5 @@
 <template>
-  <div>
-    $config:
-    <pre v-text="JSON.stringify($config)" />
-    Server Config:
-    <pre v-text="JSON.stringify(serverConfig)" />
-    ClientConfig:
-    <pre v-text="JSON.stringify(clientConfig)" />
-  </div>
+  <pre v-text="JSON.stringify(config, null, 2)" />
 </template>
 
 <script>
@@ -18,7 +11,16 @@ export default {
   },
   data () {
     return {
-      clientConfig: '...'
+      clientConfig: { please: 'wait' }
+    }
+  },
+  computed: {
+    config () {
+      return {
+        client: this.clientConfig,
+        server: this.serverConfig,
+        $config: this.$config
+      }
     }
   },
   mounted () {
