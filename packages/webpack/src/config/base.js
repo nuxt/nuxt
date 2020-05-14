@@ -11,12 +11,11 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
-
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
@@ -45,6 +44,10 @@ export default class WebpackBaseConfig {
 
   get mode () {
     return this.dev ? 'development' : 'production'
+  }
+
+  get target () {
+    return this.buildContext.target
   }
 
   get dev () {
@@ -139,7 +142,9 @@ export default class WebpackBaseConfig {
     const env = {
       'process.env.NODE_ENV': JSON.stringify(this.mode),
       'process.mode': JSON.stringify(this.mode),
-      'process.static': this.buildContext.isStatic
+      'process.dev': this.dev,
+      'process.static': this.target === TARGETS.static,
+      'process.target': JSON.stringify(this.target)
     }
     if (this.buildContext.buildOptions.aggressiveCodeRemoval) {
       env['typeof process'] = JSON.stringify(this.isServer ? 'object' : 'undefined')

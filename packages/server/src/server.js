@@ -292,6 +292,9 @@ export default class Server {
       return
     }
 
+    // unload middleware
+    this.unloadMiddleware(serverStackItem)
+
     // Resolve middleware
     const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
 
@@ -303,6 +306,12 @@ export default class Server {
 
     // Return updated item
     return serverStackItem
+  }
+
+  unloadMiddleware ({ handle }) {
+    if (handle._middleware && typeof handle._middleware.unload === 'function') {
+      handle._middleware.unload()
+    }
   }
 
   serverMiddlewarePaths () {
@@ -320,13 +329,11 @@ export default class Server {
   renderAndGetWindow (url, opts = {}, {
     loadingTimeout = 2000,
     loadedCallback = this.globals.loadedCallback,
-    ssr = this.options.render.ssr,
     globals = this.globals
   } = {}) {
     return renderAndGetWindow(url, opts, {
       loadingTimeout,
       loadedCallback,
-      ssr,
       globals
     })
   }
@@ -371,6 +378,7 @@ export default class Server {
       await this.renderer.close()
     }
 
+    this.app.stack.forEach(this.unloadMiddleware)
     this.app.removeAllListeners()
     this.app = null
 

@@ -28,10 +28,20 @@ export default {
       }
     }
   },
+  target: {
+    alias: 't',
+    type: 'string',
+    description: 'Build/start app for a different target, e.g. server, serverless and static',
+    prepare (cmd, options, argv) {
+      if (argv.target) {
+        options.target = argv.target
+      }
+    }
+  },
   'force-exit': {
     type: 'boolean',
     default (cmd) {
-      return ['build', 'generate'].includes(cmd.name)
+      return ['build', 'generate', 'export'].includes(cmd.name)
     },
     description: 'Whether Nuxt.js should force exit after the command has finished'
   },

@@ -2,7 +2,7 @@ import path from 'path'
 import util from 'util'
 import consola from 'consola'
 import prettyFormat from 'pretty-format'
-import { NuxtCommand, getWebpackConfig } from '../..'
+import { NuxtCommand, getWebpackConfig } from '../../src/index'
 import webpackCommand from '../../src/commands/webpack'
 
 const replaceAll = (str, a, b) => str.split(a).join(b)

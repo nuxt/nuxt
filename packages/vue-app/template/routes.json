@@ -1,0 +1,1 @@
+<%= JSON.stringify(router.routes, null, 2) %>

@@ -76,6 +76,8 @@ describe('generator: initialize', () => {
     const generator = new Generator(nuxt, builder)
 
     generator.initDist = jest.fn()
+    fsExtra.exists.mockReturnValueOnce(true)
+    generator.getBuildConfig = jest.fn(() => ({ ssr: true, target: 'static' }))
 
     await generator.initiate({ build: false, init: false })
 
@@ -87,7 +89,7 @@ describe('generator: initialize', () => {
     expect(generator.initDist).not.toBeCalled()
   })
 
-  test('should init routes with generate.routes and router.routes', async () => {
+  test('should init routes with generate.routes and routes.json', async () => {
     const nuxt = createNuxt()
     nuxt.options = {
       ...nuxt.options,
@@ -97,14 +99,14 @@ describe('generator: initialize', () => {
         routes: ['/foo', '/foo/bar']
       },
       router: {
-        mode: 'history',
-        routes: ['/index', '/about', '/test']
+        mode: 'history'
       }
     }
     const generator = new Generator(nuxt)
 
     flatRoutes.mockImplementationOnce(routes => routes)
     promisifyRoute.mockImplementationOnce(routes => routes)
+    generator.getAppRoutes = jest.fn(() => ['/index', '/about', '/test'])
     generator.decorateWithPayloads = jest.fn(() => 'decoratedRoutes')
 
     const routes = await generator.initRoutes()
@@ -130,8 +132,7 @@ describe('generator: initialize', () => {
         routes: ['/foo', '/foo/bar']
       },
       router: {
-        mode: 'hash',
-        routes: ['/index', '/about', '/test']
+        mode: 'hash'
       }
     }
     const generator = new Generator(nuxt)
@@ -181,8 +182,8 @@ describe('generator: initialize', () => {
 
     await generator.initDist()
 
-    expect(fsExtra.remove).toBeCalledTimes(1)
-    expect(fsExtra.remove).toBeCalledWith(generator.distPath)
+    expect(fsExtra.emptyDir).toBeCalledTimes(1)
+    expect(fsExtra.emptyDir).toBeCalledWith(generator.distPath)
     expect(nuxt.callHook).toBeCalledTimes(2)
     expect(nuxt.callHook).nthCalledWith(1, 'generate:distRemoved', generator)
     expect(fsExtra.exists).toBeCalledTimes(1)

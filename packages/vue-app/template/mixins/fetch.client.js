@@ -32,6 +32,7 @@ function beforeMount() {
 
 function created() {
   if (!isSsrHydration(this)) {
+    <% if (isFullStatic) { %>createdFullStatic.call(this)<% } %>
     return
   }
 
@@ -52,6 +53,33 @@ function created() {
   }
 }
 
+<% if (isFullStatic) { %>
+function createdFullStatic() {
+  // Check if component has been fetched on server
+  let fetchedOnServer = this.$options.fetchOnServer !== false
+  if (typeof this.$options.fetchOnServer === 'function') {
+    fetchedOnServer = this.$options.fetchOnServer.call(this) !== false
+  }
+  if (!fetchedOnServer || this.$nuxt.isPreview || !this.$nuxt._pagePayload) {
+    return
+  }
+  this._hydrated = true
+  this._fetchKey = this.$nuxt._payloadFetchIndex++
+  const data = this.$nuxt._pagePayload.fetch[this._fetchKey]
+
+  // If fetch error
+  if (data && data._error) {
+    this.$fetchState.error = data._error
+    return
+  }
+
+  // Merge data
+  for (const key in data) {
+    Vue.set(this.$data, key, data[key])
+  }
+}
+<% } %>
+
 function $fetch() {
   if (!this._fetchPromise) {
     this._fetchPromise = $_fetch.call(this)
@@ -71,6 +99,9 @@ async function $_fetch() {
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
+    if (process.dev) {
+      console.error('Error in fetch():', err)
+    }
     error = normalizeError(err)
   }
 
@@ -85,4 +116,3 @@ async function $_fetch() {
 
   this.$nextTick(() => this.<%= globals.nuxt %>.nbFetching--)
 }
-

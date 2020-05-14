@@ -1,3 +1,4 @@
+import { TARGETS } from '@nuxt/utils'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
 
@@ -11,6 +12,9 @@ export default {
   },
   async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, _start: true })
+    if (config.target === TARGETS.static) {
+      throw new Error('You cannot use `nuxt start` with ' + TARGETS.static + ' target, please use `nuxt export` and `nuxt serve`')
+    }
     const nuxt = await cmd.getNuxt(config)
 
     // Listen and show ready banner

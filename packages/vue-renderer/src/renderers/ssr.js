@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
+import { TARGETS, urlJoin } from '@nuxt/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -100,7 +101,8 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
-    if (renderContext.redirected && !renderContext._generate) {
+    // Perf: early returns if server target and redirected
+    if (renderContext.redirected && renderContext.target === TARGETS.server) {
       return {
         html: APP,
         error: renderContext.nuxt.error,
@@ -155,25 +157,66 @@ export default class SSRRenderer extends BaseRenderer {
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
-    let serializedSession = ''
+    const inlineScripts = []
 
-    // Serialize state
-    if (shouldInjectScripts || shouldHashCspScriptSrc) {
-      // Only serialized session if need inject scripts or csp hash
-      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    }
+    if (renderContext.staticAssetsBase) {
+      const preloadScripts = []
+      renderContext.staticAssets = []
+      const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
+      const { data, fetch, mutations, ...state } = nuxt
 
-    if (shouldInjectScripts) {
-      APP += `<script>${serializedSession}</script>`
+      // Initial state
+      const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}';`
+      const stateScript = `window.${this.serverContext.globals.context}=${devalue(state)};`
+
+      // Make chunk for initial state > 10 KB
+      const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
+      if (stateScriptKb > 10) {
+        const statePath = urlJoin(url, 'state.js')
+        const stateUrl = urlJoin(staticAssetsBase, statePath)
+        staticAssets.push({ path: statePath, src: stateScript })
+        APP += `<script defer>${nuxtStaticScript}</script>`
+        APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
+        preloadScripts.push(stateUrl)
+      } else {
+        APP += `<script defer>${nuxtStaticScript}${stateScript}</script>`
+      }
+
+      // Page level payload.js (async loaded for CSR)
+      const payloadPath = urlJoin(url, 'payload.js')
+      const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
+      const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
+      const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
+      staticAssets.push({ path: payloadPath, src: payloadScript })
+      preloadScripts.push(payloadUrl)
+
+      // Preload links
+      for (const href of preloadScripts) {
+        HEAD += `<link rel="preload" href="${href}" as="script">`
+      }
+    } else {
+      // Serialize state
+      let serializedSession
+      if (shouldInjectScripts || shouldHashCspScriptSrc) {
+        // Only serialized session if need inject scripts or csp hash
+        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+        inlineScripts.push(serializedSession)
+      }
+
+      if (shouldInjectScripts) {
+        APP += `<script>${serializedSession}</script>`
+      }
     }
 
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (csp) {
       if (shouldHashCspScriptSrc) {
-        const hash = crypto.createHash(csp.hashAlgorithm)
-        hash.update(serializedSession)
-        cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        for (const script of inlineScripts) {
+          const hash = crypto.createHash(csp.hashAlgorithm)
+          hash.update(script)
+          cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        }
       }
 
       // Call ssr:csp hook
