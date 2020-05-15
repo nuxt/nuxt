@@ -771,7 +771,7 @@ export default class Builder {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
 
-    if (this.options._envConfig.dotenv) {
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
       nuxtRestartWatch.push(this.options._envConfig.dotenv)
     }
 
