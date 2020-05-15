@@ -95,6 +95,9 @@ export async function loadNuxtConfig ({
   if (envConfig.expand) {
     for (const c of ['publicRuntimeConfig', 'privateRuntimeConfig']) {
       if (options[c]) {
+        if (typeof options[c] === 'function') {
+          options[c] = options[c](env)
+        }
         expand(options[c], env)
       }
     }
