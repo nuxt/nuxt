@@ -5,7 +5,6 @@ import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from '@nuxt/config'
 import { TARGETS } from '@nuxt/utils'
-import { Listener } from '@nuxt/server'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
 import * as imports from '../imports'
@@ -61,6 +60,7 @@ export default {
     }
 
     const { port, host, socket, https } = options.server
+    const { Listener } = await imports.server()
     const listener = new Listener({
       port,
       host,
