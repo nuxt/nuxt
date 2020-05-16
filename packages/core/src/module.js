@@ -177,7 +177,7 @@ export default class ModuleContainer {
     }
 
     // Ensure module is required once
-    const key = handler.meta && handler.meta.name
+    const key = (handler.meta && handler.meta.name) || src
     if (typeof key === 'string') {
       if (this.requiredModules[key]) {
         return
