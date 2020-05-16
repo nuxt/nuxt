@@ -116,9 +116,16 @@ export default class SSRRenderer extends BaseRenderer {
     // (this is unset when features.meta is false in server template)
     const meta = renderContext.meta && renderContext.meta.inject()
     if (meta) {
-      HEAD += meta.title.text() +
-        meta.meta.text() +
-        meta.link.text() +
+      HEAD += meta.title.text() + meta.meta.text()
+    }
+
+    // Add <base href=""> meta if router base specified
+    if (this.options._routerBaseSpecified) {
+      HEAD += `<base href="${this.options.router.base}">`
+    }
+
+    if (meta) {
+      HEAD += meta.link.text() +
         meta.style.text() +
         meta.script.text() +
         meta.noscript.text()
@@ -126,11 +133,6 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
-
-    // Add <base href=""> meta if router base specified
-    if (this.options._routerBaseSpecified) {
-      HEAD += `<base href="${this.options.router.base}">`
-    }
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
