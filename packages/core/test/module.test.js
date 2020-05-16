@@ -404,7 +404,7 @@ describe('core: module', () => {
     const result = await module.addModule({
       src: 'pathToModule',
       options: { test: true },
-      handler: () => { }
+      handler: opts => opts
     })
 
     expect(requireModule).not.toBeCalled()
@@ -415,7 +415,7 @@ describe('core: module', () => {
         handler: expect.any(Function)
       }
     })
-    expect(result).toBeUndefined()
+    expect(result).toEqual({ test: true })
   })
 
   test('should throw error when handler is not function', async () => {
