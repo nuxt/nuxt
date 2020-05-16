@@ -112,10 +112,10 @@ export default class ModuleContainer {
   }
 
   requireModule (moduleOpts) {
-    return this.addModule(moduleOpts, true /* require once */)
+    return this.addModule(moduleOpts)
   }
 
-  async addModule (moduleOpts, requireOnce) {
+  async addModule (moduleOpts) {
     let src
     let options
     let handler
@@ -176,15 +176,10 @@ export default class ModuleContainer {
       throw new TypeError('Module should export a function: ' + src)
     }
 
-    // Resolve module meta
-    let key = (handler.meta && handler.meta.name) || handler.name
-    if (!key || key === 'default') {
-      key = src
-    }
-
-    // Update requiredModules
+    // Ensure module is required once
+    const key = handler.meta && handler.meta.name
     if (typeof key === 'string') {
-      if (requireOnce && this.requiredModules[key]) {
+      if (this.requiredModules[key]) {
         return
       }
       this.requiredModules[key] = { src, options, handler }
