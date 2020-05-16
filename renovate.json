@@ -9,7 +9,6 @@
   "ignoreDeps": [
     "core-js",
     "memory-fs",
-    "@rollup/plugin-node-resolve",
     "execa",
     "pify",
     "file-loader",
@@ -18,7 +17,6 @@
     "fs-extra",
     "chalk",
     "wrap-ansi",
-    "@rollup/plugin-commonjs",
     "terser-webpack-plugin"
   ],
   "lockFileMaintenance": {
