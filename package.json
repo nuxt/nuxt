@@ -69,8 +69,8 @@
     "puppeteer-core": "^3.0.4",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
-    "rollup": "^2.10.0",
-    "rollup-plugin-license": "^2.0.0",
+    "rollup": "^2.10.2",
+    "rollup-plugin-license": "^2.0.1",
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.42.2",
     "vue-jest": "^4.0.0-beta.2"
