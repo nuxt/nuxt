@@ -317,7 +317,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts, true)
+    expect(module.addModule).toBeCalledWith(moduleOpts)
   })
 
   test('should add string module', async () => {
@@ -415,7 +415,7 @@ describe('core: module', () => {
         handler: expect.any(Function)
       }
     })
-    expect(result).toEqual({ test: true })
+    expect(result).toBeUndefined()
   })
 
   test('should throw error when handler is not function', async () => {
