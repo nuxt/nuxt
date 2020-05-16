@@ -448,6 +448,11 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
+  // Components module
+  if (options.components) {
+    options.buildModules.push('@nuxt/components')
+  }
+
   // Generate staticAssets
   const { staticAssets } = options.generate
   if (!staticAssets.version) {

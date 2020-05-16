@@ -1819,6 +1819,11 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
+"@nuxt/components@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.2.1.tgz#50bf099c5317ab4f7c6bcc81e12200bc78e4dbf7"
+  integrity sha512-03INdQ4UAKFtZ+wrEr6iYa4tsCXGtPuwn3epCLj+pkXIH9rFIRZnXhZ/RT+QAn6l3pQM3HnMM1GZZEKL1Dh8Jg==
+
 "@nuxt/devalue@^1.2.4":
   version "1.2.4"
   resolved "https://registry.npmjs.org/@nuxt/devalue/-/devalue-1.2.4.tgz#69eca032b7481fd3c019a78ade65d642da3f2f35"
