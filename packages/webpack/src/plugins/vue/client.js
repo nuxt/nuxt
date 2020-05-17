@@ -47,6 +47,7 @@ export default class VueSSRClientPlugin {
         assetsMapping
       }
 
+      const { entrypoints, namedChunkGroups } = stats
       const assetModules = stats.modules.filter(m => m.assets.length)
       const fileToIndex = file => manifest.all.indexOf(file)
       stats.modules.forEach((m) => {
@@ -58,7 +59,21 @@ export default class VueSSRClientPlugin {
             return
           }
           const id = m.identifier.replace(/\s\w+$/, '') // remove appended hash
-          const files = manifest.modules[hash(id)] = chunk.files.map(fileToIndex)
+          const filesSet = new Set(chunk.files.map(fileToIndex))
+
+          for (const chunkName of chunk.names) {
+            if (entrypoints[chunkName]) {
+              const chunkGroup = namedChunkGroups[chunkName]
+              if (chunkGroup) {
+                for (const asset of chunkGroup.assets) {
+                  filesSet.add(fileToIndex(asset))
+                }
+              }
+            }
+          }
+
+          const files = Array.from(filesSet)
+          manifest.modules[hash(id)] = files
 
           // In production mode, modules may be concatenated by scope hoisting
           // Include ConcatenatedModule for not losing module-component mapping
