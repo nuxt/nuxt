@@ -252,15 +252,15 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
+"@babel/parser@7.7.5", "@babel/parser@^7.7.0":
+  version "7.7.5"
+  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.7.5.tgz#cbf45321619ac12d83363fcf9c94bb67fa646d71"
+  integrity sha512-KNlOe9+/nk4i29g0VXgl8PEXIRms5xKLJeuZ6UptN0fHv+jDiriG+y94X6qAgWTR0h3KaoM1wK5G5h7MHFRSig==
+
 "@babel/parser@^7.1.0", "@babel/parser@^7.8.6", "@babel/parser@^7.9.6":
   version "7.9.6"
   resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.9.6.tgz#3b1bbb30dabe600cd72db58720998376ff653bc7"
   integrity sha512-AoeIEJn8vt+d/6+PXDRPaksYhnlbMIiejioBZvvMQsOjW/JYK6k/0dKnvvP3EhK5GfMBWDPtrxRtegWdAcdq9Q==
-
-"@babel/parser@^7.7.0":
-  version "7.7.5"
-  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.7.5.tgz#cbf45321619ac12d83363fcf9c94bb67fa646d71"
-  integrity sha512-KNlOe9+/nk4i29g0VXgl8PEXIRms5xKLJeuZ6UptN0fHv+jDiriG+y94X6qAgWTR0h3KaoM1wK5G5h7MHFRSig==
 
 "@babel/plugin-proposal-async-generator-functions@^7.8.3":
   version "7.8.3"
@@ -1819,10 +1819,10 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
-"@nuxt/components@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.2.1.tgz#50bf099c5317ab4f7c6bcc81e12200bc78e4dbf7"
-  integrity sha512-03INdQ4UAKFtZ+wrEr6iYa4tsCXGtPuwn3epCLj+pkXIH9rFIRZnXhZ/RT+QAn6l3pQM3HnMM1GZZEKL1Dh8Jg==
+"@nuxt/components@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.2.2.tgz#194f65574dc40aacf8d0f132a134168ce1b58c83"
+  integrity sha512-mTDZLmfx65fuI8haXZLeh425vSrCAHRGyK3G6Ckr/QSgmle9HDuaQX1Jl/yEEvBxiUzcPp1fhMexNMn2mvkofg==
 
 "@nuxt/devalue@^1.2.4":
   version "1.2.4"
