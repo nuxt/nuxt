@@ -35,7 +35,11 @@ export default class VueSSRClientPlugin {
       stats.assets
         .filter(({ name }) => isJS(name))
         .forEach(({ name, chunkNames }) => {
-          assetsMapping[name] = hash(chunkNames.join('|'))
+          const componentHash = hash(chunkNames.join('|'))
+          if (!assetsMapping[componentHash]) {
+            assetsMapping[componentHash] = []
+          }
+          assetsMapping[componentHash].push(name)
         })
 
       const manifest = {
