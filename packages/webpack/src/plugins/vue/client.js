@@ -62,7 +62,7 @@ export default class VueSSRClientPlugin {
           const filesSet = new Set(chunk.files.map(fileToIndex))
 
           for (const chunkName of chunk.names) {
-            if (entrypoints[chunkName]) {
+            if (!entrypoints[chunkName]) {
               const chunkGroup = namedChunkGroups[chunkName]
               if (chunkGroup) {
                 for (const asset of chunkGroup.assets) {
