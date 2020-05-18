@@ -770,6 +770,11 @@ export default class Builder {
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
+
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
+      nuxtRestartWatch.push(this.options._envConfig.dotenv)
+    }
+
     // If default page displayed, watch for first page creation
     if (this._nuxtPages && this._defaultPage) {
       nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))

@@ -294,6 +294,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,
