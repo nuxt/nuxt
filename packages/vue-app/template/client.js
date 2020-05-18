@@ -511,10 +511,10 @@ async function render (to, from, next) {
       <% } %>
 
       <% if (isFullStatic && store) { %>
-      // Replay store mutations
+      // Replay store mutations, catching to avoid error page on SPA fallback
       promises.push(this.fetchPayload(to.path).then(payload => {
         payload.mutations.forEach(m => { this.$store.commit(m[0], m[1]) })
-      }))
+      }).catch(err => null))
       <% } %>
 
       // Check disabled page loading
