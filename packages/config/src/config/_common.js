@@ -77,5 +77,9 @@ export default () => ({
   editor: undefined,
 
   // Hooks
-  hooks: null
+  hooks: null,
+
+  // runtimeConfig
+  privateRuntimeConfig: {},
+  publicRuntimeConfig: {}
 })

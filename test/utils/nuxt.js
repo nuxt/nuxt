@@ -2,6 +2,7 @@
 import path from 'path'
 import { defaultsDeep } from 'lodash'
 import { version as coreVersion } from '../../packages/core/package.json'
+import { loadNuxtConfig } from '../../packages/config/src/index'
 
 export { Nuxt } from '../../packages/core/src/index'
 export { Builder } from '../../packages/builder/src/index'
@@ -13,25 +14,13 @@ export const version = `v${coreVersion}`
 
 export const loadFixture = async function (fixture, overrides) {
   const rootDir = path.resolve(__dirname, '..', 'fixtures', fixture)
-  let config = {}
-
-  try {
-    config = await import(`../fixtures/${fixture}/nuxt.config`)
-    config = config.default || config
-  } catch (e) {
-    // Ignore MODULE_NOT_FOUND
-    if (e.code !== 'MODULE_NOT_FOUND') {
-      throw e
+  const config = await loadNuxtConfig({
+    rootDir,
+    configOverrides: {
+      dev: false,
+      test: true
     }
-  }
-
-  if (typeof config === 'function') {
-    config = await config()
-  }
-
-  config.rootDir = rootDir
-  config.dev = false
-  config.test = true
+  })
 
   // disable terser to speed-up fixture builds
   if (config.build) {

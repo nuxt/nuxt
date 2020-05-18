@@ -3,6 +3,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
+import devalue from '@nuxt/devalue'
 import { TARGETS, isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
@@ -148,12 +149,16 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
+    // Serialize state (runtime config)
     let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
 
     if (renderContext.staticAssetsBase) {
-      // Full static, add window.__NUXT_STATIC__
-      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}';window.${this.serverContext.globals.context}={spa:!0}</script>`
+      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}'</script>`
     }
+    APP += `<script>window.${this.serverContext.globals.context}=${devalue({
+      config: renderContext.runtimeConfig.public,
+      spa: true
+    })}</script>`
 
     // Prepare template params
     const templateParams = {
