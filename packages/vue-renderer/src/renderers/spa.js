@@ -152,12 +152,9 @@ export default class SPARenderer extends BaseRenderer {
     // Serialize state (runtime config)
     let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
 
-    if (renderContext.staticAssetsBase) {
-      APP += `<script>window.__NUXT_STATIC__='${renderContext.staticAssetsBase}'</script>`
-    }
     APP += `<script>window.${this.serverContext.globals.context}=${devalue({
       config: renderContext.runtimeConfig.public,
-      spa: true
+      staticAssetsBase: renderContext.staticAssetsBase
     })}</script>`
 
     // Prepare template params

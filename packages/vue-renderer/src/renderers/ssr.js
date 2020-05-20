@@ -168,20 +168,21 @@ export default class SSRRenderer extends BaseRenderer {
       const { data, fetch, mutations, ...state } = nuxt
 
       // Initial state
-      const nuxtStaticScript = `window.__NUXT_STATIC__='${staticAssetsBase}';`
-      const stateScript = `window.${this.serverContext.globals.context}=${devalue(state)};`
+      const stateScript = `window.${this.serverContext.globals.context}=${devalue({
+        staticAssetsBase,
+        ...state
+      })};`
 
       // Make chunk for initial state > 10 KB
       const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
-      if (stateScriptKb > 10) {
+      if (stateScriptKb > 1) {
         const statePath = urlJoin(url, 'state.js')
         const stateUrl = urlJoin(staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
-        APP += `<script defer>${nuxtStaticScript}</script>`
         APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
         preloadScripts.push(stateUrl)
       } else {
-        APP += `<script defer>${nuxtStaticScript}${stateScript}</script>`
+        APP += `<script defer>${stateScript}</script>`
       }
 
       // Page level payload.js (async loaded for CSR)
