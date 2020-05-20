@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS, MODES } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -92,7 +92,7 @@ export default class Generator {
   async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
-    if (this.options.mode === MODES.universal && this.options.router.mode !== 'hash') {
+    if (this.options.router.mode !== 'hash') {
       try {
         generateRoutes = await promisifyRoute(
           this.options.generate.routes || [],
@@ -105,7 +105,7 @@ export default class Generator {
     }
     let routes = []
     // Generate only index.html for router.mode = 'hash' or client-side apps
-    if (this.options.mode === MODES.spa || this.options.router.mode === 'hash') {
+    if (this.options.router.mode === 'hash') {
       routes = ['/']
     } else {
       routes = flatRoutes(this.getAppRoutes())
