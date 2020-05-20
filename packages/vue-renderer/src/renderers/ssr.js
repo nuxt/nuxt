@@ -175,7 +175,7 @@ export default class SSRRenderer extends BaseRenderer {
 
       // Make chunk for initial state > 10 KB
       const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
-      if (stateScriptKb > 1) {
+      if (stateScriptKb > 10) {
         const statePath = urlJoin(url, 'state.js')
         const stateUrl = urlJoin(staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
