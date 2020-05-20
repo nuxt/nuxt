@@ -18,7 +18,7 @@
     "vue-client-only": "^2.0.0",
     "vue-meta": "^2.3.3",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.1.6",
+    "vue-router": "^3.2.0",
     "vue-template-compiler": "^2.6.11",
     "vuex": "^3.4.0"
   },
