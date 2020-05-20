@@ -162,6 +162,11 @@ describe('config: options', () => {
     expect(fallback).toEqual('fallback.html')
   })
 
+  test('export should alias to generate', () => {
+    const { generate: { fallback } } = getNuxtConfig({ export: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
+  })
+
   test('should disable parallel if extractCSS is enabled', () => {
     const { build: { parallel } } = getNuxtConfig({ build: { extractCSS: true, parallel: true } })
     expect(parallel).toEqual(false)
