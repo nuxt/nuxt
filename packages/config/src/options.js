@@ -118,8 +118,8 @@ export function getNuxtConfig (_options) {
   // TODO: switch to export by default for nuxt3
   if (options.export) {
     options.generate = defu(options.export, options.generate)
-    delete options.export
   }
+  exports.export = options.generate
 
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
