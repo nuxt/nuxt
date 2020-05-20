@@ -805,7 +805,7 @@ async function mountApp (__app) {
 
   <% if (isFullStatic) { %>
   // Load page chunk
-  if (!NUXT.data && !NUXT.spa) {
+  if (!NUXT.data && NUXT.serverRendered) {
     try {
       const payload = await _app.fetchPayload(_app.context.route.path)
       Object.assign(NUXT, payload)
