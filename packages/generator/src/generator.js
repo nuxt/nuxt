@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS, MODES } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
