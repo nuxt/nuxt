@@ -182,7 +182,7 @@ export default class SSRRenderer extends BaseRenderer {
         APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
         preloadScripts.push(stateUrl)
       } else {
-        APP += `<script defer>${stateScript}</script>`
+        APP += `<script>${stateScript}</script>`
       }
 
       // Page level payload.js (async loaded for CSR)
