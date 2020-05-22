@@ -5,7 +5,8 @@ import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin } from '@nuxt/utils'
+import destr from 'destr'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -471,6 +472,19 @@ export function getNuxtConfig (_options) {
   }
   if (!staticAssets.versionBase) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+  }
+
+  // Nuxt Telemetry
+  if (
+    options.telemetry !== false &&
+    !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
+    getPKG('@nuxt/telemetry')
+  ) {
+    // TODO: Remove before 2.13 in favor of checking .nuxrc for first run message
+    if (typeof options.telemetry === 'undefined') {
+      consola.warn('Experimental `@nuxt/telemetry` enabled. You can disable this message by explicitly setting `telemetry: false` or `telemetry: true` in `nuxt.config`')
+    }
+    options.modules.push('@nuxt/telemetry')
   }
 
   return options
