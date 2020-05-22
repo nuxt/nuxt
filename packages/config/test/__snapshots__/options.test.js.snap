@@ -280,9 +280,7 @@ Object {
       },
     },
   },
-  "modules": Array [
-    "@nuxt/telemetry",
-  ],
+  "modules": Array [],
   "modulesDir": Array [
     "/var/nuxt/node_modules",
     "/var/nuxt/test/node_modules",
