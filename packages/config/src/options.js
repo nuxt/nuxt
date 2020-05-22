@@ -477,6 +477,7 @@ export function getNuxtConfig (_options) {
   // Nuxt Telemetry
   if (
     options.telemetry !== false &&
+    !options.test &&
     !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
     getPKG('@nuxt/telemetry')
   ) {
