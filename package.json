@@ -12,10 +12,7 @@
   "scripts": {
     "build": "yarn clean && yarn pkg",
     "changelog": "node -r esm scripts/changelog.js",
-    "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
-    "clean:build": "rimraf distributions/*/dist packages/*/dist",
-    "clean:examples": "rimraf examples/*/dist examples/*/.nuxt",
-    "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*/",
+    "clean": "node ./scripts/clean",
     "dev": "node -r esm ./scripts/dev.js",
     "postinstall": "lerna link && yarn dev",
     "ls-lint": "npx @ls-lint/ls-lint",

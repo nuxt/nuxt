@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+const rimraf = require('rimraf')
+const consola = require('consola')
+
+const dirs = [
+  // Build
+  'distributions/*/dist',
+  'packages/*/dist',
+
+  // Examples
+  'examples/*/dist',
+  'examples/*/.nuxt',
+
+  // Test
+  'test/fixtures/*/dist',
+  'test/fixtures/*/.nuxt*/',
+]
+
+for (const dir of dirs) {
+  consola.info('Cleaning', dir)
+  rimraf.sync(dir)
+}
