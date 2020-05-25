@@ -16,6 +16,7 @@
     "destr": "^0.1.4",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
+    "lodash": "^4.17.15",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

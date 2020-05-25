@@ -2381,6 +2381,7 @@ __metadata:
     exit: ^0.1.2
     fs-extra: ^8.1.0
     hable: ^3.0.0
+    lodash: ^4.17.15
     minimist: ^1.2.5
     opener: 1.5.1
     pretty-bytes: ^5.3.0
@@ -2422,6 +2423,7 @@ __metadata:
     destr: ^0.1.4
     dotenv: ^8.2.0
     esm: ^3.2.25
+    lodash: ^4.17.15
     std-env: ^2.2.1
   languageName: unknown
   linkType: soft
@@ -2441,6 +2443,7 @@ __metadata:
     fs-extra: ^8.1.0
     hable: ^3.0.0
     hash-sum: ^2.0.0
+    lodash: ^4.17.15
     std-env: ^2.2.1
   languageName: unknown
   linkType: soft
@@ -2561,6 +2564,7 @@ __metadata:
     consola: ^2.12.1
     fs-extra: ^8.1.0
     hash-sum: ^2.0.0
+    lodash: ^4.17.15
     proper-lockfile: ^4.1.1
     semver: ^7.3.2
     serialize-javascript: ^3.0.0
@@ -2593,6 +2597,7 @@ __metadata:
     "@nuxt/utils": 2.12.1
     consola: ^2.12.1
     fs-extra: ^8.1.0
+    lodash: ^4.17.15
     lru-cache: ^5.1.1
     vue: ^2.6.11
     vue-meta: ^2.3.3
@@ -2624,6 +2629,7 @@ __metadata:
     hard-source-webpack-plugin: ^0.13.1
     hash-sum: ^2.0.0
     html-webpack-plugin: ^4.3.0
+    lodash: ^4.17.15
     memory-fs: ^0.4.1
     optimize-css-assets-webpack-plugin: ^5.0.3
     pify: ^4.0.1
