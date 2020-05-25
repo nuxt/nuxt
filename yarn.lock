@@ -12161,6 +12161,7 @@ fsevents@^1.2.7:
     lodash: ^4.17.15
     node-fetch: ^2.6.0
     node-sass: ^4.14.1
+    pify: ^5.0.0
     puppeteer-core: ^3.1.0
     request: ^2.88.2
     rimraf: ^3.0.2
@@ -12944,6 +12945,13 @@ fsevents@^1.2.7:
   version: 4.0.1
   resolution: "pify@npm:4.0.1"
   checksum: 3/786486a8c94a7e1980ea56c59dcc05ebf0793740b71df9b9f273e48032e6301c5ecc5cc237c5a9ff45b13db27678b4d71aa37a2777bc11473c1310718b648e98
+  languageName: node
+  linkType: hard
+
+"pify@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "pify@npm:5.0.0"
+  checksum: 3/4c28d29597a49bbf320c0c6526fac7858d53b8398a46bfa6ed1a120a922773c7ef50bea166e27952bbc476bce1c72cf3e7d648462ac82e704e62431bdec95cec
   languageName: node
   linkType: hard
 
