@@ -67,6 +67,13 @@
     "vue-router": "^3.2.0",
     "vuex": "^3.4.0"
   },
+  "peerDependencies": {
+    "less-loader": "*",
+    "pug-plain-loader": "*",
+    "raw-loader": "*",
+    "sass-loader": "*",
+    "stylus-loader": "*"
+  },
   "peerDependenciesMeta": {
     "less-loader": {
       "optional": true
@@ -87,12 +94,5 @@
   "engines": {
     "node": ">=8.9.0",
     "npm": ">=5.0.0"
-  },
-  "peerDependencies": {
-    "less-loader": "*",
-    "pug-plain-loader": "*",
-    "raw-loader": "*",
-    "sass-loader": "*",
-    "stylus-loader": "*"
   }
 }

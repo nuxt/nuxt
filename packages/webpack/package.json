@@ -56,6 +56,13 @@
     "webpack-node-externals": "^1.7.2",
     "webpackbar": "^4.0.0"
   },
+  "peerDependencies": {
+    "less-loader": "*",
+    "pug-plain-loader": "*",
+    "raw-loader": "*",
+    "sass-loader": "*",
+    "stylus-loader": "*"
+  },
   "peerDependenciesMeta": {
     "less-loader": {
       "optional": true
@@ -78,12 +85,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "peerDependencies": {
-    "less-loader": "*",
-    "pug-plain-loader": "*",
-    "raw-loader": "*",
-    "sass-loader": "*",
-    "stylus-loader": "*"
   }
 }
