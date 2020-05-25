@@ -35,7 +35,10 @@
     "pretty-format": "^25.4.0"
   },
   "peerDependencies": {
-    "@nuxt/core": "*"
+    "@nuxt/builder": "*",
+    "@nuxt/core": "*",
+    "@nuxt/generator": "*",
+    "@nuxt/webpack": "*"
   },
   "peerDependenciesMeta": {
     "@nuxt/builder": {

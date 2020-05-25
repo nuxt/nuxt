@@ -12,7 +12,7 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { isUrl, urlJoin, getPKG, tryResolve, TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { isUrl, urlJoin, getPKG, tryResolve } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'

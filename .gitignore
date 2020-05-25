@@ -9,6 +9,11 @@ package-lock.json
 # Logs
 *.log
 
+# Yarn (some are temporary)
+.yarn
+.pnp.js
+.yarnrc.yml
+
 # Packages
 packages/*/LICENSE
 

@@ -65,9 +65,9 @@
     "@nuxt/generator": "2.12.1",
     "@nuxt/loading-screen": "^1.2.0",
     "@nuxt/opencollective": "^0.3.0",
-    "consola": "^2.11.3",
     "@nuxt/telemetry": "^0.0.4",
-    "@nuxt/webpack": "2.12.1"
+    "@nuxt/webpack": "2.12.1",
+    "consola": "^2.11.3"
   },
   "peerDependenciesMeta": {
     "less-loader": {
@@ -93,5 +93,12 @@
   "collective": {
     "url": "https://opencollective.com/nuxtjs",
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"
+  },
+  "peerDependencies": {
+    "less-loader": "*",
+    "pug-plain-loader": "*",
+    "raw-loader": "*",
+    "sass-loader": "*",
+    "stylus-loader": "*"
   }
 }
