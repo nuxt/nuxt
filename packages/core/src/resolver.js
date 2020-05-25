@@ -1,7 +1,8 @@
-import Module from 'module'
-import { resolve, join, dirname } from 'path'
+import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
+import createRequire from 'create-require'
+
 import esm from 'esm'
 
 import {
@@ -10,24 +11,6 @@ import {
   isExternalDependency,
   clearRequireCache
 } from '@nuxt/utils'
-
-// Polyfill Node's `Module.createRequire` / `Module.createRequireFromPath` function if not present
-export const createRequire =
-  // Added in Node v12.2.0
-  Module.createRequire ||
-  // Added in Node v10.12.0 and deprecated since Node v12.2.0
-  // eslint-disable-next-line node/no-deprecated-api
-  Module.createRequireFromPath ||
-  // Polyfill
-  function (filename) {
-    const mod = new Module(filename, null)
-
-    mod.filename = filename
-    mod.paths = Module._nodeModulePaths(dirname(filename))
-    mod._compile(`module.exports = require;`, filename)
-
-    return mod.exports
-  }
 
 export default class Resolver {
   constructor (nuxt) {

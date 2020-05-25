@@ -1,6 +1,6 @@
 
 import path from 'path'
-import { createRequire } from '../../packages/core/src/resolver'
+import createRequire from 'create-require'
 import PerfLoader from '../../packages/webpack/src/utils/perf-loader'
 
 const webpackRequire = createRequire(path.resolve(__dirname, '../../packages/webpack'))

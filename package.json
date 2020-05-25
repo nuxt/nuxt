@@ -43,6 +43,7 @@
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.0.1",
     "consola": "^2.12.1",
+    "create-require": "^0.0.1",
     "cross-spawn": "^7.0.3",
     "css-loader": "^3.5.2",
     "eslint": "^7.1.0",

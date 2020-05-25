@@ -14,6 +14,7 @@
     "@nuxt/utils": "2.12.1",
     "@nuxt/vue-renderer": "2.12.1",
     "consola": "^2.12.1",
+    "create-require": "^0.0.1",
     "debug": "^4.1.1",
     "esm": "^3.2.25",
     "fs-extra": "^8.1.0",

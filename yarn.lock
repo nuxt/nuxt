@@ -4344,6 +4344,11 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+create-require@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/create-require/-/create-require-0.0.1.tgz#dff94255aa485f9b78f56d9b7c5a5401a2ea8c8e"
+  integrity sha512-X4lf2eTCdL+jRHYjOE4AvORPD5su+0/u7iw9W/q0olsJ/EmFVLF1oSSlGhc4sv1BIr5tRxvqED5CZroIzABc/w==
+
 cross-spawn@^3.0.0:
   version "3.0.1"
   resolved "https://registry.npmjs.org/cross-spawn/-/cross-spawn-3.0.1.tgz#1256037ecb9f0c5f79e3d6ef135e30770184b982"
