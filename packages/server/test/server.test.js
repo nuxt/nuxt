@@ -507,7 +507,7 @@ describe('server: server', () => {
 
   test('should close server', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     const listener = { close: jest.fn() }
@@ -528,7 +528,7 @@ describe('server: server', () => {
 
   test('should prevent closing server multiple times', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     server.renderer = {}

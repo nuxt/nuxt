@@ -5,7 +5,8 @@ import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
+import destr from 'destr'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -89,10 +90,37 @@ export function getNuxtConfig (_options) {
 
   defaultsDeep(options, nuxtConfig)
 
+  // Target
+  options.target = options.target || 'server'
+  if (!Object.values(TARGETS).includes(options.target)) {
+    consola.warn(`Unknown target: ${options.target}. Falling back to server`)
+    options.target = 'server'
+  }
+
+  // SSR root option
+  if (options.ssr === false) {
+    options.mode = MODES.spa
+  }
+
+  // Apply mode preset
+  const modePreset = options.modes[options.mode || MODES.universal]
+
+  if (!modePreset) {
+    consola.warn(`Unknown mode: ${options.mode}. Falling back to ${MODES.universal}`)
+  }
+  defaultsDeep(options, modePreset || options.modes[MODES.universal])
+
   // Sanitize router.base
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
+
+  // Alias export to generate
+  // TODO: switch to export by default for nuxt3
+  if (options.export) {
+    options.generate = defu(options.export, options.generate)
+  }
+  exports.export = options.generate
 
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
@@ -241,7 +269,7 @@ export function getNuxtConfig (_options) {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,
-      addMeta: Boolean(options._generate),
+      addMeta: Boolean(options.target === TARGETS.static),
       unsafeInlineCompatibility: false,
       reportOnly: options.debug
     })
@@ -315,14 +343,6 @@ export function getNuxtConfig (_options) {
     options.render.compressor = options.render.gzip
     delete options.render.gzip
   }
-
-  // Apply mode preset
-  const modePreset = options.modes[options.mode || 'universal']
-
-  if (!modePreset) {
-    consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
-  }
-  defaultsDeep(options, modePreset || options.modes.universal)
 
   // If no server-side rendering, add appear true transition
   if (options.render.ssr === false && options.pageTransition) {
@@ -434,6 +454,38 @@ export function getNuxtConfig (_options) {
   if (isPureObject(options.serverMiddleware)) {
     options.serverMiddleware = Object.entries(options.serverMiddleware)
       .map(([path, handler]) => ({ path, handler }))
+  }
+
+  // Components module
+  if (options.components) {
+    options.buildModules.push('@nuxt/components')
+  }
+
+  // Generate staticAssets
+  const { staticAssets } = options.generate
+  if (!staticAssets.version) {
+    staticAssets.version = String(Math.round(Date.now() / 1000))
+  }
+  if (!staticAssets.base) {
+    const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
+    staticAssets.base = urlJoin(publicPath, staticAssets.dir)
+  }
+  if (!staticAssets.versionBase) {
+    staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+  }
+
+  // Nuxt Telemetry
+  if (
+    options.telemetry !== false &&
+    !options.test &&
+    !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
+    getPKG('@nuxt/telemetry')
+  ) {
+    // TODO: Remove before 2.13 in favor of checking .nuxrc for first run message
+    if (typeof options.telemetry === 'undefined') {
+      consola.warn('Experimental `@nuxt/telemetry` enabled. You can disable this message by explicitly setting `telemetry: false` or `telemetry: true` in `nuxt.config`')
+    }
+    options.modules.push('@nuxt/telemetry')
   }
 
   return options

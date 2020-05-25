@@ -1,4 +1,3 @@
-import invert from 'lodash/invert'
 import { isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
@@ -17,13 +16,15 @@ export default class ModernRenderer extends SSRRenderer {
 
     const { clientManifest, modernManifest } = this.serverContext.resources
     const legacyAssets = clientManifest.assetsMapping
-    const modernAssets = invert(modernManifest.assetsMapping)
+    const modernAssets = modernManifest.assetsMapping
     const mapping = {}
 
-    for (const legacyJsFile in legacyAssets) {
-      const chunkNamesHash = legacyAssets[legacyJsFile]
-      mapping[legacyJsFile] = modernAssets[chunkNamesHash]
-    }
+    Object.keys(legacyAssets).forEach((componentHash) => {
+      const modernComponentAssets = modernAssets[componentHash] || []
+      legacyAssets[componentHash].forEach((legacyAssetName, index) => {
+        mapping[legacyAssetName] = modernComponentAssets[index]
+      })
+    })
     delete clientManifest.assetsMapping
     delete modernManifest.assetsMapping
     this._assetsMapping = mapping

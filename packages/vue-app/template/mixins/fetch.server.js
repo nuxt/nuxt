@@ -10,6 +10,9 @@ async function serverPrefetch() {
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
+    if (process.dev) {
+      console.error('Error in fetch():', err)
+    }
     this.$fetchState.error = normalizeError(err)
   }
   this.$fetchState.pending = false
@@ -27,7 +30,7 @@ async function serverPrefetch() {
 }
 
 export default {
-  beforeCreate() {
+  created() {
     if (!hasFetch(this)) {
       return
     }

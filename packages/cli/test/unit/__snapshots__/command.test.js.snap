@@ -18,12 +18,21 @@ exports[`cli/command builds help text 1`] = `
     --modern, -m       Build/Start app for
                        modern browsers, e.g. server, client and
                        false
+    --target, -t       Build/start app for a
+                       different target, e.g. server,
+                       serverless and static
     --force-exit       Whether Nuxt.js
                        should force exit after the command has
                        finished
     --version, -v      Display the Nuxt
                        version
     --help, -h         Display this message
+    --no-processenv    Disable reading from
+                       process.env and updating it with
+                       dotenv
+    --dotenv           Specify path to
+                       dotenv file (default: .env). Use
+                       false to disable
     --port, -p         Port number on which
                        to start the application
     --hostname, -H     Hostname on which to

@@ -20,7 +20,22 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   get devtool () {
-    return this.dev ? 'cheap-module-eval-source-map' : false
+    if (!this.dev) {
+      return false
+    }
+    const scriptPolicy = this.getCspScriptPolicy()
+    const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
+    return noUnsafeEval
+      ? 'cheap-module-source-map'
+      : 'cheap-module-eval-source-map'
+  }
+
+  getCspScriptPolicy () {
+    const { csp } = this.buildContext.options.render
+    if (csp) {
+      const { policies = {} } = csp
+      return policies['script-src'] || policies['default-src'] || []
+    }
   }
 
   getFileName (...args) {
@@ -114,8 +129,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         filename: '../server/index.spa.html',
         template: appTemplatePath,
         minify: buildOptions.html.minify,
-        inject: true,
-        chunksSortMode: 'dependency'
+        inject: true
       }),
       new VueSSRClientPlugin({
         filename: `../server/${this.name}.manifest.json`
@@ -144,9 +158,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     if (modern) {
+      const scriptPolicy = this.getCspScriptPolicy()
+      const noUnsafeInline = scriptPolicy && !scriptPolicy.includes('\'unsafe-inline\'')
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(buildDir, 'dist', 'client'),
-        isModernBuild: this.isModern
+        isModernBuild: this.isModern,
+        noUnsafeInline
       }))
     }
 
@@ -168,17 +185,18 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     const { client = {} } = hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client
+
     const hotMiddlewareClientOptions = {
       reload: true,
       timeout: 30000,
       ansiColors: JSON.stringify(ansiColors),
       overlayStyles: JSON.stringify(overlayStyles),
+      path: `${router.base}/__webpack_hmr/${this.name}`.replace(/\/\//g, '/'),
       ...options,
       name: this.name
     }
-    const clientPath = `${router.base}/__webpack_hmr/${this.name}`
-    const hotMiddlewareClientOptionsStr =
-      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
+
+    const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
     // Entry points
     config.entry = Object.assign({}, config.entry, {

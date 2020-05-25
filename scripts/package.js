@@ -232,15 +232,16 @@ export default class Package {
 
           // Finished building all bundles
           case 'END':
-            this.emit('build:done')
             return this.logger.success('Bundle built')
 
           // Encountered an error while bundling
           case 'ERROR':
+            this.formatError(event.error)
             return this.logger.error(event.error)
 
           // Encountered an unrecoverable error
           case 'FATAL':
+            this.formatError(event.error)
             return this.logger.fatal(event.error)
 
           // Unknown event
@@ -272,11 +273,22 @@ export default class Package {
         //     this.logger.warn(`Unused dependency ${dep}@${dependencies[dep]}`)
         //   }
         // }
-      } catch (error) {
-        this.logger.error(error)
-        throw new Error('Error while building bundle')
+      } catch (err) {
+        this.formatError(err)
+        this.logger.error(err)
+        throw err
       }
     }
+  }
+
+  formatError (error) {
+    let loc = this.options.rootDir
+    if (error.loc) {
+      const { file, column, line } = error.loc
+      loc = `${file}:${line}:${column}`
+    }
+    error.message = `[${error.code}] ${error.message}\nat ${loc}`
+    return error
   }
 
   watch () {

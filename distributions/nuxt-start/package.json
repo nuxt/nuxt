@@ -58,13 +58,14 @@
     "@nuxt/cli": "2.12.1",
     "@nuxt/core": "2.12.1",
     "consola": "^2.11.3",
+    "@nuxt/telemetry": "^0.0.4",
     "node-fetch": "^2.6.0",
     "vue": "^2.6.11",
     "vue-client-only": "^2.0.0",
     "vue-meta": "^2.3.3",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.1.6",
-    "vuex": "^3.2.0"
+    "vue-router": "^3.2.0",
+    "vuex": "^3.4.0"
   },
   "peerDependenciesMeta": {
     "less-loader": {

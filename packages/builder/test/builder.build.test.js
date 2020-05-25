@@ -18,6 +18,7 @@ jest.mock('@nuxt/webpack')
 describe('builder: builder build', () => {
   beforeAll(() => {
     jest.spyOn(path, 'join').mockImplementation((...args) => `join(${args.join(', ')})`)
+    r.mockImplementation((...args) => `r(${args.join(', ')})`)
   })
 
   afterAll(() => {
@@ -35,6 +36,7 @@ describe('builder: builder build', () => {
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
     nuxt.options.build.template = { dir: '/var/nuxt/src/template' }
     nuxt.options.build.createRoutes = jest.fn()
+    nuxt.options.render = { ssr: true }
 
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)
@@ -43,11 +45,9 @@ describe('builder: builder build', () => {
     builder.generateRoutesAndFiles = jest.fn()
     builder.resolvePlugins = jest.fn()
 
-    r.mockImplementation((dir, src) => `r(${dir})`)
-
     const buildReturn = await builder.build()
 
-    expect(consola.info).toBeCalledTimes(1)
+    expect(consola.info).toBeCalledTimes(3)
     expect(consola.info).toBeCalledWith('Production build')
     expect(nuxt.ready).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledTimes(3)
@@ -59,12 +59,11 @@ describe('builder: builder build', () => {
     expect(consola.success).toBeCalledWith('Builder initialized')
     expect(consola.debug).toBeCalledTimes(1)
     expect(consola.debug).toBeCalledWith('App root: /var/nuxt/src')
-    expect(fsExtra.remove).toBeCalledTimes(1)
-    expect(fsExtra.remove).toBeCalledWith('r(/var/nuxt/build)')
-    expect(fsExtra.mkdirp).toBeCalledTimes(3)
-    expect(fsExtra.mkdirp).nthCalledWith(1, 'r(/var/nuxt/build)')
-    expect(fsExtra.mkdirp).nthCalledWith(2, 'r(/var/nuxt/build)')
-    expect(fsExtra.mkdirp).nthCalledWith(3, 'r(/var/nuxt/build)')
+    expect(fsExtra.emptyDir).toBeCalledTimes(4)
+    expect(fsExtra.emptyDir).nthCalledWith(1, 'r(/var/nuxt/build)')
+    expect(fsExtra.emptyDir).nthCalledWith(2, 'r(/var/nuxt/build, components)')
+    expect(fsExtra.emptyDir).nthCalledWith(3, 'r(/var/nuxt/build, dist, client)')
+    expect(fsExtra.emptyDir).nthCalledWith(4, 'r(/var/nuxt/build, dist, server)')
     expect(r).toBeCalledTimes(4)
     expect(r).nthCalledWith(1, '/var/nuxt/build')
     expect(r).nthCalledWith(2, '/var/nuxt/build', 'components')
@@ -117,6 +116,7 @@ describe('builder: builder build', () => {
     nuxt.options.buildDir = '/var/nuxt/build'
     nuxt.options.dir = { pages: '/var/nuxt/src/pages' }
     nuxt.options.build.createRoutes = jest.fn()
+    nuxt.options.render = { ssr: true }
 
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)
@@ -130,8 +130,9 @@ describe('builder: builder build', () => {
     expect(consola.info).toBeCalledTimes(2)
     expect(consola.info).nthCalledWith(1, 'Preparing project for development')
     expect(consola.info).nthCalledWith(2, 'Initial build may take a while')
-    expect(fsExtra.mkdirp).toBeCalledTimes(1)
-    expect(fsExtra.mkdirp).toBeCalledWith('r(/var/nuxt/build)')
+    expect(fsExtra.emptyDir).toBeCalledTimes(2)
+    expect(fsExtra.emptyDir).nthCalledWith(1, 'r(/var/nuxt/build)')
+    expect(fsExtra.emptyDir).nthCalledWith(2, 'r(/var/nuxt/build, components)')
     expect(r).toBeCalledTimes(2)
     expect(r).nthCalledWith(1, '/var/nuxt/build')
     expect(r).nthCalledWith(2, '/var/nuxt/build', 'components')
