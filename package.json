@@ -72,7 +72,7 @@
     "rollup": "^2.10.9",
     "rollup-plugin-license": "^2.1.0",
     "sass-loader": "^8.0.2",
-    "sort-package-json": "^1.42.2",
+    "sort-package-json": "^1.42.3",
     "vue-jest": "^4.0.0-beta.2"
   },
   "resolutions": {
