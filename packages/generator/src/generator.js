@@ -283,7 +283,7 @@ export default class Generator {
 
     // Apply shared payload
     if (this._payload) {
-      setPayload(this._payload)
+      payload = defu(payload, this._payload)
     }
 
     await this.nuxt.callHook('generate:route', { route, setPayload })
