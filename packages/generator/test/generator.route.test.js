@@ -47,16 +47,21 @@ describe('generator: generate route', () => {
     expect(path.join).toBeCalledTimes(2)
     expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
     expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
-    expect(nuxt.callHook).nthCalledWith(1, 'generate:page', {
+
+    const findHookCall = n => nuxt.callHook.mock.calls.find(c => c[0] === n)[1]
+
+    expect(findHookCall('generate:page')).toMatchObject({
       route,
       html: 'rendered html',
       path: `join(${generator.distPath}, join([sep], /foo.html))`
     })
-    expect(nuxt.callHook).nthCalledWith(2, 'generate:routeCreated', {
+
+    expect(findHookCall('generate:routeCreated')).toMatchObject({
       route,
       errors: [],
       path: `join(${generator.distPath}, join([sep], /foo.html))`
     })
+
     expect(fsExtra.mkdirp).toBeCalledTimes(1)
     expect(fsExtra.mkdirp).toBeCalledWith(`dirname(join(${generator.distPath}, join([sep], /foo.html)))`)
     expect(fsExtra.writeFile).toBeCalledTimes(1)
