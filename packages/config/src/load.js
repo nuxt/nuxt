@@ -99,7 +99,7 @@ export async function loadNuxtConfig ({
         if (typeof options[c] === 'function') {
           options[c] = options[c](env)
         }
-        expand(options[c], env)
+        expand(options[c], env, destr)
       }
     }
   }
@@ -134,7 +134,7 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
 }
 
 // Based on https://github.com/motdotla/dotenv-expand
-function expand (target, source = {}) {
+function expand (target, source = {}, parse = v => v) {
   function getValue (key) {
     // Source value 'wins' over target value
     return source[key] !== undefined ? source[key] : (target[key] || '')
@@ -145,7 +145,7 @@ function expand (target, source = {}) {
       return value
     }
     const matches = value.match(/(.?\${?(?:[a-zA-Z0-9_:]+)?}?)/g) || []
-    return destr(matches.reduce((newValue, match) => {
+    return parse(matches.reduce((newValue, match) => {
       const parts = /(.?)\${?([a-zA-Z0-9_:]+)?}?/g.exec(match)
       const prefix = parts[1]
 
