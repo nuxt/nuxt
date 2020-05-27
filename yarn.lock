@@ -11263,10 +11263,10 @@ rollup-plugin-license@^2.1.0:
     spdx-expression-validate "2.0.0"
     spdx-satisfies "5.0.0"
 
-rollup@^2.10.9:
-  version "2.10.9"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.10.9.tgz#17dcc6753c619efcc1be2cf61d73a87827eebdf9"
-  integrity sha512-dY/EbjiWC17ZCUSyk14hkxATAMAShkMsD43XmZGWjLrgFj15M3Dw2kEkA9ns64BiLFm9PKN6vTQw8neHwK74eg==
+rollup@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-2.11.0.tgz#a46265f8291c71fee6dea3cccb5ac8e8b343e59c"
+  integrity sha512-VIUTZJ/wmqtNBKwa0N6MgC2SOUZoruX3HO0UFRf2Ilv/xtswXw+lQ9COUPytRFMmGst/5+En23ZpVK64AI83Cw==
   optionalDependencies:
     fsevents "~2.1.2"
 
@@ -11667,10 +11667,10 @@ sort-object-keys@^1.1.3:
   resolved "https://registry.npmjs.org/sort-object-keys/-/sort-object-keys-1.1.3.tgz#bff833fe85cab147b34742e45863453c1e190b45"
   integrity sha512-855pvK+VkU7PaKYPc+Jjnmt4EzejQHyhhF33q31qG8x7maDzkeFhAAThdCYay11CISO+qAMwjOBP+fPZe0IPyg==
 
-sort-package-json@^1.42.3:
-  version "1.42.3"
-  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.42.3.tgz#cbd04f9432418d5a0d601ac67744ca82f8c83338"
-  integrity sha512-K00EtaQEJ58/I/jSzX5zkY9WD5hD8+iJhN/aO+zANGirMsX+MC/q7cLZoox7c6pE8QXbz+SozNK3w/ZoIvktRg==
+sort-package-json@^1.43.0:
+  version "1.43.0"
+  resolved "https://registry.npmjs.org/sort-package-json/-/sort-package-json-1.43.0.tgz#6c37c09aa3cf9dc41782907588984f2013dc767a"
+  integrity sha512-44jXWI9nyUGDgOOk2SCrrkuPgC1pLgsLwpl0Qd9Cc+rZR7GpNRBidTFxAW08Zq/FSxn4gDyJBnV0aNE0/bSQAg==
   dependencies:
     detect-indent "^6.0.0"
     detect-newline "3.1.0"
@@ -13020,10 +13020,10 @@ vue-no-ssr@^1.1.1:
   resolved "https://registry.npmjs.org/vue-no-ssr/-/vue-no-ssr-1.1.1.tgz#875f3be6fb0ae41568a837f3ac1a80eaa137b998"
   integrity sha512-ZMjqRpWabMPqPc7gIrG0Nw6vRf1+itwf0Itft7LbMXs2g3Zs/NFmevjZGN1x7K3Q95GmIjWbQZTVerxiBxI+0g==
 
-vue-router@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.3.0.tgz#752905ef1ce210626834f6fa44e6fdcb11e4f262"
-  integrity sha512-Y0qw0vFdX1kK7fMfi66hiyIdFGcQX+UTiX4Y+ZlklzXnObbH57q7n50Ad7O0BKMaZ/8xvB8AR6i8+1LRxRFiEg==
+vue-router@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.3.1.tgz#7d0545dd8ebf4f45494ca185b7eccb38d67689c1"
+  integrity sha512-2E2Xlks6oDzU559/NcSGD08g3XCDZznx8CK/jHIHkrbAdnCu1ghUcnz5e78SZ35gaOKtHGS01vJG8Yv4iJFTug==
 
 vue-server-renderer@^2.6.11:
   version "2.6.11"
