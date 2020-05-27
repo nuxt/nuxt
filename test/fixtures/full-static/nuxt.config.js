@@ -1,10 +1,12 @@
 export default {
   target: 'static',
   export: {
-    config: true
+    payload: {
+      config: true
+    }
   },
   hooks: {
-    generate: {
+    export: {
       before ({ payload }) {
         payload.shared = true
       },

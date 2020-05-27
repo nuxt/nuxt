@@ -50,6 +50,7 @@ export default class Generator {
 
     // Done hook
     await this.nuxt.callHook('generate:done', this, errors)
+    await this.nuxt.callHook('export:done', this, { errors })
 
     return { errors }
   }
@@ -60,6 +61,7 @@ export default class Generator {
 
     // Call before hook
     await this.nuxt.callHook('generate:before', this, this.options.generate)
+    await this.nuxt.callHook('export:before', this)
 
     if (build) {
       // Add flag to set process.static
@@ -118,6 +120,7 @@ export default class Generator {
 
     // extendRoutes hook
     await this.nuxt.callHook('generate:extendRoutes', routes)
+    await this.nuxt.callHook('export:extendRoutes', { routes })
 
     return routes
   }
@@ -226,6 +229,7 @@ export default class Generator {
 
     consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)
+    await this.nuxt.callHook('export:distCopied', this)
 
     // Copy static and built files
     if (await fsExtra.exists(this.staticRoutes)) {
@@ -244,6 +248,7 @@ export default class Generator {
     fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
+    await this.nuxt.callHook('export:distCopied', this)
   }
 
   decorateWithPayloads (routes, generateRoutes) {
@@ -272,6 +277,7 @@ export default class Generator {
     payload = { ...this.payload, ...payload }
 
     await this.nuxt.callHook('generate:route', { route, payload })
+    await this.nuxt.callHook('export:route', { route, payload })
 
     try {
       const renderContext = {
@@ -309,10 +315,8 @@ export default class Generator {
       pageErrors.push({ type: 'unhandled', route, error: err })
       errors.push(...pageErrors)
 
-      await this.nuxt.callHook('generate:routeFailed', {
-        route,
-        errors: pageErrors
-      })
+      await this.nuxt.callHook('generate:routeFailed', { route, errors: pageErrors })
+      await this.nuxt.callHook('export:routeFailed', { route, errors: pageErrors })
       consola.error(this._formatErrors(pageErrors))
 
       return false
@@ -340,6 +344,7 @@ export default class Generator {
     // Call hook to let user update the path & html
     const page = { route, path: fileName, html }
     await this.nuxt.callHook('generate:page', page)
+    await this.nuxt.callHook('export:page', { page })
 
     page.path = path.join(this.distPath, page.path)
 
@@ -347,11 +352,8 @@ export default class Generator {
     await fsExtra.mkdirp(path.dirname(page.path))
     await fsExtra.writeFile(page.path, page.html, 'utf8')
 
-    await this.nuxt.callHook('generate:routeCreated', {
-      route,
-      path: page.path,
-      errors: pageErrors
-    })
+    await this.nuxt.callHook('generate:routeCreated', { route, path: page.path, errors: pageErrors })
+    await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
 
     if (pageErrors.length) {
       consola.error('Error generating ' + route)
