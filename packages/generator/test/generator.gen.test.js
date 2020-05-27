@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import { waitFor } from '@nuxt/utils'
 
 import Generator from '../src/generator'
-import { createNuxt, hookCalls } from './__utils__'
+import { createNuxt } from './__utils__'
 
 jest.mock('path')
 jest.mock('chalk', () => ({
