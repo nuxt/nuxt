@@ -4,7 +4,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
 import Generator from '../src/generator'
-import { createNuxt } from './__utils__'
+import { createNuxt, hookCalls } from './__utils__'
 
 jest.mock('path')
 jest.mock('fs-extra')
@@ -47,17 +47,19 @@ describe('generator: generate route', () => {
     expect(path.join).toBeCalledTimes(2)
     expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
     expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
-    expect(nuxt.callHook).toBeCalledTimes(2)
-    expect(nuxt.callHook).nthCalledWith(1, 'generate:page', {
+
+    expect(hookCalls(nuxt, 'generate:page')[0][0]).toMatchObject({
       route,
       html: 'rendered html',
       path: `join(${generator.distPath}, join([sep], /foo.html))`
     })
-    expect(nuxt.callHook).nthCalledWith(2, 'generate:routeCreated', {
+
+    expect(hookCalls(nuxt, 'generate:routeCreated')[0][0]).toMatchObject({
       route,
       errors: [],
       path: `join(${generator.distPath}, join([sep], /foo.html))`
     })
+
     expect(fsExtra.mkdirp).toBeCalledTimes(1)
     expect(fsExtra.mkdirp).toBeCalledWith(`dirname(join(${generator.distPath}, join([sep], /foo.html)))`)
     expect(fsExtra.writeFile).toBeCalledTimes(1)
@@ -82,7 +84,6 @@ describe('generator: generate route', () => {
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
-    expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:routeFailed', {
       route,
       errors: [{ type: 'unhandled', route, error }]
