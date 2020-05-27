@@ -137,7 +137,7 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
 function expand (target, source = {}, parse = v => v) {
   function getValue (key) {
     // Source value 'wins' over target value
-    return source[key] !== undefined ? source[key] : (target[key] || '')
+    return source[key] !== undefined ? source[key] : target[key]
   }
 
   function interpolate (value) {
