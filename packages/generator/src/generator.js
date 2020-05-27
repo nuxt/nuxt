@@ -23,6 +23,9 @@ export default class Generator {
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
     this.generatedRoutes = new Set()
+
+    // Shared payload
+    this.payload = { ...this.options.generate.payload }
   }
 
   async generate ({ build = true, init = true } = {}) {
@@ -247,7 +250,7 @@ export default class Generator {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
-      routeMap[route] = { route, payload: null }
+      routeMap[route] = { route, payload: {} }
     })
     // Fill routeMap with given generate.routes
     generateRoutes.forEach((route) => {
@@ -255,7 +258,7 @@ export default class Generator {
       const path = isString(route) ? route : route.route
       routeMap[path] = {
         route: path,
-        payload: route.payload || null
+        payload: route.payload || {}
       }
     })
     return Object.values(routeMap)
@@ -264,6 +267,11 @@ export default class Generator {
   async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
+
+    // Apply shared payload
+    payload = { ...this.payload, ...payload }
+
+    await this.nuxt.callHook('generate:route', { route, payload })
 
     try {
       const renderContext = {
