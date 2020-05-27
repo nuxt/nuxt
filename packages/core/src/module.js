@@ -160,22 +160,26 @@ export default class ModuleContainer {
           throw error
         }
 
-        let message = 'Module `{name}` not found.'
+        // Hint only if entrypoint is not found and src is not local alias or path
+        if (error.message.includes(src) && !/^[~.]|^@\//.test(src)) {
+          let message = 'Module `{name}` not found.'
 
-        if (this.options.buildModules.includes(src)) {
-          message += ' Please ensure `{name}` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.'.replace('{name}', src)
-        } else if (this.options.modules.includes(src)) {
-          message += ' Please ensure `{name}` is in `dependencies` and installed.'
+          if (this.options.buildModules.includes(src)) {
+            message += ' Please ensure `{name}` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.'.replace('{name}', src)
+          } else if (this.options.modules.includes(src)) {
+            message += ' Please ensure `{name}` is in `dependencies` and installed.'
+          }
+
+          message = message.replace(/{name}/g, src)
+
+          consola.warn(message)
         }
 
-        message = message.replace(/{name}/g, src)
-
         if (this.options._cli) {
-          throw new Error(message)
+          throw error
         } else {
           // TODO: Remove in next major version
-          message += ' Silently ignoring module as programmatic usage detected.'
-          consola.warn(message)
+          consola.warn('Silently ignoring module as programatic usage detected.')
           return
         }
       }
