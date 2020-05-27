@@ -4,7 +4,7 @@ import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
 import Generator from '../src/generator'
-import { createNuxt } from './__utils__'
+import { createNuxt, hookCalls } from './__utils__'
 
 jest.mock('path')
 jest.mock('fs-extra')
@@ -48,15 +48,13 @@ describe('generator: generate route', () => {
     expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
     expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
 
-    const findHookCall = n => nuxt.callHook.mock.calls.find(c => c[0] === n)[1]
-
-    expect(findHookCall('generate:page')).toMatchObject({
+    expect(hookCalls(nuxt, 'generate:page')[0][0]).toMatchObject({
       route,
       html: 'rendered html',
       path: `join(${generator.distPath}, join([sep], /foo.html))`
     })
 
-    expect(findHookCall('generate:routeCreated')).toMatchObject({
+    expect(hookCalls(nuxt, 'generate:routeCreated')[0][0]).toMatchObject({
       route,
       errors: [],
       path: `join(${generator.distPath}, join([sep], /foo.html))`

@@ -5,7 +5,7 @@ import fsExtra from 'fs-extra'
 import { waitFor } from '@nuxt/utils'
 
 import Generator from '../src/generator'
-import { createNuxt } from './__utils__'
+import { createNuxt, hookCalls } from './__utils__'
 
 jest.mock('path')
 jest.mock('chalk', () => ({
@@ -57,7 +57,6 @@ describe('generator: generate routes', () => {
     expect(generator.generateRoutes).toBeCalledTimes(1)
     expect(generator.generateRoutes).toBeCalledWith(routes)
     expect(generator.afterGenerate).toBeCalledTimes(1)
-    expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:done', generator, errors)
   })
 
