@@ -465,7 +465,7 @@ describe('core: module', () => {
     })
 
     requireModule.mockImplementationOnce(() => {
-      const moduleNotFound = new Error()
+      const moduleNotFound = new Error(`Cannot find module 'test-build-module'`)
       moduleNotFound.code = 'MODULE_NOT_FOUND'
       throw moduleNotFound
     })
@@ -473,6 +473,7 @@ describe('core: module', () => {
     const result = await module.addModule('test-build-module', true)
 
     expect(result).toBeUndefined()
-    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used. Silently ignoring module as programatic usage detected.')
+    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.')
+    expect(consola.warn).toBeCalledWith('Silently ignoring module as programatic usage detected.')
   })
 })
