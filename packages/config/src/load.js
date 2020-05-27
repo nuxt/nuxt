@@ -5,6 +5,7 @@ import consola from 'consola'
 import dotenv from 'dotenv'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
+import destr from 'destr'
 import { defaultNuxtConfigFile } from './config'
 
 export async function loadNuxtConfig ({
@@ -144,7 +145,7 @@ function expand (target, source = {}) {
       return value
     }
     const matches = value.match(/(.?\${?(?:[a-zA-Z0-9_:]+)?}?)/g) || []
-    return matches.reduce((newValue, match) => {
+    return destr(matches.reduce((newValue, match) => {
       const parts = /(.?)\${?([a-zA-Z0-9_:]+)?}?/g.exec(match)
       const prefix = parts[1]
 
@@ -164,7 +165,7 @@ function expand (target, source = {}) {
       }
 
       return newValue.replace(replacePart, value)
-    }, value)
+    }, value))
   }
 
   for (const key in target) {
