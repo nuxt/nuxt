@@ -140,6 +140,9 @@ function expand (target, source = {}) {
   }
 
   function interpolate (value) {
+    if (typeof value !== 'string') {
+      return value
+    }
     const matches = value.match(/(.?\${?(?:[a-zA-Z0-9_:]+)?}?)/g) || []
     return matches.reduce((newValue, match) => {
       const parts = /(.?)\${?([a-zA-Z0-9_:]+)?}?/g.exec(match)
