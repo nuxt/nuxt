@@ -10,11 +10,11 @@
   "dependencies": {
     "@nuxt/devalue": "^1.2.4",
     "@nuxt/utils": "2.12.1",
-    "consola": "^2.12.1",
+    "consola": "^2.12.2",
     "fs-extra": "^9.0.0",
     "lru-cache": "^5.1.1",
     "vue": "^2.6.11",
-    "vue-meta": "^2.3.3",
+    "vue-meta": "^2.3.4",
     "vue-server-renderer": "^2.6.11"
   },
   "publishConfig": {
