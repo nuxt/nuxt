@@ -2,7 +2,6 @@
 export default () => ({
   dir: 'dist',
   routes: [],
-  payload: {},
   exclude: [],
   concurrency: 500,
   interval: 0,

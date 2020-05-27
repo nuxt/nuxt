@@ -7,11 +7,11 @@ export default {
   },
   hooks: {
     export: {
-      before ({ payload }) {
-        payload.shared = true
+      before ({ setPayload }) {
+        setPayload({ shared: true })
       },
-      route ({ route, payload }) {
-        payload.myRoute = route
+      route ({ route, setPayload }) {
+        setPayload({ myRoute: route })
       }
     }
   }

@@ -195,7 +195,6 @@ Object {
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
-    "payload": Object {},
     "routes": Array [],
     "staticAssets": Object {
       "base": "/_nuxt/static",
