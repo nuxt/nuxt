@@ -1,6 +1,7 @@
 export default {
   publicRuntimeConfig: {
-    baseURL: process.env.BASE_URL
+    baseURL: process.env.BASE_URL,
+    isFixture: true
   },
   privateRuntimeConfig: {
     baseURL: '${PUBLIC_URL}${BASE_URL}',

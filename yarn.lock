@@ -4823,6 +4823,11 @@ destr@^0.1.4:
   resolved "https://registry.npmjs.org/destr/-/destr-0.1.4.tgz#5ade43c2c02ffa7ad80e4d1516db309158d03d90"
   integrity sha512-jGvlTgd/uZHtImTF8idU1FGu0Sg2/KBRp17HdsZ9dgZSkjt6lJRp/YW1gzHb1iEk0yJ4RrSQ3ujxbswa0gmwzQ==
 
+destr@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.npmjs.org/destr/-/destr-0.1.7.tgz#630dcd9b78407759955a93b9536a76d4ab9510fc"
+  integrity sha512-QC4u2bsOmdMo8g4yo/WShyZg9FnHVDqS8KJaYNNb1Hq1cL0sJTT2e2YLRapntrF8tUNIeZlGt5Mq/+ebaNoZaw==
+
 destroy@^1.0.4, destroy@~1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"

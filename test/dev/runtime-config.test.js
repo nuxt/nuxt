@@ -25,7 +25,7 @@ describe('basic ssr', () => {
 
     expect(payload.data[0].serverConfig).toMatchObject({
       baseURL: 'https://google.com/api',
-      API_SECRET: '1234'
+      API_SECRET: 1234
     })
   })
 
