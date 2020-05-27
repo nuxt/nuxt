@@ -47,7 +47,6 @@ describe('generator: generate route', () => {
     expect(path.join).toBeCalledTimes(2)
     expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
     expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
-    expect(nuxt.callHook).toBeCalledTimes(2)
     expect(nuxt.callHook).nthCalledWith(1, 'generate:page', {
       route,
       html: 'rendered html',
@@ -82,7 +81,6 @@ describe('generator: generate route', () => {
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
-    expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:routeFailed', {
       route,
       errors: [{ type: 'unhandled', route, error }]
