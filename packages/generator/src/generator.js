@@ -2,6 +2,7 @@ import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
+import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
@@ -27,7 +28,7 @@ export default class Generator {
     // Shared payload
     this._payload = null
     this.setPayload = (payload) => {
-      this._payload = { ...this._payload, ...payload }
+      this._payload = defu(payload, this._payload)
     }
   }
 
@@ -277,7 +278,7 @@ export default class Generator {
     const pageErrors = []
 
     const setPayload = (_payload) => {
-      payload = { ...payload, ..._payload }
+      payload = defu(_payload, payload)
     }
 
     // Apply shared payload
