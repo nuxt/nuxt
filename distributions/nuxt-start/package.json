@@ -61,9 +61,9 @@
     "node-fetch": "^2.6.0",
     "vue": "^2.6.11",
     "vue-client-only": "^2.0.0",
-    "vue-meta": "^2.3.3",
+    "vue-meta": "^2.3.4",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.2.0",
+    "vue-router": "^3.3.1",
     "vuex": "^3.4.0"
   },
   "engines": {
