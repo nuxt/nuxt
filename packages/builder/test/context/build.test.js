@@ -1,15 +1,20 @@
+import { TARGETS } from '@nuxt/utils'
 import BuildContext from '../../src/context/build'
 
 describe('builder: buildContext', () => {
   test('should construct context', () => {
     const builder = {
-      nuxt: { options: {} }
+      nuxt: {
+        options: {
+          target: TARGETS.server
+        }
+      }
     }
     const context = new BuildContext(builder)
     expect(context._builder).toEqual(builder)
     expect(context.nuxt).toEqual(builder.nuxt)
     expect(context.options).toEqual(builder.nuxt.options)
-    expect(context.isStatic).toEqual(false)
+    expect(context.target).toEqual('server')
   })
 
   test('should return builder plugins context', () => {

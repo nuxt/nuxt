@@ -377,6 +377,11 @@ describe('basic ssr', () => {
     expect(html).toContain('<h1>Nested symlink page</h1>')
   })
 
+  test('/components', async () => {
+    const { html } = await nuxt.server.renderRoute('/components')
+    expect(html).toContain('Auto discovered component!')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

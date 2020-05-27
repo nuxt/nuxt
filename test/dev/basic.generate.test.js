@@ -4,6 +4,7 @@ import { resolve } from 'path'
 import { remove } from 'fs-extra'
 import serveStatic from 'serve-static'
 import finalhandler from 'finalhandler'
+import { TARGETS } from '@nuxt/utils'
 import { Builder, Generator, getPort, loadFixture, Nuxt, rp, listPaths, equalOrStartsWith } from '../utils'
 
 let port
@@ -19,7 +20,12 @@ let changedFileName
 
 describe('basic generate', () => {
   beforeAll(async () => {
-    const config = await loadFixture('basic', { generate: { dir: '.nuxt-generate' } })
+    const config = await loadFixture('basic', {
+      generate: {
+        static: false,
+        dir: '.nuxt-generate'
+      }
+    })
     const nuxt = new Nuxt(config)
     await nuxt.ready()
 
@@ -47,7 +53,7 @@ describe('basic generate', () => {
   })
 
   test('Check builder', () => {
-    expect(builder.bundleBuilder.buildContext.isStatic).toBe(true)
+    expect(builder.bundleBuilder.buildContext.target).toBe(TARGETS.static)
     expect(builder.build).toHaveBeenCalledTimes(1)
   })
 
@@ -173,10 +179,9 @@ describe('basic generate', () => {
   test('/validate should not be server-rendered', async () => {
     const { body: html } = await rp(url('/validate'))
     expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).toContain('serverRendered:!1')
   })
 
-  test('/validate -> should display a 404', async () => {
+  test.posix('/validate -> should display a 404', async () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/validate'))
     const html = window.document.body.innerHTML
     expect(html).toContain('This page could not be found')
@@ -191,7 +196,6 @@ describe('basic generate', () => {
   test('/redirect should not be server-rendered', async () => {
     const { body: html } = await rp(url('/redirect'))
     expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).toContain('serverRendered:!1')
   })
 
   test('/redirect -> check redirected source', async () => {
@@ -208,6 +212,21 @@ describe('basic generate', () => {
         body: expect.stringContaining('Cannot GET /users/1')
       }
     })
+  })
+
+  test('nuxt re-generating with no subfolders', async () => {
+    generator.nuxt.options.generate.subFolders = false
+    generator.getAppRoutes = jest.fn(() => [])
+    await expect(generator.generate()).resolves.toBeTruthy()
+  })
+
+  test('/users/1.html', async () => {
+    const { body } = await rp(url('/users/1.html'))
+    expect(body).toContain('<h1>User: 1</h1>')
+    expect(existsSync(resolve(distDir, 'users/1.html'))).toBe(true)
+    expect(
+      existsSync(resolve(distDir, 'users/1/index.html'))
+    ).toBe(false)
   })
 
   test('/-ignored', async () => {

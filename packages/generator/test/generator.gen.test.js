@@ -57,7 +57,6 @@ describe('generator: generate routes', () => {
     expect(generator.generateRoutes).toBeCalledTimes(1)
     expect(generator.generateRoutes).toBeCalledWith(routes)
     expect(generator.afterGenerate).toBeCalledTimes(1)
-    expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:done', generator, errors)
   })
 

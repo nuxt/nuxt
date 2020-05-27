@@ -5,6 +5,9 @@ export const createNuxt = () => ({
     build: {
       watch: []
     },
+    render: {
+      ssr: true
+    },
     router: {},
     dir: {
       app: 'app'

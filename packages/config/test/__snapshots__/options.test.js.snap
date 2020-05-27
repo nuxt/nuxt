@@ -190,11 +190,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": "/_nuxt/static",
+      "dir": "static",
+      "version": "x",
+      "versionBase": "/_nuxt/static/x",
+    },
     "subFolders": true,
   },
   "globalName": "nuxt",
@@ -287,6 +294,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,
@@ -339,6 +348,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -354,6 +364,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": "/var/nuxt/test",
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -364,6 +375,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {

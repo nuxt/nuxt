@@ -136,6 +136,7 @@ svg {
   display: inline-block;
   vertical-align: baseline;
   width: 1.1em;
+  height: 0.825em;
   position: relative;
   top: 1px;
 }

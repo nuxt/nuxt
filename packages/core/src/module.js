@@ -45,11 +45,10 @@ export default class ModuleContainer {
       throw new Error('Template src not found: ' + src)
     }
 
-    // Generate unique and human readable dst filename
-    const dst =
-      template.fileName ||
-      path.basename(srcPath.dir) + `.${srcPath.name}.${hash(src)}` + srcPath.ext
-
+    // Mostly for DX, some people prefers `filename` vs `fileName`
+    const fileName = template.fileName || template.filename
+    // Generate unique and human readable dst filename if not provided
+    const dst = fileName || `${path.basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
     // Add to templates list
     const templateObj = {
       src,
@@ -58,6 +57,7 @@ export default class ModuleContainer {
     }
 
     this.options.build.templates.push(templateObj)
+
     return templateObj
   }
 
@@ -112,10 +112,10 @@ export default class ModuleContainer {
   }
 
   requireModule (moduleOpts) {
-    return this.addModule(moduleOpts, true /* require once */)
+    return this.addModule(moduleOpts)
   }
 
-  async addModule (moduleOpts, requireOnce) {
+  async addModule (moduleOpts) {
     let src
     let options
     let handler
@@ -176,15 +176,10 @@ export default class ModuleContainer {
       throw new TypeError('Module should export a function: ' + src)
     }
 
-    // Resolve module meta
-    let key = (handler.meta && handler.meta.name) || handler.name
-    if (!key || key === 'default') {
-      key = src
-    }
-
-    // Update requiredModules
+    // Ensure module is required once
+    const key = (handler.meta && handler.meta.name) || src
     if (typeof key === 'string') {
-      if (requireOnce && this.requiredModules[key]) {
+      if (this.requiredModules[key]) {
         return
       }
       this.requiredModules[key] = { src, options, handler }

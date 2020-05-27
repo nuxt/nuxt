@@ -29,8 +29,8 @@ describe('modern client mode (SPA)', () => {
 
   test('should contain module modern resources', async () => {
     const { body: response } = await rp(url('/'))
-    expect(response).toContain('<script type="module" src="/_nuxt/modern-app.js" crossorigin="use-credentials"')
-    expect(response).toContain('<script type="module" src="/_nuxt/modern-commons.app.js" crossorigin="use-credentials"')
+    expect(response).toContain('<script src="/_nuxt/modern-app.js" type="module" crossorigin="use-credentials"')
+    expect(response).toContain('<script src="/_nuxt/modern-commons.app.js" type="module" crossorigin="use-credentials"')
   })
 
   test('should contain legacy preload resources', async () => {
@@ -52,6 +52,11 @@ describe('modern client mode (SPA)', () => {
     const { body: response } = await rp(url('/'), { headers: { 'user-agent': modernUA } })
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-app.js" as="script">')
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/modern-commons.app.js" as="script">')
+  })
+
+  test('should contain safari nomodule fix', async () => {
+    const { body: response } = await rp(url('/'), { headers: { 'user-agent': modernUA } })
+    expect(response).toContain('src="/_nuxt/safari-nomodule-fix.js" crossorigin="use-credentials"')
   })
 
   test('should contain modern http2 pushed resources', async () => {

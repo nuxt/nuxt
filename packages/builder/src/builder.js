@@ -1,4 +1,5 @@
 import path from 'path'
+import chalk from 'chalk'
 import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -7,7 +8,6 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
-import chalk from 'chalk'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'
@@ -23,7 +23,9 @@ import {
   determineGlobals,
   stripWhitespace,
   isIndexFileAndFolder,
-  scanRequireTree
+  scanRequireTree,
+  TARGETS,
+  isFullStatic
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -102,6 +104,7 @@ export default class Builder {
   }
 
   forGenerate () {
+    this.options.target = TARGETS.static
     this.bundleBuilder.forGenerate()
   }
 
@@ -122,6 +125,13 @@ export default class Builder {
       consola.info('Initial build may take a while')
     } else {
       consola.info('Production build')
+      if (this.options.render.ssr) {
+        consola.info(`Bundling for ${chalk.bold.yellow('server')} and ${chalk.bold.green('client')} side`)
+      } else {
+        consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
+      }
+      const target = isFullStatic(this.options) ? 'full static' : this.options.target
+      consola.info(`Target: ${chalk.bold.cyan(target)}`)
     }
 
     // Wait for nuxt ready
@@ -143,8 +153,8 @@ export default class Builder {
 
     consola.debug(`App root: ${this.options.srcDir}`)
 
-    // Create .nuxt/, .nuxt/components and .nuxt/dist folders
-    await fsExtra.remove(r(this.options.buildDir))
+    // Create or empty .nuxt/, .nuxt/components and .nuxt/dist folders
+    await fsExtra.emptyDir(r(this.options.buildDir))
     const buildDirs = [r(this.options.buildDir, 'components')]
     if (!this.options.dev) {
       buildDirs.push(
@@ -152,7 +162,7 @@ export default class Builder {
         r(this.options.buildDir, 'dist', 'server')
       )
     }
-    await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
+    await Promise.all(buildDirs.map(dir => fsExtra.emptyDir(dir)))
 
     // Call ready hook
     await this.nuxt.callHook('builder:prepared', this, this.options.build)
@@ -760,6 +770,11 @@ export default class Builder {
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
+
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
+      nuxtRestartWatch.push(this.options._envConfig.dotenv)
+    }
+
     // If default page displayed, watch for first page creation
     if (this._nuxtPages && this._defaultPage) {
       nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))

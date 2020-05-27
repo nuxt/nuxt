@@ -11,6 +11,7 @@ export default {
     }
   },
   render: {
+    csp: true,
     crossorigin: 'use-credentials',
     http2: {
       push: true
