@@ -63,4 +63,8 @@ export interface NuxtOptions extends Record<string, any> {
 }
 
 export type NuxtConfig = Partial<NuxtOptions>
+
+/**
+ * @deprecated Use NuxtConfig instead
+*/
 export type Configuration = NuxtConfig// Legacy alias
