@@ -29,6 +29,7 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint && yarn ls-lint",
     "test:unit": "jest packages --forceExit",
+    "test:types": "tsc -p packages/types/test",
     "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1488"
   },
   "devDependencies": {
@@ -73,6 +74,7 @@
     "rollup-plugin-license": "^2.1.0",
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.44.0",
+    "typescript": "~3.8",
     "vue-jest": "^4.0.0-beta.2"
   },
   "resolutions": {
