@@ -71,6 +71,9 @@ export async function loadNuxtConfig ({
       }
     }
 
+    // Don't mutate options export
+    options = { ...options }
+
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = configFile
 
