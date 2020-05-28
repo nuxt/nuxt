@@ -56,7 +56,7 @@ export interface NuxtOptions extends Record<string, any> {
   server: NuxtOptionsServer
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
-  transition?: Transition
+  transition: Transition
   'vue.config': NuxtOptionsVueConfiguration
   watch: string[]
   watchers: NuxtOptionsWatchers
