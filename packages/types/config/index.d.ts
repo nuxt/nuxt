@@ -34,6 +34,7 @@ export interface NuxtOptions extends Record<string, any> {
   features: NuxtOptionsFeatures
   fetch: NuxtOptionsFetch
   generate: NuxtOptionsGenerate
+  export: NuxtOptionsGenerate
   globalName: string
   globals: NuxtOptionsGlobals
   head: NuxtOptionsHead
