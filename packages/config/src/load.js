@@ -6,6 +6,7 @@ import dotenv from 'dotenv'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 import destr from 'destr'
+import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
 export async function loadNuxtConfig ({
@@ -71,7 +72,7 @@ export async function loadNuxtConfig ({
     }
 
     // Don't mutate options export
-    options = defu(configOverrides, options)
+    options = { ...options }
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = configFile
@@ -86,6 +87,15 @@ export async function loadNuxtConfig ({
   if (typeof options.rootDir !== 'string') {
     options.rootDir = rootDir
   }
+
+  // Load Combine configs
+  // Priority: configOverrides > nuxtConfig > .nuxtrc > .nuxtrc (global)
+  options = defu(
+    configOverrides,
+    options,
+    rc.read({ name: '.nuxtrc', dir: options.rootDir }),
+    rc.readUser('.nuxtrc')
+  )
 
   // Load env to options._env
   options._env = env
