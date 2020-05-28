@@ -30,6 +30,8 @@ jobs:
           NODE_OPTIONS: "--max_old_space_size=4096"
       - name: lint app
         run: yarn lint:app
+      - name: test types
+        run: yarn test:types
       - name: test dev
         run: yarn test:dev -w=2
       - name: test unit
