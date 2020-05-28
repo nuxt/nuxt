@@ -19,43 +19,45 @@ import { NuxtConfigurationVueConfiguration } from './vue-configuration'
 import { NuxtConfigurationWatchers } from './watchers'
 
 export interface Configuration extends Record<string, any> {
-  build?: NuxtConfigurationBuild
-  buildDir?: string
-  buildModules?: NuxtConfigurationModule[]
-  cli?: NuxtConfigurationCli
-  css?: string[]
-  dev?: boolean
-  dir?: { [key in 'app' | 'assets' | 'layouts' | 'middleware' | 'pages' | 'static' | 'store']?: string }
-  env?: NuxtConfigurationEnv
-  extensions?: string[]
-  features?: NuxtConfigurationFeatures
-  fetch?: NuxtConfigurationFetch
-  generate?: NuxtConfigurationGenerate
-  globalName?: string
-  globals?: NuxtConfigurationGlobals
-  head?: NuxtConfigurationHead
-  hooks?: NuxtConfigurationHooks
-  ignorePrefix?: string
-  ignore?: string[]
-  layoutTransition?: Transition
-  loading?: NuxtConfigurationLoading | false | string
-  loadingIndicator?: NuxtConfigurationLoadingIndicator | false | string
-  mode?: 'spa' | 'universal'
-  modern?: 'client' | 'server' | boolean
-  modules?: NuxtConfigurationModule[]
-  modulesDir?: string[]
-  plugins?: NuxtConfigurationPlugin[]
-  render?: NuxtConfigurationRender
-  rootDir?: string
-  router?: NuxtConfigurationRouter
-  server?: NuxtConfigurationServer
-  serverMiddleware?: NuxtConfigurationServerMiddleware[]
-  srcDir?: string
+  build: NuxtConfigurationBuild
+  buildDir: string
+  buildModules: NuxtConfigurationModule[]
+  cli: NuxtConfigurationCli
+  css: string[]
+  dev: boolean
+  dir: { [key in 'app' | 'assets' | 'layouts' | 'middleware' | 'pages' | 'static' | 'store']?: string }
+  env: NuxtConfigurationEnv
+  extensions: string[]
+  features: NuxtConfigurationFeatures
+  fetch: NuxtConfigurationFetch
+  generate: NuxtConfigurationGenerate
+  globalName: string
+  globals: NuxtConfigurationGlobals
+  head: NuxtConfigurationHead
+  hooks: NuxtConfigurationHooks
+  ignorePrefix: string
+  ignore: string[]
+  layoutTransition: Transition
+  loading: NuxtConfigurationLoading | false | string
+  loadingIndicator: NuxtConfigurationLoadingIndicator | false | string
+  mode: 'spa' | 'universal'
+  modern: 'client' | 'server' | boolean
+  modules: NuxtConfigurationModule[]
+  modulesDir: string[]
+  plugins: NuxtConfigurationPlugin[]
+  render: NuxtConfigurationRender
+  rootDir: string
+  router: NuxtConfigurationRouter
+  server: NuxtConfigurationServer
+  serverMiddleware: NuxtConfigurationServerMiddleware[]
+  srcDir: string
   transition?: Transition
-  'vue.config'?: NuxtConfigurationVueConfiguration
-  watch?: string[]
-  watchers?: NuxtConfigurationWatchers
+  'vue.config': NuxtConfigurationVueConfiguration
+  watch: string[]
+  watchers: NuxtConfigurationWatchers
 }
+
+export type NuxtConfig = Partial<Configuration>
 
 export {
   Module,
