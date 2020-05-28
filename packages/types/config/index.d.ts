@@ -44,6 +44,7 @@ export interface NuxtOptions extends Record<string, any> {
   loading: NuxtOptionsLoading | false | string
   loadingIndicator: NuxtOptionsLoadingIndicator | false | string
   mode: 'spa' | 'universal'
+  target:'server' | 'static'
   modern: 'client' | 'server' | boolean
   modules: NuxtOptionsModule[]
   modulesDir: string[]
