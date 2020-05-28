@@ -299,13 +299,15 @@ export default class Generator {
 
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && this.options.render.ssr) {
-        const trailingSlashReplacement = this.options.router.trailingSlash ? '/' : ''
+        const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
-          const href = (el.getAttribute('href') || '')
-            .replace(/\/+$/, trailingSlashReplacement)
+          const sanitizedHref = (el.getAttribute('href') || '')
+            .replace(/\/+$/, '')
             .split('?')[0]
             .split('#')[0]
             .trim()
+
+          const href = sanitizedHref + possibleTrailingSlash
 
           if (href.startsWith('/') && !path.extname(href) && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
             this.generatedRoutes.add(href) // add the route to the tracked list
