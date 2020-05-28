@@ -89,7 +89,7 @@ export async function loadNuxtConfig ({
   }
 
   // Load Combine configs
-  // Periority: configOverrides > nuxtConfig > .nuxtrc > .nuxtrc (global)
+  // Priority: configOverrides > nuxtConfig > .nuxtrc > .nuxtrc (global)
   options = defu(
     configOverrides,
     options,
