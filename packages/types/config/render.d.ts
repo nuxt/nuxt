@@ -1,5 +1,5 @@
 /**
- * NuxtConfigurationRender
+ * NuxtOptionsRender
  * Documentation: https://nuxtjs.org/api/configuration-render
  *                https://ssr.vuejs.org/api/#renderer-options
  *                https://github.com/expressjs/compression#readme
@@ -13,7 +13,7 @@ import { IncomingMessage } from 'connect'
 import { Options as EtagOptions } from 'etag'
 import { ServeStaticOptions } from 'serve-static'
 import { BundleRendererOptions } from 'vue-server-renderer'
-import { NuxtConfigurationServerMiddleware } from './server-middleware'
+import { NuxtOptionsServerMiddleware } from './server-middleware'
 
 type NuxtEtagOptions = EtagOptions & {
   hash?: (html: string) => string
@@ -46,9 +46,9 @@ interface PreloadFile {
   fileWithoutQuery: string
 }
 
-export interface NuxtConfigurationRender {
+export interface NuxtOptionsRender {
   bundleRenderer?: BundleRendererOptions
-  compressor?: CompressionOptions | NuxtConfigurationServerMiddleware | false
+  compressor?: CompressionOptions | NuxtOptionsServerMiddleware | false
   csp?: boolean | CspOptions
   dist?: ServeStaticOptions
   etag?: NuxtEtagOptions | false

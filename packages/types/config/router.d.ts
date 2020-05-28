@@ -1,6 +1,6 @@
 
 /**
- * NuxtConfigurationRouter
+ * NuxtOptionsRouter
  * Documentation: https://nuxtjs.org/api/configuration-router
  *                https://router.vuejs.org/api/#router-construction-options
  */
@@ -14,7 +14,7 @@ export interface NuxtRouteConfig extends Pick<RouteConfig, Exclude<keyof RouteCo
   component?: RouteConfig['component'] | string
 }
 
-export interface NuxtConfigurationRouter extends RouterOptions {
+export interface NuxtOptionsRouter extends RouterOptions {
   routeNameSplitter?: string
   extendRoutes?(routes: NuxtRouteConfig[], resolve: (...pathSegments: string[]) => string): void
   linkPrefetchedClass?: string

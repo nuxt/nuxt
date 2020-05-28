@@ -1,6 +1,6 @@
 /**
- * NuxtConfigurationEnv
+ * NuxtOptionsEnv
  * Documentation: https://nuxtjs.org/api/configuration-env
  */
 
-export type NuxtConfigurationEnv = Record<string, string>
+export type NuxtOptionsEnv = Record<string, string>

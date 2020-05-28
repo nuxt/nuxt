@@ -1,9 +1,9 @@
 /**
- * NuxtConfigurationServer
+ * NuxtOptionsServer
  * Documentation: https://nuxtjs.org/api/configuration-server
  */
 
-export interface NuxtConfigurationServer {
+export interface NuxtOptionsServer {
   host?: string
   https?: {
     cert?: string | Buffer

@@ -1,65 +1,64 @@
 import { Transition } from '../app'
-import { NuxtConfigurationBuild } from './build'
-import { NuxtConfigurationCli } from './cli'
-import { NuxtConfigurationEnv } from './env'
-import { NuxtConfigurationFeatures } from './features'
-import { NuxtConfigurationFetch } from './fetch'
-import { NuxtConfigurationGenerate } from './generate'
-import { NuxtConfigurationHead } from './head'
-import { NuxtConfigurationHooks } from './hooks'
-import { NuxtConfigurationGlobals } from './globals'
-import { NuxtConfigurationLoading, NuxtConfigurationLoadingIndicator } from './loading'
-import { NuxtConfigurationModule, Module } from './module'
-import { NuxtConfigurationPlugin } from './plugin'
-import { NuxtConfigurationRender } from './render'
-import { NuxtConfigurationRouter } from './router'
-import { NuxtConfigurationServer } from './server'
-import { NuxtConfigurationServerMiddleware, ServerMiddleware } from './server-middleware'
-import { NuxtConfigurationVueConfiguration } from './vue-configuration'
-import { NuxtConfigurationWatchers } from './watchers'
+import { NuxtOptionsBuild } from './build'
+import { NuxtOptionsCli } from './cli'
+import { NuxtOptionsEnv } from './env'
+import { NuxtOptionsFeatures } from './features'
+import { NuxtOptionsFetch } from './fetch'
+import { NuxtOptionsGenerate } from './generate'
+import { NuxtOptionsHead } from './head'
+import { NuxtOptionsHooks } from './hooks'
+import { NuxtOptionsGlobals } from './globals'
+import { NuxtOptionsLoading, NuxtOptionsLoadingIndicator } from './loading'
+import { NuxtOptionsModule } from './module'
+import { NuxtOptionsPlugin } from './plugin'
+import { NuxtOptionsRender } from './render'
+import { NuxtOptionsRouter } from './router'
+import { NuxtOptionsServer } from './server'
+import { NuxtOptionsServerMiddleware } from './server-middleware'
+import { NuxtOptionsVueConfiguration } from './vue-configuration'
+import { NuxtOptionsWatchers } from './watchers'
 
-export interface Configuration extends Record<string, any> {
-  build: NuxtConfigurationBuild
+export { Module } from './module'
+export { ServerMiddleware } from './server-middleware'
+
+export interface NuxtOptions extends Record<string, any> {
+  build: NuxtOptionsBuild
   buildDir: string
-  buildModules: NuxtConfigurationModule[]
-  cli: NuxtConfigurationCli
+  buildModules: NuxtOptionsModule[]
+  cli: NuxtOptionsCli
   css: string[]
   dev: boolean
   dir: { [key in 'app' | 'assets' | 'layouts' | 'middleware' | 'pages' | 'static' | 'store']?: string }
-  env: NuxtConfigurationEnv
+  env: NuxtOptionsEnv
   extensions: string[]
-  features: NuxtConfigurationFeatures
-  fetch: NuxtConfigurationFetch
-  generate: NuxtConfigurationGenerate
+  features: NuxtOptionsFeatures
+  fetch: NuxtOptionsFetch
+  generate: NuxtOptionsGenerate
   globalName: string
-  globals: NuxtConfigurationGlobals
-  head: NuxtConfigurationHead
-  hooks: NuxtConfigurationHooks
+  globals: NuxtOptionsGlobals
+  head: NuxtOptionsHead
+  hooks: NuxtOptionsHooks
   ignorePrefix: string
   ignore: string[]
   layoutTransition: Transition
-  loading: NuxtConfigurationLoading | false | string
-  loadingIndicator: NuxtConfigurationLoadingIndicator | false | string
+  loading: NuxtOptionsLoading | false | string
+  loadingIndicator: NuxtOptionsLoadingIndicator | false | string
   mode: 'spa' | 'universal'
   modern: 'client' | 'server' | boolean
-  modules: NuxtConfigurationModule[]
+  modules: NuxtOptionsModule[]
   modulesDir: string[]
-  plugins: NuxtConfigurationPlugin[]
-  render: NuxtConfigurationRender
+  plugins: NuxtOptionsPlugin[]
+  render: NuxtOptionsRender
   rootDir: string
-  router: NuxtConfigurationRouter
-  server: NuxtConfigurationServer
-  serverMiddleware: NuxtConfigurationServerMiddleware[]
+  router: NuxtOptionsRouter
+  server: NuxtOptionsServer
+  serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
   transition?: Transition
-  'vue.config': NuxtConfigurationVueConfiguration
+  'vue.config': NuxtOptionsVueConfiguration
   watch: string[]
-  watchers: NuxtConfigurationWatchers
+  watchers: NuxtOptionsWatchers
 }
 
-export type NuxtConfig = Partial<Configuration>
-
-export {
-  Module,
-  ServerMiddleware
-}
+export type NuxtConfig = Partial<NuxtOptions>
+export type Configuration = NuxtConfig// Legacy alias

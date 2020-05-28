@@ -1,20 +1,20 @@
 /**
- * NuxtConfigurationGenerate
+ * NuxtOptionsGenerate
  * Documentation: https://nuxtjs.org/api/configuration-generate
  */
 
-type NuxtConfigurationGenerateRoute = string | { route: string, payload: any }
+type NuxtOptionsGenerateRoute = string | { route: string, payload: any }
 
-type NuxtConfigurationGenerateRoutesFunction = () => (Promise<NuxtConfigurationGenerateRoute[]> | NuxtConfigurationGenerateRoute[])
-type NuxtConfigurationGenerateRoutesFunctionWithCallback = (callback: (err: Error, routes: NuxtConfigurationGenerateRoute[]) => void) => void
+type NuxtOptionsGenerateRoutesFunction = () => (Promise<NuxtOptionsGenerateRoute[]> | NuxtOptionsGenerateRoute[])
+type NuxtOptionsGenerateRoutesFunctionWithCallback = (callback: (err: Error, routes: NuxtOptionsGenerateRoute[]) => void) => void
 
-export interface NuxtConfigurationGenerate {
+export interface NuxtOptionsGenerate {
   concurrency?: number
   devtools?: boolean
   dir?: string
   exclude?: RegExp[]
   fallback?: string | boolean
   interval?: number
-  routes?: NuxtConfigurationGenerateRoute[] | NuxtConfigurationGenerateRoutesFunction | NuxtConfigurationGenerateRoutesFunctionWithCallback
+  routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
 }

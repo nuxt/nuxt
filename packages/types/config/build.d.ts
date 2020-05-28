@@ -1,5 +1,5 @@
 /**
- * NuxtConfigurationBuild
+ * NuxtOptionsBuild
  * Documentation: https://nuxtjs.org/api/configuration-build
  */
 
@@ -54,7 +54,7 @@ interface UrlLoaderOptions {
   mimetype?: string
 }
 
-interface NuxtConfigurationLoaders {
+interface NuxtOptionsLoaders {
   css?: CssLoaderOptions
   cssModules?: CssLoaderOptions
   file?: FileLoaderOptions
@@ -131,7 +131,7 @@ interface PostcssConfiguration {
   }
 }
 
-export interface NuxtConfigurationBuild {
+export interface NuxtOptionsBuild {
   additionalExtensions?: string[]
   analyze?: BundleAnalyzerPlugin.Options | boolean
   babel?: NuxtBabelOptions
@@ -143,7 +143,7 @@ export interface NuxtConfigurationBuild {
   extend?(
     config: WebpackConfiguration,
     ctx: {
-      loaders: NuxtConfigurationLoaders
+      loaders: NuxtOptionsLoaders
     } & NuxtWebpackEnv
   ): void
   extractCSS?: boolean | Record<string, any>
@@ -153,7 +153,7 @@ export interface NuxtConfigurationBuild {
   hotMiddleware?: WebpackHotMiddlewareOptions & { client?: WebpackHotMiddlewareClientOptions }
   html?: { minify: HtmlMinifierOptions }
   indicator?: boolean
-  loaders?: NuxtConfigurationLoaders
+  loaders?: NuxtOptionsLoaders
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean

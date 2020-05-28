@@ -1,5 +1,5 @@
 /**
- * NuxtConfigurationHooks
+ * NuxtOptionsHooks
  * Documentation: https://nuxtjs.org/api/configuration-hooks
  *                https://nuxtjs.org/api/internals-nuxt#hooks
  *                https://nuxtjs.org/api/internals-renderer#hooks
@@ -10,7 +10,7 @@
 
 import { Server as ConnectServer } from 'connect'
 
-export interface NuxtConfigurationHooks {
+export interface NuxtOptionsHooks {
   build?: {
     before?(builder: any, buildOptions: any): void
     compile?(params: { name: 'client' | 'server', compiler: any }): void

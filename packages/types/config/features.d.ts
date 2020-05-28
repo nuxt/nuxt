@@ -1,4 +1,4 @@
-export interface NuxtConfigurationFeatures {
+export interface NuxtOptionsFeatures {
   asyncData?: boolean
   clientOnline?: boolean
   clientPrefetch?: boolean

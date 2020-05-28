@@ -1,9 +1,9 @@
 /**
- * NuxtConfigurationFetch
+ * NuxtOptionsFetch
  * Documentation: ?
  */
 
-export interface NuxtConfigurationFetch {
+export interface NuxtOptionsFetch {
   client?: boolean
   server?: boolean
 }

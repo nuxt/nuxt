@@ -1,9 +1,9 @@
 /**
- * NuxtConfigurationLoading
+ * NuxtOptionsLoading
  * Documentation: https://nuxtjs.org/api/configuration-loading
  */
 
-export interface NuxtConfigurationLoading {
+export interface NuxtOptionsLoading {
   color?: string
   continuous?: boolean
   css?: boolean
@@ -15,11 +15,11 @@ export interface NuxtConfigurationLoading {
 }
 
 /**
- * NuxtConfigurationLoadingIndicator
+ * NuxtOptionsLoadingIndicator
  * Documentation: https://nuxtjs.org/api/configuration-loading-indicator
  */
 
-export interface NuxtConfigurationLoadingIndicator {
+export interface NuxtOptionsLoadingIndicator {
   background?: string
   color?: string
   color2?: string
