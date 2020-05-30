@@ -111,12 +111,17 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     let HEAD = ''
+    let metaInjectorOptions
 
     // Inject head meta
     // (this is unset when features.meta is false in server template)
     const meta = renderContext.meta && renderContext.meta.inject()
     if (meta) {
-      HEAD += meta.title.text() + meta.meta.text()
+      metaInjectorOptions = {
+        appId: renderContext.nuxt.serverRendered ? renderContext.meta.getOptions().ssrAppId : '1'
+      }
+
+      HEAD += meta.title.text(metaInjectorOptions) + meta.meta.text(metaInjectorOptions)
     }
 
     // Add <base href=""> meta if router base specified
@@ -125,10 +130,10 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
-      HEAD += meta.link.text() +
-        meta.style.text() +
-        meta.script.text() +
-        meta.noscript.text()
+      HEAD += meta.link.text(metaInjectorOptions) +
+        meta.style.text(metaInjectorOptions) +
+        meta.script.text(metaInjectorOptions) +
+        meta.noscript.text(metaInjectorOptions)
     }
 
     // Check if we need to inject scripts and state
@@ -143,12 +148,14 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     if (meta) {
+      const prependInjectorOptions = { ...metaInjectorOptions, pbody: true }
+
       const BODY_PREPEND =
-        meta.meta.text({ pbody: true }) +
-        meta.link.text({ pbody: true }) +
-        meta.style.text({ pbody: true }) +
-        meta.script.text({ pbody: true }) +
-        meta.noscript.text({ pbody: true })
+        meta.meta.text(prependInjectorOptions) +
+        meta.link.text(prependInjectorOptions) +
+        meta.style.text(prependInjectorOptions) +
+        meta.script.text(prependInjectorOptions) +
+        meta.noscript.text(prependInjectorOptions)
 
       if (BODY_PREPEND) {
         APP = `${BODY_PREPEND}${APP}`
@@ -237,17 +244,19 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
+      const appendInjectorOptions = { ...metaInjectorOptions, body: true }
+
       // Append body scripts
-      APP += meta.meta.text({ body: true })
-      APP += meta.link.text({ body: true })
-      APP += meta.style.text({ body: true })
-      APP += meta.script.text({ body: true })
-      APP += meta.noscript.text({ body: true })
+      APP += meta.meta.text(appendInjectorOptions)
+      APP += meta.link.text(appendInjectorOptions)
+      APP += meta.style.text(appendInjectorOptions)
+      APP += meta.script.text(appendInjectorOptions)
+      APP += meta.noscript.text(appendInjectorOptions)
     }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(renderContext.nuxt.serverRendered /* addSrrAttribute */) : '',
       HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
       BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,

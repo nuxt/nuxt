@@ -126,7 +126,8 @@ describe('basic generate', () => {
     const html = window.document.body.innerHTML
     const metas = window.document.getElementsByTagName('meta')
     expect(window.document.title).toBe('My title - Nuxt.js')
-    expect(metas[0].getAttribute('content')).toBe('my meta')
+    expect(metas[0].getAttribute('data-n-head')).toBe('ssr')
+    expect(metas[1].getAttribute('content')).toBe('my meta')
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
   })
 
@@ -190,6 +191,10 @@ describe('basic generate', () => {
   test('/redirect should not be server-rendered', async () => {
     const { body: html } = await rp(url('/redirect'))
     expect(html).toContain('<div id="__nuxt"></div>')
+
+    // vue-meta should also not indicate ssr
+    expect(html).toContain('<html>')
+    expect(html).toContain('<meta data-n-head="1" charset="utf-8">')
   })
 
   test('/redirect -> check redirected source', async () => {
