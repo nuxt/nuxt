@@ -2696,13 +2696,13 @@
   resolved "https://registry.npmjs.org/@types/tapable/-/tapable-1.0.5.tgz#9adbc12950582aa65ead76bffdf39fe0c27a3c02"
   integrity sha512-/gG2M/Imw7cQFp8PGvz/SwocNrmKFjFsm5Pb8HdbHkZ1K8pmuPzOX4VeVoiEecFCVf4CsN1r3/BRvx+6sNqwtQ==
 
-"@types/terser-webpack-plugin@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/@types/terser-webpack-plugin/-/terser-webpack-plugin-2.2.0.tgz#b1561e3118b9319d80ff65798c345877669b3e12"
-  integrity sha512-ywqEfTm7KdKoX9aYx0zYtiFU1z6IHrIYW9FJqeay2Ea58rTPML1J0hvoztGal2Jow3bkgGKcAmEZNL+8LqUVrA==
+"@types/terser-webpack-plugin@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/@types/terser-webpack-plugin/-/terser-webpack-plugin-3.0.0.tgz#8c5781922ce60611037b28186baf192e28780a03"
+  integrity sha512-K5C7izOT8rR4qiE2vfXcQNEJN4lT9cq/2qJgpMUWR2HsjDW/KVrHx2CaHuaXvaqDNsRmdELPLaxeJHiI4GjVrA==
   dependencies:
     "@types/webpack" "*"
-    terser "^4.3.9"
+    terser "^4.6.13"
 
 "@types/uglify-js@*":
   version "3.9.2"
@@ -12732,7 +12732,7 @@ terser-webpack-plugin@^2.3.5:
     terser "^4.6.12"
     webpack-sources "^1.4.3"
 
-terser@^4.1.2, terser@^4.3.9, terser@^4.6.12, terser@^4.6.3:
+terser@^4.1.2, terser@^4.6.12, terser@^4.6.13, terser@^4.6.3:
   version "4.7.0"
   resolved "https://registry.npmjs.org/terser/-/terser-4.7.0.tgz#15852cf1a08e3256a80428e865a2fa893ffba006"
   integrity sha512-Lfb0RiZcjRDXCC3OSHJpEkxJ9Qeqs6mp2v4jf2MHfy8vGERmVDuvjXdd/EnP5Deme5F2yBRBymKmKHCBg2echw==

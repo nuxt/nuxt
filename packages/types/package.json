@@ -22,7 +22,7 @@
     "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
     "@types/pug": "^2.0.4",
     "@types/serve-static": "^1.13.4",
-    "@types/terser-webpack-plugin": "^2.2.0",
+    "@types/terser-webpack-plugin": "^3.0.0",
     "@types/webpack": "^4.41.13",
     "@types/webpack-bundle-analyzer": "^3.8.0",
     "@types/webpack-dev-middleware": "^3.7.1",
