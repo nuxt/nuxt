@@ -832,7 +832,7 @@ async function mountApp (__app) {
     // Add afterEach router hooks
     router.afterEach(normalizeComponents)
     <% if (features.layouts) { %>
-    router.beforeResolve(setLayoutForNextPage.bind(_app))
+    router.afterEach(setLayoutForNextPage.bind(_app))
     <% } %>
     router.afterEach(fixPrepatch.bind(_app))
 
