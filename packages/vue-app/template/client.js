@@ -606,7 +606,9 @@ function setLayoutForNextPage (to, from, next) {
     layout = layout(app.context)
   }
   this.setLayout(layout)
-  next()
+  if (next) {
+    next()
+  }
 }
 <% } %>
 
