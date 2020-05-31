@@ -610,10 +610,10 @@ function setLayoutForNextPage (to, from, next) {
 }
 <% } %>
 
-function checkForErrors (to) {
+function checkForErrors (app) {
   // Hide error component if no error
-  if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
-    this.error()
+  if (app._hadError && app._dateLastError === app.$options.nuxt.dateErr) {
+    app.error()
   }
 }
 
@@ -650,7 +650,7 @@ function fixPrepatch (to, ___) {
         })
       }
     })
-    checkForErrors.call(this)
+    checkForErrors(this)
     <% if (isDev) { %>
     // Hot reloading
     setTimeout(() => hotReloadAPI(this), 100)
@@ -881,7 +881,7 @@ async function mountApp (__app) {
   const clientFirstMount = () => {
     normalizeComponents(router.currentRoute, router.currentRoute)
     setLayoutForNextPage.call(_app, router.currentRoute)
-    checkForErrors.call(_app)
+    checkForErrors(_app)
     // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
     mount()
   }
