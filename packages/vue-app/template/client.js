@@ -596,7 +596,7 @@ function normalizeComponents (to, ___) {
 }
 
 <% if (features.layouts) { %>
-function setLayoutForNextPage (to, from, next) {
+function setLayoutForNextPage (to) {
   // Set layout
   let layout = this.$options.nuxt.err
     ? (NuxtError.options || NuxtError).layout
@@ -606,9 +606,6 @@ function setLayoutForNextPage (to, from, next) {
     layout = layout(app.context)
   }
   this.setLayout(layout)
-  if (next) {
-    next()
-  }
 }
 <% } %>
 
