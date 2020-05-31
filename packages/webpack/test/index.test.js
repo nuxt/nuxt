@@ -17,7 +17,7 @@ describe('webpack: babel', () => {
   test('should allow defining plugins with an array', () => {
     expect(getConfigWithPlugins(['myPlugin']).getBabelOptions().plugins).toEqual(['myPlugin'])
   })
-  test('should allow defining plugins with  function', () => {
+  test('should allow defining plugins with a function', () => {
     expect(getConfigWithPlugins(({ isDev }) => [`myPlugin-${isDev}`]).getBabelOptions().plugins).toEqual(['myPlugin-false'])
   })
 })
