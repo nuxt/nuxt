@@ -12,7 +12,8 @@ const types = {
   perf: { title: '🔥 Performance' },
   examples: { title: '📝 Examples' },
   chore: { title: '🏡 Chore' },
-  test: { title: '👓 Tests' }
+  test: { title: '👓 Tests' },
+  types: { title: '🇹 Types' }
 }
 
 const knownAuthors = [

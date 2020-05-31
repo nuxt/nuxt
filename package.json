@@ -10,6 +10,7 @@
     "distributions/*"
   ],
   "scripts": {
+    "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1488",
     "build": "yarn clean && yarn pkg",
     "changelog": "node -r esm scripts/changelog.js",
     "clean": "yarn clean:build && yarn clean:examples && yarn clean:test",
@@ -18,18 +19,21 @@
     "clean:test": "rimraf test/fixtures/*/dist test/fixtures/*/.nuxt*/",
     "dev": "node -r esm ./scripts/dev.js",
     "postinstall": "lerna link && yarn dev",
-    "ls-lint": "npx @ls-lint/ls-lint",
     "lint": "eslint --ext .js,.mjs,.vue .",
     "lint:app": "eslint-multiplexer eslint --ignore-path packages/vue-app/template/.eslintignore 'test/fixtures/!(missing-plugin)/.nuxt!(-dev)/**' | eslint-multiplexer -b",
+    "ls-lint": "npx @ls-lint/ls-lint",
     "nuxt": "node -r esm ./packages/cli/bin/nuxt-cli.js",
     "pkg": "node -r esm ./scripts/package",
-    "test": "yarn test:fixtures && yarn test:dev && yarn test:unit",
+    "test": "yarn test:fixtures && yarn test:dev && yarn test:unit && test:types",
     "test:dev": "jest test/dev --forceExit",
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint && yarn ls-lint",
-    "test:unit": "jest packages --forceExit",
-    "audit": "improved-yarn-audit --ignore-dev-deps --min-severity moderate -e 1488"
+    "test:types": "tsc -p packages/types/test",
+    "test:unit": "jest packages --forceExit"
+  },
+  "resolutions": {
+    "babel-eslint/@babel/parser": "7.7.5"
   },
   "devDependencies": {
     "@babel/core": "^7.10.1",
@@ -73,9 +77,7 @@
     "rollup-plugin-license": "^2.1.0",
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.44.0",
+    "typescript": "~3.8",
     "vue-jest": "^4.0.0-beta.2"
-  },
-  "resolutions": {
-    "babel-eslint/@babel/parser": "7.7.5"
   }
 }
