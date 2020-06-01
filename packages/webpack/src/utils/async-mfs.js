@@ -1,4 +1,4 @@
-import MFS from 'memory-fs'
+import MFS from 'memfs'
 export default class AsyncMFS extends MFS {}
 
 const syncRegex = /Sync$/
