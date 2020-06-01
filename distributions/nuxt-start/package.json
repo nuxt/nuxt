@@ -63,7 +63,7 @@
     "vue-client-only": "^2.0.0",
     "vue-meta": "^2.3.4",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "^3.3.1",
+    "vue-router": "^3.3.2",
     "vuex": "^3.4.0"
   },
   "engines": {
