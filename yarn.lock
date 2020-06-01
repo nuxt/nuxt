@@ -2111,13 +2111,14 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-1.2.0.tgz#9cfab1e5e421bbaedadb26f7f27a68bcde313c24"
-  integrity sha512-l7nXgwkuX2/lDxEDAyIe3013MS8Jhja29uDVka21gyEbRnL68XOkoV3ws4dkk6QfhT2bcPwtu2C8tYvAhhhUzA==
+"@nuxt/loading-screen@^2.0.0-rc.1":
+  version "2.0.0-rc.1"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.0-rc.1.tgz#5740a5611c4bf35208518122bd3dfc81ac1835b1"
+  integrity sha512-9si9pD340HVSyDBOC0ZjVW+sw/LvNn7Pcz0m59TmgyJ7wFLTrXxalGWDV9N0BqzlP9xDS7oNk5brRhuETMTYSQ==
   dependencies:
     connect "^3.7.0"
-    fs-extra "^8.1.0"
+    fs-extra "^9.0.0"
+    get-port-plz "^0.0.6"
     node-res "^5.0.1"
     serve-static "^1.14.1"
 
@@ -6463,6 +6464,11 @@ fs-extra@^9.0.0:
     jsonfile "^6.0.1"
     universalify "^1.0.0"
 
+fs-memo@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.npmjs.org/fs-memo/-/fs-memo-0.0.6.tgz#c447905dbc7f7f75e8bd4b914dfb3be10b462967"
+  integrity sha512-vJVm33iM7BiTitGV+i4zwTkD92NQxv1yCClFT5SiAnRX1nGtXgodKm3wJ3Rl5dNPqwgBhKtBAf0hq0m2Iid5fw==
+
 fs-minipass@^1.2.5:
   version "1.2.7"
   resolved "https://registry.npmjs.org/fs-minipass/-/fs-minipass-1.2.7.tgz#ccff8570841e7fe4265693da88936c55aed7f7c7"
@@ -6576,6 +6582,13 @@ get-pkg-repo@^1.0.0:
     normalize-package-data "^2.3.0"
     parse-github-repo-url "^1.3.0"
     through2 "^2.0.0"
+
+get-port-plz@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.npmjs.org/get-port-plz/-/get-port-plz-0.0.6.tgz#adc7f0b5407ba04ba0984bdb206ee1af9ffba1a3"
+  integrity sha512-92HZTnhRPo5Mhpw67/+9b3m+/GjWLFQGJL3sE3H9jdjy0CvuL9MFr4jQHymS0nSFWeEQmJ75/RG99uIVPo7YPQ==
+  dependencies:
+    fs-memo "^0.0.6"
 
 get-port@^4.2.0:
   version "4.2.0"
