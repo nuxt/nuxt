@@ -17,7 +17,8 @@
     "fs-extra",
     "chalk",
     "wrap-ansi",
-    "terser-webpack-plugin"
+    "terser-webpack-plugin",
+    "@types/terser-webpack-plugin"
   ],
   "lockFileMaintenance": {
     "enabled": true
