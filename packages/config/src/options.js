@@ -461,7 +461,7 @@ export function getNuxtConfig (_options) {
   if (!options.dev || !options._cli) {
     options.build.loadingScreen = false
   }
-  if (options.build.loadingScreen) {
+  if (options.build.loadingScreen && getPKG('@nuxt/loading-screen')) {
     options._modules.push(['@nuxt/loading-screen', options.build.loadingScreen])
   } else {
     // When loadingScreen is disabled we should also disable build indicator
@@ -469,7 +469,7 @@ export function getNuxtConfig (_options) {
   }
 
   // Components Module
-  if (options.dev && options.components) {
+  if (!options._start && getPKG('@nuxt/telemetry')) {
     options._modules.push('@nuxt/components')
   }
 
