@@ -458,10 +458,10 @@ export function getNuxtConfig (_options) {
 
   // Loading screen
   // Force disable for production and programmatic users
-  if (!options.dev || !options._cli) {
+  if (!options.dev || !options._cli || !getPKG('@nuxt/loading-screen')) {
     options.build.loadingScreen = false
   }
-  if (options.build.loadingScreen && getPKG('@nuxt/loading-screen')) {
+  if (options.build.loadingScreen) {
     options._modules.push(['@nuxt/loading-screen', options.build.loadingScreen])
   } else {
     // When loadingScreen is disabled we should also disable build indicator
