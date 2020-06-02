@@ -289,7 +289,7 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(
       1,
       'Content-Security-Policy',
-      "script-src sha256-hashes 'self' /nuxt.js /test.js; report-uri /report"
+      "script-src sha256-hashes 'self' /nuxt.js /test.js 'unsafe-eval'; report-uri /report"
     )
   })
 
