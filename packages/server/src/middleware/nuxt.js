@@ -148,7 +148,7 @@ const transformPolicyObject = (policies, cspScriptSrcHashes, isDev) => {
 
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
   const hashAndPolicyList = cspScriptSrcHashes.concat('\'self\'', additionalPolicies)
-  
+
   if (isDev) {
     hashAndPolicyList.push('\'unsafe-eval\'')
   }
