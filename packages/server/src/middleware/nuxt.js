@@ -134,20 +134,24 @@ const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev, isR
   }
 
   if (policyObjectAvailable) {
-    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes)
+    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes, isDev)
     return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' ') : v}`).join('; ')
   }
 
   return baseCspStr
 }
 
-const transformPolicyObject = (policies, cspScriptSrcHashes) => {
+const transformPolicyObject = (policies, cspScriptSrcHashes, isDev) => {
   const userHasDefinedScriptSrc = policies['script-src'] && Array.isArray(policies['script-src'])
 
   const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
 
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
   const hashAndPolicyList = cspScriptSrcHashes.concat('\'self\'', additionalPolicies)
+  
+  if (isDev) {
+    hashAndPolicyList.push('\'unsafe-eval\'')
+  }
 
   return { ...policies, 'script-src': hashAndPolicyList }
 }
