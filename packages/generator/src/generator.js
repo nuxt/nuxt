@@ -359,29 +359,30 @@ export default class Generator {
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: fileName, html, export: true }
+    const page = { route, path: fileName, html, exclude: false }
     await this.nuxt.callHook('generate:page', page)
     await this.nuxt.callHook('export:page', { page, errors: pageErrors })
 
-    if (page.export) {
-      page.path = path.join(this.distPath, page.path)
+    if (page.exclude) {
+      return false
+    }
+    page.path = path.join(this.distPath, page.path)
 
-      // Make sure the sub folders are created
-      await fsExtra.mkdirp(path.dirname(page.path))
-      await fsExtra.writeFile(page.path, page.html, 'utf8')
+    // Make sure the sub folders are created
+    await fsExtra.mkdirp(path.dirname(page.path))
+    await fsExtra.writeFile(page.path, page.html, 'utf8')
 
-      await this.nuxt.callHook('generate:routeCreated', { route, path: page.path, errors: pageErrors })
-      await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
+    await this.nuxt.callHook('generate:routeCreated', { route, path: page.path, errors: pageErrors })
+    await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
 
-      if (pageErrors.length) {
-        consola.error('Error generating ' + route)
-        errors.push(...pageErrors)
-      } else {
-        consola.success('Generated ' + route)
-      }
+    if (pageErrors.length) {
+      consola.error('Error generating ' + route)
+      errors.push(...pageErrors)
+    } else {
+      consola.success('Generated ' + route)
     }
 
-    return page.export
+    return true
   }
 
   minifyHtml (html) {

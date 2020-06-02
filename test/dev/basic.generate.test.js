@@ -37,10 +37,8 @@ describe('basic generate', () => {
       writeFileSync(changedFileName, '')
     })
     nuxt.hook('export:page', ({ page, errors }) => {
-      if (errors.length > 0) {
-        if (page.path.indexOf('/skip-on-fail') === 0) {
-          page.export = false
-        }
+      if (errors.length && page.path.includes('/skip-on-fail')) {
+        page.exclude = true
       }
     })
 
