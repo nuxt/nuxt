@@ -469,7 +469,7 @@ export function getNuxtConfig (_options) {
   }
 
   // Components Module
-  if (!options._start && getPKG('@nuxt/telemetry')) {
+  if (!options._start && getPKG('@nuxt/components')) {
     options._modules.push('@nuxt/components')
   }
 
