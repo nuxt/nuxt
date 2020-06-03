@@ -19,7 +19,8 @@ jest.mock('@nuxt/utils', () => ({
 
 const defaultOptions = {
   modules: [],
-  buildModules: []
+  buildModules: [],
+  _modules: []
 }
 
 describe('core: module', () => {

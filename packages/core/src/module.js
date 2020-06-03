@@ -10,6 +10,13 @@ export default class ModuleContainer {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.requiredModules = {}
+
+    // Self bind to allow destructre from container
+    for (const method of Object.getOwnPropertyNames(ModuleContainer.prototype)) {
+      if (typeof this[method] === 'function') {
+        this[method] = this[method].bind(this)
+      }
+    }
   }
 
   async ready () {
@@ -18,11 +25,14 @@ export default class ModuleContainer {
 
     if (this.options.buildModules && !this.options._start) {
       // Load every devModule in sequence
-      await sequence(this.options.buildModules, this.addModule.bind(this))
+      await sequence(this.options.buildModules, this.addModule)
     }
 
     // Load every module in sequence
-    await sequence(this.options.modules, this.addModule.bind(this))
+    await sequence(this.options.modules, this.addModule)
+
+    // Load ah-hoc modules last
+    await sequence(this.options._modules, this.addModule)
 
     // Call done hook
     await this.nuxt.callHook('modules:done', this)
