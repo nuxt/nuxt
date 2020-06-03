@@ -85,12 +85,13 @@ interface NuxtBabelPresetEnv {
   envName: 'client' | 'modern' | 'server'
 }
 
-interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets'>> {
+interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof TransformOptions, 'presets' | 'plugins'>> {
   cacheCompression?: boolean
   cacheDirectory?: boolean
   cacheIdentifier?: string
   customize?: string | null
   presets?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
+  plugins?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv) => NonNullable<TransformOptions['plugins']>) | TransformOptions['plugins']
 }
 
 interface Warning {
