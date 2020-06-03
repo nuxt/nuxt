@@ -1,12 +1,24 @@
+// @ts-check
+
 const path = require('path')
-const consola = require('consola')
+const consola = require('consola').default
 const execa = require('execa')
 const fs = require('fs-extra')
-const glob = require('pify')(require('glob').glob)
+const glob = require('pify')(require('glob'))
+
+/**
+ * @typedef {import('./package').PackageJson} PackageJson
+ */
 
 async function main () {
+  /**
+   * @type {string[]}
+   */
   const packageDirs = await glob('+(packages|distributions)/*')
 
+  /**
+   * @type {Array<{ dir: string, pkg: PackageJson }>} packages
+   */
   const packages = packageDirs.map(pkgDir => ({
     dir: pkgDir,
     pkg: fs.readJSONSync(path.join(pkgDir, 'package.json'))

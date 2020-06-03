@@ -1,15 +1,43 @@
+// @ts-check
+
 import { resolve } from 'path'
 import consola from 'consola'
 import spawn from 'cross-spawn'
 import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
-import { glob as _glob } from 'glob'
+import _glob from 'glob'
 import pify from 'pify'
 import sortPackageJson from 'sort-package-json'
 
 import rollupConfig from './rollup.config'
 
+/**
+ * @typedef {{
+    name?: string
+    bin?: string | Record<string, string>
+    version?: string
+    workspaces?: string[]
+    dependencies?: Record<string, any>
+    devDependencies?: Record<string, any>
+   }} PackageJson
+ * @typedef {import('./rollup.config').NuxtRollupOptions} NuxtRollupOptions
+ * @typedef {import('rollup').RollupOptions} RollupOptions
+ * @typedef {import('rollup').RollupError} RollupError
+ * @typedef {{
+    rootDir: string
+    pkgPath: string
+    configPath: string
+    distDir: string
+    build: boolean
+    suffix: string
+    hooks: Record<string, (...args: any[]) => void | (Array<(...args: any[]) => void>)>
+    linkedDependencies?: string[]
+    sortDependencies?: () => void
+    rollup?: NuxtRollupOptions & RollupOptions
+   }} PackageOptions
+ * @type {PackageOptions} DEFAULTS
+ */
 const DEFAULTS = {
   rootDir: process.cwd(),
   pkgPath: 'package.json',
@@ -22,11 +50,20 @@ const DEFAULTS = {
 
 const glob = pify(_glob)
 
+/**
+ * @param {Record<string, any>} obj
+ */
 const sortObjectKeys = obj => _(obj).toPairs().sortBy(0).fromPairs().value()
 
 export default class Package {
-  constructor (options) {
+  /**
+   * @param {Partial<PackageOptions>} options
+   */
+  constructor (options = {}) {
     // Assign options
+    /**
+     * @type {PackageOptions}
+     */
     this.options = Object.assign({}, DEFAULTS, options)
 
     // Basic logger
@@ -47,11 +84,17 @@ export default class Package {
     this.loadConfig()
   }
 
+  /**
+   * @param  {string[]} args
+   */
   resolvePath (...args) {
     return resolve(this.options.rootDir, ...args)
   }
 
   readPkg () {
+    /**
+     * @type {PackageJson}
+     */
     this.pkg = readJSONSync(this.resolvePath(this.options.pkgPath))
   }
 
@@ -66,22 +109,28 @@ export default class Package {
     }
   }
 
+  /**
+   * @param {string} name
+   * @param  {Array<Record<string, any>>} args
+   */
   async callHook (name, ...args) {
-    let fns = this.options.hooks[name]
+    const fns = this.options.hooks[name]
 
     if (!fns) {
       return
     }
 
-    if (!Array.isArray(fns)) {
-      fns = [fns]
-    }
+    const fnArray = Array.isArray(fns) ? fns : [fns]
 
-    for (const fn of fns) {
+    for (const fn of fnArray) {
       await fn(this, ...args)
     }
   }
 
+  /**
+   * @param {string} relativePath
+   * @param {PackageOptions} opts
+   */
   load (relativePath, opts) {
     return new Package(Object.assign({
       rootDir: this.resolvePath(relativePath)
@@ -104,6 +153,9 @@ export default class Package {
     this.pkg.version = `${baseVersion}-${date}.${gitCommit}`
   }
 
+  /**
+   * @param {string} id
+   */
   tryRequire (id) {
     try {
       return require(id)
@@ -186,6 +238,9 @@ export default class Package {
 
   async build (_watch = false) {
     // Prepare rollup config
+    /**
+     * @type {NuxtRollupOptions}
+     */
     const config = {
       rootDir: this.options.rootDir,
       alias: {},
@@ -239,11 +294,6 @@ export default class Package {
             this.formatError(event.error)
             return this.logger.error(event.error)
 
-          // Encountered an unrecoverable error
-          case 'FATAL':
-            this.formatError(event.error)
-            return this.logger.fatal(event.error)
-
           // Unknown event
           default:
             return this.logger.info(JSON.stringify(event))
@@ -281,6 +331,9 @@ export default class Package {
     }
   }
 
+  /**
+   * @param {RollupError} error
+   */
   formatError (error) {
     let loc = this.options.rootDir
     if (error.loc) {
@@ -300,12 +353,20 @@ export default class Package {
     this.exec('npm', `publish --tag ${tag}`)
   }
 
+  /**
+   * @param {Package} source
+   * @param {Array<keyof PackageJson>} fields
+   */
   copyFieldsFrom (source, fields = []) {
     for (const field of fields) {
       this.pkg[field] = source.pkg[field]
     }
   }
 
+  /**
+   * @param {any} source
+   * @param {string[]} files
+   */
   async copyFilesFrom (source, files) {
     for (const file of files || source.pkg.files || []) {
       const src = resolve(source.options.rootDir, file)
@@ -329,8 +390,13 @@ export default class Package {
     }
   }
 
+  /**
+   * @param {string} command
+   * @param {string} args
+   * @param {boolean} silent
+   */
   exec (command, args, silent = false) {
-    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
+    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir, env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
