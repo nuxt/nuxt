@@ -16,7 +16,8 @@ jest.mock('std-env', () => ({
 
 jest.mock('@nuxt/utils', () => ({
   ...jest.requireActual('@nuxt/utils'),
-  getMainModule: () => ({ paths: ['/var/nuxt/node_modules'] })
+  getMainModule: () => ({ paths: ['/var/nuxt/node_modules'] }),
+  getPKG: () => ({ name: 'fake' })
 }))
 
 describe('config: options', () => {
