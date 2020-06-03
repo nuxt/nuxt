@@ -31,7 +31,7 @@ export default class ModuleContainer {
     // Load every module in sequence
     await sequence(this.options.modules, this.addModule)
 
-    // Load built-in module last so we ensure hooks are already registred and no override happens
+    // Load ah-hoc modules last
     await sequence(this.options._modules, this.addModule)
 
     // Call done hook
