@@ -20,9 +20,21 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
   get externalsWhitelist () {
     return [
-      /\.(?!js(x|on)?$)/i,
+      this.isNonNativeImport.bind(this),
       ...this.normalizeTranspile()
     ]
+  }
+
+  /**
+   * files *not* ending on js|jsx|json should be processed by webpack
+   *
+   * this might generate false-positives for imports like
+   * - "someFile.umd" (actually requiring someFile.umd.js)
+   * - "some.folder" (some.folder being a directory containing a package.json)
+   */
+  isNonNativeImport (modulePath) {
+    const extname = path.extname(modulePath)
+    return extname !== '' && !/^\.js(x|on)?$/.test(extname)
   }
 
   env () {
