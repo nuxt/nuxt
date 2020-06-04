@@ -11,7 +11,7 @@ export default ({ resources, options }) => async function errorMiddleware (_erro
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
     res.statusCode = error.statusCode
-    res.statusMessage = error.name
+    res.statusMessage = 'RuntimeError'
     res.setHeader('Content-Type', type + '; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(content))
     res.setHeader('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
@@ -84,8 +84,8 @@ const normalizeError = (_error, { srcDir, rootDir, buildDir }) => {
   }
 
   const error = new Error()
-  error.message = _error.message || 'Nuxt Server Error'
-  error.name = _error.name || 'NuxtServerError'
+  error.message = _error.message
+  error.name = _error.name
   error.statusCode = _error.statusCode || 500
   error.headers = _error.headers
 

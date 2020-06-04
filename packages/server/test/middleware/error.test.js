@@ -62,18 +62,14 @@ describe('server: errorMiddleware', () => {
     await errorMiddleware(error, ctx.req, ctx.res, ctx.next)
 
     expect(ctx.res.statusCode).toEqual(500)
-    expect(ctx.res.statusMessage).toEqual('NuxtServerError')
+    expect(ctx.res.statusMessage).toEqual('RuntimeError')
     expect(ctx.res.setHeader).toBeCalledTimes(4)
     expect(ctx.res.setHeader).nthCalledWith(1, 'Content-Type', 'text/html; charset=utf-8')
     expect(ctx.res.setHeader).nthCalledWith(2, 'Content-Length', Buffer.byteLength('error template'))
     expect(ctx.res.setHeader).nthCalledWith(3, 'Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
     expect(ctx.res.setHeader).nthCalledWith(4, 'Custom-Header', 'test')
     expect(params.resources.errorTemplate).toBeCalledTimes(1)
-    expect(params.resources.errorTemplate).toBeCalledWith({
-      status: 500,
-      message: 'Nuxt Server Error',
-      name: 'NuxtServerError'
-    })
+    expect(params.resources.errorTemplate).toBeCalledWith({ status: 500 })
     expect(ctx.res.end).toBeCalledTimes(1)
     expect(ctx.res.end).toBeCalledWith('error template', 'utf-8')
   })
@@ -83,7 +79,6 @@ describe('server: errorMiddleware', () => {
     const errorMiddleware = createErrorMiddleware(params)
     const error = {
       statusCode: 404,
-      name: 'NuxtTestError',
       message: 'test error'
     }
     const ctx = createServerContext()
@@ -98,7 +93,6 @@ describe('server: errorMiddleware', () => {
     }, undefined, 2)
     expect(consola.error).not.toBeCalled()
     expect(ctx.res.statusCode).toEqual(404)
-    expect(ctx.res.statusMessage).toEqual(error.name)
     expect(ctx.res.setHeader).toBeCalledTimes(3)
     expect(ctx.res.setHeader).nthCalledWith(1, 'Content-Type', 'text/json; charset=utf-8')
     expect(ctx.res.setHeader).nthCalledWith(2, 'Content-Length', Buffer.byteLength(errJson))
@@ -114,7 +108,6 @@ describe('server: errorMiddleware', () => {
     const errorMiddleware = createErrorMiddleware(params)
     const error = new Error('test error')
     error.statusCode = 503
-    error.name = 'NuxtTestError'
     const ctx = createServerContext()
 
     await errorMiddleware(error, ctx.req, ctx.res, ctx.next)
@@ -122,7 +115,6 @@ describe('server: errorMiddleware', () => {
     const errHtml = 'youch html'
 
     expect(ctx.res.statusCode).toEqual(503)
-    expect(ctx.res.statusMessage).toEqual(error.name)
     expect(ctx.res.setHeader).toBeCalledTimes(3)
     expect(ctx.res.setHeader).nthCalledWith(1, 'Content-Type', 'text/html; charset=utf-8')
     expect(ctx.res.setHeader).nthCalledWith(2, 'Content-Length', Buffer.byteLength(errHtml))
@@ -138,7 +130,6 @@ describe('server: errorMiddleware', () => {
     const errorMiddleware = createErrorMiddleware(params)
     const error = {
       statusCode: 404,
-      name: 'NuxtTestError',
       message: 'test error'
     }
     const ctx = createServerContext()
@@ -149,7 +140,6 @@ describe('server: errorMiddleware', () => {
     const errJson = JSON.stringify('youch json', undefined, 2)
 
     expect(ctx.res.statusCode).toEqual(404)
-    expect(ctx.res.statusMessage).toEqual(error.name)
     expect(ctx.res.setHeader).toBeCalledTimes(3)
     expect(ctx.res.setHeader).nthCalledWith(1, 'Content-Type', 'text/json; charset=utf-8')
     expect(ctx.res.setHeader).nthCalledWith(2, 'Content-Length', Buffer.byteLength(errJson))
