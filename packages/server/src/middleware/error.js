@@ -4,17 +4,9 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => async function errorMiddleware (rawError, req, res, next) {
+export default ({ resources, options }) => async function errorMiddleware (_error, req, res, next) {
   // Normalize error
-  const err = normalizeStack(rawError, options)
-
-  // ensure statusCode, message and name fields
-  const error = {
-    statusCode: err.statusCode || 500,
-    message: err.message || 'Nuxt Server Error',
-    name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name,
-    headers: err.headers
-  }
+  const error = normalizeError(_error, options)
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
@@ -45,8 +37,8 @@ export default ({ resources, options }) => async function errorMiddleware (rawEr
   // Use basic errors when debug mode is disabled
   if (!options.debug) {
     // We hide actual errors from end users, so show them on server logs
-    if (err.statusCode !== 404) {
-      consola.error(err)
+    if (error.statusCode !== 404) {
+      consola.error(error)
     }
 
     // Json format is compatible with Youch json responses
@@ -66,13 +58,9 @@ export default ({ resources, options }) => async function errorMiddleware (rawEr
 
   // Show stack trace
   const youch = new Youch(
-    err,
+    error,
     req,
-    readSourceFactory({
-      srcDir: options.srcDir,
-      rootDir: options.rootDir,
-      buildDir: options.buildDir
-    }),
+    readSource,
     options.router.base,
     true
   )
@@ -88,10 +76,18 @@ export default ({ resources, options }) => async function errorMiddleware (rawEr
 
 const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
 
-const normalizeStack = (_err, { srcDir, rootDir, buildDir }) => {
-  const err = (_err instanceof Error || typeof _err === 'string')
-    ? new Error(_err)
-    : new Error(_err.message || JSON.stringify(_err))
+const normalizeError = (_error, { srcDir, rootDir, buildDir }) => {
+  if (typeof _error === 'string') {
+    _error = { message: _error }
+  } else if (!_error) {
+    _error = { message: '<empty>' }
+  }
+
+  const error = new Error()
+  error.message = _error.message || 'Nuxt Server Error'
+  error.name = _error.name || 'NuxtServerError'
+  error.statusCode = _error.statusCode || 500
+  error.headers = _error.headers
 
   const searchPath = [
     srcDir,
@@ -111,32 +107,24 @@ const normalizeStack = (_err, { srcDir, rootDir, buildDir }) => {
     return fileName
   }
 
-  err.stack = (_err.stack || '')
+  error.stack = (_error.stack || '')
     .split('\n')
-    .map((l) => {
-      const m = l.match(/\(([^)]+)\)|([^\s]+\.[^\s]+):/)
-      if (!m) {
-        return l
+    .map((line) => {
+      const match = line.match(/\(([^)]+)\)|([^\s]+\.[^\s]+):/)
+      if (!match) {
+        return line
       }
-      const src = m[1] || m[2] || ''
-      const s = src.split(':')
-      if (s[0]) {
-        s[0] = findInPaths(sanitizeName(s[0]))
-      }
-      return l.replace(src, s.join(':'))
+      const src = match[1] || match[2] || ''
+      return line.replace(src, findInPaths(sanitizeName(src)))
     })
     .join('\n')
 
-  return err
+  return error
 }
 
-const readSourceFactory = ({ rootDir }) => async function readSource (frame) {
-  const source = await fs.readFile(frame.fileName, 'utf-8').catch(() => null)
-  if (source) {
-    frame.contents = source
-    if (path.isAbsolute(frame.fileName)) {
-      frame.fullPath = frame.fileName
-      frame.fileName = path.relative(rootDir, frame.fileName)
-    }
+async function readSource (frame) {
+  if (fs.existsSync(frame.fileName)) {
+    frame.fullPath = frame.fileName // Youch BW compat
+    frame.contents = await fs.readFile(frame.fileName, 'utf-8')
   }
 }
