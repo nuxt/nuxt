@@ -46,7 +46,7 @@ export default ({ resources, options }) => async function errorMiddleware (rawEr
   if (!options.debug) {
     // We hide actual errors from end users, so show them on server logs
     if (err.statusCode !== 404) {
-      consola.error(err.stack)
+      consola.error(err)
     }
 
     // Json format is compatible with Youch json responses
