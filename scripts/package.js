@@ -4,7 +4,7 @@ import spawn from 'cross-spawn'
 import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
 import { rollup, watch } from 'rollup'
-import { glob as _glob } from 'glob'
+import _glob from 'glob'
 import pify from 'pify'
 import sortPackageJson from 'sort-package-json'
 
@@ -239,11 +239,6 @@ export default class Package {
             this.formatError(event.error)
             return this.logger.error(event.error)
 
-          // Encountered an unrecoverable error
-          case 'FATAL':
-            this.formatError(event.error)
-            return this.logger.fatal(event.error)
-
           // Unknown event
           default:
             return this.logger.info(JSON.stringify(event))
@@ -330,7 +325,7 @@ export default class Package {
   }
 
   exec (command, args, silent = false) {
-    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir }, { env: process.env })
+    const r = spawn.sync(command, args.split(' '), { cwd: this.options.rootDir, env: process.env })
 
     if (!silent) {
       const fullCommand = command + ' ' + args
