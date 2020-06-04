@@ -96,6 +96,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
+        chunkFilename: '[name].js',
         libraryTarget: 'commonjs2'
       }),
       performance: {
