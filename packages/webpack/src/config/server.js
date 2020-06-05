@@ -39,9 +39,11 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   optimization () {
+    const { _minifyServer } = this.buildContext.buildOptions
+
     return {
       splitChunks: false,
-      minimizer: []
+      minimizer: _minifyServer ? this.minimizer() : []
     }
   }
 
