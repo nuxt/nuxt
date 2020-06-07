@@ -30,8 +30,8 @@ export async function loadNuxtConfig ({
   if (configFile) {
     // Clear cache
     clearRequireCache(configFile)
-
-    options = esm(module)(configFile) || {}
+    const requireES = typeof jest === 'undefined' ? esm(module) : require
+    options = requireES(configFile) || {}
 
     if (options.default) {
       options = options.default

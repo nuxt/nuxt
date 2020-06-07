@@ -1,5 +1,4 @@
 import path from 'path'
-import esm from 'esm'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
@@ -30,7 +29,6 @@ describe.posix('core: resolver', () => {
     expect(resolver.resolveModule).toBeInstanceOf(Function)
     expect(resolver.requireModule).toBeInstanceOf(Function)
     expect(resolver.esm).toEqual(expect.any(Function))
-    expect(esm).toBeCalledTimes(1)
   })
 
   test('should call require.resolve in resolveModule', () => {

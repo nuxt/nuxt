@@ -22,8 +22,7 @@ export default class Resolver {
     this.requireModule = this.requireModule.bind(this)
 
     // ESM Loader
-    this.esm = esm(module)
-
+    this.esm = typeof jest === 'undefined' ? esm(module) : require
     this._resolve = require.resolve
   }
 
