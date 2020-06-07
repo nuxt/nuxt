@@ -20,6 +20,11 @@ export default () => ({
   mode: MODES.universal,
   modern: undefined,
 
+  // Modules
+  modules: [],
+  buildModules: [],
+  _modules: [],
+
   globalName: undefined,
   globals: {
     id: globalName => `__${globalName}`,
@@ -77,5 +82,9 @@ export default () => ({
   editor: undefined,
 
   // Hooks
-  hooks: null
+  hooks: null,
+
+  // runtimeConfig
+  privateRuntimeConfig: {},
+  publicRuntimeConfig: {}
 })

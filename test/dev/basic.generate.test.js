@@ -36,6 +36,11 @@ describe('basic generate', () => {
     nuxt.hook('generate:done', () => {
       writeFileSync(changedFileName, '')
     })
+    nuxt.hook('export:page', ({ page, errors }) => {
+      if (errors.length && page.route.includes('/skip-on-fail')) {
+        page.exclude = true
+      }
+    })
 
     builder = new Builder(nuxt)
     builder.build = jest.fn()
@@ -247,6 +252,16 @@ describe('basic generate', () => {
     expect(html.includes('data-server-rendered')).toBe(false)
     expect(existsSync(resolve(distDir, '200.html'))).toBe(true)
     expect(existsSync(resolve(distDir, '404.html'))).toBe(false)
+  })
+
+  test('Checke skipped files', () => {
+    expect(
+      existsSync(resolve(distDir, 'skip-on-fail/fail.html'))
+    ).toBe(false)
+
+    expect(
+      existsSync(resolve(distDir, 'skip-on-fail/success.html'))
+    ).toBe(true)
   })
 
   // Close server and ask nuxt to stop listening to file changes

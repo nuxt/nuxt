@@ -5,7 +5,8 @@ import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin } from '@nuxt/utils'
+import destr from 'destr'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -113,6 +114,13 @@ export function getNuxtConfig (_options) {
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
+
+  // Alias export to generate
+  // TODO: switch to export by default for nuxt3
+  if (options.export) {
+    options.generate = defu(options.export, options.generate)
+  }
+  exports.export = options.generate
 
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
@@ -416,21 +424,6 @@ export function getNuxtConfig (_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
-  // Loading screen
-  // disable for production and programmatic users
-  if (!options.dev || !options._cli) {
-    options.build.loadingScreen = false
-  }
-  // Add loading-screen module
-  if (options.build.loadingScreen) {
-    options.buildModules.push(['@nuxt/loading-screen', options.build.loadingScreen])
-  }
-
-  // When loadingScreen is disabled we should also disable build indicator
-  if (!options.build.loadingScreen) {
-    options.build.indicator = false
-  }
-
   // TODO: Remove this if statement in Nuxt 3
   if (options.build.crossorigin) {
     consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
@@ -459,6 +452,35 @@ export function getNuxtConfig (_options) {
   }
   if (!staticAssets.versionBase) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+  }
+
+  // ----- Builtin modules -----
+
+  // Loading screen
+  // Force disable for production and programmatic users
+  if (!options.dev || !options._cli || !getPKG('@nuxt/loading-screen')) {
+    options.build.loadingScreen = false
+  }
+  if (options.build.loadingScreen) {
+    options._modules.push(['@nuxt/loading-screen', options.build.loadingScreen])
+  } else {
+    // When loadingScreen is disabled we should also disable build indicator
+    options.build.indicator = false
+  }
+
+  // Components Module
+  if (!options._start && getPKG('@nuxt/components')) {
+    options._modules.push('@nuxt/components')
+  }
+
+  // Nuxt Telemetry
+  if (
+    options.telemetry !== false &&
+    !options.test &&
+    !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
+    getPKG('@nuxt/telemetry')
+  ) {
+    options._modules.push('@nuxt/telemetry')
   }
 
   return options

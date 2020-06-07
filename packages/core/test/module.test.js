@@ -19,7 +19,8 @@ jest.mock('@nuxt/utils', () => ({
 
 const defaultOptions = {
   modules: [],
-  buildModules: []
+  buildModules: [],
+  _modules: []
 }
 
 describe('core: module', () => {
@@ -317,7 +318,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts, true)
+    expect(module.addModule).toBeCalledWith(moduleOpts)
   })
 
   test('should add string module', async () => {
@@ -402,21 +403,17 @@ describe('core: module', () => {
     })
 
     const result = await module.addModule({
-      src: 'moduleTest',
+      src: 'pathToModule',
       options: { test: true },
-      handler: function objectModule (options) {
-        return Promise.resolve(options)
-      }
+      handler: opts => opts
     })
 
     expect(requireModule).not.toBeCalled()
     expect(module.requiredModules).toEqual({
-      objectModule: {
-        handler: expect.any(Function),
-        options: {
-          test: true
-        },
-        src: 'moduleTest'
+      pathToModule: {
+        src: 'pathToModule',
+        options: { test: true },
+        handler: expect.any(Function)
       }
     })
     expect(result).toEqual({ test: true })

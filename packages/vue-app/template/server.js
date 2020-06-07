@@ -77,9 +77,10 @@ export default async (ssrContext) => {
   if (process.static && ssrContext.url) {
     ssrContext.url = ssrContext.url.split('?')[0]
   }
-
+  // Public runtime config
+  ssrContext.nuxt.config = ssrContext.runtimeConfig.public
   // Create the app definition and the instance (created for each request)
-  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
+  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, { ...ssrContext.runtimeConfig.public, ...ssrContext.runtimeConfig.private })
   const _app = new Vue(app)
   // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
   ssrContext.nuxt.routePath = app.context.route.path

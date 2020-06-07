@@ -2,10 +2,11 @@ import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
+import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS, MODES } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -23,6 +24,12 @@ export default class Generator {
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
     this.generatedRoutes = new Set()
+
+    // Shared payload
+    this._payload = null
+    this.setPayload = (payload) => {
+      this._payload = defu(payload, this._payload)
+    }
   }
 
   async generate ({ build = true, init = true } = {}) {
@@ -47,6 +54,7 @@ export default class Generator {
 
     // Done hook
     await this.nuxt.callHook('generate:done', this, errors)
+    await this.nuxt.callHook('export:done', this, { errors })
 
     return { errors }
   }
@@ -57,6 +65,7 @@ export default class Generator {
 
     // Call before hook
     await this.nuxt.callHook('generate:before', this, this.options.generate)
+    await this.nuxt.callHook('export:before', this)
 
     if (build) {
       // Add flag to set process.static
@@ -92,7 +101,7 @@ export default class Generator {
   async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
-    if (this.options.mode === MODES.universal && this.options.router.mode !== 'hash') {
+    if (this.options.router.mode !== 'hash') {
       try {
         generateRoutes = await promisifyRoute(
           this.options.generate.routes || [],
@@ -105,7 +114,7 @@ export default class Generator {
     }
     let routes = []
     // Generate only index.html for router.mode = 'hash' or client-side apps
-    if (this.options.mode === MODES.spa || this.options.router.mode === 'hash') {
+    if (this.options.router.mode === 'hash') {
       routes = ['/']
     } else {
       routes = flatRoutes(this.getAppRoutes())
@@ -115,6 +124,7 @@ export default class Generator {
 
     // extendRoutes hook
     await this.nuxt.callHook('generate:extendRoutes', routes)
+    await this.nuxt.callHook('export:extendRoutes', { routes })
 
     return routes
   }
@@ -223,6 +233,7 @@ export default class Generator {
 
     consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)
+    await this.nuxt.callHook('export:distCopied', this)
 
     // Copy static and built files
     if (await fsExtra.exists(this.staticRoutes)) {
@@ -241,6 +252,7 @@ export default class Generator {
     fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
+    await this.nuxt.callHook('export:distCopied', this)
   }
 
   decorateWithPayloads (routes, generateRoutes) {
@@ -265,6 +277,18 @@ export default class Generator {
     let html
     const pageErrors = []
 
+    const setPayload = (_payload) => {
+      payload = defu(_payload, payload)
+    }
+
+    // Apply shared payload
+    if (this._payload) {
+      payload = defu(payload, this._payload)
+    }
+
+    await this.nuxt.callHook('generate:route', { route, setPayload })
+    await this.nuxt.callHook('export:route', { route, setPayload })
+
     try {
       const renderContext = {
         payload,
@@ -275,8 +299,15 @@ export default class Generator {
 
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && this.options.render.ssr) {
+        const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
-          const href = (el.getAttribute('href') || '').replace(/\/+$/, '').split('?')[0].split('#')[0].trim()
+          const sanitizedHref = (el.getAttribute('href') || '')
+            .replace(/\/+$/, '')
+            .split('?')[0]
+            .split('#')[0]
+            .trim()
+
+          const href = sanitizedHref + possibleTrailingSlash
 
           if (href.startsWith('/') && !path.extname(href) && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
             this.generatedRoutes.add(href) // add the route to the tracked list
@@ -301,10 +332,8 @@ export default class Generator {
       pageErrors.push({ type: 'unhandled', route, error: err })
       errors.push(...pageErrors)
 
-      await this.nuxt.callHook('generate:routeFailed', {
-        route,
-        errors: pageErrors
-      })
+      await this.nuxt.callHook('generate:routeFailed', { route, errors: pageErrors })
+      await this.nuxt.callHook('export:routeFailed', { route, errors: pageErrors })
       consola.error(this._formatErrors(pageErrors))
 
       return false
@@ -330,20 +359,21 @@ export default class Generator {
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: fileName, html }
+    const page = { route, path: fileName, html, exclude: false }
     await this.nuxt.callHook('generate:page', page)
+    await this.nuxt.callHook('export:page', { page, errors: pageErrors })
 
+    if (page.exclude) {
+      return false
+    }
     page.path = path.join(this.distPath, page.path)
 
     // Make sure the sub folders are created
     await fsExtra.mkdirp(path.dirname(page.path))
     await fsExtra.writeFile(page.path, page.html, 'utf8')
 
-    await this.nuxt.callHook('generate:routeCreated', {
-      route,
-      path: page.path,
-      errors: pageErrors
-    })
+    await this.nuxt.callHook('generate:routeCreated', { route, path: page.path, errors: pageErrors })
+    await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
 
     if (pageErrors.length) {
       consola.error('Error generating ' + route)

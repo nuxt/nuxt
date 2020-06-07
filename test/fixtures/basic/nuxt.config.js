@@ -32,6 +32,8 @@ export default {
       '/users/1',
       '/users/2',
       '/тест雨',
+      '/skip-on-fail/success',
+      '/skip-on-fail/fail',
       { route: '/users/3', payload: { id: 3000 } }
     ],
     interval: 200
@@ -63,6 +65,7 @@ export default {
     '': true
   },
   pageTransition: false,
+  components: true,
   plugins: [
     '~/plugins/vuex-module',
     '~/plugins/dir-plugin',

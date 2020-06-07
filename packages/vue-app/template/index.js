@@ -66,7 +66,7 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
-async function createApp (ssrContext) {
+async function createApp(ssrContext, config = {}) {
   const router = await createRouter(ssrContext)
 
   <% if (store) { %>
@@ -162,8 +162,7 @@ async function createApp (ssrContext) {
     ssrContext
   })
 
-  <% if (plugins.length) { %>
-  const inject = function (key, value) {
+  function inject(key, value) {
     if (!key) {
       throw new Error('inject(key, value) has no key provided')
     }
@@ -199,7 +198,9 @@ async function createApp (ssrContext) {
       }
     })
   }
-  <% } %>
+
+  // Inject runtime config as $config
+  inject('config', config)
 
   <% if (store) { %>
   if (process.client) {

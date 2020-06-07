@@ -105,6 +105,15 @@ export default class WebpackBaseConfig {
       return options
     }
 
+    if (typeof options.plugins === 'function') {
+      options.plugins = options.plugins(
+        {
+          envName,
+          ...this.nuxtEnv
+        }
+      )
+    }
+
     const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
 
     if (typeof options.presets === 'function') {

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "noEmit": true,
+    "lib": [
+      "esnext",
+      "esnext.asynciterable",
+      "dom"
+    ]
+  }
+}

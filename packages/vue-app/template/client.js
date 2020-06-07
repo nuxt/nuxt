@@ -98,7 +98,7 @@ Vue.config.$nuxt.<%= globals.nuxt %> = true
 const errorHandler = Vue.config.errorHandler || console.error
 
 // Create and mount App
-createApp().then(mountApp).catch(errorHandler)
+createApp(null, NUXT.config).then(mountApp).catch(errorHandler)
 
 <% if (features.transitions) { %>
 function componentOption (component, key, ...args) {
@@ -805,7 +805,7 @@ async function mountApp (__app) {
 
   <% if (isFullStatic) { %>
   // Load page chunk
-  if (!NUXT.data && !NUXT.spa) {
+  if (!NUXT.data && NUXT.serverRendered) {
     try {
       const payload = await _app.fetchPayload(_app.context.route.path)
       Object.assign(NUXT, payload)

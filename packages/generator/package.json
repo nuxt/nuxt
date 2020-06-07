@@ -10,10 +10,10 @@
   "dependencies": {
     "@nuxt/utils": "2.12.1",
     "chalk": "^3.0.0",
-    "consola": "^2.12.1",
+    "consola": "^2.12.2",
     "fs-extra": "^8.1.0",
     "html-minifier": "^4.0.0",
-    "node-html-parser": "^1.2.16"
+    "node-html-parser": "^1.2.18"
   },
   "publishConfig": {
     "access": "public"

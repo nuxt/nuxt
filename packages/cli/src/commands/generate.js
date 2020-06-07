@@ -12,7 +12,7 @@ export default {
     build: {
       type: 'boolean',
       default: true,
-      description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
+      description: 'Only generate pages for dynamic routes, used for incremental builds. Generate has to be run once without this option before using it'
     },
     devtools: {
       type: 'boolean',
