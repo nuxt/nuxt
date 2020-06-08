@@ -17,7 +17,7 @@
     "@types/file-loader": "^4.2.0",
     "@types/html-minifier": "^3.5.3",
     "@types/less": "^3.0.1",
-    "@types/node": "^12.12.43",
+    "@types/node": "^12.12.44",
     "@types/node-sass": "^4.11.1",
     "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
     "@types/pug": "^2.0.4",
