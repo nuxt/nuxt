@@ -7,6 +7,11 @@ import VueSSRServerPlugin from '../plugins/vue/server'
 
 import WebpackBaseConfig from './base'
 
+const nativeFileExtensions = [
+  '.json',
+  '.js'
+]
+
 export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor (...args) {
     super(...args)
@@ -26,7 +31,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   /**
-   * files *not* ending on js|jsx|json should be processed by webpack
+   * files *not* ending on js|json should be processed by webpack
    *
    * this might generate false-positives for imports like
    * - "someFile.umd" (actually requiring someFile.umd.js)
@@ -34,7 +39,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
    */
   isNonNativeImport (modulePath) {
     const extname = path.extname(modulePath)
-    return extname !== '' && !/^\.js(x|on)?$/.test(extname)
+    return extname !== '' && !nativeFileExtensions.includes(extname)
   }
 
   env () {
