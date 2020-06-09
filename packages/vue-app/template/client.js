@@ -595,13 +595,8 @@ function normalizeComponents (to, ___) {
   })
 }
 
-function showNextPage (to) {
-  // Hide error component if no error
-  if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
-    this.error()
-  }
-
-  <% if (features.layouts) { %>
+<% if (features.layouts) { %>
+function setLayoutForNextPage (to) {
   // Set layout
   let layout = this.$options.nuxt.err
     ? (NuxtError.options || NuxtError).layout
@@ -611,7 +606,14 @@ function showNextPage (to) {
     layout = layout(app.context)
   }
   this.setLayout(layout)
-  <% } %>
+}
+<% } %>
+
+function checkForErrors (app) {
+  // Hide error component if no error
+  if (app._hadError && app._dateLastError === app.$options.nuxt.dateErr) {
+    app.error()
+  }
 }
 
 // When navigating on a different route but the same component is used, Vue.js
@@ -647,7 +649,7 @@ function fixPrepatch (to, ___) {
         })
       }
     })
-    showNextPage.call(this, to)
+    checkForErrors(this)
     <% if (isDev) { %>
     // Hot reloading
     setTimeout(() => hotReloadAPI(this), 100)
@@ -826,6 +828,9 @@ async function mountApp (__app) {
 
     // Add afterEach router hooks
     router.afterEach(normalizeComponents)
+    <% if (features.layouts) { %>
+    router.afterEach(setLayoutForNextPage.bind(_app))
+    <% } %>
     router.afterEach(fixPrepatch.bind(_app))
 
     // Listen for first Vue update
@@ -874,7 +879,8 @@ async function mountApp (__app) {
   // First render on client-side
   const clientFirstMount = () => {
     normalizeComponents(router.currentRoute, router.currentRoute)
-    showNextPage.call(_app, router.currentRoute)
+    setLayoutForNextPage.call(_app, router.currentRoute)
+    checkForErrors(_app)
     // Don't call fixPrepatch.call(_app, router.currentRoute, router.currentRoute) since it's first render
     mount()
   }
