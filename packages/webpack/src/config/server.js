@@ -56,9 +56,11 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   optimization () {
+    const { _minifyServer } = this.buildContext.buildOptions
+
     return {
       splitChunks: false,
-      minimizer: this.minimizer()
+      minimizer: _minifyServer ? this.minimizer() : []
     }
   }
 
@@ -113,6 +115,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
+        chunkFilename: '[name].js',
         libraryTarget: 'commonjs2'
       }),
       performance: {
