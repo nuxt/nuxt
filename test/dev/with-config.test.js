@@ -69,7 +69,7 @@ describe('with-config', () => {
 
   test('/ (custom postcss.config.js)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('::-webkit-input-placeholder')
+    expect(html).toContain('::-moz-placeholder')
   })
 
   test('/test/ (custom globalName)', async () => {
