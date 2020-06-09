@@ -180,7 +180,7 @@ export default class SSRRenderer extends BaseRenderer {
         const statePath = urlJoin(url, 'state.js')
         const stateUrl = urlJoin(routerBase, staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
-        APP += `<script defer src="${routerBase}${staticAssetsBase}${statePath}"></script>`
+        APP += `<script defer src="${stateUrl}"></script>`
         preloadScripts.push(stateUrl)
       } else {
         APP += `<script>${stateScript}</script>`
