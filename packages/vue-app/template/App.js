@@ -303,14 +303,15 @@ export default {
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
+      const originalRoute = route
+      const { staticAssetsBase } = window.<%= globals.context %>
+      const base = (this.$router.options.base || '').replace(/\/+$/, '')
+      if (base && route.startsWith(base)) {
+        route = route.substr(base.length)
+      }
       route = (route.replace(/\/+$/, '') || '/').split('?')[0]
+      const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
       try {
-        const { staticAssetsBase } = window.<%= globals.context %>
-        const { base = '/' } = this.$router.options
-        const src = urlJoin(staticAssetsBase, 'payload.js')
-        if (!src.startsWith(base)) {
-          src = base + src
-        }
         const payload = await window.__NUXT_IMPORT__(route, src)
         this.setPagePayload(payload)
         return payload
