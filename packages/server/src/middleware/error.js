@@ -4,20 +4,14 @@ import consola from 'consola'
 
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => async function errorMiddleware (err, req, res, next) {
-  // ensure statusCode, message and name fields
-
-  const error = {
-    statusCode: err.statusCode || 500,
-    message: err.message || 'Nuxt Server Error',
-    name: !err.name || err.name === 'Error' ? 'NuxtServerError' : err.name,
-    headers: err.headers
-  }
+export default ({ resources, options }) => async function errorMiddleware (_error, req, res, next) {
+  // Normalize error
+  const error = normalizeError(_error, options)
 
   const sendResponse = (content, type = 'text/html') => {
     // Set Headers
     res.statusCode = error.statusCode
-    res.statusMessage = error.name
+    res.statusMessage = 'RuntimeError'
     res.setHeader('Content-Type', type + '; charset=utf-8')
     res.setHeader('Content-Length', Buffer.byteLength(content))
     res.setHeader('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
@@ -43,9 +37,10 @@ export default ({ resources, options }) => async function errorMiddleware (err, 
   // Use basic errors when debug mode is disabled
   if (!options.debug) {
     // We hide actual errors from end users, so show them on server logs
-    if (err.statusCode !== 404) {
-      consola.error(err)
+    if (error.statusCode !== 404) {
+      consola.error(error)
     }
+
     // Json format is compatible with Youch json responses
     const json = {
       status: error.statusCode,
@@ -61,25 +56,11 @@ export default ({ resources, options }) => async function errorMiddleware (err, 
     return
   }
 
-  const errorFull = err instanceof Error
-    ? err
-    : typeof err === 'string'
-      ? new Error(err)
-      : new Error(err.message || JSON.stringify(err))
-
-  errorFull.name = error.name
-  errorFull.statusCode = error.statusCode
-  errorFull.stack = err.stack || undefined
-
   // Show stack trace
   const youch = new Youch(
-    errorFull,
+    error,
     req,
-    readSourceFactory({
-      srcDir: options.srcDir,
-      rootDir: options.rootDir,
-      buildDir: options.buildDir
-    }),
+    readSource,
     options.router.base,
     true
   )
@@ -93,17 +74,21 @@ export default ({ resources, options }) => async function errorMiddleware (err, 
   sendResponse(html)
 }
 
-const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function readSource (frame) {
-  // Remove webpack:/// & query string from the end
-  const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
-  frame.fileName = sanitizeName(frame.fileName)
+const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
 
-  // Return if fileName is unknown
-  if (!frame.fileName) {
-    return
+const normalizeError = (_error, { srcDir, rootDir, buildDir }) => {
+  if (typeof _error === 'string') {
+    _error = { message: _error }
+  } else if (!_error) {
+    _error = { message: '<empty>' }
   }
 
-  // Possible paths for file
+  const error = new Error()
+  error.message = _error.message
+  error.name = _error.name
+  error.statusCode = _error.statusCode || 500
+  error.headers = _error.headers
+
   const searchPath = [
     srcDir,
     rootDir,
@@ -112,17 +97,34 @@ const readSourceFactory = ({ srcDir, rootDir, buildDir }) => async function read
     process.cwd()
   ]
 
-  // Scan filesystem for real source
-  for (const pathDir of searchPath) {
-    const fullPath = path.resolve(pathDir, frame.fileName)
-    const source = await fs.readFile(fullPath, 'utf-8').catch(() => null)
-    if (source) {
-      frame.contents = source
-      frame.fullPath = fullPath
-      if (path.isAbsolute(frame.fileName)) {
-        frame.fileName = path.relative(rootDir, fullPath)
+  const findInPaths = (fileName) => {
+    for (const dir of searchPath) {
+      const fullPath = path.resolve(dir, fileName)
+      if (fs.existsSync(fullPath)) {
+        return fullPath
       }
-      return
     }
+    return fileName
+  }
+
+  error.stack = (_error.stack || '')
+    .split('\n')
+    .map((line) => {
+      const match = line.match(/\(([^)]+)\)|([^\s]+\.[^\s]+):/)
+      if (!match) {
+        return line
+      }
+      const src = match[1] || match[2] || ''
+      return line.replace(src, findInPaths(sanitizeName(src)))
+    })
+    .join('\n')
+
+  return error
+}
+
+async function readSource (frame) {
+  if (fs.existsSync(frame.fileName)) {
+    frame.fullPath = frame.fileName // Youch BW compat
+    frame.contents = await fs.readFile(frame.fileName, 'utf-8')
   }
 }
