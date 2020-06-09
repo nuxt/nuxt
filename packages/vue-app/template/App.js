@@ -303,7 +303,6 @@ export default {
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
-      const originalRoute = route
       const { staticAssetsBase } = window.<%= globals.context %>
       const base = (this.$router.options.base || '').replace(/\/+$/, '')
       if (base && route.startsWith(base)) {
