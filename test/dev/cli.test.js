@@ -55,7 +55,7 @@ describe.posix('cli', () => {
     // [Add actual test for changes here]
 
     await close(nuxtDev)
-  })
+  }, 120000)
 
   test('nuxt start', async () => {
     let error
@@ -78,5 +78,5 @@ describe.posix('cli', () => {
     expect(html).toMatch(('<div>CLI Test</div>'))
 
     await close(nuxtStart)
-  })
+  }, 120000)
 })
