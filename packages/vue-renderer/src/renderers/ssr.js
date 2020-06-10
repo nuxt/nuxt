@@ -116,7 +116,7 @@ export default class SSRRenderer extends BaseRenderer {
     // (this is unset when features.meta is false in server template)
     const meta = renderContext.meta && renderContext.meta.inject({
       isSSR: renderContext.nuxt.serverRendered,
-      ln: this.nuxt.options.dev
+      ln: this.options.dev
     })
 
     if (meta) {
