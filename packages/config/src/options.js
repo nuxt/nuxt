@@ -454,6 +454,17 @@ export function getNuxtConfig (_options) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
   }
 
+  // createRequire factory
+  if (options.createRequire === 'esm') {
+    const esm = require('esm')
+    options.createRequire = module => esm(module)
+  } else if (options.createRequire === 'jiti') {
+    const jiti = require('jiti')
+    options.createRequire = module => jiti(module.filename)
+  } else if (typeof options.createRequire !== 'function') {
+    options.createRequire = module => module.require
+  }
+
   // ----- Builtin modules -----
 
   // Loading screen

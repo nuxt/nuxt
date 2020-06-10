@@ -14,7 +14,8 @@ export async function loadNuxtConfig ({
   envConfig = {},
   configFile = defaultNuxtConfigFile,
   configContext = {},
-  configOverrides = {}
+  configOverrides = {},
+  createRequire = module => esm(module)
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -52,9 +53,8 @@ export async function loadNuxtConfig ({
   if (configFile) {
     // Clear cache
     clearRequireCache(configFile)
-    const requireES = typeof jest === 'undefined' ? esm(module) : require
-    options = requireES(configFile) || {}
-
+    const requirModule = createRequire(module)
+    options = requirModule(configFile) || {}
     if (options.default) {
       options = options.default
     }

@@ -1,7 +1,6 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-import esm from 'esm'
 
 import {
   startsWithRootAlias,
@@ -21,8 +20,9 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    // ESM Loader
-    this.esm = typeof jest === 'undefined' ? esm(module) : require
+    this.requireModule = this.options.createRequire(module)
+    this.esm = this.requireModule
+
     this._resolve = require.resolve
   }
 
@@ -159,7 +159,7 @@ export default class Resolver {
     // Try to require
     try {
       if (useESM) {
-        requiredModule = this.esm(resolvedPath)
+        requiredModule = this.requireModule(resolvedPath)
       } else {
         requiredModule = require(resolvedPath)
       }
