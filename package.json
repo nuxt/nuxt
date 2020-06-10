@@ -77,9 +77,6 @@
     "vue-jest": "^4.0.0-beta.3"
   },
   "resolutions": {
-    "babel-eslint/@babel/parser": "7.7.5",
-    "@rollup/plugin-commonjs": "^12.0.0",
-    "typescript": "~3.9",
-    "vue-jest": "^4.0.0-beta.3"
+    "babel-eslint/@babel/parser": "7.7.5"
   }
 }
