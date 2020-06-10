@@ -5,6 +5,9 @@ export default {
       config: true
     }
   },
+  router: {
+    // base: '/test'
+  },
   hooks: {
     export: {
       before ({ setPayload }) {

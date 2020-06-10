@@ -567,7 +567,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"loader\\": \\"url-loader\\",
         \\"options\\": Object {
           \\"limit\\": 1000,
-          \\"name\\": \\"img/[contenthash:7].[ext]\\",
+          \\"name\\": \\"img/[name].[contenthash:7].[ext]\\",
         },
       },
     ],
@@ -579,7 +579,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"loader\\": \\"url-loader\\",
         \\"options\\": Object {
           \\"limit\\": 1000,
-          \\"name\\": \\"fonts/[contenthash:7].[ext]\\",
+          \\"name\\": \\"fonts/[name].[contenthash:7].[ext]\\",
         },
       },
     ],
@@ -590,7 +590,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"loader\\": \\"file-loader\\",
         \\"options\\": Object {
-          \\"name\\": \\"videos/[contenthash:7].[ext]\\",
+          \\"name\\": \\"videos/[name].[contenthash:7].[ext]\\",
         },
       },
     ],

@@ -302,6 +302,7 @@ export default class Generator {
         const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
+            .replace(this.options.router.base, '/')
             .replace(/\/+$/, '')
             .split('?')[0]
             .split('#')[0]

@@ -39,6 +39,7 @@ export default {
     const app = connect()
     app.use(compression({ threshold: 0 }))
     app.use(
+      options.router.base,
       serveStatic(options.generate.dir, {
         extensions: ['html']
       })
