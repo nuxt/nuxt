@@ -14,3 +14,7 @@ export const createNuxt = () => ({
     render: {}
   }
 })
+
+export function hookCalls (nuxt, name) {
+  return nuxt.callHook.mock.calls.filter(c => c[0] === name).map(c => c.splice(1))
+}

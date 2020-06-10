@@ -26,5 +26,6 @@ export const builder = () => _import('@nuxt/builder')
 export const webpack = () => _import('@nuxt/webpack')
 export const generator = () => _import('@nuxt/generator')
 export const core = () => _import('@nuxt/core')
+export const server = () => _import('@nuxt/server')
 
 export const importModule = _import

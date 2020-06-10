@@ -153,8 +153,8 @@ export default class Builder {
 
     consola.debug(`App root: ${this.options.srcDir}`)
 
-    // Create .nuxt/, .nuxt/components and .nuxt/dist folders
-    await fsExtra.remove(r(this.options.buildDir))
+    // Create or empty .nuxt/, .nuxt/components and .nuxt/dist folders
+    await fsExtra.emptyDir(r(this.options.buildDir))
     const buildDirs = [r(this.options.buildDir, 'components')]
     if (!this.options.dev) {
       buildDirs.push(
@@ -162,7 +162,7 @@ export default class Builder {
         r(this.options.buildDir, 'dist', 'server')
       )
     }
-    await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
+    await Promise.all(buildDirs.map(dir => fsExtra.emptyDir(dir)))
 
     // Call ready hook
     await this.nuxt.callHook('builder:prepared', this, this.options.build)
@@ -770,6 +770,11 @@ export default class Builder {
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
+
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
+      nuxtRestartWatch.push(this.options._envConfig.dotenv)
+    }
+
     // If default page displayed, watch for first page creation
     if (this._nuxtPages && this._defaultPage) {
       nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))
