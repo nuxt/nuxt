@@ -3,6 +3,7 @@
 exports[`config should return default nuxt configurations 1`] = `
 Object {
   "ErrorPage": null,
+  "_modules": Array [],
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
@@ -266,6 +267,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,
@@ -369,6 +372,7 @@ Object {
 exports[`config should return nuxt configurations with custom env 1`] = `
 Object {
   "ErrorPage": null,
+  "_modules": Array [],
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
@@ -632,6 +636,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,

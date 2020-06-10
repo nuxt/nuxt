@@ -8,9 +8,7 @@
   ],
   "ignoreDeps": [
     "memory-fs",
-    "@rollup/plugin-node-resolve",
-    "@babel/parser",
-    "@rollup/plugin-commonjs"
+    "@babel/parser"
   ],
   "lockFileMaintenance": {
     "enabled": true

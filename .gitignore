@@ -18,6 +18,7 @@ distributions/*/LICENSE
 # Other
 .nuxt*
 !.nuxtignore
+!.nuxtrc
 .cache
 
 # Dist folders

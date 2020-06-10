@@ -13,7 +13,10 @@
     "@nuxt/utils": "2.12.1",
     "consola": "^2.12.2",
     "defu": "^2.0.4",
+    "destr": "^0.1.9",
+    "dotenv": "^8.2.0",
     "esm": "^3.2.25",
+    "rc9": "^0.0.7",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

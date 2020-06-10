@@ -27,6 +27,12 @@ exports[`cli/command builds help text 1`] = `
     --version, -v      Display the Nuxt
                        version
     --help, -h         Display this message
+    --no-processenv    Disable reading from
+                       process.env and updating it with
+                       dotenv
+    --dotenv           Specify path to
+                       dotenv file (default: .env). Use
+                       false to disable
     --port, -p         Port number on which
                        to start the application
     --hostname, -H     Hostname on which to
