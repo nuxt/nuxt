@@ -48,7 +48,7 @@ describe('with-config', () => {
   test('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain(
-      '<link rel="preload" href="/test/orion/fonts/7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
+      '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
     )
   })
 
@@ -69,7 +69,7 @@ describe('with-config', () => {
 
   test('/ (custom postcss.config.js)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('::-webkit-input-placeholder')
+    expect(html).toContain('::-moz-placeholder')
   })
 
   test('/test/ (custom globalName)', async () => {

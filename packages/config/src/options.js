@@ -424,21 +424,6 @@ export function getNuxtConfig (_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
-  // Loading screen
-  // disable for production and programmatic users
-  if (!options.dev || !options._cli) {
-    options.build.loadingScreen = false
-  }
-  // Add loading-screen module
-  if (options.build.loadingScreen) {
-    options.buildModules.push(['@nuxt/loading-screen', options.build.loadingScreen])
-  }
-
-  // When loadingScreen is disabled we should also disable build indicator
-  if (!options.build.loadingScreen) {
-    options.build.indicator = false
-  }
-
   // TODO: Remove this if statement in Nuxt 3
   if (options.build.crossorigin) {
     consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
@@ -456,11 +441,6 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
-  // Components module
-  if (options.components) {
-    options.buildModules.push('@nuxt/components')
-  }
-
   // Generate staticAssets
   const { staticAssets } = options.generate
   if (!staticAssets.version) {
@@ -474,6 +454,25 @@ export function getNuxtConfig (_options) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
   }
 
+  // ----- Builtin modules -----
+
+  // Loading screen
+  // Force disable for production and programmatic users
+  if (!options.dev || !options._cli || !getPKG('@nuxt/loading-screen')) {
+    options.build.loadingScreen = false
+  }
+  if (options.build.loadingScreen) {
+    options._modules.push(['@nuxt/loading-screen', options.build.loadingScreen])
+  } else {
+    // When loadingScreen is disabled we should also disable build indicator
+    options.build.indicator = false
+  }
+
+  // Components Module
+  if (!options._start && getPKG('@nuxt/components')) {
+    options._modules.push('@nuxt/components')
+  }
+
   // Nuxt Telemetry
   if (
     options.telemetry !== false &&
@@ -481,11 +480,7 @@ export function getNuxtConfig (_options) {
     !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
     getPKG('@nuxt/telemetry')
   ) {
-    // TODO: Remove before 2.13 in favor of checking .nuxrc for first run message
-    if (typeof options.telemetry === 'undefined') {
-      consola.warn('Experimental `@nuxt/telemetry` enabled. You can disable this message by explicitly setting `telemetry: false` or `telemetry: true` in `nuxt.config`')
-    }
-    options.modules.push('@nuxt/telemetry')
+    options._modules.push('@nuxt/telemetry')
   }
 
   return options

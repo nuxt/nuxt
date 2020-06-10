@@ -20,6 +20,11 @@ export default () => ({
   mode: MODES.universal,
   modern: undefined,
 
+  // Modules
+  modules: [],
+  buildModules: [],
+  _modules: [],
+
   globalName: undefined,
   globals: {
     id: globalName => `__${globalName}`,

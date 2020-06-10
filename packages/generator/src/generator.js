@@ -302,6 +302,7 @@ export default class Generator {
         const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
+            .replace(this.options.router.base, '/')
             .replace(/\/+$/, '')
             .split('?')[0]
             .split('#')[0]
@@ -359,10 +360,13 @@ export default class Generator {
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: fileName, html }
+    const page = { route, path: fileName, html, exclude: false }
     await this.nuxt.callHook('generate:page', page)
-    await this.nuxt.callHook('export:page', { page })
+    await this.nuxt.callHook('export:page', { page, errors: pageErrors })
 
+    if (page.exclude) {
+      return false
+    }
     page.path = path.join(this.distPath, page.path)
 
     // Make sure the sub folders are created

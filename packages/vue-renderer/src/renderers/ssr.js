@@ -170,6 +170,7 @@ export default class SSRRenderer extends BaseRenderer {
     if (renderContext.staticAssetsBase) {
       const preloadScripts = []
       renderContext.staticAssets = []
+      const routerBase = this.options.router.base
       const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
       const { data, fetch, mutations, ...state } = nuxt
 
@@ -183,9 +184,9 @@ export default class SSRRenderer extends BaseRenderer {
       const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
       if (stateScriptKb > 10) {
         const statePath = urlJoin(url, 'state.js')
-        const stateUrl = urlJoin(staticAssetsBase, statePath)
+        const stateUrl = urlJoin(routerBase, staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
-        APP += `<script defer src="${staticAssetsBase}${statePath}"></script>`
+        APP += `<script defer src="${stateUrl}"></script>`
         preloadScripts.push(stateUrl)
       } else {
         APP += `<script>${stateScript}</script>`
@@ -193,7 +194,7 @@ export default class SSRRenderer extends BaseRenderer {
 
       // Page level payload.js (async loaded for CSR)
       const payloadPath = urlJoin(url, 'payload.js')
-      const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
+      const payloadUrl = urlJoin(routerBase, staticAssetsBase, payloadPath)
       const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
       const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
       staticAssets.push({ path: payloadPath, src: payloadScript })
