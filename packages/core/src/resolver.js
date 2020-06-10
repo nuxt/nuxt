@@ -20,8 +20,8 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    this.requireModule = this.options.createRequire(module)
-    this.esm = this.requireModule
+    this._requireModule = this.options.createRequire(module)
+    this.esm = this._requireModule
 
     this._resolve = require.resolve
   }
@@ -159,7 +159,7 @@ export default class Resolver {
     // Try to require
     try {
       if (useESM) {
-        requiredModule = this.requireModule(resolvedPath)
+        requiredModule = this._requireModule(resolvedPath)
       } else {
         requiredModule = require(resolvedPath)
       }
