@@ -111,17 +111,16 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     let HEAD = ''
-    let metaInjectorOptions
 
     // Inject head meta
     // (this is unset when features.meta is false in server template)
-    const meta = renderContext.meta && renderContext.meta.inject()
-    if (meta) {
-      metaInjectorOptions = {
-        appId: renderContext.nuxt.serverRendered ? renderContext.meta.getOptions().ssrAppId : '1'
-      }
+    const meta = renderContext.meta && renderContext.meta.inject({
+      isSSR: renderContext.nuxt.serverRendered,
+      ln: this.nuxt.options.dev
+    })
 
-      HEAD += meta.title.text(metaInjectorOptions) + meta.meta.text(metaInjectorOptions)
+    if (meta) {
+      HEAD += meta.title.text() + meta.meta.text()
     }
 
     // Add <base href=""> meta if router base specified
@@ -130,10 +129,10 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
-      HEAD += meta.link.text(metaInjectorOptions) +
-        meta.style.text(metaInjectorOptions) +
-        meta.script.text(metaInjectorOptions) +
-        meta.noscript.text(metaInjectorOptions)
+      HEAD += meta.link.text() +
+        meta.style.text() +
+        meta.script.text() +
+        meta.noscript.text()
     }
 
     // Check if we need to inject scripts and state
@@ -148,7 +147,7 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     if (meta) {
-      const prependInjectorOptions = { ...metaInjectorOptions, pbody: true }
+      const prependInjectorOptions = { pbody: true }
 
       const BODY_PREPEND =
         meta.meta.text(prependInjectorOptions) +
@@ -244,7 +243,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
-      const appendInjectorOptions = { ...metaInjectorOptions, body: true }
+      const appendInjectorOptions = { body: true }
 
       // Append body scripts
       APP += meta.meta.text(appendInjectorOptions)
