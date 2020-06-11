@@ -166,7 +166,7 @@ async function loadAsyncComponents (to, from, next) {
           return watchQuery.some(key => this._diffQuery[key])
         }
         if (typeof watchQuery === 'function') {
-          return watchQuery.apply(instance, [to.query, from.query])
+          return await watchQuery.apply(instance, [to.query, from.query])
         }
         return false
       })
