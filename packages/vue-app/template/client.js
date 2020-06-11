@@ -157,7 +157,7 @@ async function loadAsyncComponents (to, from, next) {
         (Component, instance) => ({ Component, instance })
       )
       // Add a marker on each component that it needs to refresh or not
-      const startLoader = Components.some(async ({ Component, instance }) => {
+      const asyncWatchQueries = Components.map(async ({ Component, instance }) => {
         const watchQuery = Component.options.watchQuery
         if (watchQuery === true) {
           return true
@@ -170,6 +170,7 @@ async function loadAsyncComponents (to, from, next) {
         }
         return false
       })
+      const startLoader = (await Promise.all(asyncWatchQueries)).some(Boolean)
       <% if (loading) { %>
       if (startLoader && this.$loading.start && !this.$loading.manual) {
         this.$loading.start()
@@ -454,7 +455,7 @@ async function render (to, from, next) {
           if (!instances) {
             instances = getMatchedComponentsInstances(to)
           }
-          Component._dataRefresh = watchQuery.apply(instances[i], [to.query, from.query])
+          Component._dataRefresh = await watchQuery.apply(instances[i], [to.query, from.query])
         }
       }
       if (!this._hadError && this._isMounted && !Component._dataRefresh) {
