@@ -21,7 +21,7 @@ declare module 'vue/types/options' {
     scrollToTop?: boolean
     transition?: string | Transition | ((to: Route, from: Route) => string)
     validate?(ctx: Context): Promise<boolean> | boolean
-    watchQuery?: boolean | string[] | ((newQuery: Route['query'], oldQuery: Route['query']) => boolean)
+    watchQuery?: boolean | string[] | ((newQuery: Route['query'], oldQuery: Route['query']) => Promise<boolean> | boolean)
     meta?: { [key: string]: any }
   }
 }
