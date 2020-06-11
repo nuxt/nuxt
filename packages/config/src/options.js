@@ -465,7 +465,8 @@ export function getNuxtConfig (_options) {
     const jiti = require('jiti')
     options.createRequire = module => jiti(module.filename)
   } else if (typeof options.createRequire !== 'function') {
-    options.createRequire = module => module.require
+    const createRequire = require('create-require')
+    options.createRequire = module => createRequire(module.filename)
   }
 
   // ----- Builtin modules -----
