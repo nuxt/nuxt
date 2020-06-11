@@ -5,16 +5,20 @@ import consola from 'consola'
 import dotenv from 'dotenv'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
+import _createRequire from 'create-require'
 import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
+
+const isJest = typeof jest !== 'undefined'
 
 export async function loadNuxtConfig ({
   rootDir = '.',
   envConfig = {},
   configFile = defaultNuxtConfigFile,
   configContext = {},
-  configOverrides = {}
+  configOverrides = {},
+  createRequire = module => isJest ? _createRequire(module.filename) : esm(module)
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -52,9 +56,8 @@ export async function loadNuxtConfig ({
   if (configFile) {
     // Clear cache
     clearRequireCache(configFile)
-
-    options = esm(module)(configFile) || {}
-
+    const _require = createRequire(module)
+    options = _require(configFile) || {}
     if (options.default) {
       options = options.default
     }
