@@ -13,7 +13,7 @@
     "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",
     "semver": "^7.3.2",
-    "serialize-javascript": "^3.1.0",
+    "serialize-javascript": "^4.0.0",
     "signal-exit": "^3.0.3",
     "ua-parser-js": "^0.7.21"
   },
