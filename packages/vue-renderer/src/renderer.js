@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { isModernRequest, waitFor } from '@nuxt/utils'
+import { TARGETS, isModernRequest, waitFor } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -195,7 +195,7 @@ export default class VueRenderer {
       return
     }
 
-    if (!resources.modernManifest) {
+    if (!resources.modernManifest && options.target !== TARGETS.static) {
       options.modern = false
       return
     }
