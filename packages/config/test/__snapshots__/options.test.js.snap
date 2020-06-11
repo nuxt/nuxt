@@ -152,7 +152,7 @@ Object {
     "badgeMessages": Array [],
     "bannerColor": "green",
   },
-  "createRequire": [Function],
+  "createRequire": [MockFunction],
   "css": Array [],
   "debug": false,
   "dev": false,
