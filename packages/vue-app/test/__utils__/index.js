@@ -17,7 +17,6 @@ export async function compileTemplate (template, destination, options = {}) {
   config.dev = false
   config.test = false
   config.server = false
-  config.createRequire = false
 
   const nuxt = new Nuxt(config)
   const builder = new Builder(nuxt)

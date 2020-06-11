@@ -455,10 +455,11 @@ export function getNuxtConfig (_options) {
   }
 
   // createRequire factory
-  if (typeof jest !== 'undefined' && options.createRequire === '_esm') {
-    consola.warn('esm is no longer compatible with jest :( Please set `createRequire` config to `false` or `jiti` or `esm` to suppress this message.')
+  if (options.createRequire === undefined) {
+    const isJest = typeof jest !== 'undefined'
+    options.createRequire = isJest ? false : 'esm'
   }
-  if (options.createRequire === 'esm' || options.createRequire === '_esm') {
+  if (options.createRequire === 'esm') {
     const esm = require('esm')
     options.createRequire = module => esm(module)
   } else if (options.createRequire === 'jiti') {

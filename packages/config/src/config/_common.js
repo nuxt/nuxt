@@ -9,7 +9,7 @@ export default () => ({
   debug: undefined, // = dev
   env: {},
 
-  createRequire: '_esm',
+  createRequire: undefined,
 
   // Target
   target: TARGETS.server,
