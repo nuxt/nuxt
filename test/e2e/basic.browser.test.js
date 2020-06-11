@@ -96,7 +96,7 @@ describe('basic browser', () => {
     expect(await msg).toBe('Body script!')
     expect(await page.title()).toBe('My title - Nuxt.js')
     expect(await page.$text('h1')).toBe('I can haz meta tags')
-    expect(metas[0]).toBe('my meta')
+    expect(metas[1]).toBe('my meta')
   })
 
   test('/async-data', async () => {
