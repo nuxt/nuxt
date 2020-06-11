@@ -157,7 +157,7 @@ async function loadAsyncComponents (to, from, next) {
         (Component, instance) => ({ Component, instance })
       )
       // Add a marker on each component that it needs to refresh or not
-      const startLoader = Components.some(({ Component, instance }) => {
+      const startLoader = Components.some(async ({ Component, instance }) => {
         const watchQuery = Component.options.watchQuery
         if (watchQuery === true) {
           return true
