@@ -35,7 +35,7 @@ const close = (nuxt) => {
 }
 
 describe.posix('cli', () => {
-  test('nuxt dev', async () => {
+  test.skip('nuxt dev', async () => {
     const { env } = process
     env.PORT = port = await getPort()
 
@@ -57,7 +57,7 @@ describe.posix('cli', () => {
     await close(nuxtDev)
   })
 
-  test('nuxt start', async () => {
+  test.skip('nuxt start', async () => {
     let error
 
     const { env } = process
