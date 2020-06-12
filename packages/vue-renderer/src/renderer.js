@@ -195,10 +195,8 @@ export default class VueRenderer {
       return
     }
 
-    if (
-      !resources.modernManifest &&
-      !(options.target === TARGETS.static && options.modern)
-    ) {
+    const isExplicitStaticModern = options.target === TARGETS.static && options.modern
+    if (!resources.modernManifest && !isExplicitStaticModern) {
       options.modern = false
       return
     }
