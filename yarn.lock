@@ -1846,15 +1846,15 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@nuxt/components@^0.3.3":
-  version "0.3.3"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.3.3.tgz#10e2a7943ed328c437b9f6ab67da80c25cde1a6c"
-  integrity sha512-HpXKu7ZURXpNkXc4fCq06xMjrdxD4Q3q08PNuJQ71eH+9BLho7XWmkXLxsaz3hm7T5qYSFQpKje3gSKr9ekaOA==
+"@nuxt/components@^0.3.4":
+  version "0.3.4"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.3.4.tgz#9ca5731450d00ccd376968f3012c1daa0e761899"
+  integrity sha512-kxYhWrO+zBT0K793j8bCUY1Z7GJQAZpPwHVBsIAKqJmmYNjxNnBch/oFXfP3Q7ktQCDfbKR2NwpxyvwOxc2eCQ==
   dependencies:
-    chalk "^4.0.0"
+    chalk "^4.1.0"
     chokidar "^3.4.0"
     glob "^7.1.6"
-    globby "^11.0.0"
+    globby "^11.0.1"
     lodash "^4.17.15"
     semver "^7.3.2"
 
@@ -1895,17 +1895,18 @@
     consola "^2.10.1"
     node-fetch "^2.6.0"
 
-"@nuxt/telemetry@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.6.tgz#de5c1a4d94678361033eaf87d3f9ba2fc95f0143"
-  integrity sha512-sPv4NuqnFskEb3DLZF+ItDNbl/19YdXkDqY/99uNtJoSDTe7F/YRLYH1SHzWwI8sNczA9Wn/uQCx6qJ5BPAO1A==
+"@nuxt/telemetry@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.8.tgz#b395db843f17393617d93b51928f4f112554a33e"
+  integrity sha512-bnFY7j+HzmtHRfCa+UlDnHwfn+d5JhGwG4mj3GF9GQ48xl/xI+143oYNKOWw2SbzfTJ4nl54M/8ZoUxv/g6F5A==
   dependencies:
     arg "^4.1.3"
     ci-info "^2.0.0"
-    consola "^2.11.3"
+    consola "^2.13.0"
+    create-require "^1.0.2"
     defu "^2.0.4"
-    destr "^0.1.4"
-    fs-extra "^9.0.0"
+    destr "^0.1.9"
+    fs-extra "^9.0.1"
     git-url-parse "^11.1.2"
     inquirer "^7.1.0"
     is-docker "^2.0.0"
@@ -3932,7 +3933,7 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^4.0.0:
+chalk@^4.0.0, chalk@^4.1.0:
   version "4.1.0"
   resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.0.tgz#4e14870a618d9e2edd97dd8345fd9d9dc315646a"
   integrity sha512-qwx12AxXe2Q5xQ43Ac//I6v5aXTipYrSESdOgzrN+9XjgEpyjpKuvSGaN4qE93f7TQTlerQQ8S+EQ0EyDoVL1A==
@@ -4320,10 +4321,15 @@ connect@^3.7.0:
     parseurl "~1.3.3"
     utils-merge "1.0.1"
 
-consola@^2.10.0, consola@^2.10.1, consola@^2.11.3, consola@^2.12.2, consola@^2.6.0, consola@^2.9.0:
+consola@^2.10.0, consola@^2.10.1, consola@^2.6.0, consola@^2.9.0:
   version "2.12.2"
   resolved "https://registry.npmjs.org/consola/-/consola-2.12.2.tgz#9610f158e7b0a9ecc8f8bb0c4fc8e7c52bf41d05"
   integrity sha512-c9mzemrAk57s3UIjepn8KKkuEH5fauMdot5kFSJUnqHcnApVS9Db8Rbv5AZ1Iz6lXzaGe9z1crQXhJtGX4h/Og==
+
+consola@^2.13.0:
+  version "2.13.0"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.13.0.tgz#5a4dc75e1b1fddbd8b10728e7790a2e54efeeeb7"
+  integrity sha512-Jw+8qpL0yrpfqH9m90fWoDRQyn8TYU6Aegpl4UofoP81VYvQLoOWMpFw2vQ3U/cyLRRzTc/CyNC6YYVzZFU8Eg==
 
 console-browserify@^1.1.0:
   version "1.2.0"
@@ -4544,6 +4550,11 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     ripemd160 "^2.0.0"
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
+
+create-require@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/create-require/-/create-require-1.0.2.tgz#03f97ad0822826e506965f385fd90388f5051624"
+  integrity sha512-ZizhnQtkxsH1XNsnRy8z2SHRTDAem7fmEJbw1oeuTEkgf5sLXtjrm4nhDcYkO0aiZnAk5dwAze65EvTRaOvxZw==
 
 cross-spawn@^3.0.0:
   version "3.0.1"
@@ -5024,7 +5035,7 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-destr@^0.1.4, destr@^0.1.9:
+destr@^0.1.9:
   version "0.1.9"
   resolved "https://registry.npmjs.org/destr/-/destr-0.1.9.tgz#dcba2eece57db00dec5292c9c61dc104bff384f8"
   integrity sha512-5Ro7GLjdeXObdf5mYN37utIG++nyJxfMmvExopgHRZOVj4Ft8574EFIEvhSvgniN65BLecUKilkeB2H9GpHzsw==
@@ -6183,7 +6194,7 @@ fs-extra@^8.1.0:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-fs-extra@^9.0.0:
+fs-extra@^9.0.0, fs-extra@^9.0.1:
   version "9.0.1"
   resolved "https://registry.npmjs.org/fs-extra/-/fs-extra-9.0.1.tgz#910da0062437ba4c39fedd863f1675ccfefcb9fc"
   integrity sha512-h2iAoN838FqAFJY2/qVpzFXy+EBxfVE220PalAqQLDVsFOHLJrZvut5puAbCdNv6WJk+B8ihI+k0c7JK5erwqQ==
@@ -6477,7 +6488,7 @@ globby@10.0.0:
     merge2 "^1.2.3"
     slash "^3.0.0"
 
-globby@^11.0.0:
+globby@^11.0.1:
   version "11.0.1"
   resolved "https://registry.npmjs.org/globby/-/globby-11.0.1.tgz#9a2bf107a068f3ffeabc49ad702c79ede8cfd357"
   integrity sha512-iH9RmgwCmUJHi2z5o2l3eTtGBtXek1OYlHrbcxOYugyHLmAsZrPj43OtHThd62Buh/Vv6VyCBD2bdyWcGNQqoQ==
@@ -12810,11 +12821,6 @@ typedarray@^0.0.6:
   resolved "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@~3.9:
-  version "3.9.5"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-3.9.5.tgz#586f0dba300cde8be52dd1ac4f7e1009c1b13f36"
-  integrity sha512-hSAifV3k+i6lEoCJ2k6R2Z/rp/H3+8sdmcn5NrS3/3kE7+RyZXm9aqvxWqjEXHAd8b0pShatpcdMTvEdvAJltQ==
-
 ua-parser-js@^0.7.21:
   version "0.7.21"
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.21.tgz#853cf9ce93f642f67174273cc34565ae6f308777"
@@ -13168,10 +13174,10 @@ vue-loader@^15.9.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-meta@^2.3.4:
-  version "2.3.4"
-  resolved "https://registry.npmjs.org/vue-meta/-/vue-meta-2.3.4.tgz#fe28af0721e9bc4003422bd4b401c0b628512d12"
-  integrity sha512-Mz/5ykeWlhyTDVSTFLBM5tmVU/C+fX6rmVAkLSxbYegJUhUZh3N4D0b7nC0/knG1esK2l6r8iW/N0KeU+38bEQ==
+vue-meta@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.npmjs.org/vue-meta/-/vue-meta-2.4.0.tgz#a419fb4b4135ce965dab32ec641d1989c2ee4845"
+  integrity sha512-XEeZUmlVeODclAjCNpWDnjgw+t3WA6gdzs6ENoIAgwO1J1d5p1tezDhtteLUFwcaQaTtayRrsx7GL6oXp/m2Jw==
   dependencies:
     deepmerge "^4.2.2"
 
@@ -13180,10 +13186,10 @@ vue-no-ssr@^1.1.1:
   resolved "https://registry.npmjs.org/vue-no-ssr/-/vue-no-ssr-1.1.1.tgz#875f3be6fb0ae41568a837f3ac1a80eaa137b998"
   integrity sha512-ZMjqRpWabMPqPc7gIrG0Nw6vRf1+itwf0Itft7LbMXs2g3Zs/NFmevjZGN1x7K3Q95GmIjWbQZTVerxiBxI+0g==
 
-vue-router@^3.3.2:
-  version "3.3.2"
-  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.3.2.tgz#0099de402edb2fe92f9711053ab5a2156f239cad"
-  integrity sha512-5sEbcfb7MW8mY8lbUVbF4kgcipGXsagkM/X+pb6n0MhjP+RorWIUTPAPSqgPaiPOxVCXgAItBl8Vwz8vq78faA==
+vue-router@^3.3.3:
+  version "3.3.3"
+  resolved "https://registry.npmjs.org/vue-router/-/vue-router-3.3.3.tgz#92603966921f3f0c7e9ff3881cf0b7ab311533df"
+  integrity sha512-Qmzkurgmy9Muy8HItNQcMYAeANHi/NY4ppOJ/qhTWtrg4mFan+VLX+LEv5DqoYOX1XEabN3m3lLPOEEgUpRr0A==
 
 vue-server-renderer@^2.6.11:
   version "2.6.11"

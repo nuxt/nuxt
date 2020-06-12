@@ -46,7 +46,7 @@
     "@vue/test-utils": "^1.0.3",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.0.1",
-    "consola": "^2.12.2",
+    "consola": "^2.13.0",
     "cross-spawn": "^7.0.3",
     "eslint": "^7.2.0",
     "eslint-multiplexer": "^2.0.0",
