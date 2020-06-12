@@ -7972,10 +7972,10 @@ jest@^26.0.1:
     import-local "^3.0.2"
     jest-cli "^26.0.1"
 
-jiti@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.npmjs.org/jiti/-/jiti-0.1.8.tgz#43af51cf305509d703252aa09438d3ab174e5947"
-  integrity sha512-tb4Tsi7TEZqdMGrqSiuY0l+f+w+sEXVPKvJYnpeDjhyjpQhpTW5lF0ZDXuooLB0zvg7SseLfw/0uJ2Fots4+HA==
+jiti@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-0.1.9.tgz#2567bb84fa101582716387f1d53b88dc03f0e1a4"
+  integrity sha512-HR7z/lkCbx7VUdjWaAUVMU5gSDMg9DOB2NoKWAoN8oYMurosG7UlCVvmYCt1ADn+Uf+wvO7s9LsfiuPYzHMx9Q==
 
 js-base64@^2.1.8:
   version "2.5.2"
