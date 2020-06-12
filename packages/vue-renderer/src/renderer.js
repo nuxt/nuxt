@@ -195,7 +195,10 @@ export default class VueRenderer {
       return
     }
 
-    if (!resources.modernManifest && options.target !== TARGETS.static) {
+    if (
+      !resources.modernManifest &&
+      !(options.target === TARGETS.static && options.modern)
+    ) {
       options.modern = false
       return
     }
