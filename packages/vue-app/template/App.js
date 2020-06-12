@@ -134,7 +134,7 @@ export default {
     if (this.isPreview) {
       if (this.$store && this.$store._actions.nuxtServerInit) {
         <% if (loading) { %>this.$loading.start()<% } %>
-        await app.$store.dispatch('nuxtServerInit', this.context)
+        await this.$store.dispatch('nuxtServerInit', this.context)
       }
       await this.refresh()
       <% if (loading) { %>this.$loading.finish()<% } %>
