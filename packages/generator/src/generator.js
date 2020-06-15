@@ -83,7 +83,7 @@ export default class Generator {
         )
       }
       const config = this.getBuildConfig()
-      if (!config || config.target !== TARGETS.static) {
+      if (!config || (config.target !== TARGETS.static && !this.options._legacyGenerate)) {
         throw new Error(
           `In order to use \`nuxt export\`, you need to run \`nuxt build --target static\``
         )
