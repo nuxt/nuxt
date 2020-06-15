@@ -277,6 +277,9 @@ export default class Generator {
     let html
     const pageErrors = []
 
+    // Always encode route for generation
+    route = encodeURI(route)
+
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
     }
@@ -377,7 +380,7 @@ export default class Generator {
     await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
 
     if (pageErrors.length) {
-      consola.error('Error generating ' + route)
+      consola.error(`Error generating route "${route}": ${pageErrors.map(e => e.error.message).join(', ')}`)
       errors.push(...pageErrors)
     } else {
       consola.success('Generated ' + route)

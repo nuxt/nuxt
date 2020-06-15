@@ -10,7 +10,7 @@
       <NLink to="/pagination/1">
         Pagination
       </NLink>
-      <NLink to="/dynamic/foo%20bar">
+      <NLink to="/dynamic/foo bar">
         Dynamic route
       </NLink>
     </nav>
