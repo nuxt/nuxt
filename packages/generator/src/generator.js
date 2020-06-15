@@ -323,7 +323,7 @@ export default class Generator {
       // Save Static Assets
       if (this.staticAssetsDir && renderContext.staticAssets) {
         for (const asset of renderContext.staticAssets) {
-          const assetPath = path.join(this.staticAssetsDir, asset.path)
+          const assetPath = path.join(this.staticAssetsDir, decodeURI(asset.path))
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
