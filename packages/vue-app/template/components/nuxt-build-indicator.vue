@@ -77,7 +77,7 @@ export default {
         return
       }
       this._connecting = true
-      this.sse = new EventSource('<%= nuxtOptions._loadingScreenBaseURL %>/sse')
+      this.sse = new EventSource('<%= nuxtOptions.build.loadingScreen.baseURLAlt %>/sse')
       this.sse.addEventListener('message', event => this.onSseMessage(event))
     },
     onSseMessage (message) {
