@@ -596,7 +596,7 @@ function formatUrl (url, query) {
   let parts = url.split('/')
   let result = (protocol ? protocol + '://' : '//') + parts.shift()
 
-  let path = parts.filter(Boolean).join('/')
+  let path = parts.join('/')
   let hash
   parts = path.split('#')
   if (parts.length === 2) {
