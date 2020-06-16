@@ -283,9 +283,6 @@ export default class Generator {
     let html
     const pageErrors = []
 
-    // Ensure URL is not encoded to avoid duplicates
-    route = decodeURI(route)
-
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
     }
