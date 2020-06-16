@@ -26,7 +26,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   // Running mode
   const rendering = nuxt.options.render.ssr ? chalk.bold.yellow('server-side') : chalk.bold.yellow('client-side')
   const envMode = nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')
-  const sentence = `Running in ${envMode}, with ${rendering} rendering and ${chalk.bold.cyan(nuxt.options.target)} target.`
+  const sentence = `- Server: ${envMode}\n- Rendering: ${rendering}\n- Target: ${chalk.bold.cyan(nuxt.options.target)}`
   titleLines.push(sentence)
 
   if (showMemoryUsage) {
