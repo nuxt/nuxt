@@ -23,7 +23,6 @@ export default class Generator {
       this.distPath,
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
-    this.generatedRoutes = new Set()
 
     // Shared payload
     this._payload = null
@@ -153,9 +152,16 @@ export default class Generator {
   async generateRoutes (routes) {
     const errors = []
 
-    this.routes = routes
-    // Add routes to the tracked generated routes (for crawler)
-    this.routes.forEach(({ route }) => this.generatedRoutes.add(route))
+    this.routes = []
+    this.generatedRoutes = new Set()
+
+    routes.forEach(({ route, ...props }) => {
+      route = decodeURI(route)
+      this.routes.push({ route, ...props })
+      // Add routes to the tracked generated routes (for crawler)
+      this.generatedRoutes.add(route)
+    })
+
     // Start generate process
     while (this.routes.length) {
       let n = 0
@@ -277,8 +283,8 @@ export default class Generator {
     let html
     const pageErrors = []
 
-    // Always encode route for generation
-    route = encodeURI(route)
+    // Ensure URL is not encoded to avoid duplicates
+    route = decodeURI(route)s
 
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
@@ -311,11 +317,11 @@ export default class Generator {
             .split('#')[0]
             .trim()
 
-          const href = sanitizedHref + possibleTrailingSlash
+          const route = decodeURI(sanitizedHref + possibleTrailingSlash)
 
-          if (href.startsWith('/') && !path.extname(href) && this.shouldGenerateRoute(href) && !this.generatedRoutes.has(href)) {
-            this.generatedRoutes.add(href) // add the route to the tracked list
-            this.routes.push({ route: href })
+          if (route.startsWith('/') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
+            this.generatedRoutes.add(route)
+            this.routes.push({ route })
           }
         })
       }
@@ -323,7 +329,7 @@ export default class Generator {
       // Save Static Assets
       if (this.staticAssetsDir && renderContext.staticAssets) {
         for (const asset of renderContext.staticAssets) {
-          const assetPath = path.join(this.staticAssetsDir, decodeURI(asset.path))
+          const assetPath = path.join(this.staticAssetsDir, asset.path)
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
@@ -383,7 +389,7 @@ export default class Generator {
       consola.error(`Error generating route "${route}": ${pageErrors.map(e => e.error.message).join(', ')}`)
       errors.push(...pageErrors)
     } else {
-      consola.success('Generated ' + route)
+      consola.success(`Generated route "${route}"`)
     }
 
     return true
