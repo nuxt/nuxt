@@ -261,7 +261,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/redirect-external', false)
 
     await page.waitForFunction(
-      () => window.location.href === 'https://nuxtjs.org/'
+      () => window.location.href === 'https://nuxtjs.org/api/'
     )
     page.close()
   })
