@@ -116,8 +116,6 @@ describe('generator: generate routes', () => {
 
     expect(generator._formatErrors).toBeCalledTimes(1)
     expect(generator._formatErrors).toBeCalledWith(errors)
-
-    routes.splice.mockRestore()
   })
 
   test('should format errors', () => {
