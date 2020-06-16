@@ -225,9 +225,9 @@ describe('cli/utils', () => {
     expect(successBox).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Running in production'))
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('client-side rendering'))
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('static target'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('△ Server: production'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('△ Rendering: client-side'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('△ Target: static'))
     stdout.mockRestore()
   })
 
