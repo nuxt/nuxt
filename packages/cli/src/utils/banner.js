@@ -1,7 +1,6 @@
 import consola from 'consola'
 import env from 'std-env'
 import chalk from 'chalk'
-import { stat } from 'fs-extra'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
