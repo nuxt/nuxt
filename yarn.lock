@@ -5038,11 +5038,6 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-destr@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.npmjs.org/destr/-/destr-0.1.9.tgz#dcba2eece57db00dec5292c9c61dc104bff384f8"
-  integrity sha512-5Ro7GLjdeXObdf5mYN37utIG++nyJxfMmvExopgHRZOVj4Ft8574EFIEvhSvgniN65BLecUKilkeB2H9GpHzsw==
-
 destr@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/destr/-/destr-1.0.0.tgz#c445ef0baaf3e51a6d08551d453d6f73fbda2dc6"
@@ -10929,15 +10924,6 @@ raw-body@2.4.0:
     http-errors "1.7.2"
     iconv-lite "0.4.24"
     unpipe "1.0.0"
-
-rc9@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.npmjs.org/rc9/-/rc9-0.0.7.tgz#4d0d680c66f5b8efa8e3ee27e5a80c4a12dea14f"
-  integrity sha512-32UZ4M+ZLPtQjtYiNyxZ+j7D4axouN2RPWUhMRy9CLNqlyGgGEumW5tc77Xx91DGLCKWLXbZRJQp6CvqvmEvVw==
-  dependencies:
-    defu "^2.0.4"
-    destr "^0.1.9"
-    flat "^5.0.0"
 
 rc9@^1.0.0:
   version "1.0.0"
