@@ -1882,13 +1882,14 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^2.0.0-rc.3":
-  version "2.0.0-rc.3"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.0-rc.3.tgz#b5b106c08950fe6e01c0a055964a1f92918b1b40"
-  integrity sha512-QRk78akwn9WPh01nK/9xOZgciCKFB06IgKSMXnT9H6JNlVk+7RkbFodjjbjMELBuy8q90CJ6eSD9jQOlEZZnPQ==
+"@nuxt/loading-screen@^2.0.0-rc.4":
+  version "2.0.0-rc.4"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.0-rc.4.tgz#3ec3c5d0e8413b31840058a8391c2161bfd51622"
+  integrity sha512-5EuLiBXEkZlk5n+Bd7XMe5TYPGGkoHQx8i3o0tWUEWTJ0cs8ToM6nKUDnW8wsJjxdWB9Ap2mrIINgRdezEJwSA==
   dependencies:
     connect "^3.7.0"
-    get-port-plz "^0.0.6"
+    defu "^2.0.4"
+    get-port-please "^1.0.0"
     node-res "^5.0.1"
     serve-static "^1.14.1"
 
@@ -1901,25 +1902,25 @@
     consola "^2.10.1"
     node-fetch "^2.6.0"
 
-"@nuxt/telemetry@^0.0.9":
-  version "0.0.9"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.9.tgz#d143d889bf9ae38dd334b8a420d5c8c21d432f37"
-  integrity sha512-NPYMBSZEJQBJ+KIvVmV/XRnK1J/FDWTnXtKOtp6foNnF6o1mxmLEyWhv1FzP9h155KmKDAwtE0J6dCtFVRjh2w==
+"@nuxt/telemetry@^0.0.13":
+  version "0.0.13"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.13.tgz#7862293a76fa409f923f3921387a57c70889a783"
+  integrity sha512-HkRRxeuMhTZldYFXJScHOo5m/2reJ1cURUggH0f3dBb8KqndgdM+XZQ5lCa0nEpjd4UmzPE+Skp4rwqGRgCRZg==
   dependencies:
     arg "^4.1.3"
     ci-info "^2.0.0"
     consola "^2.13.0"
     create-require "^1.0.2"
     defu "^2.0.4"
-    destr "^0.1.9"
+    destr "^1.0.0"
     fs-extra "^9.0.1"
     git-url-parse "^11.1.2"
-    inquirer "^7.1.0"
+    inquirer "^7.2.0"
     is-docker "^2.0.0"
-    nanoid "^3.1.9"
+    nanoid "^3.1.10"
     node-fetch "^2.6.0"
     parse-git-config "^3.0.0"
-    rc9 "^0.0.7"
+    rc9 "^1.0.0"
 
 "@nuxtjs/eslint-config@^3.0.0":
   version "3.0.0"
@@ -6211,10 +6212,10 @@ fs-extra@^9.0.0, fs-extra@^9.0.1:
     jsonfile "^6.0.1"
     universalify "^1.0.0"
 
-fs-memo@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.npmjs.org/fs-memo/-/fs-memo-0.0.6.tgz#c447905dbc7f7f75e8bd4b914dfb3be10b462967"
-  integrity sha512-vJVm33iM7BiTitGV+i4zwTkD92NQxv1yCClFT5SiAnRX1nGtXgodKm3wJ3Rl5dNPqwgBhKtBAf0hq0m2Iid5fw==
+fs-memo@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/fs-memo/-/fs-memo-1.0.1.tgz#929fb840efce164003e8722aa9b56dec7c630438"
+  integrity sha512-lV4dUPsyJHVgD3g0loRj+ClZQnb8eUQN0olNWgmYbq+ch4ponSMBI+l4l72l9krHakhq79QLCzPJMko+qpvmTQ==
 
 fs-minipass@^1.2.5:
   version "1.2.7"
@@ -6330,12 +6331,12 @@ get-pkg-repo@^1.0.0:
     parse-github-repo-url "^1.3.0"
     through2 "^2.0.0"
 
-get-port-plz@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.npmjs.org/get-port-plz/-/get-port-plz-0.0.6.tgz#adc7f0b5407ba04ba0984bdb206ee1af9ffba1a3"
-  integrity sha512-92HZTnhRPo5Mhpw67/+9b3m+/GjWLFQGJL3sE3H9jdjy0CvuL9MFr4jQHymS0nSFWeEQmJ75/RG99uIVPo7YPQ==
+get-port-please@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/get-port-please/-/get-port-please-1.0.0.tgz#40c34b3b8fede217e7ca8f6a4a28aea49276b258"
+  integrity sha512-4hylsMS0Uqa4jjwXVS+QWMntWL7CQouAlv4BEmiycavPqOp3ytGf4V4yqy8FnbBboHq5orCXuZyftuXbANk+Mg==
   dependencies:
-    fs-memo "^0.0.6"
+    fs-memo "^1.0.0"
 
 get-port@^4.2.0:
   version "4.2.0"
@@ -7121,7 +7122,7 @@ inquirer@^6.2.0:
     strip-ansi "^5.1.0"
     through "^2.3.6"
 
-inquirer@^7.0.0, inquirer@^7.1.0:
+inquirer@^7.0.0, inquirer@^7.2.0:
   version "7.2.0"
   resolved "https://registry.npmjs.org/inquirer/-/inquirer-7.2.0.tgz#63ce99d823090de7eb420e4bb05e6f3449aa389a"
   integrity sha512-E0c4rPwr9ByePfNlTIB8z51kK1s2n6jrHuJeEHENl/sbq2G/S1auvibgEwNR4uSyiU+PiYHqSwsgGiXjG8p5ZQ==
@@ -8981,7 +8982,7 @@ nan@^2.12.1, nan@^2.13.2:
   resolved "https://registry.npmjs.org/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
   integrity sha512-isWHgVjnFjh2x2yuJ/tj3JbwoHu3UC2dX5G/88Cm24yB6YopVgxvBObDY7n5xW6ExmFhJpSEQqFPvq9zaXc8Jw==
 
-nanoid@^3.1.9:
+nanoid@^3.1.10:
   version "3.1.10"
   resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.1.10.tgz#69a8a52b77892de0d11cede96bc9762852145bc4"
   integrity sha512-iZFMXKeXWkxzlfmMfM91gw7YhN2sdJtixY+eZh9V6QWJWTOiurhpKhBMgr82pfzgSqglQgqYSCowEYsz8D++6w==
@@ -10936,6 +10937,15 @@ rc9@^0.0.7:
   dependencies:
     defu "^2.0.4"
     destr "^0.1.9"
+    flat "^5.0.0"
+
+rc9@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/rc9/-/rc9-1.0.0.tgz#b72c6665d0cd5e1af2f59d8f2e9da81f6187f9a3"
+  integrity sha512-MVgjFCXkndOD08FBqnCgX92ND36NaGVEzBuImhZ5XVFZz2rF9RGfTiQ0yczxdNEoNbwIRC1guhQJVUMljsqvTg==
+  dependencies:
+    defu "^2.0.4"
+    destr "^1.0.0"
     flat "^5.0.0"
 
 react-is@^16.12.0:
