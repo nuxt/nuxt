@@ -1,6 +1,7 @@
 import consola from 'consola'
 import env from 'std-env'
 import chalk from 'chalk'
+import { stat } from 'fs-extra'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
@@ -27,7 +28,10 @@ export function showBanner (nuxt, showMemoryUsage = true) {
 
   // Stage
   const isDev = nuxt.options.dev
-  const stage = isDev ? 'development' : (process.env.NODE_ENV || 'production')
+  let stage = isDev ? 'development' : 'production'
+  if (process.env.NODE_ENV !== stage) {
+    stage += ` (NODE_ENV=${process.env.NODE_ENV})`
+  }
   titleLines.push(`${label('Stage')}   ${stage}`)
 
   // Mode
@@ -40,7 +44,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   titleLines.push(`${label('Target')}  ${target}`)
 
   if (showMemoryUsage) {
-    titleLines.push(getFormattedMemoryUsage())
+    titleLines.push('\n' + getFormattedMemoryUsage())
   }
 
   // Listeners
