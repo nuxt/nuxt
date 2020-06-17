@@ -598,7 +598,7 @@ function formatUrl (url, query) {
 
   let path = parts.join('/')
   if (path === '' && parts.length === 1) {
-    path = '/'
+    result += '/'
   }
 
   let hash
@@ -607,7 +607,7 @@ function formatUrl (url, query) {
     [path, hash] = parts
   }
 
-  result += path && path !== '/' ? '/' + path : ''
+  result += path ? '/' + path : ''
 
   if (query && JSON.stringify(query) !== '{}') {
     result += (url.split('?').length === 2 ? '&' : '?') + formatQuery(query)
