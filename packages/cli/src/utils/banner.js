@@ -22,26 +22,26 @@ export function showBanner (nuxt, showMemoryUsage = true) {
 
   // Name and version
   const { bannerColor, badgeMessages } = nuxt.options.cli
-  titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')}    ${nuxt.constructor.version}\n`)
+  titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} @ ${nuxt.constructor.version || 'exotic'}\n`)
 
   const label = name => chalk.bold.cyan(`▸ ${name}:`)
 
-  // Stage
+  // Environment
   const isDev = nuxt.options.dev
-  let stage = isDev ? 'development' : 'production'
-  if (process.env.NODE_ENV !== stage) {
-    stage += ` (NODE_ENV=${process.env.NODE_ENV})`
+  let _env = isDev ? 'development' : 'production'
+  if (process.env.NODE_ENV !== _env) {
+    _env += ` (${chalk.cyan(process.env.NODE_ENV)})`
   }
-  titleLines.push(`${label('Stage')}   ${stage}`)
+  titleLines.push(`${label('Environment')} ${_env}`)
 
   // Mode
   const isSSR = nuxt.options.render.ssr
   const mode = isSSR ? 'server-side' : 'client-side'
-  titleLines.push(`${label('Mode')}    ${mode}`)
+  titleLines.push(`${label('Mode')}        ${mode}`)
 
   // Target
-  const target = nuxt.options.target
-  titleLines.push(`${label('Target')}  ${target}`)
+  const target = nuxt.options.target || 'server'
+  titleLines.push(`${label('Target')}      ${target}`)
 
   if (showMemoryUsage) {
     titleLines.push('\n' + getFormattedMemoryUsage())
