@@ -33,10 +33,10 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   }
   titleLines.push(`${label('Environment')} ${_env}`)
 
-  // Mode
+  // Rendering
   const isSSR = nuxt.options.render.ssr
-  const mode = isSSR ? 'server-side' : 'client-side'
-  titleLines.push(`${label('Mode')}        ${mode}`)
+  const rendering = isSSR ? 'server-side' : 'client-side'
+  titleLines.push(`${label('Rendering')}   ${rendering}`)
 
   // Target
   const target = nuxt.options.target || 'server'

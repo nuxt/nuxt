@@ -226,7 +226,7 @@ describe('cli/utils', () => {
     expect(stdout).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Environment:'))
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Mode:'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Rendering:'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Target:'))
     stdout.mockRestore()
   })
