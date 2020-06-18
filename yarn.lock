@@ -1853,10 +1853,10 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@nuxt/components@^0.3.4":
-  version "0.3.4"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.3.4.tgz#9ca5731450d00ccd376968f3012c1daa0e761899"
-  integrity sha512-kxYhWrO+zBT0K793j8bCUY1Z7GJQAZpPwHVBsIAKqJmmYNjxNnBch/oFXfP3Q7ktQCDfbKR2NwpxyvwOxc2eCQ==
+"@nuxt/components@^0.3.5":
+  version "0.3.5"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-0.3.5.tgz#43640997b105e626588f65e8d306784b1735000b"
+  integrity sha512-KxtW4bBPE5AyqYFPFZ2jL7xX3VzpjvZZNbBSN0x3GhW+ZNbxPNdBApEIQuvbDDpRtItYB3W6JuNASlXP3NRpLg==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.4.0"
@@ -1882,10 +1882,10 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^2.0.0-rc.4":
-  version "2.0.0-rc.4"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.0-rc.4.tgz#3ec3c5d0e8413b31840058a8391c2161bfd51622"
-  integrity sha512-5EuLiBXEkZlk5n+Bd7XMe5TYPGGkoHQx8i3o0tWUEWTJ0cs8ToM6nKUDnW8wsJjxdWB9Ap2mrIINgRdezEJwSA==
+"@nuxt/loading-screen@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.0.tgz#7f0e4941f195469c942d59a9fe733a9dc95324c2"
+  integrity sha512-NqgeeqRnnlL37oe/AZtM7tPS4kZ6rwi1ZByNEYS4WaH+GW2b/JY5RNx4PrIHt86X2GpTXjJcQ0j1hQlTP05+EQ==
   dependencies:
     connect "^3.7.0"
     defu "^2.0.4"
@@ -1902,10 +1902,10 @@
     consola "^2.10.1"
     node-fetch "^2.6.0"
 
-"@nuxt/telemetry@^0.0.13":
-  version "0.0.13"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.13.tgz#7862293a76fa409f923f3921387a57c70889a783"
-  integrity sha512-HkRRxeuMhTZldYFXJScHOo5m/2reJ1cURUggH0f3dBb8KqndgdM+XZQ5lCa0nEpjd4UmzPE+Skp4rwqGRgCRZg==
+"@nuxt/telemetry@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-0.0.14.tgz#a150872837a531175756b6d84e73c295bb9352e6"
+  integrity sha512-q5FCPbCqYP3Tks564HzESMQVda8qLxXbXKscxo80GVdM/+htD5dkN2473JFbARlTsvV38bQ+OsEcIqnCY3MyXg==
   dependencies:
     arg "^4.1.3"
     ci-info "^2.0.0"
