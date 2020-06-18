@@ -2,10 +2,11 @@
  * Extends interfaces in Vue.js
  */
 
-import Vue, { ComponentOptions } from 'vue'
+import Vue from 'vue'
 import { MetaInfo } from 'vue-meta'
 import { Route } from 'vue-router'
 import { Context, Middleware, Transition, NuxtApp } from './index'
+import { NuxtRuntimeConfig } from '../config/runtime'
 
 declare module 'vue/types/options' {
   interface ComponentOptions<V extends Vue> {
@@ -28,6 +29,7 @@ declare module 'vue/types/options' {
 
 declare module 'vue/types/vue' {
   interface Vue {
+    $config: NuxtRuntimeConfig
     $nuxt: NuxtApp
     $fetch(): void
     $fetchState: {
