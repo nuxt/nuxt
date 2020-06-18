@@ -13,6 +13,7 @@ import { NuxtOptionsModule } from './module'
 import { NuxtOptionsPlugin } from './plugin'
 import { NuxtOptionsRender } from './render'
 import { NuxtOptionsRouter } from './router'
+import { NuxtConfigurationRuntimeConfig } from './runtime'
 import { NuxtOptionsServer } from './server'
 import { NuxtOptionsServerMiddleware } from './server-middleware'
 import { NuxtOptionsVueConfiguration } from './vue-configuration'
@@ -50,6 +51,8 @@ export interface NuxtOptions extends Record<string, any> {
   modules: NuxtOptionsModule[]
   modulesDir: string[]
   plugins: NuxtOptionsPlugin[]
+  privateRuntimeConfig?: NuxtConfigurationRuntimeConfig
+  publicRuntimeConfig?: NuxtConfigurationRuntimeConfig
   render: NuxtOptionsRender
   rootDir: string
   router: NuxtOptionsRouter
