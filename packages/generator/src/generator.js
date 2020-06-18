@@ -239,7 +239,7 @@ export default class Generator {
 
     consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)
-    await this.nuxt.callHook('export:distCopied', this)
+    await this.nuxt.callHook('export:distRemoved', this)
 
     // Copy static and built files
     if (await fsExtra.exists(this.staticRoutes)) {
