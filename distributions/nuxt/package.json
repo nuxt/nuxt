@@ -60,7 +60,7 @@
   "dependencies": {
     "@nuxt/builder": "2.12.1",
     "@nuxt/cli": "2.12.1",
-    "@nuxt/components": "^0.3.4",
+    "@nuxt/components": "^1.0.0",
     "@nuxt/core": "2.12.1",
     "@nuxt/generator": "2.12.1",
     "@nuxt/loading-screen": "^2.0.0-rc.4",
