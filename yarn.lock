@@ -1895,10 +1895,10 @@
     consola "^2.10.1"
     node-fetch "^2.6.0"
 
-"@nuxt/telemetry@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.0.0.tgz#c864feb78f8eae52e2b8046e555e8212e6f2d99c"
-  integrity sha512-Y18r1ujg0UXcTy747WcYVA/RRBERYR5wH22wvZzNmVae7prp3isDYfZYId9fVl8bUEF7kmB+5W0z+5WIBRGIRQ==
+"@nuxt/telemetry@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.0.1.tgz#aabca3a2db38377ed7c02574ca44db899443fcee"
+  integrity sha512-6s+5MAQ42BEKyLgfG5iwds5sQjXrB0Hi9YmLFj6ZRmZsAXhmTnR+Ry6SqUTs1ChjNMrSZ55jfg8UHcLoNvFfRw==
   dependencies:
     arg "^4.1.3"
     ci-info "^2.0.0"
