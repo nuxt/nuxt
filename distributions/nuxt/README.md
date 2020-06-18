@@ -20,7 +20,7 @@
   <a href="https://otechie.com/nuxt?ref=badge"><img src="https://api.otechie.com/consultancy/nuxt/badge.svg" alt="Hire Nuxt"></a>
 </p>
 
-> Vue.js Meta Framework to create complex, fast & universal web applications *quickly*.
+> Build your next Vue.js application with confidence using Nuxt.js: a framework making web development simple and powerful.
 
 ## Links
 

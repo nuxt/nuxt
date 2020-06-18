@@ -118,7 +118,7 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith('Error generating /foo')
+    expect(consola.error).toBeCalledWith('Error generating route "/foo": render route failed')
     expect(errors).toEqual([{
       error,
       route,

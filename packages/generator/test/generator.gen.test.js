@@ -95,12 +95,9 @@ describe('generator: generate routes', () => {
     const generator = new Generator(nuxt)
 
     generator.generateRoute = jest.fn()
-    jest.spyOn(routes, 'splice')
 
     const errors = await generator.generateRoutes(routes)
 
-    expect(routes.splice).toBeCalledTimes(3)
-    expect(routes.splice).toBeCalledWith(0, 2)
     expect(waitFor).toBeCalledTimes(5)
     expect(waitFor).nthCalledWith(1, 0)
     expect(waitFor).nthCalledWith(2, 100)
@@ -119,8 +116,6 @@ describe('generator: generate routes', () => {
 
     expect(generator._formatErrors).toBeCalledTimes(1)
     expect(generator._formatErrors).toBeCalledWith(errors)
-
-    routes.splice.mockRestore()
   })
 
   test('should format errors', () => {

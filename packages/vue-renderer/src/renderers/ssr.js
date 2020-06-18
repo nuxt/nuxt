@@ -114,7 +114,11 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject head meta
     // (this is unset when features.meta is false in server template)
-    const meta = renderContext.meta && renderContext.meta.inject()
+    const meta = renderContext.meta && renderContext.meta.inject({
+      isSSR: renderContext.nuxt.serverRendered,
+      ln: this.options.dev
+    })
+
     if (meta) {
       HEAD += meta.title.text() + meta.meta.text()
     }
@@ -143,12 +147,14 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     if (meta) {
+      const prependInjectorOptions = { pbody: true }
+
       const BODY_PREPEND =
-        meta.meta.text({ pbody: true }) +
-        meta.link.text({ pbody: true }) +
-        meta.style.text({ pbody: true }) +
-        meta.script.text({ pbody: true }) +
-        meta.noscript.text({ pbody: true })
+        meta.meta.text(prependInjectorOptions) +
+        meta.link.text(prependInjectorOptions) +
+        meta.style.text(prependInjectorOptions) +
+        meta.script.text(prependInjectorOptions) +
+        meta.noscript.text(prependInjectorOptions)
 
       if (BODY_PREPEND) {
         APP = `${BODY_PREPEND}${APP}`
@@ -238,17 +244,19 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
+      const appendInjectorOptions = { body: true }
+
       // Append body scripts
-      APP += meta.meta.text({ body: true })
-      APP += meta.link.text({ body: true })
-      APP += meta.style.text({ body: true })
-      APP += meta.script.text({ body: true })
-      APP += meta.noscript.text({ body: true })
+      APP += meta.meta.text(appendInjectorOptions)
+      APP += meta.link.text(appendInjectorOptions)
+      APP += meta.style.text(appendInjectorOptions)
+      APP += meta.script.text(appendInjectorOptions)
+      APP += meta.noscript.text(appendInjectorOptions)
     }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(renderContext.nuxt.serverRendered /* addSrrAttribute */) : '',
       HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
       BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,

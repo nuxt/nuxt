@@ -134,7 +134,7 @@ export default {
     if (this.isPreview) {
       if (this.$store && this.$store._actions.nuxtServerInit) {
         <% if (loading) { %>this.$loading.start()<% } %>
-        await app.$store.dispatch('nuxtServerInit', this.context)
+        await this.$store.dispatch('nuxtServerInit', this.context)
       }
       await this.refresh()
       <% if (loading) { %>this.$loading.finish()<% } %>
@@ -311,7 +311,7 @@ export default {
       route = (route.replace(/\/+$/, '') || '/').split('?')[0]
       const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
       try {
-        const payload = await window.__NUXT_IMPORT__(route, src)
+        const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
         this.setPagePayload(payload)
         return payload
       } catch (err) {

@@ -1,5 +1,4 @@
 import path from 'path'
-import esm from 'esm'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
@@ -29,8 +28,7 @@ describe.posix('core: resolver', () => {
     expect(resolver.resolveAlias).toBeInstanceOf(Function)
     expect(resolver.resolveModule).toBeInstanceOf(Function)
     expect(resolver.requireModule).toBeInstanceOf(Function)
-    expect(resolver.esm).toEqual(expect.any(Function))
-    expect(esm).toBeCalledTimes(1)
+    expect(resolver._require).toEqual(expect.any(Function))
   })
 
   test('should call require.resolve in resolveModule', () => {
@@ -351,7 +349,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = x => x
-      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+      resolver._require = jest.fn(() => ({ default: 'resolved module' }))
 
       const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js')
 
@@ -363,7 +361,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = x => x
-      resolver.esm = jest.fn(() => 'resolved module')
+      resolver._require = jest.fn(() => 'resolved module')
 
       const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js')
 
@@ -375,7 +373,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = x => x
-      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+      resolver._require = jest.fn(() => ({ default: 'resolved module' }))
 
       const resolvedModule = resolver.requireModule('/var/nuxt/resolver/module.js', { interopDefault: false })
 
@@ -387,7 +385,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = jest.fn(() => 'path')
-      resolver.esm = jest.fn(() => ({ default: 'resolved module' }))
+      resolver._require = jest.fn(() => ({ default: 'resolved module' }))
 
       const resolvedModule = resolver.requireModule('path', { useESM: false })
 
@@ -399,7 +397,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
-      resolver.esm = jest.fn(() => undefined)
+      resolver._require = jest.fn(() => undefined)
 
       expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve failed')
     })
@@ -409,7 +407,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = jest.fn(() => { throw new Error('resolve failed') })
-      resolver.esm = jest.fn(() => { throw new Error('resolve esm failed') })
+      resolver._require = jest.fn(() => { throw new Error('resolve esm failed') })
 
       expect(() => resolver.requireModule('/var/nuxt/resolver/module.js')).toThrow('resolve esm failed')
     })
@@ -419,7 +417,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = x => x
-      resolver.esm = jest.fn()
+      resolver._require = jest.fn()
 
       resolver.requireModule('/var/nuxt/resolver/file.js', { intropDefault: true })
       const warnMsg = 'Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.'
@@ -432,7 +430,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = x => x
-      resolver.esm = jest.fn()
+      resolver._require = jest.fn()
 
       resolver.requireModule('/var/nuxt/resolver/file.js', { alias: true })
       const warnMsg = 'Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.'
@@ -445,7 +443,7 @@ describe.posix('core: resolver', () => {
         options: {}
       })
       resolver.resolvePath = jest.fn().mockReturnValue('/var/nuxt/resolver/file.js')
-      resolver.esm = jest.fn()
+      resolver._require = jest.fn()
 
       resolver.requireModule('/var/nuxt/resolver/file.js', { esm: true })
       const warnMsg = 'Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.'
