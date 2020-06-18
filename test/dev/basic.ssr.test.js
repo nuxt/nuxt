@@ -152,24 +152,9 @@ describe('basic ssr', () => {
     expect(html).toContain('<h1>Index page</h1>')
   })
 
-  test('/redirect', async () => {
-    const { html, redirected } = await nuxt.server.renderRoute('/redirect')
-    expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).not.toContain('window.__NUXT__')
-    expect(redirected.path === '/').toBe(true)
-    expect(redirected.status === 302).toBe(true)
-  })
-
-  test('/redirect -> check redirected source', async () => {
-    // there are no transition properties in jsdom, ignore the error log
-    const window = await nuxt.server.renderAndGetWindow(url('/redirect'))
-    const html = window.document.body.innerHTML
-    expect(html).toContain('<h1>Index page</h1>')
-  })
-
-  test('/redirect -> external link', async () => {
+  describe('/redirect', () => {
     let _headers, _status
-    const { html } = await nuxt.server.renderRoute('/redirect-external', {
+    const renderContext = {
       res: {
         writeHead (status, headers) {
           _status = status
@@ -177,10 +162,43 @@ describe('basic ssr', () => {
         },
         end () { }
       }
+    }
+
+    test('/redirect', async () => {
+      const { html, redirected } = await nuxt.server.renderRoute('/redirect')
+      expect(html).toContain('<div id="__nuxt"></div>')
+      expect(html).not.toContain('window.__NUXT__')
+      expect(redirected.path === '/').toBe(true)
+      expect(redirected.status === 302).toBe(true)
     })
-    expect(_status).toBe(302)
-    expect(_headers.Location).toBe('https://nuxtjs.org')
-    expect(html).toContain('<div data-server-rendered="true"></div>')
+
+    test('/redirect -> check redirected source', async () => {
+      // there are no transition properties in jsdom, ignore the error log
+      const window = await nuxt.server.renderAndGetWindow(url('/redirect'))
+      const html = window.document.body.innerHTML
+      expect(html).toContain('<h1>Index page</h1>')
+    })
+
+    test('/redirect -> external link', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/api/')
+      expect(html).toContain('<div data-server-rendered="true"></div>')
+    })
+
+    test('/redirect -> external link without trailing slash', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external-no-slash', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/api')
+      expect(html).toContain('<div data-server-rendered="true"></div>')
+    })
+
+    test('/redirect -> external link with root domain url', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external-root', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/')
+      expect(html).toContain('<div data-server-rendered="true"></div>')
+    })
   })
 
   test('/special-state -> check window.__NUXT__.test = true', async () => {
