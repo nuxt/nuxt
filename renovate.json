@@ -18,7 +18,8 @@
     "chalk",
     "wrap-ansi",
     "terser-webpack-plugin",
-    "@types/terser-webpack-plugin"
+    "@types/terser-webpack-plugin",
+    "rollup"
   ],
   "lockFileMaintenance": {
     "enabled": true
