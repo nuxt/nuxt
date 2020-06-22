@@ -15,7 +15,7 @@
     "@types/connect": "^3.4.33",
     "@types/etag": "^1.8.0",
     "@types/file-loader": "^4.2.0",
-    "@types/html-minifier": "^3.5.3",
+    "@types/html-minifier": "^4.0.0",
     "@types/less": "^3.0.1",
     "@types/node": "^12.12.47",
     "@types/node-sass": "^4.11.1",
