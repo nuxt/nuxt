@@ -115,7 +115,7 @@ describe('util: locking', () => {
     expect(fs.remove).toHaveBeenCalledTimes(1)
   })
 
-  test('lock release also cleansup onExit set', async () => {
+  test('lock release also cleanup onExit set', async () => {
     const release = jest.fn()
     properlock.lock.mockImplementation(() => release)
 

@@ -171,40 +171,151 @@ export default class Server {
     }))
   }
 
-  useMiddleware (middleware) {
-    let handler = middleware.handler || middleware
+  _normalizeMiddleware (middleware) {
+    // Normalize plain function
+    if (typeof middleware === 'function') {
+      middleware = { handle: middleware }
+    }
 
-    // Resolve handler setup as string (path)
-    if (typeof handler === 'string') {
-      try {
-        const requiredModuleFromHandlerPath = this.nuxt.resolver.requireModule(handler)
+    // If a plain string provided as path to middleware
+    if (typeof middleware === 'string') {
+      middleware = this._requireMiddleware(middleware)
+    }
 
-        // In case the "handler" is not derived from an object but is a normal string, another object with
-        // path and handler could be the result
+    // Normalize handler to handle (backward compatibility)
+    if (middleware.handler && !middleware.handle) {
+      middleware.handle = middleware.handler
+      delete middleware.handler
+    }
 
-        // If the required module has handler, treat the module as new "middleware" object
-        if (requiredModuleFromHandlerPath.handler) {
-          middleware = requiredModuleFromHandlerPath
-        }
+    // Normalize path to route (backward compatibility)
+    if (middleware.path && !middleware.route) {
+      middleware.route = middleware.path
+      delete middleware.path
+    }
 
-        handler = requiredModuleFromHandlerPath.handler || requiredModuleFromHandlerPath
-      } catch (err) {
-        consola.error(err)
-        // Throw error in production mode
-        if (!this.options.dev) {
-          throw err
-        }
+    // If handle is a string pointing to path
+    if (typeof middleware.handle === 'string') {
+      Object.assign(middleware, this._requireMiddleware(middleware.handle))
+    }
+
+    // No handle
+    if (!middleware.handle) {
+      middleware.handle = (req, res, next) => {
+        next(new Error('ServerMiddleware should expose a handle: ' + middleware.entry))
       }
     }
 
-    // Resolve path
-    const path = (
+    // Prefix on handle (proxy-module)
+    if (middleware.handle.prefix !== undefined && middleware.prefix === undefined) {
+      middleware.prefix = middleware.handle.prefix
+    }
+
+    // sub-app (express)
+    if (typeof middleware.handle.handle === 'function') {
+      const server = middleware.handle
+      middleware.handle = server.handle.bind(server)
+    }
+
+    return middleware
+  }
+
+  _requireMiddleware (entry) {
+    // Resolve entry
+    entry = this.nuxt.resolver.resolvePath(entry)
+
+    // Require middleware
+    let middleware
+    try {
+      middleware = this.nuxt.resolver.requireModule(entry)
+    } catch (error) {
+      // Show full error
+      consola.error('ServerMiddleware Error:', error)
+
+      // Placeholder for error
+      middleware = (req, res, next) => { next(error) }
+    }
+
+    // Normalize
+    middleware = this._normalizeMiddleware(middleware)
+
+    // Set entry
+    middleware.entry = entry
+
+    return middleware
+  }
+
+  resolveMiddleware (middleware, fallbackRoute = '/') {
+    // Ensure middleware is normalized
+    middleware = this._normalizeMiddleware(middleware)
+
+    // Fallback route
+    if (!middleware.route) {
+      middleware.route = fallbackRoute
+    }
+
+    // Resolve final route
+    middleware.route = (
       (middleware.prefix !== false ? this.options.router.base : '') +
-      (typeof middleware.path === 'string' ? middleware.path : '')
+      (typeof middleware.route === 'string' ? middleware.route : '')
     ).replace(/\/\//g, '/')
 
-    // Use middleware
-    this.app.use(path, handler)
+    // Strip trailing slash
+    if (middleware.route.endsWith('/')) {
+      middleware.route = middleware.route.slice(0, -1)
+    }
+
+    // Assign _middleware to handle to make accessible from app.stack
+    middleware.handle._middleware = middleware
+
+    return middleware
+  }
+
+  useMiddleware (middleware) {
+    const { route, handle } = this.resolveMiddleware(middleware)
+    this.app.use(route, handle)
+  }
+
+  replaceMiddleware (query, middleware) {
+    let serverStackItem
+
+    if (typeof query === 'string') {
+      // Search by entry
+      serverStackItem = this.app.stack.find(({ handle }) => handle._middleware && handle._middleware.entry === query)
+    } else {
+      // Search by reference
+      serverStackItem = this.app.stack.find(({ handle }) => handle === query)
+    }
+
+    // Stop if item not found
+    if (!serverStackItem) {
+      return
+    }
+
+    // unload middleware
+    this.unloadMiddleware(serverStackItem)
+
+    // Resolve middleware
+    const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
+
+    // Update serverStackItem
+    serverStackItem.handle = handle
+
+    // Error State
+    serverStackItem.route = route
+
+    // Return updated item
+    return serverStackItem
+  }
+
+  unloadMiddleware ({ handle }) {
+    if (handle._middleware && typeof handle._middleware.unload === 'function') {
+      handle._middleware.unload()
+    }
+  }
+
+  serverMiddlewarePaths () {
+    return this.app.stack.map(({ handle }) => handle._middleware && handle._middleware.entry).filter(Boolean)
   }
 
   renderRoute () {
@@ -218,13 +329,11 @@ export default class Server {
   renderAndGetWindow (url, opts = {}, {
     loadingTimeout = 2000,
     loadedCallback = this.globals.loadedCallback,
-    ssr = this.options.render.ssr,
     globals = this.globals
   } = {}) {
     return renderAndGetWindow(url, opts, {
       loadingTimeout,
       loadedCallback,
-      ssr,
       globals
     })
   }
@@ -269,6 +378,7 @@ export default class Server {
       await this.renderer.close()
     }
 
+    this.app.stack.forEach(this.unloadMiddleware)
     this.app.removeAllListeners()
     this.app = null
 

@@ -11,9 +11,7 @@ const useCjs = [
 
 const stub = {
   es: 'export * from \'../src/index\'',
-  cjs: `const esm = require('esm')
-
-const _require = esm(module)
+  cjs: `const _require = typeof jest === 'undefined' ? require('esm')(module) : require
 
 const execa = require('execa')
 

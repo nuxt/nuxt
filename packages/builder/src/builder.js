@@ -1,4 +1,5 @@
 import path from 'path'
+import chalk from 'chalk'
 import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -21,10 +22,10 @@ import {
   waitFor,
   determineGlobals,
   stripWhitespace,
-  isString,
   isIndexFileAndFolder,
-  isPureObject,
-  clearRequireCache
+  scanRequireTree,
+  TARGETS,
+  isFullStatic
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -60,13 +61,16 @@ export default class Builder {
         this.watchRestart()
       })
 
+      // Enable HMR for serverMiddleware
+      this.serverMiddlewareHMR()
+
       // Close hook
       this.nuxt.hook('close', () => this.close())
     }
 
     if (this.options.build.analyze) {
       this.nuxt.hook('build:done', () => {
-        consola.warn('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
+        consola.warn('Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.')
       })
     }
 
@@ -80,7 +84,8 @@ export default class Builder {
     this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
 
     this.ignore = new Ignore({
-      rootDir: this.options.srcDir
+      rootDir: this.options.srcDir,
+      ignoreArray: this.options.ignore
     })
   }
 
@@ -99,6 +104,7 @@ export default class Builder {
   }
 
   forGenerate () {
+    this.options.target = TARGETS.static
     this.bundleBuilder.forGenerate()
   }
 
@@ -119,6 +125,13 @@ export default class Builder {
       consola.info('Initial build may take a while')
     } else {
       consola.info('Production build')
+      if (this.options.render.ssr) {
+        consola.info(`Bundling for ${chalk.bold.yellow('server')} and ${chalk.bold.green('client')} side`)
+      } else {
+        consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
+      }
+      const target = isFullStatic(this.options) ? 'full static' : this.options.target
+      consola.info(`Target: ${chalk.bold.cyan(target)}`)
     }
 
     // Wait for nuxt ready
@@ -140,8 +153,8 @@ export default class Builder {
 
     consola.debug(`App root: ${this.options.srcDir}`)
 
-    // Create .nuxt/, .nuxt/components and .nuxt/dist folders
-    await fsExtra.remove(r(this.options.buildDir))
+    // Create or empty .nuxt/, .nuxt/components and .nuxt/dist folders
+    await fsExtra.emptyDir(r(this.options.buildDir))
     const buildDirs = [r(this.options.buildDir, 'components')]
     if (!this.options.dev) {
       buildDirs.push(
@@ -149,7 +162,7 @@ export default class Builder {
         r(this.options.buildDir, 'dist', 'server')
       )
     }
-    await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
+    await Promise.all(buildDirs.map(dir => fsExtra.emptyDir(dir)))
 
     // Call ready hook
     await this.nuxt.callHook('builder:prepared', this, this.options.build)
@@ -310,7 +323,6 @@ export default class Builder {
   async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
-      ignore: this.options.ignore,
       follow: this.options.build.followSymlinks
     }))
   }
@@ -649,6 +661,9 @@ export default class Builder {
 
   assignWatcher (key) {
     return (watcher) => {
+      if (this.watchers[key]) {
+        this.watchers[key].close()
+      }
       this.watchers[key] = watcher
     }
   }
@@ -690,25 +705,64 @@ export default class Builder {
     this.createFileWatcher([r(this.options.srcDir, this.options.dir.app)], ['add', 'change', 'unlink'], refreshFiles, this.assignWatcher('app'))
   }
 
-  getServerMiddlewarePaths () {
-    return this.options.serverMiddleware
-      .map((serverMiddleware) => {
-        if (isString(serverMiddleware)) {
-          return serverMiddleware
+  serverMiddlewareHMR () {
+    // Check nuxt.server dependency
+    if (!this.nuxt.server) {
+      return
+    }
+
+    // Get registered server middleware with path
+    const entries = this.nuxt.server.serverMiddlewarePaths()
+
+    // Resolve dependency tree
+    const deps = new Set()
+    const dep2Entry = {}
+
+    for (const entry of entries) {
+      for (const dep of scanRequireTree(entry)) {
+        deps.add(dep)
+        if (!dep2Entry[dep]) {
+          dep2Entry[dep] = new Set()
         }
-        if (isPureObject(serverMiddleware) && isString(serverMiddleware.handler)) {
-          return serverMiddleware.handler
+        dep2Entry[dep].add(entry)
+      }
+    }
+
+    // Create watcher
+    this.createFileWatcher(
+      Array.from(deps),
+      ['all'],
+      debounce((event, fileName) => {
+        if (!dep2Entry[fileName]) {
+          return // #7097
         }
-      })
-      .filter(Boolean)
-      .map(p => path.extname(p) ? p : this.nuxt.resolver.resolvePath(p))
+        for (const entry of dep2Entry[fileName]) {
+          // Reload entry
+          let newItem
+          try {
+            newItem = this.nuxt.server.replaceMiddleware(entry, entry)
+          } catch (error) {
+            consola.error(error)
+            consola.error(`[HMR Error]: ${error}`)
+          }
+
+          if (!newItem) {
+            // Full reload if HMR failed
+            return this.nuxt.callHook('watch:restart', { event, path: fileName })
+          }
+
+          // Log
+          consola.info(`[HMR] ${chalk.cyan(newItem.route || '/')} (${chalk.grey(fileName)})`)
+        }
+        // Tree may be changed so recreate watcher
+        this.serverMiddlewareHMR()
+      }, 200),
+      this.assignWatcher('serverMiddleware')
+    )
   }
 
   watchRestart () {
-    const serverMiddlewarePaths = this.getServerMiddlewarePaths()
     const nuxtRestartWatch = [
-      // Server middleware
-      ...serverMiddlewarePaths,
       // Custom watchers
       ...this.options.watch
     ].map(this.nuxt.resolver.resolveAlias)
@@ -716,6 +770,11 @@ export default class Builder {
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
+
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
+      nuxtRestartWatch.push(this.options._envConfig.dotenv)
+    }
+
     // If default page displayed, watch for first page creation
     if (this._nuxtPages && this._defaultPage) {
       nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))
@@ -731,11 +790,6 @@ export default class Builder {
       async (event, fileName) => {
         if (['add', 'change', 'unlink'].includes(event) === false) {
           return
-        }
-        /* istanbul ignore if */
-        if (serverMiddlewarePaths.includes(fileName)) {
-          consola.debug(`Clear cache for ${fileName}`)
-          clearRequireCache(fileName)
         }
         await this.nuxt.callHook('watch:fileChanged', this, fileName) // Legacy
         await this.nuxt.callHook('watch:restart', { event, path: fileName })

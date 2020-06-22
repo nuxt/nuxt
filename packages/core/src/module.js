@@ -10,6 +10,13 @@ export default class ModuleContainer {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.requiredModules = {}
+
+    // Self bind to allow destructre from container
+    for (const method of Object.getOwnPropertyNames(ModuleContainer.prototype)) {
+      if (typeof this[method] === 'function') {
+        this[method] = this[method].bind(this)
+      }
+    }
   }
 
   async ready () {
@@ -18,11 +25,14 @@ export default class ModuleContainer {
 
     if (this.options.buildModules && !this.options._start) {
       // Load every devModule in sequence
-      await sequence(this.options.buildModules, this.addModule.bind(this))
+      await sequence(this.options.buildModules, this.addModule)
     }
 
     // Load every module in sequence
-    await sequence(this.options.modules, this.addModule.bind(this))
+    await sequence(this.options.modules, this.addModule)
+
+    // Load ah-hoc modules last
+    await sequence(this.options._modules, this.addModule)
 
     // Call done hook
     await this.nuxt.callHook('modules:done', this)
@@ -45,11 +55,10 @@ export default class ModuleContainer {
       throw new Error('Template src not found: ' + src)
     }
 
-    // Generate unique and human readable dst filename
-    const dst =
-      template.fileName ||
-      path.basename(srcPath.dir) + `.${srcPath.name}.${hash(src)}` + srcPath.ext
-
+    // Mostly for DX, some people prefers `filename` vs `fileName`
+    const fileName = template.fileName || template.filename
+    // Generate unique and human readable dst filename if not provided
+    const dst = fileName || `${path.basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
     // Add to templates list
     const templateObj = {
       src,
@@ -58,6 +67,7 @@ export default class ModuleContainer {
     }
 
     this.options.build.templates.push(templateObj)
+
     return templateObj
   }
 
@@ -112,10 +122,10 @@ export default class ModuleContainer {
   }
 
   requireModule (moduleOpts) {
-    return this.addModule(moduleOpts, true /* require once */)
+    return this.addModule(moduleOpts)
   }
 
-  async addModule (moduleOpts, requireOnce) {
+  async addModule (moduleOpts) {
     let src
     let options
     let handler
@@ -143,7 +153,36 @@ export default class ModuleContainer {
 
     // Resolve handler
     if (!handler) {
-      handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      try {
+        handler = this.nuxt.resolver.requireModule(src, { useESM: true })
+      } catch (error) {
+        if (error.code !== 'MODULE_NOT_FOUND') {
+          throw error
+        }
+
+        // Hint only if entrypoint is not found and src is not local alias or path
+        if (error.message.includes(src) && !/^[~.]|^@\//.test(src)) {
+          let message = 'Module `{name}` not found.'
+
+          if (this.options.buildModules.includes(src)) {
+            message += ' Please ensure `{name}` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.'.replace('{name}', src)
+          } else if (this.options.modules.includes(src)) {
+            message += ' Please ensure `{name}` is in `dependencies` and installed.'
+          }
+
+          message = message.replace(/{name}/g, src)
+
+          consola.warn(message)
+        }
+
+        if (this.options._cli) {
+          throw error
+        } else {
+          // TODO: Remove in next major version
+          consola.warn('Silently ignoring module as programatic usage detected.')
+          return
+        }
+      }
     }
 
     // Validate handler
@@ -151,15 +190,10 @@ export default class ModuleContainer {
       throw new TypeError('Module should export a function: ' + src)
     }
 
-    // Resolve module meta
-    let key = (handler.meta && handler.meta.name) || handler.name
-    if (!key || key === 'default') {
-      key = src
-    }
-
-    // Update requiredModules
+    // Ensure module is required once
+    const key = (handler.meta && handler.meta.name) || src
     if (typeof key === 'string') {
-      if (requireOnce && this.requiredModules[key]) {
+      if (this.requiredModules[key]) {
         return
       }
       this.requiredModules[key] = { src, options, handler }

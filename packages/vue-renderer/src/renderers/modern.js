@@ -1,4 +1,3 @@
-import invert from 'lodash/invert'
 import { isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
@@ -17,13 +16,15 @@ export default class ModernRenderer extends SSRRenderer {
 
     const { clientManifest, modernManifest } = this.serverContext.resources
     const legacyAssets = clientManifest.assetsMapping
-    const modernAssets = invert(modernManifest.assetsMapping)
+    const modernAssets = modernManifest.assetsMapping
     const mapping = {}
 
-    for (const legacyJsFile in legacyAssets) {
-      const chunkNamesHash = legacyAssets[legacyJsFile]
-      mapping[legacyJsFile] = modernAssets[chunkNamesHash]
-    }
+    Object.keys(legacyAssets).forEach((componentHash) => {
+      const modernComponentAssets = modernAssets[componentHash] || []
+      legacyAssets[componentHash].forEach((legacyAssetName, index) => {
+        mapping[legacyAssetName] = modernComponentAssets[index]
+      })
+    })
     delete clientManifest.assetsMapping
     delete modernManifest.assetsMapping
     this._assetsMapping = mapping
@@ -50,19 +51,18 @@ export default class ModernRenderer extends SSRRenderer {
       return scripts
     }
 
-    const scriptPattern = /<script[^>]*?src="([^"]*?)"[^>]*?>[^<]*?<\/script>/g
+    const scriptPattern = /<script[^>]*?src="([^"]*?)" defer><\/script>/g
 
     const modernScripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
       const legacyJsFile = jsFile.replace(this.publicPath, '')
       const modernJsFile = this.assetsMapping[legacyJsFile]
-      const { build: { crossorigin } } = this.options
-      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-      const moduleTag = modernJsFile
-        ? scriptTag
-          .replace('<script', `<script type="module"${cors}`)
-          .replace(legacyJsFile, modernJsFile)
-        : ''
-      const noModuleTag = scriptTag.replace('<script', `<script nomodule${cors}`)
+      if (!modernJsFile) {
+        return scriptTag
+      }
+      const moduleTag = scriptTag
+        .replace('<script', `<script type="module"`)
+        .replace(legacyJsFile, modernJsFile)
+      const noModuleTag = scriptTag.replace('<script', `<script nomodule`)
 
       return noModuleTag + moduleTag
     })
@@ -108,9 +108,9 @@ export default class ModernRenderer extends SSRRenderer {
       if (!modernJsFile) {
         return ''
       }
-      const { crossorigin } = this.options.build
-      const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
-      return linkTag.replace('rel="preload"', `rel="modulepreload"${cors}`).replace(legacyJsFile, modernJsFile)
+      return linkTag
+        .replace('rel="preload"', `rel="modulepreload"`)
+        .replace(legacyJsFile, modernJsFile)
     })
   }
 

@@ -61,7 +61,8 @@ describe('server: server', () => {
     ready: jest.fn(),
     callHook: jest.fn(),
     resolver: {
-      requireModule: jest.fn()
+      requireModule: jest.fn(),
+      resolvePath: jest.fn().mockImplementation(p => p)
     }
   })
 
@@ -332,7 +333,7 @@ describe('server: server', () => {
 
   test('should use object middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
 
@@ -347,7 +348,7 @@ describe('server: server', () => {
 
   test('should use function module middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
     nuxt.resolver.requireModule.mockReturnValueOnce(handler)
@@ -379,7 +380,7 @@ describe('server: server', () => {
     expect(server.app.use).toBeCalledWith('/middleware', handler)
   })
 
-  test('should throw error when module resolves failed', () => {
+  test('should show error when module require failed', () => {
     const nuxt = createNuxt()
     nuxt.options.router = { base: '/' }
     const server = new Server(nuxt)
@@ -388,9 +389,10 @@ describe('server: server', () => {
       throw error
     })
 
-    expect(() => server.useMiddleware('test-middleware')).toThrow(error)
+    server.useMiddleware('test-middleware')
+
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith(error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should only log error when module resolves failed in dev mode', () => {
@@ -406,7 +408,7 @@ describe('server: server', () => {
     server.useMiddleware('test-middleware')
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith(error)
+    expect(consola.error).toBeCalledWith('ServerMiddleware Error:', error)
   })
 
   test('should render route via renderer', () => {
@@ -502,7 +504,7 @@ describe('server: server', () => {
 
   test('should close server', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     const listener = { close: jest.fn() }
@@ -523,7 +525,7 @@ describe('server: server', () => {
 
   test('should prevent closing server multiple times', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     server.renderer = {}

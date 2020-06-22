@@ -1,11 +1,16 @@
 import path from 'path'
 import fs from 'fs'
-import webpack from 'webpack'
+import { DefinePlugin, ProvidePlugin } from 'webpack'
 import nodeExternals from 'webpack-node-externals'
 
 import VueSSRServerPlugin from '../plugins/vue/server'
 
 import WebpackBaseConfig from './base'
+
+const nativeFileExtensions = [
+  '.json',
+  '.js'
+]
 
 export default class WebpackServerConfig extends WebpackBaseConfig {
   constructor (...args) {
@@ -20,9 +25,21 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
   get externalsWhitelist () {
     return [
-      /\.(?!js(x|on)?$)/i,
+      this.isNonNativeImport.bind(this),
       ...this.normalizeTranspile()
     ]
+  }
+
+  /**
+   * files *not* ending on js|json should be processed by webpack
+   *
+   * this might generate false-positives for imports like
+   * - "someFile.umd" (actually requiring someFile.umd.js)
+   * - "some.folder" (some.folder being a directory containing a package.json)
+   */
+  isNonNativeImport (modulePath) {
+    const extname = path.extname(modulePath)
+    return extname !== '' && !nativeFileExtensions.includes(extname)
   }
 
   env () {
@@ -39,9 +56,11 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   optimization () {
+    const { _minifyServer } = this.buildContext.buildOptions
+
     return {
       splitChunks: false,
-      minimizer: this.minimizer()
+      minimizer: _minifyServer ? this.minimizer() : []
     }
   }
 
@@ -69,11 +88,19 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   plugins () {
     const plugins = super.plugins()
     plugins.push(
-      new VueSSRServerPlugin({
-        filename: `${this.name}.manifest.json`
-      }),
-      new webpack.DefinePlugin(this.env())
+      new VueSSRServerPlugin({ filename: `${this.name}.manifest.json` }),
+      new DefinePlugin(this.env())
     )
+
+    const { serverURLPolyfill } = this.buildContext.options.build
+
+    if (serverURLPolyfill) {
+      plugins.push(new ProvidePlugin({
+        URL: [serverURLPolyfill, 'URL'],
+        URLSearchParams: [serverURLPolyfill, 'URLSearchParams']
+      }))
+    }
+
     return plugins
   }
 
@@ -88,6 +115,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
+        chunkFilename: '[name].js',
         libraryTarget: 'commonjs2'
       }),
       performance: {

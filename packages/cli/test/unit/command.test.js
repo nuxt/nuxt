@@ -1,6 +1,7 @@
 import Command from '../../src/command'
 import { common, server } from '../../src/options'
 import * as utils from '../../src/utils/'
+import * as config from '../../src/utils/config'
 import * as constants from '../../src/utils/constants'
 import { consola } from '../utils'
 
@@ -20,8 +21,8 @@ describe('cli/command', () => {
     const cmd = new Command({ options: allOptions })
     const minimistOptions = cmd._getMinimistOptions()
 
-    expect(minimistOptions.string.length).toBe(5)
-    expect(minimistOptions.boolean.length).toBe(5)
+    expect(minimistOptions.string.length).toBe(7)
+    expect(minimistOptions.boolean.length).toBe(6)
     expect(minimistOptions.alias.c).toBe('config-file')
     expect(minimistOptions.default.c).toBe(common['config-file'].default)
   })
@@ -60,13 +61,25 @@ describe('cli/command', () => {
   })
 
   test('returns nuxt config', async () => {
-    const cmd = new Command({ options: allOptions }, ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H'])
+    const loadConfigSpy = jest.spyOn(config, 'loadNuxtConfig')
+
+    const cmd = new Command({ name: 'test', options: allOptions }, ['-c', 'test-file', '-a', '-p', '3001', '-q', '-H'])
 
     const options = await cmd.getNuxtConfig({ testOption: true })
 
     expect(options.testOption).toBe(true)
     expect(options.server.port).toBe(3001)
     expect(consola.fatal).toHaveBeenCalledWith('Provided hostname argument has no value') // hostname check
+    expect(loadConfigSpy).toHaveBeenCalledTimes(1)
+    expect(loadConfigSpy).toHaveBeenCalledWith(expect.any(Object), {
+      command: 'test',
+      dev: false,
+      env: expect.objectContaining({
+        NODE_ENV: 'test'
+      })
+    })
+
+    loadConfigSpy.mockRestore()
   })
 
   test('returns Nuxt instance', async () => {

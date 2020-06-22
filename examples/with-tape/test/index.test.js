@@ -1,5 +1,5 @@
 import test from 'tape'
-import { shallow } from 'vue-test-utils'
+import { shallow } from '@vue/test-utils'
 import Index from '../pages/index.vue'
 
 test('renders Index.vue correctly', (t) => {

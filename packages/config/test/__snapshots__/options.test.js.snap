@@ -4,6 +4,9 @@ exports[`config: options should return default nuxt config 1`] = `
 Object {
   "ErrorPage": null,
   "__normalized__": true,
+  "_modules": Array [
+    "@nuxt/components",
+  ],
   "_nuxtConfigFile": "/var/nuxt/test/nuxt.config.js",
   "_nuxtConfigFiles": Array [
     "/var/nuxt/test/nuxt.config.js",
@@ -28,7 +31,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -57,11 +59,7 @@ Object {
         "useShortDoctype": true,
       },
     },
-    "indicator": Object {
-      "backgroundColor": "#2E495E",
-      "color": "#00C48D",
-      "position": "bottom-right",
-    },
+    "indicator": false,
     "loaders": Object {
       "css": Object {
         "sourceMap": false,
@@ -108,6 +106,7 @@ Object {
         "sourceMap": false,
       },
     },
+    "loadingScreen": false,
     "optimization": Object {
       "minimize": true,
       "minimizer": undefined,
@@ -130,6 +129,7 @@ Object {
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
+    "serverURLPolyfill": "url",
     "splitChunks": Object {
       "commons": true,
       "layouts": false,
@@ -152,6 +152,7 @@ Object {
     "badgeMessages": Array [],
     "bannerColor": "green",
   },
+  "createRequire": [MockFunction],
   "css": Array [],
   "debug": false,
   "dev": false,
@@ -193,11 +194,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": "/_nuxt/static",
+      "dir": "static",
+      "version": "x",
+      "versionBase": "/_nuxt/static/x",
+    },
     "subFolders": true,
   },
   "globalName": "nuxt",
@@ -290,6 +298,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,
@@ -299,6 +309,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,
@@ -341,6 +352,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -356,6 +368,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": "/var/nuxt/test",
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -366,6 +379,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {

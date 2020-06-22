@@ -1,11 +1,17 @@
 import Vue from 'vue'
-<% if (features.asyncData || features.fetch) { %>
-import {
-  getMatchedComponentsInstances,
-  promisify,
-  globalHandleError
-} from './utils'
-<% } %>
+<% utilsImports = [
+  ...(features.asyncData || features.fetch) ? [
+    'getMatchedComponentsInstances',
+    'getChildrenComponentInstancesUsingFetch',
+    'promisify',
+    'globalHandleError',
+    'urlJoin'
+  ] : [],
+  ...features.layouts ? [
+    'sanitizeComponent'
+  ]: []
+] %>
+<% if (utilsImports.length) { %>import { <%= utilsImports.join(', ') %> } from './utils'<% } %>
 <% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
@@ -16,23 +22,22 @@ import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
   if (splitChunks.layouts) {
-    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => m.default || m)`
+    return `const _${hash(key)} = () => import('${layouts[key]}'  /* webpackChunkName: "${wChunk('layouts/' + key)}" */).then(m => sanitizeComponent(m.default || m))`
   } else {
     return `import _${hash(key)} from '${layouts[key]}'`
   }
 }).join('\n') %>
 
+<% if (splitChunks.layouts) { %>
+let resolvedLayouts = {}
 const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": _${hash(key)}`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } else { %>
+const layouts = { <%= Object.keys(layouts).map(key => `"_${key}": sanitizeComponent(_${hash(key)})`).join(',') %> }<%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
-<% if (splitChunks.layouts) { %>let resolvedLayouts = {}<% } %>
 <% } %>
 
 export default {
-  <% if (features.meta) { %>
-  <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
-  head: <%= serializeFunction(head) %>,
-  <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
-  <% } %>
   render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
@@ -53,7 +58,8 @@ export default {
       domProps: {
         id: '__layout'
       },
-      key: this.layoutName
+
+          key: this.layoutName
     }, [layoutEl])
     <% } else { %>
     const templateEl = h('nuxt')
@@ -93,9 +99,12 @@ export default {
     <% } %>
     <% if (features.layouts) { %>
     layout: null,
-    layoutName: ''
+    layoutName: '',
     <% } %>
-  }),
+    <% if (features.fetch) { %>
+    nbFetching: 0
+    <% } %>
+    }),
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -103,8 +112,8 @@ export default {
   created () {
     // Add this.$nuxt in child instances
     Vue.prototype.<%= globals.nuxt %> = this
-    // add to window so we can listen when ready
     if (process.client) {
+      // add to window so we can listen when ready
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
       <% if (features.clientOnline) { %>
       this.refreshOnlineStatus()
@@ -118,10 +127,22 @@ export default {
     // Add $nuxt.context
     this.context = this.$options.context
   },
-  <% if (loading) { %>
-  mounted () {
-    this.$loading = this.$refs.loading
+  <% if (loading || isFullStatic) { %>
+  async mounted () {
+    <% if (loading) { %>this.$loading = this.$refs.loading<% } %>
+    <% if (isFullStatic) {%>
+    if (this.isPreview) {
+      if (this.$store && this.$store._actions.nuxtServerInit) {
+        <% if (loading) { %>this.$loading.start()<% } %>
+        await this.$store.dispatch('nuxtServerInit', this.context)
+      }
+      await this.refresh()
+      <% if (loading) { %>this.$loading.finish()<% } %>
+    }
+    <% } %>
   },
+  <% } %>
+  <% if (loading) { %>
   watch: {
     'nuxt.err': 'errorChanged'
   },
@@ -130,7 +151,15 @@ export default {
   computed: {
     isOffline () {
       return !this.isOnline
-    }
+    },
+    <% if (features.fetch) { %>
+    isFetching () {
+      return this.nbFetching > 0
+    },<% } %>
+    <% if (nuxtOptions.target === 'static') { %>
+    isPreview () {
+      return Boolean(this.$options.previewData)
+    },<% } %>
   },
   <% } %>
   methods: {
@@ -162,8 +191,17 @@ export default {
         const p = []
 
         <% if (features.fetch) { %>
-        if (page.$options.fetch) {
+        // Old fetch
+        if (page.$options.fetch && page.$options.fetch.length) {
           p.push(promisify(page.$options.fetch, this.context))
+        }
+        if (page.$fetch) {
+          p.push(page.$fetch())
+        } else {
+          // Get all component instance to call $fetch
+          for (const component of getChildrenComponentInstancesUsingFetch(page.$vnode.componentInstance)) {
+            p.push(component.$fetch())
+          }
         }
         <% } %>
         <% if (features.asyncData) { %>
@@ -183,7 +221,7 @@ export default {
       try {
         await Promise.all(promises)
       } catch (error) {
-        <% if (loading) { %>this.$loading.fail()<% } %>
+        <% if (loading) { %>this.$loading.fail(error)<% } %>
         globalHandleError(error)
         this.error(error)
       }
@@ -194,7 +232,7 @@ export default {
     errorChanged () {
       if (this.nuxt.err && this.$loading) {
         if (this.$loading.fail) {
-          this.$loading.fail()
+          this.$loading.fail(this.nuxt.err)
         }
         if (this.$loading.finish) {
           this.$loading.finish()
@@ -236,7 +274,7 @@ export default {
             return this.<%= globals.nuxt %>.error({ statusCode: 500, message: e.message })
           }
         })
-    }
+    },
     <% } else { %>
     setLayout (layout) {
       <% if (debug) { %>
@@ -256,9 +294,32 @@ export default {
         layout = 'default'
       }
       return Promise.resolve(layouts['_' + layout])
-    }
+    },
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
+    <% if (isFullStatic) { %>
+    setPagePayload(payload) {
+      this._pagePayload = payload
+      this._payloadFetchIndex = 0
+    },
+    async fetchPayload(route) {
+      const { staticAssetsBase } = window.<%= globals.context %>
+      const base = (this.$router.options.base || '').replace(/\/+$/, '')
+      if (base && route.startsWith(base)) {
+        route = route.substr(base.length)
+      }
+      route = (route.replace(/\/+$/, '') || '/').split('?')[0]
+      const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
+      try {
+        const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
+        this.setPagePayload(payload)
+        return payload
+      } catch (err) {
+        this.setPagePayload(false)
+        throw err
+      }
+    }
+    <% } %>
   },
   <% if (loading) { %>
   components: {
