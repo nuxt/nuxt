@@ -22,7 +22,9 @@ import { NuxtOptionsWatchers } from './watchers'
 export { Module } from './module'
 export { ServerMiddleware } from './server-middleware'
 
-export interface NuxtOptions extends Record<string, any> {
+export interface Configuration extends Record<string, any> {}
+
+export interface NuxtOptions extends Configuration {
   build: NuxtOptionsBuild
   buildDir: string
   buildModules: NuxtOptionsModule[]
@@ -65,7 +67,4 @@ export interface NuxtOptions extends Record<string, any> {
   watchers: NuxtOptionsWatchers
 }
 
-// Modules can either extend `Configuration` or `NuxtConfig`
-// Users should use `NuxtConfig` over `Configuration` in their configuration file
-export interface Configuration extends Partial<NuxtOptions> {}
-export interface NuxtConfig extends Configuration {}
+export type NuxtConfig = Partial<NuxtOptions>
