@@ -6,7 +6,7 @@ import {
   promisify,<% } %>
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.transitions || (features.middleware && features.layouts)) { %>sanitizeComponent,<% } %>
-  <% if (loading) { %>resolveRouteComponents,<% } %>
+  resolveRouteComponents,
   getMatchedComponents,
   getMatchedComponentsInstances,
   flatMapComponents,
