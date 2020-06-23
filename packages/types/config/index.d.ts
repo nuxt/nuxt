@@ -13,7 +13,7 @@ import { NuxtOptionsModule } from './module'
 import { NuxtOptionsPlugin } from './plugin'
 import { NuxtOptionsRender } from './render'
 import { NuxtOptionsRouter } from './router'
-import { NuxtConfigurationRuntimeConfig } from './runtime'
+import { NuxtOptionsRuntimeConfig } from './runtime'
 import { NuxtOptionsServer } from './server'
 import { NuxtOptionsServerMiddleware } from './server-middleware'
 import { NuxtOptionsVueConfiguration } from './vue-configuration'
@@ -51,8 +51,8 @@ export interface NuxtOptions extends Record<string, any> {
   modules: NuxtOptionsModule[]
   modulesDir: string[]
   plugins: NuxtOptionsPlugin[]
-  privateRuntimeConfig?: NuxtConfigurationRuntimeConfig
-  publicRuntimeConfig?: NuxtConfigurationRuntimeConfig
+  privateRuntimeConfig: NuxtOptionsRuntimeConfig
+  publicRuntimeConfig: NuxtOptionsRuntimeConfig
   render: NuxtOptionsRender
   rootDir: string
   router: NuxtOptionsRouter
@@ -65,9 +65,7 @@ export interface NuxtOptions extends Record<string, any> {
   watchers: NuxtOptionsWatchers
 }
 
-export type NuxtConfig = Partial<NuxtOptions>
-
-/**
- * @deprecated Use NuxtConfig instead
-*/
-export type Configuration = NuxtConfig // Legacy alias
+// Modules can either extend `Configuration` or `NuxtConfig`
+// Users should use `NuxtConfig` over `Configuration` in their configuration file
+export interface Configuration extends Partial<NuxtOptions> {}
+export interface NuxtConfig extends Configuration {}
