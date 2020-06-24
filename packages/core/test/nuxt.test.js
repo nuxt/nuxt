@@ -80,16 +80,6 @@ describe('core: nuxt', () => {
     expect(Nuxt.version).toEqual(`v${version}`)
   })
 
-  test('should return nuxt version from global.__NUXT', () => {
-    global.__NUXT = {
-      version: 'latest'
-    }
-
-    expect(Nuxt.version).toEqual('latest')
-
-    delete global.__NUXT
-  })
-
   test('should call module/server ready in nuxt.ready', async () => {
     const nuxt = new Nuxt()
 
