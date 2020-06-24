@@ -45,6 +45,7 @@ export interface NuxtOptionsHooks {
     route?(url: string, result: any, context: any): void
     routeContext?(context: any): void
     routeDone?(url: string, result: any, context: any): void
+    beforeResponse?(url: string, result: any, context: any): void
     setupMiddleware?(app: ConnectServer): void
   }
 }

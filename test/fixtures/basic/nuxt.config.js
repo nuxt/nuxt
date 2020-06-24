@@ -42,7 +42,8 @@ export default {
     return {
       titleTemplate (titleChunk) {
         return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
-      }
+      },
+      meta: [{ charset: 'utf-8' }]
     }
   },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),

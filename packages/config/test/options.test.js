@@ -26,7 +26,14 @@ describe('config: options', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
     jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
-    expect(getNuxtConfig({ generate: { staticAssets: { version: 'x' } } })).toMatchSnapshot()
+    expect(getNuxtConfig({
+      createRequire: jest.fn(),
+      generate: {
+        staticAssets: {
+          version: 'x'
+        }
+      }
+    })).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()

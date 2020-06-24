@@ -10,6 +10,7 @@ type NuxtOptionsGenerateRoutesFunctionWithCallback = (callback: (err: Error, rou
 
 export interface NuxtOptionsGenerate {
   concurrency?: number
+  crawler?: boolean
   devtools?: boolean
   dir?: string
   exclude?: RegExp[]

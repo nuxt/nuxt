@@ -13,6 +13,7 @@ import { NuxtOptionsModule } from './module'
 import { NuxtOptionsPlugin } from './plugin'
 import { NuxtOptionsRender } from './render'
 import { NuxtOptionsRouter } from './router'
+import { NuxtOptionsRuntimeConfig } from './runtime'
 import { NuxtOptionsServer } from './server'
 import { NuxtOptionsServerMiddleware } from './server-middleware'
 import { NuxtOptionsVueConfiguration } from './vue-configuration'
@@ -21,7 +22,12 @@ import { NuxtOptionsWatchers } from './watchers'
 export { Module } from './module'
 export { ServerMiddleware } from './server-middleware'
 
-export interface NuxtOptions extends Record<string, any> {
+/**	
+ * @deprecated Use NuxtConfig instead
+*/
+export interface Configuration extends Record<string, any> {}
+
+export interface NuxtOptions extends Configuration {
   build: NuxtOptionsBuild
   buildDir: string
   buildModules: NuxtOptionsModule[]
@@ -50,6 +56,8 @@ export interface NuxtOptions extends Record<string, any> {
   modules: NuxtOptionsModule[]
   modulesDir: string[]
   plugins: NuxtOptionsPlugin[]
+  privateRuntimeConfig: NuxtOptionsRuntimeConfig
+  publicRuntimeConfig: NuxtOptionsRuntimeConfig
   render: NuxtOptionsRender
   rootDir: string
   router: NuxtOptionsRouter
@@ -63,8 +71,3 @@ export interface NuxtOptions extends Record<string, any> {
 }
 
 export type NuxtConfig = Partial<NuxtOptions>
-
-/**
- * @deprecated Use NuxtConfig instead
-*/
-export type Configuration = NuxtConfig // Legacy alias
