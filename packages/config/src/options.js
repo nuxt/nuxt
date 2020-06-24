@@ -491,9 +491,10 @@ export function getNuxtConfig (_options) {
   }
 
   // Components Module
-  if (!options._start && getPKG('@nuxt/components')) {
-    options._modules.push('@nuxt/components')
-  }
+  // TODO: Webpack5 support
+  // if (!options._start && getPKG('@nuxt/components')) {
+  //   options._modules.push('@nuxt/components')
+  // }
 
   // Nuxt Telemetry
   if (
