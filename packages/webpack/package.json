@@ -26,7 +26,7 @@
     "hard-source-webpack-plugin": "^0.13.1",
     "hash-sum": "^2.0.0",
     "html-webpack-plugin": "^4.3.0",
-    "memory-fs": "^0.5.0",
+    "memfs": "^3.2.0",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "pify": "^5.0.0",
     "postcss": "^7.0.32",
