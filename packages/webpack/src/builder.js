@@ -7,7 +7,7 @@ import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
 import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
-import AsyncMFS from './utils/async-mfs'
+import { createMFS } from './utils/mfs'
 
 import * as WebpackConfigs from './config'
 import PerfLoader from './utils/perf-loader'
@@ -29,7 +29,7 @@ export class WebpackBundler {
 
     // Initialize shared MFS for dev
     if (this.buildContext.options.dev) {
-      this.mfs = new AsyncMFS()
+      this.mfs = createMFS()
     }
   }
 
@@ -122,11 +122,13 @@ export class WebpackBundler {
 
     // --- Dev Build ---
     if (options.dev) {
-      // Client Build, watch is started by dev-middleware
+      // Client buiild
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
-          compiler.hooks.done.tap('nuxt-dev', () => resolve())
-          return this.webpackDev(compiler)
+          compiler.hooks.done.tap('nuxt-dev', () => { resolve() })
+          compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
+          // Start watch
+          this.webpackDev(compiler)
         })
       }
 
@@ -176,6 +178,7 @@ export class WebpackBundler {
           stats: false,
           logLevel: 'silent',
           watchOptions: this.buildContext.options.watchers.webpack,
+          fs: this.mfs,
           ...buildOptions.devMiddleware
         })
     )
@@ -228,6 +231,10 @@ export class WebpackBundler {
     // Stop webpack middleware
     for (const devMiddleware of Object.values(this.devMiddleware)) {
       await devMiddleware.close()
+    }
+
+    for (const compiler of this.compilers) {
+      compiler.close()
     }
 
     // Cleanup MFS

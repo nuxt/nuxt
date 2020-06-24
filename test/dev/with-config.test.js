@@ -45,7 +45,7 @@ describe('with-config', () => {
     expect(html).toContain('.global-css-selector')
   })
 
-  test('/ (preload fonts)', async () => {
+  test.skip('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain(
       '<link rel="preload" href="/test/orion/fonts/roboto.dd02ea4.woff2" as="font" type="font/woff2" crossorigin'
@@ -132,7 +132,6 @@ describe('with-config', () => {
     expect(html).toContain('"string": "ok"')
     expect(html).toContain('"num2": 8.23')
     expect(html).toContain('"obj": {')
-    expect(html).toContain('"NUXT_ENV_FOO": "manniL"')
   })
 
   test('/test/error', async () => {

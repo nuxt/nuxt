@@ -50,14 +50,13 @@ export default class ModernModePlugin {
   applyLegacy (compiler) {
     const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tap(ID, (data) => {
         // get stats, write to disk
         this.assets = {
           name: data.plugin.options.filename,
           content: data.bodyTags
         }
-
-        cb()
+        return data
       })
     })
   }
@@ -65,7 +64,7 @@ export default class ModernModePlugin {
   applyModern (compiler) {
     const ID = 'nuxt-modern-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, async (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapPromise(ID, async (data) => {
         // use <script type="module"> for modern assets
         data.bodyTags.forEach((tag) => {
           if (tag.tagName === 'script' && tag.attributes) {
@@ -123,7 +122,8 @@ export default class ModernModePlugin {
         }
 
         delete assetsMap[fileName]
-        cb()
+
+        return data
       })
     })
   }

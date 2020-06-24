@@ -19,6 +19,7 @@ export default class CorsPlugin {
             }
           }
         })
+        return data
       })
     })
   }

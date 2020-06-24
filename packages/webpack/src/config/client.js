@@ -27,7 +27,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
     return noUnsafeEval
       ? 'cheap-module-source-map'
-      : 'cheap-module-eval-source-map'
+      : 'eval-cheap-module-source-map'
   }
 
   getCspScriptPolicy () {
@@ -74,7 +74,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
         priority: 10,
-        name: true
+        name: 'commons'
       }
     }
 

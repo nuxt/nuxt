@@ -1,8 +1,10 @@
 import path from 'path'
 import fs from 'fs'
 import { DefinePlugin, ProvidePlugin } from 'webpack'
-import nodeExternals from 'webpack-node-externals'
 
+// TODO: remove when webpack-node-externals support webpack5
+// import nodeExternals from 'webpack-node-externals'
+import nodeExternals from '../plugins/externals'
 import VueSSRServerPlugin from '../plugins/vue/server'
 
 import WebpackBaseConfig from './base'

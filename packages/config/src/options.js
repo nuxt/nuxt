@@ -441,6 +441,12 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
+  // TODO: extractCSS
+  if (options.build.extractCSS && !options.build._extractCSS) {
+    consola.warn('`build.extractCSS` is currently not supported with this version.')
+    options.build.extractCSS = false
+  }
+
   // Generate staticAssets
   const { staticAssets } = options.generate
   if (!staticAssets.version) {
@@ -485,9 +491,10 @@ export function getNuxtConfig (_options) {
   }
 
   // Components Module
-  if (!options._start && getPKG('@nuxt/components')) {
-    options._modules.push('@nuxt/components')
-  }
+  // TODO: Webpack5 support
+  // if (!options._start && getPKG('@nuxt/components')) {
+  //   options._modules.push('@nuxt/components')
+  // }
 
   // Nuxt Telemetry
   if (

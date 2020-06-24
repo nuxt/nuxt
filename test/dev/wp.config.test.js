@@ -1,5 +1,4 @@
 
-import path from 'path'
 import PerfLoader from '../../packages/webpack/src/utils/perf-loader'
 
 describe('webpack configuration', () => {
@@ -29,9 +28,7 @@ describe('webpack configuration', () => {
     )
     expect(perfLoader.workerPools).toMatchObject({ js, css })
     const loaders = perfLoader.use('js')
-    const cacheDirectory = path.resolve('node_modules/.cache/cache-loader/test-perf')
     expect(loaders).toMatchObject([
-      { loader: 'cache-loader', options: { cacheDirectory } },
       { loader: 'thread-loader', options: js }
     ])
   })

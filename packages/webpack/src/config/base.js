@@ -5,7 +5,6 @@ import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
-import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
@@ -16,6 +15,7 @@ import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
+
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
@@ -30,6 +30,10 @@ export default class WebpackBaseConfig {
       server: 'orange',
       modern: 'blue'
     }
+  }
+
+  get devtool () {
+    return false
   }
 
   get nuxtEnv () {
@@ -138,7 +142,8 @@ export default class WebpackBaseConfig {
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
     }
-    if (this.dev) {
+
+    if (typeof fileName === 'string' && this.dev) {
       const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
@@ -178,9 +183,24 @@ export default class WebpackBaseConfig {
     return {
       path: path.resolve(buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
-      futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
       publicPath: isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
+    }
+  }
+
+  cache () {
+    if (!this.buildContext.buildOptions.cache) {
+      return false
+    }
+
+    return {
+      type: 'filesystem',
+      cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
+      buildDependencies: {
+        config: [...this.buildContext.options._nuxtConfigFiles]
+      },
+      ...this.buildContext.buildOptions.cache,
+      name: this.name
     }
   }
 
@@ -425,14 +445,14 @@ export default class WebpackBaseConfig {
       }
     }))
 
-    if (buildOptions.hardSource) {
-      // https://github.com/mzgoddard/hard-source-webpack-plugin
-      plugins.push(new HardSourcePlugin({
-        info: {
-          level: 'warn'
-        },
-        ...buildOptions.hardSource
-      }))
+    // CSS extraction
+    if (this.buildContext.buildOptions.extractCSS) {
+      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+        filename: this.getFileName('css'),
+        chunkFilename: this.getFileName('css'),
+        // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
+        reloadAll: true
+      }, this.buildContext.buildOptions.extractCSS)))
     }
 
     return plugins
@@ -474,6 +494,7 @@ export default class WebpackBaseConfig {
       name: this.name,
       mode: this.mode,
       devtool: this.devtool,
+      cache: this.cache(),
       optimization: this.optimization(),
       output: this.output(),
       performance: {
