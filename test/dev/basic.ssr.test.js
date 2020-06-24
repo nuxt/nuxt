@@ -388,7 +388,8 @@ describe('basic ssr', () => {
     expect(html).toContain('<h1>Nested symlink page</h1>')
   })
 
-  test('/components', async () => {
+  // TODO: Enable when components module supports webpack5
+  test.skip('/components', async () => {
     const { html } = await nuxt.server.renderRoute('/components')
     expect(html).toContain('Auto discovered component!')
   })
