@@ -14,7 +14,7 @@
     "@nuxt/utils": "2.13.0",
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001087",
+    "caniuse-lite": "^1.0.30001088",
     "chalk": "^3.0.0",
     "consola": "^2.13.0",
     "css-loader": "^3.6.0",
