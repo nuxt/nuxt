@@ -1846,10 +1846,10 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
-"@nuxt/components@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-1.0.4.tgz#8a22c080bdb0061a7aafc632ab8c055d70e479ce"
-  integrity sha512-21+wVCwKmH1lzmi2e5dC2NwhMc0LEgAkkqeYtYjWHFN6D1G09l5BeNQF1rfFBQ82R9/AqRiCS8aGIAaWwUp8vQ==
+"@nuxt/components@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-1.0.5.tgz#90e95201ede263638f57ab49b168a8971c00e554"
+  integrity sha512-EBfW8C1DyAWs3p/jxGveaYxQ020jsLmKMKcyuzWWtfkVCwA/2KtaPCsV5H+zq6tNSr9GWtgOBi0ChgKetqRtJQ==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.4.0"
@@ -1875,10 +1875,10 @@
     error-stack-parser "^2.0.0"
     string-width "^2.0.0"
 
-"@nuxt/loading-screen@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.1.tgz#4049796e26b57a627a669ddc4c75771e7f6f38d6"
-  integrity sha512-oTtSHDZ+kaWUKpovgf2zM9gOiWLrZHcdmmLsveeTpJ0Q8Xk+sXR3HIRN2IBl5gFbPK6V/pYaum/LQBg73UirIQ==
+"@nuxt/loading-screen@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/@nuxt/loading-screen/-/loading-screen-2.0.2.tgz#2082e813a93bb4efa42be05a6b448121b5f1cad8"
+  integrity sha512-29fLSfSNwCLnpXPbnTbMlgK4u5rw1raJBcBjTNlONfTo2FasWxyEgZ2HMMRlJoikMxxB9FZsjdegnYcplhiRTA==
   dependencies:
     connect "^3.7.0"
     defu "^2.0.4"
@@ -10849,10 +10849,10 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-4.0.0.tgz#32cb3c97efd280301a8084caf5566b5c2d83896f"
-  integrity sha512-Tb5FVp9h9wkd2gXpc/qfBFFI7zjLxxe3pw34U5ntpSnIoUV2m9IKIjAf7ou+5N3fU9VPV3MNJ3HQiDVasN/MPQ==
+puppeteer-core@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-4.0.1.tgz#d6026add5fe058de22cd80879967eaa5e9be4cfb"
+  integrity sha512-8OfHmUkEXU/k7Bmcdm6KRWhIIfmayv/ce1AUDkP0nTLK2IpjulFggxq1dZhWgWHXebeLILbieMvAor7tSf3EqQ==
   dependencies:
     debug "^4.1.0"
     extract-zip "^2.0.0"
