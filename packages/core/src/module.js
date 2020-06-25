@@ -194,7 +194,12 @@ export default class ModuleContainer {
     const key = (handler.meta && handler.meta.name) || src
     if (typeof key === 'string') {
       if (this.requiredModules[key]) {
-        return
+        if (key === src) {
+          // TODO: Skip with nuxt3
+          consola.warn('Modules should be only specified once:', key)
+        } else {
+          return
+        }
       }
       this.requiredModules[key] = { src, options, handler }
     }
