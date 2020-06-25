@@ -191,10 +191,11 @@ export default class ModuleContainer {
     }
 
     // Ensure module is required once
-    const key = (handler.meta && handler.meta.name) || src
+    const metaKey = handler.meta && handler.meta.name
+    const key = metaKey || src
     if (typeof key === 'string') {
       if (this.requiredModules[key]) {
-        if (key === src) {
+        if (!metaKey) {
           // TODO: Skip with nuxt3
           consola.warn('Modules should be only specified once:', key)
         } else {
