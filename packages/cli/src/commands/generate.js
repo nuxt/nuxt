@@ -95,7 +95,7 @@ export default {
     }
 
     const generator = await cmd.getGenerator(nuxt)
-    await nuxt.server.listen()
+    await nuxt.server.listen(0)
 
     const { errors } = await generator.generate({
       init: true,
