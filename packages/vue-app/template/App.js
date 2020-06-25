@@ -41,25 +41,12 @@ export default {
   render (h, props) {
     <% if (loading) { %>const loadingEl = h('NuxtLoading', { ref: 'loading' })<% } %>
     <% if (features.layouts) { %>
-    <% if (components.ErrorPage) { %>
-    if (this.nuxt.err && NuxtError) {
-      const errorLayout = (NuxtError.options || NuxtError).layout
-      if (errorLayout) {
-        this.setLayout(
-          typeof errorLayout === 'function'
-            ? errorLayout.call(NuxtError, this.context)
-            : errorLayout
-        )
-      }
-    }
-    <% } %>
     const layoutEl = h(this.layout || 'nuxt')
     const templateEl = h('div', {
       domProps: {
         id: '__layout'
       },
-
-          key: this.layoutName
+      key: this.layoutName
     }, [layoutEl])
     <% } else { %>
     const templateEl = h('nuxt')
