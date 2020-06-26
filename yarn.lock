@@ -1895,10 +1895,10 @@
     consola "^2.10.1"
     node-fetch "^2.6.0"
 
-"@nuxt/telemetry@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.1.0.tgz#47e71a575e268a6c4918daa3ffdeff7dfcf688d9"
-  integrity sha512-XjeSdVT2g4XonpJmQkCswUVmmeSOBYGho5fgmWLvjQMCYsoRlOvdh+tn/cTtfQRleZfWQ6ajm/dqXaEPxK9/yg==
+"@nuxt/telemetry@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.2.0.tgz#0280cec099b6f0137477977d81ee8aa557d40d7a"
+  integrity sha512-TKpfkt5+iGf5YF4xXxKNzIi94lLCaogoJRk6RSAcqEZhPVkmMCSk5g6D4BNSqiB0rIUCLWetUP6lZBrgbEZ8Gg==
   dependencies:
     arg "^4.1.3"
     ci-info "^2.0.0"
@@ -2516,10 +2516,22 @@
     "@types/source-list-map" "*"
     source-map "^0.7.3"
 
-"@types/webpack@*", "@types/webpack@^4.41.17", "@types/webpack@^4.41.8":
+"@types/webpack@*", "@types/webpack@^4.41.8":
   version "4.41.17"
   resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.41.17.tgz#0a69005e644d657c85b7d6ec1c826a71bebd1c93"
   integrity sha512-6FfeCidTSHozwKI67gIVQQ5Mp0g4X96c2IXxX75hYEQJwST/i6NyZexP//zzMOBb+wG9jJ7oO8fk9yObP2HWAw==
+  dependencies:
+    "@types/anymatch" "*"
+    "@types/node" "*"
+    "@types/tapable" "*"
+    "@types/uglify-js" "*"
+    "@types/webpack-sources" "*"
+    source-map "^0.6.0"
+
+"@types/webpack@^4.41.18":
+  version "4.41.18"
+  resolved "https://registry.npmjs.org/@types/webpack/-/webpack-4.41.18.tgz#2945202617866ecdffa582087f1b6de04a7eed55"
+  integrity sha512-mQm2R8vV2BZE/qIDVYqmBVLfX73a8muwjs74SpjEyJWJxeXBbsI9L65Pcia9XfYLYWzD1c1V8m+L0p30y2N7MA==
   dependencies:
     "@types/anymatch" "*"
     "@types/node" "*"
