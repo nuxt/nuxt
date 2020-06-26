@@ -295,7 +295,7 @@ export default {
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      route = (route.replace(/\/+$/, '') || '/').split('?')[0]
+      route = (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
       const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
