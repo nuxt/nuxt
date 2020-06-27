@@ -1,3 +1,5 @@
+import { ComponentsDir } from '@nuxt/components'
+
 import { Transition } from '../app'
 import { NuxtOptionsBuild } from './build'
 import { NuxtOptionsCli } from './cli'
@@ -32,6 +34,7 @@ export interface NuxtOptions extends Configuration {
   buildDir: string
   buildModules: NuxtOptionsModule[]
   cli: NuxtOptionsCli
+  components: boolean | Array<string | ComponentsDir>
   css: string[]
   dev: boolean
   dir: { [key in 'app' | 'assets' | 'layouts' | 'middleware' | 'pages' | 'static' | 'store']?: string }
@@ -64,6 +67,7 @@ export interface NuxtOptions extends Configuration {
   server: NuxtOptionsServer
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
+  telemetry: boolean
   transition: Transition
   'vue.config': NuxtOptionsVueConfiguration
   watch: string[]
