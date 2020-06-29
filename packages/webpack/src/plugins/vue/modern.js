@@ -35,15 +35,15 @@ export default class ModernModePlugin {
   }
 
   getAssets (name) {
-    const asset = this.assets[name]
-    if (!asset) {
-      return
-    }
     return new Promise((resolve) => {
-      watcher.once(name, () => {
+      const asset = this.assets[name]
+      if (asset) {
+        return resolve(asset)
+      }
+      return watcher.once(name, () => {
+        const asset = this.assets[name]
         return asset && resolve(asset)
       })
-      return asset && resolve(asset)
     })
   }
 
