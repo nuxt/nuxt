@@ -45,15 +45,31 @@ export default class PostcssConfig {
     return this.buildContext.buildOptions.postcss
   }
 
+  get postcssImportAlias () {
+    const alias = { ...this.buildContext.options.alias }
+
+    for (const key in alias) {
+      if (key.startsWith('~')) {
+        continue
+      }
+      const newKey = '~' + key
+      if (!alias[newKey]) {
+        alias[newKey] = alias[key]
+      }
+    }
+
+    return alias
+  }
+
   get defaultConfig () {
-    const { dev, alias, srcDir, rootDir, modulesDir } = this.buildContext.options
+    const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
     return {
       sourceMap: this.buildContext.buildOptions.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
           resolve: createResolver({
-            alias: { ...alias },
+            alias: this.postcssImportAlias,
             modules: [srcDir, rootDir, ...modulesDir]
           })
         },

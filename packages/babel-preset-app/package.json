@@ -1,25 +1,26 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.11.0",
+  "version": "2.13.2",
   "description": "babel-preset-app for nuxt.js",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "author": "Evan You",
+  "contributors": [
+    "Clark Du"
+  ],
   "main": "src/index.js",
   "dependencies": {
-    "@babel/core": "^7.8.3",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/plugin-proposal-decorators": "^7.8.3",
-    "@babel/plugin-transform-runtime": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
-    "@babel/runtime": "^7.8.3",
+    "@babel/core": "^7.10.3",
+    "@babel/helper-compilation-targets": "^7.10.2",
+    "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/plugin-proposal-decorators": "^7.10.3",
+    "@babel/plugin-transform-runtime": "^7.10.3",
+    "@babel/preset-env": "^7.10.3",
+    "@babel/runtime": "^7.10.3",
     "@vue/babel-preset-jsx": "^1.1.2",
     "core-js": "^2.6.5"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "contributors": [
-    "Clark Du"
-  ]
+  }
 }

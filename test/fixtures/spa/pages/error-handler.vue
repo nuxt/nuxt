@@ -1,7 +1,7 @@
 <script>
 
 export default {
-  fetch () {
+  fetch (context) {
     throw new Error('fetch error!')
   }
 }

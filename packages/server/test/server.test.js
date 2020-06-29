@@ -333,7 +333,7 @@ describe('server: server', () => {
 
   test('should use object middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
 
@@ -348,7 +348,7 @@ describe('server: server', () => {
 
   test('should use function module middleware', () => {
     const nuxt = createNuxt()
-    nuxt.options.router = { base: '/' }
+    nuxt.options.router = { base: '' }
     const server = new Server(nuxt)
     const handler = jest.fn()
     nuxt.resolver.requireModule.mockReturnValueOnce(handler)
@@ -504,7 +504,7 @@ describe('server: server', () => {
 
   test('should close server', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     const listener = { close: jest.fn() }
@@ -525,7 +525,7 @@ describe('server: server', () => {
 
   test('should prevent closing server multiple times', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     server.renderer = {}

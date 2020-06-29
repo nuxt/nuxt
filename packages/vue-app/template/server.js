@@ -9,8 +9,20 @@ import {
   getMatchedComponents,
   promisify
 } from './utils.js'
+<% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 import NuxtLink from './components/nuxt-link.server.js' // should be included after ./index.js
+
+<% if (features.fetch) { %>
+// Update serverPrefetch strategy
+Vue.config.optionMergeStrategies.serverPrefetch = Vue.config.optionMergeStrategies.created
+
+// Fetch mixin
+if (!Vue.__nuxt__fetch__mixin__) {
+  Vue.mixin(fetchMixin)
+  Vue.__nuxt__fetch__mixin__ = true
+}
+<% } %>
 
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
@@ -25,9 +37,9 @@ function urlJoin () {
 }
 
 const createNext = ssrContext => (opts) => {
+  // If static target, render on client-side
   ssrContext.redirected = opts
-  // If nuxt generate
-  if (!ssrContext.res) {
+  if (ssrContext.target === 'static' || !ssrContext.res) {
     ssrContext.nuxt.serverRendered = false
     return
   }
@@ -59,11 +71,19 @@ export default async (ssrContext) => {
   ssrContext.next = createNext(ssrContext)
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
-  // Nuxt object (window{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], error: null<%= (store ? ', state: null' : '') %>, serverRendered: true }
+  // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
+  // Remove query from url is static target
+  if (process.static && ssrContext.url) {
+    ssrContext.url = ssrContext.url.split('?')[0]
+  }
+  // Public runtime config
+  ssrContext.nuxt.config = ssrContext.runtimeConfig.public
   // Create the app definition and the instance (created for each request)
-  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext)
+  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, { ...ssrContext.runtimeConfig.public, ...ssrContext.runtimeConfig.private })
   const _app = new Vue(app)
+  // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
+  ssrContext.nuxt.routePath = app.context.route.path
 
   <% if (features.meta) { %>
   // Add meta infos (used in renderer.js)
@@ -81,11 +101,19 @@ export default async (ssrContext) => {
     ssrContext.rendered = () => {
       // Add the state from the vuex store
       ssrContext.nuxt.state = store.state
+      <% if (isFullStatic && store) { %>
+      // Stop recording store mutations
+      ssrContext.unsetMutationObserver()
+      <% } %>
     }
     <% } %>
   }
 
   const renderErrorPage = async () => {
+    // Don't server-render the page in static target
+    if (ssrContext.target === 'static') {
+      ssrContext.nuxt.serverRendered = false
+    }
     <% if (features.layouts) { %>
     // Load layout for error page
     const layout = (NuxtError.options || NuxtError).layout
@@ -150,6 +178,12 @@ export default async (ssrContext) => {
   if (ssrContext.nuxt.error) {
     return renderErrorPage()
   }
+  <% } %>
+
+  <% if (isFullStatic && store) { %>
+  // Record store mutations for full-static after nuxtServerInit and Middleware
+  ssrContext.nuxt.mutations =[]
+  ssrContext.unsetMutationObserver = store.subscribe(m => { ssrContext.nuxt.mutations.push([m.type, m.payload]) })
   <% } %>
 
   <% if (features.layouts) { %>
@@ -231,10 +265,6 @@ export default async (ssrContext) => {
 
   // ...If .validate() returned false
   if (!isValid) {
-    // Don't server-render the page in generate mode
-    if (ssrContext._generate) {
-      ssrContext.nuxt.serverRendered = false
-    }
     // Render a 404 error page
     return render404Page()
   }
@@ -267,7 +297,7 @@ export default async (ssrContext) => {
 
     <% if (features.fetch) { %>
     // Call fetch(context)
-    if (Component.options.fetch) {
+    if (Component.options.fetch && Component.options.fetch.length) {
       promises.push(Component.options.fetch(app.context))
     } else {
       promises.push(null)

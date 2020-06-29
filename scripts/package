@@ -27,7 +27,7 @@ async function main () {
   // Step 1: Apply suffixes
   for (const pkg of workspacePackages) {
     if (pkg.options.suffix && pkg.options.suffix.length) {
-      await pkg.suffixAndVersion()
+      pkg.suffixAndVersion()
       await pkg.writePackage()
     }
   }

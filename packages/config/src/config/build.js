@@ -3,14 +3,8 @@ import env from 'std-env'
 export default () => ({
   quiet: Boolean(env.ci || env.test),
   analyze: false,
-  indicator: {
-    position: 'bottom-right',
-    backgroundColor: '#2E495E',
-    color: '#00C48D'
-  },
   profile: process.argv.includes('--profile'),
   extractCSS: false,
-  crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
   parallel: false,
@@ -20,12 +14,12 @@ export default () => ({
   serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
-    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
-    css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
-    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[contenthash:7].[ext]',
-    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[contenthash:7].[ext]',
-    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[contenthash:7].[ext]'
+    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[name].[contenthash:7].js',
+    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[name].[contenthash:7].js',
+    css: ({ isDev }) => isDev ? '[name].css' : '[name].[contenthash:7].css',
+    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
+    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
+    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
     file: {},
@@ -121,5 +115,13 @@ export default () => ({
   friendlyErrors: true,
   additionalExtensions: [],
   warningIgnoreFilters: [],
-  followSymlinks: false
+
+  followSymlinks: false,
+
+  loadingScreen: {},
+  indicator: {
+    position: 'bottom-right',
+    backgroundColor: '#2E495E',
+    color: '#00C48D'
+  }
 })

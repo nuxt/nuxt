@@ -182,13 +182,13 @@ export default class Server {
       middleware = this._requireMiddleware(middleware)
     }
 
-    // Normalize handler to handle (backward compatiblity)
+    // Normalize handler to handle (backward compatibility)
     if (middleware.handler && !middleware.handle) {
       middleware.handle = middleware.handler
       delete middleware.handler
     }
 
-    // Normalize path to route (backward compatiblity)
+    // Normalize path to route (backward compatibility)
     if (middleware.path && !middleware.route) {
       middleware.route = middleware.path
       delete middleware.path
@@ -204,6 +204,17 @@ export default class Server {
       middleware.handle = (req, res, next) => {
         next(new Error('ServerMiddleware should expose a handle: ' + middleware.entry))
       }
+    }
+
+    // Prefix on handle (proxy-module)
+    if (middleware.handle.prefix !== undefined && middleware.prefix === undefined) {
+      middleware.prefix = middleware.handle.prefix
+    }
+
+    // sub-app (express)
+    if (typeof middleware.handle.handle === 'function') {
+      const server = middleware.handle
+      middleware.handle = server.handle.bind(server)
     }
 
     return middleware
@@ -222,10 +233,7 @@ export default class Server {
       consola.error('ServerMiddleware Error:', error)
 
       // Placeholder for error
-      middleware = {
-        route: '#error',
-        handle: (req, res, next) => { next(error) }
-      }
+      middleware = (req, res, next) => { next(error) }
     }
 
     // Normalize
@@ -237,9 +245,14 @@ export default class Server {
     return middleware
   }
 
-  resolveMiddleware (middleware) {
+  resolveMiddleware (middleware, fallbackRoute = '/') {
     // Ensure middleware is normalized
     middleware = this._normalizeMiddleware(middleware)
+
+    // Fallback route
+    if (!middleware.route) {
+      middleware.route = fallbackRoute
+    }
 
     // Resolve final route
     middleware.route = (
@@ -247,7 +260,12 @@ export default class Server {
       (typeof middleware.route === 'string' ? middleware.route : '')
     ).replace(/\/\//g, '/')
 
-    // Assign _middleware to handle to make accessable from app.stack
+    // Strip trailing slash
+    if (middleware.route.endsWith('/')) {
+      middleware.route = middleware.route.slice(0, -1)
+    }
+
+    // Assign _middleware to handle to make accessible from app.stack
     middleware.handle._middleware = middleware
 
     return middleware
@@ -255,7 +273,7 @@ export default class Server {
 
   useMiddleware (middleware) {
     const { route, handle } = this.resolveMiddleware(middleware)
-    this.app.use(route.includes('#error') ? '/' : route, handle)
+    this.app.use(route, handle)
   }
 
   replaceMiddleware (query, middleware) {
@@ -274,21 +292,26 @@ export default class Server {
       return
     }
 
+    // unload middleware
+    this.unloadMiddleware(serverStackItem)
+
     // Resolve middleware
-    const { route, handle } = this.resolveMiddleware(middleware)
+    const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
 
     // Update serverStackItem
     serverStackItem.handle = handle
 
     // Error State
-    if (route.includes('#error')) {
-      serverStackItem.route = serverStackItem.route || '/'
-    } else {
-      serverStackItem.route = route
-    }
+    serverStackItem.route = route
 
     // Return updated item
     return serverStackItem
+  }
+
+  unloadMiddleware ({ handle }) {
+    if (handle._middleware && typeof handle._middleware.unload === 'function') {
+      handle._middleware.unload()
+    }
   }
 
   serverMiddlewarePaths () {
@@ -306,13 +329,11 @@ export default class Server {
   renderAndGetWindow (url, opts = {}, {
     loadingTimeout = 2000,
     loadedCallback = this.globals.loadedCallback,
-    ssr = this.options.render.ssr,
     globals = this.globals
   } = {}) {
     return renderAndGetWindow(url, opts, {
       loadingTimeout,
       loadedCallback,
-      ssr,
       globals
     })
   }
@@ -357,6 +378,7 @@ export default class Server {
       await this.renderer.close()
     }
 
+    this.app.stack.forEach(this.unloadMiddleware)
     this.app.removeAllListeners()
     this.app = null
 

@@ -34,8 +34,8 @@ module.exports = {
     'vue/no-parsing-error': [2, {
       'x-invalid-end-tag': false
     }],
-    "vue/max-attributes-per-line": [2, {
-      "singleline": 5,
+    'vue/max-attributes-per-line': [2, {
+      singleline: 5
     }]
   },
   globals: {}

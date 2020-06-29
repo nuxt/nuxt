@@ -12,7 +12,7 @@ describe.win('util: resolve windows', () => {
   })
 
   test('should format windows path', () => {
-    expect(wChunk('nuxt/layout/test')).toEqual('nuxt_layout_test')
+    expect(wChunk('nuxt/layout/test')).toEqual('nuxt/layout/test')
   })
 
   test('should resolve alias path', () => {

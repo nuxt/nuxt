@@ -3,7 +3,8 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
-import { isModernRequest } from '@nuxt/utils'
+import devalue from '@nuxt/devalue'
+import { TARGETS, isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
@@ -27,9 +28,9 @@ export default class SPARenderer extends BaseRenderer {
   }
 
   async render (renderContext) {
-    const { url = '/', req = {}, _generate } = renderContext
+    const { url = '/', req = {} } = renderContext
     const modernMode = this.options.modern
-    const modern = (modernMode && _generate) || isModernRequest(req, modernMode)
+    const modern = (modernMode && this.options.target === TARGETS.static) || isModernRequest(req, modernMode)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
@@ -80,6 +81,11 @@ export default class SPARenderer extends BaseRenderer {
         m.script.text() +
         m.noscript.text()
 
+      // Add <base href=""> meta if router base specified
+      if (this.options._routerBaseSpecified) {
+        meta.HEAD += `<base href="${this.options.router.base}">`
+      }
+
       // BODY_SCRIPTS (PREPEND)
       meta.BODY_SCRIPTS_PREPEND =
         m.meta.text({ pbody: true }) +
@@ -110,7 +116,7 @@ export default class SPARenderer extends BaseRenderer {
 
       // Preload initial resources
       if (Array.isArray(manifest.initial)) {
-        const { crossorigin } = this.options.build
+        const { crossorigin } = this.options.render
         const cors = `${crossorigin ? ` crossorigin="${crossorigin}"` : ''}`
 
         meta.preloadFiles = manifest.initial
@@ -146,7 +152,13 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    // Serialize state (runtime config)
+    let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+
+    APP += `<script>window.${this.serverContext.globals.context}=${devalue({
+      config: renderContext.runtimeConfig.public,
+      staticAssetsBase: renderContext.staticAssetsBase
+    })}</script>`
 
     // Prepare template params
     const templateParams = {

@@ -1,7 +1,6 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-import esm from 'esm'
 
 import {
   startsWithRootAlias,
@@ -21,8 +20,8 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    // ESM Loader
-    this.esm = esm(module)
+    const { createRequire } = this.options
+    this._require = createRequire ? createRequire(module) : module.require
 
     this._resolve = require.resolve
   }
@@ -105,8 +104,9 @@ export default class Resolver {
         return resolvedPath + '.' + ext
       }
 
-      if (isDirectory && fs.existsSync(resolvedPath + '/index.' + ext)) {
-        return resolvedPath + '/index.' + ext
+      const resolvedPathwithIndex = join(resolvedPath, 'index.' + ext)
+      if (isDirectory && fs.existsSync(resolvedPathwithIndex)) {
+        return resolvedPathwithIndex
       }
     }
 
@@ -159,7 +159,7 @@ export default class Resolver {
     // Try to require
     try {
       if (useESM) {
-        requiredModule = this.esm(resolvedPath)
+        requiredModule = this._require(resolvedPath)
       } else {
         requiredModule = require(resolvedPath)
       }

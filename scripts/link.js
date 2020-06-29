@@ -2,7 +2,7 @@ const path = require('path')
 const consola = require('consola')
 const execa = require('execa')
 const fs = require('fs-extra')
-const glob = require('pify')(require('glob').glob)
+const glob = require('pify')(require('glob'))
 
 async function main () {
   const packageDirs = await glob('+(packages|distributions)/*')
