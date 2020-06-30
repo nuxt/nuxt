@@ -34,11 +34,6 @@ describe('with-config', () => {
     expect(html).toContain('<h1>I have custom configurations</h1>')
   })
 
-  test('/ (asset name for analyze mode)', async () => {
-    const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('<script src="/test/orion/app.js"')
-  })
-
   test('/ (global styles inlined)', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/test/'))
     const html = window.document.head.innerHTML

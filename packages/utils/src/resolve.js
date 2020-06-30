@@ -17,10 +17,9 @@ export const wp = function wp (p = '') {
   return p
 }
 
+// Kept for backward compat (modules may use it from template context)
 export const wChunk = function wChunk (p = '') {
-  // workaround for SplitChunksPlugin that generate names starting from . for catchAll pages _.vue
-  // consider using https://webpack.js.org/configuration/output/#outputfilename for more robust control over filename generation
-  return p.replace('_', '[_]')
+  return p
 }
 
 const reqSep = /\//g
