@@ -2,7 +2,7 @@
 name: 🚨 Bug report | Bug 提交
 about: Report a bug report to help us improve Nuxt.js.
 title: ''
-labels: 'bug'
+labels: 'bug-report'
 assignees: ''
 
 ---
@@ -21,7 +21,7 @@ assignees: ''
 ### Versions
 
 - nuxt: <!-- ex: v2.13.0 -->
-- node: <!-- ex: v12.14.0 >
+- node: <!-- ex: v12.14.0 -->
 
 ### Reproduction
 

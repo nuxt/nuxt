@@ -2,7 +2,7 @@
 name: 🙋 Feature request | 新功能提案
 about: Suggest an idea or enhancement for Nuxt.js.
 title: ''
-labels: 'feature'
+labels: 'feature-request'
 assignees: ''
 
 ---
