@@ -15,11 +15,11 @@
       </v-list>
     </v-navigation-drawer>
     <main>
-      <v-content>
+      <v-main>
         <v-container fluid>
           <nuxt />
         </v-container>
-      </v-content>
+      </v-main>
     </main>
   </v-app>
 </template>
