@@ -56,7 +56,7 @@ export default class Nuxt extends Hookable {
   }
 
   static get version () {
-    return (global.__NUXT && global.__NUXT.version) || `v${version}`
+    return `v${version}` + (global.__NUXT_DEV__ ? '-development' : '')
   }
 
   ready () {

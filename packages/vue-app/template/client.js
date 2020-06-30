@@ -6,7 +6,7 @@ import {
   promisify,<% } %>
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.transitions || (features.middleware && features.layouts)) { %>sanitizeComponent,<% } %>
-  <% if (loading) { %>resolveRouteComponents,<% } %>
+  resolveRouteComponents,
   getMatchedComponents,
   getMatchedComponentsInstances,
   flatMapComponents,
@@ -598,7 +598,11 @@ function normalizeComponents (to, ___) {
 <% if (features.layouts) { %>
 function setLayoutForNextPage (to) {
   // Set layout
-  let layout = this.$options.nuxt.err
+  let hasError = Boolean(this.$options.nuxt.err)
+  if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
+    hasError = false
+  }
+  let layout = hasError
     ? (NuxtError.options || NuxtError).layout
     : to.matched[0].components.default.options.layout
 

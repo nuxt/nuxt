@@ -40,6 +40,37 @@ describe('util: route', () => {
     expect(routes).toEqual(['/', '/foo/bar', '/foo/baz'])
   })
 
+  test('should flat absolute routes', () => {
+    const routes = flatRoutes([
+      {
+        name: 'foo',
+        path: '/foo',
+        children: [
+          { name: 'foo-bar', path: '/foo/bar' },
+          { name: 'foo-baz', path: '/foo/baz' }
+        ]
+      }
+    ])
+
+    expect(routes).toEqual(['/foo/bar', '/foo/baz'])
+  })
+
+  test('should flat absolute routes with empty path', () => {
+    const routes = flatRoutes([
+      {
+        name: 'foo',
+        path: '/foo',
+        children: [
+          { name: 'foo-root', path: '' },
+          { name: 'foo-bar', path: '/foo/bar' },
+          { name: 'foo-baz', path: '/foo/baz' }
+        ]
+      }
+    ])
+
+    expect(routes).toEqual(['/foo', '/foo/bar', '/foo/baz'])
+  })
+
   describe('util: route guard', () => {
     test('should guard parent dir', () => {
       expect(() => {
