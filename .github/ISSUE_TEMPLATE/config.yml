@@ -1,22 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 🚨 Bug report | Bug 提交
-    url: https://bug.nuxtjs.org/
-    about: |
-      Please report bugs here.
-      请在此提交 Bug。
-  - name: 🙋 Feature request | 新功能提案
-    url: https://feature.nuxtjs.org/
-    about: |
-      Please request features here.
-      请在此提交新功能提案。
-  - name: 🤔 Consulting from the Nuxt team | 咨询 Nuxt 团队
-    url: https://otechie.com/nuxt
-    about: |
-      Get technical support, project audits, app deployments, and custom development from the core Nuxt.js team.
-      咨询核心 Nuxt.js 团队以获得技术支持，项目审核，应用程序部署以及自定义开发等方面上的帮助。
   - name: ❗️ All other issues | 其他问题
-    url: https://cmty.nuxtjs.org/
+    url: https://discord.nuxtjs.org/
     about: |
-      Please create all other issues here.
-      请在此创建其他类型问题。
+      Please use our Discord server for other issues and asking questions.
