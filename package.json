@@ -36,8 +36,8 @@
     "babel-eslint/@babel/parser": "7.7.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.3",
-    "@babel/preset-env": "^7.10.3",
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
     "@ls-lint/ls-lint": "^1.8.1",
     "@nuxtjs/eslint-config": "^3.0.0",
     "@rollup/plugin-alias": "^3.1.1",

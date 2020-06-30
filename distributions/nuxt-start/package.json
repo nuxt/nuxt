@@ -64,7 +64,7 @@
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.3.4",
-    "vuex": "^3.4.0"
+    "vuex": "^3.5.1"
   },
   "engines": {
     "node": ">=8.9.0",
