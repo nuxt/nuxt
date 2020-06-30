@@ -1,4 +1,4 @@
-import { loadFixture, getPort, Nuxt, rp, wChunk } from '../utils'
+import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let nuxt, port
 const url = route => 'http://localhost:' + port + route
