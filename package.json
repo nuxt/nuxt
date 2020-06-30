@@ -32,9 +32,6 @@
     "test:types": "tsc -p packages/types/test",
     "test:unit": "jest packages --forceExit"
   },
-  "resolutions": {
-    "babel-eslint/@babel/parser": "7.7.5"
-  },
   "devDependencies": {
     "@babel/core": "^7.10.4",
     "@babel/preset-env": "^7.10.4",

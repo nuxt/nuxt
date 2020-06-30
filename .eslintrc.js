@@ -17,7 +17,10 @@ module.exports = {
     'no-console': 'error',
     'no-debugger': 'error',
     'no-template-curly-in-string': 0,
-    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }]
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+    // https://github.com/babel/babel-eslint/issues/799
+    'template-curly-spacing': 0,
+    indent: ['error', 2, { SwitchCase: 1, ignoredNodes: ['TemplateLiteral'] }]
   },
   overrides: [{
     files: ['test/fixtures/*/.nuxt*/**'],
