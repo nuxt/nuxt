@@ -63,18 +63,33 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   optimization () {
     const optimization = super.optimization()
+    const { splitChunks } = optimization
+    const { cacheGroups } = splitChunks
 
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
       this.buildContext.buildOptions.splitChunks.commons === true &&
-      optimization.splitChunks.cacheGroups.commons === undefined
+      cacheGroups.commons === undefined
     ) {
-      optimization.splitChunks.cacheGroups.commons = {
+      cacheGroups.commons = {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
         priority: 10,
-        name: true
+        name: true,
+        automaticNameDelimiter: '/'
+      }
+    }
+
+    if (!this.dev && cacheGroups.default && !cacheGroups.default.name) {
+      cacheGroups.default.name = (_module, chunks) => {
+        if (chunks.length === 1) {
+          return chunks[0].name
+        }
+        // Use compact name for concatinated modules
+        return 'commons/' + chunks.map(c =>
+          c.name.replace(/\//g, '.').replace(/_/g, '').replace('pages.', '')
+        ).join('~')
       }
     }
 
