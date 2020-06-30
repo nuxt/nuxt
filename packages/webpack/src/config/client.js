@@ -88,7 +88,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           return
         }
         // Use compact name for concatinated modules
-        return 'commons/' + chunks.map(c =>
+        return 'commons/' + chunks.filter(c => c.name).map(c =>
           c.name.replace(/\//g, '.').replace(/_/g, '').replace('pages.', '')
         ).join('~')
       }
