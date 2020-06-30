@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!-- 💚 Thanks for your time making better Nuxt by your feedbacks 💚 -->
+<!-- 💚 Thanks for your time to make Nuxt better with your feedbacks 💚
 
 ### Is your feature request related to a problem? Please describe.
 
