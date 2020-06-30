@@ -13,7 +13,6 @@
     "pify",
     "file-loader",
     "url-loader",
-    "@babel/parser",
     "fs-extra",
     "chalk",
     "wrap-ansi",
