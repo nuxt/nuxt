@@ -7,15 +7,15 @@ assignees: ''
 
 ---
 
-<!-- 💚 Thanks for your time making better Nuxt by your feedbacks 💚
+<!-- 💚 Thanks for your time to make Nuxt better with your feedbacks 💚
 
 **IMPORTANT** Before reporting a bug:
 
 - Please make sure that you have read through Nuxt.js documentation: https://nuxtjs.org
-- If issue is related to a module please create the issue in corresponding repsitory
+- If issue is related to a module please create the issue in corresponding repository
 - Ensure using latest version of nuxt dependencies using `yarn upgrade nuxt` or `npm upgrade nuxt`
 
-👍 A properly detailed bug report can save LOTS of time and help fixing issues ASAP
+👍 A properly detailed bug report can save a LOT of time and help fixing issues as soon as possible.
 -->
 
 ### Versions
