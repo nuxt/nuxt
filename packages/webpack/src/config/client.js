@@ -81,7 +81,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }
     }
 
-    if (!this.dev && cacheGroups.default && !cacheGroups.default.name) {
+    if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
       cacheGroups.default.name = (_module, chunks) => {
         if (chunks.length === 1) {
           return chunks[0].name
