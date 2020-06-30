@@ -7,21 +7,36 @@ assignees: ''
 
 ---
 
-<!-- **IMPORTANT!**
-Before reporting a bug, please make sure that you have read through our documentation and you think your problem is indeed an issue related to our module. -->
+<!-- 💚 Thanks for your time making better Nuxt by your feedbacks 💚
+
+**IMPORTANT** Before reporting a bug:
+
+- Please make sure that you have read through Nuxt.js documentation: https://nuxtjs.org
+- If issue is related to a module please create the issue in corresponding repsitory
+- Ensure using latest version of nuxt dependencies using `yarn upgrade nuxt` or `npm upgrade nuxt`
+
+👍 A properly detailed bug report can save LOTS of time and help fixing issues ASAP
+-->
 
 ### Versions
 
 - nuxt: <!-- ex: v2.13.0 -->
 - node: <!-- ex: v12.14.0 >
 
-### Reproduction Link
+### Reproduction
 
 <!--
-A minimal test case based on one of:
-- a fork of https://template.nuxtjs.org
-- a GitHub repository that can reproduce the bug
+Link to a minimal test case based on one of:
+- A fork of https://template.nuxtjs.org
+- A GitHub repository that can reproduce the bug
+Without a reproduction, it is so hard to address problem :(
 -->
+
+<details open>
+<summary>Additional Details</summary>
+<br>
+<!-- Attaching `nuxt.config`, dependencies, logs or code snippets would help to find the issue -->
+</details>
 
 ### Steps to reproduce
 
