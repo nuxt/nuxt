@@ -20,7 +20,7 @@
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.3.4",
     "vue-template-compiler": "^2.6.11",
-    "vuex": "^3.4.0"
+    "vuex": "^3.5.1"
   },
   "publishConfig": {
     "access": "public"

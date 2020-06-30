@@ -60,12 +60,12 @@
   "dependencies": {
     "@nuxt/builder": "2.13.1",
     "@nuxt/cli": "2.13.1",
-    "@nuxt/components": "^1.0.4",
+    "@nuxt/components": "^1.0.6",
     "@nuxt/core": "2.13.1",
     "@nuxt/generator": "2.13.1",
-    "@nuxt/loading-screen": "^2.0.1",
+    "@nuxt/loading-screen": "^2.0.2",
     "@nuxt/opencollective": "^0.3.0",
-    "@nuxt/telemetry": "^1.1.0",
+    "@nuxt/telemetry": "^1.2.1",
     "@nuxt/webpack": "2.13.1"
   },
   "engines": {

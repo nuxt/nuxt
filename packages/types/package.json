@@ -23,7 +23,7 @@
     "@types/pug": "^2.0.4",
     "@types/serve-static": "^1.13.4",
     "@types/terser-webpack-plugin": "^3.0.0",
-    "@types/webpack": "^4.41.17",
+    "@types/webpack": "^4.41.18",
     "@types/webpack-bundle-analyzer": "^3.8.0",
     "@types/webpack-dev-middleware": "^3.7.1",
     "@types/webpack-hot-middleware": "^2.25.3"
