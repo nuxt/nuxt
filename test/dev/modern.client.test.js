@@ -36,7 +36,6 @@ describe('modern client mode (SSR)', () => {
     expect(link).toEqual([
       '</_nuxt/runtime.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       '</_nuxt/commons/app.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
-      '</_nuxt/4.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       '</_nuxt/app.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       `</_nuxt/pages/index.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script`
     ].join(', '))

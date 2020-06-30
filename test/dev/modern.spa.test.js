@@ -44,7 +44,6 @@ describe('modern client mode (SPA)', () => {
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
       '</_nuxt/commons/app.js>; rel=preload; crossorigin=use-credentials; as=script',
-      '</_nuxt/4.js>; rel=preload; crossorigin=use-credentials; as=script',
       '</_nuxt/app.js>; rel=preload; crossorigin=use-credentials; as=script'
     ].join(', '))
   })
@@ -65,7 +64,6 @@ describe('modern client mode (SPA)', () => {
     expect(link).toEqual([
       '</_nuxt/runtime.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       '</_nuxt/commons/app.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
-      '</_nuxt/4.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
       '</_nuxt/app.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script'
     ].join(', '))
   })

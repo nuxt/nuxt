@@ -6,6 +6,7 @@ import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
+import { chunk } from 'lodash'
 import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
 import VueSSRClientPlugin from '../plugins/vue/client'
@@ -75,7 +76,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.default.name = (_module, chunks) => {
         // Use default name for single chunks
         if (chunks.length === 1) {
-          return
+          return chunks[0].name || ''
         }
         // Use compact name for concatinated modules
         return 'commons/' + chunks.filter(c => c.name).map(c =>
