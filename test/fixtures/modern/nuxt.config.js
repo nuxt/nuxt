@@ -2,12 +2,8 @@ export default {
   modern: true,
   build: {
     filenames: {
-      app: ({ isModern }) => {
-        return `${isModern ? 'modern-' : ''}[name].js`
-      },
-      chunk: ({ isModern }) => {
-        return `${isModern ? 'modern-' : ''}[name].js`
-      }
+      app: ({ isModern }) => `[name]${isModern ? '.modern' : ''}.js`,
+      chunk: ({ isModern }) => `[name]${isModern ? '.modern' : ''}.js`
     }
   },
   render: {

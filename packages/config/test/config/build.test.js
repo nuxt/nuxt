@@ -26,7 +26,7 @@ describe('config: build', () => {
   test('should return modern filenames', () => {
     const { filenames } = buildConfig()
     const env = { isDev: true, isModern: true }
-    expect(filenames.app(env)).toEqual('modern-[name].js')
-    expect(filenames.chunk(env)).toEqual('modern-[name].js')
+    expect(filenames.app(env)).toEqual('[name].modern.js')
+    expect(filenames.chunk(env)).toEqual('[name].modern.js')
   })
 })

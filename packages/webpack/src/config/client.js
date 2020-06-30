@@ -38,16 +38,6 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
   }
 
-  getFileName (...args) {
-    if (this.buildContext.buildOptions.analyze) {
-      const [key] = args
-      if (['app', 'chunk'].includes(key)) {
-        return `${this.isModern ? 'modern-' : ''}[name].js`
-      }
-    }
-    return super.getFileName(...args)
-  }
-
   env () {
     return Object.assign(
       super.env(),
