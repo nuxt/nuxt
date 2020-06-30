@@ -5,17 +5,15 @@ on:
     branches:
       - dev
       - 2.x
-      - next
   pull_request:
     branches:
       - dev
       - 2.x
-      - next
 
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || !((github.base_ref == '2.x' || github.base_ref == 'next') && github.head_ref == 'dev')
+    if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
 
     strategy:
       matrix:
@@ -300,7 +298,6 @@ jobs:
 
       - name: publish
         run: |
-          if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
           ./scripts/workspace-run npm publish $tag -q
         env:
           ref: ${{ github.ref }}

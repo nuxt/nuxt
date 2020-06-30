@@ -3,8 +3,7 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev",
-    "next"
+    "dev"
   ],
   "ignoreDeps": [
     "core-js",
