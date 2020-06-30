@@ -4,3 +4,4 @@ import { buildFixture } from '../../utils/build'
 // That's why building both from same test file.
 buildFixture('spa')
 buildFixture('spa-hash')
+buildFixture('spa-base')
