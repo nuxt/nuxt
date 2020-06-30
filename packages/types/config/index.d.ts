@@ -22,7 +22,7 @@ import { NuxtOptionsWatchers } from './watchers'
 export { Module } from './module'
 export { ServerMiddleware } from './server-middleware'
 
-/**	
+/**
  * @deprecated Use NuxtConfig instead
 */
 export interface Configuration extends Record<string, any> {}

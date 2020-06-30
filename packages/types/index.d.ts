@@ -1,3 +1,5 @@
+import '@nuxt/components'
+import '@nuxt/telemetry'
 import './process'
 
 /**
