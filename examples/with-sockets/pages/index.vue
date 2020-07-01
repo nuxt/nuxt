@@ -21,13 +21,13 @@
 import socket from '~/plugins/socket.io.js'
 
 export default {
-  asyncData (context, callback) {
-    socket.emit('last-messages', function (messages) {
-      callback(null, {
-        messages,
-        message: ''
-      })
-    })
+  asyncData () {
+    return new Promise(resolve =>
+      socket.emit('last-messages', (messages) => resolve({ messages }))
+    )
+  },
+  data () {
+    return { message: '' }
   },
   watch: {
     messages: 'scrollToBottom'
