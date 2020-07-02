@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.13.2",
+  "version": "2.13.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/builder.js",
@@ -9,9 +9,9 @@
   ],
   "dependencies": {
     "@nuxt/devalue": "^1.2.4",
-    "@nuxt/utils": "2.13.2",
-    "@nuxt/vue-app": "2.13.2",
-    "@nuxt/webpack": "2.13.2",
+    "@nuxt/utils": "2.13.3",
+    "@nuxt/vue-app": "2.13.3",
+    "@nuxt/webpack": "2.13.3",
     "chalk": "^3.0.0",
     "chokidar": "^3.4.0",
     "consola": "^2.14.0",
