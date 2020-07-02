@@ -60,7 +60,7 @@ const logs = NUXT.logs || []
 // Setup global Vue error handler
 if (!Vue.config.$nuxt) {
   const defaultErrorHandler = Vue.config.errorHandler
-  Vue.config.errorHandler = (err, vm, info, ...rest) => {
+  Vue.config.errorHandler = async (err, vm, info, ...rest) => {
     // Call other handler if exist
     let handled = null
     if (typeof defaultErrorHandler === 'function') {
@@ -76,7 +76,19 @@ if (!Vue.config.$nuxt) {
 
       // Show Nuxt Error Page
       if (nuxtApp && vm.$root[nuxtApp].error && info !== 'render function') {
-        vm.$root[nuxtApp].error(err)
+        const currentApp = vm.$root[nuxtApp]
+        <% if (features.layouts) { %>
+        // Load error layout
+        let layout = (NuxtError.options || NuxtError).layout
+        if (typeof layout === 'function') {
+          layout = layout(currentApp.context)
+        }
+        if (layout) {
+          await currentApp.loadLayout(layout).catch(() => {})
+        }
+        currentApp.setLayout(layout)
+        <% } %>
+        currentApp.error(err)
       }
     }
 
