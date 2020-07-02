@@ -5,6 +5,7 @@ import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+import hash from 'hash-sum'
 
 import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
@@ -78,9 +79,18 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           return chunks[0].name || ''
         }
         // Use compact name for concatinated modules
-        return 'commons/' + chunks.filter(c => c.name).map(c =>
-          c.name.replace(/\//g, '.').replace(/_/g, '').replace('pages.', '')
-        ).join('~')
+        let compactName = chunks
+          .filter(c => c.name)
+          .map(c => c.name)
+          .sort()
+          .map(name => name.replace(/[/\\]/g, '.').replace(/_/g, '').replace('pages.', ''))
+          .join('~')
+
+        if (compactName.length > 32) {
+          compactName = hash(compactName)
+        }
+
+        return 'commons/' + compactName
       }
     }
 
