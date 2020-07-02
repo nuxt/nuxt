@@ -1,0 +1,47 @@
+{
+  "nuxt": {
+    "attributes": [
+      "nuxtChildKey"
+    ],
+    "description": "Component to render the current nuxt page."
+  },
+  "n-child": {
+    "description": "Component for displaying the children components in a nested route."
+  },
+  "nuxt-child": {
+    "description": "Component for displaying the children components in a nested route."
+  },
+  "n-link": {
+    "attributes": [
+      "to",
+      "replace",
+      "append",
+      "tag",
+      "active-class",
+      "exact",
+      "event",
+      "exact-active-class",
+      "prefetch",
+      "no-prefetch"
+    ],
+    "description": "Component for navigating between Nuxt pages."
+  },
+  "nuxt-link": {
+    "attributes": [
+      "to",
+      "replace",
+      "append",
+      "tag",
+      "active-class",
+      "exact",
+      "event",
+      "exact-active-class",
+      "prefetch",
+      "no-prefetch"
+    ],
+    "description": "Component for navigating between Nuxt pages."
+  },
+  "no-ssr": {
+    "description": "Component for excluding a part of your app from server-side rendering."
+  }
+}
