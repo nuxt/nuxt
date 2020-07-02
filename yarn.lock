@@ -1802,10 +1802,10 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@ls-lint/ls-lint@^1.8.1":
-  version "1.8.1"
-  resolved "https://registry.npmjs.org/@ls-lint/ls-lint/-/ls-lint-1.8.1.tgz#c156e6dd3f48501d234e0705f20073c701528929"
-  integrity sha512-4aF6H8J2yTKSVnU1Gz9Trx5kiyFpKrVOjWAQYsGNo6AaNWpPKTbKguvQrs+11yAUx5qvNKQgvQXSEIQx1HIGeA==
+"@ls-lint/ls-lint@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.npmjs.org/@ls-lint/ls-lint/-/ls-lint-1.9.0.tgz#fa4637d34526e71aea7e5228426493a113f27d77"
+  integrity sha512-F6QJ9MB2qPC8MYQ2qE0+V4yGr7qrL72uxmEwZrazGT/lYk9DkhuE1y3nPV4kqEcW7Cj8iHLQeT9Hsl6ugktoNA==
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
