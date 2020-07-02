@@ -12,6 +12,7 @@
     "pify",
     "file-loader",
     "url-loader",
+    "sass-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",
