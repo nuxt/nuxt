@@ -274,8 +274,10 @@ async function render (to, from, next) {
     return next()
   }
   // Handle first render on SPA mode
+  let spaFallback = false
   if (to === from) {
     _lastPaths = []
+    spaFallback = true
   } else {
     const fromMatches = []
     _lastPaths = getMatchedComponents(from, fromMatches).map((Component, i) => {
@@ -488,7 +490,7 @@ async function render (to, from, next) {
         <% if (isFullStatic) { %>
           let promise
 
-          if (this.isPreview) {
+          if (this.isPreview || spaFallback) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
               promise = this.fetchPayload(to.path)
@@ -522,7 +524,7 @@ async function render (to, from, next) {
 
       <% if (features.fetch) { %>
         <% if (isFullStatic) { %>
-        if (!this.isPreview) {
+        if (!this.isPreview && !spaFallback) {
           // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
         }
