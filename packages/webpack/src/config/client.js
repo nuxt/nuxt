@@ -84,7 +84,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           .map(c => c.name)
           .sort()
           .map(name => name.replace(/[/\\]/g, '.').replace(/_/g, '').replace('pages.', ''))
-          .join('~')
+          .join('~') || 'default'
 
         if (compactName.length > 32) {
           compactName = hash(compactName)
