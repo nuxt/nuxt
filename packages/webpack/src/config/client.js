@@ -77,9 +77,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // Map chunks to names
         const names = chunks
           .map(c => c.name)
+          .map(name => name
+            .replace(/[/\\]/g, '.')
+            .replace(/_/g, '')
+            .replace('pages.', '')
+          )
           .filter(Boolean)
           .sort()
-          .map(name => name.replace(/[/\\]/g, '.').replace(/_/g, '').replace('pages.', ''))
 
         // Fixes https://github.com/nuxt/nuxt.js/issues/7665
         // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
