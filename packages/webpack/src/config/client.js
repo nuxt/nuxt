@@ -84,7 +84,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           .map(c => c.name)
           .sort()
           .map(name => name.replace(/[/\\]/g, '.').replace(/_/g, '').replace('pages.', ''))
-          .join('~') || 'default'
+          .join('~')
+
+        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
+        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
+        if (!compactName) {
+          compactName = 'default'
+        }
 
         if (compactName.length > 32) {
           compactName = hash(compactName)
