@@ -76,7 +76,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.default.name = (_module, chunks) => {
         // Map chunks to names
         const names = chunks
-          .map(c => c.name)
+          .map(c => c.name || '')
           .map(name => name
             .replace(/[/\\]/g, '.')
             .replace(/_/g, '')
