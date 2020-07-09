@@ -198,7 +198,7 @@ export default class SSRRenderer extends BaseRenderer {
       const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
       const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
       staticAssets.push({ path: payloadPath, src: payloadScript })
-      preloadScripts.push(payloadUrl)
+      preloadScripts.push(payloadUrl.replace(/\.html\/payload\.js$/,'/payload.js'))
 
       // Preload links
       for (const href of preloadScripts) {
