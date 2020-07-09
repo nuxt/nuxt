@@ -23,7 +23,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     return 'cheap-module-source-map'
   }
 
-  get externalsWhitelist () {
+  get externalsAllowlist () {
     return [
       this.isNonNativeImport.bind(this),
       ...this.normalizeTranspile()
@@ -134,7 +134,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({
-              allowlist: this.externalsWhitelist,
+              allowlist: this.externalsAllowlist,
               modulesDir: dir
             })
           )
