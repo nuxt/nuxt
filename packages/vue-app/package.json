@@ -9,6 +9,7 @@
     "dist",
     "template",
     "vetur",
+    "web-types",
     "index.d.ts"
   ],
   "dependencies": {
