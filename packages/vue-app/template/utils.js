@@ -282,7 +282,8 @@ export function getLocation (base, mode) {
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
-  if (base && path.indexOf(base) === 0) {
+  // To get matched with sanitized router.base add trailing slash
+  if (base && (path.endsWith('/') ? path : path + '/').startsWith(base)) {
     path = path.slice(base.length)
   }
   return (path || '/') + window.location.search + window.location.hash

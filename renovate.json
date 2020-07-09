@@ -3,8 +3,7 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev",
-    "next"
+    "dev"
   ],
   "ignoreDeps": [
     "core-js",
@@ -13,7 +12,7 @@
     "pify",
     "file-loader",
     "url-loader",
-    "@babel/parser",
+    "sass-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",

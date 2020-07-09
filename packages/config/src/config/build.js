@@ -14,8 +14,8 @@ export default () => ({
   serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[name].[contenthash:7].js',
-    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[name].[contenthash:7].js',
+    app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
     css: ({ isDev }) => isDev ? '[name].css' : '[name].[contenthash:7].css',
     img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
     font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
@@ -62,9 +62,12 @@ export default () => ({
     minimizer: undefined,
     splitChunks: {
       chunks: 'all',
-      automaticNameDelimiter: '.',
       name: undefined,
-      cacheGroups: {}
+      cacheGroups: {
+        default: {
+          name: undefined
+        }
+      }
     }
   },
   splitChunks: {

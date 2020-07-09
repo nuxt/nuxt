@@ -60,7 +60,7 @@ const logs = NUXT.logs || []
 // Setup global Vue error handler
 if (!Vue.config.$nuxt) {
   const defaultErrorHandler = Vue.config.errorHandler
-  Vue.config.errorHandler = (err, vm, info, ...rest) => {
+  Vue.config.errorHandler = async (err, vm, info, ...rest) => {
     // Call other handler if exist
     let handled = null
     if (typeof defaultErrorHandler === 'function') {
@@ -76,7 +76,19 @@ if (!Vue.config.$nuxt) {
 
       // Show Nuxt Error Page
       if (nuxtApp && vm.$root[nuxtApp].error && info !== 'render function') {
-        vm.$root[nuxtApp].error(err)
+        const currentApp = vm.$root[nuxtApp]
+        <% if (features.layouts) { %>
+        // Load error layout
+        let layout = (NuxtError.options || NuxtError).layout
+        if (typeof layout === 'function') {
+          layout = layout(currentApp.context)
+        }
+        if (layout) {
+          await currentApp.loadLayout(layout).catch(() => {})
+        }
+        currentApp.setLayout(layout)
+        <% } %>
+        currentApp.error(err)
       }
     }
 
@@ -274,8 +286,10 @@ async function render (to, from, next) {
     return next()
   }
   // Handle first render on SPA mode
+  let spaFallback = false
   if (to === from) {
     _lastPaths = []
+    spaFallback = true
   } else {
     const fromMatches = []
     _lastPaths = getMatchedComponents(from, fromMatches).map((Component, i) => {
@@ -488,7 +502,7 @@ async function render (to, from, next) {
         <% if (isFullStatic) { %>
           let promise
 
-          if (this.isPreview) {
+          if (this.isPreview || spaFallback) {
             promise = promisify(Component.options.asyncData, app.context)
           } else {
               promise = this.fetchPayload(to.path)
@@ -522,7 +536,7 @@ async function render (to, from, next) {
 
       <% if (features.fetch) { %>
         <% if (isFullStatic) { %>
-        if (!this.isPreview) {
+        if (!this.isPreview && !spaFallback) {
           // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
         }

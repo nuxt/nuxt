@@ -5,6 +5,7 @@ import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+import hash from 'hash-sum'
 
 import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
@@ -38,16 +39,6 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
   }
 
-  getFileName (...args) {
-    if (this.buildContext.buildOptions.analyze) {
-      const [key] = args
-      if (['app', 'chunk'].includes(key)) {
-        return `${this.isModern ? 'modern-' : ''}[name].js`
-      }
-    }
-    return super.getFileName(...args)
-  }
-
   env () {
     return Object.assign(
       super.env(),
@@ -63,18 +54,54 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   optimization () {
     const optimization = super.optimization()
+    const { splitChunks } = optimization
+    const { cacheGroups } = splitChunks
 
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
       this.buildContext.buildOptions.splitChunks.commons === true &&
-      optimization.splitChunks.cacheGroups.commons === undefined
+      cacheGroups.commons === undefined
     ) {
-      optimization.splitChunks.cacheGroups.commons = {
+      cacheGroups.commons = {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
         priority: 10,
-        name: true
+        name: true,
+        automaticNameDelimiter: '/'
+      }
+    }
+
+    if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
+      cacheGroups.default.name = (_module, chunks) => {
+        // Map chunks to names
+        const names = chunks
+          .map(c => c.name || '')
+          .map(name => name
+            .replace(/[/\\]/g, '.')
+            .replace(/_/g, '')
+            .replace('pages.', '')
+          )
+          .filter(Boolean)
+          .sort()
+
+        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
+        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
+        if (!names.length) {
+          return 'commons/default'
+        }
+
+        // Single chunk is not common
+        if (names.length === 1) {
+          return names[0]
+        }
+
+        // Use compact name for concatinated modules
+        let compactName = names.join('~')
+        if (compactName.length > 32) {
+          compactName = hash(compactName)
+        }
+        return 'commons/' + compactName
       }
     }
 

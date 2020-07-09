@@ -74,7 +74,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       const isReportOnly = !!options.render.csp.reportOnly
       const cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev, isReportOnly }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }))
     }
 
     // Send response
@@ -126,9 +126,9 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev, isReportOnly }) => {
+const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }) => {
   const joinedHashes = cspScriptSrcHashes.join(' ')
-  const baseCspStr = `script-src 'self'${isDev ? ' \'unsafe-eval\'' : ''} ${joinedHashes}`
+  const baseCspStr = `script-src 'self' ${joinedHashes}`
   const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
 
   if (Array.isArray(allowedSources) && allowedSources.length) {
