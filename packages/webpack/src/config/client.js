@@ -5,6 +5,7 @@ import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
 import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+import hash from 'hash-sum'
 
 import CorsPlugin from '../plugins/vue/cors'
 import ModernModePlugin from '../plugins/vue/modern'
@@ -20,17 +21,22 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   get devtool () {
-    return this.dev ? 'cheap-module-eval-source-map' : false
+    if (!this.dev) {
+      return false
+    }
+    const scriptPolicy = this.getCspScriptPolicy()
+    const noUnsafeEval = scriptPolicy && !scriptPolicy.includes('\'unsafe-eval\'')
+    return noUnsafeEval
+      ? 'cheap-module-source-map'
+      : 'cheap-module-eval-source-map'
   }
 
-  getFileName (...args) {
-    if (this.buildContext.buildOptions.analyze) {
-      const [key] = args
-      if (['app', 'chunk'].includes(key)) {
-        return `${this.isModern ? 'modern-' : ''}[name].js`
-      }
+  getCspScriptPolicy () {
+    const { csp } = this.buildContext.options.render
+    if (csp) {
+      const { policies = {} } = csp
+      return policies['script-src'] || policies['default-src'] || []
     }
-    return super.getFileName(...args)
   }
 
   env () {
@@ -48,18 +54,54 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   optimization () {
     const optimization = super.optimization()
+    const { splitChunks } = optimization
+    const { cacheGroups } = splitChunks
 
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
       this.buildContext.buildOptions.splitChunks.commons === true &&
-      optimization.splitChunks.cacheGroups.commons === undefined
+      cacheGroups.commons === undefined
     ) {
-      optimization.splitChunks.cacheGroups.commons = {
+      cacheGroups.commons = {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
         priority: 10,
-        name: true
+        name: true,
+        automaticNameDelimiter: '/'
+      }
+    }
+
+    if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
+      cacheGroups.default.name = (_module, chunks) => {
+        // Map chunks to names
+        const names = chunks
+          .map(c => c.name || '')
+          .map(name => name
+            .replace(/[/\\]/g, '.')
+            .replace(/_/g, '')
+            .replace('pages.', '')
+          )
+          .filter(Boolean)
+          .sort()
+
+        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
+        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
+        if (!names.length) {
+          return 'commons/default'
+        }
+
+        // Single chunk is not common
+        if (names.length === 1) {
+          return names[0]
+        }
+
+        // Use compact name for concatinated modules
+        let compactName = names.join('~')
+        if (compactName.length > 32) {
+          compactName = hash(compactName)
+        }
+        return 'commons/' + compactName
       }
     }
 
@@ -95,7 +137,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins () {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern } } = this.buildContext
+    const { buildOptions, options: { appTemplatePath, buildDir, modern, render } } = this.buildContext
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -114,8 +156,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         filename: '../server/index.spa.html',
         template: appTemplatePath,
         minify: buildOptions.html.minify,
-        inject: true,
-        chunksSortMode: 'dependency'
+        inject: true
       }),
       new VueSSRClientPlugin({
         filename: `../server/${this.name}.manifest.json`
@@ -144,15 +185,18 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
 
     if (modern) {
+      const scriptPolicy = this.getCspScriptPolicy()
+      const noUnsafeInline = scriptPolicy && !scriptPolicy.includes('\'unsafe-inline\'')
       plugins.push(new ModernModePlugin({
         targetDir: path.resolve(buildDir, 'dist', 'client'),
-        isModernBuild: this.isModern
+        isModernBuild: this.isModern,
+        noUnsafeInline
       }))
     }
 
-    if (buildOptions.crossorigin) {
+    if (render.crossorigin) {
       plugins.push(new CorsPlugin({
-        crossorigin: buildOptions.crossorigin
+        crossorigin: render.crossorigin
       }))
     }
 
@@ -168,17 +212,18 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     const { client = {} } = hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client
+
     const hotMiddlewareClientOptions = {
       reload: true,
       timeout: 30000,
       ansiColors: JSON.stringify(ansiColors),
       overlayStyles: JSON.stringify(overlayStyles),
+      path: `${router.base}/__webpack_hmr/${this.name}`.replace(/\/\//g, '/'),
       ...options,
       name: this.name
     }
-    const clientPath = `${router.base}/__webpack_hmr/${this.name}`
-    const hotMiddlewareClientOptionsStr =
-      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
+
+    const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
     // Entry points
     config.entry = Object.assign({}, config.entry, {

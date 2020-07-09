@@ -13,14 +13,19 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
       if (fileName === '' && r.path === '/') {
         routes.push('/')
       }
+
       return flatRoutes(r.children, fileName + r.path + '/', routes)
     }
     fileName = fileName.replace(/\/+/g, '/')
-    routes.push(
-      (r.path === '' && fileName[fileName.length - 1] === '/'
-        ? fileName.slice(0, -1)
-        : fileName) + r.path
-    )
+
+    // if child path is already absolute, do not make any concatenations
+    if (r.path && r.path.startsWith('/')) {
+      routes.push(r.path)
+    } else if (r.path === '' && fileName[fileName.length - 1] === '/') {
+      routes.push(fileName.slice(0, -1) + r.path)
+    } else {
+      routes.push(fileName + r.path)
+    }
   })
   return routes
 }

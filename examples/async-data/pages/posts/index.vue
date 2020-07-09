@@ -7,6 +7,9 @@
         <NuxtLink :to="{ name: 'posts-id', params: { id: post.id } }">
           {{ post.title }}
         </NuxtLink>
+        <NuxtLink :to="{ name: 'posts-id', params: { id: post.id } }">
+          {{ post.title }}
+        </NuxtLink>
       </li>
     </ul>
     <p>
@@ -18,14 +21,13 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   asyncData ({ req, params }) {
     // We can return a Promise instead of calling the callback
-    return axios.get('https://jsonplaceholder.typicode.com/posts')
-      .then((res) => {
-        return { posts: res.data.slice(0, 5) }
+    return fetch('https://jsonplaceholder.typicode.com/posts')
+      .then(res => res.json())
+      .then((data) => {
+        return { posts: data.slice(0, 5) }
       })
   },
   head: {

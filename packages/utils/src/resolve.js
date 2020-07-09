@@ -17,10 +17,8 @@ export const wp = function wp (p = '') {
   return p
 }
 
+// Kept for backward compat (modules may use it from template context)
 export const wChunk = function wChunk (p = '') {
-  if (isWindows) {
-    return p.replace(/\//g, '_')
-  }
   return p
 }
 

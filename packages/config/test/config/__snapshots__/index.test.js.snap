@@ -3,6 +3,7 @@
 exports[`config should return default nuxt configurations 1`] = `
 Object {
   "ErrorPage": null,
+  "_modules": Array [],
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
@@ -15,7 +16,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": undefined,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -88,8 +88,11 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
-        "automaticNameDelimiter": ".",
-        "cacheGroups": Object {},
+        "cacheGroups": Object {
+          "default": Object {
+            "name": undefined,
+          },
+        },
         "chunks": "all",
         "name": undefined,
       },
@@ -134,6 +137,7 @@ Object {
     "badgeMessages": Array [],
     "bannerColor": "green",
   },
+  "createRequire": undefined,
   "css": Array [],
   "debug": undefined,
   "dev": false,
@@ -172,11 +176,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": undefined,
+      "dir": "static",
+      "version": undefined,
+      "versionBase": undefined,
+    },
     "subFolders": true,
   },
   "globalName": undefined,
@@ -260,6 +271,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,
@@ -269,6 +282,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,
@@ -310,6 +324,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -325,6 +340,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": undefined,
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -335,6 +351,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {
@@ -359,6 +376,7 @@ Object {
 exports[`config should return nuxt configurations with custom env 1`] = `
 Object {
   "ErrorPage": null,
+  "_modules": Array [],
   "_nuxtConfigFile": undefined,
   "alias": Object {},
   "build": Object {
@@ -371,7 +389,6 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
     "cssSourceMap": undefined,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -444,8 +461,11 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
-        "automaticNameDelimiter": ".",
-        "cacheGroups": Object {},
+        "cacheGroups": Object {
+          "default": Object {
+            "name": undefined,
+          },
+        },
         "chunks": "all",
         "name": undefined,
       },
@@ -490,6 +510,7 @@ Object {
     "badgeMessages": Array [],
     "bannerColor": "green",
   },
+  "createRequire": undefined,
   "css": Array [],
   "debug": undefined,
   "dev": false,
@@ -528,11 +549,18 @@ Object {
   },
   "generate": Object {
     "concurrency": 500,
+    "crawler": true,
     "dir": "dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": undefined,
+      "dir": "static",
+      "version": undefined,
+      "versionBase": undefined,
+    },
     "subFolders": true,
   },
   "globalName": undefined,
@@ -616,6 +644,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": undefined,
@@ -625,6 +655,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,
@@ -666,6 +697,7 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
@@ -681,6 +713,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": undefined,
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -691,6 +724,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {

@@ -1,5 +1,6 @@
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
+import { TARGETS, MODES } from '@nuxt/utils'
 
 export default () => ({
   // Env
@@ -8,9 +9,23 @@ export default () => ({
   debug: undefined, // = dev
   env: {},
 
+  createRequire: undefined,
+
+  // Target
+  target: TARGETS.server,
+
+  // Rendering
+  ssr: true,
+
+  // TODO: remove in Nuxt 3
   // Mode
-  mode: 'universal',
+  mode: MODES.universal,
   modern: undefined,
+
+  // Modules
+  modules: [],
+  buildModules: [],
+  _modules: [],
 
   globalName: undefined,
   globals: {
@@ -53,17 +68,6 @@ export default () => ({
     '**/*.spec.*'
   ],
 
-  // Generate
-  generate: {
-    dir: 'dist',
-    routes: [],
-    exclude: [],
-    concurrency: 500,
-    interval: 0,
-    subFolders: true,
-    fallback: '200.html'
-  },
-
   // Watch
   watch: [],
   watchers: {
@@ -80,5 +84,9 @@ export default () => ({
   editor: undefined,
 
   // Hooks
-  hooks: null
+  hooks: null,
+
+  // runtimeConfig
+  privateRuntimeConfig: {},
+  publicRuntimeConfig: {}
 })

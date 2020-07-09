@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
+import { TARGETS, urlJoin } from '@nuxt/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -21,7 +22,7 @@ export default class SSRRenderer extends BaseRenderer {
 
   renderScripts (renderContext) {
     const scripts = renderContext.renderScripts()
-    const { build: { crossorigin } } = this.options
+    const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return scripts
     }
@@ -37,7 +38,7 @@ export default class SSRRenderer extends BaseRenderer {
 
   renderResourceHints (renderContext) {
     const resourceHints = renderContext.renderResourceHints()
-    const { build: { crossorigin } } = this.options
+    const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return resourceHints
     }
@@ -100,7 +101,8 @@ export default class SSRRenderer extends BaseRenderer {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
-    if (renderContext.redirected && !renderContext._generate) {
+    // Perf: early returns if server target and redirected
+    if (renderContext.redirected && renderContext.target === TARGETS.server) {
       return {
         html: APP,
         error: renderContext.nuxt.error,
@@ -112,11 +114,22 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject head meta
     // (this is unset when features.meta is false in server template)
-    const meta = renderContext.meta && renderContext.meta.inject()
+    const meta = renderContext.meta && renderContext.meta.inject({
+      isSSR: renderContext.nuxt.serverRendered,
+      ln: this.options.dev
+    })
+
     if (meta) {
-      HEAD += meta.title.text() +
-        meta.meta.text() +
-        meta.link.text() +
+      HEAD += meta.title.text() + meta.meta.text()
+    }
+
+    // Add <base href=""> meta if router base specified
+    if (this.options._routerBaseSpecified) {
+      HEAD += `<base href="${this.options.router.base}">`
+    }
+
+    if (meta) {
+      HEAD += meta.link.text() +
         meta.style.text() +
         meta.script.text() +
         meta.noscript.text()
@@ -124,11 +137,6 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Check if we need to inject scripts and state
     const shouldInjectScripts = this.options.render.injectScripts !== false
-
-    // Add <base href=""> meta if router base specified
-    if (this.options._routerBaseSpecified) {
-      HEAD += `<base href="${this.options.router.base}">`
-    }
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
@@ -139,12 +147,14 @@ export default class SSRRenderer extends BaseRenderer {
     HEAD += renderContext.renderStyles()
 
     if (meta) {
+      const prependInjectorOptions = { pbody: true }
+
       const BODY_PREPEND =
-        meta.meta.text({ pbody: true }) +
-        meta.link.text({ pbody: true }) +
-        meta.style.text({ pbody: true }) +
-        meta.script.text({ pbody: true }) +
-        meta.noscript.text({ pbody: true })
+        meta.meta.text(prependInjectorOptions) +
+        meta.link.text(prependInjectorOptions) +
+        meta.style.text(prependInjectorOptions) +
+        meta.script.text(prependInjectorOptions) +
+        meta.noscript.text(prependInjectorOptions)
 
       if (BODY_PREPEND) {
         APP = `${BODY_PREPEND}${APP}`
@@ -155,25 +165,68 @@ export default class SSRRenderer extends BaseRenderer {
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
     const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
-    let serializedSession = ''
+    const inlineScripts = []
 
-    // Serialize state
-    if (shouldInjectScripts || shouldHashCspScriptSrc) {
-      // Only serialized session if need inject scripts or csp hash
-      serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
-    }
+    if (renderContext.staticAssetsBase) {
+      const preloadScripts = []
+      renderContext.staticAssets = []
+      const routerBase = this.options.router.base
+      const { staticAssetsBase, url, nuxt, staticAssets } = renderContext
+      const { data, fetch, mutations, ...state } = nuxt
 
-    if (shouldInjectScripts) {
-      APP += `<script>${serializedSession}</script>`
+      // Initial state
+      const stateScript = `window.${this.serverContext.globals.context}=${devalue({
+        staticAssetsBase,
+        ...state
+      })};`
+
+      // Make chunk for initial state > 10 KB
+      const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
+      if (stateScriptKb > 10) {
+        const statePath = urlJoin(url, 'state.js')
+        const stateUrl = urlJoin(routerBase, staticAssetsBase, statePath)
+        staticAssets.push({ path: statePath, src: stateScript })
+        APP += `<script defer src="${stateUrl}"></script>`
+        preloadScripts.push(stateUrl)
+      } else {
+        APP += `<script>${stateScript}</script>`
+      }
+
+      // Page level payload.js (async loaded for CSR)
+      const payloadPath = urlJoin(url, 'payload.js')
+      const payloadUrl = urlJoin(routerBase, staticAssetsBase, payloadPath)
+      const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
+      const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
+      staticAssets.push({ path: payloadPath, src: payloadScript })
+      preloadScripts.push(payloadUrl)
+
+      // Preload links
+      for (const href of preloadScripts) {
+        HEAD += `<link rel="preload" href="${href}" as="script">`
+      }
+    } else {
+      // Serialize state
+      let serializedSession
+      if (shouldInjectScripts || shouldHashCspScriptSrc) {
+        // Only serialized session if need inject scripts or csp hash
+        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+        inlineScripts.push(serializedSession)
+      }
+
+      if (shouldInjectScripts) {
+        APP += `<script>${serializedSession}</script>`
+      }
     }
 
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
     if (csp) {
       if (shouldHashCspScriptSrc) {
-        const hash = crypto.createHash(csp.hashAlgorithm)
-        hash.update(serializedSession)
-        cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        for (const script of inlineScripts) {
+          const hash = crypto.createHash(csp.hashAlgorithm)
+          hash.update(script)
+          cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        }
       }
 
       // Call ssr:csp hook
@@ -191,17 +244,19 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     if (meta) {
+      const appendInjectorOptions = { body: true }
+
       // Append body scripts
-      APP += meta.meta.text({ body: true })
-      APP += meta.link.text({ body: true })
-      APP += meta.style.text({ body: true })
-      APP += meta.script.text({ body: true })
-      APP += meta.noscript.text({ body: true })
+      APP += meta.meta.text(appendInjectorOptions)
+      APP += meta.link.text(appendInjectorOptions)
+      APP += meta.style.text(appendInjectorOptions)
+      APP += meta.script.text(appendInjectorOptions)
+      APP += meta.noscript.text(appendInjectorOptions)
     }
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: meta ? meta.htmlAttrs.text(true /* addSrrAttribute */) : '',
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(renderContext.nuxt.serverRendered /* addSrrAttribute */) : '',
       HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
       BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,
@@ -210,7 +265,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Call ssr:templateParams hook
-    await this.serverContext.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams)
+    await this.serverContext.nuxt.callHook('vue-renderer:ssr:templateParams', templateParams, renderContext)
 
     // Render with SSR template
     const html = this.renderTemplate(this.serverContext.resources.ssrTemplate, templateParams)

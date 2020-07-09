@@ -26,9 +26,6 @@ export default () => ({
 
   css: [],
 
-  modules: [],
-  buildModules: [],
-
   layouts: {},
 
   ErrorPage: null,

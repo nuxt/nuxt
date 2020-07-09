@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { isModernRequest, waitFor } from '@nuxt/utils'
+import { TARGETS, isModernRequest, waitFor } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -195,7 +195,8 @@ export default class VueRenderer {
       return
     }
 
-    if (!resources.modernManifest) {
+    const isExplicitStaticModern = options.target === TARGETS.static && options.modern
+    if (!resources.modernManifest && !isExplicitStaticModern) {
       options.modern = false
       return
     }
@@ -274,19 +275,27 @@ export default class VueRenderer {
 
     // Add url to the renderContext
     renderContext.url = url
+    // Add target to the renderContext
+    renderContext.target = this.serverContext.nuxt.options.target
 
-    const { req = {} } = renderContext
+    const { req = {}, res = {} } = renderContext
 
     // renderContext.spa
     if (renderContext.spa === undefined) {
       // TODO: Remove reading from renderContext.res in Nuxt3
-      renderContext.spa = !this.SSR || req.spa || (renderContext.res && renderContext.res.spa)
+      renderContext.spa = !this.SSR || req.spa || res.spa
     }
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
       const modernMode = this.options.modern
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
+    }
+
+    // Set runtime config on renderContext
+    renderContext.runtimeConfig = {
+      private: renderContext.spa ? {} : { ...this.options.privateRuntimeConfig },
+      public: { ...this.options.publicRuntimeConfig }
     }
 
     // Call renderContext hook
