@@ -134,7 +134,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({
-              whitelist: this.externalsWhitelist,
+              allowlist: this.externalsWhitelist,
               modulesDir: dir
             })
           )
