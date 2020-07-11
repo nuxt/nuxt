@@ -12,7 +12,7 @@
     "@nuxt/utils": "2.13.3",
     "consola": "^2.14.0",
     "fs-extra": "^8.1.0",
-    "lru-cache": "^5.1.1",
+    "lru-cache": "^6.0.0",
     "vue": "^2.6.11",
     "vue-meta": "^2.4.0",
     "vue-server-renderer": "^2.6.11"
