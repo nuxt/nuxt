@@ -6,16 +6,16 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from '@nuxt/utils'
+import { isLegacyGenerate, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
-    this.isFullStatic = false
 
     // Set variables
+    this.isLegacyGenerate = isLegacyGenerate(this.options)
     this.staticRoutes = path.resolve(this.options.srcDir, this.options.dir.static)
     this.srcBuiltPath = path.resolve(this.options.buildDir, 'dist', 'client')
     this.distPath = this.options.generate.dir
@@ -36,7 +36,7 @@ export default class Generator {
     await this.initiate({ build, init })
 
     // Payloads for full static
-    if (this.isFullStatic) {
+    if (!this.isLegacyGenerate) {
       consola.info('Full static mode activated')
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
@@ -72,23 +72,13 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
-      this.isFullStatic = isFullStatic(this.options)
     } else {
       const hasBuilt = await fsExtra.exists(path.resolve(this.options.buildDir, 'dist', 'server', 'client.manifest.json'))
       if (!hasBuilt) {
-        const fullStaticArgs = isFullStatic(this.options) ? ' --target static' : ''
         throw new Error(
-          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build${fullStaticArgs}\` before calling \`nuxt export\``
+          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build\``
         )
       }
-      const config = this.getBuildConfig()
-      if (!config || (config.target !== TARGETS.static && !this.options._legacyGenerate)) {
-        throw new Error(
-          `In order to use \`nuxt export\`, you need to run \`nuxt build --target static\``
-        )
-      }
-      this.isFullStatic = config.isFullStatic
-      this.options.render.ssr = config.ssr
     }
 
     // Initialize dist directory

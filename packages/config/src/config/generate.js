@@ -7,7 +7,7 @@ export default () => ({
   subFolders: true,
   fallback: '200.html',
   crawler: true,
-  build: {
+  cache: {
     ignore: [],
     globbyOptions: {
       gitignore: true

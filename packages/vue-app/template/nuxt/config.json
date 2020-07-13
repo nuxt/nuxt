@@ -1,5 +1,0 @@
-<%= JSON.stringify({
-  isFullStatic: isFullStatic,
-  ssr: nuxtOptions.render.ssr,
-  target: nuxtOptions.target
-}, null, 2) %>

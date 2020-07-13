@@ -32,7 +32,7 @@ function beforeMount() {
 
 function created() {
   if (!isSsrHydration(this)) {
-    <% if (isFullStatic) { %>createdFullStatic.call(this)<% } %>
+    <% if (!isLegacyGenerate) { %>createdFullStatic.call(this)<% } %>
     return
   }
 
@@ -53,7 +53,7 @@ function created() {
   }
 }
 
-<% if (isFullStatic) { %>
+<% if (!isLegacyGenerate) { %>
 function createdFullStatic() {
   // Check if component has been fetched on server
   let fetchedOnServer = this.$options.fetchOnServer !== false

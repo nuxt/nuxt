@@ -10,22 +10,20 @@ export async function generate (cmd) {
   const nuxt = await getNuxt({ server: true }, cmd)
   const generator = await cmd.getGenerator(nuxt)
 
-  generator.isFullStatic = nuxt.options.target === TARGETS.static
-
-  generator.initiate = async () => {
-    await nuxt.callHook('generate:before', generator, generator.options.generate)
-    await nuxt.callHook('export:before', generator)
-    await generator.initDist()
-  }
-
   await nuxt.server.listen(0)
-  await generator.generate()
+  await generator.generate({ build: false })
   await nuxt.close()
 }
 
 export async function ensureBuild (cmd) {
   const nuxt = await getNuxt({ _build: true, server: false }, cmd)
   const { options } = nuxt
+
+  if (options.generate.cache === false) {
+    const builder = await cmd.getBuilder(nuxt)
+    await builder.build()
+    await nuxt.close()
+  }
 
   // Default build ignore files
   const ignore = [
@@ -40,18 +38,18 @@ export async function ensureBuild (cmd) {
 
   // Extend ignore
   const { generate } = options
-  if (generate.build.ignore === 'function') {
-    generate.build.ignore = generate.build.ignore(ignore)
-  } else if (Array.isArray(generate.build.ignore)) {
-    generate.build.ignore = generate.build.ignore.concat(ignore)
+  if (generate.cache.ignore === 'function') {
+    generate.cache.ignore = generate.cache.ignore(ignore)
+  } else if (Array.isArray(generate.cache.ignore)) {
+    generate.cache.ignore = generate.cache.ignore.concat(ignore)
   }
-  await nuxt.callHook('generate:build:ignore', generate.build.ignore)
+  await nuxt.callHook('generate:cache:ignore', generate.cache.ignore)
 
   // Take a snapshot of current project
   const snapshotOptions = {
     rootDir: nuxt.options.rootDir,
-    ignore: nuxt.options.generate.build.ignore,
-    globbyOptions: nuxt.options.generate.build.globbyOptions
+    ignore: nuxt.options.generate.cache.ignore,
+    globbyOptions: nuxt.options.generate.cache.globbyOptions
   }
 
   const currentBuildSnapshot = await snapshot(snapshotOptions)
@@ -110,6 +108,9 @@ async function getNuxt (args, cmd) {
     config._legacyGenerate = true
   }
   config.buildDir = (config.static && config.static.cacheDir) || path.resolve(config.rootDir, 'node_modules/.cache/nuxt')
+  config.build = config.build || {}
+  config.build.transpile = config.build.transpile || []
+  config.build.transpile.push(config.buildDir)
 
   const nuxt = await cmd.getNuxt(config)
 
@@ -121,13 +122,6 @@ export function compareSnapshots (from, to) {
     ...Object.keys(from).sort(),
     ...Object.keys(to).sort()
   ]))
-
-  // const fromKeys = Object.keys(from).sort()
-  // const toKeys = Object.keys(to).sort()
-
-  // if (fromKeys.length !== toKeys.length || JSON.stringify(fromKeys) !== JSON.stringify(toKeys)) {
-  //   return true
-  // }
 
   for (const key of allKeys) {
     if (JSON.stringify(from[key]) !== JSON.stringify(to[key])) {

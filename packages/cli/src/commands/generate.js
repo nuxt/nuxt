@@ -57,6 +57,10 @@ export default {
   async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false })
 
+    // Disable analyze if set by the nuxt config
+    config.build = config.build || {}
+    config.build.analyze = false
+
     // Full static
     if (config.target === TARGETS.static) {
       await ensureBuild(cmd)
@@ -66,10 +70,6 @@ export default {
 
     // Forcing static target anyway
     config.target = TARGETS.static
-
-    // Disable analyze if set by the nuxt config
-    config.build = config.build || {}
-    config.build.analyze = false
 
     // Set flag to keep the prerendering behaviour
     config._legacyGenerate = true

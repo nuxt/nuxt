@@ -71,7 +71,7 @@ export default {
       }<% } %>
     },
     shouldPrefetch () {
-      <% if (isFullStatic && router.prefetchPayloads) { %>
+      <% if (!isLegacyGenerate && router.prefetchPayloads) { %>
       const ref = this.$router.resolve(this.to, this.$route, this.append)
       const Components = ref.resolved.matched.map(r => r.components.default)
 
@@ -107,7 +107,7 @@ export default {
         }
         Component.__prefetched = true
       }
-      <% if (isFullStatic && router.prefetchPayloads) { %>
+      <% if (!isLegacyGenerate && router.prefetchPayloads) { %>
       // Preload the data only if not in preview mode
       if (!this.$root.isPreview) {
         const { href } = this.$router.resolve(this.to, this.$route, this.append)
