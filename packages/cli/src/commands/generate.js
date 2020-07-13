@@ -1,6 +1,7 @@
 import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
+import { ensureBuild, generate } from '../utils/generate'
 
 export default {
   name: 'generate',
@@ -54,14 +55,13 @@ export default {
     }
   },
   async run (cmd) {
-    const config = await cmd.getNuxtConfig({
-      dev: false,
-      _build: cmd.argv.build,
-      _generate: true
-    })
+    const config = await cmd.getNuxtConfig({ dev: false })
 
+    // Full static
     if (config.target === TARGETS.static) {
-      throw new Error("Please use `nuxt export` when using `target: 'static'`")
+      await ensureBuild(cmd)
+      await generate(cmd)
+      return
     }
 
     // Forcing static target anyway
