@@ -20,12 +20,9 @@ export async function serve (cmd) {
     options.target = buildConfig.target
   } catch (err) { }
 
-  if (options.target === TARGETS.server) {
-    throw new Error('You cannot use `nuxt serve` with ' + TARGETS.server + ' target, please use `nuxt start`')
-  }
   const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line handle-callback-err
   if (!distStat || !distStat.isDirectory()) {
-    throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please run `nuxt export` before `nuxt serve`.')
+    throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please use `nuxt generate` before `nuxt start` for static target.')
   }
   const app = connect()
   app.use(compression({ threshold: 0 }))

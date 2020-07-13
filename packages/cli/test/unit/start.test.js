@@ -36,13 +36,6 @@ describe('start', () => {
     expect(consola.fatal).not.toHaveBeenCalled()
   })
 
-  test('error if starts with static target', () => {
-    mockGetNuxtStart()
-    mockGetNuxtConfig({ target: TARGETS.static })
-    const cmd = NuxtCommand.from(start)
-    expect(cmd.run()).rejects.toThrow(new Error('You cannot use `nuxt start` with static target, please use `nuxt export` and `nuxt serve`'))
-  })
-
   test('start doesnt force-exit by default', async () => {
     mockGetNuxtStart()
     mockGetNuxtConfig()
