@@ -38,7 +38,7 @@
     "@ls-lint/ls-lint": "^1.9.0",
     "@nuxtjs/eslint-config": "^3.0.0",
     "@rollup/plugin-alias": "^3.1.1",
-    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.1.0",
     "@rollup/plugin-replace": "^2.3.3",
