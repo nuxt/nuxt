@@ -4,7 +4,6 @@ import connect from 'connect'
 import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from '@nuxt/config'
-import { TARGETS } from '@nuxt/utils'
 import { showBanner } from '../utils/banner'
 import * as imports from '../imports'
 

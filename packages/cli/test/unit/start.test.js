@@ -1,5 +1,4 @@
 import fs from 'fs-extra'
-import { TARGETS } from '@nuxt/utils'
 import * as utils from '../../src/utils/'
 import { consola, mockGetNuxtStart, mockGetNuxtConfig, NuxtCommand } from '../utils'
 
