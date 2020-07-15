@@ -356,9 +356,15 @@ export default class Generator {
     }
 
     // Call hook to let user update the path & html
-    const page = { route, path: fileName, html, exclude: false }
+    const page = {
+      route,
+      path: fileName,
+      html,
+      exclude: false,
+      errors: pageErrors
+    }
+    page.page = page // Backward compatibility for export:page hook
     await this.nuxt.callHook('generate:page', page)
-    await this.nuxt.callHook('export:page', { page, errors: pageErrors })
 
     if (page.exclude) {
       return false
