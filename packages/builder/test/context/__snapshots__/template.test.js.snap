@@ -30,7 +30,7 @@ TemplateContext {
     ],
     "head": "test_head",
     "isDev": "test_dev",
-    "isLegacyGenerate": false,
+    "isFullStatic": false,
     "isTest": "test_test",
     "layoutTransition": Object {
       "name": "test_layout_trans",

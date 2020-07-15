@@ -6,7 +6,7 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isLegacyGenerate, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -15,7 +15,7 @@ export default class Generator {
     this.builder = builder
 
     // Set variables
-    this.isLegacyGenerate = isLegacyGenerate(this.options)
+    this.isFullStatic = isFullStatic(this.options)
     this.staticRoutes = path.resolve(this.options.srcDir, this.options.dir.static)
     this.srcBuiltPath = path.resolve(this.options.buildDir, 'dist', 'client')
     this.distPath = this.options.generate.dir
@@ -36,7 +36,7 @@ export default class Generator {
     await this.initiate({ build, init })
 
     // Payloads for full static
-    if (!this.isLegacyGenerate) {
+    if (!this.isFullStatic) {
       consola.info('Full static mode activated')
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)

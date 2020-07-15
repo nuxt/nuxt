@@ -114,10 +114,10 @@ export default {
     // Add $nuxt.context
     this.context = this.$options.context
   },
-  <% if (loading || !isLegacyGenerate) { %>
+  <% if (loading || isFullStatic) { %>
   async mounted () {
     <% if (loading) { %>this.$loading = this.$refs.loading<% } %>
-    <% if (!isLegacyGenerate) {%>
+    <% if (isFullStatic) {%>
     if (this.isPreview) {
       if (this.$store && this.$store._actions.nuxtServerInit) {
         <% if (loading) { %>this.$loading.start()<% } %>
@@ -284,7 +284,7 @@ export default {
     },
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
-    <% if (!isLegacyGenerate) { %>
+    <% if (isFullStatic) { %>
     setPagePayload(payload) {
       this._pagePayload = payload
       this._payloadFetchIndex = 0

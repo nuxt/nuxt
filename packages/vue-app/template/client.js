@@ -19,7 +19,7 @@ import {
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
 import NuxtLink from './components/nuxt-link.<%= features.clientPrefetch ? "client" : "server" %>.js' // should be included after ./index.js
-<% if (!isLegacyGenerate) { %>import './jsonp'<% } %>
+<% if (isFullStatic) { %>import './jsonp'<% } %>
 
 <% if (features.fetch) { %>
 // Fetch mixin
@@ -499,7 +499,7 @@ async function render (to, from, next) {
       <% if (features.asyncData) { %>
       // Call asyncData(context)
       if (hasAsyncData) {
-        <% if (!isLegacyGenerate) { %>
+        <% if (isFullStatic) { %>
           let promise
 
           if (this.isPreview || spaFallback) {
@@ -524,7 +524,7 @@ async function render (to, from, next) {
       }
       <% } %>
 
-      <% if (!isLegacyGenerate && store) { %>
+      <% if (isFullStatic && store) { %>
       // Replay store mutations, catching to avoid error page on SPA fallback
       promises.push(this.fetchPayload(to.path).then(payload => {
         payload.mutations.forEach(m => { this.$store.commit(m[0], m[1]) })
@@ -535,7 +535,7 @@ async function render (to, from, next) {
       this.$loading.manual = Component.options.loading === false
 
       <% if (features.fetch) { %>
-        <% if (!isLegacyGenerate) { %>
+        <% if (isFullStatic) { %>
         if (!this.isPreview && !spaFallback) {
           // Catching the error here for letting the SPA fallback and normal fetch behaviour
           promises.push(this.fetchPayload(to.path).catch(err => null))
@@ -823,7 +823,7 @@ async function mountApp (__app) {
   // Create Vue instance
   const _app = new Vue(app)
 
-  <% if (!isLegacyGenerate) { %>
+  <% if (isFullStatic) { %>
   // Load page chunk
   if (!NUXT.data && NUXT.serverRendered) {
     try {
