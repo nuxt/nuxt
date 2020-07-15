@@ -23,6 +23,12 @@ export default class Generator {
       this.distPath,
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
+    // Payloads for full static
+    if (this.isFullStatic) {
+      const { staticAssets } = this.options.generate
+      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
+      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
+    }
 
     // Shared payload
     this._payload = null
@@ -76,13 +82,6 @@ export default class Generator {
     // Initialize dist directory
     if (init) {
       await this.initDist()
-    }
-
-    // Payloads for full static
-    if (this.isFullStatic) {
-      const { staticAssets } = this.options.generate
-      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
     }
   }
 
