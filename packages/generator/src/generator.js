@@ -35,14 +35,6 @@ export default class Generator {
     consola.debug('Initializing generator...')
     await this.initiate({ build, init })
 
-    // Payloads for full static
-    if (this.isFullStatic) {
-      consola.info('Generating with full static mode')
-      const { staticAssets } = this.options.generate
-      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
-    }
-
     consola.debug('Preparing routes for generate...')
     const routes = await this.initRoutes()
 
@@ -84,6 +76,14 @@ export default class Generator {
     // Initialize dist directory
     if (init) {
       await this.initDist()
+    }
+
+    // Payloads for full static
+    if (this.isFullStatic) {
+      consola.info('Generating with full static mode')
+      const { staticAssets } = this.options.generate
+      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
+      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
     }
   }
 
