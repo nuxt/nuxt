@@ -16,6 +16,6 @@ export const determineGlobals = function determineGlobals (globalName, globals) 
   return _globals
 }
 
-export function isFullStatic (options) {
+export const isFullStatic = function (options) {
   return !options.dev && !options._legacyGenerate && options.target === TARGETS.static && options.render.ssr
 }

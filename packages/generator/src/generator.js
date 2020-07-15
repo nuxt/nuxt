@@ -36,8 +36,8 @@ export default class Generator {
     await this.initiate({ build, init })
 
     // Payloads for full static
-    if (!this.isFullStatic) {
-      consola.info('Full static mode activated')
+    if (this.isFullStatic) {
+      consola.info('Generating with full static mode')
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
       this.staticAssetsBase = this.options.generate.staticAssets.versionBase
