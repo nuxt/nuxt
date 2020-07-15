@@ -44,7 +44,7 @@ export default class Generator {
     consola.debug('Preparing routes for generate...')
     const routes = await this.initRoutes()
 
-    consola.info('Generating pages' + this.isFullStatic ? ' with full static mode' : '')
+    consola.info('Generating pages' + (this.isFullStatic ? ' with full static mode' : ''))
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()
