@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { timeout } from 'src/utils'
+import { timeout } from 'nuxt/utils'
 
 export default async function renderAndGetWindow (
   url = 'http://localhost:3000',

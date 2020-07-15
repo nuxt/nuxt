@@ -1,6 +1,6 @@
 import path from 'path'
 import consola from 'consola'
-import { TARGETS } from 'src/utils'
+import { TARGETS } from 'nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
 

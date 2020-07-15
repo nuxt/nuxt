@@ -8,9 +8,9 @@ import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
-import { Nuxt } from 'src/core'
-import { Builder } from 'src/builder'
-import { Generator } from 'src/generator'
+import { Nuxt } from 'nuxt/core'
+import { Builder } from 'nuxt/builder'
+import { Generator } from 'nuxt/generator'
 
 export default class NuxtCommand extends Hookable {
   constructor (cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks = {}) {

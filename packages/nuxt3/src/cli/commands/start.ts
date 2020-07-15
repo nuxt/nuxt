@@ -1,4 +1,4 @@
-import { TARGETS } from 'src/utils'
+import { TARGETS } from 'nuxt/utils'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
 

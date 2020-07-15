@@ -15,8 +15,8 @@ import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 
-import { BundleBuilder } from 'src/webpack'
-import vueAppTemplate from 'src/vue-app/template'
+import { BundleBuilder } from 'nuxt/webpack'
+import vueAppTemplate from 'nuxt/vue-app/template'
 
 import {
   r,
@@ -29,7 +29,7 @@ import {
   scanRequireTree,
   TARGETS,
   isFullStatic
-} from 'src/utils'
+} from 'nuxt/utils'
 
 import Ignore from './ignore'
 import BuildContext from './context/build'

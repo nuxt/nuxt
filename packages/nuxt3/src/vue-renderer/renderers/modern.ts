@@ -1,4 +1,4 @@
-import { isUrl, urlJoin, safariNoModuleFix } from 'src/utils'
+import { isUrl, urlJoin, safariNoModuleFix } from 'nuxt/utils'
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {

@@ -6,7 +6,7 @@ import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'src/utils'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {

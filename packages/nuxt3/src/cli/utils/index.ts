@@ -1,7 +1,7 @@
 import path from 'path'
 import exit from 'exit'
 
-import { lock } from 'src/utils'
+import { lock } from 'nuxt/utils'
 import chalk from 'chalk'
 import env from 'std-env'
 import { warningBox } from './formatting'

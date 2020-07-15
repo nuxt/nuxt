@@ -3,12 +3,12 @@ import { join, extname, basename } from 'path'
 import connect from 'connect'
 import serveStatic from 'serve-static'
 import compression from 'compression'
-import { getNuxtConfig } from 'src/config'
-import { TARGETS } from 'src/utils'
+import { getNuxtConfig } from 'nuxt/config'
+import { TARGETS } from 'nuxt/utils'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
-import { Listener } from 'src/server'
-import { Nuxt } from 'src/core'
+import { Listener } from 'nuxt/server'
+import { Nuxt } from 'nuxt/core'
 
 export default {
   name: 'serve',
