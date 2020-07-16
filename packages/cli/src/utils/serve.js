@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs'
-import { join, extname, basename } from 'path'
+import { join, extname, sep } from 'path'
+import consola from 'consola'
 import connect from 'connect'
 import serveStatic from 'serve-static'
 import compression from 'compression'
@@ -20,8 +21,9 @@ export async function serve (cmd) {
   } catch (err) { }
 
   const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line handle-callback-err
+  const distPath = join(options.generate.dir.replace(process.cwd() + sep, ''), sep)
   if (!distStat || !distStat.isDirectory()) {
-    throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please use `nuxt generate` before `nuxt start` for static target.')
+    throw new Error('Output directory `' + distPath + '` does not exists, please use `nuxt generate` before `nuxt start` for static target.')
   }
   const app = connect()
   app.use(compression({ threshold: 0 }))
@@ -70,4 +72,6 @@ export async function serve (cmd) {
       listeners: [listener]
     }
   }, false)
+
+  consola.info(`Serving static application from \`${distPath}\``)
 }

@@ -1,5 +1,4 @@
 import { TARGETS } from '@nuxt/utils'
-import consola from 'consola'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
 import { serve } from '../utils/serve'
@@ -16,7 +15,6 @@ export default {
     const config = await cmd.getNuxtConfig({ dev: false, _start: true })
 
     if (config.target === TARGETS.static) {
-      consola.info('Serving static dist')
       return serve(cmd)
     }
 
