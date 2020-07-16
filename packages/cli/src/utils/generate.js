@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs-extra'
 import path, { relative } from 'path'
 import crc32 from 'crc/lib/crc32'
 import consola from 'consola'
