@@ -19,7 +19,7 @@ export async function ensureBuild (cmd) {
   const nuxt = await getNuxt({ _build: true, server: false }, cmd)
   const { options } = nuxt
 
-  if (options.generate.cache === false || process.env.NUXT_BUILD) {
+  if (options.generate.cache === false || destr(process.env.NUXT_BUILD) || cmd.argv['force-build']) {
     const builder = await cmd.getBuilder(nuxt)
     await builder.build()
     await nuxt.close()

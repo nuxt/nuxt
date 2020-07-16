@@ -48,6 +48,11 @@ export default {
         }
       }
     },
+    'force-build': {
+      type: 'boolean',
+      default: false,
+      description: 'Force to build the application with webpack'
+    },
     'fail-on-error': {
       type: 'boolean',
       default: false,
