@@ -115,9 +115,9 @@ export function getNuxtConfig (_options) {
     options.router.base += '/'
   }
 
-  // Alias export to generate
-  // TODO: switch to export by default for nuxt3
+  // Legacy support for export
   if (options.export) {
+    consola.warn('export option is deprecated and will be removed in a future version! Please switch to generate')
     options.generate = defu(options.export, options.generate)
   }
   exports.export = options.generate

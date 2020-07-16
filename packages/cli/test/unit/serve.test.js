@@ -19,16 +19,10 @@ describe('serve', () => {
     expect(typeof serve.run).toBe('function')
   })
 
-  test('error if starts with server target', () => {
-    mockGetNuxtConfig({ target: TARGETS.server })
-    const cmd = NuxtCommand.from(serve)
-    expect(cmd.run()).rejects.toThrow(new Error('You cannot use `nuxt serve` with server target, please use `nuxt start`'))
-  })
-
   test('error if dist/ does not exists', () => {
     mockGetNuxtConfig({ target: TARGETS.static })
     const cmd = NuxtCommand.from(serve)
-    expect(cmd.run()).rejects.toThrow(new Error('Output directory `dist/` does not exists, please run `nuxt export` before `nuxt serve`.'))
+    expect(cmd.run()).rejects.toThrow(new Error('Output directory `dist/` does not exists, please use `nuxt generate` before `nuxt start` for static target.'))
   })
 
   test('no error if dist/ dir exists', async () => {
