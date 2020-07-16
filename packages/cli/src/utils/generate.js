@@ -1,5 +1,5 @@
-import fs from 'fs-extra'
 import path, { relative } from 'path'
+import fs from 'fs-extra'
 import crc32 from 'crc/lib/crc32'
 import consola from 'consola'
 import globby from 'globby'

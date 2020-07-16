@@ -73,6 +73,5 @@ export async function serve (cmd) {
     }
   }, false)
 
-
   consola.info(`Serving static application from \`${distPath}\``)
 }
