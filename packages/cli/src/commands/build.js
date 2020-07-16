@@ -85,7 +85,7 @@ export default {
       const builder = await cmd.getBuilder(nuxt)
       await builder.build()
 
-      const nextCommand = nuxt.options.target === TARGETS.static ? 'nuxt export' : 'nuxt start'
+      const nextCommand = nuxt.options.target === TARGETS.static ? 'nuxt generate' : 'nuxt start'
       consola.info('Ready to run `' + (nextCommand) + '`')
     }
   }

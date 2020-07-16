@@ -35,7 +35,17 @@ export default class Nuxt extends Hookable {
         to: '_render:context',
         message: '`render:routeContext(nuxt)` is deprecated, Please use `vue-renderer:ssr:context(context)`'
       },
-      showReady: 'webpack:done'
+      showReady: 'webpack:done',
+      // Introduced in 2.13
+      'export:done': 'generate:done',
+      'export:before': 'generate:before',
+      'export:extendRoutes': 'generate:extendRoutes',
+      'export:distRemoved': 'generate:distRemoved',
+      'export:distCopied': 'generate:distCopied',
+      'export:route': 'generate:route',
+      'export:routeFailed': 'generate:routeFailed',
+      'export:page': 'generate:page',
+      'export:routeCreated': 'generate:routeCreated'
     })
 
     // Add Legacy aliases
