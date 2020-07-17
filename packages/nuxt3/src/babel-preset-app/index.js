@@ -143,6 +143,8 @@ module.exports = (api, options = {}) => {
       shippedProposals,
       forceAllTransforms
     }
+  ], [
+    require('@babel/preset-typescript')
   ])
 
   // JSX

@@ -114,7 +114,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       target: 'node',
       node: false,
       entry: Object.assign({}, config.entry, {
-        app: [path.resolve(this.buildContext.options.buildDir, 'entry.server.js')]
+        app: [path.resolve(this.buildContext.options.buildDir, 'entry.server.ts')]
       }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',

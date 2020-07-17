@@ -217,7 +217,7 @@ export default class WebpackBaseConfig {
 
     return {
       resolve: {
-        extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
+        extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
         alias: this.alias(),
         modules: webpackModulesDir
       },
