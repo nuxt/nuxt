@@ -1,0 +1,14 @@
+export default {
+  loading: {
+    color: '#4FC08D',
+    failedColor: '#bf5050',
+    duration: 1500
+  },
+  head: {
+    title: 'Default title'
+  },
+  globals: [
+    '@/components/first-global.vue',
+    '@/components/second-global.vue'
+  ]
+}
