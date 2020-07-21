@@ -420,7 +420,7 @@ export default class Builder {
       )
       // Only overwrite routes when something is returned for backwards compatibility
       if (extendedRoutes !== undefined) {
-        templateVars.router.routes = extendedRoutes
+        templateVars.router.routes = await extendedRoutes
       }
     }
 
