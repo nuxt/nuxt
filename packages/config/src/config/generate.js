@@ -1,4 +1,3 @@
-
 export default () => ({
   dir: 'dist',
   routes: [],
@@ -8,6 +7,12 @@ export default () => ({
   subFolders: true,
   fallback: '200.html',
   crawler: true,
+  cache: {
+    ignore: [],
+    globbyOptions: {
+      gitignore: true
+    }
+  },
   staticAssets: {
     base: undefined, // Default: "/_nuxt/static:
     versionBase: undefined, // Default: "_nuxt/static/{version}""

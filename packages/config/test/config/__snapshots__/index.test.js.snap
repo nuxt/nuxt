@@ -175,6 +175,12 @@ Object {
     "server": true,
   },
   "generate": Object {
+    "cache": Object {
+      "globbyOptions": Object {
+        "gitignore": true,
+      },
+      "ignore": Array [],
+    },
     "concurrency": 500,
     "crawler": true,
     "dir": "dist",
@@ -548,6 +554,12 @@ Object {
     "server": true,
   },
   "generate": Object {
+    "cache": Object {
+      "globbyOptions": Object {
+        "gitignore": true,
+      },
+      "ignore": Array [],
+    },
     "concurrency": 500,
     "crawler": true,
     "dir": "dist",

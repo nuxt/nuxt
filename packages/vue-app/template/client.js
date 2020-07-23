@@ -14,7 +14,8 @@ import {
   <% if (features.transitions || features.asyncData || features.fetch) { %>getLocation,<% } %>
   compile,
   getQueryDiff,
-  globalHandleError
+  globalHandleError,
+  isSamePath
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
@@ -525,10 +526,12 @@ async function render (to, from, next) {
       <% } %>
 
       <% if (isFullStatic && store) { %>
-      // Replay store mutations, catching to avoid error page on SPA fallback
-      promises.push(this.fetchPayload(to.path).then(payload => {
-        payload.mutations.forEach(m => { this.$store.commit(m[0], m[1]) })
-      }).catch(err => null))
+      if (!this.isPreview && !spaFallback) {
+        // Replay store mutations, catching to avoid error page on SPA fallback
+        promises.push(this.fetchPayload(to.path).then(payload => {
+          payload.mutations.forEach(m => { this.$store.commit(m[0], m[1]) })
+        }).catch(err => null))
+      }
       <% } %>
 
       // Check disabled page loading
@@ -827,7 +830,7 @@ async function mountApp (__app) {
   // Load page chunk
   if (!NUXT.data && NUXT.serverRendered) {
     try {
-      const payload = await _app.fetchPayload(_app.context.route.path)
+      const payload = await _app.fetchPayload(NUXT.routePath || _app.context.route.path)
       Object.assign(NUXT, payload)
     } catch (err) {}
   }
@@ -885,14 +888,17 @@ async function mountApp (__app) {
   router.beforeEach(render.bind(_app))
 
   // Fix in static: remove trailing slash to force hydration
-  if (process.static && NUXT.serverRendered && NUXT.routePath !== '/' && NUXT.routePath.slice(-1) !== '/' && _app.context.route.path.slice(-1) === '/') {
-    _app.context.route.path = _app.context.route.path.replace(/\/+$/, '')
+  // Full static, if server-rendered: hydrate, to allow custom redirect to generated page
+  <% if (isFullStatic) { %>
+  if (NUXT.serverRendered) {
+    return mount()
   }
-  // If page already is server rendered and it was done on the same route path as client side render
-  if (NUXT.serverRendered && NUXT.routePath === _app.context.route.path) {
-    mount()
-    return
+  <% } else { %>
+  // Fix in static: remove trailing slash to force hydration
+  if (NUXT.serverRendered && isSamePath(NUXT.routePath, _app.context.route.path)) {
+    return mount()
   }
+  <% } %>
 
   // First render on client-side
   const clientFirstMount = () => {

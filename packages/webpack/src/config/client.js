@@ -74,22 +74,33 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
       cacheGroups.default.name = (_module, chunks) => {
-        // Use default name for single chunks
-        if (chunks.length === 1) {
-          return chunks[0].name || ''
-        }
-        // Use compact name for concatinated modules
-        let compactName = chunks
-          .filter(c => c.name)
-          .map(c => c.name)
+        // Map chunks to names
+        const names = chunks
+          .map(c => c.name || '')
+          .map(name => name
+            .replace(/[/\\]/g, '.')
+            .replace(/_/g, '')
+            .replace('pages.', '')
+          )
+          .filter(Boolean)
           .sort()
-          .map(name => name.replace(/[/\\]/g, '.').replace(/_/g, '').replace('pages.', ''))
-          .join('~')
 
+        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
+        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
+        if (!names.length) {
+          return 'commons/default'
+        }
+
+        // Single chunk is not common
+        if (names.length === 1) {
+          return names[0]
+        }
+
+        // Use compact name for concatinated modules
+        let compactName = names.join('~')
         if (compactName.length > 32) {
           compactName = hash(compactName)
         }
-
         return 'commons/' + compactName
       }
     }

@@ -8,13 +8,13 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.10.4",
+    "@babel/core": "^7.10.5",
     "@nuxt/babel-preset-app": "2.13.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/utils": "2.13.3",
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001093",
+    "caniuse-lite": "^1.0.30001104",
     "chalk": "^3.0.0",
     "consola": "^2.14.0",
     "css-loader": "^3.6.0",
@@ -47,7 +47,7 @@
     "webpack-bundle-analyzer": "^3.8.0",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
-    "webpack-node-externals": "^1.7.2",
+    "webpack-node-externals": "^2.5.0",
     "webpackbar": "^4.0.0"
   },
   "engines": {
