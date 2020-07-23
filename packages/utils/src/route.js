@@ -5,7 +5,8 @@ import consola from 'consola'
 import { r } from './resolve'
 
 const getRouteChildrens = function (route) {
-  if (route.children.some(child => child.path === '')) {
+  const routeHasChildWithEmptyPath = route.children.some(child => child.path === '')
+  if (routeHasChildWithEmptyPath) {
     return route.children
   }
   return [
@@ -23,7 +24,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
-    const route = (fileName + r.path + '/').replace(/\/+/g, '/')
+    const route = `${fileName}${r.path}/`.replace(/\/+/g, '/')
     if (r.children) {
       return flatRoutes(getRouteChildrens(r), route, routes)
     }
@@ -31,7 +32,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
     // if child path is already absolute, do not make any concatenations
     if (r.path && r.path.startsWith('/')) {
       routes.push(r.path)
-    } else if (route[route.length - 1] === '/') {
+    } else if (route !== '/' && route[route.length - 1] === '/') {
       routes.push(route.slice(0, -1))
     } else {
       routes.push(route)

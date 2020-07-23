@@ -14,7 +14,7 @@ describe('util: route', () => {
         ]
       }
     ])
-    expect(routes).toEqual(['/login', '/about', '', '/post'])
+    expect(routes).toEqual(['/login', '/about', '/', '/post'])
   })
 
   test('should ignore route with * and :', () => {
