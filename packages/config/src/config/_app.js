@@ -43,6 +43,8 @@ export default () => ({
 
   loadingIndicator: 'default',
 
+  rootComponents: [],
+
   pageTransition: {
     name: 'page',
     mode: 'out-in',
@@ -70,6 +72,7 @@ export default () => ({
     clientOnline: true,
     clientPrefetch: true,
     clientUseUrl: false,
+    rootComponents: true,
     componentAliases: true,
     componentClientOnly: true
   }

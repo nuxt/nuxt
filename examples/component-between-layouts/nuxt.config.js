@@ -7,7 +7,7 @@ export default {
   head: {
     title: 'Default title'
   },
-  globals: [
+  rootComponents: [
     '@/components/first-global.vue',
     '@/components/second-global.vue'
   ]

@@ -18,9 +18,11 @@ import Vue from 'vue'
 <% css.forEach((c) => { %>
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
-<%= (nuxtOptions.globals || []).map((path, idx) => {
-    return `import _global_${idx} from '${relativeToBuild(resolvePath(path))}'`;
+<% if (features.rootComponents) { %>
+<%= nuxtOptions.rootComponents.map((path, idx) => {
+    return `import _root_${idx} from '${relativeToBuild(resolvePath(path))}'`;
 }).join('\n') %>
+<% } %>
 
 <% if (features.layouts) { %>
 <%= Object.keys(layouts).map((key) => {
@@ -79,8 +81,10 @@ export default {
     }, [
       <% if (loading) { %>loadingEl, <% } %>
       <% if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>
-      <% (nuxtOptions.globals || []).forEach((v, idx) => { %>
-      h(_global_<%= idx %>),<% }) %>
+      <% if (features.rootComponents) { %>
+      <% nuxtOptions.rootComponents.forEach((v, idx) => { %>
+      h(_root_<%= idx %>),<% }) %>
+      <% } %>
       <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
     ])
   },
