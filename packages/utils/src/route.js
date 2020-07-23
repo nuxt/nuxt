@@ -23,18 +23,18 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
+    const route = (fileName + r.path + '/').replace(/\/+/g, '/')
     if (r.children) {
-      return flatRoutes(getRouteChildrens(r), fileName + r.path + '/', routes)
+      return flatRoutes(getRouteChildrens(r), route, routes)
     }
-    fileName = fileName.replace(/\/+/g, '/')
 
     // if child path is already absolute, do not make any concatenations
     if (r.path && r.path.startsWith('/')) {
       routes.push(r.path)
-    } else if (r.path === '' && fileName[fileName.length - 1] === '/') {
-      routes.push(fileName.slice(0, -1))
+    } else if (route[route.length - 1] === '/') {
+      routes.push(route.slice(0, -1))
     } else {
-      routes.push(fileName + r.path)
+      routes.push(route)
     }
   })
   return routes
