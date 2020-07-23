@@ -4,9 +4,9 @@ import consola from 'consola'
 
 import { r } from './resolve'
 
-const getRouteChildrens = function (route) {
-  const routeHasChildWithEmptyPath = route.children.some(child => child.path === '')
-  if (routeHasChildWithEmptyPath) {
+const routeChildren = function (route) {
+  const hasChildWithEmptyPath = route.children.some(child => child.path === '')
+  if (hasChildWithEmptyPath) {
     return route.children
   }
   return [
@@ -26,7 +26,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
     }
     const route = `${fileName}${r.path}/`.replace(/\/+/g, '/')
     if (r.children) {
-      return flatRoutes(getRouteChildrens(r), route, routes)
+      return flatRoutes(routeChildren(r), route, routes)
     }
 
     // if child path is already absolute, do not make any concatenations
