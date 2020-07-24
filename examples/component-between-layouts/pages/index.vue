@@ -5,17 +5,42 @@
       About page
     </NuxtLink>
 
-    <button @click="onClick">
-      Click to fill input
-    </button>
+    <input
+      v-model="text"
+      placeholder="Type text"
+    >
   </div>
 </template>
 
 <script>
 export default {
+  data () {
+    return {
+      text: ''
+    }
+  },
+
+  watch: {
+    text (newVal) {
+      const first = this.getRoot()
+
+      first.text = newVal
+    }
+  },
+
+  mounted () {
+    this.$nextTick(() => {
+      const first = this.getRoot()
+
+      if (first) {
+        this.text = first.text
+      }
+    })
+  },
+
   methods: {
-    onClick () {
-      this.$nuxt.$rootComponents.first.text = 'Text from page'
+    getRoot () {
+      return this.$nuxt.$rootComponents.first
     }
   }
 }

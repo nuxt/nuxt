@@ -1,10 +1,6 @@
 <template>
   <div>
-    I'm first global component!
-
-    <p>
-      {{ text }}
-    </p>
+    {{ text }}
   </div>
 </template>
 
@@ -17,3 +13,7 @@ export default {
   }
 }
 </script>
+
+<style>
+
+</style>
