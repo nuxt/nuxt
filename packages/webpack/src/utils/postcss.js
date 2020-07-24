@@ -79,7 +79,13 @@ export default class PostcssConfig {
 
         // https://github.com/csstools/postcss-preset-env
         'postcss-preset-env': this.preset || {},
-        cssnano: dev ? false : { preset: 'default' }
+        cssnano: dev ? false : {
+          preset: ['default', {
+            // Keep quotes in font values to prevent from HEX conversion
+            // https://github.com/nuxt/nuxt.js/issues/6306
+            minifyFontValues: { removeQuotes: false }
+          }]
+        }
       },
       // Array, String or Function
       order: 'presetEnvAndCssnanoLast'
