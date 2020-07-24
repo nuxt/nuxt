@@ -7,8 +7,8 @@ export default {
   head: {
     title: 'Default title'
   },
-  rootComponents: [
-    '@/components/first-global.vue',
-    '@/components/second-global.vue'
-  ]
+  rootComponents: {
+    first: '@/components/first-global.vue',
+    second: '@/components/second-global.vue'
+  }
 }

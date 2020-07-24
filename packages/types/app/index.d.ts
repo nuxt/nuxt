@@ -119,9 +119,14 @@ export interface NuxtAppOptions extends ComponentOptions<Vue> {
   [key: string]: any // TBD
 }
 
+export type NuxtRootComponents = Vue[] | {
+  [key: string]: Vue
+}
+
 export interface NuxtApp extends Vue {
   $options: NuxtAppOptions
   $loading: NuxtLoading
+  $rootComponents: NuxtRootComponents
   context: Context
   error(params: NuxtError): void
   isOffline: boolean

@@ -19,8 +19,8 @@ import Vue from 'vue'
 import '<%= relativeToBuild(resolvePath(c.src || c, { isStyle: true })) %>'
 <% }) %>
 <% if (features.rootComponents) { %>
-<%= nuxtOptions.rootComponents.map((path, idx) => {
-    return `import _root_${idx} from '${relativeToBuild(resolvePath(path))}'`;
+<%= Object.entries(nuxtOptions.rootComponents).map(([key, path]) => {
+    return `import _root_${key} from '${relativeToBuild(resolvePath(path))}'`;
 }).join('\n') %>
 <% } %>
 
@@ -82,8 +82,8 @@ export default {
       <% if (loading) { %>loadingEl, <% } %>
       <% if (buildIndicator) { %>h(NuxtBuildIndicator), <% } %>
       <% if (features.rootComponents) { %>
-      <% nuxtOptions.rootComponents.forEach((v, idx) => { %>
-      h(_root_<%= idx %>),<% }) %>
+      <% Object.keys(nuxtOptions.rootComponents).forEach((key) => { %>
+      h(_root_<%= key %>, { ref: 'root_<%= key %>' }),<% }) %>
       <% } %>
       <% if (features.transitions) { %>transitionEl<% } else { %>templateEl<% } %>
     ])
@@ -100,7 +100,7 @@ export default {
     <% if (features.fetch) { %>
     nbFetching: 0
     <% } %>
-    }),
+  }),
   <% } %>
   beforeCreate () {
     Vue.util.defineReactive(this, 'nuxt', this.$options.nuxt)
@@ -122,8 +122,19 @@ export default {
     this.error = this.nuxt.error
     // Add $nuxt.context
     this.context = this.$options.context
+
+    <% if (features.rootComponents) { %>
+    <% if (Array.isArray(nuxtOptions.rootComponents)) { %>
+    this.$rootComponents = [<%= Object.keys(nuxtOptions.rootComponents).map(() => 'null').join(', ') %>];
+    <% } else { %>
+    this.$rootComponents = {
+      <% Object.keys(nuxtOptions.rootComponents).forEach((name) => { %>
+      <%= name %>: null,<% }) %>
+    };
+    <% } %>
+    <% } %>
   },
-  <% if (loading || isFullStatic) { %>
+  <% if (loading || isFullStatic || features.rootComponents) { %>
   async mounted () {
     <% if (loading) { %>this.$loading = this.$refs.loading<% } %>
     <% if (isFullStatic) {%>
@@ -135,6 +146,16 @@ export default {
       await this.refresh()
       <% if (loading) { %>this.$loading.finish()<% } %>
     }
+    <% } %>
+    <% if (features.rootComponents) { %>
+    <% if (Array.isArray(nuxtOptions.rootComponents)) { %>
+    this.$rootComponents = [<%= Object.keys(nuxtOptions.rootComponents).map((name) => `this.$refs.root_${name}`).join(', ') %>];
+    <% } else { %>
+    this.$rootComponents = {
+      <% Object.keys(nuxtOptions.rootComponents).forEach((name) => { %>
+      <%= name %>: this.$refs.root_<%= name %>,<% }) %>
+    };
+    <% } %>
     <% } %>
   },
   <% } %>
