@@ -166,6 +166,7 @@ Object {
     "layouts": true,
     "meta": true,
     "middleware": true,
+    "rootComponents": true,
     "store": true,
     "transitions": true,
     "validate": true,
@@ -319,6 +320,7 @@ Object {
       "prefix": true,
     },
   },
+  "rootComponents": Array [],
   "router": Object {
     "base": "/",
     "extendRoutes": null,
@@ -545,6 +547,7 @@ Object {
     "layouts": true,
     "meta": true,
     "middleware": true,
+    "rootComponents": true,
     "store": true,
     "transitions": true,
     "validate": true,
@@ -698,6 +701,7 @@ Object {
       "prefix": true,
     },
   },
+  "rootComponents": Array [],
   "router": Object {
     "base": "/",
     "extendRoutes": null,

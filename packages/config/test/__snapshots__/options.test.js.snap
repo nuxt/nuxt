@@ -187,6 +187,7 @@ Object {
     "layouts": true,
     "meta": true,
     "middleware": true,
+    "rootComponents": true,
     "store": true,
     "transitions": true,
     "validate": true,
@@ -349,6 +350,7 @@ Object {
       "prefix": true,
     },
   },
+  "rootComponents": Array [],
   "rootDir": "/var/nuxt/test",
   "router": Object {
     "base": "/",

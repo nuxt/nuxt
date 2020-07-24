@@ -7,7 +7,7 @@
 <script>
 export default {
   mounted () {
-    console.log('Second global component mounted')
+    alert('Second global component mounted')
   }
 }
 </script>

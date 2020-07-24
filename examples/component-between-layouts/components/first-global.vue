@@ -18,7 +18,7 @@ export default {
   },
 
   mounted () {
-    console.log('First global component mounted')
+    alert('First global component mounted')
   }
 }
 </script>
