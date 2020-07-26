@@ -110,19 +110,7 @@ async function getNuxt (args, cmd) {
   config.buildDir = (config.static && config.static.cacheDir) || path.resolve(config.rootDir, 'node_modules/.cache/nuxt')
   config.build = config.build || {}
   config.build.transpile = config.build.transpile || []
-  if (config.static && config.static.cacheDir) {
-    if (
-      !config.build.transpile.some(path =>
-        path instanceof RegExp
-          ? path.test(config.buildDir)
-          : config.buildDir.includes(path)
-      )
-    ) {
-      consola.warn(
-        `Make sure to include your custom \`static.cacheDir\` in \`build.transpile\` or your built files will not be transpiled.`
-      )
-    }
-  } else {
+  if (!config.static || !config.static.cacheDir) {
     config.build.transpile.push('.cache/nuxt')
   }
 
