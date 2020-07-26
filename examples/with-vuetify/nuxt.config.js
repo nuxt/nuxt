@@ -1,5 +1,3 @@
-import VuetifyLoaderPlugin from 'vuetify-loader/lib/plugin'
-
 export default {
   /*
   ** Head elements
@@ -14,18 +12,14 @@ export default {
       }
     ]
   },
-
   build: {
-    plugins: [new VuetifyLoaderPlugin()],
-    extractCSS: true,
-    transpile: ['vuetify/lib']
+    extractCSS: true
   },
-  /*
-  ** Load Vuetify into the app
-  */
-  plugins: ['~/plugins/vuetify'],
-  /*
-  ** Load Vuetify CSS globally
-  */
-  css: ['~/assets/app.styl']
+  buildModules: [
+    '@nuxtjs/vuetify'
+  ],
+  vuetify: {
+    customVariables: ['~/assets/variables.scss'],
+    optionsPath: './vuetify.options.js'
+  }
 }
