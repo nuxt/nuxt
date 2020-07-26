@@ -297,13 +297,12 @@ export default class Generator {
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
             .replace(this.options.router.base, '/')
-            .replace(/\/+$/, '')
             .split('?')[0]
             .split('#')[0]
+            .replace(/\/+$/, '')
             .trim()
 
           const route = decodeURI(sanitizedHref + possibleTrailingSlash)
-            .replace(/\/+/g, '/')
 
           if (route.startsWith('/') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
             this.generatedRoutes.add(route)
