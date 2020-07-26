@@ -4,27 +4,38 @@ import consola from 'consola'
 
 import { r } from './resolve'
 
+const routeChildren = function (route) {
+  const hasChildWithEmptyPath = route.children.some(child => child.path === '')
+  if (hasChildWithEmptyPath) {
+    return route.children
+  }
+  return [
+    // Add default child to render parent page
+    {
+      ...route,
+      children: undefined
+    },
+    ...route.children
+  ]
+}
+
 export const flatRoutes = function flatRoutes (router, fileName = '', routes = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
+    const route = `${fileName}${r.path}/`.replace(/\/+/g, '/')
     if (r.children) {
-      if (fileName === '' && r.path === '/') {
-        routes.push('/')
-      }
-
-      return flatRoutes(r.children, fileName + r.path + '/', routes)
+      return flatRoutes(routeChildren(r), route, routes)
     }
-    fileName = fileName.replace(/\/+/g, '/')
 
     // if child path is already absolute, do not make any concatenations
     if (r.path && r.path.startsWith('/')) {
       routes.push(r.path)
-    } else if (r.path === '' && fileName[fileName.length - 1] === '/') {
-      routes.push(fileName.slice(0, -1) + r.path)
+    } else if (route !== '/' && route[route.length - 1] === '/') {
+      routes.push(route.slice(0, -1))
     } else {
-      routes.push(fileName + r.path)
+      routes.push(route)
     }
   })
   return routes
