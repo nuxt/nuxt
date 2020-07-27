@@ -21,7 +21,7 @@ export interface NuxtOptionsGenerate {
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
   cache?: false | {
-    ignore?: string[] | function,
+    ignore?: string[] | Function,
     globbyOptions?: GlobbyOptions
   }
 }
