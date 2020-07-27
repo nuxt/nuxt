@@ -71,7 +71,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: test unit
-        run: yarn test:unit -i --coverage
+        run: yarn test:unit -i --coverage --verbose
 
       - name: codecov
         uses: codecov/codecov-action@v1
