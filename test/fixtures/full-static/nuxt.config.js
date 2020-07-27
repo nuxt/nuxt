@@ -6,7 +6,8 @@ export default {
     }
   },
   router: {
-    // base: '/test'
+    // base: '/test',
+    trailingSlash: true
   },
   hooks: {
     export: {

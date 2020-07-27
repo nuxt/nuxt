@@ -297,9 +297,9 @@ export default class Generator {
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
             .replace(this.options.router.base, '/')
-            .replace(/\/+$/, '')
             .split('?')[0]
             .split('#')[0]
+            .replace(/\/+$/, '')
             .trim()
 
           const route = decodeURI(sanitizedHref + possibleTrailingSlash)
