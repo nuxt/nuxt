@@ -53,6 +53,9 @@ jobs:
         os: [windows-latest]
         node: [12]
 
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
     steps:
       - uses: actions/setup-node@v1
         with:
@@ -120,6 +123,9 @@ jobs:
       matrix:
         os: [windows-latest]
         node: [12]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
       - uses: actions/setup-node@v1
