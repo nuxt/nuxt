@@ -75,6 +75,7 @@ export default () => ({
     pages: true,
     commons: true
   },
+  corejs: 'auto',
   babel: {
     configFile: false,
     babelrc: false,
