@@ -121,13 +121,14 @@ export default class WebpackBaseConfig {
     if (corejsVersion === 'auto') {
       try {
         const r = createRequire(rootDir)
-        corejsVersion = (r('core-js') || {}).version || '2'
+        corejsVersion = ((r('core-js') || {}).version || '2').split('.')[0]
       } catch (_err) {
         corejsVersion = '2'
       }
     }
+
     if (corejsVersion !== '2' && corejsVersion !== '3') {
-      consola.warn('Invalid corejs version! Possible values are 2 and 3')
+      consola.warn(`Invalid corejs version ${JSON.stringify(corejsVersion)}! Possible values are 2 and 3`)
       corejsVersion = '2'
     }
 
