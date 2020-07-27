@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     steps:
       - uses: actions/setup-node@v1
@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -75,7 +75,6 @@ jobs:
 
       - name: codecov
         uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -87,7 +86,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -122,7 +121,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [12]
+        node: [14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -148,5 +147,5 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev -i
     needs: build
