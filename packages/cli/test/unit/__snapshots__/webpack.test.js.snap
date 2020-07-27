@@ -73,7 +73,11 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           \\"presets\\": Array [
             Array [
               \\"<nuxtDir>/packages/babel-preset-app/src/index.js\\",
-              Object {},
+              Object {
+                \\"corejs\\": Object {
+                  \\"version\\": \\"2\\",
+                },
+              },
             ],
           ],
         },
@@ -648,7 +652,11 @@ exports[`webpack nuxt webpack module.rules test=.jsx 1`] = `
         \\"presets\\": Array [
           Array [
             \\"<nuxtDir>/packages/babel-preset-app/src/index.js\\",
-            Object {},
+            Object {
+              \\"corejs\\": Object {
+                \\"version\\": \\"2\\",
+              },
+            },
           ],
         ],
       },

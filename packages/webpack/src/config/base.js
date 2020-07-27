@@ -97,8 +97,7 @@ export default class WebpackBaseConfig {
 
   getBabelOptions () {
     const envName = this.name
-    const { corejs = 'auto' } = this.buildContext.buildOptions
-    const { rootDir } = this.buildContext.options
+    const { buildOptions: { corejs }, options: { rootDir } } = this.buildContext
     const options = {
       ...this.buildContext.buildOptions.babel,
       envName
