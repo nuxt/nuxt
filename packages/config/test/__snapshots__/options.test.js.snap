@@ -31,6 +31,7 @@ Object {
       "configFile": false,
     },
     "cache": false,
+    "corejs": "auto",
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
