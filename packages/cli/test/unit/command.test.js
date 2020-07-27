@@ -90,17 +90,17 @@ describe('cli/command', () => {
     expect(typeof nuxt.ready).toBe('function')
   })
 
-  test('returns Builder instance', async () => {
+  test.posix('returns Builder instance', async () => {
     const cmd = new Command()
-    const builder = await cmd.getBuilder({})
+    const builder = await cmd.getBuilder()
 
     expect(builder.constructor.name).toBe('Builder')
     expect(typeof builder.build).toBe('function')
   })
 
-  test('returns Generator instance', async () => {
+  test.posix('returns Generator instance', async () => {
     const cmd = new Command()
-    const generator = await cmd.getGenerator({})
+    const generator = await cmd.getGenerator()
 
     expect(generator.constructor.name).toBe('Generator')
     expect(typeof generator.generate).toBe('function')
