@@ -13,6 +13,7 @@ import semver from 'semver'
 
 import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
+import createRequire from 'create-require'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -96,6 +97,7 @@ export default class WebpackBaseConfig {
 
   getBabelOptions () {
     const envName = this.name
+    const { buildOptions: { corejs }, options: { rootDir } } = this.buildContext
     const options = {
       ...this.buildContext.buildOptions.babel,
       envName
@@ -114,7 +116,26 @@ export default class WebpackBaseConfig {
       )
     }
 
-    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
+    // Auto detect corejs version
+    let corejsVersion = corejs
+    if (corejsVersion === 'auto') {
+      try {
+        corejsVersion = createRequire(rootDir)('core-js').version.split('.')[0]
+      } catch (_err) {
+        corejsVersion = '2'
+      }
+    }
+
+    if (corejsVersion !== '2' && corejsVersion !== '3') {
+      consola.warn(`Invalid corejs version ${JSON.stringify(corejsVersion)}! Possible values are 2 and 3`)
+      corejsVersion = '2'
+    }
+
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
+      corejs: {
+        version: corejsVersion
+      }
+    }]
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets(
