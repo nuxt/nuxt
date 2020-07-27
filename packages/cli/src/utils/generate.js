@@ -110,7 +110,9 @@ async function getNuxt (args, cmd) {
   config.buildDir = (config.static && config.static.cacheDir) || path.resolve(config.rootDir, 'node_modules/.cache/nuxt')
   config.build = config.build || {}
   config.build.transpile = config.build.transpile || []
-  config.build.transpile.push(config.buildDir)
+  if (!config.static || !config.static.cacheDir) {
+    config.build.transpile.push('.cache/nuxt')
+  }
 
   const nuxt = await cmd.getNuxt(config)
 
