@@ -195,8 +195,12 @@ export default class WebpackBaseConfig {
   }
 
   resolve () {
-    // Prioritize nested node_modules in webpack search path (#2558)
-    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
+    const webpackModulesDir = [
+      // Prioritize nested node_modules in webpack search path (#2558)
+      'node_modules',
+      // Ensure that loaders defined in @nuxt/webpack's package.json can be found
+      path.join(path.dirname(require.resolve('@nuxt/webpack/package.json')), 'node_modules')
+    ].concat(this.buildContext.options.modulesDir)
 
     return {
       resolve: {
