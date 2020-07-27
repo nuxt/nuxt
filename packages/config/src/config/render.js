@@ -26,6 +26,8 @@ export default () => ({
   },
   csp: false,
   dist: {
+    // Webpack might generate files starting with a dot
+    dotfiles: 'allow',
     // Don't serve index.html template
     index: false,
     // 1 year in production
