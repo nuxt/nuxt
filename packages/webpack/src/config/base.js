@@ -115,9 +115,25 @@ export default class WebpackBaseConfig {
         }
       )
     }
+
+    // Auto detect corejs version
+    let corejsVersion = corejs
+    if (corejsVersion === 'auto') {
+      try {
+        const r = createRequire(rootDir)
+        corejsVersion = (r('core-js') || {}).version || '2'
+      } catch (_err) {
+        corejsVersion = '2'
+      }
+    }
+    if (corejsVersion !== '2' && corejsVersion !== '3') {
+      consola.warn('Invalid corejs version! Possible values are 2 and 3')
+      corejsVersion = '2'
+    }
+
     const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
       corejs: {
-        version: corejs === 'auto' ? createRequire(rootDir)('core-js').version[0] : corejs
+        version: corejsVersion
       }
     }]
 
