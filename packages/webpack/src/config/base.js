@@ -120,14 +120,14 @@ export default class WebpackBaseConfig {
     let corejsVersion = corejs
     if (corejsVersion === 'auto') {
       try {
-        corejsVersion = createRequire(rootDir)('core-js').version.split('.')[0]
+        corejsVersion = createRequire(rootDir)('core-js/package.json').version.split('.')[0]
       } catch (_err) {
         corejsVersion = '2'
       }
     }
 
     if (corejsVersion !== '2' && corejsVersion !== '3') {
-      consola.warn(`Invalid corejs version ${JSON.stringify(corejsVersion)}! Possible values are 2 and 3`)
+      consola.warn(`Invalid corejs version ${JSON.stringify(corejsVersion)}! Please set "build.corejs" to either "2" or "3".`)
       corejsVersion = '2'
     }
 
