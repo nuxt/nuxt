@@ -226,7 +226,10 @@ export default class WebpackBaseConfig {
         modules: webpackModulesDir
       },
       resolveLoader: {
-        modules: webpackModulesDir
+        modules: [
+          path.resolve(__dirname, '../node_modules'),
+          ...webpackModulesDir
+        ]
       }
     }
   }
