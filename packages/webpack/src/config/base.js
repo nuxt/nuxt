@@ -120,8 +120,7 @@ export default class WebpackBaseConfig {
     let corejsVersion = corejs
     if (corejsVersion === 'auto') {
       try {
-        const r = createRequire(rootDir)
-        corejsVersion = ((r('core-js') || {}).version || '2').split('.')[0]
+        corejsVersion = createRequire(rootDir)('core-js').version.split('.')[0]
       } catch (_err) {
         corejsVersion = '2'
       }
