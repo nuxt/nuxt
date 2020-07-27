@@ -13,6 +13,7 @@
     "file-loader",
     "url-loader",
     "sass-loader",
+    "css-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",
