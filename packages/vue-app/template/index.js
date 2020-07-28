@@ -246,7 +246,9 @@ async function createApp(ssrContext, config = {}) {
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
-      router.push(ssrContext.url, resolve, () => {
+      router.push(ssrContext.url, resolve, (err) => {
+        if (err) return reject(err)
+
         // navigated to a different route in router guard
         const unregister = router.afterEach(async (to, from, next) => {
           ssrContext.url = to.fullPath
