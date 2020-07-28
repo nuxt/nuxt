@@ -1,4 +1,5 @@
 import path, { relative } from 'path'
+import upath from 'upath'
 import fs from 'fs-extra'
 import crc32 from 'crc/lib/crc32'
 import consola from 'consola'
@@ -48,7 +49,7 @@ export async function ensureBuild (cmd) {
   // Take a snapshot of current project
   const snapshotOptions = {
     rootDir: nuxt.options.rootDir,
-    ignore: nuxt.options.generate.cache.ignore,
+    ignore: nuxt.options.generate.cache.ignore.map(upath.normalize),
     globbyOptions: nuxt.options.generate.cache.globbyOptions
   }
 
