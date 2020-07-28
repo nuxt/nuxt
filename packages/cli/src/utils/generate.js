@@ -24,6 +24,7 @@ export async function ensureBuild (cmd) {
     const builder = await cmd.getBuilder(nuxt)
     await builder.build()
     await nuxt.close()
+    return
   }
 
   // Default build ignore files
