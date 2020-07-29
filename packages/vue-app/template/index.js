@@ -251,7 +251,7 @@ async function createApp(ssrContext, config = {}) {
           // router guard returned an error
           reject(err)
         } else if (err.type === 1) {
-          // navigated to a different route in router guard
+          // navigated to a different route in router guard (redirected)
           const unregister = router.afterEach(async (to, from) => {
             ssrContext.url = to.fullPath
             app.context.route = await getRouteData(to)
@@ -263,7 +263,8 @@ async function createApp(ssrContext, config = {}) {
           })
         } else {
           // other router errors (aborted, cancelled, duplicated). This will
-          // render the user error if context.error() was called or a 404.
+          // render the user error, if context.error() was called, the index
+          // page if it exists, or a 404 if there is no index page.
           resolve()
         }
       })
