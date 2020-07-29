@@ -85,15 +85,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           .filter(Boolean)
           .sort()
 
-        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
-        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
-        if (!names.length) {
-          return 'commons/default'
-        }
-
-        // Single chunk is not common
-        if (names.length === 1) {
-          return names[0]
+        // Fallback to webpack chunk key
+        if (!names.length < 2) {
+          return chunks[0].name ? `commons/${chunks[0].name}` : undefined
         }
 
         // Use compact name for concatinated modules
