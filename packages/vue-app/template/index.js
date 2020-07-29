@@ -117,9 +117,8 @@ async function createApp(ssrContext, config = {}) {
       err: null,
       dateErr: null,
       error (originalErr) {
-        let err = originalErr || null
+        const err = originalErr ? normalizeError(originalErr) : null
         app.context._errored = Boolean(err)
-        err = err ? normalizeError(err) : null
         let nuxt = app.nuxt // to work with @vue/composition-api, see https://github.com/nuxt/nuxt.js/issues/6517#issuecomment-573280207
         if (this) {
           nuxt = this.nuxt || this.$options.nuxt
@@ -253,7 +252,7 @@ async function createApp(ssrContext, config = {}) {
           // context.error(), display it. Otherwise, generate a 500.
           if (ssrContext.nuxt.originalErr === err) resolve()
           else reject(err)
-        } else if (err._isRouter && err.type === 1) {
+        } else if (err.type === 1) {
           // navigated to a different route in router guard
           const unregister = router.afterEach(async (to, from) => {
             ssrContext.url = to.fullPath
