@@ -35,7 +35,7 @@ function spaTests ({ isHashMode }) {
     test('/ (include preload and prefetch resources)', async () => {
       const { head } = await renderRoute('/')
       expect(head).toMatch('<link rel="preload" href="/_nuxt/runtime.js" as="script">')
-      expect(head).toMatch('<link rel="preload" href="/_nuxt/commons/app.js" as="script">')
+      expect(head).toMatch('<link rel="preload" href="/_nuxt/vendors/commons.js" as="script">')
       expect(head).toMatch('<link rel="preload" href="/_nuxt/app.js" as="script">')
       expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/custom.js')}">`)
       expect(head).toMatch(`<link rel="prefetch" href="/_nuxt/${wChunk('pages/error-handler-async.js')}">`)
