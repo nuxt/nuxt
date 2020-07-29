@@ -89,13 +89,11 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
+        "automaticNameDelimiter": "/",
         "cacheGroups": Object {
-          "default": Object {
-            "name": undefined,
-          },
+          "default": Object {},
         },
         "chunks": "all",
-        "name": undefined,
       },
     },
     "optimizeCSS": undefined,
@@ -469,13 +467,11 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
+        "automaticNameDelimiter": "/",
         "cacheGroups": Object {
-          "default": Object {
-            "name": undefined,
-          },
+          "default": Object {},
         },
         "chunks": "all",
-        "name": undefined,
       },
     },
     "optimizeCSS": undefined,
