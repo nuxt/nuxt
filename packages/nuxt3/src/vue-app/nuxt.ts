@@ -14,14 +14,14 @@ export class Nuxt extends Hookable {
     res?: ServerResponse
   }
 
-  constructor({ app, ssrContext, globalName }: { app: Nuxt['app'], ssrContext?: Nuxt['ssrContext'], globalName: Nuxt['globalName'] }) {
+  constructor ({ app, ssrContext, globalName }: { app: Nuxt['app'], ssrContext?: Nuxt['ssrContext'], globalName: Nuxt['globalName'] }) {
     super()
     this.app = app
     this.ssrContext = ssrContext
     this.globalName = globalName
   }
 
-  provide(name: string, value: any) {
+  provide (name: string, value: any) {
     const $name = '$' + name
     defineGetter(this.app, $name, value)
     defineGetter(this.app.config.globalProperties, $name, value)
@@ -35,7 +35,7 @@ interface InitOptions {
   globalName?: Nuxt['globalName']
 }
 
-export async function init({ app, plugins, ssrContext, globalName = 'nuxt' }: InitOptions) {
+export async function init ({ app, plugins, ssrContext, globalName = 'nuxt' }: InitOptions) {
   const nuxt = new Nuxt({ app, ssrContext, globalName })
   nuxt.provide('nuxt', nuxt)
 
