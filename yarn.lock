@@ -5042,6 +5042,11 @@ defu@^2.0.4:
   resolved "https://registry.npmjs.org/defu/-/defu-2.0.4.tgz#09659a6e87a8fd7178be13bd43e9357ebf6d1c46"
   integrity sha512-G9pEH1UUMxShy6syWk01VQSRVs3CDWtlxtZu7A+NyqjxaCA4gSlWAKDBx6QiUEKezqS8+DUlXLI14Fp05Hmpwg==
 
+defu@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/defu/-/defu-3.0.1.tgz#d563eefe433f37c02a73c4dd197cf443c125a9c7"
+  integrity sha512-z5ngYyhj1L8lMjlTK0x2MOCKdURJ8HrnXz75kD46G2mAKmmoufLFZ/qPbYQA4zJiZe4JJ7OkfGcelcJwRyLHkw==
+
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
