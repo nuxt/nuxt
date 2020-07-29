@@ -116,8 +116,8 @@ async function createApp(ssrContext, config = {}) {
       <% } %>
       err: null,
       dateErr: null,
-      error (err) {
-        err = err || null
+      error (originalErr) {
+        let err = originalErr || null
         app.context._errored = Boolean(err)
         err = err ? normalizeError(err) : null
         let nuxt = app.nuxt // to work with @vue/composition-api, see https://github.com/nuxt/nuxt.js/issues/6517#issuecomment-573280207
@@ -129,6 +129,7 @@ async function createApp(ssrContext, config = {}) {
         // Used in src/server.js
         if (ssrContext) {
           ssrContext.nuxt.error = err
+          ssrContext.nuxt.originalErr = originalErr
         }
         return err
       }
@@ -247,17 +248,26 @@ async function createApp(ssrContext, config = {}) {
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
       router.push(ssrContext.url, resolve, (err) => {
-        if (err) return reject(err)
+        if (!err._isRouter) {
+          // router guard returned an error. If the user handled it using
+          // context.error(), display it. Otherwise, generate a 500.
+          if (ssrContext.nuxt.originalErr === err) resolve()
+          else reject(err)
+        } else if (err._isRouter && err.type === 1) {
+          // navigated to a different route in router guard
+          const unregister = router.afterEach(async (to, from) => {
+            ssrContext.url = to.fullPath
+            app.context.route = await getRouteData(to)
+            app.context.params = to.params || {}
+            app.context.query = to.query || {}
 
-        // navigated to a different route in router guard
-        const unregister = router.afterEach(async (to, from, next) => {
-          ssrContext.url = to.fullPath
-          app.context.route = await getRouteData(to)
-          app.context.params = to.params || {}
-          app.context.query = to.query || {}
-          unregister()
+            resolve()
+            unregister()
+          })
+        } else {
+          // other router errors (aborted, cancelled, duplicated): render "404" error page
           resolve()
-        })
+        }
       })
     })
   }
