@@ -64,11 +64,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
+        name: 'vendors/commons',
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
-        priority: 10,
-        name: true,
-        automaticNameDelimiter: '/'
+        priority: 10
       }
     }
 
@@ -85,9 +84,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           .filter(Boolean)
           .sort()
 
-        // Fallback to webpack chunk key
-        if (!names.length < 2) {
-          return chunks[0].name ? `commons/${chunks[0].name}` : undefined
+        // Fallback to webpack chunk name or generated cache group key
+        if (names.length < 2) {
+          return chunks[0].name
         }
 
         // Use compact name for concatinated modules
@@ -95,7 +94,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         if (compactName.length > 32) {
           compactName = hash(compactName)
         }
-        return 'commons/' + compactName
+        return 'vendors/' + compactName
       }
     }
 

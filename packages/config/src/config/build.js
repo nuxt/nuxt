@@ -62,11 +62,9 @@ export default () => ({
     minimizer: undefined,
     splitChunks: {
       chunks: 'all',
-      name: undefined,
+      automaticNameDelimiter: '/',
       cacheGroups: {
-        default: {
-          name: undefined
-        }
+        default: {}
       }
     }
   },
