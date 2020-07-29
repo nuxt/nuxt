@@ -116,8 +116,8 @@ async function createApp(ssrContext, config = {}) {
       <% } %>
       err: null,
       dateErr: null,
-      error (originalErr) {
-        const err = originalErr ? normalizeError(originalErr) : null
+      error (error) {
+        const err = error ? normalizeError(error) : null
         app.context._errored = Boolean(err)
         let nuxt = app.nuxt // to work with @vue/composition-api, see https://github.com/nuxt/nuxt.js/issues/6517#issuecomment-573280207
         if (this) {
@@ -128,7 +128,6 @@ async function createApp(ssrContext, config = {}) {
         // Used in src/server.js
         if (ssrContext) {
           ssrContext.nuxt.error = err
-          ssrContext.nuxt.originalErr = originalErr
         }
         return err
       }
@@ -248,10 +247,8 @@ async function createApp(ssrContext, config = {}) {
     await new Promise((resolve, reject) => {
       router.push(ssrContext.url, resolve, (err) => {
         if (!err._isRouter) {
-          // router guard returned an error. If the user handled it using
-          // context.error(), display it. Otherwise, generate a 500.
-          if (ssrContext.nuxt.originalErr === err) resolve()
-          else reject(err)
+          // router guard returned an error
+          reject(err)
         } else if (err.type === 1) {
           // navigated to a different route in router guard
           const unregister = router.afterEach(async (to, from) => {
@@ -264,7 +261,8 @@ async function createApp(ssrContext, config = {}) {
             unregister()
           })
         } else {
-          // other router errors (aborted, cancelled, duplicated): render "404" error page
+          // other router errors (aborted, cancelled, duplicated). This will
+          // render the user error if context.error() was called or a 404.
           resolve()
         }
       })
