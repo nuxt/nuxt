@@ -3308,7 +3308,7 @@ babel-eslint@^10.1.0:
     eslint-visitor-keys "^1.0.0"
     resolve "^1.12.0"
 
-babel-jest@^26.1.0, babel-jest@^26.2.1:
+babel-jest@^26.2.1:
   version "26.2.1"
   resolved "https://registry.npmjs.org/babel-jest/-/babel-jest-26.2.1.tgz#b0678ab5934161451b3636c08038b2348dcc90c9"
   integrity sha512-8h5l0hzHTVFwWwu2K81iStzu8RPOPPQqaC5tKYrk4jcnlDYk5pMIwW+Yp515S8pxIJKWM/Z1rzkVOLanbNIn0w==
@@ -3913,7 +3913,7 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001093, caniuse-lite@^1.0.30001097, caniuse-lite@^1.0.30001107:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001093, caniuse-lite@^1.0.30001097, caniuse-lite@^1.0.30001109:
   version "1.0.30001109"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001109.tgz#a9f3f26a0c3753b063d7acbb48dfb9c0e46f2b19"
   integrity sha512-4JIXRodHzdS3HdK8nSgIqXYLExOvG+D2/EenSvcub2Kp3QEADjo2v2oUn5g0n0D+UNwG9BtwKOyGcSq2qvQXvQ==
@@ -8033,7 +8033,7 @@ jest-worker@^26.2.1:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
-jest@^26.1.0:
+jest@^26.2.1:
   version "26.2.1"
   resolved "https://registry.npmjs.org/jest/-/jest-26.2.1.tgz#0f5b367ab7b54e98170b8b53895470521c9e9664"
   integrity sha512-0uQtQchWwE9xn6ScavTyKpdOqzaDByRhNpqWHVC/WPhikgXL7pkEEZLFFhMhiYcb7l9pdy9jm9wyHfBJYCf9xQ==
@@ -13440,7 +13440,7 @@ webpack-sources@^1.0.1, webpack-sources@^1.1.0, webpack-sources@^1.4.0, webpack-
     source-list-map "^2.0.0"
     source-map "~0.6.1"
 
-webpack@^4.44.0:
+webpack@^4.44.1:
   version "4.44.1"
   resolved "https://registry.npmjs.org/webpack/-/webpack-4.44.1.tgz#17e69fff9f321b8f117d1fda714edfc0b939cc21"
   integrity sha512-4UOGAohv/VGUNQJstzEywwNxqX417FnjZgZJpJQegddzPmTvph37eBIRbRTfdySXzVtJXLJfbMN3mMYhM6GdmQ==
