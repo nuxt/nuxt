@@ -263,8 +263,9 @@ async function createApp(ssrContext, config = {}) {
           })
         } else {
           // other router errors (aborted, cancelled, duplicated). This will
-          // render the user error, if context.error() was called, the index
-          // page if it exists, or a 404 if there is no index page.
+          // render the user error, if context.error() was called, a blank page
+          // if the current route exists, or a 404 if there is no matching
+          // route.
           resolve()
         }
       })
