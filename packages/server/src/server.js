@@ -273,7 +273,7 @@ export default class Server {
 
   useMiddleware (middleware) {
     const { route, handle } = this.resolveMiddleware(middleware)
-    this.app.use(route, handle)
+    this.app.use(route, handle.bind(this.nuxt))
   }
 
   replaceMiddleware (query, middleware) {

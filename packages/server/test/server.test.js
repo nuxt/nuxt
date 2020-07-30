@@ -343,7 +343,7 @@ describe('server: server', () => {
 
     expect(nuxt.resolver.requireModule).not.toBeCalled()
     expect(server.app.use).toBeCalledTimes(1)
-    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler)
+    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler.bind(nuxt))
   })
 
   test('should use function module middleware', () => {
@@ -358,7 +358,7 @@ describe('server: server', () => {
     expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
     expect(nuxt.resolver.requireModule).toBeCalledWith('test-middleware')
     expect(server.app.use).toBeCalledTimes(1)
-    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler)
+    expect(server.app.use).toBeCalledWith(nuxt.options.router.base, handler.bind(nuxt))
   })
 
   test('should use object module middleware', () => {
@@ -377,7 +377,7 @@ describe('server: server', () => {
     expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
     expect(nuxt.resolver.requireModule).toBeCalledWith('test-middleware')
     expect(server.app.use).toBeCalledTimes(1)
-    expect(server.app.use).toBeCalledWith('/middleware', handler)
+    expect(server.app.use).toBeCalledWith('/middleware', handler.bind(nuxt))
   })
 
   test('should show error when module require failed', () => {
