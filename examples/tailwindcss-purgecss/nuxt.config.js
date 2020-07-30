@@ -15,7 +15,7 @@ export default {
   },
 
   css: ['~/assets/css/tailwind.css'],
-  build:{
+  build: {
     postcss: {
       plugins: {
         tailwindcss: path.join(__dirname, './tailwind.config.js')
