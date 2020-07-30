@@ -4,7 +4,7 @@ import { fatalBox } from './utils/formatting'
 
 let _setup = false
 
-export default function setup ({ dev }) {
+export default function setup ({ dev }: { dev: boolean }) {
   // Apply default NODE_ENV if not provided
   if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = dev ? 'development' : 'production'

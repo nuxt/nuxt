@@ -1,11 +1,17 @@
-export const sequence = function sequence (tasks, fn) {
+export const sequence = function sequence<T, R> (
+  tasks: T[],
+  fn: (task: T) => R
+) {
   return tasks.reduce(
-    (promise, task) => promise.then(() => fn(task)),
+    (promise, task): any => promise.then(() => fn(task)),
     Promise.resolve()
   )
 }
 
-export const parallel = function parallel (tasks, fn) {
+export const parallel = function parallel<T, R> (
+  tasks: T[],
+  fn: (task: T) => R
+) {
   return Promise.all(tasks.map(fn))
 }
 

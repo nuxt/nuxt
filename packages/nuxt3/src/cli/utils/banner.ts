@@ -1,10 +1,12 @@
 import consola from 'consola'
 import env from 'std-env'
 import chalk from 'chalk'
+
+import { Nuxt } from 'nuxt/core'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 
-export function showBanner (nuxt, showMemoryUsage = true) {
+export function showBanner (nuxt: Nuxt, showMemoryUsage = true) {
   if (env.test) {
     return
   }
@@ -23,7 +25,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const { bannerColor, badgeMessages } = nuxt.options.cli
   titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} @ ${nuxt.constructor.version || 'exotic'}\n`)
 
-  const label = name => chalk.bold.cyan(`▸ ${name}:`)
+  const label = (name: string) => chalk.bold.cyan(`▸ ${name}:`)
 
   // Environment
   const isDev = nuxt.options.dev

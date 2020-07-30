@@ -1,6 +1,8 @@
 import util from 'util'
 import consola from 'consola'
 import get from 'lodash/get'
+
+import type NuxtCommand from '../command'
 import { common } from '../options'
 
 export default {
@@ -32,7 +34,7 @@ export default {
       description: 'Inspect development mode webpack config'
     }
   },
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     const { name } = cmd.argv
     const queries = [...cmd.argv._]
 

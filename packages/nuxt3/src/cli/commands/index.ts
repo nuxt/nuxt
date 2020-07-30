@@ -9,7 +9,7 @@ const _commands = {
   help: () => import('./help')
 }
 
-export default function getCommand (name) {
+export default function getCommand (name: keyof typeof _commands) {
   if (!_commands[name]) {
     return Promise.resolve(null)
   }

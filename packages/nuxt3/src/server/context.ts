@@ -1,5 +1,12 @@
+import { Server } from 'nuxt/server'
+
 export default class ServerContext {
-  constructor (server) {
+  nuxt: Server['nuxt']
+  globals: Server['globals']
+  options: Server['options']
+  resources: Server['resources']
+
+  constructor (server: Server) {
     this.nuxt = server.nuxt
     this.globals = server.globals
     this.options = server.options

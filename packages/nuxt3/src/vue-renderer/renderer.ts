@@ -7,9 +7,22 @@ import { TARGETS, isModernRequest, waitFor } from 'nuxt/utils'
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
 import ModernRenderer from './renderers/modern'
+import ServerContext from 'nuxt/server/context'
 
 export default class VueRenderer {
-  constructor (context) {
+  __closed?: boolean
+  _state?: 'created' | 'loading' | 'ready' | 'error'
+  _error?: null
+  _readyPromise?: Promise<any>
+  distPath: string
+  serverContext: ServerContext
+  renderer: {
+    ssr: any
+    modern: any
+    spa: any
+  }
+
+  constructor (context: ServerContext) {
     this.serverContext = context
     this.options = this.serverContext.options
 
@@ -86,10 +99,10 @@ export default class VueRenderer {
     }
   }
 
-  async loadResources (_fs) {
+  async loadResources (_fs: typeof import('fs-extra')) {
     const updated = []
 
-    const readResource = async (fileName, encoding) => {
+    const readResource = async (fileName: string, encoding: string) => {
       try {
         const fullPath = path.resolve(this.distPath, fileName)
 
@@ -311,16 +324,16 @@ export default class VueRenderer {
     return {
       clientManifest: {
         fileName: 'client.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: (src: string) => JSON.parse(src)
       },
       modernManifest: {
         fileName: 'modern.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: (src: string) => JSON.parse(src)
       },
       serverManifest: {
         fileName: 'server.manifest.json',
         // BundleRenderer needs resolved contents
-        transform: async (src, { readResource }) => {
+        transform: async (src: string, { readResource }) => {
           const serverManifest = JSON.parse(src)
 
           const readResources = async (obj) => {
@@ -357,16 +370,16 @@ export default class VueRenderer {
       },
       ssrTemplate: {
         fileName: 'index.ssr.html',
-        transform: src => this.parseTemplate(src)
+        transform: (src: string) => this.parseTemplate(src)
       },
       spaTemplate: {
         fileName: 'index.spa.html',
-        transform: src => this.parseTemplate(src)
+        transform: (src: string) => this.parseTemplate(src)
       }
     }
   }
 
-  parseTemplate (templateStr) {
+  parseTemplate (templateStr: string) {
     return template(templateStr, {
       interpolate: /{{([\s\S]+?)}}/g,
       evaluate: /{%([\s\S]+?)%}/g

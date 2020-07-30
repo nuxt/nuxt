@@ -6,10 +6,32 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
+import type { Builder } from 'nuxt/builder'
+import type { Nuxt } from 'nuxt/core'
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from 'nuxt/utils'
 
 export default class Generator {
-  constructor (nuxt, builder) {
+  _payload: null
+  setPayload: (payload: any) => void
+
+  builder?: Builder
+  isFullStatic: boolean
+  nuxt: Nuxt
+  options: Nuxt['options']
+  staticRoutes: string
+  srcBuiltPath: string
+  distPath: string
+  distNuxtPath: string
+
+  staticAssetsDir?: string
+  staticAssetsBase?: string
+
+  payloadDir?: string
+
+  routes: Array<{ route: string } & Record<string, any>>
+  generatedRoutes: Set<string>
+
+  constructor (nuxt: Nuxt, builder?: Builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder

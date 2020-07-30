@@ -4,7 +4,7 @@ import { startSpaces, optionSpaces } from './utils/constants'
 import getCommand from './commands'
 
 export default async function listCommands () {
-  const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
+  const commandsOrder = ['dev', 'build', 'generate', 'start', 'help'] as const
 
   // Load all commands
   const _commands = await Promise.all(

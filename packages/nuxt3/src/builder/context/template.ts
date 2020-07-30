@@ -1,13 +1,17 @@
 import hash from 'hash-sum'
-import consola from 'consola'
 import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
 import { r, wp, wChunk, serializeFunction, isFullStatic } from 'nuxt/utils'
 
+import type Builder from '../builder'
+
 export default class TemplateContext {
-  constructor(builder, options) {
+  templateFiles: string[]
+  templateVars: any
+
+  constructor (builder: Builder, options) {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
       nuxtOptions: options,
@@ -53,7 +57,7 @@ export default class TemplateContext {
     }
   }
 
-  get templateOptions () {
+  get templateOptions() {
     return {
       imports: {
         serialize,
@@ -62,7 +66,7 @@ export default class TemplateContext {
         hash,
         r,
         wp,
-        wChunk,
+        wChunk
       },
       interpolate: /<%=([\s\S]+?)%>/g
     }

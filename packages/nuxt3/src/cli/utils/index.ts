@@ -12,7 +12,7 @@ export const eventsMapping = {
   unlink: { icon: '-', color: 'red', action: 'Removed' }
 }
 
-export function formatPath (filePath) {
+export function formatPath (filePath: string) {
   if (!filePath) {
     return
   }
@@ -27,7 +27,7 @@ export function formatPath (filePath) {
  * @param {*} defaultValue
  * @returns formatted argument
  */
-export function normalizeArg (arg, defaultValue) {
+export function normalizeArg (arg: boolean | 'true' | '' | 'false', defaultValue?: boolean) {
   switch (arg) {
     case 'true': arg = true; break
     case '': arg = true; break
@@ -37,7 +37,7 @@ export function normalizeArg (arg, defaultValue) {
   return arg
 }
 
-export function forceExit (cmdName, timeout) {
+export function forceExit (cmdName: string, timeout: number | false) {
   if (timeout !== false) {
     const exitTimeout = setTimeout(() => {
       const msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s
@@ -59,6 +59,6 @@ ${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fa
 
 // An immediate export throws an error when mocking with jest
 // TypeError: Cannot set property createLock of #<Object> which has only a getter
-export function createLock (...args) {
+export function createLock (...args: Parameters<typeof lock>) {
   return lock(...args)
 }

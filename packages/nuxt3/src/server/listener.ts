@@ -1,5 +1,6 @@
 import http from 'http'
 import https from 'https'
+import type { ListenOptions } from 'net'
 import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'
@@ -8,6 +9,19 @@ import pify from 'pify'
 let RANDOM_PORT = '0'
 
 export default class Listener {
+  port: number | string
+  host: string
+  socket: string
+  https: boolean
+  app: any
+  dev: boolean
+  baseURL: string
+
+  listening: boolean
+  _server: null | http.Server
+  server: null | http.Server
+  address: null
+  url: null | string
   constructor ({ port, host, socket, https, app, dev, baseURL }) {
     // Options
     this.port = port
@@ -43,6 +57,9 @@ export default class Listener {
 
   computeURL () {
     const address = this.server.address()
+    if (typeof address === 'string') {
+      return address
+    }
     if (!this.socket) {
       switch (address.address) {
         case '127.0.0.1': this.host = 'localhost'; break
@@ -68,7 +85,7 @@ export default class Listener {
 
     // Call server.listen
     // Prepare listenArgs
-    const listenArgs = this.socket ? { path: this.socket } : { host: this.host, port: this.port }
+    const listenArgs: ListenOptions = this.socket ? { path: this.socket } : { host: this.host, port: Number(this.port) }
     listenArgs.exclusive = false
 
     // Call server.listen

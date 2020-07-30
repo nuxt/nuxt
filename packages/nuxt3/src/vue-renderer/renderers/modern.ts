@@ -1,8 +1,13 @@
+import ServerContext from 'nuxt/server/context'
 import { isUrl, urlJoin, safariNoModuleFix } from 'nuxt/utils'
+
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {
-  constructor (serverContext) {
+  _assetsMapping?: Record<string, string>
+  publicPath: string
+
+  constructor (serverContext: ServerContext) {
     super(serverContext)
 
     const { build: { publicPath }, router: { base } } = this.options
@@ -17,7 +22,7 @@ export default class ModernRenderer extends SSRRenderer {
     const { clientManifest, modernManifest } = this.serverContext.resources
     const legacyAssets = clientManifest.assetsMapping
     const modernAssets = modernManifest.assetsMapping
-    const mapping = {}
+    const mapping: Record<string, string> = {}
 
     Object.keys(legacyAssets).forEach((componentHash) => {
       const modernComponentAssets = modernAssets[componentHash] || []

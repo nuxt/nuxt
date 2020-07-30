@@ -2,7 +2,8 @@ import path from 'path'
 import consola from 'consola'
 import escapeRegExp from 'lodash/escapeRegExp'
 
-export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
+export const startsWithAlias = (aliasArray: string[]) => (str: string) =>
+  aliasArray.some(c => str.startsWith(c))
 
 export const startsWithSrcAlias = startsWithAlias(['@', '~'])
 
@@ -24,9 +25,9 @@ export const wChunk = function wChunk (p = '') {
 
 const reqSep = /\//g
 const sysSep = escapeRegExp(path.sep)
-const normalize = string => string.replace(reqSep, sysSep)
+const normalize = (string: string) => string.replace(reqSep, sysSep)
 
-export const r = function r (...args) {
+export const r = function r (...args: string[]) {
   const lastArg = args[args.length - 1]
 
   if (startsWithSrcAlias(lastArg)) {
@@ -36,14 +37,12 @@ export const r = function r (...args) {
   return wp(path.resolve(...args.map(normalize)))
 }
 
-export const relativeTo = function relativeTo (...args) {
-  const dir = args.shift()
-
+export const relativeTo = function relativeTo (dir: string, ...args: string[]): string {
   // Keep webpack inline loader intact
   if (args[0].includes('!')) {
-    const loaders = args.shift().split('!')
+    const loaders = args.shift()!.split('!')
 
-    return loaders.concat(relativeTo(dir, loaders.pop(), ...args)).join('!')
+    return loaders.concat(relativeTo(dir, loaders.pop()!, ...args)).join('!')
   }
 
   // Resolve path
@@ -63,7 +62,17 @@ export const relativeTo = function relativeTo (...args) {
   return wp(rp)
 }
 
-export function defineAlias (src, target, prop, opts = {}) {
+interface AliasOptions {
+  bind?: boolean
+  warn?: boolean
+}
+
+export function defineAlias (
+  src: string,
+  target: Record<string, any>,
+  prop: string | string[],
+  opts: AliasOptions = {}
+) {
   const { bind = true, warn = false } = opts
 
   if (Array.isArray(prop)) {
@@ -94,9 +103,9 @@ export function defineAlias (src, target, prop, opts = {}) {
   })
 }
 
-const isIndex = s => /(.*)\/index\.[^/]+$/.test(s)
+const isIndex = (s: string) => /(.*)\/index\.[^/]+$/.test(s)
 
-export function isIndexFileAndFolder (pluginFiles) {
+export function isIndexFileAndFolder (pluginFiles: string[]) {
   // Return early in case the matching file count exceeds 2 (index.js + folder)
   if (pluginFiles.length !== 2) {
     return false
@@ -105,5 +114,9 @@ export function isIndexFileAndFolder (pluginFiles) {
 }
 
 export const getMainModule = () => {
-  return require.main || (module && module.main) || module
+  return (
+    require.main ||
+    (module && ((module as any).main as NodeJS.Module)) ||
+    module
+  )
 }

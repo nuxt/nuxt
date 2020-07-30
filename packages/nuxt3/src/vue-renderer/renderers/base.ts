@@ -1,10 +1,15 @@
+import ServerContext from "nuxt/server/context"
+
 export default class BaseRenderer {
-  constructor (serverContext) {
+  serverContext: ServerContext
+  options: ServerContext['options']
+
+  constructor (serverContext: ServerContext) {
     this.serverContext = serverContext
     this.options = serverContext.options
   }
 
-  renderTemplate (templateFn, opts) {
+  renderTemplate (templateFn: (options: Record<string, any>) => void, opts: Record<string, any>) {
     // Fix problem with HTMLPlugin's minify option (#3392)
     opts.html_attrs = opts.HTML_ATTRS
     opts.head_attrs = opts.HEAD_ATTRS
@@ -13,7 +18,7 @@ export default class BaseRenderer {
     return templateFn(opts)
   }
 
-  render () {
+  render (renderContext) {
     throw new Error('`render()` needs to be implemented')
   }
 }

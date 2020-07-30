@@ -1,19 +1,35 @@
+import type { ServerResponse } from 'http'
+import type { IncomingMessage } from 'connect'
+
 import { TARGETS } from './constants'
 
-export const getContext = function getContext (req, res) {
+export const getContext = function getContext (req: IncomingMessage, res: ServerResponse) {
   return { req, res }
 }
 
-export const determineGlobals = function determineGlobals (globalName, globals) {
-  const _globals = {}
+type NuxtGlobal = string | ((globalName: string) => string)
+
+type Globals = 'id' | 'nuxt' | 'context' | 'pluginPrefix' | 'readyCallback' | 'loadedCallback'
+
+type NuxtGlobals = {
+  [key in Globals]: NuxtGlobal
+}
+
+export type DeterminedGlobals = {
+  [key in keyof NuxtGlobals]: string
+}
+
+export const determineGlobals = function determineGlobals (globalName: string, globals: NuxtGlobals) {
+  const _globals: Partial<DeterminedGlobals> = {}
   for (const global in globals) {
-    if (typeof globals[global] === 'function') {
-      _globals[global] = globals[global](globalName)
+    const currentGlobal = globals[global]
+    if (currentGlobal instanceof Function) {
+      _globals[global] = currentGlobal(globalName)
     } else {
-      _globals[global] = globals[global]
+      _globals[global] = currentGlobal
     }
   }
-  return _globals
+  return _globals as DeterminedGlobals
 }
 
 export const isFullStatic = function (options) {

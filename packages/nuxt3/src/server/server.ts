@@ -1,10 +1,14 @@
 import path from 'path'
+import { ServerResponse } from 'http'
 import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
-import connect from 'connect'
-import { determineGlobals, isUrl } from 'nuxt/utils'
+import connect, { IncomingMessage } from 'connect'
+import type { TemplateExecutor } from 'lodash'
+
+import { Nuxt } from 'nuxt/core'
+import { DeterminedGlobals, determineGlobals, isUrl } from 'nuxt/utils'
 import { VueRenderer } from 'nuxt/vue-renderer'
 
 import ServerContext from './context'
@@ -14,8 +18,34 @@ import errorMiddleware from './middleware/error'
 import Listener from './listener'
 import createTimingMiddleware from './middleware/timing'
 
+interface Manifest {
+  assetsMapping: Record<string, string[]>
+  publicPath: string
+}
+
 export default class Server {
-  constructor (nuxt) {
+  __closed?: boolean
+  _readyCalled?: boolean
+
+  app: connect.Server
+  devMiddleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => any
+  listeners: Listener[]
+  nuxt: Nuxt
+  globals: DeterminedGlobals
+  options: Nuxt['options']
+  publicPath: boolean
+  renderer: VueRenderer
+  resources: {
+    clientManifest?: Manifest
+    modernManifest?: Manifest
+    serverManifest?: Manifest
+    ssrTemplate?: TemplateExecutor
+    spaTemplate?: TemplateExecutor
+    errorTemplate?: TemplateExecutor
+  }
+  serverContext: ServerContext
+
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.options = nuxt.options
 
@@ -76,7 +106,7 @@ export default class Server {
       const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
-        const compression = this.nuxt.resolver.requireModule('compression')
+        const compression = this.nuxt.resolver.requireModule<typeof import('compression')>('compression')
         this.useMiddleware(compression(compressor))
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
@@ -317,12 +347,12 @@ export default class Server {
     return this.app.stack.map(({ handle }) => handle._middleware && handle._middleware.entry).filter(Boolean)
   }
 
-  renderRoute () {
-    return this.renderer.renderRoute.apply(this.renderer, arguments)
+  renderRoute (...args: Parameters<VueRenderer['renderRoute']>) {
+    return this.renderer.renderRoute.apply(this.renderer, ...args.slice())
   }
 
-  loadResources () {
-    return this.renderer.loadResources.apply(this.renderer, arguments)
+  loadResources (...args: Parameters<VueRenderer['loadResources']>) {
+    return this.renderer.loadResources.apply(this.renderer, ...args)
   }
 
   renderAndGetWindow (url, opts = {}, {
@@ -337,13 +367,13 @@ export default class Server {
     })
   }
 
-  async listen (port, host, socket) {
+  async listen (port?: string | number, host?: string, socket?: string) {
     // Ensure nuxt is ready
     await this.nuxt.ready()
 
     // Create a new listener
     const listener = new Listener({
-      port: isNaN(parseInt(port)) ? this.options.server.port : port,
+      port: typeof port !== 'number' && isNaN(parseInt(port)) ? this.options.server.port : port,
       host: host || this.options.server.host,
       socket: socket || this.options.server.socket,
       https: this.options.server.https,

@@ -1,5 +1,8 @@
 import consola from 'consola'
+import type { ParsedArgs } from 'minimist'
+
 import { MODES, TARGETS } from 'nuxt/utils'
+import NuxtCommand from '../command'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
 
@@ -14,7 +17,7 @@ export default {
       alias: 'a',
       type: 'boolean',
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
-      prepare (cmd, options, argv) {
+      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
         // Analyze option
         options.build = options.build || {}
         if (argv.analyze && typeof options.build.analyze !== 'object') {
@@ -26,7 +29,7 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Enable Vue devtools',
-      prepare (cmd, options, argv) {
+      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
         if (argv.devtools) {
@@ -43,7 +46,7 @@ export default {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      prepare (cmd, options, argv) {
+      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
@@ -55,14 +58,14 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Bundle all server dependencies (useful for nuxt-start)',
-      prepare (cmd, options, argv) {
+      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
         if (argv.standalone) {
           options.build.standalone = true
         }
       }
     }
   },
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
     config.server = (config.mode === MODES.spa || config.ssr === false) && cmd.argv.generate !== false
     const nuxt = await cmd.getNuxt(config)

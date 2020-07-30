@@ -1,10 +1,10 @@
 import { join } from 'path'
 
-export function isExternalDependency (id) {
+export function isExternalDependency (id: string) {
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
-export function clearRequireCache (id) {
+export function clearRequireCache (id: string) {
   if (isExternalDependency(id)) {
     return
   }
@@ -27,7 +27,7 @@ export function clearRequireCache (id) {
   delete require.cache[id]
 }
 
-export function scanRequireTree (id, files = new Set()) {
+export function scanRequireTree (id: string, files = new Set<string>()) {
   if (isExternalDependency(id) || files.has(id)) {
     return files
   }
@@ -48,20 +48,20 @@ export function scanRequireTree (id, files = new Set()) {
   return files
 }
 
-export function getRequireCacheItem (id) {
+export function getRequireCacheItem (id: string) {
   try {
     return require.cache[id]
   } catch (e) {
   }
 }
 
-export function tryRequire (id) {
+export function tryRequire (id: string) {
   try {
     return require(id)
   } catch (e) {
   }
 }
 
-export function getPKG (id) {
+export function getPKG (id: string) {
   return tryRequire(join(id, 'package.json'))
 }
