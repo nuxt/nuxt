@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import 'twilio-video'
+import 'cheerio'
 
 export default {
 
