@@ -15,9 +15,7 @@
     "nuxt": "^2.2.0"
   },
   "devDependencies": {
-    "@fullhuman/postcss-purgecss": "^1.1.0",
-    "autoprefixer": "^9.3.1",
-    "tailwindcss": "^0.6.6"
+    "tailwindcss": "^1.6.0"
   },
   "prettier": {
     "semi": false,
