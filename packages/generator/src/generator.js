@@ -304,7 +304,7 @@ export default class Generator {
 
           const route = decodeURI(sanitizedHref + possibleTrailingSlash)
 
-          if (route.startsWith('/') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
+          if (route.startsWith('/') && !route.startsWith('//') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
             this.generatedRoutes.add(route)
             this.routes.push({ route })
           }
