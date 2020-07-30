@@ -1,4 +1,6 @@
-export default function preload ({ app }) {
+import type { Plugin } from 'nuxt/vue-app/types'
+
+const preload: Plugin = function ({ app }) {
   app.mixin({
     beforeCreate () {
       const { _registeredComponents } = this.$nuxt.ssrContext
@@ -7,3 +9,5 @@ export default function preload ({ app }) {
     }
   })
 }
+
+export default preload

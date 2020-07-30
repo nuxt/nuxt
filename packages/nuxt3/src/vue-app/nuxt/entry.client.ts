@@ -1,6 +1,6 @@
 import { createSSRApp } from 'vue'
-import plugins from './plugins.client'
 import { init } from 'nuxt-app'
+import plugins from './plugins.client'
 import App from '<%= appPath %>'
 
 async function initApp () {

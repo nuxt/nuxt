@@ -1,3 +1,5 @@
+import type { Plugin } from 'nuxt/vue-app/types'
+
 // import { h, defineComponent } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -5,7 +7,9 @@ import { RouterLink } from 'vue-router'
 //   extends: Link
 // })
 
-export default function components ({ app }) {
+const components: Plugin = function ({ app }) {
   app.component('NuxtLink', RouterLink)
   app.component('NLink', RouterLink) // TODO: deprecate
 }
+
+export default components

@@ -1,4 +1,6 @@
-export default function state ({ app }) {
+import type { Plugin } from 'nuxt/vue-app/types'
+
+const state: Plugin = function ({ app }) {
   if (process.server) {
     app.$nuxt.state = {
       serverRendered: true
@@ -11,3 +13,5 @@ export default function state ({ app }) {
     app.$nuxt.state = window.__NUXT__ || {}
   }
 }
+
+export default state

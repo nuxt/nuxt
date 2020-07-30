@@ -1,9 +1,11 @@
 import { ref } from 'vue'
 import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
 
+import type { Plugin } from 'nuxt/vue-app/types'
+
 import routes from 'nuxt-build/routes'
 
-export default function router ({ app }) {
+const router: Plugin = function ({ app }) {
   const routerHistory = process.client
     ? createWebHistory()
     : createMemoryHistory()
@@ -35,3 +37,5 @@ export default function router ({ app }) {
     })
   }
 }
+
+export default router
