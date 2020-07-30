@@ -98,6 +98,13 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         const prefix = nameMap[cacheGroup || 'default'] || cacheGroup
         return prefix + '/' + compactName
       }
+
+      // Enforce name for all groups
+      for (const group of Object.values(cacheGroups)) {
+        if (group.name === undefined) {
+          group.name = true
+        }
+      }
     }
 
     return optimization
