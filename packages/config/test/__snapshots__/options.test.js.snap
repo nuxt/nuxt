@@ -114,9 +114,7 @@ Object {
       "runtimeChunk": "single",
       "splitChunks": Object {
         "automaticNameDelimiter": "/",
-        "cacheGroups": Object {
-          "default": Object {},
-        },
+        "cacheGroups": Object {},
         "chunks": "all",
       },
     },

@@ -64,15 +64,16 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
-        name: 'vendors/commons',
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
+        name: 'node_modules/commons',
         priority: 10
       }
     }
 
-    if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
-      cacheGroups.default.name = (_module, chunks) => {
+    if (!this.dev && splitChunks.name === undefined) {
+      const nameMap = { default: 'commons', vendors: 'node_modules' }
+      splitChunks.name = (_module, chunks, cacheGroup) => {
         // Map chunks to names
         const names = chunks
           .map(c => c.name || '')
@@ -94,7 +95,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         if (compactName.length > 32) {
           compactName = hash(compactName)
         }
-        return 'vendors/' + compactName
+        const prefix = nameMap[cacheGroup || 'default'] || cacheGroup
+        return prefix + '/' + compactName
       }
     }
 
