@@ -44,7 +44,7 @@ export default class NuxtCommand extends Hookable {
 
   cmd: Command & { options: Command['options'] }
 
-  constructor(cmd: Command = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks: Hooks = {}) {
+  constructor (cmd: Command = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks: Hooks = {}) {
     super(consola)
     this.addHooks(hooks)
 
@@ -57,18 +57,18 @@ export default class NuxtCommand extends Hookable {
     this._parsedArgv = null // Lazy evaluate
   }
 
-  static run(cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
+  static run (cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
     return NuxtCommand.from(cmd, argv, hooks).run()
   }
 
-  static from(cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
+  static from (cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
     if (cmd instanceof NuxtCommand) {
       return cmd
     }
     return new NuxtCommand(cmd, argv, hooks)
   }
 
-  async run() {
+  async run () {
     await this.callHook('run:before', {
       argv: this._argv,
       cmd: this.cmd,
@@ -117,15 +117,15 @@ export default class NuxtCommand extends Hookable {
     }
   }
 
-  showVersion() {
+  showVersion () {
     process.stdout.write(`${name} v${version}\n`)
   }
 
-  showHelp() {
+  showHelp () {
     process.stdout.write(this._getHelp())
   }
 
-  get argv() {
+  get argv () {
     if (!this._parsedArgv) {
       const minimistOptions = this._getMinimistOptions()
       this._parsedArgv = minimist(this._argv, minimistOptions)
@@ -133,7 +133,7 @@ export default class NuxtCommand extends Hookable {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions: ExtraOptions = {}) {
+  async getNuxtConfig (extraOptions: ExtraOptions = {}) {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
@@ -154,7 +154,7 @@ export default class NuxtCommand extends Hookable {
     return options
   }
 
-  async getNuxt(options) {
+  async getNuxt (options) {
 
     const nuxt = new Nuxt(options)
     await nuxt.ready()
@@ -162,16 +162,16 @@ export default class NuxtCommand extends Hookable {
     return nuxt
   }
 
-  async getBuilder(nuxt: Nuxt) {
+  async getBuilder (nuxt: Nuxt) {
     return new Builder(nuxt)
   }
 
-  async getGenerator(nuxt) {
+  async getGenerator (nuxt) {
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
   }
 
-  async setLock(lockRelease) {
+  async setLock (lockRelease) {
     if (lockRelease) {
       if (this._lockRelease) {
         consola.warn(`A previous unreleased lock was found, this shouldn't happen and is probably an error in 'nuxt ${this.cmd.name}' command. The lock will be removed but be aware of potential strange results`)
@@ -184,14 +184,14 @@ export default class NuxtCommand extends Hookable {
     }
   }
 
-  async releaseLock() {
+  async releaseLock () {
     if (this._lockRelease) {
       await this._lockRelease()
       this._lockRelease = undefined
     }
   }
 
-  isUserSuppliedArg(option: string) {
+  isUserSuppliedArg (option: string) {
     return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
   }
 
@@ -199,7 +199,7 @@ export default class NuxtCommand extends Hookable {
     return option.default instanceof Function ? option.default(this.cmd) : option.default
   }
 
-  _getMinimistOptions() {
+  _getMinimistOptions () {
     const minimistOptions = {
       alias: {},
       boolean: [],
@@ -224,7 +224,7 @@ export default class NuxtCommand extends Hookable {
     return minimistOptions
   }
 
-  _getHelp() {
+  _getHelp () {
     const options = []
     let maxOptionLength = 0
 

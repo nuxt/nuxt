@@ -8,6 +8,7 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
+import type { RouteLocationRaw } from 'vue-router'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'
@@ -36,7 +37,6 @@ import {
 import Ignore from './ignore'
 import BuildContext from './context/build'
 import TemplateContext from './context/template'
-import { RouteLocationRaw } from 'vue-router'
 
 const glob = pify(Glob)
 export default class Builder {

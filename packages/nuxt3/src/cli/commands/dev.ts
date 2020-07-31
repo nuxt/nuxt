@@ -50,7 +50,7 @@ export default {
     return nuxt
   },
 
-  async _listenDev (cmd: NuxtCommand, argv) {
+  async _listenDev (cmd: NuxtCommand, argv: ParsedArgs) {
     const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
@@ -78,7 +78,7 @@ export default {
     return nuxt
   },
 
-  async _buildDev (cmd: NuxtCommand, argv: ParsedArgs, nuxt: Nuxt) {
+  async _buildDev (cmd: NuxtCommand, _argv: ParsedArgs, nuxt: Nuxt) {
     // Create builder instance
     const builder = await cmd.getBuilder(nuxt)
 
@@ -97,7 +97,7 @@ export default {
     return nuxt
   },
 
-  logChanged ({ event, path }) {
+  logChanged ({ event, path }: { event: keyof typeof eventsMapping, path: string }) {
     const { icon, color, action } = eventsMapping[event] || eventsMapping.change
 
     consola.log({

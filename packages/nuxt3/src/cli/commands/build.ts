@@ -17,7 +17,7 @@ export default {
       alias: 'a',
       type: 'boolean',
       description: 'Launch webpack-bundle-analyzer to optimize your bundles',
-      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
+      prepare (_cmd: NuxtCommand, options, argv: ParsedArgs) {
         // Analyze option
         options.build = options.build || {}
         if (argv.analyze && typeof options.build.analyze !== 'object') {
@@ -29,7 +29,7 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Enable Vue devtools',
-      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
+      prepare (_cmd: NuxtCommand, options, argv: ParsedArgs) {
         options.vue = options.vue || {}
         options.vue.config = options.vue.config || {}
         if (argv.devtools) {
@@ -46,7 +46,7 @@ export default {
       alias: 'q',
       type: 'boolean',
       description: 'Disable output except for errors',
-      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
+      prepare (_cmd: NuxtCommand, options, argv: ParsedArgs) {
         // Silence output when using --quiet
         options.build = options.build || {}
         if (argv.quiet) {
@@ -58,7 +58,7 @@ export default {
       type: 'boolean',
       default: false,
       description: 'Bundle all server dependencies (useful for nuxt-start)',
-      prepare (cmd: NuxtCommand, options, argv: ParsedArgs) {
+      prepare (_cmd: NuxtCommand, options, argv: ParsedArgs) {
         if (argv.standalone) {
           options.build.standalone = true
         }

@@ -17,7 +17,7 @@ export default class TemplateContext {
       nuxtOptions: options,
       features: options.features,
       extensions: options.extensions
-        .map(ext => ext.replace(/^\./, ''))
+        .map((ext: string) => ext.replace(/^\./, ''))
         .join('|'),
       messages: options.messages,
       splitChunks: options.build.splitChunks,
@@ -57,7 +57,7 @@ export default class TemplateContext {
     }
   }
 
-  get templateOptions() {
+  get templateOptions () {
     return {
       imports: {
         serialize,
