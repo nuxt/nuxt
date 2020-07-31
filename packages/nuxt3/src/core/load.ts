@@ -1,3 +1,4 @@
+import { EnvConfig } from 'nuxt/config/load'
 import { loadNuxtConfig } from '../config'
 import Nuxt from './nuxt'
 
@@ -8,7 +9,19 @@ const OVERRIDES = {
   start: { dev: false, _start: true }
 }
 
-export async function loadNuxt (loadOptions) {
+export interface LoadOptions {
+  for?: keyof typeof OVERRIDES
+  ready?: boolean
+
+  rootDir?: string
+  envConfig?: EnvConfig
+  configFile?: string
+  configContext?: {}
+  configOverrides?: {},
+  createRequire?: (module: NodeJS.Module) => NodeJS.Require
+}
+
+export async function loadNuxt (loadOptions: LoadOptions | LoadOptions['for']) {
   // Normalize loadOptions
   if (typeof loadOptions === 'string') {
     loadOptions = { for: loadOptions }

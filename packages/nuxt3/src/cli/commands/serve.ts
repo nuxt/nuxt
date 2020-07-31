@@ -5,10 +5,11 @@ import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from 'nuxt/config'
 import { TARGETS } from 'nuxt/utils'
-import { common, server } from '../options'
-import { showBanner } from '../utils/banner'
 import { Listener } from 'nuxt/server'
 import { Nuxt } from 'nuxt/core'
+import type NuxtCommand from '../command'
+import { common, server } from '../options'
+import { showBanner } from '../utils/banner'
 
 export default {
   name: 'serve',
@@ -20,7 +21,7 @@ export default {
     help: common.help,
     ...server
   },
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     let options = await cmd.getNuxtConfig({ dev: false })
     // add default options
     options = getNuxtConfig(options)

@@ -3,11 +3,22 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import LRU from 'lru-cache'
 import devalue from '@nuxt/devalue'
+
 import { TARGETS, isModernRequest } from 'nuxt/utils'
+import ServerContext from 'nuxt/server/context'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
-  constructor (serverContext) {
+  cache: LRU<unknown, unknown>
+  vueMetaConfig: {
+    ssrAppId: string
+    keyName: string
+    attribute: string
+    ssrAttribute: string
+    tagIDKeyName: string
+  }
+
+  constructor (serverContext: ServerContext) {
     super(serverContext)
 
     this.cache = new LRU()
@@ -188,7 +199,7 @@ export default class SPARenderer extends BaseRenderer {
     }
   }
 
-  static getPreloadType (ext) {
+  static getPreloadType (ext: string) {
     if (ext === 'js') {
       return 'script'
     } else if (ext === 'css') {

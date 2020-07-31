@@ -1,8 +1,11 @@
+import type { ServerResponse } from 'http'
+import type { IncomingMessage } from 'connect'
+
 import consola from 'consola'
 import onHeaders from 'on-headers'
 import { Timer } from 'nuxt/utils'
 
-export default options => (req, res, next) => {
+export default options => (_req: IncomingMessage, res: ServerResponse & { timing?: ServerTiming }, next: (err?: any) => void) => {
   if (res.timing) {
     consola.warn('server-timing is already registered.')
   }
@@ -31,13 +34,15 @@ export default options => (req, res, next) => {
 }
 
 class ServerTiming extends Timer {
-  constructor (...args) {
-    super(...args)
+  headers: string[]
+
+  constructor () {
+    super()
     this.headers = []
   }
 
-  end (...args) {
-    const time = super.end(...args)
+  end (name?: string) {
+    const time = super.end(name)
     if (time) {
       this.headers.push(this.formatHeader(time))
     }
@@ -49,7 +54,7 @@ class ServerTiming extends Timer {
     this.headers.length = 0
   }
 
-  formatHeader (time) {
+  formatHeader (time: ReturnType<Timer['end']>) {
     const desc = time.description ? `;desc="${time.description}"` : ''
     return `${time.name};dur=${time.duration}${desc}`
   }

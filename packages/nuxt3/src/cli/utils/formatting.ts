@@ -3,11 +3,11 @@ import chalk from 'chalk'
 import boxen from 'boxen'
 import { maxCharsPerLine } from './constants'
 
-export function indent (count, chr = ' ') {
+export function indent (count: number, chr = ' ') {
   return chr.repeat(count)
 }
 
-export function indentLines (string, spaces, firstLineSpaces) {
+export function indentLines (string: string | string[], spaces: number, firstLineSpaces?: number) {
   const lines = Array.isArray(string) ? string : string.split('\n')
   let s = ''
   if (lines.length) {
@@ -21,11 +21,11 @@ export function indentLines (string, spaces, firstLineSpaces) {
   return s
 }
 
-export function foldLines (string, spaces, firstLineSpaces, charsPerLine = maxCharsPerLine()) {
+export function foldLines (string: string, spaces: number, firstLineSpaces?: number, charsPerLine = maxCharsPerLine()) {
   return indentLines(wrapAnsi(string, charsPerLine), spaces, firstLineSpaces)
 }
 
-export function colorize (text) {
+export function colorize (text: string) {
   return text
     .replace(/\[[^ ]+]/g, m => chalk.grey(m))
     .replace(/<[^ ]+>/g, m => chalk.green(m))
@@ -33,7 +33,7 @@ export function colorize (text) {
     .replace(/`([^`]+)`/g, (_, m) => chalk.bold.cyan(m))
 }
 
-export function box (message, title, options) {
+export function box (message: string, title: string, options?: boxen.Options) {
   return boxen([
     title || chalk.white('Nuxt Message'),
     '',
@@ -46,24 +46,24 @@ export function box (message, title, options) {
   }, options)) + '\n'
 }
 
-export function successBox (message, title) {
+export function successBox (message: string, title?: string) {
   return box(message, title || chalk.green('✔ Nuxt Success'), {
     borderColor: 'green'
   })
 }
 
-export function warningBox (message, title) {
+export function warningBox (message: string, title?: string) {
   return box(message, title || chalk.yellow('⚠ Nuxt Warning'), {
     borderColor: 'yellow'
   })
 }
 
-export function errorBox (message, title) {
+export function errorBox (message: string, title?: string) {
   return box(message, title || chalk.red('✖ Nuxt Error'), {
     borderColor: 'red'
   })
 }
 
-export function fatalBox (message, title) {
+export function fatalBox (message: string, title?: string) {
   return errorBox(message, title || chalk.red('✖ Nuxt Fatal Error'))
 }

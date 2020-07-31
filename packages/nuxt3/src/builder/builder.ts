@@ -8,6 +8,7 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
+import type { RouteLocationRaw } from 'vue-router'
 
 import debounce from 'lodash/debounce'
 import omit from 'lodash/omit'
@@ -15,6 +16,7 @@ import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 
+import type { Nuxt } from 'nuxt/core'
 import { BundleBuilder } from 'nuxt/webpack'
 import vueAppTemplate from 'nuxt/vue-app/template'
 
@@ -26,6 +28,7 @@ import {
   determineGlobals,
   stripWhitespace,
   isIndexFileAndFolder,
+  DeterminedGlobals,
   scanRequireTree,
   TARGETS,
   isFullStatic
@@ -37,7 +40,31 @@ import TemplateContext from './context/template'
 
 const glob = pify(Glob)
 export default class Builder {
-  constructor (nuxt, bundleBuilder) {
+  __closed?: boolean
+  _buildStatus: typeof STATUS[keyof typeof STATUS]
+  _defaultPage?: boolean
+  _nuxtPages?: boolean
+
+  appFiles: string[]
+  bundleBuilder: BundleBuilder
+  globals: DeterminedGlobals
+  ignore: Ignore
+  nuxt: Nuxt
+  options: Nuxt['options']
+  plugins: Array<{
+    src: string
+  }>
+  relativeToBuild: (...args: string[]) => string
+  routes: RouteLocationRaw[]
+  supportedExtensions: string[]
+  template: typeof vueAppTemplate
+  watchers: {
+    files: null
+    custom: null
+    restart: null
+  }
+
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.plugins = []
     this.options = nuxt.options
@@ -51,7 +78,7 @@ export default class Builder {
     this.supportedExtensions = ['vue', 'js', ...(this.options.build.additionalExtensions || [])]
 
     // Helper to resolve build paths
-    this.relativeToBuild = (...args) => relativeTo(this.options.buildDir, ...args)
+    this.relativeToBuild = (...args: string[]) => relativeTo(this.options.buildDir, ...args)
 
     this._buildStatus = STATUS.INITIAL
 
@@ -81,7 +108,7 @@ export default class Builder {
     this.template = vueAppTemplate
 
     // Create a new bundle builder
-    this.bundleBuilder = this.getBundleBuilder(bundleBuilder)
+    this.bundleBuilder = this.getBundleBuilder()
 
     this.ignore = new Ignore({
       rootDir: this.options.srcDir,
@@ -846,4 +873,4 @@ const STATUS = {
   INITIAL: 1,
   BUILD_DONE: 2,
   BUILDING: 3
-}
+} as const
