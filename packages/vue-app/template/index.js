@@ -247,27 +247,19 @@ async function createApp(ssrContext, config = {}) {
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
       router.push(ssrContext.url, resolve, (err) => {
-        if (!err._isRouter) {
-          // router guard returned an error
-          reject(err)
-        } else if (err.type === 1) {
-          // navigated to a different route in router guard (redirected)
-          const unregister = router.afterEach(async (to, from) => {
-            ssrContext.url = to.fullPath
-            app.context.route = await getRouteData(to)
-            app.context.params = to.params || {}
-            app.context.query = to.query || {}
+        if (!err._isRouter) return reject(err)
+        if (err.type !== 1) return resolve()
 
-            resolve()
-            unregister()
-          })
-        } else {
-          // other router errors (aborted, cancelled, duplicated). This will
-          // render the user error, if context.error() was called, a blank page
-          // if the current route exists, or a 404 if there is no matching
-          // route.
+        // navigated to a different route in router guard
+        const unregister = router.afterEach(async (to, from) => {
+          ssrContext.url = to.fullPath
+          app.context.route = await getRouteData(to)
+          app.context.params = to.params || {}
+          app.context.query = to.query || {}
+
           resolve()
-        }
+          unregister()
+        })
       })
     })
   }
