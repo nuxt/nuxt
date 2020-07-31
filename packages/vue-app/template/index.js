@@ -256,9 +256,8 @@ async function createApp(ssrContext, config = {}) {
           app.context.route = await getRouteData(to)
           app.context.params = to.params || {}
           app.context.query = to.query || {}
-
-          resolve()
           unregister()
+          resolve()
         })
       })
     })
