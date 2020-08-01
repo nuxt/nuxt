@@ -33,8 +33,8 @@
     "test:unit": "jest packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.5",
-    "@babel/preset-env": "^7.10.4",
+    "@babel/core": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
     "@ls-lint/ls-lint": "^1.9.2",
     "@nuxtjs/eslint-config": "^3.1.0",
     "@rollup/plugin-alias": "^3.1.1",
@@ -45,11 +45,11 @@
     "@vue/server-test-utils": "^1.0.3",
     "@vue/test-utils": "^1.0.3",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^26.2.1",
+    "babel-jest": "^26.2.2",
     "consola": "^2.14.0",
     "create-require": "^1.0.2",
     "cross-spawn": "^7.0.3",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "eslint-multiplexer": "^2.0.0",
     "esm": "^3.2.25",
     "execa": "^3.4.0",
@@ -61,7 +61,7 @@
     "got": "^11.5.1",
     "improved-yarn-audit": "^2.2.1",
     "is-wsl": "^2.2.0",
-    "jest": "^26.2.1",
+    "jest": "^26.2.2",
     "jiti": "^0.1.11",
     "jsdom": "^16.3.0",
     "klaw-sync": "^6.0.0",
@@ -77,6 +77,6 @@
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.44.0",
     "typescript": "~3.9",
-    "vue-jest": "^4.0.0-beta.4"
+    "vue-jest": "^4.0.0-beta.5"
   }
 }
