@@ -1,5 +1,5 @@
 import consola from 'consola'
-import type { ParsedArgs} from 'minimist'
+import type { ParsedArgs } from 'minimist'
 
 import { Configuration } from 'nuxt/config/options'
 

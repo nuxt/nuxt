@@ -12,7 +12,7 @@ export default class TemplateContext {
   templateFiles: string[]
   templateVars: any
 
-  constructor(builder: Builder, options: NormalizedConfiguration) {
+  constructor (builder: Builder, options: NormalizedConfiguration) {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
       nuxtOptions: options,
@@ -58,7 +58,7 @@ export default class TemplateContext {
     }
   }
 
-  get templateOptions() {
+  get templateOptions () {
     return {
       imports: {
         serialize,
