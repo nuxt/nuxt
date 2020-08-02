@@ -15,21 +15,10 @@ export default {
   },
 
   css: ['~/assets/css/tailwind.css'],
-
   build: {
     postcss: {
       plugins: {
-        tailwindcss: path.join(__dirname, 'tailwind.js'),
-        autoprefixer: {},
-        '@fullhuman/postcss-purgecss': {
-          content: [
-            path.join(__dirname, './pages/**/*.vue'),
-            path.join(__dirname, './layouts/**/*.vue'),
-            path.join(__dirname, './components/**/*.vue')
-          ],
-          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || [],
-          whitelist: ['html', 'body', 'nuxt-progress']
-        }
+        tailwindcss: path.join(__dirname, './tailwind.config.js')
       }
     }
   }
