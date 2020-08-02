@@ -8,6 +8,16 @@ import pify from 'pify'
 
 let RANDOM_PORT = '0'
 
+interface ListenerOptions {
+  port: number | string
+  host: string
+  socket: string
+  https: boolean
+  app: any
+  dev: boolean
+  baseURL: string
+}
+
 export default class Listener {
   port: number | string
   host: string
@@ -22,7 +32,7 @@ export default class Listener {
   server: null | http.Server
   address: null
   url: null | string
-  constructor ({ port, host, socket, https, app, dev, baseURL }) {
+  constructor ({ port, host, socket, https, app, dev, baseURL }: ListenerOptions) {
     // Options
     this.port = port
     this.host = host

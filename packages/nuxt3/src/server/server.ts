@@ -33,7 +33,7 @@ export default class Server {
   nuxt: Nuxt
   globals: DeterminedGlobals
   options: Nuxt['options']
-  publicPath: boolean
+  publicPath: string
   renderer: VueRenderer
   resources: {
     clientManifest?: Manifest
@@ -114,7 +114,7 @@ export default class Server {
       }
     }
 
-    if (this.options.server.timing) {
+    if (typeof this.options.server !== 'boolean' && this.options.server.timing) {
       this.useMiddleware(createTimingMiddleware(this.options.server.timing))
     }
 

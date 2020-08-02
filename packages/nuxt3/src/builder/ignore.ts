@@ -1,21 +1,29 @@
 import path from 'path'
 import fs from 'fs-extra'
 import ignore from 'ignore'
+import { NormalizedConfiguration } from 'nuxt/config'
 
 type IgnoreInstance = ReturnType<typeof ignore>
 type IgnoreOptions = Parameters<typeof ignore>[0]
 
+interface Options {
+  rootDir: string
+  ignore?: IgnoreInstance
+  ignoreArray?: Array<string | IgnoreInstance>
+  ignoreOptions?: IgnoreOptions
+}
+
 export default class Ignore {
   rootDir: string
   ignore?: IgnoreInstance
-  ignoreArray?: string | string
+  ignoreArray?: Array<string | IgnoreInstance>
   ignoreFile?: string
   ignoreOptions?: IgnoreOptions
 
-  constructor (options) {
-    this.rootDir = options.rootDir
-    this.ignoreOptions = options.ignoreOptions
-    this.ignoreArray = options.ignoreArray
+  constructor ({ ignoreArray, ignoreOptions, rootDir }: Options) {
+    this.rootDir = rootDir
+    this.ignoreOptions = ignoreOptions
+    this.ignoreArray = ignoreArray
     this.addIgnoresRules()
   }
 

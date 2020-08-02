@@ -16,8 +16,8 @@ export interface LoadOptions {
   rootDir?: string
   envConfig?: EnvConfig
   configFile?: string
-  configContext?: {}
-  configOverrides?: {},
+  configContext?: Record<string, any>,
+  configOverrides?: Record<string, any>,
   createRequire?: (module: NodeJS.Module) => NodeJS.Require
 }
 

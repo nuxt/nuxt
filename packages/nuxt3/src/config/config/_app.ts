@@ -1,7 +1,72 @@
-export default () => ({
+import type { App } from 'vue'
+import type { MetaInfo, VueMetaOptions } from 'vue-meta'
+
+type Plugin = string | { mode?: 'all' | 'client' | 'server', src: string, ssr?: boolean }
+
+interface AppOptions {
+  css: string[]
+  head: MetaInfo
+  ErrorPage: null | string
+  extendPlugins: null | ((plugins: Plugin[]) => Plugin[])
+  features: {
+    store: boolean
+    layouts: boolean
+    meta: boolean
+    middleware: boolean
+    transitions: boolean
+    deprecations: boolean
+    validate: boolean
+    asyncData: boolean
+    fetch: boolean
+    clientOnline: boolean
+    clientPrefetch: boolean
+    clientUseUrl: boolean
+    componentAliases: boolean
+    componentClientOnly: boolean
+  }
+  fetch: {
+    server: boolean
+    client: boolean
+  }
+  layouts: {}
+  layoutTransition: {
+    name: string
+    mode?: string | 'out-in'
+  }
+  loading: string | false | {
+    color?: string
+    continuous?: boolean
+    css?: boolean
+    duration?: number
+    failedColor?: string
+    height?: string
+    rtl?: boolean
+    throttle?: number
+  }
+  loadingIndicator: string | false | {
+    background?: string
+    color?: string
+    color2?: string
+    name?: string
+  }
+  pageTransition: {
+    name: string
+    mode?: string | 'out-in'
+    appear?: boolean
+    appearClass?: string
+    appearActiveClass?: string
+    appearToClass?: string
+  }
+  plugins: Array<Plugin>
+  vue: {
+    config: Partial<App['config']>
+  }
+  vueMeta: null | VueMetaOptions
+}
+
+export default (): AppOptions => ({
   vue: {
     config: {
-      silent: undefined, // = !dev
       performance: undefined // = dev
     }
   },
@@ -74,3 +139,34 @@ export default () => ({
     componentClientOnly: true
   }
 })
+
+// type NormalizedConfiguration<T extends Record<string, any>> = T & {
+//   pageTransition?: Exclude<T['pageTransition'], string>
+//   layoutTransition?: Exclude<T['layoutTransition'], string>
+//   extensions?: Exclude<T['extensions'], string>
+// }
+
+// export function normalizeAppConfig<O extends Configuration>(options: O): asserts options is NormalizedConfiguration<O> {
+//   (options as NormalizedConfiguration<O>).__normalized__ = true
+
+//   // Normalize options
+//   if (options.loading === true) {
+//     delete options.loading
+//   }
+
+//   if (options.router && typeof options.router.base === 'string') {
+//     (options as NormalizedConfiguration<O>)._routerBaseSpecified = true
+//   }
+
+//   if (typeof options.pageTransition === 'string') {
+//     options.pageTransition = { name: options.pageTransition }
+//   }
+
+//   if (typeof options.layoutTransition === 'string') {
+//     options.layoutTransition = { name: options.layoutTransition }
+//   }
+
+//   if (typeof options.extensions === 'string') {
+//     options.extensions = [options.extensions]
+//   }
+// }

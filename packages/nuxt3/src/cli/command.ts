@@ -1,13 +1,13 @@
 
 import path from 'path'
 import consola from 'consola'
-import minimist, { ParsedArgs } from 'minimist'
+import minimist, { Opts as MinimistOptions, ParsedArgs } from 'minimist'
 import Hookable from 'hookable'
 
-import { Nuxt } from 'nuxt/core'
 import { Builder } from 'nuxt/builder'
+import { CliConfiguration } from 'nuxt/config/options'
+import { Nuxt } from 'nuxt/core'
 import { Generator } from 'nuxt/generator'
-import type { Target } from 'nuxt/utils'
 
 import { name, version } from '../../package.json'
 
@@ -26,16 +26,6 @@ export interface Command {
 
 type Hooks = Parameters<Hookable['addHooks']>[0]
 
-interface ExtraOptions {
-  _build?: boolean
-  _cli?: boolean
-  _export?: boolean
-  _generate?: boolean
-  _start?: boolean
-  dev?: boolean
-  server?: boolean
-  target?: Target
-}
 
 export default class NuxtCommand extends Hookable {
   _argv: string[]
@@ -133,7 +123,7 @@ export default class NuxtCommand extends Hookable {
     return this._parsedArgv
   }
 
-  async getNuxtConfig (extraOptions: ExtraOptions = {}) {
+  async getNuxtConfig(extraOptions: Partial<CliConfiguration> = {}) {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
@@ -154,7 +144,7 @@ export default class NuxtCommand extends Hookable {
     return options
   }
 
-  async getNuxt (options) {
+  async getNuxt (options: CliConfiguration) {
 
     const nuxt = new Nuxt(options)
     await nuxt.ready()
@@ -166,12 +156,12 @@ export default class NuxtCommand extends Hookable {
     return new Builder(nuxt)
   }
 
-  async getGenerator (nuxt) {
+  async getGenerator (nuxt: Nuxt) {
     const builder = await this.getBuilder(nuxt)
     return new Generator(nuxt, builder)
   }
 
-  async setLock (lockRelease) {
+  async setLock (lockRelease?: () => Promise<any>) {
     if (lockRelease) {
       if (this._lockRelease) {
         consola.warn(`A previous unreleased lock was found, this shouldn't happen and is probably an error in 'nuxt ${this.cmd.name}' command. The lock will be removed but be aware of potential strange results`)
@@ -200,7 +190,7 @@ export default class NuxtCommand extends Hookable {
   }
 
   _getMinimistOptions () {
-    const minimistOptions = {
+    const minimistOptions: MinimistOptions = {
       alias: {},
       boolean: [],
       string: [],
@@ -225,7 +215,7 @@ export default class NuxtCommand extends Hookable {
   }
 
   _getHelp () {
-    const options = []
+    const options: [string, string][] = []
     let maxOptionLength = 0
 
     for (const name in this.cmd.options) {

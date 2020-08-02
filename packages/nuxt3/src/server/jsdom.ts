@@ -1,4 +1,5 @@
 import consola from 'consola'
+import { BaseOptions, DOMWindow, VirtualConsole } from 'jsdom'
 import { DeterminedGlobals, timeout } from 'nuxt/utils'
 
 interface Options {
@@ -28,12 +29,12 @@ export default async function renderAndGetWindow (
       throw e
     })
 
-  const options = Object.assign({
+  const options: BaseOptions = Object.assign({
     // Load subresources (https://github.com/tmpvar/jsdom#loading-subresources)
-    resources: 'usable',
-    runScripts: 'dangerously',
-    virtualConsole: true,
-    beforeParse (window: Window) {
+    resources: 'usable' as const,
+    runScripts: 'dangerously' as const,
+    virtualConsole: undefined,
+    beforeParse (window: DOMWindow) {
       // Mock window.scrollTo
       window.scrollTo = () => {}
     }
@@ -44,8 +45,8 @@ export default async function renderAndGetWindow (
   }
 
   if (options.virtualConsole) {
-    if (options.virtualConsole === true) {
-      options.virtualConsole = new jsdom.VirtualConsole().sendTo(consola)
+    if (options.virtualConsole === undefined) {
+      options.virtualConsole = new jsdom.VirtualConsole().sendTo(consola as unknown as Console)
     }
     // Throw error when window creation failed
     options.virtualConsole.on('jsdomError', jsdomErrHandler)
@@ -58,13 +59,13 @@ export default async function renderAndGetWindow (
 
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')
-    error.body = window.document.body.innerHTML
+    ;(error as any).body = window.document.body.innerHTML
     window.close()
     throw error
   }
 
   // Used by Nuxt.js to say when the components are loaded and the app ready
-  await timeout(new Promise((resolve) => {
+  await timeout(new Promise<DOMWindow>((resolve) => {
     window[loadedCallback] = () => resolve(window)
   }), loadingTimeout, `Components loading in renderAndGetWindow was not completed in ${loadingTimeout / 1000}s`)
 

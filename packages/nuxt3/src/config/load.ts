@@ -11,9 +11,14 @@ import * as rc from 'rc9'
 
 import { LoadOptions } from 'nuxt/core/load'
 import { defaultNuxtConfigFile } from './config'
+import { CliConfiguration, Configuration } from 'nuxt/config/options'
 
 // @ts-ignore
 const isJest = typeof jest !== 'undefined'
+
+const interopDefault = (obj: any) => {
+  return 'default' in obj ? obj.default : obj
+}
 
 export interface EnvConfig {
   dotenv?: string
@@ -31,7 +36,7 @@ export async function loadNuxtConfig ({
 }: LoadOptions = {}) {
   rootDir = path.resolve(rootDir)
 
-  let options = {}
+  let options: CliConfiguration = {}
 
   try {
     configFile = require.resolve(path.resolve(rootDir, configFile))
@@ -66,17 +71,11 @@ export async function loadNuxtConfig ({
     // Clear cache
     clearRequireCache(configFile)
     const _require = createRequire(module)
-    options = _require(configFile) || {}
-    if (options.default) {
-      options = options.default
-    }
+    let _config: Configuration | ((ctx: Record<string, any>) => Promise<Configuration>) = interopDefault(_require(configFile) || {})
 
-    if (typeof options === 'function') {
+    if (typeof _config === 'function') {
       try {
-        options = await options(configContext)
-        if (options.default) {
-          options = options.default
-        }
+        options = interopDefault(await _config(configContext))
       } catch (error) {
         consola.error(error)
         consola.fatal('Error while fetching async configuration')

@@ -4,7 +4,7 @@ import consola from 'consola'
 import Hookable from 'hookable'
 
 import { defineAlias } from 'nuxt/utils'
-import { getNuxtConfig } from 'nuxt/config'
+import { getNuxtConfig, Configuration, NormalizedConfiguration } from 'nuxt/config'
 import { Server } from 'nuxt/server'
 
 import { version } from '../../package.json'
@@ -12,11 +12,15 @@ import { version } from '../../package.json'
 import ModuleContainer from './module'
 import Resolver from './resolver'
 
+declare global {
+  var __NUXT_DEV__: boolean
+}
+
 export default class Nuxt extends Hookable {
   _ready?: Promise<this>
   _initCalled?: boolean
 
-  options: any
+  options: NormalizedConfiguration
   resolver: Resolver
   moduleContainer: ModuleContainer
   server?: Server
@@ -24,7 +28,7 @@ export default class Nuxt extends Hookable {
   render?: Server['app']
   showReady?: () => void
 
-  constructor (options = {}) {
+  constructor(options: Configuration = {}) {
     super(consola)
 
     // Assign options and apply defaults
@@ -66,28 +70,28 @@ export default class Nuxt extends Hookable {
     }
   }
 
-  static get version () {
+  static get version() {
     return `v${version}` + (global.__NUXT_DEV__ ? '-development' : '')
   }
 
-  ready () {
+  ready() {
     if (!this._ready) {
       this._ready = this._init()
     }
     return this._ready
   }
 
-  async _init () {
+  async _init() {
     if (this._initCalled) {
       return this
     }
     this._initCalled = true
 
     // Add hooks
-    if (isPlainObject(this.options.hooks)) {
-      this.addHooks(this.options.hooks)
-    } else if (typeof this.options.hooks === 'function') {
+    if (this.options.hooks instanceof Function) {
       this.options.hooks(this.hook)
+    } else if (isPlainObject(this.options.hooks)) {
+      this.addHooks(this.options.hooks)
     }
 
     // Await for modules
@@ -104,7 +108,7 @@ export default class Nuxt extends Hookable {
     return this
   }
 
-  _initServer () {
+  _initServer() {
     if (this.server) {
       return
     }
@@ -114,14 +118,11 @@ export default class Nuxt extends Hookable {
     defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
-  async close (callback?: () => any | Promise<any>) {
+  async close(callback?: () => any | Promise<any>) {
     await this.callHook('close', this)
 
     if (typeof callback === 'function') {
       await callback()
     }
-
-    // Deleting as no longer exists on `hookable`
-    // this.clearHooks()
   }
 }

@@ -8,7 +8,7 @@ export default () => ({
     render: {
       ssr: true
     }
-  },
+  } as const,
   [MODES.spa]: {
     build: {
       ssr: false
@@ -16,5 +16,5 @@ export default () => ({
     render: {
       ssr: false
     }
-  }
+  } as const
 })

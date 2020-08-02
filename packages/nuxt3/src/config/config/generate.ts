@@ -1,5 +1,33 @@
+import { GlobbyOptions } from 'globby'
 
-export default () => ({
+type GenerateRoute = string | { route: string, payload: any }
+
+type GenerateRoutesFunction = () => (Promise<GenerateRoute[]> | GenerateRoute[])
+type GenerateRoutesFunctionWithCallback = (callback: (err: Error, routes: GenerateRoute[]) => void) => void
+
+export interface GenerateOptions {
+  cache?: false | {
+    ignore?: string[] | Function,
+    globbyOptions?: GlobbyOptions
+  }
+  concurrency: number
+  crawler: boolean
+  devtools?: boolean
+  dir: string
+  exclude: RegExp[]
+  fallback: boolean | string
+  interval: number
+  routes: GenerateRoute[] | GenerateRoutesFunction | GenerateRoutesFunctionWithCallback
+  staticAssets: {
+    base?: string
+    versionBase?: string
+    dir?: string
+    version?: string
+  }
+  subFolders: boolean
+}
+
+export default (): GenerateOptions => ({
   dir: 'dist',
   routes: [],
   exclude: [],

@@ -213,7 +213,7 @@ export const createRoutes = function createRoutes ({
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed
-export const guardDir = function guardDir (options: Record<string, unknown>, key1: string, key2: string) {
+export const guardDir = function guardDir (options: Record<string, any>, key1: string, key2: string) {
   const dir1 = get(options, key1, false) as string
   const dir2 = get(options, key2, false) as string
 

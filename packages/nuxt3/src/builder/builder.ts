@@ -254,7 +254,7 @@ export default class Builder {
     }
   }
 
-  globPathWithExtensions (path) {
+  globPathWithExtensions(path: string) {
     return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
   }
 
@@ -278,7 +278,7 @@ export default class Builder {
       this.resolveMiddleware(templateContext)
     ])
 
-    await this.resolvePlugins(templateContext)
+    await this.resolvePlugins()
 
     this.addOptionalTemplates(templateContext)
 
@@ -293,7 +293,7 @@ export default class Builder {
 
   async normalizePlugins () {
     // options.extendPlugins allows for returning a new plugins array
-    if (typeof this.options.extendPlugins === 'function') {
+    if (this.options.extendPlugins instanceof Function) {
       const extendedPlugins = this.options.extendPlugins(this.options.plugins)
 
       if (Array.isArray(extendedPlugins)) {
@@ -340,7 +340,7 @@ export default class Builder {
     )
   }
 
-  addOptionalTemplates (templateContext) {
+  addOptionalTemplates(templateContext) {
     if (this.options.build.indicator) {
       // templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
     }
@@ -350,19 +350,19 @@ export default class Builder {
     }
   }
 
-  async resolveFiles (dir, cwd = this.options.srcDir) {
+  async resolveFiles(dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
       follow: this.options.build.followSymlinks
     }))
   }
 
-  async resolveRelative (dir) {
+  async resolveRelative(dir) {
     const dirPrefix = new RegExp(`^${dir}/`)
     return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
-  async resolveApp ({ templateVars }) {
+  async resolveApp({ templateVars }) {
     templateVars.appPath = 'nuxt-app/app.tutorial.vue'
 
     for (const appFile of this.appFiles) {
@@ -376,7 +376,7 @@ export default class Builder {
     templateVars.hasApp = false
   }
 
-  async resolveLayouts ({ templateVars, templateFiles }) {
+  async resolveLayouts({ templateVars, templateFiles }) {
     if (!this.options.features.layouts) {
       return
     }
@@ -414,7 +414,7 @@ export default class Builder {
     }
   }
 
-  async resolvePages (templateContext) {
+  async resolvePages(templateContext) {
     const { templateVars } = templateContext
 
     const pagesDir = path.join(this.options.srcDir, this.options.dir.pages)
@@ -475,7 +475,7 @@ export default class Builder {
     this.routes = templateVars.router.routes
   }
 
-  async resolveStore ({ templateVars, templateFiles }) {
+  async resolveStore({ templateVars, templateFiles }) {
     // Add store if needed
     if (!this.options.features.store || !this.options.store) {
       return
@@ -515,7 +515,7 @@ export default class Builder {
   async resolveCustomTemplates (templateContext) {
     // Sanitize custom template files
     this.options.build.templates = this.options.build.templates.map((t) => {
-      const src = t.src || t
+      const src = typeof t === 'string' ? t : t.src
       return {
         src: r(this.options.srcDir, src),
         dst: t.dst || path.basename(src),
@@ -524,7 +524,7 @@ export default class Builder {
       }
     })
 
-    const customTemplateFiles = this.options.build.templates.map(t => t.dst || path.basename(t.src || t))
+    const customTemplateFiles = this.options.build.templates.map(t => t.dst || path.basename(typeof t === 'string' ? t : t.src))
 
     const templatePaths = uniq([
       // Modules & user provided templates
@@ -559,7 +559,7 @@ export default class Builder {
   }
 
   async resolveLoadingIndicator ({ templateFiles }) {
-    if (!this.options.loadingIndicator.name) {
+    if (typeof this.options.loadingIndicator !== 'object' || !this.options.loadingIndicator.name) {
       return
     }
     let indicatorPath = path.resolve(
@@ -671,7 +671,7 @@ export default class Builder {
   }
 
   // TODO: Uncomment when generateConfig enabled again
-  // async generateConfig() {
+  // async generateConfig () {
   //   const config = path.resolve(this.options.buildDir, 'build.config.js')
   //   const options = omit(this.options, Options.unsafeKeys)
   //   await fsExtra.writeFile(
@@ -707,7 +707,7 @@ export default class Builder {
     }
   }
 
-  assignWatcher (key) {
+  assignWatcher (key: string) {
     return (watcher) => {
       if (this.watchers[key]) {
         this.watchers[key].close()
@@ -731,7 +731,7 @@ export default class Builder {
       patterns.push(r(this.options.srcDir, this.options.dir.pages))
     }
 
-    patterns = patterns.map((path, ...args) => upath.normalizeSafe(this.globPathWithExtensions(path), ...args))
+    patterns = patterns.map((path) => upath.normalizeSafe(this.globPathWithExtensions(path)))
 
     const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 

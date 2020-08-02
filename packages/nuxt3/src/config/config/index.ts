@@ -9,16 +9,12 @@ import render from './render'
 import router from './router'
 import server from './server'
 import cli from './cli'
-import generate from './generate'
+import generate, { GenerateOptions } from './generate'
 
 export const defaultNuxtConfigFile = 'nuxt.config'
 
-export function getDefaultNuxtConfig (options = {}) {
-  if (!options.env) {
-    options.env = process.env
-  }
-
-  return {
+export const getDefaultNuxtConfig = () =>
+  ({
     ..._app(),
     ..._common(),
     build: build(),
@@ -26,8 +22,11 @@ export function getDefaultNuxtConfig (options = {}) {
     modes: modes(),
     render: render(),
     router: router(),
-    server: server(options),
+    server: server({ env: process.env }) as ReturnType<typeof server> | boolean,
     cli: cli(),
-    generate: generate()
-  }
-}
+    generate: generate(),
+    export: undefined as undefined | GenerateOptions,
+    telemetry: undefined as undefined | boolean,
+  })
+
+export type DefaultConfiguration = ReturnType<typeof getDefaultNuxtConfig>

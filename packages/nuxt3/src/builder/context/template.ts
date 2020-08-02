@@ -3,6 +3,7 @@ import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
+import { NormalizedConfiguration } from 'nuxt/config'
 import { r, wp, wChunk, serializeFunction, isFullStatic } from 'nuxt/utils'
 
 import type Builder from '../builder'
@@ -11,7 +12,7 @@ export default class TemplateContext {
   templateFiles: string[]
   templateVars: any
 
-  constructor (builder: Builder, options) {
+  constructor(builder: Builder, options: NormalizedConfiguration) {
     this.templateFiles = Array.from(builder.template.files)
     this.templateVars = {
       nuxtOptions: options,
@@ -57,7 +58,7 @@ export default class TemplateContext {
     }
   }
 
-  get templateOptions () {
+  get templateOptions() {
     return {
       imports: {
         serialize,

@@ -15,8 +15,8 @@ async function promiseFinally<T> (
   return result
 }
 
-export const timeout = function timeout (
-  fn: () => any,
+export const timeout = function timeout <T>(
+  fn: Promise<T>,
   ms: number,
   msg: string
 ) {

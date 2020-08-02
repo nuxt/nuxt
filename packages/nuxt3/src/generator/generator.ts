@@ -31,7 +31,7 @@ export default class Generator {
   routes: Array<{ route: string } & Record<string, any>>
   generatedRoutes: Set<string>
 
-  constructor (nuxt: Nuxt, builder?: Builder) {
+  constructor(nuxt: Nuxt, builder?: Builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
@@ -53,7 +53,7 @@ export default class Generator {
     }
   }
 
-  async generate ({ build = true, init = true } = {}) {
+  async generate({ build = true, init = true } = {}) {
     consola.debug('Initializing generator...')
     await this.initiate({ build, init })
 
@@ -80,7 +80,7 @@ export default class Generator {
     return { errors }
   }
 
-  async initiate ({ build = true, init = true } = {}) {
+  async initiate({ build = true, init = true } = {}) {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
@@ -119,7 +119,7 @@ export default class Generator {
     }
   }
 
-  async initRoutes (...args) {
+  async initRoutes(...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
     if (this.options.router.mode !== 'hash') {
@@ -150,7 +150,7 @@ export default class Generator {
     return routes
   }
 
-  shouldGenerateRoute (route) {
+  shouldGenerateRoute(route) {
     return this.options.generate.exclude.every((regex) => {
       if (typeof regex === 'string') {
         return regex !== route
@@ -159,7 +159,7 @@ export default class Generator {
     })
   }
 
-  getBuildConfig () {
+  getBuildConfig() {
     try {
       return require(path.join(this.options.buildDir, 'nuxt/config.json'))
     } catch (err) {
@@ -167,11 +167,11 @@ export default class Generator {
     }
   }
 
-  getAppRoutes () {
+  getAppRoutes() {
     return require(path.join(this.options.buildDir, 'routes.json'))
   }
 
-  async generateRoutes (routes) {
+  async generateRoutes(routes) {
     const errors = []
 
     this.routes = []
@@ -204,7 +204,7 @@ export default class Generator {
     return errors
   }
 
-  _formatErrors (errors) {
+  _formatErrors(errors) {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
@@ -223,7 +223,7 @@ export default class Generator {
       .join('\n')
   }
 
-  async afterGenerate () {
+  async afterGenerate() {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
@@ -255,7 +255,7 @@ export default class Generator {
     consola.success('Client-side fallback created: `' + fallback + '`')
   }
 
-  async initDist () {
+  async initDist() {
     // Clean destination folder
     await fsExtra.emptyDir(this.distPath)
 
@@ -283,7 +283,7 @@ export default class Generator {
     await this.nuxt.callHook('export:distCopied', this)
   }
 
-  decorateWithPayloads (routes, generateRoutes) {
+  decorateWithPayloads(routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
@@ -301,7 +301,7 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute ({ route, payload = {}, errors = [] }) {
+  async generateRoute({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
 
@@ -320,7 +320,8 @@ export default class Generator {
     try {
       const renderContext = {
         payload,
-        staticAssetsBase: this.staticAssetsBase
+        staticAssetsBase: this.staticAssetsBase,
+        staticAssets: undefined
       }
       const res = await this.nuxt.server.renderRoute(route, renderContext)
       html = res.html
@@ -377,7 +378,7 @@ export default class Generator {
       pageErrors.push({ type: 'unhandled', route, error: minifyErr })
     }
 
-    let fileName
+    let fileName: string
 
     if (this.options.generate.subFolders) {
       fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
@@ -414,16 +415,8 @@ export default class Generator {
     return true
   }
 
-  minifyHtml (html) {
-    let minificationOptions = this.options.build.html.minify
-
-    // Legacy: Override minification options with generate.minify if present
-    // TODO: Remove in Nuxt version 3
-    if (typeof this.options.generate.minify !== 'undefined') {
-      minificationOptions = this.options.generate.minify
-      consola.warn('generate.minify has been deprecated and will be removed in the next major version.' +
-        ' Use build.html.minify instead!')
-    }
+  minifyHtml(html: string) {
+    const minificationOptions = this.options.build.html.minify
 
     if (!minificationOptions) {
       return html

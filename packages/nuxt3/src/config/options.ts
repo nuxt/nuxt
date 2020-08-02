@@ -1,97 +1,104 @@
 import path from 'path'
 import fs from 'fs'
-import defaultsDeep from 'lodash/defaultsDeep'
+import consola from 'consola'
 import defu from 'defu'
+import destr from 'destr'
+import defaultsDeep from 'lodash/defaultsDeep'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
-import consola from 'consola'
-import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'nuxt/utils'
-import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
-export function getNuxtConfig (_options) {
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG, Target, Mode } from 'nuxt/utils'
+
+import { DefaultConfiguration, defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
+import { deleteProp, mergeConfigs, setProp, overrideProp, Optional } from './transformers'
+import type { EnvConfig } from 'nuxt/config/load'
+
+interface InputConfiguration {
+  appTemplatePath?: string
+  layoutTransition?: string | DefaultConfiguration['layoutTransition']
+  loading?: true | false | DefaultConfiguration['loading']
+  manifest?: {
+    theme_color?: string
+  }
+  pageTransition?: string | DefaultConfiguration['pageTransition']
+  rootDir?: string
+  store?: boolean
+}
+
+export interface Configuration extends InputConfiguration, Optional<Omit<DefaultConfiguration, keyof InputConfiguration>> { }
+
+export interface CliConfiguration extends Configuration {
+  // cli
+  _build?: boolean
+  _cli?: boolean
+  _export?: boolean
+  _generate?: boolean
+  _start?: boolean
+  _ready?: boolean
+  _legacyGenerate?: boolean
+  _env?: NodeJS.ProcessEnv
+  _envConfig?: EnvConfig
+  _nuxtConfigFiles?: string[]
+}
+
+export function getNuxtConfig(_options: Configuration) {
   // Prevent duplicate calls
-  if (_options.__normalized__) {
+  if ('__normalized__' in _options) {
     return _options
   }
 
+  return normalizeConfig(_options as CliConfiguration)
+}
+
+function normalizeConfig(_options: CliConfiguration) {
   // Clone options to prevent unwanted side-effects
-  const options = Object.assign({}, _options)
-  options.__normalized__ = true
+  const _config: CliConfiguration = Object.assign({}, _options)
+
+  setProp(_config, '__normalized__', true as const)
 
   // Normalize options
-  if (options.loading === true) {
-    delete options.loading
+  if (_config.loading === true) {
+    deleteProp(_config, 'loading')
   }
 
-  if (
-    options.router &&
-    options.router.middleware &&
-    !Array.isArray(options.router.middleware)
-  ) {
-    options.router.middleware = [options.router.middleware]
+  setProp(_config, '_routerBaseSpecified', _config.router && typeof _config.router.base === 'string')
+
+  overrideProp(_config, 'pageTransition', typeof _config.pageTransition === 'string' ? { name: _config.pageTransition } : _config.pageTransition)
+  overrideProp(_config, 'layoutTransition', typeof _config.layoutTransition === 'string' ? { name: _config.layoutTransition } : _config.layoutTransition)
+
+  if (typeof _config.extensions === 'string') {
+    _config.extensions = [_config.extensions]
   }
 
-  if (options.router && typeof options.router.base === 'string') {
-    options._routerBaseSpecified = true
-  }
-
-  // TODO: Remove for Nuxt 3
-  // router.scrollBehavior -> app/router.scrollBehavior.js
-  if (options.router && typeof options.router.scrollBehavior !== 'undefined') {
-    consola.warn('`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file, learn more: https://nuxtjs.org/api/configuration-router#scrollbehavior')
-  }
-
-  // TODO: Remove for Nuxt 3
-  // transition -> pageTransition
-  if (typeof options.transition !== 'undefined') {
-    consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
-    options.pageTransition = options.transition
-    delete options.transition
-  }
-
-  if (typeof options.pageTransition === 'string') {
-    options.pageTransition = { name: options.pageTransition }
-  }
-
-  if (typeof options.layoutTransition === 'string') {
-    options.layoutTransition = { name: options.layoutTransition }
-  }
-
-  if (typeof options.extensions === 'string') {
-    options.extensions = [options.extensions]
-  }
-
-  options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
-    ? options.globalName.toLowerCase()
-    // use `` for preventing replacing to nuxt-edge
-    : 'nuxt'
+  overrideProp(_config, 'globalName',
+    (isNonEmptyString(_config.globalName) && /^[a-zA-Z]+$/.test(_config.globalName))
+      ? _config.globalName.toLowerCase()
+      // use `` for preventing replacing to nuxt-edge
+      : 'nuxt'
+  )
 
   // Resolve rootDir
-  options.rootDir = isNonEmptyString(options.rootDir) ? path.resolve(options.rootDir) : process.cwd()
+  overrideProp(_config, 'rootDir',
+    isNonEmptyString(_config.rootDir) ? path.resolve(_config.rootDir) : process.cwd()
+  )
 
   // Apply defaults by ${buildDir}/dist/build.config.js
   // TODO: Unsafe operation.
-  // const buildDir = options.buildDir || defaults.buildDir
-  // const buildConfig = resolve(options.rootDir, buildDir, 'build.config.js')
+  // const buildDir = _config.buildDir || defaults.buildDir
+  // const buildConfig = resolve(_config.rootDir, buildDir, 'build.config.js')
   // if (existsSync(buildConfig)) {
-  //   defaultsDeep(options, require(buildConfig))
+  //   defaultsDeep(_config, require(buildConfig))
   // }
 
-  // Apply defaults
-  const nuxtConfig = getDefaultNuxtConfig()
-
-  nuxtConfig.build._publicPath = nuxtConfig.build.publicPath
-
   // Fall back to default if publicPath is falsy
-  if (options.build && !options.build.publicPath) {
-    options.build.publicPath = undefined
+  if (_config.build && !_config.build.publicPath) {
+    _config.build.publicPath = undefined
   }
 
-  defaultsDeep(options, nuxtConfig)
+  // Apply defaults
+  const options = mergeConfigs(_config, getDefaultNuxtConfig())
 
   // Target
-  options.target = options.target || 'server'
   if (!Object.values(TARGETS).includes(options.target)) {
     consola.warn(`Unknown target: ${options.target}. Falling back to server`)
     options.target = 'server'
@@ -127,16 +134,16 @@ export function getNuxtConfig (_options) {
   const hasGenerateDir = isNonEmptyString(options.generate.dir)
 
   // Resolve srcDir
-  options.srcDir = hasSrcDir
+  overrideProp(options, 'srcDir', hasSrcDir
     ? path.resolve(options.rootDir, options.srcDir)
-    : options.rootDir
+    : options.rootDir)
 
   // Resolve buildDir
-  options.buildDir = path.resolve(options.rootDir, options.buildDir)
+  overrideProp(options, 'buildDir', path.resolve(options.rootDir, options.buildDir))
 
   // Aliases
   const { rootDir, srcDir, dir: { assets: assetsDir, static: staticDir } } = options
-  options.alias = {
+  overrideProp(options, 'alias', {
     '~~': rootDir,
     '@@': rootDir,
     '~': srcDir,
@@ -144,18 +151,14 @@ export function getNuxtConfig (_options) {
     [assetsDir]: path.join(srcDir, assetsDir),
     [staticDir]: path.join(srcDir, staticDir),
     ...options.alias
-  }
+  })
 
   // Default value for _nuxtConfigFile
-  if (!options._nuxtConfigFile) {
-    options._nuxtConfigFile = path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`)
-  }
+  overrideProp(options, '_nuxtConfigFile', options._nuxtConfigFile || path.resolve(options.rootDir, `${defaultNuxtConfigFile}.js`))
 
-  if (!options._nuxtConfigFiles) {
-    options._nuxtConfigFiles = [
-      options._nuxtConfigFile
-    ]
-  }
+  setProp(options, '_nuxtConfigFiles', (options as any)._nuxtConfigFiles || [
+    options._nuxtConfigFile
+  ])
 
   // Watch for config file changes
   options.watch.push(...options._nuxtConfigFiles)
@@ -190,9 +193,9 @@ export function getNuxtConfig (_options) {
 
   const mandatoryExtensions = ['js', 'mjs']
 
-  options.extensions = mandatoryExtensions
+  overrideProp(options, 'extensions', mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))
-    .concat(options.extensions)
+    .concat(options.extensions))
 
   // If app.html is defined, set the template path to the user template
   if (options.appTemplatePath === undefined) {
@@ -204,8 +207,8 @@ export function getNuxtConfig (_options) {
     options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
   }
 
-  options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
-  options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
+  overrideProp(options.build, 'publicPath', options.build.publicPath.replace(/([^/])$/, '$1/'))
+  overrideProp(options.build, '_publicPath', options.build._publicPath.replace(/([^/])$/, '$1/'))
 
   // Ignore publicPath on dev
   if (options.dev && isUrl(options.build.publicPath)) {
@@ -233,7 +236,7 @@ export function getNuxtConfig (_options) {
     options.loadingIndicator = Object.assign(
       {
         name: 'default',
-        color: (options.loading && options.loading.color) || '#D3D3D3',
+        color: (options.loading && typeof options.loading !== 'string' && typeof options.loading !== 'boolean' && options.loading.color) || '#D3D3D3',
         color2: '#F5F5F5',
         background: (options.manifest && options.manifest.theme_color) || 'white',
         dev: options.dev,
@@ -244,15 +247,13 @@ export function getNuxtConfig (_options) {
   }
 
   // Debug errors
-  if (options.debug === undefined) {
-    options.debug = options.dev
-  }
+  overrideProp(options, 'debug', options.debug ?? options.dev)
 
   // Validate that etag.hash is a function, if not unset it
   if (options.render.etag) {
     const { hash } = options.render.etag
     if (hash) {
-      const isFn = typeof hash === 'function'
+      const isFn = hash instanceof Function
       if (!isFn) {
         options.render.etag.hash = undefined
 
@@ -273,64 +274,26 @@ export function getNuxtConfig (_options) {
       unsafeInlineCompatibility: false,
       reportOnly: options.debug
     })
-
-    // TODO: Remove this if statement in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
-    if (options.render.csp.unsafeInlineCompatiblity) {
-      consola.warn('Using `unsafeInlineCompatiblity` is deprecated and will be removed in Nuxt 3. Use `unsafeInlineCompatibility` instead.')
-      options.render.csp.unsafeInlineCompatibility = options.render.csp.unsafeInlineCompatiblity
-      delete options.render.csp.unsafeInlineCompatiblity
-    }
   }
 
   // cssSourceMap
-  if (options.build.cssSourceMap === undefined) {
-    options.build.cssSourceMap = options.dev
-  }
+  overrideProp(options.build, 'cssSourceMap', options.build.cssSourceMap ?? options.dev)
 
-  const babelConfig = options.build.babel
   // babel cacheDirectory
-  if (babelConfig.cacheDirectory === undefined) {
-    babelConfig.cacheDirectory = options.dev
-  }
-
-  // TODO: remove this warn in Nuxt 3
-  if (Array.isArray(babelConfig.presets)) {
-    const warnPreset = (presetName) => {
-      const oldPreset = '@nuxtjs/babel-preset-app'
-      const newPreset = '@nuxt/babel-preset-app'
-      if (presetName.includes(oldPreset)) {
-        presetName = presetName.replace(oldPreset, newPreset)
-        consola.warn('@nuxtjs/babel-preset-app has been deprecated, please use @nuxt/babel-preset-app.')
-      }
-      return presetName
-    }
-    babelConfig.presets = babelConfig.presets.map((preset) => {
-      const hasOptions = Array.isArray(preset)
-      if (hasOptions) {
-        preset[0] = warnPreset(preset[0])
-      } else if (typeof preset === 'string') {
-        preset = warnPreset(preset)
-      }
-      return preset
-    })
-  }
+  const babelConfig = options.build.babel
+  overrideProp(options.build.babel, 'cacheDirectory', babelConfig.cacheDirectory ?? options.dev)
 
   // Vue config
   const vueConfig = options.vue.config
 
-  if (vueConfig.silent === undefined) {
-    vueConfig.silent = !options.dev
-  }
-  if (vueConfig.performance === undefined) {
-    vueConfig.performance = options.dev
-  }
+  overrideProp(options.vue.config, 'performance', vueConfig.performance !== undefined ? vueConfig.performance : options.dev)
 
   // merge custom env with variables
   const eligibleEnvVariables = pick(process.env, Object.keys(process.env).filter(k => k.startsWith('NUXT_ENV_')))
-  Object.assign(options.env, eligibleEnvVariables)
+  overrideProp(options, 'env', Object.assign(options.env, eligibleEnvVariables))
 
   // Normalize ignore
-  options.ignore = options.ignore ? [].concat(options.ignore) : []
+  overrideProp(options, 'ignore', options.ignore ? Array.from(options.ignore) : [])
 
   // Append ignorePrefix glob to ignore
   if (typeof options.ignorePrefix === 'string') {
@@ -349,24 +312,23 @@ export function getNuxtConfig (_options) {
     options.pageTransition.appear = true
   }
 
-  options.render.ssrLog = options.dev
+  overrideProp(options.render, 'ssrLog', options.dev
     ? options.render.ssrLog === undefined || options.render.ssrLog
-    : false
+    : false)
 
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
-  if (options.generate.fallback === true) {
-    options.generate.fallback = '404.html'
-  }
+  overrideProp(options.generate, 'fallback', options.generate.fallback === true ? '404.html' : options.generate.fallback)
 
   if (options.build.stats === 'none' || options.build.quiet === true) {
     options.build.stats = false
   }
 
-  // Vendor backward compatibility with nuxt 1.x
-  if (typeof options.build.vendor !== 'undefined') {
-    delete options.build.vendor
-    consola.warn('vendor has been deprecated due to webpack4 optimization')
-  }
+  // @pi0 - surely this can go
+  // // Vendor backward compatibility with nuxt 1.x
+  // if (typeof options.build.vendor !== 'undefined') {
+  //   delete options.build.vendor
+  //   consola.warn('vendor has been deprecated due to webpack4 optimization')
+  // }
 
   // Disable CSS extraction due to incompatibility with thread-loader
   if (options.build.extractCSS && options.build.parallel) {
@@ -375,15 +337,8 @@ export function getNuxtConfig (_options) {
   }
 
   // build.extractCSS.allChunks has no effect
-  if (typeof options.build.extractCSS.allChunks !== 'undefined') {
+  if (typeof options.build.extractCSS !== 'boolean' && typeof options.build.extractCSS.allChunks !== 'undefined') {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
-  }
-
-  // devModules has been renamed to buildModules
-  if (typeof options.devModules !== 'undefined') {
-    consola.warn('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
-    options.buildModules.push(...options.devModules)
-    delete options.devModules
   }
 
   // Enable minimize for production builds
@@ -397,11 +352,11 @@ export function getNuxtConfig (_options) {
   }
 
   const { loaders } = options.build
-  const vueLoader = loaders.vue
-  if (vueLoader.productionMode === undefined) {
-    vueLoader.productionMode = !options.dev
-  }
-  const styleLoaders = [
+  // const vueLoader = loaders.vue
+  // if (vueLoader.productionMode === undefined) {
+  //   vueLoader.productionMode = !options.dev
+  // }
+  const styleLoaders: Array<keyof typeof loaders> = [
     'css', 'cssModules', 'less',
     'sass', 'scss', 'stylus', 'vueStyle'
   ]
@@ -412,7 +367,7 @@ export function getNuxtConfig (_options) {
     }
   }
 
-  options.build.transpile = [].concat(options.build.transpile || [])
+  overrideProp(options.build, 'transpile', Array.from(options.build.transpile || []))
 
   if (options.build.quiet === true) {
     consola.level = 0
@@ -420,32 +375,22 @@ export function getNuxtConfig (_options) {
 
   // Use runInNewContext for dev mode by default
   const { bundleRenderer } = options.render
-  if (typeof bundleRenderer.runInNewContext === 'undefined') {
-    bundleRenderer.runInNewContext = options.dev
+  overrideProp(options.render.bundleRenderer, 'runInNewContext', bundleRenderer.runInNewContext ?? options.dev)
+
+  // const { timing } = options.server
+  if (options.server && typeof options.server !== 'boolean' && options.server.timing) {
+    overrideProp(options.server, 'timing', { total: true, ...options.server.timing })
   }
 
-  // TODO: Remove this if statement in Nuxt 3
-  if (options.build.crossorigin) {
-    consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
-    options.render.crossorigin = options.build.crossorigin
-    delete options.build.crossorigin
-  }
 
-  const { timing } = options.server
-  if (timing) {
-    options.server.timing = { total: true, ...timing }
-  }
-
-  if (isPureObject(options.serverMiddleware)) {
-    options.serverMiddleware = Object.entries(options.serverMiddleware)
-      .map(([path, handler]) => ({ path, handler }))
-  }
+  overrideProp(options, 'serverMiddleware', Array.isArray(options.serverMiddleware) ? options.serverMiddleware : Object.entries(options.serverMiddleware)
+    .map(([path, handler]) => ({ path, handler }))
+  )
 
   // Generate staticAssets
   const { staticAssets } = options.generate
-  if (!staticAssets.version) {
-    staticAssets.version = String(Math.round(Date.now() / 1000))
-  }
+  overrideProp(options.generate.staticAssets, 'version', options.generate.staticAssets.version || String(Math.round(Date.now() / 1000)))
+
   if (!staticAssets.base) {
     const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
     staticAssets.base = urlJoin(publicPath, staticAssets.dir)
@@ -492,3 +437,5 @@ export function getNuxtConfig (_options) {
 
   return options
 }
+
+export type NormalizedConfiguration = ReturnType<typeof normalizeConfig>
