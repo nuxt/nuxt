@@ -66,7 +66,7 @@
     "@nuxt/loading-screen": "^2.0.2",
     "@nuxt/opencollective": "^0.3.0",
     "@nuxt/static": "^1.0.0",
-    "@nuxt/telemetry": "^1.2.2",
+    "@nuxt/telemetry": "^1.2.3",
     "@nuxt/webpack": "2.14.0"
   },
   "engines": {

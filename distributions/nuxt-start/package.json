@@ -57,7 +57,7 @@
   "dependencies": {
     "@nuxt/cli": "2.14.0",
     "@nuxt/core": "2.14.0",
-    "@nuxt/telemetry": "^1.2.2",
+    "@nuxt/telemetry": "^1.2.3",
     "node-fetch": "^2.6.0",
     "vue": "^2.6.11",
     "vue-client-only": "^2.0.0",
