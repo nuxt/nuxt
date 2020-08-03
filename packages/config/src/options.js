@@ -461,7 +461,7 @@ export function getNuxtConfig (_options) {
   }
   if (options.createRequire === 'esm') {
     const esm = require('esm')
-    options.createRequire = module => esm(module)
+    options.createRequire = module => esm(module, { cache: false, cjs: { cache: false } })
   } else if (options.createRequire === 'jiti') {
     const jiti = require('jiti')
     options.createRequire = module => jiti(module.filename)
