@@ -28,7 +28,7 @@ export default class Nuxt extends Hookable {
   render?: Server['app']
   showReady?: () => void
 
-  constructor(options: Configuration = {}) {
+  constructor (options: Configuration = {}) {
     super(consola)
 
     // Assign options and apply defaults
@@ -70,18 +70,18 @@ export default class Nuxt extends Hookable {
     }
   }
 
-  static get version() {
+  static get version () {
     return `v${version}` + (global.__NUXT_DEV__ ? '-development' : '')
   }
 
-  ready() {
+  ready () {
     if (!this._ready) {
       this._ready = this._init()
     }
     return this._ready
   }
 
-  async _init() {
+  async _init () {
     if (this._initCalled) {
       return this
     }
@@ -108,7 +108,7 @@ export default class Nuxt extends Hookable {
     return this
   }
 
-  _initServer() {
+  _initServer () {
     if (this.server) {
       return
     }
@@ -118,7 +118,7 @@ export default class Nuxt extends Hookable {
     defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
-  async close(callback?: () => any | Promise<any>) {
+  async close (callback?: () => any | Promise<any>) {
     await this.callHook('close', this)
 
     if (typeof callback === 'function') {

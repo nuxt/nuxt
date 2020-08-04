@@ -54,6 +54,7 @@ export default class Builder {
   plugins: Array<{
     src: string
   }>
+
   relativeToBuild: (...args: string[]) => string
   routes: RouteLocationRaw[]
   supportedExtensions: string[]
@@ -123,7 +124,7 @@ export default class Builder {
     }
   }
 
-  resolveAppTemplate() {
+  resolveAppTemplate () {
     // Resolve appDir
     const templatesDir = path.join(this.options.appDir, '_templates')
     const files = globby.sync(path.join(templatesDir, '/**'))
@@ -265,7 +266,7 @@ export default class Builder {
     }
   }
 
-  globPathWithExtensions(path: string) {
+  globPathWithExtensions (path: string) {
     return `${path}/**/*.{${this.supportedExtensions.join(',')}}`
   }
 
@@ -351,7 +352,7 @@ export default class Builder {
     )
   }
 
-  addOptionalTemplates(templateContext) {
+  addOptionalTemplates (templateContext) {
     if (this.options.build.indicator) {
       // templateContext.templateFiles.push('components/nuxt-build-indicator.vue')
     }
@@ -361,14 +362,14 @@ export default class Builder {
     }
   }
 
-  async resolveFiles(dir, cwd = this.options.srcDir) {
+  async resolveFiles (dir, cwd = this.options.srcDir) {
     return this.ignore.filter(await glob(this.globPathWithExtensions(dir), {
       cwd,
       follow: this.options.build.followSymlinks
     }))
   }
 
-  async resolveRelative(dir) {
+  async resolveRelative (dir) {
     const dirPrefix = new RegExp(`^${dir}/`)
     return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
@@ -387,7 +388,7 @@ export default class Builder {
     templateVars.hasApp = false
   }
 
-  async resolveLayouts({ templateVars, templateFiles }) {
+  async resolveLayouts ({ templateVars, templateFiles }) {
     if (!this.options.features.layouts) {
       return
     }
@@ -425,7 +426,7 @@ export default class Builder {
     }
   }
 
-  async resolvePages(templateContext) {
+  async resolvePages (templateContext) {
     const { templateVars } = templateContext
 
     const pagesDir = path.join(this.options.srcDir, this.options.dir.pages)
@@ -486,7 +487,7 @@ export default class Builder {
     this.routes = templateVars.router.routes
   }
 
-  async resolveStore({ templateVars, templateFiles }) {
+  async resolveStore ({ templateVars, templateFiles }) {
     // Add store if needed
     if (!this.options.features.store || !this.options.store) {
       return
@@ -742,7 +743,7 @@ export default class Builder {
       patterns.push(r(this.options.srcDir, this.options.dir.pages))
     }
 
-    patterns = patterns.map((path) => upath.normalizeSafe(this.globPathWithExtensions(path)))
+    patterns = patterns.map(path => upath.normalizeSafe(this.globPathWithExtensions(path)))
 
     const refreshFiles = debounce(() => this.generateRoutesAndFiles(), 200)
 

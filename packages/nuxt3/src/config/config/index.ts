@@ -26,7 +26,7 @@ export const getDefaultNuxtConfig = () =>
     cli: cli(),
     generate: generate(),
     export: undefined as undefined | GenerateOptions,
-    telemetry: undefined as undefined | boolean,
+    telemetry: undefined as undefined | boolean
   })
 
 export type DefaultConfiguration = ReturnType<typeof getDefaultNuxtConfig>

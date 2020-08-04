@@ -258,7 +258,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      'app': this.buildContext.options.appDir,
+      app: this.buildContext.options.appDir,
       'nuxt-build': this.buildContext.options.buildDir,
       'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }

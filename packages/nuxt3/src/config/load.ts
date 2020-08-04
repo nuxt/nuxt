@@ -10,8 +10,8 @@ import destr from 'destr'
 import * as rc from 'rc9'
 
 import { LoadOptions } from 'src/core/load'
-import { defaultNuxtConfigFile } from './config'
 import { CliConfiguration, Configuration } from 'src/config/options'
+import { defaultNuxtConfigFile } from './config'
 
 // @ts-ignore
 const isJest = typeof jest !== 'undefined'
@@ -71,7 +71,7 @@ export async function loadNuxtConfig ({
     // Clear cache
     clearRequireCache(configFile)
     const _require = createRequire(module)
-    let _config: Configuration | ((ctx: Record<string, any>) => Promise<Configuration>) = interopDefault(_require(configFile) || {})
+    const _config: Configuration | ((ctx: Record<string, any>) => Promise<Configuration>) = interopDefault(_require(configFile) || {})
 
     if (typeof _config === 'function') {
       try {

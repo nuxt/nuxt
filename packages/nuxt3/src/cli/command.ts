@@ -26,7 +26,6 @@ export interface Command {
 
 type Hooks = Parameters<Hookable['addHooks']>[0]
 
-
 export default class NuxtCommand extends Hookable {
   _argv: string[]
   _parsedArgv: null | ParsedArgs
@@ -123,7 +122,7 @@ export default class NuxtCommand extends Hookable {
     return this._parsedArgv
   }
 
-  async getNuxtConfig(extraOptions: Partial<CliConfiguration> = {}) {
+  async getNuxtConfig (extraOptions: Partial<CliConfiguration> = {}) {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
@@ -145,7 +144,6 @@ export default class NuxtCommand extends Hookable {
   }
 
   async getNuxt (options: CliConfiguration) {
-
     const nuxt = new Nuxt(options)
     await nuxt.ready()
 

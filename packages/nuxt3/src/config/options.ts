@@ -7,9 +7,9 @@ import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import destr from 'destr'
 import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'src/utils'
+import type { EnvConfig } from 'src/config/load'
 import { DefaultConfiguration, defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 import { deleteProp, mergeConfigs, setProp, overrideProp, Optional } from './transformers'
-import type { EnvConfig } from 'src/config/load'
 
 interface InputConfiguration {
   appTemplatePath?: string
@@ -39,7 +39,7 @@ export interface CliConfiguration extends Configuration {
   _nuxtConfigFiles?: string[]
 }
 
-export function getNuxtConfig(_options: Configuration) {
+export function getNuxtConfig (_options: Configuration) {
   // Prevent duplicate calls
   if ('__normalized__' in _options) {
     return _options
@@ -48,7 +48,7 @@ export function getNuxtConfig(_options: Configuration) {
   return normalizeConfig(_options as CliConfiguration)
 }
 
-function normalizeConfig(_options: CliConfiguration) {
+function normalizeConfig (_options: CliConfiguration) {
   // Clone options to prevent unwanted side-effects
   const _config: CliConfiguration = Object.assign({}, _options)
 
@@ -381,7 +381,6 @@ function normalizeConfig(_options: CliConfiguration) {
   if (options.server && typeof options.server !== 'boolean' && options.server.timing) {
     overrideProp(options.server, 'timing', { total: true, ...options.server.timing })
   }
-
 
   overrideProp(options, 'serverMiddleware', Array.isArray(options.serverMiddleware) ? options.serverMiddleware : Object.entries(options.serverMiddleware)
     .map(([path, handler]) => ({ path, handler }))

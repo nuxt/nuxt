@@ -1,3 +1,4 @@
+import path from 'path'
 import type { WatchOptions as ChokidarWatchOptions } from 'chokidar'
 import type { NextHandleFunction, Server as ConnectServer } from 'connect'
 import type { configHooksT } from 'hookable/types/types'
@@ -5,11 +6,10 @@ import ignore from 'ignore'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 import type { Configuration as WebpackConfiguration } from 'webpack'
-import path from 'path'
 import { TARGETS, MODES, Target, Mode } from 'src/utils'
 
-import type { NormalizedConfiguration } from '../options'
 import Hookable from 'hookable'
+import type { NormalizedConfiguration } from '../options'
 
 type IgnoreOptions = Parameters<typeof ignore>[0]
 type IgnoreInstance = ReturnType<typeof ignore>

@@ -25,4 +25,4 @@ export default ({ env = {} }: { env?: ServerProcessEnv } = {}) => ({
   socket: env.UNIX_SOCKET ||
     env.npm_package_config_unix_socket,
   timing: false as false | { total: boolean }
-}) 
+})

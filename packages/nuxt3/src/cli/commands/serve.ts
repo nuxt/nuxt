@@ -5,10 +5,10 @@ import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from 'src/config'
 import { TARGETS } from 'src/utils'
-import { common, server } from '../options'
-import { showBanner } from '../utils/banner'
 import { Listener } from 'src/server'
 import { Nuxt } from 'src/core'
+import { common, server } from '../options'
+import { showBanner } from '../utils/banner'
 import type NuxtCommand from '../command'
 
 export default {

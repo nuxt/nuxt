@@ -128,7 +128,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule <T>(path: string, { useESM, isAlias, interopDefault }: RequireModuleOptions = {}): T {
+  requireModule <T> (path: string, { useESM, isAlias, interopDefault }: RequireModuleOptions = {}): T {
     let resolvedPath = path
     let requiredModule: any
 

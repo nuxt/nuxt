@@ -67,7 +67,7 @@ interface AliasOptions {
   warn?: boolean
 }
 
-export function defineAlias <O extends Record<string, any>>(
+export function defineAlias <O extends Record<string, any>> (
   src: O,
   target: Record<string, any>,
   prop: string | string[],

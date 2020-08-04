@@ -43,6 +43,7 @@ export default class Server {
     spaTemplate?: TemplateExecutor
     errorTemplate?: TemplateExecutor
   }
+
   serverContext: ServerContext
 
   constructor (nuxt: Nuxt) {

@@ -13,13 +13,11 @@ import type { Options as PugOptions } from 'pug'
 import type { TerserPluginOptions } from 'terser-webpack-plugin'
 import type { VueLoaderOptions } from 'vue-loader'
 import type {
-  Configuration as WebpackConfiguration, WebpackPluginFunction,
-
+  Configuration as WebpackConfiguration, WebpackPluginFunction
 
 } from 'webpack'
 import type { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
-
 
 interface WebpackEnv {
   isClient: boolean
@@ -95,7 +93,6 @@ interface PostcssVariableMap {
   customSelectors: Record<string, string>
   environmentVariables?: Record<string, string>
 }
-
 
 interface PostcssConfiguration {
   order?: PostcssOrderPreset | string[] | ((names: string[], presets: PostcssOrderPresetFunctions) => string[])
@@ -177,7 +174,7 @@ export default () => ({
   } as BabelOptions,
   /**
    * Enable cache of [terser-webpack-plugin](https://github.com/webpack-contrib/terser-webpack-plugin#options) and [cache-loader](https://github.com/webpack-contrib/cache-loader#cache-loader)
-   * 
+   *
    * ⚠️ Experimental
    * @default false
    */
@@ -201,7 +198,7 @@ export default () => ({
    * Enables Common CSS Extraction using Vue Server Renderer guidelines.
    *
    * Using [extract-css-chunks-webpack-plugin](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/) under the hood, all your CSS will be extracted into separate files, usually one per component. This allows caching your CSS and JavaScript separately and is worth a try in case you have a lot of global or shared CSS.
-   * 
+   *
    * @default false
    */
   extractCSS: false as boolean | Record<string, any>,
@@ -303,7 +300,7 @@ export default () => ({
   optimizeCSS: undefined as undefined | OptimizeCssAssetsWebpackPluginOptions | boolean,
   /**
    * Enable [thread-loader](https://github.com/webpack-contrib/thread-loader#thread-loader) in webpack building
-   * 
+   *
    * ⚠️ Experimental
    * @default false
    */
@@ -349,12 +346,12 @@ export default () => ({
     commons: true
   },
   /**
-   * Creates special webpack bundle for SSR renderer. 
+   * Creates special webpack bundle for SSR renderer.
    * @default true for universal mode and `false` for spa mode
    */
   ssr: undefined as undefined | boolean,
   /**
-   * 
+   *
    */
   standalone: false,
   stats: {
@@ -371,7 +368,7 @@ export default () => ({
    */
   templates: [] as Template[],
   /**
-   * Terser plugin options. Set to `false` to disable this plugin. See https://github.com/webpack-contrib/terser-webpack-plugin 
+   * Terser plugin options. Set to `false` to disable this plugin. See https://github.com/webpack-contrib/terser-webpack-plugin
    */
   terser: {} as TerserPluginOptions | boolean,
   // Name of NPM packages to be transpiled
@@ -380,6 +377,6 @@ export default () => ({
   /**
    * You can provide your custom files to watch and regenerate after changes. This feature is specially useful for using with modules.
    */
-  watch: [] as string[],
+  watch: [] as string[]
 
 })

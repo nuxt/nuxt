@@ -6,8 +6,8 @@ import consola from 'consola'
 import type { NormalizedConfiguration } from 'src/config'
 import { chainFn, sequence } from 'src/utils'
 
-import Nuxt from './nuxt'
 import type { NuxtModule, ModuleHandler } from 'src/config/config/_common'
+import Nuxt from './nuxt'
 
 interface TemplateInput {
   filename?: string
@@ -27,7 +27,7 @@ export default class ModuleContainer {
     handler: ModuleHandler
   }>
 
-  constructor(nuxt: Nuxt) {
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.requiredModules = {}
@@ -40,7 +40,7 @@ export default class ModuleContainer {
     }
   }
 
-  async ready() {
+  async ready () {
     // Call before hook
     await this.nuxt.callHook('modules:before', this, this.options.modules)
 
@@ -59,11 +59,11 @@ export default class ModuleContainer {
     await this.nuxt.callHook('modules:done', this)
   }
 
-  addVendor() {
+  addVendor () {
     consola.warn('addVendor has been deprecated due to webpack4 optimization')
   }
 
-  addTemplate(template: TemplateInput | string) {
+  addTemplate (template: TemplateInput | string) {
     if (!template) {
       throw new Error('Invalid template: ' + JSON.stringify(template))
     }
@@ -92,7 +92,7 @@ export default class ModuleContainer {
     return templateObj
   }
 
-  addPlugin(template: TemplateInput) {
+  addPlugin (template: TemplateInput) {
     const { dst } = this.addTemplate(template)
 
     // Add to nuxt plugins
@@ -104,7 +104,7 @@ export default class ModuleContainer {
     })
   }
 
-  addLayout(template: TemplateInput, name: string) {
+  addLayout (template: TemplateInput, name: string) {
     const { dst, src } = this.addTemplate(template)
     const layoutName = name || path.parse(src).name
     const layout = this.options.layouts[layoutName]
@@ -122,31 +122,31 @@ export default class ModuleContainer {
     }
   }
 
-  addErrorLayout(dst: string) {
+  addErrorLayout (dst: string) {
     const relativeBuildDir = path.relative(this.options.rootDir, this.options.buildDir)
     this.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
   }
 
-  addServerMiddleware(middleware: NormalizedConfiguration['serverMiddleware'][number]) {
+  addServerMiddleware (middleware: NormalizedConfiguration['serverMiddleware'][number]) {
     this.options.serverMiddleware.push(middleware)
   }
 
-  extendBuild(fn: NormalizedConfiguration['build']['extend']) {
+  extendBuild (fn: NormalizedConfiguration['build']['extend']) {
     this.options.build.extend = chainFn(this.options.build.extend, fn)
   }
 
-  extendRoutes(fn: NormalizedConfiguration['router']['extendRoutes']) {
+  extendRoutes (fn: NormalizedConfiguration['router']['extendRoutes']) {
     this.options.router.extendRoutes = chainFn(
       this.options.router.extendRoutes,
       fn
     )
   }
 
-  requireModule(moduleOpts: NuxtModule) {
+  requireModule (moduleOpts: NuxtModule) {
     return this.addModule(moduleOpts)
   }
 
-  async addModule(moduleOpts: NuxtModule) {
+  async addModule (moduleOpts: NuxtModule) {
     let src: string | ModuleHandler
     let options: Record<string, any>
     let handler: ModuleHandler | ModuleHandler & { meta: { name: string } }

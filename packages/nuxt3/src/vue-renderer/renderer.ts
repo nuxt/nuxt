@@ -4,10 +4,10 @@ import consola from 'consola'
 import template from 'lodash/template'
 import { TARGETS, isModernRequest, waitFor } from 'src/utils'
 
+import ServerContext from 'src/server/context'
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
 import ModernRenderer from './renderers/modern'
-import ServerContext from 'src/server/context'
 
 export default class VueRenderer {
   __closed?: boolean

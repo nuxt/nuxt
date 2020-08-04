@@ -1,4 +1,4 @@
-import ServerContext from "nuxt/server/context"
+import ServerContext from 'nuxt/server/context'
 
 export default class BaseRenderer {
   serverContext: ServerContext
