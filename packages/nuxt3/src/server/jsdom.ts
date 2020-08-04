@@ -1,5 +1,11 @@
 import consola from 'consola'
-import { timeout } from 'src/utils'
+import { DeterminedGlobals, timeout } from 'src/utils'
+
+interface Options {
+  globals: DeterminedGlobals
+  loadedCallback: string
+  loadingTimeout?: number
+}
 
 export default async function renderAndGetWindow (
   url = 'http://localhost:3000',
@@ -8,7 +14,7 @@ export default async function renderAndGetWindow (
     loadedCallback,
     loadingTimeout = 2000,
     globals
-  } = {}
+  }: Options
 ) {
   const jsdom = await import('jsdom')
     .then(m => m.default || m)
@@ -27,13 +33,13 @@ export default async function renderAndGetWindow (
     resources: 'usable',
     runScripts: 'dangerously',
     virtualConsole: true,
-    beforeParse (window) {
+    beforeParse (window: Window) {
       // Mock window.scrollTo
       window.scrollTo = () => {}
     }
   }, jsdomOpts)
 
-  const jsdomErrHandler = (err) => {
+  const jsdomErrHandler = (err: any) => {
     throw err
   }
 

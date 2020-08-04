@@ -1,6 +1,7 @@
 import path from 'path'
 import consola from 'consola'
 import { TARGETS } from 'src/utils'
+import type NuxtCommand from '../command'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
 
@@ -17,7 +18,7 @@ export default {
       description: 'Exit with non-zero status code if there are errors when exporting pages'
     }
   },
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     const config = await cmd.getNuxtConfig({
       dev: false,
       target: TARGETS.static,

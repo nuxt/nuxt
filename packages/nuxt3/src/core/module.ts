@@ -5,8 +5,24 @@ import consola from 'consola'
 
 import { chainFn, sequence } from 'src/utils'
 
+import Nuxt from './nuxt'
+
+interface Module {
+  src: string
+  options: Record<string, any>
+  handler: () => any
+}
+
+interface Template {
+
+}
+
 export default class ModuleContainer {
-  constructor (nuxt) {
+  nuxt: Nuxt
+  options: Nuxt['options']
+  requiredModules: Record<string, Module>
+
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.requiredModules = {}
@@ -83,7 +99,7 @@ export default class ModuleContainer {
     })
   }
 
-  addLayout (template, name) {
+  addLayout (template, name: string) {
     const { dst, src } = this.addTemplate(template)
     const layoutName = name || path.parse(src).name
     const layout = this.options.layouts[layoutName]
@@ -101,7 +117,7 @@ export default class ModuleContainer {
     }
   }
 
-  addErrorLayout (dst) {
+  addErrorLayout (dst: string) {
     const relativeBuildDir = path.relative(this.options.rootDir, this.options.buildDir)
     this.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
   }
@@ -121,13 +137,13 @@ export default class ModuleContainer {
     )
   }
 
-  requireModule (moduleOpts) {
+  requireModule (moduleOpts: Module) {
     return this.addModule(moduleOpts)
   }
 
   async addModule (moduleOpts) {
     let src
-    let options
+    let options: Record<string, any>
     let handler
 
     // Type 1: String or Function
@@ -142,7 +158,7 @@ export default class ModuleContainer {
     }
 
     // Define handler if src is a function
-    if (typeof src === 'function') {
+    if (src instanceof Function) {
       handler = src
     }
 

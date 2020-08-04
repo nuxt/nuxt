@@ -9,6 +9,7 @@ import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
 import { Listener } from 'src/server'
 import { Nuxt } from 'src/core'
+import type NuxtCommand from '../command'
 
 export default {
   name: 'serve',
@@ -20,7 +21,7 @@ export default {
     help: common.help,
     ...server
   },
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     let options = await cmd.getNuxtConfig({ dev: false })
     // add default options
     options = getNuxtConfig(options)

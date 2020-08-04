@@ -1,6 +1,10 @@
 import serialize from 'serialize-javascript'
 
-export function normalizeFunctions (obj) {
+export function normalizeFunctions (obj: Array<any>): Array<any>
+export function normalizeFunctions (obj: null): null
+export function normalizeFunctions (obj: Function): Function
+export function normalizeFunctions (obj: Record<string, any>): Record<string, any>
+export function normalizeFunctions (obj: Array<unknown> | null | Function | Record<string, any>) {
   if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
     return obj
   }
@@ -22,14 +26,14 @@ export function normalizeFunctions (obj) {
           functionBody = `return ${functionBody}`
         }
         // eslint-disable-next-line no-new-func
-        obj[key] = new Function(...match[1].split(',').map(arg => arg.trim()), functionBody)
+        obj[key] = new Function(...match[1].split(',').map((arg: string) => arg.trim()), functionBody)
       }
     }
   }
   return obj
 }
 
-export function serializeFunction (func) {
+export function serializeFunction (func: Function) {
   let open = false
   func = normalizeFunctions(func)
   return serialize(func)

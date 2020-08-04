@@ -1,6 +1,11 @@
 import consola from 'consola'
 import chalk from 'chalk'
 import opener from 'opener'
+import type { ParsedArgs } from 'minimist'
+
+import { Nuxt } from 'nuxt/core'
+
+import type NuxtCommand from '../command'
 import { common, server } from '../options'
 import { eventsMapping, formatPath } from '../utils'
 import { showBanner } from '../utils/banner'
@@ -20,13 +25,13 @@ export default {
     }
   },
 
-  async run (cmd) {
+  async run (cmd: NuxtCommand) {
     const { argv } = cmd
 
     await this.startDev(cmd, argv, argv.open)
   },
 
-  async startDev (cmd, argv) {
+  async startDev (cmd: NuxtCommand, argv) {
     let nuxt
     try {
       nuxt = await this._listenDev(cmd, argv)
@@ -45,7 +50,7 @@ export default {
     return nuxt
   },
 
-  async _listenDev (cmd, argv) {
+  async _listenDev (cmd: NuxtCommand, argv: ParsedArgs) {
     const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
@@ -73,7 +78,7 @@ export default {
     return nuxt
   },
 
-  async _buildDev (cmd, argv, nuxt) {
+  async _buildDev (cmd: NuxtCommand, _argv: ParsedArgs, nuxt: Nuxt) {
     // Create builder instance
     const builder = await cmd.getBuilder(nuxt)
 
@@ -92,7 +97,7 @@ export default {
     return nuxt
   },
 
-  logChanged ({ event, path }) {
+  logChanged ({ event, path }: { event: keyof typeof eventsMapping, path: string }) {
     const { icon, color, action } = eventsMapping[event] || eventsMapping.change
 
     consola.log({
@@ -110,7 +115,7 @@ export default {
     await this.startDev(cmd, argv)
   },
 
-  onBundlerChange (path) {
+  onBundlerChange (path: string) {
     this.logChanged({ event: 'change', path })
   }
 }

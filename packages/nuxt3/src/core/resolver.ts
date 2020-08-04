@@ -1,7 +1,7 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
-import consola from 'consola'
 
+import { Nuxt } from 'nuxt/core'
 import {
   startsWithRootAlias,
   startsWithSrcAlias,
@@ -9,8 +9,25 @@ import {
   clearRequireCache
 } from 'src/utils'
 
+interface ResolvePathOptions {
+  isAlias?: boolean
+  isModule?: boolean
+  isStyle?: boolean
+}
+
+interface RequireModuleOptions {
+  useESM?: boolean
+  isAlias?: boolean
+  interopDefault?: any
+}
+
 export default class Resolver {
-  constructor (nuxt) {
+  _require: NodeJS.Require
+  _resolve: RequireResolve
+  nuxt: Nuxt
+  options: Nuxt['options']
+
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.options = this.nuxt.options
 
@@ -26,7 +43,7 @@ export default class Resolver {
     this._resolve = require.resolve
   }
 
-  resolveModule (path) {
+  resolveModule (path: string) {
     try {
       return this._resolve(path, {
         paths: this.options.modulesDir
@@ -42,7 +59,7 @@ export default class Resolver {
     }
   }
 
-  resolveAlias (path) {
+  resolveAlias (path: string) {
     if (startsWithRootAlias(path)) {
       return join(this.options.rootDir, path.substr(2))
     }
@@ -54,21 +71,13 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
-    // TODO: Remove in Nuxt 3
-    if (alias) {
-      consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
-    }
-    if (module) {
-      consola.warn('Using module is deprecated and will be removed in Nuxt 3. Use `isModule` instead.')
-    }
-
+  resolvePath (path: string, { isAlias, isModule, isStyle }: ResolvePathOptions = {}) {
     // Fast return in case of path exists
     if (fs.existsSync(path)) {
       return path
     }
 
-    let resolvedPath
+    let resolvedPath: string
 
     // Try to resolve it as a regular module
     if (isModule !== false) {
@@ -85,7 +94,7 @@ export default class Resolver {
       resolvedPath = path
     }
 
-    let isDirectory
+    let isDirectory: boolean
 
     // Check if resolvedPath exits and is not a directory
     if (fs.existsSync(resolvedPath)) {
@@ -119,22 +128,11 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
+  requireModule <T>(path: string, { useESM, isAlias, interopDefault }: RequireModuleOptions = {}): T {
     let resolvedPath = path
-    let requiredModule
+    let requiredModule: any
 
-    // TODO: Remove in Nuxt 3
-    if (intropDefault) {
-      consola.warn('Using intropDefault is deprecated and will be removed in Nuxt 3. Use `interopDefault` instead.')
-    }
-    if (alias) {
-      consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
-    }
-    if (esm) {
-      consola.warn('Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.')
-    }
-
-    let lastError
+    let lastError: any
 
     // Try to resolve path
     try {

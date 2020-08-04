@@ -2,9 +2,12 @@ import path from 'path'
 import get from 'lodash/get'
 import consola from 'consola'
 
+import type { Component } from 'vue'
+import type { _RouteRecordBase } from 'vue-router'
+
 import { r } from './resolve'
 
-export const flatRoutes = function flatRoutes (router, fileName = '', routes = []) {
+export const flatRoutes = function flatRoutes (router, fileName = '', routes: string[] = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
@@ -30,12 +33,12 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
   return routes
 }
 
-function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') {
+function cleanChildrenRoutes (routes: NuxtRouteConfig[], isChild = false, routeNameSplitter = '-') {
   let start = -1
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
-  const routesIndex = []
+  const routesIndex: string[][] = []
   routes.forEach((route) => {
-    if (regExpIndex.test(route.name) || route.name === 'index') {
+    if (route.name && typeof route.name === 'string' && (regExpIndex.test(route.name) || route.name === 'index')) {
       // Save indexOf 'index' key in name
       const res = route.name.split(routeNameSplitter)
       const s = res.indexOf('index')
@@ -46,7 +49,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = route.name.split(routeNameSplitter)
+      const names =  typeof route.name === 'string' && route.name.split(routeNameSplitter) || []
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()
@@ -66,7 +69,9 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
       })
       route.path = (isChild ? '' : '/') + paths.join('/')
     }
-    route.name = route.name.replace(regExpIndex, '')
+    if (route.name) {
+      route.name = typeof route.name === 'string' && route.name.replace(regExpIndex, '')
+    }
     if (route.children) {
       if (route.children.find(child => child.path === '')) {
         delete route.name
@@ -79,7 +84,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
 
 const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
 
-export const sortRoutes = function sortRoutes (routes) {
+export const sortRoutes = function sortRoutes (routes: NuxtRouteConfig[]) {
   routes.sort((a, b) => {
     if (!a.path.length) {
       return -1
@@ -136,6 +141,22 @@ export const sortRoutes = function sortRoutes (routes) {
   return routes
 }
 
+interface CreateRouteOptions {
+  files: string[]
+  srcDir: string
+  pagesDir?: string
+  routeNameSplitter?: string
+  supportedExtensions?: string[]
+  trailingSlash: boolean
+}
+
+interface NuxtRouteConfig extends Omit<_RouteRecordBase, 'children'> {
+  component?: Component | string
+  chunkName?: string
+  pathToRegexpOptions?: any
+  children?: NuxtRouteConfig[]
+}
+
 export const createRoutes = function createRoutes ({
   files,
   srcDir,
@@ -143,8 +164,8 @@ export const createRoutes = function createRoutes ({
   routeNameSplitter = '-',
   supportedExtensions = ['vue', 'js'],
   trailingSlash
-}) {
-  const routes = []
+}: CreateRouteOptions) {
+  const routes: NuxtRouteConfig[] = []
   files.forEach((file) => {
     const keys = file
       .replace(new RegExp(`^${pagesDir}`), '')
@@ -152,13 +173,13 @@ export const createRoutes = function createRoutes ({
       .replace(/\/{2,}/g, '/')
       .split('/')
       .slice(1)
-    const route = { name: '', path: '', component: r(srcDir, file) }
+    const route: NuxtRouteConfig = { name: '', path: '', component: r(srcDir, file) }
     let parent = routes
     keys.forEach((key, i) => {
       // remove underscore only, if its the prefix
       const sanitizedKey = key.startsWith('_') ? key.substr(1) : key
 
-      route.name = route.name
+      route.name = route.name && typeof route.name === 'string'
         ? route.name + routeNameSplitter + sanitizedKey
         : sanitizedKey
       route.name += key === '_' ? 'all' : ''
@@ -192,9 +213,9 @@ export const createRoutes = function createRoutes ({
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed
-export const guardDir = function guardDir (options, key1, key2) {
-  const dir1 = get(options, key1, false)
-  const dir2 = get(options, key2, false)
+export const guardDir = function guardDir (options: Record<string, unknown>, key1: string, key2: string) {
+  const dir1 = get(options, key1, false) as string
+  const dir2 = get(options, key2, false) as string
 
   if (
     dir1 &&
@@ -213,7 +234,7 @@ export const guardDir = function guardDir (options, key1, key2) {
   }
 }
 
-const getRoutePathExtension = (key) => {
+const getRoutePathExtension = (key: string) => {
   if (key === '_') {
     return '*'
   }

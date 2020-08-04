@@ -1,7 +1,7 @@
 
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
-import Hookable from 'hable'
+import Hookable from 'hookable'
 
 import { defineAlias } from 'src/utils'
 import { getNuxtConfig } from 'src/config'
@@ -13,6 +13,17 @@ import ModuleContainer from './module'
 import Resolver from './resolver'
 
 export default class Nuxt extends Hookable {
+  _ready?: Promise<this>
+  _initCalled?: boolean
+
+  options: any
+  resolver: Resolver
+  moduleContainer: ModuleContainer
+  server?: Server
+  renderer?: Server
+  render?: Server['app']
+  showReady?: () => void
+
   constructor (options = {}) {
     super(consola)
 
@@ -103,13 +114,14 @@ export default class Nuxt extends Hookable {
     defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
-  async close (callback) {
+  async close (callback?: () => any | Promise<any>) {
     await this.callHook('close', this)
 
     if (typeof callback === 'function') {
       await callback()
     }
 
-    this.clearHooks()
+    // Deleting as no longer exists on `hookable`
+    // this.clearHooks()
   }
 }

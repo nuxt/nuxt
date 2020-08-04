@@ -1,36 +1,67 @@
 
 import path from 'path'
 import consola from 'consola'
-import minimist from 'minimist'
-import Hookable from 'hable'
+import minimist, { ParsedArgs } from 'minimist'
+import Hookable from 'hookable'
+
+import { Nuxt } from 'src/core'
+import { Builder } from 'src/builder'
+import { Generator } from 'src/generator'
+import type { Target } from 'src/utils'
+
 import { name, version } from '../../package.json'
+
 import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'
 import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces, forceExitTimeout } from './utils/constants'
-import { Nuxt } from 'src/core'
-import { Builder } from 'src/builder'
-import { Generator } from 'src/generator'
+
+export interface Command {
+  name: string
+  usage: string
+  description: string
+  options?: Record<string, any>
+  run?: (nuxt: NuxtCommand) => any | Promise<any>
+}
+
+type Hooks = Parameters<Hookable['addHooks']>[0]
+
+interface ExtraOptions {
+  _build?: boolean
+  _cli?: boolean
+  _export?: boolean
+  _generate?: boolean
+  _start?: boolean
+  dev?: boolean
+  server?: boolean
+  target?: Target
+}
 
 export default class NuxtCommand extends Hookable {
-  constructor (cmd = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks = {}) {
+  _argv: string[]
+  _parsedArgv: null | ParsedArgs
+  _lockRelease?: () => Promise<any>
+
+  cmd: Command & { options: Command['options'] }
+
+  constructor (cmd: Command = { name: '', usage: '', description: '' }, argv = process.argv.slice(2), hooks: Hooks = {}) {
     super(consola)
     this.addHooks(hooks)
 
     if (!cmd.options) {
       cmd.options = {}
     }
-    this.cmd = cmd
+    this.cmd = cmd as Command & { options: Command['options'] }
 
     this._argv = Array.from(argv)
     this._parsedArgv = null // Lazy evaluate
   }
 
-  static run (cmd, argv, hooks) {
+  static run (cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
     return NuxtCommand.from(cmd, argv, hooks).run()
   }
 
-  static from (cmd, argv, hooks) {
+  static from (cmd: Command, argv: NodeJS.Process['argv'], hooks: Hooks) {
     if (cmd instanceof NuxtCommand) {
       return cmd
     }
@@ -54,11 +85,11 @@ export default class NuxtCommand extends Hookable {
       return
     }
 
-    if (typeof this.cmd.run !== 'function') {
+    if (!(this.cmd.run instanceof Function)) {
       throw new TypeError('Invalid command! Commands should at least implement run() function.')
     }
 
-    let cmdError
+    let cmdError: any
 
     try {
       await this.cmd.run(this)
@@ -102,7 +133,7 @@ export default class NuxtCommand extends Hookable {
     return this._parsedArgv
   }
 
-  async getNuxtConfig (extraOptions = {}) {
+  async getNuxtConfig (extraOptions: ExtraOptions = {}) {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
@@ -131,7 +162,7 @@ export default class NuxtCommand extends Hookable {
     return nuxt
   }
 
-  async getBuilder (nuxt) {
+  async getBuilder (nuxt: Nuxt) {
     return new Builder(nuxt)
   }
 
@@ -160,12 +191,12 @@ export default class NuxtCommand extends Hookable {
     }
   }
 
-  isUserSuppliedArg (option) {
+  isUserSuppliedArg (option: string) {
     return this._argv.includes(`--${option}`) || this._argv.includes(`--no-${option}`)
   }
 
-  _getDefaultOptionValue (option) {
-    return typeof option.default === 'function' ? option.default(this.cmd) : option.default
+  _getDefaultOptionValue<T, Option extends { default: ((cmd: Command) => T) | T }>(option: Option) {
+    return option.default instanceof Function ? option.default(this.cmd) : option.default
   }
 
   _getMinimistOptions () {

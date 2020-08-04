@@ -6,10 +6,12 @@ import consola from 'consola'
 import { TARGETS, urlJoin } from 'src/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-bundle-renderer'
+
+import ServerContext from 'src/server/context'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
-  constructor (serverContext) {
+  constructor (serverContext: ServerContext) {
     super(serverContext)
     this.createRenderer()
   }

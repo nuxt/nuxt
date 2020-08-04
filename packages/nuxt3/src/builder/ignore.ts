@@ -2,7 +2,16 @@ import path from 'path'
 import fs from 'fs-extra'
 import ignore from 'ignore'
 
+type IgnoreInstance = ReturnType<typeof ignore>
+type IgnoreOptions = Parameters<typeof ignore>[0]
+
 export default class Ignore {
+  rootDir: string
+  ignore?: IgnoreInstance
+  ignoreArray?: string | string
+  ignoreFile?: string
+  ignoreOptions?: IgnoreOptions
+
   constructor (options) {
     this.rootDir = options.rootDir
     this.ignoreOptions = options.ignoreOptions
@@ -44,7 +53,7 @@ export default class Ignore {
     }
   }
 
-  filter (paths) {
+  filter (paths: string[]) {
     if (this.ignore) {
       return this.ignore.filter([].concat(paths || []))
     }

@@ -1,4 +1,7 @@
-import UAParser from 'ua-parser-js'
+import { UAParser } from 'ua-parser-js'
+
+import type { SemVer } from 'semver'
+import type { IncomingMessage } from 'connect'
 
 export const ModernBrowsers = {
   Edge: '16',
@@ -12,49 +15,65 @@ export const ModernBrowsers = {
   Yandex: '18',
   Vivaldi: '1.14',
   'Mobile Safari': '10.3'
-}
+} as const
 
-let semver
-let __modernBrowsers
+type ModernBrowsers = { -readonly [key in keyof typeof ModernBrowsers]: SemVer }
+
+let semver: typeof import('semver')
+let __modernBrowsers: ModernBrowsers
 
 const getModernBrowsers = () => {
   if (__modernBrowsers) {
     return __modernBrowsers
   }
 
-  __modernBrowsers = Object.keys(ModernBrowsers)
-    .reduce((allBrowsers, browser) => {
-      allBrowsers[browser] = semver.coerce(ModernBrowsers[browser])
+  __modernBrowsers = (Object.keys(ModernBrowsers) as Array<
+    keyof typeof ModernBrowsers
+  >).reduce(
+    (allBrowsers, browser) => {
+      const version = semver.coerce(ModernBrowsers[browser])
+      if (version) { allBrowsers[browser] = version }
       return allBrowsers
-    }, {})
+    },
+    {} as ModernBrowsers
+  )
   return __modernBrowsers
 }
 
-export const isModernBrowser = (ua) => {
+interface NuxtRequest extends IncomingMessage {
+  socket: IncomingMessage['socket'] & {
+    _modern?: boolean
+  }
+}
+
+export const isModernBrowser = (ua: string) => {
   if (!ua) {
     return false
   }
   if (!semver) {
     semver = require('semver')
   }
-  const { browser } = UAParser(ua)
+  const browser = new UAParser(ua).getBrowser()
   const browserVersion = semver.coerce(browser.version)
   if (!browserVersion) {
     return false
   }
   const modernBrowsers = getModernBrowsers()
-  return Boolean(modernBrowsers[browser.name] && semver.gte(browserVersion, modernBrowsers[browser.name]))
+  const name = browser.name as keyof typeof modernBrowsers
+  return Boolean(
+    name && name in modernBrowsers && semver.gte(browserVersion, modernBrowsers[name])
+  )
 }
 
-export const isModernRequest = (req, modernMode = false) => {
+export const isModernRequest = (req: NuxtRequest, modernMode = false) => {
   if (modernMode === false) {
     return false
   }
 
-  const { socket = {}, headers } = req
+  const { socket = {} as NuxtRequest['socket'], headers } = req
   if (socket._modern === undefined) {
     const ua = headers && headers['user-agent']
-    socket._modern = isModernBrowser(ua)
+    socket._modern = ua && isModernBrowser(ua)
   }
 
   return socket._modern

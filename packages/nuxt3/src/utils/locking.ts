@@ -2,27 +2,42 @@ import path from 'path'
 import consola from 'consola'
 import hash from 'hash-sum'
 import fs from 'fs-extra'
-import properlock from 'proper-lockfile'
+import properlock, { LockOptions } from 'proper-lockfile'
 import onExit from 'signal-exit'
 
-export const lockPaths = new Set()
+export const lockPaths = new Set<string>()
 
-export const defaultLockOptions = {
+export const defaultLockOptions: Required<
+  Pick<LockOptions, 'stale' | 'onCompromised'>
+> = {
   stale: 30000,
   onCompromised: err => consola.warn(err)
 }
 
-export function getLockOptions (options) {
+export function getLockOptions (options: Partial<LockOptions>) {
   return Object.assign({}, defaultLockOptions, options)
 }
 
-export function createLockPath ({ id = 'nuxt', dir, root }) {
+interface NuxtLockOptions {
+  id?: string
+  dir: string
+  root: string
+  options?: LockOptions
+}
+
+export function createLockPath ({
+  id = 'nuxt',
+  dir,
+  root
+}: Pick<NuxtLockOptions, 'id' | 'dir' | 'root'>) {
   const sum = hash(`${root}-${dir}`)
 
   return path.resolve(root, 'node_modules/.cache/nuxt', `${id}-lock-${sum}`)
 }
 
-export async function getLockPath (config) {
+export async function getLockPath (
+  config: Pick<NuxtLockOptions, 'id' | 'dir' | 'root'>
+) {
   const lockPath = createLockPath(config)
 
   // the lock is created for the lockPath as ${lockPath}.lock
@@ -32,8 +47,12 @@ export async function getLockPath (config) {
   return lockPath
 }
 
-export async function lock ({ id, dir, root, options }) {
-  const lockPath = await getLockPath({ id, dir, root })
+export async function lock ({ id, dir, root, options }: NuxtLockOptions) {
+  const lockPath = await getLockPath({
+    id,
+    dir,
+    root
+  })
 
   try {
     const locked = await properlock.check(lockPath)
@@ -45,7 +64,7 @@ export async function lock ({ id, dir, root, options }) {
   }
 
   let lockWasCompromised = false
-  let release
+  let release: (() => Promise<void>) | undefined
 
   try {
     options = getLockOptions(options)
@@ -94,7 +113,7 @@ export async function lock ({ id, dir, root, options }) {
       // as well, but in our case its much more likely the lock was
       // compromised due to mtime update timeouts
       const lockDir = `${lockPath}.lock`
-      if (await fs.exists(lockDir)) {
+      if (await fs.pathExists(lockDir)) {
         await fs.remove(lockDir)
       }
     }

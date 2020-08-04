@@ -8,9 +8,18 @@ import jiti from 'jiti'
 import _createRequire from 'create-require'
 import destr from 'destr'
 import * as rc from 'rc9'
+
+import { LoadOptions } from 'nuxt/core/load'
 import { defaultNuxtConfigFile } from './config'
 
+// @ts-ignore
 const isJest = typeof jest !== 'undefined'
+
+export interface EnvConfig {
+  dotenv?: string
+  env?: NodeJS.ProcessEnv & { _applied?: boolean }
+  expand?: boolean
+}
 
 export async function loadNuxtConfig ({
   rootDir = '.',
@@ -18,8 +27,8 @@ export async function loadNuxtConfig ({
   configFile = defaultNuxtConfigFile,
   configContext = {},
   configOverrides = {},
-  createRequire = module => isJest ? _createRequire(module.filename) : jiti(module.filename)
-} = {}) {
+  createRequire = (module: NodeJS.Module) => isJest ? _createRequire(module.filename) : jiti(module.filename)
+}: LoadOptions = {}) {
   rootDir = path.resolve(rootDir)
 
   let options = {}
@@ -120,7 +129,7 @@ export async function loadNuxtConfig ({
   return options
 }
 
-function loadEnv (envConfig, rootDir = process.cwd()) {
+function loadEnv (envConfig: EnvConfig, rootDir = process.cwd()) {
   const env = Object.create(null)
 
   // Read dotenv
@@ -147,13 +156,13 @@ function loadEnv (envConfig, rootDir = process.cwd()) {
 }
 
 // Based on https://github.com/motdotla/dotenv-expand
-function expand (target, source = {}, parse = v => v) {
-  function getValue (key) {
+function expand (target: Record<string, string>, source: Record<string, string> = {}, parse = (v: string) => v) {
+  function getValue (key: string) {
     // Source value 'wins' over target value
     return source[key] !== undefined ? source[key] : target[key]
   }
 
-  function interpolate (value) {
+  function interpolate (value: string): string {
     if (typeof value !== 'string') {
       return value
     }
@@ -162,7 +171,8 @@ function expand (target, source = {}, parse = v => v) {
       const parts = /(.?)\${?([a-zA-Z0-9_:]+)?}?/g.exec(match)
       const prefix = parts[1]
 
-      let value, replacePart
+      let value: string
+      let replacePart: string
 
       if (prefix === '\\') {
         replacePart = parts[0]
