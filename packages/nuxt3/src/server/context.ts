@@ -1,4 +1,4 @@
-import { Server } from 'nuxt/server'
+import { Server } from 'src/server'
 
 export default class ServerContext {
   nuxt: Server['nuxt']

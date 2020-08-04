@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import opener from 'opener'
 import type { ParsedArgs } from 'minimist'
 
-import { Nuxt } from 'nuxt/core'
+import { Nuxt } from 'src/core'
 
 import type NuxtCommand from '../command'
 import { common, server } from '../options'

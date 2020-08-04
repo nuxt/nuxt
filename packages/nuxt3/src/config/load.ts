@@ -9,7 +9,7 @@ import _createRequire from 'create-require'
 import destr from 'destr'
 import * as rc from 'rc9'
 
-import { LoadOptions } from 'nuxt/core/load'
+import { LoadOptions } from 'src/core/load'
 import { defaultNuxtConfigFile } from './config'
 
 // @ts-ignore

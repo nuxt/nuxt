@@ -7,7 +7,7 @@ import { TARGETS, isModernRequest, waitFor } from 'src/utils'
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
 import ModernRenderer from './renderers/modern'
-import ServerContext from 'nuxt/server/context'
+import ServerContext from 'src/server/context'
 
 export default class VueRenderer {
   __closed?: boolean

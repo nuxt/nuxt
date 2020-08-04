@@ -2,7 +2,7 @@ import consola from 'consola'
 import env from 'std-env'
 import chalk from 'chalk'
 
-import { Nuxt } from 'nuxt/core'
+import { Nuxt } from 'src/core'
 import { successBox } from './formatting'
 import { getFormattedMemoryUsage } from './memory'
 

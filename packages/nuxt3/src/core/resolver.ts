@@ -1,7 +1,7 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 
-import { Nuxt } from 'nuxt/core'
+import { Nuxt } from 'src/core'
 import {
   startsWithRootAlias,
   startsWithSrcAlias,
