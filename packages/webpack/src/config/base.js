@@ -124,6 +124,8 @@ export default class WebpackBaseConfig {
       } catch (_err) {
         corejsVersion = 2
       }
+    } else {
+      corejsVersion = Number.parseInt(corejsVersion)
     }
 
     if (![2, 3].includes(corejsVersion)) {
