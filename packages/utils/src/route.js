@@ -43,7 +43,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
 
 function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
-  const regExpParentRouteName = new RegExp(`^${parentRouteName}-`)
+  const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
   const routesIndex = []
   routes.forEach((route) => {
     if (regExpIndex.test(route.name) || route.name === 'index') {
