@@ -57,7 +57,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      if (route.name.endsWith('-index')) {
+      if (route.name.endsWith(`${routeNameSplitter}index`)) {
         route.path = route.path.replace(/\?$/, '')
       }
       const names = route.name.split(routeNameSplitter)
