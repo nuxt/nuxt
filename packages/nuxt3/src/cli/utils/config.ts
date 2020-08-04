@@ -1,9 +1,8 @@
 import path from 'path'
 import defaultsDeep from 'lodash/defaultsDeep'
+import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from 'src/config'
+import { MODES } from 'src/utils'
 import type { ParsedArgs } from 'minimist'
-
-import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from 'nuxt/config'
-import { MODES } from 'nuxt/utils'
 
 export async function loadNuxtConfig (argv: ParsedArgs, configContext) {
   const rootDir = path.resolve(argv._[0] || '.')

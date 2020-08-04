@@ -4,10 +4,10 @@ import consola from 'consola'
 import minimist, { Opts as MinimistOptions, ParsedArgs } from 'minimist'
 import Hookable from 'hookable'
 
-import { Builder } from 'nuxt/builder'
-import { CliConfiguration } from 'nuxt/config/options'
-import { Nuxt } from 'nuxt/core'
-import { Generator } from 'nuxt/generator'
+import { Builder } from 'src/builder'
+import { CliConfiguration } from 'src/config/options'
+import { Nuxt } from 'src/core'
+import { Generator } from 'src/generator'
 
 import { name, version } from '../../package.json'
 

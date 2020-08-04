@@ -1,4 +1,4 @@
-import type { Nuxt } from 'nuxt/core'
+import type { Nuxt } from 'src/core'
 
 import Builder from './builder'
 export { default as Builder } from './builder'

@@ -3,7 +3,7 @@ import type { IncomingMessage } from 'connect'
 
 import consola from 'consola'
 import onHeaders from 'on-headers'
-import { Timer } from 'nuxt/utils'
+import { Timer } from 'src/utils'
 
 export default options => (_req: IncomingMessage, res: ServerResponse & { timing?: ServerTiming }, next: (err?: any) => void) => {
   if (res.timing) {

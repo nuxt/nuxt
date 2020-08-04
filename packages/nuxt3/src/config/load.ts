@@ -3,15 +3,15 @@ import fs from 'fs'
 import defu from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
-import { clearRequireCache, scanRequireTree } from 'nuxt/utils'
+import { clearRequireCache, scanRequireTree } from 'src/utils'
 import jiti from 'jiti'
 import _createRequire from 'create-require'
 import destr from 'destr'
 import * as rc from 'rc9'
 
-import { LoadOptions } from 'nuxt/core/load'
+import { LoadOptions } from 'src/core/load'
 import { defaultNuxtConfigFile } from './config'
-import { CliConfiguration, Configuration } from 'nuxt/config/options'
+import { CliConfiguration, Configuration } from 'src/config/options'
 
 // @ts-ignore
 const isJest = typeof jest !== 'undefined'

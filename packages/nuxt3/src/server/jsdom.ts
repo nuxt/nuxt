@@ -1,6 +1,6 @@
 import consola from 'consola'
 import { BaseOptions, DOMWindow, VirtualConsole } from 'jsdom'
-import { DeterminedGlobals, timeout } from 'nuxt/utils'
+import { DeterminedGlobals, timeout } from 'src/utils'
 
 interface Options {
   globals: DeterminedGlobals

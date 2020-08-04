@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from 'nuxt/utils'
+import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from 'src/utils'
 import { createMFS } from './utils/mfs'
 
 import * as WebpackConfigs from './config'

@@ -1,5 +1,5 @@
+import { TARGETS } from 'src/utils'
 import type { ParsedArgs } from 'minimist'
-import { TARGETS } from 'nuxt/utils'
 import type NuxtCommand from '../command'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'

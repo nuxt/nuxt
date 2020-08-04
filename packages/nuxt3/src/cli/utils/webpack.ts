@@ -1,5 +1,5 @@
-import { loadNuxt } from 'nuxt/core'
-import { getBuilder } from 'nuxt/builder'
+import { loadNuxt } from 'src/core'
+import { getBuilder } from 'src/builder'
 
 export async function getWebpackConfig (name = 'client', loadOptions = {}) {
   const nuxt = await loadNuxt(loadOptions)

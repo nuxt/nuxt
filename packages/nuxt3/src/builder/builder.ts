@@ -4,6 +4,7 @@ import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import Glob from 'glob'
+import globby from 'globby'
 import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
@@ -16,9 +17,8 @@ import template from 'lodash/template'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 
-import type { Nuxt } from 'nuxt/core'
-import { BundleBuilder } from 'nuxt/webpack'
-import vueAppTemplate from 'nuxt/vue-app/template'
+import { BundleBuilder } from 'src/webpack'
+import type { Nuxt } from 'src/core'
 
 import {
   r,
@@ -32,7 +32,7 @@ import {
   scanRequireTree,
   TARGETS,
   isFullStatic
-} from 'nuxt/utils'
+} from 'src/utils'
 
 import Ignore from './ignore'
 import BuildContext from './context/build'
@@ -104,8 +104,7 @@ export default class Builder {
       })
     }
 
-    // Resolve template
-    this.template = vueAppTemplate
+    this.resolveAppTemplate()
 
     // Create a new bundle builder
     this.bundleBuilder = this.getBundleBuilder()
@@ -121,6 +120,18 @@ export default class Builder {
       for (const name of ['app', 'App']) {
         this.appFiles.push(path.join(this.options.srcDir, `${name}.${ext}`))
       }
+    }
+  }
+
+  resolveAppTemplate() {
+    // Resolve appDir
+    const templatesDir = path.join(this.options.appDir, '_templates')
+    const files = globby.sync(path.join(templatesDir, '/**'))
+      .map(f => f.replace(templatesDir + path.sep, ''))
+    this.template = {
+      dependencies: {},
+      dir: templatesDir,
+      files
     }
   }
 
@@ -196,7 +207,7 @@ export default class Builder {
     // Generate routes and interpret the template files
     await this.generateRoutesAndFiles()
 
-    // Add vue-app template dir to watchers
+    // Add app template dir to watchers
     this.options.build.watch.push(this.globPathWithExtensions(this.template.dir))
 
     await this.resolvePlugins()
@@ -362,8 +373,8 @@ export default class Builder {
     return (await this.resolveFiles(dir)).map(file => ({ src: file.replace(dirPrefix, '') }))
   }
 
-  async resolveApp({ templateVars }) {
-    templateVars.appPath = 'nuxt-app/app.tutorial.vue'
+  async resolveApp ({ templateVars }) {
+    templateVars.appPath = 'app/app.tutorial.vue'
 
     for (const appFile of this.appFiles) {
       if (await fsExtra.exists(appFile)) {
@@ -530,7 +541,7 @@ export default class Builder {
       // Modules & user provided templates
       // first custom to keep their index
       ...customTemplateFiles,
-      // @nuxt/vue-app templates
+      // @nuxt/app templates
       ...templateContext.templateFiles
     ])
 

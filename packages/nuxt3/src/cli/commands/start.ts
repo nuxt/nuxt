@@ -1,4 +1,4 @@
-import { TARGETS } from 'nuxt/utils'
+import { TARGETS } from 'src/utils'
 
 import type NuxtCommand from '../command'
 import { common, server } from '../options'

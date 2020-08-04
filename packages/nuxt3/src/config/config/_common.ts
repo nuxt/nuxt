@@ -5,8 +5,8 @@ import ignore from 'ignore'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 import type { Configuration as WebpackConfiguration } from 'webpack'
-
-import { TARGETS, MODES, Target, Mode } from 'nuxt/utils'
+import path from 'path'
+import { TARGETS, MODES, Target, Mode } from 'src/utils'
 
 import type { NormalizedConfiguration } from '../options'
 import Hookable from 'hookable'
@@ -172,6 +172,7 @@ export default (): CommonConfiguration => ({
   modulesDir: [
     'node_modules'
   ],
+  appDir: path.resolve(__dirname, '../../../app'),
   dir: {
     assets: 'assets',
     app: 'app',

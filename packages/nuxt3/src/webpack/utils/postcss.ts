@@ -6,7 +6,7 @@ import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
-import { isPureObject } from 'nuxt/utils'
+import { isPureObject } from 'src/utils'
 
 export const orderPresets = {
   cssnanoLast (names) {

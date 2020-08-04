@@ -3,9 +3,9 @@ import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import Hookable from 'hookable'
 
-import { defineAlias } from 'nuxt/utils'
-import { getNuxtConfig, Configuration, NormalizedConfiguration } from 'nuxt/config'
-import { Server } from 'nuxt/server'
+import { defineAlias } from 'src/utils'
+import { getNuxtConfig, Configuration, NormalizedConfiguration } from 'src/config'
+import { Server } from 'src/server'
 
 import { version } from '../../package.json'
 

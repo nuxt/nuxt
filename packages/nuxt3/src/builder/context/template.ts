@@ -3,8 +3,8 @@ import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
-import { NormalizedConfiguration } from 'nuxt/config'
-import { r, wp, wChunk, serializeFunction, isFullStatic } from 'nuxt/utils'
+import { NormalizedConfiguration } from 'src/config'
+import { r, wp, wChunk, serializeFunction, isFullStatic } from 'src/utils'
 
 import type Builder from '../builder'
 

@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs-extra'
 import ignore from 'ignore'
-import { NormalizedConfiguration } from 'nuxt/config'
+import { NormalizedConfiguration } from 'src/config'
 
 type IgnoreInstance = ReturnType<typeof ignore>
 type IgnoreOptions = Parameters<typeof ignore>[0]

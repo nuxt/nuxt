@@ -1,7 +1,7 @@
 import consola from 'consola'
 import type { ParsedArgs } from 'minimist'
 
-import { Configuration } from 'nuxt/config/options'
+import { Configuration } from 'src/config/options'
 
 import NuxtCommand from '../command'
 

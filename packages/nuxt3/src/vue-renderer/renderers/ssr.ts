@@ -3,11 +3,11 @@ import crypto from 'crypto'
 import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
+import { TARGETS, urlJoin } from 'src/utils'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-bundle-renderer'
 
-import { TARGETS, urlJoin } from 'nuxt/utils'
-import ServerContext from 'nuxt/server/context'
+import ServerContext from 'src/server/context'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {

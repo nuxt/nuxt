@@ -7,9 +7,9 @@ import servePlaceholder from 'serve-placeholder'
 import connect, { IncomingMessage } from 'connect'
 import type { TemplateExecutor } from 'lodash'
 
-import { Nuxt } from 'nuxt/core'
-import { DeterminedGlobals, determineGlobals, isUrl } from 'nuxt/utils'
-import { VueRenderer } from 'nuxt/vue-renderer'
+import { Nuxt } from 'src/core'
+import { DeterminedGlobals, determineGlobals, isUrl } from 'src/utils'
+import { VueRenderer } from 'src/vue-renderer'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -347,12 +347,12 @@ export default class Server {
     return this.app.stack.map(({ handle }) => handle._middleware && handle._middleware.entry).filter(Boolean)
   }
 
-  renderRoute (...args: Parameters<VueRenderer['renderRoute']>) {
-    return this.renderer.renderRoute.apply(this.renderer, ...args.slice())
+  renderRoute () {
+    return this.renderer.renderRoute.apply(this.renderer, arguments)
   }
 
-  loadResources (...args: Parameters<VueRenderer['loadResources']>) {
-    return this.renderer.loadResources.apply(this.renderer, ...args)
+  loadResources () {
+    return this.renderer.loadResources.apply(this.renderer, arguments)
   }
 
   renderAndGetWindow (url, opts = {}, {

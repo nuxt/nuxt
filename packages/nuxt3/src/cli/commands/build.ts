@@ -1,7 +1,6 @@
 import consola from 'consola'
+import { MODES, TARGETS } from 'src/utils'
 import type { ParsedArgs } from 'minimist'
-
-import { MODES, TARGETS } from 'nuxt/utils'
 import NuxtCommand from '../command'
 import { common, locking } from '../options'
 import { createLock } from '../utils'

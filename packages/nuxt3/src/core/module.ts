@@ -3,11 +3,11 @@ import fs from 'fs'
 import hash from 'hash-sum'
 import consola from 'consola'
 
-import type { NormalizedConfiguration } from 'nuxt/config'
-import { chainFn, Mode, sequence } from 'nuxt/utils'
+import type { NormalizedConfiguration } from 'src/config'
+import { chainFn, sequence } from 'src/utils'
 
 import Nuxt from './nuxt'
-import type { NuxtModule, ModuleHandler } from 'nuxt/config/config/_common'
+import type { NuxtModule, ModuleHandler } from 'src/config/config/_common'
 
 interface TemplateInput {
   filename?: string

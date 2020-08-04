@@ -3,9 +3,8 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import LRU from 'lru-cache'
 import devalue from '@nuxt/devalue'
-
-import { TARGETS, isModernRequest } from 'nuxt/utils'
-import ServerContext from 'nuxt/server/context'
+import { TARGETS, isModernRequest } from 'src/utils'
+import ServerContext from 'src/server/context'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {

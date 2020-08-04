@@ -2,16 +2,14 @@ import path from 'path'
 import fs from 'fs'
 import consola from 'consola'
 import defu from 'defu'
-import destr from 'destr'
 import defaultsDeep from 'lodash/defaultsDeep'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
-
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG, Target, Mode } from 'nuxt/utils'
-
+import destr from 'destr'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'src/utils'
 import { DefaultConfiguration, defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 import { deleteProp, mergeConfigs, setProp, overrideProp, Optional } from './transformers'
-import type { EnvConfig } from 'nuxt/config/load'
+import type { EnvConfig } from 'src/config/load'
 
 interface InputConfiguration {
   appTemplatePath?: string
@@ -368,6 +366,8 @@ function normalizeConfig(_options: CliConfiguration) {
   }
 
   overrideProp(options.build, 'transpile', Array.from(options.build.transpile || []))
+  options.build.transpile = [].concat(options.build.transpile || [])
+  options.build.transpile.push('app')
 
   if (options.build.quiet === true) {
     consola.level = 0

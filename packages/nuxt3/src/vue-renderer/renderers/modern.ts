@@ -1,5 +1,5 @@
-import ServerContext from 'nuxt/server/context'
-import { isUrl, urlJoin, safariNoModuleFix } from 'nuxt/utils'
+import ServerContext from 'src/server/context'
+import { isUrl, urlJoin, safariNoModuleFix } from 'src/utils'
 
 import SSRRenderer from './ssr'
 
