@@ -42,15 +42,12 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
 }
 
 function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, namePrefix) {
-  let start = -1
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const routesIndex = []
   routes.forEach((route) => {
     if (regExpIndex.test(route.name) || route.name === 'index') {
       // Save indexOf 'index' key in name
       const res = route.name.replace(namePrefix, '').split(routeNameSplitter)
-      const s = res.indexOf('index')
-      start = start === -1 || s < start ? s : start
       routesIndex.push(res)
     }
   })
@@ -63,7 +60,7 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('index') - start //  children names
+        const i = r.indexOf('index')
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
