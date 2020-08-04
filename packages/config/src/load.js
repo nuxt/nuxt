@@ -18,7 +18,7 @@ export async function loadNuxtConfig ({
   configFile = defaultNuxtConfigFile,
   configContext = {},
   configOverrides = {},
-  createRequire = module => isJest ? _createRequire(module.filename) : esm(module)
+  createRequire = module => isJest ? _createRequire(module.filename) : esm(module, { cache: false })
 } = {}) {
   rootDir = path.resolve(rootDir)
 

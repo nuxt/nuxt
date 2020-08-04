@@ -70,6 +70,7 @@ export default {
   plugins: [
     '~/plugins/vuex-module',
     '~/plugins/dir-plugin',
+    '~/plugins/router-guard',
     '~/plugins/inject'
   ],
   serverMiddleware: [
