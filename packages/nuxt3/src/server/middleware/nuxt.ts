@@ -2,7 +2,7 @@ import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
 
-import { getContext, TARGETS } from 'nuxt/utils'
+import { getContext, TARGETS } from 'src/utils'
 
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context

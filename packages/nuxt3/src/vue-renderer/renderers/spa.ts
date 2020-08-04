@@ -3,7 +3,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import VueMeta from 'vue-meta'
 import LRU from 'lru-cache'
 import devalue from '@nuxt/devalue'
-import { TARGETS, isModernRequest } from 'nuxt/utils'
+import { TARGETS, isModernRequest } from 'src/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {

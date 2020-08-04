@@ -6,7 +6,7 @@ import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'nuxt/utils'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from 'src/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -413,6 +413,7 @@ export function getNuxtConfig (_options) {
   }
 
   options.build.transpile = [].concat(options.build.transpile || [])
+  options.build.transpile.push('app')
 
   if (options.build.quiet === true) {
     consola.level = 0

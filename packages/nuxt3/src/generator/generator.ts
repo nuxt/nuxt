@@ -6,7 +6,7 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from 'nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor, TARGETS } from 'src/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {

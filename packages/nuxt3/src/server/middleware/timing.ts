@@ -1,6 +1,6 @@
 import consola from 'consola'
 import onHeaders from 'on-headers'
-import { Timer } from 'nuxt/utils'
+import { Timer } from 'src/utils'
 
 export default options => (req, res, next) => {
   if (res.timing) {

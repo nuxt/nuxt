@@ -5,7 +5,7 @@
 
 import EventEmitter from 'events'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
-import { safariNoModuleFix } from 'nuxt/utils'
+import { safariNoModuleFix } from 'src/utils'
 
 const assetsMap = {}
 const watcher = new EventEmitter()

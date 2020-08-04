@@ -1,6 +1,7 @@
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
-import { TARGETS, MODES } from 'nuxt/utils'
+import path from 'path'
+import { TARGETS, MODES } from 'src/utils'
 
 export default () => ({
   // Env
@@ -47,6 +48,7 @@ export default () => ({
   modulesDir: [
     'node_modules'
   ],
+  appDir: path.resolve(__dirname, '../../../app'),
   dir: {
     assets: 'assets',
     app: 'app',

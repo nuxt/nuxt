@@ -1,4 +1,4 @@
-import { MODES } from 'nuxt/utils'
+import { MODES } from 'src/utils'
 
 export default () => ({
   [MODES.universal]: {

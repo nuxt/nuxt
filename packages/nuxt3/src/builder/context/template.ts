@@ -4,7 +4,7 @@ import uniqBy from 'lodash/uniqBy'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
-import { r, wp, wChunk, serializeFunction, isFullStatic } from 'nuxt/utils'
+import { r, wp, wChunk, serializeFunction, isFullStatic } from 'src/utils'
 
 export default class TemplateContext {
   constructor(builder, options) {

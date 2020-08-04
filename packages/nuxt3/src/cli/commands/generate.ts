@@ -1,4 +1,4 @@
-import { TARGETS } from 'nuxt/utils'
+import { TARGETS } from 'src/utils'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
 

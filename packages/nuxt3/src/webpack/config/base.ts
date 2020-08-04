@@ -9,7 +9,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
-import { TARGETS, isUrl, urlJoin, getPKG } from 'nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG } from 'src/utils'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -258,7 +258,7 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      'nuxt-app': path.dirname(require.resolve('../../vue-app')),
+      'app': this.buildContext.options.appDir,
       'nuxt-build': this.buildContext.options.buildDir,
       'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
@@ -304,7 +304,7 @@ export default class WebpackBaseConfig {
         ]
       },
       {
-        test: /\.m?jsx?$/i,
+        test: /\.m?[jt]sx?$/i,
         exclude: (file) => {
           file = file.split('node_modules', 2)[1]
 

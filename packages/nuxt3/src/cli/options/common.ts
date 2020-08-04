@@ -1,4 +1,4 @@
-import { defaultNuxtConfigFile } from 'nuxt/config'
+import { defaultNuxtConfigFile } from 'src/config'
 import { normalizeArg } from '../utils'
 
 export default {
