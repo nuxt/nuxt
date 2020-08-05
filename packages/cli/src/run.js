@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import execa from 'execa'
 import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
@@ -28,7 +29,7 @@ export default async function run (_argv, hooks = {}) {
   let cmd = await getCommand(argv[0])
 
   // Matching `nuxt` or `nuxt [dir]` or `nuxt -*` for `nuxt dev` shortcut
-  if (!cmd && (!argv[0] || argv[0][0] === '-' || (argv[0] !== 'static' && fs.existsSync(argv[0])))) {
+  if (!cmd && (!argv[0] || argv[0][0] === '-' || fs.existsSync(`${argv[0]}${path.sep}nuxt.config.ts`) || fs.existsSync(`${argv[0]}${path.sep}nuxt.config.js`))) {
     argv.unshift('dev')
     cmd = await getCommand('dev')
   }
