@@ -18,10 +18,14 @@ distributions/*/LICENSE
 # Other
 .nuxt*
 !.nuxtignore
+!.nuxtrc
 .cache
 
 # Dist folders
 dist
+
+# Junit reports
+reports
 
 # Coverage reports
 coverage

@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       formError: null,
       formUsername: '',
@@ -38,7 +38,7 @@ export default {
     }
   },
   methods: {
-    async login() {
+    async login () {
       try {
         await this.$store.dispatch('login', {
           username: this.formUsername,
@@ -51,7 +51,7 @@ export default {
         this.formError = e.message
       }
     },
-    async logout() {
+    async logout () {
       try {
         await this.$store.dispatch('logout')
       } catch (e) {

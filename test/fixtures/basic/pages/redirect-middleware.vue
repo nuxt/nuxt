@@ -1,7 +1,7 @@
 <script>
 export default {
   middleware: 'redirect',
-  created() {
+  created () {
     throw new Error('NOPE!')
   }
 }

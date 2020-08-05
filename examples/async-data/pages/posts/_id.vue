@@ -12,15 +12,14 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
-  async asyncData({ params }) {
+  async asyncData ({ params }) {
     // We can use async/await ES6 feature
-    const { data } = await axios.get(`https://jsonplaceholder.typicode.com/posts/${params.id}`)
-    return { post: data }
+    const post = await fetch(`https://jsonplaceholder.typicode.com/posts/${params.id}`).then(res => res.json())
+
+    return { post }
   },
-  head() {
+  head () {
     return {
       title: this.post.title
     }

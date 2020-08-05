@@ -4,8 +4,8 @@
 
 <script>
 export default {
-  fetch({ redirect }) {
-    return redirect('https://nuxtjs.org/')
+  middleware ({ redirect }) {
+    return redirect('https://nuxtjs.org/api/')
   }
 }
 </script>

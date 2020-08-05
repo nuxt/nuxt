@@ -103,13 +103,13 @@ describe('builder: Ignore', () => {
 
     ignore.filter()
     ignore.filter('pages/ignore.vue')
-    const paths = ignore.filter([ 'pages/ignore.vue', 'layouts/ignore.vue' ])
+    const paths = ignore.filter(['pages/ignore.vue', 'layouts/ignore.vue'])
 
     expect(ignore.ignore.filter).toBeCalledTimes(3)
     expect(ignore.ignore.filter).nthCalledWith(1, [])
-    expect(ignore.ignore.filter).nthCalledWith(2, [ 'pages/ignore.vue' ])
-    expect(ignore.ignore.filter).nthCalledWith(3, [ 'pages/ignore.vue', 'layouts/ignore.vue' ])
-    expect(paths).toEqual([ 'pages/ignore.vue', 'layouts/ignore.vue' ])
+    expect(ignore.ignore.filter).nthCalledWith(2, ['pages/ignore.vue'])
+    expect(ignore.ignore.filter).nthCalledWith(3, ['pages/ignore.vue', 'layouts/ignore.vue'])
+    expect(paths).toEqual(['pages/ignore.vue', 'layouts/ignore.vue'])
   })
 
   test('should return origin paths if there is no ignorefile', () => {
@@ -119,9 +119,9 @@ describe('builder: Ignore', () => {
       rootDir: '/var/nuxt'
     })
 
-    const paths = ignore.filter([ 'pages/ignore.vue', 'layouts/ignore.vue' ])
+    const paths = ignore.filter(['pages/ignore.vue', 'layouts/ignore.vue'])
 
-    expect(paths).toEqual([ 'pages/ignore.vue', 'layouts/ignore.vue' ])
+    expect(paths).toEqual(['pages/ignore.vue', 'layouts/ignore.vue'])
   })
 
   test('should reload ignore', () => {

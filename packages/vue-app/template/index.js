@@ -1,7 +1,8 @@
 import Vue from 'vue'
-import Meta from 'vue-meta'
+<% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
+<% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
+<% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
 import { createRouter } from './router.js'
-import NoSsr from './components/no-ssr.js'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 import Nuxt from './components/nuxt.js'
@@ -15,26 +16,47 @@ import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% }) %>
 <%= isTest ? '/* eslint-enable camelcase */' : '' %>
 
-// Component: <NoSsr>
-Vue.component(NoSsr.name, NoSsr)
-
+<% if (features.componentClientOnly) { %>
+// Component: <ClientOnly>
+Vue.component(ClientOnly.name, ClientOnly)
+<% } %>
+<% if (features.deprecations) { %>
+// TODO: Remove in Nuxt 3: <NoSsr>
+Vue.component(NoSsr.name, {
+  ...NoSsr,
+  render (h, ctx) {
+    if (process.client && !NoSsr._warned) {
+      NoSsr._warned = true
+      <%= isTest ? '// eslint-disable-next-line no-console' : '' %>
+      console.warn('<no-ssr> has been deprecated and will be removed in Nuxt 3, please use <client-only> instead')
+    }
+    return NoSsr.render(h, ctx)
+  }
+})
+<% } %>
 // Component: <NuxtChild>
 Vue.component(NuxtChild.name, NuxtChild)
-Vue.component('NChild', NuxtChild)
+<% if (features.componentAliases) { %>Vue.component('NChild', NuxtChild)<% } %>
 
 // Component NuxtLink is imported in server.js or client.js
 
-// Component: <Nuxt>`
+// Component: <Nuxt>
 Vue.component(Nuxt.name, Nuxt)
 
+<% if (features.meta) {
 // vue-meta configuration
-Vue.use(Meta, {
+const vueMetaOptions = {
+  ...nuxtOptions.vueMeta,
   keyName: 'head', // the component option name that vue-meta looks for meta info on.
   attribute: 'data-n-head', // the attribute name vue-meta adds to the tags it observes
   ssrAttribute: 'data-n-head-ssr', // the attribute name that lets vue-meta know that meta info has already been server-rendered
   tagIDKeyName: 'hid' // the property name that vue-meta uses to determine whether to overwrite or append a tag
-})
+}
+%>
+Vue.use(Meta, <%= JSON.stringify(vueMetaOptions) %>)<%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
+<% if (features.transitions) { %>
 const defaultTransition = <%=
   serialize(pageTransition)
   .replace('beforeEnter(', 'function(').replace('enter(', 'function(').replace('afterEnter(', 'function(')
@@ -42,8 +64,9 @@ const defaultTransition = <%=
   .replace('afterLeave(', 'function(').replace('leaveCancelled(', 'function(').replace('beforeAppear(', 'function(')
   .replace('appear(', 'function(').replace('afterAppear(', 'function(').replace('appearCancelled(', 'function(')
 %><%= isTest ? '// eslint-disable-line' : '' %>
+<% } %>
 
-async function createApp(ssrContext) {
+async function createApp(ssrContext, config = {}) {
   const router = await createRouter(ssrContext)
 
   <% if (store) { %>
@@ -62,14 +85,20 @@ async function createApp(ssrContext) {
   // here we inject the router and store to all child components,
   // making them available everywhere as `this.$router` and `this.$store`.
   const app = {
-    router,
+    <% if (features.meta) { %>
+    <%= isTest ? '/* eslint-disable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand  */' : '' %>
+    head: <%= serializeFunction(head) %>,
+    <%= isTest ? '/* eslint-enable array-bracket-spacing, quotes, quote-props, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren, object-shorthand */' : '' %>
+    <% } %>
     <% if (store) { %>store,<%  } %>
+    router,
     nuxt: {
+      <% if (features.transitions) { %>
       defaultTransition,
-      transitions: [ defaultTransition ],
-      setTransitions(transitions) {
+      transitions: [defaultTransition],
+      setTransitions (transitions) {
         if (!Array.isArray(transitions)) {
-          transitions = [ transitions ]
+          transitions = [transitions]
         }
         transitions = transitions.map((transition) => {
           if (!transition) {
@@ -84,17 +113,23 @@ async function createApp(ssrContext) {
         this.$options.nuxt.transitions = transitions
         return transitions
       },
+      <% } %>
       err: null,
       dateErr: null,
-      error(err) {
+      error (err) {
         err = err || null
         app.context._errored = Boolean(err)
         err = err ? normalizeError(err) : null
-        const nuxt = this.nuxt || this.$options.nuxt
+        let nuxt = app.nuxt // to work with @vue/composition-api, see https://github.com/nuxt/nuxt.js/issues/6517#issuecomment-573280207
+        if (this) {
+          nuxt = this.nuxt || this.$options.nuxt
+        }
         nuxt.dateErr = Date.now()
         nuxt.err = err
         // Used in src/server.js
-        if (ssrContext) ssrContext.nuxt.error = err
+        if (ssrContext) {
+          ssrContext.nuxt.error = err
+        }
         return err
       }
     },
@@ -110,16 +145,16 @@ async function createApp(ssrContext) {
   if (ssrContext) {
     route = router.resolve(ssrContext.url).route
   } else {
-    const path = getLocation(router.options.base)
+    const path = getLocation(router.options.base, router.options.mode)
     route = router.resolve(path).route
   }
 
   // Set context to app.context
   await setContext(app, {
+    <% if (store) { %>store,<% } %>
     route,
     next,
     error: app.nuxt.error.bind(app),
-    <% if (store) { %>store,<% } %>
     payload: ssrContext ? ssrContext.payload : undefined,
     req: ssrContext ? ssrContext.req : undefined,
     res: ssrContext ? ssrContext.res : undefined,
@@ -127,33 +162,45 @@ async function createApp(ssrContext) {
     ssrContext
   })
 
-  <% if (plugins.length) { %>
-  const inject = function (key, value) {
-    if (!key) throw new Error('inject(key, value) has no key provided')
-    if (typeof value === 'undefined') throw new Error('inject(key, value) has no value provided')
+  function inject(key, value) {
+    if (!key) {
+      throw new Error('inject(key, value) has no key provided')
+    }
+    if (value === undefined) {
+      throw new Error(`inject('${key}', value) has no value provided`)
+    }
+
     key = '$' + key
     // Add into app
     app[key] = value
+    // Add into context
+    if (!app.context[key]) {
+      app.context[key] = value
+    }
     <% if (store) { %>
     // Add into store
     store[key] = app[key]
     <% } %>
     // Check if plugin not already installed
     const installKey = '__<%= globals.pluginPrefix %>_' + key + '_installed__'
-    if (Vue[installKey]) return
+    if (Vue[installKey]) {
+      return
+    }
     Vue[installKey] = true
     // Call Vue.use() to install the plugin into vm
     Vue.use(() => {
-      if (!Vue.prototype.hasOwnProperty(key)) {
+      if (!Object.prototype.hasOwnProperty.call(Vue.prototype, key)) {
         Object.defineProperty(Vue.prototype, key, {
-          get() {
+          get () {
             return this.$root.$options[key]
           }
         })
       }
     })
   }
-  <% } %>
+
+  // Inject runtime config as $config
+  inject('config', config)
 
   <% if (store) { %>
   if (process.client) {
@@ -164,6 +211,13 @@ async function createApp(ssrContext) {
   }
   <% } %>
 
+  // Add enablePreview(previewData = {}) in context for plugins
+  if (process.static && process.client) {
+    app.context.enablePreview = function (previewData = {}) {
+      app.previewData = Object.assign({}, previewData)
+      inject('preview', previewData)
+    }
+  }
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.forEach((plugin) => { %>
@@ -182,13 +236,23 @@ async function createApp(ssrContext) {
   <% } %>
   <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
+  // Lock enablePreview in context
+  if (process.static && process.client) {
+    app.context.enablePreview = function () {
+      console.warn('You cannot call enablePreview() outside a plugin.')
+    }
+  }
 
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
-      router.push(ssrContext.url, resolve, () => {
+      router.push(ssrContext.url, resolve, (err) => {
+        // https://github.com/vuejs/vue-router/blob/v3.3.4/src/history/errors.js
+        if (!err._isRouter) return reject(err)
+        if (err.type !== 1 /* NavigationFailureType.redirected */) return resolve()
+
         // navigated to a different route in router guard
-        const unregister = router.afterEach(async (to, from, next) => {
+        const unregister = router.afterEach(async (to, from) => {
           ssrContext.url = to.fullPath
           app.context.route = await getRouteData(to)
           app.context.params = to.params || {}
@@ -201,8 +265,8 @@ async function createApp(ssrContext) {
   }
 
   return {
-    app,
     <% if(store) { %>store,<%  } %>
+    app,
     router
   }
 }

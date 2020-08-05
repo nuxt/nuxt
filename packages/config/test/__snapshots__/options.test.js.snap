@@ -4,6 +4,9 @@ exports[`config: options should return default nuxt config 1`] = `
 Object {
   "ErrorPage": null,
   "__normalized__": true,
+  "_modules": Array [
+    "@nuxt/components",
+  ],
   "_nuxtConfigFile": "/var/nuxt/test/nuxt.config.js",
   "_nuxtConfigFiles": Array [
     "/var/nuxt/test/nuxt.config.js",
@@ -19,6 +22,8 @@ Object {
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
+    "additionalExtensions": Array [],
+    "aggressiveCodeRemoval": false,
     "analyze": false,
     "babel": Object {
       "babelrc": false,
@@ -26,7 +31,7 @@ Object {
       "configFile": false,
     },
     "cache": false,
-    "crossorigin": undefined,
+    "corejs": "auto",
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -38,6 +43,7 @@ Object {
       "img": [Function],
       "video": [Function],
     },
+    "followSymlinks": false,
     "friendlyErrors": true,
     "hardSource": false,
     "hotMiddleware": Object {},
@@ -54,12 +60,15 @@ Object {
         "useShortDoctype": true,
       },
     },
+    "indicator": false,
     "loaders": Object {
       "css": Object {
         "sourceMap": false,
       },
       "cssModules": Object {
-        "localIdentName": "[local]_[hash:base64:5]",
+        "modules": Object {
+          "localIdentName": "[local]_[hash:base64:5]",
+        },
         "sourceMap": false,
       },
       "file": Object {},
@@ -74,7 +83,9 @@ Object {
       },
       "pugPlain": Object {},
       "sass": Object {
-        "indentedSyntax": true,
+        "sassOptions": Object {
+          "indentedSyntax": true,
+        },
         "sourceMap": false,
       },
       "scss": Object {
@@ -82,18 +93,6 @@ Object {
       },
       "stylus": Object {
         "sourceMap": false,
-      },
-      "ts": Object {
-        "appendTsSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
-      },
-      "tsx": Object {
-        "appendTsxSuffixTo": Array [
-          /\\\\\\.vue\\$/,
-        ],
-        "transpileOnly": true,
       },
       "vue": Object {
         "productionMode": true,
@@ -108,15 +107,15 @@ Object {
         "sourceMap": false,
       },
     },
+    "loadingScreen": false,
     "optimization": Object {
       "minimize": true,
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
-        "automaticNameDelimiter": ".",
+        "automaticNameDelimiter": "/",
         "cacheGroups": Object {},
         "chunks": "all",
-        "name": undefined,
       },
     },
     "optimizeCSS": false,
@@ -130,6 +129,7 @@ Object {
     "profile": false,
     "publicPath": "/_nuxt/",
     "quiet": true,
+    "serverURLPolyfill": "url",
     "splitChunks": Object {
       "commons": true,
       "layouts": false,
@@ -143,21 +143,21 @@ Object {
     "templates": Array [],
     "terser": Object {},
     "transpile": Array [],
-    "typescript": Object {
-      "ignoreNotFoundWarnings": false,
-      "typeCheck": true,
-    },
+    "warningIgnoreFilters": Array [],
     "watch": Array [],
   },
   "buildDir": "/var/nuxt/test/.nuxt",
+  "buildModules": Array [],
   "cli": Object {
     "badgeMessages": Array [],
+    "bannerColor": "green",
   },
+  "createRequire": [MockFunction],
   "css": Array [],
   "debug": false,
   "dev": false,
-  "devModules": Array [],
   "dir": Object {
+    "app": "app",
     "assets": "assets",
     "layouts": "layouts",
     "middleware": "middleware",
@@ -167,22 +167,51 @@ Object {
   },
   "editor": undefined,
   "env": Object {},
+  "extendPlugins": null,
   "extensions": Array [
     "js",
     "mjs",
-    "ts",
   ],
+  "features": Object {
+    "asyncData": true,
+    "clientOnline": true,
+    "clientPrefetch": true,
+    "clientUseUrl": false,
+    "componentAliases": true,
+    "componentClientOnly": true,
+    "deprecations": true,
+    "fetch": true,
+    "layouts": true,
+    "meta": true,
+    "middleware": true,
+    "store": true,
+    "transitions": true,
+    "validate": true,
+  },
   "fetch": Object {
     "client": true,
     "server": true,
   },
   "generate": Object {
+    "cache": Object {
+      "globbyOptions": Object {
+        "gitignore": true,
+      },
+      "ignore": Array [],
+    },
     "concurrency": 500,
+    "crawler": true,
     "dir": "/var/nuxt/test/dist",
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
     "routes": Array [],
+    "staticAssets": Object {
+      "base": "/_nuxt/static",
+      "dir": "static",
+      "version": "x",
+      "versionBase": "/_nuxt/static/x",
+    },
     "subFolders": true,
   },
   "globalName": "nuxt",
@@ -206,6 +235,7 @@ Object {
     "**/*.spec.*",
     "**/-*.*",
   ],
+  "ignoreOptions": undefined,
   "ignorePrefix": "-",
   "layoutTransition": Object {
     "mode": "out-in",
@@ -274,6 +304,8 @@ Object {
     "name": "page",
   },
   "plugins": Array [],
+  "privateRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {},
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,
@@ -283,6 +315,7 @@ Object {
     "compressor": Object {
       "threshold": 0,
     },
+    "crossorigin": undefined,
     "csp": false,
     "dist": Object {
       "index": false,
@@ -308,6 +341,7 @@ Object {
     },
     "resourceHints": true,
     "ssr": true,
+    "ssrLog": false,
     "static": Object {
       "prefix": true,
     },
@@ -324,10 +358,12 @@ Object {
     "mode": "history",
     "parseQuery": false,
     "prefetchLinks": true,
+    "prefetchPayloads": true,
     "routeNameSplitter": "-",
     "routes": Array [],
     "scrollBehavior": null,
     "stringifyQuery": false,
+    "trailingSlash": undefined,
   },
   "server": Object {
     "host": "localhost",
@@ -338,6 +374,7 @@ Object {
   },
   "serverMiddleware": Array [],
   "srcDir": "/var/nuxt/test",
+  "ssr": true,
   "styleExtensions": Array [
     "css",
     "pcss",
@@ -348,6 +385,7 @@ Object {
     "sass",
     "less",
   ],
+  "target": "server",
   "test": true,
   "vue": Object {
     "config": Object {
@@ -355,6 +393,7 @@ Object {
       "silent": true,
     },
   },
+  "vueMeta": null,
   "watch": Array [
     "/var/nuxt/test/nuxt.config.js",
   ],
@@ -362,10 +401,10 @@ Object {
     "chokidar": Object {
       "ignoreInitial": true,
     },
-    "rewatchOnRawEvents": Array [
-      "rename",
-    ],
-    "webpack": Object {},
+    "rewatchOnRawEvents": undefined,
+    "webpack": Object {
+      "aggregateTimeout": 1000,
+    },
   },
 }
 `;

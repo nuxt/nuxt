@@ -1,17 +1,24 @@
 {
   "name": "@nuxt/config",
-  "version": "2.7.1",
+  "version": "2.14.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
+  "main": "dist/config.js",
+  "typings": "index.d.ts",
   "files": [
     "dist",
-    "types/*.d.ts"
+    "index.d.ts"
   ],
-  "main": "dist/config.js",
-  "typings": "types/index.d.ts",
   "dependencies": {
-    "@nuxt/utils": "2.7.1",
-    "consola": "^2.6.2",
+    "@nuxt/utils": "2.14.1",
+    "consola": "^2.14.0",
+    "create-require": "^1.0.2",
+    "defu": "^2.0.4",
+    "destr": "^1.0.0",
+    "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
+    "jiti": "^0.1.11",
+    "rc9": "^1.0.0",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

@@ -6,9 +6,20 @@
     "dev"
   ],
   "ignoreDeps": [
-    "thread-loader",
     "core-js",
-    "esm"
+    "memory-fs",
+    "execa",
+    "pify",
+    "file-loader",
+    "url-loader",
+    "sass-loader",
+    "css-loader",
+    "fs-extra",
+    "chalk",
+    "wrap-ansi",
+    "terser-webpack-plugin",
+    "@types/terser-webpack-plugin",
+    "defu"
   ],
   "lockFileMaintenance": {
     "enabled": true

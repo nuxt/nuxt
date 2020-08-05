@@ -1,5 +1,5 @@
 export default class ServerContext {
-  constructor(server) {
+  constructor (server) {
     this.nuxt = server.nuxt
     this.globals = server.globals
     this.options = server.options

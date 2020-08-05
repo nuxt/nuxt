@@ -33,7 +33,7 @@
 import axios from '~/plugins/axios'
 
 export default {
-  async asyncData() {
+  async asyncData () {
     const { data: users } = await axios.get('users.json')
     return { users }
   }

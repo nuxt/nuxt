@@ -11,17 +11,17 @@ import Vue from 'vue'
 
 export default {
   filters: {
-    toStr(v) {
+    toStr (v) {
       return String(v)
     }
   },
-  data() {
+  data () {
     return {
       vueConfig: Vue.config
     }
   },
   computed: {
-    configKeys: function () {
+    configKeys () {
       return Object.keys(this.vueConfig).filter(k => ['silent', 'devtools', 'performance', 'productTip'].includes(k))
     }
   }

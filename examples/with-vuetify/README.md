@@ -6,5 +6,6 @@
 https://nuxt-with-vuetify-example.surge.sh
 
 ## Resources
-https://nuxtjs.org/examples/with-vuetify<br>
+https://github.com/nuxt-community/vuetify-module
+https://nuxtjs.org/examples/with-vuetify
 https://vuetifyjs.com/

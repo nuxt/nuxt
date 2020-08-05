@@ -7,6 +7,7 @@ TemplateContext {
   ],
   "templateVars": Object {
     "appPath": "./App.js",
+    "buildIndicator": undefined,
     "components": Object {
       "ErrorPage": "relativeBuild(test_error_page)",
     },
@@ -19,6 +20,9 @@ TemplateContext {
     ],
     "env": "test_env",
     "extensions": "test|ext",
+    "features": Object {
+      "store": true,
+    },
     "fetch": undefined,
     "globalName": "test_global",
     "globals": Array [
@@ -26,6 +30,7 @@ TemplateContext {
     ],
     "head": "test_head",
     "isDev": "test_dev",
+    "isFullStatic": false,
     "isTest": "test_test",
     "layoutTransition": Object {
       "name": "test_layout_trans",
@@ -38,7 +43,7 @@ TemplateContext {
       "test": "test message",
     },
     "mode": "test mode",
-    "options": Object {
+    "nuxtOptions": Object {
       "ErrorPage": "test_error_page",
       "build": Object {
         "splitChunks": Object {
@@ -58,6 +63,9 @@ TemplateContext {
         "test",
         "ext",
       ],
+      "features": Object {
+        "store": true,
+      },
       "globalName": "test_global",
       "head": "test_head",
       "layoutTransition": Object {

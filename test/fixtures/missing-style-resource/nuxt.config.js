@@ -1,7 +1,7 @@
 export default {
   build: {
     styleResources: {
-      'stylus': './nothinghere'
+      stylus: './nothinghere'
     }
   }
 }

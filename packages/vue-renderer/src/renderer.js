@@ -2,14 +2,14 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { isModernRequest } from '@nuxt/utils'
+import { TARGETS, isModernRequest, waitFor } from '@nuxt/utils'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
 import ModernRenderer from './renderers/modern'
 
 export default class VueRenderer {
-  constructor(context) {
+  constructor (context) {
     this.serverContext = context
     this.options = this.serverContext.options
 
@@ -35,7 +35,7 @@ export default class VueRenderer {
     this._error = null
   }
 
-  ready() {
+  ready () {
     if (!this._readyPromise) {
       this._state = 'loading'
       this._readyPromise = this._ready()
@@ -53,7 +53,7 @@ export default class VueRenderer {
     return this._readyPromise
   }
 
-  async _ready() {
+  async _ready () {
     // Resolve dist path
     this.distPath = path.resolve(this.options.buildDir, 'dist', 'server')
 
@@ -86,7 +86,7 @@ export default class VueRenderer {
     }
   }
 
-  async loadResources(_fs) {
+  async loadResources (_fs) {
     const updated = []
 
     const readResource = async (fileName, encoding) => {
@@ -128,16 +128,16 @@ export default class VueRenderer {
     // Load templates
     await this.loadTemplates()
 
+    await this.serverContext.nuxt.callHook('render:resourcesLoaded', this.serverContext.resources)
+
     // Detect if any resource updated
     if (updated.length > 0) {
       // Create new renderer
       this.createRenderer()
     }
-
-    return this.serverContext.nuxt.callHook('render:resourcesLoaded', this.serverContext.resources)
   }
 
-  async loadTemplates() {
+  async loadTemplates () {
     // Reload error template
     const errorTemplatePath = path.resolve(this.options.buildDir, 'views/error.html')
 
@@ -158,15 +158,15 @@ export default class VueRenderer {
   }
 
   // TODO: Remove in Nuxt 3
-  get noSSR() { /* Backward compatibility */
+  get noSSR () { /* Backward compatibility */
     return this.options.render.ssr === false
   }
 
-  get SSR() {
+  get SSR () {
     return this.options.render.ssr === true
   }
 
-  get isReady() {
+  get isReady () {
     // SPA
     if (!this.serverContext.resources.spaTemplate || !this.renderer.spa) {
       return false
@@ -180,22 +180,23 @@ export default class VueRenderer {
     return true
   }
 
-  get isModernReady() {
+  get isModernReady () {
     return this.isReady && this.serverContext.resources.modernManifest
   }
 
   // TODO: Remove in Nuxt 3
-  get isResourcesAvailable() { /* Backward compatibility */
+  get isResourcesAvailable () { /* Backward compatibility */
     return this.isReady
   }
 
-  detectModernBuild() {
+  detectModernBuild () {
     const { options, resources } = this.serverContext
     if ([false, 'client', 'server'].includes(options.modern)) {
       return
     }
 
-    if (!resources.modernManifest) {
+    const isExplicitStaticModern = options.target === TARGETS.static && options.modern
+    if (!resources.modernManifest && !isExplicitStaticModern) {
       options.modern = false
       return
     }
@@ -204,7 +205,7 @@ export default class VueRenderer {
     consola.info(`Modern bundles are detected. Modern mode (\`${options.modern}\`) is enabled now.`)
   }
 
-  createRenderer() {
+  createRenderer () {
     // Resource clientManifest is always required
     if (!this.serverContext.resources.clientManifest) {
       return
@@ -228,40 +229,45 @@ export default class VueRenderer {
     }
   }
 
-  renderSPA(renderContext) {
+  renderSPA (renderContext) {
     return this.renderer.spa.render(renderContext)
   }
 
-  renderSSR(renderContext) {
+  renderSSR (renderContext) {
     // Call renderToString from the bundleRenderer and generate the HTML (will update the renderContext as well)
     const renderer = renderContext.modern ? this.renderer.modern : this.renderer.ssr
     return renderer.render(renderContext)
   }
 
-  async renderRoute(url, renderContext = {}, _retried) {
+  async renderRoute (url, renderContext = {}, _retried = 0) {
     /* istanbul ignore if */
     if (!this.isReady) {
-      // Production
-      if (!this.options.dev) {
-        if (!_retried && ['loading', 'created'].includes(this._state)) {
-          await this.ready()
-          return this.renderRoute(url, renderContext, true)
-        }
-        switch (this._state) {
-          case 'created':
-            throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
-          case 'loading':
-            throw new Error(`Renderer is loading.`)
-          case 'error':
-            throw this._error
-          case 'ready':
-            throw new Error(`Renderer is loaded but not all resources are unavailable! Please check ${this.distPath} existence.`)
-          default:
-            throw new Error('Renderer is in unknown state!')
-        }
+      // Fall-back to loading-screen if enabled
+      if (this.options.build.loadingScreen) {
+        // Tell nuxt middleware to use `server:nuxt:renderLoading hook
+        return false
       }
-      // Tell nuxt middleware to render UI
-      return false
+
+      // Retry
+      const retryLimit = this.options.dev ? 60 : 3
+      if (_retried < retryLimit && this._state !== 'error') {
+        await this.ready().then(() => waitFor(1000))
+        return this.renderRoute(url, renderContext, _retried + 1)
+      }
+
+      // Throw Error
+      switch (this._state) {
+        case 'created':
+          throw new Error('Renderer ready() is not called! Please ensure `nuxt.ready()` is called and awaited.')
+        case 'loading':
+          throw new Error('Renderer is loading.')
+        case 'error':
+          throw this._error
+        case 'ready':
+          throw new Error(`Renderer resources are not loaded! Please check possible console errors and ensure dist (${this.distPath}) exists.`)
+        default:
+          throw new Error('Renderer is in unknown state!')
+      }
     }
 
     // Log rendered url
@@ -269,19 +275,27 @@ export default class VueRenderer {
 
     // Add url to the renderContext
     renderContext.url = url
+    // Add target to the renderContext
+    renderContext.target = this.options.target
 
-    const { req = {} } = renderContext
+    const { req = {}, res = {} } = renderContext
 
     // renderContext.spa
     if (renderContext.spa === undefined) {
       // TODO: Remove reading from renderContext.res in Nuxt3
-      renderContext.spa = !this.SSR || req.spa || (renderContext.res && renderContext.res.spa)
+      renderContext.spa = !this.SSR || req.spa || res.spa
     }
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
       const modernMode = this.options.modern
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
+    }
+
+    // Set runtime config on renderContext
+    renderContext.runtimeConfig = {
+      private: renderContext.spa ? {} : { ...this.options.privateRuntimeConfig },
+      public: { ...this.options.publicRuntimeConfig }
     }
 
     // Call renderContext hook
@@ -293,7 +307,7 @@ export default class VueRenderer {
       : this.renderSSR(renderContext)
   }
 
-  get resourceMap() {
+  get resourceMap () {
     return {
       clientManifest: {
         fileName: 'client.manifest.json',
@@ -352,13 +366,14 @@ export default class VueRenderer {
     }
   }
 
-  parseTemplate(templateStr) {
+  parseTemplate (templateStr) {
     return template(templateStr, {
-      interpolate: /{{([\s\S]+?)}}/g
+      interpolate: /{{([\s\S]+?)}}/g,
+      evaluate: /{%([\s\S]+?)%}/g
     })
   }
 
-  close() {
+  close () {
     if (this.__closed) {
       return
     }

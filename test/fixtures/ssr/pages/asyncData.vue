@@ -6,7 +6,7 @@
 import { nextId } from '@/lib/db'
 
 export default {
-  asyncData() {
+  asyncData () {
     return {
       id: nextId()
     }

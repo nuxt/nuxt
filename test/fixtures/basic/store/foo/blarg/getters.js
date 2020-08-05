@@ -1,5 +1,5 @@
 export default {
-  getVal(state) {
+  getVal (state) {
     return state.val
   }
 }

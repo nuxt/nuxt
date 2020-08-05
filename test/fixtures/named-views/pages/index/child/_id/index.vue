@@ -5,11 +5,11 @@
 <script>
 export default {
   name: 'Child',
-  validate({ params }) {
+  validate ({ params }) {
     return !isNaN(+params.id)
   },
   computed: {
-    id() {
+    id () {
       return this.$route.params.id
     }
   }

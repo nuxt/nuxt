@@ -47,9 +47,10 @@ describe('server: nuxtMiddleware', () => {
     expect(context.renderRoute).toBeCalledTimes(1)
     expect(context.renderRoute).toBeCalledWith(req.url, { req, res })
 
-    expect(context.nuxt.callHook).toBeCalledTimes(2)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
     expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res })
-    expect(context.nuxt.callHook).nthCalledWith(2, 'render:routeDone', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res })
 
     expect(res.setHeader).toBeCalledTimes(3)
     expect(res.setHeader).nthCalledWith(1, 'Content-Type', 'text/html; charset=utf-8')
@@ -94,9 +95,10 @@ describe('server: nuxtMiddleware', () => {
 
     const html = await nuxtMiddleware(req, res, next)
 
-    expect(context.nuxt.callHook).toBeCalledTimes(2)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
     expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res, nuxt })
-    expect(context.nuxt.callHook).nthCalledWith(2, 'render:routeDone', req.url, result, { req, res, nuxt })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res, nuxt })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res, nuxt })
 
     expect(res.statusCode).toEqual(404)
     expect(html).toEqual(result.html)
@@ -117,6 +119,22 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(1, 'ETag', 'etag-hash')
   })
 
+  test('should set etag after rendering through hook', async () => {
+    const context = createContext()
+    const hash = jest.fn(() => 'etag-hook')
+    context.options.render.etag = { hash }
+
+    const result = { html: 'rendered html' }
+    context.renderRoute.mockReturnValue(result)
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+
+    await nuxtMiddleware(req, res, next)
+
+    expect(hash).toBeCalledWith('rendered html', expect.any(Object))
+    expect(res.setHeader).nthCalledWith(1, 'ETag', 'etag-hook')
+  })
+
   test('should return 304 if request is fresh', async () => {
     const context = createContext()
     const result = { html: 'rendered html' }
@@ -129,6 +147,10 @@ describe('server: nuxtMiddleware', () => {
     await nuxtMiddleware(req, res, next)
 
     expect(res.statusCode).toEqual(304)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
+    expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res })
     expect(res.end).toBeCalledTimes(1)
     expect(res.end).toBeCalledWith()
   })
@@ -191,7 +213,7 @@ describe('server: nuxtMiddleware', () => {
     }
     context.renderRoute.mockReturnValue(result)
     context.options.dev = true
-    context.options.build.crossorigin = 'use-credentials'
+    context.options.render.crossorigin = 'use-credentials'
     context.options.render.http2 = {
       push: true,
       shouldPush: jest.fn((fileWithoutQuery, asType) => asType === 'script')
@@ -243,7 +265,7 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(
       1,
       'Content-Security-Policy-Report-Only',
-      "script-src 'self' 'unsafe-eval' sha256-hashes /nuxt/*.js /nuxt/images/*"
+      "script-src 'self' sha256-hashes /nuxt/*.js /nuxt/images/*"
     )
   })
 

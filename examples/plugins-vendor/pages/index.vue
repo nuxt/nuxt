@@ -20,7 +20,7 @@ if (process.client) {
 }
 
 export default {
-  mounted() {
+  mounted () {
     miniToastr.init()
   },
   notifications: {

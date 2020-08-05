@@ -1,10 +1,10 @@
 import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
 import { Server } from '@nuxt/server'
+import Hookable from 'hable'
 
 import Nuxt from '../src/nuxt'
 import ModuleContainer from '../src/module'
-import Hookable from '../src/hookable'
 import Resolver from '../src/resolver'
 import { version } from '../package.json'
 
@@ -36,12 +36,6 @@ describe('core: nuxt', () => {
     expect(nuxt.moduleContainer).toBeInstanceOf(ModuleContainer)
     expect(nuxt.server).toBeInstanceOf(Server)
 
-    expect(nuxt._deprecatedHooks).toEqual({
-      'render:context': 'render:routeContext',
-      'render:routeContext': 'vue-renderer:afterRender',
-      'showReady': 'webpack:done'
-    })
-
     expect(defineAlias).toBeCalledTimes(2)
     expect(defineAlias).nthCalledWith(1, nuxt, nuxt.resolver, ['resolveAlias', 'resolvePath'])
     expect(defineAlias).nthCalledWith(2, nuxt, nuxt.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
@@ -64,6 +58,17 @@ describe('core: nuxt', () => {
     expect(nuxt.callHook).toBeCalledWith('webpack:done')
   })
 
+  for (const name of ['render:context', 'render:routeContext']) {
+    test('should deprecate ' + name, async () => {
+      const nuxt = new Nuxt()
+      const fn = jest.fn()
+      nuxt.hook(name, fn)
+      await nuxt.callHook('_render:context')
+      expect(fn).toBeCalledTimes(1)
+      expect(fn).toBeCalledWith()
+    })
+  }
+
   test('should display fatal message if ready failed', async () => {
     const err = new Error('nuxt ready failed')
     const nuxt = new Nuxt()
@@ -73,16 +78,6 @@ describe('core: nuxt', () => {
 
   test('should return nuxt version from package.json', () => {
     expect(Nuxt.version).toEqual(`v${version}`)
-  })
-
-  test('should return nuxt version from global.__NUXT', () => {
-    global.__NUXT = {
-      version: 'latest'
-    }
-
-    expect(Nuxt.version).toEqual('latest')
-
-    delete global.__NUXT
   })
 
   test('should call module/server ready in nuxt.ready', async () => {

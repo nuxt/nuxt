@@ -4,20 +4,20 @@
 */
 
 import EventEmitter from 'events'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import { safariNoModuleFix } from '@nuxt/utils'
 
 const assetsMap = {}
 const watcher = new EventEmitter()
 
-// https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
-const safariFix = `!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();`
-
 export default class ModernModePlugin {
-  constructor({ targetDir, isModernBuild }) {
+  constructor ({ targetDir, isModernBuild, noUnsafeInline }) {
     this.targetDir = targetDir
     this.isModernBuild = isModernBuild
+    this.noUnsafeInline = noUnsafeInline
   }
 
-  apply(compiler) {
+  apply (compiler) {
     if (!this.isModernBuild) {
       this.applyLegacy(compiler)
     } else {
@@ -25,31 +25,36 @@ export default class ModernModePlugin {
     }
   }
 
-  set assets({ name, content }) {
+  get assets () {
+    return assetsMap
+  }
+
+  set assets ({ name, content }) {
     assetsMap[name] = content
     watcher.emit(name)
   }
 
-  getAssets(name) {
-    return assetsMap[name] ||
-      new Promise((resolve) => {
-        watcher.once(name, () => {
-          return assetsMap[name] && resolve(assetsMap[name])
-        })
-        return assetsMap[name] && resolve(assetsMap[name])
+  getAssets (name) {
+    return new Promise((resolve) => {
+      const asset = this.assets[name]
+      if (asset) {
+        return resolve(asset)
+      }
+      return watcher.once(name, () => {
+        const asset = this.assets[name]
+        return asset && resolve(asset)
       })
+    })
   }
 
-  applyLegacy(compiler) {
-    const ID = `nuxt-legacy-bundle`
+  applyLegacy (compiler) {
+    const ID = 'nuxt-legacy-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      // For html-webpack-plugin 4.0
-      // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(ID, (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, (data, cb) => {
         // get stats, write to disk
         this.assets = {
           name: data.plugin.options.filename,
-          content: data.body
+          content: data.bodyTags
         }
 
         cb()
@@ -57,14 +62,12 @@ export default class ModernModePlugin {
     })
   }
 
-  applyModern(compiler) {
-    const ID = `nuxt-modern-bundle`
+  applyModern (compiler) {
+    const ID = 'nuxt-modern-bundle'
     compiler.hooks.compilation.tap(ID, (compilation) => {
-      // For html-webpack-plugin 4.0
-      // HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tapAsync(ID, async (data, cb) => {
-      compilation.hooks.htmlWebpackPluginAlterAssetTags.tapAsync(ID, async (data, cb) => {
+      HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync(ID, async (data, cb) => {
         // use <script type="module"> for modern assets
-        data.body.forEach((tag) => {
+        data.bodyTags.forEach((tag) => {
           if (tag.tagName === 'script' && tag.attributes) {
             tag.attributes.type = 'module'
           }
@@ -72,7 +75,7 @@ export default class ModernModePlugin {
 
         // use <link rel="modulepreload"> instead of <link rel="preload">
         // for modern assets
-        data.head.forEach((tag) => {
+        data.headTags.forEach((tag) => {
           if (tag.tagName === 'link' &&
               tag.attributes.rel === 'preload' &&
               tag.attributes.as === 'script') {
@@ -86,22 +89,41 @@ export default class ModernModePlugin {
           .filter(a => a.tagName === 'script' && a.attributes)
 
         for (const a of legacyAssets) {
-          a.attributes.nomodule = ''
-          data.body.push(a)
+          a.attributes.nomodule = true
+          data.bodyTags.push(a)
+        }
+
+        if (this.noUnsafeInline) {
+          // inject the fix as an external script
+          const safariFixFilename = 'safari-nomodule-fix.js'
+          const safariFixPath = legacyAssets[0].attributes.src
+            .split('/')
+            .slice(0, -1)
+            .concat([safariFixFilename])
+            .join('/')
+
+          compilation.assets[safariFixFilename] = {
+            source: () => Buffer.from(safariNoModuleFix),
+            size: () => Buffer.byteLength(safariNoModuleFix)
+          }
+          data.bodyTags.push({
+            tagName: 'script',
+            closeTag: true,
+            attributes: {
+              src: safariFixPath
+            }
+          })
+        } else {
+          // inject Safari 10 nomodule fix
+          data.bodyTags.push({
+            tagName: 'script',
+            closeTag: true,
+            innerHTML: safariNoModuleFix
+          })
         }
 
         delete assetsMap[fileName]
         cb()
-      })
-
-      compilation.hooks.htmlWebpackPluginAfterHtmlProcessing.tap(ID, (data) => {
-        data.html = data.html.replace(/\snomodule="">/g, ' nomodule>')
-
-        // inject Safari 10 nomodule fix
-        data.html = data.html.replace(
-          /(<\/body\s*>)/i,
-          match => `<script>${safariFix}</script>${match}`
-        )
       })
     })
   }

@@ -10,45 +10,14 @@ const useCjs = [
 ]
 
 const stub = {
-  es: `export * from '../src/index'`,
-  cjs: `const esm = require('esm')
+  es: 'export * from \'../src/index\'',
+  cjs: `const _require = typeof jest === 'undefined' ? require('esm')(module) : require
+  global.__NUXT_DEV__ = true
+  module.exports = _require('../src/index')
+`
+}
 
-const _require = esm(module)
-
-const execa = require('execa')
-
-global.__NUXT = {}
-Object.defineProperty(global.__NUXT, 'version', {
-  enumerable: true,
-  get() {
-    try {
-      const { stdout } = execa.sync('git', ['status', '-s', '-b', '--porcelain=2'])
-
-      const status = { dirty: false }
-      for (const line of stdout.split('\\n')) {
-        if (line[0] === '#') {
-          const match = line.match(/branch\\.([^\\s]+) (.*)$/)
-          if (match && match.length) {
-            status[match[1]] = match[2]
-          }
-        } else {
-          status.dirty = true
-          break
-        }
-      }
-
-      return \`git<\${status.head}\${status.dirty ? '~' : '-'}\${(status.oid && status.oid.substr(0, 7)) || ''}>\` +
-        (status.ab ? \` (\${status.ab})\` : '')
-    } catch (err) {
-      return 'source'
-    }
-  }
-})
-
-module.exports = _require('../src/index')
-` }
-
-async function main() {
+async function main () {
   // Read package at current directory
   const rootPackage = new Package()
   const workspacePackages = await rootPackage.getWorkspacePackages()

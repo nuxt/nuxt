@@ -16,7 +16,7 @@ export default {
     './modules/middleware/midd2',
     '~/modules/middleware/midd3'
   ],
-  hooks(hook) {
+  hooks (hook) {
     hook('ready', (nuxt) => {
       nuxt.__ready_called__ = true
     })

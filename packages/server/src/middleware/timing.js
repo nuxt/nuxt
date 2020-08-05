@@ -31,12 +31,12 @@ export default options => (req, res, next) => {
 }
 
 class ServerTiming extends Timer {
-  constructor(...args) {
+  constructor (...args) {
     super(...args)
     this.headers = []
   }
 
-  end(...args) {
+  end (...args) {
     const time = super.end(...args)
     if (time) {
       this.headers.push(this.formatHeader(time))
@@ -44,12 +44,12 @@ class ServerTiming extends Timer {
     return time
   }
 
-  clear() {
+  clear () {
     super.clear()
     this.headers.length = 0
   }
 
-  formatHeader(time) {
+  formatHeader (time) {
     const desc = time.description ? `;desc="${time.description}"` : ''
     return `${time.name};dur=${time.duration}${desc}`
   }

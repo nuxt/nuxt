@@ -6,8 +6,10 @@ export default () => ({
     shouldPreload: (fileWithoutQuery, asType) => ['script', 'style'].includes(asType),
     runInNewContext: undefined
   },
+  crossorigin: undefined,
   resourceHints: true,
   ssr: undefined,
+  ssrLog: undefined,
   http2: {
     push: false,
     shouldPush: null,

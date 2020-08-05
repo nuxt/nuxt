@@ -1,0 +1,13 @@
+<html>
+    <head>
+        {{ HEAD }}
+        {% if (ENV.NODE_ENV === 'dev') { %}
+            <!-- debug scripts -->
+        {% } else if (ENV.NODE_ENV === 'production') { %}
+            <!-- production scripts -->
+        {% } %}
+    </head>
+    <body>
+        {{ APP }}
+    </body>
+</html>

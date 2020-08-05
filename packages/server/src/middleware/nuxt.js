@@ -2,9 +2,9 @@ import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
 
-import { getContext } from '@nuxt/utils'
+import { getContext, TARGETS } from '@nuxt/utils'
 
-export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware(req, res, next) {
+export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
   const context = getContext(req, res)
 
@@ -28,7 +28,7 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       preloadFiles
     } = result
 
-    if (redirected) {
+    if (redirected && context.target !== TARGETS.static) {
       await nuxt.callHook('render:routeDone', url, result, context)
       return html
     }
@@ -38,9 +38,11 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     // Add ETag header
     if (!error && options.render.etag) {
-      const etag = generateETag(html, options.render.etag)
+      const { hash } = options.render.etag
+      const etag = hash ? hash(html, options.render.etag) : generateETag(html, options.render.etag)
       if (fresh(req.headers, { etag })) {
         res.statusCode = 304
+        await nuxt.callHook('render:beforeResponse', url, result, context)
         res.end()
         await nuxt.callHook('render:routeDone', url, result, context)
         return
@@ -69,15 +71,17 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
 
     if (options.render.csp && cspScriptSrcHashes) {
       const { allowedSources, policies } = options.render.csp
-      const cspHeader = options.render.csp.reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+      const isReportOnly = !!options.render.csp.reportOnly
+      const cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
 
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isDev: options.dev }))
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }))
     }
 
     // Send response
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.setHeader('Accept-Ranges', 'none') // #3870
     res.setHeader('Content-Length', Buffer.byteLength(html))
+    await nuxt.callHook('render:beforeResponse', url, result, context)
     res.end(html, 'utf8')
     await nuxt.callHook('render:routeDone', url, result, context)
     return html
@@ -111,29 +115,29 @@ const defaultPushAssets = (preloadFiles, shouldPush, publicPath, options) => {
       return
     }
 
-    const { crossorigin } = options.build
+    const { crossorigin } = options.render
     const cors = `${crossorigin ? ` crossorigin=${crossorigin};` : ''}`
-    const ref = modern ? 'modulepreload' : 'preload'
+    // `modulepreload` rel attribute only supports script-like `as` value
+    // https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
+    const rel = modern && asType === 'script' ? 'modulepreload' : 'preload'
 
-    links.push(`<${publicPath}${file}>; rel=${ref};${cors} as=${asType}`)
+    links.push(`<${publicPath}${file}>; rel=${rel};${cors} as=${asType}`)
   })
   return links
 }
 
-const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isDev }) => {
+const getCspString = ({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }) => {
   const joinedHashes = cspScriptSrcHashes.join(' ')
-  const baseCspStr = `script-src 'self'${isDev ? ` 'unsafe-eval'` : ''} ${joinedHashes}`
-
-  if (Array.isArray(allowedSources)) {
-    return `${baseCspStr} ${allowedSources.join(' ')}`
-  }
-
+  const baseCspStr = `script-src 'self' ${joinedHashes}`
   const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
+
+  if (Array.isArray(allowedSources) && allowedSources.length) {
+    return isReportOnly && policyObjectAvailable && !!policies['report-uri'] ? `${baseCspStr} ${allowedSources.join(' ')}; report-uri ${policies['report-uri']};` : `${baseCspStr} ${allowedSources.join(' ')}`
+  }
 
   if (policyObjectAvailable) {
     const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes)
-
-    return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${v.join(' ')}`).join('; ')
+    return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' ') : v}`).join('; ')
   }
 
   return baseCspStr
@@ -145,7 +149,7 @@ const transformPolicyObject = (policies, cspScriptSrcHashes) => {
   const additionalPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
 
   // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
-  const hashAndPolicyList = cspScriptSrcHashes.concat(`'self'`, additionalPolicies)
+  const hashAndPolicyList = cspScriptSrcHashes.concat('\'self\'', additionalPolicies)
 
   return { ...policies, 'script-src': hashAndPolicyList }
 }

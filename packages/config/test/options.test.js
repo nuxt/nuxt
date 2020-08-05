@@ -16,7 +16,8 @@ jest.mock('std-env', () => ({
 
 jest.mock('@nuxt/utils', () => ({
   ...jest.requireActual('@nuxt/utils'),
-  getMainModule: () => ({ paths: ['/var/nuxt/node_modules'] })
+  getMainModule: () => ({ paths: ['/var/nuxt/node_modules'] }),
+  getPKG: () => ({ name: 'fake' })
 }))
 
 describe('config: options', () => {
@@ -25,7 +26,14 @@ describe('config: options', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
     jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
-    expect(getNuxtConfig({})).toMatchSnapshot()
+    expect(getNuxtConfig({
+      createRequire: jest.fn(),
+      generate: {
+        staticAssets: {
+          version: 'x'
+        }
+      }
+    })).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
@@ -74,7 +82,7 @@ describe('config: options', () => {
 
   test('should transform extensions to array', () => {
     const { extensions } = getNuxtConfig({ extensions: 'ext' })
-    expect(extensions).toEqual(['js', 'mjs', 'ts', 'ext'])
+    expect(extensions).toEqual(['js', 'mjs', 'ext'])
   })
 
   test('should support custom global name', () => {
@@ -87,16 +95,52 @@ describe('config: options', () => {
     expect(store).toEqual(true)
   })
 
+  test('should unset and warn when etag.hash not a function', () => {
+    const { render: { etag } } = getNuxtConfig({ render: { etag: { hash: true } } })
+    expect(etag).toMatchObject({ hash: undefined })
+    expect(consola.warn).not.toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+
+    const { render: { etag: etagDev } } = getNuxtConfig({ dev: true, render: { etag: { hash: true } } })
+    expect(etagDev).toMatchObject({ hash: undefined })
+    expect(consola.warn).toHaveBeenCalledWith('render.etag.hash should be a function, received boolean instead')
+  })
+
   test('should enable csp', () => {
-    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: true, test: true } } })
+    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: ['/nuxt/*'], test: true } } })
     expect(csp).toEqual({
       hashAlgorithm: 'sha256',
       addMeta: false,
-      allowedSources: true,
+      unsafeInlineCompatibility: false,
+      allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
       test: true
     })
+  })
+
+  // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
+  test('should enable csp with old typo property name, avoiding breaking changes', () => {
+    const { render: { csp } } = getNuxtConfig({ render: { csp: { allowedSources: ['/nuxt/*'], test: true, unsafeInlineCompatiblity: true } } })
+    expect(csp).toEqual({
+      hashAlgorithm: 'sha256',
+      addMeta: false,
+      unsafeInlineCompatibility: true,
+      allowedSources: ['/nuxt/*'],
+      policies: undefined,
+      reportOnly: false,
+      test: true
+    })
+  })
+
+  test('should fallback to server target', () => {
+    const { target } = getNuxtConfig({ target: 0 })
+    expect(target).toEqual('server')
+  })
+
+  test('should check unknown target', () => {
+    const { target } = getNuxtConfig({ target: 'test' })
+    expect(consola.warn).toHaveBeenCalledWith('Unknown target: test. Falling back to server')
+    expect(target).toEqual('server')
   })
 
   test('should check unknown mode', () => {
@@ -111,9 +155,24 @@ describe('config: options', () => {
     expect(pageTransition.appear).toEqual(true)
   })
 
-  test('should return 404.html as default generate.fallback', () => {
+  test('should return 200.html as default generate.fallback', () => {
+    const { generate: { fallback } } = getNuxtConfig({})
+    expect(fallback).toEqual('200.html')
+  })
+
+  test('should return 404.html when generate.fallback is true', () => {
     const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: true } })
     expect(fallback).toEqual('404.html')
+  })
+
+  test('should return fallback html when generate.fallback is string', () => {
+    const { generate: { fallback } } = getNuxtConfig({ generate: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
+  })
+
+  test('export should alias to generate', () => {
+    const { generate: { fallback } } = getNuxtConfig({ export: { fallback: 'fallback.html' } })
+    expect(fallback).toEqual('fallback.html')
   })
 
   test('should disable parallel if extractCSS is enabled', () => {
@@ -231,10 +290,34 @@ describe('config: options', () => {
       expect(consola.warn).toHaveBeenCalledWith('vendor has been deprecated due to webpack4 optimization')
     })
 
+    test('should deprecate devModules', () => {
+      const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
+      expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+      expect(config.devModules).toBe(undefined)
+      expect(config.buildModules).toEqual(['bar', 'foo'])
+    })
+
     test('should deprecate build.extractCSS.allChunks', () => {
       getNuxtConfig({ build: { extractCSS: { allChunks: true } } })
       expect(consola.warn).toHaveBeenCalledWith('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
     })
+
+    test('should deprecate build.crossorigin', () => {
+      getNuxtConfig({ build: { crossorigin: 'use-credentials' } })
+      expect(consola.warn).toHaveBeenCalledWith('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    })
+  })
+})
+
+describe('config: serverMiddleware', () => {
+  test('should transform serverMiddleware hash', () => {
+    const serverMiddleware = {
+      '/resource': (req, res, next) => {
+      }
+    }
+    const config = getNuxtConfig({ serverMiddleware })
+    expect(config.serverMiddleware[0].path).toBe('/resource')
+    expect(config.serverMiddleware[0].handler).toBe(serverMiddleware['/resource'])
   })
 })
 

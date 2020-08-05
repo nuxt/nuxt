@@ -32,7 +32,7 @@ describe('builder: builder constructor', () => {
       custom: null,
       restart: null
     })
-    expect(builder.supportedExtensions).toEqual(['vue', 'js', 'ts', 'tsx'])
+    expect(builder.supportedExtensions).toEqual(['vue', 'js'])
     expect(builder.relativeToBuild).toBeInstanceOf(Function)
 
     expect(builder._buildStatus).toEqual(1)
@@ -102,7 +102,7 @@ describe('builder: builder constructor', () => {
     const doneHook = nuxt.hook.mock.calls[0][1]
     doneHook()
     expect(consola.warn).toBeCalledTimes(1)
-    expect(consola.warn).toBeCalledWith('Notice: Please do not deploy bundles built with analyze mode, it\'s only for analyzing purpose.')
+    expect(consola.warn).toBeCalledWith('Notice: Please do not deploy bundles built with "analyze" mode, they\'re for analysis purposes only.')
   })
 
   test('should support function template', () => {

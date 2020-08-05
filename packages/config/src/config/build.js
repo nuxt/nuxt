@@ -5,21 +5,21 @@ export default () => ({
   analyze: false,
   profile: process.argv.includes('--profile'),
   extractCSS: false,
-  crossorigin: undefined,
   cssSourceMap: undefined,
   ssr: undefined,
   parallel: false,
   cache: false,
   standalone: false,
   publicPath: '/_nuxt/',
+  serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
-    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[chunkhash].js',
-    css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
-    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[hash:7].[ext]',
-    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[hash:7].[ext]',
-    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[hash:7].[ext]'
+    app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    css: ({ isDev }) => isDev ? '[name].css' : '[name].[contenthash:7].css',
+    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
+    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
+    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
     file: {},
@@ -36,32 +36,25 @@ export default () => ({
     },
     css: {},
     cssModules: {
-      localIdentName: '[local]_[hash:base64:5]'
+      modules: {
+        localIdentName: '[local]_[hash:base64:5]'
+      }
     },
     less: {},
     sass: {
-      indentedSyntax: true
+      sassOptions: {
+        indentedSyntax: true
+      }
     },
     scss: {},
     stylus: {},
-    ts: {
-      transpileOnly: true,
-      appendTsSuffixTo: [/\.vue$/]
-    },
-    tsx: {
-      transpileOnly: true,
-      appendTsxSuffixTo: [/\.vue$/]
-    },
     vueStyle: {}
-  },
-  typescript: {
-    typeCheck: true,
-    ignoreNotFoundWarnings: false
   },
   styleResources: {},
   plugins: [],
   terser: {},
   hardSource: false,
+  aggressiveCodeRemoval: false,
   optimizeCSS: undefined,
   optimization: {
     runtimeChunk: 'single',
@@ -69,8 +62,7 @@ export default () => ({
     minimizer: undefined,
     splitChunks: {
       chunks: 'all',
-      automaticNameDelimiter: '.',
-      name: undefined,
+      automaticNameDelimiter: '/',
       cacheGroups: {}
     }
   },
@@ -79,6 +71,7 @@ export default () => ({
     pages: true,
     commons: true
   },
+  corejs: 'auto',
   babel: {
     configFile: false,
     babelrc: false,
@@ -119,5 +112,16 @@ export default () => ({
       /vue-ssr-(client|modern)-manifest.json/
     ]
   },
-  friendlyErrors: true
+  friendlyErrors: true,
+  additionalExtensions: [],
+  warningIgnoreFilters: [],
+
+  followSymlinks: false,
+
+  loadingScreen: {},
+  indicator: {
+    position: 'bottom-right',
+    backgroundColor: '#2E495E',
+    color: '#00C48D'
+  }
 })

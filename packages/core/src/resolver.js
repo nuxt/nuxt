@@ -1,13 +1,16 @@
-import Module from 'module'
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-import esm from 'esm'
 
-import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
+import {
+  startsWithRootAlias,
+  startsWithSrcAlias,
+  isExternalDependency,
+  clearRequireCache
+} from '@nuxt/utils'
 
 export default class Resolver {
-  constructor(nuxt) {
+  constructor (nuxt) {
     this.nuxt = nuxt
     this.options = this.nuxt.options
 
@@ -17,25 +20,29 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    // ESM Loader
-    this.esm = esm(module)
+    const { createRequire } = this.options
+    this._require = createRequire ? createRequire(module) : module.require
+
+    this._resolve = require.resolve
   }
 
-  resolveModule(path) {
+  resolveModule (path) {
     try {
-      return Module._resolveFilename(path, {
+      return this._resolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        return undefined
-      } else {
+      if (error.code !== 'MODULE_NOT_FOUND') {
+        // TODO: remove after https://github.com/facebook/jest/pull/8487 released
+        if (process.env.NODE_ENV === 'test' && error.message.startsWith('Cannot resolve module')) {
+          return
+        }
         throw error
       }
     }
   }
 
-  resolveAlias(path) {
+  resolveAlias (path) {
     if (startsWithRootAlias(path)) {
       return join(this.options.rootDir, path.substr(2))
     }
@@ -47,7 +54,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath(path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
+  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
@@ -97,8 +104,9 @@ export default class Resolver {
         return resolvedPath + '.' + ext
       }
 
-      if (isDirectory && fs.existsSync(resolvedPath + '/index.' + ext)) {
-        return resolvedPath + '/index.' + ext
+      const resolvedPathwithIndex = join(resolvedPath, 'index.' + ext)
+      if (isDirectory && fs.existsSync(resolvedPathwithIndex)) {
+        return resolvedPathwithIndex
       }
     }
 
@@ -111,7 +119,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule(path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
+  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
     let resolvedPath = path
     let requiredModule
 
@@ -135,15 +143,23 @@ export default class Resolver {
       lastError = e
     }
 
+    const isExternal = isExternalDependency(resolvedPath)
+
+    // in dev mode make sure to clear the require cache so after
+    // a dev server restart any changed file is reloaded
+    if (this.options.dev && !isExternal) {
+      clearRequireCache(resolvedPath)
+    }
+
     // By default use esm only for js,mjs files outside of node_modules
     if (useESM === undefined) {
-      useESM = /.(js|mjs)$/.test(resolvedPath) && !/node_modules/.test(resolvedPath)
+      useESM = !isExternal && /.(js|mjs)$/.test(resolvedPath)
     }
 
     // Try to require
     try {
       if (useESM) {
-        requiredModule = this.esm(resolvedPath)
+        requiredModule = this._require(resolvedPath)
       } else {
         requiredModule = require(resolvedPath)
       }

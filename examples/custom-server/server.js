@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000
 
 // Import and set Nuxt.js options
 const config = require('./nuxt.config.js')
-config.dev = !(process.env.NODE_ENV === 'production')
+config.dev = process.env.NODE_ENV !== 'production'
 
 const nuxt = new Nuxt(config)
 

@@ -46,7 +46,7 @@ describe.posix('util: resolve', () => {
     expect(nuxt.test()).toEqual('test defineAlias')
     expect(consola.warn).toBeCalledTimes(1)
     expect(consola.warn).toBeCalledWith({
-      message: `'test' is deprecated'`,
+      message: '\'test\' is deprecated\'',
       additional: expect.any(String)
     })
   })

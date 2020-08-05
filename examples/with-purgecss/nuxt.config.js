@@ -3,8 +3,8 @@ import PurgecssPlugin from 'purgecss-webpack-plugin'
 import glob from 'glob-all'
 
 class TailwindExtractor {
-  static extract(content) {
-    return content.match(/[A-z0-9-:/]+/g) || []
+  static extract (content) {
+    return content.match(/[A-Za-z0-9-:/]+/g) || []
   }
 }
 
@@ -17,7 +17,7 @@ export default {
       },
       preset: { autoprefixer: { grid: true } }
     },
-    extend(config, { isDev }) {
+    extend (config, { isDev }) {
       if (!isDev) {
         config.plugins.push(
           new PurgecssPlugin({

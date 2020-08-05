@@ -1,9 +1,10 @@
+import { TARGETS } from './constants'
 
-export const getContext = function getContext(req, res) {
+export const getContext = function getContext (req, res) {
   return { req, res }
 }
 
-export const determineGlobals = function determineGlobals(globalName, globals) {
+export const determineGlobals = function determineGlobals (globalName, globals) {
   const _globals = {}
   for (const global in globals) {
     if (typeof globals[global] === 'function') {
@@ -13,4 +14,8 @@ export const determineGlobals = function determineGlobals(globalName, globals) {
     }
   }
   return _globals
+}
+
+export const isFullStatic = function (options) {
+  return !options.dev && !options._legacyGenerate && options.target === TARGETS.static && options.render.ssr
 }

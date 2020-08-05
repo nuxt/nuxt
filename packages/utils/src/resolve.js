@@ -8,19 +8,17 @@ export const startsWithSrcAlias = startsWithAlias(['@', '~'])
 
 export const startsWithRootAlias = startsWithAlias(['@@', '~~'])
 
-export const isWindows = /^win/.test(process.platform)
+export const isWindows = process.platform.startsWith('win')
 
-export const wp = function wp(p = '') {
+export const wp = function wp (p = '') {
   if (isWindows) {
     return p.replace(/\\/g, '\\\\')
   }
   return p
 }
 
-export const wChunk = function wChunk(p = '') {
-  if (isWindows) {
-    return p.replace(/\//g, '_')
-  }
+// Kept for backward compat (modules may use it from template context)
+export const wChunk = function wChunk (p = '') {
   return p
 }
 
@@ -28,7 +26,7 @@ const reqSep = /\//g
 const sysSep = escapeRegExp(path.sep)
 const normalize = string => string.replace(reqSep, sysSep)
 
-export const r = function r(...args) {
+export const r = function r (...args) {
   const lastArg = args[args.length - 1]
 
   if (startsWithSrcAlias(lastArg)) {
@@ -38,7 +36,7 @@ export const r = function r(...args) {
   return wp(path.resolve(...args.map(normalize)))
 }
 
-export const relativeTo = function relativeTo(...args) {
+export const relativeTo = function relativeTo (...args) {
   const dir = args.shift()
 
   // Keep webpack inline loader intact
@@ -65,7 +63,7 @@ export const relativeTo = function relativeTo(...args) {
   return wp(rp)
 }
 
-export function defineAlias(src, target, prop, opts = {}) {
+export function defineAlias (src, target, prop, opts = {}) {
   const { bind = true, warn = false } = opts
 
   if (Array.isArray(prop)) {
@@ -98,7 +96,7 @@ export function defineAlias(src, target, prop, opts = {}) {
 
 const isIndex = s => /(.*)\/index\.[^/]+$/.test(s)
 
-export function isIndexFileAndFolder(pluginFiles) {
+export function isIndexFileAndFolder (pluginFiles) {
   // Return early in case the matching file count exceeds 2 (index.js + folder)
   if (pluginFiles.length !== 2) {
     return false
@@ -106,4 +104,6 @@ export function isIndexFileAndFolder(pluginFiles) {
   return pluginFiles.some(isIndex)
 }
 
-export const getMainModule = () => require.main
+export const getMainModule = () => {
+  return require.main || (module && module.main) || module
+}

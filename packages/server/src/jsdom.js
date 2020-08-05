@@ -1,13 +1,12 @@
 import consola from 'consola'
 import { timeout } from '@nuxt/utils'
 
-export default async function renderAndGetWindow(
+export default async function renderAndGetWindow (
   url = 'http://localhost:3000',
   jsdomOpts = {},
   {
     loadedCallback,
     loadingTimeout = 2000,
-    ssr,
     globals
   } = {}
 ) {
@@ -28,7 +27,7 @@ export default async function renderAndGetWindow(
     resources: 'usable',
     runScripts: 'dangerously',
     virtualConsole: true,
-    beforeParse(window) {
+    beforeParse (window) {
       // Mock window.scrollTo
       window.scrollTo = () => {}
     }
@@ -49,9 +48,7 @@ export default async function renderAndGetWindow(
   const { window } = await jsdom.JSDOM.fromURL(url, options)
 
   // If Nuxt could not be loaded (error from the server-side)
-  const nuxtExists = window.document.body.innerHTML.includes(
-    ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
-  )
+  const nuxtExists = window.document.body.innerHTML.includes(`id="${globals.id}"`)
 
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')

@@ -7,7 +7,6 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "cross-env": "latest",
     "nuxt-start": "latest"
   },
   "devDependencies": {

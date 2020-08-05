@@ -13,7 +13,9 @@ export default {
       default: undefined
     }
   },
-  render(h, { parent, data, props }) {
+  render (_, { parent, data, props }) {
+    const h = parent.$createElement
+    <% if (features.transitions) { %>
     data.nuxtChild = true
     const _parent = parent
     const transitions = parent.<%= globals.nuxt %>.nuxt.transitions
@@ -41,31 +43,55 @@ export default {
         listeners[key] = transition[key].bind(_parent)
       }
     })
-    // Add triggerScroll event on beforeEnter (fix #1376)
-    const beforeEnter = listeners.beforeEnter
-    listeners.beforeEnter = (el) => {
-      // Ensure to trigger scroll event after calling scrollBehavior
-      window.<%= globals.nuxt %>.$nextTick(() => {
-        window.<%= globals.nuxt %>.$emit('triggerScroll')
-      })
-      if (beforeEnter) return beforeEnter.call(_parent, el)
+    if (process.client) {
+      // Add triggerScroll event on beforeEnter (fix #1376)
+      const beforeEnter = listeners.beforeEnter
+      listeners.beforeEnter = (el) => {
+        // Ensure to trigger scroll event after calling scrollBehavior
+        window.<%= globals.nuxt %>.$nextTick(() => {
+          window.<%= globals.nuxt %>.$emit('triggerScroll')
+        })
+        if (beforeEnter) {
+          return beforeEnter.call(_parent, el)
+        }
+      }
     }
 
-    let routerView = [
-      h('router-view', data)
-    ]
-    if (props.keepAlive) {
-      routerView = [
-        h('keep-alive', { props: props.keepAliveProps }, routerView)
-      ]
+    // make sure that leave is called asynchronous (fix #5703)
+    if (transition.css === false) {
+      const leave = listeners.leave
+
+      // only add leave listener when user didnt provide one
+      // or when it misses the done argument
+      if (!leave || leave.length < 2) {
+        listeners.leave = (el, done) => {
+          if (leave) {
+            leave.call(_parent, el)
+          }
+
+          _parent.$nextTick(done)
+        }
+      }
     }
+    <% } %>
+    let routerView = h('routerView', data)
+
+    if (props.keepAlive) {
+      routerView = h('keep-alive', { props: props.keepAliveProps }, [routerView])
+    }
+
+    <% if (features.transitions) { %>
     return h('transition', {
       props: transitionProps,
       on: listeners
-    }, routerView)
+    }, [routerView])
+    <% } else { %>
+    return routerView
+    <% } %>
   }
 }
 
+<% if (features.transitions) { %>
 const transitionsKeys = [
   'name',
   'mode',
@@ -99,3 +125,4 @@ const listenersKeys = [
   'afterAppear',
   'appearCancelled'
 ]
+<% } %>

@@ -1,16 +1,21 @@
+import consola from 'consola'
+
 export default {
   test: true,
   buildDir: '.nuxt-generate/build',
   generate: {
     dir: '.nuxt-generate/generate'
   },
-  hooks(hook) {
+  hooks (hook) {
     hook('generate:done', (generator, errors) => {
       if (!errors || errors.length === 0) {
-        process.stdout.write('Generated successfully')
+        consola.log('Generated successfully')
       } else {
-        process.stderr.write('Generated failed')
+        consola.log('Generated failed')
       }
     })
+  },
+  build: {
+    terser: false
   }
 }

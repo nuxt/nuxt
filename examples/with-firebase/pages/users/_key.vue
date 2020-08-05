@@ -22,7 +22,7 @@
 import axios from '~/plugins/axios'
 
 export default {
-  async asyncData({ route }) {
+  async asyncData ({ route }) {
     const { key } = route.params
     const { data: user } = await axios.get(`users/${key}.json`)
     return { user }

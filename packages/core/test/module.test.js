@@ -6,7 +6,8 @@ import ModuleContainer from '../src/module'
 
 jest.mock('fs', () => ({
   existsSync: Boolean,
-  closeSync: Boolean
+  closeSync: Boolean,
+  realpath: jest.fn()
 }))
 
 jest.mock('hash-sum', () => src => `hash(${src})`)
@@ -18,7 +19,8 @@ jest.mock('@nuxt/utils', () => ({
 
 const defaultOptions = {
   modules: [],
-  devModules: []
+  buildModules: [],
+  _modules: []
 }
 
 describe('core: module', () => {
@@ -87,9 +89,9 @@ describe('core: module', () => {
 
     const template = module.addTemplate('/var/nuxt/test')
     const expected = {
-      'dst': 'nuxt.test.hash(/var/nuxt/test)',
-      'options': undefined,
-      'src': '/var/nuxt/test'
+      dst: 'nuxt.test.hash(/var/nuxt/test)',
+      options: undefined,
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -110,9 +112,9 @@ describe('core: module', () => {
       options: { test: true }
     })
     const expected = {
-      'dst': 'nuxt.test.hash(/var/nuxt/test)',
-      'options': { test: true },
-      'src': '/var/nuxt/test'
+      dst: 'nuxt.test.hash(/var/nuxt/test)',
+      options: { test: true },
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -133,9 +135,9 @@ describe('core: module', () => {
       fileName: '/var/nuxt/dist/test'
     })
     const expected = {
-      'dst': '/var/nuxt/dist/test',
-      'options': undefined,
-      'src': '/var/nuxt/test'
+      dst: '/var/nuxt/dist/test',
+      options: undefined,
+      src: '/var/nuxt/test'
     }
     expect(template).toEqual(expected)
     expect(module.options.build.templates).toEqual([expected])
@@ -235,7 +237,7 @@ describe('core: module', () => {
 
     module.addLayout({}, 'error')
 
-    expect(module.options.layouts).toEqual({ 'error': './nuxt.test.template' })
+    expect(module.options.layouts).toEqual({ error: './nuxt.test.template' })
     expect(module.addErrorLayout).toBeCalledTimes(1)
     expect(module.addErrorLayout).toBeCalledWith('nuxt.test.template')
   })
@@ -316,7 +318,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts, true)
+    expect(module.addModule).toBeCalledWith(moduleOpts)
   })
 
   test('should add string module', async () => {
@@ -401,21 +403,17 @@ describe('core: module', () => {
     })
 
     const result = await module.addModule({
-      src: 'moduleTest',
+      src: 'pathToModule',
       options: { test: true },
-      handler: function objectModule(options) {
-        return Promise.resolve(options)
-      }
+      handler: opts => opts
     })
 
     expect(requireModule).not.toBeCalled()
     expect(module.requiredModules).toEqual({
-      objectModule: {
-        handler: expect.any(Function),
-        options: {
-          test: true
-        },
-        src: 'moduleTest'
+      pathToModule: {
+        src: 'pathToModule',
+        options: { test: true },
+        handler: expect.any(Function)
       }
     })
     expect(result).toEqual({ test: true })
@@ -452,5 +450,27 @@ describe('core: module', () => {
     expect(second).toBeUndefined()
     expect(handler).toBeCalledTimes(1)
     expect(module.requiredModules.moduleTest).toBeDefined()
+  })
+
+  test('should prevent adding not installed buildModules', async () => {
+    const module = new ModuleContainer({
+      resolver: { requireModule },
+      options: {
+        ...defaultOptions,
+        buildModules: ['test-build-module']
+      }
+    })
+
+    requireModule.mockImplementationOnce(() => {
+      const moduleNotFound = new Error(`Cannot find module 'test-build-module'`)
+      moduleNotFound.code = 'MODULE_NOT_FOUND'
+      throw moduleNotFound
+    })
+
+    const result = await module.addModule('test-build-module', true)
+
+    expect(result).toBeUndefined()
+    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.')
+    expect(consola.warn).toBeCalledWith('Silently ignoring module as programatic usage detected.')
   })
 })

@@ -1,8 +1,8 @@
 <script>
 
 export default {
-  fetch() {
-    throw Error('fetch error!')
+  fetch (context) {
+    throw new Error('fetch error!')
   }
 }
 </script>

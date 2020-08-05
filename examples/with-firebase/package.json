@@ -15,7 +15,7 @@
   "author": "Charlie Hield",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.15.3",
+    "axios": "^0.19.0",
     "nuxt": "latest"
   }
 }

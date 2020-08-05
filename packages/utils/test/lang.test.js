@@ -31,8 +31,8 @@ describe('util: lang', () => {
   })
 
   test('should wrap given argument with array', () => {
-    expect(wrapArray([ 'array' ])).toEqual([ 'array' ])
-    expect(wrapArray('str')).toEqual([ 'str' ])
+    expect(wrapArray(['array'])).toEqual(['array'])
+    expect(wrapArray('str')).toEqual(['str'])
   })
 
   test('should strip white spaces in given argument', () => {

@@ -1,18 +1,21 @@
 import path from 'path'
-import Chalk from 'chalk'
+import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
+import defu from 'defu'
 import htmlMinifier from 'html-minifier'
+import { parse } from 'node-html-parser'
 
-import { flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
 
 export default class Generator {
-  constructor(nuxt, builder) {
+  constructor (nuxt, builder) {
     this.nuxt = nuxt
     this.options = nuxt.options
     this.builder = builder
 
     // Set variables
+    this.isFullStatic = isFullStatic(this.options)
     this.staticRoutes = path.resolve(this.options.srcDir, this.options.dir.static)
     this.srcBuiltPath = path.resolve(this.options.buildDir, 'dist', 'client')
     this.distPath = this.options.generate.dir
@@ -20,35 +23,46 @@ export default class Generator {
       this.distPath,
       isUrl(this.options.build.publicPath) ? '' : this.options.build.publicPath
     )
+    // Payloads for full static
+    if (this.isFullStatic) {
+      const { staticAssets } = this.options.generate
+      this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
+      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
+    }
+
+    // Shared payload
+    this._payload = null
+    this.setPayload = (payload) => {
+      this._payload = defu(payload, this._payload)
+    }
   }
 
-  async generate({ build = true, init = true } = {}) {
+  async generate ({ build = true, init = true } = {}) {
     consola.debug('Initializing generator...')
-
     await this.initiate({ build, init })
 
     consola.debug('Preparing routes for generate...')
-
     const routes = await this.initRoutes()
 
-    consola.info('Generating pages')
-
+    consola.info('Generating pages' + (this.isFullStatic ? ' with full static mode' : ''))
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()
 
     // Done hook
     await this.nuxt.callHook('generate:done', this, errors)
+    await this.nuxt.callHook('export:done', this, { errors })
 
     return { errors }
   }
 
-  async initiate({ build = true, init = true } = {}) {
+  async initiate ({ build = true, init = true } = {}) {
     // Wait for nuxt be ready
     await this.nuxt.ready()
 
     // Call before hook
     await this.nuxt.callHook('generate:before', this, this.options.generate)
+    await this.nuxt.callHook('export:before', this)
 
     if (build) {
       // Add flag to set process.static
@@ -56,6 +70,13 @@ export default class Generator {
 
       // Start build process
       await this.builder.build()
+    } else {
+      const hasBuilt = await fsExtra.exists(path.resolve(this.options.buildDir, 'dist', 'server', 'client.manifest.json'))
+      if (!hasBuilt) {
+        throw new Error(
+          `No build files found in ${this.srcBuiltPath}.\nPlease run \`nuxt build\``
+        )
+      }
     }
 
     // Initialize dist directory
@@ -64,7 +85,7 @@ export default class Generator {
     }
   }
 
-  async initRoutes(...args) {
+  async initRoutes (...args) {
     // Resolve config.generate.routes promises before generating the routes
     let generateRoutes = []
     if (this.options.router.mode !== 'hash') {
@@ -78,30 +99,62 @@ export default class Generator {
         throw e // eslint-disable-line no-unreachable
       }
     }
-    // Generate only index.html for router.mode = 'hash'
-    let routes =
-      this.options.router.mode === 'hash'
-        ? ['/']
-        : flatRoutes(this.options.router.routes)
-
-    routes = routes.filter(route => this.options.generate.exclude.every(regex => !regex.test(route)))
-
+    let routes = []
+    // Generate only index.html for router.mode = 'hash' or client-side apps
+    if (this.options.router.mode === 'hash') {
+      routes = ['/']
+    } else {
+      routes = flatRoutes(this.getAppRoutes())
+    }
+    routes = routes.filter(route => this.shouldGenerateRoute(route))
     routes = this.decorateWithPayloads(routes, generateRoutes)
 
     // extendRoutes hook
     await this.nuxt.callHook('generate:extendRoutes', routes)
+    await this.nuxt.callHook('export:extendRoutes', { routes })
 
     return routes
   }
 
-  async generateRoutes(routes) {
+  shouldGenerateRoute (route) {
+    return this.options.generate.exclude.every((regex) => {
+      if (typeof regex === 'string') {
+        return regex !== route
+      }
+      return !regex.test(route)
+    })
+  }
+
+  getBuildConfig () {
+    try {
+      return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+    } catch (err) {
+      return null
+    }
+  }
+
+  getAppRoutes () {
+    return require(path.join(this.options.buildDir, 'routes.json'))
+  }
+
+  async generateRoutes (routes) {
     const errors = []
 
+    this.routes = []
+    this.generatedRoutes = new Set()
+
+    routes.forEach(({ route, ...props }) => {
+      route = decodeURI(route)
+      this.routes.push({ route, ...props })
+      // Add routes to the tracked generated routes (for crawler)
+      this.generatedRoutes.add(route)
+    })
+
     // Start generate process
-    while (routes.length) {
+    while (this.routes.length) {
       let n = 0
       await Promise.all(
-        routes
+        this.routes
           .splice(0, this.options.generate.concurrency)
           .map(async ({ route, payload }) => {
             await waitFor(n++ * this.options.generate.interval)
@@ -117,18 +170,18 @@ export default class Generator {
     return errors
   }
 
-  _formatErrors(errors) {
+  _formatErrors (errors) {
     return errors
       .map(({ type, route, error }) => {
         const isHandled = type === 'handled'
         const color = isHandled ? 'yellow' : 'red'
 
-        let line = Chalk[color](` ${route}\n\n`)
+        let line = chalk[color](` ${route}\n\n`)
 
         if (isHandled) {
-          line += Chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
+          line += chalk.grey(JSON.stringify(error, undefined, 2) + '\n')
         } else {
-          line += Chalk.grey(error.stack)
+          line += chalk.grey(error.stack || error.message || `${error}`)
         }
 
         return line
@@ -136,7 +189,7 @@ export default class Generator {
       .join('\n')
   }
 
-  async afterGenerate() {
+  async afterGenerate () {
     const { fallback } = this.options.generate
 
     // Disable SPA fallback if value isn't a non-empty string
@@ -153,21 +206,39 @@ export default class Generator {
     }
 
     // Render and write the SPA template to the fallback path
-    const { html } = await this.nuxt.server.renderRoute('/', { spa: true })
+    let { html } = await this.nuxt.server.renderRoute('/', {
+      spa: true,
+      staticAssetsBase: this.staticAssetsBase
+    })
+
+    try {
+      html = this.minifyHtml(html)
+    } catch (error) {
+      consola.warn('HTML minification failed for SPA fallback')
+    }
+
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
+    consola.success('Client-side fallback created: `' + fallback + '`')
   }
 
-  async initDist() {
+  async initDist () {
     // Clean destination folder
-    await fsExtra.remove(this.distPath)
+    await fsExtra.emptyDir(this.distPath)
 
+    consola.info(`Generating output directory: ${path.basename(this.distPath)}/`)
     await this.nuxt.callHook('generate:distRemoved', this)
+    await this.nuxt.callHook('export:distRemoved', this)
 
     // Copy static and built files
     if (await fsExtra.exists(this.staticRoutes)) {
       await fsExtra.copy(this.staticRoutes, this.distPath)
     }
+    // Copy .nuxt/dist/client/ to dist/_nuxt/
     await fsExtra.copy(this.srcBuiltPath, this.distNuxtPath)
+
+    if (this.payloadDir) {
+      await fsExtra.ensureDir(this.payloadDir)
+    }
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
@@ -175,9 +246,10 @@ export default class Generator {
     fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
+    await this.nuxt.callHook('export:distCopied', this)
   }
 
-  decorateWithPayloads(routes, generateRoutes) {
+  decorateWithPayloads (routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
@@ -195,16 +267,59 @@ export default class Generator {
     return Object.values(routeMap)
   }
 
-  async generateRoute({ route, payload = {}, errors = [] }) {
+  async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
 
+    const setPayload = (_payload) => {
+      payload = defu(_payload, payload)
+    }
+
+    // Apply shared payload
+    if (this._payload) {
+      payload = defu(payload, this._payload)
+    }
+
+    await this.nuxt.callHook('generate:route', { route, setPayload })
+    await this.nuxt.callHook('export:route', { route, setPayload })
+
     try {
-      const res = await this.nuxt.server.renderRoute(route, {
-        _generate: true,
-        payload
-      })
-      ;({ html } = res)
+      const renderContext = {
+        payload,
+        staticAssetsBase: this.staticAssetsBase
+      }
+      const res = await this.nuxt.server.renderRoute(route, renderContext)
+      html = res.html
+
+      // If crawler activated and called from generateRoutes()
+      if (this.options.generate.crawler && this.options.render.ssr) {
+        const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
+        parse(html).querySelectorAll('a').map((el) => {
+          const sanitizedHref = (el.getAttribute('href') || '')
+            .replace(this.options.router.base, '/')
+            .split('?')[0]
+            .split('#')[0]
+            .replace(/\/+$/, '')
+            .trim()
+
+          const route = decodeURI(sanitizedHref + possibleTrailingSlash)
+
+          if (route.startsWith('/') && !route.startsWith('//') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
+            this.generatedRoutes.add(route)
+            this.routes.push({ route })
+          }
+        })
+      }
+
+      // Save Static Assets
+      if (this.staticAssetsDir && renderContext.staticAssets) {
+        for (const asset of renderContext.staticAssets) {
+          const assetPath = path.join(this.staticAssetsDir, asset.path)
+          await fsExtra.ensureDir(path.dirname(assetPath))
+          await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
+        }
+      }
+
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }
@@ -212,15 +327,66 @@ export default class Generator {
       pageErrors.push({ type: 'unhandled', route, error: err })
       errors.push(...pageErrors)
 
-      await this.nuxt.callHook('generate:routeFailed', {
-        route,
-        errors: pageErrors
-      })
+      await this.nuxt.callHook('generate:routeFailed', { route, errors: pageErrors })
+      await this.nuxt.callHook('export:routeFailed', { route, errors: pageErrors })
       consola.error(this._formatErrors(pageErrors))
 
       return false
     }
 
+    try {
+      html = this.minifyHtml(html)
+    } catch (err) {
+      const minifyErr = new Error(
+        `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
+      )
+      pageErrors.push({ type: 'unhandled', route, error: minifyErr })
+    }
+
+    let fileName
+
+    if (this.options.generate.subFolders) {
+      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
+      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
+    } else {
+      const normalizedRoute = route.replace(/\/$/, '')
+      fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')
+    }
+
+    // Call hook to let user update the path & html
+    const page = {
+      route,
+      path: fileName,
+      html,
+      exclude: false,
+      errors: pageErrors
+    }
+    page.page = page // Backward compatibility for export:page hook
+    await this.nuxt.callHook('generate:page', page)
+
+    if (page.exclude) {
+      return false
+    }
+    page.path = path.join(this.distPath, page.path)
+
+    // Make sure the sub folders are created
+    await fsExtra.mkdirp(path.dirname(page.path))
+    await fsExtra.writeFile(page.path, page.html, 'utf8')
+
+    await this.nuxt.callHook('generate:routeCreated', { route, path: page.path, errors: pageErrors })
+    await this.nuxt.callHook('export:routeCreated', { route, path: page.path, errors: pageErrors })
+
+    if (pageErrors.length) {
+      consola.error(`Error generating route "${route}": ${pageErrors.map(e => e.error.message).join(', ')}`)
+      errors.push(...pageErrors)
+    } else {
+      consola.success(`Generated route "${route}"`)
+    }
+
+    return true
+  }
+
+  minifyHtml (html) {
     let minificationOptions = this.options.build.html.minify
 
     // Legacy: Override minification options with generate.minify if present
@@ -231,49 +397,10 @@ export default class Generator {
         ' Use build.html.minify instead!')
     }
 
-    if (minificationOptions) {
-      try {
-        html = htmlMinifier.minify(html, minificationOptions)
-      } catch (err) {
-        const minifyErr = new Error(
-          `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
-        )
-        pageErrors.push({ type: 'unhandled', route, error: minifyErr })
-      }
+    if (!minificationOptions) {
+      return html
     }
 
-    let fileName
-
-    if (this.options.generate.subFolders) {
-      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
-    } else {
-      fileName = route.length > 1 ? path.join(path.sep, route + '.html') : path.join(path.sep, 'index.html')
-    }
-
-    // Call hook to let user update the path & html
-    const page = { route, path: fileName, html }
-    await this.nuxt.callHook('generate:page', page)
-
-    page.path = path.join(this.distPath, page.path)
-
-    // Make sure the sub folders are created
-    await fsExtra.mkdirp(path.dirname(page.path))
-    await fsExtra.writeFile(page.path, page.html, 'utf8')
-
-    await this.nuxt.callHook('generate:routeCreated', {
-      route,
-      path: page.path,
-      errors: pageErrors
-    })
-
-    if (pageErrors.length) {
-      consola.error('Error generating ' + route)
-      errors.push(...pageErrors)
-    } else {
-      consola.success('Generated ' + route)
-    }
-
-    return true
+    return htmlMinifier.minify(html, minificationOptions)
   }
 }

@@ -3,47 +3,55 @@ import fs from 'fs-extra'
 import ignore from 'ignore'
 
 export default class Ignore {
-  constructor(options) {
+  constructor (options) {
     this.rootDir = options.rootDir
+    this.ignoreOptions = options.ignoreOptions
+    this.ignoreArray = options.ignoreArray
     this.addIgnoresRules()
   }
 
-  static get IGNORE_FILENAME() {
+  static get IGNORE_FILENAME () {
     return '.nuxtignore'
   }
 
-  findIgnoreFile() {
+  findIgnoreFile () {
     if (!this.ignoreFile) {
       const ignoreFile = path.resolve(this.rootDir, Ignore.IGNORE_FILENAME)
       if (fs.existsSync(ignoreFile) && fs.statSync(ignoreFile).isFile()) {
         this.ignoreFile = ignoreFile
-        this.ignore = ignore()
+        this.ignore = ignore(this.ignoreOptions)
       }
     }
     return this.ignoreFile
   }
 
-  readIgnoreFile() {
+  readIgnoreFile () {
     if (this.findIgnoreFile()) {
       return fs.readFileSync(this.ignoreFile, 'utf8')
     }
   }
 
-  addIgnoresRules() {
+  addIgnoresRules () {
     const content = this.readIgnoreFile()
     if (content) {
       this.ignore.add(content)
     }
+    if (this.ignoreArray && this.ignoreArray.length > 0) {
+      if (!this.ignore) {
+        this.ignore = ignore(this.ignoreOptions)
+      }
+      this.ignore.add(this.ignoreArray)
+    }
   }
 
-  filter(paths) {
+  filter (paths) {
     if (this.ignore) {
       return this.ignore.filter([].concat(paths || []))
     }
     return paths
   }
 
-  reload() {
+  reload () {
     delete this.ignore
     delete this.ignoreFile
     this.addIgnoresRules()

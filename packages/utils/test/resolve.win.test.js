@@ -12,7 +12,7 @@ describe.win('util: resolve windows', () => {
   })
 
   test('should format windows path', () => {
-    expect(wChunk('nuxt/layout/test')).toEqual('nuxt_layout_test')
+    expect(wChunk('nuxt/layout/test')).toEqual('nuxt/layout/test')
   })
 
   test('should resolve alias path', () => {
@@ -51,7 +51,7 @@ describe.win('util: resolve windows', () => {
     expect(nuxt.test()).toEqual('test defineAlias')
     expect(consola.warn).toBeCalledTimes(1)
     expect(consola.warn).toBeCalledWith({
-      message: `'test' is deprecated'`,
+      message: '\'test\' is deprecated\'',
       additional: expect.any(String)
     })
   })

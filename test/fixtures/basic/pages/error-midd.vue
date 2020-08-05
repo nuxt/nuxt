@@ -5,7 +5,7 @@
 <script>
 export default {
   middleware: 'error',
-  asyncData() {
+  asyncData () {
     console.log('Async data error-midd.vue') // eslint-disable-line no-console
     return {}
   }

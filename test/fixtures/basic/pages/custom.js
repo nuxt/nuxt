@@ -1,6 +1,6 @@
 export default {
   layout: 'custom',
-  render(h) {
+  render (h) {
     return h('h2', 'custom page')
   }
 }

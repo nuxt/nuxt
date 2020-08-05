@@ -1,13 +1,13 @@
 import { validate, isJS, extractQueryPartJS } from './util'
 
 export default class VueSSRServerPlugin {
-  constructor(options = {}) {
+  constructor (options = {}) {
     this.options = Object.assign({
       filename: null
     }, options)
   }
 
-  apply(compiler) {
+  apply (compiler) {
     validate(compiler)
 
     compiler.hooks.emit.tapAsync('vue-server-plugin', (compilation, cb) => {
@@ -24,8 +24,8 @@ export default class VueSSRServerPlugin {
 
       if (entryAssets.length > 1) {
         throw new Error(
-          `Server-side bundle should have one single entry file. ` +
-          `Avoid using CommonsChunkPlugin in the server config.`
+          'Server-side bundle should have one single entry file. ' +
+          'Avoid using CommonsChunkPlugin in the server config.'
         )
       }
 

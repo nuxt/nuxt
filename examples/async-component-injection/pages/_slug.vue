@@ -12,7 +12,7 @@ const getPost = slug => ({
 })
 
 export default {
-  beforeCreate() {
+  beforeCreate () {
     this.component = () => getPost(this.$route.params.slug)
   }
 }

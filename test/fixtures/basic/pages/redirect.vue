@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  fetch({ redirect }) {
+  middleware ({ redirect }) {
     return redirect('/')
   }
 }

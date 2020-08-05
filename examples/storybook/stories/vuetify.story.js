@@ -1,8 +1,7 @@
 import { storiesOf } from '@storybook/vue'
 
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
-
 import Centered from '@storybook/addon-centered'
+import VuetifyLogo from '~/components/VuetifyLogo.vue'
 
 storiesOf('Vuetify/Logo', module)
   .addDecorator(Centered)
@@ -89,7 +88,7 @@ const menuItemsAlt = [
 storiesOf('Vuetify/V-Btn', module)
   .add('Square Button', () => ({
     components: {},
-    data() {
+    data () {
       return {
         items: menuItems
       }
@@ -99,7 +98,7 @@ storiesOf('Vuetify/V-Btn', module)
   }))
   .add('with rounded button', () => ({
     components: {},
-    data() {
+    data () {
       return {
         items: menuItemsAlt
       }

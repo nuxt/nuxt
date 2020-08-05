@@ -3,7 +3,7 @@ import { indent, foldLines, colorize } from './utils/formatting'
 import { startSpaces, optionSpaces } from './utils/constants'
 import getCommand from './commands'
 
-export default async function listCommands() {
+export default async function listCommands () {
   const commandsOrder = ['dev', 'build', 'generate', 'start', 'help']
 
   // Load all commands
@@ -28,8 +28,8 @@ export default async function listCommands() {
     )
   }).join('\n')
 
-  const usage = foldLines(`Usage: nuxt <command> [--help|-h]`, startSpaces)
-  const cmds = foldLines(`Commands:`, startSpaces) + '\n\n' + _cmds
+  const usage = foldLines('Usage: nuxt <command> [--help|-h]', startSpaces)
+  const cmds = foldLines('Commands:', startSpaces) + '\n\n' + _cmds
 
   process.stderr.write(colorize(`${usage}\n\n${cmds}\n\n`))
 }

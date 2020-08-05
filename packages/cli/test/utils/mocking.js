@@ -4,16 +4,19 @@ import Command from '../../src/command'
 jest.mock('../../src/imports', () => {
   return {
     core: jest.fn().mockImplementation(() => ({
-      Nuxt: function () {}
+      Nuxt () {}
     })),
     builder: jest.fn().mockImplementation(() => ({
-      Builder: function () {}
+      Builder () {}
     })),
     generator: jest.fn().mockImplementation(() => ({
-      Generator: function () {}
+      Generator () {}
     })),
+    server: () => ({
+      Listener: class { listen () { } }
+    }),
     webpack: jest.fn().mockImplementation(() => ({
-      BundleBuilder: function () {}
+      BundleBuilder () {}
     }))
   }
 })
@@ -22,6 +25,10 @@ export const mockGetNuxt = (options = {}, implementation) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {
     return Object.assign({
       hook: jest.fn(),
+      server: {
+        listen: jest.fn()
+      },
+      close: jest.fn(),
       options
     }, implementation)
   })
@@ -68,8 +75,9 @@ export const mockGetNuxtStart = (ssr) => {
   return { listen }
 }
 
-export const mockGetNuxtConfig = () => {
+export const mockGetNuxtConfig = (config = {}) => {
   const spy = jest.fn()
+  spy.mockReturnValue(config)
   Command.prototype.getNuxtConfig = spy
   return spy
 }
@@ -77,12 +85,13 @@ export const mockGetNuxtConfig = () => {
 export const mockNuxt = (implementation) => {
   const Nuxt = function () {}
   Object.assign(Nuxt.prototype, {
-    hook(type, fn) {
+    hook (type, fn) {
       if (type === 'watch:restart') {
         Nuxt.fileRestartHook = fn
       }
     },
     options: {},
+    callHook: jest.fn(),
     clearHook: jest.fn(),
     clearHooks: jest.fn(),
     close: jest.fn(),

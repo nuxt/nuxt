@@ -38,10 +38,10 @@ describe('basic browser', () => {
     loading = await page.nuxt.loadingData()
     expect(loading.show).toBe(true)
     await page.waitForFunction(
-      `$nuxt.$loading.$data.show === false`
+      '$nuxt.$loading.$data.show === false'
     )
     await page.waitForFunction(
-      `document.querySelector('p').innerText === 'true'`
+      'document.querySelector(\'p\').innerText === \'true\''
     )
   })
 
@@ -96,7 +96,7 @@ describe('basic browser', () => {
     expect(await msg).toBe('Body script!')
     expect(await page.title()).toBe('My title - Nuxt.js')
     expect(await page.$text('h1')).toBe('I can haz meta tags')
-    expect(metas[0]).toBe('my meta')
+    expect(metas[1]).toBe('my meta')
   })
 
   test('/async-data', async () => {
@@ -180,6 +180,24 @@ describe('basic browser', () => {
     page.close()
   })
 
+  test('/scroll-to-top in the same page with watchQuery function', async () => {
+    const page = await browser.page(url('/scroll-to-top/watch-query-fn'))
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight))
+    await page.nuxt.navigate('/scroll-to-top/watch-query-fn?other=1')
+    let pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBeGreaterThan(0)
+    await page.nuxt.go(-1)
+    pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBeGreaterThan(0)
+    await page.nuxt.navigate('/scroll-to-top/watch-query-fn?test=1')
+    pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBe(0)
+    await page.nuxt.go(-1)
+    pageYOffset = await page.evaluate(() => window.pageYOffset)
+    expect(pageYOffset).toBe(0)
+    page.close()
+  })
+
   test('/validate should display a 404', async () => {
     await page.nuxt.navigate('/validate')
 
@@ -243,7 +261,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/redirect-external', false)
 
     await page.waitForFunction(
-      () => window.location.href === 'https://nuxtjs.org/'
+      () => window.location.href === 'https://nuxtjs.org/api/'
     )
     page.close()
   })
@@ -289,6 +307,16 @@ describe('basic browser', () => {
 
     const p = await page.$text('p')
     expect(p).toBe('Nuxt.js')
+  })
+
+  test('/refresh-page-data', async () => {
+    const page = await browser.page(url('/refresh-page-data'))
+    let h1 = await page.$text('h1')
+    expect(h1).toContain('Hello from server')
+    await page.evaluate($nuxt => $nuxt.refresh(), page.$nuxt)
+    h1 = await page.$text('h1')
+    expect(h1).toContain('Hello from client')
+    page.close()
   })
 
   // Close server and ask nuxt to stop listening to file changes

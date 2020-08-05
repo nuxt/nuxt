@@ -5,11 +5,12 @@ export default ({ route, params }, inject) => {
   }
   const key = 'injectedProperty'
   const map = {
-    'undefined': undefined,
-    'null': null,
-    'false': false,
-    '0': 0,
-    'empty': ''
+    undefined,
+    null: null,
+    false: false,
+    0: 0,
+    empty: '',
+    foo: 'bar'
   }
   const value = map[injectValue]
   inject(key, value)

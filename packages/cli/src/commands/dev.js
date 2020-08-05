@@ -20,23 +20,32 @@ export default {
     }
   },
 
-  async run(cmd) {
+  async run (cmd) {
     const { argv } = cmd
 
     await this.startDev(cmd, argv, argv.open)
   },
 
-  async startDev(cmd, argv) {
+  async startDev (cmd, argv) {
+    let nuxt
     try {
-      const nuxt = await this._startDev(cmd, argv)
-
-      return nuxt
+      nuxt = await this._listenDev(cmd, argv)
     } catch (error) {
+      consola.fatal(error)
+      return
+    }
+
+    try {
+      await this._buildDev(cmd, argv, nuxt)
+    } catch (error) {
+      await nuxt.callHook('cli:buildError', error)
       consola.error(error)
     }
+
+    return nuxt
   },
 
-  async _startDev(cmd, argv) {
+  async _listenDev (cmd, argv) {
     const config = await cmd.getNuxtConfig({ dev: true, _build: true })
     const nuxt = await cmd.getNuxt(config)
 
@@ -60,6 +69,11 @@ export default {
       await Promise.all(openerPromises)
     }
 
+    // Return instance
+    return nuxt
+  },
+
+  async _buildDev (cmd, argv, nuxt) {
     // Create builder instance
     const builder = await cmd.getBuilder(nuxt)
 
@@ -69,11 +83,16 @@ export default {
     // Print memory usage
     showMemoryUsage()
 
+    // Display server urls after the build
+    for (const listener of nuxt.server.listeners) {
+      consola.info(chalk.bold('Listening on: ') + listener.url)
+    }
+
     // Return instance
     return nuxt
   },
 
-  logChanged({ event, path }) {
+  logChanged ({ event, path }) {
     const { icon, color, action } = eventsMapping[event] || eventsMapping.change
 
     consola.log({
@@ -83,7 +102,7 @@ export default {
     })
   },
 
-  async onWatchRestart({ event, path }, { nuxt, cmd, argv }) {
+  async onWatchRestart ({ event, path }, { nuxt, cmd, argv }) {
     this.logChanged({ event, path })
 
     await nuxt.close()
@@ -91,7 +110,7 @@ export default {
     await this.startDev(cmd, argv)
   },
 
-  onBundlerChange(path) {
+  onBundlerChange (path) {
     this.logChanged({ event: 'change', path })
   }
 }

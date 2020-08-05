@@ -4,50 +4,66 @@ import consola from 'consola'
 
 import { r } from './resolve'
 
-export const flatRoutes = function flatRoutes(router, fileName = '', routes = []) {
+const routeChildren = function (route) {
+  const hasChildWithEmptyPath = route.children.some(child => child.path === '')
+  if (hasChildWithEmptyPath) {
+    return route.children
+  }
+  return [
+    // Add default child to render parent page
+    {
+      ...route,
+      children: undefined
+    },
+    ...route.children
+  ]
+}
+
+export const flatRoutes = function flatRoutes (router, fileName = '', routes = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
+    const route = `${fileName}${r.path}/`.replace(/\/+/g, '/')
     if (r.children) {
-      if (fileName === '' && r.path === '/') {
-        routes.push('/')
-      }
-      return flatRoutes(r.children, fileName + r.path + '/', routes)
+      return flatRoutes(routeChildren(r), route, routes)
     }
-    fileName = fileName.replace(/^\/+$/, '/')
-    routes.push(
-      (r.path === '' && fileName[fileName.length - 1] === '/'
-        ? fileName.slice(0, -1)
-        : fileName) + r.path
-    )
+
+    // if child path is already absolute, do not make any concatenations
+    if (r.path && r.path.startsWith('/')) {
+      routes.push(r.path)
+    } else if (route !== '/' && route[route.length - 1] === '/') {
+      routes.push(route.slice(0, -1))
+    } else {
+      routes.push(route)
+    }
   })
   return routes
 }
 
-function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
-  let start = -1
+function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
+  const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
   const routesIndex = []
   routes.forEach((route) => {
     if (regExpIndex.test(route.name) || route.name === 'index') {
-      // Save indexOf 'index' key in name
-      const res = route.name.split(routeNameSplitter)
-      const s = res.indexOf('index')
-      start = start === -1 || s < start ? s : start
+      const res = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       routesIndex.push(res)
     }
   })
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = route.name.split(routeNameSplitter)
+      if (route.name.endsWith(`${routeNameSplitter}index`)) {
+        route.path = route.path.replace(/\?$/, '')
+      }
+      const names = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('index') - start //  children names
+        const i = r.indexOf('index')
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
@@ -63,10 +79,16 @@ function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      if (route.children.find(child => child.path === '')) {
+      const indexRoutePath = trailingSlash === false ? '/' : ''
+      const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      const routeName = route.name
+      if (defaultChildRoute) {
+        if (trailingSlash === false) {
+          defaultChildRoute.name = route.name
+        }
         delete route.name
       }
-      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter)
+      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash, routeName)
     }
   })
   return routes
@@ -74,7 +96,7 @@ function cleanChildrenRoutes(routes, isChild = false, routeNameSplitter = '-') {
 
 const DYNAMIC_ROUTE_REGEX = /^\/([:*])/
 
-const sortRoutes = function sortRoutes(routes) {
+export const sortRoutes = function sortRoutes (routes) {
   routes.sort((a, b) => {
     if (!a.path.length) {
       return -1
@@ -131,8 +153,14 @@ const sortRoutes = function sortRoutes(routes) {
   return routes
 }
 
-export const createRoutes = function createRoutes(files, srcDir, pagesDir = '', routeNameSplitter = '-') {
-  const supportedExtensions = ['vue', 'js', 'ts', 'tsx']
+export const createRoutes = function createRoutes ({
+  files,
+  srcDir,
+  pagesDir = '',
+  routeNameSplitter = '-',
+  supportedExtensions = ['vue', 'js'],
+  trailingSlash
+}) {
   const routes = []
   files.forEach((file) => {
     const keys = file
@@ -168,15 +196,20 @@ export const createRoutes = function createRoutes(files, srcDir, pagesDir = '', 
         }
       }
     })
+    if (trailingSlash !== undefined) {
+      route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
+      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
+    }
+
     parent.push(route)
   })
 
   sortRoutes(routes)
-  return cleanChildrenRoutes(routes, false, routeNameSplitter)
+  return cleanChildrenRoutes(routes, false, routeNameSplitter, trailingSlash)
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed
-export const guardDir = function guardDir(options, key1, key2) {
+export const guardDir = function guardDir (options, key1, key2) {
   const dir1 = get(options, key1, false)
   const dir2 = get(options, key2, false)
 
@@ -209,7 +242,7 @@ const getRoutePathExtension = (key) => {
   return key
 }
 
-export const promisifyRoute = function promisifyRoute(fn, ...args) {
+export const promisifyRoute = function promisifyRoute (fn, ...args) {
   // If routes is an array
   if (Array.isArray(fn)) {
     return Promise.resolve(fn)

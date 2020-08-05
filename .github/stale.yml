@@ -1,12 +1,15 @@
 # Configuration for probot-stale - https://github.com/probot/stale
-daysUntilStale: 21
+daysUntilStale: 30
 daysUntilClose: 7
 staleLabel: stale
 exemptLabels:
   - "cmty:feature-request"
+  - "feature-request"
   - "WIP"
   - "pending"
   - "discussion"
+exemptAssignees: true
+only: issues
 markComment: >
   Thanks for your contribution to Nuxt.js!
 

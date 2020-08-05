@@ -1,7 +1,7 @@
 {
   "name": "example-custom-routes",
   "dependencies": {
-    "axios": "latest",
+    "axios": "^0.19.0",
     "nuxt": "latest"
   },
   "scripts": {

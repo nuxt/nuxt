@@ -1,7 +1,7 @@
 
 import { storiesOf } from '@storybook/vue'
-import MyButton from '~/components/Button.vue'
 import Centered from '@storybook/addon-centered'
+import MyButton from '~/components/Button.vue'
 
 storiesOf('Button', module)
   .addDecorator(Centered)

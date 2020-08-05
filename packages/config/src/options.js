@@ -1,14 +1,15 @@
 import path from 'path'
 import fs from 'fs'
 import defaultsDeep from 'lodash/defaultsDeep'
-import defaults from 'lodash/defaults'
+import defu from 'defu'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
-import { guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule } from '@nuxt/utils'
+import destr from 'destr'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
-export function getNuxtConfig(_options) {
+export function getNuxtConfig (_options) {
   // Prevent duplicate calls
   if (_options.__normalized__) {
     return _options
@@ -36,6 +37,12 @@ export function getNuxtConfig(_options) {
   }
 
   // TODO: Remove for Nuxt 3
+  // router.scrollBehavior -> app/router.scrollBehavior.js
+  if (options.router && typeof options.router.scrollBehavior !== 'undefined') {
+    consola.warn('`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file, learn more: https://nuxtjs.org/api/configuration-router#scrollbehavior')
+  }
+
+  // TODO: Remove for Nuxt 3
   // transition -> pageTransition
   if (typeof options.transition !== 'undefined') {
     consola.warn('`transition` property is deprecated in favor of `pageTransition` and will be removed in Nuxt 3')
@@ -57,6 +64,7 @@ export function getNuxtConfig(_options) {
 
   options.globalName = (isNonEmptyString(options.globalName) && /^[a-zA-Z]+$/.test(options.globalName))
     ? options.globalName.toLowerCase()
+    // use `` for preventing replacing to nuxt-edge
     : `nuxt`
 
   // Resolve rootDir
@@ -82,10 +90,37 @@ export function getNuxtConfig(_options) {
 
   defaultsDeep(options, nuxtConfig)
 
+  // Target
+  options.target = options.target || 'server'
+  if (!Object.values(TARGETS).includes(options.target)) {
+    consola.warn(`Unknown target: ${options.target}. Falling back to server`)
+    options.target = 'server'
+  }
+
+  // SSR root option
+  if (options.ssr === false) {
+    options.mode = MODES.spa
+  }
+
+  // Apply mode preset
+  const modePreset = options.modes[options.mode || MODES.universal]
+
+  if (!modePreset) {
+    consola.warn(`Unknown mode: ${options.mode}. Falling back to ${MODES.universal}`)
+  }
+  defaultsDeep(options, modePreset || options.modes[MODES.universal])
+
   // Sanitize router.base
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
+
+  // Legacy support for export
+  if (options.export) {
+    consola.warn('export option is deprecated and will be removed in a future version! Please switch to generate')
+    options.generate = defu(options.export, options.generate)
+  }
+  exports.export = options.generate
 
   // Check srcDir and generate.dir existence
   const hasSrcDir = isNonEmptyString(options.srcDir)
@@ -153,7 +188,7 @@ export function getNuxtConfig(_options) {
     )
   )
 
-  const mandatoryExtensions = ['js', 'mjs', 'ts']
+  const mandatoryExtensions = ['js', 'mjs']
 
   options.extensions = mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))
@@ -213,15 +248,38 @@ export function getNuxtConfig(_options) {
     options.debug = options.dev
   }
 
+  // Validate that etag.hash is a function, if not unset it
+  if (options.render.etag) {
+    const { hash } = options.render.etag
+    if (hash) {
+      const isFn = typeof hash === 'function'
+      if (!isFn) {
+        options.render.etag.hash = undefined
+
+        if (options.dev) {
+          consola.warn(`render.etag.hash should be a function, received ${typeof hash} instead`)
+        }
+      }
+    }
+  }
+
   // Apply default hash to CSP option
   if (options.render.csp) {
-    options.render.csp = defaults({}, options.render.csp, {
+    options.render.csp = defu(options.render.csp, {
       hashAlgorithm: 'sha256',
       allowedSources: undefined,
       policies: undefined,
-      addMeta: Boolean(options._generate),
+      addMeta: Boolean(options.target === TARGETS.static),
+      unsafeInlineCompatibility: false,
       reportOnly: options.debug
     })
+
+    // TODO: Remove this if statement in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
+    if (options.render.csp.unsafeInlineCompatiblity) {
+      consola.warn('Using `unsafeInlineCompatiblity` is deprecated and will be removed in Nuxt 3. Use `unsafeInlineCompatibility` instead.')
+      options.render.csp.unsafeInlineCompatibility = options.render.csp.unsafeInlineCompatiblity
+      delete options.render.csp.unsafeInlineCompatiblity
+    }
   }
 
   // cssSourceMap
@@ -286,18 +344,14 @@ export function getNuxtConfig(_options) {
     delete options.render.gzip
   }
 
-  // Apply mode preset
-  const modePreset = options.modes[options.mode || 'universal']
-
-  if (!modePreset) {
-    consola.warn(`Unknown mode: ${options.mode}. Falling back to universal`)
-  }
-  defaultsDeep(options, modePreset || options.modes.universal)
-
   // If no server-side rendering, add appear true transition
   if (options.render.ssr === false && options.pageTransition) {
     options.pageTransition.appear = true
   }
+
+  options.render.ssrLog = options.dev
+    ? options.render.ssrLog === undefined || options.render.ssrLog
+    : false
 
   // We assume the SPA fallback path is 404.html (for GitHub Pages, Surge, etc.)
   if (options.generate.fallback === true) {
@@ -323,6 +377,13 @@ export function getNuxtConfig(_options) {
   // build.extractCSS.allChunks has no effect
   if (typeof options.build.extractCSS.allChunks !== 'undefined') {
     consola.warn('build.extractCSS.allChunks has no effect from v2.0.0. Please use build.optimization.splitChunks settings instead.')
+  }
+
+  // devModules has been renamed to buildModules
+  if (typeof options.devModules !== 'undefined') {
+    consola.warn('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
+    options.buildModules.push(...options.devModules)
+    delete options.devModules
   }
 
   // Enable minimize for production builds
@@ -363,9 +424,79 @@ export function getNuxtConfig(_options) {
     bundleRenderer.runInNewContext = options.dev
   }
 
-  // Add loading screen
-  if (options.dev) {
-    options.devModules.push('@nuxt/loading-screen')
+  // TODO: Remove this if statement in Nuxt 3
+  if (options.build.crossorigin) {
+    consola.warn('Using `build.crossorigin` is deprecated and will be removed in Nuxt 3. Please use `render.crossorigin` instead.')
+    options.render.crossorigin = options.build.crossorigin
+    delete options.build.crossorigin
+  }
+
+  const { timing } = options.server
+  if (timing) {
+    options.server.timing = { total: true, ...timing }
+  }
+
+  if (isPureObject(options.serverMiddleware)) {
+    options.serverMiddleware = Object.entries(options.serverMiddleware)
+      .map(([path, handler]) => ({ path, handler }))
+  }
+
+  // Generate staticAssets
+  const { staticAssets } = options.generate
+  if (!staticAssets.version) {
+    staticAssets.version = String(Math.round(Date.now() / 1000))
+  }
+  if (!staticAssets.base) {
+    const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
+    staticAssets.base = urlJoin(publicPath, staticAssets.dir)
+  }
+  if (!staticAssets.versionBase) {
+    staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+  }
+
+  // createRequire factory
+  if (options.createRequire === undefined) {
+    const isJest = typeof jest !== 'undefined'
+    options.createRequire = isJest ? false : 'esm'
+  }
+  if (options.createRequire === 'esm') {
+    const esm = require('esm')
+    options.createRequire = module => esm(module, { cache: false })
+  } else if (options.createRequire === 'jiti') {
+    const jiti = require('jiti')
+    options.createRequire = module => jiti(module.filename)
+  } else if (typeof options.createRequire !== 'function') {
+    const createRequire = require('create-require')
+    options.createRequire = module => createRequire(module.filename)
+  }
+
+  // ----- Builtin modules -----
+
+  // Loading screen
+  // Force disable for production and programmatic users
+  if (!options.dev || !options._cli || !getPKG('@nuxt/loading-screen')) {
+    options.build.loadingScreen = false
+  }
+  if (options.build.loadingScreen) {
+    options._modules.push(['@nuxt/loading-screen', options.build.loadingScreen])
+  } else {
+    // When loadingScreen is disabled we should also disable build indicator
+    options.build.indicator = false
+  }
+
+  // Components Module
+  if (!options._start && getPKG('@nuxt/components')) {
+    options._modules.push('@nuxt/components')
+  }
+
+  // Nuxt Telemetry
+  if (
+    options.telemetry !== false &&
+    !options.test &&
+    !destr(process.env.NUXT_TELEMETRY_DISABLED) &&
+    getPKG('@nuxt/telemetry')
+  ) {
+    options._modules.push('@nuxt/telemetry')
   }
 
   return options
