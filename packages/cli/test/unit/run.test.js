@@ -1,3 +1,4 @@
+import path from 'path'
 import execa from 'execa'
 import run from '../../src/run'
 import getCommand from '../../src/commands'
@@ -37,9 +38,10 @@ describe('run', () => {
   })
 
   test('nuxt <dir> aliases to nuxt dev <dir>', async () => {
-    await run([__dirname])
+    const rootDir = path.resolve(__dirname, '../fixtures')
+    await run([rootDir])
     expect(getCommand).toHaveBeenCalledWith('dev')
-    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [__dirname], {})
+    expect(NuxtCommand.run).toHaveBeenCalledWith(expect.anything(), [rootDir], {})
   })
 
   test('external commands', async () => {
