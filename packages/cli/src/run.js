@@ -1,10 +1,9 @@
-import fs from 'fs'
-import path from 'path'
 import execa from 'execa'
 import { name as pkgName } from '../package.json'
 import NuxtCommand from './command'
 import setup from './setup'
 import getCommand from './commands'
+import { isNuxtDir } from './utils/dir'
 
 function packageExists (name) {
   try {
@@ -29,7 +28,7 @@ export default async function run (_argv, hooks = {}) {
   let cmd = await getCommand(argv[0])
 
   // Matching `nuxt` or `nuxt [dir]` or `nuxt -*` for `nuxt dev` shortcut
-  if (!cmd && (!argv[0] || argv[0][0] === '-' || fs.existsSync(`${argv[0]}${path.sep}nuxt.config.js`) || fs.existsSync(`${argv[0]}${path.sep}pages`) || fs.existsSync(`${argv[0]}${path.sep}nuxt.config.ts`))) {
+  if (!cmd && (!argv[0] || argv[0][0] === '-' || isNuxtDir(argv[0]))) {
     argv.unshift('dev')
     cmd = await getCommand('dev')
   }
