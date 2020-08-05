@@ -146,9 +146,10 @@ describe('server: server', () => {
 
     await server.ready()
 
-    expect(server.nuxt.callHook).toBeCalledTimes(2)
-    expect(server.nuxt.callHook).nthCalledWith(1, 'render:before', server, server.options.render)
-    expect(server.nuxt.callHook).nthCalledWith(2, 'render:done', server)
+    expect(server.nuxt.callHook).toBeCalledTimes(3)
+    expect(server.nuxt.callHook).nthCalledWith(1, 'server:prepare', null)
+    expect(server.nuxt.callHook).nthCalledWith(2, 'render:before', server, server.options.render)
+    expect(server.nuxt.callHook).nthCalledWith(3, 'render:done', server)
     expect(ServerContext).toBeCalledTimes(1)
     expect(ServerContext).toBeCalledWith(server)
     expect(VueRenderer).toBeCalledTimes(1)
@@ -169,9 +170,10 @@ describe('server: server', () => {
 
     await server.setupMiddleware()
 
-    expect(server.nuxt.callHook).toBeCalledTimes(2)
-    expect(server.nuxt.callHook).nthCalledWith(1, 'render:setupMiddleware', server.app)
-    expect(server.nuxt.callHook).nthCalledWith(2, 'render:errorMiddleware', server.app)
+    expect(server.nuxt.callHook).toBeCalledTimes(3)
+    expect(server.nuxt.callHook).nthCalledWith(1, 'server:prepare', null)
+    expect(server.nuxt.callHook).nthCalledWith(2, 'render:setupMiddleware', server.app)
+    expect(server.nuxt.callHook).nthCalledWith(3, 'render:errorMiddleware', server.app)
 
     expect(server.useMiddleware).toBeCalledTimes(4)
     expect(serveStatic).toBeCalledTimes(2)
@@ -478,8 +480,9 @@ describe('server: server', () => {
     })
     expect(listener.listen).toBeCalledTimes(1)
     expect(server.listeners).toEqual([listener])
-    expect(server.nuxt.callHook).toBeCalledTimes(1)
-    expect(server.nuxt.callHook).toBeCalledWith('listen', listener.server, listener)
+    expect(server.nuxt.callHook).toBeCalledTimes(2)
+    expect(server.nuxt.callHook).nthCalledWith(1, 'server:prepare', null)
+    expect(server.nuxt.callHook).nthCalledWith(2,'listen', listener.server, listener)
   })
 
   test('should listen server via options.server', async () => {

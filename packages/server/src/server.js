@@ -18,6 +18,9 @@ export default class Server {
     this.nuxt = nuxt
     this.options = nuxt.options
 
+    // Before server init
+    this.nuxt.callHook('server:prepare', null)
+
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
     this.publicPath = isUrl(this.options.build.publicPath)
