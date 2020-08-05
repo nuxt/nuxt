@@ -56,7 +56,7 @@ export default class VueSSRClientPlugin {
       const fileToIndex = file => manifest.all.indexOf(file)
       stats.modules.forEach((m) => {
         // Ignore modules duplicated in multiple chunks
-        if (m.chunks.length === 1) {
+        // if (m.chunks.length === 1) {
           const [cid] = m.chunks
           const chunk = stats.chunks.find(c => c.id === cid)
           if (!chunk || !chunk.files) {
@@ -96,7 +96,7 @@ export default class VueSSRClientPlugin {
               files.push.apply(files, m.assets.map(fileToIndex))
             }
           })
-        }
+        // }
       })
 
       const src = JSON.stringify(manifest, null, 2)
