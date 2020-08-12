@@ -21,6 +21,8 @@ import createTimingMiddleware from './middleware/timing'
 interface Manifest {
   assetsMapping: Record<string, string[]>
   publicPath: string
+  initial: Array<string>
+  async: Array<string>
 }
 
 export default class Server {
@@ -37,6 +39,7 @@ export default class Server {
   renderer: VueRenderer
   resources: {
     clientManifest?: Manifest
+    loadingHTML?: string
     modernManifest?: Manifest
     serverManifest?: Manifest
     ssrTemplate?: TemplateExecutor

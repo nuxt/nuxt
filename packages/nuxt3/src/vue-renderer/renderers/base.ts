@@ -1,4 +1,5 @@
-import ServerContext from 'nuxt/server/context'
+import ServerContext from 'src/server/context'
+import { RenderContext } from '../renderer'
 
 export default class BaseRenderer {
   serverContext: ServerContext
@@ -18,7 +19,7 @@ export default class BaseRenderer {
     return templateFn(opts)
   }
 
-  render (renderContext) {
+  render (_renderContext: RenderContext) {
     throw new Error('`render()` needs to be implemented')
   }
 }

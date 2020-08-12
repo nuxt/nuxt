@@ -37,7 +37,7 @@ export default class SPARenderer extends BaseRenderer {
     const modernMode = this.options.modern
     const modern = (modernMode && this.options.target === TARGETS.static) || isModernRequest(req, modernMode)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
-    let meta = this.cache.get(cacheKey)
+    let meta : Record<string, any> = this.cache.get(cacheKey)
 
     if (meta) {
       // Return a copy of the content, so that future
@@ -127,7 +127,7 @@ export default class SPARenderer extends BaseRenderer {
           .map(file => ({ ...file, modern }))
 
         meta.resourceHints += meta.preloadFiles
-          .map(({ file, extension, fileWithoutQuery, asType, modern }) => {
+          .map(({ file, extension, asType, modern }) => {
             let extra = ''
             if (asType === 'font') {
               extra = ` type="font/${extension}"${cors ? '' : ' crossorigin'}`

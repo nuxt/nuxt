@@ -108,7 +108,7 @@ interface CommonConfiguration {
   ignore: Array<string | IgnoreInstance>
   // TODO: remove in Nuxt 3
   mode: Mode
-  modern?: boolean
+  modern?: boolean | 'client' | 'server'
   modules: NuxtModule[]
   privateRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)
   publicRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)

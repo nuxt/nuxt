@@ -11,6 +11,8 @@ import ServerContext from 'src/server/context'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
+  vueRenderer: typeof import('@vue/server-renderer')
+
   constructor (serverContext: ServerContext) {
     super(serverContext)
     this.createRenderer()
@@ -170,9 +172,14 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     const { csp } = this.options.render
-    // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-    const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
-    const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
+    let shouldHashCspScriptSrc = false
+    if (typeof csp === 'object') {
+      const { policies, unsafeInlineCompatibility } = csp
+      shouldHashCspScriptSrc = unsafeInlineCompatibility ||
+        // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+        !(policies && policies['script-src'] && policies['script-src'].includes('\'unsafe-inline\''))
+    }
+
     const inlineScripts = []
 
     if (renderContext.staticAssetsBase) {
@@ -228,7 +235,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Calculate CSP hashes
     const cspScriptSrcHashes = []
-    if (csp) {
+    if (typeof csp === 'object') {
       if (shouldHashCspScriptSrc) {
         for (const script of inlineScripts) {
           const hash = crypto.createHash(csp.hashAlgorithm)

@@ -65,7 +65,7 @@ export const isModernBrowser = (ua: string) => {
   )
 }
 
-export const isModernRequest = (req: NuxtRequest, modernMode = false) => {
+export const isModernRequest = (req: NuxtRequest, modernMode: boolean | string = false) => {
   if (modernMode === false) {
     return false
   }

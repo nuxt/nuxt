@@ -5,7 +5,7 @@ type Plugin = string | { mode?: 'all' | 'client' | 'server', src: string, ssr?: 
 
 interface AppOptions {
   css: string[]
-  head: MetaInfo
+  head: MetaInfo | (() => MetaInfo)
   ErrorPage: null | string
   extendPlugins: null | ((plugins: Plugin[]) => Plugin[])
   features: {

@@ -2,12 +2,29 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { TARGETS, isModernRequest, waitFor } from 'src/utils'
+import { Target, TARGETS, isModernRequest, waitFor } from 'src/utils'
 
 import ServerContext from 'src/server/context'
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
 import ModernRenderer from './renderers/modern'
+
+declare module 'fs-extra' {
+  export function exists(path: string): Promise<boolean>;
+}
+
+export interface RenderContext {
+  target?: Target
+  spa?: boolean
+  modern?: boolean
+  req?: any
+  res?: any
+  runtimeConfig?: {
+    private: ServerContext['options']['privateRuntimeConfig'],
+    public: ServerContext['options']['publicRuntimeConfig']
+  }
+  url?: string
+}
 
 export default class VueRenderer {
   __closed?: boolean
@@ -15,6 +32,7 @@ export default class VueRenderer {
   _error?: null
   _readyPromise?: Promise<any>
   distPath: string
+  options: ServerContext['options']
   serverContext: ServerContext
   renderer: {
     ssr: any
@@ -252,7 +270,7 @@ export default class VueRenderer {
     return renderer.render(renderContext)
   }
 
-  async renderRoute (url, renderContext = {}, _retried = 0) {
+  async renderRoute (url, renderContext : RenderContext = {}, _retried = 0) {
     /* istanbul ignore if */
     if (!this.isReady) {
       // Fall-back to loading-screen if enabled

@@ -27,7 +27,7 @@ type CspPolicyName = 'child-src' | 'connect-src' | 'default-src' | 'font-src' | 
 
 interface RenderOptions {
   bundleRenderer: {
-    shouldPrefetch: () => boolean
+    shouldPrefetch: (fileWithoutQuery: string, asType: string) => boolean
     shouldPreload: (fileWithoutQuery: string, asType: string) => boolean
     runInNewContext?: boolean
   }
@@ -63,6 +63,7 @@ interface RenderOptions {
       preloadFiles: PreloadFile[]
     ) => string[])
   }
+  injectScripts?: boolean
   resourceHints: boolean
   ssr?: boolean
   ssrLog?: boolean | 'collapsed'
