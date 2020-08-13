@@ -247,9 +247,9 @@ async function createApp(ssrContext, config = {}) {
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
       router.push(ssrContext.url, resolve, (err) => {
-        // https://github.com/vuejs/vue-router/blob/v3.3.4/src/history/errors.js
+        // https://github.com/vuejs/vue-router/blob/v3.4.3/src/util/errors.js
         if (!err._isRouter) return reject(err)
-        if (err.type !== 1 /* NavigationFailureType.redirected */) return resolve()
+        if (err.type !== 2 /* NavigationFailureType.redirected */) return resolve()
 
         // navigated to a different route in router guard
         const unregister = router.afterEach(async (to, from) => {
