@@ -8,15 +8,15 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.11.0",
+    "@babel/core": "^7.11.1",
     "@nuxt/babel-preset-app": "2.14.1",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/utils": "2.14.1",
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001110",
+    "caniuse-lite": "^1.0.30001113",
     "chalk": "^3.0.0",
-    "consola": "^2.14.0",
+    "consola": "^2.15.0",
     "create-require": "^1.0.2",
     "css-loader": "^3.6.0",
     "cssnano": "^4.1.10",
@@ -48,7 +48,7 @@
     "webpack-bundle-analyzer": "^3.8.0",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
-    "webpack-node-externals": "^2.5.0",
+    "webpack-node-externals": "^2.5.1",
     "webpackbar": "^4.0.0"
   },
   "engines": {
