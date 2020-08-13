@@ -81,13 +81,13 @@ describe('basic dev', () => {
 
   test('Config: build.transpile', () => {
     expect(transpile('vue-test')).toBe(true)
-    expect(transpile(path.normalize('node_modules/test.js'))).toBe(false)
-    expect(transpile(path.normalize('node_modules/vue-test'))).toBe(true)
-    expect(transpile(path.normalize('node_modules/vue.test.js'))).toBe(true)
-    expect(transpile(path.normalize('node_modules/test.vue.js'))).toBe(true)
-    expect(transpile(path.normalize('node_modules/@scoped/packageA/src/index.js'))).toBe(true)
-    expect(transpile(path.normalize('node_modules/@scoped/packageB/src/index.js'))).toBe(true)
-    expect(transpile(path.normalize('node_modules/normal-test'))).toBe(true)
+    expect(transpile(path.normalize('vendors/test.js'))).toBe(false)
+    expect(transpile(path.normalize('vendors/vue-test'))).toBe(true)
+    expect(transpile(path.normalize('vendors/vue.test.js'))).toBe(true)
+    expect(transpile(path.normalize('vendors/test.vue.js'))).toBe(true)
+    expect(transpile(path.normalize('vendors/@scoped/packageA/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('vendors/@scoped/packageB/src/index.js'))).toBe(true)
+    expect(transpile(path.normalize('vendors/normal-test'))).toBe(true)
   })
 
   test('Config: build.filenames', () => {
