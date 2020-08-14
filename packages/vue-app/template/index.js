@@ -1,4 +1,5 @@
 import Vue from 'vue'
+<% if (store) { %>import Vuex from 'vuex'<% } %>
 <% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
 <% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
 <% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
