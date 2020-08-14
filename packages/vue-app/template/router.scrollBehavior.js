@@ -23,24 +23,24 @@ if (process.client) {
 }
 
   export default function (to, from, savedPosition) {
-  if (from === to) {
-    return
-  }
+  const isInitialLoad = to === from
 
-  // if the returned position is falsy or an empty object,
-  // will retain current scroll position.
+    if (isInitialLoad) {
+      return
+    }
+
+  // If the returned position is falsy or an empty object, will retain current scroll position
   let position = false
 
-  // if no children detected and scrollToTop is not explicitly disabled
   const Pages = getMatchedComponents(to)
+
+  // Scroll to the top of the page if...
   if (
-    Pages.length < 2 &&
-    Pages.every(Page => Page.options.scrollToTop !== false)
+      // One of the children set `scrollToTop`
+      Pages.some(Page => Page.options.scrollToTop) ||
+      // scrollToTop set in only page without children
+      (Pages.length < 2 && Pages.every(Page => Page.options.scrollToTop !== false))
   ) {
-    // scroll to the top of the page
-    position = { x: 0, y: 0 }
-  } else if (Pages.some(Page => Page.options.scrollToTop)) {
-    // if one of the children has scrollToTop option set to true
     position = { x: 0, y: 0 }
   }
 
