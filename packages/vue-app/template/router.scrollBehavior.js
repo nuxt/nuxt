@@ -25,9 +25,9 @@ if (process.client) {
   export default function (to, from, savedPosition) {
   const isInitialLoad = to === from
 
-    if (isInitialLoad) {
-      return
-    }
+  if (isInitialLoad) {
+    return
+  }
 
   // If the returned position is falsy or an empty object, will retain current scroll position
   let position = false
