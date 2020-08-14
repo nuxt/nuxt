@@ -23,12 +23,6 @@ if (process.client) {
 }
 
   export default function (to, from, savedPosition) {
-  const isInitialLoad = to === from
-
-  if (isInitialLoad) {
-    return
-  }
-
   // If the returned position is falsy or an empty object, will retain current scroll position
   let position = false
 
@@ -51,8 +45,12 @@ if (process.client) {
 
   const nuxt = window.<%= globals.nuxt %>
 
-  // triggerScroll is only fired when a new component is loaded
-  if (to.path === from.path && to.hash !== from.hash) {
+  if (
+    // Page hash changes
+    (to.path === from.path && to.hash !== from.hash) ||
+    // InitialLoad (introduced by vuejs/vue-router#3199)
+    to === from
+  ) {
     nuxt.$nextTick(() => nuxt.$emit('triggerScroll'))
   }
 
