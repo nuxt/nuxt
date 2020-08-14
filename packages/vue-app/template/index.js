@@ -66,6 +66,14 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
+const { assign, create } = Object
+const originalRegisterModule = Vuex.Store.prototype.registerModule
+const baseStoreOptions = { preserveState: process.client }
+
+function registerModule (path, rawModule, options) {
+  originalRegisterModule.call(this, path, rawModule, assign(create(baseStoreOptions), options))
+}
+
 async function createApp(ssrContext, config = {}) {
   const router = await createRouter(ssrContext)
 
@@ -75,8 +83,7 @@ async function createApp(ssrContext, config = {}) {
   store.$router = router
     <% if (mode === 'universal') { %>
   // Fix SSR caveat https://github.com/nuxt/nuxt.js/issues/3757#issuecomment-414689141
-  const registerModule = store.registerModule
-  store.registerModule = (path, rawModule, options) => registerModule.call(store, path, rawModule, Object.assign({ preserveState: process.client }, options))
+  store.registerModule = registerModule
     <% } %>
   <% } %>
 
