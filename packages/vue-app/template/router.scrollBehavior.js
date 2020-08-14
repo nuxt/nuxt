@@ -46,7 +46,7 @@ if (process.client) {
   const nuxt = window.<%= globals.nuxt %>
 
   if (
-    // Page hash changes
+    // Route hash changes
     (to.path === from.path && to.hash !== from.hash) ||
     // Initial load (vuejs/vue-router#3199)
     to === from
