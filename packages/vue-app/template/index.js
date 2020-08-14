@@ -71,8 +71,8 @@ const { assign, create } = Object
 const originalRegisterModule = Vuex.Store.prototype.registerModule
 const baseStoreOptions = { preserveState: process.client }
 
-function registerModule (path, rawModule, options) {
-  originalRegisterModule.call(this, path, rawModule, assign(create(baseStoreOptions), options))
+function registerModule (path, rawModule, options = {}) {
+  return originalRegisterModule.call(this, path, rawModule, { ...baseStoreOptions, ...options })
 }
 
 async function createApp(ssrContext, config = {}) {
