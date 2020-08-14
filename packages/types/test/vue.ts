@@ -79,6 +79,9 @@ options.scrollToTop = true
 options.transition = 'foo'
 options.transition = { name: 'foo' }
 options.transition = () => 'foo'
+options.transition = () => {
+  return { name: 'foo' }
+}
 
 // validate
 
