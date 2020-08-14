@@ -48,7 +48,7 @@ if (process.client) {
   if (
     // Page hash changes
     (to.path === from.path && to.hash !== from.hash) ||
-    // InitialLoad (introduced by vuejs/vue-router#3199)
+    // Initial load (vuejs/vue-router#3199)
     to === from
   ) {
     nuxt.$nextTick(() => nuxt.$emit('triggerScroll'))
