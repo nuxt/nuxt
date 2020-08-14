@@ -22,7 +22,11 @@ if (process.client) {
   }
 }
 
-export default function (to, from, savedPosition) {
+  export default function (to, from, savedPosition) {
+  if (from === to) {
+    return
+  }
+
   // if the returned position is falsy or an empty object,
   // will retain current scroll position.
   let position = false
