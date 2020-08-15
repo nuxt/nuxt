@@ -67,7 +67,6 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
-const { assign, create } = Object
 const originalRegisterModule = Vuex.Store.prototype.registerModule
 const baseStoreOptions = { preserveState: process.client }
 
