@@ -67,12 +67,14 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
+<% if (store) { %>
 const originalRegisterModule = Vuex.Store.prototype.registerModule
 const baseStoreOptions = { preserveState: process.client }
 
 function registerModule (path, rawModule, options = {}) {
   return originalRegisterModule.call(this, path, rawModule, { ...baseStoreOptions, ...options })
 }
+<% } %>
 
 async function createApp(ssrContext, config = {}) {
   const router = await createRouter(ssrContext)
