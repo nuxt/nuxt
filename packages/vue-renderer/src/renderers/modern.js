@@ -48,7 +48,7 @@ export default class ModernRenderer extends SSRRenderer {
     const scripts = super.renderScripts(renderContext)
 
     if (this.isServerMode) {
-      return scripts
+      return scripts.replace('<script', `<script nomodule`)
     }
 
     const scriptPattern = /<script[^>]*?src="([^"]*?)" defer><\/script>/g
