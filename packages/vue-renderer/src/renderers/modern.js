@@ -48,7 +48,7 @@ export default class ModernRenderer extends SSRRenderer {
     const scripts = super.renderScripts(renderContext)
 
     if (this.isServerMode) {
-      return scripts.replace('<script', `<script nomodule`)
+      return scripts
     }
 
     const scriptPattern = /<script[^>]*?src="([^"]*?)" defer><\/script>/g
@@ -57,7 +57,7 @@ export default class ModernRenderer extends SSRRenderer {
       const legacyJsFile = jsFile.replace(this.publicPath, '')
       const modernJsFile = this.assetsMapping[legacyJsFile]
       if (!modernJsFile) {
-        return scriptTag
+        return scriptTag.replace('<script', `<script nomodule`)
       }
       const moduleTag = scriptTag
         .replace('<script', `<script type="module"`)
