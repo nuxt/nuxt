@@ -24,6 +24,12 @@ export default {
         : (!this.reversed ? '0px' : 'auto')
     }
   },
+  watch: {
+    percent(value) {
+      if(value !== 0)
+        this.$emit('progress', value)
+    }
+  },
   beforeDestroy () {
     this.clear()
   },
@@ -41,10 +47,15 @@ export default {
       this.canSucceed = true
 
       if (this.throttle) {
-        this._throttle = setTimeout(() => this.startTimer(), this.throttle)
+        this._throttle = setTimeout(() => {
+          this.startTimer()
+          this.$emit('started')
+        }, this.throttle)
       } else {
         this.startTimer()
+        this.$emit('started')
       }
+      this.$emit('progress', 0)
       return this
     },
     set (num) {
@@ -66,15 +77,18 @@ export default {
     },
     pause () {
       clearInterval(this._timer)
+      this.$emit('paused')
       return this
     },
     resume () {
       this.startTimer()
+      this.$emit('resumed')
       return this
     },
     finish () {
       this.percent = this.reversed ? 0 : 100
       this.hide()
+      this.$emit('finished')
       return this
     },
     hide () {
@@ -90,6 +104,7 @@ export default {
     },
     fail (error) {
       this.canSucceed = false
+      this.$emit('failed')
       return this
     },
     startTimer () {

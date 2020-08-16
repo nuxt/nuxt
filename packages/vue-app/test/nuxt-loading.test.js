@@ -186,4 +186,87 @@ describe('nuxt-loading', () => {
     // TODO: check why the rendered html still has left: 0px (probably test-utils issue)
     // expect(html).toContain('left: auto')
   })
+
+  test('has events', async () => {
+    const wrapper = mount(Component, { localVue })
+
+    wrapper.setData({
+      duration: 2000,
+      throttle: 100
+    })
+
+    const progression = []
+    wrapper.vm.$on('progress', (progress) => {
+      progression.push(progress)
+    })
+
+    let started = false
+    wrapper.vm.$once('started', () => {
+      started = true
+    })
+
+    wrapper.vm.start()
+
+    await vmTick(wrapper.vm)
+    expect(progression).toEqual([0])
+
+    jest.advanceTimersByTime(250)
+    await vmTick(wrapper.vm)
+    expect(started).toBe(true)
+    expect(progression).toEqual([0, 5])
+
+    jest.advanceTimersByTime(250)
+    await vmTick(wrapper.vm)
+    expect(progression).toEqual([0, 5, 20])
+
+    let paused = false
+    wrapper.vm.$once('paused', () => {
+      paused = true
+    })
+
+    wrapper.vm.pause()
+
+    await vmTick(wrapper.vm)
+    expect(paused).toEqual(true)
+    expect(progression).toEqual([0, 5, 20])
+
+    let resumed = false
+    wrapper.vm.$once('resumed', () => {
+      resumed = true
+    })
+
+    wrapper.vm.resume()
+
+    await vmTick(wrapper.vm)
+    expect(resumed).toEqual(true)
+
+    jest.advanceTimersByTime(250)
+    await vmTick(wrapper.vm)
+    expect(progression).toEqual([0, 5, 20, 30])
+
+    let finished = false
+    wrapper.vm.$once('finished', () => {
+      finished = true
+    })
+
+    wrapper.vm.finish()
+
+    await vmTick(wrapper.vm)
+    expect(finished).toBe(true)
+    expect(progression).toEqual([0, 5, 20, 30, 100])
+
+    let failed = false
+    wrapper.vm.$once('failed', () => {
+      failed = true
+    })
+
+    wrapper.vm.fail()
+
+    await vmTick(wrapper.vm)
+    expect(failed).toBe(true)
+    expect(progression).toEqual([0, 5, 20, 30, 100])
+
+    jest.runAllTimers()
+    await vmTick(wrapper.vm)
+  })
 })
