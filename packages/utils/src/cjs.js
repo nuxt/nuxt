@@ -1,11 +1,15 @@
 import { join } from 'path'
 
+export function isHMRCompatible (id) {
+  return !/[/\\]mongoose[/\\/](lib[/\\/])?index.js/.test(id)
+}
+
 export function isExternalDependency (id) {
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
 export function clearRequireCache (id) {
-  if (isExternalDependency(id)) {
+  if (isExternalDependency(id) && isHMRCompatible(id)) {
     return
   }
 
