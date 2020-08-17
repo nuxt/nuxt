@@ -4,7 +4,8 @@ import TimeFixPlugin from 'time-fix-plugin'
 import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5'
-import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+// import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
@@ -398,7 +399,7 @@ export default class WebpackBaseConfig {
 
     // CSS extraction)
     if (buildOptions.extractCSS) {
-      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+      plugins.push(new MiniCssExtractPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css')
       }, buildOptions.extractCSS)))
@@ -446,7 +447,7 @@ export default class WebpackBaseConfig {
 
     // CSS extraction
     if (this.buildContext.buildOptions.extractCSS) {
-      plugins.push(new ExtractCssChunksPlugin(Object.assign({
+      plugins.push(new MiniCssExtractPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132

@@ -1,26 +1,40 @@
-import { resolve, join, sep } from 'path'
+import { join, relative, dirname } from 'path'
 import fsExtra from 'fs-extra'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
-import { Builder } from './builder'
 
-export async function copyTemplates ({ nuxt, app }: Builder) {
-  // Resolve appDir
-  const templatesDir = join(nuxt.options.appDir, '_templates')
+interface NuxtTemplate {
+  src: string // Absolute path to source file
+  path: string // Relative path of destination
+  data?: any
+}
 
-  const templateFiles = (await globby(join(templatesDir, '/**')))
-    .map(f => f.replace(templatesDir + sep, ''))
+async function compileTemplate({ src, path, data }: NuxtTemplate, destDir: string) {
+  const srcContents = await fsExtra.readFile(src, 'utf-8')
+  const compiledSrc = lodashTemplate(srcContents, {})(data)
+  const dest = join(destDir, path)
+  console.log('Compile template', dest)
+  await fsExtra.mkdirp(dirname(dest))
+  await fsExtra.writeFile(dest, compiledSrc)
+}
 
-  await fsExtra.mkdirp(nuxt.options.buildDir)
+export async function compileTemplates(templates: NuxtTemplate[], destDir: string) {
+  return Promise.all(templates.map(t => compileTemplate(t, destDir)))
+}
 
-  for (const template of templateFiles) {
-    const src = resolve(templatesDir, template)
-    const dst = resolve(nuxt.options.buildDir, template)
+export async function scanTemplates (dir: string, data?: Object) {
+  const templateFiles = (await globby(join(dir, '/**')))
 
-    const templateData = { app: Object.freeze(app) }
-    const srcContents = await fsExtra.readFile(src, 'utf-8')
-    const compiledSrc = lodashTemplate(srcContents, {})(templateData)
+  return templateFiles.map(src => ({
+    src,
+    path: relative(dir, src),
+    data
+  }))
+}
 
-    await fsExtra.writeFile(dst, compiledSrc)
-  }
+export async function watchTemplate(template: NuxtTemplate, watcher: any, cb: Function) {
+  template.data = new Proxy(template.data, {
+    // TODO: deep watch option changes
+  })
+  // TODO: Watch fs changes
 }

@@ -1,5 +1,6 @@
 import path from 'path'
-import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+// import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 
 import { wrapArray } from 'src/utils'
 
@@ -20,8 +21,9 @@ export default class StyleLoader {
     return this.buildContext.buildOptions.extractCSS
   }
 
-  get onlyLocals () {
-    return Boolean(this.isServer && this.extractCSS)
+  get onlyLocals() {
+    // Not supported anymore by css-loader
+    return false // Boolean(this.isServer && this.extractCSS)
   }
 
   normalize (loaders) {
@@ -86,7 +88,7 @@ export default class StyleLoader {
     if (this.extractCSS) {
       const isDev = this.buildContext.options.dev
       return {
-        loader: ExtractCssChunksPlugin.loader,
+        loader: MiniCssExtractPlugin.loader,
         options: {
           // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
           // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/161#issuecomment-500162574

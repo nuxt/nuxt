@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import { createWatcher } from './watch'
 
 export interface NuxtRoute {
   path: ''
