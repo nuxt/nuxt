@@ -1,7 +1,7 @@
 import type { Nuxt } from 'src/core'
+import { Builder } from './builder'
 
-import Builder from './builder'
-export { default as Builder } from './builder'
+export { Builder } from './builder'
 
 export function getBuilder (nuxt: Nuxt) {
   return new Builder(nuxt)
