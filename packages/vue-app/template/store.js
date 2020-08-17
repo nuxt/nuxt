@@ -94,10 +94,10 @@ function resolveStoreModules (moduleData, filename) {
   // If src is a known Vuex property
   if (VUEX_PROPERTIES.includes(moduleName)) {
     const property = moduleName
-    const storeModule = getStoreModule(store, namespaces, { isProperty: true })
+    const moduleStore = getStoreModule(store, namespaces, { isProperty: true })
 
     // Replace state since it's a function
-    mergeProperty(storeModule, moduleData, property)
+    mergeProperty(moduleStore, moduleData, property)
     return
   }
 
