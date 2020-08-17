@@ -128,6 +128,13 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
+  tryResolvePath (path: string, options?: ResolvePathOptions) {
+    try {
+      return this.resolvePath(path, options)
+    } catch (e) {
+    }
+  }
+
   requireModule <T> (path: string, { useESM, isAlias, interopDefault }: RequireModuleOptions = {}): T {
     let resolvedPath = path
     let requiredModule: any

@@ -189,7 +189,7 @@ function normalizeConfig (_options: CliConfiguration) {
     )
   )
 
-  const mandatoryExtensions = ['js', 'mjs']
+  const mandatoryExtensions = ['js', 'mjs', 'ts', 'tsx', 'vue', 'jsx']
 
   overrideProp(options, 'extensions', mandatoryExtensions
     .filter(ext => !options.extensions.includes(ext))
