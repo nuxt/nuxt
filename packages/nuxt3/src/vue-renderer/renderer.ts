@@ -17,6 +17,8 @@ export interface RenderContext {
   target?: Target
   spa?: boolean
   modern?: boolean
+  nuxt?: ServerContext['nuxt']
+  redirected?: boolean
   req?: any
   res?: any
   runtimeConfig?: {

@@ -1,3 +1,5 @@
+import type { RenderContext } from 'src/vue-renderer/renderer'
+
 import generateETag from 'etag'
 import fresh from 'fresh'
 import consola from 'consola'
@@ -6,7 +8,7 @@ import { getContext, TARGETS } from 'src/utils'
 
 export default ({ options, nuxt, renderRoute, resources }) => async function nuxtMiddleware (req, res, next) {
   // Get context
-  const context = getContext(req, res)
+  const context: RenderContext = getContext(req, res)
 
   try {
     const url = decodeURI(req.url)

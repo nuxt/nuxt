@@ -25,6 +25,12 @@ interface Manifest {
   async: Array<string>
 }
 
+type NuxtMiddleware = connect.HandleFunction & {
+  prefix?: string,
+  entry?: string,
+  _middleware?: NuxtMiddleware
+}
+
 export default class Server {
   __closed?: boolean
   _readyCalled?: boolean
@@ -123,10 +129,11 @@ export default class Server {
     }
 
     // For serving static/ files to /
-    const staticMiddleware = serveStatic(
+    const staticMiddleware : NuxtMiddleware = serveStatic(
       path.resolve(this.options.srcDir, this.options.dir.static),
       this.options.render.static
     )
+
     staticMiddleware.prefix = this.options.render.static.prefix
     this.useMiddleware(staticMiddleware)
 
@@ -234,7 +241,7 @@ export default class Server {
 
     // No handle
     if (!middleware.handle) {
-      middleware.handle = (req, res, next) => {
+      middleware.handle = (_req, _res, next) => {
         next(new Error('ServerMiddleware should expose a handle: ' + middleware.entry))
       }
     }
@@ -266,7 +273,7 @@ export default class Server {
       consola.error('ServerMiddleware Error:', error)
 
       // Placeholder for error
-      middleware = (req, res, next) => { next(error) }
+      middleware = (_req, _res, next) => { next(error) }
     }
 
     // Normalize
@@ -314,7 +321,10 @@ export default class Server {
 
     if (typeof query === 'string') {
       // Search by entry
-      serverStackItem = this.app.stack.find(({ handle }) => handle._middleware && handle._middleware.entry === query)
+      serverStackItem = this.app.stack.find(({ handle }) => {
+        const middleware = (handle as NuxtMiddleware)._middleware
+        return middleware && middleware.entry === query
+      })
     } else {
       // Search by reference
       serverStackItem = this.app.stack.find(({ handle }) => handle === query)
@@ -348,7 +358,10 @@ export default class Server {
   }
 
   serverMiddlewarePaths () {
-    return this.app.stack.map(({ handle }) => handle._middleware && handle._middleware.entry).filter(Boolean)
+    return this.app.stack.map(({ handle }) => {
+      const middleware = (handle as NuxtMiddleware)._middleware
+      return middleware && middleware.entry
+    }).filter(Boolean)
   }
 
   renderRoute () {
@@ -375,12 +388,14 @@ export default class Server {
     // Ensure nuxt is ready
     await this.nuxt.ready()
 
+    const serviceConfig = typeof this.options.server === 'object' ? this.options.server : {}
+
     // Create a new listener
     const listener = new Listener({
-      port: typeof port !== 'number' && isNaN(parseInt(port)) ? this.options.server.port : port,
-      host: host || this.options.server.host,
-      socket: socket || this.options.server.socket,
-      https: this.options.server.https,
+      port: typeof port !== 'number' && isNaN(parseInt(port)) ? serviceConfig.port : port,
+      host: host || serviceConfig.host,
+      socket: socket || serviceConfig.socket,
+      https: serviceConfig.https,
       app: this.app,
       dev: this.options.dev,
       baseURL: this.options.router.base

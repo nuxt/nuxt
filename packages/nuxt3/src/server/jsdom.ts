@@ -1,5 +1,5 @@
 import consola from 'consola'
-import { BaseOptions, DOMWindow, VirtualConsole } from 'jsdom'
+import { BaseOptions, DOMWindow } from 'jsdom'
 import { DeterminedGlobals, timeout } from 'src/utils'
 
 interface Options {

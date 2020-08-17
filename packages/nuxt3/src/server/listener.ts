@@ -6,13 +6,15 @@ import ip from 'ip'
 import consola from 'consola'
 import pify from 'pify'
 
+import type { NormalizedConfiguration } from 'src/config'
+
 let RANDOM_PORT = '0'
 
 interface ListenerOptions {
   port: number | string
   host: string
   socket: string
-  https: boolean
+  https: NormalizedConfiguration['server']['https']
   app: any
   dev: boolean
   baseURL: string
@@ -22,7 +24,7 @@ export default class Listener {
   port: number | string
   host: string
   socket: string
-  https: boolean
+  https: NormalizedConfiguration['server']['https']
   app: any
   dev: boolean
   baseURL: string
@@ -102,7 +104,7 @@ export default class Listener {
     try {
       this.server = await new Promise((resolve, reject) => {
         this._server.on('error', error => reject(error))
-        const s = this._server.listen(listenArgs, error => error ? reject(error) : resolve(s))
+        const s = this._server.listen(listenArgs, () => resolve(s))
       })
     } catch (error) {
       return this.serverErrorHandler(error)

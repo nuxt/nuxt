@@ -67,7 +67,7 @@ interface RenderOptions {
   resourceHints: boolean
   ssr?: boolean
   ssrLog?: boolean | 'collapsed'
-  static: ServeStaticOptions
+  static: ServeStaticOptions & { prefix?: string }
 }
 
 export default (): RenderOptions => ({

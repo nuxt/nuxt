@@ -1,10 +1,13 @@
+import type { IncomingMessage, ServerResponse } from 'http'
+
 import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-
 import Youch from '@nuxtjs/youch'
 
-export default ({ resources, options }) => async function errorMiddleware (_error, req, res, next) {
+import type { Nuxt } from 'src/core'
+
+export default ({ resources, options }) => async function errorMiddleware (_error, req: IncomingMessage, res: ServerResponse) {
   // Normalize error
   const error = normalizeError(_error, options)
 
@@ -28,8 +31,12 @@ export default ({ resources, options }) => async function errorMiddleware (_erro
   }
 
   // Check if request accepts JSON
-  const hasReqHeader = (header, includes) =>
-    req.headers[header] && req.headers[header].toLowerCase().includes(includes)
+  const hasReqHeader = (header, includes) => {
+    const headerValue = req.headers[header]
+    if (typeof headerValue === 'string') {
+      return headerValue.toLowerCase().includes(includes)
+    }
+  }
   const isJson =
     hasReqHeader('accept', 'application/json') ||
     hasReqHeader('user-agent', 'curl/')
@@ -76,14 +83,14 @@ export default ({ resources, options }) => async function errorMiddleware (_erro
 
 const sanitizeName = name => name ? name.replace('webpack:///', '').split('?')[0] : null
 
-const normalizeError = (_error, { srcDir, rootDir, buildDir }) => {
+const normalizeError = (_error, { srcDir, rootDir, buildDir }) : Nuxt['error'] => {
   if (typeof _error === 'string') {
     _error = { message: _error }
   } else if (!_error) {
     _error = { message: '<empty>' }
   }
 
-  const error = new Error()
+  const error: Nuxt['error'] = new Error()
   error.message = _error.message
   error.name = _error.name
   error.statusCode = _error.statusCode || 500

@@ -1,3 +1,4 @@
+import type { IncomingHttpHeaders } from 'http'
 
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
@@ -20,6 +21,7 @@ export default class Nuxt extends Hookable {
   _ready?: Promise<this>
   _initCalled?: boolean
 
+  error?: Error & { statusCode?: number, headers?: IncomingHttpHeaders }
   options: NormalizedConfiguration
   resolver: Resolver
   moduleContainer: ModuleContainer
