@@ -1,6 +1,12 @@
+
+import { Compilation } from 'webpack'
 import { validate, isJS, extractQueryPartJS } from './util'
 
 export default class VueSSRServerPlugin {
+  options: {
+    filename?: string
+  }
+
   constructor (options = {}) {
     this.options = Object.assign({
       filename: null
@@ -10,7 +16,10 @@ export default class VueSSRServerPlugin {
   apply (compiler) {
     validate(compiler)
     compiler.hooks.make.tap('VueSSRServerPlugin', (compilation: any) => {
-      compilation.hooks.processAssets.tapAsync('VueSSRServerPlugin', (assets, cb) => {
+      compilation.hooks.processAssets.tapAsync({
+        name: 'VueSSRServerPlugin',
+        stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+      }, (assets, cb) => {
         const stats = compilation.getStats().toJson()
         const [entryName] = Object.keys(stats.entrypoints)
         const entryInfo = stats.entrypoints[entryName]
@@ -67,6 +76,6 @@ export default class VueSSRServerPlugin {
 
         cb()
       })
-    }
+    })
   }
 }
