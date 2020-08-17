@@ -136,7 +136,7 @@ export default function nodeExternals (options) {
     : readDir(modulesDir).filter(isNotBinary)
 
   // return an externals function
-  return function ({ context, request }, callback) {
+  return function ({ context: _context, request }, callback) {
     const moduleName = getModuleName(request, includeAbsolutePaths)
     if (
       contains(nodeModules, moduleName) &&

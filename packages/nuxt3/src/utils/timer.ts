@@ -22,6 +22,7 @@ export const timeout = function timeout <T> (
 ) {
   let timerId: NodeJS.Timeout
   const warpPromise = promiseFinally(fn, () => clearTimeout(timerId))
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const timerPromise = new Promise((resolve, reject) => {
     timerId = setTimeout(() => reject(new Error(msg)), ms)
   })

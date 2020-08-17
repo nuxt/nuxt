@@ -16,6 +16,7 @@ interface InputConfiguration {
   layoutTransition?: string | DefaultConfiguration['layoutTransition']
   loading?: true | false | DefaultConfiguration['loading']
   manifest?: {
+    // eslint-disable-next-line camelcase
     theme_color?: string
   }
   pageTransition?: string | DefaultConfiguration['pageTransition']

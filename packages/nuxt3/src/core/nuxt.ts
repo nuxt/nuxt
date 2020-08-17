@@ -14,7 +14,11 @@ import ModuleContainer from './module'
 import Resolver from './resolver'
 
 declare global {
-  var __NUXT_DEV__: boolean
+  namespace NodeJS {
+    interface Global {
+      __NUXT_DEV__: boolean
+    }
+  }
 }
 
 export default class Nuxt extends Hookable {

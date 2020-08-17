@@ -1,5 +1,5 @@
 // Add polyfill imports to the first file encountered.
-module.exports = ({ types }) => {
+module.exports = ({ _types }) => {
   let entryFile
   return {
     name: 'inject-polyfills',

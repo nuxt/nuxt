@@ -22,7 +22,7 @@ export default {
     alias: 'm',
     type: 'string',
     description: 'Build/Start app for modern browsers, e.g. server, client and false',
-    prepare (cmd, options, argv) {
+    prepare (_cmd, options, argv) {
       if (argv.modern !== undefined) {
         options.modern = normalizeArg(argv.modern)
       }
@@ -32,7 +32,7 @@ export default {
     alias: 't',
     type: 'string',
     description: 'Build/start app for a different target, e.g. server, serverless and static',
-    prepare (cmd, options, argv) {
+    prepare (_cmd, options, argv) {
       if (argv.target) {
         options.target = argv.target
       }

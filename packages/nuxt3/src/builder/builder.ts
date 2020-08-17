@@ -1,5 +1,6 @@
 import { join } from 'path'
 import fsExtra from 'fs-extra'
+import consola from 'consola'
 import { BundleBuilder } from 'src/webpack'
 import { Nuxt } from '../core'
 import { compileTemplates, scanTemplates, NuxtTemplate } from './template'
@@ -40,7 +41,7 @@ function watch (builder: Builder) {
   const nuxtAppWatcher = createWatcher(nuxt.options.appDir)
   // nuxtAppWatcher.debug()
   nuxtAppWatcher.watchAll(async () => {
-    console.log('Re-generate templates')
+    consola.log('Re-generate templates')
     await compileTemplates(builder.templates, nuxt.options.buildDir)
   })
 
@@ -56,7 +57,7 @@ function watch (builder: Builder) {
     await generate(builder)
   })
   appWatcher.watch('pages/', async () => {
-    console.log('Re-generate routes')
+    consola.log('Re-generate routes')
     await compileTemplates(builder.templates, nuxt.options.buildDir)
   })
 }

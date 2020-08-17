@@ -49,7 +49,7 @@ function cleanChildrenRoutes (routes: NuxtRouteConfig[], isChild = false, routeN
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = typeof route.name === 'string' && route.name.split(routeNameSplitter) || []
+      const names = typeof route.name === 'string' ? route.name.split(routeNameSplitter) : []
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()

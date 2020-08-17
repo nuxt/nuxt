@@ -150,7 +150,7 @@ export default class NuxtCommand extends Hookable {
     return nuxt
   }
 
-  async getBuilder (nuxt: Nuxt) {
+  getBuilder (nuxt: Nuxt) {
     return new Builder(nuxt)
   }
 

@@ -4,8 +4,11 @@ export interface ServerProcessEnv extends NodeJS.ProcessEnv {
   HOST?: string
   PORT?: string
   UNIX_SOCKET?: string
+  // eslint-disable-next-line camelcase
   npm_package_config_nuxt_port?: string
+  // eslint-disable-next-line camelcase
   npm_package_config_nuxt_host?: string
+  // eslint-disable-next-line camelcase
   npm_package_config_unix_socket?: string
 }
 

@@ -73,7 +73,7 @@ interface RenderOptions {
 export default (): RenderOptions => ({
   bundleRenderer: {
     shouldPrefetch: () => false,
-    shouldPreload: (fileWithoutQuery, asType) => ['script', 'style'].includes(asType),
+    shouldPreload: (_fileWithoutQuery, asType) => ['script', 'style'].includes(asType),
     runInNewContext: undefined
   },
   crossorigin: undefined,
