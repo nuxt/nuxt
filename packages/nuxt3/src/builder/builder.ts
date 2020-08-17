@@ -21,7 +21,7 @@ export class Builder {
 }
 
 // Extends VueRouter
-async function build(builder: Builder) {
+async function build (builder: Builder) {
   const { nuxt } = builder
 
   await generate(builder)
@@ -33,7 +33,7 @@ async function build(builder: Builder) {
   await bundle(builder)
 }
 
-function watch(builder: Builder) {
+function watch (builder: Builder) {
   const { nuxt } = builder
 
   // Watch internal templates
@@ -52,7 +52,7 @@ function watch(builder: Builder) {
   })
   // appWatcher.debug()
   appWatcher.watch(/(A|a)pp\.[a-z]{2,3}/, async () => {
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    await new Promise(resolve => setTimeout(resolve, 200))
     await generate(builder)
   })
   appWatcher.watch('pages/', async () => {
@@ -61,7 +61,7 @@ function watch(builder: Builder) {
   })
 }
 
-export async function generate(builder: Builder) {
+export async function generate (builder: Builder) {
   const { nuxt } = builder
 
   await fsExtra.mkdirp(nuxt.options.buildDir)

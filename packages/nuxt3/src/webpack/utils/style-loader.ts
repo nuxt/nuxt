@@ -21,7 +21,7 @@ export default class StyleLoader {
     return this.buildContext.buildOptions.extractCSS
   }
 
-  get onlyLocals() {
+  get onlyLocals () {
     // Not supported anymore by css-loader
     return false // Boolean(this.isServer && this.extractCSS)
   }

@@ -1,7 +1,7 @@
-import chokidar, { WatchOptions } from 'chokidar'
 import { relative } from 'path'
+import chokidar, { WatchOptions } from 'chokidar'
 
-export function createWatcher(dir: string|string[], options?: WatchOptions) {
+export function createWatcher (dir: string|string[], options?: WatchOptions) {
   const watcher = chokidar.watch(dir, {
     ignored: [],
     ignoreInitial: true,

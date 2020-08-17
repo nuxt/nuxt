@@ -9,7 +9,7 @@ interface NuxtTemplate {
   data?: any
 }
 
-async function compileTemplate({ src, path, data }: NuxtTemplate, destDir: string) {
+async function compileTemplate ({ src, path, data }: NuxtTemplate, destDir: string) {
   const srcContents = await fsExtra.readFile(src, 'utf-8')
   const compiledSrc = lodashTemplate(srcContents, {})(data)
   const dest = join(destDir, path)
@@ -18,7 +18,7 @@ async function compileTemplate({ src, path, data }: NuxtTemplate, destDir: strin
   await fsExtra.writeFile(dest, compiledSrc)
 }
 
-export async function compileTemplates(templates: NuxtTemplate[], destDir: string) {
+export async function compileTemplates (templates: NuxtTemplate[], destDir: string) {
   return Promise.all(templates.map(t => compileTemplate(t, destDir)))
 }
 
@@ -32,7 +32,7 @@ export async function scanTemplates (dir: string, data?: Object) {
   }))
 }
 
-export async function watchTemplate(template: NuxtTemplate, watcher: any, cb: Function) {
+export async function watchTemplate (template: NuxtTemplate, watcher: any, cb: Function) {
   template.data = new Proxy(template.data, {
     // TODO: deep watch option changes
   })
