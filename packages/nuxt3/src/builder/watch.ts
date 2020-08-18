@@ -4,15 +4,15 @@ import consola from 'consola'
 import Ignore from './ignore'
 
 export function createWatcher (
-  dir: string,
+  pattern: string,
   options?: WatchOptions,
   ignore?: Ignore
 ) {
-  const opts = defu({ cwd: dir }, options, {
+  const opts = defu(options, {
     ignored: [],
     ignoreInitial: true
   })
-  const watcher = chokidar.watch(dir, opts)
+  const watcher = chokidar.watch(pattern, opts)
   const watchAll = (cb: Function, filter?: Function) => {
     watcher.on('all', (event, path: string) => {
       if (ignore && ignore.ignores(path)) {
@@ -25,11 +25,11 @@ export function createWatcher (
     })
   }
 
-  const watch = (pattern: string | RegExp, cb: Function) =>
-    watchAll(cb, e => e.path.match(pattern))
+  const watch = (pattern: string | RegExp, cb: Function, events?: string[]) =>
+    watchAll(cb, ({ event, path }) => path.match(pattern) && (!events || events.includes(event)))
 
   const debug = (tag: string = '[Watcher]') => {
-    consola.log(tag, 'Watching ', dir)
+    consola.log(tag, 'Watching ', pattern)
     watchAll((e) => {
       consola.log(tag, e.event, e.path)
     })
