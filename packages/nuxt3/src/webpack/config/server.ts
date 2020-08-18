@@ -59,7 +59,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   }
 
   optimization () {
-    const { _minifyServer } = this.buildContext.buildOptions
+    const { _minifyServer } = this.options.build
 
     return {
       splitChunks: false,
@@ -78,7 +78,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
   alias () {
     const aliases = super.alias()
 
-    for (const p of this.buildContext.plugins) {
+    for (const p of this.builder.plugins) {
       if (!aliases[p.name]) {
         // Do not load client-side plugins on server-side
         aliases[p.name] = p.mode === 'client' ? './empty.js' : p.src
@@ -95,7 +95,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       new DefinePlugin(this.env())
     )
 
-    const { serverURLPolyfill } = this.buildContext.options.build
+    const { serverURLPolyfill } = this.options.build
 
     if (serverURLPolyfill) {
       plugins.push(new ProvidePlugin({
@@ -114,7 +114,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       target: 'node',
       node: false,
       entry: Object.assign({}, config.entry, {
-        app: [path.resolve(this.buildContext.options.buildDir, 'entry.server.ts')]
+        app: [path.resolve(this.options.buildDir, 'entry.server.ts')]
       }),
       output: Object.assign({}, config.output, {
         filename: 'server.js',
@@ -132,8 +132,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
     // https://webpack.js.org/configuration/externals/#externals
     // https://github.com/liady/webpack-node-externals
     // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-    if (!this.buildContext.buildOptions.standalone) {
-      this.buildContext.options.modulesDir.forEach((dir) => {
+    if (!this.options.build.standalone) {
+      this.options.modulesDir.forEach((dir) => {
         if (fs.existsSync(dir)) {
           config.externals.push(
             nodeExternals({

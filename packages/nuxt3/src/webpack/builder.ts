@@ -6,6 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
+import { Nuxt } from 'src/core'
 import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from 'src/utils'
 import { createMFS } from './utils/mfs'
 
@@ -15,8 +16,13 @@ import PerfLoader from './utils/perf-loader'
 const glob = pify(Glob)
 
 export class WebpackBundler {
-  constructor (buildContext) {
-    this.buildContext = buildContext
+  nuxt: Nuxt
+  plugins: Array<string>
+
+  constructor (nuxt) {
+    this.nuxt = nuxt
+    // TODO: plugins
+    this.plugins = []
 
     // Class fields
     this.compilers = []
@@ -28,7 +34,7 @@ export class WebpackBundler {
     this.middleware = this.middleware.bind(this)
 
     // Initialize shared MFS for dev
-    if (this.buildContext.options.dev) {
+    if (this.nuxt.options.dev) {
       this.mfs = createMFS()
     }
   }
@@ -43,7 +49,7 @@ export class WebpackBundler {
   }
 
   async build () {
-    const { options } = this.buildContext
+    const { options } = this.nuxt
 
     const webpackConfigs = [
       this.getWebpackConfig('Client')
@@ -57,10 +63,10 @@ export class WebpackBundler {
       webpackConfigs.push(this.getWebpackConfig('Server'))
     }
 
-    await this.buildContext.nuxt.callHook('webpack:config', webpackConfigs)
+    await this.nuxt.callHook('webpack:config', webpackConfigs)
 
     // Check styleResource existence
-    const { styleResources } = this.buildContext.options.build
+    const { styleResources } = this.nuxt.options.build
     if (styleResources && Object.keys(styleResources).length) {
       consola.warn(
         'Using styleResources without the @nuxtjs/style-resources is not suggested and can lead to severe performance issues.',
@@ -68,7 +74,7 @@ export class WebpackBundler {
       )
       for (const ext of Object.keys(styleResources)) {
         await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-          const styleResourceFiles = await glob(path.resolve(this.buildContext.options.rootDir, p))
+          const styleResourceFiles = await glob(path.resolve(this.nuxt.options.rootDir, p))
 
           if (!styleResourceFiles || styleResourceFiles.length === 0) {
             throw new Error(`Style Resource not found: ${p}`)
@@ -104,20 +110,20 @@ export class WebpackBundler {
 
   async webpackCompile (compiler) {
     const { name } = compiler.options
-    const { nuxt, options } = this.buildContext
+    const { options } = this.nuxt
 
-    await nuxt.callHook('build:compile', { name, compiler })
+    await this.nuxt.callHook('build:compile', { name, compiler })
 
     // Load renderer resources after build
     compiler.hooks.done.tap('load-resources', async (stats) => {
-      await nuxt.callHook('build:compiled', {
+      await this.nuxt.callHook('build:compiled', {
         name,
         compiler,
         stats
       })
 
       // Reload renderer
-      await nuxt.callHook('build:resources', this.mfs)
+      await this.nuxt.callHook('build:resources', this.mfs)
     })
 
     // --- Dev Build ---
@@ -160,14 +166,14 @@ export class WebpackBundler {
     }
 
     // Await for renderer to load resources (programmatic, tests and generate)
-    await nuxt.callHook('build:resources')
+    await this.nuxt.callHook('build:resources')
   }
 
   async webpackDev (compiler) {
     consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
-    const buildOptions = this.buildContext.options.build
+    const buildOptions = this.nuxt.options.build
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware
@@ -177,7 +183,7 @@ export class WebpackBundler {
           publicPath: buildOptions.publicPath,
           stats: false,
           logLevel: 'silent',
-          watchOptions: this.buildContext.options.watchers.webpack,
+          watchOptions: this.nuxt.options.watchers.webpack,
           fs: this.mfs,
           ...buildOptions.devMiddleware
         })
@@ -198,11 +204,11 @@ export class WebpackBundler {
     )
 
     // Register devMiddleware on server
-    await this.buildContext.nuxt.callHook('server:devMiddleware', this.middleware)
+    await this.nuxt.callHook('server:devMiddleware', this.middleware)
   }
 
   async middleware (req, res, next) {
-    const name = isModernRequest(req, this.buildContext.options.modern) ? 'modern' : 'client'
+    const name = isModernRequest(req, this.nuxt.options.modern) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
       await this.devMiddleware[name](req, res)
@@ -251,6 +257,6 @@ export class WebpackBundler {
   }
 
   forGenerate () {
-    this.buildContext.target = TARGETS.static
+    this.nuxt.options.target = TARGETS.static
   }
 }

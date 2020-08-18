@@ -3,10 +3,10 @@ import { warmup } from 'thread-loader'
 // https://github.com/webpack-contrib/thread-loader
 
 export default class PerfLoader {
-  constructor (name, buildContext) {
+  constructor (name, options) {
     this.name = name
-    this.buildContext = buildContext
-    this.workerPools = PerfLoader.defaultPools({ dev: buildContext.options.dev })
+    this.options = options
+    this.workerPools = PerfLoader.defaultPools({ dev: options.dev })
     return new Proxy(this, {
       get (target, name) {
         return target[name] ? target[name] : target.use.bind(target, name)
@@ -38,7 +38,7 @@ export default class PerfLoader {
   use (poolName) {
     const loaders = []
 
-    if (this.buildContext.buildOptions) {
+    if (this.options.build.buildOptions) {
       const pool = this.workerPools[poolName]
       if (pool) {
         loaders.push({

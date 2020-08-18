@@ -31,8 +31,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   getCspScriptPolicy () {
-    const { csp } = this.buildContext.options.render
-    if (csp) {
+    const { csp } = this.options.render
+    if (typeof csp === 'object') {
       const { policies = {} } = csp
       return policies['script-src'] || policies['default-src'] || []
     }
@@ -59,7 +59,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
-      this.buildContext.buildOptions.splitChunks.commons === true &&
+      this.options.build.splitChunks.commons === true &&
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
@@ -89,7 +89,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   minimizer () {
     const minimizer = super.minimizer()
-    const { optimizeCSS } = this.buildContext.buildOptions
+    const { optimizeCSS } = this.options.build
 
     // https://github.com/NMFR/optimize-css-assets-webpack-plugin
     // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
@@ -104,7 +104,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   alias () {
     const aliases = super.alias()
 
-    for (const p of this.buildContext.plugins) {
+    for (const p of this.builder.plugins) {
       if (!aliases[p.name]) {
         // Do not load server-side plugins on client-side
         aliases[p.name] = p.mode === 'server' ? './empty.js' : p.src
@@ -116,7 +116,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   plugins () {
     const plugins = super.plugins()
-    const { buildOptions, options: { appTemplatePath, buildDir, modern, render } } = this.buildContext
+    const { build: buildOptions, appTemplatePath, buildDir, modern, render } = this.options
 
     // Generate output HTML for SSR
     if (buildOptions.ssr) {
@@ -185,9 +185,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   config () {
     const config = super.config()
     const {
-      options: { router, buildDir },
-      buildOptions: { hotMiddleware, quiet, friendlyErrors }
-    } = this.buildContext
+      router,
+      buildDir,
+      build: { hotMiddleware, quiet, friendlyErrors }
+    } = this.options
 
     const { client = {} } = hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client

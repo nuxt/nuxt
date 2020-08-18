@@ -6,6 +6,8 @@ import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
+import type { Nuxt } from 'src/core'
+import type { NormalizedConfiguration } from 'src/config'
 import { isPureObject } from 'src/utils'
 
 export const orderPresets = {
@@ -37,16 +39,20 @@ function postcssConfigFileWarning () {
 }
 
 export default class PostcssConfig {
-  constructor (buildContext) {
-    this.buildContext = buildContext
+  nuxt: Nuxt
+  options: NormalizedConfiguration
+
+  constructor (nuxt) {
+    this.nuxt = nuxt
+    this.options = nuxt.options
   }
 
   get postcssOptions () {
-    return this.buildContext.buildOptions.postcss
+    return this.options.build.postcss
   }
 
   get postcssImportAlias () {
-    const alias = { ...this.buildContext.options.alias }
+    const alias = { ...this.options.alias }
 
     for (const key in alias) {
       if (key.startsWith('~')) {
@@ -62,9 +68,9 @@ export default class PostcssConfig {
   }
 
   get defaultConfig () {
-    const { dev, srcDir, rootDir, modulesDir } = this.buildContext.options
+    const { dev, srcDir, rootDir, modulesDir } = this.options
     return {
-      sourceMap: this.buildContext.buildOptions.cssSourceMap,
+      sourceMap: this.options.build.cssSourceMap,
       plugins: {
         // https://github.com/postcss/postcss-import
         'postcss-import': {
@@ -90,7 +96,7 @@ export default class PostcssConfig {
     // Search for postCSS config file and use it if exists
     // https://github.com/michael-ciniawsky/postcss-load-config
     // TODO: Remove in Nuxt 3
-    const { srcDir, rootDir } = this.buildContext.options
+    const { srcDir, rootDir } = this.options
     for (const dir of [srcDir, rootDir]) {
       for (const file of [
         'postcss.config.js',
@@ -114,7 +120,7 @@ export default class PostcssConfig {
 
     if (loaderConfig.path) {
       return {
-        sourceMap: this.buildContext.buildOptions.cssSourceMap,
+        sourceMap: this.options.build.cssSourceMap,
         config: loaderConfig
       }
     }
@@ -144,7 +150,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = this.buildContext.nuxt.resolver.requireModule(p)
+          const plugin = this.nuxt.resolver.requireModule(p)
           const opts = plugins[p]
           if (opts === false) {
             return // Disabled

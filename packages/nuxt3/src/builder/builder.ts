@@ -81,13 +81,5 @@ export async function generate (builder: Builder) {
 }
 
 async function bundle ({ nuxt }: Builder) {
-  // TODO: get rid of this context and directly pass nuxt to BundleBuilder
-  const bundleBuilder = new BundleBuilder({
-    nuxt,
-    options: nuxt.options,
-    buildOptions: nuxt.options.build,
-    target: nuxt.options.target,
-    plugins: []
-  })
-  await bundleBuilder.build()
+  await new BundleBuilder(nuxt).build()
 }

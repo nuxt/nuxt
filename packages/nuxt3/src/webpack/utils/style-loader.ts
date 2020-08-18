@@ -2,23 +2,27 @@ import path from 'path'
 // import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 
+import type { Nuxt } from 'src/core'
+import type { NormalizedConfiguration } from 'src/config'
 import { wrapArray } from 'src/utils'
 
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor (buildContext, { isServer, perfLoader }) {
-    this.buildContext = buildContext
+  options: NormalizedConfiguration
+
+  constructor (nuxt: Nuxt, { isServer, perfLoader }) {
+    this.options = nuxt.options
     this.isServer = isServer
     this.perfLoader = perfLoader
 
-    if (buildContext.options.build.postcss) {
-      this.postcssConfig = new PostcssConfig(buildContext)
+    if (this.options.build.postcss) {
+      this.postcssConfig = new PostcssConfig(nuxt)
     }
   }
 
   get extractCSS () {
-    return this.buildContext.buildOptions.extractCSS
+    return this.options.build.extractCSS
   }
 
   get onlyLocals () {
@@ -32,7 +36,7 @@ export default class StyleLoader {
   }
 
   styleResource (ext) {
-    const { buildOptions: { styleResources }, options: { rootDir } } = this.buildContext
+    const { build: { styleResources }, rootDir } = this.options
     const extResource = styleResources[ext]
     // style-resources-loader
     // https://github.com/yenshih/style-resources-loader
@@ -65,7 +69,7 @@ export default class StyleLoader {
 
     return {
       loader: 'postcss-loader',
-      options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
+      options: Object.assign({ sourceMap: this.options.build.cssSourceMap }, config)
     }
   }
 
@@ -86,7 +90,7 @@ export default class StyleLoader {
 
   extract () {
     if (this.extractCSS) {
-      const isDev = this.buildContext.options.dev
+      const isDev = this.options.dev
       return {
         loader: MiniCssExtractPlugin.loader,
         options: {
@@ -102,12 +106,12 @@ export default class StyleLoader {
   styleLoader () {
     return this.extract() || {
       loader: 'vue-style-loader',
-      options: this.buildContext.buildOptions.loaders.vueStyle
+      options: this.options.build.loaders.vueStyle
     }
   }
 
   apply (ext, loaders = []) {
-    const { css, cssModules } = this.buildContext.buildOptions.loaders
+    const { css, cssModules } = this.options.build.loaders
 
     const customLoaders = [].concat(
       this.postcss(),

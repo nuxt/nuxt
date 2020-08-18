@@ -10,6 +10,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
+import type { NormalizedConfiguration } from 'src/config'
 import { TARGETS, isUrl, urlJoin, getPKG } from 'src/utils'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -17,9 +18,11 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
+  options: NormalizedConfiguration
+
   constructor (builder) {
     this.builder = builder
-    this.buildContext = builder.buildContext
+    this.options = builder.nuxt.options
   }
 
   get colors () {
@@ -49,16 +52,16 @@ export default class WebpackBaseConfig {
   }
 
   get target () {
-    return this.buildContext.target
+    return this.options.target
   }
 
   get dev () {
-    return this.buildContext.options.dev
+    return this.options.dev
   }
 
   get loaders () {
     if (!this._loaders) {
-      this._loaders = cloneDeep(this.buildContext.buildOptions.loaders)
+      this._loaders = cloneDeep(this.options.build.loaders)
       // sass-loader<8 support (#6460)
       const sassLoaderPKG = getPKG('sass-loader')
       if (sassLoaderPKG && semver.lt(sassLoaderPKG.version, '8.0.0')) {
@@ -80,7 +83,7 @@ export default class WebpackBaseConfig {
 
   normalizeTranspile ({ pathNormalize = false } = {}) {
     const transpile = []
-    for (let pattern of this.buildContext.buildOptions.transpile) {
+    for (let pattern of this.options.build.transpile) {
       if (typeof pattern === 'function') {
         pattern = pattern(this.nuxtEnv)
       }
@@ -99,7 +102,7 @@ export default class WebpackBaseConfig {
   getBabelOptions () {
     const envName = this.name
     const options = {
-      ...this.buildContext.buildOptions.babel,
+      ...this.options.build.babel,
       envName
     }
 
@@ -136,7 +139,7 @@ export default class WebpackBaseConfig {
   }
 
   getFileName (key) {
-    let fileName = this.buildContext.buildOptions.filenames[key]
+    let fileName = this.options.build.filenames[key]
     if (typeof fileName === 'function') {
       fileName = fileName(this.nuxtEnv)
     }
@@ -158,13 +161,13 @@ export default class WebpackBaseConfig {
       'process.static': this.target === TARGETS.static,
       'process.target': JSON.stringify(this.target)
     }
-    if (this.buildContext.buildOptions.aggressiveCodeRemoval) {
+    if (this.options.build.aggressiveCodeRemoval) {
       env['typeof process'] = JSON.stringify(this.isServer ? 'object' : 'undefined')
       env['typeof window'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
       env['typeof document'] = JSON.stringify(!this.isServer ? 'object' : 'undefined')
     }
 
-    Object.entries(this.buildContext.options.env).forEach(([key, value]) => {
+    Object.entries(this.options.env).forEach(([key, value]) => {
       env['process.env.' + key] =
         ['boolean', 'number'].includes(typeof value)
           ? value
@@ -175,9 +178,10 @@ export default class WebpackBaseConfig {
 
   output () {
     const {
-      options: { buildDir, router },
-      buildOptions: { publicPath }
-    } = this.buildContext
+      build: { publicPath },
+      buildDir,
+      router
+    } = this.options
     return {
       path: path.resolve(buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
@@ -187,7 +191,7 @@ export default class WebpackBaseConfig {
   }
 
   cache () {
-    if (!this.buildContext.buildOptions.cache) {
+    if (!this.options.build.cache) {
       return false
     }
 
@@ -195,15 +199,15 @@ export default class WebpackBaseConfig {
       type: 'filesystem',
       cacheDirectory: path.resolve('node_modules/.cache/@nuxt/webpack/'),
       buildDependencies: {
-        config: [...this.buildContext.options._nuxtConfigFiles]
+        config: [...this.options._nuxtConfigFiles]
       },
-      ...this.buildContext.buildOptions.cache,
+      ...this.options.build.cache,
       name: this.name
     }
   }
 
   optimization () {
-    const optimization = cloneDeep(this.buildContext.buildOptions.optimization)
+    const optimization = cloneDeep(this.options.build.optimization)
 
     if (optimization.minimize && optimization.minimizer === undefined) {
       optimization.minimizer = this.minimizer()
@@ -214,7 +218,7 @@ export default class WebpackBaseConfig {
 
   resolve () {
     // Prioritize nested node_modules in webpack search path (#2558)
-    const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
+    const webpackModulesDir = ['node_modules'].concat(this.options.modulesDir)
 
     return {
       resolve: {
@@ -230,7 +234,7 @@ export default class WebpackBaseConfig {
 
   minimizer () {
     const minimizer = []
-    const { terser, cache } = this.buildContext.buildOptions
+    const { terser, cache } = this.options.build
 
     // https://github.com/webpack-contrib/terser-webpack-plugin
     if (terser) {
@@ -258,17 +262,17 @@ export default class WebpackBaseConfig {
 
   alias () {
     return {
-      ...this.buildContext.options.alias,
-      app: this.buildContext.options.appDir,
-      'nuxt-build': this.buildContext.options.buildDir,
+      ...this.options.alias,
+      app: this.options.appDir,
+      'nuxt-build': this.options.buildDir,
       'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 
   rules () {
-    const perfLoader = new PerfLoader(this.name, this.buildContext)
+    const perfLoader = new PerfLoader(this.name, this.options)
     const styleLoader = new StyleLoader(
-      this.buildContext,
+      this.builder.nuxt,
       { isServer: this.isServer, perfLoader }
     )
 
@@ -390,7 +394,8 @@ export default class WebpackBaseConfig {
 
   plugins () {
     const plugins = []
-    const { nuxt, buildOptions } = this.buildContext
+    const { nuxt } = this.builder
+    const { build: buildOptions } = this.options
 
     // Add timefix-plugin before others plugins
     if (this.dev) {
@@ -431,8 +436,8 @@ export default class WebpackBaseConfig {
             nuxt.callHook('bundler:change', shortPath)
           }
         },
-        done: (buildContext) => {
-          if (buildContext.hasErrors) {
+        done: (stats) => {
+          if (stats.hasErrors) {
             nuxt.callHook('bundler:error')
           }
         },
@@ -446,13 +451,13 @@ export default class WebpackBaseConfig {
     }))
 
     // CSS extraction
-    if (this.buildContext.buildOptions.extractCSS) {
+    if (this.options.build.extractCSS) {
       plugins.push(new MiniCssExtractPlugin(Object.assign({
         filename: this.getFileName('css'),
         chunkFilename: this.getFileName('css'),
         // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
         reloadAll: true
-      }, this.buildContext.buildOptions.extractCSS)))
+      }, this.options.build.extractCSS)))
     }
 
     return plugins
@@ -464,14 +469,14 @@ export default class WebpackBaseConfig {
       warn => warn.name === 'ModuleDependencyWarning' &&
         warn.message.includes('export \'default\'') &&
         warn.message.includes('nuxt_plugin_'),
-      ...(this.buildContext.buildOptions.warningIgnoreFilters || [])
+      ...(this.options.build.warningIgnoreFilters || [])
     ]
 
     return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
   }
 
   extendConfig (config) {
-    const { extend } = this.buildContext.buildOptions
+    const { extend } = this.options.build
     if (typeof extend === 'function') {
       const extendedConfig = extend.call(
         this.builder, config, { loaders: this.loaders, ...this.nuxtEnv }
