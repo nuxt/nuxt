@@ -1,7 +1,6 @@
 import { join, relative, dirname } from 'path'
 import fsExtra from 'fs-extra'
 import globby from 'globby'
-import consola from 'consola'
 import lodashTemplate from 'lodash/template'
 
 export interface NuxtTemplate {
@@ -10,11 +9,17 @@ export interface NuxtTemplate {
   data?: any
 }
 
+export function templateData (builder) {
+  return {
+    app: builder.app
+  }
+}
+
 async function compileTemplate ({ src, path, data }: NuxtTemplate, destDir: string) {
   const srcContents = await fsExtra.readFile(src, 'utf-8')
   const compiledSrc = lodashTemplate(srcContents, {})(data)
   const dest = join(destDir, path)
-  consola.log('Compile template', dest)
+  // consola.log('Compile template', dest)
   await fsExtra.mkdirp(dirname(dest))
   await fsExtra.writeFile(dest, compiledSrc)
 }

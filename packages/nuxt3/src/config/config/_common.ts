@@ -122,7 +122,6 @@ interface CommonConfiguration {
   styleExtensions: string[]
   watch: string[]
   watchers: {
-    rewatchOnRawEvents?: boolean
     webpack: WebpackConfiguration['watchOptions']
     chokidar: ChokidarWatchOptions
   }
@@ -189,7 +188,7 @@ export default (): CommonConfiguration => ({
 
   // Ignores
   ignoreOptions: undefined,
-  ignorePrefix: '-',
+  ignorePrefix: '_',
   ignore: [
     '**/*.test.*',
     '**/*.spec.*'
@@ -198,7 +197,6 @@ export default (): CommonConfiguration => ({
   // Watch
   watch: [],
   watchers: {
-    rewatchOnRawEvents: undefined,
     webpack: {
       aggregateTimeout: 1000
     },

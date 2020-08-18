@@ -1,20 +1,23 @@
-import { relative } from 'path'
 import chokidar, { WatchOptions } from 'chokidar'
+import defu from 'defu'
 import consola from 'consola'
+import Ignore from './ignore'
 
-export function createWatcher (dir: string, options?: WatchOptions) {
-  const watcher = chokidar.watch(dir, {
+export function createWatcher (
+  dir: string,
+  options?: WatchOptions,
+  ignore?: Ignore
+) {
+  const opts = defu({ cwd: dir }, options, {
     ignored: [],
-    ignoreInitial: true,
-    ...options
+    ignoreInitial: true
   })
-
+  const watcher = chokidar.watch(dir, opts)
   const watchAll = (cb: Function, filter?: Function) => {
-    watcher.on('raw', (event, path: string, _details) => {
-      if (options.ignored.find(ignore => path.match(ignore))) {
-        return // 🖕 chokidar ignored option
+    watcher.on('all', (event, path: string) => {
+      if (ignore && ignore.ignores(path)) {
+        return
       }
-      path = relative(dir, path)
       const _event = { event, path }
       if (!filter || filter(_event)) {
         cb(_event)
@@ -22,7 +25,8 @@ export function createWatcher (dir: string, options?: WatchOptions) {
     })
   }
 
-  const watch = (pattern: string| RegExp, cb: Function) => watchAll(cb, e => e.path.match(pattern))
+  const watch = (pattern: string | RegExp, cb: Function) =>
+    watchAll(cb, e => e.path.match(pattern))
 
   const debug = (tag: string = '[Watcher]') => {
     consola.log(tag, 'Watching ', dir)

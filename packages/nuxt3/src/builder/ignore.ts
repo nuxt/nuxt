@@ -67,6 +67,10 @@ export default class Ignore {
     return paths
   }
 
+  ignores (pathname: string) {
+    return this.ignore && this.ignore.ignores(pathname)
+  }
+
   reload () {
     delete this.ignore
     delete this.ignoreFile

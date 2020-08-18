@@ -1,11 +1,18 @@
-import { join } from 'path'
+import { join, relative } from 'path'
 import fsExtra from 'fs-extra'
 import consola from 'consola'
+import { debounce } from 'lodash'
 import { BundleBuilder } from 'src/webpack'
 import { Nuxt } from '../core'
-import { compileTemplates, scanTemplates, NuxtTemplate } from './template'
+import {
+  templateData,
+  compileTemplates,
+  scanTemplates,
+  NuxtTemplate
+} from './template'
 import { createWatcher } from './watch'
 import { resolveApp, NuxtApp } from './app'
+import Ignore from './ignore'
 
 export class Builder {
   nuxt: Nuxt
@@ -36,26 +43,34 @@ async function build (builder: Builder) {
 
 function watch (builder: Builder) {
   const { nuxt } = builder
+  const ignore = new Ignore({
+    rootDir: nuxt.options.srcDir,
+    ignoreArray: nuxt.options.ignore.concat(
+      relative(nuxt.options.rootDir, nuxt.options.buildDir)
+    )
+  })
 
   // Watch internal templates
-  const nuxtAppWatcher = createWatcher(nuxt.options.appDir)
-  // nuxtAppWatcher.debug()
+  const options = nuxt.options.watchers.chokidar
+  const nuxtAppWatcher = createWatcher(nuxt.options.appDir, options, ignore)
   nuxtAppWatcher.watchAll(async () => {
     consola.log('Re-generate templates')
     await compileTemplates(builder.templates, nuxt.options.buildDir)
   })
 
   // Watch user app
-  const appWatcher = createWatcher(builder.app.srcDir, {
-    ignored: [
-      nuxt.options.buildDir
-    ]
-  })
-  // appWatcher.debug()
-  appWatcher.watch(/(A|a)pp\.[a-z]{2,3}/, async () => {
-    await new Promise(resolve => setTimeout(resolve, 200))
-    await generate(builder)
-  })
+  const appWatcher = createWatcher(builder.app.srcDir, options, ignore)
+  // Watch for App.vue creation
+  // appWatcher.debug('srcDir')
+  appWatcher.watch(
+    /^(A|a)pp\.[a-z]{2,3}/,
+    debounce(({ event }) => {
+      if (['add', 'unlink'].includes(event)) {
+        generate(builder)
+      }
+    }, 50)
+  )
+  // Watch for page changes
   appWatcher.watch('pages/', async () => {
     consola.log('Re-generate routes')
     await compileTemplates(builder.templates, nuxt.options.buildDir)
@@ -69,13 +84,9 @@ export async function generate (builder: Builder) {
   builder.app = resolveApp(nuxt, nuxt.options.srcDir)
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
-  const appTemplates = await scanTemplates(templatesDir, {
-    app: builder.app
-  })
+  const appTemplates = await scanTemplates(templatesDir, templateData(builder))
 
-  builder.templates = [
-    ...appTemplates
-  ]
+  builder.templates = [...appTemplates]
 
   await compileTemplates(builder.templates, nuxt.options.buildDir)
 }
