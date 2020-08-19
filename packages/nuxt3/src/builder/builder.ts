@@ -10,7 +10,7 @@ import {
   NuxtTemplate
 } from './template'
 import { createWatcher } from './watch'
-import { resolveApp, NuxtApp } from './app'
+import { createApp, NuxtApp } from './app'
 import Ignore from './ignore'
 
 export class Builder {
@@ -56,8 +56,8 @@ function watch (builder: Builder) {
   nuxtAppWatcher.watchAll(debounce(() => compileTemplates(builder.templates, nuxt.options.buildDir), 100))
 
   // Watch user app
-  const appPattern = `${builder.app.srcDir}/**/*.{${nuxt.options.extensions.join(',')}}`
-  const appWatcher = createWatcher(appPattern, { ...options, cwd: builder.app.srcDir }, ignore)
+  const appPattern = `${builder.app.dir}/**/*.{${nuxt.options.extensions.join(',')}}`
+  const appWatcher = createWatcher(appPattern, { ...options, cwd: builder.app.dir }, ignore)
   // appWatcher.debug('srcDir')
   const refreshTemplates = debounce(() => generate(builder), 100)
   // Watch for App.vue creation
@@ -70,7 +70,7 @@ export async function generate (builder: Builder) {
   const { nuxt } = builder
 
   await fsExtra.mkdirp(nuxt.options.buildDir)
-  builder.app = await resolveApp(builder)
+  builder.app = await createApp(builder)
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
   const appTemplates = await scanTemplates(templatesDir, templateData(builder))

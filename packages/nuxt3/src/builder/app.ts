@@ -14,7 +14,7 @@ export interface NuxtApp {
 }
 
 // Scan project structure
-export async function resolveApp (builder: Builder, options: Partial<NuxtApp> = {}): Promise<NuxtApp> {
+export async function createApp (builder: Builder, options: Partial<NuxtApp> = {}): Promise<NuxtApp> {
   const { nuxt } = builder
 
   // Create base app object
