@@ -25,11 +25,6 @@ export default class StyleLoader {
     return this.options.build.extractCSS
   }
 
-  get onlyLocals () {
-    // Not supported anymore by css-loader
-    return false // Boolean(this.isServer && this.extractCSS)
-  }
-
   normalize (loaders) {
     loaders = wrapArray(loaders)
     return loaders.map(loader => (typeof loader === 'string' ? { loader } : loader))
@@ -74,10 +69,11 @@ export default class StyleLoader {
   }
 
   css (options) {
-    options.onlyLocals = this.onlyLocals
     const cssLoader = { loader: 'css-loader', options }
 
-    if (options.onlyLocals) {
+    if (this.isServer && this.extractCSS) {
+      options.modules = options.modules || {}
+      options.modules.exportOnlyLocals = true
       return [cssLoader]
     }
 
