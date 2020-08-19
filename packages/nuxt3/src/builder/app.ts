@@ -30,13 +30,19 @@ export async function createApp (builder: Builder, options: Partial<NuxtApp> = {
   // Resolve app.main
   if (!app.main) {
     app.main = nuxt.resolver.tryResolvePath('~/App') ||
-      nuxt.resolver.tryResolvePath('~/app') ||
-      resolve(nuxt.options.appDir, 'app.vue')
+      nuxt.resolver.tryResolvePath('~/app')
   }
 
   // Resolve pages/
   if (app.pages) {
     app.routes.push(...await resolvePagesRoutes(builder, app))
+  }
+
+  // Fallback app.main
+  if (!app.main && app.routes.length) {
+    app.main = resolve(nuxt.options.appDir, 'app.pages.vue')
+  } else if (!app.main) {
+    app.main = resolve(nuxt.options.appDir, 'app.tutorial.vue')
   }
 
   return app
