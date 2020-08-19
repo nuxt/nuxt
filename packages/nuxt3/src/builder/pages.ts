@@ -12,13 +12,9 @@ export interface NuxtRoute {
 }
 
 export async function resolvePagesRoutes (builder, app: NuxtApp) {
-  const { nuxt } = builder
-  const pagesDirName = app.options.dir.pages
-  const extensions = app.options.extensions
-
-  const pagesDir = resolve(app.options.srcDir, pagesDirName)
-  const pagesPattern = `${pagesDirName}/**/*.{${extensions.join(',')}}`
-  const files = await resolveFiles(builder, pagesPattern, app.options.srcDir)
+  const pagesDir = resolve(app.dir, app.pages!.dir)
+  const pagesPattern = `${app.pages!.dir}/**/*.{${app.extensions.join(',')}}`
+  const files = await resolveFiles(builder, pagesPattern, app.dir)
 
   const routes: NuxtRoute[] = []
 
