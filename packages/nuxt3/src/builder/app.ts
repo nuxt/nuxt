@@ -1,20 +1,35 @@
 import { resolve } from 'path'
+import defu from 'defu'
 import { Builder } from './builder'
 import { NuxtRoute, resolvePagesRoutes } from './pages'
+import { NormalizedConfiguration } from 'src/config'
 
 export interface NuxtApp {
-  srcDir: string
+  options: AppOptions
   main?: string
   routes: NuxtRoute[]
 }
 
+interface AppOptions {
+  srcDir?: string
+  dir?: NormalizedConfiguration['dir']
+  extensions?: NormalizedConfiguration['extensions']
+}
+
 // Scan project structure
-export async function resolveApp (builder: Builder, srcDir: string): Promise<NuxtApp> {
+export async function resolveApp (builder: Builder, options: AppOptions = {}): Promise<NuxtApp> {
   const { nuxt } = builder
+
+  options = defu(options, {
+    srcDir: nuxt.options.srcDir,
+    dir: nuxt.options.dir,
+    extensions: nuxt.options.extensions
+  })
 
   // Create base app object
   const app: NuxtApp = {
-    srcDir,
+    options,
+    // Overwritten by the resolvers
     main: '',
     routes: []
   }

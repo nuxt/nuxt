@@ -70,7 +70,7 @@ export async function generate (builder: Builder) {
   const { nuxt } = builder
 
   await fsExtra.mkdirp(nuxt.options.buildDir)
-  builder.app = await resolveApp(builder, nuxt.options.srcDir)
+  builder.app = await resolveApp(builder)
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
   const appTemplates = await scanTemplates(templatesDir, templateData(builder))
