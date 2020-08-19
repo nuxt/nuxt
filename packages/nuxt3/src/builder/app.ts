@@ -6,7 +6,6 @@ import { NuxtRoute, resolvePagesRoutes } from './pages'
 export interface NuxtApp {
   main: string
   routes: NuxtRoute[]
-  srcDir?: string
   dir: string
   extensions: string[]
   pages?: {
