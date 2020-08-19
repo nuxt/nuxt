@@ -345,9 +345,9 @@ function normalizeConfig (_options: CliConfiguration) {
     options.build.optimization.minimize = !options.dev
   }
 
-  // Enable optimizeCSS only when extractCSS is enabled
-  if (options.build.optimizeCSS === undefined) {
-    options.build.optimizeCSS = options.build.extractCSS ? {} : false
+  // Enable cssMinimizer only when extractCSS is enabled
+  if (options.build.optimization.cssMinimizer === undefined) {
+    options.build.optimization.cssMinimizer = options.build.extractCSS ? {} : false
   }
 
   const { loaders } = options.build
