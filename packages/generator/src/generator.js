@@ -1,4 +1,5 @@
 import path from 'path'
+import crypto from 'crypto'
 import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -217,6 +218,77 @@ export default class Generator {
       consola.warn('HTML minification failed for SPA fallback')
     }
 
+    const { csp } = this.options.render
+
+    // Calculate CSP hashes
+    if (csp) {
+      const { allowedSources, policies } = csp
+
+      const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
+
+      // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
+      const containsUnsafeInlineScriptSrc = policyObjectAvailable && policies['script-src'] && policies['script-src'].includes('\'unsafe-inline\'')
+      const shouldHashCspScriptSrc = csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc
+
+      const inlineScripts = []
+      const inlineStyles = []
+      const cspScriptSrcHashes = []
+      const cspStyleSrcHashes = []
+      const dom = parse(html, { script: true, style: true })
+      if (shouldHashCspScriptSrc) {
+        const inlineScriptTags = dom.querySelectorAll('script')
+        for (const inlineScriptTag of inlineScriptTags) {
+          inlineScripts.push(inlineScriptTag.rawText)
+        }
+        for (const script of inlineScripts) {
+          const hash = crypto.createHash(csp.hashAlgorithm)
+          hash.update(script)
+          cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        }
+
+        const inlineStyleTags = dom.querySelectorAll('style')
+        for (const inlineStyleTag of inlineStyleTags) {
+          inlineStyles.push(inlineStyleTag.rawText)
+        }
+        for (const style of inlineStyles) {
+          const hash = crypto.createHash(csp.hashAlgorithm)
+          hash.update(style)
+          cspStyleSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+        }
+      }
+
+      let isReportOnly, cspHeader, cspString
+
+      if (csp.showResult || csp.saveResult) {
+        isReportOnly = !!csp.reportOnly
+        cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+        cspString = getCspString({ cspScriptSrcHashes, cspStyleSrcHashes, allowedSources, policies, isReportOnly })
+      }
+      // Show CSP header in console
+      if (csp.showResult) {
+        consola.info(`CSP Header: ${cspHeader}: ${cspString}`)
+      }
+      // Save CSP header into file
+      if (csp.saveResult) {
+        await fsExtra.writeFile(path.join(this.options.generate.dir, csp.saveResult), `${cspHeader}: ${cspString}`, 'utf8')
+        consola.success(`CSP Header saved as: ${csp.saveResult}`)
+      }
+
+      // Add csp meta tags
+      if (csp.addMeta) {
+        isReportOnly = false
+        try { // report-uri is not allowed in HTML meta tag
+          delete policies['report-uri']
+        } catch (e) {}
+        cspString = getCspString({ cspScriptSrcHashes, cspStyleSrcHashes, allowedSources, policies, isReportOnly })
+
+        const head = dom.querySelector('head')
+
+        head.appendChild(`<meta http-equiv="Content-Security-Policy" content="${cspString}">`)
+        html = dom.toString()
+      }
+    }
+
     await fsExtra.writeFile(fallbackPath, html, 'utf8')
     consola.success('Client-side fallback created: `' + fallback + '`')
   }
@@ -403,4 +475,40 @@ export default class Generator {
 
     return htmlMinifier.minify(html, minificationOptions)
   }
+}
+
+const getCspString = ({ cspScriptSrcHashes, cspStyleSrcHashes, allowedSources, policies, isReportOnly }) => {
+  const joinedScriptHashes = cspScriptSrcHashes.join(' ')
+  const baseScriptCspStr = `script-src 'self' ${joinedScriptHashes}`
+
+  const joinedStyleHashes = cspStyleSrcHashes.join(' ')
+  const baseStyleCspStr = `style-src 'self' ${joinedStyleHashes}`
+
+  const policyObjectAvailable = typeof policies === 'object' && policies !== null && !Array.isArray(policies)
+
+  if (Array.isArray(allowedSources) && allowedSources.length) {
+    const cspStr = `${baseScriptCspStr} ${allowedSources.join(' ')}; ${baseStyleCspStr} ${allowedSources.join(' ')}`
+    return isReportOnly && policyObjectAvailable && !!policies['report-uri'] ? `${cspStr}; report-uri ${policies['report-uri']};` : `${cspStr}`
+  }
+
+  if (policyObjectAvailable) {
+    const transformedPolicyObject = transformPolicyObject(policies, cspScriptSrcHashes, cspStyleSrcHashes)
+    return Object.entries(transformedPolicyObject).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' ') : v}`).join('; ')
+  }
+
+  return baseScriptCspStr + '; ' + baseStyleCspStr
+}
+
+const transformPolicyObject = (policies, cspScriptSrcHashes, cspStyleSrcHashes) => {
+  const userHasDefinedScriptSrc = policies['script-src'] && Array.isArray(policies['script-src'])
+  const additionalScriptPolicies = userHasDefinedScriptSrc ? policies['script-src'] : []
+
+  const userHasDefinedStyleSrc = policies['style-src'] && Array.isArray(policies['style-src'])
+  const additionalStylePolicies = userHasDefinedStyleSrc ? policies['style-src'] : []
+
+  // Self is always needed for inline-scripts, so add it, no matter if the user specified script-src himself.
+  const scriptHashAndPolicyList = cspScriptSrcHashes.concat('\'self\'', additionalScriptPolicies)
+  const styleHashAndPolicyList = cspStyleSrcHashes.concat('\'self\'', additionalStylePolicies)
+
+  return { ...policies, 'script-src': scriptHashAndPolicyList, 'style-src': styleHashAndPolicyList }
 }
