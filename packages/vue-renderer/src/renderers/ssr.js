@@ -47,7 +47,19 @@ export default class SSRRenderer extends BaseRenderer {
       `rel="preload" crossorigin="${crossorigin}"`
     )
   }
-
+  
+  renderStyles (renderContext) {
+    const styles = renderContext.renderStyles();
+    const { render: { crossorigin } } = this.options;
+    if (!crossorigin) {
+      return styles
+    }
+    return styles.replace(
+      /<link/g,
+      `<link crossorigin="${crossorigin}"`
+    )
+  }
+  
   createRenderer () {
     // Create bundle renderer for SSR
     return createBundleRenderer(
@@ -144,7 +156,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject styles
-    HEAD += renderContext.renderStyles()
+    HEAD += this.renderStyles(renderContext)
 
     if (meta) {
       const prependInjectorOptions = { pbody: true }
