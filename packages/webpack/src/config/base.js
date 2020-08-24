@@ -362,7 +362,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
         use: [{
           loader: 'url-loader',
           options: Object.assign(
