@@ -1,7 +1,7 @@
 import { join } from 'path'
 
 export function isHMRCompatible (id) {
-  return !/[/\\]mongoose[/\\/](lib[/\\/])?index.js/.test(id)
+  return !/[/\\]mongoose[/\\/]/.test(id)
 }
 
 export function isExternalDependency (id) {
