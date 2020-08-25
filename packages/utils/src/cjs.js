@@ -20,11 +20,13 @@ export function clearRequireCache (id) {
     entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 
+  delete require.cache[id]; // needs to be cleared before children, to protect against circular deps (which are totally fine for typescript)
+  
   for (const child of entry.children) {
     clearRequireCache(child.id)
   }
 
-  delete require.cache[id]
+  
 }
 
 export function scanRequireTree (id, files = new Set()) {
