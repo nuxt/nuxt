@@ -21,7 +21,7 @@ export function clearRequireCache (id) {
   }
 
   // Needs to be cleared before children, to protect against circular deps (#7966)
-  delete require.cache[id] 
+  delete require.cache[id]
 
   for (const child of entry.children) {
     clearRequireCache(child.id)
