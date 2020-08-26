@@ -37,6 +37,18 @@ export default class SSRRenderer extends BaseRenderer {
     return tags
   }
 
+  renderResourceHints (renderContext) {
+    return this.addAttrs(renderContext.renderResourceHints(), null, 'rel="preload"')
+  }
+
+  renderScripts (renderContext) {
+    return this.addAttrs(renderContext.renderScripts(), 'script')
+  }
+
+  renderStyles (renderContext) {
+    return this.addAttrs(renderContext.renderStyles(), 'link')
+  }
+
   getPreloadFiles (renderContext) {
     return renderContext.getPreloadFiles()
   }
@@ -133,11 +145,11 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
-      HEAD += this.addAttrs(renderContext.renderResourceHints(), null, 'rel="preload"')
+      HEAD += this.renderResourceHints(renderContext)
     }
 
     // Inject styles
-    HEAD += this.addAttrs(renderContext.renderStyles(), 'link')
+    HEAD += this.renderStyles(renderContext)
 
     if (meta) {
       const prependInjectorOptions = { pbody: true }
@@ -233,7 +245,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Prepend scripts
     if (shouldInjectScripts) {
-      APP += this.addAttrs(renderContext.renderScripts(), 'script')
+      APP += this.renderScripts(renderContext)
     }
 
     if (meta) {
