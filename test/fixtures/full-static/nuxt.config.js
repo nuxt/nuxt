@@ -7,7 +7,9 @@ export default {
   },
   router: {
     // base: '/test',
-    trailingSlash: true
+  },
+  build: {
+    publicPath: '/test/_nuxt/'
   },
   hooks: {
     export: {
