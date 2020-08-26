@@ -20,11 +20,12 @@ export function clearRequireCache (id) {
     entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 
+  // Needs to be cleared before children, to protect against circular deps (#7966)
+  delete require.cache[id]
+
   for (const child of entry.children) {
     clearRequireCache(child.id)
   }
-
-  delete require.cache[id]
 }
 
 export function scanRequireTree (id, files = new Set()) {
