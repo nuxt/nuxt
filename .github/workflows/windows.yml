@@ -1,0 +1,152 @@
+name: windows
+
+on:
+  push:
+    branches:
+      - dev
+      - 2.x
+  pull_request:
+    branches:
+      - dev
+      - 2.x
+
+jobs:
+  setup:
+    runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [12]
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: cache node_modules
+        id: node_modules_cache_id
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+
+      - name: install
+        run: yarn --check-files --frozen-lockfile --non-interactive
+
+      - name: cache workspace
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+
+  # TODO: Investigate [error]Process completed with exit code 1.
+  # test-unit:
+  #   runs-on: ${{ matrix.os }}
+
+  #   strategy:
+  #     matrix:
+  #       os: [windows-latest]
+  #       node: [12]
+
+  #   env:
+  #     NODE_OPTIONS: "--max_old_space_size=4096"
+
+  #   steps:
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node }}
+
+  #     - name: checkout
+  #       uses: actions/checkout@master
+
+  #     - name: restore workspace cache
+  #       uses: actions/cache@v1
+  #       with:
+  #         path: ${{ github.workspace }}
+  #         key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+  #     - name: test unit
+  #       run: node node_modules/jest/bin/jest packages -i --coverage --verbose
+
+  #     - name: codecov
+  #       uses: codecov/codecov-action@v1
+  #       with:
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         flags: unittests
+  #   needs: setup
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [12]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: build
+        run: yarn test:fixtures -i
+
+      - name: cache fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+    needs: setup
+
+  test-dev:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [12]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/cache@v1
+        with:
+          path: test/fixtures
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
+
+      - name: test dev
+        run: yarn test:dev -i
+    needs: build
