@@ -21,15 +21,20 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   addAttrs (tags, referenceTag, referenceAttr) {
-    const { render: { crossorigin } } = this.options
     const reference = referenceTag ? `<${referenceTag}` : referenceAttr
-    if (!crossorigin || !reference) {
+    if (!reference) {
       return tags
     }
-    return tags.replace(
-      new RegExp(reference, 'g'),
-      `${reference} crossorigin="${crossorigin}"`
-    )
+
+    const { render: { crossorigin } } = this.options
+    if (crossorigin) {
+      tags = tags.replace(
+        new RegExp(reference, 'g'),
+        `${reference} crossorigin="${crossorigin}"`
+      )
+    }
+
+    return tags
   }
 
   getPreloadFiles (renderContext) {
