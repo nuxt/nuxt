@@ -20,15 +20,15 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  renderScripts (renderContext) {
-    const scripts = renderContext.renderScripts()
+  addAttrs (tags, referenceTag, referenceAttr) {
     const { render: { crossorigin } } = this.options
-    if (!crossorigin) {
-      return scripts
+    const reference = referenceTag ? `<${referenceTag}` : referenceAttr
+    if (!crossorigin || !reference) {
+      return tags
     }
-    return scripts.replace(
-      /<script/g,
-      `<script crossorigin="${crossorigin}"`
+    return tags.replace(
+      new RegExp(reference, 'g'),
+      `${reference} crossorigin="${crossorigin}"`
     )
   }
 
@@ -36,30 +36,6 @@ export default class SSRRenderer extends BaseRenderer {
     return renderContext.getPreloadFiles()
   }
 
-  renderResourceHints (renderContext) {
-    const resourceHints = renderContext.renderResourceHints()
-    const { render: { crossorigin } } = this.options
-    if (!crossorigin) {
-      return resourceHints
-    }
-    return resourceHints.replace(
-      /rel="preload"/g,
-      `rel="preload" crossorigin="${crossorigin}"`
-    )
-  }
-  
-  renderStyles (renderContext) {
-    const styles = renderContext.renderStyles();
-    const { render: { crossorigin } } = this.options;
-    if (!crossorigin) {
-      return styles
-    }
-    return styles.replace(
-      /<link/g,
-      `<link crossorigin="${crossorigin}"`
-    )
-  }
-  
   createRenderer () {
     // Create bundle renderer for SSR
     return createBundleRenderer(
@@ -152,11 +128,11 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
-      HEAD += this.renderResourceHints(renderContext)
+      HEAD += this.addAttrs(renderContext.renderResourceHints(), null, 'rel="preload"')
     }
 
     // Inject styles
-    HEAD += this.renderStyles(renderContext)
+    HEAD += this.addAttrs(renderContext.renderStyles(), 'link')
 
     if (meta) {
       const prependInjectorOptions = { pbody: true }
@@ -252,7 +228,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Prepend scripts
     if (shouldInjectScripts) {
-      APP += this.renderScripts(renderContext)
+      APP += this.addAttrs(renderContext.renderScripts(), 'script')
     }
 
     if (meta) {
