@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.13.3",
+  "version": "2.14.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/cli.js",
@@ -12,14 +12,14 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.13.3",
+    "@nuxt/config": "2.14.3",
     "@nuxt/static": "^1.0.0",
-    "@nuxt/utils": "2.13.3",
+    "@nuxt/utils": "2.14.3",
     "boxen": "^4.2.0",
     "chalk": "^3.0.0",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
-    "consola": "^2.14.0",
+    "consola": "^2.15.0",
     "crc": "^3.8.0",
     "destr": "^1.0.0",
     "esm": "^3.2.25",
@@ -33,6 +33,7 @@
     "pretty-bytes": "^5.3.0",
     "serve-static": "^1.14.1",
     "std-env": "^2.2.1",
+    "upath": "^1.2.0",
     "wrap-ansi": "^6.2.0"
   },
   "publishConfig": {

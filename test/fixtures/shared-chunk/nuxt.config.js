@@ -1,4 +1,3 @@
 export default {
-  components: true,
-  modern: true
+  components: true
 }

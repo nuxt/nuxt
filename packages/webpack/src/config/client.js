@@ -66,14 +66,14 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons = {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
-        priority: 10,
-        name: true,
-        automaticNameDelimiter: '/'
+        name: 'vendors/commons',
+        priority: 10
       }
     }
 
-    if (!this.dev && cacheGroups.default && cacheGroups.default.name === undefined) {
-      cacheGroups.default.name = (_module, chunks) => {
+    if (!this.dev && splitChunks.name === undefined) {
+      const nameMap = { default: 'commons' }
+      splitChunks.name = (_module, chunks, cacheGroup) => {
         // Map chunks to names
         const names = chunks
           .map(c => c.name || '')
@@ -85,15 +85,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
           .filter(Boolean)
           .sort()
 
-        // Fixes https://github.com/nuxt/nuxt.js/issues/7665
-        // TODO: We need a reproduction for this case (test/fixtures/shared-chunk)
-        if (!names.length) {
-          return 'commons/default'
-        }
-
-        // Single chunk is not common
-        if (names.length === 1) {
-          return names[0]
+        // Fallback to webpack chunk name or generated cache group key
+        if (names.length < 2) {
+          return chunks[0].name
         }
 
         // Use compact name for concatinated modules
@@ -101,7 +95,15 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         if (compactName.length > 32) {
           compactName = hash(compactName)
         }
-        return 'commons/' + compactName
+        const prefix = nameMap[cacheGroup || 'default'] || cacheGroup
+        return prefix + '/' + compactName
+      }
+
+      // Enforce name for all groups
+      for (const group of Object.values(cacheGroups)) {
+        if (group.name === undefined) {
+          group.name = true
+        }
       }
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/utils",
-  "version": "2.13.3",
+  "version": "2.14.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/utils.js",
@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "consola": "^2.14.0",
+    "consola": "^2.15.0",
     "fs-extra": "^8.1.0",
     "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",

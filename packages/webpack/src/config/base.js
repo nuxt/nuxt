@@ -120,15 +120,17 @@ export default class WebpackBaseConfig {
     let corejsVersion = corejs
     if (corejsVersion === 'auto') {
       try {
-        corejsVersion = createRequire(rootDir)('core-js').version.split('.')[0]
+        corejsVersion = Number.parseInt(createRequire(rootDir)('core-js/package.json').version.split('.')[0])
       } catch (_err) {
-        corejsVersion = '2'
+        corejsVersion = 2
       }
+    } else {
+      corejsVersion = Number.parseInt(corejsVersion)
     }
 
-    if (corejsVersion !== '2' && corejsVersion !== '3') {
-      consola.warn(`Invalid corejs version ${JSON.stringify(corejsVersion)}! Possible values are 2 and 3`)
-      corejsVersion = '2'
+    if (![2, 3].includes(corejsVersion)) {
+      consola.warn(`Invalid corejs version ${corejsVersion}! Please set "build.corejs" to either "auto", 2 or 3.`)
+      corejsVersion = 2
     }
 
     const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
@@ -226,7 +228,10 @@ export default class WebpackBaseConfig {
         modules: webpackModulesDir
       },
       resolveLoader: {
-        modules: webpackModulesDir
+        modules: [
+          path.resolve(__dirname, '../node_modules'),
+          ...webpackModulesDir
+        ]
       }
     }
   }
@@ -357,7 +362,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
         use: [{
           loader: 'url-loader',
           options: Object.assign(

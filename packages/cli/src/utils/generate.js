@@ -1,4 +1,5 @@
 import path, { relative } from 'path'
+import upath from 'upath'
 import fs from 'fs-extra'
 import crc32 from 'crc/lib/crc32'
 import consola from 'consola'
@@ -11,8 +12,11 @@ export async function generate (cmd) {
   const generator = await cmd.getGenerator(nuxt)
 
   await nuxt.server.listen(0)
-  await generator.generate({ build: false })
+  const { errors } = await generator.generate({ build: false })
   await nuxt.close()
+  if (cmd.argv['fail-on-error'] && errors.length > 0) {
+    throw new Error('Error generating pages, exiting with non-zero code')
+  }
 }
 
 export async function ensureBuild (cmd) {
@@ -23,6 +27,7 @@ export async function ensureBuild (cmd) {
     const builder = await cmd.getBuilder(nuxt)
     await builder.build()
     await nuxt.close()
+    return
   }
 
   // Default build ignore files
@@ -48,7 +53,7 @@ export async function ensureBuild (cmd) {
   // Take a snapshot of current project
   const snapshotOptions = {
     rootDir: nuxt.options.rootDir,
-    ignore: nuxt.options.generate.cache.ignore,
+    ignore: nuxt.options.generate.cache.ignore.map(upath.normalize),
     globbyOptions: nuxt.options.generate.cache.globbyOptions
   }
 

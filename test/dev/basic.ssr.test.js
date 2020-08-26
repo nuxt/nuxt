@@ -350,6 +350,27 @@ describe('basic ssr', () => {
     expect(html.includes('Router Guard')).toBe(false)
   })
 
+  test('/router-guard-error', async () => {
+    const { html, error } = await nuxt.server.renderRoute('/router-guard-error')
+
+    expect(error).toBe(null)
+    expect(html.includes('Page content')).toBe(false)
+  })
+
+  test('/router-guard-error?error=zepe', async () => {
+    const { html, error } = await nuxt.server.renderRoute('/router-guard-error?error=zepe')
+
+    expect(html.includes('Page content')).toBe(false)
+    expect(html).toContain('zepe')
+    expect(error.message).toContain('zepe')
+    expect(error.statusCode).toBe(500)
+  })
+
+  test('/router-guard-error?throw=ezae', async () => {
+    await expect(nuxt.server.renderRoute('/router-guard-error?throw=ezae'))
+      .rejects.toMatchObject({ message: 'ezae' })
+  })
+
   test('/jsx', async () => {
     const { html } = await nuxt.server.renderRoute('/jsx')
     expect(html).toContain('<h1>JSX Page</h1>')

@@ -41,29 +41,29 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
   return routes
 }
 
-function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash) {
-  let start = -1
+function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
+  const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
   const routesIndex = []
   routes.forEach((route) => {
     if (regExpIndex.test(route.name) || route.name === 'index') {
-      // Save indexOf 'index' key in name
-      const res = route.name.split(routeNameSplitter)
-      const s = res.indexOf('index')
-      start = start === -1 || s < start ? s : start
+      const res = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       routesIndex.push(res)
     }
   })
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = route.name.split(routeNameSplitter)
+      if (route.name.endsWith(`${routeNameSplitter}index`)) {
+        route.path = route.path.replace(/\?$/, '')
+      }
+      const names = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('index') - start //  children names
+        const i = r.indexOf('index')
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
@@ -81,13 +81,14 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     if (route.children) {
       const indexRoutePath = trailingSlash === false ? '/' : ''
       const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      const routeName = route.name
       if (defaultChildRoute) {
         if (trailingSlash === false) {
           defaultChildRoute.name = route.name
         }
         delete route.name
       }
-      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash)
+      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash, routeName)
     }
   })
   return routes

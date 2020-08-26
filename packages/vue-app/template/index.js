@@ -1,4 +1,5 @@
 import Vue from 'vue'
+<% if (store) { %>import Vuex from 'vuex'<% } %>
 <% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
 <% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
 <% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
@@ -66,6 +67,15 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
+<% if (store) { %>
+const originalRegisterModule = Vuex.Store.prototype.registerModule
+const baseStoreOptions = { preserveState: process.client }
+
+function registerModule (path, rawModule, options = {}) {
+  return originalRegisterModule.call(this, path, rawModule, { ...baseStoreOptions, ...options })
+}
+<% } %>
+
 async function createApp(ssrContext, config = {}) {
   const router = await createRouter(ssrContext)
 
@@ -75,8 +85,7 @@ async function createApp(ssrContext, config = {}) {
   store.$router = router
     <% if (mode === 'universal') { %>
   // Fix SSR caveat https://github.com/nuxt/nuxt.js/issues/3757#issuecomment-414689141
-  const registerModule = store.registerModule
-  store.registerModule = (path, rawModule, options) => registerModule.call(store, path, rawModule, Object.assign({ preserveState: process.client }, options))
+  store.registerModule = registerModule
     <% } %>
   <% } %>
 
@@ -246,9 +255,13 @@ async function createApp(ssrContext, config = {}) {
   // If server-side, wait for async component to be resolved first
   if (process.server && ssrContext && ssrContext.url) {
     await new Promise((resolve, reject) => {
-      router.push(ssrContext.url, resolve, () => {
+      router.push(ssrContext.url, resolve, (err) => {
+        // https://github.com/vuejs/vue-router/blob/v3.4.3/src/util/errors.js
+        if (!err._isRouter) return reject(err)
+        if (err.type !== 2 /* NavigationFailureType.redirected */) return resolve()
+
         // navigated to a different route in router guard
-        const unregister = router.afterEach(async (to, from, next) => {
+        const unregister = router.afterEach(async (to, from) => {
           ssrContext.url = to.fullPath
           app.context.route = await getRouteData(to)
           app.context.params = to.params || {}

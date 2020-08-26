@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/core",
-  "version": "2.13.3",
+  "version": "2.14.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/core.js",
@@ -8,12 +8,12 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.13.3",
+    "@nuxt/config": "2.14.3",
     "@nuxt/devalue": "^1.2.4",
-    "@nuxt/server": "2.13.3",
-    "@nuxt/utils": "2.13.3",
-    "@nuxt/vue-renderer": "2.13.3",
-    "consola": "^2.14.0",
+    "@nuxt/server": "2.14.3",
+    "@nuxt/utils": "2.14.3",
+    "@nuxt/vue-renderer": "2.14.3",
+    "consola": "^2.15.0",
     "debug": "^4.1.1",
     "esm": "^3.2.25",
     "fs-extra": "^8.1.0",

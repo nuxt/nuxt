@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.13.3",
+  "version": "2.14.3",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/webpack.js",
@@ -8,15 +8,16 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.10.5",
-    "@nuxt/babel-preset-app": "2.13.3",
+    "@babel/core": "^7.11.4",
+    "@nuxt/babel-preset-app": "2.14.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
-    "@nuxt/utils": "2.13.3",
+    "@nuxt/utils": "2.14.3",
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001107",
+    "caniuse-lite": "^1.0.30001118",
     "chalk": "^3.0.0",
-    "consola": "^2.14.0",
+    "consola": "^2.15.0",
+    "create-require": "^1.0.2",
     "css-loader": "^3.6.0",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
@@ -43,11 +44,11 @@
     "time-fix-plugin": "^2.0.6",
     "url-loader": "^2.3.0",
     "vue-loader": "^15.9.3",
-    "webpack": "^4.44.0",
+    "webpack": "^4.44.1",
     "webpack-bundle-analyzer": "^3.8.0",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
-    "webpack-node-externals": "^2.5.0",
+    "webpack-node-externals": "^2.5.2",
     "webpackbar": "^4.0.0"
   },
   "engines": {
