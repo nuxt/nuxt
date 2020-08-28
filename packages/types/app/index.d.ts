@@ -50,7 +50,8 @@ export interface Context {
 }
 
 export type Middleware = string | ((ctx: Context, cb: Function) => Promise<void> | void)
-export type Plugin = (ctx: Context, inject: (key: string, value: any) => void) => Promise<void> | void
+export type Inject = (key: string, value: any) => void
+export type Plugin = (ctx: Context, inject: Inject) => Promise<void> | void
 
 export interface Transition {
   name?: string
