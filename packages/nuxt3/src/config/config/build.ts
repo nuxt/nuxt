@@ -289,7 +289,7 @@ export default () => ({
     runtimeChunk: 'single',
     minimize: undefined as boolean | undefined,
     minimizer: undefined,
-    cssMinimizer: undefined,
+    // cssMinimizer: undefined,
     splitChunks: {
       chunks: 'all',
       name: undefined,
@@ -299,7 +299,9 @@ export default () => ({
         }
       }
     }
-  } as WebpackConfiguration['optimization'] & { cssMinimizer: undefined | boolean | Record<string, any> },
+  } as WebpackConfiguration['optimization'] & {
+    // cssMinimizer: undefined | boolean | Record<string, any>
+  },
   /**
    * Enable [thread-loader](https://github.com/webpack-contrib/thread-loader#thread-loader) in webpack building
    *
