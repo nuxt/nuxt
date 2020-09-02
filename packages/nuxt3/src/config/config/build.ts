@@ -7,7 +7,6 @@ import type { Options as FileLoaderOptions } from 'file-loader'
 import type { Options as HtmlMinifierOptions } from 'html-minifier'
 import type * as Less from 'less'
 import type { Options as SassOptions } from 'node-sass'
-import type { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
 import type { Plugin as PostcssPlugin } from 'postcss'
 import type { Options as PugOptions } from 'pug'
 import type { TerserPluginOptions } from 'terser-webpack-plugin'
@@ -265,8 +264,11 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: {},
+    css: {
+      esModule: false
+    },
     cssModules: {
+      esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]'
       }
@@ -287,6 +289,7 @@ export default () => ({
     runtimeChunk: 'single',
     minimize: undefined as boolean | undefined,
     minimizer: undefined,
+    cssMinimizer: undefined,
     splitChunks: {
       chunks: 'all',
       name: undefined,
@@ -296,8 +299,7 @@ export default () => ({
         }
       }
     }
-  } as WebpackConfiguration['optimization'],
-  optimizeCSS: undefined as undefined | OptimizeCssAssetsWebpackPluginOptions | boolean,
+  } as WebpackConfiguration['optimization'] & { cssMinimizer: undefined | boolean | Record<string, any> },
   /**
    * Enable [thread-loader](https://github.com/webpack-contrib/thread-loader#thread-loader) in webpack building
    *

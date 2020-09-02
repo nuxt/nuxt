@@ -3,7 +3,7 @@ import querystring from 'querystring'
 import webpack from 'webpack'
 import HTMLPlugin from 'html-webpack-plugin'
 import BundleAnalyzer from 'webpack-bundle-analyzer'
-import OptimizeCSSAssetsPlugin from 'optimize-css-assets-webpack-plugin'
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 
 import CorsPlugin from '../plugins/vue/cors'
@@ -89,13 +89,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   minimizer () {
     const minimizer = super.minimizer()
-    const { optimizeCSS } = this.options.build
+    const { cssMinimizer } = this.options.build.optimization
 
-    // https://github.com/NMFR/optimize-css-assets-webpack-plugin
-    // https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
-    // TODO: Remove OptimizeCSSAssetsPlugin when upgrading to webpack 5
-    if (optimizeCSS) {
-      minimizer.push(new OptimizeCSSAssetsPlugin(Object.assign({}, optimizeCSS)))
+    if (cssMinimizer) {
+      minimizer.push(new CssMinimizerPlugin(Object.assign({}, cssMinimizer)))
     }
 
     return minimizer
