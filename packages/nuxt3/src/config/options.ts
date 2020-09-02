@@ -346,9 +346,9 @@ function normalizeConfig (_options: CliConfiguration) {
   }
 
   // Enable cssMinimizer only when extractCSS is enabled
-  if (options.build.optimization.cssMinimizer === undefined) {
-    options.build.optimization.cssMinimizer = options.build.extractCSS ? {} : false
-  }
+  // if (options.build.optimization.cssMinimizer === undefined) {
+  //   options.build.optimization.cssMinimizer = options.build.extractCSS ? {} : false
+  // }
 
   const { loaders } = options.build
   // const vueLoader = loaders.vue

@@ -5,13 +5,11 @@ import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
-
 import { Nuxt } from 'src/core'
 import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from 'src/utils'
 import { createMFS } from './utils/mfs'
-
-import * as WebpackConfigs from './config'
-import PerfLoader from './utils/perf-loader'
+import { client, server } from './configs'
+import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
 
 const glob = pify(Glob)
 
@@ -40,27 +38,32 @@ export class WebpackBundler {
   }
 
   getWebpackConfig (name) {
-    const Config = WebpackConfigs[name.toLowerCase()] // eslint-disable-line import/namespace
-    if (!Config) {
+    const ctx = createWebpackConfigContext({ nuxt: this.nuxt })
+
+    if (name === 'client') {
+      applyPresets(ctx, client)
+    } else if (name === 'server') {
+      applyPresets(ctx, server)
+    } else {
       throw new Error(`Unsupported webpack config ${name}`)
     }
-    const config = new Config(this)
-    return config.config()
+
+    return getWebpackConfig(ctx)
   }
 
   async build () {
     const { options } = this.nuxt
 
     const webpackConfigs = [
-      this.getWebpackConfig('Client')
+      this.getWebpackConfig('client')
     ]
 
     if (options.modern) {
-      webpackConfigs.push(this.getWebpackConfig('Modern'))
+      webpackConfigs.push(this.getWebpackConfig('modern'))
     }
 
     if (options.build.ssr) {
-      webpackConfigs.push(this.getWebpackConfig('Server'))
+      webpackConfigs.push(this.getWebpackConfig('server'))
     }
 
     await this.nuxt.callHook('webpack:config', webpackConfigs)
@@ -95,13 +98,6 @@ export class WebpackBundler {
       return compiler
     })
 
-    // Warm up perfLoader before build
-    if (options.build.parallel) {
-      consola.info('Warming up worker pools')
-      PerfLoader.warmupAll({ dev: options.dev })
-      consola.success('Worker pools ready')
-    }
-
     // Start Builds
     const runner = options.dev ? parallel : sequence
 
@@ -128,7 +124,7 @@ export class WebpackBundler {
 
     // --- Dev Build ---
     if (options.dev) {
-      // Client buiild
+      // Client build
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
           compiler.hooks.done.tap('nuxt-dev', () => { resolve() })

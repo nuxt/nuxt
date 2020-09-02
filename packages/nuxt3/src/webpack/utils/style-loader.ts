@@ -11,10 +11,9 @@ import PostcssConfig from './postcss'
 export default class StyleLoader {
   options: NormalizedConfiguration
 
-  constructor (nuxt: Nuxt, { isServer, perfLoader }) {
+  constructor (nuxt: Nuxt, { isServer }) {
     this.options = nuxt.options
     this.isServer = isServer
-    this.perfLoader = perfLoader
 
     if (this.options.build.postcss) {
       this.postcssConfig = new PostcssConfig(nuxt)
@@ -121,17 +120,17 @@ export default class StyleLoader {
       // This matches <style module>
       {
         resourceQuery: /module/,
-        use: this.perfLoader.css().concat(
+        use: [
           this.cssModules(cssModules),
           customLoaders
-        )
+        ]
       },
       // This matches plain <style> or <style scoped>
       {
-        use: this.perfLoader.css().concat(
+        use: [
           this.css(css),
           customLoaders
-        )
+        ]
       }
     ]
   }
