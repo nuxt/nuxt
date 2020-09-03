@@ -171,8 +171,13 @@ function expand (target, source = {}, parse = v => v) {
         const key = parts[2]
         replacePart = parts[0].substring(prefix.length)
 
-        // Get value but avoid recursion
-        value = parents.includes(key) ? '' : getValue(key)
+        // Avoid recursion
+        if (parents.includes(key)) {
+          consola.warn(`Please avoid recursive environment variables (path ${parents.join(' > ')} > ${key})`)
+          return ''
+        }
+
+        value = getValue(key)
 
         // Resolve recursive interpolations
         value = interpolate(value, [...parents, key])
