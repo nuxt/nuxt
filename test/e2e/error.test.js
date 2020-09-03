@@ -42,6 +42,16 @@ describe('basic browser', () => {
     expect(await page.$text('h1')).toBe('About')
   })
 
+  test('/about error layout after click', async () => {
+    const transitionPromise = page.evaluate(async ($nuxt) => {
+      await new Promise(resolve => $nuxt.$once('triggerScroll', resolve))
+    }, page.$nuxt)
+
+    await page.click('button')
+    await transitionPromise
+    expect(await page.$text('header')).toBe('Error layout')
+  })
+
   test('/info prints empty page', async () => {
     await page.nuxt.navigate('/info')
 

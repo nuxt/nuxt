@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h1>About</h1>
+    <h1>Info</h1>
     <button
       type="button"
       @click="onClick"
     >
-      error click
+      click me
     </button>
     <nuxt-link to="/">
       back
