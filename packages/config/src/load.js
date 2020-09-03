@@ -177,7 +177,7 @@ function expand (target, source = {}, parse = v => v) {
         value = interpolate(value)
       }
 
-      return newValue.replace(replacePart, value)
+      return value !== undefined ? newValue.replace(replacePart, value) : newValue
     }, value))
   }
 
