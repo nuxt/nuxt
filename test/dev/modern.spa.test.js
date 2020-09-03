@@ -24,7 +24,7 @@ describe('modern client mode (SPA)', () => {
   test('should contain nomodule legacy resources', async () => {
     const { body: response } = await rp(url('/'))
     expect(response).toContain('src="/_nuxt/app.js" crossorigin="use-credentials" nomodule')
-    expect(response).toContain('src="/_nuxt/vendors/commons.js" crossorigin="use-credentials" nomodule')
+    expect(response).toContain('src="/_nuxt/commons.js" crossorigin="use-credentials" nomodule')
   })
 
   test('should contain module modern resources', async () => {
@@ -36,14 +36,14 @@ describe('modern client mode (SPA)', () => {
   test('should contain legacy preload resources', async () => {
     const { body: response } = await rp(url('/'))
     expect(response).toContain('<link rel="preload" crossorigin="use-credentials" href="/_nuxt/app.js" as="script">')
-    expect(response).toContain('<link rel="preload" crossorigin="use-credentials" href="/_nuxt/vendors/commons.js" as="script">')
+    expect(response).toContain('<link rel="preload" crossorigin="use-credentials" href="/_nuxt/commons.js" as="script">')
   })
 
   test('should contain legacy http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
-      '</_nuxt/vendors/commons.js>; rel=preload; crossorigin=use-credentials; as=script',
+      '</_nuxt/commons.js>; rel=preload; crossorigin=use-credentials; as=script',
       '</_nuxt/app.js>; rel=preload; crossorigin=use-credentials; as=script'
     ].join(', '))
   })

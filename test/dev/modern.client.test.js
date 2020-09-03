@@ -16,7 +16,7 @@ describe('modern client mode (SSR)', () => {
   test('should contain nomodule legacy resources', async () => {
     const { body: response } = await rp(url('/'))
     expect(response).toContain('script nomodule crossorigin="use-credentials" src="/_nuxt/app.js')
-    expect(response).toContain('script nomodule crossorigin="use-credentials" src="/_nuxt/vendors/commons.js')
+    expect(response).toContain('script nomodule crossorigin="use-credentials" src="/_nuxt/commons.js')
   })
 
   test('should contain module modern resources', async () => {
