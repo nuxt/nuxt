@@ -5,7 +5,7 @@
 <script>
 /* eslint no-undef: 0 */
 export default {
-  async asyncData ({ error }) {
+  asyncData ({ error }) {
     error(new Error('test error'))
   }
 }
