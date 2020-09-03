@@ -153,7 +153,7 @@ function expand (target, source = {}, parse = v => v) {
     return source[key] !== undefined ? source[key] : target[key]
   }
 
-  function interpolate (value) {
+  function interpolate (value, parents = []) {
     if (typeof value !== 'string') {
       return value
     }
@@ -171,10 +171,11 @@ function expand (target, source = {}, parse = v => v) {
         const key = parts[2]
         replacePart = parts[0].substring(prefix.length)
 
-        value = getValue(key)
+        // Get value but avoid recursion
+        value = parents.includes(key) ? '' : getValue(key)
 
         // Resolve recursive interpolations
-        value = interpolate(value)
+        value = interpolate(value, [...parents, key])
       }
 
       return newValue.replace(replacePart, value)
