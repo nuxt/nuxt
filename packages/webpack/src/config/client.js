@@ -66,44 +66,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons = {
         test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
         chunks: 'all',
-        name: 'vendors/commons',
+        name: true,
         priority: 10
-      }
-    }
-
-    if (!this.dev && splitChunks.name === undefined) {
-      const nameMap = { default: 'commons' }
-      splitChunks.name = (_module, chunks, cacheGroup) => {
-        // Map chunks to names
-        const names = chunks
-          .map(c => c.name || '')
-          .map(name => name
-            .replace(/[/\\]/g, '.')
-            .replace(/_/g, '')
-            .replace('pages.', '')
-          )
-          .filter(Boolean)
-          .sort()
-
-        // Fallback to webpack chunk name or generated cache group key
-        if (names.length < 2) {
-          return chunks[0].name
-        }
-
-        // Use compact name for concatinated modules
-        let compactName = names.join('~')
-        if (compactName.length > 32) {
-          compactName = hash(compactName)
-        }
-        const prefix = nameMap[cacheGroup || 'default'] || cacheGroup
-        return prefix + '/' + compactName
-      }
-
-      // Enforce name for all groups
-      for (const group of Object.values(cacheGroups)) {
-        if (group.name === undefined) {
-          group.name = true
-        }
       }
     }
 
