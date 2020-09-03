@@ -613,7 +613,7 @@ function normalizeComponents (to, ___) {
 }
 
 <% if (features.layouts) { %>
-function setLayoutForNextPage (to) {
+<% if (splitChunks.layouts) { %>async <% } %>function setLayoutForNextPage (to) {
   // Set layout
   let hasError = Boolean(this.$options.nuxt.err)
   if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
@@ -626,6 +626,9 @@ function setLayoutForNextPage (to) {
   if (typeof layout === 'function') {
     layout = layout(app.context)
   }
+  <% if (splitChunks.layouts) { %>
+  await this.loadLayout(layout)
+  <% } %>
   this.setLayout(layout)
 }
 <% } %>
