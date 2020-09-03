@@ -173,7 +173,7 @@ function expand (target, source = {}, parse = v => v) {
 
         // Avoid recursion
         if (parents.includes(key)) {
-          consola.warn(`Please avoid recursive environment variables (path ${parents.join(' > ')} > ${key})`)
+          consola.warn(`Please avoid recursive environment variables (path: ${parents.join(' > ')} > ${key})`)
           return ''
         }
 
