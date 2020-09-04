@@ -1,11 +1,15 @@
 import { join } from 'path'
 
+export function isHMRCompatible (id) {
+  return !/[/\\]mongoose[/\\/]/.test(id)
+}
+
 export function isExternalDependency (id) {
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
 export function clearRequireCache (id) {
-  if (isExternalDependency(id)) {
+  if (isExternalDependency(id) && isHMRCompatible(id)) {
     return
   }
 
@@ -20,11 +24,12 @@ export function clearRequireCache (id) {
     entry.parent.children = entry.parent.children.filter(e => e.id !== id)
   }
 
+  // Needs to be cleared before children, to protect against circular deps (#7966)
+  delete require.cache[id]
+
   for (const child of entry.children) {
     clearRequireCache(child.id)
   }
-
-  delete require.cache[id]
 }
 
 export function scanRequireTree (id, files = new Set()) {
