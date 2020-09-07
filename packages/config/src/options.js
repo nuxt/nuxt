@@ -472,6 +472,12 @@ export function getNuxtConfig (_options) {
 
   // ----- Builtin modules -----
 
+  // Indicator
+  // Change boolean true to default nuxt value
+  if (typeof options.build.indicator === "boolean" && options.build.indicator) {
+    options.build.indicator = nuxtConfig.build.indicator
+  }
+
   // Loading screen
   // Force disable for production and programmatic users
   if (!options.dev || !options._cli || !getPKG('@nuxt/loading-screen')) {
