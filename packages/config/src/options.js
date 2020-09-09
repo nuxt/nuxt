@@ -474,7 +474,7 @@ export function getNuxtConfig (_options) {
 
   // Indicator
   // Change boolean true to default nuxt value
-  if (typeof options.build.indicator === 'boolean' && options.build.indicator) {
+  if (options.build.indicator === true) {
     options.build.indicator = nuxtConfig.build.indicator
   }
 
