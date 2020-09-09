@@ -20,7 +20,13 @@ export const chainFn = function chainFn (base, fn) {
 
   return function (arg0, ...args) {
     const next = (previous = arg0) => {
-      return fn.call(this, previous, ...args) || previous
+      const fnResult = fn.call(this, previous, ...args)
+
+      if (fnResult && typeof fnResult.then === 'function') {
+        return fnResult.then(res => res || previous)
+      }
+
+      return fnResult || previous
     }
 
     const baseResult = base.call(this, arg0, ...args)

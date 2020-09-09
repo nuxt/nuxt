@@ -108,6 +108,7 @@ describe('util: task', () => {
     const firstFn = () => Promise.resolve({ foo: 1 })
     const secondFn = function (obj) {
       obj.foo++
+      return Promise.resolve()
     }
 
     const chainedFn = chainFn(firstFn, secondFn)
