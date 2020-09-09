@@ -103,4 +103,14 @@ describe('util: task', () => {
     const chainedFn = chainFn(firstFn, secondFn)
     expect(chainedFn({}, 10)).toEqual({ bar: 12 })
   })
+
+  test('chainFn (promise)', async () => {
+    const firstFn = () => Promise.resolve({ foo: 1 })
+    const secondFn = function (obj) {
+      obj.foo++
+    }
+
+    const chainedFn = chainFn(firstFn, secondFn)
+    expect(await chainedFn()).toEqual({ foo: 2 })
+  })
 })
