@@ -17,9 +17,10 @@ export default () => ({
   // Rendering
   ssr: true,
 
-  // TODO: remove in Nuxt 3
-  // Mode
-  mode: MODES.universal,
+  // Mode (deprecated)
+  mode: undefined,
+
+  // Modern
   modern: undefined,
 
   // Modules

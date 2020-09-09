@@ -50,6 +50,7 @@ export interface NuxtOptions extends Configuration {
   layoutTransition: Transition
   loading: NuxtOptionsLoading | false | string
   loadingIndicator: NuxtOptionsLoadingIndicator | false | string
+  /** @deprecated Use ssr option instead */
   mode: 'spa' | 'universal'
   target: 'server' | 'static'
   modern: 'client' | 'server' | boolean
