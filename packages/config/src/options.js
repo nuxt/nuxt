@@ -470,6 +470,12 @@ export function getNuxtConfig (_options) {
     options.createRequire = module => createRequire(module.filename)
   }
 
+  // Indicator
+  // Change boolean true to default nuxt value
+  if (options.build.indicator === true) {
+    options.build.indicator = nuxtConfig.build.indicator
+  }
+
   // ----- Builtin modules -----
 
   // Loading screen
