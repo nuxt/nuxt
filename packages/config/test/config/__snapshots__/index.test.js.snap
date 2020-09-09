@@ -89,6 +89,7 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
+        "automaticNameDelimiter": "/",
         "cacheGroups": Object {},
         "chunks": "all",
       },
@@ -464,6 +465,7 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
+        "automaticNameDelimiter": "/",
         "cacheGroups": Object {},
         "chunks": "all",
       },
