@@ -13,24 +13,28 @@ export const chainFn = function chainFn (base, fn) {
   if (typeof fn !== 'function') {
     return base
   }
-  return function (...args) {
-    if (typeof base !== 'function') {
-      return fn.apply(this, args)
+
+  if (typeof base !== 'function') {
+    return fn
+  }
+
+  return function (arg0, ...args) {
+    const next = (previous = arg0) => {
+      const fnResult = fn.call(this, previous, ...args)
+
+      if (fnResult && typeof fnResult.then === 'function') {
+        return fnResult.then(res => res || previous)
+      }
+
+      return fnResult || previous
     }
-    let baseResult = base.apply(this, args)
-    // Allow function to mutate the first argument instead of returning the result
-    if (baseResult === undefined) {
-      [baseResult] = args
+
+    const baseResult = base.call(this, arg0, ...args)
+
+    if (baseResult && typeof baseResult.then === 'function') {
+      return baseResult.then(res => next(res))
     }
-    const fnResult = fn.call(
-      this,
-      baseResult,
-      ...Array.prototype.slice.call(args, 1)
-    )
-    // Return mutated argument if no result was returned
-    if (fnResult === undefined) {
-      return baseResult
-    }
-    return fnResult
+
+    return next(baseResult)
   }
 }
