@@ -270,7 +270,7 @@ Object {
     "server_error": "Server error",
     "server_error_details": "An error occurred in the application and your page could not be served. If you are the application owner, check your logs for details.",
   },
-  "mode": "universal",
+  "mode": undefined,
   "modern": undefined,
   "modes": Object {
     "spa": Object {
