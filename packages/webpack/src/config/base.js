@@ -167,6 +167,9 @@ export default class WebpackBaseConfig {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
     }
+    if (this.buildContext.buildOptions.analyze && !fileName.includes('[name]')) {
+      fileName = '[name].' + fileName
+    }
     return fileName
   }
 
