@@ -14,6 +14,7 @@
     "url-loader",
     "sass-loader",
     "css-loader",
+    "postcss-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",
