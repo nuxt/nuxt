@@ -104,6 +104,9 @@ export function getNuxtConfig (_options) {
     } else {
       consola.warn('`mode` option is deprecated. Please use `ssr: true` for universal mode or `ssr: false` for spa mode and remove `mode` from `nuxt.config`')
     }
+  } else {
+    // For backward compat we need default value
+    options.mode = MODES.universal
   }
 
   // SSR root option
