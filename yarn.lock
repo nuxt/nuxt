@@ -11719,10 +11719,10 @@ serialize-javascript@^4.0.0:
   dependencies:
     randombytes "^2.1.0"
 
-serialize-javascript@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-5.0.0.tgz#55ec4cbbbbb5440a1aca9e5e8b0c9168e6fb565b"
-  integrity sha512-JyENN0vEVTeDAFn+s4whS5OxSadXxb14iEtUOo8fw9h1xYd+/kjQ6zWVxHm7W8HfQjGxnD1TYlh3PhAZlj0xbg==
+serialize-javascript@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-5.0.1.tgz#7886ec848049a462467a97d3d918ebb2aaf934f4"
+  integrity sha512-SaaNal9imEO737H2c05Og0/8LUXG7EnsZyMa8MzkmuHoELfT6txuj0cMqRj6zfPKnmQ1yasR4PCJc8x+M4JSPA==
   dependencies:
     randombytes "^2.1.0"
 
