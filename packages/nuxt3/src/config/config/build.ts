@@ -286,7 +286,6 @@ export default () => ({
   } as Loaders,
   loadingScreen: {} as Record<string, any> | false,
   optimization: {
-    runtimeChunk: 'single',
     minimize: undefined as boolean | undefined,
     minimizer: undefined,
     // cssMinimizer: undefined,
