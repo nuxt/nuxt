@@ -2712,18 +2712,18 @@
   optionalDependencies:
     prettier "^1.18.2"
 
-"@vue/server-test-utils@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.0.5.tgz#5b484e9d824105f69eaaaf0fb70af563770b1fd6"
-  integrity sha512-EcvBUs2+NpkukpIFTA/zmC+7lPTagXeDE9cfLkjUgeeFxIszHvx+zdtUGZEeTCEm4kNaLbom+ftu/zPoRiQkkg==
+"@vue/server-test-utils@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.1.0.tgz#90d67ebe71c2e1e3715fb3fc0c7c999d94bf26ee"
+  integrity sha512-LhkNnKhxOOH2lsTppaa7UC2XMqJmwgg/bpdyBevvX85w/y41LIR1q1tuEJaQOtqPaVbaQQYDDf0b+wHoTUUQZg==
   dependencies:
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.0.5.tgz#676e1f986bb93ddc869d9c6cf1c820183d64d92f"
-  integrity sha512-P2x8kXwqfTXesAdfJQN146V1S3QD3Xv9wYZ1B09Oecmg7I3Fpqqo1CwfIn5ivwuXyBPQWFDH4vyBHynnYjIkRg==
+"@vue/test-utils@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.1.0.tgz#76305e73a786c921ede1352849614e26c7113f94"
+  integrity sha512-M+3jtVqNYIrvzO5gaxogre5a5+96h0hN/dXw+5Lj0t+dp6fAhYcUjpLrC9j9cEEkl2Rcuh/gKYRUmR5N4vcqPw==
   dependencies:
     dom-event-types "^1.0.0"
     lodash "^4.17.15"
@@ -13235,15 +13235,14 @@ vue-hot-reload-api@^2.3.0:
   resolved "https://registry.npmjs.org/vue-hot-reload-api/-/vue-hot-reload-api-2.3.4.tgz#532955cc1eb208a3d990b3a9f9a70574657e08f2"
   integrity sha512-BXq3jwIagosjgNVae6tkHzzIk6a8MHFtzAdwhnV5VlvPTFxDCvIttgSiHWjdGoTJvXtmRu5HacExfdarRcFhog==
 
-vue-jest@^4.0.0-beta.5:
-  version "4.0.0-beta.5"
-  resolved "https://registry.npmjs.org/vue-jest/-/vue-jest-4.0.0-beta.5.tgz#ba2820663222f97ec64a3eabe47e9b9e99fe571b"
-  integrity sha512-5vjEgJdAdPFUx/EQLiSlSD107UYVDMRngRktPsXnVdyxUU+woyJXtwLVbh9LEszYV4oSff9zBeOul+tHASduNw==
+vue-jest@^4.0.0-beta.6:
+  version "4.0.0-beta.6"
+  resolved "https://registry.npmjs.org/vue-jest/-/vue-jest-4.0.0-beta.6.tgz#5e4637614bcb3b822478d897c630c5f32ef28a91"
+  integrity sha512-om5U0gnCcPIECd1pnEVPgFHvBBrvmQp1x4KMfBMoIQfE5WhNwxMD3v/p2Pc/0i9112qChRFFu4h4p+0ynUB4uQ==
   dependencies:
     "@babel/plugin-transform-modules-commonjs" "^7.2.0"
     "@vue/component-compiler-utils" "^3.1.0"
     chalk "^2.1.0"
-    convert-source-map "^1.6.0"
     extract-from-css "^0.4.4"
     source-map "0.5.6"
     ts-jest "25.5.x"
