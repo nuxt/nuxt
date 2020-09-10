@@ -2445,10 +2445,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.6.4.tgz#a145cc0bb14ef9c4777361b7bbafa5cf8e3acb5a"
   integrity sha512-Wk7nG1JSaMfMpoMJDKUsWYugliB2Vy55pdjLpmLixeyMi7HizW2I/9QoxsPCkXl3dO+ZOVqPumKaDUv5zJu2uQ==
 
-"@types/node@^12.12.56":
-  version "12.12.56"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.12.56.tgz#83591a89723d8ec3eaf722137e1784a7351edb6c"
-  integrity sha512-8OdIupOIZtmObR13fvGyTvpcuzKmMugkATeVcfNwCjGtHxhjEKmOvLqXwR8U9VOtNnZ4EXaSfNiLVsPinaCXkQ==
+"@types/node@^12.12.57":
+  version "12.12.57"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.12.57.tgz#fa7bab1f5e5adc99df92d824ef75c3bbca929a22"
+  integrity sha512-Dg4fab0IP6ZtdJOkwTaMaOJA3PWw7bR6cUYh+nxkYe4+ZogiLBKhaEr9sHqVkCtREVLw92g3Fl1bt8++dHKavw==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -6622,10 +6622,10 @@ globule@^1.0.0:
     lodash "~4.17.10"
     minimatch "~3.0.2"
 
-got@^11.6.1:
-  version "11.6.1"
-  resolved "https://registry.npmjs.org/got/-/got-11.6.1.tgz#a307122fc136c446f676f7b939d89dbc6ed6b909"
-  integrity sha512-6izGvOsrd/4CsIdQMgweFOTCtS4sAwJTuCzIuVoTbCDzt3+wa3eGIHhSIMgEF6gfCDenslGlMUmAdPap5DkirQ==
+got@^11.6.2:
+  version "11.6.2"
+  resolved "https://registry.npmjs.org/got/-/got-11.6.2.tgz#79d7bb8c11df212b97f25565407a1f4ae73210ec"
+  integrity sha512-/21qgUePCeus29Jk7MEti8cgQUNXFSWfIevNIk4H7u1wmXNDrGPKPY6YsPY+o9CIT/a2DjCjRz0x1nM9FtS2/A==
   dependencies:
     "@sindresorhus/is" "^3.1.1"
     "@szmarczak/http-timer" "^4.0.5"
