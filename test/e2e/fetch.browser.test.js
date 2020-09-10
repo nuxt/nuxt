@@ -76,6 +76,12 @@ describe('basic browser', () => {
     expect(await page.$text('pre')).toContain('kevinmarrec')
   })
 
+  test('ssr: /fetch-root', async () => {
+    const page = await browser.page(url('/fetch-root'))
+    expect(await page.$text('button')).toContain('has fetch')
+    page.close()
+  })
+
   test('ssr: /fetch-client', async () => {
     const page = await browser.page(url('/fetch-client'))
     expect(await page.$text('p')).toContain('Fetching...')
