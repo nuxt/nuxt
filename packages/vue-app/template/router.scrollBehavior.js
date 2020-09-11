@@ -2,27 +2,27 @@
 <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
 export default <%= serializeFunction(router.scrollBehavior) %>
 <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
-<% } else { %>import { getMatchedComponents } from './utils'
+<% } else { %>import { getMatchedComponents, setScrollRestoration } from './utils'
 
 if (process.client) {
   if ('scrollRestoration' in window.history) {
-    window.history.scrollRestoration = 'manual'
+    setScrollRestoration('manual')
 
     // reset scrollRestoration to auto when leaving page, allowing page reload
     // and back-navigation from other pages to use the browser to restore the
     // scrolling position.
     window.addEventListener('beforeunload', () => {
-      window.history.scrollRestoration = 'auto'
+      setScrollRestoration('auto')
     })
 
     // Setting scrollRestoration to manual again when returning to this page.
     window.addEventListener('load', () => {
-      window.history.scrollRestoration = 'manual'
+      setScrollRestoration('manual')
     })
   }
 }
 
-  export default function (to, from, savedPosition) {
+export default function (to, from, savedPosition) {
   // If the returned position is falsy or an empty object, will retain current scroll position
   let position = false
 
