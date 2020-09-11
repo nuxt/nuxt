@@ -667,5 +667,5 @@ export function isSamePath (p1, p2) {
 export function setScrollRestoration (newVal) {
   try {
     window.history.scrollRestoration = newVal;
-  } catch() {}
+  } catch(e) {}
 }
