@@ -24,6 +24,13 @@ declare module 'vue/types/options' {
     validate?(ctx: Context): Promise<boolean> | boolean
     watchQuery?: boolean | string[] | ((newQuery: Route['query'], oldQuery: Route['query']) => boolean)
     meta?: { [key: string]: any }
+    apollo?: {
+      [key: string]: {
+        query: any
+        prefetch: boolean
+        variables(): { [key: string]: any }
+      }
+    }
   }
 }
 
