@@ -99,12 +99,16 @@ export default {
   created () {
     // Add this.$nuxt in child instances
     const vm = this
+    function setGlobalNuxt() {
+      Object.defineProperty(this, '<%= globals.nuxt %>', {
+        get: () => vm,
+        configurable: true,
+      })
+    }
+    setGlobalNuxt.call(this)
     Vue.mixin({
       beforeCreate() {
-        Object.defineProperty(this, '<%= globals.nuxt %>', {
-          get: () => vm,
-          configurable: true,
-        })
+        setGlobalNuxt.call(this)
       }
     })
     if (process.client) {
