@@ -14,6 +14,7 @@
     "url-loader",
     "sass-loader",
     "css-loader",
+    "postcss",
     "postcss-loader",
     "thread-loader",
     "fs-extra",
