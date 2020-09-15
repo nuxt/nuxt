@@ -59,7 +59,7 @@ export async function resolvePagesRoutes (builder, app: NuxtApp) {
           if (/^\[\.{3}/.test(part)) {
             route.path += '(.*)'
           } else if (i === pathParts.length - 1) {
-            route.path += '?'
+            // route.path += '?'
           }
         } else {
           route.path += `/${normalizedPart}`
