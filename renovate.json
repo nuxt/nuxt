@@ -15,6 +15,7 @@
     "sass-loader",
     "css-loader",
     "postcss-loader",
+    "thread-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",
