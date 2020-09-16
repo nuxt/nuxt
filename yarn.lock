@@ -2471,10 +2471,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.10.1.tgz#cc323bad8e8a533d4822f45ce4e5326f36e42177"
   integrity sha512-aYNbO+FZ/3KGeQCEkNhHFRIzBOUgc7QvcVNKXbfnhDkSfwUv91JsQQa10rDgKSTSLkXZ1UIyPe4FJJNVgw1xWQ==
 
-"@types/node@^12.12.58":
-  version "12.12.58"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.12.58.tgz#46dae9b2b9ee5992818c8f7cee01ff4ce03ab44c"
-  integrity sha512-Be46CNIHWAagEfINOjmriSxuv7IVcqbGe+sDSg2SYCEz/0CRBy7LRASGfRbD8KZkqoePU73Wsx3UvOSFcq/9hA==
+"@types/node@^12.12.59":
+  version "12.12.59"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.12.59.tgz#3a6154c24d4b5bd95bb1ce921ef805fb722f24cc"
+  integrity sha512-D2MISWfv2j17aFBAkMD3lQ97vYpXCkAJMJf0mx2eKHNkzXA6Vo9w7A7BWi9fH8sOH1zeFb7fIhOo22z0TtrSag==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -11601,10 +11601,10 @@ rollup-plugin-license@^2.2.0:
     spdx-expression-validate "2.0.0"
     spdx-satisfies "5.0.0"
 
-rollup@2.26.11:
-  version "2.26.11"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.26.11.tgz#4fc31de9c7b83d50916fc8395f8c3d24730cdaae"
-  integrity sha512-xyfxxhsE6hW57xhfL1I+ixH8l2bdoIMaAecdQiWF3N7IgJEMu99JG+daBiSZQjnBpzFxa0/xZm+3pbCdAQehHw==
+rollup@2.27.0:
+  version "2.27.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-2.27.0.tgz#f2b70a8dd583bc3675b36686289aa9a51e27af4f"
+  integrity sha512-1WlbhNdzhLjdhh2wsf6CDxmuBAYG+5O53fYqCcGv8aJOoX/ymCfCY6oZnvllXZzaC/Ng+lPPwq9EMbHOKc5ozA==
   optionalDependencies:
     fsevents "~2.1.2"
 
