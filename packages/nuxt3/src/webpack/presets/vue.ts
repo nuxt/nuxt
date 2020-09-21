@@ -1,4 +1,5 @@
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5'
+import { DefinePlugin } from 'webpack'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
 import { WebpackConfigContext } from '../utils/config'
@@ -23,4 +24,12 @@ export function vue (ctx: WebpackConfigContext) {
       filename: `${ctx.name}.manifest.json`
     }))
   }
+
+  // Feature flags
+  // https://github.com/vuejs/vue-next/tree/master/packages/vue#bundler-build-feature-flags
+  // TODO: Provide options to toggle
+  config.plugins.push(new DefinePlugin({
+    __VUE_OPTIONS_API__: 'true',
+    __VUE_PROD_DEVTOOLS__: 'false'
+  }))
 }
