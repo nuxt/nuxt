@@ -285,10 +285,10 @@ export default () => ({
     vueStyle: {}
   } as Loaders,
   loadingScreen: {} as Record<string, any> | false,
+  optimizeCSS: undefined as Record<string, any> | false | undefined,
   optimization: {
     minimize: undefined as boolean | undefined,
     minimizer: undefined,
-    // cssMinimizer: undefined,
     splitChunks: {
       chunks: 'all',
       name: undefined,
@@ -298,9 +298,7 @@ export default () => ({
         }
       }
     }
-  } as WebpackConfiguration['optimization'] & {
-    // cssMinimizer: undefined | boolean | Record<string, any>
-  },
+  } as WebpackConfiguration['optimization'],
   /**
    * Enable [thread-loader](https://github.com/webpack-contrib/thread-loader#thread-loader) in webpack building
    *

@@ -24,7 +24,7 @@ export default class VueSSRClientPlugin {
 
       const initialFiles = uniq(Object.keys(stats.entrypoints)
         .map(name => stats.entrypoints[name].assets)
-        .reduce((assets, all) => all.concat(assets), [])
+        .reduce((files, entryAssets) => files.concat(entryAssets.map(entryAsset => entryAsset.name)), [])
         .filter(file => isJS(file) || isCSS(file)))
 
       const asyncFiles = allFiles
@@ -70,7 +70,7 @@ export default class VueSSRClientPlugin {
               const chunkGroup = namedChunkGroups[chunkName]
               if (chunkGroup) {
                 for (const asset of chunkGroup.assets) {
-                  filesSet.add(fileToIndex(asset))
+                  filesSet.add(fileToIndex(asset.name))
                 }
               }
             }

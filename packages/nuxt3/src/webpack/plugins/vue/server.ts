@@ -29,7 +29,7 @@ export default class VueSSRServerPlugin {
           return cb()
         }
 
-        const entryAssets = entryInfo.assets.filter(isJS)
+        const entryAssets = entryInfo.assets.filter(asset => isJS(asset.name))
 
         if (entryAssets.length > 1) {
           throw new Error(
@@ -39,14 +39,14 @@ export default class VueSSRServerPlugin {
         }
 
         const [entry] = entryAssets
-        if (!entry || typeof entry !== 'string') {
+        if (!entry || typeof entry.name !== 'string') {
           throw new Error(
             `Entry "${entryName}" not found. Did you specify the correct entry option?`
           )
         }
 
         const bundle = {
-          entry,
+          entry: entry.name,
           files: {},
           maps: {}
         }
