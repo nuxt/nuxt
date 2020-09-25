@@ -96,8 +96,11 @@ export default class SSRRenderer extends BaseRenderer {
     // Call Vue renderer renderToString
     let APP = await this.vueRenderer.renderToString(renderContext)
 
+    // Call render:done in app
+    await renderContext.nuxt.hooks.callHook('vue-renderer:done')
+
     if (typeof getSSRLog === 'function') {
-      renderContext.nuxt.logs = getSSRLog()
+      renderContext.payload.logs = getSSRLog()
     }
 
     // Call ssr:context hook
@@ -107,7 +110,7 @@ export default class SSRRenderer extends BaseRenderer {
     await this.serverContext.nuxt.callHook('_render:context', renderContext.nuxt)
 
     // Fallback to empty response
-    if (!renderContext.nuxt.serverRendered) {
+    if (!renderContext.payload.serverRendered) {
       APP = `<div id="${this.serverContext.globals.id}"></div>`
     }
 
@@ -115,7 +118,7 @@ export default class SSRRenderer extends BaseRenderer {
     if (renderContext.redirected && renderContext.target === TARGETS.server) {
       return {
         html: APP,
-        error: renderContext.nuxt.error,
+        error: renderContext.payload.error,
         redirected: renderContext.redirected
       }
     }
@@ -125,7 +128,7 @@ export default class SSRRenderer extends BaseRenderer {
     // Inject head meta
     // (this is unset when features.meta is false in server template)
     const meta = renderContext.meta && renderContext.meta.inject({
-      isSSR: renderContext.nuxt.serverRendered,
+      isSSR: renderContext.payload.serverRendered,
       ln: this.options.dev
     })
 
@@ -224,7 +227,7 @@ export default class SSRRenderer extends BaseRenderer {
       let serializedSession
       if (shouldInjectScripts || shouldHashCspScriptSrc) {
         // Only serialized session if need inject scripts or csp hash
-        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.nuxt)};`
+        serializedSession = `window.${this.serverContext.globals.context}=${devalue(renderContext.payload)};`
         inlineScripts.push(serializedSession)
       }
 
@@ -271,7 +274,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Template params
     const templateParams = {
-      HTML_ATTRS: meta ? meta.htmlAttrs.text(renderContext.nuxt.serverRendered /* addSrrAttribute */) : '',
+      HTML_ATTRS: meta ? meta.htmlAttrs.text(renderContext.payload.serverRendered /* addSrrAttribute */) : '',
       HEAD_ATTRS: meta ? meta.headAttrs.text() : '',
       BODY_ATTRS: meta ? meta.bodyAttrs.text() : '',
       HEAD,
