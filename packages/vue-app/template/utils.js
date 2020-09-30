@@ -663,3 +663,9 @@ export function stripTrailingSlash (path) {
 export function isSamePath (p1, p2) {
   return stripTrailingSlash(p1) === stripTrailingSlash(p2)
 }
+
+export function setScrollRestoration (newVal) {
+  try {
+    window.history.scrollRestoration = newVal;
+  } catch(e) {}
+}
