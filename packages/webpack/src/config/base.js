@@ -13,6 +13,7 @@ import semver from 'semver'
 
 import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
 
+import createRequire from 'create-require'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -96,6 +97,7 @@ export default class WebpackBaseConfig {
 
   getBabelOptions () {
     const envName = this.name
+    const { buildOptions: { corejs }, options: { rootDir } } = this.buildContext
     const options = {
       ...this.buildContext.buildOptions.babel,
       envName
@@ -114,7 +116,28 @@ export default class WebpackBaseConfig {
       )
     }
 
-    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {}]
+    // Auto detect corejs version
+    let corejsVersion = corejs
+    if (corejsVersion === 'auto') {
+      try {
+        corejsVersion = Number.parseInt(createRequire(rootDir)('core-js/package.json').version.split('.')[0])
+      } catch (_err) {
+        corejsVersion = 2
+      }
+    } else {
+      corejsVersion = Number.parseInt(corejsVersion)
+    }
+
+    if (![2, 3].includes(corejsVersion)) {
+      consola.warn(`Invalid corejs version ${corejsVersion}! Please set "build.corejs" to either "auto", 2 or 3.`)
+      corejsVersion = 2
+    }
+
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
+      corejs: {
+        version: corejsVersion
+      }
+    }]
 
     if (typeof options.presets === 'function') {
       options.presets = options.presets(
@@ -143,6 +166,9 @@ export default class WebpackBaseConfig {
       if (hash) {
         consola.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
       }
+    }
+    if (this.buildContext.buildOptions.analyze && !fileName.includes('[name]')) {
+      fileName = '[name].' + fileName
     }
     return fileName
   }
@@ -205,7 +231,10 @@ export default class WebpackBaseConfig {
         modules: webpackModulesDir
       },
       resolveLoader: {
-        modules: webpackModulesDir
+        modules: [
+          path.resolve(__dirname, '../node_modules'),
+          ...webpackModulesDir
+        ]
       }
     }
   }
@@ -336,7 +365,7 @@ export default class WebpackBaseConfig {
         })
       },
       {
-        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
         use: [{
           loader: 'url-loader',
           options: Object.assign(

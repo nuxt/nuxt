@@ -74,6 +74,9 @@ jobs:
 
       - name: lint
         run: yarn test:lint
+
+      - name: test types
+        run: yarn test:types
     needs: setup
 
   audit:

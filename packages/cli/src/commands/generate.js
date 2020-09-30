@@ -1,6 +1,7 @@
 import { TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
+import { ensureBuild, generate } from '../utils/generate'
 
 export default {
   name: 'generate',
@@ -47,6 +48,11 @@ export default {
         }
       }
     },
+    'force-build': {
+      type: 'boolean',
+      default: false,
+      description: 'Force to build the application with webpack'
+    },
     'fail-on-error': {
       type: 'boolean',
       default: false,
@@ -54,22 +60,21 @@ export default {
     }
   },
   async run (cmd) {
-    const config = await cmd.getNuxtConfig({
-      dev: false,
-      _build: cmd.argv.build,
-      _generate: true
-    })
-
-    if (config.target === TARGETS.static) {
-      throw new Error("Please use `nuxt export` when using `target: 'static'`")
-    }
-
-    // Forcing static target anyway
-    config.target = TARGETS.static
+    const config = await cmd.getNuxtConfig({ dev: false })
 
     // Disable analyze if set by the nuxt config
     config.build = config.build || {}
     config.build.analyze = false
+
+    // Full static
+    if (config.target === TARGETS.static) {
+      await ensureBuild(cmd)
+      await generate(cmd)
+      return
+    }
+
+    // Forcing static target anyway
+    config.target = TARGETS.static
 
     // Set flag to keep the prerendering behaviour
     config._legacyGenerate = true

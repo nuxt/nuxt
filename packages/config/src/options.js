@@ -97,6 +97,18 @@ export function getNuxtConfig (_options) {
     options.target = 'server'
   }
 
+  // Deprecate Mode
+  if (options.mode) {
+    if ((options.mode === MODES.universal && options.ssr) || (options.mode === MODES.spa && !options.ssr)) {
+      consola.warn('`mode` option is deprecated. You can safely remove it from `nuxt.config`')
+    } else {
+      consola.warn('`mode` option is deprecated. Please use `ssr: true` for universal mode or `ssr: false` for spa mode and remove `mode` from `nuxt.config`')
+    }
+  } else {
+    // For backward compat we need default value
+    options.mode = MODES.universal
+  }
+
   // SSR root option
   if (options.ssr === false) {
     options.mode = MODES.spa
@@ -115,9 +127,9 @@ export function getNuxtConfig (_options) {
     options.router.base += '/'
   }
 
-  // Alias export to generate
-  // TODO: switch to export by default for nuxt3
+  // Legacy support for export
   if (options.export) {
+    consola.warn('export option is deprecated and will be removed in a future version! Please switch to generate')
     options.generate = defu(options.export, options.generate)
   }
   exports.export = options.generate
@@ -461,13 +473,19 @@ export function getNuxtConfig (_options) {
   }
   if (options.createRequire === 'esm') {
     const esm = require('esm')
-    options.createRequire = module => esm(module)
+    options.createRequire = module => esm(module, { cache: false })
   } else if (options.createRequire === 'jiti') {
     const jiti = require('jiti')
     options.createRequire = module => jiti(module.filename)
   } else if (typeof options.createRequire !== 'function') {
     const createRequire = require('create-require')
     options.createRequire = module => createRequire(module.filename)
+  }
+
+  // Indicator
+  // Change boolean true to default nuxt value
+  if (options.build.indicator === true) {
+    options.build.indicator = nuxtConfig.build.indicator
   }
 
   // ----- Builtin modules -----

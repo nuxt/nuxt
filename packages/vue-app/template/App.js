@@ -12,7 +12,7 @@ import Vue from 'vue'
   ]: []
 ] %>
 <% if (utilsImports.length) { %>import { <%= utilsImports.join(', ') %> } from './utils'<% } %>
-<% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
+import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -129,11 +129,9 @@ export default {
     <% } %>
   },
   <% } %>
-  <% if (loading) { %>
   watch: {
     'nuxt.err': 'errorChanged'
   },
-  <% } %>
   <% if (features.clientOnline) { %>
   computed: {
     isOffline () {
@@ -215,18 +213,29 @@ export default {
       <% if (loading) { %>this.$loading.finish()<% } %>
       <% } %>
     },
-    <% if (loading) { %>
-    errorChanged () {
-      if (this.nuxt.err && this.$loading) {
-        if (this.$loading.fail) {
-          this.$loading.fail(this.nuxt.err)
+    <% if (splitChunks.layouts) { %>async <% } %>errorChanged () {
+      if (this.nuxt.err) {
+        <% if (loading) { %>
+        if (this.$loading) {
+          if (this.$loading.fail) {
+            this.$loading.fail(this.nuxt.err)
+          }
+          if (this.$loading.finish) {
+            this.$loading.finish()
+          }
         }
-        if (this.$loading.finish) {
-          this.$loading.finish()
+        <% } %>
+        let errorLayout = (NuxtError.options || NuxtError).layout;
+
+        if (typeof errorLayout === 'function') {
+          errorLayout = errorLayout(this.context)
         }
+        <% if (splitChunks.layouts) { %>
+        await this.loadLayout(errorLayout)
+        <% } %>
+        this.setLayout(errorLayout)
       }
     },
-    <% } %>
     <% if (features.layouts) { %>
     <% if (splitChunks.layouts) { %>
     setLayout (layout) {

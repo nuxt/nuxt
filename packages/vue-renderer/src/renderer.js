@@ -276,7 +276,7 @@ export default class VueRenderer {
     // Add url to the renderContext
     renderContext.url = url
     // Add target to the renderContext
-    renderContext.target = this.serverContext.nuxt.options.target
+    renderContext.target = this.options.target
 
     const { req = {}, res = {} } = renderContext
 

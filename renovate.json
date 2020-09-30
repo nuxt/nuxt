@@ -12,11 +12,17 @@
     "pify",
     "file-loader",
     "url-loader",
+    "sass-loader",
+    "css-loader",
+    "postcss",
+    "postcss-loader",
+    "thread-loader",
     "fs-extra",
     "chalk",
     "wrap-ansi",
     "terser-webpack-plugin",
-    "@types/terser-webpack-plugin"
+    "@types/terser-webpack-plugin",
+    "defu"
   ],
   "lockFileMaintenance": {
     "enabled": true

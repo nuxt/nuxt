@@ -20,32 +20,37 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  renderScripts (renderContext) {
-    const scripts = renderContext.renderScripts()
-    const { render: { crossorigin } } = this.options
-    if (!crossorigin) {
-      return scripts
+  addAttrs (tags, referenceTag, referenceAttr) {
+    const reference = referenceTag ? `<${referenceTag}` : referenceAttr
+    if (!reference) {
+      return tags
     }
-    return scripts.replace(
-      /<script/g,
-      `<script crossorigin="${crossorigin}"`
-    )
+
+    const { render: { crossorigin } } = this.options
+    if (crossorigin) {
+      tags = tags.replace(
+        new RegExp(reference, 'g'),
+        `${reference} crossorigin="${crossorigin}"`
+      )
+    }
+
+    return tags
+  }
+
+  renderResourceHints (renderContext) {
+    return this.addAttrs(renderContext.renderResourceHints(), null, 'rel="preload"')
+  }
+
+  renderScripts (renderContext) {
+    return this.addAttrs(renderContext.renderScripts(), 'script')
+  }
+
+  renderStyles (renderContext) {
+    return this.addAttrs(renderContext.renderStyles(), 'link')
   }
 
   getPreloadFiles (renderContext) {
     return renderContext.getPreloadFiles()
-  }
-
-  renderResourceHints (renderContext) {
-    const resourceHints = renderContext.renderResourceHints()
-    const { render: { crossorigin } } = this.options
-    if (!crossorigin) {
-      return resourceHints
-    }
-    return resourceHints.replace(
-      /rel="preload"/g,
-      `rel="preload" crossorigin="${crossorigin}"`
-    )
   }
 
   createRenderer () {
@@ -144,7 +149,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Inject styles
-    HEAD += renderContext.renderStyles()
+    HEAD += this.renderStyles(renderContext)
 
     if (meta) {
       const prependInjectorOptions = { pbody: true }

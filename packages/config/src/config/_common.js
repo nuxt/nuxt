@@ -1,6 +1,6 @@
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
-import { TARGETS, MODES } from '@nuxt/utils'
+import { TARGETS } from '@nuxt/utils'
 
 export default () => ({
   // Env
@@ -17,9 +17,10 @@ export default () => ({
   // Rendering
   ssr: true,
 
-  // TODO: remove in Nuxt 3
-  // Mode
-  mode: MODES.universal,
+  // Mode (deprecated)
+  mode: undefined,
+
+  // Modern
   modern: undefined,
 
   // Modules

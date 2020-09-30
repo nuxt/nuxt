@@ -1,11 +1,13 @@
 export default {
   publicRuntimeConfig: {
     baseURL: process.env.BASE_URL,
-    isFixture: true
+    isFixture: true,
+    TOKEN: 'default'
   },
   privateRuntimeConfig: {
     baseURL: '${PUBLIC_URL}${BASE_URL}',
-    API_SECRET: ''
+    API_SECRET: '',
+    FOO: '123/${FOO}'
   },
   serverMiddleware: [
     (req, _, next) => {

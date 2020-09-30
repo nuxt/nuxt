@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/utils",
-  "version": "2.13.2",
+  "version": "2.14.6",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/utils.js",
@@ -8,14 +8,14 @@
     "dist"
   ],
   "dependencies": {
-    "consola": "^2.14.0",
+    "consola": "^2.15.0",
     "fs-extra": "^8.1.0",
     "hash-sum": "^2.0.0",
     "proper-lockfile": "^4.1.1",
     "semver": "^7.3.2",
-    "serialize-javascript": "^4.0.0",
+    "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
-    "ua-parser-js": "^0.7.21"
+    "ua-parser-js": "^0.7.22"
   },
   "publishConfig": {
     "access": "public"

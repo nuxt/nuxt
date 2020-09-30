@@ -7,7 +7,8 @@
 
       <div class="title">{{ message }}</div>
       <p v-if="statusCode === 404" class="description">
-        <NuxtLink class="error-link" to="/"><%= messages.back_to_home %></NuxtLink>
+        <a v-if="typeof $route === 'undefined'" class="error-link" href="/"><% messages.back_to_home %></a>
+        <NuxtLink v-else class="error-link" to="/"><%= messages.back_to_home %></NuxtLink>
       </p>
       <% if(debug) { %>
       <p class="description" v-else><%= messages.client_error_details %></p>

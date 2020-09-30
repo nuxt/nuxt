@@ -1,3 +1,5 @@
+import { GlobbyOptions } from 'globby'
+
 /**
  * NuxtOptionsGenerate
  * Documentation: https://nuxtjs.org/api/configuration-generate
@@ -18,4 +20,8 @@ export interface NuxtOptionsGenerate {
   interval?: number
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
+  cache?: false | {
+    ignore?: string[] | Function,
+    globbyOptions?: GlobbyOptions
+  }
 }

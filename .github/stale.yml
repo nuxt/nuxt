@@ -4,6 +4,7 @@ daysUntilClose: 7
 staleLabel: stale
 exemptLabels:
   - "cmty:feature-request"
+  - "feature-request"
   - "WIP"
   - "pending"
   - "discussion"

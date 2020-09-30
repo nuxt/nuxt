@@ -14,7 +14,7 @@ describe('util: route', () => {
         ]
       }
     ])
-    expect(routes).toEqual(['/login', '/about', '', '/post'])
+    expect(routes).toEqual(['/login', '/about', '/', '/post'])
   })
 
   test('should ignore route with * and :', () => {
@@ -52,7 +52,7 @@ describe('util: route', () => {
       }
     ])
 
-    expect(routes).toEqual(['/foo/bar', '/foo/baz'])
+    expect(routes).toEqual(['/foo', '/foo/bar', '/foo/baz'])
   })
 
   test('should flat absolute routes with empty path', () => {

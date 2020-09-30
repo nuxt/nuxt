@@ -414,7 +414,7 @@ export default class Builder {
     // router.extendRoutes method
     if (typeof this.options.router.extendRoutes === 'function') {
       // let the user extend the routes
-      const extendedRoutes = this.options.router.extendRoutes(
+      const extendedRoutes = await this.options.router.extendRoutes(
         templateVars.router.routes,
         r
       )

@@ -18,7 +18,7 @@ export async function loadNuxtConfig ({
   configFile = defaultNuxtConfigFile,
   configContext = {},
   configOverrides = {},
-  createRequire = module => isJest ? _createRequire(module.filename) : esm(module)
+  createRequire = module => isJest ? _createRequire(module.filename) : esm(module, { cache: false })
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -153,7 +153,7 @@ function expand (target, source = {}, parse = v => v) {
     return source[key] !== undefined ? source[key] : target[key]
   }
 
-  function interpolate (value) {
+  function interpolate (value, parents = []) {
     if (typeof value !== 'string') {
       return value
     }
@@ -171,13 +171,19 @@ function expand (target, source = {}, parse = v => v) {
         const key = parts[2]
         replacePart = parts[0].substring(prefix.length)
 
+        // Avoid recursion
+        if (parents.includes(key)) {
+          consola.warn(`Please avoid recursive environment variables ( loop: ${parents.join(' > ')} > ${key} )`)
+          return ''
+        }
+
         value = getValue(key)
 
         // Resolve recursive interpolations
-        value = interpolate(value)
+        value = interpolate(value, [...parents, key])
       }
 
-      return newValue.replace(replacePart, value)
+      return value !== undefined ? newValue.replace(replacePart, value) : newValue
     }, value))
   }
 

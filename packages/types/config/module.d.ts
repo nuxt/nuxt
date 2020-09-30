@@ -6,7 +6,7 @@
 
 import { Configuration as WebpackConfiguration } from 'webpack'
 import { NuxtOptionsLoaders } from './build'
-import { Configuration as NuxtOptions } from '.'
+import { NuxtOptions } from '.'
 
 interface ExtendFunctionContext {
   isClient: boolean

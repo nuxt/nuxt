@@ -31,6 +31,7 @@ Object {
       "configFile": false,
     },
     "cache": false,
+    "corejs": "auto",
     "cssSourceMap": false,
     "devMiddleware": Object {},
     "extractCSS": false,
@@ -112,13 +113,9 @@ Object {
       "minimizer": undefined,
       "runtimeChunk": "single",
       "splitChunks": Object {
-        "cacheGroups": Object {
-          "default": Object {
-            "name": undefined,
-          },
-        },
+        "automaticNameDelimiter": "/",
+        "cacheGroups": Object {},
         "chunks": "all",
-        "name": undefined,
       },
     },
     "optimizeCSS": false,
@@ -196,6 +193,12 @@ Object {
     "server": true,
   },
   "generate": Object {
+    "cache": Object {
+      "globbyOptions": Object {
+        "gitignore": true,
+      },
+      "ignore": Array [],
+    },
     "concurrency": 500,
     "crawler": true,
     "dir": "/var/nuxt/test/dist",

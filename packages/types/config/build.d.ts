@@ -137,6 +137,7 @@ export interface NuxtOptionsBuild {
   analyze?: BundleAnalyzerPlugin.Options | boolean
   babel?: NuxtBabelOptions
   cache?: boolean
+  corejs?: 'auto' | 2 | 3
   crossorigin?: string
   cssSourceMap?: boolean
   devMiddleware?: WebpackDevMiddlewareOptions
