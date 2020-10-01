@@ -96,6 +96,9 @@ export default class SSRRenderer extends BaseRenderer {
     // Call Vue renderer renderToString
     let APP = await this.vueRenderer.renderToString(renderContext)
 
+    // Wrap with Nuxt id
+    APP = `<div id="${this.serverContext.globals.id}">${APP}</div>`
+
     // Call render:done in app
     await renderContext.nuxt.hooks.callHook('vue-renderer:done')
 

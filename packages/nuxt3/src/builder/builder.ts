@@ -3,6 +3,7 @@ import fsExtra from 'fs-extra'
 import { debounce } from 'lodash'
 import { BundleBuilder } from 'src/webpack'
 import { Nuxt } from '../core'
+import { DeterminedGlobals, determineGlobals } from '../utils'
 import {
   templateData,
   compileTemplates,
@@ -15,12 +16,14 @@ import Ignore from './ignore'
 
 export class Builder {
   nuxt: Nuxt
+  globals: DeterminedGlobals
   ignore: Ignore
-  app: NuxtApp
   templates: NuxtTemplate[]
+  app: NuxtApp
 
   constructor (nuxt) {
     this.nuxt = nuxt
+    this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
     this.ignore = new Ignore({
       rootDir: nuxt.options.srcDir,
       ignoreArray: nuxt.options.ignore.concat(
@@ -31,6 +34,10 @@ export class Builder {
 
   build () {
     return build(this)
+  }
+
+  close () {
+    // TODO: close watchers
   }
 }
 

@@ -38,7 +38,8 @@ export function createWatcher (
   return {
     watchAll,
     watch,
-    debug
+    debug,
+    close: () => watcher.close()
   }
 }
 

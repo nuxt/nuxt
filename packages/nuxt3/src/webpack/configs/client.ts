@@ -94,7 +94,7 @@ function clientHTML (ctx: WebpackConfigContext) {
     config.plugins.push(
       new HTMLPlugin({
         filename: '../server/index.ssr.html',
-        template: options.appTemplatePath,
+        template: options.documentPath,
         minify: options.build.html.minify as any,
         inject: false // Resources will be injected using bundleRenderer
       })
@@ -104,7 +104,7 @@ function clientHTML (ctx: WebpackConfigContext) {
   config.plugins.push(
     new HTMLPlugin({
       filename: '../server/index.spa.html',
-      template: options.appTemplatePath,
+      template: options.documentPath,
       minify: options.build.html.minify as any,
       inject: true
     })

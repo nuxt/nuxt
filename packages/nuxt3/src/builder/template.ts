@@ -11,6 +11,7 @@ export interface NuxtTemplate {
 
 export function templateData (builder) {
   return {
+    globals: builder.globals,
     app: builder.app
   }
 }

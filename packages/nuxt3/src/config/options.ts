@@ -12,7 +12,7 @@ import { DefaultConfiguration, defaultNuxtConfigFile, getDefaultNuxtConfig } fro
 import { deleteProp, mergeConfigs, setProp, overrideProp, Optional } from './transformers'
 
 interface InputConfiguration {
-  appTemplatePath?: string
+  documentPath?: string
   layoutTransition?: string | DefaultConfiguration['layoutTransition']
   loading?: true | false | DefaultConfiguration['loading']
   manifest?: {
@@ -197,13 +197,16 @@ function normalizeConfig (_options: CliConfiguration) {
     .concat(options.extensions))
 
   // If app.html is defined, set the template path to the user template
-  if (options.appTemplatePath === undefined) {
-    options.appTemplatePath = path.resolve(options.buildDir, 'views/app.template.html')
-    if (fs.existsSync(path.join(options.srcDir, 'app.html'))) {
-      options.appTemplatePath = path.join(options.srcDir, 'app.html')
+  if (options.documentPath === undefined) {
+    options.documentPath = path.resolve(options.buildDir, 'views/document.template.html')
+    const userDocumentPath = path.join(options.srcDir, 'document.html')
+    if (fs.existsSync(userDocumentPath)) {
+      options.documentPath = userDocumentPath
+    } else {
+      options.watch.push(userDocumentPath)
     }
   } else {
-    options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
+    options.documentPath = path.resolve(options.srcDir, options.documentPath)
   }
 
   overrideProp(options.build, 'publicPath', options.build.publicPath.replace(/([^/])$/, '$1/'))
