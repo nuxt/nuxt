@@ -30,12 +30,10 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   async asyncData ({ query }) {
     const page = +(query.page || 1)
-    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+    const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => res.json())
     return {
       page,
       totalPages: data.total_pages,
