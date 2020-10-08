@@ -104,7 +104,13 @@ export default class Generator {
     if (this.options.router.mode === 'hash') {
       routes = ['/']
     } else {
-      routes = flatRoutes(this.getAppRoutes())
+      try {
+        routes = flatRoutes(this.getAppRoutes())
+      } catch (err) {
+        // Case: where we use custom router.js
+        // https://github.com/nuxt-community/router-module/issues/83
+        routes = ['/']
+      }
     }
     routes = routes.filter(route => this.shouldGenerateRoute(route))
     routes = this.decorateWithPayloads(routes, generateRoutes)
