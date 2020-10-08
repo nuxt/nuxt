@@ -48,7 +48,7 @@ export default {
   watch: {
     async '$route.query.page' (page) {
       this.$nuxt.$loading.start()
-      const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => json())
+      const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => res.json())
       this.users = data.data
       this.transitionName = this.getTransitionName(page)
       this.page = +(page || 1)
