@@ -105,6 +105,7 @@ export default class Generator {
       routes = ['/']
     } else {
       try {
+        // https://github.com/nuxt-community/router-module/issues/83
         routes = flatRoutes(this.getAppRoutes())
       } catch (err) {
         // case where we use custom router.js
