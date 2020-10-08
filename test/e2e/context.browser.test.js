@@ -20,7 +20,7 @@ describe('server shared context', () => {
 
     await browser.start({
       // slowMo: 50,
-      headless: false
+      // headless: false
     })
   })
 
