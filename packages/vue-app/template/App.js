@@ -98,7 +98,7 @@ export default {
   },
   created () {
     // Add this.$nuxt in child instances
-    if (process.server) {
+    if (process.server && !Vue.prototype.<%= globals.nuxt %>) {
       this.$root.$options.<%= globals.nuxt %> = this
       Object.defineProperty(Vue.prototype, '<%= globals.nuxt %>', {
         get() {
