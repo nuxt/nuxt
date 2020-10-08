@@ -24,14 +24,6 @@ if (!Vue.__nuxt__fetch__mixin__) {
 }
 <% } %>
 
-Vue.mixin({
-  beforeCreate() {
-    if(Vue.prototype.<%= globals.nuxt %>) {
-      this.<%= globals.nuxt %> = Vue.prototype.<%= globals.nuxt %>
-    }
-  }
-})
-
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 <% if (features.componentAliases) { %>Vue.component('NLink', NuxtLink)<% } %>
