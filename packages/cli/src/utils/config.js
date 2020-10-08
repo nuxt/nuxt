@@ -1,7 +1,6 @@
 import path from 'path'
 import defaultsDeep from 'lodash/defaultsDeep'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
-import { MODES } from '@nuxt/utils'
 
 export async function loadNuxtConfig (argv, configContext) {
   const rootDir = path.resolve(argv._[0] || '.')
@@ -18,9 +17,11 @@ export async function loadNuxtConfig (argv, configContext) {
     }
   })
 
-  // Nuxt Mode
-  options.mode =
-    (argv.spa && MODES.spa) || (argv.universal && MODES.universal) || options.mode
+  if (argv.spa === true) {
+    options.ssr = false
+  } else if (argv.universal === true) {
+    options.ssr = true
+  }
 
   // Server options
   options.server = defaultsDeep({
