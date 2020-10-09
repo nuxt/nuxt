@@ -385,21 +385,23 @@ export default class Builder {
       // Use nuxt.js createRoutes bases on pages/
       const files = {}
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
-      for (const page of await this.resolveFiles(this.options.dir.pages)) {
-        const key = page.replace(ext, '')
-        // .vue file takes precedence over other extensions
-        if (/\.vue$/.test(page) || !files[key]) {
-          files[key] = page.replace(/(['"])/g, '\\$1')
+      for (const subPages of this.options.dir.pages) {
+        for (const page of await this.resolveFiles(subPages)) {
+          const key = page.replace(ext, '')
+          // .vue file takes precedence over other extensions
+          if (/\.vue$/.test(page) || !files[key]) {
+            files[key] = page.replace(/(['"])/g, '\\$1')
+          }
         }
+        templateVars.router.routes = createRoutes({
+          files: Object.values(files),
+          srcDir: this.options.srcDir,
+          pagesDir: subPages,
+          routeNameSplitter,
+          supportedExtensions: this.supportedExtensions,
+          trailingSlash
+        })
       }
-      templateVars.router.routes = createRoutes({
-        files: Object.values(files),
-        srcDir: this.options.srcDir,
-        pagesDir: this.options.dir.pages,
-        routeNameSplitter,
-        supportedExtensions: this.supportedExtensions,
-        trailingSlash
-      })
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = await this.options.build.createRoutes(
         this.options.srcDir

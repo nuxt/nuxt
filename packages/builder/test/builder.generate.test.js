@@ -644,7 +644,7 @@ describe('builder: builder generate', () => {
       const nuxt = createNuxt()
       nuxt.options.srcDir = '/var/nuxt/src'
       nuxt.options.dir = {
-        pages: '/var/nuxt/pages'
+        pages: ['/var/nuxt/pages', '/var/nuxt/pages']
       }
       nuxt.options.build = {
         watch: [],
