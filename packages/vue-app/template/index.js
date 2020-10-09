@@ -44,6 +44,12 @@ Vue.component(NuxtChild.name, NuxtChild)
 // Component: <Nuxt>
 Vue.component(Nuxt.name, Nuxt)
 
+Object.defineProperty(Vue.prototype, '<%= globals.nuxt %>', {
+  get() {
+    return this.$root.$options.<%= globals.nuxt %>
+  }
+})
+
 <% if (features.meta) {
 // vue-meta configuration
 const vueMetaOptions = {
