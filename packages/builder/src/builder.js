@@ -190,23 +190,24 @@ export default class Builder {
   // Check if pages dir exists and warn if not
   async validatePages () {
     this._nuxtPages = typeof this.options.build.createRoutes !== 'function'
+    for (const subPages of this.options.dir.pages) {
+      if (
+        !this._nuxtPages ||
+      await fsExtra.exists(path.join(this.options.srcDir, subPages))
+      ) {
+        return
+      }
 
-    if (
-      !this._nuxtPages ||
-      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
-    ) {
-      return
+      const dir = this.options.srcDir
+      if (await fsExtra.exists(path.join(this.options.srcDir, '..', subPages))) {
+        throw new Error(
+        `No \`${subPages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
+        )
+      }
+
+      this._defaultPage = true
+      consola.warn(`No \`${subPages}\` directory found in ${dir}. Using the default built-in page.`)
     }
-
-    const dir = this.options.srcDir
-    if (await fsExtra.exists(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
-      throw new Error(
-        `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
-      )
-    }
-
-    this._defaultPage = true
-    consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
   }
 
   validateTemplate () {
@@ -393,14 +394,14 @@ export default class Builder {
             files[key] = page.replace(/(['"])/g, '\\$1')
           }
         }
-        templateVars.router.routes = createRoutes({
+        templateVars.router.routes.push(...createRoutes({
           files: Object.values(files),
           srcDir: this.options.srcDir,
           pagesDir: subPages,
           routeNameSplitter,
           supportedExtensions: this.supportedExtensions,
           trailingSlash
-        })
+        }))
       }
     } else { // If user defined a custom method to create routes
       templateVars.router.routes = await this.options.build.createRoutes(
@@ -681,7 +682,9 @@ export default class Builder {
     }
 
     if (this._nuxtPages && !this._defaultPage) {
-      patterns.push(r(this.options.srcDir, this.options.dir.pages))
+      for (const subPages of this.options.dir.pages) {
+        patterns.push(r(this.options.srcDir, subPages))
+      }
     }
 
     patterns = patterns.map((path, ...args) => upath.normalizeSafe(this.globPathWithExtensions(path), ...args))
