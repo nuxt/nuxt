@@ -11,6 +11,12 @@ export default {
   build: {
     publicPath: '/test/_nuxt/'
   },
+  foo: {
+    shell: process.env.SHELL
+  },
+  env: {
+    x: 123
+  },
   hooks: {
     export: {
       before ({ setPayload }) {

@@ -59,13 +59,27 @@ export async function ensureBuild (cmd) {
 
   const currentBuildSnapshot = await snapshot(snapshotOptions)
 
+  // Detect process.env usage in nuxt.config
+  const processEnv = {}
+  if (nuxt.options._nuxtConfigFile) {
+    const configSrc = await fs.readFile(nuxt.options._nuxtConfigFile)
+    const envRegex = /process.env.(\w+)/g
+    let match
+    // eslint-disable-next-line no-cond-assign
+    while (match = envRegex.exec(configSrc)) {
+      processEnv[match[1]] = process.env[match[1]]
+    }
+  }
+
   // Current build meta
   const currentBuild = {
     // @ts-ignore
     nuxtVersion: nuxt.constructor.version,
     ssr: nuxt.options.ssr,
     target: nuxt.options.target,
-    snapshot: currentBuildSnapshot
+    snapshot: currentBuildSnapshot,
+    env: nuxt.options.env,
+    'process.env': processEnv
   }
 
   // Check if build can be skipped
@@ -74,9 +88,10 @@ export async function ensureBuild (cmd) {
     const previousBuild = destr(fs.readFileSync(nuxtBuildFile, 'utf-8')) || {}
 
     // Quick diff
-    const needBuild = false
-    for (const field of ['nuxtVersion', 'ssr', 'target']) {
-      if (previousBuild[field] !== currentBuild[field]) {
+    let needBuild = false
+    for (const field of ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']) {
+      if (JSON.stringify(previousBuild[field]) !== JSON.stringify(currentBuild[field])) {
+        needBuild = true
         consola.info(`Doing webpack rebuild because ${field} changed`)
         break
       }
