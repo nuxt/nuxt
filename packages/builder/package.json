@@ -13,7 +13,7 @@
     "@nuxt/vue-app": "2.14.6",
     "@nuxt/webpack": "2.14.6",
     "chalk": "^3.0.0",
-    "chokidar": "^3.4.2",
+    "chokidar": "^3.4.3",
     "consola": "^2.15.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
