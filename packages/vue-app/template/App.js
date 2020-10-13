@@ -98,7 +98,8 @@ export default {
   },
   created () {
     // Add this.$nuxt in child instances
-    Vue.prototype.<%= globals.nuxt %> = this
+    this.$root.$options.<%= globals.nuxt %> = this
+
     if (process.client) {
       // add to window so we can listen when ready
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
