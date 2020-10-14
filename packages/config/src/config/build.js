@@ -75,10 +75,7 @@ export default () => ({
   babel: {
     configFile: false,
     babelrc: false,
-    cacheDirectory: undefined,
-    plugins: [
-      '@babel/plugin-proposal-optional-chaining'
-    ]
+    cacheDirectory: undefined
   },
   transpile: [], // Name of NPM packages to be transpiled
   postcss: {
