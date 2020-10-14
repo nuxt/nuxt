@@ -1,4 +1,5 @@
 import consola from 'consola'
+import chalk from 'chalk'
 import { MODES, TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
@@ -78,6 +79,7 @@ export default {
     // TODO: remove if in Nuxt 3
     if (nuxt.options.mode === MODES.spa && nuxt.options.target === TARGETS.server && cmd.argv.generate !== false) {
       // Build + Generate for static deployment
+      consola.info(`Enforcing ${chalk.bold.blue('static')} target because of \`nuxt build\` with server-side rendering disabled`)
       const generator = await cmd.getGenerator(nuxt)
       await generator.generate({ build: true })
     } else {

@@ -1,4 +1,6 @@
 import { TARGETS } from '@nuxt/utils'
+import consola from 'consola'
+import chalk from 'chalk'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
 import { ensureBuild, generate } from '../utils/generate'
@@ -75,6 +77,7 @@ export default {
 
     // Forcing static target anyway
     config.target = TARGETS.static
+    consola.info(`Enforcing ${chalk.bold.blue('static')} target because of \`nuxt generate\` command`)
 
     // Set flag to keep the prerendering behaviour
     config._legacyGenerate = true

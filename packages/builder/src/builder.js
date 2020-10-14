@@ -130,8 +130,7 @@ export default class Builder {
       } else {
         consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
       }
-      const target = isFullStatic(this.options) ? 'full static' : this.options.target
-      consola.info(`Target: ${chalk.bold.cyan(target)}`)
+      consola.info(`Target: ${chalk.bold.cyan(this.options.target)}`)
     }
 
     // Wait for nuxt ready
