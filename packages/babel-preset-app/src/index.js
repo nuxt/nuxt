@@ -160,8 +160,10 @@ module.exports = (api, options = {}) => {
   }])
 
   // https://github.com/nuxt/nuxt.js/issues/7722
-  plugins.push('@babel/plugin-proposal-optional-chaining')
-  plugins.push('@babel/plugin-proposal-nullish-coalescing-operator')
+  if (envName === 'server') {
+    plugins.push('@babel/plugin-proposal-optional-chaining')
+    plugins.push('@babel/plugin-proposal-nullish-coalescing-operator')
+  }
 
   return {
     sourceType: 'unambiguous',
