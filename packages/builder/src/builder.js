@@ -24,8 +24,7 @@ import {
   stripWhitespace,
   isIndexFileAndFolder,
   scanRequireTree,
-  TARGETS,
-  isFullStatic
+  TARGETS
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
