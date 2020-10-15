@@ -30,7 +30,8 @@
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint && yarn ls-lint",
     "test:types": "tsc -p packages/types/test",
-    "test:unit": "jest packages --forceExit"
+    "test:unit": "jest packages --forceExit",
+    "test:builder": "jest packages/builder --forceExit"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",

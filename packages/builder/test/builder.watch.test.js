@@ -38,19 +38,19 @@ describe('builder: builder watch', () => {
 
     const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
-    builder.assignWatcher = jest.fn(() => () => {})
+    builder.assignWatcher = jest.fn(() => () => { })
     r.mockImplementation((dir, src) => src)
 
     builder.watchClient()
 
     const patterns = [
-      '/var/nuxt/src/layouts',
-      '/var/nuxt/src/middleware'
+      '/var/nuxt/src/middleware',
+      '/var/nuxt/src/layouts'
     ]
 
     const globbedPatterns = [
-      '/var/nuxt/src/layouts/**/*.{vue,js}',
-      '/var/nuxt/src/middleware/**/*.{vue,js}'
+      '/var/nuxt/src/middleware/**/*.{vue,js}',
+      '/var/nuxt/src/layouts/**/*.{vue,js}'
     ]
 
     expect(r).toBeCalledTimes(2)
@@ -64,6 +64,36 @@ describe('builder: builder watch', () => {
     expect(builder.createFileWatcher).toBeCalledTimes(1)
     expect(builder.createFileWatcher).toBeCalledWith(globbedPatterns, ['add', 'unlink'], expect.any(Function), expect.any(Function))
     expect(builder.assignWatcher).toBeCalledTimes(1)
+  })
+
+  test('should watch client with multiple layout directories', () => {
+    const nuxt = createNuxt()
+    nuxt.options.srcDir = '/var/nuxt/src'
+    nuxt.options.dir = {
+      layouts: ['/var/nuxt/src/layouts', '/var/nuxt/src/layouts-alt'],
+      pages: '/var/nuxt/src/pages',
+      store: '/var/nuxt/src/store',
+      middleware: '/var/nuxt/src/middleware'
+    }
+    nuxt.options.build.watch = []
+
+    const builder = new Builder(nuxt, BundleBuilder)
+    builder.createFileWatcher = jest.fn()
+    builder.assignWatcher = jest.fn(() => () => { })
+    r.mockImplementation((dir, src) => src)
+
+    builder.watchClient()
+
+    const patterns = [
+      '/var/nuxt/src/middleware',
+      '/var/nuxt/src/layouts',
+      '/var/nuxt/src/layouts-alt'
+    ]
+
+    expect(r).toBeCalledTimes(3)
+    expect(r).nthCalledWith(1, '/var/nuxt/src', patterns[0])
+    expect(r).nthCalledWith(2, '/var/nuxt/src', patterns[1])
+    expect(r).nthCalledWith(3, '/var/nuxt/src', patterns[2])
   })
 
   test('should watch store files', () => {
@@ -80,7 +110,7 @@ describe('builder: builder watch', () => {
 
     const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
-    builder.assignWatcher = jest.fn(() => () => {})
+    builder.assignWatcher = jest.fn(() => () => { })
     r.mockImplementation((dir, src) => src)
 
     builder.watchClient()
@@ -184,7 +214,7 @@ describe('builder: builder watch', () => {
     ]
     const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
-    builder.assignWatcher = jest.fn(() => () => {})
+    builder.assignWatcher = jest.fn(() => () => { })
     builder.watchClient()
 
     const patterns = [
@@ -394,7 +424,7 @@ describe('builder: builder watch', () => {
 
   test('should close bundleBuilder only if close api exists', async () => {
     const nuxt = createNuxt()
-    const builder = new Builder(nuxt, { })
+    const builder = new Builder(nuxt, {})
     builder.unwatch = jest.fn()
 
     expect(builder.__closed).toBeUndefined()

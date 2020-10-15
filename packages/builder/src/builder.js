@@ -337,27 +337,33 @@ export default class Builder {
       return
     }
 
-    if (await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.layouts))) {
-      for (const file of await this.resolveFiles(this.options.dir.layouts)) {
-        const name = file
-          .replace(new RegExp(`^${this.options.dir.layouts}/`), '')
-          .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
+    let layouts = this.options.dir.layouts || []
+    if (typeof layouts === 'string') {
+      layouts = [layouts]
+    }
+    for (const layout of layouts) {
+      if (await fsExtra.exists(path.resolve(this.options.srcDir, layout))) {
+        for (const file of await this.resolveFiles(layout)) {
+          const name = file
+            .replace(new RegExp(`^${layout}/`), '')
+            .replace(new RegExp(`\\.(${this.supportedExtensions.join('|')})$`), '')
 
-        // Layout Priority: module.addLayout > .vue file > other extensions
-        if (name === 'error') {
-          if (!templateVars.components.ErrorPage) {
-            templateVars.components.ErrorPage = this.relativeToBuild(
+          // Layout Priority: module.addLayout > .vue file > other extensions
+          if (name === 'error') {
+            if (!templateVars.components.ErrorPage) {
+              templateVars.components.ErrorPage = this.relativeToBuild(
+                this.options.srcDir,
+                file
+              )
+            }
+          } else if (this.options.layouts[name]) {
+            consola.warn(`Duplicate layout registration, "${name}" has been registered as "${this.options.layouts[name]}"`)
+          } else if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
+            templateVars.layouts[name] = this.relativeToBuild(
               this.options.srcDir,
               file
             )
           }
-        } else if (this.options.layouts[name]) {
-          consola.warn(`Duplicate layout registration, "${name}" has been registered as "${this.options.layouts[name]}"`)
-        } else if (!templateVars.layouts[name] || /\.vue$/.test(file)) {
-          templateVars.layouts[name] = this.relativeToBuild(
-            this.options.srcDir,
-            file
-          )
         }
       }
     }
@@ -670,9 +676,18 @@ export default class Builder {
 
   watchClient () {
     let patterns = [
-      r(this.options.srcDir, this.options.dir.layouts),
       r(this.options.srcDir, this.options.dir.middleware)
     ]
+
+    let layouts = this.options.dir.layouts || []
+    if (typeof layouts === 'string') {
+      layouts = [layouts]
+    }
+    for (const layoutDir of layouts) {
+      patterns.push(
+        r(this.options.srcDir, layoutDir)
+      )
+    }
 
     if (this.options.store) {
       patterns.push(r(this.options.srcDir, this.options.dir.store))
