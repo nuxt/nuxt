@@ -1,6 +1,5 @@
 import { TARGETS } from '@nuxt/utils'
 import consola from 'consola'
-import chalk from 'chalk'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
 import { ensureBuild, generate } from '../utils/generate'

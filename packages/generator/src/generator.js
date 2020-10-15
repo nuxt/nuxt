@@ -17,7 +17,7 @@ export default class Generator {
     // Set variables
     this.isFullStatic = isFullStatic(this.options)
     if (this.isFullStatic) {
-      consola.info(`Full static generation ${chalk.bold.green('activated')}`)
+      consola.info(`Full static generation activated`)
     }
     this.staticRoutes = path.resolve(this.options.srcDir, this.options.dir.static)
     this.srcBuiltPath = path.resolve(this.options.buildDir, 'dist', 'client')
