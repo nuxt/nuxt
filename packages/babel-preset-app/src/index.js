@@ -159,6 +159,12 @@ module.exports = (api, options = {}) => {
     absoluteRuntime
   }])
 
+  // https://github.com/nuxt/nuxt.js/issues/7722
+  if (envName === 'server') {
+    plugins.push(require('@babel/plugin-proposal-optional-chaining'))
+    plugins.push(require('@babel/plugin-proposal-nullish-coalescing-operator'))
+  }
+
   return {
     sourceType: 'unambiguous',
     presets,
