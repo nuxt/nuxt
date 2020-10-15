@@ -9,7 +9,7 @@ let app
 let server
 
 describe('express', () => {
-  // Init nuxt.js and create express server
+  // Init nuxt and create express server
   beforeAll(async () => {
     const config = await loadFixture('basic')
     nuxt = new Nuxt(config)

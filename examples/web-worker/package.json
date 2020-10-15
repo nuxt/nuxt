@@ -1,6 +1,6 @@
 {
   "name": "web-worker",
-  "description": "Demo web workers in nuxt.js",
+  "description": "Demo web workers in nuxt",
   "private": true,
   "scripts": {
     "dev": "nuxt",

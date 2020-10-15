@@ -1,3 +1,3 @@
-# Routes transitions with Nuxt.js
+# Routes transitions with Nuxt
 
 https://nuxtjs.org/examples/routes-transitions

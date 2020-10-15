@@ -26,7 +26,7 @@ export default {
   notifications: {
     showLoginError: {
       title: 'Welcome!',
-      message: 'Hello from nuxt.js',
+      message: 'Hello from nuxt',
       type: 'info'
     }
   }

@@ -58,7 +58,7 @@ export default {
     }
   },
   head: {
-    title: 'Nuxt.js with Socket.io'
+    title: 'Nuxt with Socket.io'
   }
 }
 </script>

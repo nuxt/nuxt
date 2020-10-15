@@ -1,7 +1,7 @@
 {
   "name": "example-with-firebase",
   "version": "1.0.0",
-  "description": "Nuxt.js with Firebase",
+  "description": "Nuxt with Firebase",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",

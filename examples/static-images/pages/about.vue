@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <img src="~static/nuxt-black.png">
-    <h2>Thank you for testing nuxt.js</h2>
+    <h2>Thank you for testing nuxt</h2>
     <p>Loaded from the {{ name }}</p>
     <p>
       <NuxtLink to="/">

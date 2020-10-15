@@ -33,7 +33,7 @@ export default {
         cacheGroups: {
           nuxtApp: {
             test: /[\\/]\.nuxt[\\/]/,
-            filename: 'vue-app.nuxt.js',
+            filename: 'vue-app.nuxt',
             enforce: true
           }
         }

@@ -1,7 +1,7 @@
 {
   "name": "example-pug-stylus-coffee",
   "version": "1.0.0",
-  "description": "Nuxt.js with Pug Stylus and CoffeeScript",
+  "description": "Nuxt with Pug Stylus and CoffeeScript",
   "author": "Alex Ananiev <alex.ananiev.r@gmail.com>, Kron Austrum <huyach@protonmail.ch>",
   "private": true,
   "scripts": {

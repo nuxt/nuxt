@@ -1,7 +1,7 @@
 {
   "name": "@nuxt/types",
   "version": "2.14.7",
-  "description": "Nuxt.js types",
+  "description": "Nuxt types",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "types": "index",

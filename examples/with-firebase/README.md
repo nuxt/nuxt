@@ -13,7 +13,7 @@ You can view the Firebase data at [https://nuxt-firebase.firebaseio.com/.json](h
 Download this example [or clone the repo](https://github.com/nuxt/nuxt.js):
 
 ```bash
-curl https://codeload.github.com/nuxt/nuxt.js/tar.gz/master | tar -xz --strip=2 nuxt.js-master/examples/with-firebase
+curl https://codeload.github.com/nuxt/nuxt.js/tar.gz/master | tar -xz --strip=2 nuxt-master/examples/with-firebase
 cd with-firebase
 ```
 

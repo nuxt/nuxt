@@ -56,7 +56,7 @@ export default {
   env: {
     bool: true,
     num: 23,
-    string: 'Nuxt.js',
+    string: 'Nuxt',
     object: {
       bool: false,
       string: 'ok',

@@ -1,3 +1,3 @@
-# `<no-ssr>` with Nuxt.js
+# `<no-ssr>` with Nuxt
 
 https://nuxtjs.org/examples

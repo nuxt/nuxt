@@ -21,7 +21,7 @@ export const template = {
     'components/nuxt-child.js',
     'components/nuxt-link.server.js',
     'components/nuxt-link.client.js',
-    'components/nuxt.js',
+    'components/nuxt',
     'views/app.template.html',
     'views/error.html'
   ]

@@ -1,4 +1,4 @@
-# Nuxt.js server-side benchmarks
+# Nuxt server-side benchmarks
 
 > Taken from [Next.js benchmarks](https://github.com/zeit/next.js/tree/master/bench), if you like React, we recommend you to try [Next.js](https://github.com/zeit/next.js).
 

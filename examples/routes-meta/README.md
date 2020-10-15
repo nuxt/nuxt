@@ -1,4 +1,4 @@
-# Routes meta with Nuxt.js
+# Routes meta with Nuxt
 
 Demo: https://nuxt-routes-meta.glitch.me
 

@@ -6,7 +6,7 @@
         web-worker
       </h1>
       <h2 class="subtitle">
-        Nuxt.js project
+        Nuxt project
       </h2>
       <p>{{ notification }}</p>
       <ul class="list">

@@ -6,7 +6,7 @@ import Vue from 'vue'
 import { createRouter } from './router.js'
 import NuxtChild from './components/nuxt-child.js'
 import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
-import Nuxt from './components/nuxt.js'
+import Nuxt from './components/nuxt'
 import App from '<%= appPath %>'
 import { setContext, getLocation, getRouteData, normalizeError } from './utils'
 <% if (store) { %>import { createStore } from './store.js'<% } %>
