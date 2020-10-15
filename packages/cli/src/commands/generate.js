@@ -77,7 +77,8 @@ export default {
 
     // Forcing static target anyway
     config.target = TARGETS.static
-    consola.info(`Enforcing ${chalk.bold.blue('static')} target because of \`nuxt generate\` command`)
+    consola.warn(`For using `nuxt generate`, your have to set \`target: 'static'\` in your nuxt.config`)
+    consola.info('Learn more about it on https://nuxtjs.org/blog/going-full-static')
 
     // Set flag to keep the prerendering behaviour
     config._legacyGenerate = true
