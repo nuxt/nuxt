@@ -18,5 +18,6 @@ export default () => ({
     versionBase: undefined, // Default: "_nuxt/static/{version}""
     dir: 'static',
     version: undefined // Default: "{timeStampSec}"
-  }
+  },
+  nonRootPageExtension: undefined // Default: '.html'
 })

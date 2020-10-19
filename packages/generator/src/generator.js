@@ -359,7 +359,8 @@ export default class Generator {
       fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
     } else {
       const normalizedRoute = route.replace(/\/$/, '')
-      fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')
+      const extension = (typeof this.options.generate.nonRootPageExtension === 'undefined') ? '.html' : this.options.generate.nonRootPageExtension
+      fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + extension) : path.join(path.sep, 'index.html')
     }
 
     // Call hook to let user update the path & html

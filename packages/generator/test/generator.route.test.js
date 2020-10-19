@@ -242,4 +242,44 @@ describe('generator: generate route', () => {
     expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], index.html))`, 'rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
+
+  test('should be able go generate routes without extension (except main)', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.generate.subFolders = false
+    nuxt.options.build.html = { minify: false }
+    nuxt.options.generate.nonRootPageExtension = ''
+    const generator = new Generator(nuxt)
+    path.join.mockClear()
+
+    const route = '/foo'
+    const payload = {}
+    const errors = []
+
+    const returned = await generator.generateRoute({ route, payload, errors })
+
+    expect(nuxt.server.renderRoute).toBeCalledTimes(1)
+    expect(nuxt.server.renderRoute).toBeCalledWith(route, { payload })
+    expect(path.join).toBeCalledTimes(2)
+    expect(path.join).nthCalledWith(1, '[sep]', '/foo')
+    expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo)')
+
+    expect(hookCalls(nuxt, 'generate:page')[0][0]).toMatchObject({
+      route,
+      html: 'rendered html',
+      path: `join(${generator.distPath}, join([sep], /foo))`
+    })
+
+    expect(hookCalls(nuxt, 'generate:routeCreated')[0][0]).toMatchObject({
+      route,
+      errors: [],
+      path: `join(${generator.distPath}, join([sep], /foo))`
+    })
+
+    expect(fsExtra.mkdirp).toBeCalledTimes(1)
+    expect(fsExtra.mkdirp).toBeCalledWith(`dirname(join(${generator.distPath}, join([sep], /foo)))`)
+    expect(fsExtra.writeFile).toBeCalledTimes(1)
+    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], /foo))`, 'rendered html', 'utf8')
+
+    expect(returned).toEqual(true)
+  })
 })
