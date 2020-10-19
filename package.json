@@ -33,8 +33,8 @@
     "test:unit": "jest packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.0",
-    "@babel/preset-env": "^7.12.0",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
     "@ls-lint/ls-lint": "^1.9.2",
     "@nuxtjs/eslint-config": "^3.1.0",
     "@rollup/plugin-alias": "^3.1.1",
@@ -72,7 +72,7 @@
     "puppeteer-core": "^5.3.1",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
-    "rollup": "2.30.0",
+    "rollup": "2.32.0",
     "rollup-plugin-license": "^2.2.0",
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.46.0",
