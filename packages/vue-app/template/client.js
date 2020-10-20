@@ -650,7 +650,7 @@ function fixPrepatch (to, ___) {
   const instances = getMatchedComponentsInstances(to)
   const Components = getMatchedComponents(to)
 
-  let triggerScroll = <%= features.transitions ? 'true' : 'false' %>
+  let triggerScroll = <%= features.transitions ? 'false' : 'true' %>
 
   Vue.nextTick(() => {
     instances.forEach((instance, i) => {
