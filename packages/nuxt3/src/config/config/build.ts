@@ -72,14 +72,6 @@ interface UrlLoaderOptions {
   mimetype?: string
 }
 
-interface WebpackEnv {
-  isClient: boolean
-  isDev: boolean
-  isLegacy: boolean
-  isModern: boolean
-  isServer: boolean
-}
-
 interface PostcssOrderPresetFunctions {
   cssnanoLast: (names: string[]) => string[]
   presetEnvAndCssnanoLast: (names: string[]) => string[]
@@ -97,7 +89,7 @@ interface PostcssConfiguration {
   order?: PostcssOrderPreset | string[] | ((names: string[], presets: PostcssOrderPresetFunctions) => string[])
   plugins?: {
     [key: string]: false | { [key: string]: any }
-  } | ((loader: any) => PostcssPlugin<any>[]) | Array<[string | PostcssPlugin<any>, any] | string | PostcssPlugin<any>>
+  } | ((loader: any) => PostcssPlugin[]) | Array<[string | PostcssPlugin, any] | string | PostcssPlugin>
   preset?: {
     autoprefixer?: false | AutoprefixerOptions
     browsers?: string
@@ -106,17 +98,11 @@ interface PostcssConfiguration {
       [key: string]: boolean | { [key: string]: any }
     }
     importFrom?: string | string[] | Partial<PostcssVariableMap> | (() => Partial<PostcssVariableMap>)
-    insertAfter?: { [key: string]: PostcssPlugin<any> }
-    insertBefore?: { [key: string]: PostcssPlugin<any> }
+    insertAfter?: { [key: string]: PostcssPlugin }
+    insertBefore?: { [key: string]: PostcssPlugin }
     preserve?: boolean
     stage?: 0 | 1 | 2 | 3 | 4 | false
   }
-}
-
-interface VueStyleOptions {
-  manualInject?: boolean
-  ssrId?: boolean
-  shadowMode?: boolean
 }
 
 interface Loaders {

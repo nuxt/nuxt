@@ -1,9 +1,14 @@
 import serialize from 'serialize-javascript'
 
-export function normalizeFunctions (obj: Array<any>): Array<any>
-export function normalizeFunctions (obj: null): null
-export function normalizeFunctions (obj: Function): Function
-export function normalizeFunctions (obj: Record<string, any>): Record<string, any>
+// eslint-disable-next-line no-redeclare
+export function normalizeFunctions(obj: Array<any>): Array<any>
+// eslint-disable-next-line no-redeclare
+export function normalizeFunctions(obj: null): null
+// eslint-disable-next-line no-redeclare
+export function normalizeFunctions(obj: Function): Function
+// eslint-disable-next-line no-redeclare
+export function normalizeFunctions(obj: Record<string, any>): Record<string, any>
+// eslint-disable-next-line no-redeclare
 export function normalizeFunctions (obj: Array<unknown> | null | Function | Record<string, any>) {
   if (typeof obj !== 'object' || Array.isArray(obj) || obj === null) {
     return obj

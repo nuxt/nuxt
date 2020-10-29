@@ -46,7 +46,7 @@ export default async function renderAndGetWindow (
 
   if (options.virtualConsole) {
     if (options.virtualConsole === undefined) {
-      options.virtualConsole = new jsdom.VirtualConsole().sendTo(consola as unknown as Console)
+      options.virtualConsole = new jsdom.VirtualConsole().sendTo(consola as unknown as typeof console)
     }
     // Throw error when window creation failed
     options.virtualConsole.on('jsdomError', jsdomErrHandler)

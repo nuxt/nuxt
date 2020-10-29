@@ -17,10 +17,10 @@ export const ModernBrowsers = {
   'Mobile Safari': '10.3'
 } as const
 
-type ModernBrowsers = { -readonly [key in keyof typeof ModernBrowsers]: SemVer }
+type ModernBrowsersT = { -readonly [key in keyof typeof ModernBrowsers]: SemVer }
 
 let semver: typeof import('semver')
-let __modernBrowsers: ModernBrowsers
+let __modernBrowsers: ModernBrowsersT
 
 const getModernBrowsers = () => {
   if (__modernBrowsers) {
@@ -35,7 +35,7 @@ const getModernBrowsers = () => {
       if (version) { allBrowsers[browser] = version }
       return allBrowsers
     },
-    {} as ModernBrowsers
+    {} as ModernBrowsersT
   )
   return __modernBrowsers
 }

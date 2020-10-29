@@ -23,7 +23,7 @@ interface RequireModuleOptions {
 
 export default class Resolver {
   _require: NodeJS.Require
-  _resolve: RequireResolve
+  _resolve: NodeJS.RequireResolve
   nuxt: Nuxt
   options: Nuxt['options']
 
