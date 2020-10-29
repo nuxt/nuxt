@@ -41,7 +41,9 @@ jobs:
       - name: cache workspace
         uses: actions/cache@v2
         with:
-          path: ./**/node_modules
+          path: |
+            packages/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
 
@@ -103,7 +105,9 @@ jobs:
       - name: restore workspace cache
         uses: actions/cache@v2
         with:
-          path: ./**/node_modules
+          path: |
+            packages/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: build
@@ -138,7 +142,9 @@ jobs:
       - name: restore workspace cache
         uses: actions/cache@v2
         with:
-          path: ./**/node_modules
+          path: |
+            packages/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
