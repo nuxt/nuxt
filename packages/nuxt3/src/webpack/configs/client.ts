@@ -65,13 +65,10 @@ function clientHMR (ctx: WebpackConfigContext) {
   // Add HMR support
   const app = (config.entry as any).app as any
   app.unshift(
-    // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-    'eventsource-polyfill',
       // https://github.com/glenjamin/webpack-hot-middleware#config
       `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
   )
 
-  // TODO: webpackHotUpdate is not defined: https://github.com/webpack/webpack/issues/6693
   config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
