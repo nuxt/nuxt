@@ -11,7 +11,7 @@ import ServerContext from 'src/server/context'
 import BaseRenderer from './base'
 
 export default class SSRRenderer extends BaseRenderer {
-  vueRenderer: typeof import('@vue/server-renderer')
+  vueRenderer: ReturnType<typeof createBundleRenderer>
 
   constructor (serverContext: ServerContext) {
     super(serverContext)
@@ -23,6 +23,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     return {
       vueServerRenderer: require('@vue/server-renderer'),
+      bundleRunner: require('bundle-runner'),
       clientManifest: this.serverContext.resources.clientManifest,
       // for globally installed nuxt command, search dependencies in global dir
       basedir: hasModules ? this.options.rootDir : __dirname,
@@ -30,8 +31,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
   }
 
-  renderScripts (renderContext) {
-    const scripts = renderContext.renderScripts()
+  renderScripts (scripts) {
     const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return scripts
@@ -46,8 +46,7 @@ export default class SSRRenderer extends BaseRenderer {
     return renderContext.getPreloadFiles()
   }
 
-  renderResourceHints (renderContext) {
-    const resourceHints = renderContext.renderResourceHints()
+  renderResourceHints (resourceHints) {
     const { render: { crossorigin } } = this.options
     if (!crossorigin) {
       return resourceHints
@@ -94,7 +93,8 @@ export default class SSRRenderer extends BaseRenderer {
     const getSSRLog = this.useSSRLog()
 
     // Call Vue renderer renderToString
-    let APP = await this.vueRenderer.renderToString(renderContext)
+    const { html: _html, renderResourceHints, renderScripts, renderStyles } = await this.vueRenderer.renderToString(renderContext)
+    let APP = _html
 
     // Wrap with Nuxt id
     APP = `<div id="${this.serverContext.globals.id}">${APP}</div>`
@@ -156,11 +156,11 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Inject resource hints
     if (this.options.render.resourceHints && shouldInjectScripts) {
-      HEAD += this.renderResourceHints(renderContext)
+      HEAD += this.renderResourceHints(renderResourceHints())
     }
 
     // Inject styles
-    HEAD += renderContext.renderStyles()
+    HEAD += renderStyles()
 
     if (meta) {
       const prependInjectorOptions = { pbody: true }
@@ -261,7 +261,7 @@ export default class SSRRenderer extends BaseRenderer {
 
     // Prepend scripts
     if (shouldInjectScripts) {
-      APP += this.renderScripts(renderContext)
+      APP += this.renderScripts(renderScripts())
     }
 
     if (meta) {
