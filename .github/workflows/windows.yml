@@ -42,6 +42,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            node_modules
             packages/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
@@ -106,6 +107,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            node_modules
             packages/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
@@ -143,6 +145,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            node_modules
             packages/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
