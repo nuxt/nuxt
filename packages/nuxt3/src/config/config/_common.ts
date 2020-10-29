@@ -78,7 +78,7 @@ export type ModuleHandler<T = any> = (this: ModuleThis, moduleOptions: T) => Pro
 
 export type NuxtModule = string | ModuleHandler | [string | ModuleHandler, any]
 
-export type ServerMiddleware = string | { path: string, prefix?: boolean, handler: string | NextHandleFunction } | NextHandleFunction
+export type ServerMiddleware = string | { path: string, prefix?: boolean, handler: string | express.NextFunction } | express.NextFunction
 
 interface CommonConfiguration {
   _modules: NuxtModule[]
@@ -113,7 +113,7 @@ interface CommonConfiguration {
   modules: NuxtModule[]
   privateRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)
   publicRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)
-  serverMiddleware: Array<ServerMiddleware> | Record<string, expr>
+  serverMiddleware: Array<ServerMiddleware> | Record<string, express.Handler>
   ssr: boolean
   target: Target
   test: boolean

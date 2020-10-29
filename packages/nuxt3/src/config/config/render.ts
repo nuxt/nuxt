@@ -2,6 +2,7 @@
 import type { ServerResponse, IncomingMessage } from 'http'
 import type { CompressionOptions } from 'compression'
 import type { ServeStaticOptions } from 'serve-static'
+import type etag from 'etag'
 import type { ServerMiddleware } from './_common'
 
 interface PreloadFile {
@@ -40,7 +41,7 @@ interface RenderOptions {
     unsafeInlineCompatibility?: boolean
   }
   dist: ServeStaticOptions
-  etag: false | EtagOptions & {
+  etag: false | etag.Options & {
     hash?: (html: string) => string
   }
   fallback?: {
