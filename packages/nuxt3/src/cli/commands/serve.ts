@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs'
 import { join, extname, basename } from 'path'
-import connect from 'connect'
+import express from 'express'
 import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from 'src/config'
@@ -38,7 +38,7 @@ export default {
     if (!distStat || !distStat.isDirectory()) {
       throw new Error('Output directory `' + basename(options.generate.dir) + '/` does not exists, please run `nuxt export` before `nuxt serve`.')
     }
-    const app = connect()
+    const app = express()
     app.use(compression({ threshold: 0 }))
     app.use(
       options.router.base,

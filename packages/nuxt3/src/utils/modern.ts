@@ -1,7 +1,7 @@
+import type { IncomingMessage } from 'http'
 import { UAParser } from 'ua-parser-js'
 
 import type { SemVer } from 'semver'
-import type { IncomingMessage } from 'connect'
 
 export const ModernBrowsers = {
   Edge: '16',

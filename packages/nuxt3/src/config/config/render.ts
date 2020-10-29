@@ -1,7 +1,5 @@
 // TODO: Refactor @nuxt/server related options into `server.js`
-import type { ServerResponse } from 'http'
-import type { Options as EtagOptions } from 'etag'
-import type { IncomingMessage } from 'connect'
+import type { ServerResponse, IncomingMessage } from 'http'
 import type { CompressionOptions } from 'compression'
 import type { ServeStaticOptions } from 'serve-static'
 import type { ServerMiddleware } from './_common'

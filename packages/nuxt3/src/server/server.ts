@@ -1,10 +1,10 @@
 import path from 'path'
-import { ServerResponse } from 'http'
+import { ServerResponse, IncomingMessage } from 'http'
 import consola from 'consola'
 import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
-import connect, { IncomingMessage } from 'connect'
+import express from 'express'
 import type { TemplateExecutor } from 'lodash'
 
 import { Nuxt } from 'src/core'
@@ -25,7 +25,7 @@ interface Manifest {
   async: Array<string>
 }
 
-type NuxtMiddleware = connect.HandleFunction & {
+type NuxtMiddleware = express.Handler & {
   prefix?: string,
   entry?: string,
   _middleware?: NuxtMiddleware
@@ -35,7 +35,7 @@ export default class Server {
   __closed?: boolean
   _readyCalled?: boolean
 
-  app: connect.Server
+  app: express.Application
   devMiddleware: (req: IncomingMessage, res: ServerResponse, next: (err?: any) => void) => any
   listeners: Listener[]
   nuxt: Nuxt
@@ -71,8 +71,8 @@ export default class Server {
     // Will be set after listen
     this.listeners = []
 
-    // Create new connect instance
-    this.app = connect()
+    // Create new express instance
+    this.app = express()
 
     // Close hook
     this.nuxt.hook('close', () => this.close())

@@ -1,6 +1,6 @@
 import path from 'path'
 import type { WatchOptions as ChokidarWatchOptions } from 'chokidar'
-import type { NextHandleFunction, Server as ConnectServer } from 'connect'
+import type express from 'express'
 import type { configHooksT } from 'hookable/types/types'
 import ignore from 'ignore'
 import capitalize from 'lodash/capitalize'
@@ -57,13 +57,13 @@ interface NuxtHooks extends configHooksT {
   render?: {
     before?(renderer: any, options: any): void
     done?(renderer: any): void
-    errorMiddleware?(app: ConnectServer): void
+    errorMiddleware?(app: express.Application): void
     resourcesLoaded?(resources: any): void
     route?(url: string, result: any, context: any): void
     routeContext?(context: any): void
     routeDone?(url: string, result: any, context: any): void
     beforeResponse?(url: string, result: any, context: any): void
-    setupMiddleware?(app: ConnectServer): void
+    setupMiddleware?(app: express.Application): void
   }
 }
 
@@ -113,7 +113,7 @@ interface CommonConfiguration {
   modules: NuxtModule[]
   privateRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)
   publicRuntimeConfig: Record<string, any> | ((env: NodeJS.ProcessEnv) => Record<string, any>)
-  serverMiddleware: Array<ServerMiddleware> | Record<string, NextHandleFunction>
+  serverMiddleware: Array<ServerMiddleware> | Record<string, expr>
   ssr: boolean
   target: Target
   test: boolean

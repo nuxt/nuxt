@@ -1,5 +1,4 @@
-import type { ServerResponse } from 'http'
-import type { IncomingMessage } from 'connect'
+import type { ServerResponse, IncomingMessage } from 'http'
 
 import consola from 'consola'
 import onHeaders from 'on-headers'
