@@ -30,7 +30,7 @@ jobs:
 
       - name: cache node_modules
         id: node_modules_cache_id
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: node_modules
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
@@ -39,7 +39,7 @@ jobs:
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
@@ -110,7 +110,7 @@ jobs:
         run: yarn test:fixtures -i
 
       - name: cache fixtures
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: test/fixtures
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
@@ -136,13 +136,13 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: test/fixtures
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
