@@ -34,6 +34,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
+    stats: 'errors-warnings',
     ...ctx.config
   }
 }

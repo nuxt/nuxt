@@ -177,10 +177,7 @@ export class WebpackBundler {
       webpackDevMiddleware(
         compiler, {
           publicPath: buildOptions.publicPath,
-          stats: false,
-          logLevel: 'silent',
-          watchOptions: this.nuxt.options.watchers.webpack,
-          fs: this.mfs,
+          outputFileSystem: this.mfs,
           ...buildOptions.devMiddleware
         })
     )
