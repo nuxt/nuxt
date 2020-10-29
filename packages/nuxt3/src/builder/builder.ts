@@ -76,7 +76,7 @@ function watch (builder: Builder) {
 export async function generate (builder: Builder) {
   const { nuxt } = builder
 
-  await fsExtra.mkdirp(nuxt.options.buildDir)
+  await fsExtra.emptyDir(nuxt.options.buildDir)
   builder.app = await createApp(builder)
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
