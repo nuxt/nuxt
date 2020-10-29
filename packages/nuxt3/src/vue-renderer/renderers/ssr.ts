@@ -22,7 +22,7 @@ export default class SSRRenderer extends BaseRenderer {
     const hasModules = fs.existsSync(path.resolve(this.options.rootDir, 'node_modules'))
 
     return {
-      vueServerRenderer: require('@vue/server-renderer'),
+      renderToString: require('@vue/server-renderer').renderToString,
       bundleRunner: require('bundle-runner'),
       clientManifest: this.serverContext.resources.clientManifest,
       // for globally installed nuxt command, search dependencies in global dir
