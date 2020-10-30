@@ -48,41 +48,38 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
 
-  # TODO: Investigate [error]Process completed with exit code 1.
-  # test-unit:
-  #   runs-on: ${{ matrix.os }}
+  test-unit:
+    runs-on: ${{ matrix.os }}
 
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest]
-  #       node: [12]
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [12]
 
-  #   env:
-  #     NODE_OPTIONS: "--max_old_space_size=4096"
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
 
-  #   steps:
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node }}
+    steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
 
-  #     - name: checkout
-  #       uses: actions/checkout@master
+      - name: checkout
+        uses: actions/checkout@master
 
-  #     - name: restore workspace cache
-  #       uses: actions/cache@v1
-  #       with:
-  #         path: ./**/node_modules
-  #         key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+      - name: restore workspace cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
-  #     - name: test unit
-  #       run: node node_modules/jest/bin/jest packages -i --coverage --verbose
+      - name: test unit
+        run: yarn test:unit --testPathIgnorePatterns=packages/cli
 
-  #     - name: codecov
-  #       uses: codecov/codecov-action@v1
-  #       with:
-  #         token: ${{ secrets.CODECOV_TOKEN }}
-  #         flags: unittests
-  #   needs: setup
+    needs: setup
 
   build:
     runs-on: ${{ matrix.os }}
@@ -113,7 +110,7 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: build
-        run: yarn test:fixtures -i
+        run: yarn test:fixtures
 
       - name: cache fixtures
         uses: actions/cache@v2
@@ -157,5 +154,5 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -i
+        run: yarn test:dev
     needs: build
