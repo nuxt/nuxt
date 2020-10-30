@@ -43,8 +43,7 @@ export default async function renderAndGetWindow (
       // Throw error when window creation failed
       options.virtualConsole.on('jsdomError', jsdomErrHandler)
     }
-  }
-  else {
+  } else {
     // If we get the virtualConsole option as `false` we should delete for don't pass it to `jsdom.JSDOM.fromURL`
     delete options.virtualConsole
   }
