@@ -4,6 +4,11 @@ import { WebpackConfigContext } from '../utils/config'
 export function esbuild (ctx: WebpackConfigContext) {
   const { config } = ctx
 
+  // https://esbuild.github.io/getting-started/#bundling-for-the-browser
+  // https://gs.statcounter.com/browser-version-market-share
+  // https://nodejs.org/en/
+  const target = ctx.isServer ? 'node14' : 'chrome85'
+
   config.optimization.minimizer.push(new ESBuildMinifyPlugin())
 
   config.plugins.push(new ESBuildPlugin())
@@ -25,7 +30,7 @@ export function esbuild (ctx: WebpackConfigContext) {
       },
       options: {
         loader: 'ts',
-        target: 'es2015'
+        target
       }
     },
     {
@@ -33,7 +38,7 @@ export function esbuild (ctx: WebpackConfigContext) {
       loader: 'esbuild-loader',
       options: {
         loader: 'tsx',
-        target: 'es2015'
+        target
       }
     }
   )
