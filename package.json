@@ -68,7 +68,7 @@
     "lerna": "^3.22.1",
     "lodash": "^4.17.20",
     "node-fetch": "^2.6.1",
-    "node-sass": "^4.14.1",
+    "node-sass": "^5.0.0",
     "puppeteer-core": "^5.4.1",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
