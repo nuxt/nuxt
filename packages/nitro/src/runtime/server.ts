@@ -21,8 +21,7 @@ export async function render (url) {
     runtimeConfig: {
       public: {},
       private: {}
-    },
-    _registeredComponents: []
+    }
   }
   const rendered = await renderer.renderToString(ssrContext)
 
