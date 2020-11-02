@@ -38,7 +38,7 @@ async function main () {
   process.chdir(config.buildDir)
 
   // Compile html template
-  const htmlTemplateFile = resolve(config.buildDir, `views/${{ 2: 'app', 3: 'template' }[config.nuxt]}.template.html`)
+  const htmlTemplateFile = resolve(config.buildDir, `views/${{ 2: 'app', 3: 'document' }[config.nuxt]}.template.html`)
   const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
   const htmlTemplateContents = await readFile(htmlTemplateFile, 'utf-8')
   // eslint-disable-next-line no-template-curly-in-string
