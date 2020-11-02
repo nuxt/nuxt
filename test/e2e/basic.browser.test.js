@@ -319,6 +319,11 @@ describe('basic browser', () => {
     page.close()
   })
 
+  test('/redirection/no loop', async () => {
+    const page = await browser.page(url('/redirection/no loop'))
+    expect(await page.$text('h1')).toContain('Redirected page')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
