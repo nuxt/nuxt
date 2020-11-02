@@ -70,7 +70,7 @@ export const getRollupConfig = (config) => {
   if (config.dynamicImporter) {
     options.output.intro += config.dynamicImporter(config.importSync, config.importAsync)
   } else {
-    options.output.intro += 'const requireDynamic = require;'
+    options.output.intro += `const requireDynamic = (chunkId) => ${config.importSync}`
   }
   options.plugins.push(replace({ values: { 'require("./" +': 'requireDynamic(' }, delimiters: ['', ''] }))
 

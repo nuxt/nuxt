@@ -20,7 +20,6 @@ async function main () {
     buildDir: '',
     targets: [],
     nuxt: 2,
-    dynamicImporter: undefined,
     importSync: "require('../server/' + chunkId)",
     importAsync: "Promise.resolve(require('../server/' + chunkId))",
     target: process.argv[3] && process.argv[3][0] !== '-' ? process.argv[3] : null,
@@ -51,10 +50,8 @@ async function main () {
   consola.info('Generated', prettyPath(htmlTemplateFileJS))
 
   // Collect dynamic chunks
-  if (!config.dynamicImporter) {
-    consola.info('Collecting dynamic chunks...')
-    config.dynamicImporter = await createDynamicImporter(resolve(config.buildDir, 'dist/server'))
-  }
+  consola.info('Collecting dynamic chunks...')
+  const dynamicImporter = await createDynamicImporter(resolve(config.buildDir, 'dist/server'))
 
   // Bundle for each target
   for (let target of config.targets) {
@@ -72,7 +69,8 @@ async function main () {
     const ctx: any = defu(
       target,
       config,
-      tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target)
+      tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target),
+      { dynamicImporter }
     )
 
     const hooks = new Hookable()
