@@ -2,7 +2,7 @@ import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 
 // @ts-ignore
-import { renderToString } from './vue2'
+import { renderToString } from '~rendertostring'
 // @ts-ignore
 import server from '~build/dist/server/server'
 // @ts-ignore

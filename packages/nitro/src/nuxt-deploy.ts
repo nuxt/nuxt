@@ -18,6 +18,7 @@ async function main () {
     rootDir,
     buildDir: '',
     targets: [],
+    nuxt: 2,
     target: process.argv[3] && process.argv[3][0] !== '-' ? process.argv[3] : null,
     minify: process.argv.includes('--minify') ? true : null,
     analyze: process.argv.includes('--analyze') ? true : null,
@@ -37,7 +38,7 @@ async function main () {
   process.chdir(config.buildDir)
 
   // Compile html template
-  const htmlTemplateFile = resolve(config.buildDir, 'views/app.template.html') // TODO: nuxt3: document.template.html
+  const htmlTemplateFile = resolve(config.buildDir, `views/${{ 2: 'app', 3: 'template' }[config.nuxt]}.template.html`)
   const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
   const htmlTemplateContents = await readFile(htmlTemplateFile, 'utf-8')
   // eslint-disable-next-line no-template-curly-in-string
