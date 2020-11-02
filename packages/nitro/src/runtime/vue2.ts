@@ -1,8 +1,10 @@
-import _renderToString from 'vue-server-renderer/basic.js'
+import { createRenderer } from 'vue-server-renderer/build.prod.js'
+
+const _renderer = createRenderer({})
 
 export function renderToString (component, context) {
   return new Promise((resolve, reject) => {
-    _renderToString(component, context, (err, result) => {
+    _renderer.renderToString(component, context, (err, result) => {
       if (err) {
         return reject(err)
       }
