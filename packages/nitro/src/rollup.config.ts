@@ -65,7 +65,7 @@ export const getRollupConfig = (config) => {
   options.output.intro += 'const requireDynamic = require;'
   options.plugins.push(replace({
     values: {
-      'require("./"': 'requireDynamic("./"'
+      'require("./" +': 'requireDynamic("./" +'
     },
     delimiters: ['', '']
   }))
