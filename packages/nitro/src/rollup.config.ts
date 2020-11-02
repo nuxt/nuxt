@@ -14,8 +14,17 @@ export type RollupConfig = InputOptions & { output: OutputOptions }
 
 export const getRollupConfig = (config) => {
   const mocks = [
-    '@babel/parser',
+    // @nuxt/devalue
+    'consola',
+    // vue2
     'encoding',
+    'he',
+    'resolve',
+    'source-map',
+    'lodash.template',
+    'serialize-javascript',
+    // vue3
+    '@babel/parser',
     '@vue/compiler-core',
     '@vue/compiler-dom',
     '@vue/compiler-ssr'
