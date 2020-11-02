@@ -9,6 +9,7 @@ import gzipSize from 'gzip-size'
 import chalk from 'chalk'
 import { getRollupConfig } from './rollup.config'
 import { tryImport, hl, prettyPath } from './utils'
+import { createDynamicImporter } from './dynamic'
 
 async function main () {
   const rootDir = resolve(process.cwd(), process.argv[2] || '.')
@@ -19,6 +20,9 @@ async function main () {
     buildDir: '',
     targets: [],
     nuxt: 2,
+    dynamicImporter: undefined,
+    importSync: "require('../server/' + chunkId)",
+    importAsync: "Promise.resolve(require('../server/' + chunkId))",
     target: process.argv[3] && process.argv[3][0] !== '-' ? process.argv[3] : null,
     minify: process.argv.includes('--minify') ? true : null,
     analyze: process.argv.includes('--analyze') ? true : null,
@@ -44,7 +48,13 @@ async function main () {
   // eslint-disable-next-line no-template-curly-in-string
   const htmlTemplateCompiled = `export default (params) => \`${htmlTemplateContents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
   await writeFile(htmlTemplateFileJS, htmlTemplateCompiled)
-  consola.info('Generated', (prettyPath(htmlTemplateFileJS)))
+  consola.info('Generated', prettyPath(htmlTemplateFileJS))
+
+  // Collect dynamic chunks
+  if (!config.dynamicImporter) {
+    consola.info('Collecting dynamic chunks...')
+    config.dynamicImporter = await createDynamicImporter(resolve(config.buildDir, 'dist/server'))
+  }
 
   // Bundle for each target
   for (let target of config.targets) {

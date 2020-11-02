@@ -53,6 +53,12 @@ export const getRollupConfig = (config) => {
     plugins: []
   }
 
+  if (config.logStartup) {
+    options.output.intro += 'global._startTime = process.hrtime();'
+    // eslint-disable-next-line no-template-curly-in-string
+    options.output.outro += 'global._endTime = process.hrtime(global._startTime); global._coldstart = ((_endTime[0] * 1e9) + _endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
+  }
+
   // https://github.com/rollup/plugins/tree/master/packages/replace
   options.plugins.push(replace({
     values: {
@@ -60,15 +66,13 @@ export const getRollupConfig = (config) => {
     }
   }))
 
-  // Preserve dynamic require
-  // https://github.com/rollup/plugins/tree/master/packages/replace
-  options.output.intro += 'const requireDynamic = require;'
-  options.plugins.push(replace({
-    values: {
-      'require("./" +': 'requireDynamic("../server/" +'
-    },
-    delimiters: ['', '']
-  }))
+  // Dynamic Importer
+  if (config.dynamicImporter) {
+    options.output.intro += config.dynamicImporter(config.importSync, config.importAsync)
+  } else {
+    options.output.intro += 'const requireDynamic = require;'
+  }
+  options.plugins.push(replace({ values: { 'require("./" +': 'requireDynamic(' }, delimiters: ['', ''] }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
   options.plugins.push(alias({
@@ -108,12 +112,6 @@ export const getRollupConfig = (config) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/json
   options.plugins.push(json())
-
-  if (config.logStartup) {
-    options.output.intro += 'global._startTime = process.hrtime();'
-    // eslint-disable-next-line no-template-curly-in-string
-    options.output.outro += 'global._endTime = process.hrtime(global._startTime); global._coldstart = ((_endTime[0] * 1e9) + _endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
-  }
 
   if (config.analyze) {
     // https://github.com/doesdev/rollup-plugin-analyzer

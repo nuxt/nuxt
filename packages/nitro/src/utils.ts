@@ -1,10 +1,12 @@
 import { relative } from 'path'
 import jiti from 'jiti'
 
+const pwd = process.cwd()
+
 export const hl = str => '`' + str + '`'
 
 export const prettyPath = (p, highlight = true) => {
-  p = relative(process.cwd(), p)
+  p = relative(pwd, p)
   return highlight ? hl(p) : p
 }
 
