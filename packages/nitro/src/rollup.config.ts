@@ -43,7 +43,7 @@ export const getRollupConfig = (config) => {
   const options: RollupConfig = {
     input: config.entry,
     output: {
-      file: path.resolve(config.buildDir, 'dist/server', `index.${config.target}.js`),
+      file: path.resolve(config.buildDir, `dist/${config.target}`, 'index.js'),
       format: 'cjs',
       intro: '',
       outro: '',
@@ -65,7 +65,7 @@ export const getRollupConfig = (config) => {
   options.output.intro += 'const requireDynamic = require;'
   options.plugins.push(replace({
     values: {
-      'require("./" +': 'requireDynamic("./" +'
+      'require("./" +': 'requireDynamic("../server/" +'
     },
     delimiters: ['', '']
   }))
