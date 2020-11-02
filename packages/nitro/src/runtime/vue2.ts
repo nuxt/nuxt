@@ -1,4 +1,4 @@
-const _renderToString = require('vue-server-renderer/basic.js')
+import _renderToString from 'vue-server-renderer/basic.js'
 
 export function renderToString (component, context) {
   return new Promise((resolve, reject) => {
