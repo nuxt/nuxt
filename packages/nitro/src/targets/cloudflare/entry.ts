@@ -1,3 +1,4 @@
+// @ts-ignore
 import { render } from '~runtime/server'
 
 addEventListener('fetch', (event) => {

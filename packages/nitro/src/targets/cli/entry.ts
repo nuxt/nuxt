@@ -1,3 +1,4 @@
+// @ts-ignore
 import { render } from '~runtime/server'
 
 render(process.argv[2] || '/')
