@@ -16,7 +16,7 @@ const renderer = createRenderer(server, {
 })
 
 export async function render (url) {
-  const ssrContext = {
+  const ssrContext: any = {
     url,
     runtimeConfig: {
       public: {},

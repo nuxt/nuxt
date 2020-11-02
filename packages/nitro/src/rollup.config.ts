@@ -8,13 +8,14 @@ import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
-import esbuild from 'rollup-plugin-esbuild'
+import ts from 'rollup-plugin-ts'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
 export const getRollupConfig = (config) => {
   const mocks = [
     '@babel/parser',
+    'encoding',
     '@vue/compiler-core',
     '@vue/compiler-dom',
     '@vue/compiler-ssr'
@@ -32,7 +33,6 @@ export const getRollupConfig = (config) => {
 
   const options: RollupConfig = {
     input: config.entry,
-
     output: {
       file: path.resolve(config.buildDir, 'dist/server', `index.${config.target}.js`),
       format: 'cjs',
@@ -40,55 +40,50 @@ export const getRollupConfig = (config) => {
       outro: '',
       preferConst: true
     },
-
     external,
-
-    plugins: [
-      replace({
-        values: {
-          'process.env.NODE_ENV': '"production"'
-        }
-      }),
-
-      alias({
-        entries: {
-          '~runtime': path.resolve(__dirname, 'runtime'),
-          '~build': config.buildDir,
-          '~mock': require.resolve('./runtime/mock'),
-          ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {})
-        }
-      }),
-
-      // https://github.com/rollup/plugins/tree/master/packages/node-resolve
-      resolve({
-        extensions,
-        preferBuiltins: true,
-        mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
-      }),
-
-      // https://github.com/rollup/plugins/tree/master/packages/commonjs
-      commonjs({
-        extensions: extensions.filter(ext => ext !== '.json'),
-        dynamicRequireTargets: ['*.js']
-      }),
-
-      // https://github.com/egoist/rollup-plugin-esbuild
-      esbuild({
-        target: 'node12',
-        include: /\.[jt]s?$/,
-        tsconfig: false,
-        sourceMap: false,
-        loaders: {
-          '.json': 'json',
-          '.js': 'jsx',
-          '.ts': 'ts'
-        }
-      }),
-
-      // https://github.com/rollup/plugins/tree/master/packages/json
-      json()
-    ]
+    plugins: []
   }
+
+  // https://github.com/rollup/plugins/tree/master/packages/replace
+  options.plugins.push(replace({
+    values: {
+      'process.env.NODE_ENV': '"production"'
+    }
+  }))
+
+  // https://github.com/rollup/plugins/tree/master/packages/alias
+  options.plugins.push(alias({
+    entries: {
+      '~runtime': path.resolve(__dirname, 'runtime'),
+      '~build': config.buildDir,
+      '~mock': require.resolve('./runtime/mock'),
+      ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {})
+    }
+  }))
+
+  // https://github.com/wessberg/rollup-plugin-ts
+  options.plugins.push(ts({
+    transpileOnly: true,
+    transpiler: 'babel',
+    include: ['**/*.ts'],
+    exclude: ['*.json', 'node_modules']
+  }))
+
+  // https://github.com/rollup/plugins/tree/master/packages/node-resolve
+  options.plugins.push(resolve({
+    extensions,
+    preferBuiltins: true,
+    mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
+  }))
+
+  // https://github.com/rollup/plugins/tree/master/packages/commonjs
+  options.plugins.push(commonjs({
+    extensions: extensions.filter(ext => ext !== '.json'),
+    dynamicRequireTargets: ['*.js']
+  }))
+
+  // https://github.com/rollup/plugins/tree/master/packages/json
+  options.plugins.push(json())
 
   if (config.logStartup) {
     options.output.intro += 'global._startTime = process.hrtime();'
