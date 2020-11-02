@@ -82,6 +82,11 @@ export const getRollupConfig = (config) => {
   options.plugins.push(resolve({
     extensions,
     preferBuiltins: true,
+    rootDir: config.rootDir,
+    // https://www.npmjs.com/package/resolve
+    customResolveOptions: {
+      basedir: config.rootDir
+    },
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
 
