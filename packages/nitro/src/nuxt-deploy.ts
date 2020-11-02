@@ -33,6 +33,9 @@ async function main () {
     consola.success('Using existing nuxt build from', prettyPath(config.buildDir))
   }
 
+  // Ensure relative operations are relative to build dir (fixes rollup dynamic imports)
+  process.chdir(config.buildDir)
+
   // Compile html template
   const htmlTemplateFile = resolve(config.buildDir, 'views/app.template.html') // TODO: nuxt3: document.template.html
   const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
@@ -78,7 +81,6 @@ async function main () {
     consola.success('Generated', prettyPath((ctx.rollupConfig.output as any).file),
       chalk.gray(`(Size: ${size} Gzip: ${zSize})`)
     )
-
     await hooks.callHook('rollup:done', ctx)
   }
 }
