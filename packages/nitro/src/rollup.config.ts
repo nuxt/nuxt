@@ -60,6 +60,16 @@ export const getRollupConfig = (config) => {
     }
   }))
 
+  // Preserve dynamic require
+  // https://github.com/rollup/plugins/tree/master/packages/replace
+  options.output.intro += 'const requireDynamic = require;'
+  options.plugins.push(replace({
+    values: {
+      'require("./"': 'requireDynamic("./"'
+    },
+    delimiters: ['', '']
+  }))
+
   // https://github.com/rollup/plugins/tree/master/packages/alias
   options.plugins.push(alias({
     entries: {
@@ -93,8 +103,7 @@ export const getRollupConfig = (config) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   options.plugins.push(commonjs({
-    extensions: extensions.filter(ext => ext !== '.json'),
-    dynamicRequireTargets: ['*.js']
+    extensions: extensions.filter(ext => ext !== '.json')
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/json
