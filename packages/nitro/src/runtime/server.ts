@@ -28,7 +28,7 @@ export async function render (url, ctx: any) {
   }
   const rendered = await renderer.renderToString(ssrContext)
 
-  const state = `<script>window.__NUXT__ = ${devalue(ssrContext.payload)}</script>`
+  const state = `<script>window.__NUXT__=${devalue(ssrContext.nuxt /* nuxt 2 */ || ssrContext.payload /* nuxt 3 */)}</script>`
   const _html = `<div id="__nuxt">${rendered.html}</div>`
 
   const html = htmlTemplate({
