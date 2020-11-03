@@ -1,47 +1,32 @@
 <!DOCTYPE html>
 <html>
-<body>
+
+<head>
+  <meta charset="utf-8">
+  <link rel="prefetch" href="/nuxt.sw.js">
+  <link rel="preload" href="/nuxt.sw.js" as="worker">
   <script>
     if (!('serviceWorker' in navigator)) {
       throw new Error('Browser not supported!')
     }
 
     let timeout
-    const stopTimer = () => {
-        if (timeout) {
-          clearTimeout(timeout)
-        }
-      }
-    const startTimer = () => {
-      stopTimer()
-      timeout = setTimeout(() => { document.write('Loading...') }, 3000)
-    }
+    const stopTimer = () => { if (timeout) { clearTimeout(timeout); timeout = undefined } }
+    const startTimer = () => { stopTimer(); timeout = setTimeout(() => { document.write('Loading...') }, 3000) }
 
     startTimer()
-    window.addEventListener('load', () => {
-      startTimer()
-      navigator.serviceWorker.register('/nuxt.sw.js').then((registration) => {
-        startTimer()
-        console.log('ServiceWorker registration successful with scope:', registration.scope)
-        fetch(window.location.href).then(r => r.text()).then(html => {
-          stopTimer()
-          if (html.includes('/nuxt.sw.js')) {
-            console.error('Soon!')
-            return
-          }
-          document.open()
-          document.write(html)
-          document.close()
-        }).catch(() => {
-          stopTimer()
-          window.location.reload(false)
-        })
-      }).catch(error => {
-        console.error('ServiceWorker registration failed:', error)
-        document.write(error)
-      })
+    navigator.serviceWorker.register('/nuxt.sw.js').then((registration) => {
+      stopTimer()
+      console.log('ServiceWorker registration successful with scope:', registration.scope)
+      window.location.reload(false)
+    }).catch(error => {
+      stopTimer()
+      console.error('ServiceWorker registration failed:', error)
+      document.write(error)
     })
   </script>
-</body>
+</head>
+
+<body></body>
 
 </html>
