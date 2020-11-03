@@ -111,8 +111,8 @@ export default {
       // Preload the data only if not in preview mode
       if (!this.$root.isPreview) {
         const { href } = this.$router.resolve(this.to, this.$route, this.append)
-        if (this.$nuxt)
-          this.$nuxt.fetchPayload(href).catch(() => {})
+        if (this.<%= globals.nuxt %>)
+          this.<%= globals.nuxt %>.fetchPayload(href).catch(() => {})
       }
       <% } %>
       <% if (router.linkPrefetchedClass) { %>
