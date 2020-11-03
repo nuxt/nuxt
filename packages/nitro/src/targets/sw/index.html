@@ -10,8 +10,10 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/nuxt.sw.js').then((registration) => {
         console.log('ServiceWorker registration successful with scope:', registration.scope)
+        window.location.reload()
       }).catch(error => {
         console.error('ServiceWorker registration failed:', error)
+        document.write(error)
       })
     })
   </script>
