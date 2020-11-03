@@ -9,6 +9,7 @@ import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
 import ts from 'rollup-plugin-ts'
+import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -66,13 +67,15 @@ export const getRollupConfig = (config) => {
     }
   }))
 
-  // Dynamic Importer
-  if (config.dynamicImporter) {
-    options.output.intro += config.dynamicImporter(config.importSync, config.importAsync)
-  } else {
-    options.output.intro += `const requireDynamic = (chunkId) => ${config.importSync}`
-  }
-  options.plugins.push(replace({ values: { 'require("./" +': 'requireDynamic(' }, delimiters: ['', ''] }))
+  // Dynamic Require Support
+  options.plugins.push(dynamicRequire({
+    dir: path.resolve(config.buildDir, 'dist/server'),
+    globbyOptions: {
+      ignore: [
+        'server.js'
+      ]
+    }
+  }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
   options.plugins.push(alias({
