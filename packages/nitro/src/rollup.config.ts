@@ -56,7 +56,7 @@ export const getRollupConfig = (config) => {
   if (config.logStartup) {
     options.output.intro += 'global._startTime = process.hrtime();'
     // eslint-disable-next-line no-template-curly-in-string
-    options.output.outro += 'global._endTime = process.hrtime(global._startTime); global._coldstart = ((_endTime[0] * 1e9) + _endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
+    options.output.outro += 'global._endTime = process.hrtime(global._startTime); global._coldstart = ((global._endTime[0] * 1e9) + global._endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
