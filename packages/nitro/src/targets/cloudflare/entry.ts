@@ -1,18 +1,16 @@
 // @ts-ignore
 import { render } from '~runtime/server'
 
-addEventListener('fetch', (event) => {
-  // @ts-ignore
-  event.respondWith(handleRequest(event.request))
+addEventListener('fetch', (event: any) => {
+  event.respondWith(handleEvent(event.request))
 })
 
-async function handleRequest (_request) {
-  // @ts-ignore
-  const html = await render()
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'content-type': 'text/html;charset=UTF-8'
-    }
-  })
+async function handleEvent (request) {
+  try {
+    const url = new URL(request.url)
+    const { html, status, headers } = await render(url.pathname, { req: request })
+    return new Response(html, { status, headers })
+  } catch (error) {
+    return new Response('Internal Error: ' + error, { status: 500 })
+  }
 }

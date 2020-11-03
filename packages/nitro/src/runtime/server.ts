@@ -2,7 +2,7 @@ import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 
 // @ts-ignore
-import { renderToString } from '~rendertostring'
+import { renderToString } from '~renderer'
 // @ts-ignore
 import server from '~build/dist/server/server'
 // @ts-ignore
@@ -15,7 +15,7 @@ const renderer = createRenderer(server, {
   renderToString
 })
 
-export async function render (url) {
+export async function render (url, ctx: any) {
   const start = process.hrtime()
 
   const ssrContext: any = {
@@ -23,7 +23,8 @@ export async function render (url) {
     runtimeConfig: {
       public: {},
       private: {}
-    }
+    },
+    ...ctx
   }
   const rendered = await renderer.renderToString(ssrContext)
 

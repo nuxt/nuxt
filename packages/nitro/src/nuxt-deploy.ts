@@ -56,33 +56,30 @@ async function main () {
       continue
     }
 
-    console.log('\n')
     consola.info(`Generating bundle for ${hl(target.target)}`)
 
-    const ctx: any = defu(
+    const _config: any = defu(
       target,
       config,
       tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target)
     )
 
     const hooks = new Hookable()
-    hooks.addHooks(ctx.hooks)
+    hooks.addHooks(_config.hooks)
 
-    await hooks.callHook('rollup:prepare', ctx)
-    ctx.rollupConfig = getRollupConfig(ctx)
-    await hooks.callHook('rollup:config', ctx)
+    await hooks.callHook('config', _config)
 
-    await hooks.callHook('rollup:before', ctx)
-    const build = await rollup(ctx.rollupConfig)
-    await hooks.callHook('rollup:built', ctx, build)
+    _config.rollupConfig = getRollupConfig(_config)
+    await hooks.callHook('rollup:before', _config)
+    const build = await rollup(_config.rollupConfig)
 
-    const { output } = await build.write(ctx.rollupConfig.output as OutputOptions)
+    const { output } = await build.write(_config.rollupConfig.output as OutputOptions)
     const size = prettyBytes(output[0].code.length)
     const zSize = prettyBytes(await gzipSize(output[0].code))
-    consola.success('Generated', prettyPath((ctx.rollupConfig.output as any).file),
+    consola.success('Generated', prettyPath((_config.rollupConfig.output as any).file),
       chalk.gray(`(Size: ${size} Gzip: ${zSize})`)
     )
-    await hooks.callHook('rollup:done', ctx)
+    await hooks.callHook('done', _config)
   }
 }
 

@@ -78,10 +78,11 @@ export const getRollupConfig = (config) => {
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
+  const renderer = config.renderer || (config.nuxt === 2 ? 'vue2' : 'vue3')
   options.plugins.push(alias({
     entries: {
       '~runtime': path.resolve(__dirname, 'runtime'),
-      '~rendertostring': config.nuxt === 2 ? require.resolve('./runtime/vue2') : require.resolve('./runtime/vue3'),
+      '~renderer': require.resolve('./runtime/' + renderer),
       '~build': config.buildDir,
       '~mock': require.resolve('./runtime/mock'),
       ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {})
