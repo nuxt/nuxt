@@ -16,6 +16,8 @@ const renderer = createRenderer(server, {
 })
 
 export async function render (url) {
+  const start = process.hrtime()
+
   const ssrContext: any = {
     url,
     runtimeConfig: {
@@ -26,13 +28,26 @@ export async function render (url) {
   const rendered = await renderer.renderToString(ssrContext)
 
   const state = `<script>window.__NUXT__ = ${devalue(ssrContext.payload)}</script>`
-  const html = `<div id="__nuxt">${rendered.html}</div>`
+  const _html = `<div id="__nuxt">${rendered.html}</div>`
 
-  return htmlTemplate({
+  const html = htmlTemplate({
     HTML_ATTRS: '',
     HEAD_ATTRS: '',
     BODY_ATTRS: '',
     HEAD: rendered.renderResourceHints() + rendered.renderStyles(),
-    APP: html + state + rendered.renderScripts()
+    APP: _html + state + rendered.renderScripts()
   })
+
+  const end = process.hrtime(start)
+  const time = ((end[0] * 1e9) + end[1]) / 1e6
+
+  return {
+    html,
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html;charset=UTF-8',
+      'X-Nuxt-Coldstart': global._coldstart + 'ms',
+      'X-Nuxt-ResponseTime': time + 'ms'
+    }
+  }
 }
