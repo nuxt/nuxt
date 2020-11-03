@@ -35,7 +35,7 @@ export async function render (url, ctx: any) {
     HTML_ATTRS: '',
     HEAD_ATTRS: '',
     BODY_ATTRS: '',
-    HEAD: rendered.renderResourceHints() + rendered.renderStyles(),
+    HEAD: rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
     APP: _html + state + rendered.renderScripts()
   })
 
