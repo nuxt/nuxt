@@ -44,7 +44,7 @@ export const getRollupConfig = (config) => {
   const options: RollupConfig = {
     input: config.entry,
     output: {
-      file: path.resolve(config.buildDir, `dist/${config.target}`, 'index.js'),
+      file: path.resolve(config.outDir, config.outName),
       format: 'cjs',
       intro: '',
       outro: '',
