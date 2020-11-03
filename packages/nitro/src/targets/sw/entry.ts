@@ -11,6 +11,16 @@ addEventListener('fetch', (event: any) => {
   event.respondWith(handleEvent(url, event.request))
 })
 
+self.addEventListener('install', () => {
+  // @ts-ignore
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', (event) => {
+  // @ts-ignore
+  event.waitUntil(self.clients.claim())
+})
+
 async function handleEvent (url, request) {
   try {
     const { html, status, headers } = await render(url.pathname, { req: request })
