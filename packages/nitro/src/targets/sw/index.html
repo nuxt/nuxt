@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
   <link rel="prefetch" href="/nuxt.sw.js">
@@ -9,24 +8,16 @@
     if (!('serviceWorker' in navigator)) {
       throw new Error('Browser not supported!')
     }
-
-    let timeout
-    const stopTimer = () => { if (timeout) { clearTimeout(timeout); timeout = undefined } }
-    const startTimer = () => { stopTimer(); timeout = setTimeout(() => { document.write('Loading...') }, 3000) }
-
-    startTimer()
     navigator.serviceWorker.register('/nuxt.sw.js').then((registration) => {
-      stopTimer()
       console.log('ServiceWorker registration successful with scope:', registration.scope)
       window.location.reload(false)
     }).catch(error => {
-      stopTimer()
       console.error('ServiceWorker registration failed:', error)
       document.write(error)
     })
   </script>
 </head>
-
-<body></body>
-
+<body>
+  Loading...
+</body>
 </html>
