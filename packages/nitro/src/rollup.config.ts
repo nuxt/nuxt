@@ -19,6 +19,7 @@ export const getRollupConfig = (config) => {
     'consola',
     // vue2
     'encoding',
+    'stream',
     'he',
     'resolve',
     'source-map',

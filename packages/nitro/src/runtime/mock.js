@@ -22,4 +22,4 @@ function getProxy (name) {
   })
 }
 
-export default getProxy('mock')
+module.exports = getProxy('mock')

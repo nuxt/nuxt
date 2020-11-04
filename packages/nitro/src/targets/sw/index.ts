@@ -11,11 +11,6 @@ export default {
     { src: resolve(__dirname, 'index.html'), dst: '200.html' }
   ],
   hooks: {
-    config (config) {
-      if (config.nuxt === 2) {
-        config.renderer = 'vue2.basic'
-      }
-    },
     'rollup:before' ({ rollupConfig }) {
       rollupConfig.output.intro =
         'const global = {}; const exports = {}; const module = { exports }; const process = { env: {}, hrtime: () => [0,0]};' +
