@@ -32,6 +32,11 @@ export const getRollupConfig = (config) => {
     '@vue/compiler-ssr'
   ]
 
+  const providedDeps = [
+    '@nuxt/devalue',
+    'vue-bundle-renderer'
+  ]
+
   const extensions = ['.ts', '.mjs', '.js', '.json', '.node']
 
   const external = []
@@ -87,7 +92,8 @@ export const getRollupConfig = (config) => {
       '~renderer': require.resolve(path.resolve(RUNTIME_DIR, renderer)),
       '~build': config.buildDir,
       '~mock': require.resolve(path.resolve(RUNTIME_DIR, 'mock')),
-      ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {})
+      ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {}),
+      ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {})
     }
   }))
 
