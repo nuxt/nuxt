@@ -47,6 +47,7 @@ export async function render (url, ctx: any) {
     status: 200,
     headers: {
       'Content-Type': 'text/html;charset=UTF-8',
+      // @ts-ignore
       'X-Nuxt-Coldstart': global._coldstart + 'ms',
       'X-Nuxt-ResponseTime': time + 'ms'
     }
