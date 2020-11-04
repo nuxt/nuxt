@@ -77,6 +77,7 @@ export const getRollupConfig = (config) => {
   // Dynamic Require Support
   options.plugins.push(dynamicRequire({
     dir: path.resolve(config.buildDir, 'dist/server'),
+    outDir: config.node === false ? undefined : config.outDir,
     globbyOptions: {
       ignore: [
         'server.js'
