@@ -38,7 +38,10 @@ jobs:
         id: node_modules_cache_id
         uses: actions/cache@v2
         with:
-          path: node_modules
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
 
       - name: install
@@ -50,6 +53,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -75,6 +79,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -107,6 +112,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -137,6 +143,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -177,6 +184,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -212,6 +220,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -248,6 +257,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -284,6 +294,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
@@ -312,6 +323,7 @@ jobs:
           path: |
             node_modules
             packages/*/node_modules
+            distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
