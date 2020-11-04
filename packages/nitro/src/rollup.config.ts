@@ -64,7 +64,8 @@ export const getRollupConfig = (config) => {
   // https://github.com/rollup/plugins/tree/master/packages/replace
   options.plugins.push(replace({
     values: {
-      'process.env.NODE_ENV': '"production"'
+      'process.env.NODE_ENV': '"production"',
+      'typeof window': '"undefined"'
     }
   }))
 
