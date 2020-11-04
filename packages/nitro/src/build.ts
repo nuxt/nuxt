@@ -5,7 +5,7 @@ import Hookable from 'hookable'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
 import chalk from 'chalk'
-import { copy, emptyDir, existsSync } from 'fs-extra'
+import { copy, emptyDir, existsSync, mkdirp } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
 import { getTargetConfig } from './config'
 import { hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
@@ -39,13 +39,6 @@ export async function build (baseConfig, target) {
     consola.info('Compiled', prettyPath(dstPath))
   }
 
-  if (config.copyAssets) {
-    const publicDir = typeof config.copyAssets === 'string' ? config.copyAssets : 'public'
-    const dst = resolve(config.outDir, publicDir, '_nuxt')
-    await copy(resolve(config.buildDir, 'dist/client'), dst)
-    consola.info('Copied public assets to', prettyPath(dst))
-  }
-
   await hooks.callHook('done', config)
 }
 
@@ -62,4 +55,19 @@ export function ensureDist (baseConfig) {
   } else {
     consola.success('Using existing nuxt build from', prettyPath(baseConfig.buildDir))
   }
+}
+
+export async function generatePublic (baseConfig) {
+  await emptyDir(baseConfig.publicDir)
+  await mkdirp(baseConfig.publicDir)
+
+  await copy(
+    baseConfig.staticDir,
+    baseConfig.publicDir
+  )
+
+  await copy(
+    resolve(baseConfig.buildDir, 'dist/client'),
+    resolve(baseConfig.publicDir, '_nuxt')
+  )
 }

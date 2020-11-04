@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { build, compileHTMLTemplate, ensureDist } from './build'
+import { build, compileHTMLTemplate, ensureDist, generatePublic } from './build'
 import { getBaseConfig } from './config'
 
 export async function runCLI () {
@@ -13,6 +13,9 @@ export async function runCLI () {
 
   // Compile html template
   await compileHTMLTemplate(baseConfig)
+
+  // Generate public dir
+  await generatePublic(baseConfig)
 
   // Bundle for each target
   for (const target of baseConfig.targets) {

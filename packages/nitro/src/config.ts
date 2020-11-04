@@ -6,6 +6,8 @@ export function getBaseConfig (rootDir) {
   let baseConfig = {
     rootDir,
     buildDir: '',
+    publicDir: '',
+    staticDir: '',
     targets: [],
     templates: [],
     nuxt: 2,
@@ -24,6 +26,8 @@ export function getBaseConfig (rootDir) {
   }
 
   baseConfig.buildDir = resolve(baseConfig.rootDir, baseConfig.buildDir || '.nuxt')
+  baseConfig.publicDir = resolve(baseConfig.rootDir, baseConfig.publicDir || 'dist')
+  baseConfig.staticDir = resolve(baseConfig.rootDir, baseConfig.staticDir || 'static')
 
   baseConfig.targets = baseConfig.targets.map(t => typeof t === 'string' ? { target: t } : t)
   if (baseConfig.target && !baseConfig.targets.find(t => t.target === baseConfig.target)) {
