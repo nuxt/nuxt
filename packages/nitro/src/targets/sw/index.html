@@ -27,7 +27,7 @@
       })
     }
 
-    if (location.host !== 'localhost' && location.protocol === 'http:') {
+    if (location.hostname !== 'localhost' && location.protocol === 'http:') {
       location.replace(location.href.replace('http://', 'https://'))
     } else {
       register()
