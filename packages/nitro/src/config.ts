@@ -50,6 +50,9 @@ export function getTargetConfig (baseConfig, target) {
     // Target defaults
     _targetDefaults,
     // Generic defaults
-    { outDir: resolve(baseConfig.buildDir, `dist/${target.target}`), outName: 'index.js' }
+    {
+      outDir: resolve(baseConfig.buildDir, `sls/${target.target}`),
+      outName: 'index.js'
+    }
   )
 }
