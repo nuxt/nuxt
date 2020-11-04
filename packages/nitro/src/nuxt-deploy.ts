@@ -71,7 +71,7 @@ async function main () {
       // Target defaults
       tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target),
       // Generic defaults
-      { outDir: resolve(config.buildDir, `dist/${config.target}`), outName: 'index.js' }
+      { outDir: resolve(config.buildDir, `dist/${target.target}`), outName: 'index.js' }
     )
 
     const hooks = new Hookable()
