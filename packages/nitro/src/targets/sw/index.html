@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+  <!-- SW_INIT-->
   <meta charset="utf-8">
   <link rel="prefetch" href="/nuxt.sw.js">
-  <link rel="preload" href="/nuxt.sw.js" as="worker">
   <script>
-    if (!('serviceWorker' in navigator)) {
-      throw new Error('Browser not supported!')
+    async function reload() {
+      const html = await fetch(window.location.href).then(r => r.text())
+      if (html.includes('<!-- SW_INIT-->')) {
+        window.location.reload(false)
+      } else {
+        document.open()
+        document.write(html)
+        document.close()
+      }
     }
-    navigator.serviceWorker.register('/nuxt.sw.js').then((registration) => {
-      console.log('ServiceWorker registration successful with scope:', registration.scope)
-      window.location.reload(false)
-    }).catch(error => {
-      console.error('ServiceWorker registration failed:', error)
-      document.write(error)
-    })
+
+    async function register() {
+      const registration = await navigator.serviceWorker.register('/nuxt.sw.js')
+      await navigator.serviceWorker.ready
+      registration.active.addEventListener('statechange', (event) => {
+        if (event.target.state === 'activated') {
+          reload()
+        }
+      })
+    }
+
+    register()
   </script>
 </head>
+
 <body>
   Loading...
 </body>
+
 </html>
