@@ -7,10 +7,10 @@ import { existsSync, copy, emptyDir } from 'fs-extra'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
 import chalk from 'chalk'
-import { getRollupConfig } from './rollup.config'
+import { getRollupConfig } from './rollup/config'
 import { tryImport, hl, prettyPath, compileTemplateToJS, renderTemplate } from './utils'
 
-async function main () {
+async function _runCLI () {
   const rootDir = resolve(process.cwd(), process.argv[2] || '.')
 
   // Config
@@ -26,7 +26,7 @@ async function main () {
     logStartup: true
   }
 
-  Object.assign(config, tryImport(rootDir, './nuxt.config')!.deploy)
+  Object.assign(config, tryImport(rootDir, './nuxt.config')!.serverless)
 
   config.buildDir = resolve(config.rootDir, config.buildDir || '.nuxt')
 
@@ -63,13 +63,19 @@ async function main () {
 
     consola.info(`Generating bundle for ${hl(target.target)}`)
 
+    const _targetDefaults = tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target)
+    if (!_targetDefaults) {
+      consola.warn('Cannot resolve target', target.target)
+      continue
+    }
+
     const _config: any = defu(
       // Target specific config by user
       target,
       // Global user config
       config,
       // Target defaults
-      tryImport(__dirname, `./targets/${target.target}`) || tryImport(config.rootDir, target.target),
+      _targetDefaults,
       // Generic defaults
       { outDir: resolve(config.buildDir, `dist/${target.target}`), outName: 'index.js' }
     )
@@ -109,7 +115,9 @@ async function main () {
   }
 }
 
-main().catch((err) => {
-  consola.error(err)
-  process.exit(1)
-})
+export function runCLI () {
+  _runCLI().catch((err) => {
+    consola.error(err)
+    process.exit(1)
+  })
+}

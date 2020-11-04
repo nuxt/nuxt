@@ -5,7 +5,7 @@ export default {
   dynamicImporter: false,
   hooks: {
     'done' () {
-      consola.info('Run `vercel deploy` to deploy!')
+      consola.info('Run `vercel serverless` to serverless!')
     }
   }
 }
