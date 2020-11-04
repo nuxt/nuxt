@@ -6,6 +6,10 @@
   <meta charset="utf-8">
   <link rel="prefetch" href="/nuxt.sw.js">
   <script>
+    if (location.host !== 'localhost' && location.protocol === 'http:') {
+      return location.replace(location.href.replace('http://', 'https://'))
+    }
+
     async function reload() {
       const html = await fetch(window.location.href).then(r => r.text())
       if (html.includes('<!-- SW_INIT-->')) {
