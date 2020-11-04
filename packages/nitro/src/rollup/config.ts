@@ -8,7 +8,7 @@ import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
-import ts from 'rollup-plugin-ts'
+import { RUNTIME_DIR } from '../utils'
 import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
@@ -83,20 +83,12 @@ export const getRollupConfig = (config) => {
   const renderer = config.renderer || (config.nuxt === 2 ? 'vue2' : 'vue3')
   options.plugins.push(alias({
     entries: {
-      '~runtime': path.resolve(__dirname, '../runtime'),
-      '~renderer': require.resolve('../runtime/' + renderer),
+      '~runtime': RUNTIME_DIR,
+      '~renderer': require.resolve(path.resolve(RUNTIME_DIR, renderer)),
       '~build': config.buildDir,
-      '~mock': require.resolve('../runtime/mock'),
+      '~mock': require.resolve(path.resolve(RUNTIME_DIR, 'mock')),
       ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {})
     }
-  }))
-
-  // https://github.com/wessberg/rollup-plugin-ts
-  options.plugins.push(ts({
-    transpileOnly: true,
-    transpiler: 'babel',
-    include: ['**/*.ts'],
-    exclude: ['*.json', 'node_modules']
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/node-resolve

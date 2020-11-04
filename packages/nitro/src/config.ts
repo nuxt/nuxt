@@ -1,8 +1,9 @@
 import { resolve } from 'path'
-import { tryImport } from './utils'
+import defu from 'defu'
+import { tryImport, LIB_DIR } from './utils'
 
 export function getBaseConfig (rootDir) {
-  const baseConfig = {
+  let baseConfig = {
     rootDir,
     buildDir: '',
     targets: [],
@@ -14,7 +15,13 @@ export function getBaseConfig (rootDir) {
     logStartup: true
   }
 
-  Object.assign(baseConfig, tryImport(rootDir, './nuxt.config')!.serverless)
+  const nuxtConfig = tryImport(rootDir, './nuxt.config')
+  if (!nuxtConfig) {
+    throw new Error('`nuxt.config` file not found in: ' + rootDir)
+  }
+  if (nuxtConfig.serverless) {
+    baseConfig = defu(nuxtConfig.serverless, baseConfig)
+  }
 
   baseConfig.buildDir = resolve(baseConfig.rootDir, baseConfig.buildDir || '.nuxt')
 
@@ -24,4 +31,25 @@ export function getBaseConfig (rootDir) {
   }
 
   return baseConfig
+}
+
+export function getTargetConfig (baseConfig, target) {
+  const _targetDefaults = tryImport(LIB_DIR, `./targets/${target.target}`) ||
+    tryImport(baseConfig.rootDir, target.target)
+  if (!_targetDefaults) {
+    throw new Error('Cannot resolve target: ' + target.target)
+  }
+
+  // TODO: Merge hooks
+
+  return defu(
+    // Target specific config by user
+    target,
+    // Global user config
+    baseConfig,
+    // Target defaults
+    _targetDefaults,
+    // Generic defaults
+    { outDir: resolve(baseConfig.buildDir, `dist/${target.target}`), outName: 'index.js' }
+  )
 }

@@ -2,33 +2,18 @@ import { resolve } from 'path'
 import consola from 'consola'
 import { rollup, OutputOptions } from 'rollup'
 import Hookable from 'hookable'
-import defu from 'defu'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
 import chalk from 'chalk'
 import { copy, emptyDir, existsSync } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
-import { tryImport, hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
+import { getTargetConfig } from './config'
+import { hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
 
 export async function build (baseConfig, target) {
   consola.info(`Generating bundle for ${hl(target.target)}`)
 
-  const _targetDefaults = tryImport(__dirname, `./targets/${target.target}`) ||
-    tryImport(baseConfig.rootDir, target.target)
-  if (!_targetDefaults) {
-    throw new Error('Cannot resolve target: ' + target.target)
-  }
-
-  const config: any = defu(
-    // Target specific config by user
-    target,
-    // Global user config
-    baseConfig,
-    // Target defaults
-    _targetDefaults,
-    // Generic defaults
-    { outDir: resolve(baseConfig.buildDir, `dist/${target.target}`), outName: 'index.js' }
-  )
+  const config: any = getTargetConfig(baseConfig, target)
 
   const hooks = new Hookable()
   hooks.addHooks(config.hooks)

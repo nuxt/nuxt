@@ -1,4 +1,4 @@
-import { relative, dirname } from 'path'
+import { relative, dirname, resolve } from 'path'
 import { readFile, writeFile, mkdirp } from 'fs-extra'
 import jiti from 'jiti'
 
@@ -31,4 +31,8 @@ export async function compileTemplateToJS (src: string, dst: string) {
   await writeFile(dst, compiled)
 }
 
-export const tryImport = (dir, path) => { try { return jiti(dir)(path) } catch (_err) { } }
+export const jitiImport = (dir, path) => jiti(dir)(path)
+export const tryImport = (dir, path) => { try { return jitiImport(dir, path) } catch (_err) { } }
+
+export const LIB_DIR = resolve(__dirname, '../lib')
+export const RUNTIME_DIR = resolve(LIB_DIR, 'runtime')
