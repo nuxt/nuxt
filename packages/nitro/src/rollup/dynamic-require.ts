@@ -49,7 +49,7 @@ export default function dynamicRequire ({ dir, globbyOptions, outDir, chunksDir 
         const imports = files.map(id => ({
           id,
           import: resolve(dir, id),
-          name: id.replace(/[\\/.]/g, '_')
+          name: '_' + id.replace(/[\\/.]/g, '_')
         }))
 
         if (!outDir) {
