@@ -5,7 +5,7 @@ import { tryImport, LIB_DIR } from './utils'
 
 export interface SLSOptions {
   node: false
-  target: 'vercel' | 'cloudflare' | 'node' | 'sw' | string
+  target: 'worker' | 'node' | string
   entry: string
   outDir: string
   slsDir: string
