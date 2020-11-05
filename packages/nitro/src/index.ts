@@ -41,13 +41,5 @@ export default <Module> function slsModule () {
     }
   })
 
-  nuxt.hook('generate:done', () => buildSLS(options))
-}
-
-async function buildSLS (options) {
-  // Compile html template
-  await compileHTMLTemplate(options)
-
-  // Bundle target
-  await build(options)
+  nuxt.hook('generate:done', () => build(options))
 }

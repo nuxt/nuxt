@@ -7,7 +7,7 @@ import gzipSize from 'gzip-size'
 import chalk from 'chalk'
 import { emptyDir } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
-import { hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
+import { hl, prettyPath, renderTemplate, compileTemplateToJS, writeFileP } from './utils'
 import { SLSOptions } from './config'
 
 export async function build (options: SLSOptions) {
@@ -17,7 +17,17 @@ export async function build (options: SLSOptions) {
   const hooks = new Hookable()
   hooks.addHooks(options.hooks)
 
-  await hooks.callHook('options', options)
+  // Compile html template
+  const htmlTemplate = {
+    src: resolve(options.buildDir, `views/${{ 2: 'app', 3: 'document' }[options.nuxt]}.template.html`),
+    dst: '',
+    compiled: ''
+  }
+  htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.js').replace('app.', 'document.')
+  htmlTemplate.compiled = await compileTemplateToJS(htmlTemplate.src)
+  await hooks.callHook('template:document', htmlTemplate)
+  await writeFileP(htmlTemplate.dst, htmlTemplate.compiled)
+  consola.info('Generated', prettyPath(htmlTemplate.dst))
 
   emptyDir(options.slsDir)
 
@@ -43,11 +53,4 @@ export async function build (options: SLSOptions) {
   }
 
   await hooks.callHook('done', options)
-}
-
-export async function compileHTMLTemplate (options: SLSOptions) {
-  const htmlTemplateFile = resolve(options.buildDir, `views/${{ 2: 'app', 3: 'document' }[options.nuxt]}.template.html`)
-  const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
-  await compileTemplateToJS(htmlTemplateFile, htmlTemplateFileJS)
-  consola.info('Generated', prettyPath(htmlTemplateFileJS))
 }

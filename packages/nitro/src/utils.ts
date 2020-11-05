@@ -24,12 +24,15 @@ export async function renderTemplate (src: string, dst: string, params: any) {
   await writeFile(dst, rendered)
 }
 
-export async function compileTemplateToJS (src: string, dst: string) {
+export async function compileTemplateToJS (src: string) {
   const contents = await readFile(src, 'utf-8')
   // eslint-disable-next-line no-template-curly-in-string
-  const compiled = `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
-  await mkdirp(dirname(dst))
-  await writeFile(dst, compiled)
+  return `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
+}
+
+export async function writeFileP (path, contents) {
+  await mkdirp(dirname(path))
+  await writeFile(path, contents)
 }
 
 export const jitiImport = (dir: string, path: string) => jiti(dir)(path)
