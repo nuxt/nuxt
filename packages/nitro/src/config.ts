@@ -39,7 +39,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     static: [],
     nuxt: 2,
     logStartup: true,
-    inlineChunks: false
+    inlineChunks: true
   }
 
   let target = nuxtOptions.serverless.target || process.env.SLS_TARGET || 'node'
