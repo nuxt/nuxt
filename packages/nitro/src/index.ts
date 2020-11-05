@@ -19,6 +19,12 @@ export default <Module> function slsModule () {
   nuxt.options.build.standalone = true
 
   nuxt.options.generate.crawler = false
+  if (Array.isArray(nuxt.options.generate.routes)) {
+    nuxt.options.generate.routes = Array.from(new Set([
+      ...nuxt.options.generate.routes,
+      ...options.static
+    ]))
+  }
 
   nuxt.hook('generate:cache:ignore', (ignore) => {
     ignore.push(options.slsDir)

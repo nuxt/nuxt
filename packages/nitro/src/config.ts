@@ -52,10 +52,6 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     inlineChunks: true
   }
 
-  if (Array.isArray(nuxtOptions.generate.routes)) {
-    defaults.static = nuxtOptions.generate.routes
-  }
-
   let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || 'node'
   if (typeof target === 'function') {
     target = target(nuxtOptions)
