@@ -10,7 +10,7 @@ import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
 
 import { SLSOptions } from '../config'
-import { RUNTIME_DIR } from '../utils'
+import { RUNTIME_DIR, resolvePath } from '../utils'
 import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
@@ -75,6 +75,7 @@ export const getRollupConfig = (config: SLSOptions) => {
       'typeof window': '"undefined"',
       'process.env.NUXT_STATIC_BASE': JSON.stringify(config.staticAssets.base),
       'process.env.NUXT_STATIC_VERSION': JSON.stringify(config.staticAssets.version),
+      // @ts-ignore
       'process.env.NUXT_FULL_STATIC': config.fullStatic
     }
   }))

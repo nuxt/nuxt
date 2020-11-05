@@ -1,13 +1,14 @@
 import { resolve } from 'path'
 import defu from 'defu'
 import { NuxtOptions } from '@nuxt/types'
-import { tryImport, LIB_DIR } from './utils'
+import { tryImport, LIB_DIR, resolvePath } from './utils'
+
+export type UnresolvedPath = string | ((SLSOptions) => string)
 
 export interface SLSOptions {
   node: false
-  target: 'worker' | 'node' | string
+  target: string
   entry: string
-  outDir: string
   slsDir: string
   outName: string
   logStartup: boolean
@@ -17,7 +18,7 @@ export interface SLSOptions {
   staticDir: string
   targetDir: string
   rootDir: string
-  templates: { src: string, dst: string }[]
+  templates: { src: string, dst: UnresolvedPath }[]
   static: string[]
   renderer: string
   nuxt: 2 | 3
@@ -34,7 +35,9 @@ export interface SLSOptions {
   hooks: { [key: string]: any } // TODO: export from hookable
 }
 
-export interface SLSConfig extends Partial<SLSOptions> {}
+export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
+  targetDir: UnresolvedPath
+}
 
 export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   const defaults: SLSConfig = {
@@ -49,7 +52,8 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     static: [],
     nuxt: 2,
     logStartup: true,
-    inlineChunks: true
+    inlineChunks: true,
+    targetDir: null
   }
 
   let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || 'node'
@@ -67,7 +71,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   options.buildDir = resolve(options.rootDir, options.buildDir || '.nuxt')
   options.publicDir = resolve(options.rootDir, options.publicDir || 'dist')
   options.slsDir = resolve(options.rootDir, options.slsDir || '.sls')
-  options.targetDir = resolve(options.slsDir, target)
+  options.targetDir = options.targetDir ? resolvePath(options, options.targetDir) : resolve(options.slsDir, target)
 
   return options
 }

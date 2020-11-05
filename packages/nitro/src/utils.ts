@@ -1,6 +1,7 @@
 import { relative, dirname, resolve } from 'path'
 import { readFile, writeFile, mkdirp } from 'fs-extra'
 import jiti from 'jiti'
+import { SLSOptions, UnresolvedPath } from './config'
 
 const pwd = process.cwd()
 
@@ -33,6 +34,10 @@ export async function compileTemplateToJS (src: string, dst: string) {
 
 export const jitiImport = (dir: string, path: string) => jiti(dir)(path)
 export const tryImport = (dir: string, path: string) => { try { return jitiImport(dir, path) } catch (_err) { } }
+
+export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveBase: string = '') {
+  return resolve(resolveBase, typeof path === 'string' ? path : path(options))
+}
 
 export const LIB_DIR = resolve(__dirname, '../lib')
 export const RUNTIME_DIR = resolve(LIB_DIR, 'runtime')

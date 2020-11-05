@@ -33,7 +33,11 @@ export async function build (options: SLSOptions) {
   )
 
   for (const tmpl of options.templates) {
-    const dstPath = resolve(options.targetDir, tmpl.dst)
+    let dst = tmpl.dst
+    if (typeof dst === 'function') {
+      dst = dst(options)
+    }
+    const dstPath = resolve(options.targetDir, dst)
     await renderTemplate(tmpl.src, dstPath, { options })
     consola.info('Compiled', prettyPath(dstPath))
   }
