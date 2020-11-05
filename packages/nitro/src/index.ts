@@ -1,6 +1,6 @@
 import type { Module } from '@nuxt/types'
 import { build, compileHTMLTemplate } from './build'
-import { getBaseConfig } from './config'
+import { getoptions } from './config'
 
 export default <Module> function slsModule () {
   const { nuxt } = this
@@ -10,37 +10,32 @@ export default <Module> function slsModule () {
   }
 
   // Config
-  const baseConfig = getBaseConfig(nuxt.options)
+  const options = getoptions(nuxt.options)
 
-  if (baseConfig.minify !== false) {
+  if (options.minify !== false) {
     nuxt.options.build._minifyServer = true
   }
 
   nuxt.options.build.standalone = true
 
   nuxt.hook('generate:cache:ignore', (ignore) => {
-    ignore.push(baseConfig.slsDir)
+    ignore.push(options.slsDir)
   })
 
   nuxt.hook('generate:page', (page) => {
     // TODO: Use ssrContext
-    if (!baseConfig.static.includes(page.route)) {
+    if (!options.static.includes(page.route)) {
       page.exclude = true
     }
   })
 
-  nuxt.hook('generate:done', () => buildSLS(baseConfig))
+  nuxt.hook('generate:done', () => buildSLS(options))
 }
 
-async function buildSLS (baseConfig) {
+async function buildSLS (options) {
   // Compile html template
-  await compileHTMLTemplate(baseConfig)
+  await compileHTMLTemplate(options)
 
-  // Bundle for each target
-  for (const target of baseConfig.targets) {
-    if (baseConfig.target && target.target !== baseConfig.target) {
-      continue
-    }
-    await build(baseConfig, target)
-  }
+  // Bundle target
+  await build(options)
 }

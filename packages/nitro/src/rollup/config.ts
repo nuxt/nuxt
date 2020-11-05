@@ -9,13 +9,13 @@ import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
 
-import { SLSConfig } from '../config'
+import { SLSOptions } from '../config'
 import { RUNTIME_DIR } from '../utils'
 import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
-export const getRollupConfig = (config: SLSConfig) => {
+export const getRollupConfig = (config: SLSOptions) => {
   const mocks = [
     // @nuxt/devalue
     'consola',

@@ -3,77 +3,61 @@ import defu from 'defu'
 import { NuxtOptions } from '@nuxt/types'
 import { tryImport, LIB_DIR } from './utils'
 
-export interface SLSConfig {
+export interface SLSOptions {
   node: false
+  target: 'vercel' | 'cloudflare' | 'node' | 'sw' | string
   entry: string
   outDir: string
   slsDir: string
   outName: string
   logStartup: boolean
+  inlineChunks: boolean
   buildDir: string
   publicDir: string
   staticDir: string
+  targetDir: string
   rootDir: string
-  targets: ((SLSConfig & { target: string }) | string)[]
-  target: string
-  templates: string[]
+  templates: { src: string, dst: string }[]
+  static: string[]
   renderer: string
   nuxt: 2 | 3
   analyze: boolean
   minify: boolean
+  rollupConfig?: any
+  hooks: { [key: string]: any } // TODO: export from hookable
 }
 
-export function getBaseConfig (options: NuxtOptions): SLSConfig {
-  const baseConfig = {
-    rootDir: options.rootDir,
-    buildDir: options.buildDir,
-    publicDir: options.generate.dir,
-    slsDir: null,
-    targets: [],
+export interface SLSConfig extends Partial<SLSOptions> {}
+
+export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
+  const defaults: SLSConfig = {
+    rootDir: nuxtOptions.rootDir,
+    buildDir: nuxtOptions.buildDir,
+    publicDir: nuxtOptions.generate.dir,
+    outName: 'index.js',
     templates: [],
-    static: [
-      '/about'
-    ],
+    static: [],
     nuxt: 2,
-    target: null,
-    minify: null,
-    analyze: null,
     logStartup: true,
-    ...options.serverless
+    inlineChunks: false
   }
 
-  baseConfig.buildDir = resolve(baseConfig.rootDir, baseConfig.buildDir || '.nuxt')
-  baseConfig.publicDir = resolve(baseConfig.rootDir, baseConfig.publicDir || 'dist')
-  baseConfig.slsDir = resolve(baseConfig.rootDir, baseConfig.slsDir || '.sls')
-
-  baseConfig.targets = baseConfig.targets.map(t => typeof t === 'string' ? { target: t } : t)
-  if (baseConfig.target && !baseConfig.targets.find(t => t.target === baseConfig.target)) {
-    baseConfig.targets.push({ target: baseConfig.target })
+  let target = nuxtOptions.serverless.target || process.env.SLS_TARGET || 'node'
+  if (typeof target === 'function') {
+    target = target(nuxtOptions)
+  }
+  let targetDefaults = tryImport(LIB_DIR, `./targets/${target}`) || tryImport(nuxtOptions.rootDir, target)
+  targetDefaults = targetDefaults.default || targetDefaults
+  if (!targetDefaults) {
+    throw new Error('Cannot resolve target: ' + target)
   }
 
-  return baseConfig
-}
+  const options: SLSOptions = defu(nuxtOptions.serverless, targetDefaults, defaults, { target })
 
-export function getTargetConfig (baseConfig: SLSConfig, target: SLSConfig) {
-  const _targetDefaults = tryImport(LIB_DIR, `./targets/${target.target}`) ||
-    tryImport(baseConfig.rootDir, target.target)
-  if (!_targetDefaults) {
-    throw new Error('Cannot resolve target: ' + target.target)
-  }
+  options.buildDir = resolve(options.rootDir, options.buildDir || '.nuxt')
+  options.publicDir = resolve(options.rootDir, options.publicDir || 'dist')
+  options.slsDir = resolve(options.rootDir, options.slsDir || '.sls')
+  options.targetDir = resolve(options.slsDir, target)
 
-  // TODO: Merge hooks
-
-  return defu(
-    // Target specific config by user
-    target,
-    // Global user config
-    baseConfig,
-    // Target defaults
-    _targetDefaults,
-    // Generic defaults
-    {
-      targetDir: resolve(baseConfig.slsDir, target.target),
-      outName: 'index.js'
-    }
-  )
+  return options
 }
