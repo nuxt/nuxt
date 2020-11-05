@@ -50,7 +50,7 @@ export const getRollupConfig = (config) => {
   const options: RollupConfig = {
     input: config.entry,
     output: {
-      file: path.resolve(config.outDir, config.outName),
+      file: path.resolve(config.targetDir, config.outName),
       format: 'cjs',
       intro: '',
       outro: '',
@@ -77,7 +77,7 @@ export const getRollupConfig = (config) => {
   // Dynamic Require Support
   options.plugins.push(dynamicRequire({
     dir: path.resolve(config.buildDir, 'dist/server'),
-    outDir: config.node === false ? undefined : config.outDir,
+    outDir: (config.node === false || config.inlineChunks) ? undefined : config.targetDir,
     globbyOptions: {
       ignore: [
         'server.js'
@@ -123,7 +123,7 @@ export const getRollupConfig = (config) => {
     options.plugins.push(analyze())
   }
 
-  if (config.minify) {
+  if (config.minify !== false) {
     options.plugins.push(terser())
   }
 

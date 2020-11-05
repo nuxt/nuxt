@@ -2,32 +2,25 @@ import { resolve } from 'path'
 import defu from 'defu'
 import { tryImport, LIB_DIR } from './utils'
 
-export function getBaseConfig (rootDir) {
-  let baseConfig = {
-    rootDir,
-    buildDir: '',
-    publicDir: '',
-    staticDir: '',
+export function getBaseConfig (options) {
+  const baseConfig = {
+    rootDir: options.rootDir,
+    buildDir: options.buildDir,
+    publicDir: options.generate.dir,
+    slsDir: null,
     targets: [],
     templates: [],
     nuxt: 2,
-    target: process.argv[3] && process.argv[3][0] !== '-' ? process.argv[3] : null,
-    minify: process.argv.includes('--minify') ? true : null,
-    analyze: process.argv.includes('--analyze') ? true : null,
-    logStartup: true
-  }
-
-  const nuxtConfig = tryImport(rootDir, './nuxt.config')
-  if (!nuxtConfig) {
-    throw new Error('`nuxt.config` file not found in: ' + rootDir)
-  }
-  if (nuxtConfig.serverless) {
-    baseConfig = defu(nuxtConfig.serverless, baseConfig)
+    target: null,
+    minify: null,
+    analyze: null,
+    logStartup: true,
+    ...options.serverless
   }
 
   baseConfig.buildDir = resolve(baseConfig.rootDir, baseConfig.buildDir || '.nuxt')
   baseConfig.publicDir = resolve(baseConfig.rootDir, baseConfig.publicDir || 'dist')
-  baseConfig.staticDir = resolve(baseConfig.rootDir, baseConfig.staticDir || 'static')
+  baseConfig.slsDir = resolve(baseConfig.rootDir, baseConfig.slsDir || '.sls')
 
   baseConfig.targets = baseConfig.targets.map(t => typeof t === 'string' ? { target: t } : t)
   if (baseConfig.target && !baseConfig.targets.find(t => t.target === baseConfig.target)) {
@@ -55,7 +48,7 @@ export function getTargetConfig (baseConfig, target) {
     _targetDefaults,
     // Generic defaults
     {
-      outDir: resolve(baseConfig.buildDir, `sls/${target.target}`),
+      targetDir: resolve(baseConfig.slsDir, target.target),
       outName: 'index.js'
     }
   )

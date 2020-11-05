@@ -5,12 +5,13 @@ import Hookable from 'hookable'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
 import chalk from 'chalk'
-import { copy, emptyDir, existsSync, mkdirp } from 'fs-extra'
+import { emptyDir } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
 import { getTargetConfig } from './config'
 import { hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
 
 export async function build (baseConfig, target) {
+  console.log('\n')
   consola.info(`Generating bundle for ${hl(target.target)}`)
 
   const config: any = getTargetConfig(baseConfig, target)
@@ -20,7 +21,7 @@ export async function build (baseConfig, target) {
 
   await hooks.callHook('config', config)
 
-  emptyDir(config.outDir)
+  emptyDir(config.targetDir)
 
   config.rollupConfig = getRollupConfig(config)
   await hooks.callHook('rollup:before', config)
@@ -34,7 +35,7 @@ export async function build (baseConfig, target) {
   )
 
   for (const tmpl of config.templates) {
-    const dstPath = resolve(config.outDir, tmpl.dst)
+    const dstPath = resolve(config.targetDir, tmpl.dst)
     await renderTemplate(tmpl.src, dstPath, { config })
     consola.info('Compiled', prettyPath(dstPath))
   }
@@ -47,27 +48,4 @@ export async function compileHTMLTemplate (baseConfig) {
   const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
   await compileTemplateToJS(htmlTemplateFile, htmlTemplateFileJS)
   consola.info('Generated', prettyPath(htmlTemplateFileJS))
-}
-
-export function ensureDist (baseConfig) {
-  if (!existsSync(resolve(baseConfig.buildDir, 'dist/server'))) {
-    return consola.error('Please use `nuxt build` first to build project!')
-  } else {
-    consola.success('Using existing nuxt build from', prettyPath(baseConfig.buildDir))
-  }
-}
-
-export async function generatePublic (baseConfig) {
-  await emptyDir(baseConfig.publicDir)
-  await mkdirp(baseConfig.publicDir)
-
-  await copy(
-    baseConfig.staticDir,
-    baseConfig.publicDir
-  )
-
-  await copy(
-    resolve(baseConfig.buildDir, 'dist/client'),
-    resolve(baseConfig.publicDir, '_nuxt')
-  )
 }

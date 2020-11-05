@@ -4,7 +4,7 @@ import { copyFile, mkdirp } from 'fs-extra'
 
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.js`
-const DYNAMIC_REQUIRE_RE = /require\("\.\/" \+/g
+const DYNAMIC_REQUIRE_RE = /require\("\.\/" ?\+/g
 
 const TMPL_INLINE = ({ imports }) =>
   `${imports.map(i => `import ${i.name} from '${i.import}'`).join('\n')}
