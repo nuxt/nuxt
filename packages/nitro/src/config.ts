@@ -1,8 +1,29 @@
 import { resolve } from 'path'
 import defu from 'defu'
+import { NuxtOptions } from '@nuxt/types'
 import { tryImport, LIB_DIR } from './utils'
 
-export function getBaseConfig (options) {
+export interface SLSConfig {
+  node: false
+  entry: string
+  outDir: string
+  slsDir: string
+  outName: string
+  logStartup: boolean
+  buildDir: string
+  publicDir: string
+  staticDir: string
+  rootDir: string
+  targets: ((SLSConfig & { target: string }) | string)[]
+  target: string
+  templates: string[]
+  renderer: string
+  nuxt: 2 | 3
+  analyze: boolean
+  minify: boolean
+}
+
+export function getBaseConfig (options: NuxtOptions): SLSConfig {
   const baseConfig = {
     rootDir: options.rootDir,
     buildDir: options.buildDir,
@@ -33,7 +54,7 @@ export function getBaseConfig (options) {
   return baseConfig
 }
 
-export function getTargetConfig (baseConfig, target) {
+export function getTargetConfig (baseConfig: SLSConfig, target: SLSConfig) {
   const _targetDefaults = tryImport(LIB_DIR, `./targets/${target.target}`) ||
     tryImport(baseConfig.rootDir, target.target)
   if (!_targetDefaults) {

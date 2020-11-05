@@ -6,7 +6,13 @@ const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.js`
 const DYNAMIC_REQUIRE_RE = /require\("\.\/" ?\+/g
 
-const TMPL_INLINE = ({ imports }) =>
+interface Import {
+  name: string
+  id: string
+  import: string
+}
+
+const TMPL_INLINE = ({ imports }: { imports: Import[]}) =>
   `${imports.map(i => `import ${i.name} from '${i.import}'`).join('\n')}
 const dynamicChunks = {
   ${imports.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
@@ -30,13 +36,13 @@ interface Options {
 export default function dynamicRequire ({ dir, globbyOptions, outDir, chunksDir }: Options) {
   return {
     name: PLUGIN_NAME,
-    transform (code, _id) {
+    transform (code: string, _id: string) {
       return code.replace(DYNAMIC_REQUIRE_RE, `require('${HELPER_DYNAMIC}')(`)
     },
-    resolveId (id) {
+    resolveId (id: string) {
       return id === HELPER_DYNAMIC ? id : null
     },
-    async load (id) {
+    async load (id: string) {
       if (id === HELPER_DYNAMIC) {
         const files = await globby('**/*.js', { cwd: dir, absolute: false, ...globbyOptions })
 

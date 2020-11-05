@@ -1,7 +1,8 @@
+import type { Module } from '@nuxt/types'
 import { build, compileHTMLTemplate } from './build'
 import { getBaseConfig } from './config'
 
-export default function () {
+export default <Module> function slsModule () {
   const { nuxt } = this
 
   if (nuxt.options.dev) {

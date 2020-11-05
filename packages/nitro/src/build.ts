@@ -7,8 +7,8 @@ import gzipSize from 'gzip-size'
 import chalk from 'chalk'
 import { emptyDir } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
-import { getTargetConfig } from './config'
 import { hl, prettyPath, renderTemplate, compileTemplateToJS } from './utils'
+import { getTargetConfig, SLSConfig } from './config'
 
 export async function build (baseConfig, target) {
   console.log('\n')
@@ -43,7 +43,7 @@ export async function build (baseConfig, target) {
   await hooks.callHook('done', config)
 }
 
-export async function compileHTMLTemplate (baseConfig) {
+export async function compileHTMLTemplate (baseConfig: SLSConfig) {
   const htmlTemplateFile = resolve(baseConfig.buildDir, `views/${{ 2: 'app', 3: 'document' }[baseConfig.nuxt]}.template.html`)
   const htmlTemplateFileJS = htmlTemplateFile.replace(/.html$/, '.js').replace('app.', 'document.')
   await compileTemplateToJS(htmlTemplateFile, htmlTemplateFileJS)

@@ -4,19 +4,19 @@ import jiti from 'jiti'
 
 const pwd = process.cwd()
 
-export const hl = str => '`' + str + '`'
+export const hl = (str: string) => '`' + str + '`'
 
-export function prettyPath (p, highlight = true) {
+export function prettyPath (p: string, highlight = true) {
   p = relative(pwd, p)
   return highlight ? hl(p) : p
 }
 
-export async function loadTemplate (src) {
+export async function loadTemplate (src: string) {
   const contents = await readFile(src, 'utf-8')
-  return params => contents.replace(/{{ (\w+) }}/g, `${params.$1}`)
+  return (params: Record<string, string>) => contents.replace(/{{ (\w+) }}/g, `${params.$1}`)
 }
 
-export async function renderTemplate (src, dst: string, params: any) {
+export async function renderTemplate (src: string, dst: string, params: any) {
   const tmpl = await loadTemplate(src)
   const rendered = tmpl(params)
   await mkdirp(dirname(dst))
@@ -31,8 +31,8 @@ export async function compileTemplateToJS (src: string, dst: string) {
   await writeFile(dst, compiled)
 }
 
-export const jitiImport = (dir, path) => jiti(dir)(path)
-export const tryImport = (dir, path) => { try { return jitiImport(dir, path) } catch (_err) { } }
+export const jitiImport = (dir: string, path: string) => jiti(dir)(path)
+export const tryImport = (dir: string, path: string) => { try { return jitiImport(dir, path) } catch (_err) { } }
 
 export const LIB_DIR = resolve(__dirname, '../lib')
 export const RUNTIME_DIR = resolve(LIB_DIR, 'runtime')
