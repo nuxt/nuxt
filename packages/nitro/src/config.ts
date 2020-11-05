@@ -24,6 +24,13 @@ export interface SLSOptions {
   analyze: boolean
   minify: boolean
   rollupConfig?: any
+  fullStatic: boolean,
+  staticAssets: {
+    base: string
+    versionBase: string
+    dir: string
+    version: string
+  }
   hooks: { [key: string]: any } // TODO: export from hookable
 }
 
@@ -34,6 +41,9 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     rootDir: nuxtOptions.rootDir,
     buildDir: nuxtOptions.buildDir,
     publicDir: nuxtOptions.generate.dir,
+    fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
+    // @ts-ignore
+    staticAssets: nuxtOptions.generate.staticAssets,
     outName: 'server.js',
     templates: [],
     static: [],

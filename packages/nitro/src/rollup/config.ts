@@ -72,7 +72,10 @@ export const getRollupConfig = (config: SLSOptions) => {
   options.plugins.push(replace({
     values: {
       'process.env.NODE_ENV': '"production"',
-      'typeof window': '"undefined"'
+      'typeof window': '"undefined"',
+      'process.env.NUXT_STATIC_BASE': JSON.stringify(config.staticAssets.base),
+      'process.env.NUXT_STATIC_VERSION': JSON.stringify(config.staticAssets.version),
+      'process.env.NUXT_FULL_STATIC': config.fullStatic
     }
   }))
 
