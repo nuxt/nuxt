@@ -34,7 +34,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     rootDir: nuxtOptions.rootDir,
     buildDir: nuxtOptions.buildDir,
     publicDir: nuxtOptions.generate.dir,
-    outName: 'index.js',
+    outName: 'server.js',
     templates: [],
     static: [],
     nuxt: 2,
@@ -47,10 +47,10 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     target = target(nuxtOptions)
   }
   let targetDefaults = tryImport(LIB_DIR, `./targets/${target}`) || tryImport(nuxtOptions.rootDir, target)
-  targetDefaults = targetDefaults.default || targetDefaults
   if (!targetDefaults) {
     throw new Error('Cannot resolve target: ' + target)
   }
+  targetDefaults = targetDefaults.default || targetDefaults
 
   const options: SLSOptions = defu(nuxtOptions.serverless, targetDefaults, defaults, { target })
 

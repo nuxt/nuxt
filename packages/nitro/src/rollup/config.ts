@@ -1,9 +1,9 @@
 import Module from 'module'
-import path from 'path'
+import { basename, extname, resolve } from 'path'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
-import resolve from '@rollup/plugin-node-resolve'
+import nodeResolve from '@rollup/plugin-node-resolve'
 import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
@@ -52,7 +52,7 @@ export const getRollupConfig = (config: SLSOptions) => {
   const options: RollupConfig = {
     input: config.entry,
     output: {
-      file: path.resolve(config.targetDir, config.outName),
+      file: resolve(config.targetDir, config.outName),
       format: 'cjs',
       intro: '',
       outro: '',
@@ -78,8 +78,9 @@ export const getRollupConfig = (config: SLSOptions) => {
 
   // Dynamic Require Support
   options.plugins.push(dynamicRequire({
-    dir: path.resolve(config.buildDir, 'dist/server'),
+    dir: resolve(config.buildDir, 'dist/server'),
     outDir: (config.node === false || config.inlineChunks) ? undefined : config.targetDir,
+    chunksDir: '_' + basename(config.outName, extname(config.outName)),
     globbyOptions: {
       ignore: [
         'server.js'
@@ -92,16 +93,16 @@ export const getRollupConfig = (config: SLSOptions) => {
   options.plugins.push(alias({
     entries: {
       '~runtime': RUNTIME_DIR,
-      '~renderer': require.resolve(path.resolve(RUNTIME_DIR, renderer)),
+      '~renderer': require.resolve(resolve(RUNTIME_DIR, renderer)),
       '~build': config.buildDir,
-      '~mock': require.resolve(path.resolve(RUNTIME_DIR, 'mock')),
+      '~mock': require.resolve(resolve(RUNTIME_DIR, 'mock')),
       ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {}),
       ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {})
     }
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/node-resolve
-  options.plugins.push(resolve({
+  options.plugins.push(nodeResolve({
     extensions,
     preferBuiltins: true,
     rootDir: config.rootDir,
