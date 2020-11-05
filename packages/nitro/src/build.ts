@@ -19,7 +19,7 @@ export async function build (options: SLSOptions) {
 
   await hooks.callHook('options', options)
 
-  emptyDir(options.targetDir)
+  emptyDir(options.slsDir)
 
   options.rollupConfig = getRollupConfig(options)
   await hooks.callHook('rollup:before', options)
