@@ -18,6 +18,8 @@ export default <Module> function slsModule () {
 
   nuxt.options.build.standalone = true
 
+  nuxt.options.generate.crawler = false
+
   nuxt.hook('generate:cache:ignore', (ignore) => {
     ignore.push(options.slsDir)
   })
