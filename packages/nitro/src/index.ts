@@ -21,6 +21,13 @@ export default function () {
     ignore.push(baseConfig.slsDir)
   })
 
+  nuxt.hook('generate:page', (page) => {
+    // TODO: Use ssrContext
+    if (!baseConfig.static.includes(page.route)) {
+      page.exclude = true
+    }
+  })
+
   nuxt.hook('generate:done', () => buildSLS(baseConfig))
 }
 

@@ -10,6 +10,9 @@ export function getBaseConfig (options) {
     slsDir: null,
     targets: [],
     templates: [],
+    static: [
+      '/about'
+    ],
     nuxt: 2,
     target: null,
     minify: null,
