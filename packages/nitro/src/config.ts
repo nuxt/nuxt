@@ -42,7 +42,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     inlineChunks: true
   }
 
-  let target = nuxtOptions.serverless.target || process.env.SLS_TARGET || 'node'
+  let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || 'node'
   if (typeof target === 'function') {
     target = target(nuxtOptions)
   }
