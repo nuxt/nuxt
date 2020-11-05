@@ -26,6 +26,10 @@ export default <Module> function slsModule () {
     ]))
   }
 
+  if (options.nuxtHooks) {
+    nuxt.addHooks(options.nuxtHooks)
+  }
+
   nuxt.hook('generate:cache:ignore', (ignore) => {
     ignore.push(options.slsDir)
   })

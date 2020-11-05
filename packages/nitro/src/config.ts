@@ -33,6 +33,7 @@ export interface SLSOptions {
     version: string
   }
   hooks: { [key: string]: any } // TODO: export from hookable
+  nuxtHooks: NuxtOptions['hooks']
 }
 
 export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
