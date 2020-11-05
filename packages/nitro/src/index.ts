@@ -1,5 +1,5 @@
 import type { Module } from '@nuxt/types'
-import { build, compileHTMLTemplate } from './build'
+import { build } from './build'
 import { getoptions } from './config'
 
 export default <Module> function slsModule () {

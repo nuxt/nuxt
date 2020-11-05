@@ -10,7 +10,7 @@ import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
 
 import { SLSOptions } from '../config'
-import { RUNTIME_DIR, resolvePath } from '../utils'
+import { RUNTIME_DIR } from '../utils'
 import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
