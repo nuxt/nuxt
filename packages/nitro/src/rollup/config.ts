@@ -36,7 +36,8 @@ export const getRollupConfig = (config: SLSOptions) => {
 
   const providedDeps = [
     '@nuxt/devalue',
-    'vue-bundle-renderer'
+    'vue-bundle-renderer',
+    '@cloudflare/kv-asset-handler'
   ]
 
   const extensions = ['.ts', '.mjs', '.js', '.json', '.node']
