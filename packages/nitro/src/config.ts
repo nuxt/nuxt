@@ -27,6 +27,7 @@ export interface SLSOptions {
   minify: boolean
   rollupConfig?: any
   fullStatic: boolean,
+  generateIgnore: string[]
   staticAssets: {
     base: string
     versionBase: string
