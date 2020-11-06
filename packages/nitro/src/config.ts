@@ -1,12 +1,13 @@
 import { resolve } from 'path'
 import defu from 'defu'
-import { NuxtOptions } from '@nuxt/types'
+import type { NuxtOptions } from '@nuxt/types'
 import { tryImport, resolvePath, detectTarget } from './utils'
 import * as TARGETS from './targets'
 
 export type UnresolvedPath = string | ((SLSOptions) => string)
 
 export interface SLSOptions {
+  nuxtOptions: NuxtOptions
   node: false
   target: string
   entry: UnresolvedPath
@@ -42,7 +43,7 @@ export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
   targetDir: UnresolvedPath
 }
 
-export type SLSTarget = Partial<SLSConfig>
+export type SLSTarget = Partial<SLSConfig> | ((NuxtOptions) => Partial<SLSConfig>)
 
 export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   const defaults: SLSConfig = {
@@ -55,6 +56,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     outName: '_nuxt.js',
     runtimeDir: resolve(__dirname, '../runtime'),
     static: [],
+    generateIgnore: [],
     nuxt: 2,
     logStartup: true,
     inlineChunks: true,
@@ -65,11 +67,15 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   if (typeof target === 'function') {
     target = target(nuxtOptions)
   }
+
   let targetDefaults = TARGETS[target] || tryImport(nuxtOptions.rootDir, target)
   if (!targetDefaults) {
     throw new Error('Cannot resolve target: ' + target)
   }
   targetDefaults = targetDefaults.default || targetDefaults
+  if (typeof targetDefaults === 'function') {
+    targetDefaults = targetDefaults(nuxtOptions)
+  }
 
   const options: SLSOptions = defu(nuxtOptions.serverless, targetDefaults, defaults, { target })
 

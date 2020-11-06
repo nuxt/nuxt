@@ -2,6 +2,8 @@ import { relative, dirname, resolve } from 'path'
 import { writeFile, mkdirp } from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
+import Hookable from 'hookable'
+import type { NuxtOptions } from '@nuxt/types'
 import { SLSOptions, UnresolvedPath, SLSTarget } from './config'
 
 export function hl (str: string) {
@@ -60,6 +62,18 @@ export function detectTarget () {
 }
 
 export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTarget {
-  // TODO: merge hooks
-  return defu(target, base)
+  return (nuxtOptions: NuxtOptions) => {
+    if (typeof target === 'function') {
+      target = target(nuxtOptions)
+    }
+
+    if (typeof base === 'function') {
+      base = base(base)
+    }
+
+    return defu({
+      hooks: Hookable.mergeHooks(base.hooks, target.hooks),
+      nuxtHooks: Hookable.mergeHooks(base.nuxtHooks as any, target.nuxtHooks as any)
+    }, target, base)
+  }
 }
