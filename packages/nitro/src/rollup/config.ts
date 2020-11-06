@@ -93,7 +93,7 @@ export const getRollupConfig = (config: SLSOptions) => {
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
-  const renderer = config.renderer || (config.nuxt === 2 ? 'vue2' : 'vue3')
+  const renderer = config.renderer || 'vue2'
   options.plugins.push(alias({
     entries: {
       '~runtime': config.runtimeDir,

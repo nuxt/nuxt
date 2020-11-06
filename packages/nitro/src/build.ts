@@ -18,7 +18,7 @@ export async function build (options: SLSOptions) {
   hooks.addHooks(options.hooks)
 
   // Compile html template
-  const htmlSrc = resolve(options.buildDir, `views/${{ 2: 'app', 3: 'document' }[options.nuxt]}.template.html`)
+  const htmlSrc = resolve(options.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
   htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.js').replace('app.', 'document.')
   htmlTemplate.contents = await readFile(htmlTemplate.src, 'utf-8')

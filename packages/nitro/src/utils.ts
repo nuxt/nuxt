@@ -3,8 +3,7 @@ import { writeFile, mkdirp } from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
 import Hookable from 'hookable'
-import type { NuxtOptions } from '@nuxt/types'
-import { SLSOptions, UnresolvedPath, SLSTarget } from './config'
+import { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from './config'
 
 export function hl (str: string) {
   return '`' + str + '`'
@@ -44,6 +43,10 @@ export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveB
     path = path(options)
   }
 
+  if (typeof path !== 'string') {
+    throw new TypeError('Invalid path: ' + path)
+  }
+
   path = compileTemplate(path)(options)
 
   return resolve(resolveBase, path)
@@ -61,16 +64,14 @@ export function detectTarget () {
   return 'node'
 }
 
-export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTarget {
-  return (nuxtOptions: NuxtOptions) => {
+export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTargetFn {
+  return (config: SLSConfig) => {
     if (typeof target === 'function') {
-      target = target(nuxtOptions)
+      target = target(config)
     }
-
     if (typeof base === 'function') {
-      base = base(base)
+      base = base(config)
     }
-
     return defu({
       hooks: Hookable.mergeHooks(base.hooks, target.hooks),
       nuxtHooks: Hookable.mergeHooks(base.nuxtHooks as any, target.nuxtHooks as any)

@@ -5,36 +5,38 @@ import { extendTarget } from '../utils'
 import { SLSTarget } from '../config'
 import { worker } from './worker'
 
-const getScriptTag = () => `<script>
+export const browser: SLSTarget = extendTarget(worker, (options) => {
+  const script = `<script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('/server.js');
+    navigator.serviceWorker.register('${options.routerBase}_nuxt.js');
   });
 }
 </script>`.replace(/\n| +/g, '')
 
-export const browser: SLSTarget = extendTarget(worker, {
-  targetDir: ({ publicDir }) => publicDir,
-  nuxtHooks: {
-    'vue-renderer:ssr:templateParams' (params) {
-      params.APP += getScriptTag()
-    },
-    'vue-renderer:spa:templateParams' (params) {
-      params.APP += getScriptTag()
-    }
-  },
-  hooks: {
-    'template:document' (tmpl) {
-      tmpl.compiled = tmpl.compiled.replace('</body>', getScriptTag() + '</body>')
-    },
-    async done ({ targetDir, publicDir }) {
-      const rootIndex = resolve(publicDir, 'index.html')
-      const rootFallback = resolve(publicDir, '200.html')
-      if (!existsSync(rootIndex) && existsSync(rootFallback)) {
-        await copy(rootFallback, rootIndex)
+  return {
+    targetDir: '{{ publicDir }}',
+    nuxtHooks: {
+      'vue-renderer:ssr:templateParams' (params) {
+        params.APP += script
+      },
+      'vue-renderer:spa:templateParams' (params) {
+        params.APP += script
       }
+    },
+    hooks: {
+      'template:document' (tmpl) {
+        tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
+      },
+      async done ({ targetDir, publicDir }) {
+        const rootIndex = resolve(publicDir, 'index.html')
+        const rootFallback = resolve(publicDir, '200.html')
+        if (!existsSync(rootIndex) && existsSync(rootFallback)) {
+          await copy(rootFallback, rootIndex)
+        }
 
-      consola.info(`Try with \`npx serve ${relative(process.cwd(), targetDir)}\``)
+        consola.info(`Try with \`npx serve ${relative(process.cwd(), targetDir)}\``)
+      }
     }
   }
 })

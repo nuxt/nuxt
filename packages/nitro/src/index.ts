@@ -10,7 +10,7 @@ export default <Module> function slsModule () {
   }
 
   // Config
-  const options = getoptions(nuxt.options)
+  const options = getoptions(nuxt)
 
   if (options.minify !== false) {
     nuxt.options.build._minifyServer = true
