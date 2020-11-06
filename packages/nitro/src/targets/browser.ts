@@ -12,7 +12,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('${options.routerBase}_nuxt.js');
   });
 }
-</script>`.replace(/\n| +/g, '')
+</script>`.replace(/\n|  +/g, '')
 
   return {
     targetDir: '{{ publicDir }}',
