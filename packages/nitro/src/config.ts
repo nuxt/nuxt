@@ -60,7 +60,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     targetDir: null
   }
 
-  let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || detectTarget()
+  let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless?.target || detectTarget()
   if (typeof target === 'function') {
     target = target(nuxtOptions)
   }
