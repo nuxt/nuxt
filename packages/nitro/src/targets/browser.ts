@@ -5,7 +5,13 @@ import { extendTarget } from '../utils'
 import { SLSTarget } from '../config'
 import { worker } from './worker'
 
-const getScriptTag = () => '<script async defer src="/sw-register.js"></script>'
+const getScriptTag = () => `<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/server.js');
+  });
+}
+</script>`.replace(/\n| +/g, '')
 
 export const browser: SLSTarget = extendTarget(worker, {
   targetDir: ({ publicDir }) => publicDir,
