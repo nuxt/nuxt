@@ -57,7 +57,7 @@ export function detectTarget () {
     return 'netlify'
   }
 
-  if (process.env.VERCEL_URL) {
+  if (process.env.NOW_BUILDER) {
     return 'vercel'
   }
 
