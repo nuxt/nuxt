@@ -22,7 +22,7 @@ export async function build (options: SLSOptions) {
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
   htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.js').replace('app.', 'document.')
   htmlTemplate.contents = await readFile(htmlTemplate.src, 'utf-8')
-  htmlTemplate.compiled = serializeTemplate(htmlTemplate.src)
+  htmlTemplate.compiled = serializeTemplate(htmlTemplate.contents)
   await hooks.callHook('template:document', htmlTemplate)
   await writeFileP(htmlTemplate.dst, htmlTemplate.compiled)
   consola.info('Generated', prettyPath(htmlTemplate.dst))
