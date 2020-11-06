@@ -51,7 +51,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
     // @ts-ignore
     staticAssets: nuxtOptions.generate.staticAssets,
-    outName: 'server.js',
+    outName: '_nuxt.js',
     runtimeDir: resolve(__dirname, '../runtime'),
     static: [],
     nuxt: 2,
