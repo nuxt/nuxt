@@ -1,31 +1,23 @@
 import { relative, dirname, resolve } from 'path'
-import { readFile, writeFile, mkdirp } from 'fs-extra'
+import { writeFile, mkdirp } from 'fs-extra'
 import jiti from 'jiti'
-import { SLSOptions, UnresolvedPath } from './config'
+import defu from 'defu'
+import { SLSOptions, UnresolvedPath, SLSTarget } from './config'
 
-const pwd = process.cwd()
-
-export const hl = (str: string) => '`' + str + '`'
+export function hl (str: string) {
+  return '`' + str + '`'
+}
 
 export function prettyPath (p: string, highlight = true) {
-  p = relative(pwd, p)
+  p = relative(process.cwd(), p)
   return highlight ? hl(p) : p
 }
 
-export async function loadTemplate (src: string) {
-  const contents = await readFile(src, 'utf-8')
-  return (params: Record<string, string>) => contents.replace(/{{ (\w+) }}/g, `${params.$1}`)
+export function compileTemplate (contents: string) {
+  return (params: Record<string, any>) => contents.replace(/{{ ?(\w+) ?}}/g, (_, match) => params[match] || '')
 }
 
-export async function renderTemplate (src: string, dst: string, params: any) {
-  const tmpl = await loadTemplate(src)
-  const rendered = tmpl(params)
-  await mkdirp(dirname(dst))
-  await writeFile(dst, rendered)
-}
-
-export async function compileTemplateToJS (src: string) {
-  const contents = await readFile(src, 'utf-8')
+export function serializeTemplate (contents: string) {
   // eslint-disable-next-line no-template-curly-in-string
   return `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
 }
@@ -35,11 +27,24 @@ export async function writeFileP (path, contents) {
   await writeFile(path, contents)
 }
 
-export const jitiImport = (dir: string, path: string) => jiti(dir)(path)
-export const tryImport = (dir: string, path: string) => { try { return jitiImport(dir, path) } catch (_err) { } }
+export function jitiImport (dir: string, path: string) {
+  return jiti(dir)(path)
+}
+
+export function tryImport (dir: string, path: string) {
+  try {
+    return jitiImport(dir, path)
+  } catch (_err) { }
+}
 
 export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveBase: string = '') {
-  return resolve(resolveBase, typeof path === 'string' ? path : path(options))
+  if (typeof path === 'function') {
+    path = path(options)
+  }
+
+  path = compileTemplate(path)(options)
+
+  return resolve(resolveBase, path)
 }
 
 export function detectTarget () {
@@ -54,5 +59,7 @@ export function detectTarget () {
   return 'node'
 }
 
-export const LIB_DIR = resolve(__dirname, '../lib')
-export const RUNTIME_DIR = resolve(LIB_DIR, 'runtime')
+export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTarget {
+  // TODO: merge hooks
+  return defu(target, base)
+}

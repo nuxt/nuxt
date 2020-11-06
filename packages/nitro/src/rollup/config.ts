@@ -10,7 +10,7 @@ import replace from '@rollup/plugin-replace'
 import analyze from 'rollup-plugin-analyzer'
 
 import { SLSOptions } from '../config'
-import { RUNTIME_DIR } from '../utils'
+import { resolvePath } from '../utils'
 import dynamicRequire from './dynamic-require'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
@@ -50,7 +50,7 @@ export const getRollupConfig = (config: SLSOptions) => {
   }
 
   const options: RollupConfig = {
-    input: config.entry,
+    input: resolvePath(config, config.entry),
     output: {
       file: resolve(config.targetDir, config.outName),
       format: 'cjs',
@@ -96,10 +96,10 @@ export const getRollupConfig = (config: SLSOptions) => {
   const renderer = config.renderer || (config.nuxt === 2 ? 'vue2' : 'vue3')
   options.plugins.push(alias({
     entries: {
-      '~runtime': RUNTIME_DIR,
-      '~renderer': require.resolve(resolve(RUNTIME_DIR, renderer)),
+      '~runtime': config.runtimeDir,
+      '~renderer': require.resolve(resolve(config.runtimeDir, renderer)),
       '~build': config.buildDir,
-      '~mock': require.resolve(resolve(RUNTIME_DIR, 'mock')),
+      '~mock': require.resolve(resolve(config.runtimeDir, 'mock')),
       ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {}),
       ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {})
     }

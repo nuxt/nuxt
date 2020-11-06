@@ -1,14 +1,15 @@
 import { resolve } from 'path'
 import defu from 'defu'
 import { NuxtOptions } from '@nuxt/types'
-import { tryImport, LIB_DIR, resolvePath, detectTarget } from './utils'
+import { tryImport, resolvePath, detectTarget } from './utils'
+import * as TARGETS from './targets'
 
 export type UnresolvedPath = string | ((SLSOptions) => string)
 
 export interface SLSOptions {
   node: false
   target: string
-  entry: string
+  entry: UnresolvedPath
   slsDir: string
   outName: string
   logStartup: boolean
@@ -18,7 +19,7 @@ export interface SLSOptions {
   staticDir: string
   targetDir: string
   rootDir: string
-  templates: { src: string, dst: UnresolvedPath }[]
+  runtimeDir: string
   static: string[]
   renderer: string
   nuxt: 2 | 3
@@ -33,12 +34,14 @@ export interface SLSOptions {
     version: string
   }
   hooks: { [key: string]: any } // TODO: export from hookable
-  nuxtHooks: NuxtOptions['hooks']
+  nuxtHooks: { [key: string]: Function } // NuxtOptions['hooks']
 }
 
 export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
   targetDir: UnresolvedPath
 }
+
+export type SLSTarget = Partial<SLSConfig>
 
 export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   const defaults: SLSConfig = {
@@ -49,7 +52,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     // @ts-ignore
     staticAssets: nuxtOptions.generate.staticAssets,
     outName: 'server.js',
-    templates: [],
+    runtimeDir: resolve(__dirname, '../runtime'),
     static: [],
     nuxt: 2,
     logStartup: true,
@@ -61,7 +64,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
   if (typeof target === 'function') {
     target = target(nuxtOptions)
   }
-  let targetDefaults = tryImport(LIB_DIR, `./targets/${target}`) || tryImport(nuxtOptions.rootDir, target)
+  let targetDefaults = TARGETS[target] || tryImport(nuxtOptions.rootDir, target)
   if (!targetDefaults) {
     throw new Error('Cannot resolve target: ' + target)
   }
