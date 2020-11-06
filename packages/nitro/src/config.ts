@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import defu from 'defu'
 import { NuxtOptions } from '@nuxt/types'
-import { tryImport, LIB_DIR, resolvePath } from './utils'
+import { tryImport, LIB_DIR, resolvePath, detectTarget } from './utils'
 
 export type UnresolvedPath = string | ((SLSOptions) => string)
 
@@ -57,7 +57,7 @@ export function getoptions (nuxtOptions: NuxtOptions): SLSOptions {
     targetDir: null
   }
 
-  let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || 'node'
+  let target = process.env.NUXT_SLS_TARGET || nuxtOptions.serverless.target || detectTarget()
   if (typeof target === 'function') {
     target = target(nuxtOptions)
   }

@@ -42,5 +42,17 @@ export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveB
   return resolve(resolveBase, typeof path === 'string' ? path : path(options))
 }
 
+export function detectTarget () {
+  if (process.env.NETLIFY) {
+    return 'netlify'
+  }
+
+  if (process.env.VERCEL_URL) {
+    return 'vercel'
+  }
+
+  return 'node'
+}
+
 export const LIB_DIR = resolve(__dirname, '../lib')
 export const RUNTIME_DIR = resolve(LIB_DIR, 'runtime')
