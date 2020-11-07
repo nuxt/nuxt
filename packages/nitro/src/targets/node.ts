@@ -7,7 +7,7 @@ export const node: SLSTarget = {
   hooks: {
     'done' ({ rollupConfig }) {
       const entry = relative(process.cwd(), rollupConfig.output.file).replace(/\.js$/, '')
-      consola.info(`Ready to deploy lambda: \`${entry}\``)
+      consola.info(`Ready to deploy node entrypoint: \`${entry}\``)
       consola.info(`You can try using \`node ${entry} [path]\``)
     }
   }
