@@ -197,13 +197,16 @@ export default class SSRRenderer extends BaseRenderer {
         APP += `<script>${stateScript}</script>`
       }
 
-      // Page level payload.js (async loaded for CSR)
-      const payloadPath = urlJoin(url, 'payload.js')
-      const payloadUrl = urlJoin(routerBase, staticAssetsBase, payloadPath)
-      const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
-      const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
-      staticAssets.push({ path: payloadPath, src: payloadScript })
-      preloadScripts.push(payloadUrl)
+      // Save payload only if no error or redirection were made
+      if (!renderContext.nuxt.error && !renderContext.redirected) {
+        // Page level payload.js (async loaded for CSR)
+        const payloadPath = urlJoin(url, 'payload.js')
+        const payloadUrl = urlJoin(routerBase, staticAssetsBase, payloadPath)
+        const routePath = (url.replace(/\/+$/, '') || '/').split('?')[0] // remove trailing slah and query params
+        const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
+        staticAssets.push({ path: payloadPath, src: payloadScript })
+        preloadScripts.push(payloadUrl)
+      }
 
       // Preload links
       for (const href of preloadScripts) {

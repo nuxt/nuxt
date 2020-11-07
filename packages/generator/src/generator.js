@@ -1,6 +1,7 @@
 import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
+import devalue from 'devalue'
 import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
@@ -31,6 +32,7 @@ export default class Generator {
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
       this.staticAssetsBase = this.options.generate.staticAssets.versionBase
+      this.routesManifest = []
     }
 
     // Shared payload
@@ -51,6 +53,13 @@ export default class Generator {
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()
+
+    // Save routes manifest for full static
+    if (this.routesManifest) {
+      const manifestPath = path.join(this.staticAssetsDir, 'routes-manifest.js')
+      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("routes-manifest.js", ${devalue(this.routesManifest)})`, 'utf-8')
+      consola.success('Routes manifest generated')
+    }
 
     // Done hook
     await this.nuxt.callHook('generate:done', this, errors)
@@ -252,7 +261,7 @@ export default class Generator {
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
     const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
-    fsExtra.writeFile(nojekyllPath, '')
+    await fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
     await this.nuxt.callHook('export:distCopied', this)
@@ -327,8 +336,13 @@ export default class Generator {
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
+        // Add route to manifest (only if no error and redirect)
+        if (!res.error && !res.redirected) {
+          this.routesManifest.push(route)
+        }
       }
 
+      // SPA fallback
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }

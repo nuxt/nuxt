@@ -295,18 +295,32 @@ export default {
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
     <% if (isFullStatic) { %>
-    setPagePayload(payload) {
-      this._pagePayload = payload
-      this._payloadFetchIndex = 0
-    },
-    async fetchPayload(route) {
+    getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
       const base = (this.$router.options.base || '').replace(/\/+$/, '')
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
       route = (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
-      const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
+
+      return urlJoin(base, staticAssetsBase, route)
+    },
+    async fetchRoutesManifest() {
+      return window.__NUXT_IMPORT__('routes-manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'routes-manifest.js')))
+    },
+    setPagePayload(payload) {
+      this._pagePayload = payload
+      this._payloadFetchIndex = 0
+    },
+    async fetchPayload(route) {
+      const routesManifest = await this.fetchRoutesManifest()
+      // TODO: check with router base
+      if (!routesManifest.includes(route)) {
+        this.setPagePayload(false)
+        throw new Error(`Route ${route} is not pre-rendered`)
+      }
+      console.log('routesManifest', routesManifest)
+      const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
         this.setPagePayload(payload)
