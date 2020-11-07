@@ -32,7 +32,9 @@ export default class Generator {
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
       this.staticAssetsBase = this.options.generate.staticAssets.versionBase
-      this.routesManifest = []
+      this.manifest = {
+        routes: []
+      }
     }
 
     // Shared payload
@@ -55,10 +57,10 @@ export default class Generator {
     await this.afterGenerate()
 
     // Save routes manifest for full static
-    if (this.routesManifest) {
-      const manifestPath = path.join(this.staticAssetsDir, 'routes-manifest.js')
-      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("routes-manifest.js", ${devalue(this.routesManifest)})`, 'utf-8')
-      consola.success('Routes manifest generated')
+    if (this.manifest) {
+      const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
+      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
+      consola.success('Static manifest generated')
     }
 
     // Done hook
@@ -338,7 +340,7 @@ export default class Generator {
         }
         // Add route to manifest (only if no error and redirect)
         if (!res.error && !res.redirected) {
-          this.routesManifest.push(route)
+          this.manifest.routes.push(route)
         }
       }
 

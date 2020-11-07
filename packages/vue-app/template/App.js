@@ -295,31 +295,36 @@ export default {
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
     <% if (isFullStatic) { %>
-    getStaticAssetsPath(route = '/') {
-      const { staticAssetsBase } = window.<%= globals.context %>
-      const base = (this.$router.options.base || '').replace(/\/+$/, '')
+    getRouterBase() {
+      return (this.$router.options.base || '').replace(/\/+$/, '')
+    },
+    getRoutePath(route = '/') {
+      const base = this.getRouterBase()
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      route = (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
-
-      return urlJoin(base, staticAssetsBase, route)
+      return (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
     },
-    async fetchRoutesManifest() {
-      return window.__NUXT_IMPORT__('routes-manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'routes-manifest.js')))
+    getStaticAssetsPath(route = '/') {
+      const { staticAssetsBase } = window.<%= globals.context %>
+
+      return urlJoin(this.getRouterBase(), staticAssetsBase, this.getRoutePath(route))
+    },
+    async fetchStaticManifest() {
+      console.log(urlJoin(this.getStaticAssetsPath(), 'manifest.js'))
+      return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
     },
     setPagePayload(payload) {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
-      const routesManifest = await this.fetchRoutesManifest()
-      // TODO: check with router base
-      if (!routesManifest.includes(route)) {
+      const manifest = await this.fetchStaticManifest()
+      const path = this.getRoutePath(route)
+      if (!manifest.routes.includes(path)) {
         this.setPagePayload(false)
-        throw new Error(`Route ${route} is not pre-rendered`)
+        throw new Error(`Route ${path} is not pre-rendered`)
       }
-      console.log('routesManifest', routesManifest)
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
