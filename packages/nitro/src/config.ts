@@ -78,7 +78,7 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
     generateIgnore: []
   }
 
-  const target = process.env.NUXT_SLS_TARGET || nuxt.options.serverless?.target || detectTarget()
+  const target = process.env.NUXT_SLS_TARGET || (nuxt.options.serverless || {}).target || detectTarget()
   let targetDefaults = TARGETS[target] || tryImport(nuxt.options.rootDir, target)
   if (!targetDefaults) {
     throw new Error('Cannot resolve target: ' + target)
