@@ -30,7 +30,7 @@ export default <Module> function slsModule () {
     nuxt.addHooks(options.nuxtHooks)
   }
 
-  nuxt.hook('generate:cache:ignore', (ignore) => {
+  nuxt.hook('generate:cache:ignore', (ignore: string[]) => {
     ignore.push(options.slsDir)
     ignore.push(options.targetDir)
     ignore.push(...options.generateIgnore)

@@ -5,7 +5,8 @@ import Hookable, { configHooksT } from 'hookable'
 import { tryImport, resolvePath, detectTarget, extendTarget } from './utils'
 import * as TARGETS from './targets'
 
-export type UnresolvedPath = string | ((SLSOptions) => string)
+// eslint-disable-next-line
+export type UnresolvedPath = string | ((config: SLSOptions) => string)
 
 export interface Nuxt extends Hookable{
   options: NuxtOptions
@@ -45,17 +46,24 @@ export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
   targetDir?: UnresolvedPath
 }
 
-export type SLSTargetFn = (SLSConfig) => SLSConfig
+export type SLSTargetFn = (config: SLSConfig) => SLSConfig
 export type SLSTarget = SLSConfig | SLSTargetFn
 
-export function getoptions (nuxt: Nuxt): SLSOptions {
+interface SLSNuxt extends Nuxt {
+  options: Nuxt['options'] & {
+    generate: Nuxt['options']['generate'] & {
+      staticAssets: string[]
+    }
+  }
+}
+
+export function getoptions (nuxt: SLSNuxt): SLSOptions {
   const defaults: SLSConfig = {
     rootDir: nuxt.options.rootDir,
     buildDir: nuxt.options.buildDir,
     publicDir: nuxt.options.generate.dir,
     routerBase: nuxt.options.router.base,
     fullStatic: nuxt.options.target === 'static' && !nuxt.options._legacyGenerate,
-    // @ts-ignore
     staticAssets: nuxt.options.generate.staticAssets,
 
     outName: '_nuxt.js',

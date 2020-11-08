@@ -23,7 +23,7 @@ export function serializeTemplate (contents: string) {
   return `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
 }
 
-export async function writeFileP (path, contents) {
+export async function writeFileP (path: string, contents: string) {
   await mkdirp(dirname(path))
   await writeFile(path, contents)
 }
