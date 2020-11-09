@@ -49,7 +49,7 @@
     "consola": "^2.15.0",
     "create-require": "^1.0.2",
     "cross-spawn": "^7.0.3",
-    "eslint": "^7.12.1",
+    "eslint": "^7.13.0",
     "eslint-multiplexer": "^2.0.0",
     "esm": "^3.2.25",
     "execa": "^3.4.0",
