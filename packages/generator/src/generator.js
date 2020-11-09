@@ -29,11 +29,13 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
-      const { staticAssets } = this.options.generate
+      const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
       this.staticAssetsBase = this.options.generate.staticAssets.versionBase
-      this.manifest = {
-        routes: []
+      if (manifest) {
+        this.manifest = defu(manifest, {
+          routes: []
+        })
       }
     }
 
@@ -58,6 +60,7 @@ export default class Generator {
 
     // Save routes manifest for full static
     if (this.manifest) {
+      await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
       await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
@@ -339,7 +342,7 @@ export default class Generator {
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
         // Add route to manifest (only if no error and redirect)
-        if (!res.error && !res.redirected) {
+        if (this.manifest && (!res.error && !res.redirected)) {
           this.manifest.routes.push(route)
         }
       }

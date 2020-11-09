@@ -310,20 +310,24 @@ export default {
 
       return urlJoin(this.getRouterBase(), staticAssetsBase, this.getRoutePath(route))
     },
-    async fetchStaticManifest() {
+    <% if (nuxtOptions.generate.manifest) { %>
+      async fetchStaticManifest() {
       return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
     },
+    <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
+      <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
       const path = this.getRoutePath(route)
       if (!manifest.routes.includes(path)) {
         this.setPagePayload(false)
         throw new Error(`Route ${path} is not pre-rendered`)
       }
+      <% } %>
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))

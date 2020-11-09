@@ -206,6 +206,11 @@ export default class SSRRenderer extends BaseRenderer {
         const payloadScript = `__NUXT_JSONP__("${routePath}", ${devalue({ data, fetch, mutations })});`
         staticAssets.push({ path: payloadPath, src: payloadScript })
         preloadScripts.push(payloadUrl)
+        // Add manifest preload
+        if (this.options.generate.manifest) {
+          const manifestUrl = urlJoin(routerBase, staticAssetsBase, 'manifest.js')
+          preloadScripts.push(manifestUrl)
+        }
       }
 
       // Preload links
