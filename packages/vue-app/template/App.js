@@ -311,7 +311,6 @@ export default {
       return urlJoin(this.getRouterBase(), staticAssetsBase, this.getRoutePath(route))
     },
     async fetchStaticManifest() {
-      console.log(urlJoin(this.getStaticAssetsPath(), 'manifest.js'))
       return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
     },
     setPagePayload(payload) {
