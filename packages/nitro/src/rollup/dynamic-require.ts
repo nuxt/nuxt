@@ -13,7 +13,7 @@ interface Import {
 }
 
 const TMPL_INLINE = ({ imports }: { imports: Import[]}) =>
-  `${imports.map(i => `import ${i.name} from '${i.import}'`).join('\n')}
+  `${imports.map(i => `import ${i.name} from '${i.import.replace(/\\/g, '/')}'`).join('\n')}
 const dynamicChunks = {
   ${imports.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
 };
