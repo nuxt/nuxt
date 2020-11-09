@@ -282,12 +282,15 @@ export function getLocation (base, mode) {
     return window.location.hash.replace(/^#\//, '')
   }
 
-  let path = window.location.pathname
+  let path = decodeURI(window.location.pathname)
 
   // To get matched with sanitized router.base add trailing slash
   if (base && (path.endsWith('/') ? path : path + '/').startsWith(base)) {
     path = path.slice(base.length)
   }
+
+  // https://github.com/vuejs/vue-router/pull/3350
+  path = encodeURI(path)
 
   return (path || '/') + window.location.search + window.location.hash
 }
