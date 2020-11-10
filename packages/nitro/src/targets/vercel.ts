@@ -43,5 +43,5 @@ async function writeRoutes ({ targetDir }) {
     }
   ]
 
-  await writeFile(resolve(targetDir, 'routes.json'), JSON.stringify(routes, null, 2))
+  await writeFile(resolve(targetDir, 'config/routes.json'), JSON.stringify(routes, null, 2))
 }
