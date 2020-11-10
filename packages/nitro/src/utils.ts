@@ -37,7 +37,7 @@ export function tryImport (dir: string, path: string) {
 export async function writeFile (file, contents) {
   await fse.mkdirp(dirname(file))
   await fse.writeFile(file, contents, 'utf-8')
-  consola.info('Generated ', prettyPath(file))
+  consola.info('Generated', prettyPath(file))
 }
 
 export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveBase: string = '') {
