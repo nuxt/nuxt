@@ -5,7 +5,7 @@ import { node } from './node'
 
 export const vercel: SLSTarget = extendTarget(node, {
   targetDir: '{{ rootDir }}/.vercel_build_output',
-  outName: 'functions/_nuxt/index.js',
+  outName: 'functions/node/_nuxt/index.js',
   publicDir: '{{ targetDir }}/static',
   inlineChunks: false,
   generateIgnore: [
@@ -13,12 +13,12 @@ export const vercel: SLSTarget = extendTarget(node, {
   ],
   hooks: {
     async done ({ targetDir }) {
-      await wrtieRoutes({ targetDir })
+      await writeRoutes({ targetDir })
     }
   }
 })
 
-async function wrtieRoutes ({ targetDir }) {
+async function writeRoutes ({ targetDir }) {
   const routes = [
     {
       src: '/sw.js',
