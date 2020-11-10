@@ -39,7 +39,7 @@ async function writeRoutes ({ targetDir }) {
     },
     {
       src: '(.*)',
-      dest: '/.vercel/functions/_nuxt'
+      dest: '/.vercel/functions/_nuxt/index'
     }
   ]
 
