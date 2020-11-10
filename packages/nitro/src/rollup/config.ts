@@ -76,6 +76,7 @@ export const getRollupConfig = (config: SLSOptions) => {
     values: {
       'process.env.NODE_ENV': '"production"',
       'typeof window': '"undefined"',
+      'process.env.ROUTER_BASE': JSON.stringify(config.routerBase),
       'process.env.NUXT_STATIC_BASE': JSON.stringify(config.staticAssets.base),
       'process.env.NUXT_STATIC_VERSION': JSON.stringify(config.staticAssets.version),
       // @ts-ignore

@@ -28,14 +28,13 @@ if ('serviceWorker' in navigator) {
       'template:document' (tmpl) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
-      async done ({ targetDir, publicDir }) {
-        const rootIndex = resolve(publicDir, 'index.html')
-        const rootFallback = resolve(publicDir, '200.html')
-        if (!existsSync(rootIndex) && existsSync(rootFallback)) {
-          await copy(rootFallback, rootIndex)
+      async done ({ rootDir, publicDir }) {
+        const fallback200 = resolve(publicDir, '200.html')
+        const fallback400 = resolve(publicDir, '400.html')
+        if (!existsSync(fallback400) && existsSync(fallback200)) {
+          await copy(fallback200, fallback400)
         }
-
-        consola.info(`Try with \`npx serve ${relative(process.cwd(), targetDir)}\``)
+        consola.info(`Try with \`nuxt start ${relative(process.cwd(), rootDir)}\``)
       }
     }
   }
