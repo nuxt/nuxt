@@ -1,5 +1,5 @@
 import Module from 'module'
-import { basename, extname, resolve } from 'path'
+import { basename, dirname, extname, resolve } from 'path'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
@@ -50,10 +50,12 @@ export const getRollupConfig = (config: SLSOptions) => {
     external.push(...Module.builtinModules)
   }
 
+  const outFile = resolve(config.targetDir, config.outName)
+
   const options: RollupConfig = {
     input: resolvePath(config, config.entry),
     output: {
-      file: resolve(config.targetDir, config.outName),
+      file: outFile,
       format: 'cjs',
       intro: '',
       outro: '',
@@ -84,8 +86,8 @@ export const getRollupConfig = (config: SLSOptions) => {
   // Dynamic Require Support
   options.plugins.push(dynamicRequire({
     dir: resolve(config.buildDir, 'dist/server'),
-    outDir: (config.node === false || config.inlineChunks) ? undefined : config.targetDir,
-    chunksDir: '_' + basename(config.outName, extname(config.outName)),
+    outDir: (config.node === false || config.inlineChunks) ? undefined : dirname(outFile),
+    chunksDir: '_' + basename(outFile, extname(outFile)),
     globbyOptions: {
       ignore: [
         'server.js'

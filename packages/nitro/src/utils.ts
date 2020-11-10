@@ -1,8 +1,9 @@
 import { relative, dirname, resolve } from 'path'
-import { writeFile, mkdirp } from 'fs-extra'
+import fse from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
 import Hookable from 'hookable'
+import consola from 'consola'
 import { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from './config'
 
 export function hl (str: string) {
@@ -23,11 +24,6 @@ export function serializeTemplate (contents: string) {
   return `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
 }
 
-export async function writeFileP (path: string, contents: string) {
-  await mkdirp(dirname(path))
-  await writeFile(path, contents)
-}
-
 export function jitiImport (dir: string, path: string) {
   return jiti(dir)(path)
 }
@@ -36,6 +32,12 @@ export function tryImport (dir: string, path: string) {
   try {
     return jitiImport(dir, path)
   } catch (_err) { }
+}
+
+export async function writeFile (file, contents) {
+  await fse.mkdirp(dirname(file))
+  await fse.writeFile(file, contents, 'utf-8')
+  consola.info('Generated ', prettyPath(file))
 }
 
 export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveBase: string = '') {

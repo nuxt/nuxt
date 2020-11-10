@@ -7,7 +7,7 @@ import gzipSize from 'gzip-size'
 import chalk from 'chalk'
 import { emptyDir, readFile } from 'fs-extra'
 import { getRollupConfig } from './rollup/config'
-import { hl, prettyPath, serializeTemplate, writeFileP } from './utils'
+import { hl, prettyPath, serializeTemplate, writeFile } from './utils'
 import { SLSOptions } from './config'
 
 export async function build (options: SLSOptions) {
@@ -24,8 +24,7 @@ export async function build (options: SLSOptions) {
   htmlTemplate.contents = await readFile(htmlTemplate.src, 'utf-8')
   htmlTemplate.compiled = serializeTemplate(htmlTemplate.contents)
   await hooks.callHook('template:document', htmlTemplate)
-  await writeFileP(htmlTemplate.dst, htmlTemplate.compiled)
-  consola.info('Generated', prettyPath(htmlTemplate.dst))
+  await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
   emptyDir(options.slsDir)
 

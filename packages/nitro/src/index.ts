@@ -26,6 +26,8 @@ export default <Module> function slsModule () {
     ]))
   }
 
+  nuxt.options.generate.dir = options.publicDir
+
   if (options.nuxtHooks) {
     nuxt.addHooks(options.nuxtHooks)
   }

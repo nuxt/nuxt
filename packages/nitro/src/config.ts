@@ -92,6 +92,7 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
 
   options.slsDir = resolve(options.rootDir, options.slsDir || '.sls')
   options.targetDir = options.targetDir ? resolvePath(options, options.targetDir) : resolve(options.slsDir, target)
+  options.publicDir = resolvePath(options, options.publicDir)
 
   return options
 }
