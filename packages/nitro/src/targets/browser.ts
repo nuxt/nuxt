@@ -30,9 +30,9 @@ if ('serviceWorker' in navigator) {
       },
       async done ({ rootDir, publicDir }) {
         const fallback200 = resolve(publicDir, '200.html')
-        const fallback400 = resolve(publicDir, '400.html')
-        if (!existsSync(fallback400) && existsSync(fallback200)) {
-          await copy(fallback200, fallback400)
+        const fallback404 = resolve(publicDir, '404.html')
+        if (!existsSync(fallback404) && existsSync(fallback200)) {
+          await copy(fallback200, fallback404)
         }
         consola.info(`Try with \`nuxt start ${relative(process.cwd(), rootDir)}\``)
       }
