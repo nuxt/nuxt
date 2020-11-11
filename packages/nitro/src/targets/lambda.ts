@@ -5,6 +5,7 @@ import { SLSTarget } from '../config'
 
 export const lambda: SLSTarget = {
   entry: '{{ runtimeDir }}/targets/lambda',
+  outName: '_nuxt.js',
   hooks: {
     'done' ({ rollupConfig }) {
       const entry = relative(process.cwd(), rollupConfig.output.file).replace(/\.js$/, '')

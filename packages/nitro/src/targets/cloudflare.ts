@@ -6,6 +6,7 @@ import { worker } from './worker'
 
 export const cloudflare: SLSTarget = extendTarget(worker, {
   entry: '{{ runtimeDir }}/targets/cloudflare',
+  outName: '_nuxt.js',
   generateIgnore: [
     'wrangler.toml'
   ],
