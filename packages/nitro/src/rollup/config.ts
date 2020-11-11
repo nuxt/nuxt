@@ -7,8 +7,10 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
+import virtual from '@rollup/plugin-virtual'
 import analyze from 'rollup-plugin-analyzer'
 
+import hasha from 'hasha'
 import { SLSOptions } from '../config'
 import { resolvePath } from '../utils'
 import dynamicRequire from './dynamic-require'
@@ -97,6 +99,18 @@ export const getRollupConfig = (config: SLSOptions) => {
     }
   }))
 
+  // Provide serverMiddleware
+  const getImportId = p => '_' + hasha(p).substr(0, 6)
+  options.plugins.push(virtual({
+    '~serverMiddleware': `
+      ${config.serverMiddleware.map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
+
+      export default [
+        ${config.serverMiddleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)} }`).join(',\n')}
+      ];
+    `
+  }))
+
   // https://github.com/rollup/plugins/tree/master/packages/alias
   const renderer = config.renderer || 'vue2'
   options.plugins.push(alias({
@@ -116,9 +130,7 @@ export const getRollupConfig = (config: SLSOptions) => {
     preferBuiltins: true,
     rootDir: config.rootDir,
     // https://www.npmjs.com/package/resolve
-    customResolveOptions: {
-      basedir: config.rootDir
-    },
+    customResolveOptions: { basedir: config.rootDir },
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
 

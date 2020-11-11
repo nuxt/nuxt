@@ -12,6 +12,11 @@ export interface Nuxt extends Hookable{
   options: NuxtOptions
 }
 
+export interface ServerMiddleware {
+  route: string
+  handle: string
+}
+
 export interface SLSOptions {
   hooks: configHooksT
   nuxtHooks: configHooksT
@@ -38,6 +43,8 @@ export interface SLSOptions {
   runtimeDir: string
   slsDir: string
   targetDir: string
+
+  serverMiddleware: ServerMiddleware[],
 
   static: string[]
   generateIgnore: string[]
@@ -75,6 +82,8 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
     runtimeDir: resolve(__dirname, '../runtime'),
     slsDir: '{{ rootDir }}/.nuxt/serverless',
     targetDir: '{{ slsDir }}/{{ target }}',
+
+    serverMiddleware: [],
 
     static: [],
     generateIgnore: []
