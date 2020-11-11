@@ -5,7 +5,7 @@ import { SLSOptions, SLSTarget } from '../config'
 import { worker } from './worker'
 
 export const cloudflare: SLSTarget = extendTarget(worker, {
-  entry: '{{ runtimeDir }}/cloudflare',
+  entry: '{{ runtimeDir }}/targets/cloudflare',
   generateIgnore: [
     'wrangler.toml'
   ],

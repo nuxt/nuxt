@@ -15,6 +15,7 @@ if ('serviceWorker' in navigator) {
 </script>`.replace(/\n|  +/g, '')
 
   return {
+    entry: '{{ runtimeDir }}/targets/service-worker',
     targetDir: '{{ publicDir }}',
     nuxtHooks: {
       'vue-renderer:ssr:templateParams' (params) {

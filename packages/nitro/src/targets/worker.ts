@@ -12,7 +12,7 @@ const o=Date.now(),t=()=>Date.now()-o;process.hrtime=o=>{const e=Math.floor(.001
 `
 
 export const worker: SLSTarget = {
-  entry: '{{ runtimeDir }}/worker',
+  entry: null, // Abstract
   node: false,
   hooks: {
     'rollup:before' ({ rollupConfig }) {

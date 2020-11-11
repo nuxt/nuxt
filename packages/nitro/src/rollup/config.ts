@@ -102,9 +102,9 @@ export const getRollupConfig = (config: SLSOptions) => {
   options.plugins.push(alias({
     entries: {
       '~runtime': config.runtimeDir,
-      '~renderer': require.resolve(resolve(config.runtimeDir, renderer)),
+      '~renderer': require.resolve(resolve(config.runtimeDir, 'ssr', renderer)),
       '~build': config.buildDir,
-      '~mock': require.resolve(resolve(config.runtimeDir, 'mock')),
+      '~mock': require.resolve(resolve(config.runtimeDir, 'utils/mock')),
       ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {}),
       ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {})
     }
