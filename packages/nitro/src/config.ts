@@ -73,8 +73,8 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
     inlineChunks: true,
 
     runtimeDir: resolve(__dirname, '../runtime'),
-    slsDir: null,
-    targetDir: null,
+    slsDir: '{{ rootDir }}/.nuxt/serverless',
+    targetDir: '{{ slsDir }}/{{ target }}',
 
     static: [],
     generateIgnore: []
@@ -92,8 +92,8 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
   const _target = extendTarget(nuxt.options.serverless, targetDefaults)(_targetInput)
   const options: SLSOptions = defu(nuxt.options.serverless, _target, _defaults)
 
-  options.slsDir = resolve(options.rootDir, options.slsDir || '.sls')
-  options.targetDir = options.targetDir ? resolvePath(options, options.targetDir) : resolve(options.slsDir, target)
+  options.slsDir = resolvePath(options, options.slsDir)
+  options.targetDir = resolvePath(options, options.targetDir)
   options.publicDir = resolvePath(options, options.publicDir)
 
   return options
