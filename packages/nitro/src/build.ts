@@ -26,7 +26,9 @@ export async function build (options: SLSOptions) {
   await hooks.callHook('template:document', htmlTemplate)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
-  emptyDir(options.slsDir)
+  if (options.targetDir.startsWith(options.slsDir)) {
+    emptyDir(options.slsDir)
+  }
 
   options.rollupConfig = getRollupConfig(options)
   await hooks.callHook('rollup:before', options)
