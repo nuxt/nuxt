@@ -20,6 +20,7 @@ export interface SLSOptions {
   buildDir: string
   publicDir: string
   routerBase: string
+  publicPath: string
   fullStatic: boolean
   staticAssets: any
 
@@ -63,6 +64,7 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
     buildDir: nuxt.options.buildDir,
     publicDir: nuxt.options.generate.dir,
     routerBase: nuxt.options.router.base,
+    publicPath: nuxt.options.build.publicPath,
     fullStatic: nuxt.options.target === 'static' && !nuxt.options._legacyGenerate,
     staticAssets: nuxt.options.generate.staticAssets,
 
