@@ -1,4 +1,3 @@
-import hasha from 'hasha'
 import type { Module } from '@nuxt/types'
 import { build } from './build'
 import { getoptions } from './config'
@@ -33,19 +32,25 @@ export default <Module> function slsModule () {
   // TODO: render:setupMiddleware hook
   // TODO: support m.prefix and m.route
   nuxt.hook('modules:done', () => {
+    const unsupported = []
     for (let m of nuxt.options.serverMiddleware) {
       if (typeof m === 'string') {
         m = { handler: m }
       }
-      if (typeof m.handler !== 'string') {
-        console.warn('[Serverless] Unsupported serverMiddleware format:', m)
-        continue
-      }
 
       const route = m.path || m.route || '/'
       const handle = nuxt.resolver.resolvePath(m.handler || m.handle)
-      const id = '_' + hasha(handle).substr(0, 6)
-      options.serverMiddleware.push({ route, id, handle })
+
+      if (typeof handle !== 'string' || typeof route !== 'string') {
+        unsupported.push(m)
+        continue
+      }
+
+      options.serverMiddleware.push({ route, handle })
+    }
+    if (unsupported.length) {
+      console.warn('[serverless] Unsupported Server middleware used: ', unsupported)
+      console.info('Supported format is `{ path: string, handler: string }` and handler should export `(req, res) => {}`')
     }
   })
 
