@@ -44,8 +44,7 @@ export default <Module> function slsModule () {
 
       const route = m.path || m.route || '/'
       const handle = nuxt.resolver.resolvePath(m.handler || m.handle)
-      const id = '_' + hasha(handle).substr(0, 6)
-      options.serverMiddleware.push({ route, id, handle })
+      options.serverMiddleware.push({ route, handle })
     }
   })
 
