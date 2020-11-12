@@ -1,4 +1,3 @@
-import hasha from 'hasha'
 import type { Module } from '@nuxt/types'
 import { build } from './build'
 import { getoptions } from './config'
