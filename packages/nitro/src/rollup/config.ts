@@ -16,7 +16,7 @@ import { SLSOptions } from '../config'
 import { resolvePath } from '../utils'
 import dynamicRequire from './dynamic-require'
 
-const mapArrToVal = (val, arr) => arr.reduce((p, c) => ({ ...p, [c]: val }))
+const mapArrToVal = (val, arr) => arr.reduce((p, c) => ({ ...p, [c]: val }), {})
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -55,7 +55,7 @@ export const getRollupConfig = (config: SLSOptions) => {
 
   if (config.node === false) {
     // Globals
-    injects.Buffer = ['buffer', 'Buffer']
+    // injects.Buffer = ['buffer', 'Buffer'] <-- TODO: Make it opt-in
     injects.process = '~mocks/node/process'
 
     // Aliases
@@ -66,7 +66,7 @@ export const getRollupConfig = (config: SLSOptions) => {
       fs: '~mocks/node/fs',
       process: '~mocks/node/process',
       'node-process': require.resolve('process/browser.js'),
-      buffer: require.resolve('buffer/index.js'),
+      // buffer: require.resolve('buffer/index.js'),
       util: require.resolve('util/util.js'),
       events: require.resolve('events/events.js'),
       inherits: require.resolve('inherits/inherits_browser.js'),
@@ -74,6 +74,12 @@ export const getRollupConfig = (config: SLSOptions) => {
       // Custom
       depd: '~mocks/custom/depd',
       etag: '~mocks/generic/noop',
+
+      // Express
+      ...mapArrToVal('~mocks/generic', [
+        'serve-static',
+        'iconv-lite'
+      ]),
 
       // Mime
       'mime-db': '~mocks/custom/mime-db',
