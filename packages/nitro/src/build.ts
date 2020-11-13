@@ -32,7 +32,10 @@ export async function build (options: SLSOptions) {
 
   options.rollupConfig = getRollupConfig(options)
   await hooks.callHook('rollup:before', options)
-  const build = await rollup(options.rollupConfig)
+  const build = await rollup(options.rollupConfig).catch((error) => {
+    error.message = '[serverless] Rollup Error: ' + error.message
+    throw error
+  })
 
   const { output } = await build.write(options.rollupConfig.output as OutputOptions)
   const size = prettyBytes(output[0].code.length)
