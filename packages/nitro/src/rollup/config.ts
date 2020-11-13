@@ -18,7 +18,7 @@ import dynamicRequire from './dynamic-require'
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
 export const getRollupConfig = (config: SLSOptions) => {
-  const mocks = [
+  const genericMocks = [
     // @nuxt/devalue
     'consola',
     // vue2
@@ -46,8 +46,21 @@ export const getRollupConfig = (config: SLSOptions) => {
 
   const external = []
 
+  const aliases: {[key: string]: string} = {}
+
   if (config.node === false) {
-    mocks.push(...Module.builtinModules)
+    // Generic mocks
+    Object.assign(aliases, [...genericMocks, ...Module.builtinModules].reduce((p, c) => ({ ...p, [c]: '~mock' }), {}))
+
+    // Custom
+    aliases.depd = '~runtime/mocks/depd'
+    aliases.http = '~runtime/mocks/http'
+
+    // Builtin (browserify)
+    aliases.buffer = require.resolve('buffer/index.js')
+    aliases.util = require.resolve('util/util.js')
+    aliases.events = require.resolve('events/events.js')
+    aliases.inherits = require.resolve('inherits/inherits_browser.js')
   } else {
     external.push(...Module.builtinModules)
   }
@@ -118,9 +131,9 @@ export const getRollupConfig = (config: SLSOptions) => {
       '~runtime': config.runtimeDir,
       '~renderer': require.resolve(resolve(config.runtimeDir, 'ssr', renderer)),
       '~build': config.buildDir,
-      '~mock': require.resolve(resolve(config.runtimeDir, 'utils/mock')),
-      ...mocks.reduce((p, c) => ({ ...p, [c]: '~mock' }), {}),
-      ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {})
+      '~mock': require.resolve(resolve(config.runtimeDir, 'mocks/generic')),
+      ...providedDeps.reduce((p, c) => ({ ...p, [c]: require.resolve(c) }), {}),
+      ...aliases
     }
   }))
 
