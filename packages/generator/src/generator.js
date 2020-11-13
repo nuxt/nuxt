@@ -325,11 +325,11 @@ export default class Generator {
             .replace(/\/+$/, '')
             .trim()
 
-          const route = decodeURI(sanitizedHref + possibleTrailingSlash)
+          const foundRoute = decodeURI(sanitizedHref + possibleTrailingSlash)
 
-          if (route.startsWith('/') && !route.startsWith('//') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
-            this.generatedRoutes.add(route)
-            this.routes.push({ route })
+          if (foundRoute.startsWith('/') && !foundRoute.startsWith('//') && !path.extname(foundRoute) && this.shouldGenerateRoute(foundRoute) && !this.generatedRoutes.has(foundRoute)) {
+            this.generatedRoutes.add(foundRoute)
+            this.routes.push({ route: foundRoute })
           }
         })
       }
