@@ -33,7 +33,25 @@ export const getRollupConfig = (config: SLSOptions) => {
 
   const injects:{ [key: string]: string| string[] } = {}
 
-  const aliases: {[key: string]: string} = {}
+  const aliases: { [key: string]: string } = {}
+
+  Object.assign(aliases, mapArrToVal('~mocks/generic', [
+    // @nuxt/devalue
+    'consola',
+    // vue2
+    'encoding',
+    'stream',
+    'he',
+    'resolve',
+    'source-map',
+    'lodash.template',
+    'serialize-javascript',
+    // vue3
+    '@babel/parser',
+    '@vue/compiler-core',
+    '@vue/compiler-dom',
+    '@vue/compiler-ssr'
+  ]))
 
   if (config.node === false) {
     // Globals
@@ -41,24 +59,6 @@ export const getRollupConfig = (config: SLSOptions) => {
 
     // Aliases
     Object.assign(aliases, {
-      ...mapArrToVal('~mocks/generic', [
-        // @nuxt/devalue
-        'consola',
-        // vue2
-        'encoding',
-        'stream',
-        'he',
-        'resolve',
-        'source-map',
-        'lodash.template',
-        'serialize-javascript',
-        // vue3
-        '@babel/parser',
-        '@vue/compiler-core',
-        '@vue/compiler-dom',
-        '@vue/compiler-ssr'
-      ]),
-
       // Node
       ...mapArrToVal('~mocks/generic', Module.builtinModules),
       http: '~mocks/node/http',
@@ -169,11 +169,11 @@ export const getRollupConfig = (config: SLSOptions) => {
     extensions: extensions.filter(ext => ext !== '.json')
   }))
 
-  // https://github.com/rollup/plugins/tree/master/packages/inject
-  options.plugins.push(inject(injects))
-
   // https://github.com/rollup/plugins/tree/master/packages/json
   options.plugins.push(json())
+
+  // https://github.com/rollup/plugins/tree/master/packages/inject
+  options.plugins.push(inject(injects))
 
   if (config.analyze) {
     // https://github.com/doesdev/rollup-plugin-analyzer
