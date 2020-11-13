@@ -55,6 +55,9 @@ export const getRollupConfig = (config: SLSOptions) => {
     // Custom
     aliases.depd = '~runtime/mocks/depd'
     aliases.http = '~runtime/mocks/http'
+    aliases['mime-db'] = '~runtime/mocks/mime-db'
+    aliases['mime/lite'] = require.resolve('mime/lite')
+    aliases.mime = '~runtime/mocks/mime'
 
     // Builtin (browserify)
     aliases.buffer = require.resolve('buffer/index.js')
