@@ -8,6 +8,7 @@ import alias from '@rollup/plugin-alias'
 import json from '@rollup/plugin-json'
 import replace from '@rollup/plugin-replace'
 import virtual from '@rollup/plugin-virtual'
+import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
 
 import hasha from 'hasha'
@@ -15,55 +16,67 @@ import { SLSOptions } from '../config'
 import { resolvePath } from '../utils'
 import dynamicRequire from './dynamic-require'
 
+const mapArrToVal = (val, arr) => arr.reduce((p, c) => ({ ...p, [c]: val }))
+
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
 export const getRollupConfig = (config: SLSOptions) => {
-  const genericMocks = [
-    // @nuxt/devalue
-    'consola',
-    // vue2
-    'encoding',
-    'stream',
-    'he',
-    'resolve',
-    'source-map',
-    'lodash.template',
-    'serialize-javascript',
-    // vue3
-    '@babel/parser',
-    '@vue/compiler-core',
-    '@vue/compiler-dom',
-    '@vue/compiler-ssr'
-  ]
-
   const providedDeps = [
     '@nuxt/devalue',
     'vue-bundle-renderer',
     '@cloudflare/kv-asset-handler'
   ]
 
-  const extensions = ['.ts', '.mjs', '.js', '.json', '.node']
+  const extensions: string[] = ['.ts', '.mjs', '.js', '.json', '.node']
 
-  const external = []
+  const external: string[] = []
+
+  const injects:{ [key: string]: string| string[] } = {}
 
   const aliases: {[key: string]: string} = {}
 
   if (config.node === false) {
-    // Generic mocks
-    Object.assign(aliases, [...genericMocks, ...Module.builtinModules].reduce((p, c) => ({ ...p, [c]: '~mock' }), {}))
+    // Globals
+    injects.Buffer = ['buffer', 'Buffer']
 
-    // Custom
-    aliases.depd = '~runtime/mocks/depd'
-    aliases.http = '~runtime/mocks/http'
-    aliases['mime-db'] = '~runtime/mocks/mime-db'
-    aliases['mime/lite'] = require.resolve('mime/lite')
-    aliases.mime = '~runtime/mocks/mime'
+    // Aliases
+    Object.assign(aliases, {
+      ...mapArrToVal('~mocks/generic', [
+        // @nuxt/devalue
+        'consola',
+        // vue2
+        'encoding',
+        'stream',
+        'he',
+        'resolve',
+        'source-map',
+        'lodash.template',
+        'serialize-javascript',
+        // vue3
+        '@babel/parser',
+        '@vue/compiler-core',
+        '@vue/compiler-dom',
+        '@vue/compiler-ssr'
+      ]),
 
-    // Builtin (browserify)
-    aliases.buffer = require.resolve('buffer/index.js')
-    aliases.util = require.resolve('util/util.js')
-    aliases.events = require.resolve('events/events.js')
-    aliases.inherits = require.resolve('inherits/inherits_browser.js')
+      // Node
+      ...mapArrToVal('~mocks/generic', Module.builtinModules),
+      http: '~mocks/node/http',
+      fs: '~mocks/node/fs',
+      buffer: require.resolve('buffer/index.js'),
+      util: require.resolve('util/util.js'),
+      events: require.resolve('events/events.js'),
+      inherits: require.resolve('inherits/inherits_browser.js'),
+
+      // Custom
+      depd: '~mocks/custom/depd',
+      etag: '~mocks/generic/noop',
+
+      // Mime
+      'mime-db': '~mocks/custom/mime-db',
+      'mime/lite': require.resolve('mime/lite'),
+      mime: '~mocks/custom/mime'
+    })
   } else {
     external.push(...Module.builtinModules)
   }
@@ -132,6 +145,7 @@ export const getRollupConfig = (config: SLSOptions) => {
   options.plugins.push(alias({
     entries: {
       '~runtime': config.runtimeDir,
+      '~mocks': resolve(config.runtimeDir, 'mocks'),
       '~renderer': require.resolve(resolve(config.runtimeDir, 'ssr', renderer)),
       '~build': config.buildDir,
       '~mock': require.resolve(resolve(config.runtimeDir, 'mocks/generic')),
@@ -154,6 +168,9 @@ export const getRollupConfig = (config: SLSOptions) => {
   options.plugins.push(commonjs({
     extensions: extensions.filter(ext => ext !== '.json')
   }))
+
+  // https://github.com/rollup/plugins/tree/master/packages/inject
+  options.plugins.push(inject(injects))
 
   // https://github.com/rollup/plugins/tree/master/packages/json
   options.plugins.push(json())
