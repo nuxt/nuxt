@@ -56,6 +56,7 @@ export const getRollupConfig = (config: SLSOptions) => {
   if (config.node === false) {
     // Globals
     injects.Buffer = ['buffer', 'Buffer']
+    injects.process = '~mocks/node/process'
 
     // Aliases
     Object.assign(aliases, {
@@ -63,6 +64,8 @@ export const getRollupConfig = (config: SLSOptions) => {
       ...mapArrToVal('~mocks/generic', Module.builtinModules),
       http: '~mocks/node/http',
       fs: '~mocks/node/fs',
+      process: '~mocks/node/process',
+      'node-process': require.resolve('process/browser.js'),
       buffer: require.resolve('buffer/index.js'),
       util: require.resolve('util/util.js'),
       events: require.resolve('events/events.js'),
@@ -97,9 +100,9 @@ export const getRollupConfig = (config: SLSOptions) => {
   }
 
   if (config.logStartup) {
-    options.output.intro += 'global._startTime = process.hrtime();'
+    options.output.intro += 'global._startTime = global.process.hrtime();'
     // eslint-disable-next-line no-template-curly-in-string
-    options.output.outro += 'global._endTime = process.hrtime(global._startTime); global._coldstart = ((global._endTime[0] * 1e9) + global._endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
+    options.output.outro += 'global._endTime = global.process.hrtime(global._startTime); global._coldstart = ((global._endTime[0] * 1e9) + global._endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms`);'
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
