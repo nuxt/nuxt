@@ -95,7 +95,7 @@ export const getRollupConfig = (options: SLSOptions) => {
     output: {
       dir: options.targetDir,
       entryFileNames: options.outName,
-      chunkFileNames: join(chunksDirName, '_[name].js'),
+      chunkFileNames: join(chunksDirName, '[name].js'),
       inlineDynamicImports: options.inlineChunks,
       format: 'cjs',
       exports: 'auto',
@@ -131,8 +131,6 @@ export const getRollupConfig = (options: SLSOptions) => {
   rollupConfig.plugins.push(dynamicRequire({
     dir: resolve(options.buildDir, 'dist/server'),
     inline: options.node === false || options.inlineChunks,
-    outDir: join(options.targetDir, chunksDirName),
-    prefix: './',
     globbyOptions: {
       ignore: [
         'server.js'

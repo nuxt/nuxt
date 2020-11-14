@@ -1,6 +1,6 @@
-import { resolve, dirname } from 'path'
+import { resolve } from 'path'
 import globby, { GlobbyOptions } from 'globby'
-import { copyFile, mkdirp } from 'fs-extra'
+import type { Plugin } from 'rollup'
 
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.js`
@@ -15,17 +15,21 @@ interface Options {
 }
 
 interface Chunk {
-  name: string
   id: string
   src: string
+  name: string
+  meta?: {
+    id?: string
+    ids?: string[]
+    moduleIds?: string[]
+  }
 }
 
 interface TemplateContext {
   chunks: Chunk[]
-  prefix: string
 }
 
-export function dynamicRequire ({ dir, globbyOptions, inline, outDir, prefix = '' }: Options) {
+export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin {
   return {
     name: PLUGIN_NAME,
     transform (code: string, _id: string) {
@@ -34,6 +38,12 @@ export function dynamicRequire ({ dir, globbyOptions, inline, outDir, prefix = '
     resolveId (id: string) {
       return id === HELPER_DYNAMIC ? id : null
     },
+    // TODO: Async chunk loading over netwrok!
+    // renderDynamicImport () {
+    //   return {
+    //     left: 'fetch(', right: ')'
+    //   }
+    // },
     async load (_id: string) {
       if (_id !== HELPER_DYNAMIC) {
         return null
@@ -44,28 +54,30 @@ export function dynamicRequire ({ dir, globbyOptions, inline, outDir, prefix = '
       const chunks = files.map(id => ({
         id,
         src: resolve(dir, id).replace(/\\/g, '/'),
-        out: prefix + id,
-        name: '_' + id.replace(/[\\/.]/g, '_')
+        name: '_' + id.replace(/[\\/.]/g, '_'),
+        meta: getWebpackChunkMeta(resolve(dir, id))
       }))
 
-      // Inline mode
       if (inline) {
-        return TMPL_ESM_INLINE({ chunks, prefix })
+        return TMPL_INLINE({ chunks })
+      } else {
+        return TMPL_LAZY({ chunks })
       }
-
-      // Write chunks
-      await Promise.all(chunks.map(async (chunk) => {
-        const dst = resolve(outDir, prefix + chunk.id)
-        await mkdirp(dirname(dst))
-        await copyFile(chunk.src, dst)
-      }))
-
-      return TMPL_CJS_LAZY({ chunks, prefix })
     }
   }
 }
 
-function TMPL_ESM_INLINE ({ chunks }: TemplateContext) {
+function getWebpackChunkMeta (src) {
+  const chunk = require(src) || {}
+  const { id, ids, modules } = chunk
+  return {
+    id,
+    ids,
+    moduleIds: Object.keys(modules)
+  }
+}
+
+function TMPL_INLINE ({ chunks }: TemplateContext) {
   return `${chunks.map(i => `import ${i.name} from '${i.src}'`).join('\n')}
 const dynamicChunks = {
   ${chunks.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
@@ -76,18 +88,31 @@ export default function dynamicRequire(id) {
 };`
 }
 
-function TMPL_CJS_LAZY ({ chunks, prefix }: TemplateContext) {
-  return `const dynamicChunks = {
-${chunks.map(i => ` ['${i.id}']: () => require('${prefix}${i.id}')`).join(',\n')}
+function TMPL_LAZY ({ chunks }: TemplateContext) {
+  return `
+function asyncWebpackModule(promise, id) {
+  return function (module, exports, require) {
+    module.exports = promise.then(r => {
+        const realModule = { exports: {}, require };
+        r.modules[id](realModule, realModule.exports, realModule.require);
+        return realModule.exports;
+    });
+ };
+};
+
+function webpackChunk (meta, promise) {
+ const chunk = { ...meta, modules: {} };
+ for (const id of meta.moduleIds) {
+   chunk.modules[id] = asyncWebpackModule(promise, id);
+ };
+ return chunk;
+};
+
+const dynamicChunks = {
+${chunks.map(i => ` ['${i.id}']: () => webpackChunk(${JSON.stringify(i.meta)}, import('${i.src}'))`).join(',\n')}
 };
 
 export default function dynamicRequire(id) {
   return dynamicChunks[id]();
 };`
 }
-
-// function TMPL_CJS ({ prefix }: TemplateContext) {
-//   return `export default function dynamicRequire(id) {
-// return require('${prefix}' + id);
-// };`
-// }
