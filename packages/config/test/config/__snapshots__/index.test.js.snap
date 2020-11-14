@@ -51,8 +51,11 @@ Object {
       "position": "bottom-right",
     },
     "loaders": Object {
-      "css": Object {},
+      "css": Object {
+        "esModule": false,
+      },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
@@ -431,8 +434,11 @@ Object {
       "position": "bottom-right",
     },
     "loaders": Object {
-      "css": Object {},
+      "css": Object {
+        "esModule": false,
+      },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },

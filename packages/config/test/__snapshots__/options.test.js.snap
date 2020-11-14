@@ -63,9 +63,11 @@ Object {
     "indicator": false,
     "loaders": Object {
       "css": Object {
+        "esModule": false,
         "sourceMap": false,
       },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },

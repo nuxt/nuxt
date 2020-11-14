@@ -98,6 +98,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -131,6 +132,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
@@ -167,6 +169,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -200,6 +203,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
@@ -236,6 +240,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -275,6 +280,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
@@ -317,6 +323,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -359,6 +366,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
@@ -404,6 +412,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -443,6 +452,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
@@ -485,6 +495,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"modules\\": Object {
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
@@ -524,6 +535,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"css-loader\\",
             \\"options\\": Object {
+              \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
             },
