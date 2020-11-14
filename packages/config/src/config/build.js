@@ -22,9 +22,9 @@ export default () => ({
     video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
-    file: {},
-    fontUrl: { limit: 1000 },
-    imgUrl: { limit: 1000 },
+    file: { esModule: false },
+    fontUrl: { esModule: false, limit: 1000 },
+    imgUrl: { esModule: false, limit: 1000 },
     pugPlain: {},
     vue: {
       transformAssetUrls: {

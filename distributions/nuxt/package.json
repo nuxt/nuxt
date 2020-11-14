@@ -70,8 +70,8 @@
     "@nuxt/webpack": "2.14.7"
   },
   "engines": {
-    "node": ">=8.9.0",
-    "npm": ">=5.0.0"
+    "node": ">=10.13.0",
+    "npm": ">=6.0.0"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

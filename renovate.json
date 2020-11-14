@@ -7,13 +7,7 @@
   ],
   "ignoreDeps": [
     "core-js",
-    "memory-fs",
-    "execa",
-    "pify",
-    "file-loader",
-    "url-loader",
     "sass-loader",
-    "css-loader",
     "node-sass",
     "postcss",
     "postcss-import",
