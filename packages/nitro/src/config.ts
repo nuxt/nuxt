@@ -71,6 +71,7 @@ export function getoptions (nuxtOptions: Nuxt['options'], serverless: SLSConfig)
     outName: '_nuxt.js',
     logStartup: true,
     inlineChunks: true,
+    minify: false,
 
     runtimeDir: resolve(__dirname, '../runtime'),
     slsDir: '{{ rootDir }}/.nuxt/serverless',

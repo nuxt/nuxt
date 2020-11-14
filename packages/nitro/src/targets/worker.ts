@@ -13,6 +13,7 @@ global.process = global.process || {};
 export const worker: SLSTarget = {
   entry: null, // Abstract
   node: false,
+  minify: true,
   hooks: {
     'rollup:before' ({ rollupConfig }) {
       rollupConfig.output.intro = polyfill + rollupConfig.output.intro

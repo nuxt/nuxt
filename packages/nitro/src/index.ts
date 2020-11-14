@@ -74,10 +74,7 @@ export default <Module> function slsModule () {
   nuxt.hook('generate:before', async () => {
     const { entry } = await build(getoptions(nuxt.options, {
       target: 'node',
-      serverMiddleware: options.serverMiddleware,
-      node: true,
-      minify: false,
-      analyze: false
+      serverMiddleware: options.serverMiddleware
     }))
     require(entry)
   })

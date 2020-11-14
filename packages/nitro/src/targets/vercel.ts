@@ -7,7 +7,6 @@ export const vercel: SLSTarget = extendTarget(node, {
   targetDir: '{{ rootDir }}/.vercel_build_output',
   outName: 'functions/node/_nuxt/index.js',
   publicDir: '{{ targetDir }}/static',
-  inlineChunks: false,
   generateIgnore: [
     'vercel.json'
   ],
