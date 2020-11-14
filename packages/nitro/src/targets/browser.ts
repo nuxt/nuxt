@@ -18,6 +18,7 @@ if ('serviceWorker' in navigator) {
     entry: '{{ runtimeDir }}/targets/service-worker',
     targetDir: '{{ publicDir }}',
     outName: '_nuxt.js',
+    cleanTargetDir: false,
     nuxtHooks: {
       'vue-renderer:ssr:templateParams' (params) {
         params.APP += script

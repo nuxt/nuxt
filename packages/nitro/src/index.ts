@@ -13,9 +13,7 @@ export default <Module> function slsModule () {
   const options = getoptions(nuxt.options, nuxt.options.serverless || {})
 
   // Tune webpack config
-  if (options.minify !== false) {
-    nuxt.options.build._minifyServer = true
-  }
+  nuxt.options.build._minifyServer = options.minify !== false
   nuxt.options.build.standalone = true
 
   // Tune generator
@@ -46,7 +44,7 @@ export default <Module> function slsModule () {
         continue
       }
 
-      options.serverMiddleware.push({ route, handle })
+      options.serverMiddleware.push({ ...m, route, handle })
     }
     if (unsupported.length) {
       console.warn('[serverless] Unsupported Server middleware used: ', unsupported)
@@ -72,12 +70,16 @@ export default <Module> function slsModule () {
   })
 
   nuxt.hook('generate:before', async () => {
+    console.info('Building light version for `nuxt generate`')
     const { entry } = await build(getoptions(nuxt.options, {
-      target: 'node',
+      target: 'cjs',
       serverMiddleware: options.serverMiddleware
     }))
+    console.info('Loading lambda')
     require(entry)
   })
 
-  nuxt.hook('generate:done', () => build(options))
+  nuxt.hook('generate:done', async () => {
+    await build(options)
+  })
 }

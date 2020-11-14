@@ -15,6 +15,7 @@ export interface Nuxt extends Hookable{
 export interface ServerMiddleware {
   route: string
   handle: string
+  lazy?: boolean
 }
 
 export interface SLSOptions {
@@ -34,11 +35,13 @@ export interface SLSOptions {
   node: false | true
   target: string
   minify: boolean
+  externals: boolean
   rollupConfig?: any
   logStartup: boolean
   inlineChunks: boolean
   renderer: string
   analyze: boolean
+  cleanTargetDir: boolean
 
   runtimeDir: string
   slsDir: string
@@ -72,6 +75,8 @@ export function getoptions (nuxtOptions: Nuxt['options'], serverless: SLSConfig)
     logStartup: true,
     inlineChunks: true,
     minify: false,
+    externals: false,
+    cleanTargetDir: true,
 
     runtimeDir: resolve(__dirname, '../runtime'),
     slsDir: '{{ rootDir }}/.nuxt/serverless',

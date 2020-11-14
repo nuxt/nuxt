@@ -6,6 +6,8 @@ import Hookable from 'hookable'
 import consola from 'consola'
 import { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from './config'
 
+export const MODULE_DIR = resolve(__dirname, '..')
+
 export function hl (str: string) {
   return '`' + str + '`'
 }
@@ -21,7 +23,7 @@ export function compileTemplate (contents: string) {
 
 export function serializeTemplate (contents: string) {
   // eslint-disable-next-line no-template-curly-in-string
-  return `export default (params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
+  return `(params) => \`${contents.replace(/{{ (\w+) }}/g, '${params.$1}')}\``
 }
 
 export function jitiImport (dir: string, path: string) {
@@ -79,4 +81,23 @@ export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTargetFn {
       nuxtHooks: Hookable.mergeHooks(base.nuxtHooks as any, target.nuxtHooks as any)
     }, target, base)
   }
+}
+
+const _getDependenciesMode = {
+  dev: ['devDependencies'],
+  prod: ['dependencies'],
+  all: ['devDependencies', 'dependencies']
+}
+export function getDependencies (dir: string, mode: keyof typeof _getDependenciesMode = 'all') {
+  const fields = _getDependenciesMode[mode]
+  const pkg = require(resolve(dir, 'package.json'))
+  const dependencies = []
+  for (const field of fields) {
+    if (pkg[field]) {
+      for (const name in pkg[field]) {
+        dependencies.push(name)
+      }
+    }
+  }
+  return dependencies
 }
