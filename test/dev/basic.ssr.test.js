@@ -414,9 +414,9 @@ describe('basic ssr', () => {
     expect(html).toContain('Auto discovered component!')
   })
 
-  test('<script>', async () => {
+  test('/ (normal <script>)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('" defer async>')
+    expect(html).toContain('" defer>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

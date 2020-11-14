@@ -100,6 +100,7 @@ export default {
       push: true,
       shouldPush: (file, type) => type === 'script'
     },
+    asyncScripts: true,
     bundleRenderer: {
       shouldPreload: (file, type) => {
         return ['script', 'style', 'font'].includes(type)
