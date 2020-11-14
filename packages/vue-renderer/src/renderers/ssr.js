@@ -42,7 +42,7 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return this.addAttrs(renderContext.renderScripts(), 'script')
+    return this.addAttrs(renderContext.renderScripts(), 'script').replace(/defer/g, 'defer async')
   }
 
   renderStyles (renderContext) {
@@ -191,7 +191,7 @@ export default class SSRRenderer extends BaseRenderer {
         const statePath = urlJoin(url, 'state.js')
         const stateUrl = urlJoin(routerBase, staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
-        APP += `<script defer src="${stateUrl}"></script>`
+        APP += `<script defer async src="${stateUrl}"></script>`
         preloadScripts.push(stateUrl)
       } else {
         APP += `<script>${stateScript}</script>`
