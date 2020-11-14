@@ -1,13 +1,11 @@
 import { resolve } from 'path'
 import consola from 'consola'
-import { rollup, OutputOptions } from 'rollup'
+import { rollup } from 'rollup'
 import Hookable from 'hookable'
-import prettyBytes from 'pretty-bytes'
-import gzipSize from 'gzip-size'
-import chalk from 'chalk'
 import { readFile, emptyDir } from 'fs-extra'
+import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
-import { hl, prettyPath, serializeTemplate, writeFile } from './utils'
+import { hl, serializeTemplate, writeFile } from './utils'
 import { SLSOptions } from './config'
 
 export async function build (options: SLSOptions) {
@@ -30,16 +28,17 @@ export async function build (options: SLSOptions) {
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
   options.rollupConfig = getRollupConfig(options)
+
   await hooks.callHook('rollup:before', options)
+
   const build = await rollup(options.rollupConfig).catch((error) => {
     error.message = '[serverless] Rollup Error: ' + error.message
     throw error
   })
 
-  const { output } = await build.write(options.rollupConfig.output as OutputOptions)
-  const size = prettyBytes(output[0].code.length)
-  const zSize = prettyBytes(await gzipSize(output[0].code))
-  consola.success('Generated bundle in', prettyPath(options.targetDir), chalk.gray(`(Size: ${size} Gzip: ${zSize})`))
+  await build.write(options.rollupConfig.output)
+
+  await printFSTree(options.targetDir)
 
   await hooks.callHook('done', options)
 
