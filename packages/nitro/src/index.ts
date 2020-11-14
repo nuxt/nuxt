@@ -10,7 +10,7 @@ export default <Module> function slsModule () {
   }
 
   // Config
-  const options = getoptions(nuxt)
+  const options = getoptions(nuxt.options, nuxt.options.serverless || {})
 
   // Tune webpack config
   if (options.minify !== false) {
@@ -69,6 +69,17 @@ export default <Module> function slsModule () {
     if (!options.static.includes(page.route)) {
       page.exclude = true
     }
+  })
+
+  nuxt.hook('generate:before', async () => {
+    const { entry } = await build(getoptions(nuxt.options, {
+      target: 'node',
+      serverMiddleware: options.serverMiddleware,
+      node: true,
+      minify: false,
+      analyze: false
+    }))
+    require(entry)
   })
 
   nuxt.hook('generate:done', () => build(options))

@@ -31,7 +31,7 @@ export interface SLSOptions {
 
   entry: UnresolvedPath
   outName: string
-  node: false
+  node: false | true
   target: string
   minify: boolean
   rollupConfig?: any
@@ -57,23 +57,16 @@ export interface SLSConfig extends Omit<Partial<SLSOptions>, 'targetDir'> {
 export type SLSTargetFn = (config: SLSConfig) => SLSConfig
 export type SLSTarget = SLSConfig | SLSTargetFn
 
-interface SLSNuxt extends Nuxt {
-  options: Nuxt['options'] & {
-    generate: Nuxt['options']['generate'] & {
-      staticAssets: string[]
-    }
-  }
-}
-
-export function getoptions (nuxt: SLSNuxt): SLSOptions {
+export function getoptions (nuxtOptions: Nuxt['options'], serverless: SLSConfig): SLSOptions {
   const defaults: SLSConfig = {
-    rootDir: nuxt.options.rootDir,
-    buildDir: nuxt.options.buildDir,
-    publicDir: nuxt.options.generate.dir,
-    routerBase: nuxt.options.router.base,
-    publicPath: nuxt.options.build.publicPath,
-    fullStatic: nuxt.options.target === 'static' && !nuxt.options._legacyGenerate,
-    staticAssets: nuxt.options.generate.staticAssets,
+    rootDir: nuxtOptions.rootDir,
+    buildDir: nuxtOptions.buildDir,
+    publicDir: nuxtOptions.generate.dir,
+    routerBase: nuxtOptions.router.base,
+    publicPath: nuxtOptions.build.publicPath,
+    fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
+    // @ts-ignore
+    staticAssets: nuxtOptions.generate.staticAssets,
 
     outName: '_nuxt.js',
     logStartup: true,
@@ -83,23 +76,23 @@ export function getoptions (nuxt: SLSNuxt): SLSOptions {
     slsDir: '{{ rootDir }}/.nuxt/serverless',
     targetDir: '{{ slsDir }}/{{ target }}',
 
-    serverMiddleware: [],
+    serverMiddleware: serverless.serverMiddleware || [],
 
     static: [],
     generateIgnore: []
   }
 
-  const target = process.env.NUXT_SLS_TARGET || (nuxt.options.serverless || {}).target || detectTarget()
-  let targetDefaults = TARGETS[target] || tryImport(nuxt.options.rootDir, target)
+  const target = serverless.target || process.env.NUXT_SLS_TARGET || detectTarget()
+  let targetDefaults = TARGETS[target] || tryImport(nuxtOptions.rootDir, target)
   if (!targetDefaults) {
     throw new Error('Cannot resolve target: ' + target)
   }
   targetDefaults = targetDefaults.default || targetDefaults
 
   const _defaults = defu(defaults, { target })
-  const _targetInput = defu(nuxt.options.serverless, _defaults)
-  const _target = extendTarget(nuxt.options.serverless, targetDefaults)(_targetInput)
-  const options: SLSOptions = defu(nuxt.options.serverless, _target, _defaults)
+  const _targetInput = defu(nuxtOptions.serverless, _defaults)
+  const _target = extendTarget(nuxtOptions.serverless, targetDefaults)(_targetInput)
+  const options: SLSOptions = defu(nuxtOptions.serverless, _target, _defaults)
 
   options.slsDir = resolvePath(options, options.slsDir)
   options.targetDir = resolvePath(options, options.targetDir)
