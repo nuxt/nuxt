@@ -28,7 +28,7 @@ ${imports.map(i => ` ['${i.id}']: () => require('./${chunksDir}/${i.id}')`).join
 };
 
 export default function dynamicRequire(id) {
-  return dynamicChunks[id];
+  return dynamicChunks[id]();
 };`
 
 // const TMPL_CJS = ({ chunksDir }) => `export default function dynamicRequire(id) {
