@@ -71,11 +71,15 @@ Object {
         },
         "sourceMap": false,
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {

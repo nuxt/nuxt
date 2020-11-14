@@ -57,11 +57,15 @@ Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {},
@@ -433,11 +437,15 @@ Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {},
