@@ -70,8 +70,11 @@ export default class StyleLoader {
   css (options) {
     const cssLoader = { loader: 'css-loader', options }
 
-    if (options && options.modules && this.exportOnlyLocals) {
-      options.modules.exportOnlyLocals = true
+    if (this.exportOnlyLocals) {
+      options.modules = {
+        ...options.modules,
+        exportOnlyLocals: true
+      }
       return [cssLoader]
     }
 
