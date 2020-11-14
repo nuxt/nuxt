@@ -217,8 +217,18 @@ export const getRollupConfig = (options: SLSOptions) => {
     rollupConfig.plugins.push(analyze())
   }
 
+  // https://github.com/TrySound/rollup-plugin-terser
+  // https://github.com/terser/terser#minify-options
   if (options.minify !== false) {
-    rollupConfig.plugins.push(terser())
+    rollupConfig.plugins.push(terser({
+      mangle: {
+        keep_fnames: true,
+        keep_classnames: true
+      },
+      format: {
+        comments: false
+      }
+    }))
   }
 
   return rollupConfig
