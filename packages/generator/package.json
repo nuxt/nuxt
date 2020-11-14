@@ -13,7 +13,7 @@
     "consola": "^2.15.0",
     "fs-extra": "^8.1.0",
     "html-minifier": "^4.0.0",
-    "node-html-parser": "^1.4.9"
+    "node-html-parser": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
