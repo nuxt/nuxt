@@ -8,11 +8,11 @@
 
 <script>
 export default {
-  fetch () {
-    this.$store.commit('COUNT')
-  },
   async asyncData ({ store }) {
     await store.dispatch('auth/FETCH_USER')
+  },
+  fetch () {
+    this.$store.commit('COUNT')
   }
 }
 </script>

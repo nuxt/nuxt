@@ -86,7 +86,7 @@ function advancedGet (obj = {}, query = '') {
     const v = get(i, l)
 
     if (!v) {
-      return
+      return false
     }
 
     if (
@@ -97,6 +97,8 @@ function advancedGet (obj = {}, query = '') {
     ) {
       return true
     }
+
+    return false
   })
 
   if (result.length === 1) {
