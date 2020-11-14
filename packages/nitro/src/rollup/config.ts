@@ -138,6 +138,15 @@ export const getRollupConfig = (config: SLSOptions) => {
     }
   }))
 
+  // https://github.com/rollup/plugins/tree/master/packages/replace
+  // TODO: better fix for node-fetch issue
+  options.plugins.push(replace({
+    delimiters: ['', ''],
+    values: {
+      'require(\'encoding\')': '{}'
+    }
+  }))
+
   // Provide serverMiddleware
   const getImportId = p => '_' + hasha(p).substr(0, 6)
   options.plugins.push(virtual({
