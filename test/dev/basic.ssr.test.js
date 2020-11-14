@@ -414,6 +414,11 @@ describe('basic ssr', () => {
     expect(html).toContain('Auto discovered component!')
   })
 
+  test('<script>', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer async>')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
