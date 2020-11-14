@@ -13,8 +13,8 @@ export default <Module> function slsModule () {
   const options = getoptions(nuxt.options, nuxt.options.serverless || {})
 
   // Tune webpack config
-  nuxt.options.build._minifyServer = options.minify !== false
-  nuxt.options.build.standalone = true
+  nuxt.options.build._minifyServer = false
+  nuxt.options.build.standalone = false
 
   // Tune generator
   nuxt.options.generate.crawler = false
