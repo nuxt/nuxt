@@ -17,13 +17,13 @@ export default {
       required: true
     }
   },
-  async fetch () {
-    this.user = await this.$http.$get(`https://jsonplaceholder.typicode.com/users/${this.userId}`)
-  },
   data () {
     return {
       user: {}
     }
+  },
+  async fetch () {
+    this.user = await this.$http.$get(`https://jsonplaceholder.typicode.com/users/${this.userId}`)
   },
   fetchOnServer: false
 }

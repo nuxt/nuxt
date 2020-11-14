@@ -45,6 +45,9 @@ export default {
       transitionName: this.getTransitionName(this.page)
     }
   },
+  head: {
+    title: 'Users #2'
+  },
   watch: {
     async '$route.query.page' (page) {
       this.$nuxt.$loading.start()
@@ -60,9 +63,6 @@ export default {
     getTransitionName (newPage) {
       return newPage < this.page ? 'slide-right' : 'slide-left'
     }
-  },
-  head: {
-    title: 'Users #2'
   }
 }
 </script>

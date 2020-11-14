@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  transition: 'fade',
-  scrollToTop: true
+  scrollToTop: true,
+  transition: 'fade'
 }
 </script>
