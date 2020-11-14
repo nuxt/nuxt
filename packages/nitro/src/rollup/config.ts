@@ -1,5 +1,5 @@
 import Module from 'module'
-import { join, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
@@ -88,12 +88,14 @@ export const getRollupConfig = (options: SLSOptions) => {
     external.push(...Module.builtinModules)
   }
 
+  const chunksDirName = join(dirname(options.outName), 'chunks')
+
   const rollupConfig: RollupConfig = {
     input: resolvePath(options, options.entry),
     output: {
       dir: options.targetDir,
       entryFileNames: options.outName,
-      chunkFileNames: 'chunks/_[name].js',
+      chunkFileNames: join(chunksDirName, '_[name].js'),
       inlineDynamicImports: options.inlineChunks,
       format: 'cjs',
       exports: 'auto',
@@ -129,7 +131,7 @@ export const getRollupConfig = (options: SLSOptions) => {
   rollupConfig.plugins.push(dynamicRequire({
     dir: resolve(options.buildDir, 'dist/server'),
     inline: options.node === false || options.inlineChunks,
-    outDir: join(options.targetDir, 'chunks'),
+    outDir: join(options.targetDir, chunksDirName),
     prefix: './',
     globbyOptions: {
       ignore: [
