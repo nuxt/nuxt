@@ -12,7 +12,7 @@ interface Import {
   import: string
 }
 
-const TMPL_INLINE = ({ imports }: { imports: Import[]}) =>
+const TMPL_ESM_INLINE = ({ imports }: { imports: Import[]}) =>
   `${imports.map(i => `import ${i.name} from '${i.import.replace(/\\/g, '/')}'`).join('\n')}
 const dynamicChunks = {
   ${imports.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
@@ -22,9 +22,18 @@ export default function dynamicRequire(id) {
   return dynamicChunks[id];
 };`
 
-const TMPL_CJS = ({ chunksDir }) => `export default function dynamicRequire(id) {
-return require('./${chunksDir}/' + id);
+const TMPL_CJS_LAZY = ({ imports, chunksDir }) =>
+  `const dynamicChunks = {
+${imports.map(i => ` ['${i.id}']: () => require('./${chunksDir}/${i.id}')`).join(',\n')}
+};
+
+export default function dynamicRequire(id) {
+  return dynamicChunks[id];
 };`
+
+// const TMPL_CJS = ({ chunksDir }) => `export default function dynamicRequire(id) {
+// return require('./${chunksDir}/' + id);
+// };`
 
 interface Options {
   dir: string
@@ -53,7 +62,7 @@ export default function dynamicRequire ({ dir, globbyOptions, outDir, chunksDir 
         }))
 
         if (!outDir) {
-          return TMPL_INLINE({ imports })
+          return TMPL_ESM_INLINE({ imports })
         }
 
         // Write chunks
@@ -63,7 +72,7 @@ export default function dynamicRequire ({ dir, globbyOptions, outDir, chunksDir 
           await mkdirp(dirname(dst))
           await copyFile(i.import, dst)
         }))
-        return TMPL_CJS({ chunksDir })
+        return TMPL_CJS_LAZY({ chunksDir, imports })
       }
       return null
     }
