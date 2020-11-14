@@ -34,8 +34,9 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: {},
+    css: { esModule: false },
     cssModules: {
+      esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]'
       }
