@@ -42,7 +42,7 @@ export default class SSRRenderer extends BaseRenderer {
   }
 
   renderScripts (renderContext) {
-    return this.addAttrs(renderContext.renderScripts(), 'script').replace(/defer/g, 'defer async')
+    return this.addAttrs(renderContext.renderScripts(), 'script').replace(/defer>/g, 'defer async>')
   }
 
   renderStyles (renderContext) {
