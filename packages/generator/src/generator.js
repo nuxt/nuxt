@@ -317,6 +317,7 @@ export default class Generator {
             this.generatedRoutes.add(route)
             this.routes.push({ route })
           }
+          return null
         })
       }
 

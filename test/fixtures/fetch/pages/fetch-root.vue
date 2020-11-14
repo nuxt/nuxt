@@ -6,16 +6,16 @@
 
 <script>
 export default {
-  async fetch () {
-    await new Promise(resolve => setTimeout(resolve, 100))
-
-    this.foo = this.$fetch ? 'has fetch' : 'hasn\'t fetch'
-  },
 
   data () {
     return {
       foo: null
     }
+  },
+  async fetch () {
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    this.foo = this.$fetch ? 'has fetch' : 'hasn\'t fetch'
   }
 }
 </script>

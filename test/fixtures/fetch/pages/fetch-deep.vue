@@ -5,13 +5,6 @@
 
 <script>
 export default {
-  async fetch () {
-    await new Promise(resolve => setTimeout(resolve, 100))
-    this.user.inventory.items.push('B')
-    this.user.name = 'Potato'
-    this.foo = 'barbar'
-    this.async2 = 'data2fetch'
-  },
   async asyncData () {
     await new Promise(resolve => setTimeout(resolve, 100))
     return {
@@ -30,6 +23,13 @@ export default {
         }
       }
     }
+  },
+  async fetch () {
+    await new Promise(resolve => setTimeout(resolve, 100))
+    this.user.inventory.items.push('B')
+    this.user.name = 'Potato'
+    this.foo = 'barbar'
+    this.async2 = 'data2fetch'
   }
 }
 </script>
