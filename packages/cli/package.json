@@ -16,7 +16,7 @@
     "@nuxt/static": "^1.0.0",
     "@nuxt/utils": "2.14.7",
     "boxen": "^4.2.0",
-    "chalk": "^3.0.0",
+    "chalk": "^4.1.0",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "consola": "^2.15.0",
@@ -34,7 +34,7 @@
     "serve-static": "^1.14.1",
     "std-env": "^2.2.1",
     "upath": "^2.0.1",
-    "wrap-ansi": "^6.2.0"
+    "wrap-ansi": "^7.0.0"
   },
   "publishConfig": {
     "access": "public"

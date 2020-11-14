@@ -15,7 +15,7 @@
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
     "caniuse-lite": "^1.0.30001157",
-    "chalk": "^3.0.0",
+    "chalk": "^4.1.0",
     "consola": "^2.15.0",
     "create-require": "^1.0.2",
     "css-loader": "^4.3.0",

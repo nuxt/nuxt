@@ -11,8 +11,6 @@
     "postcss-import",
     "postcss-loader",
     "postcss-url",
-    "chalk",
-    "wrap-ansi",
     "terser-webpack-plugin",
     "@types/terser-webpack-plugin",
     "defu"
