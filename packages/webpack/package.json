@@ -39,7 +39,7 @@
     "semver": "^7.3.2",
     "std-env": "^2.2.1",
     "style-resources-loader": "^1.3.3",
-    "terser-webpack-plugin": "^2.3.5",
+    "terser-webpack-plugin": "^4.2.3",
     "thread-loader": "^3.0.1",
     "time-fix-plugin": "^2.0.7",
     "url-loader": "^4.1.1",
