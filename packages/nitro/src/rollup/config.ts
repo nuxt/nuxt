@@ -72,6 +72,7 @@ export const getRollupConfig = (config: SLSOptions) => {
       inherits: require.resolve('inherits/inherits_browser.js'),
 
       // Custom
+      'node-fetch': '~mocks/custom/node-fetch',
       depd: '~mocks/custom/depd',
       etag: '~mocks/generic/noop',
 
