@@ -1,5 +1,5 @@
 import Module from 'module'
-import { dirname, join, resolve } from 'path'
+import { dirname, join, relative, resolve } from 'path'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
@@ -50,7 +50,7 @@ export const getRollupConfig = (options: SLSOptions) => {
     '@vue/compiler-ssr'
   ]))
 
-  // Uses eval
+  // Uses eval 😈
   aliases.depd = '~mocks/custom/depd'
 
   if (options.node === false) {
@@ -91,13 +91,28 @@ export const getRollupConfig = (options: SLSOptions) => {
   }
 
   const chunksDirName = join(dirname(options.outName), 'chunks')
+  const serverDir = join(options.buildDir, 'dist/server')
 
   const rollupConfig: RollupConfig = {
     input: resolvePath(options, options.entry),
     output: {
       dir: options.targetDir,
       entryFileNames: options.outName,
-      chunkFileNames: join(chunksDirName, '[name].js'),
+      chunkFileNames (chunkInfo) {
+        let prefix = ''
+        const modules = Object.keys(chunkInfo.modules)
+        const lastModule = modules[modules.length - 1]
+        if (lastModule.startsWith(serverDir)) {
+          prefix = join('ssr', relative(serverDir, dirname(lastModule)))
+        } else if (lastModule.startsWith(options.buildDir)) {
+          prefix = 'ssr'
+        } else if (lastModule.startsWith(options.runtimeDir)) {
+          prefix = 'runtime'
+        } else if (!prefix && options.serverMiddleware.find(m => lastModule.startsWith(m.handle))) {
+          prefix = 'middleware'
+        }
+        return join(chunksDirName, prefix, '[name].js')
+      },
       inlineDynamicImports: options.inlineChunks,
       format: 'cjs',
       exports: 'auto',
