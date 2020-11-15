@@ -25,7 +25,7 @@ export function timing (_opts: Options = {}): Plugin {
     renderChunk (code, chunk: RenderedChunk) {
       let name = chunk.fileName || ''
       name = name.replace(extname(name), '')
-      return "'use strict';" + HELPER + `${TIMING}.logStart('import:${name}');` + code + `;${TIMING}.logEnd('import:${name}');`
+      return "'use strict';" + (chunk.isEntry ? HELPER : '') + `${TIMING}.logStart('import:${name}');` + code + `;${TIMING}.logEnd('import:${name}');`
     }
   }
 }
