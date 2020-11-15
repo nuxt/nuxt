@@ -25,6 +25,16 @@ export function interopDefault (promise) {
 export function hasFetch(vm) {
   return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
 }
+export function purifyData(data) {
+  return Object.entries(data).filter(
+    ([_, value]) =>
+      !(value instanceof Function) &&
+      !(value instanceof Promise)
+    ).reduce((obj, [key, value]) => {
+      obj[key] = value
+      return obj
+    }, {})
+}
 export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
   const children = vm.$children || []
   for (const child of children) {

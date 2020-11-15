@@ -26,6 +26,9 @@ describe('basic browser', () => {
   test('Open /', async () => {
     page = await browser.page(url('/'))
     expect(await page.$text('pre')).toContain('Atinux')
+    expect(await page.$text('pre')).toContain('value: 42')
+    await page.waitForSelector('#mounted')
+    expect(await page.$text('pre')).toContain('value: 42')
   })
 
   test('/fetch-client', async () => {
