@@ -4,7 +4,7 @@ import jiti from 'jiti'
 import defu from 'defu'
 import Hookable from 'hookable'
 import consola from 'consola'
-import { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from './config'
+import type { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from '../config'
 
 export const MODULE_DIR = resolve(__dirname, '..')
 
