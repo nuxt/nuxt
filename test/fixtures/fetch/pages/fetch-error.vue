@@ -12,13 +12,13 @@
 
 <script>
 export default {
-  async fetch () {
-    await new Promise((resolve, reject) => reject(new Error('fetch-error')))
-  },
   data () {
     return {
       team: []
     }
+  },
+  async fetch () {
+    await new Promise((resolve, reject) => reject(new Error('fetch-error')))
   }
 }
 </script>

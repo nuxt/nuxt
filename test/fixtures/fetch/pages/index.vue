@@ -14,17 +14,17 @@
 
 <script>
 export default {
-  async fetch () {
-    const url = (process.server && !process.static ? `http://${this.$ssrContext.req.headers.host}` : '')
-
-    this.team = await fetch(`${url}/team.json`).then(res => res.json())
-  },
   data () {
     return {
       mounted: false,
       team: [],
       func: () => 42
     }
+  },
+  async fetch () {
+    const url = (process.server && !process.static ? `http://${this.$ssrContext.req.headers.host}` : '')
+
+    this.team = await fetch(`${url}/team.json`).then(res => res.json())
   },
   mounted () {
     this.mounted = true

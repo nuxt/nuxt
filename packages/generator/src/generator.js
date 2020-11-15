@@ -6,7 +6,7 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -28,9 +28,11 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
+      const { build: { publicPath: _publicPath }, router: { base } } = this.options
+      const publicPath = isUrl(_publicPath) ? _publicPath : base
       const { staticAssets } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
+      this.staticAssetsBase = urlJoin(publicPath, this.options.generate.staticAssets.versionBase)
     }
 
     // Shared payload
@@ -317,6 +319,7 @@ export default class Generator {
             this.generatedRoutes.add(route)
             this.routes.push({ route })
           }
+          return null
         })
       }
 
