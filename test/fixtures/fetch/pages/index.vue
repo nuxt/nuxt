@@ -3,12 +3,7 @@
     <p v-if="$fetchState.pending">
       Fetching...
     </p>
-    <pre v-else>
-      {{ team }}
-      value: {{ func() }}
-      mounted: {{ mounted }}
-    </pre>
-    <div :id="mounted ? 'mounted' : null" />
+    <pre v-else>{{ team }}</pre>
   </div>
 </template>
 
@@ -16,18 +11,13 @@
 export default {
   data () {
     return {
-      mounted: false,
-      team: [],
-      func: () => 42
+      team: []
     }
   },
   async fetch () {
-    const url = (process.server && !process.static ? `http://${this.$ssrContext.req.headers.host}` : '')
+    const url = (process.server ? `http://${this.$ssrContext.req.headers.host}` : '')
 
     this.team = await fetch(`${url}/team.json`).then(res => res.json())
-  },
-  mounted () {
-    this.mounted = true
   }
 }
 </script>
