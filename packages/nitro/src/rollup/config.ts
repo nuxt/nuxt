@@ -14,8 +14,10 @@ import analyze from 'rollup-plugin-analyzer'
 import hasha from 'hasha'
 import { SLSOptions } from '../config'
 import { resolvePath, MODULE_DIR } from '../utils'
+
 import { dynamicRequire } from './dynamic-require'
 import { externals } from './externals'
+import { timing } from './timing'
 
 const mapArrToVal = (val, arr) => arr.reduce((p, c) => ({ ...p, [c]: val }), {})
 
@@ -107,10 +109,8 @@ export const getRollupConfig = (options: SLSOptions) => {
     plugins: []
   }
 
-  if (options.logStartup) {
-    rollupConfig.output.intro += 'global._startTime = global.process.hrtime();'
-    // eslint-disable-next-line no-template-curly-in-string
-    rollupConfig.output.outro += 'global._endTime = global.process.hrtime(global._startTime); global._coldstart = ((global._endTime[0] * 1e9) + global._endTime[1]) / 1e6; console.log(`λ Cold start took: ${global._coldstart}ms (${typeof __filename !== "undefined" ? __filename.replace(process.cwd(), "") : "<entry>"})`);'
+  if (options.timing) {
+    rollupConfig.plugins.push(timing())
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace

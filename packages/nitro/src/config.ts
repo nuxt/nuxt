@@ -37,7 +37,7 @@ export interface SLSOptions {
   minify: boolean
   externals: boolean
   rollupConfig?: any
-  logStartup: boolean
+  timing: boolean
   inlineChunks: boolean
   renderer: string
   analyze: boolean
@@ -72,7 +72,7 @@ export function getoptions (nuxtOptions: Nuxt['options'], serverless: SLSConfig)
     staticAssets: nuxtOptions.generate.staticAssets,
 
     outName: '_nuxt.js',
-    logStartup: true,
+    timing: true,
     inlineChunks: true,
     minify: false,
     externals: false,
