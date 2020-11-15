@@ -152,6 +152,7 @@ export interface NuxtApp extends Vue {
   $options: NuxtAppOptions
   $loading: NuxtLoading
   nbFetching: number
+  isFetching: boolean
   context: Context
   error(params: NuxtError): void
   isOffline: boolean
