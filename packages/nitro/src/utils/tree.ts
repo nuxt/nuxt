@@ -14,7 +14,7 @@ export async function printFSTree (dir) {
     const size = src.byteLength
     const gzip = await gzipSize(src)
     return { file, path, size, gzip }
-  }))).sort((a, b) => b.size - a.size)
+  }))).sort((a, b) => b.path.localeCompare(a.path))
 
   let totalSize = 0
   let totalGzip = 0
