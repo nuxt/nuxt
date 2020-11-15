@@ -26,10 +26,18 @@ export function hasFetch(vm) {
   return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
 }
 export function purifyData(data) {
+  if (process.env.NODE_ENV === 'production') {
+    return data
+  }
+
   return Object.entries(data).filter(
-    ([_, value]) =>
-      !(value instanceof Function) &&
-      !(value instanceof Promise)
+    ([key, value]) => {
+      const valid = !(value instanceof Function) && !(value instanceof Promise)
+      if (!valid) {
+        console.warn(`${key} is not able to be stringified. This will break in a production environment.`)
+      }
+      return valid
+    }
     ).reduce((obj, [key, value]) => {
       obj[key] = value
       return obj
