@@ -151,6 +151,7 @@ export interface NuxtAppOptions extends ComponentOptions<Vue> {
 export interface NuxtApp extends Vue {
   $options: NuxtAppOptions
   $loading: NuxtLoading
+  nbFetching: number
   context: Context
   error(params: NuxtError): void
   isOffline: boolean
