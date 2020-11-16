@@ -21,7 +21,7 @@
     "connect": "^3.7.0",
     "consola": "^2.15.0",
     "crc": "^3.8.0",
-    "destr": "^1.0.0",
+    "destr": "^1.0.1",
     "esm": "^3.2.25",
     "execa": "^3.4.0",
     "exit": "^0.1.2",
@@ -33,7 +33,7 @@
     "pretty-bytes": "^5.4.1",
     "serve-static": "^1.14.1",
     "std-env": "^2.2.1",
-    "upath": "^2.0.0",
+    "upath": "^2.0.1",
     "wrap-ansi": "^6.2.0"
   },
   "publishConfig": {

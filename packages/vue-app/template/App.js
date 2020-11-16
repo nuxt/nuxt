@@ -308,7 +308,7 @@ export default {
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
 
-      return urlJoin(this.getRouterBase(), staticAssetsBase, this.getRoutePath(route))
+      return urlJoin(staticAssetsBase, this.getRoutePath(route))
     },
     <% if (nuxtOptions.generate.manifest) { %>
       async fetchStaticManifest() {

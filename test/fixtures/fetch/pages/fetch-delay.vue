@@ -9,15 +9,15 @@
 
 <script>
 export default {
-  async fetch () {
-    const url = (process.server ? `http://${this.$ssrContext.req.headers.host}` : '')
-
-    this.team = await fetch(`${url}/team.json`).then(res => res.json())
-  },
   data () {
     return {
       team: []
     }
+  },
+  async fetch () {
+    const url = (process.server ? `http://${this.$ssrContext.req.headers.host}` : '')
+
+    this.team = await fetch(`${url}/team.json`).then(res => res.json())
   },
   fetchDelay: 1000
 }

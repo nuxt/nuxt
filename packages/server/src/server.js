@@ -4,7 +4,7 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
-import { determineGlobals, isUrl } from '@nuxt/utils'
+import { determineGlobals, isUrl, urlJoin } from '@nuxt/utils'
 
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -160,6 +160,21 @@ export default class Server {
       renderRoute: this.renderRoute.bind(this),
       resources: this.resources
     }))
+
+    // DX: redirect if router.base in development
+    if (this.options.dev && this.nuxt.options.router.base !== '/') {
+      this.useMiddleware({
+        prefix: false,
+        handler: (req, res) => {
+          const to = urlJoin(this.nuxt.options.router.base, req.url)
+          consola.info(`[Development] Redirecting from \`${req.url}\` to \`${to}\` (router.base specified).`)
+          res.writeHead(302, {
+            Location: to
+          })
+          res.end()
+        }
+      })
+    }
 
     // Apply errorMiddleware from modules first
     await this.nuxt.callHook('render:errorMiddleware', this.app)

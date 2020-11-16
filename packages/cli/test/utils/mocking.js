@@ -21,7 +21,7 @@ jest.mock('../../src/imports', () => {
   }
 })
 
-export const mockGetNuxt = (options = {}, implementation) => {
+export const mockGetNuxt = (options = {}, implementation = {}) => {
   Command.prototype.getNuxt = jest.fn().mockImplementationOnce(() => {
     return Object.assign({
       hook: jest.fn(),
