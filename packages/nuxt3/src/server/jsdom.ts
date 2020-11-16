@@ -15,7 +15,7 @@ export default async function renderAndGetWindow (
     loadedCallback,
     loadingTimeout = 2000,
     globals
-  }: Options
+  }: Partial<Options> = {}
 ) {
   const jsdom = await import('jsdom')
     .then(m => m.default || m)

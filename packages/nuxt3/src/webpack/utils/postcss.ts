@@ -153,7 +153,7 @@ export default class PostcssConfig {
           const plugin = this.nuxt.resolver.requireModule(p)
           const opts = plugins[p]
           if (opts === false) {
-            return // Disabled
+            return false // Disabled
           }
           return plugin(opts)
         })

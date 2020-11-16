@@ -117,17 +117,21 @@ export const sortRoutes = function sortRoutes (routes: NuxtRouteConfig[]) {
       // If a.length >= b.length
       if (i === _b.length - 1 && res === 0) {
         // unless * found sort by level, then alphabetically
-        res = _a[i] === '*' ? -1 : (
-          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-        )
+        res = _a[i] === '*'
+          ? -1
+          : (
+              _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+            )
       }
     }
 
     if (res === 0) {
       // unless * found sort by level, then alphabetically
-      res = _a[i - 1] === '*' && _b[i] ? 1 : (
-        _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-      )
+      res = _a[i - 1] === '*' && _b[i]
+        ? 1
+        : (
+            _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+          )
     }
     return res
   })

@@ -5,7 +5,7 @@ function contains (arr, val) {
   return arr && arr.includes(val)
 }
 
-const atPrefix = new RegExp('^@', 'g')
+const atPrefix = /^@/g
 
 function readDir (dirName) {
   if (!fs.existsSync(dirName)) {
@@ -95,10 +95,7 @@ function containsPattern (arr, val) {
   )
 }
 
-const scopedModuleRegex = new RegExp(
-  '@[a-zA-Z0-9][\\w-.]+/[a-zA-Z0-9][\\w-.]+([a-zA-Z0-9./]+)?',
-  'g'
-)
+const scopedModuleRegex = /@[a-zA-Z0-9][\\w-.]+\/[a-zA-Z0-9][\\w-.]+([a-zA-Z0-9./]+)?/g
 
 function getModuleName (request, includeAbsolutePaths) {
   let req = request

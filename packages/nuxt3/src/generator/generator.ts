@@ -329,7 +329,7 @@ export default class Generator {
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && this.options.render.ssr) {
         const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
-        parse(html).querySelectorAll('a').map((el) => {
+        parse(html).querySelectorAll('a').forEach((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
             .replace(this.options.router.base, '/')
             .replace(/\/+$/, '')

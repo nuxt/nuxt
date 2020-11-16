@@ -385,8 +385,11 @@ function normalizeConfig (_options: CliConfiguration) {
     overrideProp(options.server, 'timing', { total: true, ...options.server.timing })
   }
 
-  overrideProp(options, 'serverMiddleware', Array.isArray(options.serverMiddleware) ? options.serverMiddleware : Object.entries(options.serverMiddleware)
-    .map(([path, handler]) => ({ path, handler }))
+  overrideProp(options, 'serverMiddleware',
+    Array.isArray(options.serverMiddleware)
+      ? options.serverMiddleware
+      : Object.entries(options.serverMiddleware)
+        .map(([path, handler]) => ({ path, handler }))
   )
 
   // Generate staticAssets
