@@ -3990,9 +3990,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001157:
-  version "1.0.30001157"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001157.tgz#2d11aaeb239b340bc1aa730eca18a37fdb07a9ab"
-  integrity sha512-gOerH9Wz2IRZ2ZPdMfBvyOi3cjaz4O4dgNwPGzx8EhqAs4+2IL/O+fJsbt+znSigujoZG8bVcIAUM/I/E5K3MA==
+  version "1.0.30001158"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001158.tgz#fce86d321369603c2bc855ee0e901a7f49f8310b"
+  integrity sha512-s5loVYY+yKpuVA3HyW8BarzrtJvwHReuzugQXlv1iR3LKSReoFXRm86mT6hT7PEF5RxW+XQZg+6nYjlywYzQ+g==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -4909,9 +4909,9 @@ cssnano@^4.1.10:
     postcss "^7.0.0"
 
 csso@^4.0.2:
-  version "4.1.0"
-  resolved "https://registry.npmjs.org/csso/-/csso-4.1.0.tgz#1d31193efa99b87aa6bad6c0cef155e543d09e8b"
-  integrity sha512-h+6w/W1WqXaJA4tb1dk7r5tVbOm97MsKxzwnvOR04UQ6GILroryjMWu3pmCCtL2mLaEStQ0fZgeGiy99mo7iyg==
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/csso/-/csso-4.1.1.tgz#e0cb02d6eb3af1df719222048e4359efd662af13"
+  integrity sha512-Rvq+e1e0TFB8E8X+8MQjHSY6vtol45s5gxtLI/018UsAn2IBMmwNEZRM/h+HVnAJRHjasLIKKUO3uvoMM28LvA==
   dependencies:
     css-tree "^1.0.0"
 
