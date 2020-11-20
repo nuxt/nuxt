@@ -19,6 +19,7 @@ import { resolvePath, MODULE_DIR } from '../utils'
 import { dynamicRequire } from './dynamic-require'
 import { externals } from './externals'
 import { timing } from './timing'
+import { autoMock } from './automock'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -178,6 +179,9 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     },
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
+
+  // Automatically mock unresolved externals
+  rollupConfig.plugins.push(autoMock())
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(commonjs({
