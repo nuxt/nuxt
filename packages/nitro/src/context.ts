@@ -33,6 +33,7 @@ export interface SigmaContext {
   _nuxt: {
     dev: boolean
     rootDir: string
+    srcDir: string
     buildDir: string
     staticDir: string
     routerBase: string
@@ -73,6 +74,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     _nuxt: {
       dev: nuxtOptions.dev,
       rootDir: nuxtOptions.rootDir,
+      srcDir: nuxtOptions.srcDir,
       buildDir: nuxtOptions.buildDir,
       staticDir: nuxtOptions.dir.static,
       routerBase: nuxtOptions.router.base,

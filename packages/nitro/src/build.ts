@@ -38,7 +38,7 @@ export async function generate (sigmaContext: SigmaContext) {
     join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath)
   )
   await copy(
-    resolve(sigmaContext._nuxt.rootDir, sigmaContext._nuxt.staticDir),
+    resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir),
     sigmaContext.output.publicDir
   )
 }
