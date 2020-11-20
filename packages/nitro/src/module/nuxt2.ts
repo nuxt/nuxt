@@ -18,14 +18,19 @@ export default function (nuxt) {
   const sigmaContext = getsigmaContext(nuxt.options, nuxt.options.sigma || {})
   const sigmaDevContext = getsigmaContext(nuxt.options, { preset: 'dev' })
 
-  // Use nuxt as main hooks host
+  // Connect hooks
   nuxt.addHooks(sigmaContext.nuxtHooks)
+  nuxt.hook('close', () => sigmaContext._internal.hooks.callHook('close'))
+
+  nuxt.addHooks(sigmaDevContext.nuxtHooks)
+  nuxt.hook('close', () => sigmaDevContext._internal.hooks.callHook('close'))
+  sigmaDevContext._internal.hooks.hook('renderLoading',
+    (req, res) => nuxt.callHook('server:nuxt:renderLoading', req, res))
 
   // Replace nuxt server
   if (nuxt.server) {
     nuxt.server.__closed = true
     nuxt.server = createNuxt2DevServer(sigmaDevContext)
-    nuxt.addHooks(sigmaDevContext.nuxtHooks)
   }
 
   // serverMiddleware bridge
@@ -60,12 +65,16 @@ export default function (nuxt) {
   nuxt.options.build._minifyServer = false
   nuxt.options.build.standalone = false
   nuxt.hook('build:done', async () => {
-    await build(nuxt.options.dev ? sigmaDevContext : sigmaContext)
+    if (nuxt.options.dev) {
+      await build(sigmaDevContext)
+    } else if (!sigmaContext._nuxt.isStatic) {
+      await build(sigmaContext)
+    }
   })
 
   // nude dev
   if (nuxt.options.dev) {
-    nuxt.hook('sigma:compiled', () => { nuxt.server.watch() })
+    sigmaDevContext._internal.hooks.hook('sigma:compiled', () => { nuxt.server.watch() })
     nuxt.hook('build:compile', ({ compiler }) => { compiler.outputFileSystem = wpfs })
     nuxt.hook('server:devMiddleware', (m) => { nuxt.server.setDevMiddleware(m) })
   }
@@ -74,17 +83,19 @@ export default function (nuxt) {
   nuxt.options.generate.dir = sigmaContext.output.publicDir
   nuxt.hook('generate:cache:ignore', (ignore: string[]) => {
     ignore.push(sigmaContext.output.dir)
+    ignore.push(sigmaContext.output.serverDir)
+    if (sigmaContext.output.publicDir) {
+      ignore.push(sigmaContext.output.publicDir)
+    }
     ignore.push(...sigmaContext.ignore)
   })
-
-  // generate:bfore is before webpack build that we need!
   nuxt.hook('generate:extendRoutes', async () => {
     await build(sigmaDevContext)
     await nuxt.server.reload()
   })
-
   nuxt.hook('generate:done', async () => {
     await nuxt.server.close()
+    await build(sigmaContext)
   })
 }
 

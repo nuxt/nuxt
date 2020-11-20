@@ -73,11 +73,13 @@ export function createDevServer (sigmaContext: SigmaContext) {
   const proxy = createProxy()
   app.use((req, res) => {
     if (workerAddress) {
-      proxy.web(req, res, { target: workerAddress })
+      proxy.web(req, res, { target: workerAddress }, (err) => {
+        console.error('[proxy]', err)
+      })
     } else if (loadingMiddleware) {
       // TODO:serverIndex method is not exposed
       // loadingMiddleware(req, res)
-      sigmaContext._internal.hooks.callHook('server:nuxt:renderLoading', req, res)
+      sigmaContext._internal.hooks.callHook('renderLoading', req, res)
     } else {
       res.end('Worker not ready!')
     }

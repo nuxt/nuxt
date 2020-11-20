@@ -41,6 +41,7 @@ export interface SigmaContext {
     staticDir: string
     routerBase: string
     publicPath: string
+    isStatic: boolean
     fullStatic: boolean
     staticAssets: any
   }
@@ -85,7 +86,8 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
       staticDir: nuxtOptions.dir.static,
       routerBase: nuxtOptions.router.base,
       publicPath: nuxtOptions.build.publicPath,
-      fullStatic: nuxtOptions.preset === 'static' && !nuxtOptions._legacyGenerate,
+      isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,
+      fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
       // @ts-ignore
       staticAssets: nuxtOptions.generate.staticAssets
     },
