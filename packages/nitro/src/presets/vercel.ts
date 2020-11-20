@@ -6,7 +6,7 @@ import { node } from './node'
 export const vercel: SigmaPreset = extendPreset(node, {
   output: {
     dir: '{{ _nuxt.rootDir }}/.vercel_build_output',
-    serverDir: '{{ output.dir }}/functions/node/server/index.js',
+    serverDir: '{{ output.dir }}/functions/node/server',
     publicDir: '{{ output.dir }}/static'
   },
   ignore: [
