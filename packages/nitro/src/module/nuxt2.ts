@@ -33,10 +33,10 @@ export default function (nuxt, moduleContainer) {
     nuxt.server = createNuxt2DevServer(sigmaDevContext)
   }
 
-  // $fetch support in client
+  // Sigma client plugin
   moduleContainer.addPlugin({
-    fileName: 'fetch.client.js',
-    src: resolve(sigmaContext._internal.runtimeDir, 'app/fetch.client.js')
+    fileName: 'sigma.client.js',
+    src: resolve(sigmaContext._internal.runtimeDir, 'app/sigma.client.js')
   })
 
   // serverMiddleware bridge
