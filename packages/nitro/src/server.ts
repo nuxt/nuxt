@@ -86,7 +86,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
   })
 
   // Listen
-  const listeners: Server[] = []
+  let listeners: Server[] = []
   async function listen (port) {
     port = await getPort({ name: 'nuxt' })
     const listener = await new Promise<Server>((resolve, reject) => {
@@ -122,9 +122,10 @@ export function createDevServer (sigmaContext: SigmaContext) {
     if (pendingWorker) {
       await pendingWorker.terminate()
     }
-    await Promise.all(listeners.map(l => new Promise((resolve, reject) => {
-      l.close(err => err ? reject(err) : resolve(undefined))
+    await Promise.all(listeners.map(l => new Promise((resolve) => {
+      l.close(() => resolve())
     })))
+    listeners = []
   }
   sigmaContext._internal.hooks.hook('close', close)
 
