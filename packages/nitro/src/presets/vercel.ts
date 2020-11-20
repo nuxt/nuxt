@@ -4,6 +4,7 @@ import { SigmaPreset, SigmaContext } from '../context'
 import { node } from './node'
 
 export const vercel: SigmaPreset = extendPreset(node, {
+  entry: '{{ _internal.runtimeDir }}/entries/vercel',
   output: {
     dir: '{{ _nuxt.rootDir }}/.vercel_build_output',
     serverDir: '{{ output.dir }}/functions/node/server',
