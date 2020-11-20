@@ -27,6 +27,9 @@ export default function (nuxt, moduleContainer) {
   sigmaDevContext._internal.hooks.hook('renderLoading',
     (req, res) => nuxt.callHook('server:nuxt:renderLoading', req, res))
 
+  // Expose process.env.SIGMA_PRESET
+  nuxt.options.env.SIGMA_PRESET = sigmaContext.preset
+
   // Replace nuxt server
   if (nuxt.server) {
     nuxt.server.__closed = true

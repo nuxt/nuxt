@@ -92,7 +92,8 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       'process.env.NUXT_STATIC_BASE': JSON.stringify(sigmaContext._nuxt.staticAssets.base),
       'process.env.NUXT_STATIC_VERSION': JSON.stringify(sigmaContext._nuxt.staticAssets.version),
       // @ts-ignore
-      'process.env.NUXT_FULL_STATIC': sigmaContext.fullStatic
+      'process.env.NUXT_FULL_STATIC': sigmaContext.fullStatic,
+      'process.env.SIGMA_PRESET': JSON.stringify(sigmaContext.preset)
     }
   }))
 
