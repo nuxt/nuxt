@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { resolve } from 'upath'
-import { build } from '../build'
+import { build, generate, prepare } from '../build'
 import { getsigmaContext, SigmaContext } from '../context'
 import { createDevServer } from '../server'
 import wpfs from '../utils/wpfs'
@@ -16,7 +16,7 @@ export default function (nuxt) {
 
   // Create contexts
   const sigmaContext = getsigmaContext(nuxt.options, nuxt.options.sigma || {})
-  const sigmaDevContext = getsigmaContext(nuxt.options, { preset: 'dev' })
+  const sigmaDevContext = getsigmaContext(nuxt.options, { preset: 'local' })
 
   // Connect hooks
   nuxt.addHooks(sigmaContext.nuxtHooks)
@@ -68,6 +68,8 @@ export default function (nuxt) {
     if (nuxt.options.dev) {
       await build(sigmaDevContext)
     } else if (!sigmaContext._nuxt.isStatic) {
+      await prepare(sigmaContext)
+      await generate(sigmaContext)
       await build(sigmaContext)
     }
   })
@@ -88,6 +90,9 @@ export default function (nuxt) {
       ignore.push(sigmaContext.output.publicDir)
     }
     ignore.push(...sigmaContext.ignore)
+  })
+  nuxt.hook('generate:before', async () => {
+    await prepare(sigmaContext)
   })
   nuxt.hook('generate:extendRoutes', async () => {
     await build(sigmaDevContext)

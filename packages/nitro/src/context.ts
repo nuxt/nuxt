@@ -29,8 +29,7 @@ export interface SigmaContext {
   output: {
     dir: string
     serverDir: string
-    publicDir: string | false
-    clean: boolean
+    publicDir: string
   }
   _nuxt: {
     dev: boolean
@@ -51,7 +50,9 @@ export interface SigmaContext {
   }
 }
 
-export interface SigmaInput extends Partial<SigmaContext> {}
+type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> }
+
+export interface SigmaInput extends DeepPartial<SigmaContext> {}
 
 export type SigmaPreset = SigmaInput | ((input: SigmaInput) => SigmaInput)
 
@@ -74,8 +75,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     output: {
       dir: '{{ _nuxt.rootDir }}/.output',
       serverDir: '{{ output.dir }}/server',
-      publicDir: '{{ output.dir }}/public',
-      clean: true
+      publicDir: '{{ output.dir }}/public'
     },
     _nuxt: {
       dev: nuxtOptions.dev,
@@ -110,9 +110,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
   const sigmaContext: SigmaContext = defu(input, _preset, defaults) as any
 
   sigmaContext.output.dir = resolvePath(sigmaContext, sigmaContext.output.dir)
-  sigmaContext.output.publicDir = sigmaContext.output.publicDir
-    ? resolvePath(sigmaContext, sigmaContext.output.publicDir)
-    : false
+  sigmaContext.output.publicDir = resolvePath(sigmaContext, sigmaContext.output.publicDir)
   sigmaContext.output.serverDir = resolvePath(sigmaContext, sigmaContext.output.serverDir)
 
   sigmaContext._internal.hooks.addHooks(sigmaContext.hooks)

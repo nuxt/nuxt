@@ -5,17 +5,43 @@ import ora from 'ora'
 import { readFile, emptyDir, copy } from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
-import { hl, serializeTemplate, writeFile } from './utils'
+import { hl, prettyPath, serializeTemplate, writeFile } from './utils'
 import { SigmaContext } from './context'
 
-export async function build (sigmaContext: SigmaContext) {
+export async function prepare (sigmaContext: SigmaContext) {
   consola.info(`Sigma preset is ${hl(sigmaContext.preset)}`)
 
-  // Cleanup output dir
-  if (sigmaContext.output.clean) {
-    await emptyDir(sigmaContext.output.dir)
+  await cleanupDir(sigmaContext.output.dir)
+
+  if (!sigmaContext.output.publicDir.startsWith(sigmaContext.output.dir)) {
+    await cleanupDir(sigmaContext.output.publicDir)
   }
 
+  if (!sigmaContext.output.serverDir.startsWith(sigmaContext.output.dir)) {
+    await cleanupDir(sigmaContext.output.serverDir)
+  }
+}
+
+async function cleanupDir (dir: string) {
+  consola.info('Cleaning up', prettyPath(dir))
+  await emptyDir(dir)
+}
+
+export async function generate (sigmaContext: SigmaContext) {
+  const spinner = ora()
+  spinner.start('Generating public...')
+  await copy(
+    resolve(sigmaContext._nuxt.buildDir, 'dist/client'),
+    join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath)
+  )
+  await copy(
+    resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir),
+    sigmaContext.output.publicDir
+  )
+  spinner.succeed('Generated public ' + prettyPath(sigmaContext.output.publicDir))
+}
+
+export async function build (sigmaContext: SigmaContext) {
   // Compile html template
   const htmlSrc = resolve(sigmaContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
@@ -25,28 +51,9 @@ export async function build (sigmaContext: SigmaContext) {
   await sigmaContext._internal.hooks.callHook('sigma:template:document', htmlTemplate)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
-  // TODO: only when not generate
-  await generate(sigmaContext)
-
   sigmaContext.rollupConfig = getRollupConfig(sigmaContext)
-
   await sigmaContext._internal.hooks.callHook('sigma:rollup:before', sigmaContext)
-
   return sigmaContext._nuxt.dev ? _watch(sigmaContext) : _build(sigmaContext)
-}
-
-export async function generate (sigmaContext: SigmaContext) {
-  if (!sigmaContext.output.publicDir) {
-    return
-  }
-  await copy(
-    resolve(sigmaContext._nuxt.buildDir, 'dist/client'),
-    join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath)
-  )
-  await copy(
-    resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir),
-    sigmaContext.output.publicDir
-  )
 }
 
 async function _build (sigmaContext: SigmaContext) {
@@ -58,10 +65,10 @@ async function _build (sigmaContext: SigmaContext) {
     throw error
   })
 
-  spinner.start('Wrting Sigma bundle...')
+  spinner.start('Wrting server bundle...')
   await build.write(sigmaContext.rollupConfig.output)
 
-  spinner.succeed('Sigma built')
+  spinner.succeed('Server built')
   await printFSTree(sigmaContext.output.serverDir)
   await sigmaContext._internal.hooks.callHook('sigma:compiled', sigmaContext)
 
