@@ -32,7 +32,13 @@ if ('serviceWorker' in navigator) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
       async 'sigma:compiled' ({ output }: SigmaContext) {
-        await writeFile(resolve(output.publicDir, 'sw.js'), 'self.importScripts(\'/server/index.js\');')
+        await writeFile(resolve(output.publicDir, 'sw.js'), 'self.importScripts(\'/_server/index.js\');')
+
+        // Temp fix
+        await writeFile(resolve(output.publicDir, 'index.html'), script)
+        await writeFile(resolve(output.publicDir, '200.html'), script)
+        await writeFile(resolve(output.publicDir, '404.html'), script)
+
         consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
       }
     }
