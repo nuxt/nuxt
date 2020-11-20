@@ -126,7 +126,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       ${sigmaContext.middleware.filter(m => m.lazy !== false).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
 
       export default [
-        ${sigmaContext.middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify || true} }`).join(',\n')}
+        ${sigmaContext.middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify !== undefined ? m.promisify : true} }`).join(',\n')}
       ];
     `
   }))
