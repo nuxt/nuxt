@@ -132,7 +132,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
 
   // Polyfill
   rollupConfig.plugins.push(virtual({
-    '~polyfill': env.polyfill.map(p => `require('${p}');`).join('\n')
+    '~polyfill': env.polyfill.map(p => `import '${p}';`).join('\n')
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias

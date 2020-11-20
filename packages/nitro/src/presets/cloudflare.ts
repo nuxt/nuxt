@@ -13,7 +13,11 @@ export const cloudflare: SigmaPreset = extendPreset(worker, {
     async 'sigma:compiled' ({ output, _nuxt }: SigmaContext) {
       await writeFile(resolve(output.dir, 'package.json'), JSON.stringify({ private: true, main: './server/index.js' }, null, 2))
       await writeFile(resolve(output.dir, 'package-lock.json'), JSON.stringify({ lockfileVersion: 1 }, null, 2))
-      consola.success('Ready to run `wrangler publish` in', prettyPath(_nuxt.rootDir))
+      let inDir = prettyPath(_nuxt.rootDir)
+      if (inDir) {
+        inDir = 'in ' + inDir
+      }
+      consola.success('Ready to run `wrangler publish`', inDir)
     }
   }
 })
