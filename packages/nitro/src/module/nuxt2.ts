@@ -5,7 +5,7 @@ import { getsigmaContext, SigmaContext } from '../context'
 import { createDevServer } from '../server'
 import wpfs from '../utils/wpfs'
 
-export default function (nuxt) {
+export default function (nuxt, moduleContainer) {
   // Build in node_modules/.cache/nuxt
   const oldBuildDir = nuxt.options.buildDir
   nuxt.options.buildDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
@@ -32,6 +32,12 @@ export default function (nuxt) {
     nuxt.server.__closed = true
     nuxt.server = createNuxt2DevServer(sigmaDevContext)
   }
+
+  // $fetch support in client
+  moduleContainer.addPlugin({
+    fileName: 'fetch.client.js',
+    src: resolve(sigmaContext._internal.runtimeDir, 'app/fetch.client.js')
+  })
 
   // serverMiddleware bridge
   // TODO: render:setupMiddleware hook
