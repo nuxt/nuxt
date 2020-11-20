@@ -123,7 +123,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
       await pendingWorker.terminate()
     }
     await Promise.all(listeners.map(l => new Promise((resolve) => {
-      l.close(() => resolve())
+      l.close(() => resolve(undefined))
     })))
     listeners = []
   }
