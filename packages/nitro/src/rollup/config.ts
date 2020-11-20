@@ -75,7 +75,12 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       preferConst: true
     },
     external,
-    plugins: []
+    plugins: [],
+    onwarn (warning, rollupWarn) {
+      if (!['CIRCULAR_DEPENDENCY', 'EVAL'].includes(warning.code)) {
+        rollupWarn(warning)
+      }
+    }
   }
 
   if (sigmaContext.timing) {
