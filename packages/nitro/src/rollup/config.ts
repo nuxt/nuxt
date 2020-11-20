@@ -121,9 +121,9 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   const getImportId = p => '_' + hasha(p).substr(0, 6)
   rollupConfig.plugins.push(virtual({
     '~serverMiddleware': `
-      ${sigmaContext.middleware.filter(m => !m.lazy).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
+      ${sigmaContext.middleware.filter(m => m.lazy === false).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
 
-      ${sigmaContext.middleware.filter(m => m.lazy).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
+      ${sigmaContext.middleware.filter(m => m.lazy !== false).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
 
       export default [
         ${sigmaContext.middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify || true} }`).join(',\n')}
