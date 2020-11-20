@@ -24,17 +24,20 @@ export interface SigmaContext {
   renderer: string
   middleware: ServerMiddleware[]
   hooks: configHooksT
+  nuxtHooks: configHooksT
   ignore: string[]
   output: {
     dir: string
     serverDir: string
-    publicDir: string
+    publicDir: string | false
+    clean: boolean
   }
   _nuxt: {
     dev: boolean
     rootDir: string
     srcDir: string
     buildDir: string
+    generateDir: string
     staticDir: string
     routerBase: string
     publicPath: string
@@ -66,16 +69,19 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     middleware: [],
     ignore: [],
     hooks: {},
+    nuxtHooks: {},
     output: {
       dir: '{{ _nuxt.rootDir }}/.output',
       serverDir: '{{ output.dir }}/server',
-      publicDir: '{{ output.dir }}/public'
+      publicDir: '{{ output.dir }}/public',
+      clean: true
     },
     _nuxt: {
       dev: nuxtOptions.dev,
       rootDir: nuxtOptions.rootDir,
       srcDir: nuxtOptions.srcDir,
       buildDir: nuxtOptions.buildDir,
+      generateDir: nuxtOptions.generate.dir,
       staticDir: nuxtOptions.dir.static,
       routerBase: nuxtOptions.router.base,
       publicPath: nuxtOptions.build.publicPath,
@@ -85,7 +91,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     },
     _internal: {
       runtimeDir: resolve(__dirname, '../runtime'),
-      hooks: undefined
+      hooks: new Hookable()
     }
   }
 
@@ -102,8 +108,12 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
   const sigmaContext: SigmaContext = defu(input, _preset, defaults) as any
 
   sigmaContext.output.dir = resolvePath(sigmaContext, sigmaContext.output.dir)
-  sigmaContext.output.publicDir = resolvePath(sigmaContext, sigmaContext.output.publicDir)
+  sigmaContext.output.publicDir = sigmaContext.output.publicDir
+    ? resolvePath(sigmaContext, sigmaContext.output.publicDir)
+    : false
   sigmaContext.output.serverDir = resolvePath(sigmaContext, sigmaContext.output.serverDir)
+
+  sigmaContext._internal.hooks.addHooks(sigmaContext.hooks)
 
   // console.log(sigmaContext)
   // process.exit(1)

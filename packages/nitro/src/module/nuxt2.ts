@@ -19,15 +19,13 @@ export default function (nuxt) {
   const sigmaDevContext = getsigmaContext(nuxt.options, { preset: 'dev' })
 
   // Use nuxt as main hooks host
-  sigmaContext._internal.hooks = nuxt
-  sigmaDevContext._internal.hooks = nuxt
-  nuxt.addHooks(sigmaContext.hooks)
+  nuxt.addHooks(sigmaContext.nuxtHooks)
 
   // Replace nuxt server
   if (nuxt.server) {
     nuxt.server.__closed = true
     nuxt.server = createNuxt2DevServer(sigmaDevContext)
-    nuxt.addHooks(sigmaDevContext.hooks)
+    nuxt.addHooks(sigmaDevContext.nuxtHooks)
   }
 
   // serverMiddleware bridge
@@ -73,10 +71,9 @@ export default function (nuxt) {
   }
 
   // nuxt generate
+  nuxt.options.generate.dir = sigmaContext.output.publicDir
   nuxt.hook('generate:cache:ignore', (ignore: string[]) => {
     ignore.push(sigmaContext.output.dir)
-    ignore.push(sigmaContext.output.serverDir)
-    ignore.push(sigmaContext.output.publicDir)
     ignore.push(...sigmaContext.ignore)
   })
 
@@ -84,6 +81,10 @@ export default function (nuxt) {
   nuxt.hook('generate:extendRoutes', async () => {
     await build(sigmaDevContext)
     await nuxt.server.reload()
+  })
+
+  nuxt.hook('generate:done', async () => {
+    await nuxt.server.close()
   })
 }
 

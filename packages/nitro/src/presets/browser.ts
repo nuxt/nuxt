@@ -19,21 +19,24 @@ if ('serviceWorker' in navigator) {
     output: {
       dir: '{{ _nuxt.rootDir }}/.output/public',
       publicDir: '{{ output.dir }}',
-      serverDir: '{{ output.dir }}'
+      serverDir: '{{ output.dir }}',
+      clean: true
     },
-    hooks: {
+    nuxtHooks: {
       'vue-renderer:ssr:templateParams' (params) {
         params.APP += script
       },
       'vue-renderer:spa:templateParams' (params) {
         params.APP += script
-      },
+      }
+    },
+    hooks: {
       'sigma:template:document' (tmpl) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
       async 'sigma:compiled' ({ output }: SigmaContext) {
         await writeFile(resolve(output.publicDir, 'index.html'), script) // TODO
-        consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir))
+        consola.info('Ready to deploy to static hosting:', prettyPath(output.publicDir as string))
       }
     }
   }

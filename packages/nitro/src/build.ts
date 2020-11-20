@@ -12,7 +12,9 @@ export async function build (sigmaContext: SigmaContext) {
   consola.info(`Sigma preset is ${hl(sigmaContext.preset)}`)
 
   // Cleanup output dir
-  await emptyDir(sigmaContext.output.dir)
+  if (sigmaContext.output.clean) {
+    await emptyDir(sigmaContext.output.dir)
+  }
 
   // Compile html template
   const htmlSrc = resolve(sigmaContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
@@ -23,6 +25,7 @@ export async function build (sigmaContext: SigmaContext) {
   await sigmaContext._internal.hooks.callHook('sigma:template:document', htmlTemplate)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
+  // TODO: only when not generate
   await generate(sigmaContext)
 
   sigmaContext.rollupConfig = getRollupConfig(sigmaContext)
@@ -33,6 +36,9 @@ export async function build (sigmaContext: SigmaContext) {
 }
 
 export async function generate (sigmaContext: SigmaContext) {
+  if (!sigmaContext.output.publicDir) {
+    return
+  }
   await copy(
     resolve(sigmaContext._nuxt.buildDir, 'dist/client'),
     join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath)

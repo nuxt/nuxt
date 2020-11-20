@@ -6,8 +6,9 @@ import { node } from './node'
 export const vercel: SigmaPreset = extendPreset(node, {
   output: {
     dir: '{{ _nuxt.rootDir }}/.vercel_build_output',
-    serverDir: '{{ output.dir }}/functions/node/_nuxt/index.js',
-    publicDir: '{{ output.dir }}/static'
+    serverDir: '{{ output.dir }}/functions/node/server/index.js',
+    publicDir: '{{ output.dir }}/static',
+    clean: true
   },
   ignore: [
     'vercel.json'
@@ -40,7 +41,7 @@ async function writeRoutes ({ output }: SigmaContext) {
     },
     {
       src: '(.*)',
-      dest: '/.vercel/functions/_nuxt/index'
+      dest: '/.vercel/functions/server/index'
     }
   ]
 

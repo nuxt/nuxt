@@ -121,7 +121,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
       await pendingWorker.terminate()
     }
     await Promise.all(listeners.map(l => new Promise((resolve, reject) => {
-      l.close(err => err ? reject(err) : resolve())
+      l.close(err => err ? reject(err) : resolve(undefined))
     })))
   }
   sigmaContext._internal.hooks.hook('close', close)
