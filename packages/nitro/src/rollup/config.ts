@@ -1,5 +1,5 @@
 import Module from 'module'
-import { dirname, join, relative, resolve } from 'path'
+import { dirname, join, relative, resolve } from 'upath'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
@@ -10,110 +10,64 @@ import replace from '@rollup/plugin-replace'
 import virtual from '@rollup/plugin-virtual'
 import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
+import * as un from '@nuxt/un'
 
 import hasha from 'hasha'
-import { SLSOptions } from '../config'
+import { SigmaContext } from '../context'
 import { resolvePath, MODULE_DIR } from '../utils'
 
 import { dynamicRequire } from './dynamic-require'
 import { externals } from './externals'
 import { timing } from './timing'
 
-const mapArrToVal = (val, arr) => arr.reduce((p, c) => ({ ...p, [c]: val }), {})
-
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
-export const getRollupConfig = (options: SLSOptions) => {
-  const extensions: string[] = ['.ts', '.mjs', '.js', '.json', '.node']
+export const getRollupConfig = (sigmaContext: SigmaContext) => {
+  const extensions: string[] = ['.ts', '.js', '.json', '.node']
 
   const external: InputOptions['external'] = []
 
-  const injects:{ [key: string]: string| string[] } = {}
+  const presets = []
 
-  const aliases: { [key: string]: string } = {}
-
-  Object.assign(aliases, mapArrToVal('~mocks/generic', [
-    // @nuxt/devalue
-    'consola',
-    // vue2
-    'encoding',
-    'stream',
-    'he',
-    'resolve',
-    'source-map',
-    'lodash.template',
-    'serialize-javascript',
-    // vue3
-    '@babel/parser',
-    '@vue/compiler-core',
-    '@vue/compiler-dom',
-    '@vue/compiler-ssr'
-  ]))
-
-  // Uses eval 😈
-  aliases.depd = '~mocks/custom/depd'
-
-  if (options.node === false) {
-    // Globals
-    // injects.Buffer = ['buffer', 'Buffer'] <-- TODO: Make it opt-in
-    injects.process = '~mocks/node/process'
-
-    // Aliases
-    Object.assign(aliases, {
-      // Node
-      ...mapArrToVal('~mocks/generic', Module.builtinModules),
-      http: '~mocks/node/http',
-      fs: '~mocks/node/fs',
-      process: '~mocks/node/process',
-      'node-process': require.resolve('process/browser.js'),
-      // buffer: require.resolve('buffer/index.js'),
-      util: require.resolve('util/util.js'),
-      events: require.resolve('events/events.js'),
-      inherits: require.resolve('inherits/inherits_browser.js'),
-
-      // Custom
-      'node-fetch': '~mocks/custom/node-fetch',
-      etag: '~mocks/generic/noop',
-
-      // Express
-      ...mapArrToVal('~mocks/generic', [
-        'serve-static',
-        'iconv-lite'
-      ]),
-
-      // Mime
-      'mime-db': '~mocks/custom/mime-db',
-      'mime/lite': require.resolve('mime/lite'),
-      mime: '~mocks/custom/mime'
-    })
+  if (sigmaContext.node === false) {
+    presets.push(un.nodeless)
   } else {
+    presets.push(un.node)
     external.push(...Module.builtinModules)
   }
 
-  const chunksDirName = join(dirname(options.outName), 'chunks')
-  const serverDir = join(options.buildDir, 'dist/server')
+  const env = un.env(...presets, {
+    alias: {
+      depd: require.resolve('@nuxt/un/runtime/npm/depd')
+    }
+  })
+
+  const buildServerDir = join(sigmaContext._nuxt.buildDir, 'dist/server')
+  const runtimeAppDir = join(sigmaContext._internal.runtimeDir, 'app')
 
   const rollupConfig: RollupConfig = {
-    input: resolvePath(options, options.entry),
+    input: resolvePath(sigmaContext, sigmaContext.entry),
     output: {
-      dir: options.targetDir,
-      entryFileNames: options.outName,
+      dir: sigmaContext.output.serverDir,
+      entryFileNames: 'index.js',
       chunkFileNames (chunkInfo) {
         let prefix = ''
         const modules = Object.keys(chunkInfo.modules)
         const lastModule = modules[modules.length - 1]
-        if (lastModule.startsWith(serverDir)) {
-          prefix = join('ssr', relative(serverDir, dirname(lastModule)))
-        } else if (lastModule.startsWith(options.buildDir)) {
-          prefix = 'ssr'
-        } else if (lastModule.startsWith(options.runtimeDir)) {
-          prefix = 'runtime'
-        } else if (!prefix && options.serverMiddleware.find(m => lastModule.startsWith(m.handle))) {
+        if (lastModule.startsWith(buildServerDir)) {
+          prefix = join('app', relative(buildServerDir, dirname(lastModule)))
+        } else if (lastModule.startsWith(runtimeAppDir)) {
+          prefix = 'app'
+        } else if (lastModule.startsWith(sigmaContext._nuxt.buildDir)) {
+          prefix = 'nuxt'
+        } else if (lastModule.startsWith(sigmaContext._internal.runtimeDir)) {
+          prefix = 'sigma'
+        } else if (!prefix && sigmaContext.middleware.find(m => lastModule.startsWith(m.handle))) {
           prefix = 'middleware'
         }
-        return join(chunksDirName, prefix, '[name].js')
+        return join('chunks', prefix, '[name].js')
       },
-      inlineDynamicImports: options.inlineChunks,
+      inlineDynamicImports: sigmaContext.inlineChunks,
       format: 'cjs',
       exports: 'auto',
       intro: '',
@@ -124,28 +78,28 @@ export const getRollupConfig = (options: SLSOptions) => {
     plugins: []
   }
 
-  if (options.timing) {
+  if (sigmaContext.timing) {
     rollupConfig.plugins.push(timing())
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
     values: {
-      'process.env.NODE_ENV': '"production"',
+      'process.env.NODE_ENV': sigmaContext._nuxt.dev ? '"development"' : '"production"',
       'typeof window': '"undefined"',
-      'process.env.ROUTER_BASE': JSON.stringify(options.routerBase),
-      'process.env.PUBLIC_PATH': JSON.stringify(options.publicPath),
-      'process.env.NUXT_STATIC_BASE': JSON.stringify(options.staticAssets.base),
-      'process.env.NUXT_STATIC_VERSION': JSON.stringify(options.staticAssets.version),
+      'process.env.ROUTER_BASE': JSON.stringify(sigmaContext._nuxt.routerBase),
+      'process.env.PUBLIC_PATH': JSON.stringify(sigmaContext._nuxt.publicPath),
+      'process.env.NUXT_STATIC_BASE': JSON.stringify(sigmaContext._nuxt.staticAssets.base),
+      'process.env.NUXT_STATIC_VERSION': JSON.stringify(sigmaContext._nuxt.staticAssets.version),
       // @ts-ignore
-      'process.env.NUXT_FULL_STATIC': options.fullStatic
+      'process.env.NUXT_FULL_STATIC': sigmaContext.fullStatic
     }
   }))
 
   // Dynamic Require Support
   rollupConfig.plugins.push(dynamicRequire({
-    dir: resolve(options.buildDir, 'dist/server'),
-    inline: options.node === false || options.inlineChunks,
+    dir: resolve(sigmaContext._nuxt.buildDir, 'dist/server'),
+    inline: sigmaContext.node === false || sigmaContext.inlineChunks,
     globbyOptions: {
       ignore: [
         'server.js'
@@ -166,36 +120,39 @@ export const getRollupConfig = (options: SLSOptions) => {
   const getImportId = p => '_' + hasha(p).substr(0, 6)
   rollupConfig.plugins.push(virtual({
     '~serverMiddleware': `
-      ${options.serverMiddleware.filter(m => !m.lazy).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
+      ${sigmaContext.middleware.filter(m => !m.lazy).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
 
-      ${options.serverMiddleware.filter(m => m.lazy).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
+      ${sigmaContext.middleware.filter(m => m.lazy).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
 
       export default [
-        ${options.serverMiddleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || false} }`).join(',\n')}
+        ${sigmaContext.middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || false} }`).join(',\n')}
       ];
     `
   }))
 
+  // Polyfill
+  rollupConfig.plugins.push(virtual({
+    '~polyfill': env.polyfill.map(p => `require('${p}');`).join('\n')
+  }))
+
   // https://github.com/rollup/plugins/tree/master/packages/alias
-  const renderer = options.renderer || 'vue2'
+  const renderer = sigmaContext.renderer || 'vue2'
   rollupConfig.plugins.push(alias({
     entries: {
-      '~runtime': options.runtimeDir,
-      '~mocks': resolve(options.runtimeDir, 'mocks'),
-      '~renderer': require.resolve(resolve(options.runtimeDir, 'ssr', renderer)),
-      '~build': options.buildDir,
-      '~mock': require.resolve(resolve(options.runtimeDir, 'mocks/generic')),
-      ...aliases
+      '~runtime': sigmaContext._internal.runtimeDir,
+      '~renderer': require.resolve(resolve(sigmaContext._internal.runtimeDir, 'app', renderer)),
+      '~build': sigmaContext._nuxt.buildDir,
+      ...env.alias
     }
   }))
 
   // External Plugin
-  if (options.externals) {
+  if (sigmaContext.externals) {
     rollupConfig.plugins.push(externals({
-      relativeTo: options.targetDir,
+      relativeTo: sigmaContext.output.serverDir,
       include: [
-        options.runtimeDir,
-        ...options.serverMiddleware.map(m => m.handle)
+        sigmaContext._internal.runtimeDir,
+        ...sigmaContext.middleware.map(m => m.handle)
       ]
     }))
   }
@@ -204,12 +161,12 @@ export const getRollupConfig = (options: SLSOptions) => {
   rollupConfig.plugins.push(nodeResolve({
     extensions,
     preferBuiltins: true,
-    rootDir: options.rootDir,
+    rootDir: sigmaContext._nuxt.rootDir,
     // https://www.npmjs.com/package/resolve
     customResolveOptions: {
-      basedir: options.rootDir,
+      basedir: sigmaContext._nuxt.rootDir,
       paths: [
-        resolve(options.rootDir, 'node_modukes'),
+        resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
         resolve(MODULE_DIR, 'node_modules')
       ]
     },
@@ -225,16 +182,16 @@ export const getRollupConfig = (options: SLSOptions) => {
   rollupConfig.plugins.push(json())
 
   // https://github.com/rollup/plugins/tree/master/packages/inject
-  rollupConfig.plugins.push(inject(injects))
+  rollupConfig.plugins.push(inject(env.inject))
 
-  if (options.analyze) {
+  if (sigmaContext.analyze) {
     // https://github.com/doesdev/rollup-plugin-analyzer
     rollupConfig.plugins.push(analyze())
   }
 
   // https://github.com/TrySound/rollup-plugin-terser
-  // https://github.com/terser/terser#minify-options
-  if (options.minify !== false) {
+  // https://github.com/terser/terser#minify-sigmaContext
+  if (sigmaContext.minify) {
     rollupConfig.plugins.push(terser({
       mangle: {
         keep_fnames: true,

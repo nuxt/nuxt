@@ -1,15 +1,17 @@
-import { relative, dirname, resolve } from 'path'
+import { relative, dirname, resolve } from 'upath'
 import fse from 'fs-extra'
 import jiti from 'jiti'
 import defu from 'defu'
 import Hookable from 'hookable'
 import consola from 'consola'
-import type { SLSOptions, UnresolvedPath, SLSTarget, SLSTargetFn, SLSConfig } from '../config'
+import chalk from 'chalk'
+import { get } from 'dot-prop'
+import type { SigmaPreset, SigmaInput } from '../context'
 
 export const MODULE_DIR = resolve(__dirname, '..')
 
 export function hl (str: string) {
-  return '`' + str + '`'
+  return chalk.cyan(str)
 }
 
 export function prettyPath (p: string, highlight = true) {
@@ -18,7 +20,13 @@ export function prettyPath (p: string, highlight = true) {
 }
 
 export function compileTemplate (contents: string) {
-  return (params: Record<string, any>) => contents.replace(/{{ ?(\w+) ?}}/g, (_, match) => params[match] || '')
+  return (params: Record<string, any>) => contents.replace(/{{ ?([\w.]+) ?}}/g, (_, match) => {
+    const val = get(params, match)
+    if (!val) {
+      consola.warn(`cannot resolve template param '${match}' in ${contents.substr(0, 20)}`)
+    }
+    return val as string || `${match}`
+  })
 }
 
 export function serializeTemplate (contents: string) {
@@ -42,16 +50,16 @@ export async function writeFile (file, contents) {
   consola.info('Generated', prettyPath(file))
 }
 
-export function resolvePath (options: SLSOptions, path: UnresolvedPath, resolveBase: string = '') {
+export function resolvePath (sigmaContext: SigmaInput, path: string | ((sigmaContext) => string), resolveBase: string = ''): string {
   if (typeof path === 'function') {
-    path = path(options)
+    path = path(sigmaContext)
   }
 
   if (typeof path !== 'string') {
     throw new TypeError('Invalid path: ' + path)
   }
 
-  path = compileTemplate(path)(options)
+  path = compileTemplate(path)(sigmaContext)
 
   return resolve(resolveBase, path)
 }
@@ -64,22 +72,19 @@ export function detectTarget () {
   if (process.env.NOW_BUILDER) {
     return 'vercel'
   }
-
-  return 'node'
 }
 
-export function extendTarget (base: SLSTarget, target: SLSTarget): SLSTargetFn {
-  return (config: SLSConfig) => {
-    if (typeof target === 'function') {
-      target = target(config)
+export function extendPreset (base: SigmaPreset, preset: SigmaPreset): SigmaPreset {
+  return (config: SigmaInput) => {
+    if (typeof preset === 'function') {
+      preset = preset(config)
     }
     if (typeof base === 'function') {
       base = base(config)
     }
     return defu({
-      hooks: Hookable.mergeHooks(base.hooks, target.hooks),
-      nuxtHooks: Hookable.mergeHooks(base.nuxtHooks as any, target.nuxtHooks as any)
-    }, target, base)
+      hooks: Hookable.mergeHooks(base.hooks, preset.hooks)
+    }, preset, base)
   }
 }
 

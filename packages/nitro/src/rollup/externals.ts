@@ -1,4 +1,4 @@
-import { isAbsolute, relative } from 'path'
+import { isAbsolute, relative } from 'upath'
 
 export function externals ({ include = [], relativeTo }) {
   return {

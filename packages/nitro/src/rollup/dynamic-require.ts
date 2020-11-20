@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve } from 'upath'
 import globby, { GlobbyOptions } from 'globby'
 import type { Plugin } from 'rollup'
 

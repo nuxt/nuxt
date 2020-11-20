@@ -1,4 +1,4 @@
-import { resolve, dirname, relative } from 'path'
+import { resolve, dirname, relative } from 'upath'
 import globby from 'globby'
 import prettyBytes from 'pretty-bytes'
 import gzipSize from 'gzip-size'
@@ -30,5 +30,5 @@ export async function printFSTree (dir) {
     totalGzip += item.gzip
   })
 
-  process.stdout.write(`${chalk.cyan('λ Total size:')} ${prettyBytes(totalSize)} (${prettyBytes(totalGzip)} gzip)\n`)
+  process.stdout.write(`${chalk.cyan('Σ Total size:')} ${prettyBytes(totalSize)} (${prettyBytes(totalGzip)} gzip)\n`)
 }
