@@ -8,7 +8,8 @@ import * as PRESETS from './presets'
 export interface ServerMiddleware {
   route: string
   handle: string
-  lazy?: boolean
+  lazy?: boolean // Default is true
+  promisify?: boolean // Default is true
 }
 
 export interface SigmaContext {
