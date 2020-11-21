@@ -5,7 +5,6 @@ import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 
 import Resolver from '../src/resolver'
 
-jest.mock('esm', () => jest.fn(() => jest.fn()))
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
