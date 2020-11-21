@@ -480,7 +480,7 @@ export function getNuxtConfig (_options) {
     options.createRequire = p => jiti(typeof p === 'string' ? p : p.filename)
   } else if (typeof options.createRequire !== 'function') {
     throw new TypeError(
-      `Unsupported createRequire value ${options.createRequire}! Possible values: "native", "jiti", "esm", <Function>`
+      `Unsupported createRequire value ${options.createRequire}! Possible values: "native", "jiti", <Function>`
     )
   }
 
