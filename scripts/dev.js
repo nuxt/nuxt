@@ -1,4 +1,3 @@
-#!/usr/bin/env node -r esm
 import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
