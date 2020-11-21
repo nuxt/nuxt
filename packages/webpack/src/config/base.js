@@ -5,6 +5,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import escapeRegExp from 'lodash/escapeRegExp'
 import VueLoader from 'vue-loader'
 import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import * as PnpWebpackPlugin from 'pnp-webpack-plugin'
 import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
@@ -228,12 +229,18 @@ export default class WebpackBaseConfig {
       resolve: {
         extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
-        modules: webpackModulesDir
+        modules: webpackModulesDir,
+        pluins: [
+          PnpWebpackPlugin
+        ]
       },
       resolveLoader: {
         modules: [
           path.resolve(__dirname, '../node_modules'),
           ...webpackModulesDir
+        ],
+        plugins: [
+          PnpWebpackPlugin.moduleLoader(module)
         ]
       }
     }
