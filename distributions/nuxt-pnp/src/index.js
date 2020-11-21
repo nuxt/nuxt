@@ -1,0 +1,16 @@
+// import '@nuxt/babel-preset-app'
+// import '@nuxt/config'
+// import '@nuxt/utils'
+// import '@nuxt/vue-app'
+// import '@nuxt/vue-renderer'
+// import '@nuxt/webpack'
+
+// export * from '@nuxt/utils'
+// export * from '@nuxt/config'
+// export * from '@nuxt/server'
+
+export * from '@nuxt/core'
+export * from '@nuxt/server'
+export * from '@nuxt/builder'
+export * from '@nuxt/generator'
+export * from '@nuxt/cli'
