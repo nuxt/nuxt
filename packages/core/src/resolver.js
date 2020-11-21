@@ -20,15 +20,14 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    const { createRequire } = this.options
-    this._require = createRequire ? createRequire(module) : module.require
-
-    this._resolve = require.resolve
+    this._createRequire = this.options.createRequire
+    this._require = this._createRequire(__filename)
   }
 
-  resolveModule (path) {
+  resolveModule (path, { requirePath } = {}) {
     try {
-      return this._resolve(path, {
+      const _require = requirePath ? this._createRequire(requirePath) : this._require
+      return _require.resolve(path, {
         paths: this.options.modulesDir
       })
     } catch (error) {
@@ -54,7 +53,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle } = {}) {
+  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle, requirePath } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
@@ -72,7 +71,7 @@ export default class Resolver {
 
     // Try to resolve it as a regular module
     if (isModule !== false) {
-      resolvedPath = this.resolveModule(path)
+      resolvedPath = this.resolveModule(path, { requirePath })
     }
 
     // Try to resolve alias
@@ -119,7 +118,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault } = {}) {
+  requireModule (path, { esm, useESM = esm, alias, isAlias = alias, intropDefault, interopDefault = intropDefault, requirePath } = {}) {
     let resolvedPath = path
     let requiredModule
 
@@ -138,7 +137,7 @@ export default class Resolver {
 
     // Try to resolve path
     try {
-      resolvedPath = this.resolvePath(path, { isAlias })
+      resolvedPath = this.resolvePath(path, { isAlias, requirePath })
     } catch (e) {
       lastError = e
     }
@@ -151,18 +150,10 @@ export default class Resolver {
       clearRequireCache(resolvedPath)
     }
 
-    // By default use esm only for js,mjs files outside of node_modules
-    if (useESM === undefined) {
-      useESM = !isExternal && /.(js|mjs)$/.test(resolvedPath)
-    }
-
     // Try to require
     try {
-      if (useESM) {
-        requiredModule = this._require(resolvedPath)
-      } else {
-        requiredModule = require(resolvedPath)
-      }
+      const _require = requirePath ? this._createRequire(requirePath) : this._require
+      requiredModule = _require(resolvedPath)
     } catch (e) {
       lastError = e
     }
