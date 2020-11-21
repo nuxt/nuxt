@@ -2,6 +2,7 @@ import { resolve } from 'upath'
 import defu from 'defu'
 import type { NuxtOptions } from '@nuxt/types'
 import Hookable, { configHooksT } from 'hookable'
+import type { Preset } from '@nuxt/un'
 import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
 import * as PRESETS from './presets'
 
@@ -27,6 +28,7 @@ export interface SigmaContext {
   hooks: configHooksT
   nuxtHooks: configHooksT
   ignore: string[]
+  env: Preset
   output: {
     dir: string
     serverDir: string
@@ -71,6 +73,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     renderer: undefined,
     middleware: [],
     ignore: [],
+    env: {},
     hooks: {},
     nuxtHooks: {},
     output: {

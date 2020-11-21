@@ -1,4 +1,3 @@
-import Module from 'module'
 import { dirname, join, relative, resolve } from 'upath'
 import { InputOptions, OutputOptions } from 'rollup'
 import { terser } from 'rollup-plugin-terser'
@@ -10,6 +9,7 @@ import replace from '@rollup/plugin-replace'
 import virtual from '@rollup/plugin-virtual'
 import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
+import type { Preset } from '@nuxt/un'
 import * as un from '@nuxt/un'
 
 import hasha from 'hasha'
@@ -24,24 +24,31 @@ import { autoMock } from './automock'
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
 export const getRollupConfig = (sigmaContext: SigmaContext) => {
-  const extensions: string[] = ['.ts', '.js', '.json', '.node']
+  const extensions: string[] = ['.ts', '.mjs', '.js', '.json', '.node']
 
-  const external: InputOptions['external'] = []
+  const nodePreset = sigmaContext.node === false ? un.nodeless : un.node
 
-  const presets = []
-
-  if (sigmaContext.node === false) {
-    presets.push(un.nodeless)
-  } else {
-    presets.push(un.node)
-    external.push(...Module.builtinModules)
+  const builtinPreset: Preset = {
+    alias: {
+      // General
+      depd: require.resolve('@nuxt/un/runtime/npm/depd'),
+      // Vue 2
+      encoding: 'un/mock/proxy',
+      he: 'un/mock/proxy',
+      resolve: 'un/mock/proxy',
+      'source-map': 'un/mock/proxy',
+      'lodash.template': 'un/mock/proxy',
+      'serialize-javascript': 'un/mock/proxy',
+      // Vue 3
+      '@babel/parser': 'un/mock/proxy',
+      '@vue/compiler-core': 'un/mock/proxy',
+      '@vue/compiler-dom': 'un/mock/proxy',
+      '@vue/compiler-ssr': 'un/mock/proxy'
+    }
   }
 
-  const env = un.env(...presets, {
-    alias: {
-      depd: require.resolve('@nuxt/un/runtime/npm/depd')
-    }
-  })
+  const env = un.env(nodePreset, builtinPreset, sigmaContext.env)
+  // console.log(env)
 
   const buildServerDir = join(sigmaContext._nuxt.buildDir, 'dist/server')
   const runtimeAppDir = join(sigmaContext._internal.runtimeDir, 'app')
@@ -75,7 +82,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       outro: '',
       preferConst: true
     },
-    external,
+    external: env.external,
     plugins: [],
     onwarn (warning, rollupWarn) {
       if (!['CIRCULAR_DEPENDENCY', 'EVAL'].includes(warning.code)) {
