@@ -444,11 +444,6 @@ describe.posix('core: resolver', () => {
       })
       resolver.resolvePath = jest.fn().mockReturnValue('/var/nuxt/resolver/file.js')
       resolver._require = jest.fn()
-
-      resolver.requireModule('/var/nuxt/resolver/file.js', { esm: true })
-      const warnMsg = 'Using esm is deprecated and will be removed in Nuxt 3. Use `useESM` instead.'
-      expect(consola.warn).toBeCalledTimes(1)
-      expect(consola.warn).toBeCalledWith(warnMsg)
     })
   })
 })
