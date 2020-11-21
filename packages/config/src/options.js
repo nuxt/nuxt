@@ -466,20 +466,25 @@ export function getNuxtConfig (_options) {
     staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
   }
 
-  // createRequire factory
-  if (options.createRequire === undefined) {
-    const isJest = typeof jest !== 'undefined'
-    options.createRequire = isJest ? false : 'esm'
-  }
-  if (options.createRequire === 'esm') {
-    const esm = require('esm')
-    options.createRequire = module => esm(module, { cache: false })
+  // createRequire
+  const isJest = typeof jest !== 'undefined'
+  const defaultCreateRequire = isJest ? 'native' : 'jiti'
+
+  options.createRequire = process.env.NUXT_CREATE_REQUIRE || options.createRequire || defaultCreateRequire
+
+  if (options.createRequire === 'native') {
+    const createRequire = require('create-require')
+    options.createRequire = _module => createRequire(_module.filename)
   } else if (options.createRequire === 'jiti') {
     const jiti = require('jiti')
-    options.createRequire = module => jiti(module.filename)
+    options.createRequire = _module => jiti(_module.filename)
+  } else if (options.createRequire === 'esm') {
+    const esm = require('esm')
+    options.createRequire = _module => esm(_module, { cache: false })
   } else if (typeof options.createRequire !== 'function') {
-    const createRequire = require('create-require')
-    options.createRequire = module => createRequire(module.filename)
+    throw new TypeError(
+      `Unsupported createRequire value ${options.createRequire}! Possible values: "native", "jiti", "esm", <Function>`
+    )
   }
 
   // Indicator
