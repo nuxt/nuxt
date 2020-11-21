@@ -474,13 +474,10 @@ export function getNuxtConfig (_options) {
 
   if (options.createRequire === 'native') {
     const createRequire = require('create-require')
-    options.createRequire = _module => createRequire(_module.filename)
+    options.createRequire = p => createRequire(typeof p === 'string' ? p : p.filename)
   } else if (options.createRequire === 'jiti') {
     const jiti = require('jiti')
-    options.createRequire = _module => jiti(_module.filename)
-  } else if (options.createRequire === 'esm') {
-    const esm = require('esm')
-    options.createRequire = _module => esm(_module, { cache: false })
+    options.createRequire = p => jiti(typeof p === 'string' ? p : p.filename)
   } else if (typeof options.createRequire !== 'function') {
     throw new TypeError(
       `Unsupported createRequire value ${options.createRequire}! Possible values: "native", "jiti", "esm", <Function>`
