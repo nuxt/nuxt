@@ -230,7 +230,7 @@ export default class WebpackBaseConfig {
         extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir,
-        pluins: [
+        plugins: [
           PnpWebpackPlugin
         ]
       },
