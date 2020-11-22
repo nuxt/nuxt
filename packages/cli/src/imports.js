@@ -22,7 +22,7 @@ async function _import (modulePath) {
   throw error
 }
 
-const NuxtCompact = () => (global.__NUXT_COMPACT__ || {})
+const NuxtCompact = () => (global.__NUXT_PNP__ || {})
 
 export const builder = () => NuxtCompact().builder || _import('@nuxt/builder')
 export const webpack = () => NuxtCompact().webpack || _import('@nuxt/webpack')

@@ -74,8 +74,8 @@ export default class Builder {
     }
 
     // Resolve template
-    const NuxtCompact = global.__NUXT_COMPACT__ || {}
-    this.template = this.options.build.template || NuxtCompact.vueApp.template || '@nuxt/vue-app'
+    const NuxtCompact = global.__NUXT_PNP__ || {}
+    this.template = this.options.build.template || (NuxtCompact.vueApp && NuxtCompact.vueApp.template) || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template).template
     }
@@ -97,7 +97,7 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      const NuxtCompact = global.__NUXT_COMPACT__ || {}
+      const NuxtCompact = global.__NUXT_PNP__ || {}
       BundleBuilder = (NuxtCompact.webpack || require('@nuxt/webpack')).BundleBuilder
     }
 

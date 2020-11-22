@@ -67,6 +67,13 @@ export function tryRequire (id) {
   }
 }
 
+export function tryResolve (id) {
+  try {
+    return require.resolve(id)
+  } catch (e) {
+  }
+}
+
 export function getPKG (id) {
   return tryRequire(join(id, 'package.json'))
 }

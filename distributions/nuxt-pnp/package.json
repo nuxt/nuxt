@@ -1,10 +1,10 @@
 {
-  "name": "nuxt-compact",
-  "version": "2.14.7-13",
+  "name": "nuxt-pnp",
+  "version": "2.14.7-3",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
-  "main": "dist/nuxt-compact.js",
+  "main": "dist/nuxt-pnp.js",
   "bin": {
     "nuxt": "bin/nuxt.js",
     "nuxt-compact": "bin/nuxt.js"
@@ -74,7 +74,7 @@
     "html-webpack-plugin": "^4.5.0",
     "ignore": "^5.1.8",
     "ip": "^1.1.5",
-    "jiti": "^0.1.14",
+    "jiti": "^0.1.15",
     "launch-editor-middleware": "^2.2.1",
     "lodash": "^4.17.20",
     "lru-cache": "^5.1.1",
@@ -96,6 +96,7 @@
     "pretty-bytes": "^5.4.1",
     "proper-lockfile": "^4.1.1",
     "rc9": "^1.1.0",
+    "regenerator-runtime": "^0.13.7",
     "semver": "^7.3.2",
     "serialize-javascript": "^5.0.1",
     "serve-placeholder": "^1.2.2",
@@ -118,6 +119,7 @@
     "vue-no-ssr": "^1.1.1",
     "vue-router": "3.4.8",
     "vue-server-renderer": "^2.6.12",
+    "vue-style-loader": "^4.1.2",
     "vue-template-compiler": "^2.6.12",
     "vuex": "^3.5.1",
     "webpack": "^4.44.2",

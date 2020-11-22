@@ -12,7 +12,7 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG, tryResolve } from '@nuxt/utils'
 
 import createRequire from 'create-require'
 import PerfLoader from '../utils/perf-loader'
@@ -24,7 +24,7 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.resolveLoader = l => builder.options.build.futureResolveLoaders ? require.resolve(l) : l
+    this.resolveLoader = l => builder.buildContext.options.build.futureResolveLoaders ? (tryResolve(l) || l) : l
   }
 
   get colors () {
@@ -135,7 +135,7 @@ export default class WebpackBaseConfig {
       corejsVersion = 2
     }
 
-    const NuxtCompact = global.__NUXT_COMPACT__ || {}
+    const NuxtCompact = global.__NUXT_PNP__ || {}
     const defaultPreset = [NuxtCompact.babelPresetApp || require.resolve('@nuxt/babel-preset-app'), {
       corejs: {
         version: corejsVersion
@@ -233,7 +233,9 @@ export default class WebpackBaseConfig {
         alias: this.alias(),
         modules: webpackModulesDir,
         plugins: [
-          PnpWebpackPlugin
+          PnpWebpackPlugin,
+          PnpWebpackPlugin.moduleLoader(this.buildContext.options.rootDir),
+          PnpWebpackPlugin.moduleLoader(__dirname)
         ]
       },
       resolveLoader: {
