@@ -74,7 +74,8 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/vue-app'
+    const NuxtCompact = global.__NUXT_COMPACT__ || {}
+    this.template = this.options.build.template || NuxtCompact.vueApp.template || '@nuxt/vue-app'
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template).template
     }
@@ -96,7 +97,8 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      ({ BundleBuilder } = require('@nuxt/webpack'))
+      const NuxtCompact = global.__NUXT_COMPACT__ || {}
+      BundleBuilder = (NuxtCompact.webpack || require('@nuxt/webpack')).BundleBuilder
     }
 
     return new BundleBuilder(context)

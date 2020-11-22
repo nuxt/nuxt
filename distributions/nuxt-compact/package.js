@@ -2,7 +2,6 @@
 import { resolve } from 'path'
 
 const internalPackages = [
-  'babel-preset-app',
   'builder',
   'cli',
   'config',

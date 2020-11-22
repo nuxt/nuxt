@@ -26,9 +26,11 @@ export default class Resolver {
 
   resolveModule (path, { requirePath } = {}) {
     try {
-      const _require = requirePath ? this._createRequire(requirePath) : this._require
-      return _require.resolve(path, {
-        paths: this.options.modulesDir
+      return require.resolve(path, {
+        paths: [
+          requirePath || __dirname,
+          ...this.options.modulesDir
+        ]
       })
     } catch (error) {
       if (error.code !== 'MODULE_NOT_FOUND') {

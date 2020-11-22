@@ -22,10 +22,12 @@ async function _import (modulePath) {
   throw error
 }
 
-export const builder = () => _import('@nuxt/builder')
-export const webpack = () => _import('@nuxt/webpack')
-export const generator = () => _import('@nuxt/generator')
-export const core = () => _import('@nuxt/core')
-export const server = () => _import('@nuxt/server')
+const NuxtCompact = () => (global.__NUXT_COMPACT__ || {})
+
+export const builder = () => NuxtCompact().builder || _import('@nuxt/builder')
+export const webpack = () => NuxtCompact().webpack || _import('@nuxt/webpack')
+export const generator = () => NuxtCompact().generator || _import('@nuxt/generator')
+export const core = () => NuxtCompact().core || _import('@nuxt/core')
+export const server = () => NuxtCompact().server || _import('@nuxt/server')
 
 export const importModule = _import
