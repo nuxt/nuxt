@@ -301,10 +301,10 @@ export default class Package {
     }
   }
 
-  async copyFilesFrom (source, files) {
+  async copyFilesFrom (source, files, dstPrefix = '') {
     for (const file of files || source.pkg.files || []) {
       const src = resolve(source.options.rootDir, file)
-      const dst = resolve(this.options.rootDir, file)
+      const dst = resolve(this.options.rootDir, dstPrefix + file)
       await copy(src, dst)
     }
   }

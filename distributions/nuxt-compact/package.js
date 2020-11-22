@@ -47,14 +47,13 @@ export default {
     },
     async 'build:done' (pkg) {
       const mono = pkg.load('../..')
-      await pkg.copyFilesFrom(mono, [
-        'LICENSE'
-      ])
+      await pkg.copyFilesFrom(mono, ['LICENSE'])
 
       const vueApp = pkg.load('../../packages/vue-app')
-      await pkg.copyFilesFrom(vueApp, [
-        'template'
-      ])
+      await pkg.copyFilesFrom(vueApp, ['template'])
+
+      const babelPresetApp = pkg.load('../../packages/babel-preset-app')
+      await pkg.copyFilesFrom(babelPresetApp, ['src'], 'dist/babel-preset-app/')
     }
   }
 }

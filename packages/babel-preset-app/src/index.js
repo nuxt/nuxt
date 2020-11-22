@@ -4,14 +4,14 @@ const coreJsMeta = {
       es6: 'es6',
       es7: 'es7'
     },
-    builtIns: '@babel/compat-data/corejs2-built-ins'
+    builtIns: require.resolve('@babel/compat-data/corejs2-built-ins')
   },
   3: {
     prefixes: {
       es6: 'es',
       es7: 'es'
     },
-    builtIns: 'core-js-compat/data'
+    builtIns: require.resolve('core-js-compat/data')
   }
 }
 
