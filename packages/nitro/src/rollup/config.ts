@@ -31,7 +31,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   const builtinPreset: Preset = {
     alias: {
       // General
-      depd: 'un/runtime/npm/depd',
+      depd: 'un/npm/depd',
       // Vue 2
       encoding: 'un/mock/proxy',
       he: 'un/mock/proxy',
