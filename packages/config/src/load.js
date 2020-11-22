@@ -25,7 +25,7 @@ export async function loadNuxtConfig ({
   let options = {}
 
   try {
-    configFile = require.resolve(path.resolve(rootDir, configFile))
+    configFile = _require.resolve(path.resolve(rootDir, configFile))
   } catch (e) {
     if (e.code !== 'MODULE_NOT_FOUND') {
       throw (e)
