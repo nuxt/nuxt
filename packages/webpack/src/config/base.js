@@ -24,6 +24,7 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
+    this.resolveLoader = l => builder.options.build.futureResolveLoaders ? require.resolve(l) : l
   }
 
   get colors () {
@@ -283,10 +284,10 @@ export default class WebpackBaseConfig {
   }
 
   rules () {
-    const perfLoader = new PerfLoader(this.name, this.buildContext)
+    const perfLoader = new PerfLoader(this.name, this.buildContext, { resolveLoader: this.resolveLoader })
     const styleLoader = new StyleLoader(
       this.buildContext,
-      { isServer: this.isServer, perfLoader }
+      { isServer: this.isServer, perfLoader, resolveLoader: this.resolveLoader }
     )
 
     const babelLoader = {
@@ -297,7 +298,7 @@ export default class WebpackBaseConfig {
     return [
       {
         test: /\.vue$/i,
-        loader: 'vue-loader',
+        loader: this.resolveLoader('vue-loader'),
         options: this.loaders.vue
       },
       {
@@ -306,15 +307,15 @@ export default class WebpackBaseConfig {
           {
             resourceQuery: /^\?vue/i,
             use: [{
-              loader: 'pug-plain-loader',
+              loader: this.resolveLoader('pug-plain-loader'),
               options: this.loaders.pugPlain
             }]
           },
           {
             use: [
-              'raw-loader',
+              this.resolveLoader('raw-loader'),
               {
-                loader: 'pug-plain-loader',
+                loader: this.resolveLoader('pug-plain-loader'),
                 options: this.loaders.pugPlain
               }
             ]
@@ -347,35 +348,35 @@ export default class WebpackBaseConfig {
       {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
-          loader: 'less-loader',
+          loader: this.resolveLoader('less-loader'),
           options: this.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
-          loader: 'sass-loader',
+          loader: this.resolveLoader('sass-loader'),
           options: this.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
-          loader: 'sass-loader',
+          loader: this.resolveLoader('sass-loader'),
           options: this.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
-          loader: 'stylus-loader',
+          loader: this.resolveLoader('stylus-loader'),
           options: this.loaders.stylus
         })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
         use: [{
-          loader: 'url-loader',
+          loader: this.resolveLoader('url-loader'),
           options: Object.assign(
             this.loaders.imgUrl,
             { name: this.getFileName('img') }
@@ -385,7 +386,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
         use: [{
-          loader: 'url-loader',
+          loader: this.resolveLoader('url-loader'),
           options: Object.assign(
             this.loaders.fontUrl,
             { name: this.getFileName('font') }
@@ -395,7 +396,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(webm|mp4|ogv)$/i,
         use: [{
-          loader: 'file-loader',
+          loader: this.resolveLoader('file-loader'),
           options: Object.assign(
             this.loaders.file,
             { name: this.getFileName('video') }

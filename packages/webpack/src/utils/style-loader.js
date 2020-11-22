@@ -6,10 +6,11 @@ import { wrapArray } from '@nuxt/utils'
 import PostcssConfig from './postcss'
 
 export default class StyleLoader {
-  constructor (buildContext, { isServer, perfLoader }) {
+  constructor (buildContext, { isServer, perfLoader, resolveLoader }) {
     this.buildContext = buildContext
     this.isServer = isServer
     this.perfLoader = perfLoader
+    this.resolveLoader = resolveLoader
 
     if (buildContext.options.build.postcss) {
       this.postcssConfig = new PostcssConfig(buildContext)
@@ -40,7 +41,7 @@ export default class StyleLoader {
     const patterns = wrapArray(extResource).map(p => path.resolve(rootDir, p))
 
     return {
-      loader: 'style-resources-loader',
+      loader: this.resolveLoader('style-resources-loader'),
       options: Object.assign(
         { patterns },
         styleResources.options || {}
@@ -62,14 +63,14 @@ export default class StyleLoader {
     }
 
     return {
-      loader: 'postcss-loader',
+      loader: this.resolveLoader('postcss-loader'),
       options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
     }
   }
 
   css (options) {
     options.onlyLocals = this.onlyLocals
-    const cssLoader = { loader: 'css-loader', options }
+    const cssLoader = { loader: this.resolveLoader('css-loader'), options }
 
     if (options.onlyLocals) {
       return [cssLoader]
@@ -99,7 +100,7 @@ export default class StyleLoader {
 
   styleLoader () {
     return this.extract() || {
-      loader: 'vue-style-loader',
+      loader: this.resolveLoader('vue-style-loader'),
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }

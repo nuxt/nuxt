@@ -10,6 +10,7 @@ export default () => ({
   parallel: false,
   cache: false,
   standalone: false,
+  futureResolveLoaders: !!global.__NUXT_COMPACT__,
   publicPath: '/_nuxt/',
   serverURLPolyfill: 'url',
   filenames: {
