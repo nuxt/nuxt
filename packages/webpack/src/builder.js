@@ -169,7 +169,7 @@ export class WebpackBundler {
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     compiler.options.watchOptions = this.buildContext.options.watchers.webpack
-    compiler.hooks.infrastructureLog.tap('webpack-dev-middlewre-log', (name) => {
+    compiler.hooks.infrastructureLog.tap('webpack-dev-middleware-log', (name) => {
       if (name === 'webpack-dev-middleware') {
         return false
       }
