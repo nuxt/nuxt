@@ -95,7 +95,7 @@ function containsPattern (arr, val) {
   )
 }
 
-const scopedModuleRegex = /@[a-zA-Z0-9][\\w-.]+\/[a-zA-Z0-9][\\w-.]+([a-zA-Z0-9./]+)?/g
+const scopedModuleRegex = /@[a-zA-Z0-9][.\\w-]+\/[a-zA-Z0-9][.\\w-]+([a-zA-Z0-9./]+)?/g
 
 function getModuleName (request, includeAbsolutePaths) {
   let req = request
