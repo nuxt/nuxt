@@ -7,6 +7,7 @@ export default () => ({
   subFolders: true,
   fallback: '200.html',
   crawler: true,
+  manifest: true,
   cache: {
     ignore: [],
     globbyOptions: {
