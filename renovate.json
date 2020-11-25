@@ -25,7 +25,8 @@
     "wrap-ansi",
     "terser-webpack-plugin",
     "@types/terser-webpack-plugin",
-    "defu"
+    "defu",
+    "vue-loader"
   ],
   "lockFileMaintenance": {
     "enabled": true
