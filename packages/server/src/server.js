@@ -92,7 +92,10 @@ export default class Server {
     // For serving static/ files to /
     const staticMiddleware = serveStatic(
       path.resolve(this.options.srcDir, this.options.dir.static),
-      this.options.render.static
+      {
+        redirect: !!this.options.router.trailingSlash,
+        ...this.options.render.static
+      }
     )
     staticMiddleware.prefix = this.options.render.static.prefix
     this.useMiddleware(staticMiddleware)
