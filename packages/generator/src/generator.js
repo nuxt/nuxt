@@ -296,6 +296,10 @@ export default class Generator {
     let html
     const pageErrors = []
 
+    if (this.options.router && this.options.router.trailingSlash && route[route.length - 1] !== '/') {
+      route = route + '/'
+    }
+
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
     }
