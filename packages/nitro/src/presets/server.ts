@@ -7,7 +7,8 @@ export const server: SigmaPreset = extendPreset(node, {
   entry: '{{ _internal.runtimeDir }}/entries/server',
   externals: false,
   inlineChunks: false,
-  timing: true,
+  serveStatic: true,
+  minify: false,
   hooks: {
     'sigma:compiled' ({ output }: SigmaContext) {
       consola.success('Ready to run', hl('node ' + prettyPath(output.serverDir)))

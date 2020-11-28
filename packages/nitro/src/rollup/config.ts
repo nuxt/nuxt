@@ -12,15 +12,16 @@ import analyze from 'rollup-plugin-analyzer'
 import type { Preset } from '@nuxt/un'
 import * as un from '@nuxt/un'
 
-import hasha from 'hasha'
 import { SigmaContext } from '../context'
 import { resolvePath, MODULE_DIR } from '../utils'
 
-import { dynamicRequire } from './dynamic-require'
-import { externals } from './externals'
-import { timing } from './timing'
-import { autoMock } from './automock'
-import esbuild from './esbuild'
+import { dynamicRequire } from './plugins/dynamic-require'
+import { externals } from './plugins/externals'
+import { timing } from './plugins/timing'
+import { autoMock } from './plugins/automock'
+import { staticAssets } from './plugins/static'
+import { middleware } from './plugins/middleware'
+import { esbuild } from './plugins/esbuild'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -125,28 +126,17 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     }
   }))
 
-  // https://github.com/rollup/plugins/tree/master/packages/replace
-  // TODO: better fix for node-fetch issue
-  rollupConfig.plugins.push(replace({
-    delimiters: ['', ''],
-    values: {
-      'require(\'encoding\')': '{}'
-    }
-  }))
+  // Static
+  if (sigmaContext.serveStatic) {
+    rollupConfig.plugins.push(staticAssets(sigmaContext))
+  }
 
-  // Provide serverMiddleware
-  const getImportId = p => '_' + hasha(p).substr(0, 6)
-  rollupConfig.plugins.push(virtual({
-    '~serverMiddleware': `
-      ${sigmaContext.middleware.filter(m => m.lazy === false).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
-
-      ${sigmaContext.middleware.filter(m => m.lazy !== false).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
-
-      export default [
-        ${sigmaContext.middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify !== undefined ? m.promisify : true} }`).join(',\n')}
-      ];
-    `
-  }))
+  // Middleware
+  const _middleware = [...sigmaContext.middleware]
+  if (sigmaContext.serveStatic) {
+    _middleware.unshift({ route: '/', handle: '~runtime/server/static' })
+  }
+  rollupConfig.plugins.push(middleware(_middleware))
 
   // Polyfill
   rollupConfig.plugins.push(virtual({

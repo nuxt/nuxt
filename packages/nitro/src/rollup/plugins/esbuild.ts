@@ -34,7 +34,7 @@ export type Options = {
   }
 }
 
-export default (options: Options = {}): Plugin => {
+export function esbuild (options: Options = {}): Plugin {
   let target: string | string[]
 
   const loaders = {

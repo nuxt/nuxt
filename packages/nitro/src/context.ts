@@ -24,6 +24,7 @@ export interface SigmaContext {
   preset: string
   rollupConfig?: any
   renderer: string
+  serveStatic: boolean
   middleware: ServerMiddleware[]
   hooks: configHooksT
   nuxtHooks: configHooksT
@@ -72,6 +73,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     preset: undefined,
     rollupConfig: undefined,
     renderer: undefined,
+    serveStatic: false,
     middleware: [],
     ignore: [],
     env: {},

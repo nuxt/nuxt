@@ -1,61 +1,18 @@
-import replace from '@rollup/plugin-replace'
 import archiver from 'archiver'
 import consola from 'consola'
-import createEtag from 'etag'
-import { createWriteStream, readdirSync, readFileSync, statSync } from 'fs-extra'
-import mime from 'mime'
-import { join, relative, resolve } from 'upath'
-
+import { createWriteStream } from 'fs-extra'
+import { join, resolve } from 'upath'
 import { prettyPath, writeFile } from '../utils'
 import { SigmaPreset, SigmaContext } from '../context'
 
 export const azure: SigmaPreset = {
   inlineChunks: false,
+  serveStatic: true,
   entry: '{{ _internal.runtimeDir }}/entries/azure',
   hooks: {
-    'sigma:rollup:before' (ctx: SigmaContext) {
-      const manifest = JSON.stringify(getStaticManifest(ctx)).replace(/\\"/g, '\\\\"')
-      ctx.rollupConfig.plugins.push(replace({
-        values: {
-          'process.env.STATIC_MANIFEST': `\`${manifest}\``
-        }
-      }))
-    },
     async 'sigma:compiled' (ctx: SigmaContext) {
       await writeRoutes(ctx)
     }
-  }
-}
-
-function getStaticManifest ({ output: { dir } }: SigmaContext) {
-  const files = []
-  const staticRoot = resolve(dir, 'public')
-
-  const addFiles = (directory: string) => {
-    const listing = readdirSync(directory)
-    listing.forEach((filename) => {
-      const fullPath = resolve(directory, filename)
-      if (statSync(fullPath).isDirectory()) {
-        return addFiles(fullPath)
-      }
-      files.push('/' + relative(staticRoot, fullPath))
-    })
-  }
-
-  addFiles(staticRoot)
-  const metadata = files.reduce((metadata, filename) => {
-    let mimeType = mime.getType(filename) || 'text/plain'
-    if (mimeType.startsWith('text')) {
-      mimeType += '; charset=utf-8'
-    }
-    const etag = createEtag(readFileSync(join(staticRoot, filename)))
-    metadata[filename] = [mimeType, etag]
-    return metadata
-  }, {} as Record<string, string>)
-
-  return {
-    files,
-    metadata
   }
 }
 
