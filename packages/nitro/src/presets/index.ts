@@ -1,3 +1,4 @@
+export * from './azure'
 export * from './browser'
 export * from './cloudflare'
 export * from './lambda'
