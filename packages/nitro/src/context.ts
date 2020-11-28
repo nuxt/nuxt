@@ -46,6 +46,7 @@ export interface SigmaContext {
     isStatic: boolean
     fullStatic: boolean
     staticAssets: any
+    runtimeConfig: { public: any, private: any }
   }
   _internal: {
     runtimeDir: string
@@ -93,7 +94,11 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
       isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,
       fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
       // @ts-ignore
-      staticAssets: nuxtOptions.generate.staticAssets
+      staticAssets: nuxtOptions.generate.staticAssets,
+      runtimeConfig: {
+        public: nuxtOptions.publicRuntimeConfig,
+        private: nuxtOptions.privateRuntimeConfig
+      }
     },
     _internal: {
       runtimeDir: resolve(__dirname, '../runtime'),
