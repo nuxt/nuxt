@@ -20,6 +20,7 @@ import { dynamicRequire } from './dynamic-require'
 import { externals } from './externals'
 import { timing } from './timing'
 import { autoMock } from './automock'
+import esbuild from './esbuild'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -109,6 +110,9 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       'process.env.RUNTIME_CONFIG': JSON.stringify(sigmaContext._nuxt.runtimeConfig)
     }
   }))
+
+  // ESBuild (typescript)
+  rollupConfig.plugins.push(esbuild({}))
 
   // Dynamic Require Support
   rollupConfig.plugins.push(dynamicRequire({

@@ -30,6 +30,9 @@ export default function (nuxt, moduleContainer) {
   // Expose process.env.SIGMA_PRESET
   nuxt.options.env.SIGMA_PRESET = sigmaContext.preset
 
+  // .ts is supported for serverMiddleware
+  nuxt.options.extensions.push('ts')
+
   // Replace nuxt server
   if (nuxt.server) {
     nuxt.server.__closed = true
