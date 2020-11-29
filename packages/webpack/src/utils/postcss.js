@@ -180,8 +180,6 @@ export default class PostcssConfig {
     }
 
     postcssOptions = this.normalize(cloneDeep(this.postcssOptions))
-    const { execute } = postcssOptions
-    delete postcssOptions.execute
 
     // Apply default plugins
     if (isPureObject(postcssOptions)) {
@@ -196,6 +194,11 @@ export default class PostcssConfig {
         postcssOptions = merge({}, this.defaultPostcssOptions, postcssOptions)
         this.loadPlugins(postcssOptions)
       }
+
+      const { execute } = postcssOptions
+      delete postcssOptions.execute
+      delete postcssOptions.order
+
       return {
         execute,
         postcssOptions,
