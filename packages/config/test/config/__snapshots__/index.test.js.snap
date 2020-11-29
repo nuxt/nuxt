@@ -191,6 +191,7 @@ Object {
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
+    "manifest": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
@@ -574,6 +575,7 @@ Object {
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
+    "manifest": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
