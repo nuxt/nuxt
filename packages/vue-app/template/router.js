@@ -47,7 +47,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     }
     // @see: https://router.vuejs.org/api/#router-construction-options
     res += '{'
-    res += firstIndent + 'path: ' + JSON.stringify(encodeURI(route.path))
+    res += firstIndent + 'path: ' + JSON.stringify(encodeURI(decodeURI(route.path)))
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + route._name : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
