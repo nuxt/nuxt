@@ -1,12 +1,13 @@
 import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
+import devalue from 'devalue'
 import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -28,9 +29,16 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
-      const { staticAssets } = this.options.generate
+      const { build: { publicPath: _publicPath }, router: { base } } = this.options
+      const publicPath = isUrl(_publicPath) ? _publicPath : base
+      const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = this.options.generate.staticAssets.versionBase
+      this.staticAssetsBase = urlJoin(publicPath, this.options.generate.staticAssets.versionBase)
+      if (manifest) {
+        this.manifest = defu(manifest, {
+          routes: []
+        })
+      }
     }
 
     // Shared payload
@@ -51,6 +59,14 @@ export default class Generator {
     const errors = await this.generateRoutes(routes)
 
     await this.afterGenerate()
+
+    // Save routes manifest for full static
+    if (this.manifest) {
+      await this.nuxt.callHook('generate:manifest', this.manifest, this)
+      const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
+      await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
+      consola.success('Static manifest generated')
+    }
 
     // Done hook
     await this.nuxt.callHook('generate:done', this, errors)
@@ -252,7 +268,7 @@ export default class Generator {
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
     const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
-    fsExtra.writeFile(nojekyllPath, '')
+    await fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
     await this.nuxt.callHook('export:distCopied', this)
@@ -279,6 +295,10 @@ export default class Generator {
   async generateRoute ({ route, payload = {}, errors = [] }) {
     let html
     const pageErrors = []
+
+    if (this.options.router && this.options.router.trailingSlash && route[route.length - 1] !== '/') {
+      route = route + '/'
+    }
 
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
@@ -311,12 +331,13 @@ export default class Generator {
             .replace(/\/+$/, '')
             .trim()
 
-          const route = decodeURI(sanitizedHref + possibleTrailingSlash)
+          const foundRoute = decodeURI(sanitizedHref + possibleTrailingSlash)
 
-          if (route.startsWith('/') && !route.startsWith('//') && !path.extname(route) && this.shouldGenerateRoute(route) && !this.generatedRoutes.has(route)) {
-            this.generatedRoutes.add(route)
-            this.routes.push({ route })
+          if (foundRoute.startsWith('/') && !foundRoute.startsWith('//') && !path.extname(foundRoute) && this.shouldGenerateRoute(foundRoute) && !this.generatedRoutes.has(foundRoute)) {
+            this.generatedRoutes.add(foundRoute)
+            this.routes.push({ route: foundRoute })
           }
+          return null
         })
       }
 
@@ -327,8 +348,13 @@ export default class Generator {
           await fsExtra.ensureDir(path.dirname(assetPath))
           await fsExtra.writeFile(assetPath, asset.src, 'utf-8')
         }
+        // Add route to manifest (only if no error and redirect)
+        if (this.manifest && (!res.error && !res.redirected)) {
+          this.manifest.routes.push(route)
+        }
       }
 
+      // SPA fallback
       if (res.error) {
         pageErrors.push({ type: 'handled', route, error: res.error })
       }

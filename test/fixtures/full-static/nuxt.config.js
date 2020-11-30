@@ -9,7 +9,7 @@ export default {
     // base: '/test',
   },
   build: {
-    publicPath: '/test/_nuxt/'
+    publicPath: 'https://cdn.nuxtjs.org/test/_nuxt/'
   },
   foo: {
     shell: process.env.SHELL

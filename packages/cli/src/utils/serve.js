@@ -20,7 +20,7 @@ export async function serve (cmd) {
     options.target = buildConfig.target
   } catch (err) { }
 
-  const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line handle-callback-err
+  const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line node/handle-callback-err
   const distPath = join(options.generate.dir.replace(process.cwd() + sep, ''), sep)
   if (!distStat || !distStat.isDirectory()) {
     throw new Error('Output directory `' + distPath + '` does not exists, please use `nuxt generate` before `nuxt start` for static target.')
@@ -30,7 +30,8 @@ export async function serve (cmd) {
   app.use(
     options.router.base,
     serveStatic(options.generate.dir, {
-      extensions: ['html']
+      extensions: ['html'],
+      redirect: !!options.router.trailingSlash
     })
   )
   if (options.generate.fallback) {

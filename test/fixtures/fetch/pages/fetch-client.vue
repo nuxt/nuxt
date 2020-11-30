@@ -9,13 +9,13 @@
 
 <script>
 export default {
-  async fetch () {
-    this.team = await fetch('/team.json').then(res => res.json())
-  },
   data () {
     return {
       team: []
     }
+  },
+  async fetch () {
+    this.team = await fetch('/team.json').then(res => res.json())
   },
   fetchOnServer: false
 }
