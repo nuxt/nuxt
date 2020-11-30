@@ -1,5 +1,5 @@
 <template>
   <div>
-    Landing
+    Unicode base works!
   </div>
 </template>
