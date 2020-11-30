@@ -303,7 +303,6 @@ export function getLocation (base, mode) {
   base = decodeURI(base).slice(0, -1) // consideration is base is normalized with trailing slash
   let path = decodeURI(window.location.pathname)
 
-  // To get matched with sanitized router.base add trailing slash
   if (base && path.startsWith(base)) {
     path = path.slice(base.length)
   }
