@@ -7,8 +7,7 @@ import {
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.middleware && features.layouts) { %>sanitizeComponent,<% } %>
   getMatchedComponents,
-  promisify,
-  ensureURIEncoded
+  promisify
 } from './utils.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
