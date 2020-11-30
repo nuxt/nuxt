@@ -7,7 +7,7 @@ import test from 'ava'
 // So we can close them at the end of the test
 let nuxt = null
 
-// Init Nuxt.js and create a server listening on localhost:4000
+// Init Nuxt and create a server listening on localhost:4000
 test.before(async () => {
   const config = {
     dev: false,
@@ -38,6 +38,6 @@ test('Route / exits and render HTML with CSS applied', async (t) => {
 })
 
 // Close server and ask nuxt to stop listening to file changes
-test.after('Closing server and nuxt.js', (t) => {
+test.after('Closing server and nuxt', (t) => {
   nuxt.close()
 })

@@ -27,7 +27,7 @@ export default class VueRenderer {
       serverManifest: undefined,
       ssrTemplate: undefined,
       spaTemplate: undefined,
-      errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
+      errorTemplate: this.parseTemplate('Nuxt Internal Server Error')
     })
 
     // Default status

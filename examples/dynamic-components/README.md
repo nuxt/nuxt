@@ -1,4 +1,4 @@
-# Dynamic Components with Nuxt.js
+# Dynamic Components with Nuxt
 
 Demo: https://dynamic-components.nuxtjs.org/
 

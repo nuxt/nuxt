@@ -1,6 +1,6 @@
 export default {
   head: {
-    title: 'Nuxt.js + Vue-ChartJS',
+    title: 'Nuxt + Vue-ChartJS',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' }

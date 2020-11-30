@@ -1,6 +1,6 @@
 ---
 name: 🚨 Bug report | Bug 提交
-about: Report a bug report to help us improve Nuxt.js.
+about: Report a bug report to help us improve Nuxt.
 title: ''
 labels: 'bug-report'
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
 
 **IMPORTANT** Before reporting a bug:
 
-- Please make sure that you have read through Nuxt.js documentation: https://nuxtjs.org
+- Please make sure that you have read through Nuxt documentation: https://nuxtjs.org
 - If issue is related to a module please create the issue in corresponding repository
 - Ensure using latest version of nuxt dependencies using `yarn upgrade nuxt` or `npm upgrade nuxt`
 

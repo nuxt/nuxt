@@ -3,7 +3,7 @@
     <div class="header">
       <nav>
         <h1 @click="$router.push('/')">
-          Nuxt.js + Firebase
+          Nuxt + Firebase
         </h1>
       </nav>
     </div>

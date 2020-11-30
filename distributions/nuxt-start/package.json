@@ -1,7 +1,7 @@
 {
   "name": "nuxt-start",
   "version": "2.14.7",
-  "description": "Starts Nuxt.js Application in production mode",
+  "description": "Starts Nuxt Application in production mode",
   "keywords": [
     "nuxt",
     "nuxt.js",

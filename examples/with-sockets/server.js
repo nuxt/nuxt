@@ -7,7 +7,7 @@ const server = http.createServer(app)
 const io = require('socket.io')(server)
 
 const { Nuxt, Builder } = require('nuxt')
-// We instantiate Nuxt.js with the options
+// We instantiate Nuxt with the options
 const config = require('./nuxt.config.js')
 config.dev = !isProd
 

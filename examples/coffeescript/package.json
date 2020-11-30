@@ -1,7 +1,7 @@
 {
   "name": "example-coffeescript",
   "version": "1.0.0",
-  "description": "Nuxt.js with CoffeeScript",
+  "description": "Nuxt with CoffeeScript",
   "author": "Alex Ananiev <alex.ananiev.r@gmail.com>",
   "private": true,
   "scripts": {

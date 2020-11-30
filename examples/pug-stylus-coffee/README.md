@@ -1,6 +1,6 @@
-# Pug + Stylus + Coffee template for Nuxt.js
+# Pug + Stylus + Coffee template for Nuxt
 
-> Ultimative complete pack for coding with pleasure and Nuxt.js
+> Ultimative complete pack for coding with pleasure and Nuxt
 
 ## Build Setup
 

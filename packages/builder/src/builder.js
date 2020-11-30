@@ -380,7 +380,7 @@ export default class Builder {
         trailingSlash
       })
     } else if (this._nuxtPages) {
-      // Use nuxt.js createRoutes bases on pages/
+      // Use nuxt createRoutes bases on pages/
       const files = {}
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
       for (const page of await this.resolveFiles(this.options.dir.pages)) {

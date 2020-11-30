@@ -11,7 +11,7 @@
       <h2>Another subtitle</h2>
       <ul>
         <li>Vue.js</li>
-        <li>Nuxt.js</li>
+        <li>Nuxt</li>
         <li>= &lt;3</li>
       </ul>
     </div>

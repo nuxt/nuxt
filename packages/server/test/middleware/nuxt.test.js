@@ -197,7 +197,7 @@ describe('server: nuxtMiddleware', () => {
 
     await nuxtMiddleware(req, res, next)
 
-    expect(res.setHeader).nthCalledWith(1, 'Link', '</nuxt/nuxt/preload1.js>; rel=preload; as=script, </nuxt/nuxt/preload2.js>; rel=preload; as=script, </nuxt/nuxt/style.css>; rel=preload; as=style')
+    expect(res.setHeader).nthCalledWith(1, 'Link', '</nuxt/nuxt.js/preload1.js>; rel=preload; as=script, </nuxt/nuxt.js/preload2.js>; rel=preload; as=script, </nuxt/nuxt.js/style.css>; rel=preload; as=style')
   })
 
   test('should ignore preload files which are excluded by shouldPush', async () => {
@@ -228,7 +228,7 @@ describe('server: nuxtMiddleware', () => {
 
     expect(consola.warn).toBeCalledWith('http2.shouldPush is deprecated. Use http2.pushAssets function')
     expect(context.options.render.http2.shouldPush).toBeCalledTimes(4)
-    expect(res.setHeader).nthCalledWith(1, 'Link', '</nuxt/nuxt/preload1.js>; rel=preload; crossorigin=use-credentials; as=script, </nuxt/nuxt/preload2.js>; rel=modulepreload; crossorigin=use-credentials; as=script')
+    expect(res.setHeader).nthCalledWith(1, 'Link', '</nuxt/nuxt.js/preload1.js>; rel=preload; crossorigin=use-credentials; as=script, </nuxt/nuxt.js/preload2.js>; rel=modulepreload; crossorigin=use-credentials; as=script')
   })
 
   test('should add csp header if csp is enabled', async () => {
@@ -277,7 +277,7 @@ describe('server: nuxtMiddleware', () => {
     context.options.render.csp = {
       policies: {
         'script-src': [
-          '/nuxt.js',
+          '/nuxt',
           '/test.js'
         ],
         'report-uri': [
@@ -295,7 +295,7 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(
       1,
       'Content-Security-Policy',
-      "script-src sha256-hashes 'self' /nuxt.js /test.js; report-uri /report"
+      "script-src sha256-hashes 'self' /nuxt /test.js; report-uri /report"
     )
   })
 
