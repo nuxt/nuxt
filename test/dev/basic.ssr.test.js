@@ -182,14 +182,14 @@ describe('basic ssr', () => {
     test('/redirect -> external link', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/api/')
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching/')
       expect(html).toContain('<div data-server-rendered="true"></div>')
     })
 
     test('/redirect -> external link without trailing slash', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external-no-slash', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/api')
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching')
       expect(html).toContain('<div data-server-rendered="true"></div>')
     })
 

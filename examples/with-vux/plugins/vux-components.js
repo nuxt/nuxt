@@ -1,5 +1,5 @@
 import Vue from 'vue'
 import { Group, Cell } from 'vux'
 
-Vue.component('group', Group)
-Vue.component('cell', Cell)
+Vue.component('Group', Group)
+Vue.component('Cell', Cell)

@@ -43,7 +43,7 @@ export async function ensureBuild (cmd) {
 
   // Extend ignore
   const { generate } = options
-  if (generate.cache.ignore === 'function') {
+  if (typeof generate.cache.ignore === 'function') {
     generate.cache.ignore = generate.cache.ignore(ignore)
   } else if (Array.isArray(generate.cache.ignore)) {
     generate.cache.ignore = generate.cache.ignore.concat(ignore)
@@ -52,9 +52,9 @@ export async function ensureBuild (cmd) {
 
   // Take a snapshot of current project
   const snapshotOptions = {
-    rootDir: nuxt.options.rootDir,
-    ignore: nuxt.options.generate.cache.ignore.map(upath.normalize),
-    globbyOptions: nuxt.options.generate.cache.globbyOptions
+    rootDir: options.rootDir,
+    ignore: generate.cache.ignore.map(upath.normalize),
+    globbyOptions: generate.cache.globbyOptions
   }
 
   const currentBuildSnapshot = await snapshot(snapshotOptions)

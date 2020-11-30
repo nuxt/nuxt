@@ -41,6 +41,7 @@ export const flatRoutes = function flatRoutes (router, fileName = '', routes = [
   return routes
 }
 
+// eslint-disable-next-line default-param-last
 function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
   const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
@@ -86,6 +87,13 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
         if (trailingSlash === false) {
           defaultChildRoute.name = route.name
         }
+        route.children.forEach((child) => {
+          if (child.path !== indexRoutePath) {
+            const parts = child.path.split('/')
+            parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
+            child.path = parts.join('/')
+          }
+        })
         delete route.name
       }
       route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash, routeName)
@@ -129,17 +137,21 @@ export const sortRoutes = function sortRoutes (routes) {
       // If a.length >= b.length
       if (i === _b.length - 1 && res === 0) {
         // unless * found sort by level, then alphabetically
-        res = _a[i] === '*' ? -1 : (
-          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-        )
+        res = _a[i] === '*'
+          ? -1
+          : (
+            _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+          )
       }
     }
 
     if (res === 0) {
       // unless * found sort by level, then alphabetically
-      res = _a[i - 1] === '*' && _b[i] ? 1 : (
-        _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-      )
+      res = _a[i - 1] === '*' && _b[i]
+        ? 1
+        : (
+          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+        )
     }
     return res
   })

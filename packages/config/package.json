@@ -12,13 +12,13 @@
   "dependencies": {
     "@nuxt/utils": "2.14.7",
     "consola": "^2.15.0",
-    "create-require": "^1.0.2",
+    "create-require": "^1.1.1",
     "defu": "^2.0.4",
-    "destr": "^1.0.0",
+    "destr": "^1.0.1",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
-    "jiti": "^0.1.11",
-    "rc9": "^1.0.0",
+    "jiti": "^0.1.17",
+    "rc9": "^1.2.0",
     "std-env": "^2.2.1"
   },
   "publishConfig": {

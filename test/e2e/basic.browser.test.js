@@ -261,7 +261,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/redirect-external', false)
 
     await page.waitForFunction(
-      () => window.location.href === 'https://nuxtjs.org/api/'
+      () => window.location.href === 'https://nuxtjs.org/docs/2.x/features/data-fetching/'
     )
     page.close()
   })
@@ -317,6 +317,11 @@ describe('basic browser', () => {
     h1 = await page.$text('h1')
     expect(h1).toContain('Hello from client')
     page.close()
+  })
+
+  test('/redirection/no loop', async () => {
+    const page = await browser.page(url('/redirection/no loop'))
+    expect(await page.$text('h1')).toContain('Redirected page')
   })
 
   // Close server and ask nuxt to stop listening to file changes
