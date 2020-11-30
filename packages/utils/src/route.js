@@ -87,6 +87,13 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
         if (trailingSlash === false) {
           defaultChildRoute.name = route.name
         }
+        route.children.forEach((child) => {
+          if (child.path !== indexRoutePath) {
+            const parts = child.path.split('/')
+            parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
+            child.path = parts.join('/')
+          }
+        })
         delete route.name
       }
       route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash, routeName)
