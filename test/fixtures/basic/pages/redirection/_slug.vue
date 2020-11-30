@@ -9,9 +9,7 @@ export default {
   asyncData ({ redirect, route }) {
     if (process.server) {
       // Redirect to the same route
-      // redirect(decodeURI(route.path))
-      // redirect(route.path)
-      redirect({ path: '/redirection/a b' })
+      redirect(route)
     }
 
     return {}
