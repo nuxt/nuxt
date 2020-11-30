@@ -93,7 +93,7 @@ Vue.use(Router)
 
 export const routerOptions = {
   mode: '<%= router.mode %>',
-  base: decodeURI('<%= router.base %>'),
+  base: '<%= router.base %>',
   linkActiveClass: '<%= router.linkActiveClass %>',
   linkExactActiveClass: '<%= router.linkExactActiveClass %>',
   scrollBehavior,

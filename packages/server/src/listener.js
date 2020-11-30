@@ -50,6 +50,7 @@ export default class Listener {
       }
       this.port = address.port
       this.url = `http${this.https ? 's' : ''}://${this.host}:${this.port}${this.baseURL}`
+      this.url = decodeURI(this.url)
       return
     }
     this.url = `unix+http://${address}`
