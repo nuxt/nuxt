@@ -18,7 +18,7 @@ describe('unicode', () => {
   test('/ö/ (router base)', async () => {
     const { body: response } = await rp(url('/ö/'))
 
-    expect(response).toContain('<h1>Unicode base works!</h1>')
+    expect(response).toContain('Unicode base works!')
   })
 
   // Close server and ask nuxt to stop listening to file changes
