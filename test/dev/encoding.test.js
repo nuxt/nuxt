@@ -5,9 +5,9 @@ const url = route => 'http://localhost:' + port + encodeURI(route)
 
 let nuxt = null
 
-describe('unicode', () => {
+describe('encoding', () => {
   beforeAll(async () => {
-    const config = await loadFixture('unicode')
+    const config = await loadFixture('encoding')
     nuxt = new Nuxt(config)
     await nuxt.ready()
 
