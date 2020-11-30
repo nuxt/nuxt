@@ -274,7 +274,7 @@ export default class VueRenderer {
     consola.debug(`Rendering url ${url}`)
 
     // Add url to the renderContext
-    renderContext.url = encodeURI(url)
+    renderContext.url = encodeURI(decodeURI(url))
 
     // Add target to the renderContext
     renderContext.target = this.options.target
