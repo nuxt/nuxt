@@ -7,7 +7,8 @@ import {
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.middleware && features.layouts) { %>sanitizeComponent,<% } %>
   getMatchedComponents,
-  promisify
+  promisify,
+  ensureURIEncoded
 } from './utils.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
@@ -50,7 +51,7 @@ const createNext = ssrContext => (opts) => {
     opts.path = urlJoin(routerBase, opts.path)
   }
   // Avoid loop redirect
-  if (decodeURIComponent(opts.path) === ssrContext.url) {
+  if (encodeURI(decodeURI(opts.path)) === ssrContext.url) {
     ssrContext.redirected = false
     return
   }

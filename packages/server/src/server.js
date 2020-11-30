@@ -167,7 +167,7 @@ export default class Server {
         prefix: false,
         handler: (req, res) => {
           const to = urlJoin(this.nuxt.options.router.base, req.url)
-          consola.info(`[Development] Redirecting from \`${req.url}\` to \`${to}\` (router.base specified).`)
+          consola.info(`[Development] Redirecting from \`${decodeURI(req.url)}\` to \`${decodeURI(to)}\` (router.base specified).`)
           res.writeHead(302, {
             Location: to
           })
