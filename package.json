@@ -40,7 +40,7 @@
     "@rollup/plugin-alias": "^3.1.1",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-node-resolve": "^11.0.0",
     "@rollup/plugin-replace": "^2.3.4",
     "@vue/server-test-utils": "^1.1.1",
     "@vue/test-utils": "^1.1.1",
