@@ -36,7 +36,7 @@ module.exports =
   css: []
   # Plugins to load before mounting the App
   plugins: []
-  # Nuxt.js modules
+  # Nuxt modules
   modules:
     [
       '~/modules/coffeescript'

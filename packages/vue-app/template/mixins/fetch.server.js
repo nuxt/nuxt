@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, purifyData } from '../utils'
 
 async function serverPrefetch() {
   if (!this._fetchOnServer) {
@@ -26,7 +26,7 @@ async function serverPrefetch() {
   attrs['data-fetch-key'] = this._fetchKey
 
   // Add to ssrContext for window.__NUXT__.fetch
-  this.$ssrContext.nuxt.fetch.push(this.$fetchState.error ? { _error: this.$fetchState.error } : this._data)
+  this.$ssrContext.nuxt.fetch.push(this.$fetchState.error ? { _error: this.$fetchState.error } : purifyData(this._data))
 }
 
 export default {
@@ -41,6 +41,8 @@ export default {
       this._fetchOnServer = this.$options.fetchOnServer !== false
     }
 
+    // Added for remove vue undefined warning while ssr
+    this.$fetch = () => {} // issue #8043
     Vue.util.defineReactive(this, '$fetchState', {
       pending: true,
       error: null,

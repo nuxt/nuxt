@@ -14,10 +14,11 @@ const hooks = [
 
 describe('with-config', () => {
   buildFixture('with-config', () => {
-    expect(consola.warn).toHaveBeenCalledTimes(7)
+    expect(consola.warn).toHaveBeenCalledTimes(8)
     expect(consola.fatal).toHaveBeenCalledTimes(0)
     expect(consola.warn.mock.calls).toMatchObject([
       ['`router.scrollBehavior` property is deprecated in favor of using `~/app/router.scrollBehavior.js` file, learn more: https://nuxtjs.org/api/configuration-router#scrollbehavior'],
+      ['`mode` option is deprecated. Please use `ssr: true` for universal mode or `ssr: false` for spa mode and remove `mode` from `nuxt.config`'],
       ['Unknown mode: unknown. Falling back to universal'],
       ['Invalid plugin mode (server/client/all): \'abc\'. Falling back to \'all\''],
       [{

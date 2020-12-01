@@ -1,8 +1,10 @@
 import { ServerResponse } from 'http'
-import { IncomingMessage } from 'connect'
+import { IncomingMessage, NextFunction } from 'connect'
 import Vue, { ComponentOptions } from 'vue'
 import VueRouter, { Location, Route } from 'vue-router'
 import { Store } from 'vuex'
+
+import { NuxtOptions } from '../config'
 import { NuxtRuntimeConfig } from '../config/runtime'
 
 // augment typings of Vue.js
@@ -39,11 +41,37 @@ export interface Context {
   params: Route['params']
   payload: any
   query: Route['query']
+  next?: NextFunction
   req: IncomingMessage
   res: ServerResponse
   redirect(status: number, path: string, query?: Route['query']): void
   redirect(path: string, query?: Route['query']): void
   redirect(location: Location): void
+  ssrContext?: {
+    req: Context['req']
+    res: Context['res']
+    url: string
+    target: NuxtOptions['target']
+    spa?: boolean
+    modern: boolean
+    runtimeConfig: {
+      public: NuxtRuntimeConfig
+      private: NuxtRuntimeConfig
+    }
+    redirected: boolean
+    next: NextFunction
+    beforeRenderFns: Array<() => any>
+    nuxt: {
+      layout: string
+      data: Array<Record<string, any>>
+      fetch: Array<Record<string, any>>
+      error: any
+      state: Array<Record<string, any>>
+      serverRendered: boolean
+      routePath: string
+      config: NuxtRuntimeConfig
+    }
+  }
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
@@ -123,6 +151,8 @@ export interface NuxtAppOptions extends ComponentOptions<Vue> {
 export interface NuxtApp extends Vue {
   $options: NuxtAppOptions
   $loading: NuxtLoading
+  nbFetching: number
+  isFetching: boolean
   context: Context
   error(params: NuxtError): void
   isOffline: boolean

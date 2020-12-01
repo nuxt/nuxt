@@ -36,6 +36,14 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       res.statusCode = context.nuxt.error.statusCode || 500
     }
 
+    if (options.render.csp && cspScriptSrcHashes) {
+      const { allowedSources, policies } = options.render.csp
+      const isReportOnly = !!options.render.csp.reportOnly
+      const cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
+
+      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }))
+    }
+
     // Add ETag header
     if (!error && options.render.etag) {
       const { hash } = options.render.etag
@@ -67,14 +75,6 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
       if (links.length > 0) {
         res.setHeader('Link', links.join(', '))
       }
-    }
-
-    if (options.render.csp && cspScriptSrcHashes) {
-      const { allowedSources, policies } = options.render.csp
-      const isReportOnly = !!options.render.csp.reportOnly
-      const cspHeader = isReportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy'
-
-      res.setHeader(cspHeader, getCspString({ cspScriptSrcHashes, allowedSources, policies, isReportOnly }))
     }
 
     // Send response

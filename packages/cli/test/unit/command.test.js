@@ -3,11 +3,15 @@ import { common, server } from '../../src/options'
 import * as utils from '../../src/utils/'
 import * as config from '../../src/utils/config'
 import * as constants from '../../src/utils/constants'
-import { consola } from '../utils'
+import { consola, localPath } from '../utils'
 
 jest.mock('@nuxt/core')
 jest.mock('@nuxt/builder')
 jest.mock('@nuxt/generator')
+
+jest.mock(localPath('@nuxt/core'))
+jest.mock(localPath('@nuxt/builder'))
+jest.mock(localPath('@nuxt/generator'))
 
 const allOptions = {
   ...common,

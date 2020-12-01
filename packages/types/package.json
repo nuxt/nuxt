@@ -1,7 +1,7 @@
 {
   "name": "@nuxt/types",
-  "version": "2.14.4",
-  "description": "Nuxt.js types",
+  "version": "2.14.8",
+  "description": "Nuxt types",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "types": "index",
@@ -10,23 +10,24 @@
   ],
   "dependencies": {
     "@types/autoprefixer": "^9.7.2",
-    "@types/babel__core": "^7.1.9",
+    "@types/babel__core": "^7.1.12",
     "@types/compression": "^1.7.0",
     "@types/connect": "^3.4.33",
     "@types/etag": "^1.8.0",
     "@types/file-loader": "^4.2.0",
     "@types/html-minifier": "^4.0.0",
     "@types/less": "^3.0.1",
-    "@types/node": "^12.12.54",
-    "@types/node-sass": "^4.11.1",
+    "@types/node": "^12.19.3",
     "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
     "@types/pug": "^2.0.4",
-    "@types/serve-static": "^1.13.5",
-    "@types/terser-webpack-plugin": "^2.2.0",
-    "@types/webpack": "^4.41.21",
-    "@types/webpack-bundle-analyzer": "^3.8.0",
+    "@types/sass": "^1.16.0",
+    "@types/serve-static": "^1.13.6",
+    "@types/terser-webpack-plugin": "^4.2.0",
+    "@types/webpack": "^4.41.24",
+    "@types/webpack-bundle-analyzer": "^3.9.0",
     "@types/webpack-dev-middleware": "^3.7.2",
-    "@types/webpack-hot-middleware": "^2.25.3"
+    "@types/webpack-hot-middleware": "^2.25.3",
+    "sass-loader": "^10.1.0"
   },
   "publishConfig": {
     "access": "public"

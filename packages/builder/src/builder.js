@@ -24,8 +24,7 @@ import {
   stripWhitespace,
   isIndexFileAndFolder,
   scanRequireTree,
-  TARGETS,
-  isFullStatic
+  TARGETS
 } from '@nuxt/utils'
 
 import Ignore from './ignore'
@@ -130,8 +129,7 @@ export default class Builder {
       } else {
         consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
       }
-      const target = isFullStatic(this.options) ? 'full static' : this.options.target
-      consola.info(`Target: ${chalk.bold.cyan(target)}`)
+      consola.info(`Target: ${chalk.bold.cyan(this.options.target)}`)
     }
 
     // Wait for nuxt ready
@@ -382,7 +380,7 @@ export default class Builder {
         trailingSlash
       })
     } else if (this._nuxtPages) {
-      // Use nuxt.js createRoutes bases on pages/
+      // Use nuxt createRoutes bases on pages/
       const files = {}
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
       for (const page of await this.resolveFiles(this.options.dir.pages)) {

@@ -29,6 +29,9 @@ export default {
   data () {
     return { message: '' }
   },
+  head: {
+    title: 'Nuxt.js with Socket.io'
+  },
   watch: {
     messages: 'scrollToBottom'
   },
@@ -56,9 +59,6 @@ export default {
         this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
       })
     }
-  },
-  head: {
-    title: 'Nuxt.js with Socket.io'
   }
 }
 </script>

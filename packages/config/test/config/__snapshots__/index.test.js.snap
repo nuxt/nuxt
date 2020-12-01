@@ -51,17 +51,24 @@ Object {
       "position": "bottom-right",
     },
     "loaders": Object {
-      "css": Object {},
+      "css": Object {
+        "esModule": false,
+      },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {},
@@ -184,6 +191,7 @@ Object {
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
+    "manifest": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
@@ -237,11 +245,11 @@ Object {
     "client_error_details": "An error occurred while rendering the page. Check developer tools console for details.",
     "error_404": "This page could not be found",
     "loading": "Loading...",
-    "nuxtjs": "Nuxt.js",
+    "nuxtjs": "Nuxt",
     "server_error": "Server error",
     "server_error_details": "An error occurred in the application and your page could not be served. If you are the application owner, check your logs for details.",
   },
-  "mode": "universal",
+  "mode": undefined,
   "modern": undefined,
   "modes": Object {
     "spa": Object {
@@ -427,17 +435,24 @@ Object {
       "position": "bottom-right",
     },
     "loaders": Object {
-      "css": Object {},
+      "css": Object {
+        "esModule": false,
+      },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {},
@@ -560,6 +575,7 @@ Object {
     "exclude": Array [],
     "fallback": "200.html",
     "interval": 0,
+    "manifest": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
@@ -613,11 +629,11 @@ Object {
     "client_error_details": "An error occurred while rendering the page. Check developer tools console for details.",
     "error_404": "This page could not be found",
     "loading": "Loading...",
-    "nuxtjs": "Nuxt.js",
+    "nuxtjs": "Nuxt",
     "server_error": "Server error",
     "server_error_details": "An error occurred in the application and your page could not be served. If you are the application owner, check your logs for details.",
   },
-  "mode": "universal",
+  "mode": undefined,
   "modern": undefined,
   "modes": Object {
     "spa": Object {

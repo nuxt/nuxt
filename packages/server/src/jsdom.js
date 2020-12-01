@@ -43,6 +43,9 @@ export default async function renderAndGetWindow (
     }
     // Throw error when window creation failed
     options.virtualConsole.on('jsdomError', jsdomErrHandler)
+  } else {
+    // If we get the virtualConsole option as `false` we should delete for don't pass it to `jsdom.JSDOM.fromURL`
+    delete options.virtualConsole
   }
 
   const { window } = await jsdom.JSDOM.fromURL(url, options)
@@ -57,7 +60,7 @@ export default async function renderAndGetWindow (
     throw error
   }
 
-  // Used by Nuxt.js to say when the components are loaded and the app ready
+  // Used by Nuxt to say when the components are loaded and the app ready
   await timeout(new Promise((resolve) => {
     window[loadedCallback] = () => resolve(window)
   }), loadingTimeout, `Components loading in renderAndGetWindow was not completed in ${loadingTimeout / 1000}s`)

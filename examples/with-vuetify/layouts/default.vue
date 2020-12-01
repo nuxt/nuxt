@@ -70,9 +70,6 @@
   </v-app>
 </template>
 
-<style scoped>
-</style>
-
 <script>
 export default {
   data () {
@@ -101,3 +98,6 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+</style>

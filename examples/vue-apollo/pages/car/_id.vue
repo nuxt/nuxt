@@ -24,6 +24,11 @@ export default {
       }
     }
   },
+  head () {
+    return {
+      title: (this.Car ? `${this.Car.make} ${this.Car.model}` : 'Loading')
+    }
+  },
   methods: {
     formatCurrency (num) {
       const formatter = new Intl.NumberFormat('en-US', {
@@ -32,11 +37,6 @@ export default {
         minimumFractionDigits: 2
       })
       return formatter.format(num)
-    }
-  },
-  head () {
-    return {
-      title: (this.Car ? `${this.Car.make} ${this.Car.model}` : 'Loading')
     }
   }
 }

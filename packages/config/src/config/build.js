@@ -14,17 +14,17 @@ export default () => ({
   serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
-    chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[name].[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
     css: ({ isDev }) => isDev ? '[name].css' : '[name].[contenthash:7].css',
     img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
     font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
     video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
-    file: {},
-    fontUrl: { limit: 1000 },
-    imgUrl: { limit: 1000 },
+    file: { esModule: false },
+    fontUrl: { esModule: false, limit: 1000 },
+    imgUrl: { esModule: false, limit: 1000 },
     pugPlain: {},
     vue: {
       transformAssetUrls: {
@@ -34,8 +34,9 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: {},
+    css: { esModule: false },
     cssModules: {
+      esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]'
       }

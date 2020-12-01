@@ -6,13 +6,13 @@
 
 <script>
 export default {
-  fetch ({ store, route }) {
-    store.commit('setOldFetchData', route.name)
-  },
   data () {
     return {
       team: []
     }
+  },
+  fetch ({ store, route }) {
+    store.commit('setOldFetchData', route.name)
   }
 }
 </script>

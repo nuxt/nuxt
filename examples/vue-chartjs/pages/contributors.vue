@@ -36,7 +36,7 @@ export default {
         labels: contributors.map(c => c.login),
         datasets: [
           {
-            label: 'Nuxt.js Contributors',
+            label: 'Nuxt Contributors',
             backgroundColor: contributors.map(getRandomColor),
             data: contributors.map(c => c.contributions)
           }

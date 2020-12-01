@@ -32,6 +32,11 @@
         </n-link>
       </li>
       <li>
+        <n-link to="/fetch-root">
+          Fetch in root click handler
+        </n-link>
+      </li>
+      <li>
         <n-link to="/fetch-component">
           Fetch in component
         </n-link>

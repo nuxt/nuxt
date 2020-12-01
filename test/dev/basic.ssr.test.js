@@ -80,7 +80,7 @@ describe('basic ssr', () => {
 
   test('/head', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/head'))
-    expect(window.document.title).toBe('My title - Nuxt.js')
+    expect(window.document.title).toBe('My title - Nuxt')
 
     const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
@@ -97,17 +97,17 @@ describe('basic ssr', () => {
 
   test('/async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/async-data')
-    expect(html).toContain('<p>Nuxt.js</p>')
+    expect(html).toContain('<p>Nuxt</p>')
   })
 
   test('/await-async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/await-async-data')
-    expect(html).toContain('<p>Await Nuxt.js</p>')
+    expect(html).toContain('<p>Await Nuxt</p>')
   })
 
   test('/callback-async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/callback-async-data')
-    expect(html).toContain('<p>Callback Nuxt.js</p>')
+    expect(html).toContain('<p>Callback Nuxt</p>')
   })
 
   test('/users/1', async () => {
@@ -182,14 +182,14 @@ describe('basic ssr', () => {
     test('/redirect -> external link', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/api/')
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching/')
       expect(html).toContain('<div data-server-rendered="true"></div>')
     })
 
     test('/redirect -> external link without trailing slash', async () => {
       const { html } = await nuxt.server.renderRoute('/redirect-external-no-slash', renderContext)
       expect(_status).toBe(302)
-      expect(_headers.Location).toBe('https://nuxtjs.org/api')
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching')
       expect(html).toContain('<div data-server-rendered="true"></div>')
     })
 
@@ -203,7 +203,7 @@ describe('basic ssr', () => {
 
   test('/special-state -> check window.__NUXT__.test = true', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/special-state'))
-    expect(window.document.title).toBe('Nuxt.js')
+    expect(window.document.title).toBe('Nuxt')
     expect(window.__NUXT__.test).toBe(true)
   })
 
@@ -346,7 +346,7 @@ describe('basic ssr', () => {
 
   test('/router-guard', async () => {
     const { html } = await nuxt.server.renderRoute('/router-guard')
-    expect(html).toContain('<p>Nuxt.js</p>')
+    expect(html).toContain('<p>Nuxt</p>')
     expect(html.includes('Router Guard')).toBe(false)
   })
 
@@ -412,6 +412,11 @@ describe('basic ssr', () => {
   test('/components', async () => {
     const { html } = await nuxt.server.renderRoute('/components')
     expect(html).toContain('Auto discovered component!')
+  })
+
+  test('/ (normal <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

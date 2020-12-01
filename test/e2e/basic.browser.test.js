@@ -94,7 +94,7 @@ describe('basic browser', () => {
     const metas = await page.$$attr('meta', 'content')
 
     expect(await msg).toBe('Body script!')
-    expect(await page.title()).toBe('My title - Nuxt.js')
+    expect(await page.title()).toBe('My title - Nuxt')
     expect(await page.$text('h1')).toBe('I can haz meta tags')
     expect(metas[1]).toBe('my meta')
   })
@@ -102,19 +102,19 @@ describe('basic browser', () => {
   test('/async-data', async () => {
     await page.nuxt.navigate('/async-data')
 
-    expect(await page.$text('p')).toBe('Nuxt.js')
+    expect(await page.$text('p')).toBe('Nuxt')
   })
 
   test('/await-async-data', async () => {
     await page.nuxt.navigate('/await-async-data')
 
-    expect(await page.$text('p')).toBe('Await Nuxt.js')
+    expect(await page.$text('p')).toBe('Await Nuxt')
   })
 
   test('/callback-async-data', async () => {
     await page.nuxt.navigate('/callback-async-data')
 
-    expect(await page.$text('p')).toBe('Callback Nuxt.js')
+    expect(await page.$text('p')).toBe('Callback Nuxt')
   })
 
   test('/users/1', async () => {
@@ -261,7 +261,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/redirect-external', false)
 
     await page.waitForFunction(
-      () => window.location.href === 'https://nuxtjs.org/api/'
+      () => window.location.href === 'https://nuxtjs.org/docs/2.x/features/data-fetching/'
     )
     page.close()
   })
@@ -306,7 +306,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/router-guard')
 
     const p = await page.$text('p')
-    expect(p).toBe('Nuxt.js')
+    expect(p).toBe('Nuxt')
   })
 
   test('/refresh-page-data', async () => {
@@ -317,6 +317,11 @@ describe('basic browser', () => {
     h1 = await page.$text('h1')
     expect(h1).toContain('Hello from client')
     page.close()
+  })
+
+  test('/redirection/no loop', async () => {
+    const page = await browser.page(url('/redirection/no loop'))
+    expect(await page.$text('h1')).toContain('Redirected page')
   })
 
   // Close server and ask nuxt to stop listening to file changes

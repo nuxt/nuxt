@@ -23,7 +23,7 @@ export default {
         labels: stats.map(stat => moment(stat.week * 1000).format('GGGG[-W]WW')),
         datasets: [
           {
-            label: 'Nuxt.js Commit Activity',
+            label: 'Nuxt Commit Activity',
             backgroundColor: '#41B38A',
             data: stats.map(stat => stat.total)
           }

@@ -50,6 +50,7 @@ export interface NuxtOptions extends Configuration {
   layoutTransition: Transition
   loading: NuxtOptionsLoading | false | string
   loadingIndicator: NuxtOptionsLoadingIndicator | false | string
+  /** @deprecated Use ssr option instead */
   mode: 'spa' | 'universal'
   target: 'server' | 'static'
   modern: 'client' | 'server' | boolean
@@ -65,9 +66,11 @@ export interface NuxtOptions extends Configuration {
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
   transition: Transition
-  'vue.config': NuxtOptionsVueConfiguration
+  vue: {
+    config?: NuxtOptionsVueConfiguration
+  }
   watch: string[]
   watchers: NuxtOptionsWatchers
 }
 
-export type NuxtConfig = Partial<NuxtOptions>
+export interface NuxtConfig extends Partial<NuxtOptions> {}

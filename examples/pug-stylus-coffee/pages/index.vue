@@ -2,7 +2,7 @@
   section.container
     div
       logo
-      h1.title Nuxt.js with Pug Stylus and Coffee!
+      h1.title Nuxt with Pug Stylus and Coffee!
       h2.subtitle {{ $store.state.msg }}
       //- h2.subtitle {{message}}
       .links

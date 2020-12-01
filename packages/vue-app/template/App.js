@@ -12,7 +12,7 @@ import Vue from 'vue'
   ]: []
 ] %>
 <% if (utilsImports.length) { %>import { <%= utilsImports.join(', ') %> } from './utils'<% } %>
-<% if (features.layouts && components.ErrorPage) { %>import NuxtError from '<%= components.ErrorPage %>'<% } %>
+import NuxtError from '<%= components.ErrorPage ? components.ErrorPage : "./components/nuxt-error.vue" %>'
 <% if (loading) { %>import NuxtLoading from '<%= (typeof loading === "string" ? loading : "./components/nuxt-loading.vue") %>'<% } %>
 <% if (buildIndicator) { %>import NuxtBuildIndicator from './components/nuxt-build-indicator'<% } %>
 <% css.forEach((c) => { %>
@@ -98,7 +98,8 @@ export default {
   },
   created () {
     // Add this.$nuxt in child instances
-    Vue.prototype.<%= globals.nuxt %> = this
+    this.$root.$options.<%= globals.nuxt %> = this
+
     if (process.client) {
       // add to window so we can listen when ready
       window.<%= globals.nuxt %> = <%= (globals.nuxt !== '$nuxt' ? 'window.$nuxt = ' : '') %>this
@@ -129,11 +130,9 @@ export default {
     <% } %>
   },
   <% } %>
-  <% if (loading) { %>
   watch: {
     'nuxt.err': 'errorChanged'
   },
-  <% } %>
   <% if (features.clientOnline) { %>
   computed: {
     isOffline () {
@@ -215,18 +214,29 @@ export default {
       <% if (loading) { %>this.$loading.finish()<% } %>
       <% } %>
     },
-    <% if (loading) { %>
-    errorChanged () {
-      if (this.nuxt.err && this.$loading) {
-        if (this.$loading.fail) {
-          this.$loading.fail(this.nuxt.err)
+    <% if (splitChunks.layouts) { %>async <% } %>errorChanged () {
+      if (this.nuxt.err) {
+        <% if (loading) { %>
+        if (this.$loading) {
+          if (this.$loading.fail) {
+            this.$loading.fail(this.nuxt.err)
+          }
+          if (this.$loading.finish) {
+            this.$loading.finish()
+          }
         }
-        if (this.$loading.finish) {
-          this.$loading.finish()
+        <% } %>
+        let errorLayout = (NuxtError.options || NuxtError).layout;
+
+        if (typeof errorLayout === 'function') {
+          errorLayout = errorLayout(this.context)
         }
+        <% if (splitChunks.layouts) { %>
+        await this.loadLayout(errorLayout)
+        <% } %>
+        this.setLayout(errorLayout)
       }
     },
-    <% } %>
     <% if (features.layouts) { %>
     <% if (splitChunks.layouts) { %>
     setLayout (layout) {
@@ -285,18 +295,40 @@ export default {
     <% } /* splitChunks.layouts */ %>
     <% } /* features.layouts */ %>
     <% if (isFullStatic) { %>
+    getRouterBase() {
+      return (this.$router.options.base || '').replace(/\/+$/, '')
+    },
+    getRoutePath(route = '/') {
+      const base = this.getRouterBase()
+      if (base && route.startsWith(base)) {
+        route = route.substr(base.length)
+      }
+      return (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
+    },
+    getStaticAssetsPath(route = '/') {
+      const { staticAssetsBase } = window.<%= globals.context %>
+
+      return urlJoin(staticAssetsBase, this.getRoutePath(route))
+    },
+    <% if (nuxtOptions.generate.manifest) { %>
+      async fetchStaticManifest() {
+      return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
+    },
+    <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
       this._payloadFetchIndex = 0
     },
     async fetchPayload(route) {
-      const { staticAssetsBase } = window.<%= globals.context %>
-      const base = (this.$router.options.base || '').replace(/\/+$/, '')
-      if (base && route.startsWith(base)) {
-        route = route.substr(base.length)
+      <% if (nuxtOptions.generate.manifest) { %>
+      const manifest = await this.fetchStaticManifest()
+      const path = this.getRoutePath(route)
+      if (!manifest.routes.includes(path)) {
+        this.setPagePayload(false)
+        throw new Error(`Route ${path} is not pre-rendered`)
       }
-      route = (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
-      const src = urlJoin(base, staticAssetsBase, route, 'payload.js')
+      <% } %>
+      const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
         this.setPagePayload(payload)

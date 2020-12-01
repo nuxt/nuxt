@@ -43,7 +43,7 @@ export async function ensureBuild (cmd) {
 
   // Extend ignore
   const { generate } = options
-  if (generate.cache.ignore === 'function') {
+  if (typeof generate.cache.ignore === 'function') {
     generate.cache.ignore = generate.cache.ignore(ignore)
   } else if (Array.isArray(generate.cache.ignore)) {
     generate.cache.ignore = generate.cache.ignore.concat(ignore)
@@ -52,12 +52,24 @@ export async function ensureBuild (cmd) {
 
   // Take a snapshot of current project
   const snapshotOptions = {
-    rootDir: nuxt.options.rootDir,
-    ignore: nuxt.options.generate.cache.ignore.map(upath.normalize),
-    globbyOptions: nuxt.options.generate.cache.globbyOptions
+    rootDir: options.rootDir,
+    ignore: generate.cache.ignore.map(upath.normalize),
+    globbyOptions: generate.cache.globbyOptions
   }
 
   const currentBuildSnapshot = await snapshot(snapshotOptions)
+
+  // Detect process.env usage in nuxt.config
+  const processEnv = {}
+  if (nuxt.options._nuxtConfigFile) {
+    const configSrc = await fs.readFile(nuxt.options._nuxtConfigFile)
+    const envRegex = /process.env.(\w+)/g
+    let match
+    // eslint-disable-next-line no-cond-assign
+    while (match = envRegex.exec(configSrc)) {
+      processEnv[match[1]] = process.env[match[1]]
+    }
+  }
 
   // Current build meta
   const currentBuild = {
@@ -65,7 +77,9 @@ export async function ensureBuild (cmd) {
     nuxtVersion: nuxt.constructor.version,
     ssr: nuxt.options.ssr,
     target: nuxt.options.target,
-    snapshot: currentBuildSnapshot
+    snapshot: currentBuildSnapshot,
+    env: nuxt.options.env,
+    'process.env': processEnv
   }
 
   // Check if build can be skipped
@@ -74,9 +88,10 @@ export async function ensureBuild (cmd) {
     const previousBuild = destr(fs.readFileSync(nuxtBuildFile, 'utf-8')) || {}
 
     // Quick diff
-    const needBuild = false
-    for (const field of ['nuxtVersion', 'ssr', 'target']) {
-      if (previousBuild[field] !== currentBuild[field]) {
+    let needBuild = false
+    for (const field of ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']) {
+      if (JSON.stringify(previousBuild[field]) !== JSON.stringify(currentBuild[field])) {
+        needBuild = true
         consola.info(`Doing webpack rebuild because ${field} changed`)
         break
       }

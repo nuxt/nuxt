@@ -613,7 +613,7 @@ function normalizeComponents (to, ___) {
 }
 
 <% if (features.layouts) { %>
-function setLayoutForNextPage (to) {
+<% if (splitChunks.layouts) { %>async <% } %>function setLayoutForNextPage (to) {
   // Set layout
   let hasError = Boolean(this.$options.nuxt.err)
   if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
@@ -626,6 +626,9 @@ function setLayoutForNextPage (to) {
   if (typeof layout === 'function') {
     layout = layout(app.context)
   }
+  <% if (splitChunks.layouts) { %>
+  await this.loadLayout(layout)
+  <% } %>
   this.setLayout(layout)
 }
 <% } %>
@@ -647,6 +650,8 @@ function fixPrepatch (to, ___) {
   const instances = getMatchedComponentsInstances(to)
   const Components = getMatchedComponents(to)
 
+  let triggerScroll = <%= features.transitions ? 'false' : 'true' %>
+
   Vue.nextTick(() => {
     instances.forEach((instance, i) => {
       if (!instance || instance._isDestroyed) {
@@ -664,12 +669,17 @@ function fixPrepatch (to, ___) {
           Vue.set(instance.$data, key, newData[key])
         }
 
-        // Ensure to trigger scroll event after calling scrollBehavior
-        window.<%= globals.nuxt %>.$nextTick(() => {
-          window.<%= globals.nuxt %>.$emit('triggerScroll')
-        })
+        triggerScroll = true
       }
     })
+
+    if (triggerScroll) {
+      // Ensure to trigger scroll event after calling scrollBehavior
+      window.<%= globals.nuxt %>.$nextTick(() => {
+        window.<%= globals.nuxt %>.$emit('triggerScroll')
+      })
+    }
+
     checkForErrors(this)
     <% if (isDev) { %>
     // Hot reloading

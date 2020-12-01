@@ -12,10 +12,10 @@ export default {
     meta: [
       { name: 'twitter:card', content: 'summary' },
       { name: 'twitter:site', content: '@nuxt_js' },
-      { name: 'twitter:title', content: 'Nuxt.js Twitter Card' },
-      { name: 'twitter:description', content: 'Nuxt.js lets you handle custom headers for your app with vue-meta' },
+      { name: 'twitter:title', content: 'Nuxt Twitter Card' },
+      { name: 'twitter:description', content: 'Nuxt lets you handle custom headers for your app with vue-meta' },
       { name: 'twitter:image', content: 'https://avatars0.githubusercontent.com/u/23360933?v=3' },
-      { name: 'twitter:image:alt', content: 'Nuxt.js logo' }
+      { name: 'twitter:image:alt', content: 'Nuxt logo' }
     ]
   }
 }

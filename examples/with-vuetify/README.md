@@ -1,4 +1,4 @@
-# Using [Vuetify.js](https://vuetifyjs.com/en/) with Nuxt.js
+# Using [Vuetify.js](https://vuetifyjs.com/en/) with Nuxt
 
 > Vuetify is a Vue based Material Design Component Framework
 
