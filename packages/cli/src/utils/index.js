@@ -41,9 +41,9 @@ export function forceExit (cmdName, timeout) {
   if (timeout !== false) {
     const exitTimeout = setTimeout(() => {
       const msg = `The command 'nuxt ${cmdName}' finished but did not exit after ${timeout}s
-This is most likely not caused by a bug in Nuxt.js
+This is most likely not caused by a bug in Nuxt
 Make sure to cleanup all timers and listeners you or your plugins/modules start.
-Nuxt.js will now force exit
+Nuxt will now force exit
 
 ${chalk.bold('DeprecationWarning: Starting with Nuxt version 3 this will be a fatal error')}`
 

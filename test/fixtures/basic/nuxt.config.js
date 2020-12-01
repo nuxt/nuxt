@@ -41,7 +41,7 @@ export default {
   head () {
     return {
       titleTemplate (titleChunk) {
-        return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
+        return titleChunk ? `${titleChunk} - Nuxt` : 'Nuxt'
       },
       meta: [{ charset: 'utf-8' }]
     }

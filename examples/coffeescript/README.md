@@ -1,6 +1,6 @@
 # Nuxt with CoffeeScript
 
-> Nuxt.js project with CoffeeScript
+> Nuxt project with CoffeeScript
 
 ## Build Setup
 
@@ -19,4 +19,4 @@ $ npm start
 $ npm run generate
 ```
 
-For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
+For detailed explanation on how things work, checkout the [Nuxt docs](https://github.com/nuxt/nuxt.js).

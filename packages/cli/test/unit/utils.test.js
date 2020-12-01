@@ -167,7 +167,7 @@ describe('cli/utils', () => {
 
     expect(successBox).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledTimes(1)
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening: ${listeners[0].url}`))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching(`Listening: ${listeners[1].url}`))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
@@ -197,7 +197,7 @@ describe('cli/utils', () => {
 
     expect(successBox).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledTimes(1)
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt'))
     expect(stdout).not.toHaveBeenCalledWith(expect.stringMatching('Memory usage'))
     stdout.mockRestore()
   })
@@ -226,7 +226,7 @@ describe('cli/utils', () => {
 
     expect(successBox).toHaveBeenCalledTimes(1)
     expect(stdout).toHaveBeenCalledTimes(1)
-    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js'))
+    expect(stdout).toHaveBeenCalledWith(expect.stringMatching('Nuxt'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Environment:'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Rendering:'))
     expect(stdout).toHaveBeenCalledWith(expect.stringMatching('▸ Target:'))
@@ -249,7 +249,7 @@ describe('cli/utils', () => {
     expect(exit).not.toHaveBeenCalled()
     jest.runAllTimers()
 
-    expect(stderr).toHaveBeenCalledWith(expect.stringMatching('Nuxt.js will now force exit'))
+    expect(stderr).toHaveBeenCalledWith(expect.stringMatching('Nuxt will now force exit'))
     expect(exit).toHaveBeenCalledTimes(1)
 
     stderr.mockRestore()

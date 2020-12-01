@@ -1,4 +1,4 @@
-# Custom page loading with Nuxt.js
+# Custom page loading with Nuxt
 
 https://nuxtjs.org/examples/custom-page-loading
 

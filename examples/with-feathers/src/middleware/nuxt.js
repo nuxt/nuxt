@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import { Nuxt, Builder } from 'nuxt'
 
-// Setup nuxt.js
+// Setup nuxt
 let config = {}
 try {
   config = require('../../nuxt.config.js')
@@ -17,7 +17,7 @@ if (config.dev) {
   process.nextTick(() => process.emit('nuxt:build:done'))
 }
 
-// Add nuxt.js middleware
+// Add nuxt middleware
 export default function (req, res) {
   nuxt.render(req, res)
 }

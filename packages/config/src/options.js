@@ -126,6 +126,7 @@ export function getNuxtConfig (_options) {
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
+  options.router.base = encodeURI(decodeURI(options.router.base))
 
   // Legacy support for export
   if (options.export) {

@@ -5,9 +5,9 @@ const url = route => 'http://localhost:' + port + encodeURI(route)
 
 let nuxt = null
 
-describe('unicode-base', () => {
+describe('encoding', () => {
   beforeAll(async () => {
-    const config = await loadFixture('unicode-base')
+    const config = await loadFixture('encoding')
     nuxt = new Nuxt(config)
     await nuxt.ready()
 
@@ -18,7 +18,7 @@ describe('unicode-base', () => {
   test('/ö/ (router base)', async () => {
     const { body: response } = await rp(url('/ö/'))
 
-    expect(response).toContain('<h1>Unicode base works!</h1>')
+    expect(response).toContain('Unicode base works!')
   })
 
   // Close server and ask nuxt to stop listening to file changes

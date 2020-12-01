@@ -1,7 +1,7 @@
 {
   "name": "nuxt-start",
-  "version": "2.14.7",
-  "description": "Starts Nuxt.js Application in production mode",
+  "version": "2.14.8",
+  "description": "Starts Nuxt Application in production mode",
   "keywords": [
     "nuxt",
     "nuxt.js",
@@ -55,19 +55,19 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/cli": "2.14.7",
-    "@nuxt/core": "2.14.7",
-    "@nuxt/telemetry": "^1.2.5",
+    "@nuxt/cli": "2.14.8",
+    "@nuxt/core": "2.14.8",
+    "@nuxt/telemetry": "^1.2.3",
     "node-fetch": "^2.6.1",
     "vue": "^2.6.12",
     "vue-client-only": "^2.0.0",
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
-    "vue-router": "3.4.8",
-    "vuex": "^3.5.1"
+    "vue-router": "^3.4.9",
+    "vuex": "^3.6.0"
   },
   "engines": {
-    "node": ">=8.9.0",
-    "npm": ">=5.0.0"
+    "node": ">=10.13.0",
+    "npm": ">=6.0.0"
   }
 }

@@ -296,15 +296,20 @@ export function promisify (fn, context) {
 
 // Imported from vue-router
 export function getLocation (base, mode) {
-  let path = decodeURI(window.location.pathname)
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
-  // To get matched with sanitized router.base add trailing slash
-  if (base && (path.endsWith('/') ? path : path + '/').startsWith(base)) {
+
+  base = decodeURI(base).slice(0, -1) // consideration is base is normalized with trailing slash
+  let path = decodeURI(window.location.pathname)
+
+  if (base && path.startsWith(base)) {
     path = path.slice(base.length)
   }
-  return (path || '/') + window.location.search + window.location.hash
+
+  const fullPath = (path || '/') + window.location.search + window.location.hash
+
+  return encodeURI(fullPath)
 }
 
 // Imported from path-to-regexp

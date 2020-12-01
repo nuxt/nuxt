@@ -1,4 +1,4 @@
-# Nuxt.js with [Purgecss](https://www.purgecss.com/) (and [Tailwind CSS](https://tailwindcss.com))
+# Nuxt with [Purgecss](https://www.purgecss.com/) (and [Tailwind CSS](https://tailwindcss.com))
 
 > *Tailwind CSS* is a utility-first CSS framework for rapidly building custom user interfaces.
 

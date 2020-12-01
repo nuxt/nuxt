@@ -1,6 +1,6 @@
 {
   "name": "example-tailwindcss",
-  "description": "Nuxt.js with Tailwind CSS",
+  "description": "Nuxt with Tailwind CSS",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",

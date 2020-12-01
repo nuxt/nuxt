@@ -56,7 +56,7 @@ export default {
   env: {
     bool: true,
     num: 23,
-    string: 'Nuxt.js',
+    string: 'Nuxt',
     object: {
       bool: false,
       string: 'ok',
@@ -100,6 +100,7 @@ export default {
       push: true,
       shouldPush: (file, type) => type === 'script'
     },
+    asyncScripts: true,
     bundleRenderer: {
       shouldPreload: (file, type) => {
         return ['script', 'style', 'font'].includes(type)

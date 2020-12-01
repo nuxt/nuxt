@@ -9,7 +9,7 @@ export default {
       {
         hid: 'description',
         name: 'description',
-        content: 'A static site powered by Nuxt.js'
+        content: 'A static site powered by Nuxt'
       }
     ]
   },

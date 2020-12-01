@@ -1,6 +1,6 @@
 ---
 name: 🙋 Feature request | 新功能提案
-about: Suggest an idea or enhancement for Nuxt.js.
+about: Suggest an idea or enhancement for Nuxt.
 title: ''
 labels: 'feature-request'
 assignees: ''

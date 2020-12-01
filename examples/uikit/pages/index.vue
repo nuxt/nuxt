@@ -1,7 +1,7 @@
 <template>
   <div class="uk-card uk-card-body uk-card-primary">
     <h3 class="uk-card-title">
-      Nuxt.js + UIKIT
+      Nuxt + UIKIT
     </h3>
     <button class="uk-button uk-button-default" title="Hello World" uk-tooltip>
       Hover

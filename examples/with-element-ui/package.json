@@ -13,7 +13,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "devDependencies": {
-    "node-sass": "^4.6.0",
-    "sass-loader": "^6.0.6"
+    "sass": "^1.29.0",
+    "sass-loader": "^10.1.0"
   }
 }
