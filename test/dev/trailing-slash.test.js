@@ -34,7 +34,7 @@ describe('trailing-slash', () => {
   })
 
   test('/posts/foo/', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/foo')
+    const { html } = await nuxt.server.renderRoute('/posts/foo/')
     expect(html).toContain('[pages/posts]')
     expect(html).toContain('[pages/posts/_slug]')
   })
