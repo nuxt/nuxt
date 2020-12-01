@@ -19,7 +19,7 @@ import { dynamicRequire } from './plugins/dynamic-require'
 import { externals } from './plugins/externals'
 import { timing } from './plugins/timing'
 import { autoMock } from './plugins/automock'
-import { staticAssets } from './plugins/static'
+import { staticAssets, dirnames } from './plugins/static'
 import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
 
@@ -128,6 +128,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
 
   // Static
   if (sigmaContext.serveStatic) {
+    rollupConfig.plugins.push(dirnames())
     rollupConfig.plugins.push(staticAssets(sigmaContext))
   }
 

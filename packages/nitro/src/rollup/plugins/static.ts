@@ -4,6 +4,7 @@ import mime from 'mime'
 import { relative, resolve } from 'upath'
 import virtual from '@rollup/plugin-virtual'
 import globby from 'globby'
+import type { Plugin } from 'rollup'
 import type { SigmaContext } from '../../context'
 
 export function staticAssets (context: SigmaContext) {
@@ -29,14 +30,12 @@ export function staticAssets (context: SigmaContext) {
   return virtual({
     '~static-assets': `export default ${JSON.stringify(assets, null, 2)};`,
     '~static': `
-import { readFile } from 'fs/promises'
-import { resolve, dirname } from 'path'
+import { promises } from 'fs'
+import { resolve } from 'path'
 import assets from '~static-assets'
 
-const mainDir = dirname(require.main.filename)
-
 export function readAsset (id) {
-  return readFile(resolve(mainDir, getAsset(id).path))
+  return promises.readFile(resolve(mainDir, getAsset(id).path))
 }
 
 export function getAsset (id) {
@@ -44,4 +43,13 @@ export function getAsset (id) {
 }
 `
   })
+}
+
+export function dirnames (): Plugin {
+  return {
+    name: 'dirnames',
+    renderChunk (code, chunk) {
+      return code + (chunk.isEntry ? 'global.mainDir="undefined"!=typeof __dirname?__dirname:require.main.filename;' : '')
+    }
+  }
 }
