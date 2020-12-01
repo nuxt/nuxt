@@ -83,9 +83,6 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
       const defaultChildRoute = route.children.find(child => child.path === '/' || child.path === '')
       const routeName = route.name
       if (defaultChildRoute) {
-        if (trailingSlash === false) {
-          defaultChildRoute.name = route.name
-        }
         route.children.forEach((child) => {
           if (child.path !== defaultChildRoute.path) {
             const parts = child.path.split('/')
