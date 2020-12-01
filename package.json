@@ -77,6 +77,6 @@
     "sass-loader": "^8.0.2",
     "sort-package-json": "^1.48.0",
     "typescript": "~4.1",
-    "vue-jest": "^4.0.0-rc.0"
+    "vue-jest": "^4.0.0-rc.1"
   }
 }
