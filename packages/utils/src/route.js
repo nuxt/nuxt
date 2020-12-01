@@ -80,15 +80,14 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      const indexRoutePath = trailingSlash === false ? '/' : ''
-      const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      const defaultChildRoute = route.children.find(child => child.path === '/' || child.path === '')
       const routeName = route.name
       if (defaultChildRoute) {
         if (trailingSlash === false) {
           defaultChildRoute.name = route.name
         }
         route.children.forEach((child) => {
-          if (child.path !== indexRoutePath) {
+          if (child.path !== defaultChildRoute.path) {
             const parts = child.path.split('/')
             parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
             child.path = parts.join('/')
