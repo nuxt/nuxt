@@ -27,7 +27,7 @@ export default class VueRenderer {
       serverManifest: undefined,
       ssrTemplate: undefined,
       spaTemplate: undefined,
-      errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
+      errorTemplate: this.parseTemplate('Nuxt Internal Server Error')
     })
 
     // Default status
@@ -274,7 +274,8 @@ export default class VueRenderer {
     consola.debug(`Rendering url ${url}`)
 
     // Add url to the renderContext
-    renderContext.url = url
+    renderContext.url = encodeURI(decodeURI(url))
+
     // Add target to the renderContext
     renderContext.target = this.options.target
 

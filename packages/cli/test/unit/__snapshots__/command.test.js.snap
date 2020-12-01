@@ -13,16 +13,16 @@ exports[`cli/command builds help text 1`] = `
     --spa, -s          Launch in SPA mode
     --universal, -u    Launch in Universal
                        mode (default)
-    --config-file, -c  Path to Nuxt.js
-                       config file (default: nuxt.config)
+    --config-file, -c  Path to Nuxt config
+                       file (default: nuxt.config)
     --modern, -m       Build/Start app for
                        modern browsers, e.g. server, client and
                        false
     --target, -t       Build/start app for a
                        different target, e.g. server,
                        serverless and static
-    --force-exit       Whether Nuxt.js
-                       should force exit after the command has
+    --force-exit       Whether Nuxt should
+                       force exit after the command has
                        finished
     --version, -v      Display the Nuxt
                        version

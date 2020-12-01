@@ -1,3 +1,3 @@
-# Hello World with Nuxt.js
+# Hello World with Nuxt
 
 https://nuxtjs.org/examples

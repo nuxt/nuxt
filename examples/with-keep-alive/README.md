@@ -1,4 +1,4 @@
-# `<keep-alive>` with Nuxt.js
+# `<keep-alive>` with Nuxt
 
 Introduced in v1.2.0, you can add the `keep-alive` prop to `<Nuxt/>` or `<NuxtChild/>` to "keep alive" the pages.
 

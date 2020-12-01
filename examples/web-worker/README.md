@@ -1,6 +1,6 @@
 # Nuxt with web-workers using [Worker-loader](https://github.com/webpack-contrib/worker-loader)
 
-> Nuxt.js project
+> Nuxt project
 
 In nuxt 1.4 and below you have to create a production build to use web workers.
 
@@ -23,4 +23,4 @@ $ npm start
 $ npm run generate
 ```
 
-For detailed explanation on how things work, checkout the [Nuxt.js docs](https://github.com/nuxt/nuxt.js).
+For detailed explanation on how things work, checkout the [Nuxt docs](https://github.com/nuxt/nuxt.js).

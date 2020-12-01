@@ -1,6 +1,6 @@
 <template>
   <div>
-    <mu-appbar title="Nuxt.js">
+    <mu-appbar title="Nuxt">
       <mu-icon-button slot="left" icon="menu" @click="toggle()" />
       <mu-icon-menu slot="right" icon="expand_more">
         <mu-menu-item value="1" title="One" />

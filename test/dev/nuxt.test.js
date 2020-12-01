@@ -2,11 +2,11 @@ import { resolve } from 'path'
 import { loadFixture, getPort, Nuxt, Builder } from '../utils'
 
 describe('nuxt', () => {
-  test('Nuxt.js Class', () => {
+  test('Nuxt Class', () => {
     expect(typeof Nuxt).toBe('function')
   })
 
-  test('Nuxt.js Instance', async () => {
+  test('Nuxt Instance', async () => {
     const config = await loadFixture('empty')
     const nuxt = new Nuxt(config)
     await nuxt.ready()

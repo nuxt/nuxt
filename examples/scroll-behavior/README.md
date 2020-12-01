@@ -1,3 +1,3 @@
-# Custom scroll behavior with Nuxt.js
+# Custom scroll behavior with Nuxt
 
 https://nuxtjs.org/examples/custom-scroll-behavior

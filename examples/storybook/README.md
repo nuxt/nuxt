@@ -1,10 +1,10 @@
 # Storybook demo for Nuxt
 
-Demo showcasing [Storybook](https://storybook.js.org/) usage with Nuxt.js, [Vuetify](https://vuetifyjs.com) and [Vue-Charts](http://vue-chartjs.org/)
+Demo showcasing [Storybook](https://storybook.js.org/) usage with Nuxt, [Vuetify](https://vuetifyjs.com) and [Vue-Charts](http://vue-chartjs.org/)
 
-## Features 
+## Features
 
-* Supports `~` and `~~` Nuxt.js aliases
+* Supports `~` and `~~` Nuxt aliases
 * Contains `storybase.js` with helper classes
 * Integrates most of addons
 * Real life examples with Vuetify and Vue-Charts
