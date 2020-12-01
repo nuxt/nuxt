@@ -12,8 +12,7 @@
     "postcss-loader",
     "postcss-url",
     "terser-webpack-plugin",
-    "@types/terser-webpack-plugin",
-    "defu"
+    "@types/terser-webpack-plugin"
   ],
   "lockFileMaintenance": {
     "enabled": true
