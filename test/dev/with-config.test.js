@@ -42,8 +42,8 @@ describe('with-config', () => {
 
   test('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain(
-      '<link rel="preload" href="/test/orion/fonts/roboto.dd02ea4.woff2" as="font" type="font/woff2" crossorigin'
+    expect(html).toMatch(
+      /<link rel="preload" href="\/test\/orion\/fonts\/roboto.[\w]{7}.woff2" as="font" type="font\/woff2" crossorigin/
     )
   })
 
