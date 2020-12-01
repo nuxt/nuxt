@@ -8,7 +8,7 @@ import { Options as AutoprefixerOptions } from 'autoprefixer'
 import { Options as FileLoaderOptions } from 'file-loader'
 import { Options as HtmlMinifierOptions } from 'html-minifier'
 import * as Less from 'less'
-import { Options as SassOptions } from 'node-sass'
+import { Options as SassOptions } from 'sass'
 import { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
 import { Plugin as PostcssPlugin } from 'postcss'
 import { Options as PugOptions } from 'pug'
@@ -27,11 +27,13 @@ import { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as Webp
 
 type CssLoaderUrlFunction = (url: string, resourcePath: string) => boolean
 type CssLoaderImportFunction = (parsedImport: string, resourcePath: string) => boolean
-type CssLoaderMode = 'global' | 'local'
+type CssLoaderMode = 'global' | 'local' | 'pure'
 interface CssLoaderModulesOptions {
   context?: string
+  exportLocalsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
+  exportOnlyLocals?: boolean
   getLocalIdent?: (context: string, localIdentName: string, localName: string, options: CssLoaderModulesOptions) => string
-  hashPrefix?: string
+  localIdentHashPrefix?: string
   localIdentName?: string
   localIdentRegExp?: string | RegExp
   mode?: CssLoaderMode
@@ -40,9 +42,7 @@ interface CssLoaderModulesOptions {
 interface CssLoaderOptions {
   import?: boolean | CssLoaderImportFunction
   importLoaders?: number
-  localsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
   modules?: boolean | CssLoaderMode | CssLoaderModulesOptions
-  onlyLocals?: boolean
   sourceMap?: boolean
   url?: boolean | CssLoaderUrlFunction
 }
