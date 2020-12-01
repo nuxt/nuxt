@@ -201,10 +201,10 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        const isDynamic = key.startsWith('_') && key.length > 1
+        const isDynamic = key.startsWith('_')
         route.path += '/' + getRoutePathExtension(isDynamic ? key : encodeURIComponent(decodeURIComponent(key)))
 
-        if (isDynamic) {
+        if (isDynamic && key.length > 1) {
           route.path += '?'
         }
       }
