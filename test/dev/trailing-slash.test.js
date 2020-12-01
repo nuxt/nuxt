@@ -1,88 +1,92 @@
 import { loadFixture, getPort, Nuxt } from '../utils'
 
-let port
-let nuxt = null
+function runTest (name, expectations) {
+  describe(name, () => {
+    let port
+    let nuxt = null
 
-describe('trailing-slash', () => {
-  beforeAll(async () => {
-    const options = await loadFixture('trailing-slash')
-    nuxt = new Nuxt(options)
-    await nuxt.ready()
-    port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
-  })
+    beforeAll(async () => {
+      const options = await loadFixture(name)
+      nuxt = new Nuxt(options)
+      await nuxt.ready()
+      port = await getPort()
+      await nuxt.server.listen(port, 'localhost')
+    })
 
-  test('/', async () => {
-    const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('[pages/index]')
-  })
+    for (const route in expectations) {
+      test(route, async () => {
+        const { html } = await nuxt.server.renderRoute(route)
+        for (const exp of expectations[route]) {
+          expect(html).toContain(exp)
+        }
+      })
+    }
 
-  test('/posts', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts')
-    expect(html).toContain('statusCode:404')
+    afterAll(async () => {
+      await nuxt.close()
+    })
   })
+}
 
-  test('/posts/', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/')
-    expect(html).toContain('[pages/posts]')
-    expect(html).toContain('[pages/posts/index]')
-  })
-
-  test('/posts/foo', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/foo')
-    expect(html).toContain('statusCode:404')
-  })
-
-  test('/posts/foo/', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/foo/')
-    expect(html).toContain('[pages/posts]')
-    expect(html).toContain('[pages/posts/_slug]')
-  })
-
-  // Close server and ask nuxt to stop listening to file changes
-  afterAll(async () => {
-    await nuxt.close()
-  })
+runTest('trailing-slash/with-true', {
+  '/': [
+    '[pages/index]'
+  ],
+  '/posts': [
+    'statusCode:404'
+  ],
+  '/posts/': [
+    '[pages/posts]',
+    '[pages/posts/index]'
+  ],
+  '/posts/foo': [
+    'statusCode:404'
+  ],
+  '/posts/foo/': [
+    '[pages/posts]',
+    '[pages/posts/_slug]'
+  ]
 })
 
-describe('trailing-slash-false', () => {
-  beforeAll(async () => {
-    const options = await loadFixture('trailing-slash-false')
-    nuxt = new Nuxt(options)
-    await nuxt.ready()
-    port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
-  })
+runTest('trailing-slash/with-false', {
+  '/': [
+    '[pages/index]'
+  ],
+  '/posts': [
+    '[pages/posts]'
+    // '[pages/posts/index]' // <--seems wired
+  ],
+  '/posts/': [
+    '[pages/posts]',
+    '[pages/posts/index]'
+  ],
+  '/posts/foo': [
+    '[pages/posts]',
+    '[pages/posts/_slug]'
+  ],
+  '/posts/foo/': [
+    'statusCode:404'
+  ]
+})
 
-  test('/', async () => {
-    const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('[pages/index]')
-  })
-
-  test('/posts', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts')
-    expect(html).toContain('[pages/posts]')
-  })
-
-  test('/posts/', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/')
-    expect(html).toContain('[pages/posts]')
-    expect(html).toContain('[pages/posts/index]')
-  })
-
-  test('/posts/foo', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/foo')
-    expect(html).toContain('[pages/posts]')
-    expect(html).toContain('[pages/posts/_slug]')
-  })
-
-  test('/posts/foo/', async () => {
-    const { html } = await nuxt.server.renderRoute('/posts/foo/')
-    expect(html).toContain('statusCode:404')
-  })
-
-  // Close server and ask nuxt to stop listening to file changes
-  afterAll(async () => {
-    await nuxt.close()
-  })
+runTest('trailing-slash/with-default', {
+  '/': [
+    '[pages/index]'
+  ],
+  '/posts': [
+    '[pages/posts]',
+    '[pages/posts/index]'
+  ],
+  '/posts/': [
+    '[pages/posts]',
+    '[pages/posts/index]'
+  ],
+  '/posts/foo': [
+    '[pages/posts]',
+    '[pages/posts/_slug]'
+  ],
+  '/posts/foo/': [
+    '[pages/posts]',
+    '[pages/posts/_slug]'
+  ]
 })

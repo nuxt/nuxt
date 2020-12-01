@@ -1,7 +1,8 @@
 import { resolve } from 'path'
 
 export default {
-  srcDir: resolve(__dirname, '../trailing-slash'),
+  rootDir: __dirname,
+  srcDir: resolve(__dirname, '..'),
   router: {
     trailingSlash: false
   }
