@@ -12,7 +12,7 @@ export default {
     return new Promise((resolve) => {
       setTimeout(() => resolve({
         loaded: false,
-        name: 'Nuxt.js'
+        name: 'Nuxt'
       }), 300)
     })
   },

@@ -21,7 +21,7 @@ export function showBanner (nuxt, showMemoryUsage = true) {
 
   // Name and version
   const { bannerColor, badgeMessages } = nuxt.options.cli
-  titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} @ ${nuxt.constructor.version || 'exotic'}\n`)
+  titleLines.push(`${chalk[bannerColor].bold('Nuxt')} @ ${nuxt.constructor.version || 'exotic'}\n`)
 
   const label = name => chalk.bold.cyan(`▸ ${name}:`)
 

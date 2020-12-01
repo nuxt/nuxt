@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "2.14.7",
+  "version": "2.14.8",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "keywords": [
     "nuxt",
@@ -58,15 +58,15 @@
     "postinstall": "opencollective || exit 0"
   },
   "dependencies": {
-    "@nuxt/builder": "2.14.7",
-    "@nuxt/cli": "2.14.7",
-    "@nuxt/components": "^1.1.1",
-    "@nuxt/core": "2.14.7",
-    "@nuxt/generator": "2.14.7",
-    "@nuxt/loading-screen": "^2.0.2",
+    "@nuxt/builder": "2.14.8",
+    "@nuxt/cli": "2.14.8",
+    "@nuxt/components": "^1.2.0",
+    "@nuxt/core": "2.14.8",
+    "@nuxt/generator": "2.14.8",
+    "@nuxt/loading-screen": "^2.0.3",
     "@nuxt/opencollective": "^0.3.2",
     "@nuxt/telemetry": "^1.2.3",
-    "@nuxt/webpack": "2.14.7"
+    "@nuxt/webpack": "2.14.8"
   },
   "engines": {
     "node": ">=10.13.0",

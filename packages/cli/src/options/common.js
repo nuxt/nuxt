@@ -16,7 +16,7 @@ export default {
     alias: 'c',
     type: 'string',
     default: defaultNuxtConfigFile,
-    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}\`)`
+    description: `Path to Nuxt config file (default: \`${defaultNuxtConfigFile}\`)`
   },
   modern: {
     alias: 'm',
@@ -43,7 +43,7 @@ export default {
     default (cmd) {
       return ['build', 'generate', 'export'].includes(cmd.name)
     },
-    description: 'Whether Nuxt.js should force exit after the command has finished'
+    description: 'Whether Nuxt should force exit after the command has finished'
   },
   version: {
     alias: 'v',

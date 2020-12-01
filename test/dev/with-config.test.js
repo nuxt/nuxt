@@ -54,12 +54,17 @@ describe('with-config', () => {
 
   test('/ (custom app.html)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('<p>Made by Nuxt.js team</p>')
+    expect(html).toContain('<p>Made by Nuxt team</p>')
   })
 
   test('/ (custom build.publicPath)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/')
+  })
+
+  test('/ (async <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer async>')
   })
 
   test('/ (custom postcss.config.js)', async () => {
@@ -122,7 +127,7 @@ describe('with-config', () => {
     expect(html).toContain('<h1>Custom env layout</h1>')
     expect(html).toContain('"bool": true')
     expect(html).toContain('"num": 23')
-    expect(html).toContain('"string": "Nuxt.js"')
+    expect(html).toContain('"string": "Nuxt"')
     expect(html).toContain('"bool": false')
     expect(html).toContain('"string": "ok"')
     expect(html).toContain('"num2": 8.23')
