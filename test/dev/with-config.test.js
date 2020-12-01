@@ -62,6 +62,11 @@ describe('with-config', () => {
     expect(html).toContain('<script src="/test/orion/')
   })
 
+  test('/ (async <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer async>')
+  })
+
   test('/ (custom postcss.config.js)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('::-moz-placeholder')
