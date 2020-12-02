@@ -18,7 +18,7 @@ import { resolvePath, MODULE_DIR } from '../utils'
 import { dynamicRequire } from './plugins/dynamic-require'
 import { externals } from './plugins/externals'
 import { timing } from './plugins/timing'
-import { autoMock } from './plugins/automock'
+// import { autoMock } from './plugins/automock'
 import { staticAssets, dirnames } from './plugins/static'
 import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
@@ -179,7 +179,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }))
 
   // Automatically mock unresolved externals
-  rollupConfig.plugins.push(autoMock())
+  // rollupConfig.plugins.push(autoMock())
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(commonjs({
