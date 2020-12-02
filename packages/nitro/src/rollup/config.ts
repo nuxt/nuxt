@@ -171,14 +171,10 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     extensions,
     preferBuiltins: true,
     rootDir: sigmaContext._nuxt.rootDir,
-    // https://www.npmjs.com/package/resolve
-    customResolveOptions: {
-      basedir: sigmaContext._nuxt.rootDir,
-      paths: [
-        resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
-        resolve(MODULE_DIR, 'node_modules')
-      ]
-    },
+    moduleDirectories: [
+      resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
+      resolve(MODULE_DIR, 'node_modules')
+    ],
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
 
