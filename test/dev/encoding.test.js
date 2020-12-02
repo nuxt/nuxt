@@ -21,6 +21,12 @@ describe('encoding', () => {
     expect(response).toContain('Unicode base works!')
   })
 
+  test('/ö/query?q=food,coffee (encodeURIComponent)', async () => {
+    const { body: response } = await rp(url('/ö/query?q=food%252Ccoffee'))
+
+    expect(response).toContain('food,coffee')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

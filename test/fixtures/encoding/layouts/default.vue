@@ -14,6 +14,10 @@
       <NLink :to="encodeURI('/тест?spa')">
         /тест (SPA encoded)
       </NLink>
+      <br>
+      <NLink to="/query?q=food%2Ccoffee">
+        /query?q=food%2Ccoffee
+      </NLink>
     </div>
     <Nuxt />
   </div>
