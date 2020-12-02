@@ -59,6 +59,10 @@ export default function (nuxt, moduleContainer) {
           nuxt.server.setLoadingMiddleware(handle)
           continue
         }
+        // Temporary hide for @nuxt/pwa module
+        if (route === '/_nuxt/' && process.env.NODE_ENV === 'development') {
+          continue
+        }
         unsupported.push(m)
         continue
       }
