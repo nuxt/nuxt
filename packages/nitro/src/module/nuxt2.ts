@@ -95,6 +95,7 @@ export default function (nuxt, moduleContainer) {
 
   // nuxt generate
   nuxt.options.generate.dir = sigmaContext.output.publicDir
+  nuxt.options.generate.manifest = false
   nuxt.hook('generate:cache:ignore', (ignore: string[]) => {
     ignore.push(sigmaContext.output.dir)
     ignore.push(sigmaContext.output.serverDir)
