@@ -173,7 +173,8 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     rootDir: sigmaContext._nuxt.rootDir,
     moduleDirectories: [
       resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
-      resolve(MODULE_DIR, 'node_modules')
+      resolve(MODULE_DIR, 'node_modules'),
+      'node_modules'
     ],
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
