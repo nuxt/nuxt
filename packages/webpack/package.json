@@ -36,7 +36,7 @@
     "postcss-loader": "^3.0.0",
     "postcss-preset-env": "^6.7.0",
     "postcss-url": "^8.0.0",
-    "semver": "^7.3.2",
+    "semver": "^7.3.4",
     "std-env": "^2.2.1",
     "style-resources-loader": "^1.4.1",
     "terser-webpack-plugin": "^4.2.3",
