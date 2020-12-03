@@ -2,21 +2,31 @@
   <div>
     <div>
       <NLink to="/тест">
-        /тест
+        unicode
       </NLink>
+      <br>
       <NLink :to="encodeURI('/тест')">
-        /тест (encoded)
+        unicode (encoded)
       </NLink>
       <br>
       <NLink to="/тест?spa">
-        /тест (SPA)
-      </NLink>
-      <NLink :to="encodeURI('/тест?spa')">
-        /тест (SPA encoded)
+        unicode (SPA)
       </NLink>
       <br>
-      <NLink to="/query?q=food%2Ccoffee">
-        /query?q=food%2Ccoffee
+      <NLink :to="encodeURI('/тест?spa')">
+        unicode (SPA encoded)
+      </NLink>
+      <br>
+      <NLink to="/dynamic/سلام?q=food,cofee">
+        dynamic
+      </NLink>
+      <br>
+      <NLink :to="encodeURI('/dynamic/سلام?q=food,cofee')">
+        dynamic (encodeURI)
+      </NLink>
+      <br>
+      <NLink to="/dynamic/%D8%B3%D9%84%D8%A7%D9%85?q=coffee%2Cfood">
+        dynamic (encodeURIComponent)
       </NLink>
     </div>
     <Nuxt />
