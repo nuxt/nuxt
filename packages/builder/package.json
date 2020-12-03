@@ -21,7 +21,7 @@
     "ignore": "^5.1.8",
     "lodash": "^4.17.20",
     "pify": "^5.0.0",
-    "semver": "^7.3.2",
+    "semver": "^7.3.4",
     "serialize-javascript": "^5.0.1",
     "upath": "^2.0.1"
   },
