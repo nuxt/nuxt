@@ -107,15 +107,14 @@ export const routerOptions = {
 
 export function createRouter () {
   const router = new Router(routerOptions)
-  const resolve = router.resolve.bind(router)
 
-  // encodeURI(decodeURI()) ~> support both encoded and non-encoded urls
-  router.resolve = (to, current, append) => {
-    if (typeof to === 'string') {
-      to = encodeURI(decodeURI(to))
-    }
-    return resolve(to, current, append)
-  }
+  // const resolve = router.resolve.bind(router)
+  // router.resolve = (to, current, append) => {
+  //   if (typeof to === 'string') {
+  //     to = encodeURI(decodeURI(to))
+  //   }
+  //   return resolve(to, current, append)
+  // }
 
   return router
 }
