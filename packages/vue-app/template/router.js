@@ -107,7 +107,9 @@ export const routerOptions = {
 
 function decodeObj(obj) {
   for (const key in obj) {
-    obj[key] = decodeURIComponent(obj[key])
+    if (typeof obj[key] === 'string') {
+      obj[key] = decodeURIComponent(obj[key])
+    }
   }
 }
 
