@@ -280,10 +280,15 @@ export const promisifyRoute = function promisifyRoute (fn, ...args) {
   return promise
 }
 
-export function safeEncodeComponent (str) {
+function safeEncodeComponent (str) {
   return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
 }
 
+const ENCODE_SPLITTERS = ['/', '?', '&']
+
 export function safeEncode (str) {
-  return str.split('/').map(safeEncodeComponent).join('/')
+  for (const splitter of ENCODE_SPLITTERS) {
+    str = str.split(splitter).map(safeEncodeComponent).join(splitter)
+  }
+  return str
 }
