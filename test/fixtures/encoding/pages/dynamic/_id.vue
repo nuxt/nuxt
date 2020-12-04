@@ -1,7 +1,7 @@
 <template>
   <div>
-    <p>Query (SSR): <pre v-html="q" /> </p>
-    <p>Params (SSR): <pre v-html="p" /> </p>
+    <p>Query (SSR): <pre v-text="q" /> </p>
+    <p>Params (SSR): <pre v-text="p" /> </p>
   </div>
 </template>
 

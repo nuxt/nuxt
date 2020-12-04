@@ -4,7 +4,7 @@
       <ul>
         <li v-for="link in links" :key="link">
           <NLink :to="link">
-            {{ link.substr(0, 25) }}
+            {{ link }}
           </NLink>
           <NLink :to="link.includes('?') ? link.replace('?', '?spa&') : '?spa'">
             (spa)
