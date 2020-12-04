@@ -7,7 +7,8 @@ import {
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.middleware && features.layouts) { %>sanitizeComponent,<% } %>
   getMatchedComponents,
-  promisify
+  promisify,
+  safeEncode
 } from './utils.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
@@ -55,7 +56,7 @@ const createNext = ssrContext => (opts) => {
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    Location: encodeURI(opts.path)
+    Location: safeEncode(opts.path)
   })
   ssrContext.res.end()
 }
