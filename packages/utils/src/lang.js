@@ -42,7 +42,3 @@ export const stripWhitespace = function stripWhitespace (string) {
   })
   return string
 }
-
-export function safeEncode (str) {
-  return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
-}

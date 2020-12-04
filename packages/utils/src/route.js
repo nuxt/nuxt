@@ -1,7 +1,6 @@
 import path from 'path'
 import get from 'lodash/get'
 import consola from 'consola'
-
 import { r } from './resolve'
 
 const routeChildren = function (route) {
@@ -202,7 +201,7 @@ export const createRoutes = function createRoutes ({
         route.path += i > 0 ? '' : '/'
       } else {
         const isDynamic = key.startsWith('_')
-        route.path += '/' + getRoutePathExtension(isDynamic ? key : encodeURIComponent(decodeURIComponent(key)))
+        route.path += '/' + getRoutePathExtension(isDynamic ? key : safeEncode(key))
 
         if (isDynamic && key.length > 1) {
           route.path += '?'
@@ -279,4 +278,8 @@ export const promisifyRoute = function promisifyRoute (fn, ...args) {
     promise = Promise.resolve(promise)
   }
   return promise
+}
+
+export function safeEncode (str) {
+  return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
 }
