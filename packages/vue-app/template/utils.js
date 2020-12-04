@@ -309,7 +309,7 @@ export function getLocation (base, mode) {
 
   const fullPath = (path || '/') + window.location.search + window.location.hash
 
-  return encodeURI(fullPath)
+  return safeEncode(fullPath)
 }
 
 // Imported from path-to-regexp
@@ -691,4 +691,8 @@ export function setScrollRestoration (newVal) {
   try {
     window.history.scrollRestoration = newVal;
   } catch(e) {}
+}
+
+export function safeEncode(str) {
+  return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
 }
