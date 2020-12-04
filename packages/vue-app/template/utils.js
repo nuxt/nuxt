@@ -210,7 +210,7 @@ export async function setContext (app, context) {
         path = formatUrl(path, query)
         if (process.server) {
           app.context.next({
-            path,
+            path: encodeURI(path),
             status
           })
         }
