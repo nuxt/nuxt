@@ -1,4 +1,3 @@
-import { split } from 'lodash'
 import Vue from 'vue'
 
 // window.{{globals.loadedCallback}} hook
