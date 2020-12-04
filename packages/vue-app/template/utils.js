@@ -210,7 +210,7 @@ export async function setContext (app, context) {
         path = formatUrl(path, query)
         if (process.server) {
           app.context.next({
-            path: encodeURI(path),
+            path,
             status
           })
         }
@@ -693,6 +693,10 @@ export function setScrollRestoration (newVal) {
   } catch(e) {}
 }
 
-export function safeEncode(str) {
+export function safeEncodeComponent(str) {
   return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
+}
+
+export function safeEncode(str) {
+  return str.split('/').map(safeEncodeComponent).join('/')
 }

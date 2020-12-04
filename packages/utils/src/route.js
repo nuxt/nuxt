@@ -280,6 +280,10 @@ export const promisifyRoute = function promisifyRoute (fn, ...args) {
   return promise
 }
 
-export function safeEncode (str) {
+export function safeEncodeComponent (str) {
   return /%[0-9a-fA-F]{2}/.test(str) ? str : encodeURI(str)
+}
+
+export function safeEncode (str) {
+  return str.split('/').map(safeEncodeComponent).join('/')
 }
