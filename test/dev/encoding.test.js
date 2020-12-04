@@ -27,6 +27,12 @@ describe('encoding', () => {
     expect(response).toContain('food,coffee')
   })
 
+  test('/ö/@about', async () => {
+    const { body: response } = await rp(url('/ö/@about'))
+
+    expect(response).toContain('About')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

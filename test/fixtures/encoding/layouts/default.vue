@@ -6,7 +6,7 @@
           <NLink :to="link">
             {{ link }}
           </NLink>
-          <NLink :to="link.includes('?') ? link.replace('?', '?spa&') : '?spa'">
+          <NLink :to="link.includes('?') ? link.replace('?', '?spa&') : (link + '?spa')">
             (spa)
           </NLink>
           <a :href="encodeURI('/ö') + link">(direct)</a>
@@ -23,6 +23,7 @@ export default {
     links () {
       return [
         '/redirect',
+        '/@about',
         '/тест',
         encodeURI('/тест'),
         '/dynamic/سلام چطوری?q=cofee,food,دسر',
