@@ -4,7 +4,10 @@
       <ul>
         <li v-for="link in links" :key="link">
           <NLink :to="link">
-            {{ link }}
+            {{ link.substr(0, 25) }}
+          </NLink>
+          <NLink :to="link.includes('?') ? link.replace('?', '?spa&') : '?spa'">
+            (spa)
           </NLink>
           <a :href="link">(direct)</a>
         </li>
@@ -21,8 +24,6 @@ export default {
       return [
         '/тест',
         encodeURI('/тест'),
-        '/тест?spa',
-        encodeURI('/тест?spa'),
         '/dynamic/سلام چطوری?q=cofee,food,دسر',
         encodeURI('/dynamic/سلام چطوری?q=cofee,food,دسر'),
         // Using encodeURIComponent on each segment
