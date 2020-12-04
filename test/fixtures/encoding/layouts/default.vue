@@ -22,6 +22,7 @@ export default {
   computed: {
     links () {
       return [
+        '/redirect',
         '/тест',
         encodeURI('/тест'),
         '/dynamic/سلام چطوری?q=cofee,food,دسر',
