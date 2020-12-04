@@ -9,7 +9,7 @@
           <NLink :to="link.includes('?') ? link.replace('?', '?spa&') : '?spa'">
             (spa)
           </NLink>
-          <a :href="link">(direct)</a>
+          <a :href="encodeURI('/ö') + link">(direct)</a>
         </li>
       </ul>
     </div>
