@@ -105,6 +105,12 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
+function decodeObj(obj) {
+  for (const key in obj) {
+    obj[key] = decodeURIComponent(obj[key])
+  }
+}
+
 export function createRouter () {
   const router = new Router(routerOptions)
 
@@ -113,7 +119,11 @@ export function createRouter () {
     if (typeof to === 'string') {
       to = safeEncode(to)
     }
-    return resolve(to, current, append)
+    const r = resolve(to, current, append)
+    if (r && r.resolved && r.resolved.query) {
+      decodeObj(r.resolved.query)
+    }
+    return r
   }
 
   return router
