@@ -7,6 +7,7 @@ import uniq from 'lodash/uniq'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
+import { normalizeURL } from '@nuxt/ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -126,7 +127,7 @@ export function getNuxtConfig (_options) {
   if (!/\/$/.test(options.router.base)) {
     options.router.base += '/'
   }
-  options.router.base = encodeURI(decodeURI(options.router.base))
+  options.router.base = normalizeURL(options.router.base)
 
   // Legacy support for export
   if (options.export) {

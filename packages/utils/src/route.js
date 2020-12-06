@@ -1,7 +1,7 @@
 import path from 'path'
 import get from 'lodash/get'
 import consola from 'consola'
-
+import { normalizeURL } from '@nuxt/ufo'
 import { r } from './resolve'
 
 const routeChildren = function (route) {
@@ -201,10 +201,8 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        const isDynamic = key.startsWith('_')
-        route.path += '/' + getRoutePathExtension(isDynamic ? key : encodeURIComponent(decodeURIComponent(key)))
-
-        if (isDynamic && key.length > 1) {
+        route.path += normalizeURL(getRoutePathExtension(key))
+        if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
       }

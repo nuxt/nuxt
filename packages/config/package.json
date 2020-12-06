@@ -10,6 +10,7 @@
     "index.d.ts"
   ],
   "dependencies": {
+    "@nuxt/ufo": "^0.0.3",
     "@nuxt/utils": "2.14.9",
     "consola": "^2.15.0",
     "create-require": "^1.1.1",
