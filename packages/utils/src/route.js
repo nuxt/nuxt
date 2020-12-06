@@ -201,7 +201,7 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += getRoutePathExtension(key)
+        route.path += normalizeURL(getRoutePathExtension(key))
         if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
@@ -211,8 +211,6 @@ export const createRoutes = function createRoutes ({
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
       route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
     }
-
-    route.path = normalizeURL(route.path)
 
     parent.push(route)
   })
