@@ -16,7 +16,7 @@
     "@types/etag": "^1.8.0",
     "@types/file-loader": "^4.2.0",
     "@types/html-minifier": "^4.0.0",
-    "@types/less": "^3.0.1",
+    "@types/less": "^3.0.2",
     "@types/node": "^12.19.8",
     "@types/optimize-css-assets-webpack-plugin": "^5.0.1",
     "@types/pug": "^2.0.4",
