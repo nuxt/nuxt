@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { interopDefault, safeEncode } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
+import { normalizeURL } from '@nuxt/ufo'
+import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 
 <% function recursiveRoutes(routes, tab, components, indentCount) {
@@ -119,7 +120,7 @@ export function createRouter () {
   const resolve = router.resolve.bind(router)
   router.resolve = (to, current, append) => {
     if (typeof to === 'string') {
-      to = safeEncode(to)
+      to = normalizeURL(to)
     }
     const r = resolve(to, current, append)
     if (r && r.resolved && r.resolved.query) {

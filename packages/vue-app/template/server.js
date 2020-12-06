@@ -1,5 +1,6 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
+import { normalizeURL } from '@nuxt/ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -7,8 +8,7 @@ import {
   <% if (features.middleware) { %>middlewareSeries,<% } %>
   <% if (features.middleware && features.layouts) { %>sanitizeComponent,<% } %>
   getMatchedComponents,
-  promisify,
-  safeEncode
+  promisify
 } from './utils.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.server'<% } %>
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
@@ -56,7 +56,7 @@ const createNext = ssrContext => (opts) => {
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    Location: safeEncode(opts.path)
+    Location: normalizeURL(opts.path)
   })
   ssrContext.res.end()
 }
