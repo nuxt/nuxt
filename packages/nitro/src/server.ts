@@ -1,10 +1,9 @@
 import { Worker } from 'worker_threads'
-import { Server } from 'http'
 import { resolve } from 'upath'
 import debounce from 'debounce'
-import connect from 'connect'
-import getPort from 'get-port-please'
 import chokidar from 'chokidar'
+import { createApp } from '@nuxt/h2'
+import { listen, Listener } from 'listhen'
 import serveStatic from 'serve-static'
 import { createProxy } from 'http-proxy'
 import { stat } from 'fs-extra'
@@ -48,7 +47,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
   }
 
   // App
-  const app = connect()
+  const app = createApp()
 
   // _nuxt and static
   app.use(sigmaContext._nuxt.publicPath, serveStatic(resolve(sigmaContext._nuxt.buildDir, 'dist/client')))
@@ -86,16 +85,11 @@ export function createDevServer (sigmaContext: SigmaContext) {
   })
 
   // Listen
-  let listeners: Server[] = []
-  async function listen (port) {
-    port = await getPort({ name: 'nuxt' })
-    const listener = await new Promise<Server>((resolve, reject) => {
-      const l = app.listen(port, err => err ? reject(err) : resolve(l))
-    })
+  let listeners: Listener[] = []
+  const _listen = async (port) => {
+    const listener = await listen(app, { port })
     listeners.push(listener)
-    return {
-      url: 'http://localhost:' + port
-    }
+    return listener
   }
 
   // Watch for dist and reload worker
@@ -122,16 +116,14 @@ export function createDevServer (sigmaContext: SigmaContext) {
     if (pendingWorker) {
       await pendingWorker.terminate()
     }
-    await Promise.all(listeners.map(l => new Promise((resolve) => {
-      l.close(() => resolve(undefined))
-    })))
+    await Promise.all(listeners.map(l => l.close()))
     listeners = []
   }
   sigmaContext._internal.hooks.hook('close', close)
 
   return {
     reload,
-    listen,
+    listen: _listen,
     close,
     watch,
     setLoadingMiddleware,
