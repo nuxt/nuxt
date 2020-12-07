@@ -4,9 +4,8 @@ import { node } from './node'
 
 export const local: SigmaPreset = extendPreset(node, {
   entry: '{{ _internal.runtimeDir }}/entries/local',
-  // @ts-ignore
   output: {
-    dir: '{{ _nuxt.rootDir }}/node_modules/.cache/sigma'
+    serverDir: '{{ output.dir }}/.local'
   },
   minify: false,
   externals: true,
