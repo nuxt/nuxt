@@ -50,7 +50,10 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }
 
   const env = un.env(nodePreset, builtinPreset, sigmaContext.env)
-  // console.log(env)
+
+  if (sigmaContext.sourceMap) {
+    env.polyfill.push('source-map-support/register')
+  }
 
   const buildServerDir = join(sigmaContext._nuxt.buildDir, 'dist/server')
   const runtimeAppDir = join(sigmaContext._internal.runtimeDir, 'app')
@@ -82,7 +85,12 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
       exports: 'auto',
       intro: '',
       outro: '',
-      preferConst: true
+      preferConst: true,
+      sourcemap: sigmaContext.sourceMap,
+      sourcemapExcludeSources: true,
+      sourcemapPathTransform (relativePath, sourcemapPath) {
+        return resolve(dirname(sourcemapPath), relativePath)
+      }
     },
     external: env.external,
     plugins: [],
@@ -112,8 +120,10 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     }
   }))
 
-  // ESBuild (typescript)
-  rollupConfig.plugins.push(esbuild({}))
+  // ESBuild
+  rollupConfig.plugins.push(esbuild({
+    sourceMap: true
+  }))
 
   // Dynamic Require Support
   rollupConfig.plugins.push(dynamicRequire({

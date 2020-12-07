@@ -31,7 +31,10 @@ export function timing (_opts: Options = {}): Plugin {
       let name = chunk.fileName || ''
       name = name.replace(extname(name), '')
       const logName = name === 'index' ? 'Cold Start' : ('Load ' + name)
-      return "'use strict';" + (chunk.isEntry ? HELPER : '') + `${TIMING}.logStart('${logName}');` + code + `;${TIMING}.logEnd('${logName}');`
+      return {
+        code: (chunk.isEntry ? HELPER : '') + `${TIMING}.logStart('${logName}');` + code + `;${TIMING}.logEnd('${logName}');`,
+        map: null
+      }
     }
   }
 }

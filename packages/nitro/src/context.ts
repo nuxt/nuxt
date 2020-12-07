@@ -17,6 +17,7 @@ export interface SigmaContext {
   timing: boolean
   inlineChunks: boolean
   minify: boolean
+  sourceMap: boolean
   externals: boolean
   analyze: boolean
   entry: string
@@ -66,6 +67,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     timing: true,
     inlineChunks: true,
     minify: true,
+    sourceMap: false,
     externals: false,
     analyze: false,
     entry: undefined,

@@ -6,7 +6,8 @@ import { startService, Loader, Service, TransformResult } from 'esbuild'
 import { createFilter, FilterPattern } from '@rollup/pluginutils'
 
 const defaultLoaders: { [ext: string]: Loader } = {
-  '.ts': 'ts'
+  '.ts': 'ts',
+  '.js': 'js'
 }
 
 export type Options = {

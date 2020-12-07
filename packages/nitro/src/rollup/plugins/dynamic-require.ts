@@ -33,7 +33,10 @@ export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin
   return {
     name: PLUGIN_NAME,
     transform (code: string, _id: string) {
-      return code.replace(DYNAMIC_REQUIRE_RE, `require('${HELPER_DYNAMIC}')(`)
+      return {
+        code: code.replace(DYNAMIC_REQUIRE_RE, `require('${HELPER_DYNAMIC}')(`),
+        map: null
+      }
     },
     resolveId (id: string) {
       return id === HELPER_DYNAMIC ? id : null

@@ -10,5 +10,6 @@ export const local: SigmaPreset = extendPreset(node, {
   minify: false,
   externals: true,
   inlineChunks: true,
-  timing: true
+  timing: false,
+  sourceMap: true
 })
