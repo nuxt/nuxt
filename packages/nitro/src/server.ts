@@ -87,7 +87,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
   // Listen
   let listeners: Listener[] = []
   const _listen = async (port) => {
-    const listener = await listen(app, { port })
+    const listener = await listen(app, { port, showURL: false, isProd: true })
     listeners.push(listener)
     return listener
   }
