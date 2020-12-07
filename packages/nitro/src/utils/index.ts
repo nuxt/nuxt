@@ -74,6 +74,14 @@ export function detectTarget () {
   }
 }
 
+export async function isDirectory (path: string) {
+  try {
+    return (await fse.stat(path)).isDirectory()
+  } catch (_err) {
+    return false
+  }
+}
+
 export function extendPreset (base: SigmaPreset, preset: SigmaPreset): SigmaPreset {
   return (config: SigmaInput) => {
     if (typeof preset === 'function') {

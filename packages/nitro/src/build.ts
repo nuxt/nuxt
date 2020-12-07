@@ -5,7 +5,7 @@ import ora from 'ora'
 import { readFile, emptyDir, copy } from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
-import { hl, prettyPath, serializeTemplate, writeFile } from './utils'
+import { hl, prettyPath, serializeTemplate, writeFile, isDirectory } from './utils'
 import { SigmaContext } from './context'
 
 export async function prepare (sigmaContext: SigmaContext) {
@@ -30,14 +30,17 @@ async function cleanupDir (dir: string) {
 export async function generate (sigmaContext: SigmaContext) {
   const spinner = ora()
   spinner.start('Generating public...')
-  await copy(
-    resolve(sigmaContext._nuxt.buildDir, 'dist/client'),
-    join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath)
-  )
-  await copy(
-    resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir),
-    sigmaContext.output.publicDir
-  )
+
+  const clientDist = resolve(sigmaContext._nuxt.buildDir, 'dist/client')
+  if (await isDirectory(clientDist)) {
+    await copy(clientDist, join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath))
+  }
+
+  const staticDir = resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir)
+  if (await isDirectory(staticDir)) {
+    await copy(staticDir, sigmaContext.output.publicDir)
+  }
+
   spinner.succeed('Generated public ' + prettyPath(sigmaContext.output.publicDir))
 }
 
