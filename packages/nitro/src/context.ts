@@ -5,6 +5,7 @@ import Hookable, { configHooksT } from 'hookable'
 import type { Preset } from '@nuxt/un'
 import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
 import * as PRESETS from './presets'
+import type { NodeExternalsOptions } from './rollup/plugins/externals'
 
 export interface ServerMiddleware {
   route: string
@@ -18,7 +19,7 @@ export interface SigmaContext {
   inlineChunks: boolean
   minify: boolean
   sourceMap: boolean
-  externals: boolean
+  externals: boolean | NodeExternalsOptions
   analyze: boolean
   entry: string
   node: boolean

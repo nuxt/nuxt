@@ -1,5 +1,6 @@
 import { dirname, join, relative, resolve } from 'upath'
 import { InputOptions, OutputOptions } from 'rollup'
+import defu from 'defu'
 import { terser } from 'rollup-plugin-terser'
 import commonjs from '@rollup/plugin-commonjs'
 import nodeResolve from '@rollup/plugin-node-resolve'
@@ -50,6 +51,8 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }
 
   const env = un.env(nodePreset, builtinPreset, sigmaContext.env)
+
+  delete env.alias['node-fetch'] // FIX ME
 
   if (sigmaContext.sourceMap) {
     env.polyfill.push('source-map-support/register')
@@ -165,15 +168,27 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     }
   }))
 
-  // External Plugin
+  const moduleDirectories = [
+    resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
+    resolve(MODULE_DIR, 'node_modules'),
+    resolve(MODULE_DIR, '../node_modules'),
+    'node_modules'
+  ]
+
+  // Externals Plugin
   if (sigmaContext.externals) {
-    rollupConfig.plugins.push(externals({
-      relativeTo: sigmaContext.output.serverDir,
-      include: [
+    rollupConfig.plugins.push(externals(defu(sigmaContext.externals as any, {
+      outDir: sigmaContext.output.serverDir,
+      moduleDirectories,
+      ignore: [
         sigmaContext._internal.runtimeDir,
+        ...(sigmaContext._nuxt.dev ? [] : [sigmaContext._nuxt.buildDir]),
         ...sigmaContext.middleware.map(m => m.handle)
-      ]
-    }))
+      ],
+      traceOptions: {
+        base: sigmaContext._nuxt.rootDir
+      }
+    })))
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/node-resolve
@@ -181,11 +196,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     extensions,
     preferBuiltins: true,
     rootDir: sigmaContext._nuxt.rootDir,
-    moduleDirectories: [
-      resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
-      resolve(MODULE_DIR, 'node_modules'),
-      'node_modules'
-    ],
+    moduleDirectories,
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
 
