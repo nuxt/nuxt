@@ -13205,6 +13205,11 @@ url-loader@^2.3.0:
     mime "^2.4.4"
     schema-utils "^2.5.0"
 
+url-polyfill@^1.1.12:
+  version "1.1.12"
+  resolved "https://registry.npmjs.org/url-polyfill/-/url-polyfill-1.1.12.tgz#6cdaa17f6b022841b3aec0bf8dbd87ac0cd33331"
+  integrity sha512-mYFmBHCapZjtcNHW0MDq9967t+z4Dmg5CJ0KqysK3+ZbyoNOWQHksGCTWwDhxGXllkWlOc10Xfko6v4a3ucM6A==
+
 url@^0.11.0:
   version "0.11.0"
   resolved "https://registry.npmjs.org/url/-/url-0.11.0.tgz#3838e97cfc60521eb73c525a8e55bfdd9e2e28f1"
