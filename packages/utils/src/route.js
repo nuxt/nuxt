@@ -201,7 +201,7 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += normalizeURL(getRoutePathExtension(key))
+        route.path += '/' + normalizeURL(getRoutePathExtension(key))
         if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
