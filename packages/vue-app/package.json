@@ -16,7 +16,6 @@
     "@nuxt/ufo": "^0.1.0",
     "node-fetch": "^2.6.1",
     "unfetch": "^4.2.0",
-    "url-polyfill": "^1.1.12",
     "vue": "^2.6.12",
     "vue-client-only": "^2.0.0",
     "vue-meta": "^2.4.0",

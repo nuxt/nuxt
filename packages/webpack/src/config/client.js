@@ -205,6 +205,11 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       )
     }
 
+    // Add URL polyfill for IE11 support with ufo
+    if (!this.isModern && !this.isServer) {
+      config.entry.app.unshift(require.resolve('url-polyfill/url-polyfill.min.js'))
+    }
+
     // Add friendly error plugin
     if (this.dev && !quiet && friendlyErrors) {
       config.plugins.push(

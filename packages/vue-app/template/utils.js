@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import 'url-polyfill'
 import { normalizeURL } from '@nuxt/ufo'
 
 // window.{{globals.loadedCallback}} hook
