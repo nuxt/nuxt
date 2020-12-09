@@ -13,7 +13,7 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "@nuxt/ufo": "^0.0.3",
+    "@nuxt/ufo": "^0.1.0",
     "node-fetch": "^2.6.1",
     "unfetch": "^4.2.0",
     "vue": "^2.6.12",
