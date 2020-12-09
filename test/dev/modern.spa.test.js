@@ -39,7 +39,7 @@ describe('modern client mode (SPA)', () => {
     expect(response).toContain('<link rel="preload" crossorigin="use-credentials" href="/_nuxt/commons/app.js" as="script">')
   })
 
-  test('should contain legacy http2 pushed resources', async () => {
+  test.posix('should contain legacy http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
@@ -59,7 +59,7 @@ describe('modern client mode (SPA)', () => {
     expect(response).toContain('src="/_nuxt/safari-nomodule-fix.js" crossorigin="use-credentials"')
   })
 
-  test('should contain modern http2 pushed resources', async () => {
+  test.posix('should contain modern http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'), { headers: { 'user-agent': modernUA } })
     expect(link).toEqual([
       '</_nuxt/runtime.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
