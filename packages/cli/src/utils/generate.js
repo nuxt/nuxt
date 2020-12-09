@@ -7,8 +7,8 @@ import globby from 'globby'
 import destr from 'destr'
 import { TARGETS } from '@nuxt/utils'
 
-export async function generate (cmd) {
-  const nuxt = await getNuxt({ server: true }, cmd)
+export async function buildFullStatic (cmd) {
+  const nuxt = await ensureBuild(cmd)
   const generator = await cmd.getGenerator(nuxt)
 
   await nuxt.server.listen(0)
@@ -20,14 +20,13 @@ export async function generate (cmd) {
 }
 
 export async function ensureBuild (cmd) {
-  const nuxt = await getNuxt({ _build: true, server: false }, cmd)
+  const nuxt = await getNuxt({ _build: true, server: true }, cmd)
   const { options } = nuxt
 
   if (options.generate.cache === false || destr(process.env.NUXT_BUILD) || cmd.argv['force-build']) {
     const builder = await cmd.getBuilder(nuxt)
     await builder.build()
-    await nuxt.close()
-    return
+    return nuxt
   }
 
   // Default build ignore files
@@ -102,7 +101,7 @@ export async function ensureBuild (cmd) {
       const changed = compareSnapshots(previousBuild.snapshot, currentBuild.snapshot)
       if (!changed) {
         consola.success('Skipping webpack build as no changes detected')
-        return
+        return nuxt
       } else {
         consola.info(`Doing webpack rebuild because ${changed} modified`)
       }
@@ -116,7 +115,7 @@ export async function ensureBuild (cmd) {
   // Write build.json
   fs.writeFileSync(nuxtBuildFile, JSON.stringify(currentBuild, null, 2), 'utf-8')
 
-  await nuxt.close()
+  return nuxt
 }
 
 async function getNuxt (args, cmd) {

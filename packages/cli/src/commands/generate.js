@@ -2,7 +2,7 @@ import { TARGETS } from '@nuxt/utils'
 import consola from 'consola'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
-import { ensureBuild, generate } from '../utils/generate'
+import { buildFullStatic } from '../utils/generate'
 
 export default {
   name: 'generate',
@@ -69,8 +69,7 @@ export default {
 
     // Full static
     if (config.target === TARGETS.static) {
-      await ensureBuild(cmd)
-      await generate(cmd)
+      await buildFullStatic(cmd)
       return
     }
 
