@@ -43,7 +43,7 @@ describe('modern server mode', () => {
     expect(response).not.toContain('=>')
   })
 
-  test.posix('should contain legacy http2 pushed resources', async () => {
+  test('should contain legacy http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
@@ -53,7 +53,7 @@ describe('modern server mode', () => {
     ].join(', '))
   })
 
-  test.posix('should contain module http2 pushed resources', async () => {
+  test('should contain module http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'), {
       headers: { 'user-agent': modernUA }
     })

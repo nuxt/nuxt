@@ -31,7 +31,7 @@ describe('modern client mode (SSR)', () => {
     expect(response).toContain('<link rel="modulepreload" crossorigin="use-credentials" href="/_nuxt/commons/app.modern.js" as="script">')
   })
 
-  test.posix('should contain module http2 pushed resources', async () => {
+  test('should contain module http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.modern.js>; rel=modulepreload; crossorigin=use-credentials; as=script',
