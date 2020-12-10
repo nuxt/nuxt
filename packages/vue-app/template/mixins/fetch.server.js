@@ -19,7 +19,7 @@ async function serverPrefetch() {
 
 
   // Define an ssrKey for hydration
-  this._fetchKey = this._fetchKey || this.$ssrContext.nuxt.fetchCounters['']++
+  this._fetchKey = this._fetchKey || this.$ssrContext.fetchCounters['']++
 
   // Add data-fetch-key on parent element of Component
   const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
