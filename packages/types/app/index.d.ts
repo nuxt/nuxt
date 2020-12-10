@@ -61,11 +61,11 @@ export interface Context {
     redirected: boolean
     next: NextFunction
     beforeRenderFns: Array<() => any>
+    fetchCounters: Record<string, number>
     nuxt: {
       layout: string
       data: Array<Record<string, any>>
       fetch: Array<Record<string, any>>
-      fetchIndices: Record<string, any>
       error: any
       state: Array<Record<string, any>>
       serverRendered: boolean

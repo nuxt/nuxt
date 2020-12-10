@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook, purifyData } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, purifyData, createGetCounter } from '../utils'
 
 async function serverPrefetch() {
   if (!this._fetchOnServer) {
@@ -19,7 +19,7 @@ async function serverPrefetch() {
 
 
   // Define an ssrKey for hydration
-  this._fetchKey = this._fetchKey || this.$ssrContext.nuxt.fetchIndices['']++
+  this._fetchKey = this._fetchKey || this.$ssrContext.nuxt.fetchCounters['']++
 
   // Add data-fetch-key on parent element of Component
   const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
@@ -47,16 +47,14 @@ export default {
       this._fetchOnServer = this.$options.fetchOnServer !== false
     }
 
+    const defaultKey = this.$options._scopeId || this.$options.name || ''
+    const getCounter = createGetCounter(this.$ssrContext.fetchCounters, defaultKey)
+
     if (typeof this.$options.fetchKey === 'function') {
-      this._fetchKey = this.$options.fetchKey.call(this, this.$ssrContext.nuxt.fetchIndices)
+      this._fetchKey = this.$options.fetchKey.call(this, getCounter)
     } else {
-      const key = ['number', 'string'].includes(typeof this.$options.fetchKey)
-        ? this.$options.fetchKey
-        : this.$options.name || ''
-      if (this.$ssrContext.nuxt.fetchIndices[key] === undefined) {
-        this.$ssrContext.nuxt.fetchIndices[key] = 0
-      }
-      this._fetchKey = key + this.$ssrContext.nuxt.fetchIndices[key]++
+      const key = 'string' === typeof this.$options.fetchKey ? this.$options.fetchKey : defaultKey
+      this._fetchKey = key + getCounter(key)
     }
 
     // Added for remove vue undefined warning while ssr

@@ -73,7 +73,7 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: {}, fetchIndices: { '': 0 }, <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: {}, fetchCounters: { '': 0 }, <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
   // Remove query from url is static target
   if (process.static && ssrContext.url) {
     ssrContext.url = ssrContext.url.split('?')[0]

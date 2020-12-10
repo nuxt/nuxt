@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, createGetCounter } from '../utils'
 
 const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.fetchKey
 const nuxtState = window.<%= globals.context %>
@@ -65,16 +65,14 @@ function createdFullStatic() {
   }
   this._hydrated = true
 
+  const defaultKey = this.$options._scopeId || this.$options.name || ''
+  const getCounter = createGetCounter(this.<%= globals.nuxt %>._fetchCounters, defaultKey)
+
   if (typeof this.$options.fetchKey === 'function') {
-    this._fetchKey = this.$options.fetchKey.call(this, this.<%= globals.nuxt %>._fetchIndices)
+    this._fetchKey = this.$options.fetchKey.call(this, getCounter)
   } else {
-    const key = ['number', 'string'].includes(typeof this.$options.fetchKey)
-        ? this.$options.fetchKey
-        : this.$options.name || ''
-    if (this.<%= globals.nuxt %>._fetchIndices[key] === undefined) {
-      this.<%= globals.nuxt %>._fetchIndices[key] = 0
-    }
-    this._fetchKey = key + this.<%= globals.nuxt %>._fetchIndices[key]++
+    const key = 'string' === typeof this.$options.fetchKey ? this.$options.fetchKey : defaultKey
+    this._fetchKey = key + getCounter(key)
   }
 
   const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
