@@ -64,7 +64,14 @@ function createdFullStatic() {
     return
   }
   this._hydrated = true
-  this._fetchKey = this.<%= globals.nuxt %>._payloadFetchIndex++
+
+  if (typeof this.$options.fetchKey === 'function') {
+    this._fetchKey = this.$options.fetchKey.call(this)
+  } else if (['number', 'string'].includes(typeof this.$options.fetchKey)) {
+    this._fetchKey = this.$options.fetchKey
+  }
+  this._fetchKey = this._fetchKey || this.<%= globals.nuxt %>._payloadFetchIndex++
+
   const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
 
   // If fetch error
