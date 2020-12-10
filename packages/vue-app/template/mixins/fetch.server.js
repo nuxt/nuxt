@@ -19,7 +19,7 @@ async function serverPrefetch() {
 
 
   // Define an ssrKey for hydration
-  this._fetchKey = this._fetchKey || this.$ssrContext.nuxt.fetchKey++
+  this._fetchKey = this._fetchKey || this.$ssrContext.nuxt.fetchKeys['']++
 
   // Add data-fetch-key on parent element of Component
   const attrs = this.$vnode.data.attrs = this.$vnode.data.attrs || {}
@@ -48,9 +48,13 @@ export default {
     }
 
     if (typeof this.$options.fetchKey === 'function') {
-      this._fetchKey = this.$options.fetchKey.call(this)
+      this._fetchKey = this.$options.fetchKey.call(this, this.$ssrContext.nuxt.fetchKeys)
     } else if (['number', 'string'].includes(typeof this.$options.fetchKey)) {
-      this._fetchKey = this.$options.fetchKey
+      const key = this.$options.fetchKey
+      if (this.$ssrContext.nuxt.fetchKeys[key] === undefined) {
+        this.$ssrContext.nuxt.fetchKeys[key] = 0
+      }
+      this._fetchKey = key + '-' + this.$ssrContext.nuxt.fetchKeys[key]++
     }
 
     // Added for remove vue undefined warning while ssr

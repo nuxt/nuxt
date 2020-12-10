@@ -317,7 +317,9 @@ export default {
     <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
-      this._payloadFetchIndex = 0
+      this._fetchKeys = {
+        '': 0
+      }
     },
     async fetchPayload(route) {
       <% if (nuxtOptions.generate.manifest) { %>
