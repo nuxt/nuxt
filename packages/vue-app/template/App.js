@@ -317,7 +317,7 @@ export default {
     <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
-      this._fetchKeys = {
+      this._fetchIndices = {
         '': 0
       }
     },

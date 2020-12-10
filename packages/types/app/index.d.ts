@@ -65,7 +65,7 @@ export interface Context {
       layout: string
       data: Array<Record<string, any>>
       fetch: Array<Record<string, any>>
-      fetchKey: number
+      fetchIndices: Record<string, any>
       error: any
       state: Array<Record<string, any>>
       serverRendered: boolean

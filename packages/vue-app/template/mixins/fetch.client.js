@@ -66,15 +66,15 @@ function createdFullStatic() {
   this._hydrated = true
 
   if (typeof this.$options.fetchKey === 'function') {
-    this._fetchKey = this.$options.fetchKey.call(this, this.<%= globals.nuxt %>._fetchKeys)
+    this._fetchKey = this.$options.fetchKey.call(this, this.<%= globals.nuxt %>._fetchIndices)
   } else {
     const key = ['number', 'string'].includes(typeof this.$options.fetchKey)
         ? this.$options.fetchKey
         : this.$options.name || ''
-    if (this.<%= globals.nuxt %>._fetchKeys[key] === undefined) {
-      this.<%= globals.nuxt %>._fetchKeys[key] = 0
+    if (this.<%= globals.nuxt %>._fetchIndices[key] === undefined) {
+      this.<%= globals.nuxt %>._fetchIndices[key] = 0
     }
-    this._fetchKey = key + this.<%= globals.nuxt %>._fetchKeys[key]++
+    this._fetchKey = key + this.<%= globals.nuxt %>._fetchIndices[key]++
   }
 
   const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
