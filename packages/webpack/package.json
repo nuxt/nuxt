@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.12.9",
+    "@babel/core": "^7.12.10",
     "@nuxt/babel-preset-app": "2.14.11",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/utils": "2.14.11",
@@ -21,7 +21,7 @@
     "css-loader": "^4.3.0",
     "cssnano": "^4.1.10",
     "eventsource-polyfill": "^0.9.6",
-    "extract-css-chunks-webpack-plugin": "^4.8.0",
+    "extract-css-chunks-webpack-plugin": "^4.9.0",
     "file-loader": "^6.2.0",
     "glob": "^7.1.6",
     "hard-source-webpack-plugin": "^0.13.1",
