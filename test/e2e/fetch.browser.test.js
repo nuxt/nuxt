@@ -76,6 +76,35 @@ describe('basic browser', () => {
     expect(await page.$text('pre')).toContain('kevinmarrec')
   })
 
+  test('/nested', async () => {
+    await page.nuxt.navigate('/nested')
+    expect(await page.$text('div')).toContain('foo-bar-baz')
+    expect(await page.$text('div')).toContain('fizz-buzz')
+    expect(await page.$text('button')).toContain('fetch')
+  })
+
+  test('/nested/child', async () => {
+    await page.nuxt.navigate('/nested/child')
+    await page.waitForSelector('pre')
+    expect(await page.$text('pre')).toContain('Atinux')
+    expect(await page.$text('div')).toContain('foo-bar-baz')
+    expect(await page.$text('div')).toContain('fizz-buzz')
+  })
+
+  test('ssr: /nested', async () => {
+    page = await browser.page(url('/nested'))
+    expect(await page.$text('div')).toContain('foo-bar-baz')
+    expect(await page.$text('div')).toContain('fizz-buzz')
+    expect(await page.$text('button')).toContain('has fetch')
+  })
+
+  test('ssr: /nested/child', async () => {
+    page = await browser.page(url('/nested/child'))
+    expect(await page.$text('pre')).toContain('Atinux')
+    expect(await page.$text('div')).toContain('foo-bar-baz')
+    expect(await page.$text('div')).toContain('fizz-buzz')
+  })
+
   test('ssr: /fetch-root', async () => {
     const page = await browser.page(url('/fetch-root'))
     expect(await page.$text('button')).toContain('has fetch')
@@ -132,7 +161,7 @@ describe('basic browser', () => {
     // Fragments
     const { data, fetch } = await page.evaluate(() => window.__NUXT__)
     expect(data.length).toBe(1)
-    expect(Object.keys(fetch).length).toBe(1)
+    expect(Object.keys(fetch).length).toBe(2)
 
     // asyncData mutations
     expect(data[0]).toMatchObject({ async: 'data', async2: 'data2' })
