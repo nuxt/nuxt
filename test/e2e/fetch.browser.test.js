@@ -132,7 +132,7 @@ describe('basic browser', () => {
     // Fragments
     const { data, fetch } = await page.evaluate(() => window.__NUXT__)
     expect(data.length).toBe(1)
-    expect(fetch.length).toBe(1)
+    expect(Object.keys(fetch).length).toBe(1)
 
     // asyncData mutations
     expect(data[0]).toMatchObject({ async: 'data', async2: 'data2' })
