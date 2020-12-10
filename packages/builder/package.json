@@ -23,7 +23,8 @@
     "pify": "^5.0.0",
     "semver": "^7.3.4",
     "serialize-javascript": "^5.0.1",
-    "upath": "^2.0.1"
+    "upath": "^2.0.1",
+    "url-polyfill": "^1.1.12"
   },
   "publishConfig": {
     "access": "public"
