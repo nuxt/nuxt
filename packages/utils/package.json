@@ -16,7 +16,7 @@
     "semver": "^7.3.4",
     "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
-    "ua-parser-js": "^0.7.22"
+    "ua-parser-js": "^0.7.23"
   },
   "publishConfig": {
     "access": "public"

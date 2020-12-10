@@ -12,7 +12,7 @@
     "@types/autoprefixer": "^9.7.2",
     "@types/babel__core": "^7.1.12",
     "@types/compression": "^1.7.0",
-    "@types/connect": "^3.4.33",
+    "@types/connect": "^3.4.34",
     "@types/etag": "^1.8.0",
     "@types/file-loader": "^4.2.0",
     "@types/html-minifier": "^4.0.0",
