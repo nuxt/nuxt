@@ -38,7 +38,7 @@ function created() {
 
   // Hydrate component
   this._hydrated = true
-  this._fetchKey = +this.$vnode.elm.dataset.fetchKey
+  this._fetchKey = this.$vnode.elm.dataset.fetchKey
   const data = nuxtState.fetch[this._fetchKey]
 
   // If fetch error
@@ -67,14 +67,15 @@ function createdFullStatic() {
 
   if (typeof this.$options.fetchKey === 'function') {
     this._fetchKey = this.$options.fetchKey.call(this, this.<%= globals.nuxt %>._fetchKeys)
-  } else if (['number', 'string'].includes(typeof this.$options.fetchKey)) {
-    const key = this.$options.fetchKey
+  } else {
+    const key = ['number', 'string'].includes(typeof this.$options.fetchKey)
+        ? this.$options.fetchKey
+        : this.$options.name || ''
     if (this.<%= globals.nuxt %>._fetchKeys[key] === undefined) {
       this.<%= globals.nuxt %>._fetchKeys[key] = 0
     }
-    this._fetchKey = key + '-' + this.<%= globals.nuxt %>._fetchKeys[key]++
+    this._fetchKey = key + this.<%= globals.nuxt %>._fetchKeys[key]++
   }
-  this._fetchKey = this._fetchKey || this.<%= globals.nuxt %>._fetchKeys['']++
 
   const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
 

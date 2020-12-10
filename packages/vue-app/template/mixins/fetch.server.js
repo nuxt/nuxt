@@ -49,12 +49,14 @@ export default {
 
     if (typeof this.$options.fetchKey === 'function') {
       this._fetchKey = this.$options.fetchKey.call(this, this.$ssrContext.nuxt.fetchKeys)
-    } else if (['number', 'string'].includes(typeof this.$options.fetchKey)) {
-      const key = this.$options.fetchKey
+    } else {
+      const key = ['number', 'string'].includes(typeof this.$options.fetchKey)
+        ? this.$options.fetchKey
+        : this.$options.name || ''
       if (this.$ssrContext.nuxt.fetchKeys[key] === undefined) {
         this.$ssrContext.nuxt.fetchKeys[key] = 0
       }
-      this._fetchKey = key + '-' + this.$ssrContext.nuxt.fetchKeys[key]++
+      this._fetchKey = key + this.$ssrContext.nuxt.fetchKeys[key]++
     }
 
     // Added for remove vue undefined warning while ssr
