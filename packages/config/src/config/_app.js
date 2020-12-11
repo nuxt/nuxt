@@ -67,6 +67,7 @@ export default () => ({
     validate: true,
     asyncData: true,
     fetch: true,
+    catchFetchError: true,
     clientOnline: true,
     clientPrefetch: true,
     clientUseUrl: false,

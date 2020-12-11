@@ -7,6 +7,7 @@ async function serverPrefetch() {
   }
 
   // Call and await on $fetch
+  <% if (features.catchFetchError) { %>
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
@@ -15,6 +16,9 @@ async function serverPrefetch() {
     }
     this.$fetchState.error = normalizeError(err)
   }
+  <% } else { %>
+  await this.$options.fetch.call(this)
+  <% } %>
   this.$fetchState.pending = false
 
 

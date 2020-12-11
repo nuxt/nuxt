@@ -96,6 +96,7 @@ async function $_fetch() {
   let error = null
   const startTime = Date.now()
 
+  <% if (features.catchFetchError) { %>
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
@@ -104,6 +105,9 @@ async function $_fetch() {
     }
     error = normalizeError(err)
   }
+  <% } else { %>
+  await this.$options.fetch.call(this)
+  <% } %>
 
   const delayLeft = this._fetchDelay - (Date.now() - startTime)
   if (delayLeft > 0) {
