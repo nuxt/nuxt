@@ -78,6 +78,11 @@ describe('basic browser', () => {
 
   test('/nested', async () => {
     await page.nuxt.navigate('/nested')
+    const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
+    expect(fetchKeys).toEqual([
+      '0',
+      'DefaultLayout0'
+    ])
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
     expect(await page.$text('button')).toContain('fetch')
@@ -87,6 +92,11 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/nested/child')
     await page.waitForSelector('pre')
     expect(await page.$text('pre')).toContain('Atinux')
+    const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
+    expect(fetchKeys).toEqual([
+      '0',
+      'DefaultLayout0'
+    ])
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
   })
@@ -95,12 +105,26 @@ describe('basic browser', () => {
     page = await browser.page(url('/nested'))
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
+    const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
+    expect(fetchKeys).toEqual([
+      '0',
+      'DefaultLayout0',
+      'ie0'
+    ])
     expect(await page.$text('button')).toContain('has fetch')
   })
 
   test('ssr: /nested/child', async () => {
     page = await browser.page(url('/nested/child'))
     expect(await page.$text('pre')).toContain('Atinux')
+    const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
+    expect(fetchKeys).toEqual([
+      '0',
+      'DefaultLayout0',
+      'team0'
+    ])
+    const team = await page.evaluate(() => window.__NUXT__.fetch.team0.team)
+    expect(team.includes('Atinux'))
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
   })

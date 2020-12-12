@@ -9,7 +9,9 @@
 
 <script>
 export default {
-
+  fetchKey (getCounter) {
+    return 'ie' + getCounter('ie')
+  },
   data () {
     return {
       foo: null
