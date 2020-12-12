@@ -64,6 +64,7 @@ export default class Generator {
     if (this.manifest) {
       await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
+      await fsExtra.ensureDir(this.staticAssetsDir)
       await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
     }
