@@ -72,8 +72,8 @@ export function createDevServer (sigmaContext: SigmaContext) {
   const proxy = createProxy()
   app.use((req, res) => {
     if (workerAddress) {
-      proxy.web(req, res, { target: workerAddress }, (err) => {
-        console.error('[proxy]', err)
+      proxy.web(req, res, { target: workerAddress }, (_err) => {
+        // console.error('[proxy]', err)
       })
     } else if (loadingMiddleware) {
       // TODO:serverIndex method is not exposed
