@@ -1,8 +1,8 @@
 import { Worker } from 'worker_threads'
+import connect from 'connect'
 import { resolve } from 'upath'
 import debounce from 'debounce'
 import chokidar from 'chokidar'
-import { createApp } from '@nuxt/h2'
 import { listen, Listener } from 'listhen'
 import serveStatic from 'serve-static'
 import { createProxy } from 'http-proxy'
@@ -47,7 +47,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
   }
 
   // App
-  const app = createApp()
+  const app = connect()
 
   // _nuxt and static
   app.use(sigmaContext._nuxt.publicPath, serveStatic(resolve(sigmaContext._nuxt.buildDir, 'dist/client')))
