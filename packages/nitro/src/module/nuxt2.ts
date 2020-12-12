@@ -8,7 +8,9 @@ import wpfs from '../utils/wpfs'
 export default function (nuxt, moduleContainer) {
   // Build in node_modules/.cache/nuxt
   const oldBuildDir = nuxt.options.buildDir
-  nuxt.options.buildDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
+  if (!nuxt.options.dev) {
+    nuxt.options.buildDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
+  }
   nuxt.options.build.transpile = nuxt.options.build.transpile || []
   nuxt.options.build.transpile.push(nuxt.options.buildDir)
   nuxt.options.appTemplatePath = nuxt.options.appTemplatePath
