@@ -78,9 +78,12 @@ const defaultTransition = <%=
 const originalRegisterModule = Vuex.Store.prototype.registerModule
 
 function registerModule (path, rawModule, options = {}) {
-  return originalRegisterModule.call(
-    this, path, rawModule, { preserveState: process.client && path in this.state, ...options }
+  const preserveState = process.client && (
+    Array.isArray(path)
+      ? path.reduce((namespacedState, path) => namespacedState && namespacedState[path], this.state)
+      : path in this.state
   )
+  return originalRegisterModule.call(this, path, rawModule, { preserveState, ...options })
 }
 <% } %>
 
