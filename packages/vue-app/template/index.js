@@ -80,7 +80,7 @@ const originalRegisterModule = Vuex.Store.prototype.registerModule
 function registerModule (path, rawModule, options = {}) {
   const preserveState = process.client && (
     Array.isArray(path)
-      ? path.reduce((namespacedState, path) => namespacedState && namespacedState[path], this.state)
+      ? !!path.reduce((namespacedState, path) => namespacedState && namespacedState[path], this.state)
       : path in this.state
   )
   return originalRegisterModule.call(this, path, rawModule, { preserveState, ...options })
