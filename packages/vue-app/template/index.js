@@ -76,10 +76,11 @@ const defaultTransition = <%=
 
 <% if (store) { %>
 const originalRegisterModule = Vuex.Store.prototype.registerModule
-const baseStoreOptions = { preserveState: process.client }
 
 function registerModule (path, rawModule, options = {}) {
-  return originalRegisterModule.call(this, path, rawModule, { ...baseStoreOptions, ...options })
+  return originalRegisterModule.call(
+    this, path, rawModule, { preserveState: process.client && path in this.state, ...options }
+  )
 }
 <% } %>
 
