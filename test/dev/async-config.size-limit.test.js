@@ -23,7 +23,7 @@ describe('nuxt basic resources size limit', () => {
     const LEGACY_JS_RESOURCES_KB_SIZE = 217
     expect(legacyResourcesSize.uncompressed).toBeWithinSize(LEGACY_JS_RESOURCES_KB_SIZE)
 
-    const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 70
+    const LEGACY_JS_RESOURCES_GZIP_KB_SIZE = 75
     expect(legacyResourcesSize.gzip).toBeWithinSize(LEGACY_JS_RESOURCES_GZIP_KB_SIZE)
 
     const LEGACY_JS_RESOURCES_BROTLI_KB_SIZE = 64
@@ -36,7 +36,7 @@ describe('nuxt basic resources size limit', () => {
     const MODERN_JS_RESOURCES_KB_SIZE = 180
     expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE)
 
-    const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 60
+    const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 64
     expect(modernResourcesSize.gzip).toBeWithinSize(MODERN_JS_RESOURCES_GZIP_KB_SIZE)
 
     const MODERN_JS_RESOURCES_BROTLI_KB_SIZE = 55
