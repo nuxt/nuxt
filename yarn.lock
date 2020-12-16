@@ -1955,10 +1955,10 @@
     rc9 "^1.2.0"
     std-env "^2.2.1"
 
-"@nuxt/ufo@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/@nuxt/ufo/-/ufo-0.1.0.tgz#4943741c4300b73e4f1de09cad684ed4e9235502"
-  integrity sha512-7az26cl4TaNejTFlgwcGRIGPFH6tD8dLh1t+Q+BWIM8UQqqV9o2DH9yKcVlboP+LdocLBUC+OTOiZc0RSZh0bA==
+"@nuxt/ufo@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.npmjs.org/@nuxt/ufo/-/ufo-0.5.0.tgz#a84d5ce9dedee25b81fbbb4b44fef5ca2987af39"
+  integrity sha512-0My2z3nfJ8KTyz49/kyRBh0naoArsItDgfQP7qf38BfY8HAoiujFIANZyjpnq433UOU0wZqv0djHkydQX56FmQ==
 
 "@nuxtjs/eslint-config@^5.0.0":
   version "5.0.0"
@@ -13204,11 +13204,6 @@ url-loader@^2.3.0:
     loader-utils "^1.2.3"
     mime "^2.4.4"
     schema-utils "^2.5.0"
-
-url-polyfill@^1.1.12:
-  version "1.1.12"
-  resolved "https://registry.npmjs.org/url-polyfill/-/url-polyfill-1.1.12.tgz#6cdaa17f6b022841b3aec0bf8dbd87ac0cd33331"
-  integrity sha512-mYFmBHCapZjtcNHW0MDq9967t+z4Dmg5CJ0KqysK3+ZbyoNOWQHksGCTWwDhxGXllkWlOc10Xfko6v4a3ucM6A==
 
 url@^0.11.0:
   version "0.11.0"
