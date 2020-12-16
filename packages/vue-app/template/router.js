@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { normalizeURL } from '@nuxt/ufo'
+import { normalizeURL, decode } from '@nuxt/ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 
@@ -109,7 +109,7 @@ export const routerOptions = {
 function decodeObj(obj) {
   for (const key in obj) {
     if (typeof obj[key] === 'string') {
-      obj[key] = decodeURIComponent(obj[key])
+      obj[key] = decode(obj[key])
     }
   }
 }
