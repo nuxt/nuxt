@@ -1955,10 +1955,10 @@
     rc9 "^1.2.0"
     std-env "^2.2.1"
 
-"@nuxt/ufo@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.npmjs.org/@nuxt/ufo/-/ufo-0.3.1.tgz#3dd07e8ddc1c1eb1b4fe54645f936fa9484228d0"
-  integrity sha512-AJ2+LO5MDQMZ31UPRQPQUz03zIlJ/huqrR+Mc4jzsFl/UihWniiB1FyhmitvIC19+Van5vK0x0Bhk5K/tmmBgA==
+"@nuxt/ufo@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.npmjs.org/@nuxt/ufo/-/ufo-0.5.0.tgz#a84d5ce9dedee25b81fbbb4b44fef5ca2987af39"
+  integrity sha512-0My2z3nfJ8KTyz49/kyRBh0naoArsItDgfQP7qf38BfY8HAoiujFIANZyjpnq433UOU0wZqv0djHkydQX56FmQ==
 
 "@nuxtjs/eslint-config@^5.0.0":
   version "5.0.0"

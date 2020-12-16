@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/ufo": "^0.3.1",
+    "@nuxt/ufo": "^0.5.0",
     "consola": "^2.15.0",
     "fs-extra": "^8.1.0",
     "hash-sum": "^2.0.0",
