@@ -4,7 +4,7 @@ import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { TARGETS, urlJoin } from '@nuxt/utils'
-import { withoutTrailingSlash } from '@nuxt/ufo'
+import { parsePath, withoutTrailingSlash } from '@nuxt/ufo'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -210,7 +210,7 @@ export default class SSRRenderer extends BaseRenderer {
         // Page level payload.js (async loaded for CSR)
         const payloadPath = urlJoin(url, 'payload.js')
         const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
-        let routePath = url.split('?')[0] // remove query params
+        let routePath = parsePath(url).pathname // remove query params
         if (!this.options.router.trailingSlash) {
           routePath = withoutTrailingSlash(routePath) || '/'
         }

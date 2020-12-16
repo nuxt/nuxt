@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { withoutTrailingSlash } from '@nuxt/ufo'
+import { parsePath, withoutTrailingSlash } from '@nuxt/ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',
@@ -304,7 +304,7 @@ export default {
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      let path = route.split('?')[0].split('#')[0]
+      let path = parsePath(route).pathname
       <% if (!nuxtOptions.router.trailingSlash) { %>
         path = withoutTrailingSlash(path)
       <% } %>
