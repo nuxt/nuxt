@@ -255,7 +255,7 @@ export default class WebpackBaseConfig {
           },
           terserOptions: {
             compress: {
-              ecma: this.isModern ? 6 : undefined
+              ecma: this.isModern ? 2015 : undefined
             },
             mangle: {
               reserved: reservedVueTags

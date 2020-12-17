@@ -55,6 +55,7 @@ describe('basic browser', () => {
   test('/store-module', async () => {
     await page.nuxt.navigate('/store-module')
     expect(await page.$text('h1')).toBe('mutated')
+    expect(await page.evaluate(() => window.__NUXT__.state.clientsideModule.initialised)).toBeTruthy()
   })
 
   test('/css', async () => {

@@ -168,15 +168,19 @@ export class WebpackBundler {
     const buildOptions = this.buildContext.options.build
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
+    compiler.options.watchOptions = this.buildContext.options.watchers.webpack
+    compiler.hooks.infrastructureLog.tap('webpack-dev-middleware-log', (name) => {
+      if (name === 'webpack-dev-middleware') {
+        return false
+      }
+      return undefined
+    })
+
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
         compiler, {
-          publicPath: buildOptions.publicPath,
-          stats: false,
-          logLevel: 'silent',
-          watchOptions: this.buildContext.options.watchers.webpack,
-          fs: compiler.outputFileSystem,
+          outputFileSystem: compiler.outputFileSystem,
           ...buildOptions.devMiddleware
         })
     )
@@ -203,7 +207,10 @@ export class WebpackBundler {
     const name = isModernRequest(req, this.buildContext.options.modern) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
+      const { url } = req
+      req.url = req.originalUrl || req.url
       await this.devMiddleware[name](req, res)
+      req.url = url
     }
 
     if (this.hotMiddleware && this.hotMiddleware[name]) {

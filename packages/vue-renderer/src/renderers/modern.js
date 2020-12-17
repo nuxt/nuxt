@@ -51,7 +51,7 @@ export default class ModernRenderer extends SSRRenderer {
       return scripts
     }
 
-    const scriptPattern = /<script[^>]*?src="([^"]*?)" defer><\/script>/g
+    const scriptPattern = /<script[^>]*?src="([^"]*?)" defer( async)?><\/script>/g
 
     const modernScripts = scripts.replace(scriptPattern, (scriptTag, jsFile) => {
       const legacyJsFile = jsFile.replace(this.publicPath, '')

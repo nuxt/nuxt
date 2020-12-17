@@ -63,19 +63,25 @@ Object {
     "indicator": false,
     "loaders": Object {
       "css": Object {
+        "esModule": false,
         "sourceMap": false,
       },
       "cssModules": Object {
+        "esModule": false,
         "modules": Object {
           "localIdentName": "[local]_[hash:base64:5]",
         },
         "sourceMap": false,
       },
-      "file": Object {},
+      "file": Object {
+        "esModule": false,
+      },
       "fontUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "imgUrl": Object {
+        "esModule": false,
         "limit": 1000,
       },
       "less": Object {

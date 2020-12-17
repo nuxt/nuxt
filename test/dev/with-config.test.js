@@ -42,8 +42,8 @@ describe('with-config', () => {
 
   test('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain(
-      '<link rel="preload" href="/test/orion/fonts/roboto.7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
+    expect(html).toMatch(
+      /<link rel="preload" href="\/test\/orion\/fonts\/roboto.[\w]{7}.woff2" as="font" type="font\/woff2" crossorigin/
     )
   })
 
@@ -60,6 +60,11 @@ describe('with-config', () => {
   test('/ (custom build.publicPath)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<script src="/test/orion/')
+  })
+
+  test('/ (async <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer async>')
   })
 
   test('/ (custom postcss.config.js)', async () => {

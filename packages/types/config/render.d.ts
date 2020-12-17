@@ -68,6 +68,7 @@ export interface NuxtOptionsRender {
     ) => string[]
   }
   injectScripts?: boolean
+  asyncScripts?: boolean
   resourceHints?: boolean
   ssr?: boolean
   ssrLog?: boolean | 'collapsed'

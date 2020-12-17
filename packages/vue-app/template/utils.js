@@ -10,6 +10,15 @@ if (process.client) {
   }
 }
 
+export function createGetCounter (counterObject, defaultKey = '') {
+  return function getCounter (id = defaultKey) {
+    if (counterObject[id] === undefined) {
+      counterObject[id] = 0
+    }
+    return counterObject[id]++
+  }
+}
+
 export function empty () {}
 
 export function globalHandleError (error) {

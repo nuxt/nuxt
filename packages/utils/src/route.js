@@ -1,7 +1,7 @@
 import path from 'path'
 import get from 'lodash/get'
 import consola from 'consola'
-import { normalizeURL } from '@nuxt/ufo'
+import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from '@nuxt/ufo'
 import { r } from './resolve'
 
 const routeChildren = function (route) {
@@ -205,7 +205,11 @@ export const createRoutes = function createRoutes ({
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
+      if (trailingSlash && !route.path.endsWith('*')) {
+        route.path = withTrailingSlash(route.path)
+      } else {
+        route.path = withoutTrailingSlash(route.path) || '/'
+      }
     }
 
     parent.push(route)
