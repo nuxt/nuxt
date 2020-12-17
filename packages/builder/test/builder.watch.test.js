@@ -1,13 +1,14 @@
 import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
-import { debounce } from 'lodash'
+import lodash from 'lodash'
 import { r, isString, isPureObject } from '@nuxt/utils'
-
 import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
 jest.mock('@nuxt/webpack')
+
+lodash.debounce = jest.fn()
 
 jest.mock('chokidar', () => ({
   watch: jest.fn().mockReturnThis(),
@@ -15,7 +16,6 @@ jest.mock('chokidar', () => ({
   close: jest.fn().mockReturnThis()
 }))
 jest.mock('upath', () => ({ normalizeSafe: jest.fn(src => src) }))
-jest.mock('lodash/debounce', () => jest.fn(fn => fn))
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
 jest.mock('@nuxt/webpack')
@@ -158,8 +158,8 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(debounce).toBeCalledTimes(1)
-    expect(debounce).toBeCalledWith(expect.any(Function), 200)
+    expect(lodash.debounce).toBeCalledTimes(1)
+    expect(lodash.debounce).toBeCalledWith(expect.any(Function), 200)
 
     const refreshFiles = chokidar.on.mock.calls[0][1]
     builder.generateRoutesAndFiles = jest.fn()

@@ -1,12 +1,14 @@
 import hash from 'hash-sum'
 import consola from 'consola'
 import serialize from 'serialize-javascript'
+import lodash from 'lodash'
 
 import devalue from '@nuxt/devalue'
 import { r, wp, wChunk, serializeFunction } from '@nuxt/utils'
 import TemplateContext from '../../src/context/template'
 
-jest.mock('lodash', () => ({ test: 'test lodash', warn: 'only once' }))
+lodash.test = 'test lodash'
+lodash.warn = 'only once'
 
 describe('builder: buildContext', () => {
   const builder = {

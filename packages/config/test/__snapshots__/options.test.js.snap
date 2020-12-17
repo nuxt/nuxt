@@ -45,6 +45,7 @@ Object {
     },
     "followSymlinks": false,
     "friendlyErrors": true,
+    "futureResolveLoaders": false,
     "hardSource": false,
     "hotMiddleware": Object {},
     "html": Object {

@@ -1,18 +1,19 @@
 import path from 'path'
+import lodash from 'lodash'
 import Glob from 'glob'
 import fs from 'fs-extra'
 import consola from 'consola'
-import { template } from 'lodash'
 import { r, createRoutes, stripWhitespace } from '@nuxt/utils'
 import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import TemplateContext from '../src/context/template'
 import { createNuxt } from './__utils__'
 
+lodash.template = jest.fn()
+
 jest.mock('glob')
 jest.mock('pify', () => fn => fn)
 jest.mock('fs-extra')
-jest.mock('lodash/template')
 jest.mock('@nuxt/utils')
 jest.mock('../src/context/template', () => jest.fn())
 jest.mock('../src/ignore', () => function () {
@@ -373,7 +374,7 @@ describe('builder: builder generate', () => {
     const builder = new Builder(nuxt, BundleBuilder)
     builder.relativeToBuild = jest.fn()
     const templateFn = jest.fn(() => 'compiled content')
-    template.mockImplementation(() => templateFn)
+    lodash.template.mockImplementation(() => templateFn)
     stripWhitespace.mockImplementation(content => `trim(${content})`)
 
     const templateContext = {
@@ -403,10 +404,10 @@ describe('builder: builder generate', () => {
     expect(fs.readFile).nthCalledWith(1, '/var/nuxt/src/foo.js', 'utf8')
     expect(fs.readFile).nthCalledWith(2, '/var/nuxt/src/bar.js', 'utf8')
     expect(fs.readFile).nthCalledWith(3, '/var/nuxt/src/baz.js', 'utf8')
-    expect(template).toBeCalledTimes(3)
-    expect(template).nthCalledWith(1, 'readFile(/var/nuxt/src/foo.js, utf8)', templateContext.templateOptions)
-    expect(template).nthCalledWith(2, 'readFile(/var/nuxt/src/bar.js, utf8)', templateContext.templateOptions)
-    expect(template).nthCalledWith(3, 'readFile(/var/nuxt/src/baz.js, utf8)', templateContext.templateOptions)
+    expect(lodash.template).toBeCalledTimes(3)
+    expect(lodash.template).nthCalledWith(1, 'readFile(/var/nuxt/src/foo.js, utf8)', templateContext.templateOptions)
+    expect(lodash.template).nthCalledWith(2, 'readFile(/var/nuxt/src/bar.js, utf8)', templateContext.templateOptions)
+    expect(lodash.template).nthCalledWith(3, 'readFile(/var/nuxt/src/baz.js, utf8)', templateContext.templateOptions)
     expect(templateFn).toBeCalledTimes(3)
     expect(templateFn).nthCalledWith(1, {
       ...templateContext.templateVars,
@@ -442,7 +443,7 @@ describe('builder: builder generate', () => {
     const nuxt = createNuxt()
     const builder = new Builder(nuxt, BundleBuilder)
     builder.relativeToBuild = jest.fn()
-    template.mockImplementation(() => {
+    lodash.template.mockImplementation(() => {
       throw new Error('compile failed')
     })
 
