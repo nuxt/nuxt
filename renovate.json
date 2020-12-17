@@ -11,6 +11,7 @@
     "postcss-import",
     "postcss-loader",
     "postcss-url",
+    "css-loader",
     "terser-webpack-plugin",
     "@types/terser-webpack-plugin"
   ],

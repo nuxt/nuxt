@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.14.8",
+  "version": "2.14.12",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/cli.js",
@@ -12,8 +12,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.14.8",
-    "@nuxt/utils": "2.14.8",
+    "@nuxt/config": "2.14.12",
+    "@nuxt/utils": "2.14.12",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "compression": "^1.7.4",
@@ -21,7 +21,7 @@
     "consola": "^2.15.0",
     "crc": "^3.8.0",
     "destr": "^1.0.1",
-    "execa": "^4.1.0",
+    "execa": "^5.0.0",
     "exit": "^0.1.2",
     "fs-extra": "^9.0.1",
     "globby": "^11.0.1",

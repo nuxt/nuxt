@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import { normalizeURL, decode } from '@nuxt/ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 
@@ -47,7 +48,7 @@ import scrollBehavior from './router.scrollBehavior.js'
     }
     // @see: https://router.vuejs.org/api/#router-construction-options
     res += '{'
-    res += firstIndent + 'path: ' + JSON.stringify(encodeURI(decodeURI(route.path)))
+    res += firstIndent + 'path: ' + JSON.stringify(route.path)
     res += (route.components) ? nextIndent + 'components: {' + resMap + '\n' + baseIndent + tab + '}' : ''
     res += (route.component) ? nextIndent + 'component: ' + route._name : ''
     res += (route.redirect) ? nextIndent + 'redirect: ' + JSON.stringify(route.redirect) : ''
@@ -105,16 +106,27 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
+function decodeObj(obj) {
+  for (const key in obj) {
+    if (typeof obj[key] === 'string') {
+      obj[key] = decode(obj[key])
+    }
+  }
+}
+
 export function createRouter () {
   const router = new Router(routerOptions)
-  const resolve = router.resolve.bind(router)
 
-  // encodeURI(decodeURI()) ~> support both encoded and non-encoded urls
+  const resolve = router.resolve.bind(router)
   router.resolve = (to, current, append) => {
     if (typeof to === 'string') {
-      to = encodeURI(decodeURI(to))
+      to = normalizeURL(to)
     }
-    return resolve(to, current, append)
+    const r = resolve(to, current, append)
+    if (r && r.resolved && r.resolved.query) {
+      decodeObj(r.resolved.query)
+    }
+    return r
   }
 
   return router

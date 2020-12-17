@@ -63,7 +63,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
-        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
+        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|url-polyfill|@nuxt[\\/]ufo|ufo|nuxt\.js)[\\/]/,
         chunks: 'all',
         name: true,
         priority: 10

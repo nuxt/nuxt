@@ -1,5 +1,6 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
+import { normalizeURL } from '@nuxt/ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -50,12 +51,12 @@ const createNext = ssrContext => (opts) => {
     opts.path = urlJoin(routerBase, opts.path)
   }
   // Avoid loop redirect
-  if (encodeURI(decodeURI(opts.path)) === ssrContext.url) {
+  if (decodeURI(opts.path) === decodeURI(ssrContext.url)) {
     ssrContext.redirected = false
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    Location: opts.path
+    Location: normalizeURL(opts.path)
   })
   ssrContext.res.end()
 }
@@ -72,7 +73,11 @@ export default async (ssrContext) => {
   // Used for beforeNuxtRender({ Components, nuxtState })
   ssrContext.beforeRenderFns = []
   // Nuxt object (window.{{globals.context}}, defaults to window.__NUXT__)
-  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: [], <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
+  ssrContext.nuxt = { <% if (features.layouts) { %>layout: 'default', <% } %>data: [], <% if (features.fetch) { %>fetch: {}, <% } %>error: null<%= (store ? ', state: null' : '') %>, serverRendered: true, routePath: '' }
+  <% if (features.fetch) { %>
+    ssrContext.fetchCounters = {}
+  <% } %>
+
   // Remove query from url is static target
   if (process.static && ssrContext.url) {
     ssrContext.url = ssrContext.url.split('?')[0]

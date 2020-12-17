@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.14.8",
+  "version": "2.14.12",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/server.js",
@@ -8,9 +8,9 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.14.8",
-    "@nuxt/utils": "2.14.8",
-    "@nuxt/vue-renderer": "2.14.8",
+    "@nuxt/config": "2.14.12",
+    "@nuxt/utils": "2.14.12",
+    "@nuxt/vue-renderer": "2.14.12",
     "@nuxtjs/youch": "^4.2.3",
     "chalk": "^4.1.0",
     "compression": "^1.7.4",
@@ -23,7 +23,7 @@
     "launch-editor-middleware": "^2.2.1",
     "on-headers": "^1.0.2",
     "pify": "^5.0.0",
-    "serve-placeholder": "^1.2.2",
+    "serve-placeholder": "^1.2.3",
     "serve-static": "^1.14.1",
     "server-destroy": "^1.0.1"
   },

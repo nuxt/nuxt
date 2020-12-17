@@ -1,7 +1,7 @@
 import path from 'path'
 import get from 'lodash/get'
 import consola from 'consola'
-
+import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from '@nuxt/ufo'
 import { r } from './resolve'
 
 const routeChildren = function (route) {
@@ -80,15 +80,11 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      const indexRoutePath = trailingSlash === false ? '/' : ''
-      const defaultChildRoute = route.children.find(child => child.path === indexRoutePath)
+      const defaultChildRoute = route.children.find(child => child.path === '/' || child.path === '')
       const routeName = route.name
       if (defaultChildRoute) {
-        if (trailingSlash === false) {
-          defaultChildRoute.name = route.name
-        }
         route.children.forEach((child) => {
-          if (child.path !== indexRoutePath) {
+          if (child.path !== defaultChildRoute.path) {
             const parts = child.path.split('/')
             parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
             child.path = parts.join('/')
@@ -201,8 +197,7 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += '/' + getRoutePathExtension(key)
-
+        route.path += '/' + normalizeURL(getRoutePathExtension(key))
         if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
@@ -210,7 +205,11 @@ export const createRoutes = function createRoutes ({
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
+      if (trailingSlash && !route.path.endsWith('*')) {
+        route.path = withTrailingSlash(route.path)
+      } else {
+        route.path = withoutTrailingSlash(route.path) || '/'
+      }
     }
 
     parent.push(route)

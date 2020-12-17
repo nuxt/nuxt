@@ -162,12 +162,16 @@ export default class Server {
     }))
 
     // DX: redirect if router.base in development
-    if (this.options.dev && this.nuxt.options.router.base !== '/') {
+    const routerBase = this.nuxt.options.router.base
+    if (this.options.dev && routerBase !== '/') {
       this.useMiddleware({
         prefix: false,
-        handler: (req, res) => {
-          const to = urlJoin(this.nuxt.options.router.base, req.url)
-          consola.info(`[Development] Redirecting from \`${decodeURI(req.url)}\` to \`${decodeURI(to)}\` (router.base specified).`)
+        handler: (req, res, next) => {
+          if (decodeURI(req.url).startsWith(decodeURI(routerBase))) {
+            return next()
+          }
+          const to = urlJoin(routerBase, req.url)
+          consola.info(`[Development] Redirecting from \`${decodeURI(req.url)}\` to \`${decodeURI(to)}\` (router.base specified)`)
           res.writeHead(302, {
             Location: to
           })

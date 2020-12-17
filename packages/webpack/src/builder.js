@@ -207,7 +207,10 @@ export class WebpackBundler {
     const name = isModernRequest(req, this.buildContext.options.modern) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
+      const { url } = req
+      req.url = req.originalUrl || req.url
       await this.devMiddleware[name](req, res)
+      req.url = url
     }
 
     if (this.hotMiddleware && this.hotMiddleware[name]) {

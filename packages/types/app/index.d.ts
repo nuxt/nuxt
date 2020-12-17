@@ -61,6 +61,7 @@ export interface Context {
     redirected: boolean
     next: NextFunction
     beforeRenderFns: Array<() => any>
+    fetchCounters: Record<string, number>
     nuxt: {
       layout: string
       data: Array<Record<string, any>>

@@ -210,7 +210,6 @@ describe('util: route', () => {
       'pages/subpage/_param.vue',
       'pages/snake_case_route.vue',
       'pages/another_route/_id.vue',
-      'pages/another_route/_id.vue',
       'pages/parent/index.vue',
       'pages/parent/child/index.vue',
       'pages/parent/child/test.vue'
