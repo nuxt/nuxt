@@ -29,7 +29,7 @@ export default function rollupConfig ({
     pkg = readJSONSync(path.resolve(rootDir, 'package.json'))
   }
 
-  const name = path.basename(pkg.name.replace('-edge', '').replace('-pnp', ''))
+  const name = path.basename(pkg.name.replace('-edge', ''))
 
   return defaultsDeep({}, options, {
     input: path.resolve(rootDir, input),
