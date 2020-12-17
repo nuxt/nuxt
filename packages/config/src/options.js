@@ -7,6 +7,7 @@ import uniq from 'lodash/uniq'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
+import { normalizeURL, withTrailingSlash } from '@nuxt/ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -123,10 +124,7 @@ export function getNuxtConfig (_options) {
   defaultsDeep(options, modePreset || options.modes[MODES.universal])
 
   // Sanitize router.base
-  if (!/\/$/.test(options.router.base)) {
-    options.router.base += '/'
-  }
-  options.router.base = encodeURI(decodeURI(options.router.base))
+  options.router.base = withTrailingSlash(normalizeURL(options.router.base))
 
   // Legacy support for export
   if (options.export) {

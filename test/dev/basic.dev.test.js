@@ -106,7 +106,7 @@ describe('basic dev', () => {
     )
     const { cssModules, vue } = loadersOptions
     expect(cssModules.modules.localIdentName).toBe('[hash:base64:6]')
-    expect(vueLoader.options).toBe(vue)
+    expect(vueLoader.use[1 /* 0 is components loader */].options).toBe(vue)
   })
 
   test('Config: preset-env and cssnano are at then end of postcss plugins', () => {
