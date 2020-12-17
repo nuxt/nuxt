@@ -317,6 +317,9 @@ jobs:
         node: [12]
 
     steps:
+      - name: checkout
+        uses: actions/checkout@master
+
       - name: restore workspace cache
         uses: actions/cache@v2
         with:
