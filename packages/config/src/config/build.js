@@ -10,7 +10,7 @@ export default () => ({
   parallel: false,
   cache: false,
   standalone: false,
-  futureResolveLoaders: !!global.__NUXT_PNP__,
+  futureResolveLoaders: !!process.versions.pnp,
   publicPath: '/_nuxt/',
   serverURLPolyfill: 'url',
   filenames: {

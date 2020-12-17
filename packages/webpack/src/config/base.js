@@ -136,8 +136,8 @@ export default class WebpackBaseConfig {
       corejsVersion = 2
     }
 
-    const NuxtCompact = global.__NUXT_PNP__ || {}
-    const defaultPreset = [NuxtCompact.babelPresetApp || require.resolve('@nuxt/babel-preset-app'), {
+    const NuxtDeps = global.__NUXT_DEPS__ || {}
+    const defaultPreset = [NuxtDeps.babelPresetApp || require.resolve('@nuxt/babel-preset-app'), {
       corejs: {
         version: corejsVersion
       }
