@@ -1,6 +1,7 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
+import createRequire from 'create-require'
 
 import {
   startsWithRootAlias,
@@ -20,7 +21,7 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    this._createRequire = this.options.createRequire
+    this._createRequire = this.options.createRequire || createRequire
     this._require = this._createRequire(__filename)
   }
 

@@ -1,6 +1,6 @@
 import hash from 'hash-sum'
 import consola from 'consola'
-import uniqBy from 'lodash/uniqBy'
+import { uniqBy } from 'lodash'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'

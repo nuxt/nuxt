@@ -60,18 +60,23 @@ export function getRequireCacheItem (id) {
   }
 }
 
+export function resolveModule (id) {
+  return require.resolve(id, [
+    process.cwd(),
+    ...(process.__NUXT_PATHS__ || [])
+  ])
+}
+
+export function requireModule (id) {
+  return require(resolveModule(id))
+}
+
 export function tryRequire (id) {
-  try {
-    return require(id)
-  } catch (e) {
-  }
+  try { return requireModule(id) } catch (e) { }
 }
 
 export function tryResolve (id) {
-  try {
-    return require.resolve(id)
-  } catch (e) {
-  }
+  try { return resolveModule(id) } catch (e) { }
 }
 
 export function getPKG (id) {

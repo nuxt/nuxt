@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import defaultsDeep from 'lodash/defaultsDeep'
+import { defaultsDeep } from 'lodash'
 import baseNuxtConfig from '../spa/nuxt.config'
 
 const config = {

@@ -1,7 +1,7 @@
 import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
-import debounce from 'lodash/debounce'
+import { debounce } from 'lodash'
 import { r, isString, isPureObject } from '@nuxt/utils'
 
 import { BundleBuilder } from '@nuxt/webpack'

@@ -1,8 +1,7 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import cloneDeep from 'lodash/cloneDeep'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { escapeRegExp, cloneDeep } from 'lodash'
 import VueLoader from 'vue-loader'
 import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 import * as PnpWebpackPlugin from 'pnp-webpack-plugin'
@@ -136,8 +135,7 @@ export default class WebpackBaseConfig {
       corejsVersion = 2
     }
 
-    const NuxtDeps = global.__NUXT_DEPS__ || {}
-    const defaultPreset = [NuxtDeps.babelPresetApp || require.resolve('@nuxt/babel-preset-app'), {
+    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
       corejs: {
         version: corejsVersion
       }

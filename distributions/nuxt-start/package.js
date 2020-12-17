@@ -19,5 +19,19 @@ export default {
 
       await pkg.writePackage()
     }
-  }
+  },
+  ignoreUnused: [
+    // directly used by bin
+    '@nuxt/cli',
+    // discovered by config
+    '@nuxt/telemetry',
+    // vue-app externals for ssr
+    'node-fetch',
+    'vue',
+    'vue-client-only',
+    'vue-meta',
+    'vue-no-ssr',
+    'vue-router',
+    'vuex'
+  ]
 }
