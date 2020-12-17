@@ -63,7 +63,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
-        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|url-polyfill|nuxt\.js)[\\/]/,
+        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|url-polyfill|@nuxt[\\/]ufo|ufo|nuxt\.js)[\\/]/,
         chunks: 'all',
         name: true,
         priority: 10
@@ -203,11 +203,6 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         // https://github.com/glenjamin/webpack-hot-middleware#config
         `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
       )
-    }
-
-    // Add URL polyfill for IE11 support with ufo
-    if (!this.isModern && !this.isServer) {
-      config.entry.app.unshift(require.resolve('url-polyfill/url-polyfill.min.js'))
     }
 
     // Add friendly error plugin

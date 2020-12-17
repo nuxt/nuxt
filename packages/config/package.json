@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/config",
-  "version": "2.14.11",
+  "version": "2.14.12",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/config.js",
@@ -10,8 +10,8 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "@nuxt/ufo": "^0.1.0",
-    "@nuxt/utils": "2.14.11",
+    "@nuxt/ufo": "^0.5.2",
+    "@nuxt/utils": "2.14.12",
     "consola": "^2.15.0",
     "create-require": "^1.1.1",
     "defu": "^3.2.2",

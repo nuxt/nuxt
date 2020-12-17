@@ -15,4 +15,13 @@ export default function ({ store }) {
       }
     }
   })
+
+  if (process.server) { return }
+
+  store.registerModule('clientsideModule', {
+    namespaced: true,
+    state: () => ({
+      initialised: true
+    })
+  })
 }
