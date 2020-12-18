@@ -23,7 +23,7 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.resolveLoader = l => builder.buildContext.options.build.futureResolveLoaders ? (tryResolve(l) || l) : l
+    this.resolveLoader = l => tryResolve(l) || l
   }
 
   get colors () {
