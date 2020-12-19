@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { normalizeURL, decode, withTrailingSlash } from '@nuxt/ufo'
+import { normalizeURL, decode } from '@nuxt/ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 
@@ -115,10 +115,7 @@ function decodeObj(obj) {
 }
 
 export function createRouter (ssrContext, config) {
-  let base = config.router && config.router.base
-  if (typeof base === 'string') {
-    base = withTrailingSlash(normalizeURL(base))
-  }
+  const base = config._nuxt && config._nuxt.routerBase
   const router = new Router({ ...routerOptions, base: base || routerOptions.base })
 
   const resolve = router.resolve.bind(router)

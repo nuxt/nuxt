@@ -46,10 +46,7 @@ const createNext = ssrContext => (opts) => {
   }
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
-  const dynamicBase = ssrContext.runtimeConfig.public.router && ssrContext.runtimeConfig.public.router.base
-  if (typeof base === 'string') {
-    dynamicBase = withTrailingSlash(normalizeURL(base))
-  }
+  const dynamicBase = ssrContext.runtimeConfig._nuxt && ssrContext.runtimeConfig._nuxt.routerBase
   const routerBase = dynamicBase || '<%= router.base %>'
   if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {
     opts.path = urlJoin(routerBase, opts.path)
