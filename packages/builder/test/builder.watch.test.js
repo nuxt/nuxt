@@ -1,15 +1,16 @@
 import path from 'path'
 import chokidar from 'chokidar'
 import upath from 'upath'
-import lodash from 'lodash'
+import { debounce } from 'lodash'
 import { r, isString, isPureObject } from '@nuxt/utils'
 import { BundleBuilder } from '@nuxt/webpack'
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
-jest.mock('@nuxt/webpack')
 
-lodash.debounce = jest.fn()
-
+jest.mock('lodash', () => ({
+  ...jest.requireActual('lodash'),
+  debounce: jest.fn(fn => fn)
+}))
 jest.mock('chokidar', () => ({
   watch: jest.fn().mockReturnThis(),
   on: jest.fn().mockReturnThis(),
@@ -17,8 +18,8 @@ jest.mock('chokidar', () => ({
 }))
 jest.mock('upath', () => ({ normalizeSafe: jest.fn(src => src) }))
 jest.mock('@nuxt/utils')
-jest.mock('../src/ignore')
 jest.mock('@nuxt/webpack')
+jest.mock('../src/ignore')
 
 describe('builder: builder watch', () => {
   beforeEach(() => {
@@ -158,8 +159,8 @@ describe('builder: builder watch', () => {
 
     builder.watchClient()
 
-    expect(lodash.debounce).toBeCalledTimes(1)
-    expect(lodash.debounce).toBeCalledWith(expect.any(Function), 200)
+    expect(debounce).toBeCalledTimes(1)
+    expect(debounce).toBeCalledWith(expect.any(Function), 200)
 
     const refreshFiles = chokidar.on.mock.calls[0][1]
     builder.generateRoutesAndFiles = jest.fn()
