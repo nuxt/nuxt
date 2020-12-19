@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { TARGETS, isModernRequest, waitFor } from '@nuxt/utils'
+import { TARGETS, isModernRequest, isUrl, urlJoin, waitFor } from '@nuxt/utils'
 import { normalizeURL } from '@nuxt/ufo'
 
 import SPARenderer from './renderers/spa'
@@ -309,15 +309,20 @@ export default class VueRenderer {
       : this.renderSSR(renderContext)
   }
 
+  get publicPath () {
+    const { build: { publicPath }, router: { base } } = this.options
+    return isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
+  }
+
   get resourceMap () {
     return {
       clientManifest: {
         fileName: 'client.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: src => Object.assign(JSON.parse(src), { publicPath: this.publicPath })
       },
       modernManifest: {
         fileName: 'modern.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: src => Object.assign(JSON.parse(src), { publicPath: this.publicPath })
       },
       serverManifest: {
         fileName: 'server.manifest.json',

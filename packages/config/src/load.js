@@ -3,6 +3,7 @@ import fs from 'fs'
 import defu from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
+import { normalizeURL, withTrailingSlash } from '@nuxt/ufo'
 import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
 import esm from 'esm'
 import _createRequire from 'create-require'
@@ -114,6 +115,23 @@ export async function loadNuxtConfig ({
         }
         expand(options[c], env, destr)
       }
+    }
+  }
+
+  if (options.publicRuntimeConfig) {
+    // Apply runtimeConfig options
+    const dynamicRouterBase = options.publicRuntimeConfig.router && options.publicRuntimeConfig.router.base
+    if (typeof dynamicRouterBase === 'string') {
+      options.router = options.router || {}
+      options.router.base = withTrailingSlash(normalizeURL(dynamicRouterBase))
+      options._routerBaseSpecified = true
+    }
+
+    const publicPath = options.publicRuntimeConfig.build && options.publicRuntimeConfig.build.publicPath
+    if (typeof publicPath === 'string') {
+      options.build = options.build || {}
+      options.build.publicPath = withTrailingSlash(normalizeURL(publicPath))
+      options.build._publicPath = options.build.publicPath
     }
   }
 

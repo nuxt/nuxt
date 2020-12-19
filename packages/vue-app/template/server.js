@@ -46,7 +46,11 @@ const createNext = ssrContext => (opts) => {
   }
   opts.query = stringify(opts.query)
   opts.path = opts.path + (opts.query ? '?' + opts.query : '')
-  const routerBase = '<%= router.base %>'
+  const dynamicBase = ssrContext.runtimeConfig.public.router && ssrContext.runtimeConfig.public.router.base
+  if (typeof base === 'string') {
+    dynamicBase = withTrailingSlash(normalizeURL(base))
+  }
+  const routerBase = dynamicBase || '<%= router.base %>'
   if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {
     opts.path = urlJoin(routerBase, opts.path)
   }

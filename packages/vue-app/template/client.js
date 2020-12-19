@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { parsePath, withoutTrailingSlash } from '@nuxt/ufo'
 <% if (fetch.client) { %>import fetch from 'unfetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -15,7 +16,8 @@ import {
   compile,
   getQueryDiff,
   globalHandleError,
-  isSamePath
+  isSamePath,
+  urlJoin
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
@@ -44,6 +46,19 @@ let router
 
 // Try to rehydrate SSR data from window
 const NUXT = window.<%= globals.context %> || {}
+
+let publicPath = NUXT.config.build && NUXT.config.build.publicPath
+  
+if (typeof publicPath === 'string') {
+  let base = NUXT.config.router && NUXT.config.router.base
+  if (typeof base === 'string') {
+    base = withTrailingSlash(normalizeURL(base))
+  }
+  publicPath = withTrailingSlash(normalizeURL(publicPath))
+  __webpack_public_path__ = ['http', '//'].some(str => publicPath.startsWith(str))
+    ? publicPath
+    : urlJoin(base || '<%= router.base %>', publicPath)
+}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 

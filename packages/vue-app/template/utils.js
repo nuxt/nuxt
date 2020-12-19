@@ -180,7 +180,7 @@ export async function setContext (app, context) {
       <%= (store ? 'store: app.store,' : '') %>
       payload: context.payload,
       error: context.error,
-      base: '<%= router.base %>',
+      base: app.router.options.base,
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
