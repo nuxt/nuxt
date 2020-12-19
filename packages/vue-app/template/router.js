@@ -119,7 +119,7 @@ export function createRouter (ssrContext, config) {
   if (typeof base === 'string') {
     base = withTrailingSlash(normalizeURL(base))
   }
-  const router = new Router(Object.assign({}, routerOptions, { base: base || routerOptions.base }))
+  const router = new Router({ ...routerOptions, base: base || routerOptions.base })
 
   const resolve = router.resolve.bind(router)
   router.resolve = (to, current, append) => {
