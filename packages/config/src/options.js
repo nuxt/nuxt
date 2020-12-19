@@ -228,10 +228,9 @@ export function getNuxtConfig (_options) {
   }
 
   // Update for Nuxt 3 to support top-level static directory
-  options.publicRuntimeConfig.app.cdnUrl = isUrl(options.build.publicPath) ? options.build.publicPath : '/'
-  options.publicRuntimeConfig.app.assetsPath = isUrl(options.build.publicPath)
-    ? '/'
-    : urlJoin(options.router.base, options.build.publicPath)
+  const useCdn = isUrl(options.build.publicPath) && !options.dev
+  options.publicRuntimeConfig.app.cdnUrl = useCdn ? options.build.publicPath : '/'
+  options.publicRuntimeConfig.app.assetsPath = useCdn ? '/' : urlJoin(options.router.base, options.build.publicPath)
 
   // If store defined, update store options to true unless explicitly disabled
   if (
