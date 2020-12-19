@@ -48,7 +48,7 @@ const NUXT = window.<%= globals.context %> || {}
 
 const dynamicConfig = NUXT.config.app || {}
 
-if (dynamicConfig.cdnUrl === 'string') {
+if (dynamicConfig.cdnUrl) {
   __webpack_public_path__ = urlJoin(dynamicConfig.cdnUrl, dynamicConfig.assetsPath)
 }
 
