@@ -55,9 +55,7 @@ if (typeof publicPath === 'string') {
     base = withTrailingSlash(normalizeURL(base))
   }
   publicPath = withTrailingSlash(normalizeURL(publicPath))
-  __webpack_public_path__ = ['http', '//'].some(str => publicPath.startsWith(str))
-    ? publicPath
-    : urlJoin(base || '<%= router.base %>', publicPath)
+  __webpack_public_path__ = /^(http|\/\/)/.test(publicPath) ? publicPath : urlJoin(base || '<%= router.base %>', publicPath)
 }
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
