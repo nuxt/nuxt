@@ -25,6 +25,9 @@ describe('webpack configuration', () => {
           parallel: true,
           cache: true
         }
+      },
+      {
+        resolveLoader: jest.fn(id => id)
       }
     )
     expect(perfLoader.workerPools).toMatchObject({ js, css })
