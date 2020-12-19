@@ -6,8 +6,9 @@ describe('webpack configuration', () => {
   test('performance loader', () => {
     const js = { name: 'js', poolTimeout: Infinity }
     const css = { name: 'css', poolTimeout: Infinity }
+    const resolveLoader = jest.fn(id => id)
     PerfLoader.warmup = jest.fn()
-    PerfLoader.warmupAll({ dev: true })
+    PerfLoader.warmupAll({ dev: true, resolveLoader })
     expect(PerfLoader.warmup).toHaveBeenCalledTimes(2)
     expect(PerfLoader.warmup).toHaveBeenCalledWith(js, [
       require.resolve('babel-loader'),
@@ -27,7 +28,7 @@ describe('webpack configuration', () => {
         }
       },
       {
-        resolveLoader: jest.fn(id => id)
+        resolveLoader
       }
     )
     expect(perfLoader.workerPools).toMatchObject({ js, css })
