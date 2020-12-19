@@ -4,6 +4,9 @@ export const importModule = (id) => {
   try {
     return Promise.resolve(requireModule(id))
   } catch (err) {
+    if (err.code === 'MODULE_NOT_FOUND') {
+      err.message = `Cannot import module '${id}'`
+    }
     return Promise.reject(err)
   }
 }
