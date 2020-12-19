@@ -9,9 +9,11 @@ import Builder from '../src/builder'
 import TemplateContext from '../src/context/template'
 import { createNuxt } from './__utils__'
 
-lodash.template = jest.fn()
-
 jest.mock('glob')
+jest.mock('lodash', () => ({
+  ...jest.requireActual('lodash'),
+  template: jest.fn()
+}))
 jest.mock('pify', () => fn => fn)
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
