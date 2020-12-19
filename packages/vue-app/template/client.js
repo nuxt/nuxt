@@ -48,8 +48,8 @@ const NUXT = window.<%= globals.context %> || {}
 
 const dynamicConfig = NUXT.config.app || {}
 
-if (dynamicConfig.cdnUrl) {
-  __webpack_public_path__ = urlJoin(dynamicConfig.cdnUrl, dynamicConfig.assetsPath)
+if (dynamicConfig.cdnURL) {
+  __webpack_public_path__ = urlJoin(dynamicConfig.cdnURL, dynamicConfig.assetsPath)
 }
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>

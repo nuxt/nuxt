@@ -310,8 +310,8 @@ export default class VueRenderer {
   }
 
   get publicPath () {
-    const { cdnUrl, assetsPath } = this.options.publicRuntimeConfig.app
-    return urlJoin(cdnUrl, assetsPath)
+    const { cdnURL, assetsPath } = this.options.publicRuntimeConfig.app
+    return urlJoin(cdnURL, assetsPath)
   }
 
   get resourceMap () {

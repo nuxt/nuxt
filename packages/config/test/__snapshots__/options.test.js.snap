@@ -316,7 +316,7 @@ Object {
     "app": Object {
       "assetsPath": "/_nuxt/",
       "baseURL": "/",
-      "cdnUrl": "/",
+      "cdnURL": "/",
     },
   },
   "render": Object {
