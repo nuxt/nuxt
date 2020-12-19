@@ -26,13 +26,13 @@ export default class PerfLoader {
     }
   }
 
-  static warmupAll ({ dev }) {
+  static warmupAll ({ dev, resolveLoader }) {
     const pools = PerfLoader.defaultPools({ dev })
     PerfLoader.warmup(pools.js, [
       require.resolve('babel-loader'),
       require.resolve('@babel/preset-env')
     ])
-    PerfLoader.warmup(pools.css, [this.resolveLoader('css-loader')])
+    PerfLoader.warmup(pools.css, [resolveLoader('css-loader')])
   }
 
   static warmup (...args) {

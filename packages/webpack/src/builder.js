@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import { TARGETS, parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
+import { TARGETS, parallel, sequence, tryResolve, wrapArray, isModernRequest } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
 import * as WebpackConfigs from './config'
@@ -92,7 +92,7 @@ export class WebpackBundler {
     // Warm up perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
-      PerfLoader.warmupAll({ dev: options.dev })
+      PerfLoader.warmupAll({ dev: options.dev, resolveLoader: id => tryResolve(id) || id })
       consola.success('Worker pools ready')
     }
 
