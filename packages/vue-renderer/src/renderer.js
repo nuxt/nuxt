@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
 import template from 'lodash/template'
-import { TARGETS, isModernRequest, isUrl, urlJoin, waitFor } from '@nuxt/utils'
+import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
 import { normalizeURL } from '@nuxt/ufo'
 
 import SPARenderer from './renderers/spa'
@@ -310,8 +310,8 @@ export default class VueRenderer {
   }
 
   get publicPath () {
-    const { build: { publicPath }, router: { base } } = this.options
-    return isUrl(publicPath) ? publicPath : urlJoin(base, publicPath)
+    const { cdnUrl, assetsPath } = this.options.publicRuntimeConfig.app
+    return urlJoin(cdnUrl, assetsPath)
   }
 
   get resourceMap () {

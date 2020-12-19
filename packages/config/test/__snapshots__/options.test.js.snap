@@ -312,7 +312,13 @@ Object {
   },
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
-  "publicRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {
+    "app": Object {
+      "assetsPath": "/_nuxt/",
+      "baseURL": "/",
+      "cdnUrl": "/",
+    },
+  },
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,

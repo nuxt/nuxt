@@ -26,7 +26,7 @@ export function getNuxtConfig (_options) {
   }
 
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig._nuxt = options.publicRuntimeConfig._nuxt || {}
+  options.publicRuntimeConfig.app = options.publicRuntimeConfig.app || {}
 
   if (
     options.router &&
@@ -128,7 +128,7 @@ export function getNuxtConfig (_options) {
 
   // Sanitize router.base
   options.router.base = withTrailingSlash(normalizeURL(options.router.base))
-  options.publicRuntimeConfig._nuxt.routerBase = options.router.base
+  options.publicRuntimeConfig.app.baseURL = options.router.base
 
   // Legacy support for export
   if (options.export) {
@@ -227,7 +227,11 @@ export function getNuxtConfig (_options) {
     options.build.publicPath = options.build._publicPath
   }
 
-  options.publicRuntimeConfig._nuxt.publicPath = options.build.publicPath
+  // Update for Nuxt 3 to support top-level static directory
+  options.publicRuntimeConfig.app.cdnUrl = isUrl(options.build.publicPath) ? options.build.publicPath : '/'
+  options.publicRuntimeConfig.app.assetsPath = isUrl(options.build.publicPath)
+    ? '/'
+    : urlJoin(options.router.base, options.build.publicPath)
 
   // If store defined, update store options to true unless explicitly disabled
   if (

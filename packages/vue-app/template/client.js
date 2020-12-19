@@ -46,12 +46,10 @@ let router
 // Try to rehydrate SSR data from window
 const NUXT = window.<%= globals.context %> || {}
 
-const nuxtConfig = NUXT.config._nuxt || {}
+const dynamicConfig = NUXT.config.app || {}
 
-if (typeof nuxtConfig.publicPath === 'string') {
-  __webpack_public_path__ = /^(http|\/\/)/.test(nuxtConfig.publicPath)
-    ? nuxtConfig.publicPath
-    : urlJoin(nuxtConfig.routerBase || '<%= router.base %>', nuxtConfig.publicPath)
+if (dynamicConfig.cdnUrl === 'string') {
+  __webpack_public_path__ = urlJoin(dynamicConfig.cdnUrl, dynamicConfig.assetsPath)
 }
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>

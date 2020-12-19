@@ -115,8 +115,8 @@ function decodeObj(obj) {
 }
 
 export function createRouter (ssrContext, config) {
-  const base = config._nuxt && config._nuxt.routerBase
-  const router = new Router({ ...routerOptions, base: base || routerOptions.base })
+  const base = (config.app && config.app.baseURL) || routerOptions.base
+  const router = new Router({ ...routerOptions, base  })
 
   const resolve = router.resolve.bind(router)
   router.resolve = (to, current, append) => {
