@@ -117,12 +117,6 @@ export async function loadNuxtConfig ({
     }
   }
 
-  options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig._nuxt = {
-    publicPath: (options.build && options.build.publicPath) || undefined,
-    routerBase: (options.router && options.router.base) || undefined
-  }
-
   return options
 }
 

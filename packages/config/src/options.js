@@ -25,6 +25,9 @@ export function getNuxtConfig (_options) {
     delete options.loading
   }
 
+  options.publicRuntimeConfig = options.publicRuntimeConfig || {}
+  options.publicRuntimeConfig._nuxt = options.publicRuntimeConfig._nuxt || {}
+
   if (
     options.router &&
     options.router.middleware &&
@@ -125,6 +128,7 @@ export function getNuxtConfig (_options) {
 
   // Sanitize router.base
   options.router.base = withTrailingSlash(normalizeURL(options.router.base))
+  options.publicRuntimeConfig._nuxt.routerBase = options.router.base
 
   // Legacy support for export
   if (options.export) {
@@ -222,6 +226,8 @@ export function getNuxtConfig (_options) {
   if (options.dev && isUrl(options.build.publicPath)) {
     options.build.publicPath = options.build._publicPath
   }
+
+  options.publicRuntimeConfig._nuxt.publicPath = options.build.publicPath
 
   // If store defined, update store options to true unless explicitly disabled
   if (
