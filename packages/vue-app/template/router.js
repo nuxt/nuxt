@@ -115,7 +115,7 @@ function decodeObj(obj) {
 }
 
 export function createRouter (ssrContext, config) {
-  const base = (config.app && config.app.baseURL) || routerOptions.base
+  const base = (config.app && config.app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
 
   const resolve = router.resolve.bind(router)

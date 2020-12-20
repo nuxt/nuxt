@@ -128,7 +128,7 @@ export function getNuxtConfig (_options) {
 
   // Sanitize router.base
   options.router.base = withTrailingSlash(normalizeURL(options.router.base))
-  options.publicRuntimeConfig.app.baseURL = options.router.base
+  options.publicRuntimeConfig.app.basePath = options.router.base
 
   // Legacy support for export
   if (options.export) {

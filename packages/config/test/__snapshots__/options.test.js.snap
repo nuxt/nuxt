@@ -315,7 +315,7 @@ Object {
   "publicRuntimeConfig": Object {
     "app": Object {
       "assetsPath": "/_nuxt/",
-      "baseURL": "/",
+      "basePath": "/",
       "cdnURL": "/",
     },
   },
