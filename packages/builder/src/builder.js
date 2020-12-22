@@ -7,7 +7,6 @@ import Glob from 'glob'
 import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
-import semver from 'semver'
 import { debounce, omit, template, uniq, uniqBy } from 'lodash'
 import {
   r,
@@ -137,13 +136,6 @@ export default class Builder {
 
     await this.validatePages()
 
-    // Validate template
-    try {
-      this.validateTemplate()
-    } catch (err) {
-      consola.fatal(err)
-    }
-
     consola.success('Builder initialized')
 
     consola.debug(`App root: ${this.options.srcDir}`)
@@ -202,25 +194,6 @@ export default class Builder {
 
     this._defaultPage = true
     consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
-  }
-
-  validateTemplate () {
-    // Validate template dependencies
-    const templateDependencies = this.template.dependencies
-    for (const depName in templateDependencies) {
-      const depVersion = templateDependencies[depName]
-
-      // Load installed version
-      const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'))
-      if (pkg) {
-        const validVersion = semver.satisfies(pkg.version, depVersion)
-        if (!validVersion) {
-          consola.warn(`${depName}@${depVersion} is recommended but ${depName}@${pkg.version} is installed!`)
-        }
-      } else {
-        consola.warn(`${depName}@${depVersion} is required but not installed!`)
-      }
-    }
   }
 
   globPathWithExtensions (path) {

@@ -1,7 +1,6 @@
 import path from 'path'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
-import semver from 'semver'
 import { r, waitFor } from '@nuxt/utils'
 import { BundleBuilder } from '@nuxt/webpack'
 
@@ -9,7 +8,6 @@ import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
 
 jest.mock('fs-extra')
-jest.mock('semver/functions/satisfies')
 jest.mock('hash-sum', () => src => `hash(${src})`)
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
@@ -41,7 +39,6 @@ describe('builder: builder build', () => {
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)
     builder.validatePages = jest.fn()
-    builder.validateTemplate = jest.fn()
     builder.generateRoutesAndFiles = jest.fn()
     builder.resolvePlugins = jest.fn()
 
@@ -54,7 +51,6 @@ describe('builder: builder build', () => {
     expect(nuxt.callHook).nthCalledWith(1, 'build:before', builder, nuxt.options.build)
     expect(nuxt.callHook).nthCalledWith(2, 'builder:prepared', builder, nuxt.options.build)
     expect(builder.validatePages).toBeCalledTimes(1)
-    expect(builder.validateTemplate).toBeCalledTimes(1)
     expect(consola.success).toBeCalledTimes(1)
     expect(consola.success).toBeCalledWith('Builder initialized')
     expect(consola.debug).toBeCalledTimes(1)
@@ -121,7 +117,6 @@ describe('builder: builder build', () => {
     const bundleBuilder = { build: jest.fn() }
     const builder = new Builder(nuxt, bundleBuilder)
     builder.validatePages = jest.fn()
-    builder.validateTemplate = jest.fn()
     builder.generateRoutesAndFiles = jest.fn()
     builder.resolvePlugins = jest.fn()
 
@@ -136,24 +131,6 @@ describe('builder: builder build', () => {
     expect(r).toBeCalledTimes(2)
     expect(r).nthCalledWith(1, '/var/nuxt/build')
     expect(r).nthCalledWith(2, '/var/nuxt/build', 'components')
-  })
-
-  test('should throw error when validateTemplate failed', async () => {
-    const nuxt = createNuxt()
-    const builder = new Builder(nuxt, BundleBuilder)
-    builder.validatePages = jest.fn()
-    builder.validateTemplate = jest.fn(() => {
-      throw new Error('validate failed')
-    })
-    consola.success.mockImplementationOnce(() => {
-      throw new Error('exit')
-    })
-
-    await expect(builder.build()).rejects.toThrow('exit')
-
-    expect(builder._buildStatus).toEqual(3)
-    expect(consola.fatal).toBeCalledTimes(1)
-    expect(consola.fatal).toBeCalledWith(new Error('validate failed'))
   })
 
   test('should warn built-in page will be used if no pages dir found', async () => {
@@ -226,58 +203,5 @@ describe('builder: builder build', () => {
     expect(fsExtra.exists).toBeCalledTimes(1)
     expect(fsExtra.exists).toBeCalledWith('join(/var/nuxt/src, /var/nuxt/src/pages)')
     expect(builder._defaultPage).toBeUndefined()
-  })
-
-  test('should validate dependencies in template', () => {
-    const nuxt = createNuxt()
-    nuxt.options.build.template = {
-      dependencies: {
-        vue: 'latest',
-        nuxt: 'edge'
-      }
-    }
-    const builder = new Builder(nuxt, BundleBuilder)
-    semver.satisfies
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(true)
-    nuxt.resolver.requireModule
-      .mockReturnValueOnce({ version: 'alpha' })
-      .mockReturnValueOnce({ version: 'beta' })
-
-    builder.validateTemplate()
-
-    expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
-    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)')
-    expect(semver.satisfies).toBeCalledTimes(2)
-    expect(semver.satisfies).nthCalledWith(1, 'alpha', 'latest')
-    expect(semver.satisfies).nthCalledWith(2, 'beta', 'edge')
-  })
-
-  test('should warn and throw error if dependencies is not installed', () => {
-    const nuxt = createNuxt()
-    nuxt.options.build.template = {
-      dependencies: {
-        vue: 'latest',
-        nuxt: 'edge'
-      }
-    }
-    const builder = new Builder(nuxt, BundleBuilder)
-    semver.satisfies
-      .mockReturnValueOnce(false)
-    nuxt.resolver.requireModule
-      .mockReturnValueOnce({ version: 'alpha' })
-      .mockReturnValueOnce(undefined)
-
-    builder.validateTemplate()
-
-    expect(nuxt.resolver.requireModule).toBeCalledTimes(2)
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'join(vue, package.json)')
-    expect(nuxt.resolver.requireModule).nthCalledWith(2, 'join(nuxt, package.json)')
-    expect(consola.warn).toBeCalledTimes(2)
-    expect(consola.warn).nthCalledWith(1, 'vue@latest is recommended but vue@alpha is installed!')
-    expect(consola.warn).nthCalledWith(2, 'nuxt@edge is required but not installed!')
-    expect(semver.satisfies).toBeCalledTimes(1)
-    expect(semver.satisfies).nthCalledWith(1, 'alpha', 'latest')
   })
 })
