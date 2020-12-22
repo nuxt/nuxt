@@ -11,8 +11,8 @@ describe('webpack configuration', () => {
     PerfLoader.warmupAll({ dev: true, resolveModule })
     expect(PerfLoader.warmup).toHaveBeenCalledTimes(2)
     expect(PerfLoader.warmup).toHaveBeenCalledWith(js, [
-      require.resolve('babel-loader'),
-      require.resolve('@babel/preset-env')
+      'babel-loader',
+      '@babel/preset-env'
     ])
     expect(PerfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
