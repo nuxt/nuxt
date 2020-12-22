@@ -469,7 +469,7 @@ export function getNuxtConfig (_options) {
     staticAssets.version = String(Math.round(Date.now() / 1000))
   }
   if (!staticAssets.base) {
-    staticAssets.base = joinURL(options.app.cdnURL || '/', options.app.assetsPath, staticAssets.dir)
+    staticAssets.base = joinURL(options.app.assetsPath, staticAssets.dir)
   }
   if (!staticAssets.versionBase) {
     staticAssets.versionBase = joinURL(staticAssets.base, staticAssets.version)
