@@ -1,4 +1,3 @@
-import path from 'path'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
@@ -6,24 +5,11 @@ import htmlMinifier from 'html-minifier'
 import Generator from '../src/generator'
 import { createNuxt, hookCalls } from './__utils__'
 
-jest.mock('path')
 jest.mock('fs-extra')
 jest.mock('html-minifier')
 jest.mock('@nuxt/utils')
 
 describe('generator: generate route', () => {
-  const sep = path.sep
-
-  beforeAll(() => {
-    path.sep = '[sep]'
-    path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
-    path.dirname.mockImplementation((...args) => `dirname(${args.join(', ')})`)
-  })
-
-  afterAll(() => {
-    path.sep = sep
-  })
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -34,7 +20,6 @@ describe('generator: generate route', () => {
     nuxt.options.generate.minify = undefined
     nuxt.options.generate.subFolders = false
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = '/foo/'
     const payload = {}
@@ -44,26 +29,23 @@ describe('generator: generate route', () => {
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith(route, { payload })
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
 
     expect(hookCalls(nuxt, 'generate:page')[0][0]).toMatchObject({
       route,
       html: 'rendered html',
-      path: `join(${generator.distPath}, join([sep], /foo.html))`
+      path: `/var/nuxt/generate/foo.html`
     })
 
     expect(hookCalls(nuxt, 'generate:routeCreated')[0][0]).toMatchObject({
       route,
       errors: [],
-      path: `join(${generator.distPath}, join([sep], /foo.html))`
+      path: `/var/nuxt/generate/foo.html`
     })
 
     expect(fsExtra.mkdirp).toBeCalledTimes(1)
-    expect(fsExtra.mkdirp).toBeCalledWith(`dirname(join(${generator.distPath}, join([sep], /foo.html)))`)
+    expect(fsExtra.mkdirp).toBeCalledWith(`/var/nuxt/generate`)
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], /foo.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo.html`, 'rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
 
@@ -158,7 +140,7 @@ describe('generator: generate route', () => {
     expect(htmlMinifier.minify).toBeCalledTimes(1)
     expect(htmlMinifier.minify).toBeCalledWith('rendered html', { value: 'test-minify' })
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], /foo.html))`, 'minified rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo.html`, 'minified rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
 
@@ -191,17 +173,13 @@ describe('generator: generate route', () => {
     nuxt.options.build.html = { minify: false }
     nuxt.options.generate.subFolders = true
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = '/foo'
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, route, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join(/foo, [sep], index.html)')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join(/foo, [sep], index.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo/index.html`, 'rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
 
@@ -210,18 +188,13 @@ describe('generator: generate route', () => {
     nuxt.options.build.html = { minify: false }
     nuxt.options.generate.subFolders = true
     const generator = new Generator(nuxt)
-    path.join.mockClear()
-    path.join.mockReturnValueOnce('/404/index.html')
 
     const route = '/404'
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, route, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, '/404.html')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, /404.html)`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/404.html`, 'rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
 
@@ -229,17 +202,13 @@ describe('generator: generate route', () => {
     const nuxt = createNuxt()
     nuxt.options.build.html = { minify: false }
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = ''
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], index.html)')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], index.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/index.html`, 'rendered html', 'utf8')
     expect(returned).toEqual(true)
   })
 })
