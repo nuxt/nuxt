@@ -25,13 +25,10 @@ export default class Resolver {
     this._require = this._createRequire(__filename)
   }
 
-  resolveModule (path, { requirePath } = {}) {
+  resolveModule (path, { paths } = {}) {
     try {
       return this._require.resolve(path, {
-        paths: [
-          requirePath || __dirname,
-          ...[].concat(this.options.modulesDir)
-        ]
+        paths: [].concat(paths || [], this.options.modulesDir)
       })
     } catch (error) {
       if (error.code !== 'MODULE_NOT_FOUND') {
@@ -52,7 +49,7 @@ export default class Resolver {
     return resolve(this.options.srcDir, path)
   }
 
-  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle, requirePath } = {}) {
+  resolvePath (path, { alias, isAlias = alias, module, isModule = module, isStyle, paths } = {}) {
     // TODO: Remove in Nuxt 3
     if (alias) {
       consola.warn('Using alias is deprecated and will be removed in Nuxt 3. Use `isAlias` instead.')
@@ -70,7 +67,7 @@ export default class Resolver {
 
     // Try to resolve it as a regular module
     if (isModule !== false) {
-      resolvedPath = this.resolveModule(path, { requirePath })
+      resolvedPath = this.resolveModule(path, { paths })
     }
 
     // Try to resolve alias
@@ -117,7 +114,7 @@ export default class Resolver {
     throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
   }
 
-  requireModule (path, { alias, isAlias = alias, intropDefault, interopDefault = intropDefault, requirePath } = {}) {
+  requireModule (path, { alias, isAlias = alias, intropDefault, interopDefault = intropDefault, paths } = {}) {
     let resolvedPath = path
     let requiredModule
 
@@ -133,7 +130,7 @@ export default class Resolver {
 
     // Try to resolve path
     try {
-      resolvedPath = this.resolvePath(path, { isAlias, requirePath })
+      resolvedPath = this.resolvePath(path, { isAlias, paths })
     } catch (e) {
       lastError = e
     }
@@ -148,8 +145,7 @@ export default class Resolver {
 
     // Try to require
     try {
-      const _require = requirePath ? this._createRequire(requirePath) : this._require
-      requiredModule = _require(resolvedPath)
+      requiredModule = this._require(resolvedPath)
     } catch (e) {
       lastError = e
     }
