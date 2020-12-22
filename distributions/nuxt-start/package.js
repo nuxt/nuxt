@@ -32,6 +32,11 @@ export default {
     'vue-meta',
     'vue-no-ssr',
     'vue-router',
-    'vuex'
+    'vuex',
+    // Distro
+    '@nuxt/config',
+    '@nuxt/server',
+    '@nuxt/utils',
+    '@nuxt/vue-renderer'
   ]
 }
