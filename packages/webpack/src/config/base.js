@@ -236,7 +236,7 @@ export default class WebpackBaseConfig {
           PnpWebpackPlugin.moduleLoader(__dirname)
         ]
       },
-      resolveModule: {
+      resolveLoader: {
         modules: [
           path.resolve(__dirname, '../node_modules'),
           ...webpackModulesDir
