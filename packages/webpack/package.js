@@ -2,6 +2,7 @@ export default {
   build: true,
   ignoreUnused: [
     '@nuxt/babel-preset-app',
+    '@babel/core', // peerDependency of babel-loader
     'babel-loader',
     'cache-loader',
     'caniuse-lite',

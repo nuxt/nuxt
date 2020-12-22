@@ -67,11 +67,13 @@ export function resolveModule (id, paths) {
   if (typeof paths === 'string') {
     paths = [paths]
   }
-  return _require.resolve(id, [
-    process.cwd(),
-    ...(paths || []),
-    ...(global.__NUXT_PATHS__ || [])
-  ])
+  return _require.resolve(id, {
+    paths: [
+      process.cwd(),
+      ...(paths || []),
+      ...(global.__NUXT_PATHS__ || [])
+    ]
+  })
 }
 
 export function requireModule (id, paths) {
