@@ -28,7 +28,7 @@ export default class Resolver {
   resolveModule (path, { paths } = {}) {
     try {
       return this._require.resolve(path, {
-        paths: [].concat(paths || [], this.options.modulesDir)
+        paths: [].concat(paths || [], this.options.modulesDir, global.__NUXT_PATHS__ || [])
       })
     } catch (error) {
       if (error.code !== 'MODULE_NOT_FOUND') {
