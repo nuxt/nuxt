@@ -19,6 +19,11 @@ Object {
     "~": "/var/nuxt/test",
     "~~": "/var/nuxt/test",
   },
+  "app": Object {
+    "assetsPath": "/_nuxt/",
+    "basePath": "/",
+    "cdnURL": undefined,
+  },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
@@ -316,7 +321,7 @@ Object {
     "app": Object {
       "assetsPath": "/_nuxt/",
       "basePath": "/",
-      "cdnURL": "/",
+      "cdnURL": undefined,
     },
   },
   "render": Object {

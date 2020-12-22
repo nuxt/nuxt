@@ -6,8 +6,8 @@ import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
-import { normalizeURL, withTrailingSlash } from '@nuxt/ufo'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
+import { joinURL, normalizeURL, withTrailingSlash } from '@nuxt/ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -24,9 +24,6 @@ export function getNuxtConfig (_options) {
   if (options.loading === true) {
     delete options.loading
   }
-
-  options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig.app = options.publicRuntimeConfig.app || {}
 
   if (
     options.router &&
@@ -128,7 +125,6 @@ export function getNuxtConfig (_options) {
 
   // Sanitize router.base
   options.router.base = withTrailingSlash(normalizeURL(options.router.base))
-  options.publicRuntimeConfig.app.basePath = options.router.base
 
   // Legacy support for export
   if (options.export) {
@@ -226,11 +222,6 @@ export function getNuxtConfig (_options) {
   if (options.dev && isUrl(options.build.publicPath)) {
     options.build.publicPath = options.build._publicPath
   }
-
-  // Update for Nuxt 3 to support top-level static directory
-  const useCdn = isUrl(options.build.publicPath) && !options.dev
-  options.publicRuntimeConfig.app.cdnURL = useCdn ? options.build.publicPath : '/'
-  options.publicRuntimeConfig.app.assetsPath = useCdn ? '/' : urlJoin(options.router.base, options.build.publicPath)
 
   // If store defined, update store options to true unless explicitly disabled
   if (
@@ -461,17 +452,27 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
+  // App config (internal for nuxt2 at this stage)
+  const useCDN = isUrl(options.build.publicPath) && !options.dev
+  options.app = defu(options.app, {
+    basePath: options.router.base,
+    assetsPath: useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
+    cdnURL: useCDN ? options.build.publicPath : undefined
+  })
+  // Expose app config to $config.app
+  options.publicRuntimeConfig = options.publicRuntimeConfig || {}
+  options.publicRuntimeConfig.app = options.app
+
   // Generate staticAssets
   const { staticAssets } = options.generate
   if (!staticAssets.version) {
     staticAssets.version = String(Math.round(Date.now() / 1000))
   }
   if (!staticAssets.base) {
-    const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
-    staticAssets.base = urlJoin(publicPath, staticAssets.dir)
+    staticAssets.base = joinURL(options.app.cdnURL || '/', options.app.assetsPath, staticAssets.dir)
   }
   if (!staticAssets.versionBase) {
-    staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+    staticAssets.versionBase = joinURL(staticAssets.base, staticAssets.version)
   }
 
   // createRequire factory
