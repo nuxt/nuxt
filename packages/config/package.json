@@ -10,7 +10,6 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "ufo": "^0.5.2",
     "@nuxt/utils": "2.14.12",
     "consola": "^2.15.0",
     "create-require": "^1.1.1",
@@ -20,7 +19,8 @@
     "jiti": "^0.1.17",
     "lodash": "^4.17.20",
     "rc9": "^1.2.0",
-    "std-env": "^2.2.1"
+    "std-env": "^2.2.1",
+    "ufo": "^0.5.2"
   },
   "publishConfig": {
     "access": "public"

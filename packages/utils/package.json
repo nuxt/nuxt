@@ -8,7 +8,6 @@
     "dist"
   ],
   "dependencies": {
-    "ufo": "^0.5.2",
     "consola": "^2.15.0",
     "create-require": "^1.1.1",
     "fs-extra": "^9.0.1",
@@ -18,7 +17,8 @@
     "semver": "^7.3.4",
     "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
-    "ua-parser-js": "^0.7.23"
+    "ua-parser-js": "^0.7.23",
+    "ufo": "^0.5.2"
   },
   "publishConfig": {
     "access": "public"
