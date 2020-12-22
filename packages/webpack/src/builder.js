@@ -92,7 +92,7 @@ export class WebpackBundler {
     // Warm up perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
-      PerfLoader.warmupAll({ dev: options.dev, resolveLoader: id => tryResolve(id) || id })
+      PerfLoader.warmupAll({ dev: options.dev, resolveModule: id => tryResolve(id, __filename) || id })
       consola.success('Worker pools ready')
     }
 

@@ -105,5 +105,5 @@ export function isIndexFileAndFolder (pluginFiles) {
 }
 
 export const getMainModule = () => {
-  return require.main || (module && module.main) || module
+  return (require && require.main) || (module && module.main) || module
 }

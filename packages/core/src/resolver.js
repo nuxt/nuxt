@@ -27,7 +27,7 @@ export default class Resolver {
 
   resolveModule (path, { requirePath } = {}) {
     try {
-      return require.resolve(path, {
+      return this._require.resolve(path, {
         paths: [
           requirePath || __dirname,
           ...[].concat(this.options.modulesDir)

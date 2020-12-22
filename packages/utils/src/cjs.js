@@ -1,7 +1,7 @@
 import { join } from 'path'
 import createRequire from 'create-require'
 
-const _require = createRequire(process.cwd())
+const _require = createRequire()
 
 export function isHMRCompatible (id) {
   return !/[/\\]mongoose[/\\/]/.test(id)
@@ -64,9 +64,12 @@ export function getRequireCacheItem (id) {
 }
 
 export function resolveModule (id, paths) {
+  if (typeof paths === 'string') {
+    paths = [paths]
+  }
   return _require.resolve(id, [
-    ...(paths || []),
     process.cwd(),
+    ...(paths || []),
     ...(global.__NUXT_PATHS__ || [])
   ])
 }

@@ -7,7 +7,7 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -153,14 +153,14 @@ export default class Generator {
 
   getBuildConfig () {
     try {
-      return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+      return requireModule(path.join(this.options.buildDir, 'nuxt/config.json'))
     } catch (err) {
       return null
     }
   }
 
   getAppRoutes () {
-    return require(path.join(this.options.buildDir, 'routes.json'))
+    return requireModule(path.join(this.options.buildDir, 'routes.json'))
   }
 
   async generateRoutes (routes) {
