@@ -22,7 +22,7 @@ Object {
   "app": Object {
     "assetsPath": "/_nuxt/",
     "basePath": "/",
-    "cdnURL": undefined,
+    "cdnURL": null,
   },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
@@ -321,7 +321,7 @@ Object {
     "app": Object {
       "assetsPath": "/_nuxt/",
       "basePath": "/",
-      "cdnURL": undefined,
+      "cdnURL": null,
     },
   },
   "render": Object {
