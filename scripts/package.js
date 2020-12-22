@@ -125,6 +125,10 @@ export default class Package {
     // Apply suffix to all linkedDependencies
     if (this.pkg.dependencies) {
       for (const oldName of (this.options.linkedDependencies || [])) {
+        if (!this.pkg.dependencies[oldName]) {
+          continue
+        }
+
         const name = oldName + this.options.suffix
         const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
 
@@ -278,8 +282,9 @@ export default class Package {
           throw new Error(`Missing dependencies in ${this.pkg.name}: ` + missingDependencies.join(', '))
         }
         const ignoreUnused = this.options.ignoreUnused || []
+        const stripEdge = s => s.replace(/-edge$/, '')
         const unusedDependencies = dependencies.filter(d =>
-          !imports.find(i => i.startsWith(d)) && !ignoreUnused.includes(d)
+          !imports.find(i => i.startsWith(d)) && !ignoreUnused.includes(stripEdge(d))
         )
         if (unusedDependencies.length) {
           throw new Error(`Unused dependencies in ${this.pkg.name}: ` + unusedDependencies.join(', '))
