@@ -1,5 +1,5 @@
 import path from 'path'
-import defaultsDeep from 'lodash/defaultsDeep'
+import defu from 'defu'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
 
 export async function loadNuxtConfig (argv, configContext) {
@@ -24,10 +24,10 @@ export async function loadNuxtConfig (argv, configContext) {
   }
 
   // Server options
-  options.server = defaultsDeep({
-    port: argv.port || undefined,
-    host: argv.hostname || undefined,
-    socket: argv['unix-socket'] || undefined
+  options.server = defu({
+    port: argv.port || null,
+    host: argv.hostname || null,
+    socket: argv['unix-socket'] || null
   }, options.server || {}, getDefaultNuxtConfig().server)
 
   return options

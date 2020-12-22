@@ -1,4 +1,7 @@
 import { join } from 'path'
+import createRequire from 'create-require'
+
+const _require = createRequire()
 
 export function isHMRCompatible (id) {
   return !/[/\\]mongoose[/\\/]/.test(id)
@@ -16,7 +19,7 @@ export function clearRequireCache (id) {
   const entry = getRequireCacheItem(id)
 
   if (!entry) {
-    delete require.cache[id]
+    delete _require.cache[id]
     return
   }
 
@@ -25,7 +28,7 @@ export function clearRequireCache (id) {
   }
 
   // Needs to be cleared before children, to protect against circular deps (#7966)
-  delete require.cache[id]
+  delete _require.cache[id]
 
   for (const child of entry.children) {
     clearRequireCache(child.id)
@@ -55,18 +58,34 @@ export function scanRequireTree (id, files = new Set()) {
 
 export function getRequireCacheItem (id) {
   try {
-    return require.cache[id]
+    return _require.cache[id]
   } catch (e) {
   }
 }
 
-export function tryRequire (id) {
-  try {
-    return require(id)
-  } catch (e) {
+export function resolveModule (id, paths) {
+  if (typeof paths === 'string') {
+    paths = [paths]
   }
+  return _require.resolve(id, [
+    process.cwd(),
+    ...(paths || []),
+    ...(global.__NUXT_PATHS__ || [])
+  ])
 }
 
-export function getPKG (id) {
-  return tryRequire(join(id, 'package.json'))
+export function requireModule (id, paths) {
+  return _require(resolveModule(id, paths))
+}
+
+export function tryRequire (id, paths) {
+  try { return requireModule(id, paths) } catch (e) { }
+}
+
+export function tryResolve (id, paths) {
+  try { return resolveModule(id, paths) } catch (e) { }
+}
+
+export function getPKG (id, paths) {
+  return tryRequire(join(id, 'package.json'), paths)
 }

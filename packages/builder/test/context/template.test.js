@@ -6,7 +6,11 @@ import devalue from '@nuxt/devalue'
 import { r, wp, wChunk, serializeFunction } from '@nuxt/utils'
 import TemplateContext from '../../src/context/template'
 
-jest.mock('lodash', () => ({ test: 'test lodash', warn: 'only once' }))
+jest.mock('lodash', () => ({
+  ...jest.requireActual('lodash'),
+  test: 'test lodash',
+  warn: 'only once'
+}))
 
 describe('builder: buildContext', () => {
   const builder = {

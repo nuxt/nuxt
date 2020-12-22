@@ -1,6 +1,6 @@
 import path from 'path'
 import consola from 'consola'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { escapeRegExp } from 'lodash'
 
 export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
 
@@ -105,5 +105,5 @@ export function isIndexFileAndFolder (pluginFiles) {
 }
 
 export const getMainModule = () => {
-  return require.main || (module && module.main) || module
+  return (require && require.main) || (module && module.main) || module
 }

@@ -5,6 +5,7 @@ import connect from 'connect'
 import serveStatic from 'serve-static'
 import compression from 'compression'
 import { getNuxtConfig } from '@nuxt/config'
+import { requireModule } from '@nuxt/utils'
 import { showBanner } from '../utils/banner'
 import * as imports from '../imports'
 
@@ -16,7 +17,7 @@ export async function serve (cmd) {
 
   try {
     // overwrites with build config
-    const buildConfig = require(join(options.buildDir, 'nuxt/config.json'))
+    const buildConfig = requireModule(join(options.buildDir, 'nuxt/config.json'))
     options.target = buildConfig.target
   } catch (err) { }
 

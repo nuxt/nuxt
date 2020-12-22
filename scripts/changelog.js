@@ -1,8 +1,6 @@
 import consola from 'consola'
 import execa from 'execa'
-import groupBy from 'lodash/groupBy'
-import sortBy from 'lodash/sortBy'
-import uniq from 'lodash/uniq'
+import { uniq, sortBy, groupBy } from 'lodash'
 import { writeFile } from 'fs-extra'
 
 const types = {

@@ -8,13 +8,7 @@ import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
 import semver from 'semver'
-
-import debounce from 'lodash/debounce'
-import omit from 'lodash/omit'
-import template from 'lodash/template'
-import uniq from 'lodash/uniq'
-import uniqBy from 'lodash/uniqBy'
-
+import { debounce, omit, template, uniq, uniqBy } from 'lodash'
 import {
   r,
   createRoutes,
@@ -26,6 +20,9 @@ import {
   scanRequireTree,
   TARGETS
 } from '@nuxt/utils'
+
+import { template as VueAppTemplate } from '@nuxt/vue-app'
+import { BundleBuilder as WebpackBuilder } from '@nuxt/webpack'
 
 import Ignore from './ignore'
 import BuildContext from './context/build'
@@ -74,7 +71,7 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/vue-app'
+    this.template = this.options.build.template || VueAppTemplate
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template).template
     }
@@ -96,7 +93,7 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      ({ BundleBuilder } = require('@nuxt/webpack'))
+      BundleBuilder = WebpackBuilder
     }
 
     return new BundleBuilder(context)

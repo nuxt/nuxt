@@ -1,5 +1,5 @@
 import path from 'path'
-import get from 'lodash/get'
+import { get } from 'lodash'
 import consola from 'consola'
 import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from '@nuxt/ufo'
 import { r } from './resolve'
