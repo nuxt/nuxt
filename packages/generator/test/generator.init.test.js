@@ -1,4 +1,3 @@
-import path from 'path'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import { flatRoutes, isString, isUrl, promisifyRoute } from '@nuxt/utils'
@@ -6,15 +5,12 @@ import { flatRoutes, isString, isUrl, promisifyRoute } from '@nuxt/utils'
 import Generator from '../src/generator'
 import { createNuxt, hookCalls } from './__utils__'
 
-jest.mock('path')
 jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
 describe('generator: initialize', () => {
   beforeAll(() => {
     isString.mockImplementation(str => typeof str === 'string')
-    path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
-    path.resolve.mockImplementation((...args) => `resolve(${args.join(', ')})`)
   })
 
   beforeEach(() => {
@@ -34,10 +30,22 @@ describe('generator: initialize', () => {
     expect(generator.nuxt).toBe(nuxt)
     expect(generator.options).toBe(nuxt.options)
     expect(generator.builder).toBe(builder)
-    expect(generator.staticRoutes).toEqual('resolve(/var/nuxt/src, /var/nuxt/static)')
-    expect(generator.srcBuiltPath).toBe('resolve(/var/nuxt/build, dist, client)')
-    expect(generator.distPath).toBe('/var/nuxt/generate')
-    expect(generator.distNuxtPath).toBe('join(/var/nuxt/generate, )')
+    expect(generator.staticRoutes).toBePath(
+      '/var/nuxt/static',
+      'C:\\nuxt\\static'
+    )
+    expect(generator.srcBuiltPath).toBePath(
+      '/var/nuxt/build/dist/client',
+      'C:\\nuxt\\build\\dist\\client'
+    )
+    expect(generator.distPath).toBePath(
+      '/var/nuxt/generate',
+      'C:\\nuxt\\generate'
+    )
+    expect(generator.distNuxtPath).toBePath(
+      '/var/nuxt/generate',
+      'C:\\nuxt\\generate'
+    )
   })
 
   test('should append publicPath to distPath if publicPath is not url', () => {
@@ -50,7 +58,10 @@ describe('generator: initialize', () => {
     const builder = jest.fn()
     const generator = new Generator(nuxt, builder)
 
-    expect(generator.distNuxtPath).toBe('join(/var/nuxt/generate, __public)')
+    expect(generator.distNuxtPath).toBePath(
+      '/var/nuxt/generate/__public',
+      'C:\\nuxt\\generate\\__public'
+    )
   })
 
   test('should initiate with build and init by default', async () => {
@@ -172,8 +183,6 @@ describe('generator: initialize', () => {
     const nuxt = createNuxt()
     nuxt.options.generate.fallback = 'fallback.html'
     const generator = new Generator(nuxt)
-    path.join.mockClear()
-    path.resolve.mockClear()
     fsExtra.exists.mockReturnValueOnce(false)
 
     await generator.initDist()
@@ -185,10 +194,11 @@ describe('generator: initialize', () => {
     expect(fsExtra.exists).toBeCalledWith(generator.staticRoutes)
     expect(fsExtra.copy).toBeCalledTimes(1)
     expect(fsExtra.copy).toBeCalledWith(generator.srcBuiltPath, generator.distNuxtPath)
-    expect(path.resolve).toBeCalledTimes(1)
-    expect(path.resolve).toBeCalledWith(generator.distPath, '.nojekyll')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`resolve(${generator.distPath}, .nojekyll)`, '')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/.nojekyll',
+      'C:\\nuxt\\generate\\.nojekyll'
+    )
     expect(hookCalls(nuxt, 'generate:distCopied')[0][0]).toMatchObject(generator)
   })
 

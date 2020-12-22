@@ -1,9 +1,11 @@
 import consola from 'consola'
+import { template as VueAppTemplate } from '@nuxt/vue-app'
 import { relativeTo, determineGlobals } from '@nuxt/utils'
 
 import Builder from '../src/builder'
 import { createNuxt } from './__utils__'
 
+jest.mock('@nuxt/vue-app')
 jest.mock('@nuxt/utils')
 jest.mock('../src/ignore')
 
@@ -37,9 +39,7 @@ describe('builder: builder constructor', () => {
 
     expect(builder._buildStatus).toEqual(1)
 
-    expect(nuxt.resolver.requireModule).toBeCalledTimes(1)
-    expect(nuxt.resolver.requireModule).toBeCalledWith('@nuxt/vue-app')
-    expect(builder.template).toEqual('builder-template')
+    expect(builder.template).toBe(VueAppTemplate)
 
     expect(builder.bundleBuilder).toBe(bundleBuilder)
   })
@@ -112,6 +112,5 @@ describe('builder: builder constructor', () => {
     const builder = new Builder(nuxt, bundleBuilder)
 
     expect(builder.template).toBe(nuxt.options.build.template)
-    expect(nuxt.resolver.requireModule).not.toBeCalled()
   })
 })

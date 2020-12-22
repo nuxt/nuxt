@@ -1,5 +1,5 @@
 
-import isPlainObject from 'lodash/isPlainObject'
+import { isPlainObject } from 'lodash'
 import consola from 'consola'
 import Hookable from 'hable'
 

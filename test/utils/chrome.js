@@ -8,7 +8,7 @@ import path from 'path'
 import { execSync, execFileSync } from 'child_process'
 import isWsl from 'is-wsl'
 import consola from 'consola'
-import uniq from 'lodash/uniq'
+import { uniq } from 'lodash'
 
 const newLineRegex = /\r?\n/
 

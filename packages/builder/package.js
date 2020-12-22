@@ -1,3 +1,7 @@
 export default {
-  build: true
+  build: true,
+  ignoreUnused: [
+    // used for legacy _ in template context
+    'lodash'
+  ]
 }

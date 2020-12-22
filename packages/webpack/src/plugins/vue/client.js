@@ -4,7 +4,7 @@
  */
 
 import hash from 'hash-sum'
-import uniq from 'lodash/uniq'
+import { uniq } from 'lodash'
 
 import { isJS, isCSS } from './util'
 

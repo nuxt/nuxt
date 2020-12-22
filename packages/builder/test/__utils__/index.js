@@ -17,7 +17,7 @@ export const createNuxt = () => ({
   hook: jest.fn(),
   callHook: jest.fn(),
   resolver: {
-    requireModule: jest.fn(() => ({ template: 'builder-template' })),
+    requireModule: jest.fn(),
     resolveAlias: jest.fn(src => `resolveAlias(${src})`),
     resolvePath: jest.fn(src => `resolvePath(${src})`)
   }

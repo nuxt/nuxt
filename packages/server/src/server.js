@@ -4,8 +4,9 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
+import compression from 'compression'
 import { determineGlobals, isUrl, urlJoin } from '@nuxt/utils'
-
+import { VueRenderer } from '@nuxt/vue-renderer'
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
@@ -53,8 +54,6 @@ export default class Server {
     await this.nuxt.callHook('render:before', this, this.options.render)
 
     // Initialize vue-renderer
-    const { VueRenderer } = await import('@nuxt/vue-renderer')
-
     this.serverContext = new ServerContext(this)
     this.renderer = new VueRenderer(this.serverContext)
     await this.renderer.ready()
@@ -77,7 +76,6 @@ export default class Server {
       const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
-        const compression = this.nuxt.resolver.requireModule('compression')
         this.useMiddleware(compression(compressor))
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
