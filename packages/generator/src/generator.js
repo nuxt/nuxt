@@ -382,8 +382,9 @@ export default class Generator {
     let fileName
 
     if (this.options.generate.subFolders) {
-      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
+      fileName = route === '/404'
+        ? path.join(path.sep, '404.html') // /404 -> /404.html
+        : path.join(route, path.sep, 'index.html') // /about -> /about/index.html
     } else {
       const normalizedRoute = route.replace(/\/$/, '')
       fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')
