@@ -139,11 +139,18 @@ grey:bar failed`)
     await generator.afterGenerate()
 
     expect(fsExtra.exists).toBeCalledTimes(1)
-    expect(fsExtra.exists).toBeCalledWith(`${generator.distPath}/fallback.html`)
+    expect(fsExtra.exists.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith('/', { spa: true })
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`${generator.distPath}/fallback.html`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
   })
 
   test('should disable writing fallback if fallback is empty or not string', async () => {
@@ -170,7 +177,10 @@ grey:bar failed`)
     await generator.afterGenerate()
 
     expect(fsExtra.exists).toBeCalledTimes(1)
-    expect(fsExtra.exists).toBeCalledWith(`${generator.distPath}/fallback.html`)
+    expect(fsExtra.exists.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
     expect(nuxt.server.renderRoute).not.toBeCalled()
     expect(fsExtra.writeFile).not.toBeCalled()
   })

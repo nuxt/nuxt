@@ -30,22 +30,37 @@ describe('generator: generate route', () => {
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith(route, { payload })
 
-    expect(hookCalls(nuxt, 'generate:page')[0][0]).toMatchObject({
+    const genernatePageHookCall = hookCalls(nuxt, 'generate:page')[0][0]
+    expect(genernatePageHookCall).toMatchObject({
       route,
-      html: 'rendered html',
-      path: `/var/nuxt/generate/foo.html`
+      html: 'rendered html'
     })
+    expect(genernatePageHookCall.path).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
 
-    expect(hookCalls(nuxt, 'generate:routeCreated')[0][0]).toMatchObject({
+    const genernateRouteCreatedHookCall = hookCalls(nuxt, 'generate:routeCreated')[0][0]
+    expect(genernateRouteCreatedHookCall).toMatchObject({
       route,
-      errors: [],
-      path: `/var/nuxt/generate/foo.html`
+      errors: []
     })
+    expect(genernateRouteCreatedHookCall.path).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
 
     expect(fsExtra.mkdirp).toBeCalledTimes(1)
-    expect(fsExtra.mkdirp).toBeCalledWith(`/var/nuxt/generate`)
+    expect(fsExtra.mkdirp.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate',
+      'C:\\nuxt\\generate'
+    )
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo.html`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -140,7 +155,11 @@ describe('generator: generate route', () => {
     expect(htmlMinifier.minify).toBeCalledTimes(1)
     expect(htmlMinifier.minify).toBeCalledWith('rendered html', { value: 'test-minify' })
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo.html`, 'minified rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'minified rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -179,7 +198,11 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route })
 
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/foo/index.html`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo/index.html',
+      'C:\\nuxt\\generate\\foo\\index.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -194,7 +217,11 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route })
 
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/404.html`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/404.html',
+      'C:\\nuxt\\generate\\404.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -208,7 +235,11 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route })
 
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`/var/nuxt/generate/index.html`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/index.html',
+      'C:\\nuxt\\generate\\index.html'
+    )
     expect(returned).toEqual(true)
   })
 })
