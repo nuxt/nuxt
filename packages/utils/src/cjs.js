@@ -63,7 +63,7 @@ export function getRequireCacheItem (id) {
 export function resolveModule (id) {
   return require.resolve(id, [
     process.cwd(),
-    ...(process.__NUXT_PATHS__ || [])
+    ...(global.__NUXT_PATHS__ || [])
   ])
 }
 
