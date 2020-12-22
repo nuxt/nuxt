@@ -309,20 +309,16 @@ export default class VueRenderer {
       : this.renderSSR(renderContext)
   }
 
-  get publicPath () {
-    const { cdnURL, assetsPath } = this.options.publicRuntimeConfig.app
-    return urlJoin(cdnURL, assetsPath)
-  }
-
   get resourceMap () {
+    const publicPath = urlJoin(this.options.app.cdnURL || '/', this.options.app.assetsPath)
     return {
       clientManifest: {
         fileName: 'client.manifest.json',
-        transform: src => Object.assign(JSON.parse(src), { publicPath: this.publicPath })
+        transform: src => Object.assign(JSON.parse(src), { publicPath })
       },
       modernManifest: {
         fileName: 'modern.manifest.json',
-        transform: src => Object.assign(JSON.parse(src), { publicPath: this.publicPath })
+        transform: src => Object.assign(JSON.parse(src), { publicPath })
       },
       serverManifest: {
         fileName: 'server.manifest.json',
