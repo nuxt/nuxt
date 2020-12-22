@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { normalizeURL, decode } from '@nuxt/ufo'
+import { normalizeURL, decode } from 'ufo'
 import { interopDefault } from './utils'<%= isTest ? '// eslint-disable-line no-unused-vars' : '' %>
 import scrollBehavior from './router.scrollBehavior.js'
 

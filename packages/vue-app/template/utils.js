@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { normalizeURL } from '@nuxt/ufo'
+import { normalizeURL } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)

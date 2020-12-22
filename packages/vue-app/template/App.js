@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { parsePath, withoutTrailingSlash } from '@nuxt/ufo'
+import { parsePath, withoutTrailingSlash } from 'ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',

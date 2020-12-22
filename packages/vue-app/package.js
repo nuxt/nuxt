@@ -2,7 +2,7 @@ export default {
   build: true,
   ignoreUnused: [
     // used in vue-app
-    '@nuxt/ufo',
+    'ufo',
     'node-fetch',
     'unfetch',
     'vue',

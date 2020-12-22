@@ -1,6 +1,6 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
-import { normalizeURL } from '@nuxt/ufo'
+import { normalizeURL } from 'ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {

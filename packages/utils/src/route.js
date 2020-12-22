@@ -1,7 +1,7 @@
 import path from 'path'
 import { get } from 'lodash'
 import consola from 'consola'
-import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from '@nuxt/ufo'
+import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { r } from './resolve'
 
 const routeChildren = function (route) {

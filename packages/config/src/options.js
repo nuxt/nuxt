@@ -5,7 +5,7 @@ import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
 import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
-import { joinURL, normalizeURL, withTrailingSlash } from '@nuxt/ufo'
+import { joinURL, normalizeURL, withTrailingSlash } from 'ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {

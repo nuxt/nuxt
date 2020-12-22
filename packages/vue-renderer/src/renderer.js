@@ -3,7 +3,7 @@ import fs from 'fs-extra'
 import consola from 'consola'
 import { template } from 'lodash'
 import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
-import { normalizeURL } from '@nuxt/ufo'
+import { normalizeURL } from 'ufo'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
