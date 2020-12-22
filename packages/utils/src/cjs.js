@@ -1,4 +1,7 @@
 import { join } from 'path'
+import createRequire from 'create-require'
+
+const _require = createRequire(process.cwd())
 
 export function isHMRCompatible (id) {
   return !/[/\\]mongoose[/\\/]/.test(id)
@@ -16,7 +19,7 @@ export function clearRequireCache (id) {
   const entry = getRequireCacheItem(id)
 
   if (!entry) {
-    delete require.cache[id]
+    delete _require.cache[id]
     return
   }
 
@@ -25,7 +28,7 @@ export function clearRequireCache (id) {
   }
 
   // Needs to be cleared before children, to protect against circular deps (#7966)
-  delete require.cache[id]
+  delete _require.cache[id]
 
   for (const child of entry.children) {
     clearRequireCache(child.id)
@@ -55,13 +58,13 @@ export function scanRequireTree (id, files = new Set()) {
 
 export function getRequireCacheItem (id) {
   try {
-    return require.cache[id]
+    return _require.cache[id]
   } catch (e) {
   }
 }
 
 export function resolveModule (id, paths) {
-  return require.resolve(id, [
+  return _require.resolve(id, [
     ...(paths || []),
     process.cwd(),
     ...(global.__NUXT_PATHS__ || [])
@@ -69,7 +72,7 @@ export function resolveModule (id, paths) {
 }
 
 export function requireModule (id, paths) {
-  return require(resolveModule(id, paths))
+  return _require(resolveModule(id, paths))
 }
 
 export function tryRequire (id, paths) {
