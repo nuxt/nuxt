@@ -4,8 +4,8 @@ import { defaultsDeep, pick, uniq } from 'lodash'
 import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, urlJoin, getPKG } from '@nuxt/utils'
-import { normalizeURL, withTrailingSlash } from '@nuxt/ufo'
+import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
+import { joinURL, normalizeURL, withTrailingSlash } from '@nuxt/ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -450,17 +450,27 @@ export function getNuxtConfig (_options) {
       .map(([path, handler]) => ({ path, handler }))
   }
 
+  // App config (internal for nuxt2 at this stage)
+  const useCDN = isUrl(options.build.publicPath) && !options.dev
+  options.app = defu(options.app, {
+    basePath: options.router.base,
+    assetsPath: useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
+    cdnURL: useCDN ? options.build.publicPath : null
+  })
+  // Expose app config to $config.app
+  options.publicRuntimeConfig = options.publicRuntimeConfig || {}
+  options.publicRuntimeConfig.app = options.app
+
   // Generate staticAssets
   const { staticAssets } = options.generate
   if (!staticAssets.version) {
     staticAssets.version = String(Math.round(Date.now() / 1000))
   }
   if (!staticAssets.base) {
-    const publicPath = isUrl(options.build.publicPath) ? '' : options.build.publicPath // "/_nuxt" or custom CDN URL
-    staticAssets.base = urlJoin(publicPath, staticAssets.dir)
+    staticAssets.base = joinURL(options.app.assetsPath, staticAssets.dir)
   }
   if (!staticAssets.versionBase) {
-    staticAssets.versionBase = urlJoin(staticAssets.base, staticAssets.version)
+    staticAssets.versionBase = joinURL(staticAssets.base, staticAssets.version)
   }
 
   // createRequire

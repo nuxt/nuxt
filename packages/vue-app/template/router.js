@@ -109,8 +109,9 @@ function decodeObj(obj) {
   }
 }
 
-export function createRouter () {
-  const router = new Router(routerOptions)
+export function createRouter (ssrContext, config) {
+  const base = (config.app && config.app.basePath) || routerOptions.base
+  const router = new Router({ ...routerOptions, base  })
 
   // TODO: remove in Nuxt 3
   const originalPush = router.push

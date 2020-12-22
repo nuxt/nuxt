@@ -15,7 +15,8 @@ import {
   compile,
   getQueryDiff,
   globalHandleError,
-  isSamePath
+  isSamePath,
+  urlJoin
 } from './utils.js'
 import { createApp<% if (features.layouts) { %>, NuxtError<% } %> } from './index.js'
 <% if (features.fetch) { %>import fetchMixin from './mixins/fetch.client'<% } %>
@@ -44,6 +45,11 @@ let router
 
 // Try to rehydrate SSR data from window
 const NUXT = window.<%= globals.context %> || {}
+
+const $config = NUXT.config || {}
+if ($config.app) {
+  __webpack_public_path__ = urlJoin($config.app.cdnURL || '/', $config.app.assetsPath)
+}
 
 Object.assign(Vue.config, <%= serialize(vue.config) %>)<%= isTest ? '// eslint-disable-line' : '' %>
 

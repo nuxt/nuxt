@@ -29,11 +29,9 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
-      const { build: { publicPath: _publicPath }, router: { base } } = this.options
-      const publicPath = isUrl(_publicPath) ? _publicPath : base
       const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = urlJoin(publicPath, this.options.generate.staticAssets.versionBase)
+      this.staticAssetsBase = urlJoin(this.options.app.cdnURL || '/', this.options.generate.staticAssets.versionBase)
       if (manifest) {
         this.manifest = defu(manifest, {
           routes: []
