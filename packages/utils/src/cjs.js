@@ -60,25 +60,26 @@ export function getRequireCacheItem (id) {
   }
 }
 
-export function resolveModule (id) {
+export function resolveModule (id, paths) {
   return require.resolve(id, [
+    ...(paths || []),
     process.cwd(),
     ...(global.__NUXT_PATHS__ || [])
   ])
 }
 
-export function requireModule (id) {
-  return require(resolveModule(id))
+export function requireModule (id, paths) {
+  return require(resolveModule(id, paths))
 }
 
-export function tryRequire (id) {
-  try { return requireModule(id) } catch (e) { }
+export function tryRequire (id, paths) {
+  try { return requireModule(id, paths) } catch (e) { }
 }
 
-export function tryResolve (id) {
-  try { return resolveModule(id) } catch (e) { }
+export function tryResolve (id, paths) {
+  try { return resolveModule(id, paths) } catch (e) { }
 }
 
-export function getPKG (id) {
-  return tryRequire(join(id, 'package.json'))
+export function getPKG (id, paths) {
+  return tryRequire(join(id, 'package.json'), paths)
 }
