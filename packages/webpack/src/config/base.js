@@ -22,7 +22,7 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
-    this.resolveModule = id => tryResolve(id) || id
+    this.resolveModule = id => tryResolve(id, [this.buildContext.options.rootDir, __dirname]) || id
   }
 
   get colors () {
