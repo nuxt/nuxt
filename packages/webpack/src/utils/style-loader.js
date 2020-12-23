@@ -13,7 +13,7 @@ export default class StyleLoader {
     this.perfLoader = perfLoader
     this.resolveModule = resolveModule
 
-    const { postcss } = buildContext.options.build.postcss
+    const { postcss } = buildContext.options.build
     if (postcss) {
       const { version } = postcss
       delete postcss.version
