@@ -13,11 +13,11 @@ export default class StyleLoader {
     this.perfLoader = perfLoader
     this.resolveModule = resolveModule
 
-    const { postcss } = buildContext.options.build
-    if (postcss) {
-      const { version } = postcss
-      delete postcss.version
-      if (version === 8) {
+    const { postcss: postcssOptions } = buildContext.options.build
+    if (postcssOptions) {
+      const postcss = require(resolveModule('postcss'))
+      // postcss >= v8
+      if (!postcss.vendor) {
         this.postcssConfig = new PostcssV8Config(buildContext)
       } else {
         this.postcssConfig = new PostcssConfig(buildContext)
