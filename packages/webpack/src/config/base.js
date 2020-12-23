@@ -228,6 +228,7 @@ export default class WebpackBaseConfig {
     const resolvePath = [
       this.buildContext.options.rootDir,
       __dirname,
+      ...(global.__NUXT_PATHS__ || []),
       resolveModule('@nuxt/vue-app'),
       resolveModule('@nuxt/babel-preset-app')
     ]

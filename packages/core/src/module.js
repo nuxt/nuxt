@@ -157,6 +157,8 @@ export default class ModuleContainer {
     if (!handler) {
       try {
         handler = this.nuxt.resolver.requireModule(src, { paths })
+        // pnp support
+        try { (global.__NUXT_PATHS__ || []).push(this.nuxt.resolver.resolvePath(src, { paths })) } catch (_err) {}
       } catch (error) {
         if (error.code !== 'MODULE_NOT_FOUND') {
           throw error
