@@ -44,6 +44,8 @@
     "time-fix-plugin": "^2.0.7",
     "url-loader": "^4.1.1",
     "vue-loader": "^15.9.6",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.12",
     "webpack": "^4.44.2",
     "webpack-bundle-analyzer": "^3.9.0",
     "webpack-dev-middleware": "^4.0.2",

@@ -14,6 +14,8 @@ export default {
     'postcss-preset-env',
     'postcss-url',
     'style-resources-loader',
+    'vue-style-loader', // vue-loader
+    'vue-template-compiler', // vue-loader
     'url-loader'
   ]
 }

@@ -11,7 +11,7 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -225,25 +225,27 @@ export default class WebpackBaseConfig {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
+    const resolvePath = [
+      this.buildContext.options.rootDir,
+      __dirname,
+      resolveModule('@nuxt/vue-app'),
+      resolveModule('@nuxt/babel-preset-app')
+    ]
+    const resolvePlugins = [PnpWebpackPlugin].concat(resolvePath.map(p => PnpWebpackPlugin.moduleLoader(p)))
+
     return {
       resolve: {
         extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
         modules: webpackModulesDir,
-        plugins: [
-          PnpWebpackPlugin,
-          PnpWebpackPlugin.moduleLoader(this.buildContext.options.rootDir),
-          PnpWebpackPlugin.moduleLoader(__dirname)
-        ]
+        plugins: resolvePlugins
       },
       resolveLoader: {
         modules: [
           path.resolve(__dirname, '../node_modules'),
           ...webpackModulesDir
         ],
-        plugins: [
-          PnpWebpackPlugin.moduleLoader(module)
-        ]
+        plugins: resolvePlugins
       }
     }
   }
