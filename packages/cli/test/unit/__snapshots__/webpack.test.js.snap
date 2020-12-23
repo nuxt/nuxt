@@ -109,13 +109,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -140,13 +142,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -180,13 +184,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -211,13 +217,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -251,13 +259,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -288,13 +298,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -334,13 +346,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -374,13 +388,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -423,13 +439,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -460,13 +478,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -506,13 +526,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
@@ -543,13 +565,15 @@ exports[`webpack nuxt webpack module.rules 1`] = `
           Object {
             \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
-              \\"order\\": \\"presetEnvAndCssnanoLast\\",
-              \\"plugins\\": Array [
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-                [Function anonymous],
-              ],
+              \\"execute\\": undefined,
+              \\"postcssOptions\\": Object {
+                \\"plugins\\": Array [
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                  [Function anonymous],
+                ],
+              },
               \\"sourceMap\\": false,
             },
           },
