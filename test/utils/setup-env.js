@@ -21,3 +21,15 @@ function errorTrap (error) {
 
 process.on('unhandledRejection', errorTrap)
 process.on('uncaughtException', errorTrap)
+
+expect.extend({
+  toBePath (received, posixPath, winPath) {
+    const expectedPath = isWin ? winPath : posixPath
+    const pass = received === expectedPath
+    return {
+      pass,
+      message: () =>
+        `expected path ${received} to be ${expectedPath}`
+    }
+  }
+})

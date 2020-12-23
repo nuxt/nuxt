@@ -76,15 +76,19 @@ const defaultTransition = <%=
 
 <% if (store) { %>
 const originalRegisterModule = Vuex.Store.prototype.registerModule
-const baseStoreOptions = { preserveState: process.client }
 
 function registerModule (path, rawModule, options = {}) {
-  return originalRegisterModule.call(this, path, rawModule, { ...baseStoreOptions, ...options })
+  const preserveState = process.client && (
+    Array.isArray(path)
+      ? !!path.reduce((namespacedState, path) => namespacedState && namespacedState[path], this.state)
+      : path in this.state
+  )
+  return originalRegisterModule.call(this, path, rawModule, { preserveState, ...options })
 }
 <% } %>
 
 async function createApp(ssrContext, config = {}) {
-  const router = await createRouter(ssrContext)
+  const router = await createRouter(ssrContext, config)
 
   <% if (store) { %>
   const store = createStore(ssrContext)

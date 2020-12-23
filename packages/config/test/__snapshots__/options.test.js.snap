@@ -19,6 +19,11 @@ Object {
     "~": "/var/nuxt/test",
     "~~": "/var/nuxt/test",
   },
+  "app": Object {
+    "assetsPath": "/_nuxt/",
+    "basePath": "/",
+    "cdnURL": null,
+  },
   "appTemplatePath": "/var/nuxt/test/.nuxt/views/app.template.html",
   "build": Object {
     "_publicPath": "/_nuxt/",
@@ -312,7 +317,13 @@ Object {
   },
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
-  "publicRuntimeConfig": Object {},
+  "publicRuntimeConfig": Object {
+    "app": Object {
+      "assetsPath": "/_nuxt/",
+      "basePath": "/",
+      "cdnURL": null,
+    },
+  },
   "render": Object {
     "bundleRenderer": Object {
       "runInNewContext": false,

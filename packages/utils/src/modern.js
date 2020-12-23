@@ -1,4 +1,5 @@
 import UAParser from 'ua-parser-js'
+import semver from 'semver'
 
 export const ModernBrowsers = {
   Edge: '16',
@@ -14,7 +15,6 @@ export const ModernBrowsers = {
   'Mobile Safari': '10.3'
 }
 
-let semver
 let __modernBrowsers
 
 const getModernBrowsers = () => {
@@ -33,9 +33,6 @@ const getModernBrowsers = () => {
 export const isModernBrowser = (ua) => {
   if (!ua) {
     return false
-  }
-  if (!semver) {
-    semver = require('semver')
   }
   const { browser } = UAParser(ua)
   const browserVersion = semver.coerce(browser.version)

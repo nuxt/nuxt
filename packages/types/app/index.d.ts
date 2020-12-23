@@ -47,6 +47,7 @@ export interface Context {
   redirect(status: number, path: string, query?: Route['query']): void
   redirect(path: string, query?: Route['query']): void
   redirect(location: Location): void
+  redirect(status: number, location: Location): void
   ssrContext?: {
     req: Context['req']
     res: Context['res']
@@ -61,6 +62,7 @@ export interface Context {
     redirected: boolean
     next: NextFunction
     beforeRenderFns: Array<() => any>
+    fetchCounters: Record<string, number>
     nuxt: {
       layout: string
       data: Array<Record<string, any>>

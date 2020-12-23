@@ -318,7 +318,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts)
+    expect(module.addModule).toBeCalledWith(moduleOpts, undefined, { paths: undefined })
   })
 
   test('should add string module', async () => {
@@ -332,7 +332,7 @@ describe('core: module', () => {
     const result = await module.addModule('moduleTest')
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
@@ -381,7 +381,7 @@ describe('core: module', () => {
     const result = await module.addModule(['moduleTest', { test: true }])
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),

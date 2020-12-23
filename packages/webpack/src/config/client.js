@@ -63,7 +63,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       cacheGroups.commons === undefined
     ) {
       cacheGroups.commons = {
-        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
+        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|url-polyfill|@nuxt[\\/]ufo|ufo|nuxt\.js)[\\/]/,
         chunks: 'all',
         name: true,
         priority: 10
@@ -199,9 +199,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.dev) {
       config.entry.app.unshift(
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-        'eventsource-polyfill',
+        this.resolveModule('eventsource-polyfill'),
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+        `${this.resolveModule('webpack-hot-middleware/client')}?${hotMiddlewareClientOptionsStr}`
       )
     }
 

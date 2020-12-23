@@ -9,6 +9,7 @@ import pify from 'pify'
 import sortPackageJson from 'sort-package-json'
 
 import rollupConfig from './rollup.config'
+import { builtins } from './builtins'
 
 const DEFAULTS = {
   rootDir: process.cwd(),
@@ -124,6 +125,10 @@ export default class Package {
     // Apply suffix to all linkedDependencies
     if (this.pkg.dependencies) {
       for (const oldName of (this.options.linkedDependencies || [])) {
+        if (!this.pkg.dependencies[oldName]) {
+          continue
+        }
+
         const name = oldName + this.options.suffix
         const version = this.pkg.dependencies[oldName] || this.pkg.dependencies[name]
 
@@ -185,11 +190,22 @@ export default class Package {
   }
 
   async build (_watch = false) {
+    // Externals
+    const externals = [
+      // Dependencies that will be installed alongise with the nuxt package
+      ...Object.keys(this.pkg.dependencies || {}),
+      // Builtin node modules
+      ...builtins,
+      // Custom externals
+      ...(this.options.externals || [])
+    ]
+
     // Prepare rollup config
     const config = {
       rootDir: this.options.rootDir,
       alias: {},
       replace: {},
+      externals,
       ...this.options.rollup
     }
 
@@ -250,27 +266,31 @@ export default class Package {
       try {
         const bundle = await rollup(_rollupConfig)
         await remove(_rollupConfig.output.dir)
-        await bundle.write(_rollupConfig.output)
+        const result = await bundle.write(_rollupConfig.output)
 
         this.logger.success('Bundle built')
         await this.callHook('build:done', { bundle })
 
         // Analyze bundle imports against pkg
-        // if (this.pkg.dependencies) {
-        //   const dependencies = {}
-        //   for (const dep in this.pkg.dependencies) {
-        //     dependencies[dep] = this.pkg.dependencies[dep]
-        //   }
-        //   for (const imp of bundle.imports) {
-        //     delete dependencies[imp]
-        //   }
-        //   for (const dep in dependencies) {
-        //     this.logger.warn(`Unused dependency ${dep}@${dependencies[dep]}`)
-        //   }
-        // }
+        const dependencies = Object.keys(this.pkg.dependencies || {})
+        const imports = [].concat(...result.output.map(o => o.imports))
+
+        const missingDependencies = imports
+          .filter(i => !i.endsWith('.js')) // dynamic imports
+          .filter(i => !dependencies.includes(i) && !externals.find(e => i.startsWith(e)))
+        if (missingDependencies.length) {
+          throw new Error(`Missing dependencies in ${this.pkg.name}: ` + missingDependencies.join(', '))
+        }
+        const ignoreUnused = this.options.ignoreUnused || []
+        const stripEdge = s => s.replace(/-edge$/, '')
+        const unusedDependencies = dependencies.filter(d =>
+          !imports.find(i => i.startsWith(d)) && !ignoreUnused.includes(stripEdge(d))
+        )
+        if (unusedDependencies.length) {
+          throw new Error(`Unused dependencies in ${this.pkg.name}: ` + unusedDependencies.join(', '))
+        }
       } catch (err) {
         this.formatError(err)
-        this.logger.error(err)
         throw err
       }
     }
@@ -282,7 +302,7 @@ export default class Package {
       const { file, column, line } = error.loc
       loc = `${file}:${line}:${column}`
     }
-    error.message = `[${error.code}] ${error.message}\nat ${loc}`
+    error.message = `[${error.code || ''}] ${error.message}\nat ${loc}`
     return error
   }
 

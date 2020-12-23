@@ -1,10 +1,10 @@
 import hash from 'hash-sum'
 import consola from 'consola'
-import uniqBy from 'lodash/uniqBy'
+import { uniqBy } from 'lodash'
 import serialize from 'serialize-javascript'
 
 import devalue from '@nuxt/devalue'
-import { r, wp, wChunk, serializeFunction, isFullStatic } from '@nuxt/utils'
+import { r, wp, wChunk, serializeFunction, isFullStatic, requireModule } from '@nuxt/utils'
 
 export default class TemplateContext {
   constructor (builder, options) {
@@ -70,7 +70,7 @@ export default class TemplateContext {
           get (target, prop) {
             if (!lodash) {
               consola.warn('Avoid using _ inside templates')
-              lodash = require('lodash')
+              lodash = requireModule('lodash')
             }
             return lodash[prop]
           }

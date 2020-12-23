@@ -12,6 +12,7 @@
 
 <script>
 export default {
+  fetchKey: 'team',
   data () {
     return {
       team: []

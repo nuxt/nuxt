@@ -4,11 +4,9 @@ import jsonPlugin from '@rollup/plugin-json'
 import commonjsPlugin from '@rollup/plugin-commonjs'
 import replacePlugin from '@rollup/plugin-replace'
 import aliasPlugin from '@rollup/plugin-alias'
-import nodeResolvePlugin from '@rollup/plugin-node-resolve'
+// import nodeResolvePlugin from '@rollup/plugin-node-resolve'
 import licensePlugin from 'rollup-plugin-license'
-import defaultsDeep from 'lodash/defaultsDeep'
-
-import { builtins } from './builtins'
+import { defaultsDeep } from 'lodash'
 
 export default function rollupConfig ({
   rootDir = process.cwd(),
@@ -17,12 +15,6 @@ export default function rollupConfig ({
   replace = {},
   alias = {},
   externals = [],
-  resolve = {
-    resolveOnly: [
-      /lodash/,
-      /^((?!node_modules).)*$/
-    ]
-  },
   ...options
 }, pkg) {
   if (!pkg) {
@@ -40,14 +32,7 @@ export default function rollupConfig ({
       format: 'cjs',
       preferConst: true
     },
-    external: [
-      // Dependencies that will be installed alongise with the nuxt package
-      ...Object.keys(pkg.dependencies || {}),
-      // Builtin node modules
-      ...builtins,
-      // Explicit externals
-      ...externals
-    ],
+    external: externals,
     plugins: [
       aliasPlugin(alias),
       replacePlugin({
@@ -58,7 +43,12 @@ export default function rollupConfig ({
           ...replace
         }
       }),
-      nodeResolvePlugin(resolve),
+      // nodeResolvePlugin({
+      //   preferBuiltins: true,
+      //   resolveOnly: [
+      //     /lodash/
+      //   ]
+      // }),
       commonjsPlugin({ include: /node_modules/ }),
       jsonPlugin(),
       licensePlugin({

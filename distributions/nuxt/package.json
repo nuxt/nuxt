@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "2.14.8",
+  "version": "2.14.12",
   "description": "A minimalistic framework for server-rendered Vue.js applications (inspired by Next.js)",
   "keywords": [
     "nuxt",
@@ -48,7 +48,9 @@
     }
   ],
   "main": "dist/nuxt.js",
-  "bin": "bin/nuxt.js",
+  "bin": {
+    "nuxt": "./bin/nuxt.js"
+  },
   "files": [
     "bin",
     "dist",
@@ -58,19 +60,25 @@
     "postinstall": "opencollective || exit 0"
   },
   "dependencies": {
-    "@nuxt/builder": "2.14.8",
-    "@nuxt/cli": "2.14.8",
-    "@nuxt/components": "^1.2.0",
-    "@nuxt/core": "2.14.8",
-    "@nuxt/generator": "2.14.8",
+    "@nuxt/babel-preset-app": "^2.14.12",
+    "@nuxt/builder": "^2.14.12",
+    "@nuxt/cli": "^2.14.12",
+    "@nuxt/components": "^1.2.2",
+    "@nuxt/config": "^2.14.12",
+    "@nuxt/core": "^2.14.12",
+    "@nuxt/generator": "^2.14.12",
     "@nuxt/loading-screen": "^2.0.3",
     "@nuxt/opencollective": "^0.3.2",
-    "@nuxt/telemetry": "^1.2.3",
-    "@nuxt/webpack": "2.14.8"
+    "@nuxt/server": "^2.14.12",
+    "@nuxt/telemetry": "^1.3.0",
+    "@nuxt/utils": "^2.14.12",
+    "@nuxt/vue-app": "^2.14.12",
+    "@nuxt/vue-renderer": "^2.14.12",
+    "@nuxt/webpack": "^2.14.12"
   },
   "engines": {
     "node": ">=10.13.0",
-    "npm": ">=6.14.9"
+    "npm": ">=6.14.10"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

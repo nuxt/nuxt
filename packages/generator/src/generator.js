@@ -7,7 +7,7 @@ import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
 
-import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor } from '@nuxt/utils'
+import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
 export default class Generator {
   constructor (nuxt, builder) {
@@ -29,11 +29,9 @@ export default class Generator {
     )
     // Payloads for full static
     if (this.isFullStatic) {
-      const { build: { publicPath: _publicPath }, router: { base } } = this.options
-      const publicPath = isUrl(_publicPath) ? _publicPath : base
       const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = urlJoin(publicPath, this.options.generate.staticAssets.versionBase)
+      this.staticAssetsBase = urlJoin(this.options.app.cdnURL || '/', this.options.generate.staticAssets.versionBase)
       if (manifest) {
         this.manifest = defu(manifest, {
           routes: []
@@ -64,6 +62,7 @@ export default class Generator {
     if (this.manifest) {
       await this.nuxt.callHook('generate:manifest', this.manifest, this)
       const manifestPath = path.join(this.staticAssetsDir, 'manifest.js')
+      await fsExtra.ensureDir(this.staticAssetsDir)
       await fsExtra.writeFile(manifestPath, `__NUXT_JSONP__("manifest.js", ${devalue(this.manifest)})`, 'utf-8')
       consola.success('Static manifest generated')
     }
@@ -152,14 +151,14 @@ export default class Generator {
 
   getBuildConfig () {
     try {
-      return require(path.join(this.options.buildDir, 'nuxt/config.json'))
+      return requireModule(path.join(this.options.buildDir, 'nuxt/config.json'))
     } catch (err) {
       return null
     }
   }
 
   getAppRoutes () {
-    return require(path.join(this.options.buildDir, 'routes.json'))
+    return requireModule(path.join(this.options.buildDir, 'routes.json'))
   }
 
   async generateRoutes (routes) {
@@ -381,8 +380,9 @@ export default class Generator {
     let fileName
 
     if (this.options.generate.subFolders) {
-      fileName = path.join(route, path.sep, 'index.html') // /about -> /about/index.html
-      fileName = fileName === '/404/index.html' ? '/404.html' : fileName // /404 -> /404.html
+      fileName = route === '/404'
+        ? path.join(path.sep, '404.html') // /404 -> /404.html
+        : path.join(route, path.sep, 'index.html') // /about -> /about/index.html
     } else {
       const normalizedRoute = route.replace(/\/$/, '')
       fileName = route.length > 1 ? path.join(path.sep, normalizedRoute + '.html') : path.join(path.sep, 'index.html')

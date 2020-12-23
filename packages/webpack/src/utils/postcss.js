@@ -1,9 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
-import defaults from 'lodash/defaults'
-import merge from 'lodash/merge'
-import cloneDeep from 'lodash/cloneDeep'
+import { defaults, merge, cloneDeep } from 'lodash'
 import createResolver from 'postcss-import-resolver'
 
 import { isPureObject } from '@nuxt/utils'
@@ -154,7 +152,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       postcssOptions.plugins = this.sortPlugins(postcssOptions)
         .map((p) => {
-          const plugin = this.buildContext.nuxt.resolver.requireModule(p)
+          const plugin = this.buildContext.nuxt.resolver.requireModule(p, { paths: [__dirname] })
           const opts = plugins[p]
           if (opts === false) {
             return false // Disabled

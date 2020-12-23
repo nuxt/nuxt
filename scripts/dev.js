@@ -1,4 +1,3 @@
-#!/usr/bin/env node -r esm
 import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
@@ -11,7 +10,7 @@ const useCjs = [
 
 const stub = {
   es: 'export * from \'../src/index\'',
-  cjs: `const _require = typeof jest === 'undefined' ? require('esm')(module) : require
+  cjs: `const _require = typeof jest === 'undefined' ? require('jiti')(__dirname) : require
   global.__NUXT_DEV__ = true
   module.exports = _require('../src/index')
 `

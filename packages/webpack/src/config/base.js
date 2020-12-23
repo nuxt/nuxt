@@ -1,19 +1,18 @@
 import path from 'path'
 import consola from 'consola'
 import TimeFixPlugin from 'time-fix-plugin'
-import cloneDeep from 'lodash/cloneDeep'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { escapeRegExp, cloneDeep } from 'lodash'
 import VueLoader from 'vue-loader'
 import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
+import * as PnpWebpackPlugin from 'pnp-webpack-plugin'
 import HardSourcePlugin from 'hard-source-webpack-plugin'
 import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { TARGETS, isUrl, urlJoin, getPKG } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
 
-import createRequire from 'create-require'
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -23,6 +22,7 @@ export default class WebpackBaseConfig {
   constructor (builder) {
     this.builder = builder
     this.buildContext = builder.buildContext
+    this.resolveModule = id => tryResolve(id, [this.buildContext.options.rootDir, __dirname]) || id
   }
 
   get colors () {
@@ -73,6 +73,7 @@ export default class WebpackBaseConfig {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
       /consola\/src/,
+      /@nuxt[/\\]ufo/, // exports modern syntax for browser field
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -120,7 +121,7 @@ export default class WebpackBaseConfig {
     let corejsVersion = corejs
     if (corejsVersion === 'auto') {
       try {
-        corejsVersion = Number.parseInt(createRequire(rootDir)('core-js/package.json').version.split('.')[0])
+        corejsVersion = Number.parseInt(requireModule('core-js/package.json', rootDir).version.split('.')[0])
       } catch (_err) {
         corejsVersion = 2
       }
@@ -133,7 +134,7 @@ export default class WebpackBaseConfig {
       corejsVersion = 2
     }
 
-    const defaultPreset = [require.resolve('@nuxt/babel-preset-app'), {
+    const defaultPreset = [this.resolveModule('@nuxt/babel-preset-app'), {
       corejs: {
         version: corejsVersion
       }
@@ -224,17 +225,28 @@ export default class WebpackBaseConfig {
     // Prioritize nested node_modules in webpack search path (#2558)
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
+    const resolvePath = [
+      this.buildContext.options.rootDir,
+      __dirname,
+      ...(global.__NUXT_PATHS__ || []),
+      resolveModule('@nuxt/vue-app'),
+      resolveModule('@nuxt/babel-preset-app')
+    ]
+    const resolvePlugins = [PnpWebpackPlugin].concat(resolvePath.map(p => PnpWebpackPlugin.moduleLoader(p)))
+
     return {
       resolve: {
         extensions: ['.wasm', '.mjs', '.js', '.json', '.vue', '.jsx'],
         alias: this.alias(),
-        modules: webpackModulesDir
+        modules: webpackModulesDir,
+        plugins: resolvePlugins
       },
       resolveLoader: {
         modules: [
           path.resolve(__dirname, '../node_modules'),
           ...webpackModulesDir
-        ]
+        ],
+        plugins: resolvePlugins
       }
     }
   }
@@ -270,26 +282,26 @@ export default class WebpackBaseConfig {
   alias () {
     return {
       ...this.buildContext.options.alias,
-      'vue-meta': require.resolve(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
+      'vue-meta': this.resolveModule(`vue-meta${this.isServer ? '' : '/dist/vue-meta.esm.browser.js'}`)
     }
   }
 
   rules () {
-    const perfLoader = new PerfLoader(this.name, this.buildContext)
+    const perfLoader = new PerfLoader(this.name, this.buildContext, { resolveModule: this.resolveModule })
     const styleLoader = new StyleLoader(
       this.buildContext,
-      { isServer: this.isServer, perfLoader }
+      { isServer: this.isServer, perfLoader, resolveModule: this.resolveModule }
     )
 
     const babelLoader = {
-      loader: require.resolve('babel-loader'),
+      loader: this.resolveModule('babel-loader'),
       options: this.getBabelOptions()
     }
 
     return [
       {
         test: /\.vue$/i,
-        loader: 'vue-loader',
+        loader: this.resolveModule('vue-loader'),
         options: this.loaders.vue
       },
       {
@@ -298,15 +310,15 @@ export default class WebpackBaseConfig {
           {
             resourceQuery: /^\?vue/i,
             use: [{
-              loader: 'pug-plain-loader',
+              loader: this.resolveModule('pug-plain-loader'),
               options: this.loaders.pugPlain
             }]
           },
           {
             use: [
-              'raw-loader',
+              this.resolveModule('raw-loader'),
               {
-                loader: 'pug-plain-loader',
+                loader: this.resolveModule('pug-plain-loader'),
                 options: this.loaders.pugPlain
               }
             ]
@@ -339,35 +351,35 @@ export default class WebpackBaseConfig {
       {
         test: /\.less$/i,
         oneOf: styleLoader.apply('less', {
-          loader: 'less-loader',
+          loader: this.resolveModule('less-loader'),
           options: this.loaders.less
         })
       },
       {
         test: /\.sass$/i,
         oneOf: styleLoader.apply('sass', {
-          loader: 'sass-loader',
+          loader: this.resolveModule('sass-loader'),
           options: this.loaders.sass
         })
       },
       {
         test: /\.scss$/i,
         oneOf: styleLoader.apply('scss', {
-          loader: 'sass-loader',
+          loader: this.resolveModule('sass-loader'),
           options: this.loaders.scss
         })
       },
       {
         test: /\.styl(us)?$/i,
         oneOf: styleLoader.apply('stylus', {
-          loader: 'stylus-loader',
+          loader: this.resolveModule('stylus-loader'),
           options: this.loaders.stylus
         })
       },
       {
         test: /\.(png|jpe?g|gif|svg|webp|avif)$/i,
         use: [{
-          loader: 'url-loader',
+          loader: this.resolveModule('url-loader'),
           options: Object.assign(
             this.loaders.imgUrl,
             { name: this.getFileName('img') }
@@ -377,7 +389,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i,
         use: [{
-          loader: 'url-loader',
+          loader: this.resolveModule('url-loader'),
           options: Object.assign(
             this.loaders.fontUrl,
             { name: this.getFileName('font') }
@@ -387,7 +399,7 @@ export default class WebpackBaseConfig {
       {
         test: /\.(webm|mp4|ogv)$/i,
         use: [{
-          loader: 'file-loader',
+          loader: this.resolveModule('file-loader'),
           options: Object.assign(
             this.loaders.file,
             { name: this.getFileName('video') }

@@ -2,7 +2,7 @@
 
 exports[`webpack getWebpackConfig() 1`] = `
 "Object {
-  \\"loader\\": \\"vue-loader\\",
+  \\"loader\\": \\"<nuxtDir>/node_modules/vue-loader/lib/index.js\\",
   \\"options\\": Object {
     \\"productionMode\\": true,
     \\"transformAssetUrls\\": Object {
@@ -24,7 +24,7 @@ exports[`webpack nuxt webpack devtool 1`] = `
 exports[`webpack nuxt webpack module.rules 1`] = `
 "Array [
   Object {
-    \\"loader\\": \\"vue-loader\\",
+    \\"loader\\": \\"<nuxtDir>/node_modules/vue-loader/lib/index.js\\",
     \\"options\\": Object {
       \\"productionMode\\": true,
       \\"transformAssetUrls\\": Object {
@@ -90,13 +90,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -107,7 +107,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -126,13 +126,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -140,7 +140,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -165,13 +165,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -182,7 +182,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -201,13 +201,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -215,7 +215,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -240,13 +240,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -257,7 +257,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -282,13 +282,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -296,7 +296,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -327,13 +327,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -344,7 +344,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -359,7 +359,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"sass-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/sass-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"sassOptions\\": Object {
                 \\"indentedSyntax\\": true,
@@ -372,13 +372,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -386,7 +386,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -401,7 +401,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"sass-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/sass-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"sassOptions\\": Object {
                 \\"indentedSyntax\\": true,
@@ -420,13 +420,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -437,7 +437,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -452,7 +452,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"sass-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/sass-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
@@ -462,13 +462,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -476,7 +476,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -491,7 +491,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"sass-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/sass-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
@@ -507,13 +507,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"resourceQuery\\": /module/,
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -524,7 +524,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -549,13 +549,13 @@ exports[`webpack nuxt webpack module.rules 1`] = `
       Object {
         \\"use\\": Array [
           Object {
-            \\"loader\\": \\"vue-style-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/vue-style-loader/index.js\\",
             \\"options\\": Object {
               \\"sourceMap\\": false,
             },
           },
           Object {
-            \\"loader\\": \\"css-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/css-loader/dist/cjs.js\\",
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
@@ -563,7 +563,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             },
           },
           Object {
-            \\"loader\\": \\"postcss-loader\\",
+            \\"loader\\": \\"<nuxtDir>/node_modules/postcss-loader/src/index.js\\",
             \\"options\\": Object {
               \\"execute\\": undefined,
               \\"postcssOptions\\": Object {
@@ -592,7 +592,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
     \\"test\\": /\\\\.(png|jpe?g|gif|svg|webp|avif)$/i,
     \\"use\\": Array [
       Object {
-        \\"loader\\": \\"url-loader\\",
+        \\"loader\\": \\"<nuxtDir>/node_modules/url-loader/dist/cjs.js\\",
         \\"options\\": Object {
           \\"esModule\\": false,
           \\"limit\\": 1000,
@@ -605,7 +605,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
     \\"test\\": /\\\\.(woff2?|eot|ttf|otf)(\\\\?.*)?$/i,
     \\"use\\": Array [
       Object {
-        \\"loader\\": \\"url-loader\\",
+        \\"loader\\": \\"<nuxtDir>/node_modules/url-loader/dist/cjs.js\\",
         \\"options\\": Object {
           \\"esModule\\": false,
           \\"limit\\": 1000,
@@ -618,7 +618,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
     \\"test\\": /\\\\.(webm|mp4|ogv)$/i,
     \\"use\\": Array [
       Object {
-        \\"loader\\": \\"file-loader\\",
+        \\"loader\\": \\"<nuxtDir>/node_modules/file-loader/dist/cjs.js\\",
         \\"options\\": Object {
           \\"esModule\\": false,
           \\"name\\": \\"videos/[name].[contenthash:7].[ext]\\",
@@ -632,7 +632,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
 
 exports[`webpack nuxt webpack module.rules loader=.*-loader 1`] = `
 "Object {
-  \\"loader\\": \\"vue-loader\\",
+  \\"loader\\": \\"<nuxtDir>/node_modules/vue-loader/lib/index.js\\",
   \\"options\\": Object {
     \\"productionMode\\": true,
     \\"transformAssetUrls\\": Object {
@@ -649,7 +649,7 @@ exports[`webpack nuxt webpack module.rules loader=.*-loader 1`] = `
 
 exports[`webpack nuxt webpack module.rules loader=vue- 1`] = `
 "Object {
-  \\"loader\\": \\"vue-loader\\",
+  \\"loader\\": \\"<nuxtDir>/node_modules/vue-loader/lib/index.js\\",
   \\"options\\": Object {
     \\"productionMode\\": true,
     \\"transformAssetUrls\\": Object {

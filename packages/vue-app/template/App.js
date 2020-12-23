@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { parsePath, withoutTrailingSlash } from 'ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',
@@ -296,19 +297,23 @@ export default {
     <% } /* features.layouts */ %>
     <% if (isFullStatic) { %>
     getRouterBase() {
-      return (this.$router.options.base || '').replace(/\/+$/, '')
+      return withoutTrailingSlash(this.$router.options.base)
     },
     getRoutePath(route = '/') {
       const base = this.getRouterBase()
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      return (route.replace(/\/+$/, '') || '/').split('?')[0].split('#')[0]
+      let path = parsePath(route).pathname
+      <% if (!nuxtOptions.router.trailingSlash) { %>
+        path = withoutTrailingSlash(path)
+      <% } %>
+      return path || '/'
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
 
-      return urlJoin(staticAssetsBase, this.getRoutePath(route))
+      return urlJoin(staticAssetsBase, withoutTrailingSlash(this.getRoutePath(route)))
     },
     <% if (nuxtOptions.generate.manifest) { %>
       async fetchStaticManifest() {
@@ -317,7 +322,7 @@ export default {
     <% } %>
     setPagePayload(payload) {
       this._pagePayload = payload
-      this._payloadFetchIndex = 0
+      this._fetchCounters = {}
     },
     async fetchPayload(route) {
       <% if (nuxtOptions.generate.manifest) { %>

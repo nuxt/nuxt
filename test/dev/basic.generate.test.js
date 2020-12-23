@@ -24,6 +24,9 @@ describe('basic generate', () => {
       generate: {
         static: false,
         dir: '.nuxt-generate'
+      },
+      publicRuntimeConfig: {
+        generated: true
       }
     })
     const nuxt = new Nuxt(config)
@@ -140,6 +143,13 @@ describe('basic generate', () => {
     const window = await generator.nuxt.server.renderAndGetWindow(url('/async-data'))
     const html = window.document.body.innerHTML
     expect(html).toContain('<p>Nuxt</p>')
+  })
+
+  test('/fetch', async () => {
+    const window = await generator.nuxt.server.renderAndGetWindow(url('/fetch'))
+    const html = window.document.body.innerHTML
+    expect(html).toContain('<code>true</code>')
+    expect(window.__NUXT__.fetch.custom100.fetched).toBe(true)
   })
 
   test('/тест雨 (test non ascii route)', async () => {

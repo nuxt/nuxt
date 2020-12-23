@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { normalizeURL } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -6,6 +7,15 @@ if (process.client) {
   window.<%= globals.readyCallback %>Cbs = []
   window.<%= globals.readyCallback %> = (cb) => {
     window.<%= globals.readyCallback %>Cbs.push(cb)
+  }
+}
+
+export function createGetCounter (counterObject, defaultKey = '') {
+  return function getCounter (id = defaultKey) {
+    if (counterObject[id] === undefined) {
+      counterObject[id] = 0
+    }
+    return counterObject[id]++
   }
 }
 
@@ -170,7 +180,7 @@ export async function setContext (app, context) {
       <%= (store ? 'store: app.store,' : '') %>
       payload: context.payload,
       error: context.error,
-      base: '<%= router.base %>',
+      base: app.router.options.base,
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
@@ -309,7 +319,7 @@ export function getLocation (base, mode) {
 
   const fullPath = (path || '/') + window.location.search + window.location.hash
 
-  return encodeURI(fullPath)
+  return normalizeURL(fullPath)
 }
 
 // Imported from path-to-regexp
@@ -692,3 +702,4 @@ export function setScrollRestoration (newVal) {
     window.history.scrollRestoration = newVal;
   } catch(e) {}
 }
+
