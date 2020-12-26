@@ -87,6 +87,10 @@ module.exports = (api, options = {}) => {
     corejs = { version: Number(corejs) }
   }
 
+  if (corejs.proposals === undefined) {
+    corejs.proposals = true
+  }
+
   const defaultTargets = {
     server: { node: 'current' },
     client: { ie: 9 },
