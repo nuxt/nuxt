@@ -9,7 +9,9 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "axios": "0.21.1",
     "core-js": "^3.6.5",
+    "express": "4.17.1",
     "nuxt": "2.14.12"
   },
   "devDependencies": {}

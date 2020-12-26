@@ -117,7 +117,23 @@ Vue.config.$nuxt.<%= globals.nuxt %> = true
 const errorHandler = Vue.config.errorHandler || console.error
 
 // Create and mount App
-createApp(null, NUXT.config).then(mountApp).catch(errorHandler)
+NUXT.config.orchestratedEls = Array.from(document.querySelectorAll('[data-orchestrated-app'));
+if (NUXT.config.orchestratedEls.length > 1) {
+  NUXT.config.orchestrated = true;
+  NUXT.config.orchestratedEls.reduce(
+    (acc, el) => acc
+      .then(() => createApp(null, NUXT.config))
+      .then((app) => {
+        app.app.orchestrated = el.dataset.orchestratedApp;
+        NUXT.config.existingStore = NUXT.config.existingStore || app.store;
+        return mountApp(app, el);
+      })
+      .catch(errorHandler),
+    Promise.resolve(),
+  );
+} else {
+  createApp(null, NUXT.config).then(mountApp).catch(errorHandler);
+}
 
 <% if (features.transitions) { %>
 function componentOption (component, key, ...args) {
@@ -833,7 +849,7 @@ function addHotReload ($component, depth) {
 }
 <% } %>
 
-async function mountApp (__app) {
+async function mountApp (__app, el) {
   // Set global variables
   app = __app.app
   router = __app.router
@@ -861,7 +877,7 @@ async function mountApp (__app) {
 
   // Mounts Vue app to DOM element
   const mount = () => {
-    _app.$mount('#<%= globals.id %>')
+    _app.$mount(el || '#<%= globals.id %>')
 
     // Add afterEach router hooks
     router.afterEach(normalizeComponents)

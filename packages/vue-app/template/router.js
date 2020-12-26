@@ -110,6 +110,12 @@ function decodeObj(obj) {
 }
 
 export function createRouter (ssrContext, config) {
+  if (config.orchestrated) {
+    routerOptions.routes = [{
+      ...routerOptions.routes.find(r => r.name === "orchestrated-component"),
+      path: '*',
+    }];
+  }
   const base = (config.app && config.app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
 
