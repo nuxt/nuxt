@@ -4,7 +4,7 @@ import { defaultsDeep, pick, uniq } from 'lodash'
 import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
+import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
 import { joinURL, normalizeURL, withTrailingSlash } from 'ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
@@ -480,7 +480,6 @@ export function getNuxtConfig (_options) {
   options.createRequire = process.env.NUXT_CREATE_REQUIRE || options.createRequire || defaultCreateRequire
 
   if (options.createRequire === 'native') {
-    const createRequire = require('create-require')
     options.createRequire = p => createRequire(typeof p === 'string' ? p : p.filename)
   } else if (options.createRequire === 'jiti') {
     const jiti = require('jiti')

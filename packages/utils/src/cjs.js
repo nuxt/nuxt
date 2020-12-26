@@ -1,7 +1,9 @@
 import { join } from 'path'
-import createRequire from 'create-require'
+import _createRequire from 'create-require'
 
-const _require = createRequire()
+export const createRequire = global.__NUXT_DEV__ ? () => _createRequire(undefined, require) : _createRequire
+
+const _require = createRequire(undefined, require)
 
 export function isHMRCompatible (id) {
   return !/[/\\]mongoose[/\\/]/.test(id)
