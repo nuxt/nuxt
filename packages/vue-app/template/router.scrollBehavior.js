@@ -31,9 +31,11 @@ export default function (to, from, savedPosition) {
   // Scroll to the top of the page if...
   if (
       // One of the children set `scrollToTop`
-      Pages.some(Page => Page.options.scrollToTop) ||
+      (Pages.some(Page => Page.options.scrollToTop) ||
       // scrollToTop set in only page without children
-      (Pages.length < 2 && Pages.every(Page => Page.options.scrollToTop !== false))
+      (Pages.length < 2 && Pages.every(Page => Page.options.scrollToTop !== false))) &&
+      // route changes
+      to !== from
   ) {
     position = { x: 0, y: 0 }
   }
