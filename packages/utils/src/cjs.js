@@ -1,9 +1,19 @@
 import { join } from 'path'
 import _createRequire from 'create-require'
+import jiti from 'jiti'
 
-export const createRequire = global.__NUXT_DEV__ ? () => _createRequire(undefined, require) : _createRequire
+export const createRequire = (
+  filename,
+  useJiti = global.__NUXT_DEV__ && typeof jest === 'undefined'
+) => {
+  if (useJiti) {
+    return jiti(filename)
+  }
 
-const _require = createRequire(undefined, require)
+  return _createRequire(filename)
+}
+
+const _require = createRequire()
 
 export function isHMRCompatible (id) {
   return !/[/\\]mongoose[/\\/]/.test(id)
