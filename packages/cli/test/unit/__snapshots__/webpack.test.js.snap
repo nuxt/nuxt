@@ -104,6 +104,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -135,6 +136,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -175,6 +177,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -206,6 +209,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -246,6 +250,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -283,6 +288,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -329,6 +335,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -369,6 +376,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -418,6 +426,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -455,6 +464,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -501,6 +511,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                 \\"localIdentName\\": \\"[local]_[hash:base64:5]\\",
               },
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
@@ -538,6 +549,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
               \\"sourceMap\\": false,
+              \\"url\\": [Function isUrlResolvingEnabled],
             },
           },
           Object {
