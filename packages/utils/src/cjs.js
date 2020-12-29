@@ -1,5 +1,17 @@
 import { join } from 'path'
-import createRequire from 'create-require'
+import _createRequire from 'create-require'
+import jiti from 'jiti'
+
+export const createRequire = (
+  filename,
+  useJiti = global.__NUXT_DEV__ && typeof jest === 'undefined'
+) => {
+  if (useJiti) {
+    return jiti(filename)
+  }
+
+  return _createRequire(filename)
+}
 
 const _require = createRequire()
 

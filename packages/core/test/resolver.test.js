@@ -6,7 +6,11 @@ import { startsWithRootAlias, startsWithSrcAlias } from '@nuxt/utils'
 import Resolver from '../src/resolver'
 
 jest.mock('fs-extra')
-jest.mock('@nuxt/utils')
+jest.mock('@nuxt/utils', () => ({
+  ...jest.requireActual('@nuxt/utils'),
+  startsWithRootAlias: jest.fn(),
+  startsWithSrcAlias: jest.fn()
+}))
 
 jest.spyOn(path, 'join')
 jest.spyOn(path, 'resolve')

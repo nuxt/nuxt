@@ -1,9 +1,9 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-import createRequire from 'create-require'
 
 import {
+  createRequire,
   startsWithRootAlias,
   startsWithSrcAlias,
   isExternalDependency,

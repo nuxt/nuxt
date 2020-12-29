@@ -3,15 +3,12 @@ import fs from 'fs'
 import defu from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
-import { clearRequireCache, scanRequireTree } from '@nuxt/utils'
-import jiti from 'jiti'
-import _createRequire from 'create-require'
+import { clearRequireCache, createRequire, scanRequireTree } from '@nuxt/utils'
 import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
-const isJest = typeof jest !== 'undefined'
-const _require = isJest ? _createRequire(__filename) : jiti(__filename)
+const _require = createRequire(__filename)
 
 export async function loadNuxtConfig ({
   rootDir = '.',
