@@ -199,6 +199,11 @@ export default class Server {
       middleware = this._requireMiddleware(middleware)
     }
 
+    // #8584
+    // shallow clone the middleware before any change is made,
+    // in case any following mutation breaks when applied repeatedly.
+    middleware = Object.assign({}, middleware)
+
     // Normalize handler to handle (backward compatibility)
     if (middleware.handler && !middleware.handle) {
       middleware.handle = middleware.handler
@@ -271,6 +276,10 @@ export default class Server {
       middleware.route = fallbackRoute
     }
 
+    // #8584
+    // save the original route before applying defaults
+    middleware._originalRoute = middleware.route
+
     // Resolve final route
     middleware.route = (
       (middleware.prefix !== false ? this.options.router.base : '') +
@@ -313,7 +322,13 @@ export default class Server {
     this.unloadMiddleware(serverStackItem)
 
     // Resolve middleware
-    const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
+    const { route, handle } = this.resolveMiddleware(
+      middleware,
+      // #8584 pass the original route as fallback
+      serverStackItem.handle._middleware
+        ? serverStackItem.handle._middleware._originalRoute
+        : serverStackItem.route
+    )
 
     // Update serverStackItem
     serverStackItem.handle = handle
