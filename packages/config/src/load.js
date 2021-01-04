@@ -8,8 +8,6 @@ import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
-const _require = createRequire(__filename)
-
 export async function loadNuxtConfig ({
   rootDir = '.',
   envConfig = {},
@@ -18,6 +16,8 @@ export async function loadNuxtConfig ({
   configOverrides = {}
 } = {}) {
   rootDir = path.resolve(rootDir)
+
+  const _require = createRequire(rootDir, true)
 
   let options = {}
 
