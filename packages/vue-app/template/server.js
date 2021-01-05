@@ -31,7 +31,7 @@ Vue.component(NuxtLink.name, NuxtLink)
 
 <% if (fetch.server) { %>if (!global.fetch) { global.fetch = fetch }<% } %>
 
-const noopApp = () => new Vue({ render: h => h('div') })
+const noopApp = () => new Vue({ render: h => h('div', { domProps: { id: '<%= globals.id %>' } }) })
 
 function urlJoin () {
   return Array.prototype.slice.call(arguments).join('/').replace(/\/+/g, '/')
