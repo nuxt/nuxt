@@ -17,7 +17,7 @@ const cancelIdleCallback = window.cancelIdleCallback || function (id) {
 
 const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
   entries.forEach(({ intersectionRatio, target: link }) => {
-    if (intersectionRatio <= 0) {
+    if (intersectionRatio <= 0 || !link.__prefetch) {
       return
     }
     link.__prefetch()
