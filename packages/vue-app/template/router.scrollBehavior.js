@@ -40,7 +40,7 @@ export default function (to, from, savedPosition) {
   if (savedPosition) {
     position = savedPosition
   } else if (isRouteChanged && shouldScrollToTop(to)) {
-    position = { x:0, y:0 }
+    position = { x: 0, y: 0 }
   }
 
   const nuxt = window.<%= globals.nuxt %>
