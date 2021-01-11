@@ -18,7 +18,7 @@
     "lodash": "^4.17.20",
     "rc9": "^1.2.0",
     "std-env": "^2.2.1",
-    "ufo": "^0.5.2"
+    "ufo": "^0.5.4"
   },
   "publishConfig": {
     "access": "public"
