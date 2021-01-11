@@ -63,7 +63,7 @@
     "@nuxt/babel-preset-app": "^2.14.12",
     "@nuxt/builder": "^2.14.12",
     "@nuxt/cli": "^2.14.12",
-    "@nuxt/components": "^1.2.2",
+    "@nuxt/components": "^1.2.3",
     "@nuxt/config": "^2.14.12",
     "@nuxt/core": "^2.14.12",
     "@nuxt/generator": "^2.14.12",
@@ -78,7 +78,7 @@
   },
   "engines": {
     "node": ">=10.13.0",
-    "npm": ">=6.14.10"
+    "npm": ">=6.14.11"
   },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",

@@ -71,10 +71,10 @@
     "puppeteer-core": "^5.5.0",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
-    "rollup": "2.35.1",
+    "rollup": "2.36.1",
     "rollup-plugin-license": "^2.2.0",
-    "sass": "^1.32.0",
-    "sass-loader": "^10.1.0",
+    "sass": "^1.32.2",
+    "sass-loader": "^10.1.1",
     "sort-package-json": "^1.48.1",
     "typescript": "~4.1",
     "vue-jest": "^4.0.0-rc.1"
