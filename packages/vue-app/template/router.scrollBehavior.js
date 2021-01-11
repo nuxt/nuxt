@@ -22,8 +22,8 @@ if (process.client) {
   }
 }
 
-function shouldScrollToTop() {
-   const Pages = getMatchedComponents(to)
+function shouldScrollToTop(route) {
+   const Pages = getMatchedComponents(route)
    if (Pages.length === 1) {
      const { options = {} } = Pages[0]
      return options.scrollToTop !== false
@@ -39,7 +39,7 @@ export default function (to, from, savedPosition) {
   // savedPosition is only available for popstate navigations (back button)
   if (savedPosition) {
     position = savedPosition
-  } else if (isRouteChanged && shouldScrollToTop()) {
+  } else if (isRouteChanged && shouldScrollToTop(to)) {
     position = { x:0, y:0 }
   }
 
