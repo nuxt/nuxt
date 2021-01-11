@@ -68,7 +68,7 @@ async function _build (sigmaContext: SigmaContext) {
     throw error
   })
 
-  spinner.start('Wrting server bundle...')
+  spinner.start('Writing server bundle...')
   await build.write(sigmaContext.rollupConfig.output)
 
   spinner.succeed('Server built')
