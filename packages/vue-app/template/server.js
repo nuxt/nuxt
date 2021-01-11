@@ -80,9 +80,11 @@ export default async (ssrContext) => {
   <% } %>
 
   // Remove query from url is static target
-  if (process.static && ssrContext.url) {
+  <% if (isFullStatic) { %>
+  if (ssrContext.url) {
     ssrContext.url = ssrContext.url.split('?')[0]
   }
+  <% } %>
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
   // Create the app definition and the instance (created for each request)

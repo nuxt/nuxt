@@ -184,12 +184,14 @@ export async function setContext (app, context) {
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
-    if (!process.static && context.req) {
+    <% if (!isFullStatic) { %>
+    if (context.req) {
       app.context.req = context.req
     }
-    if (!process.static && context.res) {
+    if (context.res) {
       app.context.res = context.res
     }
+    <% } %>
     if (context.ssrContext) {
       app.context.ssrContext = context.ssrContext
     }
