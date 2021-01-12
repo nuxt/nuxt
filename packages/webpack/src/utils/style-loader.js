@@ -1,5 +1,4 @@
 import path from 'path'
-import consola from 'consola'
 import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 
 import { wrapArray } from '@nuxt/utils'
