@@ -44,7 +44,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       }
     },
     async buildEnd () {
-      if (opts.trace) {
+      if (opts.trace !== false) {
         const { fileList } = await nodeFileTrace(Object.values(resolvedExternals), opts.traceOptions)
         await Promise.all(fileList.map(async (file) => {
           if (!file.startsWith('node_modules')) {
