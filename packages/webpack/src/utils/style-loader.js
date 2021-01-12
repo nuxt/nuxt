@@ -36,12 +36,7 @@ export default class StyleLoader {
 
   isUrlResolvingEnabled (url, resourcePath) {
     // Ignore absolute URLs, it will be handled by serve-static.
-    if (url.startsWith('/')) {
-      consola.warn(`Please use relative path or alias path instead of absolute path ${url}`)
-      return false
-    }
-
-    return true
+    return !url.startsWith('/')
   }
 
   normalize (loaders) {
