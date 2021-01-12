@@ -90,6 +90,7 @@ interface NuxtBabelOptions extends Pick<TransformOptions, Exclude<keyof Transfor
   cacheDirectory?: boolean
   cacheIdentifier?: string
   customize?: string | null
+  // eslint-disable-next-line @typescript-eslint/ban-types
   presets?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv, defaultPreset: [string, object]) => PluginItem[] | void) | PluginItem[] | null
   plugins?: ((env: NuxtBabelPresetEnv & NuxtWebpackEnv) => NonNullable<TransformOptions['plugins']>) | TransformOptions['plugins']
 }
