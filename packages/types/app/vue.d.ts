@@ -9,7 +9,7 @@ import { NuxtRuntimeConfig } from '../config/runtime'
 import { Context, Middleware, Transition, NuxtApp } from './index'
 
 declare module 'vue/types/options' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
   interface ComponentOptions<V extends Vue> {
     // eslint-disable-next-line @typescript-eslint/ban-types
     asyncData?(ctx: Context): Promise<object | void> | object | void
