@@ -25,7 +25,7 @@ export { ServerMiddleware } from './server-middleware'
 /**
  * @deprecated Use NuxtConfig instead
 */
-export type Configuration = Record<string, any>
+export interface Configuration extends Record<string, any> {}
 
 export interface NuxtOptions extends Configuration {
   build: NuxtOptionsBuild
