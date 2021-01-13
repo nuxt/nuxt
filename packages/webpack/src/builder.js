@@ -185,18 +185,6 @@ export class WebpackBundler {
         })
     )
 
-    // disable webpack-dev-middleware stas printing
-    Object.defineProperty(
-      this.devMiddleware[name].context,
-      'stats',
-      {
-        configurable: true,
-        get () {
-          return 'none'
-        }
-      }
-    )
-
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
 
     this.compilersWatching.push(this.devMiddleware[name].context.watching)

@@ -78,6 +78,11 @@ export default class WebpackBaseConfig {
     ]
   }
 
+  get stats () {
+    const { buildOptions } = this.buildContext
+    return !buildOptions.quiet && !this.dev && buildOptions.stats
+  }
+
   normalizeTranspile ({ pathNormalize = false } = {}) {
     const transpile = []
     for (let pattern of this.buildContext.buildOptions.transpile) {
@@ -525,6 +530,7 @@ export default class WebpackBaseConfig {
         rules: this.rules()
       },
       plugins: this.plugins(),
+      stats: this.stats,
       ...this.resolve()
     }
 
