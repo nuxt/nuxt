@@ -15,6 +15,16 @@ import './vuex'
 
 type NuxtState = Record<string, any>
 
+export interface NuxtAppOptions extends ComponentOptions<Vue> {
+  [key: string]: any // TBD
+}
+
+export interface NuxtError {
+  message?: string
+  path?: string
+  statusCode?: number
+}
+
 export interface Context {
   $config: NuxtRuntimeConfig
 
@@ -79,6 +89,7 @@ export interface Context {
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type Middleware = string | ((ctx: Context, cb: Function) => Promise<void> | void)
 export type Inject = (key: string, value: any) => void
 export type Plugin = (ctx: Context, inject: Inject) => Promise<void> | void
@@ -96,19 +107,15 @@ export interface Transition {
   leaveToClass?: string
   leaveActiveClass?: string
   beforeEnter?(el: HTMLElement): void
+  // eslint-disable-next-line @typescript-eslint/ban-types
   enter?(el: HTMLElement, done: Function): void
   afterEnter?(el: HTMLElement): void
   enterCancelled?(el: HTMLElement): void
   beforeLeave?(el: HTMLElement): void
+  // eslint-disable-next-line @typescript-eslint/ban-types
   leave?(el: HTMLElement, done: Function): void
   afterLeave?(el: HTMLElement): void
   leaveCancelled?(el: HTMLElement): void
-}
-
-export interface NuxtError {
-  message?: string
-  path?: string
-  statusCode?: number
 }
 
 export interface DefaultNuxtLoading extends Vue {
@@ -145,10 +152,6 @@ export interface CustomNuxtLoading extends Vue {
 }
 
 export type NuxtLoading = DefaultNuxtLoading | CustomNuxtLoading
-
-export interface NuxtAppOptions extends ComponentOptions<Vue> {
-  [key: string]: any // TBD
-}
 
 export interface NuxtApp extends Vue {
   $options: NuxtAppOptions

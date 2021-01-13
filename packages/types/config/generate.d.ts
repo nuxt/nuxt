@@ -21,6 +21,7 @@ export interface NuxtOptionsGenerate {
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
   cache?: false | {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     ignore?: string[] | Function,
     globbyOptions?: GlobbyOptions
   }

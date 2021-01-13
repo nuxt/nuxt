@@ -61,7 +61,9 @@ options.loading = true
 
 const middlewares: Middleware[] = [
   'foo',
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   async () => {}
 ]
 

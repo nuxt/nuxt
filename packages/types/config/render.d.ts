@@ -50,7 +50,7 @@ export interface NuxtOptionsRender {
   bundleRenderer?: BundleRendererOptions
   compressor?: CompressionOptions | NuxtOptionsServerMiddleware | false
   csp?: boolean | CspOptions
-  crossorigin?: "anonymous" | "use-credentials" | ""
+  crossorigin?: 'anonymous' | 'use-credentials' | ''
   dist?: ServeStaticOptions
   etag?: NuxtEtagOptions | false
   fallback?: {

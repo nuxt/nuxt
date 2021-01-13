@@ -5,11 +5,13 @@
 import Vue from 'vue'
 import { MetaInfo } from 'vue-meta'
 import { Route } from 'vue-router'
-import { Context, Middleware, Transition, NuxtApp } from './index'
 import { NuxtRuntimeConfig } from '../config/runtime'
+import { Context, Middleware, Transition, NuxtApp } from './index'
 
 declare module 'vue/types/options' {
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
   interface ComponentOptions<V extends Vue> {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     asyncData?(ctx: Context): Promise<object | void> | object | void
     fetch?(ctx: Context): Promise<void> | void
     fetchKey?: string | ((getKey: (id: string) => number) => string)
