@@ -8162,10 +8162,15 @@ jest@^26.6.3:
     import-local "^3.0.2"
     jest-cli "^26.6.3"
 
-jiti@^0.1.16, jiti@^0.1.19:
+jiti@^0.1.16:
   version "0.1.19"
   resolved "https://registry.npmjs.org/jiti/-/jiti-0.1.19.tgz#455f93e0c92f26c9cea0af48def3eb4f567bbbe3"
   integrity sha512-ElDW0w/0ATX6IQwReNYMVrYkHu8PqIOO5t3lluceP/saq4SYz4D3uSMpU8pbn/RX3H6VYVPc0PnKn2WfQ5kiwg==
+
+jiti@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-1.0.0.tgz#508dcacb5f6cdc6b2248f00492db2b749684bf21"
+  integrity sha512-TIU7sNC4Iuo6YgjOUjYFME1JR1He4j8da8jIyB0K1B+oNfzbLn9pnI7YTGcR8xTQ8w5wiukmSelo4qeUki01jQ==
 
 js-beautify@^1.6.12:
   version "1.13.1"
@@ -13526,7 +13531,7 @@ webpack-bundle-analyzer@^3.9.0:
     opener "^1.5.1"
     ws "^6.0.0"
 
-webpack-dev-middleware@^4.0.2:
+webpack-dev-middleware@4.0.2:
   version "4.0.2"
   resolved "https://registry.npmjs.org/webpack-dev-middleware/-/webpack-dev-middleware-4.0.2.tgz#1436ae6cacee78475bd6bc1fbf063dfbfd6e577d"
   integrity sha512-xyAICqIugWtT1RRH5aMMmZlPhDhEqPTDL0TWhmMZsuZ+cFlAvRxv4thCbuxdk9MW+OYK4c9BkfmgdQ1/7imkJA==
