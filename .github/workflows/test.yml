@@ -319,6 +319,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@master
+        with:
+          ref: 'refs/heads/dev'
+          fetch-depth: 0 # All history
 
       - name: restore workspace cache
         uses: actions/cache@v2
@@ -329,6 +332,9 @@ jobs:
             distributions/*/node_modules
             packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - uses: actions/setup-node@v2
         with:
