@@ -111,6 +111,16 @@ body, html, #<%= globals.id %> {
   -webkit-animation-delay: -0.1s;
           animation-delay: -0.1s; }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .sk-circle .sk-child:before {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-circleBounceDelay {
   0%, 80%, 100% {
     -webkit-transform: scale(0);

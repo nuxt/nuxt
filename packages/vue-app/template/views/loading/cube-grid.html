@@ -51,6 +51,16 @@ body, html, #<%= globals.id %> {
   -webkit-animation-delay: 0.2s;
           animation-delay: 0.2s; }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .sk-cube-grid .sk-cube {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-cubeGridScaleDelay {
   0%, 70%, 100% {
     -webkit-transform: scale3D(1, 1, 1);

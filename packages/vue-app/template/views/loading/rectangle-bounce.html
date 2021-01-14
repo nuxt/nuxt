@@ -47,6 +47,16 @@ body, html, #<%= globals.id %> {
   animation-delay: -0.8s;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .spinner > div {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-stretchdelay {
   0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
   20% { -webkit-transform: scaleY(1.0) }

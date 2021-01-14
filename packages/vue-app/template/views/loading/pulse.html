@@ -20,6 +20,16 @@ body, html, #<%= globals.id %> {
   animation: sk-scaleout 1.0s infinite ease-in-out;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .spinner {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-scaleout {
   0% { -webkit-transform: scale(0) }
   100% {

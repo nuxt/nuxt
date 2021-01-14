@@ -19,6 +19,16 @@ body, html, #<%= globals.id %> {
   animation: sk-rotateplane 1.2s infinite ease-in-out;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .spinner {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-rotateplane {
   0% { -webkit-transform: perspective(120px) }
   50% { -webkit-transform: perspective(120px) rotateY(180deg) }

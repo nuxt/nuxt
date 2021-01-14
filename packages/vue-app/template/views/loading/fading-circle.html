@@ -135,6 +135,16 @@ body, html, #<%= globals.id %> {
           animation-delay: -0.1s;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .sk-fading-circle .sk-circle:before {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-circleFadeDelay {
   0%, 39%, 100% { opacity: 0; }
   40% { opacity: 1; }

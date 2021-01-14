@@ -40,6 +40,16 @@ body, html, #<%= globals.id %> {
   animation-delay: -1.0s;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .dot1, .dot2 {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-rotate { 100% { -webkit-transform: rotate(360deg) }}
 @keyframes sk-rotate { 100% { transform: rotate(360deg); -webkit-transform: rotate(360deg) }}
 

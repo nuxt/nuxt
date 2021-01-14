@@ -73,6 +73,17 @@
   animation-duration: 5s;
 }
 
+@media (prefers-color-scheme: dark) {
+  #nuxt-loading {
+    background: <%= options.backgroundDark %>;
+  }
+
+  #nuxt-loading>div {
+    border-color: <%= options.color2Dark %>;
+    border-left-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes nuxtLoading {
   0% {
     -webkit-transform: rotate(0deg);

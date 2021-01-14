@@ -21,7 +21,10 @@ export interface NuxtOptionsLoading {
 
 export interface NuxtOptionsLoadingIndicator {
   background?: string
+  backgroundDark?: string
   color?: string
+  colorDark?: string
   color2?: string
+  color2Dark?: string
   name?: string
 }

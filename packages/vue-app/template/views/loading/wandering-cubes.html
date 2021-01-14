@@ -33,6 +33,16 @@ body, html, #<%= globals.id %> {
   animation-delay: -0.9s;
 }
 
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .cube1, .cube2 {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-cubemove {
   25% { -webkit-transform: translateX(42px) rotate(-90deg) scale(0.5) }
   50% { -webkit-transform: translateX(42px) translateY(42px) rotate(-180deg) }

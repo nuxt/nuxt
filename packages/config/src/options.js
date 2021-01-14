@@ -238,13 +238,50 @@ export function getNuxtConfig (_options) {
       options.loadingIndicator = { name: options.loadingIndicator }
     }
 
+    const defaultColor = (options.loading && options.loading.color) || '#D3D3D3'
+    const defaultColor2 = '#F5F5F5'
+    const defaultBackground = (options.manifest && options.manifest.theme_color) || 'white'
+
+    if (isPureObject(options.loadingIndicator.color)) {
+      options.loadingIndicator = Object.assign(
+        options.loadingIndicator,
+        {
+          color: options.loadingIndicator.color.light || defaultColor,
+          colorDark: options.loadingIndicator.color.dark || defaultColor
+        }
+      )
+    }
+
+    if (isPureObject(options.loadingIndicator.color2)) {
+      options.loadingIndicator = Object.assign(
+        options.loadingIndicator,
+        {
+          color2: options.loadingIndicator.color2.light || defaultColor2,
+          color2Dark: options.loadingIndicator.color2.dark || defaultColor2
+        }
+      )
+    }
+
+    if (isPureObject(options.loadingIndicator.background)) {
+      options.loadingIndicator = Object.assign(
+        options.loadingIndicator,
+        {
+          background: options.loadingIndicator.background.light || defaultBackground,
+          backgroundDark: options.loadingIndicator.background.dark || defaultBackground
+        }
+      )
+    }
+
     // Apply defaults
     options.loadingIndicator = Object.assign(
       {
         name: 'default',
-        color: (options.loading && options.loading.color) || '#D3D3D3',
-        color2: '#F5F5F5',
-        background: (options.manifest && options.manifest.theme_color) || 'white',
+        color: defaultColor,
+        colorDark: defaultColor,
+        color2: defaultColor2,
+        color2Dark: defaultColor2,
+        background: defaultBackground,
+        backgroundDark: defaultBackground,
         dev: options.dev,
         loading: options.messages.loading
       },

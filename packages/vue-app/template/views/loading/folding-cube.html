@@ -65,6 +65,17 @@ body, html, #<%= globals.id %> {
   -webkit-animation-delay: 0.9s;
           animation-delay: 0.9s;
 }
+
+@media (prefers-color-scheme: dark) {
+  body, html, #<%= globals.id %> {
+    background: <%= options.backgroundDark %>;
+  }
+
+  .sk-folding-cube .sk-cube:before {
+    background-color: <%= options.colorDark %>;
+  }
+}
+
 @-webkit-keyframes sk-foldCubeAngle {
   0%, 10% {
     -webkit-transform: perspective(140px) rotateX(-180deg);
