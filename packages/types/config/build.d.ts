@@ -157,6 +157,7 @@ export interface NuxtOptionsBuild {
   html?: { minify: HtmlMinifierOptions }
   indicator?: boolean
   loaders?: NuxtOptionsLoaders
+  loadingScreen?: false | {}
   optimization?: WebpackOptions.Optimization
   optimizeCSS?: OptimizeCssAssetsWebpackPluginOptions | boolean
   parallel?: boolean
