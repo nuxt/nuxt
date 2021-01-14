@@ -13,7 +13,6 @@
     "postcss-url",
     "css-loader",
     "terser-webpack-plugin",
-    "webpack-dev-middleware",
     "@types/terser-webpack-plugin"
   ],
   "lockFileMaintenance": {
