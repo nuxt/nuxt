@@ -1886,10 +1886,10 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@nuxt/components@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-1.2.3.tgz#c8663fafe75fd04a9d6fe16add15491d4f974152"
-  integrity sha512-tWe2pdj84hfMZWlkUzB3jY1RfNc7URMOxd4RMCTmfX+qVZSJwDi/8D+tgls4nGl8ckZsxI5wbqaFUXWpoQ/ydQ==
+"@nuxt/components@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-1.2.5.tgz#0120d567d1c381312a9e88ee2375ca0fbf773aa5"
+  integrity sha512-OgLO45JNYBus7+fh+nimniLlpD09ABHKLp7+ShrOAkWP8KmXTlZAj2IvYQX3Areau6sWepV2+3vg1SyErh/Fow==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.4.3"
@@ -1897,6 +1897,7 @@
     globby "^11.0.1"
     lodash "^4.17.20"
     semver "^7.3.4"
+    upath "^2.0.1"
     vue-template-compiler "^2.6.12"
 
 "@nuxt/devalue@^1.2.4":
@@ -1936,25 +1937,25 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@nuxt/telemetry@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.3.0.tgz#0c6595c786c4fcb060ea8508aaf6285dce8201e0"
-  integrity sha512-anAhyccoVyy/RetkqVsIxpJKdAu/GHyLl79ZtH0oOCbYcC85k8d+LC1S10WcqXyeqyUKifLxGR6yPqSPmQCCtg==
+"@nuxt/telemetry@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.3.2.tgz#a642888dd5d5e24b44b42028d2a10187348a88a1"
+  integrity sha512-Hx16EwlKo1sjsyz6qhsBYp/IC/82vXwqLp71QIf2IXyLhFPSiqXzHMY3/BxGiLr1o92C9s8hct3EwuSFTiex8w==
   dependencies:
     arg "^5.0.0"
     chalk "^4.1.0"
     ci-info "^2.0.0"
     consola "^2.15.0"
-    create-require "^1.1.0"
+    create-require "^1.1.1"
     defu "^3.2.2"
     destr "^1.0.1"
     dotenv "^8.2.0"
     fs-extra "^8.1.0"
-    git-url-parse "^11.4.0"
+    git-url-parse "^11.4.3"
     inquirer "^7.3.3"
     is-docker "^2.1.1"
-    jiti "^0.1.16"
-    nanoid "^3.1.18"
+    jiti "^1.0.0"
+    nanoid "^3.1.20"
     node-fetch "^2.6.1"
     parse-git-config "^3.0.0"
     rc9 "^1.2.0"
@@ -2433,10 +2434,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.14.20.tgz#f7974863edd21d1f8a494a73e8e2b3658615c340"
   integrity sha512-Y93R97Ouif9JEOWPIUyU+eyIdyRqQR0I8Ez1dzku4hDx34NWh4HbtIc3WNzwB1Y9ULvNGeu5B8h8bVL5cAk4/A==
 
-"@types/node@^12.19.12":
-  version "12.19.12"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.12.tgz#04793c2afa4ce833a9972e4c476432e30f9df47b"
-  integrity sha512-UwfL2uIU9arX/+/PRcIkT08/iBadGN2z6ExOROA2Dh5mAuWTBj6iJbQX4nekiV5H8cTrEG569LeX+HRco9Cbxw==
+"@types/node@^12.19.14":
+  version "12.19.14"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.14.tgz#59e5029a3c2aea34f68b717955381692fd47cafb"
+  integrity sha512-2U9uLN46+7dv9PiS8VQJcHhuoOjiDPZOLAt0WuA1EanEknIMae+2QbMhayF7cgGqjvRVIfNpt+6jLPczJZFiRw==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -4049,10 +4050,15 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001173, caniuse-lite@^1.0.30001174:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001173:
   version "1.0.30001174"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001174.tgz#0f2aca2153fd88ceb07a2bb982fc2acb787623c4"
   integrity sha512-tqClL/4ThQq6cfFXH3oJL4rifFBeM6gTkphjao5kgwMaW9yn0tKgQLAEfKzDwj6HQWCB/aWo8kTFlSvIN8geEA==
+
+caniuse-lite@^1.0.30001177:
+  version "1.0.30001177"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001177.tgz#2c3b384933aafda03e29ccca7bb3d8c3389e1ece"
+  integrity sha512-6Ld7t3ifCL02jTj3MxPMM5wAYjbo4h/TAQGFTgv1inihP1tWnWp8mxxT4ut4JBEHLbpFXEXJJQ119JCJTBkYDw==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -4733,7 +4739,7 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-create-require@^1.1.0, create-require@^1.1.1:
+create-require@^1.1.1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
@@ -6643,7 +6649,7 @@ git-up@^4.0.0:
     is-ssh "^1.3.0"
     parse-url "^5.0.0"
 
-git-url-parse@^11.1.2, git-url-parse@^11.4.0:
+git-url-parse@^11.1.2, git-url-parse@^11.4.3:
   version "11.4.3"
   resolved "https://registry.npmjs.org/git-url-parse/-/git-url-parse-11.4.3.tgz#1610284edf1f14964180f5b3399ec68b692cfd87"
   integrity sha512-LZTTk0nqJnKN48YRtOpR8H5SEfp1oM2tls90NuZmBxN95PnCvmuXGzqQ4QmVirBgKx2KPYfPGteX3/raWjKenQ==
@@ -8162,15 +8168,15 @@ jest@^26.6.3:
     import-local "^3.0.2"
     jest-cli "^26.6.3"
 
-jiti@^0.1.16:
-  version "0.1.19"
-  resolved "https://registry.npmjs.org/jiti/-/jiti-0.1.19.tgz#455f93e0c92f26c9cea0af48def3eb4f567bbbe3"
-  integrity sha512-ElDW0w/0ATX6IQwReNYMVrYkHu8PqIOO5t3lluceP/saq4SYz4D3uSMpU8pbn/RX3H6VYVPc0PnKn2WfQ5kiwg==
-
 jiti@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/jiti/-/jiti-1.0.0.tgz#508dcacb5f6cdc6b2248f00492db2b749684bf21"
   integrity sha512-TIU7sNC4Iuo6YgjOUjYFME1JR1He4j8da8jIyB0K1B+oNfzbLn9pnI7YTGcR8xTQ8w5wiukmSelo4qeUki01jQ==
+
+jiti@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-1.2.0.tgz#15187ac6c49fb5ee4e04700bc05c1d5caed58546"
+  integrity sha512-9YR5zusNf4qmOZAIMqja5pTeuojl5mG2sE4IGogwBoxyclX+Wm2yBZDo2nvuwkUOzUg/nmXwiI2Hz7d/d1UCyw==
 
 js-beautify@^1.6.12:
   version "1.13.1"
@@ -9202,7 +9208,7 @@ nan@^2.12.1:
   resolved "https://registry.npmjs.org/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
   integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
 
-nanoid@^3.1.18:
+nanoid@^3.1.20:
   version "3.1.20"
   resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.1.20.tgz#badc263c6b1dcf14b71efaa85f6ab4c1d6cfc788"
   integrity sha512-a1cQNyczgKbLX9jwbS/+d7W8fX/RfgYR7lVWwWOGIPNgK2m0MWvrGF6/m4kk6U3QcFMnZf3RIhL0v2Jgh/0Uxw==
