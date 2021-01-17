@@ -525,8 +525,6 @@ export default class WebpackBaseConfig {
         rules: this.rules()
       },
       plugins: this.plugins(),
-      // stats will be printed by webapckbar StateReporter
-      stats: 'none',
       ...this.resolve()
     }
 

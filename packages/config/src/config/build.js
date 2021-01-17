@@ -103,7 +103,10 @@ export default () => ({
   templates: [],
 
   watch: [],
-  devMiddleware: {},
+  devMiddleware: {
+    // stats will be printed by webapckbar StateReporter
+    stats: 'none'
+  },
   hotMiddleware: {},
 
   stats: {

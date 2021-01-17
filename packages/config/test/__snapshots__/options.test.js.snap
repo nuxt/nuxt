@@ -38,7 +38,9 @@ Object {
     "cache": false,
     "corejs": "auto",
     "cssSourceMap": false,
-    "devMiddleware": Object {},
+    "devMiddleware": Object {
+      "stats": "none",
+    },
     "extractCSS": false,
     "filenames": Object {
       "app": [Function],

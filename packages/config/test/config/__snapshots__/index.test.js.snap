@@ -18,7 +18,9 @@ Object {
     "cache": false,
     "corejs": "auto",
     "cssSourceMap": undefined,
-    "devMiddleware": Object {},
+    "devMiddleware": Object {
+      "stats": "none",
+    },
     "extractCSS": false,
     "filenames": Object {
       "app": [Function],
@@ -402,7 +404,9 @@ Object {
     "cache": false,
     "corejs": "auto",
     "cssSourceMap": undefined,
-    "devMiddleware": Object {},
+    "devMiddleware": Object {
+      "stats": "none",
+    },
     "extractCSS": false,
     "filenames": Object {
       "app": [Function],
