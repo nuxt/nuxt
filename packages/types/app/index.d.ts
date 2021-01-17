@@ -87,7 +87,8 @@ export interface Context {
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
-  enablePreview(): void
+  enablePreview(): Function | undefined
+  $preview?: Object
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
