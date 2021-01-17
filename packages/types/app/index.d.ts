@@ -87,7 +87,7 @@ export interface Context {
   error(params: NuxtError): void
   nuxtState: NuxtState
   beforeNuxtRender(fn: (params: { Components: VueRouter['getMatchedComponents'], nuxtState: NuxtState }) => void): void
-  enablePreview(): Function | undefined
+  enablePreview?: (previewData?: Record<string, any>) => void
   $preview?: Object
 }
 
