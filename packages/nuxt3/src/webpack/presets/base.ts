@@ -114,8 +114,8 @@ function baseAlias (ctx: WebpackConfigContext) {
   const { options, isServer } = ctx
 
   ctx.alias = {
-    app: options.appDir,
-    'nuxt-build': options.buildDir,
+    'nuxt/app': options.appDir,
+    '~build': options.buildDir,
     'vue-meta': require.resolve(`vue-meta${isServer ? '' : '/dist/vue-meta.esm.browser.js'}`),
     ...options.alias,
     ...ctx.alias

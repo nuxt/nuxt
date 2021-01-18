@@ -1,7 +1,7 @@
-import path from 'path'
 import type { WatchOptions as ChokidarWatchOptions } from 'chokidar'
 import type express from 'express'
-import type { configHooksT } from 'hookable/types/types'
+import type { configHooksT } from 'hookable'
+import { APP_DIR } from 'src/index'
 import ignore from 'ignore'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
@@ -172,7 +172,7 @@ export default (): CommonConfiguration => ({
   modulesDir: [
     'node_modules'
   ],
-  appDir: path.resolve(__dirname, '../../../app'),
+  appDir: APP_DIR,
   dir: {
     assets: 'assets',
     app: 'app',
