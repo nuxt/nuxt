@@ -8,13 +8,17 @@ export interface NuxtApp {
   routes: NuxtRoute[]
   dir: string
   extensions: string[]
+  templates: Record<string, string>
   pages?: {
     dir: string
   }
 }
 
 // Scan project structure
-export async function createApp (builder: Builder, options: Partial<NuxtApp> = {}): Promise<NuxtApp> {
+export async function createApp (
+  builder: Builder,
+  options: Partial<NuxtApp> = {}
+): Promise<NuxtApp> {
   const { nuxt } = builder
 
   // Create base app object
@@ -22,6 +26,7 @@ export async function createApp (builder: Builder, options: Partial<NuxtApp> = {
     dir: nuxt.options.srcDir,
     extensions: nuxt.options.extensions,
     routes: [],
+    templates: {},
     pages: {
       dir: 'pages'
     }
@@ -29,13 +34,18 @@ export async function createApp (builder: Builder, options: Partial<NuxtApp> = {
 
   // Resolve app.main
   if (!app.main) {
-    app.main = nuxt.resolver.tryResolvePath('~/App') ||
+    app.main =
+      nuxt.resolver.tryResolvePath('~/App') ||
       nuxt.resolver.tryResolvePath('~/app')
   }
 
   // Resolve pages/
   if (app.pages) {
-    app.routes.push(...await resolvePagesRoutes(builder, app))
+    app.routes.push(...(await resolvePagesRoutes(builder, app)))
+  }
+  // TODO: Hook to extend routes
+  if (app.routes.length) {
+    app.templates.routes = serializeRoutes(app.routes)
   }
 
   // Fallback app.main
@@ -46,4 +56,23 @@ export async function createApp (builder: Builder, options: Partial<NuxtApp> = {
   }
 
   return app
+}
+
+function serializeRoutes (routes: NuxtRoute[]) {
+  return JSON.stringify(
+    routes.map(formatRoute),
+    null,
+    2
+  ).replace(/"{(.+)}"/g, '$1')
+}
+
+function formatRoute (route: NuxtRoute) {
+  return {
+    name: route.name,
+    path: route.path,
+    children: route.children.map(formatRoute),
+    // TODO: avoid exposing to prod
+    __file: route.file,
+    component: `{() => import('${route.file}' /* webpackChunkName: '${route.name}' */)}`
+  }
 }
