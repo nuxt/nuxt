@@ -106,7 +106,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
       }
     },
     _internal: {
-      runtimeDir: resolve(__dirname, '../runtime'),
+      runtimeDir: resolve(__dirname, './runtime'),
       hooks: new Hookable()
     }
   }
