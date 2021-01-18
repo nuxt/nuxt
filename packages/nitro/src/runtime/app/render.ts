@@ -1,9 +1,13 @@
 import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 import config from './config'
+// @ts-ignore
 import { renderToString } from '~renderer'
+// @ts-ignore
 import server from '~build/dist/server/server'
+// @ts-ignore
 import clientManifest from '~build/dist/server/client.manifest.json'
+// @ts-ignore
 import htmlTemplate from '~build/views/document.template.js'
 
 const renderer = createRenderer(server, {

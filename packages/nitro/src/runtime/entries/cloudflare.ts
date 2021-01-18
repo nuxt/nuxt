@@ -4,7 +4,7 @@ import { localCall } from '../server'
 
 const PUBLIC_PATH = process.env.PUBLIC_PATH // Default: /_nuxt/
 
-addEventListener('fetch', (event) => {
+addEventListener('fetch', (event: any) => {
   event.respondWith(handleEvent(event))
 })
 
@@ -29,6 +29,7 @@ async function handleEvent (event) {
   })
 
   return new Response(r.body, {
+    // @ts-ignore
     headers: r.headers,
     status: r.status,
     statusText: r.statusText

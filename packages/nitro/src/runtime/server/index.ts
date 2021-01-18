@@ -5,6 +5,7 @@ import destr from 'destr'
 import { createCall, createFetch as createLocalFetch } from '@nuxt/un/runtime/fetch'
 import { timingMiddleware } from './timing'
 import { handleError } from './error'
+// @ts-ignore
 import serverMiddleware from '~serverMiddleware'
 
 const app = createApp({

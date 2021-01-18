@@ -1,3 +1,4 @@
+// @ts-ignore
 import { createRenderer } from '~vueServerRenderer'
 
 const _renderer = createRenderer({})

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import '~polyfill'
 import { localCall } from '../server'
 

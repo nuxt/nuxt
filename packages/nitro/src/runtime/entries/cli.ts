@@ -1,5 +1,5 @@
 import '~polyfill'
-import { localCall } from '../server/call'
+import { localCall } from '../server'
 
 async function cli () {
   const url = process.argv[2] || '/'
@@ -9,6 +9,7 @@ async function cli () {
   debug('URL', url)
   debug('StatusCode', r.status)
   debug('StatusMessage', r.statusText)
+  // @ts-ignore
   for (const header of r.headers.entries()) {
     debug(header[0], header[1])
   }

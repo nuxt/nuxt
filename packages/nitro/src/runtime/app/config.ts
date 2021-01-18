@@ -1,6 +1,6 @@
 import destr from 'destr'
 
-const runtimeConfig = process.env.RUNTIME_CONFIG
+const runtimeConfig = process.env.RUNTIME_CONFIG as any
 
 for (const type of ['private', 'public']) {
   for (const key in runtimeConfig[type]) {

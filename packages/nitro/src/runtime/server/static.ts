@@ -1,4 +1,5 @@
-import { sendError } from 'h3'
+import { createError } from 'h3'
+// @ts-ignore
 import { getAsset, readAsset } from '~static'
 
 const METHODS = ['HEAD', 'GET']
@@ -23,7 +24,10 @@ export default async function serveStatic(req, res) {
 
   if (!asset) {
     if (id.startsWith(PUBLIC_PATH)) {
-      sendError(res, 'Asset not found: ' + id, false, 404)
+      throw createError({
+        message: 'Asset not found: ' + id,
+        statusCode: 404
+      })
     }
     return
   }
