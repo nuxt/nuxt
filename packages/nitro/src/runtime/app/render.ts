@@ -33,7 +33,8 @@ export async function renderMiddleware (req, res) {
     ...(req.context || {})
   }
   const rendered = await renderer.renderToString(ssrContext)
-  const payload = ssrContext.nuxt /* nuxt 2 */ || ssrContext.payload /* nuxt 3 */
+  // TODO: nuxt3 should not reuse `nuxt` property for different purpose!
+  const payload = ssrContext.payload /* nuxt 3 */ || ssrContext.nuxt /* nuxt 2 */
 
   if (process.env.NUXT_FULL_STATIC) {
     payload.staticAssetsBase = STATIC_ASSETS_BASE

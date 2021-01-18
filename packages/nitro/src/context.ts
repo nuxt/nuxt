@@ -38,6 +38,7 @@ export interface SigmaContext {
     publicDir: string
   }
   _nuxt: {
+    majorVersion: number
     dev: boolean
     rootDir: string
     srcDir: string
@@ -88,6 +89,7 @@ export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
       publicDir: '{{ output.dir }}/public'
     },
     _nuxt: {
+      majorVersion: nuxtOptions._majorVersion || 2,
       dev: nuxtOptions.dev,
       rootDir: nuxtOptions.rootDir,
       srcDir: nuxtOptions.srcDir,

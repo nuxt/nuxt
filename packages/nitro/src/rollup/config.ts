@@ -159,13 +159,13 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
-  const renderer = sigmaContext.renderer || 'vue2'
-  const vueServerRenderer = 'vue-server-renderer/' + (sigmaContext._nuxt.dev ? 'build.dev.js' : 'build.prod.js')
+  const renderer = sigmaContext.renderer || (sigmaContext._nuxt.majorVersion === 3 ? 'vue3' : 'vue2')
+  const vue2ServerRenderer = 'vue-server-renderer/' + (sigmaContext._nuxt.dev ? 'build.dev.js' : 'build.prod.js')
   rollupConfig.plugins.push(alias({
     entries: {
       '~runtime': sigmaContext._internal.runtimeDir,
       '~renderer': require.resolve(resolve(sigmaContext._internal.runtimeDir, 'app', renderer)),
-      '~vueServerRenderer': vueServerRenderer,
+      '~vueServerRenderer': vue2ServerRenderer,
       '~build': sigmaContext._nuxt.buildDir,
       ...env.alias
     }
