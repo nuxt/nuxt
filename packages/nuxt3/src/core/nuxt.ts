@@ -4,9 +4,7 @@ import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import Hookable from 'hookable'
 
-import { defineAlias } from 'src/utils'
 import { getNuxtConfig, Configuration, NormalizedConfiguration } from 'src/config'
-import { Server } from 'src/server'
 
 import { version } from '../../package.json'
 
@@ -29,9 +27,9 @@ export default class Nuxt extends Hookable {
   options: NormalizedConfiguration
   resolver: Resolver
   moduleContainer: ModuleContainer
-  server?: Server
-  renderer?: Server
-  render?: Server['app']
+  server?: any
+  renderer?: any
+  render?: any['app']
   showReady?: () => void
 
   constructor (options: Configuration = {}) {
@@ -44,29 +42,7 @@ export default class Nuxt extends Hookable {
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
 
-    // Deprecated hooks
-    this.deprecateHooks({
-      // #3294 - 7514db73b25c23b8c14ebdafbb4e129ac282aabd
-      'render:context': {
-        to: '_render:context',
-        message: '`render:context(nuxt)` is deprecated, Please use `vue-renderer:ssr:context(context)`'
-      },
-      // #3773
-      'render:routeContext': {
-        to: '_render:context',
-        message: '`render:routeContext(nuxt)` is deprecated, Please use `vue-renderer:ssr:context(context)`'
-      },
-      showReady: 'webpack:done'
-    })
-
-    // Add Legacy aliases
-    defineAlias(this, this.resolver, ['resolveAlias', 'resolvePath'])
-    this.showReady = () => { this.callHook('webpack:done') }
-
-    // Init server
-    if (this.options.server !== false) {
-      this._initServer()
-    }
+    this.server = {} // SIGMA TODO
 
     // Call ready
     if (this.options._ready !== false) {
@@ -112,16 +88,6 @@ export default class Nuxt extends Hookable {
     await this.callHook('ready', this)
 
     return this
-  }
-
-  _initServer () {
-    if (this.server) {
-      return
-    }
-    this.server = new Server(this)
-    this.renderer = this.server
-    this.render = this.server.app
-    defineAlias(this, this.server, ['renderRoute', 'renderAndGetWindow', 'listen'])
   }
 
   async close (callback?: () => any | Promise<any>) {

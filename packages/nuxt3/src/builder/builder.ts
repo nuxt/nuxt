@@ -52,6 +52,8 @@ async function build (builder: Builder) {
   }
 
   await bundle(builder)
+
+  await nuxt.callHook('build:done')
 }
 
 function watch (builder: Builder) {

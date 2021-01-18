@@ -3,8 +3,10 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
+import { dirname } from 'path'
 import hash from 'hash-sum'
 import uniq from 'lodash/uniq'
+import { writeFile, mkdirp } from 'fs-extra'
 import { Compilation } from 'webpack'
 
 import { isJS, isCSS } from './util'
@@ -25,7 +27,7 @@ export default class VueSSRClientPlugin {
       compilation.hooks.processAssets.tapAsync({
         name: 'VueSSRClientPlugin',
         stage: Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
-      }, (assets, cb) => {
+      }, async (_assets, cb) => {
         const stats = compilation.getStats().toJson()
 
         const allFiles = uniq(stats.assets
@@ -110,10 +112,13 @@ export default class VueSSRClientPlugin {
 
         const src = JSON.stringify(manifest, null, 2)
 
-        assets[this.options.filename] = {
-          source: () => src,
-          size: () => src.length
-        }
+        await mkdirp(dirname(this.options.filename))
+        await writeFile(this.options.filename, src)
+        // assets[this.options.filename] = {
+        //   source: () => src,
+        //   size: () => src.length
+        // }
+
         cb()
       })
     })

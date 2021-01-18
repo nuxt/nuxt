@@ -198,7 +198,7 @@ function normalizeConfig (_options: CliConfiguration) {
 
   // If app.html is defined, set the template path to the user template
   if (options.documentPath === undefined) {
-    options.documentPath = path.resolve(options.buildDir, 'views/document.template.html')
+    options.documentPath = path.resolve(options.buildDir, 'views/app.template.html') // SIGMA/Nuxt2 compat
     const userDocumentPath = path.join(options.srcDir, 'document.html')
     if (fs.existsSync(userDocumentPath)) {
       options.documentPath = userDocumentPath
@@ -439,6 +439,11 @@ function normalizeConfig (_options: CliConfiguration) {
   ) {
     options._modules.push('@nuxt/telemetry')
   }
+
+  // Sigma
+  options.appTemplatePath = path.resolve(options.appDir, '_templates/views/document.template.html') // SIGMA TODO
+  options._majorVersion = 3
+  options._modules.push('@nuxt/sigma/src')
 
   return options
 }

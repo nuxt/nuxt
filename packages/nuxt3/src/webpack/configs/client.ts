@@ -87,23 +87,12 @@ function clientHTML (ctx: WebpackConfigContext) {
   const { options, config } = ctx
 
   // Generate output HTML for SSR
-  if (options.build.ssr) {
-    config.plugins.push(
-      new HTMLPlugin({
-        filename: '../server/index.ssr.html',
-        template: options.documentPath,
-        minify: options.build.html.minify as any,
-        inject: false // Resources will be injected using bundleRenderer
-      })
-    )
-  }
-
   config.plugins.push(
     new HTMLPlugin({
-      filename: '../server/index.spa.html',
+      filename: '../server/index.ssr.html',
       template: options.documentPath,
       minify: options.build.html.minify as any,
-      inject: true
+      inject: false // Resources will be injected using bundleRenderer
     })
   )
 }

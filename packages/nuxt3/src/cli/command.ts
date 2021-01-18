@@ -7,7 +7,6 @@ import Hookable from 'hookable'
 import { Builder } from 'src/builder'
 import { CliConfiguration } from 'src/config/options'
 import { Nuxt } from 'src/core'
-import { Generator } from 'src/generator'
 
 import { name, version } from '../../package.json'
 
@@ -152,11 +151,6 @@ export default class NuxtCommand extends Hookable {
 
   getBuilder (nuxt: Nuxt) {
     return new Builder(nuxt)
-  }
-
-  async getGenerator (nuxt: Nuxt) {
-    const builder = await this.getBuilder(nuxt)
-    return new Generator(nuxt, builder)
   }
 
   async setLock (lockRelease?: () => Promise<any>) {

@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5'
 import { DefinePlugin } from 'webpack'
 import VueSSRClientPlugin from '../plugins/vue/client'
@@ -17,7 +18,7 @@ export function vue (ctx: WebpackConfigContext) {
 
   if (ctx.isClient) {
     config.plugins.push(new VueSSRClientPlugin({
-      filename: `../server/${ctx.name}.manifest.json`
+      filename: resolve(options.buildDir, 'dist/server', `${ctx.name}.manifest.json`)
     }))
   } else {
     config.plugins.push(new VueSSRServerPlugin({
