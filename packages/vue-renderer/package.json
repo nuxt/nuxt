@@ -11,7 +11,7 @@
     "@nuxt/devalue": "^1.2.4",
     "@nuxt/utils": "2.14.12",
     "consola": "^2.15.0",
-    "fs-extra": "^9.0.1",
+    "fs-extra": "^9.1.0",
     "lodash": "^4.17.20",
     "lru-cache": "^5.1.1",
     "ufo": "^0.5.4",
