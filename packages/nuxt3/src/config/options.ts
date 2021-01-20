@@ -443,7 +443,7 @@ function normalizeConfig (_options: CliConfiguration) {
   // Sigma
   options.appTemplatePath = path.resolve(options.appDir, '_templates/views/document.template.html') // SIGMA TODO
   options._majorVersion = 3
-  options._modules.push('@nuxt/sigma/src')
+  options._modules.push('@nuxt/sigma')
 
   return options
 }
