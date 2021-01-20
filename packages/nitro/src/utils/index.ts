@@ -44,10 +44,12 @@ export function tryImport (dir: string, path: string) {
   } catch (_err) { }
 }
 
-export async function writeFile (file, contents) {
+export async function writeFile (file, contents, log = false) {
   await fse.mkdirp(dirname(file))
   await fse.writeFile(file, contents, 'utf-8')
-  consola.info('Generated', prettyPath(file))
+  if (log) {
+    consola.info('Generated', prettyPath(file))
+  }
 }
 
 export function resolvePath (sigmaContext: SigmaInput, path: string | ((sigmaContext) => string), resolveBase: string = ''): string {
