@@ -2,10 +2,21 @@ import { resolve } from 'path'
 import { loadNuxt, build } from '.'
 
 async function _main () {
-  const rootDir = resolve(process.cwd(), process.argv[2] || '.')
-  const nuxt = await loadNuxt({ for: 'dev', rootDir })
-  const [{ url }] = await nuxt.server.listen(3000)
-  console.log('Listening:', url)
+  const args = process.argv.splice(2)
+  const cmd = args[0]
+  if (!['dev', 'build'].includes(cmd)) {
+    console.error('Usage nuxt dev|build [rootDir]')
+    process.exit(1)
+  }
+  const isDev = cmd === 'dev'
+  const rootDir = resolve(process.cwd(), args[1] || '.')
+  const nuxt = await loadNuxt({ for: isDev ? 'dev' : 'build', rootDir })
+
+  if (isDev) {
+    const [{ url }] = await nuxt.server.listen(3000)
+    console.log('Listening:', url)
+  }
+
   await build(nuxt)
 }
 

@@ -79,8 +79,9 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new WebpackBar({
     name: ctx.name,
     color: colors[ctx.name],
-    reporters: ['basic'],
+    reporters: ['basic', 'stats'],
     basic: true,
+    stats: !ctx.isDev,
     reporter: {
       change: (_, { shortPath }) => {
         if (!ctx.isServer) {
