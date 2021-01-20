@@ -8,7 +8,9 @@ export const local: SigmaPreset = extendPreset(node, {
     serverDir: '{{ _nuxt.buildDir }}/sigma'
   },
   minify: false,
-  externals: true,
+  externals: {
+    trace: false
+  },
   inlineChunks: true,
   timing: false,
   sourceMap: true
