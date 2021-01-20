@@ -13,8 +13,10 @@ export default function (nuxt, moduleContainer) {
   }
   nuxt.options.build.transpile = nuxt.options.build.transpile || []
   nuxt.options.build.transpile.push(nuxt.options.buildDir)
-  nuxt.options.appTemplatePath = nuxt.options.appTemplatePath
-    .replace(oldBuildDir, nuxt.options.buildDir)
+  for (const pathKey of ['appTemplatePath', 'documentPath']) {
+    nuxt.options[pathKey] = nuxt.options[pathKey]
+      .replace(oldBuildDir, nuxt.options.buildDir)
+  }
 
   // Create contexts
   const sigmaContext = getsigmaContext(nuxt.options, nuxt.options.sigma || {})
