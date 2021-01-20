@@ -2,6 +2,7 @@ import { resolve, join } from 'path'
 import fs from 'fs-extra'
 
 import { Nuxt } from 'src/core'
+import jiti from 'jiti'
 import {
   startsWithRootAlias,
   startsWithSrcAlias,
@@ -37,10 +38,8 @@ export default class Resolver {
     this.resolveModule = this.resolveModule.bind(this)
     this.requireModule = this.requireModule.bind(this)
 
-    const { createRequire } = this.options
-    this._require = createRequire ? createRequire(module) : module.require
-
-    this._resolve = require.resolve
+    this._require = jiti(__filename)
+    this._resolve = this._require.resolve
   }
 
   resolveModule (path: string) {

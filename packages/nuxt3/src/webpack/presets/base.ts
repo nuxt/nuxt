@@ -3,7 +3,7 @@ import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
 import stdEnv from 'std-env'
 import { DefinePlugin, Configuration } from 'webpack'
-import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+// import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import { isUrl, urlJoin, TARGETS } from 'src/utils'
 import escapeRegExp from 'lodash/escapeRegExp'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -23,7 +23,7 @@ function baseConfig (ctx: WebpackConfigContext) {
 
   ctx.config = {
     name: ctx.name,
-    entry: { app: [resolve(options.buildDir, `entry.${ctx.name}.ts`)] },
+    entry: { app: [resolve(options.buildDir, `entry.${ctx.name}`)] },
     module: { rules: [] },
     plugins: [],
     externals: [],
@@ -57,18 +57,18 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
-  if (
-    ctx.isServer ||
-    (ctx.isDev && !options.build.quiet && options.build.friendlyErrors)
-  ) {
-    ctx.config.plugins.push(
-      new FriendlyErrorsWebpackPlugin({
-        clearConsole: false,
-        reporter: 'consola',
-        logLevel: 'WARNING'
-      })
-    )
-  }
+  // if (
+  //   ctx.isServer ||
+  //   (ctx.isDev && !options.build.quiet && options.build.friendlyErrors)
+  // ) {
+  //   ctx.config.plugins.push(
+  //     new FriendlyErrorsWebpackPlugin({
+  //       clearConsole: false,
+  //       reporter: 'consola',
+  //       logLevel: 'WARNING'
+  //     })
+  //   )
+  // }
 
   // Webpackbar
   const colors = {
@@ -111,12 +111,11 @@ function basePlugins (ctx: WebpackConfigContext) {
 }
 
 function baseAlias (ctx: WebpackConfigContext) {
-  const { options, isServer } = ctx
+  const { options } = ctx
 
   ctx.alias = {
     'nuxt/app': options.appDir,
     '~build': options.buildDir,
-    'vue-meta': require.resolve(`vue-meta${isServer ? '' : '/dist/vue-meta.esm.browser.js'}`),
     ...options.alias,
     ...ctx.alias
   }
