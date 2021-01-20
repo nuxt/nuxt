@@ -1,7 +1,6 @@
 import { resolve, normalize } from 'path'
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
-import stdEnv from 'std-env'
 import { DefinePlugin, Configuration } from 'webpack'
 // import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import { isUrl, urlJoin, TARGETS } from 'src/utils'
