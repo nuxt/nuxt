@@ -64,7 +64,7 @@ async function _build (sigmaContext: SigmaContext) {
 
   spinner.start('Building server...')
   const build = await rollup(sigmaContext.rollupConfig).catch((error) => {
-    spinner.fail('Rollup error: ' + error.messsage)
+    spinner.fail('Rollup error: ' + error.message)
     throw error
   })
 

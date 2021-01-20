@@ -62,6 +62,6 @@ export function handleError (error, req, res) {
 `
 
   res.statusCode = error.statusCode || 500
-  res.statusMessage = error.statusMessage || 'Invernal Error'
+  res.statusMessage = error.statusMessage || 'Internal Error'
   res.end(html)
 }
