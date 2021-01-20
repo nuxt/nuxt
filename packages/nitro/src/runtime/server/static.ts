@@ -1,4 +1,5 @@
 import { createError } from 'h3'
+import { withoutTrailingSlash, withLeadingSlash, parseURL } from 'ufo'
 // @ts-ignore
 import { getAsset, readAsset } from '~static'
 
@@ -12,15 +13,18 @@ export default async function serveStatic(req, res) {
     return
   }
 
-  let id = req.url.split('?')[0]
-  if (id.startsWith('/')) {
-    id = id.substr(1)
-  }
-  if (id.endsWith('/')) {
-    id = id.substr(0, id.length - 1)
-  }
+  let id = withLeadingSlash(withoutTrailingSlash(parseURL(req.url).pathname))
+  let asset = getAsset(id)
 
-  const asset = getAsset(id) || getAsset(id = id + '/index.html')
+  // Try index.html
+  if (!asset) {
+    const _id = id + '/index.html'
+    const _asset = getAsset(_id)
+    if (_asset) {
+      asset = _asset
+      id = _id
+    }
+  }
 
   if (!asset) {
     if (id.startsWith(PUBLIC_PATH)) {

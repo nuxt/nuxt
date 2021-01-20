@@ -19,7 +19,7 @@ export function staticAssets (context: SigmaContext) {
     const etag = createEtag(readFileSync(fullPath))
     const stat = statSync(fullPath)
 
-    assets[id] = {
+    assets['/' + id] = {
       type,
       etag,
       mtime: stat.mtime.toJSON(),
