@@ -62,11 +62,15 @@ function renderHTML (payload, rendered, ssrContext) {
   const state = `<script>window.__NUXT__=${devalue(payload)}</script>`
   const _html = rendered.html
 
+  const { htmlAttrs = '', bodyAttrs = '', headTags = '', headAttrs = '' } =
+    (ssrContext.head && ssrContext.head()) || {}
+
   return htmlTemplate({
-    HTML_ATTRS: '',
-    HEAD_ATTRS: '',
-    BODY_ATTRS: '',
-    HEAD: rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
+    HTML_ATTRS: htmlAttrs,
+    HEAD_ATTRS: headAttrs,
+    BODY_ATTRS: bodyAttrs,
+    HEAD: headTags +
+      rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
     APP: _html + state + rendered.renderScripts()
   })
 }
