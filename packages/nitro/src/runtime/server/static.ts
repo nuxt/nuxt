@@ -29,7 +29,7 @@ export default async function serveStatic(req, res) {
   if (!asset) {
     if (id.startsWith(PUBLIC_PATH)) {
       throw createError({
-        message: 'Asset not found: ' + id,
+        statusMessage: 'Cannot find static asset ' + id,
         statusCode: 404
       })
     }
