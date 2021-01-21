@@ -24,7 +24,7 @@ export async function serve (cmd) {
   const distStat = await fs.stat(options.generate.dir).catch(err => null) // eslint-disable-line node/handle-callback-err
   const distPath = join(options.generate.dir.replace(process.cwd() + sep, ''), sep)
   if (!distStat || !distStat.isDirectory()) {
-    throw new Error('Output directory `' + distPath + '` does not exists, please use `nuxt generate` before `nuxt start` for static target.')
+    throw new Error('Output directory `' + distPath + '` does not exist, please use `nuxt generate` before `nuxt start` for static target.')
   }
   const app = connect()
   app.use(compression({ threshold: 0 }))
