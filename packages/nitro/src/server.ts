@@ -5,6 +5,7 @@ import debounce from 'debounce'
 import chokidar from 'chokidar'
 import { listen, Listener } from 'listhen'
 import serveStatic from 'serve-static'
+import servePlaceholder from 'serve-placeholder'
 import { createProxy } from 'http-proxy'
 import { stat } from 'fs-extra'
 import type { SigmaContext } from './context'
@@ -67,6 +68,10 @@ export function createDevServer (sigmaContext: SigmaContext) {
     }
     return next()
   })
+
+  // serve placeholder 404 assets instead of hitting SSR
+  app.use(sigmaContext._nuxt.publicPath, servePlaceholder())
+  app.use(sigmaContext._nuxt.routerBase, servePlaceholder({ skipUnknown: true }))
 
   // SSR Proxy
   const proxy = createProxy()
