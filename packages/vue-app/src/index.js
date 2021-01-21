@@ -14,6 +14,7 @@ export const template = {
     'routes.json',
     'server.js',
     'utils.js',
+    'observer.js',
     'empty.js',
     'mixins/fetch.server.js',
     'mixins/fetch.client.js',
