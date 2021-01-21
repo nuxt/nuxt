@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { resolve } from 'upath'
 import { build, generate, prepare } from '../build'
-import { getsigmaContext, SigmaContext } from '../context'
+import { getSigmaContext, SigmaContext } from '../context'
 import { createDevServer } from '../server'
 import wpfs from '../utils/wpfs'
 
@@ -19,8 +19,8 @@ export default function (nuxt, moduleContainer) {
   }
 
   // Create contexts
-  const sigmaContext = getsigmaContext(nuxt.options, nuxt.options.sigma || {})
-  const sigmaDevContext = getsigmaContext(nuxt.options, { preset: 'local' })
+  const sigmaContext = getSigmaContext(nuxt.options, nuxt.options.sigma || {})
+  const sigmaDevContext = getSigmaContext(nuxt.options, { preset: 'local' })
 
   // Connect hooks
   nuxt.addHooks(sigmaContext.nuxtHooks)

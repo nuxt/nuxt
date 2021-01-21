@@ -64,7 +64,7 @@ export interface SigmaInput extends DeepPartial<SigmaContext> {}
 
 export type SigmaPreset = SigmaInput | ((input: SigmaInput) => SigmaInput)
 
-export function getsigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): SigmaContext {
+export function getSigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): SigmaContext {
   const defaults: SigmaContext = {
     timing: true,
     inlineChunks: true,
