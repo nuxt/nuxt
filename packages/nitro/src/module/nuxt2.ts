@@ -13,8 +13,9 @@ export default function (nuxt, moduleContainer) {
   }
   nuxt.options.build.transpile = nuxt.options.build.transpile || []
   nuxt.options.build.transpile.push(nuxt.options.buildDir)
+
   for (const pathKey of ['appTemplatePath', 'documentPath']) {
-    nuxt.options[pathKey] = nuxt.options[pathKey]
+    nuxt.options[pathKey] = (nuxt.options[pathKey] || '')
       .replace(oldBuildDir, nuxt.options.buildDir)
   }
 
