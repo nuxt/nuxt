@@ -10,7 +10,7 @@ import clientManifest from '~build/dist/server/client.manifest.json'
 // @ts-ignore
 import htmlTemplate from '~build/views/document.template.js'
 
-function _interopDefault (e) { return e && typeof e === 'object' && 'default' in e ? e : { default: e } }
+function _interopDefault (e) { return e && typeof e === 'object' && 'default' in e ? e.default : e }
 
 const renderer = createRenderer(_interopDefault(createApp), {
   clientManifest: _interopDefault(clientManifest),
