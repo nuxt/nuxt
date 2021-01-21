@@ -4,14 +4,16 @@ import config from './config'
 // @ts-ignore
 import { renderToString } from '~renderer'
 // @ts-ignore
-import server from '~build/dist/server/server'
+import createApp from '~build/dist/server/server'
 // @ts-ignore
 import clientManifest from '~build/dist/server/client.manifest.json'
 // @ts-ignore
 import htmlTemplate from '~build/views/document.template.js'
 
-const renderer = createRenderer(server, {
-  clientManifest,
+function _interopDefault (e) { return e && typeof e === 'object' && 'default' in e ? e : { default: e } }
+
+const renderer = createRenderer(_interopDefault(createApp), {
+  clientManifest: _interopDefault(clientManifest),
   renderToString
 })
 
