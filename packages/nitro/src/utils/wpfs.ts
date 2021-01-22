@@ -1,7 +1,7 @@
 import { join } from 'upath'
 import fsExtra from 'fs-extra'
 
-export default {
+export const wpfs = {
   ...fsExtra,
   join
 }

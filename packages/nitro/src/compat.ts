@@ -1,23 +1,17 @@
 import fetch from 'node-fetch'
 import { resolve } from 'upath'
-import { build, generate, prepare } from '../build'
-import { getSigmaContext, SigmaContext } from '../context'
-import { createDevServer } from '../server'
-import wpfs from '../utils/wpfs'
+import { build, generate, prepare } from './build'
+import { getSigmaContext, SigmaContext } from './context'
+import { createDevServer } from './server'
+import { wpfs } from './utils/wpfs'
+import { resolveMiddleware } from './middleware'
 
-export default function (nuxt, moduleContainer) {
-  // Build in node_modules/.cache/nuxt
-  const oldBuildDir = nuxt.options.buildDir
-  if (!nuxt.options.dev) {
-    nuxt.options.buildDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
-  }
-  nuxt.options.build.transpile = nuxt.options.build.transpile || []
-  nuxt.options.build.transpile.push(nuxt.options.buildDir)
+export default function nuxt2CompatModule () {
+  const { nuxt } = this
 
-  for (const pathKey of ['appTemplatePath', 'documentPath']) {
-    nuxt.options[pathKey] = (nuxt.options[pathKey] || '')
-      .replace(oldBuildDir, nuxt.options.buildDir)
-  }
+  // Disable loading-screen
+  nuxt.options.build.loadingScreen = false
+  nuxt.options.build.indicator = false
 
   // Create contexts
   const sigmaContext = getSigmaContext(nuxt.options, nuxt.options.sigma || {})
@@ -45,41 +39,18 @@ export default function (nuxt, moduleContainer) {
   }
 
   // Sigma client plugin
-  moduleContainer.addPlugin({
+  this.addPlugin({
     fileName: 'sigma.client.js',
     src: resolve(sigmaContext._internal.runtimeDir, 'app/sigma.client.js')
   })
 
-  // serverMiddleware bridge
-  // TODO: render:setupMiddleware hook
-  // TODO: support m.prefix and m.route
+  // Resolve middleware
   nuxt.hook('modules:done', () => {
-    const unsupported = []
-    for (let m of nuxt.options.serverMiddleware) {
-      if (typeof m === 'string') { m = { handler: m } }
-      const route = m.path || m.route || '/'
-      let handle = m.handler || m.handle
-      if (typeof handle !== 'string' || typeof route !== 'string') {
-        if (route === '/_loading') {
-          nuxt.server.setLoadingMiddleware(handle)
-          continue
-        }
-        // Temporary hide for @nuxt/pwa module
-        if (route === '/_nuxt/' && process.env.NODE_ENV === 'development') {
-          continue
-        }
-        unsupported.push(m)
-        continue
-      }
-      handle = nuxt.resolver.resolvePath(handle)
-      sigmaContext.middleware.push({ ...m, route, handle })
-      sigmaDevContext.middleware.push({ ...m, route, handle })
-    }
-    nuxt.options.serverMiddleware = [...unsupported]
-    if (unsupported.length) {
-      console.warn('[sigma] Unsupported Server middleware used: \n', ...unsupported)
-      console.info('Supported format is `{ path: string, handler: string }` and handler should export `(req, res) => {}`')
-    }
+    const { middleware, legacyMiddleware } =
+      resolveMiddleware(nuxt.options.serverMiddleware, nuxt.resolver.resolvePath)
+    nuxt.server.setLegacyMiddleware(legacyMiddleware)
+    sigmaContext.middleware.push(...middleware)
+    sigmaDevContext.middleware.push(...middleware)
   })
 
   // nuxt build/dev
@@ -154,7 +125,7 @@ function createNuxt2DevServer (sigmaContext: SigmaContext) {
     renderRoute,
     listen,
     serverMiddlewarePaths () { return [] },
-    ready () {}
+    ready () { }
   }
 }
 

@@ -1,5 +1,5 @@
 import { Worker } from 'worker_threads'
-import connect from 'connect'
+import { createApp } from 'h3'
 import { resolve } from 'upath'
 import debounce from 'debounce'
 import chokidar from 'chokidar'
@@ -48,26 +48,17 @@ export function createDevServer (sigmaContext: SigmaContext) {
   }
 
   // App
-  const app = connect()
+  const app = createApp()
 
   // _nuxt and static
   app.use(sigmaContext._nuxt.publicPath, serveStatic(resolve(sigmaContext._nuxt.buildDir, 'dist/client')))
   app.use(sigmaContext._nuxt.routerBase, serveStatic(resolve(sigmaContext._nuxt.staticDir)))
 
-  // Dev Middleware
-  let loadingMiddleware, devMiddleware
-  const setLoadingMiddleware = (m) => { loadingMiddleware = m }
-  const setDevMiddleware = (m) => { devMiddleware = m }
-  app.use((req, res, next) => {
-    if (loadingMiddleware && req.url.startsWith('/_loading')) {
-      req.url = req.url.replace('/_loading', '')
-      return loadingMiddleware(req, res)
-    }
-    if (devMiddleware) {
-      return devMiddleware(req, res, next)
-    }
-    return next()
-  })
+  // Dynamic Middlwware
+  const legacyMiddleware = createDynamicMiddleware()
+  const devMiddleware = createDynamicMiddleware()
+  app.use(legacyMiddleware.middleware)
+  app.use(devMiddleware.middleware)
 
   // serve placeholder 404 assets instead of hitting SSR
   app.use(sigmaContext._nuxt.publicPath, servePlaceholder())
@@ -80,10 +71,6 @@ export function createDevServer (sigmaContext: SigmaContext) {
       proxy.web(req, res, { target: workerAddress }, (_err) => {
         // console.error('[proxy]', err)
       })
-    } else if (loadingMiddleware) {
-      // TODO:serverIndex method is not exposed
-      // loadingMiddleware(req, res)
-      sigmaContext._internal.hooks.callHook('renderLoading', req, res)
     } else {
       res.end('Worker not ready!')
     }
@@ -131,7 +118,26 @@ export function createDevServer (sigmaContext: SigmaContext) {
     listen: _listen,
     close,
     watch,
-    setLoadingMiddleware,
-    setDevMiddleware
+    setLegacyMiddleware: legacyMiddleware.set,
+    setDevMiddleware: devMiddleware.set
+  }
+}
+
+function createDynamicMiddleware () {
+  let middleware
+  return {
+    set: (input) => {
+      if (!Array.isArray(input)) {
+        middleware = input
+        return
+      }
+      const app = require('connect')()
+      for (const m of input) {
+        app.use(m.path || m.route || '/', m.handler || m.handle)
+      }
+      middleware = app
+    },
+    middleware: (req, res, next) =>
+      middleware ? middleware(req, res, next) : next()
   }
 }

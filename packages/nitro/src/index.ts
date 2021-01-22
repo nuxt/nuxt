@@ -1,7 +1,6 @@
-import nuxt2 from './module/nuxt2'
+export * from './build'
+export * from './context'
+export * from './middleware'
+export * from './server'
 export * from './types'
-
-export default function () {
-  const { nuxt } = this
-  return nuxt2(nuxt, this)
-}
+export { wpfs } from './utils/wpfs'
