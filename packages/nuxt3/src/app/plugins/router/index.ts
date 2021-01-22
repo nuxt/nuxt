@@ -7,7 +7,6 @@ import {
 } from 'vue-router'
 import type { Plugin } from 'nuxt/app'
 import NuxtPage from './NuxtPage.vue'
-import NuxtChild from './NuxtChild.vue'
 
 import routes from '~build/routes'
 
@@ -20,7 +19,6 @@ export default <Plugin> function router (nuxt) {
   }
 
   app.component('NuxtPage', NuxtPage)
-  app.component('NuxtChild', NuxtChild)
   app.component('NuxtLink', RouterLink)
 
   const routerHistory = process.client
