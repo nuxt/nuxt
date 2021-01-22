@@ -98,13 +98,6 @@ function clientPlugins (ctx: WebpackConfigContext) {
       ...options.build.analyze as any
     }))
   }
-
-  // CORS
-  if (ctx.options.render.crossorigin) {
-    ctx.config.plugins.push(new CorsPlugin({
-      crossorigin: ctx.options.render.crossorigin
-    }))
-  }
 }
 
 function getCspScriptPolicy (ctx: WebpackConfigContext) {

@@ -5,6 +5,7 @@ async function _main () {
   const args = process.argv.splice(2)
   const cmd = args[0]
   if (!['dev', 'build'].includes(cmd)) {
+    // eslint-disable-next-line no-console
     console.error('Usage nuxt dev|build [rootDir]')
     process.exit(1)
   }
