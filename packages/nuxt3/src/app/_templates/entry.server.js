@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-
 import { createNuxt, applyPlugins } from 'nuxt/app/nuxt'
 import plugins from './plugins'
 import serverPlugins from './plugins.server'

@@ -13,7 +13,7 @@ import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './ut
 
 const glob = pify(Glob)
 
-export class WebpackBundler {
+class WebpackBundler {
   nuxt: Nuxt
   plugins: Array<string>
 
@@ -250,4 +250,9 @@ export class WebpackBundler {
   forGenerate () {
     this.nuxt.options.target = TARGETS.static
   }
+}
+
+export function bundle (nuxt: Nuxt) {
+  const bundler = new WebpackBundler(nuxt)
+  return bundler.build()
 }

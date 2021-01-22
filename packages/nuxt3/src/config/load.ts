@@ -71,11 +71,11 @@ export async function loadNuxtConfig ({
     // Clear cache
     clearRequireCache(configFile)
     const _require = createRequire(module)
-    const _config: Configuration | ((ctx: Record<string, any>) => Promise<Configuration>) = interopDefault(_require(configFile) || {})
+    let _config: Configuration | ((ctx: Record<string, any>) => Promise<Configuration>) = interopDefault(_require(configFile) || {})
 
     if (typeof _config === 'function') {
       try {
-        options = interopDefault(await _config(configContext))
+        _config = interopDefault(await _config(configContext))
       } catch (error) {
         consola.error(error)
         consola.fatal('Error while fetching async configuration')
@@ -83,7 +83,7 @@ export async function loadNuxtConfig ({
     }
 
     // Don't mutate options export
-    options = { ...options }
+    options = { ..._config }
 
     // Keep _nuxtConfigFile for watching
     options._nuxtConfigFile = configFile

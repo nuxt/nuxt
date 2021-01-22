@@ -1,6 +1,6 @@
 import { Ref, toRef, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
 import { Nuxt, useNuxt } from 'nuxt/app'
-import { httpFetch } from '../utils/fetch'
+import { $fetch } from 'ohmyfetch'
 import { useData } from './data'
 
 export type HTTPRequest = string | { method: string, url: string }
@@ -44,7 +44,7 @@ export function useFetch (defaults?: FetchOptions) {
     options = {
       server: true,
       defer: false,
-      fetcher: httpFetch,
+      fetcher: globalThis.$fetch || $fetch,
       ...defaults,
       ...options
     }

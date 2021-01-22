@@ -442,6 +442,11 @@ function normalizeConfig (_options: CliConfiguration) {
 
   options._majorVersion = 3
 
+  if (options.vite && !options.dev) {
+    options.vite = false
+    consola.warn('Vite does not support production builds yet! Using webpack...')
+  }
+
   return options
 }
 

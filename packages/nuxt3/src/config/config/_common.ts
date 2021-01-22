@@ -85,7 +85,8 @@ interface CommonConfiguration {
   _nuxtConfigFile?: string
   alias: Record<string, string>
   appDir: string,
-  buildDir: string
+  buildDir: string,
+  vite: boolean,
   buildModules: NuxtModule[]
   createRequire?: (module: NodeJS.Module) => NodeJS.Require
   debug?: boolean

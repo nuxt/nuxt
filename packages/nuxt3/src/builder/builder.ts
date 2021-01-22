@@ -1,7 +1,6 @@
 import { join, relative } from 'path'
 import fsExtra from 'fs-extra'
 import { debounce } from 'lodash'
-import { BundleBuilder } from 'src/webpack'
 import { Nuxt } from '../core'
 import { DeterminedGlobals, determineGlobals } from '../utils'
 import {
@@ -73,6 +72,11 @@ function watch (builder: Builder) {
   appWatcher.watch(/^(A|a)pp\.[a-z]{2,3}/, refreshTemplates, ['add', 'unlink'])
   // Watch for page changes
   appWatcher.watch(new RegExp(`^${nuxt.options.dir.pages}/`), refreshTemplates, ['add', 'unlink'])
+
+  // Shared Watcher
+  const watchHookDebounced = debounce((event, file) => builder.nuxt.callHook('builder:watch', event, file), 100)
+  appWatcher.watchAll(watchHookDebounced)
+  nuxtAppWatcher.watchAll(watchHookDebounced)
 }
 
 export async function generate (builder: Builder) {
@@ -90,5 +94,11 @@ export async function generate (builder: Builder) {
 }
 
 async function bundle ({ nuxt }: Builder) {
-  await new BundleBuilder(nuxt).build()
+  // @ts-ignore
+  const useVite = !!nuxt.options.vite
+  const bundle = await (useVite
+    ? import('./vite/vite' /* webpackChunkName: "vite" */)
+    : import('./webpack/webpack' /* webpackChunkName: "webpack" */))
+    .then(p => p.bundle)
+  return bundle(nuxt)
 }
