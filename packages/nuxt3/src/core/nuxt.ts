@@ -10,6 +10,7 @@ import { version } from '../../package.json'
 
 import ModuleContainer from './module'
 import Resolver from './resolver'
+import { initNitro } from './nitro'
 
 declare global {
   namespace NodeJS {
@@ -41,8 +42,6 @@ export default class Nuxt extends Hookable {
     // Create instance of core components
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
-
-    this.server = {} // SIGMA TODO
 
     // Call ready
     if (this.options._ready !== false) {
@@ -79,10 +78,8 @@ export default class Nuxt extends Hookable {
     // Await for modules
     await this.moduleContainer.ready()
 
-    // Await for server to be ready
-    if (this.server) {
-      await this.server.ready()
-    }
+    // Await for server
+    await initNitro(this)
 
     // Call ready hook
     await this.callHook('ready', this)

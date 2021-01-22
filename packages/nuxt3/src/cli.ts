@@ -13,8 +13,8 @@ async function _main () {
   const nuxt = await loadNuxt({ for: isDev ? 'dev' : 'build', rootDir })
 
   if (isDev) {
-    const [{ url }] = await nuxt.server.listen(3000)
-    console.log('Listening:', url)
+    // https://github.com/nuxt-contrib/listhen
+    await nuxt.server.listen(3000, { name: 'Nuxt' })
   }
 
   await build(nuxt)
