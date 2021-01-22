@@ -44,9 +44,7 @@ export async function createApp (
     app.routes.push(...(await resolvePagesRoutes(builder, app)))
   }
   // TODO: Hook to extend routes
-  if (app.routes.length) {
-    app.templates.routes = serializeRoutes(app.routes)
-  }
+  app.templates.routes = serializeRoutes(app.routes)
 
   // Fallback app.main
   if (!app.main && app.routes.length) {
