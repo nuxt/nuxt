@@ -1,10 +1,10 @@
-import { SigmaPreset, SigmaContext } from '../context'
+import { NitroPreset, NitroContext } from '../context'
 
-export const worker: SigmaPreset = {
+export const worker: NitroPreset = {
   entry: null, // Abstract
   node: false,
   hooks: {
-    'sigma:rollup:before' ({ rollupConfig }: SigmaContext) {
+    'nitro:rollup:before' ({ rollupConfig }: NitroContext) {
       rollupConfig.output.format = 'iife'
     }
   }

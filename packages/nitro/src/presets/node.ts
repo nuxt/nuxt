@@ -1,6 +1,6 @@
-import { SigmaPreset } from '../context'
+import { NitroPreset } from '../context'
 
-export const node: SigmaPreset = {
+export const node: NitroPreset = {
   entry: '{{ _internal.runtimeDir }}/entries/node',
   inlineChunks: false
 }

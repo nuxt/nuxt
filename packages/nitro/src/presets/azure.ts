@@ -3,14 +3,14 @@ import consola from 'consola'
 import { createWriteStream } from 'fs-extra'
 import { join, resolve } from 'upath'
 import { prettyPath, writeFile } from '../utils'
-import { SigmaPreset, SigmaContext } from '../context'
+import { NitroPreset, NitroContext } from '../context'
 
-export const azure: SigmaPreset = {
+export const azure: NitroPreset = {
   inlineChunks: false,
   serveStatic: true,
   entry: '{{ _internal.runtimeDir }}/entries/azure',
   hooks: {
-    async 'sigma:compiled' (ctx: SigmaContext) {
+    async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)
     }
   }
@@ -31,7 +31,7 @@ function zipDirectory (dir: string, outfile: string): Promise<undefined> {
   })
 }
 
-async function writeRoutes ({ output: { dir, serverDir } }: SigmaContext) {
+async function writeRoutes ({ output: { dir, serverDir } }: NitroContext) {
   const host = {
     version: '2.0',
     extensions: { http: { routePrefix: '' } }

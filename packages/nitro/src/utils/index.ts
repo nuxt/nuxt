@@ -6,7 +6,7 @@ import Hookable from 'hookable'
 import consola from 'consola'
 import chalk from 'chalk'
 import { get } from 'dot-prop'
-import type { SigmaPreset, SigmaInput } from '../context'
+import type { NitroPreset, NitroInput } from '../context'
 
 export const MODULE_DIR = resolve(__dirname, '..')
 
@@ -52,16 +52,16 @@ export async function writeFile (file, contents, log = false) {
   }
 }
 
-export function resolvePath (sigmaContext: SigmaInput, path: string | ((sigmaContext) => string), resolveBase: string = ''): string {
+export function resolvePath (nitroContext: NitroInput, path: string | ((nitroContext) => string), resolveBase: string = ''): string {
   if (typeof path === 'function') {
-    path = path(sigmaContext)
+    path = path(nitroContext)
   }
 
   if (typeof path !== 'string') {
     throw new TypeError('Invalid path: ' + path)
   }
 
-  path = compileTemplate(path)(sigmaContext)
+  path = compileTemplate(path)(nitroContext)
 
   return resolve(resolveBase, path)
 }
@@ -84,8 +84,8 @@ export async function isDirectory (path: string) {
   }
 }
 
-export function extendPreset (base: SigmaPreset, preset: SigmaPreset): SigmaPreset {
-  return (config: SigmaInput) => {
+export function extendPreset (base: NitroPreset, preset: NitroPreset): NitroPreset {
+  return (config: NitroInput) => {
     if (typeof preset === 'function') {
       preset = preset(config)
     }

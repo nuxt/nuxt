@@ -8,11 +8,11 @@ import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import { createProxy } from 'http-proxy'
 import { stat } from 'fs-extra'
-import type { SigmaContext } from './context'
+import type { NitroContext } from './context'
 
-export function createDevServer (sigmaContext: SigmaContext) {
+export function createDevServer (nitroContext: NitroContext) {
   // Worker
-  const workerEntry = resolve(sigmaContext.output.dir, sigmaContext.output.serverDir, 'index.js')
+  const workerEntry = resolve(nitroContext.output.dir, nitroContext.output.serverDir, 'index.js')
   let pendingWorker: Worker
   let activeWorker: Worker
   let workerAddress: string
@@ -51,8 +51,8 @@ export function createDevServer (sigmaContext: SigmaContext) {
   const app = createApp()
 
   // _nuxt and static
-  app.use(sigmaContext._nuxt.publicPath, serveStatic(resolve(sigmaContext._nuxt.buildDir, 'dist/client')))
-  app.use(sigmaContext._nuxt.routerBase, serveStatic(resolve(sigmaContext._nuxt.staticDir)))
+  app.use(nitroContext._nuxt.publicPath, serveStatic(resolve(nitroContext._nuxt.buildDir, 'dist/client')))
+  app.use(nitroContext._nuxt.routerBase, serveStatic(resolve(nitroContext._nuxt.staticDir)))
 
   // Dynamic Middlwware
   const legacyMiddleware = createDynamicMiddleware()
@@ -61,8 +61,8 @@ export function createDevServer (sigmaContext: SigmaContext) {
   app.use(devMiddleware.middleware)
 
   // serve placeholder 404 assets instead of hitting SSR
-  app.use(sigmaContext._nuxt.publicPath, servePlaceholder())
-  app.use(sigmaContext._nuxt.routerBase, servePlaceholder({ skipUnknown: true }))
+  app.use(nitroContext._nuxt.publicPath, servePlaceholder())
+  app.use(nitroContext._nuxt.routerBase, servePlaceholder({ skipUnknown: true }))
 
   // SSR Proxy
   const proxy = createProxy()
@@ -92,8 +92,8 @@ export function createDevServer (sigmaContext: SigmaContext) {
     if (watcher) { return }
     const dReload = debounce(() => reload().catch(console.warn), 200, true)
     watcher = chokidar.watch([
-      resolve(sigmaContext.output.serverDir, pattern),
-      resolve(sigmaContext._nuxt.buildDir, 'dist/server', pattern)
+      resolve(nitroContext.output.serverDir, pattern),
+      resolve(nitroContext._nuxt.buildDir, 'dist/server', pattern)
     ]).on('all', event => events.includes(event) && dReload())
   }
 
@@ -111,7 +111,7 @@ export function createDevServer (sigmaContext: SigmaContext) {
     await Promise.all(listeners.map(l => l.close()))
     listeners = []
   }
-  sigmaContext._internal.hooks.hook('close', close)
+  nitroContext._internal.hooks.hook('close', close)
 
   return {
     reload,

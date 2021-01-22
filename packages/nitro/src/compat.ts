@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { resolve } from 'upath'
 import { build, generate, prepare } from './build'
-import { getSigmaContext, SigmaContext } from './context'
+import { getNitroContext, NitroContext } from './context'
 import { createDevServer } from './server'
 import { wpfs } from './utils/wpfs'
 import { resolveMiddleware } from './middleware'
@@ -14,20 +14,20 @@ export default function nuxt2CompatModule () {
   nuxt.options.build.indicator = false
 
   // Create contexts
-  const sigmaContext = getSigmaContext(nuxt.options, nuxt.options.sigma || {})
-  const sigmaDevContext = getSigmaContext(nuxt.options, { preset: 'local' })
+  const nitroContext = getNitroContext(nuxt.options, nuxt.options.nitro || {})
+  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'local' })
 
   // Connect hooks
-  nuxt.addHooks(sigmaContext.nuxtHooks)
-  nuxt.hook('close', () => sigmaContext._internal.hooks.callHook('close'))
+  nuxt.addHooks(nitroContext.nuxtHooks)
+  nuxt.hook('close', () => nitroContext._internal.hooks.callHook('close'))
 
-  nuxt.addHooks(sigmaDevContext.nuxtHooks)
-  nuxt.hook('close', () => sigmaDevContext._internal.hooks.callHook('close'))
-  sigmaDevContext._internal.hooks.hook('renderLoading',
+  nuxt.addHooks(nitroDevContext.nuxtHooks)
+  nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
+  nitroDevContext._internal.hooks.hook('renderLoading',
     (req, res) => nuxt.callHook('server:nuxt:renderLoading', req, res))
 
-  // Expose process.env.SIGMA_PRESET
-  nuxt.options.env.SIGMA_PRESET = sigmaContext.preset
+  // Expose process.env.NITRO_PRESET
+  nuxt.options.env.NITRO_PRESET = nitroContext.preset
 
   // .ts is supported for serverMiddleware
   nuxt.options.extensions.push('ts')
@@ -35,13 +35,13 @@ export default function nuxt2CompatModule () {
   // Replace nuxt server
   if (nuxt.server) {
     nuxt.server.__closed = true
-    nuxt.server = createNuxt2DevServer(sigmaDevContext)
+    nuxt.server = createNuxt2DevServer(nitroDevContext)
   }
 
-  // Sigma client plugin
+  // Nitro client plugin
   this.addPlugin({
-    fileName: 'sigma.client.js',
-    src: resolve(sigmaContext._internal.runtimeDir, 'app/sigma.client.js')
+    fileName: 'nitro.client.js',
+    src: resolve(nitroContext._internal.runtimeDir, 'app/nitro.client.js')
   })
 
   // Resolve middleware
@@ -49,8 +49,8 @@ export default function nuxt2CompatModule () {
     const { middleware, legacyMiddleware } =
       resolveMiddleware(nuxt.options.serverMiddleware, nuxt.resolver.resolvePath)
     nuxt.server.setLegacyMiddleware(legacyMiddleware)
-    sigmaContext.middleware.push(...middleware)
-    sigmaDevContext.middleware.push(...middleware)
+    nitroContext.middleware.push(...middleware)
+    nitroDevContext.middleware.push(...middleware)
   })
 
   // nuxt build/dev
@@ -58,47 +58,47 @@ export default function nuxt2CompatModule () {
   nuxt.options.build.standalone = false
   nuxt.hook('build:done', async () => {
     if (nuxt.options.dev) {
-      await build(sigmaDevContext)
-    } else if (!sigmaContext._nuxt.isStatic) {
-      await prepare(sigmaContext)
-      await generate(sigmaContext)
-      await build(sigmaContext)
+      await build(nitroDevContext)
+    } else if (!nitroContext._nuxt.isStatic) {
+      await prepare(nitroContext)
+      await generate(nitroContext)
+      await build(nitroContext)
     }
   })
 
   // nude dev
   if (nuxt.options.dev) {
-    sigmaDevContext._internal.hooks.hook('sigma:compiled', () => { nuxt.server.watch() })
+    nitroDevContext._internal.hooks.hook('nitro:compiled', () => { nuxt.server.watch() })
     nuxt.hook('build:compile', ({ compiler }) => { compiler.outputFileSystem = wpfs })
     nuxt.hook('server:devMiddleware', (m) => { nuxt.server.setDevMiddleware(m) })
   }
 
   // nuxt generate
-  nuxt.options.generate.dir = sigmaContext.output.publicDir
+  nuxt.options.generate.dir = nitroContext.output.publicDir
   nuxt.options.generate.manifest = false
   nuxt.hook('generate:cache:ignore', (ignore: string[]) => {
-    ignore.push(sigmaContext.output.dir)
-    ignore.push(sigmaContext.output.serverDir)
-    if (sigmaContext.output.publicDir) {
-      ignore.push(sigmaContext.output.publicDir)
+    ignore.push(nitroContext.output.dir)
+    ignore.push(nitroContext.output.serverDir)
+    if (nitroContext.output.publicDir) {
+      ignore.push(nitroContext.output.publicDir)
     }
-    ignore.push(...sigmaContext.ignore)
+    ignore.push(...nitroContext.ignore)
   })
   nuxt.hook('generate:before', async () => {
-    await prepare(sigmaContext)
+    await prepare(nitroContext)
   })
   nuxt.hook('generate:extendRoutes', async () => {
-    await build(sigmaDevContext)
+    await build(nitroDevContext)
     await nuxt.server.reload()
   })
   nuxt.hook('generate:done', async () => {
     await nuxt.server.close()
-    await build(sigmaContext)
+    await build(nitroContext)
   })
 }
 
-function createNuxt2DevServer (sigmaContext: SigmaContext) {
-  const server = createDevServer(sigmaContext)
+function createNuxt2DevServer (nitroContext: NitroContext) {
+  const server = createDevServer(nitroContext)
 
   const listeners = []
   async function listen (port) {

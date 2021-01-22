@@ -6,19 +6,19 @@ import { readFile, emptyDir, copy } from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
 import { hl, prettyPath, serializeTemplate, writeFile, isDirectory } from './utils'
-import { SigmaContext } from './context'
+import { NitroContext } from './context'
 
-export async function prepare (sigmaContext: SigmaContext) {
-  consola.info(`Sigma preset is ${hl(sigmaContext.preset)}`)
+export async function prepare (nitroContext: NitroContext) {
+  consola.info(`Nitro preset is ${hl(nitroContext.preset)}`)
 
-  await cleanupDir(sigmaContext.output.dir)
+  await cleanupDir(nitroContext.output.dir)
 
-  if (!sigmaContext.output.publicDir.startsWith(sigmaContext.output.dir)) {
-    await cleanupDir(sigmaContext.output.publicDir)
+  if (!nitroContext.output.publicDir.startsWith(nitroContext.output.dir)) {
+    await cleanupDir(nitroContext.output.publicDir)
   }
 
-  if (!sigmaContext.output.serverDir.startsWith(sigmaContext.output.dir)) {
-    await cleanupDir(sigmaContext.output.serverDir)
+  if (!nitroContext.output.serverDir.startsWith(nitroContext.output.dir)) {
+    await cleanupDir(nitroContext.output.serverDir)
   }
 }
 
@@ -27,63 +27,63 @@ async function cleanupDir (dir: string) {
   await emptyDir(dir)
 }
 
-export async function generate (sigmaContext: SigmaContext) {
+export async function generate (nitroContext: NitroContext) {
   const spinner = ora()
   spinner.start('Generating public...')
 
-  const clientDist = resolve(sigmaContext._nuxt.buildDir, 'dist/client')
+  const clientDist = resolve(nitroContext._nuxt.buildDir, 'dist/client')
   if (await isDirectory(clientDist)) {
-    await copy(clientDist, join(sigmaContext.output.publicDir, sigmaContext._nuxt.publicPath))
+    await copy(clientDist, join(nitroContext.output.publicDir, nitroContext._nuxt.publicPath))
   }
 
-  const staticDir = resolve(sigmaContext._nuxt.srcDir, sigmaContext._nuxt.staticDir)
+  const staticDir = resolve(nitroContext._nuxt.srcDir, nitroContext._nuxt.staticDir)
   if (await isDirectory(staticDir)) {
-    await copy(staticDir, sigmaContext.output.publicDir)
+    await copy(staticDir, nitroContext.output.publicDir)
   }
 
-  spinner.succeed('Generated public ' + prettyPath(sigmaContext.output.publicDir))
+  spinner.succeed('Generated public ' + prettyPath(nitroContext.output.publicDir))
 }
 
-export async function build (sigmaContext: SigmaContext) {
+export async function build (nitroContext: NitroContext) {
   // Compile html template
-  const htmlSrc = resolve(sigmaContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
+  const htmlSrc = resolve(nitroContext._nuxt.buildDir, `views/${{ 2: 'app', 3: 'document' }[2]}.template.html`)
   const htmlTemplate = { src: htmlSrc, contents: '', dst: '', compiled: '' }
   htmlTemplate.dst = htmlTemplate.src.replace(/.html$/, '.js').replace('app.', 'document.')
   htmlTemplate.contents = await readFile(htmlTemplate.src, 'utf-8')
   htmlTemplate.compiled = 'module.exports = ' + serializeTemplate(htmlTemplate.contents)
-  await sigmaContext._internal.hooks.callHook('sigma:template:document', htmlTemplate)
+  await nitroContext._internal.hooks.callHook('nitro:template:document', htmlTemplate)
   await writeFile(htmlTemplate.dst, htmlTemplate.compiled)
 
-  sigmaContext.rollupConfig = getRollupConfig(sigmaContext)
-  await sigmaContext._internal.hooks.callHook('sigma:rollup:before', sigmaContext)
-  return sigmaContext._nuxt.dev ? _watch(sigmaContext) : _build(sigmaContext)
+  nitroContext.rollupConfig = getRollupConfig(nitroContext)
+  await nitroContext._internal.hooks.callHook('nitro:rollup:before', nitroContext)
+  return nitroContext._nuxt.dev ? _watch(nitroContext) : _build(nitroContext)
 }
 
-async function _build (sigmaContext: SigmaContext) {
+async function _build (nitroContext: NitroContext) {
   const spinner = ora()
 
   spinner.start('Building server...')
-  const build = await rollup(sigmaContext.rollupConfig).catch((error) => {
+  const build = await rollup(nitroContext.rollupConfig).catch((error) => {
     spinner.fail('Rollup error: ' + error.message)
     throw error
   })
 
   spinner.start('Writing server bundle...')
-  await build.write(sigmaContext.rollupConfig.output)
+  await build.write(nitroContext.rollupConfig.output)
 
   spinner.succeed('Server built')
-  await printFSTree(sigmaContext.output.serverDir)
-  await sigmaContext._internal.hooks.callHook('sigma:compiled', sigmaContext)
+  await printFSTree(nitroContext.output.serverDir)
+  await nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
 
   return {
-    entry: resolve(sigmaContext.rollupConfig.output.dir, sigmaContext.rollupConfig.output.entryFileNames)
+    entry: resolve(nitroContext.rollupConfig.output.dir, nitroContext.rollupConfig.output.entryFileNames)
   }
 }
 
-function _watch (sigmaContext: SigmaContext) {
+function _watch (nitroContext: NitroContext) {
   const spinner = ora()
 
-  const watcher = rollupWatch(sigmaContext.rollupConfig)
+  const watcher = rollupWatch(nitroContext.rollupConfig)
 
   let start
 
@@ -96,13 +96,13 @@ function _watch (sigmaContext: SigmaContext) {
       // Building an individual bundle
       case 'BUNDLE_START':
         start = Date.now()
-        spinner.start('Building Sigma...')
+        spinner.start('Building Nitro...')
         return
 
       // Finished building all bundles
       case 'END':
-        sigmaContext._internal.hooks.callHook('sigma:compiled', sigmaContext)
-        return spinner.succeed(`Sigma built in ${Date.now() - start} ms`)
+        nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
+        return spinner.succeed(`Nitro built in ${Date.now() - start} ms`)
 
       // Encountered an error while bundling
       case 'ERROR':

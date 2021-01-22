@@ -1,8 +1,8 @@
 import { extendPreset } from '../utils'
-import { SigmaPreset } from '../context'
+import { NitroPreset } from '../context'
 import { lambda } from './lambda'
 
-export const netlify: SigmaPreset = extendPreset(lambda, {
+export const netlify: NitroPreset = extendPreset(lambda, {
   // @ts-ignore
   output: {
     publicDir: '{{ _nuxt.rootDir }}/dist'

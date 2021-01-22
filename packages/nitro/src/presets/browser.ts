@@ -2,10 +2,10 @@ import { writeFile } from 'fs-extra'
 import { resolve } from 'upath'
 import consola from 'consola'
 import { extendPreset, prettyPath } from '../utils'
-import { SigmaPreset, SigmaContext, SigmaInput } from '../context'
+import { NitroPreset, NitroContext, NitroInput } from '../context'
 import { worker } from './worker'
 
-export const browser: SigmaPreset = extendPreset(worker, (input: SigmaInput) => {
+export const browser: NitroPreset = extendPreset(worker, (input: NitroInput) => {
   const routerBase = input._nuxt.routerBase
 
   const script = `<script>
@@ -47,7 +47,7 @@ if ('serviceWorker' in navigator) {
 
 </html>`
 
-  return <SigmaInput> {
+  return <NitroInput> {
     entry: '{{ _internal.runtimeDir }}/entries/service-worker',
     output: {
       serverDir: '{{ output.dir }}/public/_server'
@@ -61,10 +61,10 @@ if ('serviceWorker' in navigator) {
       }
     },
     hooks: {
-      'sigma:template:document' (tmpl) {
+      'nitro:template:document' (tmpl) {
         tmpl.compiled = tmpl.compiled.replace('</body>', script + '</body>')
       },
-      async 'sigma:compiled' ({ output }: SigmaContext) {
+      async 'nitro:compiled' ({ output }: NitroContext) {
         await writeFile(resolve(output.publicDir, 'sw.js'), `self.importScripts('${input._nuxt.routerBase}_server/index.js');`)
 
         // Temp fix

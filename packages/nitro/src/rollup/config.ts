@@ -13,7 +13,7 @@ import analyze from 'rollup-plugin-analyzer'
 import type { Preset } from '@nuxt/un'
 import * as un from '@nuxt/un'
 
-import { SigmaContext } from '../context'
+import { NitroContext } from '../context'
 import { resolvePath, MODULE_DIR } from '../utils'
 
 import { dynamicRequire } from './plugins/dynamic-require'
@@ -26,10 +26,10 @@ import { esbuild } from './plugins/esbuild'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
-export const getRollupConfig = (sigmaContext: SigmaContext) => {
+export const getRollupConfig = (nitroContext: NitroContext) => {
   const extensions: string[] = ['.ts', '.mjs', '.js', '.json', '.node']
 
-  const nodePreset = sigmaContext.node === false ? un.nodeless : un.node
+  const nodePreset = nitroContext.node === false ? un.nodeless : un.node
 
   const builtinPreset: Preset = {
     alias: {
@@ -50,21 +50,21 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     }
   }
 
-  const env = un.env(nodePreset, builtinPreset, sigmaContext.env)
+  const env = un.env(nodePreset, builtinPreset, nitroContext.env)
 
   delete env.alias['node-fetch'] // FIX ME
 
-  if (sigmaContext.sourceMap) {
+  if (nitroContext.sourceMap) {
     env.polyfill.push('source-map-support/register')
   }
 
-  const buildServerDir = join(sigmaContext._nuxt.buildDir, 'dist/server')
-  const runtimeAppDir = join(sigmaContext._internal.runtimeDir, 'app')
+  const buildServerDir = join(nitroContext._nuxt.buildDir, 'dist/server')
+  const runtimeAppDir = join(nitroContext._internal.runtimeDir, 'app')
 
   const rollupConfig: RollupConfig = {
-    input: resolvePath(sigmaContext, sigmaContext.entry),
+    input: resolvePath(nitroContext, nitroContext.entry),
     output: {
-      dir: sigmaContext.output.serverDir,
+      dir: nitroContext.output.serverDir,
       entryFileNames: 'index.js',
       chunkFileNames (chunkInfo) {
         let prefix = ''
@@ -74,22 +74,22 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
           prefix = join('app', relative(buildServerDir, dirname(lastModule)))
         } else if (lastModule.startsWith(runtimeAppDir)) {
           prefix = 'app'
-        } else if (lastModule.startsWith(sigmaContext._nuxt.buildDir)) {
+        } else if (lastModule.startsWith(nitroContext._nuxt.buildDir)) {
           prefix = 'nuxt'
-        } else if (lastModule.startsWith(sigmaContext._internal.runtimeDir)) {
-          prefix = 'sigma'
-        } else if (!prefix && sigmaContext.middleware.find(m => lastModule.startsWith(m.handle))) {
+        } else if (lastModule.startsWith(nitroContext._internal.runtimeDir)) {
+          prefix = 'nitro'
+        } else if (!prefix && nitroContext.middleware.find(m => lastModule.startsWith(m.handle))) {
           prefix = 'middleware'
         }
         return join('chunks', prefix, '[name].js')
       },
-      inlineDynamicImports: sigmaContext.inlineChunks,
+      inlineDynamicImports: nitroContext.inlineChunks,
       format: 'cjs',
       exports: 'auto',
       intro: '',
       outro: '',
       preferConst: true,
-      sourcemap: sigmaContext.sourceMap,
+      sourcemap: nitroContext.sourceMap,
       sourcemapExcludeSources: true,
       sourcemapPathTransform (relativePath, sourcemapPath) {
         return resolve(dirname(sourcemapPath), relativePath)
@@ -104,23 +104,23 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
     }
   }
 
-  if (sigmaContext.timing) {
+  if (nitroContext.timing) {
     rollupConfig.plugins.push(timing())
   }
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
     values: {
-      'process.env.NODE_ENV': sigmaContext._nuxt.dev ? '"development"' : '"production"',
+      'process.env.NODE_ENV': nitroContext._nuxt.dev ? '"development"' : '"production"',
       'typeof window': '"undefined"',
-      'process.env.ROUTER_BASE': JSON.stringify(sigmaContext._nuxt.routerBase),
-      'process.env.PUBLIC_PATH': JSON.stringify(sigmaContext._nuxt.publicPath),
-      'process.env.NUXT_STATIC_BASE': JSON.stringify(sigmaContext._nuxt.staticAssets.base),
-      'process.env.NUXT_STATIC_VERSION': JSON.stringify(sigmaContext._nuxt.staticAssets.version),
-      'process.env.NUXT_FULL_STATIC': sigmaContext._nuxt.fullStatic as unknown as string,
-      'process.env.SIGMA_PRESET': JSON.stringify(sigmaContext.preset),
-      'process.env.RUNTIME_CONFIG': JSON.stringify(sigmaContext._nuxt.runtimeConfig),
-      'process.env.DEBUG': JSON.stringify(sigmaContext._nuxt.dev)
+      'process.env.ROUTER_BASE': JSON.stringify(nitroContext._nuxt.routerBase),
+      'process.env.PUBLIC_PATH': JSON.stringify(nitroContext._nuxt.publicPath),
+      'process.env.NUXT_STATIC_BASE': JSON.stringify(nitroContext._nuxt.staticAssets.base),
+      'process.env.NUXT_STATIC_VERSION': JSON.stringify(nitroContext._nuxt.staticAssets.version),
+      'process.env.NUXT_FULL_STATIC': nitroContext._nuxt.fullStatic as unknown as string,
+      'process.env.NITRO_PRESET': JSON.stringify(nitroContext.preset),
+      'process.env.RUNTIME_CONFIG': JSON.stringify(nitroContext._nuxt.runtimeConfig),
+      'process.env.DEBUG': JSON.stringify(nitroContext._nuxt.dev)
     }
   }))
 
@@ -131,8 +131,8 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
 
   // Dynamic Require Support
   rollupConfig.plugins.push(dynamicRequire({
-    dir: resolve(sigmaContext._nuxt.buildDir, 'dist/server'),
-    inline: sigmaContext.node === false || sigmaContext.inlineChunks,
+    dir: resolve(nitroContext._nuxt.buildDir, 'dist/server'),
+    inline: nitroContext.node === false || nitroContext.inlineChunks,
     globbyOptions: {
       ignore: [
         'server.js'
@@ -141,14 +141,14 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }))
 
   // Static
-  if (sigmaContext.serveStatic) {
+  if (nitroContext.serveStatic) {
     rollupConfig.plugins.push(dirnames())
-    rollupConfig.plugins.push(staticAssets(sigmaContext))
+    rollupConfig.plugins.push(staticAssets(nitroContext))
   }
 
   // Middleware
-  const _middleware = [...sigmaContext.middleware]
-  if (sigmaContext.serveStatic) {
+  const _middleware = [...nitroContext.middleware]
+  if (nitroContext.serveStatic) {
     _middleware.unshift({ route: '/', handle: '~runtime/server/static' })
   }
   rollupConfig.plugins.push(middleware(_middleware))
@@ -159,37 +159,37 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/alias
-  const renderer = sigmaContext.renderer || (sigmaContext._nuxt.majorVersion === 3 ? 'vue3' : 'vue2')
-  const vue2ServerRenderer = 'vue-server-renderer/' + (sigmaContext._nuxt.dev ? 'build.dev.js' : 'build.prod.js')
+  const renderer = nitroContext.renderer || (nitroContext._nuxt.majorVersion === 3 ? 'vue3' : 'vue2')
+  const vue2ServerRenderer = 'vue-server-renderer/' + (nitroContext._nuxt.dev ? 'build.dev.js' : 'build.prod.js')
   rollupConfig.plugins.push(alias({
     entries: {
-      '~runtime': sigmaContext._internal.runtimeDir,
-      '~renderer': require.resolve(resolve(sigmaContext._internal.runtimeDir, 'app', renderer)),
+      '~runtime': nitroContext._internal.runtimeDir,
+      '~renderer': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer)),
       '~vueServerRenderer': vue2ServerRenderer,
-      '~build': sigmaContext._nuxt.buildDir,
+      '~build': nitroContext._nuxt.buildDir,
       ...env.alias
     }
   }))
 
   const moduleDirectories = [
-    resolve(sigmaContext._nuxt.rootDir, 'node_modules'),
+    resolve(nitroContext._nuxt.rootDir, 'node_modules'),
     resolve(MODULE_DIR, 'node_modules'),
     resolve(MODULE_DIR, '../node_modules'),
     'node_modules'
   ]
 
   // Externals Plugin
-  if (sigmaContext.externals) {
-    rollupConfig.plugins.push(externals(defu(sigmaContext.externals as any, {
-      outDir: sigmaContext.output.serverDir,
+  if (nitroContext.externals) {
+    rollupConfig.plugins.push(externals(defu(nitroContext.externals as any, {
+      outDir: nitroContext.output.serverDir,
       moduleDirectories,
       ignore: [
-        sigmaContext._internal.runtimeDir,
-        ...(sigmaContext._nuxt.dev ? [] : [sigmaContext._nuxt.buildDir]),
-        ...sigmaContext.middleware.map(m => m.handle)
+        nitroContext._internal.runtimeDir,
+        ...(nitroContext._nuxt.dev ? [] : [nitroContext._nuxt.buildDir]),
+        ...nitroContext.middleware.map(m => m.handle)
       ],
       traceOptions: {
-        base: sigmaContext._nuxt.rootDir
+        base: nitroContext._nuxt.rootDir
       }
     })))
   }
@@ -198,7 +198,7 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   rollupConfig.plugins.push(nodeResolve({
     extensions,
     preferBuiltins: true,
-    rootDir: sigmaContext._nuxt.rootDir,
+    rootDir: nitroContext._nuxt.rootDir,
     moduleDirectories,
     mainFields: ['main'] // Force resolve CJS (@vue/runtime-core ssrUtils)
   }))
@@ -217,14 +217,14 @@ export const getRollupConfig = (sigmaContext: SigmaContext) => {
   // https://github.com/rollup/plugins/tree/master/packages/inject
   rollupConfig.plugins.push(inject(env.inject))
 
-  if (sigmaContext.analyze) {
+  if (nitroContext.analyze) {
     // https://github.com/doesdev/rollup-plugin-analyzer
     rollupConfig.plugins.push(analyze())
   }
 
   // https://github.com/TrySound/rollup-plugin-terser
-  // https://github.com/terser/terser#minify-sigmaContext
-  if (sigmaContext.minify) {
+  // https://github.com/terser/terser#minify-nitroContext
+  if (nitroContext.minify) {
     rollupConfig.plugins.push(terser({
       mangle: {
         keep_fnames: true,

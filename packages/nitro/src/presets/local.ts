@@ -1,11 +1,11 @@
 import { extendPreset } from '../utils'
-import { SigmaPreset } from '../context'
+import { NitroPreset } from '../context'
 import { node } from './node'
 
-export const local: SigmaPreset = extendPreset(node, {
+export const local: NitroPreset = extendPreset(node, {
   entry: '{{ _internal.runtimeDir }}/entries/local',
   output: {
-    serverDir: '{{ _nuxt.buildDir }}/sigma'
+    serverDir: '{{ _nuxt.buildDir }}/nitro'
   },
   minify: false,
   externals: {

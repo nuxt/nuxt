@@ -5,9 +5,9 @@ import { relative, resolve } from 'upath'
 import virtual from '@rollup/plugin-virtual'
 import globby from 'globby'
 import type { Plugin } from 'rollup'
-import type { SigmaContext } from '../../context'
+import type { NitroContext } from '../../context'
 
-export function staticAssets (context: SigmaContext) {
+export function staticAssets (context: NitroContext) {
   const assets: Record<string, { type: string, etag: string, mtime: string, path: string }> = {}
 
   const files = globby.sync('**/*.*', { cwd: context.output.publicDir, absolute: false })

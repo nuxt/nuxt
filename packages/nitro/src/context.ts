@@ -14,7 +14,7 @@ export interface ServerMiddleware {
   promisify?: boolean // Default is true
 }
 
-export interface SigmaContext {
+export interface NitroContext {
   timing: boolean
   inlineChunks: boolean
   minify: boolean
@@ -60,12 +60,12 @@ export interface SigmaContext {
 
 type DeepPartial<T> = { [P in keyof T]?: DeepPartial<T[P]> }
 
-export interface SigmaInput extends DeepPartial<SigmaContext> {}
+export interface NitroInput extends DeepPartial<NitroContext> {}
 
-export type SigmaPreset = SigmaInput | ((input: SigmaInput) => SigmaInput)
+export type NitroPreset = NitroInput | ((input: NitroInput) => NitroInput)
 
-export function getSigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): SigmaContext {
-  const defaults: SigmaContext = {
+export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): NitroContext {
+  const defaults: NitroContext = {
     timing: true,
     inlineChunks: true,
     minify: true,
@@ -113,7 +113,7 @@ export function getSigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
     }
   }
 
-  defaults.preset = input.preset || process.env.SIGMA_PRESET || detectTarget() || 'server'
+  defaults.preset = input.preset || process.env.NITRO_PRESET || detectTarget() || 'server'
   let presetDefaults = PRESETS[defaults.preset] || tryImport(nuxtOptions.rootDir, defaults.preset)
   if (!presetDefaults) {
     throw new Error('Cannot resolve preset: ' + defaults.preset)
@@ -123,16 +123,16 @@ export function getSigmaContext (nuxtOptions: NuxtOptions, input: SigmaInput): S
   const _presetInput = defu(input, defaults)
   // @ts-ignore
   const _preset = extendPreset(input, presetDefaults)(_presetInput)
-  const sigmaContext: SigmaContext = defu(input, _preset, defaults) as any
+  const nitroContext: NitroContext = defu(input, _preset, defaults) as any
 
-  sigmaContext.output.dir = resolvePath(sigmaContext, sigmaContext.output.dir)
-  sigmaContext.output.publicDir = resolvePath(sigmaContext, sigmaContext.output.publicDir)
-  sigmaContext.output.serverDir = resolvePath(sigmaContext, sigmaContext.output.serverDir)
+  nitroContext.output.dir = resolvePath(nitroContext, nitroContext.output.dir)
+  nitroContext.output.publicDir = resolvePath(nitroContext, nitroContext.output.publicDir)
+  nitroContext.output.serverDir = resolvePath(nitroContext, nitroContext.output.serverDir)
 
-  sigmaContext._internal.hooks.addHooks(sigmaContext.hooks)
+  nitroContext._internal.hooks.addHooks(nitroContext.hooks)
 
-  // console.log(sigmaContext)
+  // console.log(nitroContext)
   // process.exit(1)
 
-  return sigmaContext
+  return nitroContext
 }

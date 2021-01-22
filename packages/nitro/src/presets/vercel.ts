@@ -1,9 +1,9 @@
 import { resolve } from 'upath'
 import { extendPreset, writeFile } from '../utils'
-import { SigmaPreset, SigmaContext } from '../context'
+import { NitroPreset, NitroContext } from '../context'
 import { node } from './node'
 
-export const vercel: SigmaPreset = extendPreset(node, {
+export const vercel: NitroPreset = extendPreset(node, {
   entry: '{{ _internal.runtimeDir }}/entries/vercel',
   output: {
     dir: '{{ _nuxt.rootDir }}/.vercel_build_output',
@@ -14,13 +14,13 @@ export const vercel: SigmaPreset = extendPreset(node, {
     'vercel.json'
   ],
   hooks: {
-    async 'sigma:compiled' (ctx: SigmaContext) {
+    async 'nitro:compiled' (ctx: NitroContext) {
       await writeRoutes(ctx)
     }
   }
 })
 
-async function writeRoutes ({ output }: SigmaContext) {
+async function writeRoutes ({ output }: NitroContext) {
   const routes = [
     {
       src: '/sw.js',
