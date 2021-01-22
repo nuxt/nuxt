@@ -34,11 +34,23 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await mkdirp(nuxt.options.buildDir)
-  const { dependencies = {}, devDependencies = {} } = createRequire(nuxt.options.rootDir)('package.json')
+  const allDependencies = {}
+
+  const addDependencies = (dir: string, path = './') => {
+    try {
+      const pkg = createRequire(dir)(path + 'package.json')
+      Object.assign(allDependencies, pkg.dependencies)
+      Object.assign(allDependencies, pkg.devDependencies)
+    } catch (_err) { }
+  }
+  addDependencies(nuxt.options.rootDir)
+  addDependencies(nuxt.options.srcDir)
+  addDependencies(nuxt.options.appDir, '../../')
+
   await writeFile(resolve(nuxt.options.buildDir, 'package.json'), JSON.stringify({
     private: true,
     description: 'auto generated',
-    devDependencies: { ...dependencies, ...devDependencies }
+    devDependencies: allDependencies
   }, null, 2))
 
   const callBuild = async (fn, name) => {
