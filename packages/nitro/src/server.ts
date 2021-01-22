@@ -78,8 +78,8 @@ export function createDevServer (nitroContext: NitroContext) {
 
   // Listen
   let listeners: Listener[] = []
-  const _listen = async (port) => {
-    const listener = await listen(app, { port, showURL: false, isProd: true })
+  const _listen = async (port, opts?) => {
+    const listener = await listen(app, { port, ...opts })
     listeners.push(listener)
     return listener
   }

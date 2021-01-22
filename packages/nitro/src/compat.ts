@@ -102,9 +102,12 @@ function createNuxt2DevServer (nitroContext: NitroContext) {
 
   const listeners = []
   async function listen (port) {
-    const listener = await server.listen(port)
+    const listener = await server.listen(port, {
+      showURL: false,
+      isProd: true
+    })
     listeners.push(listener)
-    return listeners
+    return listener
   }
 
   async function renderRoute (route = '/', renderContext = {}) {
