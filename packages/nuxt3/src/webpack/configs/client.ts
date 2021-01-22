@@ -1,9 +1,7 @@
 import path from 'path'
 import querystring from 'querystring'
 import webpack from 'webpack'
-import HTMLPlugin from 'html-webpack-plugin'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import CorsPlugin from '../plugins/vue/cors'
 import { applyPresets, WebpackConfigContext } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 
@@ -17,8 +15,7 @@ export function client (ctx: WebpackConfigContext) {
     clientOptimization,
     clientDevtool,
     clientPerformance,
-    clientHMR,
-    clientHTML
+    clientHMR
   ])
 }
 
@@ -81,20 +78,6 @@ function clientOptimization (ctx: WebpackConfigContext) {
   }
 
   // TODO: Improve optimization.splitChunks.cacheGroups
-}
-
-function clientHTML (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
-
-  // Generate output HTML for SSR
-  config.plugins.push(
-    new HTMLPlugin({
-      filename: '../server/index.ssr.html',
-      template: options.documentPath,
-      minify: options.build.html.minify as any,
-      inject: false // Resources will be injected using bundleRenderer
-    })
-  )
 }
 
 function clientPlugins (ctx: WebpackConfigContext) {
