@@ -1937,10 +1937,10 @@
     consola "^2.15.0"
     node-fetch "^2.6.1"
 
-"@nuxt/telemetry@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.3.2.tgz#a642888dd5d5e24b44b42028d2a10187348a88a1"
-  integrity sha512-Hx16EwlKo1sjsyz6qhsBYp/IC/82vXwqLp71QIf2IXyLhFPSiqXzHMY3/BxGiLr1o92C9s8hct3EwuSFTiex8w==
+"@nuxt/telemetry@^1.3.3":
+  version "1.3.3"
+  resolved "https://registry.npmjs.org/@nuxt/telemetry/-/telemetry-1.3.3.tgz#beefa94c6032a1312c7dc9c8784c6b8cc3aa42ae"
+  integrity sha512-ElnoAJo1n/Ui0j9i3xqhXajoGJdEwmkEtsWftlZUpQNJxdfoz+623qnt9XHMYa0X5Nf1PXYdcUKa2u4AASXOjA==
   dependencies:
     arg "^5.0.0"
     chalk "^4.1.0"
@@ -1948,13 +1948,13 @@
     consola "^2.15.0"
     create-require "^1.1.1"
     defu "^3.2.2"
-    destr "^1.0.1"
+    destr "^1.1.0"
     dotenv "^8.2.0"
     fs-extra "^8.1.0"
     git-url-parse "^11.4.3"
     inquirer "^7.3.3"
     is-docker "^2.1.1"
-    jiti "^1.0.0"
+    jiti "^1.3.0"
     nanoid "^3.1.20"
     node-fetch "^2.6.1"
     parse-git-config "^3.0.0"
@@ -2444,10 +2444,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.14.20.tgz#f7974863edd21d1f8a494a73e8e2b3658615c340"
   integrity sha512-Y93R97Ouif9JEOWPIUyU+eyIdyRqQR0I8Ez1dzku4hDx34NWh4HbtIc3WNzwB1Y9ULvNGeu5B8h8bVL5cAk4/A==
 
-"@types/node@^12.19.14":
-  version "12.19.14"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.14.tgz#59e5029a3c2aea34f68b717955381692fd47cafb"
-  integrity sha512-2U9uLN46+7dv9PiS8VQJcHhuoOjiDPZOLAt0WuA1EanEknIMae+2QbMhayF7cgGqjvRVIfNpt+6jLPczJZFiRw==
+"@types/node@^12.19.15":
+  version "12.19.15"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.15.tgz#0de7e978fb43db62da369db18ea088a63673c182"
+  integrity sha512-lowukE3GUI+VSYSu6VcBXl14d61Rp5hA1D+61r16qnwC0lYNSqdxcvRh0pswejorHfS+HgwBasM8jLXz0/aOsw==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -4139,10 +4139,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001174.tgz#0f2aca2153fd88ceb07a2bb982fc2acb787623c4"
   integrity sha512-tqClL/4ThQq6cfFXH3oJL4rifFBeM6gTkphjao5kgwMaW9yn0tKgQLAEfKzDwj6HQWCB/aWo8kTFlSvIN8geEA==
 
-caniuse-lite@^1.0.30001178:
-  version "1.0.30001178"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001178.tgz#3ad813b2b2c7d585b0be0a2440e1e233c6eabdbc"
-  integrity sha512-VtdZLC0vsXykKni8Uztx45xynytOi71Ufx9T8kHptSw9AL4dpqailUJJHavttuzUe1KYuBYtChiWv+BAb7mPmQ==
+caniuse-lite@^1.0.30001179:
+  version "1.0.30001179"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001179.tgz#b0803883b4471a6c62066fb1752756f8afc699c8"
+  integrity sha512-blMmO0QQujuUWZKyVrD1msR4WNDAqb/UPO1Sw2WWsQ7deoM5bJiicKnWJ1Y0NS/aGINSnKPIWBMw5luX+NDUCA==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -5317,10 +5317,15 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-destr@^1.0.0, destr@^1.0.1:
+destr@^1.0.0:
   version "1.0.1"
   resolved "https://registry.npmjs.org/destr/-/destr-1.0.1.tgz#d13db7f9d9c9ca4fcf24e86343d601217136ddc3"
   integrity sha512-LnEdINrd1ydSqRiAGjMBVrG/G8hNruwE+fEKlkJA14MGPEoI9T7zJDwGpkMTyXT2ASE0ycnN2SYn4k6Q7j7lHg==
+
+destr@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/destr/-/destr-1.1.0.tgz#2da6add6ba71e04fd0abfb1e642d4f6763235095"
+  integrity sha512-Ev/sqS5AzzDwlpor/5wFCDu0dYMQu/0x2D6XfAsQ0E7uQmamIgYJ6Dppo2T2EOFVkeVYWjc+PCLKaqZZ57qmLg==
 
 destroy@^1.0.4, destroy@~1.0.4:
   version "1.0.4"
@@ -8259,15 +8264,10 @@ jest@^26.6.3:
     import-local "^3.0.2"
     jest-cli "^26.6.3"
 
-jiti@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/jiti/-/jiti-1.0.0.tgz#508dcacb5f6cdc6b2248f00492db2b749684bf21"
-  integrity sha512-TIU7sNC4Iuo6YgjOUjYFME1JR1He4j8da8jIyB0K1B+oNfzbLn9pnI7YTGcR8xTQ8w5wiukmSelo4qeUki01jQ==
-
-jiti@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/jiti/-/jiti-1.2.0.tgz#15187ac6c49fb5ee4e04700bc05c1d5caed58546"
-  integrity sha512-9YR5zusNf4qmOZAIMqja5pTeuojl5mG2sE4IGogwBoxyclX+Wm2yBZDo2nvuwkUOzUg/nmXwiI2Hz7d/d1UCyw==
+jiti@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-1.3.0.tgz#9c6b8bde5744f732f33c1aa27108fd03b9a49d0d"
+  integrity sha512-CrRtGy3v7PE5dGWtMBe+FMaViXX2eUa7I+Cyo0WmyggVm61lfpEs1orBQalHx9KDIp0Kl5mNaXGHZCMgTpNDXw==
 
 js-beautify@^1.6.12:
   version "1.13.1"
@@ -11730,10 +11730,10 @@ rollup-plugin-license@^2.2.0:
     spdx-expression-validate "2.0.0"
     spdx-satisfies "5.0.0"
 
-rollup@2.37.1:
-  version "2.37.1"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.37.1.tgz#aa7aadffd75c80393f9314f9857e851b0ffd34e7"
-  integrity sha512-V3ojEeyGeSdrMSuhP3diBb06P+qV4gKQeanbDv+Qh/BZbhdZ7kHV0xAt8Yjk4GFshq/WjO7R4c7DFM20AwTFVQ==
+rollup@2.38.0:
+  version "2.38.0"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-2.38.0.tgz#57942d5a10826cb12ed1f19c261f774efa502d2d"
+  integrity sha512-ay9zDiNitZK/LNE/EM2+v5CZ7drkB2xyDljvb1fQJCGnq43ZWRkhxN145oV8GmoW1YNi4sA/1Jdkr2LfawJoXw==
   optionalDependencies:
     fsevents "~2.1.2"
 
