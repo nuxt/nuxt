@@ -39,12 +39,10 @@ export default function nuxt2CompatModule () {
   }
 
   // Disable server sourceMap, esbuild will generate for it.
-  if (nitroContext.sourceMap !== false) {
-    nuxt.hook('webpack:config', (webpackConfigs) => {
-      const serverConfig = webpackConfigs[2] || webpackConfigs[2]
-      serverConfig.devtool = false
-    })
-  }
+  nuxt.hook('webpack:config', (webpackConfigs) => {
+    const serverConfig = webpackConfigs[2] || webpackConfigs[2]
+    serverConfig.devtool = false
+  })
 
   // Nitro client plugin
   this.addPlugin({
