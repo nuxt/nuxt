@@ -48,7 +48,9 @@ export default function nuxt2CompatModule () {
   nuxt.hook('modules:done', () => {
     const { middleware, legacyMiddleware } =
       resolveMiddleware(nuxt.options.serverMiddleware, nuxt.resolver.resolvePath)
-    nuxt.server.setLegacyMiddleware(legacyMiddleware)
+    if (nuxt.server) {
+      nuxt.server.setLegacyMiddleware(legacyMiddleware)
+    }
     nitroContext.middleware.push(...middleware)
     nitroDevContext.middleware.push(...middleware)
   })
