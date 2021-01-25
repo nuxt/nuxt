@@ -49,7 +49,7 @@ export default {
     cancelIdleCallback(this.handleId)
 
     if (this.__observed) {
-      this.__unobserve(this.$el)
+      this.$options.__unobserve(this.$el)
       delete this.$el.__prefetch
     }
   },
@@ -62,7 +62,7 @@ export default {
       // Add to observer
       if (this.shouldPrefetch()) {
         this.$el.__prefetch = this.prefetchLink.bind(this)
-        this.__unobserve = this.$nuxt.context.observer.use(this.$el)
+        this.$options.__unobserve = this.$nuxt.context.observer.use(this.$el)
         this.__observed = true
       }<% if (router.linkPrefetchedClass) { %> else {
         this.addPrefetchedClass()
@@ -93,7 +93,7 @@ export default {
         return
       }
       // Stop observing this link (in case of internet connection changes)
-      this.__unobserve(this.$el)
+      this.$options.__unobserve(this.$el)
       const Components = this.getPrefetchComponents()
       <% if (router.linkPrefetchedClass) { %>const promises = []<% } %>
 
@@ -122,5 +122,6 @@ export default {
         this.$el.className = (this.$el.className + ' ' + this.prefetchedClass).trim()
       }
     }<% } %>
-  }
+  },
+  __unobserve: () => {}
 }
