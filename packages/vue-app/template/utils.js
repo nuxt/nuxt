@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import { normalizeURL } from 'ufo'
-import { get, use } from './observer'
+import { createObserver } from './observer'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -242,10 +242,7 @@ export async function setContext (app, context) {
     if (process.client) {
       app.context.nuxtState = window.<%= globals.context %>
       // Global IntersectionObserver
-      app.context.observer = {
-        get,
-        use
-      }
+      app.context.observer = createObserver()
     }
   }
 

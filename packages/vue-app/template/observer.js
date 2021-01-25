@@ -4,7 +4,7 @@ let observerInstance
 let observerIdCtr = 1
 const OBSERVER_ID_KEY = '__nuxt_prefetch_observer__'
 
-export function get () {
+function get () {
   if (typeof IntersectionObserver === 'undefined') {
     return false
   }
@@ -35,15 +35,22 @@ export function get () {
     intersectObserver.observe(el)
   }
 
-  observerInstance = { supported: true, add, remove }
+  observerInstance = { add, remove }
   return observerInstance
 }
 
-export function use (el) {
+function use (el) {
   const observer = get()
   observer.add(el)
   if (!observer) {
     return () => {}
   }
   return () => observer.remove(el)
+}
+
+export function createObserver () {
+  return {
+    get,
+    use
+  }
 }
