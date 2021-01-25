@@ -41,28 +41,29 @@ export default {
   },
   mounted () {
     if (this.prefetch && !this.noPrefetch) {
-
       this.handleId = requestIdleCallback(this.observe, { timeout: 2000 })
     }
   },
   beforeDestroy () {
     cancelIdleCallback(this.handleId)
 
-    if (this.__observed) {
-      this.$options.__unobserve(this.$el)
-      delete this.$el.__prefetch
+    if (!this.__observed) {
+      return
     }
+    this.$options.__unobserve(this.$el)
+    delete this.$el.__prefetch
   },
   methods: {
     observe () {
-      // If no IntersectionObserver, avoid prefetching
-      if (!window.IntersectionObserver) {
-        return
-      }
       // Add to observer
       if (this.shouldPrefetch()) {
+        const unobserveFunctionOrUnavailable = this.$nuxt.context.observer.use(this.$el)
+        if(!unobserveFunctionOrUnavailable) {
+          return
+        }
+
+        this.$options.__unobserve = unobserveFunctionOrUnavailable
         this.$el.__prefetch = this.prefetchLink.bind(this)
-        this.$options.__unobserve = this.$nuxt.context.observer.use(this.$el)
         this.__observed = true
       }<% if (router.linkPrefetchedClass) { %> else {
         this.addPrefetchedClass()

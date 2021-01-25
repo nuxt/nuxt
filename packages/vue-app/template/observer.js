@@ -43,7 +43,7 @@ function use (el) {
   const observer = get()
   observer.add(el)
   if (!observer) {
-    return () => {}
+    return false
   }
   return () => observer.remove(el)
 }
