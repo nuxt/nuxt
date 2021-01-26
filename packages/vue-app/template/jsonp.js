@@ -75,6 +75,9 @@ function importChunk(chunkId, src) {
   return promise
 }
 
-window.__NUXT_JSONP__ = function (chunkId, exports) { chunks[chunkId] = exports }
-window.__NUXT_JSONP_CACHE__ = chunks
-window.__NUXT_IMPORT__ = importChunk
+export function installJsonp() {
+  window.__NUXT_JSONP__ = function (chunkId, exports) { chunks[chunkId] = exports }
+  window.__NUXT_JSONP_CACHE__ = chunks
+  window.__NUXT_IMPORT__ = importChunk
+}
+
