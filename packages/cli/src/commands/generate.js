@@ -80,6 +80,10 @@ export default {
 
     // Set flag to keep the prerendering behaviour
     config._legacyGenerate = true
+    if (config.build) {
+      // https://github.com/nuxt/nuxt.js/issues/7390
+      config.build.parallel = false
+    }
 
     const nuxt = await cmd.getNuxt(config)
 

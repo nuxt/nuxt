@@ -129,6 +129,8 @@ async function getNuxt (args, cmd) {
   }
   config.buildDir = (config.static && config.static.cacheDir) || path.resolve(config.rootDir, 'node_modules/.cache/nuxt')
   config.build = config.build || {}
+  // https://github.com/nuxt/nuxt.js/issues/7390
+  config.build.parallel = false
   config.build.transpile = config.build.transpile || []
   if (!config.static || !config.static.cacheDir) {
     config.build.transpile.push('.cache/nuxt')
