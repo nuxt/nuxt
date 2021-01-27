@@ -324,22 +324,22 @@ export default {
       this._pagePayload = payload
       this._fetchCounters = {}
     },
-    async fetchPayload(route) {
+    async fetchPayload(route, prefetch) {
       <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
       const path = this.getRoutePath(route)
       if (!manifest.routes.includes(path)) {
-        this.setPagePayload(false)
+        if (!prefetch) { this.setPagePayload(false) }
         throw new Error(`Route ${path} is not pre-rendered`)
       }
       <% } %>
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
-        this.setPagePayload(payload)
+        if (!prefetch) { this.setPagePayload(payload) }
         return payload
       } catch (err) {
-        this.setPagePayload(false)
+        if (!prefetch) { this.setPagePayload(false) }
         throw err
       }
     }
