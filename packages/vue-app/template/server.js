@@ -25,6 +25,24 @@ if (!Vue.__nuxt__fetch__mixin__) {
 }
 <% } %>
 
+<% if (isDev) { %>
+if (!Vue.__original_use__) {
+  Vue.__original_use__ = Vue.use
+  Vue.__install_times__ = 0
+  Vue.use = function (plugin, ...args) {
+    plugin.__nuxt_external_installed__ = Vue._installedPlugins.includes(plugin)
+    return Vue.__original_use__(plugin, ...args)
+  }
+}
+if (Vue.__install_times__ === 2) {
+  Vue.__install_times__ = 0
+  Vue._installedPlugins = Vue._installedPlugins.filter(plugin => {
+    return plugin.__nuxt_external_installed__ === true
+  })
+}
+Vue.__install_times__++
+<% } %>
+
 // Component: <NuxtLink>
 Vue.component(NuxtLink.name, NuxtLink)
 <% if (features.componentAliases) { %>Vue.component('NLink', NuxtLink)<% } %>
