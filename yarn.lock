@@ -2114,17 +2114,17 @@
   resolved "https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.11.tgz#aeb16f50649a91af79dbe36574b66d0f9e4d9f71"
   integrity sha512-3NsZsJIA/22P3QUyrEDNA2D133H4j224twJrdipXN38dpnIOzAbUDtOwkcJ5pXmn75w7LSQDjA4tO9dm1XlqlA==
 
-"@rollup/plugin-alias@^3.1.1":
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/@rollup/plugin-alias/-/plugin-alias-3.1.1.tgz#bb96cf37fefeb0a953a6566c284855c7d1cd290c"
-  integrity sha512-hNcQY4bpBUIvxekd26DBPgF7BT4mKVNDF5tBG4Zi+3IgwLxGYRY0itHs9D0oLVwXM5pvJDWJlBQro+au8WaUWw==
+"@rollup/plugin-alias@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.npmjs.org/@rollup/plugin-alias/-/plugin-alias-3.1.2.tgz#c585b05be4a7782d269c69d13def56f44e417772"
+  integrity sha512-wzDnQ6v7CcoRzS0qVwFPrFdYA4Qlr+ookA217Y2Z3DPZE1R8jrFNM3jvGgOf6o6DMjbnQIn5lCIJgHPe1Bt3uw==
   dependencies:
     slash "^3.0.0"
 
-"@rollup/plugin-commonjs@^17.0.0":
-  version "17.0.0"
-  resolved "https://registry.npmjs.org/@rollup/plugin-commonjs/-/plugin-commonjs-17.0.0.tgz#2ae2228354cf0fbba6cf9f06f30b2c66a974324c"
-  integrity sha512-/omBIJG1nHQc+bgkYDuLpb/V08QyutP9amOrJRUSlYJZP+b/68gM//D8sxJe3Yry2QnYIr3QjR3x4AlxJEN3GA==
+"@rollup/plugin-commonjs@^17.1.0":
+  version "17.1.0"
+  resolved "https://registry.npmjs.org/@rollup/plugin-commonjs/-/plugin-commonjs-17.1.0.tgz#757ec88737dffa8aa913eb392fade2e45aef2a2d"
+  integrity sha512-PoMdXCw0ZyvjpCMT5aV4nkL0QywxP29sODQsSGeDpr/oI49Qq9tRtAsb/LbYbDzFlOydVEqHmmZWFtXJEAX9ew==
   dependencies:
     "@rollup/pluginutils" "^3.1.0"
     commondir "^1.0.1"
@@ -2141,10 +2141,10 @@
   dependencies:
     "@rollup/pluginutils" "^3.0.8"
 
-"@rollup/plugin-node-resolve@^11.1.0":
-  version "11.1.0"
-  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-11.1.0.tgz#fa0f888297b3aebcd6534e8aba4e6fe01997649a"
-  integrity sha512-ouBBppRdWJKCllDXGzJ7ZIkYbaq+5TmyP0smt1vdJCFfoZhLi31vhpmjLhyo8lreHf4RoeSNllaWrvSqHpHRog==
+"@rollup/plugin-node-resolve@^11.1.1":
+  version "11.1.1"
+  resolved "https://registry.npmjs.org/@rollup/plugin-node-resolve/-/plugin-node-resolve-11.1.1.tgz#47bc34252914794a1b06fb50371d7520a03f91f3"
+  integrity sha512-zlBXR4eRS+2m79TsUZWhsd0slrHUYdRx4JF+aVQm+MI0wsKdlpC2vlDVjmlGvtZY1vsefOT9w3JxvmWSBei+Lg==
   dependencies:
     "@rollup/pluginutils" "^3.1.0"
     "@types/resolve" "1.17.1"
@@ -3999,10 +3999,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001179.tgz#b0803883b4471a6c62066fb1752756f8afc699c8"
   integrity sha512-blMmO0QQujuUWZKyVrD1msR4WNDAqb/UPO1Sw2WWsQ7deoM5bJiicKnWJ1Y0NS/aGINSnKPIWBMw5luX+NDUCA==
 
-caniuse-lite@^1.0.30001180:
-  version "1.0.30001180"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001180.tgz#67abcd6d1edf48fa5e7d1e84091d1d65ab76e33b"
-  integrity sha512-n8JVqXuZMVSPKiPiypjFtDTXc4jWIdjxull0f92WLo7e1MSi3uJ3NvveakSh/aCl1QKFAvIz3vIj0v+0K+FrXw==
+caniuse-lite@^1.0.30001181:
+  version "1.0.30001181"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001181.tgz#4f0e5184e1ea7c3bf2727e735cbe7ca9a451d673"
+  integrity sha512-m5ul/ARCX50JB8BSNM+oiPmQrR5UmngaQ3QThTTp5HcIIQGP/nPBs82BYLE+tigzm3VW+F4BJIhUyaVtEweelQ==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -9226,10 +9226,10 @@ node-gyp@^5.0.2:
     tar "^4.4.12"
     which "^1.3.1"
 
-node-html-parser@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-2.0.2.tgz#168c9cfb77ae58fe4038d84862a0fc8f2ad8e3fd"
-  integrity sha512-N2000Ho9dkabvRZcyiwm6zOpdiAzxAxcJ0Z0WNoh/yXHG0YCuiK2WpNQfN+9vheLNY/h/It11Gk7uwT4QTfk9Q==
+node-html-parser@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-2.1.0.tgz#36345804d743a5a1f672d4821a53f6b0e60629a9"
+  integrity sha512-kbCNfqjrwHAbG+mevL8aqjwVtF0Qv66XurWHoGLOc5G9rPR1L3k602jfeczAUUBldLNnCrdsDmO5G5nqAoMW+g==
   dependencies:
     he "1.2.0"
 
