@@ -40,7 +40,7 @@ export default function nuxt2CompatModule () {
 
   // Disable server sourceMap, esbuild will generate for it.
   nuxt.hook('webpack:config', (webpackConfigs) => {
-    const serverConfig = webpackConfigs[2] || webpackConfigs[2]
+    const serverConfig = webpackConfigs.find(config => config.name === 'server')
     serverConfig.devtool = false
   })
 
