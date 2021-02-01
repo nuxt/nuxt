@@ -7,6 +7,9 @@
       <NLink to="/store">
         Store
       </NLink>
+      <NLink to="/encoding/中文">
+        Encoding
+      </NLink>
       <NLink to="/pagination/1">
         Pagination
       </NLink>
