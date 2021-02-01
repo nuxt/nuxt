@@ -74,6 +74,10 @@ export function detectTarget () {
   if (process.env.NOW_BUILDER) {
     return 'vercel'
   }
+
+  if (process.env.INPUT_AZURE_STATIC_WEB_APPS_API_TOKEN) {
+    return 'azure'
+  }
 }
 
 export async function isDirectory (path: string) {
