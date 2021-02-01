@@ -4,7 +4,7 @@ import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { TARGETS, urlJoin } from '@nuxt/utils'
-import { $URL, withoutTrailingSlash } from 'ufo'
+import { decode, parseURL, withoutTrailingSlash } from 'ufo'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -181,10 +181,12 @@ export default class SSRRenderer extends BaseRenderer {
       const preloadScripts = []
       renderContext.staticAssets = []
       const { staticAssetsBase, nuxt, staticAssets } = renderContext
-      let url = new $URL(renderContext.url).pathname
+
+      let pathname = decode(parseURL(renderContext.url).pathname)
       if (!this.options.router.trailingSlash) {
-        url = withoutTrailingSlash(url) || '/'
+        pathname = withoutTrailingSlash(pathname) || '/'
       }
+
       const { data, fetch, mutations, ...state } = nuxt
 
       // Initial state
@@ -196,7 +198,7 @@ export default class SSRRenderer extends BaseRenderer {
       // Make chunk for initial state > 10 KB
       const stateScriptKb = (stateScript.length * 4 /* utf8 */) / 100
       if (stateScriptKb > 10) {
-        const statePath = urlJoin(url, 'state.js')
+        const statePath = urlJoin(pathname, 'state.js')
         const stateUrl = urlJoin(staticAssetsBase, statePath)
         staticAssets.push({ path: statePath, src: stateScript })
         if (this.options.render.asyncScripts) {
@@ -212,9 +214,9 @@ export default class SSRRenderer extends BaseRenderer {
       // Save payload only if no error or redirection were made
       if (!renderContext.nuxt.error && !renderContext.redirected) {
         // Page level payload.js (async loaded for CSR)
-        const payloadPath = urlJoin(url, 'payload.js')
+        const payloadPath = urlJoin(pathname, 'payload.js')
         const payloadUrl = urlJoin(staticAssetsBase, payloadPath)
-        const payloadScript = `__NUXT_JSONP__("${url}", ${devalue({ data, fetch, mutations })});`
+        const payloadScript = `__NUXT_JSONP__("${pathname}", ${devalue({ data, fetch, mutations })});`
         staticAssets.push({ path: payloadPath, src: payloadScript })
         preloadScripts.push(payloadUrl)
         // Add manifest preload
