@@ -6,7 +6,6 @@ import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
-import { decode, parseURL, withoutTrailingSlash } from 'ufo'
 
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
@@ -169,7 +168,7 @@ export default class Generator {
     this.generatedRoutes = new Set()
 
     routes.forEach(({ route, ...props }) => {
-      route = decode(route)
+      route = decodeURI(route)
       this.routes.push({ route, ...props })
       // Add routes to the tracked generated routes (for crawler)
       this.generatedRoutes.add(route)
