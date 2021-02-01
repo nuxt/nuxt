@@ -4,7 +4,7 @@ import { format } from 'util'
 import fs from 'fs-extra'
 import consola from 'consola'
 import { TARGETS, urlJoin } from '@nuxt/utils'
-import { decode, parseURL, withoutTrailingSlash } from 'ufo'
+import { decode, withoutTrailingSlash } from 'ufo'
 import devalue from '@nuxt/devalue'
 import { createBundleRenderer } from 'vue-server-renderer'
 import BaseRenderer from './base'
@@ -182,7 +182,7 @@ export default class SSRRenderer extends BaseRenderer {
       renderContext.staticAssets = []
       const { staticAssetsBase, nuxt, staticAssets } = renderContext
 
-      let pathname = decode(parseURL(renderContext.url).pathname)
+      let pathname = decode(renderContext.url)
       if (!this.options.router.trailingSlash) {
         pathname = withoutTrailingSlash(pathname) || '/'
       }

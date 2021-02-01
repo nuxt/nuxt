@@ -162,14 +162,6 @@ export default class Generator {
     return requireModule(path.join(this.options.buildDir, 'routes.json'))
   }
 
-  normalizeRoute (url) {
-    let pathname = decode(parseURL(url).pathname)
-    if (!this.options.router || !this.options.router.trailingSlash) {
-      pathname = withoutTrailingSlash(pathname) || '/'
-    }
-    return pathname
-  }
-
   async generateRoutes (routes) {
     const errors = []
 
@@ -177,7 +169,7 @@ export default class Generator {
     this.generatedRoutes = new Set()
 
     routes.forEach(({ route, ...props }) => {
-      route = this.normalizeRoute(route)
+      route = decode(route)
       this.routes.push({ route, ...props })
       // Add routes to the tracked generated routes (for crawler)
       this.generatedRoutes.add(route)
