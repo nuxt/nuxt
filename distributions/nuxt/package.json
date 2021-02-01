@@ -63,7 +63,7 @@
     "@nuxt/babel-preset-app": "^2.14.12",
     "@nuxt/builder": "^2.14.12",
     "@nuxt/cli": "^2.14.12",
-    "@nuxt/components": "^1.2.5",
+    "@nuxt/components": "^1.2.6",
     "@nuxt/config": "^2.14.12",
     "@nuxt/core": "^2.14.12",
     "@nuxt/generator": "^2.14.12",
