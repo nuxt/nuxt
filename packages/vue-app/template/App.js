@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { parsePath, withoutTrailingSlash } from 'ufo'
+import { parsePath, withoutTrailingSlash, normalizeURL } from 'ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',
@@ -317,7 +317,7 @@ export default {
     },
     <% if (nuxtOptions.generate.manifest) { %>
       async fetchStaticManifest() {
-      return window.__NUXT_IMPORT__('manifest.js', encodeURI(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
+      return window.__NUXT_IMPORT__('manifest.js', normalizeURL(urlJoin(this.getStaticAssetsPath(), 'manifest.js')))
     },
     <% } %>
     setPagePayload(payload) {
@@ -328,14 +328,14 @@ export default {
       <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
       const path = this.getRoutePath(route)
-      if (!manifest.routes.includes(path)) {
+      if (!manifest.routes.includes(decodeURI(path))) {
         if (!prefetch) { this.setPagePayload(false) }
         throw new Error(`Route ${path} is not pre-rendered`)
       }
       <% } %>
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
-        const payload = await window.__NUXT_IMPORT__(decodeURI(route), encodeURI(src))
+        const payload = await window.__NUXT_IMPORT__(decodeURI(route), normalizeURL(src))
         if (!prefetch) { this.setPagePayload(payload) }
         return payload
       } catch (err) {
