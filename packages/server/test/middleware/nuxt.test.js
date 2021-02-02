@@ -339,8 +339,17 @@ describe('server: nuxtMiddleware', () => {
     const err = Error('URI malformed')
     err.name = 'URIError'
 
-    await nuxtMiddleware({ ...req, url: 'http://localhost/test/server/%c1%81' }, res, next)
+    const paths = [
+      '%c1%81',
+      '%c1',
+      '%'
+    ]
 
-    expect(next).toBeCalledWith(err)
+    for (const path of paths) {
+      await nuxtMiddleware({ ...req, url: 'http://localhost/test/server/' + path }, res, next)
+
+      expect(next).toBeCalledWith(err)
+      next.mockReset()
+    }
   })
 })
