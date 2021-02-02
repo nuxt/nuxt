@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@nuxt/utils": "2.14.12",
-    "consola": "^2.15.0",
+    "consola": "^2.15.1",
     "defu": "^3.2.2",
     "destr": "^1.1.0",
     "dotenv": "^8.2.0",
