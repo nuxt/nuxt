@@ -36,7 +36,10 @@ describe('encoding', () => {
   test('query params', async () => {
     const queryStrings = {
       '?email=some%20email.com': { email: 'some email.com' },
-      '?str=%26&str2=%2526': { str: '&', str2: '%26' }
+      '?str=%26&str2=%2526': { str: '&', str2: '%26' },
+      '?t=coffee%2Cfood%2C': { t: 'coffee,food,' },
+      '?redirect=%2Fhomologation%2Flist': { redirect: '/homologation/list' },
+      '?email=some@email.com&token=DvtiwbIzry319e6KWimopA%3D%3D': { email: 'some@email.com', token: 'DvtiwbIzry319e6KWimopA==' }
     }
     for (const [param, result] of Object.entries(queryStrings)) {
       const { body: response } = await rp(url('/ö/dynamic/test') + param)
