@@ -56,7 +56,7 @@ describe('full-static', () => {
 
     paths.forEach((path) => {
       const files = glob.sync(join(distDir, '**', path))
-      expect(html).toContain(path)
+      expect(html).toContain(encodeURI(path))
       expect(files).toContainEqual(expect.stringContaining(path))
     })
   })
