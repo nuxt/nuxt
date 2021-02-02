@@ -43,6 +43,16 @@ export async function createApp (
   if (app.pages) {
     app.routes.push(...(await resolvePagesRoutes(builder, app)))
   }
+  // Add 404 page is not added
+  const page404 = app.routes.find(route => route.name === '404')
+  if (!page404) {
+    app.routes.push({
+      name: '404',
+      path: '/:catchAll(.*)*',
+      file: resolve(nuxt.options.appDir, 'pages/404.vue'),
+      children: []
+    })
+  }
   // TODO: Hook to extend routes
   app.templates.routes = serializeRoutes(app.routes)
 
@@ -69,7 +79,7 @@ function formatRoute (route: NuxtRoute) {
     name: route.name,
     path: route.path,
     children: route.children.map(formatRoute),
-    // TODO: avoid exposing to prod
+    // TODO: avoid exposing to prod, using process.env.NODE_ENV ?
     __file: route.file,
     component: `{() => import('${route.file}' /* webpackChunkName: '${route.name}' */)}`
   }
