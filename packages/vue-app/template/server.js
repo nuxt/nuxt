@@ -1,6 +1,6 @@
 import { stringify } from 'querystring'
 import Vue from 'vue'
-import { normalizeURL } from 'ufo'
+import { normalizeURL, joinURL } from 'ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -51,12 +51,8 @@ Vue.component(NuxtLink.name, NuxtLink)
 
 const noopApp = () => new Vue({ render: h => h('div', { domProps: { id: '<%= globals.id %>' } }) })
 
-export const urlJoin = function urlJoin () {
-  return [].slice
-    .call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-    .replace(':/', '://')
+function urlJoin (base, ...args) {
+  return joinURL(base, ...args)
 }
 
 const createNext = ssrContext => (opts) => {
