@@ -329,7 +329,7 @@ describe('server: nuxtMiddleware', () => {
     expect(consola.error).toBeCalledWith(err)
   })
 
-  test('should return 400 if request is uri error', async () => {
+  test('should return handle uri errors by normalizing', async () => {
     const context = createContext()
     const result = { html: 'rendered html' }
     context.renderRoute.mockReturnValue(result)
