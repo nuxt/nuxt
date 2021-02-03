@@ -5,7 +5,6 @@ import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
 import compression from 'compression'
-import { normalizeURL } from 'ufo'
 import { determineGlobals, isUrl, urlJoin } from '@nuxt/utils'
 import { VueRenderer } from '@nuxt/vue-renderer'
 import ServerContext from './context'
@@ -166,12 +165,11 @@ export default class Server {
       this.useMiddleware({
         prefix: false,
         handler: (req, res, next) => {
-          const url = normalizeURL(req.url)
-          if (decodeURI(url).startsWith(decodeURI(routerBase))) {
+          if (decodeURI(req.url).startsWith(decodeURI(routerBase))) {
             return next()
           }
-          const to = urlJoin(routerBase, url)
-          consola.info(`[Development] Redirecting from \`${decodeURI(url)}\` to \`${decodeURI(to)}\` (router.base specified)`)
+          const to = urlJoin(routerBase, req.url)
+          consola.info(`[Development] Redirecting from \`${decodeURI(req.url)}\` to \`${decodeURI(to)}\` (router.base specified)`)
           res.writeHead(302, {
             Location: to
           })
