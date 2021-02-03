@@ -24,7 +24,7 @@
     "glob": "^7.1.6",
     "hard-source-webpack-plugin": "^0.13.1",
     "hash-sum": "^2.0.0",
-    "html-webpack-plugin": "^4.5.1",
+    "html-webpack-plugin": "^5.0.0",
     "lodash": "^4.17.20",
     "memory-fs": "^0.5.0",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
