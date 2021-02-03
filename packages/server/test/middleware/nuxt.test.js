@@ -328,4 +328,25 @@ describe('server: nuxtMiddleware', () => {
     expect(await nuxtMiddleware(req, res, next)).toBe(err)
     expect(consola.error).toBeCalledWith(err)
   })
+
+  test('should return 400 if request is uri error', async () => {
+    const context = createContext()
+    const result = { html: 'rendered html' }
+    context.renderRoute.mockReturnValue(result)
+    const nuxtMiddleware = createNuxtMiddleware(context)
+    const { req, res, next } = createServerContext()
+    const paths = ['%c1%81', '%c1', '%']
+
+    for (const path of paths) {
+      await nuxtMiddleware(
+        { ...req, url: 'http://localhost/test/server/' + path },
+        res,
+        next
+      )
+
+      expect(next).toBeCalledTimes(0)
+      expect(res.statusCode).toBe(200)
+      next.mockReset()
+    }
+  })
 })

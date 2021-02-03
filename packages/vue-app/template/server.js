@@ -70,7 +70,8 @@ const createNext = ssrContext => (opts) => {
     opts.path = urlJoin(routerBase, opts.path)
   }
   // Avoid loop redirect
-  if (decodeURI(opts.path) === decodeURI(ssrContext.url)) {
+  const url = normalizeURL(ssrContext.url)
+  if (decodeURI(opts.path) === decodeURI(url)) {
     ssrContext.redirected = false
     return
   }
