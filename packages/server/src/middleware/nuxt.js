@@ -10,8 +10,6 @@ export default ({ options, nuxt, renderRoute, resources }) => async function nux
   const context = getContext(req, res)
 
   try {
-    // Throw error if req.url is not decodable so we can fail early, as other parts of app depend on decoding
-    decodeURI(req.url)
     const url = normalizeURL(req.url)
     res.statusCode = 200
     const result = await renderRoute(url, context)
