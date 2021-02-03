@@ -25,7 +25,7 @@
     "nuxt": "jiti ./packages/cli/bin/nuxt-cli.js",
     "pkg": "jiti ./scripts/pkg.js",
     "test": "yarn test:fixtures && yarn test:dev && yarn test:unit && test:types",
-    "test:dev": "jest test/dev --forceExit --runInBand",
+    "test:dev": "jest test/dev --forceExit",
     "test:e2e": "jest -i test/e2e --forceExit",
     "test:fixtures": "jest test/fixtures --forceExit",
     "test:lint": "yarn lint && yarn ls-lint",
