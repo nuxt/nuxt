@@ -105,6 +105,9 @@ export default async (ssrContext) => {
   <% } %>
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
+  if (ssrContext.nuxt.config.app) {
+    __webpack_public_path__ = urlJoin(ssrContext.nuxt.config.app.cdnURL || '/', ssrContext.nuxt.config.app.assetsPath)
+  }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, { ...ssrContext.runtimeConfig.public, ...ssrContext.runtimeConfig.private })
   const _app = new Vue(app)

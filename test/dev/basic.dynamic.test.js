@@ -62,6 +62,14 @@ describe('basic ssr', () => {
     expect(fetchCount).toBeGreaterThan(0)
   })
 
+  test('dynamic publicPath is used in ssr html', async () => {
+    const { html } = await nuxt.server.renderRoute('/', {
+      resources: resourceLoader
+    })
+
+    expect(html).toContain('<img src="https://cdn.nuxtjs.org/img')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()
