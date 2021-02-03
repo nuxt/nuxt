@@ -1,25 +1,22 @@
-import { Ref, toRef, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
+import { Ref, ref, toRef, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
 import { Nuxt, useNuxt } from 'nuxt/app'
-import { $fetch } from 'ohmyfetch'
 import { useData } from './data'
 
-export type HTTPRequest = string | { method: string, url: string }
-export type FetchRequest<T> = HTTPRequest | ((ctx: Nuxt) => HTTPRequest | Promise<T>)
+export type AsyncDataFn<T> = (ctx?: Nuxt) => Promise<T>
 
-export interface FetchOptions {
+export interface AsyncDataOptions {
   server?: boolean
   defer?: boolean
-  fetcher?: Function
-  key?: string
 }
 
-export interface FetchObj<T> {
+export interface AsyncDataObj<T> {
   data: Ref<T>
-  fetch: Function
+  pending: Ref<boolean>
+  refresh: Function
   error?: any
 }
 
-export function useFetch (defaults?: FetchOptions) {
+export function useAsyncData (defaults?: AsyncDataOptions) {
   const nuxt = useNuxt()
   const vm = getCurrentInstance()
 
@@ -40,31 +37,32 @@ export function useFetch (defaults?: FetchOptions) {
     })
   }
 
-  return async function fetch<T = any> (request: FetchRequest<T>, options?: FetchOptions): Promise<FetchObj<T>> {
+  return async function asyncData<T = any> (handler: AsyncDataFn<T>, options?: AsyncDataOptions): Promise<AsyncDataObj<T>> {
+    if (typeof handler !== 'function') {
+      throw new TypeError('asyncData handler must be a function')
+    }
     options = {
       server: true,
       defer: false,
-      fetcher: globalThis.$fetch || $fetch,
       ...defaults,
       ...options
     }
 
     const key = String(dataRef++)
+    const pending = ref(true)
 
     const fetch = async () => {
-      const _request = typeof request === 'function'
-        ? request(nuxt)
-        : request
+      pending.value = true
+      const _handler = handler(nuxt)
 
-      if (_request instanceof Promise) {
+      if (_handler instanceof Promise) {
         // Let user resolve if request is promise
-        data[key] = await _request
-      } else if (_request && (typeof _request === 'string' || _request.url)) {
-        // Make HTTP request when request is string (url) or { url, ...opts }
-        data[key] = await options.fetcher(_request)
+        // TODO: handle error
+        data[key] = await _handler
+        pending.value = false
       } else {
         // Invalid request
-        throw new Error('Invalid fetch request: ' + _request)
+        throw new TypeError('Invalid asyncData handler: ' + _handler)
       }
     }
 
@@ -73,6 +71,9 @@ export function useFetch (defaults?: FetchOptions) {
     // Client side
     if (process.client) {
       // 1. Hydration (server: true): no fetch
+      if (nuxt.isHydrating && options.server) {
+        pending.value = false
+      }
       // 2. Initial load (server: false): fetch on mounted
       if (nuxt.isHydrating && !options.server) {
         // Fetch on mounted (initial load or deferred fetch)
@@ -86,10 +87,8 @@ export function useFetch (defaults?: FetchOptions) {
           await fetch()
         }
       }
-      // Watch request
-      if (typeof request === 'function') {
-        watch(request, fetch)
-      }
+      // Watch handler
+      watch(handler.bind(null, nuxt), fetch)
     }
 
     // Server side
@@ -99,7 +98,8 @@ export function useFetch (defaults?: FetchOptions) {
 
     return {
       data: toRef<any, string>(data, key),
-      fetch
+      pending,
+      refresh: fetch
     }
   }
 }

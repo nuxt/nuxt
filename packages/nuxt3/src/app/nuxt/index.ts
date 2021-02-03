@@ -51,11 +51,13 @@ export function createNuxt (options: CreateOptions) {
 
   nuxt.provide = (name: string, value: any) => {
     const $name = '$' + name
-    defineGetter(nuxt.app, $name, value)
+    defineGetter(nuxt, $name, value)
     defineGetter(nuxt.app.config.globalProperties, $name, value)
   }
 
-  nuxt.provide('nuxt', nuxt)
+  // Inject $nuxt
+  defineGetter(nuxt.app, '$nuxt', nuxt)
+  defineGetter(nuxt.app.config.globalProperties, '$nuxt', nuxt)
 
   // Expose nuxt to the renderContext
   if (nuxt.ssrContext) {
