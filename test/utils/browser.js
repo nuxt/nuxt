@@ -1,12 +1,7 @@
 import puppeteer from 'puppeteer-core'
-
-import ChromeDetector from './chrome'
+import { Launcher } from 'chrome-launcher'
 
 export default class Browser {
-  constructor () {
-    this.detector = new ChromeDetector()
-  }
-
   async start (options = {}) {
     // https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#puppeteerlaunchoptions
     const _opts = {
@@ -19,7 +14,7 @@ export default class Browser {
     }
 
     if (!_opts.executablePath) {
-      _opts.executablePath = this.detector.detect()
+      _opts.executablePath = Launcher.getInstallations()[0]
     }
 
     this.browser = await puppeteer.launch(_opts)
