@@ -101,14 +101,6 @@ export const routerOptions = {
   fallback: <%= router.fallback %>
 }
 
-function decodeObj(obj) {
-  for (const key in obj) {
-    if (typeof obj[key] === 'string') {
-      obj[key] = decode(obj[key])
-    }
-  }
-}
-
 export function createRouter (ssrContext, config) {
   const base = (config.app && config.app.basePath) || routerOptions.base
   const router = new Router({ ...routerOptions, base  })
@@ -124,11 +116,7 @@ export function createRouter (ssrContext, config) {
     if (typeof to === 'string') {
       to = normalizeURL(to)
     }
-    const r = resolve(to, current, append)
-    if (r && r.resolved && r.resolved.query) {
-      decodeObj(r.resolved.query)
-    }
-    return r
+    return resolve(to, current, append)
   }
 
   return router

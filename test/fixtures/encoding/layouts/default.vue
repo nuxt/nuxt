@@ -26,6 +26,8 @@ export default {
         '/@about',
         '/тест',
         encodeURI('/тест'),
+        '/dynamic/%c',
+        '/dynamic/%',
         '/dynamic/سلام چطوری?q=cofee,food,دسر',
         encodeURI('/dynamic/سلام چطوری?q=cofee,food,دسر'),
         // Using encodeURIComponent on each segment
