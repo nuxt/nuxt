@@ -69,7 +69,6 @@ export default () => ({
     fetch: true,
     clientOnline: true,
     clientPrefetch: true,
-    clientUseUrl: false,
     componentAliases: true,
     componentClientOnly: true
   }

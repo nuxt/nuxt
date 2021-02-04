@@ -189,7 +189,6 @@ Object {
     "asyncData": true,
     "clientOnline": true,
     "clientPrefetch": true,
-    "clientUseUrl": false,
     "componentAliases": true,
     "componentClientOnly": true,
     "deprecations": true,

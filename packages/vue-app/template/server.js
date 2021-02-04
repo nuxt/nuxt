@@ -1,6 +1,5 @@
-import { stringify } from 'querystring'
 import Vue from 'vue'
-import { normalizeURL, joinURL } from 'ufo'
+import { joinURL, normalizeURL, stringifyQuery, withQuery } from 'ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -58,8 +57,8 @@ const createNext = ssrContext => (opts) => {
     ssrContext.nuxt.serverRendered = false
     return
   }
-  opts.query = stringify(opts.query)
-  opts.path = opts.path + (opts.query ? '?' + opts.query : '')
+  opts.path = withQuery(opts.path, opts.query)
+  opts.query = stringifyQuery(opts.query)
   const $config = ssrContext.runtimeConfig || {}
   const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
   if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {

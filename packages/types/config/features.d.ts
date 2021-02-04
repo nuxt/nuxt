@@ -2,6 +2,9 @@ export interface NuxtOptionsFeatures {
   asyncData?: boolean
   clientOnline?: boolean
   clientPrefetch?: boolean
+  /**
+   * @deprecated
+   */
   clientUseUrl?: boolean
   componentAliases?: boolean
   componentClientOnly?: boolean
