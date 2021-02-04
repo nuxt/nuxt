@@ -58,7 +58,7 @@ const createNext = ssrContext => (opts) => {
     return
   }
   opts.path = withQuery(opts.path, opts.query)
-  opts.query = stringifyQuery(opts.query)
+  opts.query = stringifyQuery(opts.query || {})
   const $config = ssrContext.runtimeConfig || {}
   const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
   if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {

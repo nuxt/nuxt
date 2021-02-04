@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { joinURL, normalizeURL, resolveURL, withQuery, withoutTrailingSlash } from 'ufo'
+import { joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -219,8 +219,7 @@ export async function setContext (app, context) {
           status
         })
       } else {
-        const url = resolveURL(window.location.href, path)
-        path = withQuery(url, query)
+        path = withQuery(path, query)
         if (process.server) {
           app.context.next({
             path,
