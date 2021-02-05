@@ -243,7 +243,7 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Calculate CSP hashes
-    const cspScriptSrcHashes = []
+    const cspScriptSrcHashes = csp.policies && csp.policies['script-src'] ? csp.policies['script-src'] : []
     if (csp) {
       if (shouldHashCspScriptSrc) {
         for (const script of inlineScripts) {
