@@ -34,7 +34,7 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await mkdirp(nuxt.options.buildDir)
-  const { dependencies = {}, devDependencies = {} } = createRequire(nuxt.options.rootDir)('package.json')
+  const { dependencies = {}, devDependencies = {} } = createRequire(nuxt.options.rootDir)('./package.json')
   await writeFile(resolve(nuxt.options.buildDir, 'package.json'), JSON.stringify({
     private: true,
     description: 'auto generated',
