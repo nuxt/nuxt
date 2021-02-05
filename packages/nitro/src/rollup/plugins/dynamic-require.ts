@@ -57,7 +57,7 @@ export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin
       const chunks = files.map(id => ({
         id,
         src: resolve(dir, id).replace(/\\/g, '/'),
-        name: '_' + id.replace(/[\\/.]/g, '_'),
+        name: '_' + id.replace(/[^a-zA-Z_]/g, '_'),
         meta: getWebpackChunkMeta(resolve(dir, id))
       }))
 
