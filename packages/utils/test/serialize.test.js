@@ -3,7 +3,7 @@ const { serializeFunction, normalizeFunctions } = require('../src/serialize')
 // NOTE: This test file is on purpose using CommonJS syntax to avoid code being
 // transformed by 'babel-jest' which affects the results.
 
-const RE_LINE_BREAKS = /[\r\n]+/
+const RE_LINE_BREAKS = /[\r\n]+/g
 
 describe('util: serialize', () => {
   test('should normalize arrow functions', () => {
