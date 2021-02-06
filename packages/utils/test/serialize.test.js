@@ -3,6 +3,8 @@ const { serializeFunction, normalizeFunctions } = require('../src/serialize')
 // NOTE: This test file is on purpose using CommonJS syntax to avoid code being
 // transformed by 'babel-jest' which affects the results.
 
+const RE_LINE_BREAKS = /[\r\n]+/
+
 describe('util: serialize', () => {
   test('should normalize arrow functions', () => {
     const obj = {
@@ -82,8 +84,8 @@ describe('util: serialize', () => {
     }
     expect(serializeFunction(obj.fn1)).toEqual('foobar => {}')
     expect(serializeFunction(obj.fn2)).toEqual('foobar => 1')
-    expect(serializeFunction(obj.fn3)).toEqual('foobar => {\n        return 3\n      }')
-    expect(serializeFunction(obj.fn4)).toEqual('arg1 =>\n        2 * arg1')
+    expect(serializeFunction(obj.fn3).replace(RE_LINE_BREAKS, '\n')).toEqual('foobar => {\n        return 3\n      }')
+    expect(serializeFunction(obj.fn4).replace(RE_LINE_BREAKS, '\n')).toEqual('arg1 =>\n        2 * arg1')
   })
 
   test('should not replace custom scripts', () => {
@@ -93,7 +95,7 @@ describe('util: serialize', () => {
       }
     }
 
-    expect(serializeFunction(obj.fn)).toEqual(`function() {
+    expect(serializeFunction(obj.fn).replace(RE_LINE_BREAKS, '\n')).toEqual(`function() {
         return 'function xyz(){};a=false?true:xyz();'
       }`)
   })
@@ -111,7 +113,7 @@ describe('util: serialize', () => {
       }
     }
 
-    expect(serializeFunction(obj.fn)).toEqual(`function(arg) {
+    expect(serializeFunction(obj.fn).replace(RE_LINE_BREAKS, '\n')).toEqual(`function(arg) {
         if (arg) {
           return {
             title: function () {
