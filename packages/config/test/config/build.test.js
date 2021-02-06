@@ -17,10 +17,10 @@ describe('config: build', () => {
     const env = { isDev: false }
     expect(filenames.app(env)).toEqual('[contenthash:7].js')
     expect(filenames.chunk(env)).toEqual('[contenthash:7].js')
-    expect(filenames.css(env)).toEqual('[name].[contenthash:7].css')
-    expect(filenames.img(env)).toEqual('img/[name].[contenthash:7].[ext]')
-    expect(filenames.font(env)).toEqual('fonts/[name].[contenthash:7].[ext]')
-    expect(filenames.video(env)).toEqual('videos/[name].[contenthash:7].[ext]')
+    expect(filenames.css(env)).toEqual('css/[contenthash:7].css')
+    expect(filenames.img(env)).toEqual('img/[contenthash:7].[ext]')
+    expect(filenames.font(env)).toEqual('fonts/[contenthash:7].[ext]')
+    expect(filenames.video(env)).toEqual('videos/[contenthash:7].[ext]')
   })
 
   test('should return modern filenames', () => {
