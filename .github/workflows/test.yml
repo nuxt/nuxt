@@ -228,6 +228,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
 
       - name: lint app
         run: yarn lint:app
@@ -264,6 +265,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
 
       - name: test dev
         run: yarn test:dev -w=2
@@ -300,6 +302,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
 
       - name: test e2e
         run: yarn test:e2e

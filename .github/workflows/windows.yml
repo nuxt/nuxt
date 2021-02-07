@@ -158,6 +158,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
 
       - name: test dev
         run: yarn test:dev
