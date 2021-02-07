@@ -268,7 +268,7 @@ jobs:
           path: test/fixtures
 
       - name: test dev
-        run: yarn test:dev --runInBand
+        run: yarn test:dev
     needs: build
 
   test-e2e:
