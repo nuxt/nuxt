@@ -191,11 +191,11 @@ jobs:
       - name: build
         run: yarn test:fixtures -i
 
-      - name: cache fixtures
-        uses: actions/cache@v2
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
     needs: setup
 
   lint-app:
@@ -225,10 +225,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: lint app
         run: yarn lint:app
@@ -262,13 +262,13 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev
     needs: build
 
   test-e2e:
@@ -299,10 +299,10 @@ jobs:
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v2
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test e2e
         run: yarn test:e2e
