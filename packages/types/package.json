@@ -27,7 +27,7 @@
     "@types/webpack-bundle-analyzer": "^3.9.0",
     "@types/webpack-dev-middleware": "^4.1.0",
     "@types/webpack-hot-middleware": "^2.25.3",
-    "sass-loader": "^10.1.1"
+    "sass-loader": "^11.0.0"
   },
   "publishConfig": {
     "access": "public"
