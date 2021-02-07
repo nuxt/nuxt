@@ -65,6 +65,7 @@ export interface NuxtOptions extends Configuration {
   server: NuxtOptionsServer
   serverMiddleware: NuxtOptionsServerMiddleware[]
   srcDir: string
+  ssr: boolean
   transition: Transition
   vue: {
     config?: NuxtOptionsVueConfiguration
