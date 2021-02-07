@@ -584,7 +584,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"options\\": Object {
           \\"esModule\\": false,
           \\"limit\\": 1000,
-          \\"name\\": \\"img/[contenthash:7].[ext]\\",
+          \\"name\\": \\"img/[name].[contenthash:7].[ext]\\",
         },
       },
     ],
@@ -597,7 +597,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"options\\": Object {
           \\"esModule\\": false,
           \\"limit\\": 1000,
-          \\"name\\": \\"fonts/[contenthash:7].[ext]\\",
+          \\"name\\": \\"fonts/[name].[contenthash:7].[ext]\\",
         },
       },
     ],
@@ -609,7 +609,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
         \\"loader\\": \\"<nuxtDir>/node_modules/file-loader/dist/cjs.js\\",
         \\"options\\": Object {
           \\"esModule\\": false,
-          \\"name\\": \\"videos/[contenthash:7].[ext]\\",
+          \\"name\\": \\"videos/[name].[contenthash:7].[ext]\\",
         },
       },
     ],
