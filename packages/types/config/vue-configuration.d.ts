@@ -6,4 +6,4 @@
 
 import { VueConstructor } from 'vue'
 
-export type NuxtOptionsVueConfiguration = VueConstructor['config']
+export type NuxtOptionsVueConfiguration = Partial<VueConstructor['config']>
