@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
+import { isSamePath as _isSamePath, joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -607,9 +607,7 @@ export const urlJoin = joinURL
 
 export const stripTrailingSlash = withoutTrailingSlash
 
-export function isSamePath (p1, p2) {
-  return withoutTrailingSlash(p1) === withoutTrailingSlash(p2)
-}
+export const isSamePath = _isSamePath
 
 export function setScrollRestoration (newVal) {
   try {
