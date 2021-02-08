@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { joinURL, normalizeURL, stringifyQuery, withQuery } from 'ufo'
+import { joinURL, normalizeURL, withQuery } from 'ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
