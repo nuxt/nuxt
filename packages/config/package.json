@@ -11,14 +11,14 @@
   ],
   "dependencies": {
     "@nuxt/utils": "2.14.12",
-    "consola": "^2.15.1",
+    "consola": "^2.15.3",
     "defu": "^3.2.2",
     "destr": "^1.1.0",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.20",
     "rc9": "^1.2.0",
     "std-env": "^2.2.1",
-    "ufo": "^0.6.1"
+    "ufo": "^0.6.2"
   },
   "publishConfig": {
     "access": "public"

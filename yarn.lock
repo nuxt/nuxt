@@ -863,10 +863,10 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.12.13"
 
-"@babel/plugin-transform-runtime@^7.12.13":
-  version "7.12.13"
-  resolved "https://registry.npmjs.org/@babel/plugin-transform-runtime/-/plugin-transform-runtime-7.12.13.tgz#93a47630c80dab152a2b71011d1e1fd37b31b8e1"
-  integrity sha512-ho1CV2lm8qn2AxD3JdvPgtLVHCYLDaOszlf0gosdHcJAIfgNizag76WI+FoibrvfT+h117fgf8h+wgvo4O2qbA==
+"@babel/plugin-transform-runtime@^7.12.15":
+  version "7.12.15"
+  resolved "https://registry.npmjs.org/@babel/plugin-transform-runtime/-/plugin-transform-runtime-7.12.15.tgz#4337b2507288007c2b197059301aa0af8d90c085"
+  integrity sha512-OwptMSRnRWJo+tJ9v9wgAf72ydXWfYSXWhnQjZing8nGZSDFqU1MBleKM3+DriKkcbv7RagA8gVeB0A1PNlNow==
   dependencies:
     "@babel/helper-module-imports" "^7.12.13"
     "@babel/helper-plugin-utils" "^7.12.13"
@@ -2668,10 +2668,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.14.22.tgz#0d29f382472c4ccf3bd96ff0ce47daf5b7b84b18"
   integrity sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
 
-"@types/node@^12.19.15":
-  version "12.19.15"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.15.tgz#0de7e978fb43db62da369db18ea088a63673c182"
-  integrity sha512-lowukE3GUI+VSYSu6VcBXl14d61Rp5hA1D+61r16qnwC0lYNSqdxcvRh0pswejorHfS+HgwBasM8jLXz0/aOsw==
+"@types/node@^12.19.16":
+  version "12.19.16"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.19.16.tgz#15753af35cbef636182d8d8ca55b37c8583cecb3"
+  integrity sha512-7xHmXm/QJ7cbK2laF+YYD7gb5MggHIIQwqyjin3bpEGiSuvScMQ5JZZXPvRipi1MwckTQbJZROMns/JxdnIL1Q==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -2774,10 +2774,10 @@
   dependencies:
     source-map "^0.6.1"
 
-"@types/webpack-bundle-analyzer@^3.9.0":
-  version "3.9.0"
-  resolved "https://registry.npmjs.org/@types/webpack-bundle-analyzer/-/webpack-bundle-analyzer-3.9.0.tgz#bf2f3fd7f1fe6a71dff8968afeb12785d1ce737b"
-  integrity sha512-O4Dsmml4T+emssdk3t6/N1vwtYRx1VfWCx0Oph4jRY62DZGNOL9IAS6mSX0XG1LdZuFSX0g42DXj1otQuPXRGQ==
+"@types/webpack-bundle-analyzer@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.npmjs.org/@types/webpack-bundle-analyzer/-/webpack-bundle-analyzer-3.9.1.tgz#27a8923a4e71c13ac5f043f34f12136d8c99cf8e"
+  integrity sha512-AmRIHpxByb9Hm7AZE1Ya0v6/Ek9t6MKBl/7l7ay+WeFqE6dedOJFL/7OuUzFxjUA+iDUM71yRNrzrkkq4pmX2A==
   dependencies:
     "@types/webpack" "*"
 
@@ -3075,18 +3075,18 @@
   optionalDependencies:
     prettier "^1.18.2"
 
-"@vue/server-test-utils@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.1.2.tgz#21efc2d90772b449a5421ee52dc69cf5f7f77634"
-  integrity sha512-R2uUDecJSAZN5/z/c1PKTVjzk7+vS/HcmpagN3/o/vhOko4/JLP41mJYyDdn4ljybLoAJs74IEz7zBUuW3DOQQ==
+"@vue/server-test-utils@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.npmjs.org/@vue/server-test-utils/-/server-test-utils-1.1.3.tgz#3e7e16384f1b9d7d2b62185fc066a1e39baefd90"
+  integrity sha512-xoSpgagYFOYy8pNTC21PjPgJ1G4+muy9v0X8mluqyhf6oVSPzfC5Uh++jyrIdcBe0d5pYFvuyui15CVF2zbCVQ==
   dependencies:
     "@types/cheerio" "^0.22.10"
     cheerio "^1.0.0-rc.2"
 
-"@vue/test-utils@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.1.2.tgz#fdb487448dceefeaf3d01d465f7c836a3d666dbc"
-  integrity sha512-utbIL7zn9c+SjhybPwh48lpWCiluFCbP1yyRNAy1fQsw/6hiNFioaWy05FoVAFIZXC5WwBf+5r4ypfM1j/nI4A==
+"@vue/test-utils@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.npmjs.org/@vue/test-utils/-/test-utils-1.1.3.tgz#747f5683d8d4633c85a385fe2e02c1bb35bec153"
+  integrity sha512-BAY1Cwe9JpkJseimC295EW3YlAmgIJI9OPkg2FSP62+PHZooB0B+wceDi9TYyU57oqzL0yLbcP73JKFpKiLc9A==
   dependencies:
     dom-event-types "^1.0.0"
     lodash "^4.17.15"
@@ -4298,10 +4298,10 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, can
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001181.tgz#4f0e5184e1ea7c3bf2727e735cbe7ca9a451d673"
   integrity sha512-m5ul/ARCX50JB8BSNM+oiPmQrR5UmngaQ3QThTTp5HcIIQGP/nPBs82BYLE+tigzm3VW+F4BJIhUyaVtEweelQ==
 
-caniuse-lite@^1.0.30001183:
-  version "1.0.30001183"
-  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001183.tgz#7a57ba9d6584119bb5f2bc76d3cc47ba9356b3e2"
-  integrity sha512-7JkwTEE1hlRKETbCFd8HDZeLiQIUcl8rC6JgNjvHCNaxOeNmQ9V4LvQXRUsKIV2CC73qKxljwVhToaA3kLRqTw==
+caniuse-lite@^1.0.30001185:
+  version "1.0.30001185"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001185.tgz#3482a407d261da04393e2f0d61eefbc53be43b95"
+  integrity sha512-Fpi4kVNtNvJ15H0F6vwmXtb3tukv3Zg3qhKkOGUq7KJ1J6b9kf4dnNgtEAFXhRsJo0gNj9W60+wBvn0JcTvdTg==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -4767,10 +4767,10 @@ consola@^2.10.0, consola@^2.15.0, consola@^2.6.0, consola@^2.9.0:
   resolved "https://registry.npmjs.org/consola/-/consola-2.15.0.tgz#40fc4eefa4d2f8ef2e2806147f056ea207fcc0e9"
   integrity sha512-vlcSGgdYS26mPf7qNi+dCisbhiyDnrN1zaRbw3CSuc2wGOMEGGPsp46PdRG5gqXwgtJfjxDkxRNAgRPr1B77vQ==
 
-consola@^2.15.1:
-  version "2.15.1"
-  resolved "https://registry.npmjs.org/consola/-/consola-2.15.1.tgz#6c9141d97798537551e5b411a1423e39e4a7abd6"
-  integrity sha512-uNINF19d9f1/Pza5aNmQ/JlrmY4uPOW0BxID3Xvw5iOP6diJArUXp+JgcIQ4fR56qV+HB9o/ZRUnrnYd92LxZw==
+consola@^2.15.3:
+  version "2.15.3"
+  resolved "https://registry.npmjs.org/consola/-/consola-2.15.3.tgz#2e11f98d6a4be71ff72e0bdf07bd23e12cb61550"
+  integrity sha512-9vAdYbHj6x2fLKC4+oPH0kFzY/orMZyG2Aj+kNylHxKGJ/Ed4dpNyAQYwJOdqO4zdM7XpVHmyejQDcQHrnuXbw==
 
 console-browserify@^1.1.0:
   version "1.2.0"
@@ -11284,10 +11284,10 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-7.0.0.tgz#33aab35f6306a99c5ed849680dc93c2af7880405"
-  integrity sha512-ASMDBDEuF/vNlOIQBmGYB8pYuOfsFQyTP+7RrMZXGRLrVf5kxOQuKUgIxgLRLtXJf9EK9b15LNZfznb01fdP0Q==
+puppeteer-core@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-7.0.1.tgz#4d4bbc910ef879680045902a26ee932715af7352"
+  integrity sha512-CIOSYtfTFbaG/li8ZJzkqPQ15tuUb9hDTfzQ/AV/kWhv1OKV/T+VzCGx1DU2CdhoEsmLBYmVb1SQ6h0eQSRuXg==
   dependencies:
     debug "^4.1.0"
     devtools-protocol "0.0.847576"
@@ -11893,10 +11893,10 @@ rollup-plugin-license@^2.2.0:
     spdx-expression-validate "2.0.0"
     spdx-satisfies "5.0.0"
 
-rollup@2.38.4:
-  version "2.38.4"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-2.38.4.tgz#1b84ea8728c73b1a00a6a6e9c630ec8c3fe48cea"
-  integrity sha512-B0LcJhjiwKkTl79aGVF/u5KdzsH8IylVfV56Ut6c9ouWLJcUK17T83aZBetNYSnZtXf2OHD4+2PbmRW+Fp5ulg==
+rollup@2.38.5:
+  version "2.38.5"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-2.38.5.tgz#be41ad4fe0c103a8794377afceb5f22b8f603d6a"
+  integrity sha512-VoWt8DysFGDVRGWuHTqZzT02J0ASgjVq/hPs9QcBOGMd7B+jfTr/iqMVEyOi901rE3xq+Deq66GzIT1yt7sGwQ==
   optionalDependencies:
     fsevents "~2.3.1"
 
@@ -13312,10 +13312,10 @@ ua-parser-js@^0.7.23:
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.23.tgz#704d67f951e13195fbcd3d78818577f5bc1d547b"
   integrity sha512-m4hvMLxgGHXG3O3fQVAyyAQpZzDOvwnhOTjYz5Xmr7r/+LpkNy3vJXdVRWgd1TkAb7NGROZuSy96CrlNVjA7KA==
 
-ufo@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.npmjs.org/ufo/-/ufo-0.6.1.tgz#a604175fb68d2f13740391a28af0c5e901124122"
-  integrity sha512-5fILNEcWgmB+8jEOZAS5h/KfK+BFNN84rQgfUacaQze+L5y3TIvIsBS88lG9nEKU8NRoA0/jGCw8+Jdudzqj3A==
+ufo@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npmjs.org/ufo/-/ufo-0.6.2.tgz#0def51a6c4ecbd6e1a4d192622a1cefdb9103164"
+  integrity sha512-BRoE0KTw4s+oVJ5GqYaNthVOFcLbdzw5qbHMmGRxZ3YHZJ0m5Zqvni0u+Ipugt5fHLzE2mC8FtaUZyta0EfUDw==
 
 uglify-js@^3.1.4, uglify-js@^3.5.1:
   version "3.12.6"

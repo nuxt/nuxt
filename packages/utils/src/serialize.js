@@ -44,7 +44,7 @@ export function serializeFunction (func) {
         return _
       }
     })
-    .replace(`${func.name || 'function'}(`, 'function (')
+    .replace(new RegExp(`${(func.name || 'function').replace('$', '\\$')}\\s*\\(`), 'function(')
     .replace('function function', 'function')
 }
 
