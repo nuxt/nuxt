@@ -2,6 +2,7 @@ import consola from 'consola'
 import { MODES, TARGETS } from '@nuxt/utils'
 import { common, locking } from '../options'
 import { createLock } from '../utils'
+import { checkDependencies } from '../utils/dependencies'
 
 export default {
   name: 'build',
@@ -63,6 +64,7 @@ export default {
     }
   },
   async run (cmd) {
+    checkDependencies()
     const config = await cmd.getNuxtConfig({ dev: false, server: false, _build: true })
     config.server = (config.mode === MODES.spa || config.ssr === false) && cmd.argv.generate !== false
     const nuxt = await cmd.getNuxt(config)

@@ -2,6 +2,7 @@ import util from 'util'
 import consola from 'consola'
 import { get } from 'lodash'
 import { common } from '../options'
+import { checkDependencies } from '../utils/dependencies'
 
 export default {
   name: 'webpack',
@@ -33,6 +34,7 @@ export default {
     }
   },
   async run (cmd) {
+    checkDependencies()
     const { name } = cmd.argv
     const queries = [...cmd.argv._]
 
