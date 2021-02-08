@@ -4,11 +4,8 @@ import consola from 'consola'
 import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
 
-jest.mock('fs', () => ({
-  existsSync: Boolean,
-  closeSync: Boolean,
-  realpath: jest.fn()
-}))
+// TODO: don't internal native fs :(
+fs.existsSync = jest.fn().mockImplementation(() => true)
 
 jest.mock('hash-sum', () => src => `hash(${src})`)
 
