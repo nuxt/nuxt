@@ -6,6 +6,7 @@ import fsExtra from 'fs-extra'
 import defu from 'defu'
 import htmlMinifier from 'html-minifier'
 import { parse } from 'node-html-parser'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { isFullStatic, flatRoutes, isString, isUrl, promisifyRoute, urlJoin, waitFor, requireModule } from '@nuxt/utils'
 
@@ -295,8 +296,8 @@ export default class Generator {
     let html
     const pageErrors = []
 
-    if (this.options.router && this.options.router.trailingSlash && route[route.length - 1] !== '/') {
-      route = route + '/'
+    if (this.options.router && this.options.router.trailingSlash) {
+      route = withTrailingSlash(route)
     }
 
     const setPayload = (_payload) => {
@@ -349,7 +350,7 @@ export default class Generator {
         }
         // Add route to manifest (only if no error and redirect)
         if (this.manifest && (!res.error && !res.redirected)) {
-          this.manifest.routes.push(route)
+          this.manifest.routes.push(withoutTrailingSlash(route))
         }
       }
 
