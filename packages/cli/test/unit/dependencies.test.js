@@ -16,7 +16,7 @@ describe('cli/utils', () => {
       )
     )
     expect(consola.error).toHaveBeenCalledTimes(1)
-    if (process.version.startsWith('10')) {
+    if (process.version.startsWith('v10')) {
       expect(consola.warn).toHaveBeenCalledTimes(1)
     } else {
       expect(consola.warn).toHaveBeenCalledTimes(0)
