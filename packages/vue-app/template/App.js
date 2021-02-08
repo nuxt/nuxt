@@ -304,7 +304,7 @@ export default {
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      return withoutTrailingSlash(parsePath(route).pathname) || '/'
+      return withoutTrailingSlash(parsePath(route).pathname)
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
