@@ -350,7 +350,7 @@ export default class Generator {
         }
         // Add route to manifest (only if no error and redirect)
         if (this.manifest && (!res.error && !res.redirected)) {
-          this.manifest.routes.push(withoutTrailingSlash(route))
+          this.manifest.routes.push(withoutTrailingSlash(route) || '/')
         }
       }
 
