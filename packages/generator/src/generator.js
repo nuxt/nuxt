@@ -32,7 +32,7 @@ export default class Generator {
     if (this.isFullStatic) {
       const { staticAssets, manifest } = this.options.generate
       this.staticAssetsDir = path.resolve(this.distNuxtPath, staticAssets.dir, staticAssets.version)
-      this.staticAssetsBase = urlJoin(this.options.app.cdnURL || '/', this.options.generate.staticAssets.versionBase)
+      this.staticAssetsBase = urlJoin(this.options.app.cdnURL, this.options.generate.staticAssets.versionBase)
       if (manifest) {
         this.manifest = defu(manifest, {
           routes: []
