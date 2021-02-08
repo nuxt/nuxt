@@ -4,9 +4,6 @@ import consola from 'consola'
 import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
 
-// TODO: don't internal native fs :(
-fs.existsSync = jest.fn().mockImplementation(() => true)
-
 jest.mock('hash-sum', () => src => `hash(${src})`)
 
 jest.mock('@nuxt/utils', () => ({
@@ -31,6 +28,13 @@ describe('core: module', () => {
     consola.fatal.mockClear()
     chainFn.mockClear()
     requireModule.mockClear()
+
+    fs._existsSync = fs._existsSync || fs.existsSync
+    fs.existsSync = jest.fn().mockImplementation(() => true)
+  })
+
+  afterEach(() => {
+    fs.existsSync = fs._existsSync
   })
 
   test('should construct module container', () => {
