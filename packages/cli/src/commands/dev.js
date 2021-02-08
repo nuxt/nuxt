@@ -5,7 +5,6 @@ import { common, server } from '../options'
 import { eventsMapping, formatPath } from '../utils'
 import { showBanner } from '../utils/banner'
 import { showMemoryUsage } from '../utils/memory'
-import { checkDependencies } from '../utils/dependencies'
 
 export default {
   name: 'dev',
@@ -23,7 +22,6 @@ export default {
 
   async run (cmd) {
     const { argv } = cmd
-    checkDependencies()
 
     await this.startDev(cmd, argv, argv.open)
   },

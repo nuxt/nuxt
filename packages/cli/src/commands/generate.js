@@ -2,7 +2,6 @@ import { TARGETS } from '@nuxt/utils'
 import consola from 'consola'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
-import { checkDependencies } from '../utils/dependencies'
 import { ensureBuild, generate } from '../utils/generate'
 
 export default {
@@ -62,7 +61,6 @@ export default {
     }
   },
   async run (cmd) {
-    checkDependencies()
     const config = await cmd.getNuxtConfig({ dev: false })
 
     // Disable analyze if set by the nuxt config

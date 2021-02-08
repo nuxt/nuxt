@@ -1,5 +1,6 @@
 import consola from 'consola'
 import exit from 'exit'
+import { checkDependencies } from './utils/dependencies'
 import { fatalBox } from './utils/formatting'
 
 let _setup = false
@@ -8,6 +9,9 @@ export default function setup ({ dev }) {
   // Apply default NODE_ENV if not provided
   if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = dev ? 'development' : 'production'
+  }
+  if (dev) {
+    checkDependencies()
   }
 
   if (_setup) {
