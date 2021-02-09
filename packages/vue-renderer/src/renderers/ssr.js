@@ -244,7 +244,7 @@ export default class SSRRenderer extends BaseRenderer {
     let cspScriptSrcHashes = []
     if (csp) {
       if (shouldHashCspScriptSrc) {
-        const _cspScriptSrcHashes = new Set() // new Set(scriptSrcPolicy)
+        const _cspScriptSrcHashes = new Set(scriptSrcPolicy)
         for (const script of inlineScripts) {
           const hash = crypto.createHash(csp.hashAlgorithm)
           hash.update(script)
