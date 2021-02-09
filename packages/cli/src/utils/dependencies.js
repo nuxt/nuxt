@@ -18,7 +18,7 @@ export function checkDependencies () {
       node: {
         range: '>=12.0.0',
         message:
-          'You are using an unsupported version of Node.js (x.y.z) and Nuxt is likely to be broken. It is recommended to use the latest LTS version (https://nodejs.org)'
+          'You are using an unsupported version of Node.js (x.y.z) and Nuxt is likely to be broken. It is recommended to use the latest LTS version (https://nodejs.org/en/about/releases/)'
       }
     }
   }
