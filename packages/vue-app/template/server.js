@@ -1,6 +1,5 @@
-import { stringify } from 'querystring'
 import Vue from 'vue'
-import { normalizeURL, joinURL } from 'ufo'
+import { joinURL, normalizeURL, withQuery } from 'ufo'
 <% if (fetch.server) { %>import fetch from 'node-fetch'<% } %>
 <% if (features.middleware) { %>import middleware from './middleware.js'<% } %>
 import {
@@ -58,20 +57,19 @@ const createNext = ssrContext => (opts) => {
     ssrContext.nuxt.serverRendered = false
     return
   }
-  opts.query = stringify(opts.query)
-  opts.path = opts.path + (opts.query ? '?' + opts.query : '')
+  let fullPath = withQuery(opts.path, opts.query)
   const $config = ssrContext.runtimeConfig || {}
   const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
-  if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {
-    opts.path = joinURL(routerBase, opts.path)
+  if (!fullPath.startsWith('http') && (routerBase !== '/' && !fullPath.startsWith(routerBase))) {
+    fullPath = joinURL(routerBase, fullPath)
   }
   // Avoid loop redirect
-  if (decodeURI(opts.path) === decodeURI(ssrContext.url)) {
+  if (decodeURI(fullPath) === decodeURI(ssrContext.url)) {
     ssrContext.redirected = false
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    Location: normalizeURL(opts.path)
+    Location: normalizeURL(fullPath)
   })
   ssrContext.res.end()
 }
@@ -102,7 +100,7 @@ export default async (ssrContext) => {
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
   if (ssrContext.nuxt.config.app) {
-    __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL || '/', ssrContext.nuxt.config.app.assetsPath)
+    __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL, ssrContext.nuxt.config.app.assetsPath)
   }
   // Create the app definition and the instance (created for each request)
   const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, { ...ssrContext.runtimeConfig.public, ...ssrContext.runtimeConfig.private })
