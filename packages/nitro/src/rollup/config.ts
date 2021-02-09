@@ -34,6 +34,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   const builtinPreset: Preset = {
     alias: {
       // General
+      debug: 'un/npm/debug',
       depd: 'un/npm/depd',
       // Vue 2
       encoding: 'un/mock/proxy',
