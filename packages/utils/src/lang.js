@@ -1,3 +1,5 @@
+import { joinURL } from 'ufo'
+
 export const encodeHtml = function encodeHtml (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -12,13 +14,7 @@ export const isUrl = function isUrl (url) {
   return ['http', '//'].some(str => url.startsWith(str))
 }
 
-export const urlJoin = function urlJoin () {
-  return [].slice
-    .call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-    .replace(':/', '://')
-}
+export const urlJoin = joinURL
 
 /**
  * Wraps value in array if it is not already an array

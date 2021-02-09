@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { normalizeURL } from 'ufo'
+import { isSamePath as _isSamePath, joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -219,7 +219,7 @@ export async function setContext (app, context) {
           status
         })
       } else {
-        path = formatUrl(path, query)
+        path = withQuery(path, query)
         if (process.server) {
           app.context.next({
             path,
@@ -594,86 +594,6 @@ function flags (options) {
   return options && options.sensitive ? '' : 'i'
 }
 
-/**
- * Format given url, append query to url query string
- *
- * @param  {string} url
- * @param  {string} query
- * @return {string}
- */
-function formatUrl (url, query) {
-  <% if (features.clientUseUrl) { %>
-  url = new URL(url, top.location.href)
-  for (const key in query) {
-    const value = query[key]
-    if (value == null) {
-      continue
-    }
-    if (Array.isArray(value)) {
-      for (const arrayValue of value) {
-        url.searchParams.append(key, arrayValue)
-      }
-      continue
-    }
-    url.searchParams.append(key, value)
-  }
-  url.searchParams.sort()
-  return url.toString()
-  <% } else { %>
-  let protocol
-  const index = url.indexOf('://')
-  if (index !== -1) {
-    protocol = url.substring(0, index)
-    url = url.substring(index + 3)
-  } else if (url.startsWith('//')) {
-    url = url.substring(2)
-  }
-
-  let parts = url.split('/')
-  let result = (protocol ? protocol + '://' : '//') + parts.shift()
-
-  let path = parts.join('/')
-  if (path === '' && parts.length === 1) {
-    result += '/'
-  }
-
-  let hash
-  parts = path.split('#')
-  if (parts.length === 2) {
-    [path, hash] = parts
-  }
-
-  result += path ? '/' + path : ''
-
-  if (query && JSON.stringify(query) !== '{}') {
-    result += (url.split('?').length === 2 ? '&' : '?') + formatQuery(query)
-  }
-  result += hash ? '#' + hash : ''
-
-  return result
-  <% } %>
-}
-<% if (!features.clientUseUrl) { %>
-/**
- * Transform data object to query string
- *
- * @param  {object} query
- * @return {string}
- */
-function formatQuery (query) {
-  return Object.keys(query).sort().map((key) => {
-    const val = query[key]
-    if (val == null) {
-      return ''
-    }
-    if (Array.isArray(val)) {
-      return val.slice().map(val2 => [key, '=', val2].join('')).join('&')
-    }
-    return key + '=' + val
-  }).filter(Boolean).join('&')
-}
-<% } %>
-
 export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
@@ -683,21 +603,11 @@ export function addLifecycleHook(vm, hook, fn) {
   }
 }
 
-export function urlJoin () {
-  return [].slice
-    .call(arguments)
-    .join('/')
-    .replace(/\/+/g, '/')
-    .replace(':/', '://')
-}
+export const urlJoin = joinURL
 
-export function stripTrailingSlash (path) {
-  return path.replace(/\/+$/, '') || '/'
-}
+export const stripTrailingSlash = withoutTrailingSlash
 
-export function isSamePath (p1, p2) {
-  return stripTrailingSlash(p1) === stripTrailingSlash(p2)
-}
+export const isSamePath = _isSamePath
 
 export function setScrollRestoration (newVal) {
   try {
