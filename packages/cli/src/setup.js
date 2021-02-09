@@ -10,14 +10,13 @@ export default function setup ({ dev }) {
   if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = dev ? 'development' : 'production'
   }
-  if (dev) {
-    checkDependencies()
-  }
 
   if (_setup) {
     return
   }
   _setup = true
+
+  checkDependencies()
 
   // Global error handler
   /* istanbul ignore next */
