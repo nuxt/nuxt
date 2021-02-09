@@ -15,7 +15,6 @@ describe('cli/utils', () => {
         /webpack@.+ is installed but .+ is expected/
       )
     )
-    expect(consola.warn).toHaveBeenCalledTimes(1)
     if (process.version.startsWith('v10')) {
       expect(consola.warn).toHaveBeenCalledTimes(2)
     } else {
