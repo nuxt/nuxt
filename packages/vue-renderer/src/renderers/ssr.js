@@ -173,7 +173,8 @@ export default class SSRRenderer extends BaseRenderer {
 
     const { csp } = this.options.render
     // Only add the hash if 'unsafe-inline' rule isn't present to avoid conflicts (#5387)
-    const containsUnsafeInlineScriptSrc = csp.policies && csp.policies['script-src'] && csp.policies['script-src'].includes('\'unsafe-inline\'')
+    const scriptSrcPolicy = (csp.policies && csp.policies['script-src']) || []
+    const containsUnsafeInlineScriptSrc = scriptSrcPolicy.includes('\'unsafe-inline\'')
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
     const inlineScripts = []
 
@@ -240,15 +241,16 @@ export default class SSRRenderer extends BaseRenderer {
     }
 
     // Calculate CSP hashes
-    const scriptSrc = csp.policies && csp.policies['script-src']
-    const cspScriptSrcHashes = scriptSrc ? Array.from(scriptSrc) : []
+    let cspScriptSrcHashes = []
     if (csp) {
       if (shouldHashCspScriptSrc) {
+        const _cspScriptSrcHashes = new Set() // new Set(scriptSrcPolicy)
         for (const script of inlineScripts) {
           const hash = crypto.createHash(csp.hashAlgorithm)
           hash.update(script)
-          cspScriptSrcHashes.push(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
+          _cspScriptSrcHashes.add(`'${csp.hashAlgorithm}-${hash.digest('base64')}'`)
         }
+        cspScriptSrcHashes = Array.from(_cspScriptSrcHashes)
       }
 
       // Call ssr:csp hook
