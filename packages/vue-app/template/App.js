@@ -322,11 +322,9 @@ export default {
     },
     async fetchPayload(route, prefetch) {
       const path = decode(this.getRoutePath(route))
-      console.log({ route, path })
       <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
       if (!manifest.routes.includes(path)) {
-        console.log('not in manifest')
         if (!prefetch) { this.setPagePayload(false) }
         throw new Error(`Route ${path} is not pre-rendered`)
       }
@@ -334,7 +332,6 @@ export default {
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
         const payload = await window.__NUXT_IMPORT__(path, normalizeURL(src))
-        console.log({ prefetch, payload })
         if (!prefetch) { this.setPagePayload(payload) }
         return payload
       } catch (err) {
