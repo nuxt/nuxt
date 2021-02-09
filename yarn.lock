@@ -12995,10 +12995,10 @@ ua-parser-js@^0.7.23:
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.23.tgz#704d67f951e13195fbcd3d78818577f5bc1d547b"
   integrity sha512-m4hvMLxgGHXG3O3fQVAyyAQpZzDOvwnhOTjYz5Xmr7r/+LpkNy3vJXdVRWgd1TkAb7NGROZuSy96CrlNVjA7KA==
 
-ufo@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.npmjs.org/ufo/-/ufo-0.6.2.tgz#0def51a6c4ecbd6e1a4d192622a1cefdb9103164"
-  integrity sha512-BRoE0KTw4s+oVJ5GqYaNthVOFcLbdzw5qbHMmGRxZ3YHZJ0m5Zqvni0u+Ipugt5fHLzE2mC8FtaUZyta0EfUDw==
+ufo@^0.6.4:
+  version "0.6.4"
+  resolved "https://registry.npmjs.org/ufo/-/ufo-0.6.4.tgz#d2332bdcb8a31a399d1a6ab06a4646a524524a81"
+  integrity sha512-pi9H3gE8CSyM/IeKAKiozUP7ImtKh+qip5v8nzGiErFVGx9HEDThwT1+R1yCS+JQW56mEqQ9t/r4STviUqaebQ==
 
 uglify-js@^3.1.4, uglify-js@^3.5.1:
   version "3.12.7"

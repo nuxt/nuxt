@@ -304,16 +304,12 @@ export default {
       if (base && route.startsWith(base)) {
         route = route.substr(base.length)
       }
-      let path = parsePath(route).pathname
-      <% if (!nuxtOptions.router.trailingSlash) { %>
-        path = withoutTrailingSlash(path)
-      <% } %>
-      return path || '/'
+      return withoutTrailingSlash(parsePath(route).pathname)
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
 
-      return urlJoin(staticAssetsBase, withoutTrailingSlash(this.getRoutePath(route)))
+      return urlJoin(staticAssetsBase, this.getRoutePath(route))
     },
     <% if (nuxtOptions.generate.manifest) { %>
       async fetchStaticManifest() {
@@ -325,17 +321,17 @@ export default {
       this._fetchCounters = {}
     },
     async fetchPayload(route, prefetch) {
+      const path = decode(this.getRoutePath(route))
       <% if (nuxtOptions.generate.manifest) { %>
       const manifest = await this.fetchStaticManifest()
-      const path = this.getRoutePath(route)
-      if (!manifest.routes.includes(decodeURI(path))) {
+      if (!manifest.routes.includes(path)) {
         if (!prefetch) { this.setPagePayload(false) }
         throw new Error(`Route ${path} is not pre-rendered`)
       }
       <% } %>
       const src = urlJoin(this.getStaticAssetsPath(route), 'payload.js')
       try {
-        const payload = await window.__NUXT_IMPORT__(decodeURI(route), normalizeURL(src))
+        const payload = await window.__NUXT_IMPORT__(path, normalizeURL(src))
         if (!prefetch) { this.setPagePayload(payload) }
         return payload
       } catch (err) {

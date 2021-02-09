@@ -310,7 +310,7 @@ export default class VueRenderer {
   }
 
   get resourceMap () {
-    const publicPath = urlJoin(this.options.app.cdnURL || '/', this.options.app.assetsPath)
+    const publicPath = urlJoin(this.options.app.cdnURL, this.options.app.assetsPath)
     return {
       clientManifest: {
         fileName: 'client.manifest.json',

@@ -208,7 +208,7 @@ export const createRoutes = function createRoutes ({
       if (trailingSlash && !route.path.endsWith('*')) {
         route.path = withTrailingSlash(route.path)
       } else {
-        route.path = withoutTrailingSlash(route.path) || '/'
+        route.path = withoutTrailingSlash(route.path)
       }
     }
 
