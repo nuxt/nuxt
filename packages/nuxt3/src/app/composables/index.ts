@@ -1,3 +1,3 @@
-export { useFetch } from './fetch'
+export { useAsyncData } from './asyncData'
 export { useData } from './data'
 export { useHydration } from './hydrate'

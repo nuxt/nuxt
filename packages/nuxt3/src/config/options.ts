@@ -299,7 +299,7 @@ function normalizeConfig (_options: CliConfiguration) {
 
   // Append ignorePrefix glob to ignore
   if (typeof options.ignorePrefix === 'string') {
-    options.ignore.push(`**/${options.ignorePrefix}*.*`)
+    options.ignore.push(`${options.ignorePrefix}*`)
   }
 
   // Compression middleware legacy
