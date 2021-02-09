@@ -57,19 +57,19 @@ const createNext = ssrContext => (opts) => {
     ssrContext.nuxt.serverRendered = false
     return
   }
-  opts.path = withQuery(opts.path, opts.query)
+  let fullPath = withQuery(opts.path, opts.query)
   const $config = ssrContext.runtimeConfig || {}
   const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
-  if (!opts.path.startsWith('http') && (routerBase !== '/' && !opts.path.startsWith(routerBase))) {
-    opts.path = joinURL(routerBase, opts.path)
+  if (!fullPath.startsWith('http') && (routerBase !== '/' && !fullPath.startsWith(routerBase))) {
+    fullPath = joinURL(routerBase, fullPath)
   }
   // Avoid loop redirect
-  if (decodeURI(opts.path) === decodeURI(ssrContext.url)) {
+  if (decodeURI(fullPath) === decodeURI(ssrContext.url)) {
     ssrContext.redirected = false
     return
   }
   ssrContext.res.writeHead(opts.status, {
-    Location: normalizeURL(opts.path)
+    Location: normalizeURL(fullPath)
   })
   ssrContext.res.end()
 }
