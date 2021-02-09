@@ -10,16 +10,16 @@ describe('cli/utils', () => {
 
   test('checkDependencies', () => {
     checkDependencies()
-    expect(consola.error).toHaveBeenCalledWith(
+    expect(consola.warn).toHaveBeenCalledWith(
       expect.stringMatching(
-        /Required version of webpack \(.*\) not installed. \(5.0.0 was detected.\)/
+        /webpack@.+ is installed but .+ is expected/
       )
     )
-    expect(consola.error).toHaveBeenCalledTimes(1)
+    expect(consola.warn).toHaveBeenCalledTimes(1)
     if (process.version.startsWith('v10')) {
-      expect(consola.warn).toHaveBeenCalledTimes(1)
+      expect(consola.warn).toHaveBeenCalledTimes(2)
     } else {
-      expect(consola.warn).toHaveBeenCalledTimes(0)
+      expect(consola.warn).toHaveBeenCalledTimes(1)
     }
   })
 })
