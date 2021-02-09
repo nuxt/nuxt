@@ -1,5 +1,6 @@
 import consola from 'consola'
 import exit from 'exit'
+import { checkDependencies } from './utils/dependencies'
 import { fatalBox } from './utils/formatting'
 
 let _setup = false
@@ -14,6 +15,8 @@ export default function setup ({ dev }) {
     return
   }
   _setup = true
+
+  checkDependencies()
 
   // Global error handler
   /* istanbul ignore next */
