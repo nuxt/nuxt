@@ -56,6 +56,7 @@ export default function rollupConfig ({
           '/*!',
           ` * ${pkg.name} v${pkg.version} (c) 2016-${new Date().getFullYear()}`,
           ' * Released under the MIT License',
+          ' * Repository: https://github.com/nuxt/nuxt.js',
           ' * Website: https://nuxtjs.org',
           '*/'
         ].join('\n')
