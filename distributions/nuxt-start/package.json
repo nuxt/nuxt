@@ -19,35 +19,6 @@
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
-  "contributors": [
-    {
-      "name": "Sebastien Chopin (@Atinux)"
-    },
-    {
-      "name": "Alexandre Chopin (@alexchopin)"
-    },
-    {
-      "name": "Pooya Parsa (@pi0)"
-    },
-    {
-      "name": "Clark Du (@clarkdo)"
-    },
-    {
-      "name": "Jonas Galvez (@galvez)"
-    },
-    {
-      "name": "Alexander Lichter (@manniL)"
-    },
-    {
-      "name": "Dmitry Molotkov (@aldarund)"
-    },
-    {
-      "name": "Kevin Marrec (@kevinmarrec)"
-    },
-    {
-      "name": "Pim (@pimlie)"
-    }
-  ],
   "main": "dist/nuxt-start.js",
   "bin": "bin/nuxt-start.js",
   "files": [
