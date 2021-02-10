@@ -301,7 +301,7 @@ export default {
     },
     getRoutePath(route = '/') {
       const base = this.getRouterBase()
-      return withoutTrailingSlash(withoutBase(parsePath(route).pathname, base))
+      return withLeadingSlash(withoutTrailingSlash(withoutBase(parsePath(route).pathname, base)))
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
