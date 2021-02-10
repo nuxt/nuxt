@@ -55,9 +55,7 @@ export default function rollupConfig ({
         banner: [
           '/*!',
           ` * ${pkg.name} v${pkg.version} (c) 2016-${new Date().getFullYear()}`,
-          `${(pkg.contributors || []).map(c => ` * - ${c.name}`).join('\n')}`,
-          ' * - All the amazing contributors',
-          ' * Released under the MIT License.',
+          ' * Released under the MIT License',
           ' * Website: https://nuxtjs.org',
           '*/'
         ].join('\n')

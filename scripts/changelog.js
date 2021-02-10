@@ -22,7 +22,9 @@ const knownAuthors = [
   'lichter',
   'molotkov',
   'marrec',
-  'pim'
+  'pim',
+  'daniel roe',
+  'danielroe'
 ]
 
 const isKnownAuthor = name => Boolean(knownAuthors.find(n => name.toLowerCase().includes(n)))
