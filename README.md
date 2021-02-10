@@ -112,6 +112,8 @@ Support us with a monthly donation and help us continue our activities. [[Become
 
 ## Contributors
 
+Thank you to all our [contributors](https://github.com/nuxt/nuxt.js/graphs/contributors)!
+
 [![Nuxt Contributors][contributors-src]][contributors-href]
 
 ## Contributing
