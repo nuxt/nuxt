@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { decode, parsePath, withLeadingSlash, withoutBase, withoutTrailingSlash, normalizeURL } from 'ufo'
+import { decode, parsePath, withoutBase, withoutTrailingSlash, normalizeURL } from 'ufo'
 <% utilsImports = [
   ...(features.asyncData || features.fetch) ? [
     'getMatchedComponentsInstances',
@@ -301,7 +301,7 @@ export default {
     },
     getRoutePath(route = '/') {
       const base = this.getRouterBase()
-      return withLeadingSlash(withoutTrailingSlash(withoutBase(parsePath(route).pathname, base)))
+      return withoutTrailingSlash(withoutBase(parsePath(route).pathname, base))
     },
     getStaticAssetsPath(route = '/') {
       const { staticAssetsBase } = window.<%= globals.context %>
