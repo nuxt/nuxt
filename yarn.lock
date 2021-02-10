@@ -1877,10 +1877,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@nuxt/components@^1.2.6":
-  version "1.2.6"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-1.2.6.tgz#69399599aedaeffe79e1847c9495f4ab79284393"
-  integrity sha512-PUXP26xCr7fhSSSZfQsoh7BuLIT71cpMms18ZckR117UgjXi/ZYhKBZkn/bYGv8qI7ECqmOrMi6hOcKghAwWFw==
+"@nuxt/components@^2.0.0-0":
+  version "2.0.0-0"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-2.0.0-0.tgz#bfa69cfa3c6c708ca240a716b64b1b91c746cef7"
+  integrity sha512-s10biEAxJdKtcn6P+jFoJLTiCrHKCiEkbxInuzJ26Tle5QmFhOjhJ5Wfcrnfo3h6o7dQPfqg+KaLnzW7t8bbZA==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.5.1"
