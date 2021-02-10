@@ -18,35 +18,6 @@
   ],
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
-  "contributors": [
-    {
-      "name": "Sebastien Chopin (@Atinux)"
-    },
-    {
-      "name": "Alexandre Chopin (@alexchopin)"
-    },
-    {
-      "name": "Pooya Parsa (@pi0)"
-    },
-    {
-      "name": "Clark Du (@clarkdo)"
-    },
-    {
-      "name": "Jonas Galvez (@galvez)"
-    },
-    {
-      "name": "Alexander Lichter (@manniL)"
-    },
-    {
-      "name": "Dmitry Molotkov (@aldarund)"
-    },
-    {
-      "name": "Kevin Marrec (@kevinmarrec)"
-    },
-    {
-      "name": "Pim (@pimlie)"
-    }
-  ],
   "main": "dist/nuxt.js",
   "bin": {
     "nuxt": "./bin/nuxt.js"
@@ -63,7 +34,7 @@
     "@nuxt/babel-preset-app": "^2.14.12",
     "@nuxt/builder": "^2.14.12",
     "@nuxt/cli": "^2.14.12",
-    "@nuxt/components": "^1.2.6",
+    "@nuxt/components": "^2.0.0-0",
     "@nuxt/config": "^2.14.12",
     "@nuxt/core": "^2.14.12",
     "@nuxt/generator": "^2.14.12",
