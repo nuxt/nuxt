@@ -28,11 +28,11 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
-    expect(nuxt.server.renderRoute).toBeCalledWith(route, { payload })
+    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
 
     const genernatePageHookCall = hookCalls(nuxt, 'generate:page')[0][0]
     expect(genernatePageHookCall).toMatchObject({
-      route,
+      route: '/foo',
       html: 'rendered html'
     })
     expect(genernatePageHookCall.path).toBePath(
@@ -42,7 +42,7 @@ describe('generator: generate route', () => {
 
     const genernateRouteCreatedHookCall = hookCalls(nuxt, 'generate:routeCreated')[0][0]
     expect(genernateRouteCreatedHookCall).toMatchObject({
-      route,
+      route: '/foo',
       errors: []
     })
     expect(genernateRouteCreatedHookCall.path).toBePath(
