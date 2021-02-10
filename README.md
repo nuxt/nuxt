@@ -106,6 +106,9 @@ Support us with a monthly donation and help us continue our activities. [[Become
 
 [![Open Collective Bronze Sponsors][bronze-sponsors-src]][bronze-sponsors-href]
 
+### Nuxters
+
+[![Open Collective Nuxters][nuxters-src]][nuxters-href]
 
 ## Contributors
 
