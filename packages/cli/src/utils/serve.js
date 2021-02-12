@@ -31,8 +31,7 @@ export async function serve (cmd) {
   app.use(
     options.router.base,
     serveStatic(options.generate.dir, {
-      extensions: ['html'],
-      redirect: !!options.router.trailingSlash
+      extensions: ['html']
     })
   )
   if (options.generate.fallback) {
