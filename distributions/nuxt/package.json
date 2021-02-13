@@ -47,10 +47,6 @@
     "@nuxt/vue-renderer": "^2.14.12",
     "@nuxt/webpack": "^2.14.12"
   },
-  "engines": {
-    "node": ">=10.13.0",
-    "npm": ">=6.14.11"
-  },
   "collective": {
     "url": "https://opencollective.com/nuxtjs",
     "logoUrl": "https://opencollective.com/nuxtjs/logo.txt?reverse=true&variant=variant2"

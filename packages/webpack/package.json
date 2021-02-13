@@ -53,9 +53,6 @@
     "webpack-node-externals": "^2.5.2",
     "webpackbar": "^4.0.0"
   },
-  "engines": {
-    "node": ">=10.0.0"
-  },
   "publishConfig": {
     "access": "public"
   }
