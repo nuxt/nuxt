@@ -186,7 +186,7 @@ export default class Builder {
     }
 
     const dir = this.options.srcDir
-    if (await fsExtra.exists(path.resolve(this.options.srcDir, '..', this.options.dir.pages))) {
+    if (await fsExtra.exists(path.join(this.options.srcDir, '..', this.options.dir.pages))) {
       throw new Error(
         `No \`${this.options.dir.pages}\` directory found in ${dir}. Did you mean to run \`nuxt\` in the parent (\`../\`) directory?`
       )
