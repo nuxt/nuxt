@@ -1910,10 +1910,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@nuxt/components@^2.0.0-1":
-  version "2.0.0-1"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-2.0.0-1.tgz#f39ad5477634cf3bdd634eec0b19e1339d31ea1e"
-  integrity sha512-rwYLDi0hJqPg6IXYi58zXMJz7i6cbqSJEeH17ODMBkIs44I1fRPD+s030CkAddgm2ZEeyShkeiL6Yf59tBz42g==
+"@nuxt/components@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-2.0.0.tgz#f4fd3eb105f9f0069c1017f5c6fb79aa9dfb3df0"
+  integrity sha512-ZV1xbHxOaYwXgvnjhpCrmdXwwCauZyiIYepnr2Rs/E8QWfWVlYNWgjHIfbDPpUANAfIbxSemoqNJ82dg+Q9wfw==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.5.1"
@@ -2465,10 +2465,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-14.14.25.tgz#15967a7b577ff81383f9b888aa6705d43fbbae93"
   integrity sha512-EPpXLOVqDvisVxtlbvzfyqSsFeQxltFbluZNRndIb8tr9KiBnYNLzrc1N3pyKUCww2RNrfHDViqDWWE1LCJQtQ==
 
-"@types/node@^12.20.0":
-  version "12.20.0"
-  resolved "https://registry.npmjs.org/@types/node/-/node-12.20.0.tgz#692dfdecd6c97f5380c42dd50f19261f9f604deb"
-  integrity sha512-0/41wHcurotvSOTHQUFkgL702c3pyWR1mToSrrX3pGPvGfpHTv3Ksx0M4UVuU5VJfjVb62Eyr1eKO1tWNUCg2Q==
+"@types/node@^12.20.1":
+  version "12.20.1"
+  resolved "https://registry.npmjs.org/@types/node/-/node-12.20.1.tgz#63d36c10e162666f0107f247cdca76542c3c7472"
+  integrity sha512-tCkE96/ZTO+cWbln2xfyvd6ngHLanvVlJ3e5BeirJ3BYI5GbAyubIrmV4JjjugDly5D9fHjOL5MNsqsCnqwW6g==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
