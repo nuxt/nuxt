@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/utils",
-  "version": "2.14.12",
+  "version": "2.15.0",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/utils.js",
