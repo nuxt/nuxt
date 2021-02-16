@@ -20,7 +20,7 @@ export function checkDependencies () {
   for (const name in dependencies) {
     const installedVersion = getInstalledVersion(name)
     if (!installedVersion) {
-      return // Ignore to avoid false-positive warnings
+      continue // Ignore to avoid false-positive warnings
     }
     const expectedRange = dependencies[name]
     if (!satisfies(installedVersion, expectedRange)) {
