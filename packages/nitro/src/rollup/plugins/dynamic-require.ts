@@ -61,16 +61,26 @@ export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin
         meta: getWebpackChunkMeta(resolve(dir, id))
       }))
 
+      return inline ? TMPL_INLINE({ chunks }) : TMPL_LAZY({ chunks })
+    },
+    renderChunk (code) {
       if (inline) {
-        return TMPL_INLINE({ chunks })
-      } else {
-        return TMPL_LAZY({ chunks })
+        return {
+          map: null,
+          code
+        }
+      }
+      return {
+        map: null,
+        code: code.replace(
+          /Promise.resolve\(\).then\(function \(\) \{ return require\('([^']*)' \/\* webpackChunk \*\/\); \}\).then\(function \(n\) \{ return n.([a-zA-Z]*); \}\)/g,
+          "require('$1').$2")
       }
     }
   }
 }
 
-function getWebpackChunkMeta (src) {
+function getWebpackChunkMeta (src: string) {
   const chunk = require(src) || {}
   const { id, ids, modules } = chunk
   return {
@@ -93,26 +103,31 @@ export default function dynamicRequire(id) {
 
 function TMPL_LAZY ({ chunks }: TemplateContext) {
   return `
-function asyncWebpackModule(promise, id) {
+function dynamicWebpackModule(id, getChunk) {
   return function (module, exports, require) {
-    module.exports = promise.then(r => {
+    const r = getChunk()
+    if (r instanceof Promise) {
+      module.exports = r.then(r => {
         const realModule = { exports: {}, require };
         r.modules[id](realModule, realModule.exports, realModule.require);
         return realModule.exports;
-    });
- };
+      });
+    } else {
+      r.modules[id](module, exports, require);
+    }
+  };
 };
 
-function webpackChunk (meta, promise) {
+function webpackChunk (meta, getChunk) {
  const chunk = { ...meta, modules: {} };
  for (const id of meta.moduleIds) {
-   chunk.modules[id] = asyncWebpackModule(promise, id);
+   chunk.modules[id] = dynamicWebpackModule(id, getChunk);
  };
  return chunk;
 };
 
 const dynamicChunks = {
-${chunks.map(i => ` ['${i.id}']: () => webpackChunk(${JSON.stringify(i.meta)}, import('${i.src}'))`).join(',\n')}
+${chunks.map(i => ` ['${i.id}']: () => webpackChunk(${JSON.stringify(i.meta)}, () => import('${i.src}' /* webpackChunk */))`).join(',\n')}
 };
 
 export default function dynamicRequire(id) {
