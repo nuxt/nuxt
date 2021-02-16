@@ -73,7 +73,7 @@ export function dynamicRequire ({ dir, globbyOptions, inline }: Options): Plugin
       return {
         map: null,
         code: code.replace(
-          /Promise.resolve\(\).then\(function \(\) \{ return require\('([^']*)' \/\* webpackChunk \*\/\); \}\).then\(function \(n\) \{ return n.([a-zA-Z]*); \}\)/g,
+          /Promise.resolve\(\).then\(function \(\) \{ return require\('([^']*)' \/\* webpackChunk \*\/\); \}\).then\(function \(n\) \{ return n.([_a-zA-Z0-9]*); \}\)/g,
           "require('$1').$2")
       }
     }
