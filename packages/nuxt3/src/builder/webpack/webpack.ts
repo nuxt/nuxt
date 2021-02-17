@@ -178,6 +178,7 @@ class WebpackBundler {
         compiler, {
           publicPath: buildOptions.publicPath,
           outputFileSystem: this.mfs,
+          stats: 'none',
           ...buildOptions.devMiddleware
         })
     )

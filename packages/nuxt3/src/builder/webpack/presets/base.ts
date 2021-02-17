@@ -1,8 +1,9 @@
 import { resolve, normalize } from 'path'
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
+import consola from 'consola'
 import { DefinePlugin, Configuration } from 'webpack'
-// import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
+import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import { isUrl, urlJoin, TARGETS } from 'src/utils'
 import escapeRegExp from 'lodash/escapeRegExp'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
@@ -33,7 +34,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
-    stats: 'errors-warnings',
+    stats: 'none',
     ...ctx.config
   }
 }
@@ -56,18 +57,18 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new DefinePlugin(getEnv(ctx)))
 
   // Friendly errors
-  // if (
-  //   ctx.isServer ||
-  //   (ctx.isDev && !options.build.quiet && options.build.friendlyErrors)
-  // ) {
-  //   ctx.config.plugins.push(
-  //     new FriendlyErrorsWebpackPlugin({
-  //       clearConsole: false,
-  //       reporter: 'consola',
-  //       logLevel: 'WARNING'
-  //     })
-  //   )
-  // }
+  if (
+    ctx.isServer ||
+    (ctx.isDev && !options.build.quiet && options.build.friendlyErrors)
+  ) {
+    ctx.config.plugins.push(
+      new FriendlyErrorsWebpackPlugin({
+        clearConsole: false,
+        reporter: 'consola',
+        logLevel: 'ERROR' // TODO
+      })
+    )
+  }
 
   // Webpackbar
   const colors = {
@@ -78,8 +79,7 @@ function basePlugins (ctx: WebpackConfigContext) {
   config.plugins.push(new WebpackBar({
     name: ctx.name,
     color: colors[ctx.name],
-    reporters: ['basic', 'stats'],
-    basic: true,
+    reporters: ['stats'],
     stats: !ctx.isDev,
     reporter: {
       change: (_, { shortPath }) => {
@@ -87,9 +87,11 @@ function basePlugins (ctx: WebpackConfigContext) {
           nuxt.callHook('bundler:change', shortPath)
         }
       },
-      done: (stats) => {
-        if (stats.hasErrors) {
+      done: ({ state }) => {
+        if (state.hasErrors) {
           nuxt.callHook('bundler:error')
+        } else {
+          consola.success(`${state.name} ${state.message}`)
         }
       },
       allDone: () => {
