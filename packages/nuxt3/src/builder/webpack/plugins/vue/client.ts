@@ -8,7 +8,7 @@ import hash from 'hash-sum'
 import uniq from 'lodash/uniq'
 import { writeFile, mkdirp } from 'fs-extra'
 
-import { isJS, isCSS } from './util'
+import { isJS, isCSS, isHotUpdate } from './util'
 
 export default class VueSSRClientPlugin {
   options: {
@@ -27,19 +27,23 @@ export default class VueSSRClientPlugin {
 
       const allFiles = uniq(stats.assets
         .map(a => a.name))
+        .filter(file => !isHotUpdate(file))
 
       const initialFiles = uniq(Object.keys(stats.entrypoints)
         .map(name => stats.entrypoints[name].assets)
         .reduce((files, entryAssets) => files.concat(entryAssets.map(entryAsset => entryAsset.name)), [])
         .filter(file => isJS(file) || isCSS(file)))
+        .filter(file => !isHotUpdate(file))
 
       const asyncFiles = allFiles
         .filter(file => isJS(file) || isCSS(file))
         .filter(file => !initialFiles.includes(file))
+        .filter(file => !isHotUpdate(file))
 
       const assetsMapping = {}
       stats.assets
         .filter(({ name }) => isJS(name))
+        .filter(({ name }) => !isHotUpdate(name))
         .forEach(({ name, chunkNames }) => {
           const componentHash = hash(chunkNames.join('|'))
           if (!assetsMapping[componentHash]) {
@@ -69,7 +73,7 @@ export default class VueSSRClientPlugin {
             return
           }
           const id = m.identifier.replace(/\s\w+$/, '') // remove appended hash
-          const filesSet = new Set(chunk.files.map(fileToIndex))
+          const filesSet = new Set(chunk.files.map(fileToIndex).filter(i => i !== -1))
 
           for (const chunkName of chunk.names) {
             if (!entrypoints[chunkName]) {

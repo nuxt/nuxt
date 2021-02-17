@@ -30,3 +30,5 @@ export const isJS = file => isJSRegExp.test(file)
 export const extractQueryPartJS = file => isJSRegExp.exec(file)[1]
 
 export const isCSS = file => /\.css(\?[^.]+)?$/.test(file)
+
+export const isHotUpdate = file => file.includes('hot-update')
