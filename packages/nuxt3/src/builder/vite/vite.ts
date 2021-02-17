@@ -1,7 +1,6 @@
 import { resolve } from 'path'
 import { Nuxt } from 'src/core'
 import { mkdirp, writeFile } from 'fs-extra'
-import createRequire from 'create-require'
 import vue from '@vitejs/plugin-vue'
 import consola from 'consola'
 import * as vite from 'vite'
