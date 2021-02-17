@@ -1,2 +1,2 @@
 // TODO: Use webpack-virtual-modules
-export default <%= app.templates.routes %>
+export default <%= app.templates.routes || '[]' %>

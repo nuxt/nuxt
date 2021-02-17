@@ -43,18 +43,20 @@ export async function createApp (
   if (app.pages) {
     app.routes.push(...(await resolvePagesRoutes(builder, app)))
   }
-  // Add 404 page is not added
-  const page404 = app.routes.find(route => route.name === '404')
-  if (!page404) {
-    app.routes.push({
-      name: '404',
-      path: '/:catchAll(.*)*',
-      file: resolve(nuxt.options.appDir, 'pages/404.vue'),
-      children: []
-    })
+  if (app.routes.length) {
+    // Add 404 page is not added
+    const page404 = app.routes.find(route => route.name === '404')
+    if (!page404) {
+      app.routes.push({
+        name: '404',
+        path: '/:catchAll(.*)*',
+        file: resolve(nuxt.options.appDir, 'pages/404.vue'),
+        children: []
+      })
+    }
+    // TODO: Hook to extend routes
+    app.templates.routes = serializeRoutes(app.routes)
   }
-  // TODO: Hook to extend routes
-  app.templates.routes = serializeRoutes(app.routes)
 
   // Fallback app.main
   if (!app.main && app.routes.length) {
