@@ -17,11 +17,14 @@ export async function bundle (nuxt: Nuxt) {
     config: {
       root: nuxt.options.buildDir,
       mode: nuxt.options.dev ? 'development' : 'production',
-      alias: {
-        'nuxt/app': nuxt.options.appDir,
-        '~build': nuxt.options.buildDir,
-        '~': nuxt.options.srcDir,
-        '@': nuxt.options.srcDir
+      logLevel: 'warn',
+      resolve: {
+        alias: {
+          'nuxt/app': nuxt.options.appDir,
+          '~build': nuxt.options.buildDir,
+          '~': nuxt.options.srcDir,
+          '@': nuxt.options.srcDir
+        }
       },
       clearScreen: false,
       plugins: [
@@ -34,24 +37,7 @@ export async function bundle (nuxt: Nuxt) {
   }
 
   await mkdirp(nuxt.options.buildDir)
-  const allDependencies = {}
-
-  const addDependencies = (dir: string, path = './') => {
-    try {
-      const pkg = createRequire(dir)(path + 'package.json')
-      Object.assign(allDependencies, pkg.dependencies)
-      Object.assign(allDependencies, pkg.devDependencies)
-    } catch (_err) { }
-  }
-  addDependencies(nuxt.options.rootDir)
-  addDependencies(nuxt.options.srcDir)
-  addDependencies(nuxt.options.appDir, '../../')
-
-  await writeFile(resolve(nuxt.options.buildDir, 'package.json'), JSON.stringify({
-    private: true,
-    description: 'auto generated',
-    devDependencies: allDependencies
-  }, null, 2))
+  await mkdirp(resolve(nuxt.options.buildDir, '.vite/temp'))
 
   const callBuild = async (fn, name) => {
     try {
@@ -84,8 +70,6 @@ async function buildClient (ctx: ViteBuildContext) {
     build: {
       outDir: 'dist/client',
       assetsDir: '.',
-      ssrManifest: true,
-      manifest: true,
       rollupOptions: {
         input: resolve(ctx.nuxt.options.buildDir, './entry.client.js')
       }
