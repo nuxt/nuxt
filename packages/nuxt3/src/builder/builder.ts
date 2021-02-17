@@ -44,6 +44,7 @@ export class Builder {
 async function build (builder: Builder) {
   const { nuxt } = builder
 
+  await fsExtra.emptyDir(nuxt.options.buildDir)
   await generate(builder)
 
   if (nuxt.options.dev) {
@@ -82,7 +83,6 @@ function watch (builder: Builder) {
 export async function generate (builder: Builder) {
   const { nuxt } = builder
 
-  await fsExtra.emptyDir(nuxt.options.buildDir)
   builder.app = await createApp(builder)
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
