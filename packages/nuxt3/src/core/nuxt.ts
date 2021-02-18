@@ -75,11 +75,11 @@ export default class Nuxt extends Hookable {
       this.addHooks(this.options.hooks)
     }
 
-    // Await for modules
-    await this.moduleContainer.ready()
-
     // Await for server
     await initNitro(this)
+
+    // Await for modules
+    await this.moduleContainer.ready()
 
     // Call ready hook
     await this.callHook('ready', this)
