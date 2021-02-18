@@ -148,11 +148,16 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   }
 
   // Middleware
-  const _middleware = [...nitroContext.middleware]
-  if (nitroContext.serveStatic) {
-    _middleware.unshift({ route: '/', handle: '~runtime/server/static' })
-  }
-  rollupConfig.plugins.push(middleware(_middleware))
+  rollupConfig.plugins.push(middleware(() => {
+    const _middleware = [
+      ...nitroContext.scannedMiddleware,
+      ...nitroContext.middleware
+    ]
+    if (nitroContext.serveStatic) {
+      _middleware.unshift({ route: '/', handle: '~runtime/server/static' })
+    }
+    return _middleware
+  }))
 
   // Polyfill
   rollupConfig.plugins.push(virtual({
@@ -187,7 +192,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       ignore: [
         nitroContext._internal.runtimeDir,
         ...(nitroContext._nuxt.dev ? [] : [nitroContext._nuxt.buildDir]),
-        ...nitroContext.middleware.map(m => m.handle)
+        ...nitroContext.middleware.map(m => m.handle),
+        nitroContext._nuxt.serverDir
       ],
       traceOptions: {
         base: nitroContext._nuxt.rootDir

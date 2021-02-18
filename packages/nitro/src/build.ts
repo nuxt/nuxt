@@ -1,12 +1,12 @@
 import { resolve, join } from 'upath'
 import consola from 'consola'
 import { rollup, watch as rollupWatch } from 'rollup'
-import ora from 'ora'
 import { readFile, emptyDir, copy } from 'fs-extra'
 import { printFSTree } from './utils/tree'
 import { getRollupConfig } from './rollup/config'
 import { hl, prettyPath, serializeTemplate, writeFile, isDirectory } from './utils'
 import { NitroContext } from './context'
+import { scanMiddleware } from './server/middleware'
 
 export async function prepare (nitroContext: NitroContext) {
   consola.info(`Nitro preset is ${hl(nitroContext.preset)}`)
@@ -28,8 +28,7 @@ async function cleanupDir (dir: string) {
 }
 
 export async function generate (nitroContext: NitroContext) {
-  const spinner = ora()
-  spinner.start('Generating public...')
+  consola.start('Generating public...')
 
   const clientDist = resolve(nitroContext._nuxt.buildDir, 'dist/client')
   if (await isDirectory(clientDist)) {
@@ -41,7 +40,7 @@ export async function generate (nitroContext: NitroContext) {
     await copy(staticDir, nitroContext.output.publicDir)
   }
 
-  spinner.succeed('Generated public ' + prettyPath(nitroContext.output.publicDir))
+  consola.success('Generated public ' + prettyPath(nitroContext.output.publicDir))
 }
 
 export async function build (nitroContext: NitroContext) {
@@ -60,18 +59,18 @@ export async function build (nitroContext: NitroContext) {
 }
 
 async function _build (nitroContext: NitroContext) {
-  const spinner = ora()
+  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir)
 
-  spinner.start('Building server...')
+  consola.start('Building server...')
   const build = await rollup(nitroContext.rollupConfig).catch((error) => {
-    spinner.fail('Rollup error: ' + error.message)
+    consola.error('Rollup error: ' + error.message)
     throw error
   })
 
-  spinner.start('Writing server bundle...')
+  consola.start('Writing server bundle...')
   await build.write(nitroContext.rollupConfig.output)
 
-  spinner.succeed('Server built')
+  consola.success('Server built')
   await printFSTree(nitroContext.output.serverDir)
   await nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
 
@@ -80,10 +79,15 @@ async function _build (nitroContext: NitroContext) {
   }
 }
 
-function _watch (nitroContext: NitroContext) {
-  const spinner = ora()
-
+async function _watch (nitroContext: NitroContext) {
   const watcher = rollupWatch(nitroContext.rollupConfig)
+
+  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir,
+    (middleware, event, file) => {
+      nitroContext.scannedMiddleware = middleware
+      watcher.emit(event, file)
+    }
+  )
 
   let start
 
@@ -96,17 +100,17 @@ function _watch (nitroContext: NitroContext) {
       // Building an individual bundle
       case 'BUNDLE_START':
         start = Date.now()
-        spinner.start('Building Nitro...')
         return
 
       // Finished building all bundles
       case 'END':
         nitroContext._internal.hooks.callHook('nitro:compiled', nitroContext)
-        return spinner.succeed(`Nitro built in ${Date.now() - start} ms`)
+        consola.success('Nitro built', start ? `in ${Date.now() - start} ms` : '')
+        return
 
       // Encountered an error while bundling
       case 'ERROR':
-        spinner.fail('Rollup error: ' + event.error)
+        consola.error('Rollup error: ' + event.error)
         // consola.error(event.error)
     }
   })

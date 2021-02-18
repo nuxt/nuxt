@@ -6,13 +6,7 @@ import type { Preset } from '@nuxt/un'
 import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
 import * as PRESETS from './presets'
 import type { NodeExternalsOptions } from './rollup/plugins/externals'
-
-export interface ServerMiddleware {
-  route: string
-  handle: string
-  lazy?: boolean // Default is true
-  promisify?: boolean // Default is true
-}
+import type { ServerMiddleware } from './server/middleware'
 
 export interface NitroContext {
   timing: boolean
@@ -28,6 +22,7 @@ export interface NitroContext {
   renderer: string
   serveStatic: boolean
   middleware: ServerMiddleware[]
+  scannedMiddleware: ServerMiddleware[]
   hooks: configHooksT
   nuxtHooks: configHooksT
   ignore: string[]
@@ -45,6 +40,7 @@ export interface NitroContext {
     buildDir: string
     generateDir: string
     staticDir: string
+    serverDir: string
     routerBase: string
     publicPath: string
     isStatic: boolean
@@ -79,6 +75,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
     renderer: undefined,
     serveStatic: false,
     middleware: [],
+    scannedMiddleware: [],
     ignore: [],
     env: {},
     hooks: {},
@@ -96,6 +93,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       buildDir: nuxtOptions.buildDir,
       generateDir: nuxtOptions.generate.dir,
       staticDir: nuxtOptions.dir.static,
+      serverDir: resolve(nuxtOptions.srcDir, (nuxtOptions.dir as any).server || 'server'),
       routerBase: nuxtOptions.router.base,
       publicPath: nuxtOptions.build.publicPath,
       isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,

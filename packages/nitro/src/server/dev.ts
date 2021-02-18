@@ -8,7 +8,7 @@ import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import { createProxy } from 'http-proxy'
 import { stat } from 'fs-extra'
-import type { NitroContext } from './context'
+import type { NitroContext } from '../context'
 
 export function createDevServer (nitroContext: NitroContext) {
   // Worker

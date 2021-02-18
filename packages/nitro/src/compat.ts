@@ -2,9 +2,9 @@ import fetch from 'node-fetch'
 import { resolve } from 'upath'
 import { build, generate, prepare } from './build'
 import { getNitroContext, NitroContext } from './context'
-import { createDevServer } from './server'
+import { createDevServer } from './server/dev'
 import { wpfs } from './utils/wpfs'
-import { resolveMiddleware } from './middleware'
+import { resolveMiddleware } from './server/middleware'
 
 export default function nuxt2CompatModule () {
   const { nuxt } = this
