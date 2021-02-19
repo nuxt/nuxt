@@ -1,4 +1,4 @@
-declare module '~build/routes' {
+declare module 'nuxt/build/routes' {
     import { RouteRecordRaw } from 'vue-router'
 
     const _default: RouteRecordRaw[]

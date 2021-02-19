@@ -20,7 +20,7 @@ export async function bundle (nuxt: Nuxt) {
       resolve: {
         alias: {
           'nuxt/app': nuxt.options.appDir,
-          '~build': nuxt.options.buildDir,
+          'nuxt/build': nuxt.options.buildDir,
           '~': nuxt.options.srcDir,
           '@': nuxt.options.srcDir
         }
