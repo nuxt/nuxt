@@ -25,6 +25,7 @@ export default <Plugin> function router (nuxt) {
     routes
   })
   app.use(router)
+  nuxt.provide('router', router)
 
   const previousRoute = shallowRef(router.currentRoute.value)
   router.afterEach((_to, from) => {
@@ -35,7 +36,7 @@ export default <Plugin> function router (nuxt) {
     get: () => previousRoute.value
   })
 
-  nuxt.hooks.hook('app:created', async () => {
+  nuxt.hook('app:created', async () => {
     if (process.server) {
       router.push(nuxt.ssrContext.url)
     }

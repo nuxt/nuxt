@@ -65,6 +65,7 @@ function watch (builder: Builder) {
   nuxtAppWatcher.watchAll(debounce(() => compileTemplates(builder.templates, nuxt.options.buildDir), 100))
 
   // Watch user app
+  // TODO: handle multiples app dirs
   const appPattern = `${builder.app.dir}/**/*.{${nuxt.options.extensions.join(',')}}`
   const appWatcher = createWatcher(appPattern, { ...options, cwd: builder.app.dir }, ignore)
   // appWatcher.debug('srcDir')
@@ -73,6 +74,8 @@ function watch (builder: Builder) {
   appWatcher.watch(/^(A|a)pp\.[a-z]{2,3}/, refreshTemplates, ['add', 'unlink'])
   // Watch for page changes
   appWatcher.watch(new RegExp(`^${nuxt.options.dir.pages}/`), refreshTemplates, ['add', 'unlink'])
+  // Watch for plugins changes
+  appWatcher.watch(/^plugins/, refreshTemplates, ['add', 'unlink'])
 
   // Shared Watcher
   const watchHookDebounced = debounce((event, file) => builder.nuxt.callHook('builder:watch', event, file), 100)
@@ -84,9 +87,11 @@ export async function generate (builder: Builder) {
   const { nuxt } = builder
 
   builder.app = await createApp(builder)
+  // Todo: Call app:created hook
 
   const templatesDir = join(builder.nuxt.options.appDir, '_templates')
   const appTemplates = await scanTemplates(templatesDir, templateData(builder))
+  // Todo: Call app:templates hook
 
   builder.templates = [...appTemplates]
 

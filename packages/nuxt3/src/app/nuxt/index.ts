@@ -81,6 +81,7 @@ export function createNuxt (options: CreateOptions) {
 }
 
 export function applyPlugin (nuxt: Nuxt, plugin: Plugin) {
+  if (typeof plugin !== 'function') { return }
   return callWithNuxt(nuxt, () => plugin(nuxt))
 }
 

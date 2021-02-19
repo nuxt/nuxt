@@ -2,12 +2,13 @@ import { resolve } from 'path'
 import defu from 'defu'
 import { Builder } from './builder'
 import { NuxtRoute, resolvePagesRoutes } from './pages'
-
+import { NuxtPlugin, resolvePlugins } from './plugins'
 export interface NuxtApp {
   main: string
   routes: NuxtRoute[]
   dir: string
   extensions: string[]
+  plugins: NuxtPlugin[]
   templates: Record<string, string>
   pages?: {
     dir: string
@@ -26,6 +27,7 @@ export async function createApp (
     dir: nuxt.options.srcDir,
     extensions: nuxt.options.extensions,
     routes: [],
+    plugins: [],
     templates: {},
     pages: {
       dir: 'pages'
@@ -54,8 +56,6 @@ export async function createApp (
         children: []
       })
     }
-    // TODO: Hook to extend routes
-    app.templates.routes = serializeRoutes(app.routes)
   }
 
   // Fallback app.main
@@ -65,24 +65,8 @@ export async function createApp (
     app.main = resolve(nuxt.options.appDir, 'app.tutorial.vue')
   }
 
+  // Resolve plugins/
+  app.plugins = await resolvePlugins(builder, app)
+
   return app
-}
-
-function serializeRoutes (routes: NuxtRoute[]) {
-  return JSON.stringify(
-    routes.map(formatRoute),
-    null,
-    2
-  ).replace(/"{(.+)}"/g, '$1')
-}
-
-function formatRoute (route: NuxtRoute) {
-  return {
-    name: route.name,
-    path: route.path,
-    children: route.children.map(formatRoute),
-    // TODO: avoid exposing to prod, using process.env.NODE_ENV ?
-    __file: route.file,
-    component: `{() => import('${route.file}' /* webpackChunkName: '${route.name}' */)}`
-  }
 }

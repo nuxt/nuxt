@@ -2,6 +2,7 @@ import { join, relative, dirname } from 'path'
 import fsExtra from 'fs-extra'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
+import * as nxt from './nxt'
 
 export interface NuxtTemplate {
   src: string // Absolute path to source file
@@ -13,7 +14,8 @@ export function templateData (builder) {
   return {
     globals: builder.globals,
     app: builder.app,
-    nuxtOptions: builder.nuxt.options
+    nuxtOptions: builder.nuxt.options,
+    nxt
   }
 }
 
