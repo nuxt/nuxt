@@ -23,7 +23,7 @@ function filesToMiddleware (files: string[], baseDir: string, basePath: string, 
     .map(m => ({ ...m, ...overrides }))
 }
 
-export function scanMiddleware (serverDir: string, onChange?: Function): Promise<ServerMiddleware[]> {
+export function scanMiddleware (serverDir: string, onChange?: (results: ServerMiddleware[], event: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', file: string) => void): Promise<ServerMiddleware[]> {
   const pattern = '**/*.{js,ts}'
   const globalDir = resolve(serverDir, 'middleware')
   const apiDir = resolve(serverDir, 'api')

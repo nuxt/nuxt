@@ -79,16 +79,8 @@ async function _build (nitroContext: NitroContext) {
   }
 }
 
-async function _watch (nitroContext: NitroContext) {
+function startRollupWatcher (nitroContext: NitroContext) {
   const watcher = rollupWatch(nitroContext.rollupConfig)
-
-  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir,
-    (middleware, event, file) => {
-      nitroContext.scannedMiddleware = middleware
-      watcher.emit(event, file)
-    }
-  )
-
   let start
 
   watcher.on('event', (event) => {
@@ -114,4 +106,19 @@ async function _watch (nitroContext: NitroContext) {
         // consola.error(event.error)
     }
   })
+  return watcher
+}
+
+async function _watch (nitroContext: NitroContext) {
+  let watcher = startRollupWatcher(nitroContext)
+
+  nitroContext.scannedMiddleware = await scanMiddleware(nitroContext._nuxt.serverDir,
+    (middleware, event) => {
+      nitroContext.scannedMiddleware = middleware
+      if (['add', 'addDir'].includes(event)) {
+        watcher.close()
+        watcher = startRollupWatcher(nitroContext)
+      }
+    }
+  )
 }
