@@ -84,6 +84,8 @@ export function applyAsyncData (Component, asyncData) {
     const data = ComponentData.call(this, this)
     if (this.$ssrContext) {
       asyncData = this.$ssrContext.asyncData[Component.cid]
+    } else {
+      asyncData = {}
     }
     return { ...data, ...asyncData }
   }
