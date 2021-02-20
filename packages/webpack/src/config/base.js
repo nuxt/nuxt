@@ -73,7 +73,7 @@ export default class WebpackBaseConfig {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
       /consola\/src/,
-      /@nuxt[/\\]ufo/, // exports modern syntax for browser field
+      /ufo/, // exports modern syntax for browser field
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }

@@ -81,7 +81,7 @@ describe('basic browser', () => {
     const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
     expect(fetchKeys).toEqual([
       '0',
-      'DefaultLayout0'
+      'DefaultLayout:0'
     ])
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
@@ -95,7 +95,7 @@ describe('basic browser', () => {
     const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
     expect(fetchKeys).toEqual([
       '0',
-      'DefaultLayout0'
+      'DefaultLayout:0'
     ])
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
@@ -108,7 +108,7 @@ describe('basic browser', () => {
     const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
     expect(fetchKeys).toEqual([
       '0',
-      'DefaultLayout0',
+      'DefaultLayout:0',
       'ie0'
     ])
     expect(await page.$text('button')).toContain('has fetch')
@@ -120,10 +120,10 @@ describe('basic browser', () => {
     const fetchKeys = await page.evaluate(() => Object.keys(window.__NUXT__.fetch))
     expect(fetchKeys).toEqual([
       '0',
-      'DefaultLayout0',
-      'team0'
+      'DefaultLayout:0',
+      'team:0'
     ])
-    const team = await page.evaluate(() => window.__NUXT__.fetch.team0.team)
+    const team = await page.evaluate(() => window.__NUXT__.fetch['team:0'].team)
     expect(team.includes('Atinux'))
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')

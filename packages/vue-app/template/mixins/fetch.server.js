@@ -54,7 +54,7 @@ export default {
       this._fetchKey = this.$options.fetchKey.call(this, getCounter)
     } else {
       const key = 'string' === typeof this.$options.fetchKey ? this.$options.fetchKey : defaultKey
-      this._fetchKey = key + getCounter(key)
+      this._fetchKey = key ? key + ':' + getCounter(key) : String(getCounter(key))
     }
 
     // Added for remove vue undefined warning while ssr

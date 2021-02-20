@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.14.12",
+  "version": "2.15.1",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/webpack.js",
@@ -8,13 +8,13 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.12.13",
-    "@nuxt/babel-preset-app": "2.14.12",
+    "@babel/core": "^7.12.17",
+    "@nuxt/babel-preset-app": "2.15.1",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
-    "@nuxt/utils": "2.14.12",
+    "@nuxt/utils": "2.15.1",
     "babel-loader": "^8.2.2",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001185",
+    "caniuse-lite": "^1.0.30001189",
     "consola": "^2.15.3",
     "css-loader": "^4.3.0",
     "cssnano": "^4.1.10",
@@ -37,7 +37,7 @@
     "postcss-preset-env": "^6.7.0",
     "postcss-url": "^8.0.0",
     "semver": "^7.3.4",
-    "std-env": "^2.2.1",
+    "std-env": "^2.3.0",
     "style-resources-loader": "^1.4.1",
     "terser-webpack-plugin": "^4.2.3",
     "thread-loader": "^3.0.1",
@@ -52,9 +52,6 @@
     "webpack-hot-middleware": "^2.25.0",
     "webpack-node-externals": "^2.5.2",
     "webpackbar": "^4.0.0"
-  },
-  "engines": {
-    "node": ">=10.0.0"
   },
   "publishConfig": {
     "access": "public"
