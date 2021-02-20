@@ -69,7 +69,7 @@
     "jsonfile": "^6.1.0",
     "klaw-sync": "^6.0.0",
     "lerna": "^3.22.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
     "puppeteer-core": "^7.1.0",
     "request": "^2.88.2",
