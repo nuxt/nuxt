@@ -2,6 +2,7 @@ import hasha from 'hasha'
 import { relative } from 'upath'
 import { table, getBorderCharacters } from 'table'
 import isPrimitive from 'is-primitive'
+import stdenv from 'std-env'
 import type { ServerMiddleware } from '../../server/middleware'
 import virtual from './virtual'
 
@@ -13,13 +14,17 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
   return virtual({
     '~serverMiddleware': () => {
       const middleware = getMiddleware()
-      const dumped = dumpMiddleware(middleware)
-      if (dumped !== lastDump) {
-        lastDump = dumped
-        if (middleware.length) {
-          console.log('\n\nNitro middleware:\n' + dumped)
+
+      if (!stdenv.test) {
+        const dumped = dumpMiddleware(middleware)
+        if (dumped !== lastDump) {
+          lastDump = dumped
+          if (middleware.length) {
+            console.log('\n\nNitro middleware:\n' + dumped)
+          }
         }
       }
+
       return `
 ${middleware.filter(m => m.lazy === false).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
 
