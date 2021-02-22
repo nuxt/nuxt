@@ -61,6 +61,8 @@ export function resolveMiddleware (serverMiddleware: any[], resolvePath: (string
     if (typeof handle !== 'string' || typeof route !== 'string') {
       legacyMiddleware.push(m)
     } else {
+      delete m.handler
+      delete m.path
       middleware.push({
         ...m,
         handle: resolvePath(handle),
