@@ -20,7 +20,7 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
         if (dumped !== lastDump) {
           lastDump = dumped
           if (middleware.length) {
-            console.log('\n\nNitro middleware:\n' + dumped)
+            console.log(dumped)
           }
         }
       }
@@ -43,7 +43,7 @@ export default middleware
 function dumpMiddleware (middleware: ServerMiddleware[]) {
   const data = middleware.map(({ route, handle, ...props }) => {
     return [
-      (route && route !== '/') ? route : '[global]',
+      (route && route !== '/') ? route : '*',
       relative(process.cwd(), handle),
       dumpObject(props)
     ]
@@ -52,6 +52,7 @@ function dumpMiddleware (middleware: ServerMiddleware[]) {
     ['Route', 'Handle', 'Options'],
     ...data
   ], {
+    singleLine: true,
     border: getBorderCharacters('norc')
   })
 }
