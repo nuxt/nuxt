@@ -12,7 +12,7 @@ import type { Nuxt } from './index'
 export function initNitro (nuxt: Nuxt) {
   // Create contexts
   const nitroContext = getNitroContext(nuxt.options, nuxt.options.nitro || {})
-  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'local' })
+  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'dev' })
 
   nuxt.server = createDevServer(nitroDevContext)
 
