@@ -4,7 +4,7 @@ import { Builder } from './builder'
 import { NuxtRoute, resolvePagesRoutes } from './pages'
 import { NuxtPlugin, resolvePlugins } from './plugins'
 export interface NuxtApp {
-  main: string
+  main?: string
   routes: NuxtRoute[]
   dir: string
   extensions: string[]

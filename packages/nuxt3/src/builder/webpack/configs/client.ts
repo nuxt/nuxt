@@ -2,6 +2,8 @@ import path from 'path'
 import querystring from 'querystring'
 import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
+import type { ClientOptions } from 'webpack-hot-middleware'
+
 import { applyPresets, WebpackConfigContext } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 
@@ -47,14 +49,14 @@ function clientHMR (ctx: WebpackConfigContext) {
     return
   }
 
-  const clientOptions = options.build.hotMiddleware?.client || {}
+  const clientOptions = options.build.hotMiddleware?.client || {} as ClientOptions
   const hotMiddlewareClientOptions = {
     reload: true,
     timeout: 30000,
-    ansiColors: JSON.stringify(clientOptions.ansiColors || {}),
-    overlayStyles: JSON.stringify(clientOptions.overlayStyles || {}),
     path: `${options.router.base}/__webpack_hmr/${ctx.name}`.replace(/\/\//g, '/'),
     ...clientOptions,
+    ansiColors: JSON.stringify(clientOptions.ansiColors || {}),
+    overlayStyles: JSON.stringify(clientOptions.overlayStyles || {}),
     name: ctx.name
   }
   const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)

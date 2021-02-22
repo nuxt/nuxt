@@ -81,6 +81,7 @@ export type NuxtModule = string | ModuleHandler | [string | ModuleHandler, any]
 export type ServerMiddleware = string | { path: string, prefix?: boolean, handler: string | express.NextFunction } | express.NextFunction
 
 interface CommonConfiguration {
+  _majorVersion: Number
   _modules: NuxtModule[]
   _nuxtConfigFile?: string
   alias: Record<string, string>
@@ -129,6 +130,7 @@ interface CommonConfiguration {
 }
 
 export default (): CommonConfiguration => ({
+  _majorVersion: undefined,
   // Env
   dev: Boolean(env.dev),
   test: Boolean(env.test),
@@ -170,6 +172,7 @@ export default (): CommonConfiguration => ({
   _nuxtConfigFile: undefined,
   srcDir: undefined,
   buildDir: '.nuxt',
+  vite: false,
   modulesDir: [
     'node_modules'
   ],

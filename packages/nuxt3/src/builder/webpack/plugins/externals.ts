@@ -31,7 +31,7 @@ function readDir (dirName) {
         }
         return module
       })
-      .reduce(function (prev, next) {
+      .reduce<string[]>(function (prev, next) {
         return prev.concat(next)
       }, [])
   } catch (e) {

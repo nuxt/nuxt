@@ -1,4 +1,7 @@
+import { WebpackError } from 'webpack'
 export default class WarningIgnorePlugin {
+  filter: (warn: WebpackError) => boolean
+
   constructor (filter) {
     this.filter = filter
   }
