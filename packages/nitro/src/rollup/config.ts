@@ -111,6 +111,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
+    // @ts-ignore https://github.com/rollup/plugins/pull/810
+    preventAssignment: true,
     values: {
       'process.env.NODE_ENV': nitroContext._nuxt.dev ? '"development"' : '"production"',
       'typeof window': '"undefined"',
