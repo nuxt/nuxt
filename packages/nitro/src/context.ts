@@ -10,7 +10,7 @@ import type { ServerMiddleware } from './server/middleware'
 
 export interface NitroContext {
   timing: boolean
-  inlineChunks: boolean
+  inlineDynamicImports: boolean
   minify: boolean
   sourceMap: boolean
   externals: boolean | NodeExternalsOptions
@@ -62,18 +62,18 @@ export type NitroPreset = NitroInput | ((input: NitroInput) => NitroInput)
 
 export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): NitroContext {
   const defaults: NitroContext = {
-    timing: true,
-    inlineChunks: true,
-    minify: true,
-    sourceMap: false,
-    externals: false,
-    analyze: false,
+    timing: undefined,
+    inlineDynamicImports: undefined,
+    minify: undefined,
+    sourceMap: undefined,
+    externals: undefined,
+    analyze: undefined,
     entry: undefined,
     node: undefined,
     preset: undefined,
     rollupConfig: undefined,
     renderer: undefined,
-    serveStatic: false,
+    serveStatic: undefined,
     middleware: [],
     scannedMiddleware: [],
     ignore: [],

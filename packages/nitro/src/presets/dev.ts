@@ -7,9 +7,7 @@ export const dev: NitroPreset = extendPreset(node, {
   output: {
     serverDir: '{{ _nuxt.buildDir }}/nitro'
   },
-  minify: false,
   externals: { trace: false },
-  inlineChunks: true,
-  timing: false,
+  inlineDynamicImports: true, // externals plugin limitation
   sourceMap: true
 })

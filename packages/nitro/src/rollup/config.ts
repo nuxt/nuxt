@@ -84,7 +84,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
         }
         return join('chunks', prefix, '[name].js')
       },
-      inlineDynamicImports: nitroContext.inlineChunks,
+      inlineDynamicImports: nitroContext.inlineDynamicImports,
       format: 'cjs',
       exports: 'auto',
       intro: '',
@@ -135,7 +135,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   // Dynamic Require Support
   rollupConfig.plugins.push(dynamicRequire({
     dir: resolve(nitroContext._nuxt.buildDir, 'dist/server'),
-    inline: nitroContext.node === false || nitroContext.inlineChunks,
+    inline: nitroContext.node === false || nitroContext.inlineDynamicImports,
     globbyOptions: {
       ignore: [
         'server.js'

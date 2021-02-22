@@ -7,7 +7,6 @@ import { NitroPreset, NitroContext } from '../context'
 
 // eslint-disable-next-line
 export const azure_functions: NitroPreset = {
-  inlineChunks: false,
   serveStatic: true,
   entry: '{{ _internal.runtimeDir }}/entries/azure_functions',
   hooks: {

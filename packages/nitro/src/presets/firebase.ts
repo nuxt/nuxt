@@ -7,7 +7,6 @@ import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 export const firebase: NitroPreset = {
-  inlineChunks: false,
   entry: '{{ _internal.runtimeDir }}/entries/firebase',
   hooks: {
     async 'nitro:compiled' (ctx: NitroContext) {

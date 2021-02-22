@@ -6,7 +6,6 @@ import { writeFile } from '../utils'
 import { NitroPreset, NitroContext } from '../context'
 
 export const azure: NitroPreset = {
-  inlineChunks: false,
   entry: '{{ _internal.runtimeDir }}/entries/azure',
   output: {
     serverDir: '{{ output.dir }}/server/functions'
