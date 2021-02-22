@@ -15,7 +15,7 @@ export default function nuxt2CompatModule () {
 
   // Create contexts
   const nitroContext = getNitroContext(nuxt.options, nuxt.options.nitro || {})
-  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'local' })
+  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'dev' })
 
   // Connect hooks
   nuxt.addHooks(nitroContext.nuxtHooks)
