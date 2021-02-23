@@ -38,6 +38,7 @@ export default function rollupConfig ({
       replacePlugin({
         exclude: 'node_modules/**',
         delimiters: ['', ''],
+        preventAssignment: true,
         values: {
           __NODE_ENV__: process.env.NODE_ENV,
           ...replace
