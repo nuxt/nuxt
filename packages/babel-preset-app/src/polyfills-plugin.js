@@ -1,4 +1,18 @@
 // Add polyfill imports to the first file encountered.
+const { addSideEffect } = require('@babel/helper-module-imports')
+
+const modulePathMap = {
+  'regenerator-runtime': 'regenerator-runtime/runtime.js'
+}
+
+function getModulePath (mod) {
+  return modulePathMap[mod] || 'core-js/modules/' + mod + '.js'
+}
+
+function createImport (path, mod) {
+  return addSideEffect(path, getModulePath(mod))
+}
+
 module.exports = ({ types }) => {
   let entryFile
   return {
@@ -12,7 +26,6 @@ module.exports = ({ types }) => {
         }
 
         const { polyfills } = state.opts
-        const { createImport } = require('@babel/preset-env/lib/utils')
 
         // Imports are injected in reverse order
         polyfills.slice().reverse().forEach((p) => {
