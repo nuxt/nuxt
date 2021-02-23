@@ -30,7 +30,7 @@
     "lodash": "^4.17.21",
     "minimist": "^1.2.5",
     "opener": "1.5.2",
-    "pretty-bytes": "^5.5.0",
+    "pretty-bytes": "^5.6.0",
     "semver": "^7.3.4",
     "serve-static": "^1.14.1",
     "std-env": "^2.3.0",

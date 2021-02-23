@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "node-fetch": "^2.6.1",
-    "ufo": "^0.6.6",
+    "ufo": "^0.6.7",
     "unfetch": "^4.2.0",
     "vue": "^2.6.12",
     "vue-client-only": "^2.0.0",
