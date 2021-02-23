@@ -19,7 +19,7 @@
     "serialize-javascript": "^5.0.1",
     "signal-exit": "^3.0.3",
     "ua-parser-js": "^0.7.24",
-    "ufo": "^0.6.6"
+    "ufo": "^0.6.7"
   },
   "publishConfig": {
     "access": "public"
