@@ -12,11 +12,11 @@ module.exports = ({ types }) => {
         }
 
         const { polyfills } = state.opts
-        const { createImport } = require('@babel/preset-env/lib/polyfills/utils')
+        const { addSideEffect, getModulePath } = require('@babel/helper-module-imports')
 
         // Imports are injected in reverse order
         polyfills.slice().reverse().forEach((p) => {
-          createImport(path, p)
+          addSideEffect(path, getModulePath(p))
         })
       }
     }
