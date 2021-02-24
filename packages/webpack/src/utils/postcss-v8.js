@@ -178,6 +178,22 @@ export default class PostcssConfig {
       }
     }
 
+    if (typeof this.postcssOptions === 'function') {
+      return {
+        postcssOptions: (loaderContext) => {
+          const postcssOptions = merge(
+            {},
+            this.defaultPostcssOptions,
+            this.postcssOptions(loaderContext)
+          )
+          this.loadPlugins(postcssOptions)
+
+          return postcssOptions
+        },
+        sourceMap: this.cssSourceMap
+      }
+    }
+
     postcssOptions = this.normalize(cloneDeep(this.postcssOptions))
 
     // Apply default plugins
