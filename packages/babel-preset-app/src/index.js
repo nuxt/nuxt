@@ -87,12 +87,6 @@ module.exports = (api, options = {}) => {
     corejs = { version: Number(corejs) }
   }
 
-  // TODO: remove this when babel-plugin-polyfill-corejs2 fixes web.dom.iterable injection
-  if (corejs.version === 2) {
-    const corejs2BuiltIns = require('@babel/compat-data/corejs2-built-ins')
-    corejs2BuiltIns['web.dom.iterable'] = {}
-  }
-
   if (corejs.proposals === undefined) {
     corejs.proposals = true
   }
