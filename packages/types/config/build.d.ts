@@ -117,6 +117,7 @@ interface PostcssConfiguration {
   order?: PostcssOrderPreset | string[] | ((names: string[], presets: PostcssOrderPresetFunctions) => string[])
   plugins?: {
     [key: string]: false | { [key: string]: any }
+  // @ts-ignore PostcssPlugin in v8 is not a generic, but default is v7 right now. therefore ignore type def errors till postcss8 is default
   } | ((loader: WebpackLoaderNamespace.LoaderContext) => PostcssPlugin<any>[]) | Array<[string | PostcssPlugin<any>, any] | string | PostcssPlugin<any>>
   preset?: {
     autoprefixer?: false | AutoprefixerOptions
@@ -126,7 +127,9 @@ interface PostcssConfiguration {
       [key: string]: boolean | { [key: string]: any }
     }
     importFrom?: string | string[] | Partial<PostcssVariableMap> | (() => Partial<PostcssVariableMap>)
+    // @ts-ignore PostcssPlugin in v8 is not a generic, but default is v7 right now. therefore ignore type def errors till postcss8 is default
     insertAfter?: { [key: string]: PostcssPlugin<any> }
+    // @ts-ignore PostcssPlugin in v8 is not a generic, but default is v7 right now. therefore ignore type def errors till postcss8 is default
     insertBefore?: { [key: string]: PostcssPlugin<any> }
     preserve?: boolean
     stage?: 0 | 1 | 2 | 3 | 4 | false
