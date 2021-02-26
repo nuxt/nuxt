@@ -121,7 +121,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
   const _presetInput = defu(input, defaults)
   // @ts-ignore
   const _preset = extendPreset(input, presetDefaults)(_presetInput)
-  const nitroContext: NitroContext = defu(input, _preset, defaults) as any
+  const nitroContext: NitroContext = defu(_preset, defaults) as any
 
   nitroContext.output.dir = resolvePath(nitroContext, nitroContext.output.dir)
   nitroContext.output.publicDir = resolvePath(nitroContext, nitroContext.output.publicDir)
