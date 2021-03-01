@@ -16,6 +16,7 @@ import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModu
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
+import { Watchpack2Plugin } from '../plugins/watchpack'
 import { reservedVueTags } from '../utils/reserved-tags'
 
 export default class WebpackBaseConfig {
@@ -73,7 +74,7 @@ export default class WebpackBaseConfig {
     return [
       /\.vue\.js/i, // include SFCs in node_modules
       /consola\/src/,
-      /@nuxt[/\\]ufo/, // exports modern syntax for browser field
+      /ufo/, // exports modern syntax for browser field
       ...this.normalizeTranspile({ pathNormalize: true })
     ]
   }
@@ -475,6 +476,8 @@ export default class WebpackBaseConfig {
         ...buildOptions.hardSource
       }))
     }
+
+    plugins.push(new Watchpack2Plugin())
 
     return plugins
   }

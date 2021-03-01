@@ -178,7 +178,7 @@ export default class SSRRenderer extends BaseRenderer {
     const shouldHashCspScriptSrc = csp && (csp.unsafeInlineCompatibility || !containsUnsafeInlineScriptSrc)
     const inlineScripts = []
 
-    if (renderContext.staticAssetsBase) {
+    if (shouldInjectScripts && renderContext.staticAssetsBase) {
       const preloadScripts = []
       renderContext.staticAssets = []
       const { staticAssetsBase, url, nuxt, staticAssets } = renderContext

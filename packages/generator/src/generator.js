@@ -169,7 +169,7 @@ export default class Generator {
     this.generatedRoutes = new Set()
 
     routes.forEach(({ route, ...props }) => {
-      route = decodeURI(route)
+      route = decodeURI(this.normalizeSlash(route))
       this.routes.push({ route, ...props })
       // Add routes to the tracked generated routes (for crawler)
       this.generatedRoutes.add(route)
@@ -267,25 +267,31 @@ export default class Generator {
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
-    const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
-    await fsExtra.writeFile(nojekyllPath, '')
+    if (this.options.generate.nojekyll) {
+      const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
+      await fsExtra.writeFile(nojekyllPath, '')
+    }
 
     await this.nuxt.callHook('generate:distCopied', this)
     await this.nuxt.callHook('export:distCopied', this)
+  }
+
+  normalizeSlash (route) {
+    return this.options.router && this.options.router.trailingSlash ? withTrailingSlash(route) : withoutTrailingSlash(route)
   }
 
   decorateWithPayloads (routes, generateRoutes) {
     const routeMap = {}
     // Fill routeMap for known routes
     routes.forEach((route) => {
-      routeMap[route] = { route, payload: null }
+      routeMap[route] = { route: this.normalizeSlash(route), payload: null }
     })
     // Fill routeMap with given generate.routes
     generateRoutes.forEach((route) => {
       // route is either a string or like { route : '/my_route/1', payload: {} }
       const path = isString(route) ? route : route.route
       routeMap[path] = {
-        route: path,
+        route: this.normalizeSlash(path),
         payload: route.payload || null
       }
     })
@@ -296,9 +302,7 @@ export default class Generator {
     let html
     const pageErrors = []
 
-    if (this.options.router && this.options.router.trailingSlash) {
-      route = withTrailingSlash(route)
-    }
+    route = this.normalizeSlash(route)
 
     const setPayload = (_payload) => {
       payload = defu(_payload, payload)
@@ -322,7 +326,6 @@ export default class Generator {
 
       // If crawler activated and called from generateRoutes()
       if (this.options.generate.crawler && this.options.render.ssr) {
-        const possibleTrailingSlash = this.options.router.trailingSlash ? '/' : ''
         parse(html).querySelectorAll('a').map((el) => {
           const sanitizedHref = (el.getAttribute('href') || '')
             .replace(this.options.router.base, '/')
@@ -331,7 +334,7 @@ export default class Generator {
             .replace(/\/+$/, '')
             .trim()
 
-          const foundRoute = decodeURI(sanitizedHref + possibleTrailingSlash)
+          const foundRoute = decodeURI(this.normalizeSlash(sanitizedHref))
 
           if (foundRoute.startsWith('/') && !foundRoute.startsWith('//') && !path.extname(foundRoute) && this.shouldGenerateRoute(foundRoute) && !this.generatedRoutes.has(foundRoute)) {
             this.generatedRoutes.add(foundRoute)

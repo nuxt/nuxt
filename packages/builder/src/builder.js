@@ -180,7 +180,7 @@ export default class Builder {
 
     if (
       !this._nuxtPages ||
-      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
+      await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.pages))
     ) {
       return
     }

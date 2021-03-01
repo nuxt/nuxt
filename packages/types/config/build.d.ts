@@ -154,7 +154,7 @@ export interface NuxtOptionsBuild {
   friendlyErrors?: boolean
   hardSource?: boolean
   hotMiddleware?: WebpackHotMiddlewareOptions & { client?: WebpackHotMiddlewareClientOptions }
-  html?: { minify: HtmlMinifierOptions }
+  html?: { minify: false | HtmlMinifierOptions }
   indicator?: boolean
   loaders?: NuxtOptionsLoaders
   loadingScreen?: boolean | any
