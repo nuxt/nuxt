@@ -1,4 +1,4 @@
-import { Ref, ref, toRef, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
+import { Ref, ref, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
 import { Nuxt, useNuxt } from 'nuxt/app'
 import { useData } from './data'
 
@@ -58,7 +58,12 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
       if (_handler instanceof Promise) {
         // Let user resolve if request is promise
         // TODO: handle error
-        data[key] = await _handler
+        const result = await _handler
+        if (!data[key]) {
+          data[key] = result
+        } else {
+          Object.assign(data[key], result)
+        }
         pending.value = false
       } else {
         // Invalid request
@@ -76,10 +81,14 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
       }
       // 2. Initial load (server: false): fetch on mounted
       if (nuxt.isHydrating && !options.server) {
+        // Force tracking it
+        data[key] = {}
         // Fetch on mounted (initial load or deferred fetch)
         onMountedCbs.push(fetch)
       } else if (!nuxt.isHydrating) {
         if (options.defer) {
+          // Force tracking it
+          data[key] = {}
           // 3. Navigation (defer: true): fetch on mounted
           onMountedCbs.push(fetch)
         } else {
@@ -95,11 +104,14 @@ export function useAsyncData (defaults?: AsyncDataOptions) {
     if (process.server && !clientOnly) {
       await fetch()
     }
-
     return {
-      data: toRef<any, string>(data, key),
+      data: data[key],
       pending,
       refresh: fetch
     }
   }
+}
+
+export function asyncData<T = any> (handler: AsyncDataFn<T>, options?: AsyncDataOptions): Promise<AsyncDataObj<T>> {
+  return useAsyncData()(handler, options)
 }
