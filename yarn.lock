@@ -5390,10 +5390,10 @@ devalue@^2.0.1:
   resolved "https://registry.npmjs.org/devalue/-/devalue-2.0.1.tgz#5d368f9adc0928e47b77eea53ca60d2f346f9762"
   integrity sha512-I2TiqT5iWBEyB8GRfTDP0hiLZ0YeDJZ+upDxjBfOC2lebO5LezQMv7QvIUTzdb64jQyAKLf1AHADtGN+jw6v8Q==
 
-devtools-protocol@0.0.847576:
-  version "0.0.847576"
-  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.847576.tgz#2f201bfb68aa9ef4497199fbd7f5d5dfde3b200b"
-  integrity sha512-0M8kobnSQE0Jmly7Mhbeq0W/PpZfnuK+WjN2ZRVPbGqYwCHCioAVp84H0TcLimgECcN5H976y5QiXMGBC9JKmg==
+devtools-protocol@0.0.854822:
+  version "0.0.854822"
+  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.854822.tgz#eac3a5260a6b3b4e729a09fdc0c77b0d322e777b"
+  integrity sha512-xd4D8kHQtB0KtWW0c9xBZD5LVtm9chkMOfs/3Yn01RhT/sFIsVtzTtypfKoFfWBaL+7xCYLxjOLkhwPXaX/Kcg==
 
 dezalgo@^1.0.0:
   version "1.0.3"
@@ -11206,13 +11206,13 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-puppeteer-core@^7.1.0:
-  version "7.1.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-7.1.0.tgz#75a00484481e99aa3578bd93ae13a6991fdc7e97"
-  integrity sha512-2wjKs3L1rYuoVNNtRR/GbAGjbt6LF8DRUxcg/UoCQZrzjfppWlrIqiHRF5uBzJk+Nc0w7ZkvVzKQCvB5PFqFdA==
+puppeteer-core@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-8.0.0.tgz#4f56cc24675a8e993b0610a284f064a84910f4ec"
+  integrity sha512-kRTiGh42+4eiw9tl489p//8Zpg3LWmz0K3mOpv0qj5PsCV7jE43SLIi0E50suLh8OghXsFhJFoE98vEmXUnDew==
   dependencies:
     debug "^4.1.0"
-    devtools-protocol "0.0.847576"
+    devtools-protocol "0.0.854822"
     extract-zip "^2.0.0"
     https-proxy-agent "^5.0.0"
     node-fetch "^2.6.1"
