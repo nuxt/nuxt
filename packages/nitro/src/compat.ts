@@ -9,6 +9,11 @@ import { resolveMiddleware } from './server/middleware'
 export default function nuxt2CompatModule () {
   const { nuxt } = this
 
+  // Ensure we're not just building with 'static' target
+  if (!nuxt.options.dev && nuxt.options.target === 'static' && !nuxt.options._export && !nuxt.options._legacyGenerate) {
+    throw new Error('[nitro] Please use `nuxt generate` for static target')
+  }
+
   // Disable loading-screen
   nuxt.options.build.loadingScreen = false
   nuxt.options.build.indicator = false
