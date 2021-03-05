@@ -5,6 +5,11 @@ import Glob from 'glob'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
+
+import type { Compiler, Watching } from 'webpack'
+import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
+import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
+
 import { Nuxt } from 'src/core'
 import { TARGETS, parallel, sequence, wrapArray } from 'src/utils'
 import { createMFS } from './utils/mfs'
@@ -12,10 +17,16 @@ import { client, server } from './configs'
 import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
 
 const glob = pify(Glob)
-
 class WebpackBundler {
   nuxt: Nuxt
   plugins: Array<string>
+  compilers: Array<Compiler>
+  compilersWatching: Array<Watching & { closeAsync?: () => void }>
+  // TODO: change this when pify has better types https://github.com/sindresorhus/pify/pull/76
+  devMiddleware: Record<string, Function & { close?: () => void, context?: WebpackDevMiddlewareContext }>
+  hotMiddleware: Record<string, Function>
+  mfs: Compiler['outputFileSystem']
+  __closed: boolean
 
   constructor (nuxt) {
     this.nuxt = nuxt
@@ -33,7 +44,7 @@ class WebpackBundler {
 
     // Initialize shared MFS for dev
     if (this.nuxt.options.dev) {
-      this.mfs = createMFS()
+      this.mfs = createMFS() as Compiler['outputFileSystem']
     }
   }
 
@@ -143,7 +154,7 @@ class WebpackBundler {
           resolve()
         })
 
-        watching.close = pify(watching.close)
+        watching.closeAsync = pify(watching.close)
         this.compilersWatching.push(watching)
       })
     }
@@ -175,12 +186,14 @@ class WebpackBundler {
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
-        compiler, {
+        compiler,
+        {
           publicPath: buildOptions.publicPath,
           outputFileSystem: this.mfs,
           stats: 'none',
           ...buildOptions.devMiddleware
-        })
+        } as WebpackDevMiddlewareOptions
+      )
     )
 
     this.devMiddleware[name].close = pify(this.devMiddleware[name].close)
@@ -189,12 +202,14 @@ class WebpackBundler {
 
     this.hotMiddleware[name] = pify(
       webpackHotMiddleware(
-        compiler, {
+        compiler,
+        {
           log: false,
           heartbeat: 10000,
           path: `/__webpack_hmr/${name}`,
           ...hotMiddlewareOptions
-        })
+        } as WebpackHotMiddlewareOptions
+      )
     )
 
     // Register devMiddleware on server
@@ -214,7 +229,7 @@ class WebpackBundler {
   }
 
   async unwatch () {
-    await Promise.all(this.compilersWatching.map(watching => watching.close()))
+    await Promise.all(this.compilersWatching.map(watching => watching.closeAsync()))
   }
 
   async close () {
@@ -232,12 +247,11 @@ class WebpackBundler {
     }
 
     for (const compiler of this.compilers) {
-      compiler.close()
+      await new Promise(resolve => compiler.close(resolve))
     }
 
     // Cleanup MFS
     if (this.mfs) {
-      delete this.mfs.data
       delete this.mfs
     }
 
