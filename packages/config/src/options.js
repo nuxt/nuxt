@@ -4,8 +4,8 @@ import { defaultsDeep, pick, uniq } from 'lodash'
 import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isRelative, isUrl, getMainModule, getPKG } from '@nuxt/utils'
-import { joinURL, normalizeURL, withTrailingSlash } from 'ufo'
+import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
+import { isRelative, joinURL, normalizeURL, withTrailingSlash } from 'ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
 export function getNuxtConfig (_options) {
@@ -214,8 +214,7 @@ export function getNuxtConfig (_options) {
   }
 
   options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
-  options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
-  options.build._publicPath = options.build._publicPath.replace(/^\.\//, '/')
+  options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/').replace(/^\.\//, '/')
 
   // Ignore publicPath on dev
   if (options.dev && isUrl(options.build.publicPath)) {

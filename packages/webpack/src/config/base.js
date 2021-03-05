@@ -10,8 +10,9 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
+import { isRelative } from 'ufo'
 
-import { TARGETS, isRelative, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
+import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'

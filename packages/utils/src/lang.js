@@ -1,4 +1,4 @@
-import { joinURL } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 
 export const encodeHtml = function encodeHtml (str) {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -10,14 +10,8 @@ export const isNonEmptyString = obj => Boolean(obj && isString(obj))
 
 export const isPureObject = obj => !Array.isArray(obj) && typeof obj === 'object'
 
-// Replace once ufo exports isRelative
 export const isUrl = function isUrl (url) {
-  return ['http', '//'].some(str => url.startsWith(str))
-}
-
-// Replace once ufo exports isRelative
-export function isRelative (url) {
-  return ['./', '../'].some(str => url.startsWith(str))
+  return hasProtocol(url, true)
 }
 
 export const urlJoin = joinURL
