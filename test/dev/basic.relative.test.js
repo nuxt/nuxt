@@ -34,6 +34,7 @@ describe('basic ssr with relative path', () => {
 
   test('relative publicPath can be used in production ssr', async () => {
     const config = await loadFixture('basic', {
+      dev: false,
       build: {
         publicPath: './_nuxt/'
       }
