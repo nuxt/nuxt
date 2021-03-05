@@ -456,8 +456,8 @@ export function getNuxtConfig (_options) {
 
   options.app = defu(options.app, {
     basePath: options.router.base,
-    assetsPath: useCDN || isRelativePublicPath ? '/' : joinURL(options.router.base, options.build.publicPath),
-    cdnURL: useCDN || isRelativePublicPath ? options.build.publicPath : null
+    assetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
+    cdnURL: useCDN ? options.build.publicPath : null
   })
   // Expose app config to $config.app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
