@@ -4,7 +4,7 @@ import { defaultsDeep, pick, uniq } from 'lodash'
 import defu from 'defu'
 import consola from 'consola'
 import destr from 'destr'
-import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isUrl, getMainModule, getPKG } from '@nuxt/utils'
+import { TARGETS, MODES, createRequire, guardDir, isNonEmptyString, isPureObject, isRelative, isUrl, getMainModule, getPKG } from '@nuxt/utils'
 import { joinURL, normalizeURL, withTrailingSlash } from 'ufo'
 import { defaultNuxtConfigFile, getDefaultNuxtConfig } from './config'
 
@@ -215,6 +215,7 @@ export function getNuxtConfig (_options) {
 
   options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
   options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/')
+  options.build._publicPath = options.build._publicPath.replace(/^\.\//, '/')
 
   // Ignore publicPath on dev
   if (options.dev && isUrl(options.build.publicPath)) {
@@ -452,10 +453,12 @@ export function getNuxtConfig (_options) {
 
   // App config (internal for nuxt2 at this stage)
   const useCDN = isUrl(options.build.publicPath) && !options.dev
+  const isRelativePublicPath = isRelative(options.build.publicPath)
+
   options.app = defu(options.app, {
     basePath: options.router.base,
-    assetsPath: useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
-    cdnURL: useCDN ? options.build.publicPath : null
+    assetsPath: useCDN || isRelativePublicPath ? '/' : joinURL(options.router.base, options.build.publicPath),
+    cdnURL: useCDN || isRelativePublicPath ? options.build.publicPath : null
   })
   // Expose app config to $config.app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}

@@ -11,7 +11,7 @@ import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
 
-import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
+import { TARGETS, isRelative, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
 
 import PerfLoader from '../utils/perf-loader'
 import StyleLoader from '../utils/style-loader'
@@ -201,14 +201,14 @@ export default class WebpackBaseConfig {
   output () {
     const {
       options: { buildDir, router },
-      buildOptions: { publicPath }
+      buildOptions: { publicPath, _publicPath }
     } = this.buildContext
     return {
       path: path.resolve(buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
-      publicPath: isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
+      publicPath: isRelative(publicPath) ? _publicPath : isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
     }
   }
 

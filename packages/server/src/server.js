@@ -5,7 +5,7 @@ import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
 import compression from 'compression'
-import { determineGlobals, isUrl, urlJoin } from '@nuxt/utils'
+import { determineGlobals, isRelative, isUrl, urlJoin } from '@nuxt/utils'
 import { VueRenderer } from '@nuxt/vue-renderer'
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
@@ -21,7 +21,7 @@ export default class Server {
 
     this.globals = determineGlobals(nuxt.options.globalName, nuxt.options.globals)
 
-    this.publicPath = isUrl(this.options.build.publicPath)
+    this.publicPath = isUrl(this.options.build.publicPath) || isRelative(this.options.build.publicPath)
       ? this.options.build._publicPath
       : this.options.build.publicPath
 
