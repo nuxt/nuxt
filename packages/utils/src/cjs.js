@@ -77,7 +77,7 @@ export function resolveModule (id, paths) {
     paths = [paths]
   }
   return _require.resolve(id, {
-    paths: [].concat(paths || [], global.__NUXT_PATHS__ || [], process.cwd())
+    paths: [].concat(...(global.__NUXT_PREPATHS__ || []), paths || [], global.__NUXT_PATHS__ || [], process.cwd())
   })
 }
 
