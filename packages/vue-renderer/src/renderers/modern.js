@@ -1,4 +1,5 @@
-import { isRelative, isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
+import { isRelative } from 'ufo'
+import { isUrl, urlJoin, safariNoModuleFix } from '@nuxt/utils'
 import SSRRenderer from './ssr'
 
 export default class ModernRenderer extends SSRRenderer {
