@@ -227,6 +227,7 @@ export default class WebpackBaseConfig {
     const webpackModulesDir = ['node_modules'].concat(this.buildContext.options.modulesDir)
 
     const resolvePath = [
+      ...(global.__NUXT_PREPATHS__ || []),
       this.buildContext.options.rootDir,
       __dirname,
       ...(global.__NUXT_PATHS__ || []),
