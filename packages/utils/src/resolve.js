@@ -86,6 +86,7 @@ export function defineAlias (src, target, prop, opts = {}) {
         warned = true
         consola.warn({
           message: `'${prop}' is deprecated'`,
+          // eslint-disable-next-line unicorn/error-message
           additional: new Error().stack.split('\n').splice(2).join('\n')
         })
       }

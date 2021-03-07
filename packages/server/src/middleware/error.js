@@ -83,8 +83,7 @@ const normalizeError = (_error, { srcDir, rootDir, buildDir }) => {
     _error = { message: '<empty>' }
   }
 
-  const error = new Error()
-  error.message = _error.message
+  const error = new Error(_error.message)
   error.name = _error.name
   error.statusCode = _error.statusCode || 500
   error.headers = _error.headers
