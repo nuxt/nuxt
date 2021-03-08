@@ -89,7 +89,13 @@ export async function ensureBuild (cmd) {
 
     // Quick diff
     let needBuild = false
-    for (const field of ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']) {
+    let fields = ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']
+
+    if (nuxt.options.build.ignoreEnv === true) {
+      fields = fields.filter(field => !['env', 'process.env'].includes(field))
+    }
+
+    for (const field of fields) {
       if (JSON.stringify(previousBuild[field]) !== JSON.stringify(currentBuild[field])) {
         needBuild = true
         consola.info(`Doing webpack rebuild because ${field} changed`)
