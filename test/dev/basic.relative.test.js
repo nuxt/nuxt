@@ -42,10 +42,6 @@ describe('basic ssr with relative path', () => {
     nuxt = new Nuxt(config)
     await nuxt.ready()
 
-    const builder = new Builder(nuxt)
-
-    await builder.build()
-
     port = await getPort()
     await nuxt.server.listen(port, 'localhost')
 
