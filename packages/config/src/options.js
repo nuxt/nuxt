@@ -213,8 +213,12 @@ export function getNuxtConfig (_options) {
     options.appTemplatePath = path.resolve(options.srcDir, options.appTemplatePath)
   }
 
-  options.build.publicPath = options.build.publicPath.replace(/([^/])$/, '$1/')
-  options.build._publicPath = options.build._publicPath.replace(/([^/])$/, '$1/').replace(/^\.\//, '/')
+  options.build.publicPath = withTrailingSlash(options.build.publicPath)
+  options.build._publicPath = withTrailingSlash(options.build._publicPath)
+  // Ensure that _publicPath is absolute (for use in server/webpack)
+  if (isRelative(options.build._publicPath)) {
+    options.build._publicPath = options.build._publicPath.replace(/^\.+\//, '/')
+  }
 
   // Ignore publicPath on dev
   if (options.dev && isUrl(options.build.publicPath)) {
