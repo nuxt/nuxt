@@ -202,14 +202,14 @@ export default class WebpackBaseConfig {
   output () {
     const {
       options: { buildDir, router },
-      buildOptions: { publicPath, _publicPath }
+      buildOptions: { publicPath }
     } = this.buildContext
     return {
       path: path.resolve(buildDir, 'dist', this.isServer ? 'server' : 'client'),
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
-      publicPath: isRelative(publicPath) ? _publicPath : isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
+      publicPath: isUrl(publicPath) ? publicPath : isRelative(publicPath) ? publicPath.replace(/^\.+\//, '/') : urlJoin(router.base, publicPath)
     }
   }
 
