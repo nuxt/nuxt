@@ -267,10 +267,8 @@ export default class Generator {
 
     // Add .nojekyll file to let GitHub Pages add the _nuxt/ folder
     // https://help.github.com/articles/files-that-start-with-an-underscore-are-missing/
-    if (this.options.generate.nojekyll) {
-      const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
-      await fsExtra.writeFile(nojekyllPath, '')
-    }
+    const nojekyllPath = path.resolve(this.distPath, '.nojekyll')
+    await fsExtra.writeFile(nojekyllPath, '')
 
     await this.nuxt.callHook('generate:distCopied', this)
     await this.nuxt.callHook('export:distCopied', this)

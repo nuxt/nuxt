@@ -196,7 +196,6 @@ Object {
     "fallback": "200.html",
     "interval": 0,
     "manifest": true,
-    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
@@ -585,7 +584,6 @@ Object {
     "fallback": "200.html",
     "interval": 0,
     "manifest": true,
-    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": undefined,
