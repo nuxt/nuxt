@@ -17,6 +17,7 @@ export interface NuxtOptionsGenerate {
   dir?: string
   exclude?: RegExp[]
   fallback?: string | boolean
+  ignoreEnv?: boolean
   interval?: number
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
