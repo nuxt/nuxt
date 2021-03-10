@@ -89,10 +89,11 @@ export async function ensureBuild (cmd) {
 
     // Quick diff
     let needBuild = false
-    let fields = ['nuxtVersion', 'ssr', 'target', 'env', 'process.env']
 
-    if (nuxt.options.build.ignoreEnv === true) {
-      fields = fields.filter(field => !['env', 'process.env'].includes(field))
+    const fields = ['nuxtVersion', 'ssr', 'target']
+
+    if (nuxt.options.generate.ignoreEnv !== true) {
+      fields.push('env', 'process.env')
     }
 
     for (const field of fields) {

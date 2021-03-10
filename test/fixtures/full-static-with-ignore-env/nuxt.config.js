@@ -8,7 +8,7 @@ export default {
   router: {
     // base: '/test',
   },
-  build: {
+  generate: {
     ignoreEnv: true
   },
   foo: {
