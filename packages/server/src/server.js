@@ -23,7 +23,7 @@ export default class Server {
 
     this.publicPath = isUrl(this.options.build.publicPath)
       ? this.options.build._publicPath
-      : this.options.build.publicPath
+      : this.options.build.publicPath.replace(/^\.+\//, '/')
 
     // Runtime shared resources
     this.resources = {}

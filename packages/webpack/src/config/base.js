@@ -10,6 +10,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin'
 import WebpackBar from 'webpackbar'
 import env from 'std-env'
 import semver from 'semver'
+import { isRelative } from 'ufo'
 
 import { TARGETS, isUrl, urlJoin, getPKG, tryResolve, requireModule, resolveModule } from '@nuxt/utils'
 
@@ -208,7 +209,7 @@ export default class WebpackBaseConfig {
       filename: this.getFileName('app'),
       futureEmitAssets: true, // TODO: Remove when using webpack 5
       chunkFilename: this.getFileName('chunk'),
-      publicPath: isUrl(publicPath) ? publicPath : urlJoin(router.base, publicPath)
+      publicPath: isUrl(publicPath) ? publicPath : isRelative(publicPath) ? publicPath.replace(/^\.+\//, '/') : urlJoin(router.base, publicPath)
     }
   }
 
