@@ -103,7 +103,7 @@ export default async (ssrContext) => {
     __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL, ssrContext.nuxt.config.app.assetsPath)
   }
   // Create the app definition and the instance (created for each request)
-const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, ssrContext.runtimeConfig.private)
+  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, ssrContext.runtimeConfig.private)
   const _app = new Vue(app)
   // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
   ssrContext.nuxt.routePath = app.context.route.path
