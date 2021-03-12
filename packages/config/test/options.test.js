@@ -191,6 +191,11 @@ describe('config: options', () => {
       const { _routerBaseSpecified } = getNuxtConfig({ router: { base: '/test' } })
       expect(_routerBaseSpecified).toEqual(true)
     })
+
+    test('should not set _routerBaseSpecified when baseTag is set to false', () => {
+      const { _routerBaseSpecified } = getNuxtConfig({ router: { base: '/test', baseTag: false } })
+      expect(_routerBaseSpecified).toBeUndefined()
+    })
   })
 
   describe('config: options dir', () => {
