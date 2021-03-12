@@ -31,7 +31,7 @@ export function getNuxtConfig (_options) {
     options.router.middleware = [options.router.middleware]
   }
 
-  if (typeof options.router.baseTag === 'undefined') {
+  if (options.router && typeof options.router.baseTag === 'undefined') {
     options.router.baseTag = true
   }
 
