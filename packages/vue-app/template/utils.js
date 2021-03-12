@@ -149,7 +149,7 @@ export function resolveRouteComponents (route, fn) {
         try {
           Component = await Component()
         } catch (error) {
-          // Handle chunk loading errors
+          // Handle webpack chunk loading errors
           // This may be due to a new deployment or a network problem
           if (error && error.name === 'ChunkLoadError' && window.location.hash !== '#retry') {
             // mark the page not to reload infinitely
