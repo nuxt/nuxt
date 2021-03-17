@@ -35,7 +35,7 @@ export async function loadNuxtConfig ({
 
   // Load env
   envConfig = {
-    dotenv: '.env',
+    dotenv: (process.env.NODE_ENV.trim() === 'development') ? '.env.development' : (process.env.NODE_ENV.trim() === 'production') ? '.env.production' : '.env',
     env: process.env,
     expand: true,
     ...envConfig
