@@ -17,7 +17,7 @@ export default <Plugin> function ({ app }) {
   )
 }
 
-export function createStore (arg1, arg2) {
+export function createStore (arg1: any, arg2?: any) {
   const store = defineStore(arg1, arg2)
 
   return () => useStore(store)

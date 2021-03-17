@@ -1,17 +1,18 @@
 import { resolve, extname, relative } from 'path'
 import { encodePath } from 'ufo'
 import { NuxtApp } from './app'
+import { Builder } from './builder'
 import { resolveFiles } from './utils'
 
 // Check if name has [slug]
 export interface NuxtRoute {
-  name: string
+  name?: string
   path: string
   file: string
   children: NuxtRoute[]
 }
 
-export async function resolvePagesRoutes (builder, app: NuxtApp) {
+export async function resolvePagesRoutes (builder: Builder, app: NuxtApp) {
   const pagesDir = resolve(app.dir, app.pages!.dir)
   const pagesPattern = `${app.pages!.dir}/**/*.{${app.extensions.join(',')}}`
   const files = await resolveFiles(builder, pagesPattern, app.dir)
