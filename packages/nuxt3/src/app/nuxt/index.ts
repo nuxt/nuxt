@@ -15,8 +15,8 @@ export interface Nuxt {
 
   ssrContext?: Record<string, any>
   payload: {
-    serverRendered?: true,
-    data?: object
+    serverRendered?: true
+    data?: Record<string, any>
     rendered?: Function
     [key: string]: any
   }
@@ -36,7 +36,6 @@ export interface CreateOptions {
 
 export function createNuxt (options: CreateOptions) {
   const nuxt: Nuxt = {
-    app: undefined,
     provide: undefined,
     globalName: 'nuxt',
     state: {},
@@ -68,6 +67,8 @@ export function createNuxt (options: CreateOptions) {
     nuxt.payload = {
       serverRendered: true // TODO: legacy
     }
+
+    nuxt.ssrContext = nuxt.ssrContext || {}
 
     // Expose to server renderer to create window.__NUXT__
     nuxt.ssrContext.payload = nuxt.payload

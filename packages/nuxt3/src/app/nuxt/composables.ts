@@ -1,9 +1,9 @@
 import { getCurrentInstance } from 'vue'
 import type { Nuxt } from 'nuxt/app'
 
-let currentNuxtInstance: Nuxt
+let currentNuxtInstance: Nuxt | null
 
-export const setNuxtInstance = (nuxt: Nuxt) => {
+export const setNuxtInstance = (nuxt: Nuxt | null) => {
   currentNuxtInstance = nuxt
 }
 
@@ -15,21 +15,20 @@ export const setNuxtInstance = (nuxt: Nuxt) => {
 export async function callWithNuxt (nuxt: Nuxt, setup: () => any) {
   setNuxtInstance(nuxt)
   const p = setup()
-  setNuxtInstance(undefined)
+  setNuxtInstance(null)
   await p
 }
 
 /**
  * Returns the current Nuxt instance.
  */
-export function useNuxt () {
+export function useNuxt (): Nuxt {
   const vm = getCurrentInstance()
 
-  if (!vm && !currentNuxtInstance) {
-    throw new Error('nuxt instance unavailable')
-  }
-
   if (!vm) {
+    if (!currentNuxtInstance) {
+      throw new Error('nuxt instance unavailable')
+    }
     return currentNuxtInstance
   }
 
