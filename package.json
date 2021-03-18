@@ -1,0 +1,43 @@
+{
+  "name": "nuxt-framework",
+  "private": "true",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "link": "lerna link",
+    "nuxt": "jiti ./scripts/nuxt",
+    "build": "yarn workspaces run build",
+    "stub": "yarn workspaces run stub",
+    "play": "yarn nuxt dev playground",
+    "lint": "eslint --ext .vue,.ts,.js .",
+    "test": "yarn lint",
+    "postinstall": "yarn stub"
+  },
+  "devDependencies": {
+    "@nuxtjs/eslint-config": "^6.0.0",
+    "@nuxtjs/eslint-config-typescript": "^6.0.0",
+    "@rollup/plugin-alias": "^3.1.2",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.35",
+    "chalk": "^4.1.0",
+    "defu": "^3.2.2",
+    "esbuild": "^0.9.3",
+    "eslint": "^7.22.0",
+    "jest": "^26.6.3",
+    "jiti": "^1.6.4",
+    "lerna": "^4.0.0",
+    "mkdist": "^0.1.2",
+    "pretty-bytes": "^5.6.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.41.5",
+    "rollup-plugin-dts": "^3.0.1",
+    "rollup-plugin-esbuild": "^3.0.2",
+    "standard-version": "^9.1.1",
+    "ts-jest": "^26.5.3",
+    "typescript": "^4.2.3"
+  }
+}

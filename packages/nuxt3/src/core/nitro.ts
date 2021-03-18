@@ -1,12 +1,5 @@
-import {
-  wpfs,
-  getNitroContext,
-  createDevServer,
-  resolveMiddleware,
-  build,
-  prepare,
-  generate
-} from '@nuxt/nitro'
+// eslint-disable-next-line import/named
+import { wpfs, getNitroContext, createDevServer, resolveMiddleware, build, prepare, generate } from '@nuxt/nitro'
 import type { Nuxt } from './index'
 
 export function initNitro (nuxt: Nuxt) {

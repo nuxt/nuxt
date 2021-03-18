@@ -6,9 +6,9 @@ import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
 
-import type { Nuxt } from 'src/core'
-import type { NormalizedConfiguration } from 'src/config'
-import { isPureObject } from 'src/utils'
+import type { Nuxt } from '../../../core'
+import type { NormalizedConfiguration } from '../../../config'
+import { isPureObject } from '../../../utils'
 
 export const orderPresets = {
   cssnanoLast (names) {

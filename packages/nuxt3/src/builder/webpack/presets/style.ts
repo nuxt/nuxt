@@ -1,7 +1,7 @@
 import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import { wrapArray } from 'src/utils'
+import { wrapArray } from '../../../utils'
 import { fileName, WebpackConfigContext, applyPresets } from '../utils/config'
 
 export function style (ctx: WebpackConfigContext) {

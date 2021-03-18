@@ -12,6 +12,24 @@ export interface NuxtRoute {
   children: NuxtRoute[]
 }
 
+// TODO: should be const
+enum SegmentParserState {
+  initial,
+  static,
+  dynamic,
+}
+
+// TODO: should be const
+enum SegmentTokenType {
+  static,
+  dynamic,
+}
+
+interface SegmentToken {
+  type: SegmentTokenType
+  value: string
+}
+
 export async function resolvePagesRoutes (builder: Builder, app: NuxtApp) {
   const pagesDir = resolve(app.dir, app.pages!.dir)
   const pagesPattern = `${app.pages!.dir}/**/*.{${app.extensions.join(',')}}`
@@ -85,24 +103,6 @@ function getRoutePath (tokens: SegmentToken[]): string {
         : encodePath(token.value))
     )
   }, '/')
-}
-
-// TODO: should be const
-enum SegmentParserState {
-  initial,
-  static,
-  dynamic,
-}
-
-// TODO: should be const
-enum SegmentTokenType {
-  static,
-  dynamic,
-}
-
-interface SegmentToken {
-  type: SegmentTokenType
-  value: string
 }
 
 const PARAM_CHAR_RE = /[\w\d_]/

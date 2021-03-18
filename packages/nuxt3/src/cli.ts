@@ -1,5 +1,6 @@
 import { resolve } from 'path'
-import { loadNuxt, build } from '.'
+import { loadNuxt } from './core/load'
+import { build } from './builder'
 
 async function _main () {
   const args = process.argv.splice(2)

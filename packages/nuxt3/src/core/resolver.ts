@@ -1,14 +1,14 @@
 import { resolve, join } from 'path'
 import fs from 'fs-extra'
 
-import { Nuxt } from 'src/core'
 import jiti from 'jiti'
+import { Nuxt } from '../core'
 import {
   startsWithRootAlias,
   startsWithSrcAlias,
   isExternalDependency,
   clearRequireCache
-} from 'src/utils'
+} from '../utils'
 
 interface ResolvePathOptions {
   isAlias?: boolean

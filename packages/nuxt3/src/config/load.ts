@@ -3,14 +3,14 @@ import fs from 'fs'
 import defu from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
-import { clearRequireCache, scanRequireTree } from 'src/utils'
 import jiti from 'jiti'
 import _createRequire from 'create-require'
 import destr from 'destr'
 import * as rc from 'rc9'
+import { clearRequireCache, scanRequireTree } from '../utils'
 
-import { LoadOptions } from 'src/core/load'
-import { CliConfiguration, Configuration } from 'src/config/options'
+import { LoadOptions } from '../core/load'
+import { CliConfiguration, Configuration } from '../config/options'
 import { defaultNuxtConfigFile } from './config'
 
 // @ts-ignore

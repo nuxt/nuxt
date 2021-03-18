@@ -1,4 +1,4 @@
-import { ESBuildPlugin, ESBuildMinifyPlugin } from 'esbuild-loader'
+import { ESBuildMinifyPlugin } from 'esbuild-loader'
 import { WebpackConfigContext } from '../utils/config'
 
 export function esbuild (ctx: WebpackConfigContext) {
@@ -10,8 +10,6 @@ export function esbuild (ctx: WebpackConfigContext) {
   const target = ctx.isServer ? 'node14' : 'chrome85'
 
   config.optimization.minimizer.push(new ESBuildMinifyPlugin())
-
-  config.plugins.push(new ESBuildPlugin())
 
   config.module.rules.push(
     {

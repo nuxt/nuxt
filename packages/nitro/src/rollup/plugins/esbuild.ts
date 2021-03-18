@@ -2,7 +2,7 @@
 
 import { extname, relative } from 'path'
 import { Plugin, PluginContext } from 'rollup'
-import { startService, Loader, Service, TransformResult } from 'esbuild'
+import { Loader, TransformResult, transform } from 'esbuild'
 import { createFilter, FilterPattern } from '@rollup/pluginutils'
 
 const defaultLoaders: { [ext: string]: Loader } = {
@@ -64,23 +64,8 @@ export function esbuild (options: Options = {}): Plugin {
     options.exclude || EXCLUDE_REGEXP
   )
 
-  let service: Service | undefined
-
-  const stopService = () => {
-    if (service) {
-      service.stop()
-      service = undefined
-    }
-  }
-
   return {
     name: 'esbuild',
-
-    async buildStart () {
-      if (!service) {
-        service = await startService()
-      }
-    },
 
     async transform (code, id) {
       if (!filter(id)) {
@@ -90,13 +75,13 @@ export function esbuild (options: Options = {}): Plugin {
       const ext = extname(id)
       const loader = loaders[ext]
 
-      if (!loader || !service) {
+      if (!loader) {
         return null
       }
 
       target = options.target || 'node12'
 
-      const result = await service.transform(code, {
+      const result = await transform(code, {
         loader,
         target,
         define: options.define,
@@ -114,16 +99,9 @@ export function esbuild (options: Options = {}): Plugin {
       )
     },
 
-    buildEnd (error) {
-      // Stop the service early if there's error
-      if (error && !this.meta.watchMode) {
-        stopService()
-      }
-    },
-
     async renderChunk (code) {
-      if (options.minify && service) {
-        const result = await service.transform(code, {
+      if (options.minify) {
+        const result = await transform(code, {
           loader: 'js',
           minify: true,
           target
@@ -136,12 +114,6 @@ export function esbuild (options: Options = {}): Plugin {
         }
       }
       return null
-    },
-
-    generateBundle () {
-      if (!this.meta.watchMode) {
-        stopService()
-      }
     }
   }
 }

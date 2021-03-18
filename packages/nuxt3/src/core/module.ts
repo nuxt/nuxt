@@ -3,10 +3,10 @@ import fs from 'fs'
 import hash from 'hash-sum'
 import consola from 'consola'
 
-import type { NormalizedConfiguration } from 'src/config'
-import { chainFn, sequence } from 'src/utils'
+import type { NormalizedConfiguration } from '../config'
+import { chainFn, sequence } from '../utils'
 
-import type { NuxtModule, ModuleHandler } from 'src/config/config/_common'
+import type { NuxtModule, ModuleHandler } from '../config/config/_common'
 import Nuxt from './nuxt'
 
 interface TemplateInput {

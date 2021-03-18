@@ -10,8 +10,8 @@ import type { Compiler, Watching } from 'webpack'
 import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
 
-import { Nuxt } from 'src/core'
-import { TARGETS, parallel, sequence, wrapArray } from 'src/utils'
+import { Nuxt } from '../../core'
+import { TARGETS, parallel, sequence, wrapArray } from '../../utils'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
 import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
@@ -138,7 +138,7 @@ class WebpackBundler {
       // Client build
       if (['client', 'modern'].includes(name)) {
         return new Promise((resolve, reject) => {
-          compiler.hooks.done.tap('nuxt-dev', () => { resolve() })
+          compiler.hooks.done.tap('nuxt-dev', () => { resolve(null) })
           compiler.hooks.failed.tap('nuxt-errorlog', (err) => { reject(err) })
           // Start watch
           this.webpackDev(compiler)
@@ -151,7 +151,7 @@ class WebpackBundler {
           if (err) {
             return reject(err)
           }
-          resolve()
+          resolve(null)
         })
 
         watching.closeAsync = pify(watching.close)
@@ -181,6 +181,7 @@ class WebpackBundler {
 
     const { name } = compiler.options
     const buildOptions = this.nuxt.options.build
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
     // Create webpack dev middleware

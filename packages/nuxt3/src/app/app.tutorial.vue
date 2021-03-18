@@ -29,7 +29,9 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               ><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-              <div class="ml-4 text-lg leading-7 font-semibold"><a href="https://nuxtjs.com" class="hover:underline text-gray-900 dark:text-white">Documentation</a></div>
+              <div class="ml-4 text-lg leading-7 font-semibold">
+                <a href="https://nuxtjs.com" class="hover:underline text-gray-900 dark:text-white">Documentation</a>
+              </div>
             </div>
             <div class="ml-10">
               <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">
@@ -51,7 +53,9 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               ><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" /></svg>
-              <div class="ml-4 text-lg leading-7 font-semibold"><a href="https://twitter.com/nuxt_js" class="hover:underline text-gray-900 dark:text-white">Twitter</a></div>
+              <div class="ml-4 text-lg leading-7 font-semibold">
+                <a href="https://twitter.com/nuxt_js" class="hover:underline text-gray-900 dark:text-white">Twitter</a>
+              </div>
             </div>
             <div class="ml-10">
               <div class="mt-2 text-gray-600 dark:text-gray-400 text-sm">

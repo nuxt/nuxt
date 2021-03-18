@@ -1,4 +1,4 @@
-import { EnvConfig } from 'src/config/load'
+import { EnvConfig } from '../config/load'
 import { loadNuxtConfig } from '../config'
 import Nuxt from './nuxt'
 

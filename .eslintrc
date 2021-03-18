@@ -1,0 +1,12 @@
+{
+  "globals": {
+    "NodeJS": true
+  },
+  "extends": [
+    "@nuxtjs/eslint-config-typescript"
+  ],
+  "rules": {
+    "no-console": "off",
+    "vue/one-component-per-file": "off"
+  }
+}

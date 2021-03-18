@@ -22,6 +22,7 @@ export function deleteProp<O extends Record<string, any>, K extends string> (obj
 
 type MergeArrays<S, T> = S extends Array<infer A1> ? T extends Array<infer A2> ? Array<A1 | A2> : T | Array<A1> : T | S
 type MergeObjects<S extends Record<string, any>, T extends Record<string, any>> = Omit<S & T, keyof S & keyof T> & {
+  // eslint-disable-next-line no-use-before-define
     -readonly [K in keyof S & keyof T]: Merge<S[K], T[K]>
 }
 type Merge<S, T> = S extends Array<any> ? MergeArrays<S, T> : S extends Function ? S | T : S extends RegExp ? S | T : S extends Promise<any> ? S | T : T extends Function ? S | T : S extends Record<string, any> ? T extends Record<string, any> ? MergeObjects<S, T> : S | T : MergeArrays<S, T>

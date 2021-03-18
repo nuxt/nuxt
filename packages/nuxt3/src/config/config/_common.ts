@@ -1,14 +1,14 @@
 import type { WatchOptions as ChokidarWatchOptions } from 'chokidar'
 import type express from 'express'
 import type { configHooksT } from 'hookable'
-import { APP_DIR } from 'src/index'
 import ignore from 'ignore'
 import capitalize from 'lodash/capitalize'
 import env from 'std-env'
 import type { Configuration as WebpackConfiguration } from 'webpack'
-import { TARGETS, MODES, Target, Mode } from 'src/utils'
-
 import Hookable from 'hookable'
+import { TARGETS, MODES, Target, Mode } from '../../utils'
+
+import { APP_DIR } from '../../consts'
 import type { NormalizedConfiguration } from '../options'
 
 type IgnoreOptions = Parameters<typeof ignore>[0]
