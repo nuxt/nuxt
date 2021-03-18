@@ -34,7 +34,7 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: { esModule: false },
+    css: { esModule: false, modules: { compileType: 'icss' } },
     cssModules: {
       esModule: false,
       modules: {
