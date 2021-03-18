@@ -156,7 +156,7 @@ export default async (ssrContext) => {
   <% if (debug) { %>const s = Date.now()<% } %>
 
   // Components are already resolved by setContext -> getRouteData (app/utils.js)
-  const Components = getMatchedComponents(router.match(ssrContext.url))
+  const Components = getMatchedComponents(app.context.route)
 
   <% if (store) { %>
   /*
