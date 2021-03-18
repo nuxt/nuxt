@@ -21,7 +21,7 @@
     "@rollup/plugin-alias": "^3.1.2",
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
-    "@types/jest": "^26.0.20",
+    "@types/jest": "^26.0.21",
     "@types/node": "^14.14.35",
     "chalk": "^4.1.0",
     "defu": "^3.2.2",
@@ -37,7 +37,7 @@
     "rollup-plugin-dts": "^3.0.1",
     "rollup-plugin-esbuild": "^3.0.2",
     "standard-version": "^9.1.1",
-    "ts-jest": "^26.5.3",
+    "ts-jest": "^26.5.4",
     "typescript": "^4.2.3"
   }
 }
