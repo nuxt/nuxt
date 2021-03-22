@@ -55,6 +55,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
       },
       "cssModules": Object {
         "esModule": false,
@@ -441,6 +444,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
       },
       "cssModules": Object {
         "esModule": false,

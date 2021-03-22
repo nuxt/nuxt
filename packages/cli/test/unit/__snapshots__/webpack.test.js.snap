@@ -135,6 +135,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -208,6 +211,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -287,6 +293,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -375,6 +384,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -463,6 +475,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
@@ -548,6 +563,9 @@ exports[`webpack nuxt webpack module.rules 1`] = `
             \\"options\\": Object {
               \\"esModule\\": false,
               \\"importLoaders\\": 2,
+              \\"modules\\": Object {
+                \\"compileType\\": \\"icss\\",
+              },
               \\"sourceMap\\": false,
               \\"url\\": [Function isUrlResolvingEnabled],
             },
