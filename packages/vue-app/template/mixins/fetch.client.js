@@ -85,7 +85,7 @@ function createdFullStatic() {
 
   // If there is a missing payload
   if (!data) {
-    this.$fetch.call(this)
+    this.$fetch()
     return
   }
 
