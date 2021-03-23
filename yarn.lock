@@ -1896,17 +1896,17 @@
     node-gyp "^7.1.0"
     read-package-json-fast "^2.0.1"
 
-"@nuxt/components@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.npmjs.org/@nuxt/components/-/components-2.1.3.tgz#5be51bf3f1aea0aef218abfc12c41a9e733d0d1b"
-  integrity sha512-MXChq9y2VGIwT3DKVrxRhJZT2RqRNjyMtKlMWF+VnOa1vJ82A5tAXFKxCvSv9RfVx+nS7bXYAk1Mpp4Qzqm3zQ==
+"@nuxt/components@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.npmjs.org/@nuxt/components/-/components-2.1.4.tgz#6d3774704be9b3f692a9bb6d994b1261351799d8"
+  integrity sha512-V3AMoZz2ADhI0SbbUoX1U70eulL/xDwWpV5L/PLmoUHN7NuzsvBbOIl8JBXxf+Vp/d5TZwO0I2x7cHiukydfmA==
   dependencies:
     chalk "^4.1.0"
     chokidar "^3.5.1"
     glob "^7.1.6"
-    globby "^11.0.2"
+    globby "^11.0.3"
     scule "^0.1.1"
-    semver "^7.3.4"
+    semver "^7.3.5"
     upath "^2.0.1"
     vue-template-compiler "^2.6.12"
 
