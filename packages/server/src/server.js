@@ -116,6 +116,7 @@ export default class Server {
         }
         // Safari over-caches JS (breaking HMR) and the seemingly only way to turn
         // this off in dev mode is to set Vary: * header
+        // #3828, #9034
         if (req.url.startsWith(this.publicPath) && req.url.endsWith('.js')) {
           res.setHeader('Vary', '*')
         }
