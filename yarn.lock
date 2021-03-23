@@ -9161,10 +9161,10 @@ node-gyp@^7.1.0:
     tar "^6.0.2"
     which "^2.0.2"
 
-node-html-parser@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-3.1.0.tgz#2630dcd654b1eaff370284f49d96ddfc67a4094a"
-  integrity sha512-BelrM4a7Pz7zppZoeryUWVjdfalyaLzuwkYMC5GKloEaF/01QGjWzmVL67H11pbWLq/R4NmRT3dPfVLOGwlp5w==
+node-html-parser@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.npmjs.org/node-html-parser/-/node-html-parser-3.1.1.tgz#7bcd5bbb93b01de8ea627ccbac51bef07c4e3b2d"
+  integrity sha512-V+9bmEAO3qYk1/C+JtLLR2WBG0BiLpyTtxKqomo1ug/IZqT2eNOef0kTePtWIjvbfUKseExL0K9g9bD5dh+SdA==
   dependencies:
     css-select "^3.1.2"
     he "1.2.0"
@@ -11687,6 +11687,13 @@ semver@^7.1.1, semver@^7.1.3, semver@^7.2.1, semver@^7.3.2, semver@^7.3.4:
   version "7.3.4"
   resolved "https://registry.npmjs.org/semver/-/semver-7.3.4.tgz#27aaa7d2e4ca76452f98d3add093a72c943edc97"
   integrity sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==
+  dependencies:
+    lru-cache "^6.0.0"
+
+semver@^7.3.5:
+  version "7.3.5"
+  resolved "https://registry.npmjs.org/semver/-/semver-7.3.5.tgz#0b621c879348d8998e4b0e4be94b3f12e6018ef7"
+  integrity sha512-PoeGJYh8HK4BTO/a9Tf6ZG3veo/A7ZVsYrSA6J8ny9nb3B1VrpkuN+z9OE5wfE5p6H4LchYZsegiQgbJD94ZFQ==
   dependencies:
     lru-cache "^6.0.0"
 
