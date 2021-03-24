@@ -151,10 +151,20 @@ export function resolveRouteComponents (route, fn) {
         } catch (error) {
           // Handle webpack chunk loading errors
           // This may be due to a new deployment or a network problem
-          if (error && error.name === 'ChunkLoadError' && window.location.hash !== '#retry') {
-            // mark the page not to reload infinitely
-            window.location.hash = '#retry'
-            window.location.reload(true /* skip cache */)
+          if (
+            error &&
+            error.name === 'ChunkLoadError' &&
+            typeof window !== 'undefined' &&
+            window.sessionStorage
+          ) {
+            const timeNow = (new Date()).getTime()
+            const previousReloadTime = window.sessionStorage.getItem('nuxt-reload')
+
+            // check for previous reload time not to reload infinitely
+            if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
+              window.sessionStorage.setItem('nuxt-reload', timeNow)
+              window.location.reload(true /* skip cache */)
+            }
           }
 
           throw error
