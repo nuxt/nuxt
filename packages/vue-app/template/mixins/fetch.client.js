@@ -83,6 +83,12 @@ function createdFullStatic() {
     return
   }
 
+  // If there is a missing payload
+  if (!data) {
+    this.$fetch()
+    return
+  }
+
   // Merge data
   for (const key in data) {
     Vue.set(this.$data, key, data[key])
