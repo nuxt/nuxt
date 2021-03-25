@@ -461,7 +461,7 @@ export function getNuxtConfig (_options) {
   })
   // Expose app config to $config.app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig.app = options.app
+  options.publicRuntimeConfig.app = defu(options.publicRuntimeConfig.app, options.app)
 
   // Generate staticAssets
   const { staticAssets } = options.generate
