@@ -26,25 +26,29 @@ import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
 
 type CssLoaderUrlFunction = (url: string, resourcePath: string) => boolean
-type CssLoaderImportFunction = (parsedImport: string, resourcePath: string) => boolean
+type CssLoaderImportFunction = (url: string, media: string, resourcePath: string) => boolean
+
 type CssLoaderMode = 'global' | 'local' | 'pure'
 interface CssLoaderModulesOptions {
-  context?: string
-  exportLocalsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
-  exportOnlyLocals?: boolean
-  getLocalIdent?: (context: string, localIdentName: string, localName: string, options: CssLoaderModulesOptions) => string
-  localIdentHashPrefix?: string
-  localIdentName?: string
-  localIdentRegExp?: string | RegExp
-  mode?: CssLoaderMode
+  compileType?: 'module' | 'icss',
+  mode?: CssLoaderMode,
+  auto?: Boolean | RegExp | ((resourcePath: string) => boolean),
+  exportGlobals?: boolean,
+  localIdentName?: string,
+  context?: string,
+  localIdentHashPrefix?: string,
+  namedExport?: boolean,
+  exportLocalsConvention?: 'asIs' | 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly',
+  exportOnlyLocals?: boolean,
 }
 
 interface CssLoaderOptions {
+  url?: boolean | CssLoaderUrlFunction
   import?: boolean | CssLoaderImportFunction
-  importLoaders?: number
   modules?: boolean | CssLoaderMode | CssLoaderModulesOptions
   sourceMap?: boolean
-  url?: boolean | CssLoaderUrlFunction
+  importLoaders?: number
+  esModule?: boolean
 }
 
 interface UrlLoaderOptions {
