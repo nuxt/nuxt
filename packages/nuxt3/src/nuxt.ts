@@ -4,7 +4,7 @@ import { dirname } from 'path'
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import Hookable from 'hookable'
-import { loadNuxtConfig } from '@nuxt/kit'
+import { LoadNuxtOptions, loadNuxtConfig } from '@nuxt/kit'
 import { version } from '../package.json'
 
 import ModuleContainer from './module'
