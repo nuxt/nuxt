@@ -1,0 +1,24 @@
+{
+  "name": "@nuxt/nu",
+  "version": "0.0.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "bin": {
+    "nu": "./bin/nu.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "jiti ../../scripts/build .",
+    "stub": "yarn build --stub",
+    "prepublishOnly": "yarn build"
+  },
+  "build": {
+    "entries": {
+      "index": { "format": "cjs" }
+    }
+  }
+}
