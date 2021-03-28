@@ -32,7 +32,7 @@ export class Builder {
   }
 
   build () {
-    return build(this)
+    return _build(this)
   }
 
   close () {
@@ -41,7 +41,7 @@ export class Builder {
 }
 
 // Extends VueRouter
-async function build (builder: Builder) {
+async function _build (builder: Builder) {
   const { nuxt } = builder
 
   await fsExtra.emptyDir(nuxt.options.buildDir)
@@ -106,4 +106,12 @@ async function bundle ({ nuxt }: Builder) {
     : import('./webpack/webpack' /* webpackChunkName: "webpack" */))
     .then(p => p.bundle)
   return bundle(nuxt)
+}
+
+export function getBuilder (nuxt: Nuxt) {
+  return new Builder(nuxt)
+}
+
+export function build (nuxt: Nuxt) {
+  return getBuilder(nuxt).build()
 }

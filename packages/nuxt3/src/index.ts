@@ -1,3 +1,2 @@
-export { loadNuxt } from './core'
+export { Nuxt, loadNuxt } from './nuxt'
 export { build } from './builder'
-export { main } from '../../nu/src'

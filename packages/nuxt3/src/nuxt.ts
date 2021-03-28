@@ -1,10 +1,11 @@
 import type { IncomingHttpHeaders } from 'http'
 
+import { dirname } from 'path'
 import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import Hookable from 'hookable'
-
-import { version } from '../../package.json'
+import { loadNuxtConfig } from '@nuxt/kit'
+import { version } from '../package.json'
 
 import ModuleContainer from './module'
 import Resolver from './resolver'
@@ -18,7 +19,7 @@ declare global {
   }
 }
 
-export default class Nuxt extends Hookable {
+export class Nuxt extends Hookable {
   _ready?: Promise<this>
   _initCalled?: boolean
 
@@ -91,4 +92,16 @@ export default class Nuxt extends Hookable {
       await callback()
     }
   }
+}
+
+export async function loadNuxt (opts: LoadNuxtOptions) {
+  const options = await loadNuxtConfig(opts)
+
+  // Temp
+  options.appDir = dirname(require.resolve('@nuxt/app'))
+  options._majorVersion = 3
+
+  const nuxt = new Nuxt(options)
+  await nuxt.ready()
+  return nuxt
 }

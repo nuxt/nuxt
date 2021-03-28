@@ -8,7 +8,7 @@ import {
   isExternalDependency,
   clearRequireCache
 } from '@nuxt/kit'
-import { Nuxt } from '../core'
+import { Nuxt } from './nuxt'
 
 interface ResolvePathOptions {
   isAlias?: boolean
