@@ -4,8 +4,10 @@
   "description": "Nuxt types",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
-  "types": "index",
+  "main": "index.js",
+  "types": "index.d.ts",
   "files": [
+    "index.js",
     "**/*.d.ts"
   ],
   "dependencies": {
