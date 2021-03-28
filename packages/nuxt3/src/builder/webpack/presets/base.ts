@@ -5,7 +5,7 @@ import consola from 'consola'
 import { DefinePlugin, Configuration } from 'webpack'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'lodash/escapeRegExp'
-import { isUrl, urlJoin, TARGETS } from '../../../utils'
+import { isUrl, urlJoin, TARGETS } from '@nuxt/kit'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
 

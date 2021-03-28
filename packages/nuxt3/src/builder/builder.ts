@@ -1,8 +1,8 @@
 import { join, relative } from 'path'
 import fsExtra from 'fs-extra'
 import { debounce } from 'lodash'
+import { DeterminedGlobals, determineGlobals } from '@nuxt/kit'
 import { Nuxt } from '../core'
-import { DeterminedGlobals, determineGlobals } from '../utils'
 import {
   templateData,
   compileTemplates,
