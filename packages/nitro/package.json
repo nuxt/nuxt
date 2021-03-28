@@ -14,7 +14,7 @@
   },
   "build": {
     "entries": {
-      "index": {},
+      "index": { "format": "cjs" },
       "compat": { "format": "cjs" },
       "runtime/": {}
     },

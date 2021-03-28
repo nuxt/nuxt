@@ -14,8 +14,7 @@
   },
   "build": {
     "entries": {
-      "index": {},
-      "app/": {}
+      "index": { "format": "cjs" }
     },
     "dependencies": [
       "@vue/compiler-sfc",
@@ -39,6 +38,7 @@
     ]
   },
   "dependencies": {
+    "@nuxt/app": "0.0.0",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/nitro": "^0.1.11",
     "@vitejs/plugin-vue": "^1.1.5",

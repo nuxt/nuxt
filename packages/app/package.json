@@ -1,18 +1,16 @@
 {
-  "name": "@nuxt/kit",
+  "name": "@nuxt/app",
   "version": "0.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "genconfig": "jiti ./scripts/genconfig",
-    "stub": "yarn build --stub",
-    "prepublishOnly": "yarn build && yarn genconfig"
+    "build": "mkdist",
+    "stub": "rm -rf dist && ln -s src dist #",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "create-require": "^1.1.1",
@@ -27,7 +25,7 @@
   },
   "build": {
     "entries": {
-      "index": { "format": "cjs" }
+      "index": {}
     }
   }
 }

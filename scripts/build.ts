@@ -56,12 +56,12 @@ async function main () {
       if (entry.bundle) {
         const input = resolve(ctx.rootDir, entry.input)
         stubbed.push(entry.output)
-        const output = resolve(ctx.rootDir, entry.output) + '.ts'
+        const output = resolve(ctx.rootDir, entry.output) + '.js'
         await mkdir(dirname(output)).catch(() => { })
-        await writeFile(output, entry.format === 'cjs'
-          ? `module.exports = require('jiti')()('${input}')`
-          : `export * from '${input}'`
-        )
+        const cjsStub = `module.exports = require('jiti')()('${input}')`
+        const esStub = `export * from '${input}'`
+        await writeFile(output, entry.format === 'cjs' ? cjsStub : esStub)
+        await writeFile(output.replace('.js', '.d.ts'), esStub)
       }
     }
     consola.success(`Stub done: ${stubbed.join(', ')}`)
