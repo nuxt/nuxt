@@ -157,7 +157,7 @@ export function resolveRouteComponents (route, fn) {
             typeof window !== 'undefined' &&
             window.sessionStorage
           ) {
-            const timeNow = (new Date()).getTime()
+            const timeNow = Date.now()
             const previousReloadTime = window.sessionStorage.getItem('nuxt-reload')
 
             // check for previous reload time not to reload infinitely
