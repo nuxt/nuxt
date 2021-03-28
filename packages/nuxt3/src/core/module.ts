@@ -3,10 +3,8 @@ import fs from 'fs'
 import hash from 'hash-sum'
 import consola from 'consola'
 
-import type { NormalizedConfiguration } from '../config'
 import { chainFn, sequence } from '../utils'
 
-import type { NuxtModule, ModuleHandler } from '../config/config/_common'
 import Nuxt from './nuxt'
 
 interface TemplateInput {
@@ -24,7 +22,7 @@ export default class ModuleContainer {
   requiredModules: Record<string, {
     src: string
     options: Record<string, any>
-    handler: ModuleHandler
+    handler
   }>
 
   constructor (nuxt: Nuxt) {
@@ -127,29 +125,29 @@ export default class ModuleContainer {
     this.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
   }
 
-  addServerMiddleware (middleware: NormalizedConfiguration['serverMiddleware'][number]) {
+  addServerMiddleware (middleware) {
     this.options.serverMiddleware.push(middleware)
   }
 
-  extendBuild (fn: NormalizedConfiguration['build']['extend']) {
+  extendBuild (fn) {
     this.options.build.extend = chainFn(this.options.build.extend, fn)
   }
 
-  extendRoutes (fn: NormalizedConfiguration['router']['extendRoutes']) {
+  extendRoutes (fn) {
     this.options.router.extendRoutes = chainFn(
       this.options.router.extendRoutes,
       fn
     )
   }
 
-  requireModule (moduleOpts: NuxtModule) {
+  requireModule (moduleOpts) {
     return this.addModule(moduleOpts)
   }
 
-  async addModule (moduleOpts: NuxtModule) {
-    let src: string | ModuleHandler
+  async addModule (moduleOpts) {
+    let src
     let options: Record<string, any>
-    let handler: ModuleHandler | ModuleHandler & { meta: { name: string } }
+    let handler
 
     // Type 1: String or Function
     if (typeof moduleOpts === 'string' || typeof moduleOpts === 'function') {
@@ -224,7 +222,7 @@ export default class ModuleContainer {
             return
           }
         }
-        this.requiredModules[key] = { src, options, handler: handler as ModuleHandler }
+        this.requiredModules[key] = { src, options, handler }
       }
     }
 

@@ -4,8 +4,6 @@ import isPlainObject from 'lodash/isPlainObject'
 import consola from 'consola'
 import Hookable from 'hookable'
 
-import { getNuxtConfig, Configuration, NormalizedConfiguration } from '../config'
-
 import { version } from '../../package.json'
 
 import ModuleContainer from './module'
@@ -25,7 +23,7 @@ export default class Nuxt extends Hookable {
   _initCalled?: boolean
 
   error?: Error & { statusCode?: number, headers?: IncomingHttpHeaders }
-  options: NormalizedConfiguration
+  options: any
   resolver: Resolver
   moduleContainer: ModuleContainer
   server?: any
@@ -33,11 +31,10 @@ export default class Nuxt extends Hookable {
   render?: any['app']
   showReady?: () => void
 
-  constructor (options: Configuration = {}) {
+  constructor (options) {
     super(consola)
 
-    // Assign options and apply defaults
-    this.options = getNuxtConfig(options)
+    this.options = options
 
     // Create instance of core components
     this.resolver = new Resolver(this)

@@ -56,7 +56,7 @@ async function main () {
       if (entry.bundle) {
         const input = resolve(ctx.rootDir, entry.input)
         stubbed.push(entry.output)
-        const output = resolve(ctx.rootDir, entry.output) + '.js'
+        const output = resolve(ctx.rootDir, entry.output) + '.ts'
         await mkdir(dirname(output)).catch(() => { })
         await writeFile(output, entry.format === 'cjs'
           ? `module.exports = require('jiti')()('${input}')`
@@ -118,7 +118,7 @@ ${buildEntries.map(entry => `${chalk.bold(entry.path)}
   ).join('\n')}`)
 
   const usedDependencies = new Set<string>()
-  const unusedDependencies = new Set<string>(Object.keys(pkg.dependencies))
+  const unusedDependencies = new Set<string>(Object.keys(pkg.dependencies || {}))
   const implicitDependnecies = new Set<string>()
   for (const id of usedImports) {
     unusedDependencies.delete(id)

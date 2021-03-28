@@ -1,53 +1,17 @@
-import { EnvConfig } from '../config/load'
-import { loadNuxtConfig } from '../config'
+import { resolve } from 'path'
+import { loadNuxtConfig } from '@nuxt/kit'
 import Nuxt from './nuxt'
-
-const OVERRIDES = {
-  dry: { dev: false, server: false },
-  dev: { dev: true, _build: true },
-  build: { dev: false, server: false, _build: true },
-  start: { dev: false, _start: true }
+export interface LoadNuxtOptions {
 }
 
-export interface LoadOptions {
-  for?: keyof typeof OVERRIDES
-  ready?: boolean
+export async function loadNuxt (opts: LoadNuxtOptions) {
+  const options = await loadNuxtConfig(opts)
 
-  rootDir?: string
-  envConfig?: EnvConfig
-  configFile?: string
-  configContext?: Record<string, any>,
-  configOverrides?: Record<string, any>,
-  createRequire?: (module: NodeJS.Module) => NodeJS.Require
-}
+  // Temp
+  options.appDir = resolve(__dirname, '../app')
+  options._majorVersion = 3
 
-export async function loadNuxt (loadOptions: LoadOptions | LoadOptions['for']) {
-  // Normalize loadOptions
-  if (typeof loadOptions === 'string') {
-    loadOptions = { for: loadOptions }
-  }
-  const { ready = true } = loadOptions
-  const _for = loadOptions.for || 'dry'
-
-  // Get overrides
-  const override = OVERRIDES[_for]
-
-  // Unsupported purpose
-  if (!override) {
-    throw new Error('Unsupported for: ' + _for)
-  }
-
-  // Load Config
-  const config = await loadNuxtConfig(loadOptions)
-
-  // Apply config overrides
-  Object.assign(config, override)
-
-  // Initiate Nuxt
-  const nuxt = new Nuxt(config)
-  if (ready) {
-    await nuxt.ready()
-  }
-
+  const nuxt = new Nuxt(options)
+  await nuxt.ready()
   return nuxt
 }

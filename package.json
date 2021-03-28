@@ -8,8 +8,8 @@
   "scripts": {
     "link": "lerna link",
     "nuxt": "jiti ./scripts/nuxt",
-    "build": "yarn workspaces run build",
-    "stub": "yarn workspaces run stub",
+    "build": "yarn workspaces run build --silent",
+    "stub": "yarn workspaces run stub --silent",
     "play": "yarn nuxt dev playground",
     "lint": "eslint --ext .vue,.ts,.js .",
     "test": "yarn lint",
