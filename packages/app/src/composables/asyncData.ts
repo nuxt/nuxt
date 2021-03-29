@@ -1,5 +1,5 @@
 import { Ref, ref, onMounted, watch, getCurrentInstance, onUnmounted } from 'vue'
-import { Nuxt, useNuxt } from 'nuxt/app'
+import { Nuxt, useNuxt } from '@nuxt/app'
 
 import { ensureReactive, useData } from './data'
 

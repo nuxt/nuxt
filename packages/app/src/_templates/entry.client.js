@@ -1,6 +1,6 @@
 <%= nuxtOptions.vite ? "import('vite/dynamic-import-polyfill')" : '' %>
 import { createSSRApp, nextTick } from 'vue'
-import { createNuxt, applyPlugins } from 'nuxt/app/nuxt'
+import { createNuxt, applyPlugins } from '@nuxt/app'
 import plugins from './plugins'
 import clientPlugins from './plugins.client'
 import App from '<%= app.main %>'

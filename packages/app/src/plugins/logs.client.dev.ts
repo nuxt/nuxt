@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { Plugin } from 'nuxt/app'
+import type { Plugin } from '@nuxt/app'
 
 export default <Plugin> function logs ({ app }) {
   // Only activate in development

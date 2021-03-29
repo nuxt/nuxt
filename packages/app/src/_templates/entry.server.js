@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createNuxt, applyPlugins } from 'nuxt/app/nuxt'
+import { createNuxt, applyPlugins } from '@nuxt/app'
 import plugins from './plugins'
 import serverPlugins from './plugins.server'
 import App from '<%= app.main %>'

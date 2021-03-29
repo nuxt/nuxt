@@ -1,4 +1,4 @@
-import type { Plugin } from 'nuxt/app'
+import type { Plugin } from '@nuxt/app'
 import { createHead, renderHeadToString } from '@vueuse/head'
 import { Head, Html, Body, Title, Meta, Link, Script, Style } from './head'
 

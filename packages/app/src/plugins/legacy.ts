@@ -1,5 +1,5 @@
 import type { App } from 'vue'
-import type { Plugin } from 'nuxt/app'
+import type { Plugin } from '@nuxt/app'
 
 export type LegacyApp = App<Element> & {
   $root: LegacyApp

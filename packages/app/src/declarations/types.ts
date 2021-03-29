@@ -1,4 +1,4 @@
-import { Nuxt } from 'nuxt/app'
+import { Nuxt } from '@nuxt/app'
 
 declare module 'vue' {
     interface App {

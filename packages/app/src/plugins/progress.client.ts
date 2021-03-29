@@ -1,4 +1,4 @@
-import type { Plugin } from 'nuxt/app'
+import type { Plugin } from '@nuxt/app'
 
 export default <Plugin> function progressbar ({ app }) {
   const { $nuxt } = app
