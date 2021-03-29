@@ -1,7 +1,7 @@
 import { basename, extname } from 'path'
 import hash from 'hash-sum'
 import { camelCase } from 'scule'
-import { NuxtRoute } from './pages'
+import { NuxtRoute } from '../pages'
 // NXT is a set of utils for serializing JavaScript data to JS code
 
 export const serialize = data => JSON.stringify(data, null, 2).replace(/"{(.+)}"/g, '$1')

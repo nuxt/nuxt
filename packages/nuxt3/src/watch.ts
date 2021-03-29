@@ -1,7 +1,7 @@
 import chokidar, { WatchOptions } from 'chokidar'
 import defu from 'defu'
 import consola from 'consola'
-import Ignore from './ignore'
+import Ignore from './utils/ignore'
 
 export function createWatcher (
   pattern: string,

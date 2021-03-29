@@ -1,6 +1,6 @@
 import { resolve } from 'path'
 import globby from 'globby'
-import { Builder } from './builder'
+import { Builder } from '../builder'
 
 // TODO: move to core resolver
 export async function resolveFiles (builder: Builder, pattern: string, srcDir: string) {

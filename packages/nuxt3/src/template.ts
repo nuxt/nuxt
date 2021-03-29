@@ -2,7 +2,7 @@ import { join, relative, dirname } from 'path'
 import fsExtra from 'fs-extra'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
-import * as nxt from './nxt'
+import * as nxt from './utils/nxt'
 
 export interface NuxtTemplate {
   src: string // Absolute path to source file

@@ -2,7 +2,7 @@ import { join, relative } from 'path'
 import fsExtra from 'fs-extra'
 import { debounce } from 'lodash'
 import { DeterminedGlobals, determineGlobals } from '@nuxt/kit'
-import { Nuxt } from '../core'
+import { Nuxt } from './nuxt'
 import {
   templateData,
   compileTemplates,
@@ -11,7 +11,7 @@ import {
 } from './template'
 import { createWatcher } from './watch'
 import { createApp, NuxtApp } from './app'
-import Ignore from './ignore'
+import Ignore from './utils/ignore'
 
 export class Builder {
   nuxt: Nuxt
