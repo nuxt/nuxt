@@ -667,8 +667,8 @@ function fixPrepatch (to, ___) {
       }
 
       if (
-        instance.constructor._dataRefresh &&
-        Components[i] === instance.constructor &&
+        Components[i]._dataRefresh &&
+        <% if (!isDev) { %> Components[i] === instance.constructor && <% } %>
         instance.$vnode.data.keepAlive !== true &&
         typeof instance.constructor.options.data === 'function'
       ) {
