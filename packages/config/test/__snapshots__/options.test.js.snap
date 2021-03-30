@@ -323,7 +323,7 @@ Object {
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
   "publicRuntimeConfig": Object {
-    "app": Object {
+    "_app": Object {
       "assetsPath": "/_nuxt/",
       "basePath": "/",
       "cdnURL": null,
