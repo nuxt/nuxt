@@ -47,6 +47,9 @@ async function main () {
   if (pkg.dependencies) {
     ctx.externals.push(...Object.keys(pkg.dependencies))
   }
+  if (buildOptions.externals) {
+    ctx.externals.push(...buildOptions.externals)
+  }
 
   await promisify(rimraf)(resolve(ctx.rootDir, 'dist'))
 
@@ -68,12 +71,14 @@ async function main () {
     return
   }
 
-  consola.info(`${chalk.cyan(`Builduing ${pkg.name}`)}
+  if (process.env.DEBUG) {
+    consola.info(`${chalk.cyan(`Builduing ${pkg.name}`)}
 
 ${chalk.bold('Root dir:')} ${ctx.rootDir}
 ${chalk.bold('Entries:')}
 ${ctx.entries.map(entry => ' ' + dumpObject(entry)).join('\n')}
 `)
+  }
 
   const rollupOptions = getRollupOptions(ctx)
   const buildResult = await rollup(rollupOptions)
@@ -110,12 +115,16 @@ ${ctx.entries.map(entry => ' ' + dumpObject(entry)).join('\n')}
     })
   }
 
-  consola.success(`${chalk.green('Build succeed')}\n
+  consola.success(chalk.green('Build succeed'))
+
+  if (process.env.DEBUG) {
+    consola.log(`
 ${buildEntries.map(entry => `${chalk.bold(entry.path)}
   size: ${chalk.cyan(entry.bytes ? prettyBytes(entry.bytes) : '-')}
   exports: ${chalk.gray(entry.exports ? entry.exports.join(', ') : '-')}
   chunks: ${chalk.gray(entry.chunks ? entry.chunks.join(', ') : '-')}`
-  ).join('\n')}`)
+    ).join('\n')}`)
+  }
 
   const usedDependencies = new Set<string>()
   const unusedDependencies = new Set<string>(Object.keys(pkg.dependencies || {}))
@@ -182,7 +191,7 @@ function getRollupOptions (ctx: BuildContext): RollupOptions {
     },
 
     external (id) {
-      if (id[0] === '.' || id.includes('src/')) {
+      if (id[0] === '.' || id[0] === '/' || id.includes('src/')) {
         return false
       }
       return !!ctx.externals.find(ext => id.includes(ext))
