@@ -47,7 +47,7 @@ Vue.component(Nuxt.name, Nuxt)
 Object.defineProperty(Vue.prototype, '<%= globals.nuxt %>', {
   get() {
     const globalNuxt = this.$root.$options.<%= globals.nuxt %>
-    if(process.client && !globalNuxt && typeof window !== 'undefined') {
+    if (process.client && !globalNuxt && typeof window !== 'undefined') {
       return window.<%= globals.nuxt %>
     }
     return globalNuxt
