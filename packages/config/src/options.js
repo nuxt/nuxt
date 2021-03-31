@@ -459,9 +459,9 @@ export function getNuxtConfig (_options) {
     assetsPath: isRelativePublicPath ? options.build.publicPath : useCDN ? '/' : joinURL(options.router.base, options.build.publicPath),
     cdnURL: useCDN ? options.build.publicPath : null
   })
-  // Expose app config to $config.app
+  // Expose app config to $config._app
   options.publicRuntimeConfig = options.publicRuntimeConfig || {}
-  options.publicRuntimeConfig.app = defu(options.publicRuntimeConfig.app, options.app)
+  options.publicRuntimeConfig._app = options.app
 
   // Generate staticAssets
   const { staticAssets } = options.generate

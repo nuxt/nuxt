@@ -146,7 +146,29 @@ export function resolveRouteComponents (route, fn) {
     flatMapComponents(route, async (Component, instance, match, key) => {
       // If component is a function, resolve it
       if (typeof Component === 'function' && !Component.options) {
-        Component = await Component()
+        try {
+          Component = await Component()
+        } catch (error) {
+          // Handle webpack chunk loading errors
+          // This may be due to a new deployment or a network problem
+          if (
+            error &&
+            error.name === 'ChunkLoadError' &&
+            typeof window !== 'undefined' &&
+            window.sessionStorage
+          ) {
+            const timeNow = Date.now()
+            const previousReloadTime = parseInt(window.sessionStorage.getItem('nuxt-reload'))
+
+            // check for previous reload time not to reload infinitely
+            if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
+              window.sessionStorage.setItem('nuxt-reload', timeNow)
+              window.location.reload(true /* skip cache */)
+            }
+          }
+
+          throw error
+        }
       }
       match.components[key] = Component = sanitizeComponent(Component)
       return typeof fn === 'function' ? fn(Component, instance, match, key) : Component
