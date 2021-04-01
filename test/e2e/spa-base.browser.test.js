@@ -26,7 +26,7 @@ describe('spa router base browser', () => {
   test('Open /app (router base)', async () => {
     page = await browser.page(url('/app'))
 
-    expect(await page.evaluate(() => location.href)).toBe(url('/app'))
+    expect(await page.evaluate(() => location.href)).toBe(url('/app/'))
 
     expect(await page.html()).not.toContain('This page could not be found')
 
