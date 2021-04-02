@@ -15,7 +15,10 @@ async function _main () {
 
   const { loadNuxt, build } = await import('nuxt3')
 
-  const nuxt = await loadNuxt({ for: isDev ? 'dev' : 'build', rootDir })
+  const nuxt = await loadNuxt({
+    for: isDev ? 'dev' : 'build',
+    rootDir
+  })
 
   if (isDev) {
     // https://github.com/nuxt-contrib/listhen

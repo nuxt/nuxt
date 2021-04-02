@@ -1,123 +1,72 @@
-import path from 'path'
-import consola from 'consola'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { existsSync, lstatSync } from 'fs'
+import { resolve, join } from 'upath'
 
-export const startsWithAlias = (aliasArray: string[]) => (str: string) =>
-  aliasArray.some(c => str.startsWith(c))
-
-export const startsWithSrcAlias = startsWithAlias(['@', '~'])
-
-export const startsWithRootAlias = startsWithAlias(['@@', '~~'])
-
-export const isWindows = process.platform.startsWith('win')
-
-export const wp = function wp (p = '') {
-  if (isWindows) {
-    return p.replace(/\\/g, '\\\\')
-  }
-  return p
+export interface ResolveOptions {
+  base?: string
+  alias?: Record<string, string>
+  extensions?: string[]
 }
 
-// Kept for backward compat (modules may use it from template context)
-export const wChunk = function wChunk (p = '') {
-  return p
-}
-
-const reqSep = /\//g
-const sysSep = escapeRegExp(path.sep)
-const normalize = (string: string) => string.replace(reqSep, sysSep)
-
-export const r = function r (...args: string[]) {
-  const lastArg = args[args.length - 1]
-
-  if (startsWithSrcAlias(lastArg)) {
-    return wp(lastArg)
+function resolvePath (path: string, opts: ResolveOptions = {}) {
+  // Fast return in case of path exists
+  if (existsSync(path)) {
+    return path
   }
 
-  return wp(path.resolve(...args.map(normalize)))
-}
+  let resolvedPath: string
 
-export const relativeTo = function relativeTo (dir: string, ...args: string[]): string {
-  // Keep webpack inline loader intact
-  if (args[0].includes('!')) {
-    const loaders = args.shift()!.split('!')
-
-    return loaders.concat(relativeTo(dir, loaders.pop()!, ...args)).join('!')
+  // Resolve alias
+  if (opts.alias) {
+    resolvedPath = resolveAlias(path, opts.alias)
   }
 
-  // Resolve path
-  const resolvedPath = r(...args)
+  // Resolve relative to base or cwd
+  resolvedPath = resolve(opts.base || '.', resolvedPath)
 
-  // Check if path is an alias
-  if (startsWithSrcAlias(resolvedPath)) {
+  // Check if resolvedPath is a file
+  let isDirectory = false
+  if (existsSync(resolvedPath)) {
+    isDirectory = lstatSync(resolvedPath).isDirectory()
+    if (!isDirectory) {
+      return resolvedPath
+    }
+  }
+
+  // Check possible extensions
+  for (const ext of opts.extensions) {
+    // resolvedPath.[ext]
+    const resolvedPathwithExt = resolvedPath + ext
+    if (!isDirectory && existsSync(resolvedPathwithExt)) {
+      return resolvedPathwithExt
+    }
+    // resolvedPath/index.[ext]
+    const resolvedPathwithIndex = join(resolvedPath, 'index' + ext)
+    if (isDirectory && existsSync(resolvedPathwithIndex)) {
+      return resolvedPathwithIndex
+    }
+  }
+
+  // If extension check fails and resolvedPath is a valid directory, return it
+  if (isDirectory) {
     return resolvedPath
   }
 
-  // Make correct relative path
-  let rp = path.relative(dir, resolvedPath)
-  if (rp[0] !== '.') {
-    rp = '.' + path.sep + rp
-  }
-
-  return wp(rp)
+  // Give up if it is neither a directory
+  throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
 }
 
-interface AliasOptions {
-  bind?: boolean
-  warn?: boolean
-}
-
-export function defineAlias <O extends Record<string, any>> (
-  src: O,
-  target: Record<string, any>,
-  prop: string | string[],
-  opts: AliasOptions = {}
-) {
-  const { bind = true, warn = false } = opts
-
-  if (Array.isArray(prop)) {
-    for (const p of prop) {
-      defineAlias(src, target, p, opts)
+export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
+  for (const key in alias) {
+    if (path.startsWith(key)) {
+      path = alias[key] + path.substr(key.length)
     }
-    return
   }
-
-  let targetVal = target[prop]
-  if (bind && typeof targetVal === 'function') {
-    targetVal = targetVal.bind(target)
-  }
-
-  let warned = false
-
-  Object.defineProperty(src, prop, {
-    get: () => {
-      if (warn && !warned) {
-        warned = true
-        consola.warn({
-          message: `'${prop}' is deprecated'`,
-          // eslint-disable-next-line unicorn/error-message
-          additional: new Error().stack.split('\n').splice(2).join('\n')
-        })
-      }
-      return targetVal
-    }
-  })
+  return path
 }
 
-const isIndex = (s: string) => /(.*)\/index\.[^/]+$/.test(s)
-
-export function isIndexFileAndFolder (pluginFiles: string[]) {
-  // Return early in case the matching file count exceeds 2 (index.js + folder)
-  if (pluginFiles.length !== 2) {
-    return false
+export function tryResolvePath (path: string, opts: ResolveOptions = {}) {
+  try {
+    return resolvePath(path, opts)
+  } catch (e) {
   }
-  return pluginFiles.some(isIndex)
-}
-
-export const getMainModule = () => {
-  return (
-    require.main ||
-    (module && ((module as any).main as NodeJS.Module)) ||
-    module
-  )
 }

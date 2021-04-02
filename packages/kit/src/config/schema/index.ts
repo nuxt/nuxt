@@ -1,6 +1,7 @@
 
 import _app from './_app'
 import _common from './_common'
+import _internal from './_internal'
 import build from './build'
 import messages from './messages'
 import render from './render'
@@ -30,6 +31,7 @@ TODO for top level normalizations: (nuxt2)
 export default {
   ..._app,
   ..._common,
+  ..._internal,
   build,
   messages,
   render,

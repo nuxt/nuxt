@@ -19,10 +19,16 @@ export function templateData (builder) {
   }
 }
 
-async function compileTemplate ({ src, path, data }: NuxtTemplate, destDir: string) {
-  const srcContents = await fsExtra.readFile(src, 'utf-8')
-  const compiledSrc = lodashTemplate(srcContents, {})(data)
-  const dest = join(destDir, path)
+async function compileTemplate (tmpl: NuxtTemplate, destDir: string) {
+  const srcContents = await fsExtra.readFile(tmpl.src, 'utf-8')
+  let compiledSrc
+  try {
+    compiledSrc = lodashTemplate(srcContents, {})(tmpl.data)
+  } catch (err) {
+    console.error('Error compiling template: ', tmpl)
+    throw err
+  }
+  const dest = join(destDir, tmpl.path)
   // consola.log('Compile template', dest)
   await fsExtra.mkdirp(dirname(dest))
   await fsExtra.writeFile(dest, compiledSrc)

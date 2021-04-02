@@ -112,10 +112,10 @@ export default {
   },
 
   extensions: {
-    $resolve: val => ['js', 'mjs', 'ts', 'tsx', 'vue'].concat(val).filter(Boolean)
+    $resolve: val => ['.js', '.mjs', '.ts', '.tsx', '.vue'].concat(val).filter(Boolean)
   },
 
-  styleExtensions: ['css', 'pcss', 'postcss', 'styl', 'stylus', 'scss', 'sass', 'less'],
+  styleExtensions: ['.css', '.pcss', '.postcss', '.styl', '.stylus', '.scss', '.sass', '.less'],
 
   alias: {
     $resolve: (val, get) => ({

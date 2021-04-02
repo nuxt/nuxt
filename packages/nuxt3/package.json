@@ -9,7 +9,6 @@
   ],
   "scripts": {
     "build": "jiti ../../scripts/build .",
-    "stub": "yarn build --stub",
     "prepublishOnly": "yarn build"
   },
   "build": {
@@ -17,6 +16,7 @@
       "index": { "format": "cjs" }
     },
     "dependencies": [
+      "@nuxt/app",
       "@vue/compiler-sfc",
       "postcss",
       "postcss-loader",
@@ -38,6 +38,7 @@
     ]
   },
   "dependencies": {
+    "@nuxt/kit": "0.0.0",
     "@nuxt/app": "0.0.0",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/nitro": "^0.1.11",
@@ -50,12 +51,9 @@
     "chokidar": "^3.5.1",
     "consola": "^2.15.3",
     "core-js": "^3.9.1",
-    "create-require": "^1.1.1",
     "css-loader": "^5.2.0",
     "css-minimizer-webpack-plugin": "^1.3.0",
     "defu": "^3.2.2",
-    "destr": "^1.1.0",
-    "dotenv": "^8.2.0",
     "esbuild-loader": "^2.11.0",
     "file-loader": "^6.2.0",
     "fs-extra": "^9.1.0",
@@ -64,7 +62,6 @@
     "hash-sum": "^2.0.0",
     "hookable": "^4.4.1",
     "ignore": "^5.1.8",
-    "jiti": "^1.6.4",
     "lodash": "^4.17.21",
     "memfs": "^3.2.0",
     "mini-css-extract-plugin": "^1.4.0",
@@ -72,9 +69,7 @@
     "postcss": "^8.2.8",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^5.2.0",
-    "rc9": "^1.2.0",
     "scule": "^0.1.1",
-    "std-env": "3.0.0-alpha",
     "style-resources-loader": "^1.4.1",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^0.6.10",

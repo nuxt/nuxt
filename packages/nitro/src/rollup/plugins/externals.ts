@@ -27,6 +27,11 @@ export function externals (opts: NodeExternalsOptions): Plugin {
         return null
       }
 
+      // Bundle ts
+      if (id.endsWith('.ts')) {
+        return null
+      }
+
       for (const dir of opts.moduleDirectories) {
         if (id.startsWith(dir)) {
           id = id.substr(dir.length + 1)

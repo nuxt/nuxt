@@ -9,13 +9,19 @@
   ],
   "scripts": {
     "build": "jiti ../../scripts/build .",
-    "stub": "yarn build --stub",
     "prepublishOnly": "yarn build"
   },
   "build": {
+    "externals": [
+      "@nuxt/kit"
+    ],
     "entries": {
-      "index": { "format": "cjs" },
-      "compat": { "format": "cjs" },
+      "index": {
+        "format": "cjs"
+      },
+      "compat": {
+        "format": "cjs"
+      },
       "runtime/": {}
     },
     "dependencies": [
@@ -77,6 +83,7 @@
     "serve-static": "^1.14.1",
     "std-env": "^2.3.0",
     "table": "^6.0.7",
+    "ufo": "^0.6.10",
     "upath": "^2.0.1",
     "vue-bundle-renderer": "^0.2.3",
     "vue-server-renderer": "^2.6.12"

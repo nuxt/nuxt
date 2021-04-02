@@ -1,3 +1,4 @@
+// @ts-nocheck
 import fs from 'fs'
 import path from 'path'
 import consola from 'consola'
@@ -5,10 +6,9 @@ import defaults from 'lodash/defaults'
 import merge from 'lodash/merge'
 import cloneDeep from 'lodash/cloneDeep'
 import createResolver from 'postcss-import-resolver'
+import { Nuxt, tryRequireModule } from '@nuxt/kit'
 
-import { isPureObject } from '@nuxt/kit'
-import type { Nuxt } from '../../../core'
-import type { NormalizedConfiguration } from '../../../config'
+const isPureObject = obj => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
 export const orderPresets = {
   cssnanoLast (names) {
@@ -30,17 +30,18 @@ export const orderPresets = {
   }
 }
 
+let _postcssConfigFileWarningShown
 function postcssConfigFileWarning () {
-  if (postcssConfigFileWarning.executed) {
+  if (_postcssConfigFileWarningShown) {
     return
   }
   consola.warn('Please use `build.postcss` in your nuxt.config.js instead of an external config file. Support for such files will be removed in Nuxt 3 as they remove all defaults set by Nuxt and can cause severe problems with features like alias resolving inside your CSS.')
-  postcssConfigFileWarning.executed = true
+  _postcssConfigFileWarningShown = true
 }
 
 export default class PostcssConfig {
   nuxt: Nuxt
-  options: NormalizedConfiguration
+  options: Nuxt['options']
 
   constructor (nuxt) {
     this.nuxt = nuxt
@@ -150,7 +151,7 @@ export default class PostcssConfig {
       // Map postcss plugins into instances on object mode once
       config.plugins = this.sortPlugins(config)
         .map((p) => {
-          const plugin = this.nuxt.resolver.requireModule(p)
+          const plugin = tryRequireModule(p)
           const opts = plugins[p]
           if (opts === false) {
             return false // Disabled

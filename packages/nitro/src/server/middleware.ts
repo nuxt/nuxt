@@ -2,6 +2,7 @@ import { resolve, join, extname } from 'upath'
 import { joinURL } from 'ufo'
 import globby from 'globby'
 import { watch } from 'chokidar'
+import { tryResolvePath } from '@nuxt/kit'
 
 export interface ServerMiddleware {
   route: string
@@ -50,7 +51,7 @@ export function scanMiddleware (serverDir: string, onChange?: (results: ServerMi
   return scan()
 }
 
-export function resolveMiddleware (serverMiddleware: any[], resolvePath: (string) => string) {
+export function resolveMiddleware (serverMiddleware: any[]) {
   const middleware: ServerMiddleware[] = []
   const legacyMiddleware: ServerMiddleware[] = []
 
@@ -65,7 +66,9 @@ export function resolveMiddleware (serverMiddleware: any[], resolvePath: (string
       delete m.path
       middleware.push({
         ...m,
-        handle: resolvePath(handle),
+        handle: tryResolvePath(handle, {
+          extensions: ['.ts', '.js']
+        }),
         route
       })
     }

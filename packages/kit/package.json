@@ -10,24 +10,26 @@
   ],
   "scripts": {
     "build": "jiti ../../scripts/build .",
-    "genconfig": "jiti ./scripts/genconfig",
-    "stub": "yarn build --stub",
-    "prepublishOnly": "yarn build && yarn genconfig"
+    "gentypes": "jiti ./scripts/gentypes",
+    "prepublishOnly": "yarn build && yarn gentypes"
   },
   "dependencies": {
     "consola": "^2.15.3",
     "create-require": "^1.1.1",
     "defu": "^3.2.2",
     "dotenv": "^8.2.0",
+    "hash-sum": "^2.0.0",
     "jiti": "^1.6.4",
-    "lodash": "^4.17.21",
     "rc9": "^1.2.0",
     "scule": "^0.1.1",
     "std-env": "^2.3.0",
     "ufo": "^0.6.10",
-    "untyped": "^0.2.2"
+    "unctx": "^0.0.3",
+    "untyped": "^0.2.2",
+    "upath": "^2.0.1"
   },
   "build": {
+    "prebuild": "yarn -s gentypes",
     "entries": {
       "index": {
         "format": "cjs"

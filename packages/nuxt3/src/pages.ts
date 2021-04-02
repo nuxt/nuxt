@@ -32,7 +32,7 @@ interface SegmentToken {
 
 export async function resolvePagesRoutes (builder: Builder, app: NuxtApp) {
   const pagesDir = resolve(app.dir, app.pages!.dir)
-  const pagesPattern = `${app.pages!.dir}/**/*.{${app.extensions.join(',')}}`
+  const pagesPattern = `${app.pages!.dir}/**/*{${app.extensions.join(',')}}`
   const files = await resolveFiles(builder, pagesPattern, app.dir)
 
   // Sort to make sure parent are listed first

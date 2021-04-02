@@ -1,8 +1,10 @@
 import { resolve } from 'path'
 import defu from 'defu'
+import { tryResolvePath } from '@nuxt/kit'
 import { Builder } from './builder'
 import { NuxtRoute, resolvePagesRoutes } from './pages'
 import { NuxtPlugin, resolvePlugins } from './plugins'
+
 export interface NuxtApp {
   main?: string
   routes: NuxtRoute[]
@@ -35,10 +37,15 @@ export async function createApp (
   })
 
   // Resolve app.main
+  const resolveOptions = {
+    base: nuxt.options.srcDir,
+    alias: nuxt.options.alias,
+    extensions: nuxt.options.extensions
+  }
+
   if (!app.main) {
-    app.main =
-      nuxt.resolver.tryResolvePath('~/App') ||
-      nuxt.resolver.tryResolvePath('~/app')
+    app.main = tryResolvePath('~/App', resolveOptions) ||
+      tryResolvePath('~/app', resolveOptions)
   }
 
   // Resolve pages/

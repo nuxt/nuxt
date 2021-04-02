@@ -3,29 +3,22 @@
   "version": "0.0.0",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.ts",
+  "main": "./dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "mkdist",
-    "stub": "rm -rf dist && ln -s src dist #",
+    "build": "jiti ../../scripts/build .",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "create-require": "^1.1.1",
-    "defu": "^3.2.2",
-    "dotenv": "^8.2.0",
-    "jiti": "^1.6.4",
-    "rc9": "^1.2.0",
-    "scule": "^0.1.1",
-    "std-env": "^2.3.0",
-    "ufo": "^0.6.10",
-    "untyped": "^0.2.2"
+    "hookable": "^4.4.1",
+    "vue": "^3.0.10"
   },
   "build": {
     "entries": {
-      "index": {}
+      "index": { "distDir": ".gen" },
+      "/": {}
     }
   }
 }

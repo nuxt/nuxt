@@ -3,6 +3,7 @@ import defu from 'defu'
 import jiti from 'jiti'
 import { applyDefaults } from 'untyped'
 import * as rc from 'rc9'
+import { NuxtOptions } from '../types/config'
 import nuxtConfigSchema from './schema'
 
 export interface LoadNuxtConfigOptions {
@@ -11,7 +12,7 @@ export interface LoadNuxtConfigOptions {
   config?: any
 }
 
-export function loadNuxtConfig (opts: LoadNuxtConfigOptions) {
+export function loadNuxtConfig (opts: LoadNuxtConfigOptions): NuxtOptions {
   const rootDir = resolve(process.cwd(), opts.rootDir || '.')
 
   const _require = jiti(rootDir)
@@ -53,5 +54,5 @@ export function loadNuxtConfig (opts: LoadNuxtConfigOptions) {
   }
 
   // Resolve and apply defaults
-  return applyDefaults(nuxtConfigSchema, nuxtConfig)
+  return applyDefaults(nuxtConfigSchema, nuxtConfig) as NuxtOptions
 }

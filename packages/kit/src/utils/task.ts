@@ -1,4 +1,4 @@
-export const sequence = function sequence<T, R> (
+export function sequence<T, R> (
   tasks: T[],
   fn: (task: T) => R
 ) {
@@ -8,14 +8,14 @@ export const sequence = function sequence<T, R> (
   )
 }
 
-export const parallel = function parallel<T, R> (
+export function parallel<T, R> (
   tasks: T[],
   fn: (task: T) => R
 ) {
   return Promise.all(tasks.map(fn))
 }
 
-export const chainFn = function chainFn (base, fn) {
+export function chainFn (base, fn) {
   if (typeof fn !== 'function') {
     return base
   }
