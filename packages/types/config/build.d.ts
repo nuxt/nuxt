@@ -12,6 +12,7 @@ import { Options as SassOptions } from 'sass-loader'
 import { Options as OptimizeCssAssetsWebpackPluginOptions } from 'optimize-css-assets-webpack-plugin'
 import { Plugin as PostcssPlugin } from 'postcss'
 import { Options as PugOptions } from 'pug'
+import { TerserPluginOptions } from 'terser-webpack-plugin'
 import { VueLoaderOptions } from 'vue-loader'
 import {
   Configuration as WebpackConfiguration,
@@ -23,8 +24,6 @@ import {
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import { MiddlewareOptions as WebpackHotMiddlewareOptions, ClientOptions as WebpackHotMiddlewareClientOptions } from 'webpack-hot-middleware'
-
-import { TerserPluginOptions } from '../terser-webpack-plugins'
 
 type CssLoaderUrlFunction = (url: string, resourcePath: string) => boolean
 type CssLoaderImportFunction = (url: string, media: string, resourcePath: string) => boolean
