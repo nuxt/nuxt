@@ -1,5 +1,4 @@
 import TerserWebpackPlugin from 'terser-webpack-plugin'
-import { WebpackPluginInstance } from 'webpack'
 import { reservedVueTags } from '../utils/reserved-tags'
 import { WebpackConfigContext } from '../utils/config'
 
