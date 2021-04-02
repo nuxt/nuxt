@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "hookable": "^4.4.1",
-    "vue": "^3.0.10"
+    "vue": "^3.0.11"
   },
   "build": {
     "entries": {
