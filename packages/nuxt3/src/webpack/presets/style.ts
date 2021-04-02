@@ -1,7 +1,6 @@
 import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import { wrapArray } from '@nuxt/kit'
 import { fileName, WebpackConfigContext, applyPresets } from '../utils/config'
 
 export function style (ctx: WebpackConfigContext) {
@@ -17,7 +16,7 @@ function minimizer (ctx: WebpackConfigContext) {
 
   if (options.build.optimizeCSS && Array.isArray(config.optimization.minimizer)) {
     config.optimization.minimizer.push(new CssMinimizerPlugin({
-      ...options.build.optimizeCSS
+      ...options.build.optimizeCSS as any
     }))
   }
 }
@@ -30,7 +29,7 @@ function extractCSS (ctx: WebpackConfigContext) {
     config.plugins.push(new MiniCssExtractPlugin({
       filename: fileName(ctx, 'css'),
       chunkFilename: fileName(ctx, 'css'),
-      ...(options.build.extractCSS as object)
+      ...(options.build.extractCSS as any)
     }))
   }
 }
@@ -129,7 +128,7 @@ function createStyleResourcesLoaderRule (styleLang, styleResources, rootDir) {
   return {
     loader: 'style-resources-loader',
     options: {
-      patterns: wrapArray(styleResources[styleLang]).map(p => path.resolve(rootDir, p)),
+      patterns: Array.from(styleResources[styleLang]).map(p => path.resolve(rootDir, p as string)),
       ...styleResources.options
     }
   }

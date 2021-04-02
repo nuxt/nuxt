@@ -10,8 +10,7 @@ import type { Compiler, Watching } from 'webpack'
 import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
 
-import { TARGETS, parallel, sequence, wrapArray } from '@nuxt/kit'
-import { Nuxt } from '../../core'
+import type { Nuxt } from '@nuxt/kit'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
 import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
@@ -87,8 +86,8 @@ class WebpackBundler {
         'Please use https://github.com/nuxt-community/style-resources-module'
       )
       for (const ext of Object.keys(styleResources)) {
-        await Promise.all(wrapArray(styleResources[ext]).map(async (p) => {
-          const styleResourceFiles = await glob(path.resolve(this.nuxt.options.rootDir, p))
+        await Promise.all(Array.from(styleResources[ext]).map(async (p) => {
+          const styleResourceFiles = await glob(path.resolve(this.nuxt.options.rootDir, p as string))
 
           if (!styleResourceFiles || styleResourceFiles.length === 0) {
             throw new Error(`Style Resource not found: ${p}`)
@@ -110,9 +109,13 @@ class WebpackBundler {
     })
 
     // Start Builds
-    const runner = options.dev ? parallel : sequence
-
-    await runner(this.compilers, compiler => this.webpackCompile(compiler))
+    if (options.dev) {
+      return Promise.all(this.compilers.map(c => this.webpackCompile(c)))
+    } else {
+      for (const c of this.compilers) {
+        await this.webpackCompile(c)
+      }
+    }
   }
 
   async webpackCompile (compiler) {
@@ -264,7 +267,7 @@ class WebpackBundler {
   }
 
   forGenerate () {
-    this.nuxt.options.target = TARGETS.static
+    this.nuxt.options.target = 'static'
   }
 }
 

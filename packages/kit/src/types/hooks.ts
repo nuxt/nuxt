@@ -1,6 +1,6 @@
 import { Nuxt } from './nuxt'
 
-export type NuxtHook<Arg1 = any> = (arg1: Arg1, ...args: any) => Promise<void> | void
+export type NuxtHook<Arg1 = any> = (arg1?: Arg1, ...args: any) => Promise<void> | void
 
 export interface NuxtHooks {
   [key: string]: NuxtHook

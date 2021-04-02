@@ -5,7 +5,7 @@ import consola from 'consola'
 import { DefinePlugin, Configuration } from 'webpack'
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'lodash/escapeRegExp'
-import { isUrl, urlJoin, TARGETS } from '@nuxt/kit'
+import { hasProtocol, joinURL } from 'ufo'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import { WebpackConfigContext, applyPresets, fileName } from '../utils/config'
 
@@ -82,6 +82,7 @@ function basePlugins (ctx: WebpackConfigContext) {
     reporters: ['stats'],
     stats: !ctx.isDev,
     reporter: {
+      // @ts-ignore
       change: (_, { shortPath }) => {
         if (!ctx.isServer) {
           nuxt.callHook('bundler:change', shortPath)
@@ -185,9 +186,9 @@ function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
     path: resolve(options.buildDir, 'dist', ctx.isServer ? 'server' : 'client'),
     filename: fileName(ctx, 'app'),
     chunkFilename: fileName(ctx, 'chunk'),
-    publicPath: isUrl(options.build.publicPath)
+    publicPath: hasProtocol(options.build.publicPath, true)
       ? options.build.publicPath
-      : urlJoin(options.router.base, options.build.publicPath)
+      : joinURL(options.router.base, options.build.publicPath)
   }
 }
 
@@ -212,7 +213,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     'process.mode': JSON.stringify(ctx.config.mode),
     'process.dev': options.dev,
-    'process.static': options.target === TARGETS.static,
+    'process.static': options.target === 'static',
     'process.target': JSON.stringify(options.target),
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.browser': ctx.isClient,

@@ -9,9 +9,11 @@ export function initNitro (nuxt: Nuxt) {
   nuxt.server = createDevServer(nitroDevContext)
 
   // Connect hooks
+  // @ts-ignore
   nuxt.hooks.addHooks(nitroContext.nuxtHooks)
   nuxt.hook('close', () => nitroContext._internal.hooks.callHook('close'))
 
+  // @ts-ignore
   nuxt.hooks.addHooks(nitroDevContext.nuxtHooks)
   nuxt.hook('close', () => nitroDevContext._internal.hooks.callHook('close'))
 

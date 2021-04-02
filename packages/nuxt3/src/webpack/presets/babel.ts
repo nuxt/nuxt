@@ -44,7 +44,7 @@ export function babel (ctx: WebpackConfigContext) {
       ...options.build.terser as any
     })
 
-    config.plugins.push(terser as WebpackPluginInstance)
+    config.plugins.push(terser as any)
   }
 }
 

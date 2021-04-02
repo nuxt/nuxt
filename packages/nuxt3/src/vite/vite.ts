@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { Nuxt } from 'sr..c/core'
+import type { Nuxt } from '@nuxt/kit'
 import { mkdirp, writeFile } from 'fs-extra'
 import vue from '@vitejs/plugin-vue'
 import consola from 'consola'

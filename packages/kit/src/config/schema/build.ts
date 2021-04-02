@@ -31,18 +31,19 @@ export default {
     video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
-    // $resolve: (val, get) => {
-    //   const styleLoaders = [
-    //     'css', 'cssModules', 'less',
-    //     'sass', 'scss', 'stylus', 'vueStyle'
-    //   ]
-    //   for (const name of styleLoaders) {
-    //     const loader = val[name]
-    //     if (loader && loader.sourceMap === undefined) {
-    //       loader.sourceMap = Boolean(get('build.cssSourceMap'))
-    //     }
-    //   }
-    // },
+    $resolve: (val, get) => {
+      const styleLoaders = [
+        'css', 'cssModules', 'less',
+        'sass', 'scss', 'stylus', 'vueStyle'
+      ]
+      for (const name of styleLoaders) {
+        const loader = val[name]
+        if (loader && loader.sourceMap === undefined) {
+          loader.sourceMap = Boolean(get('build.cssSourceMap'))
+        }
+      }
+      return val
+    },
     file: { esModule: false },
     fontUrl: { esModule: false, limit: 1000 },
     imgUrl: { esModule: false, limit: 1000 },
@@ -56,8 +57,12 @@ export default {
         embed: 'src'
       }
     },
-    css: { esModule: false },
+    css: {
+      importLoaders: 0,
+      esModule: false
+    },
     cssModules: {
+      importLoaders: 0,
       esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]'

@@ -10750,10 +10750,10 @@ unset-value@^1.0.0:
     has-value "^0.3.1"
     isobject "^3.0.0"
 
-untyped@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.2.tgz#b8c83d2e8f890cd45108495929bb5574b274fa1a"
-  integrity sha512-AZPhUm/dr/2mnK1mwE67FuV3hbKers34Vp0b8xz26b9JwPg62bvVJGHyWU2rC05acW6tO6OZHfqE5m1J/JjtPg==
+untyped@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/untyped/-/untyped-0.2.4.tgz#03170e9d70812cd2844d7070c625fbd657f463d3"
+  integrity sha512-nLrY9MB0+iBs/A3mfwmc1MTT1eJOvGhH08oIKI4iMtd2qkTyh6gDDeI4Lx89gJe9SbkFXwvX04n4XbG2m4kshg==
 
 upath@^2.0.1:
   version "2.0.1"
