@@ -1,5 +1,4 @@
 import { getCurrentInstance, isReactive, reactive, UnwrapRef } from 'vue'
-
 import { useNuxt } from '@nuxt/app'
 
 export function ensureReactive<
@@ -50,4 +49,13 @@ export function useData<T = Record<string, any>> (
   nuxt.payload.data = nuxt.payload.data || {}
 
   return ensureReactive(nuxt.payload.data, ssrRef)
+}
+
+/**
+ * Allows accessing reactive global data that can be synced between server and client.
+ * @param nuxt - (optional) A Nuxt instance
+ */
+export function useGlobalData (nuxt = useNuxt()): Record<string, any> {
+  nuxt.payload.data = nuxt.payload.data || {}
+  return nuxt.payload.data
 }

@@ -13,6 +13,8 @@ export interface Nuxt {
 
   [key: string]: any
 
+  _asyncDataPromises?: Record<string, Promise<any>>
+
   ssrContext?: Record<string, any>
   payload: {
     serverRendered?: true

@@ -10,6 +10,9 @@
     "types": [
       "node",
       "jest"
-    ]
+    ],
+    "paths": {
+      "nuxt/app/composables": ["./packages/app/src/composables"]
+    }
   }
 }
