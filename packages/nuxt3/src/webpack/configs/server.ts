@@ -1,7 +1,4 @@
-import path from 'path'
-import fs from 'fs'
 import { ProvidePlugin } from 'webpack'
-import nodeExternals from '../plugins/externals'
 import { WebpackConfigContext, applyPresets, getWebpackConfig } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
@@ -34,26 +31,29 @@ function serverPreset (ctx: WebpackConfigContext) {
 }
 
 function serverStandalone (ctx: WebpackConfigContext) {
-  const { options, config } = ctx
+  // TODO: Refactor this out of webpack
+  const inline = [
+    'src/',
+    'nuxt/app',
+    'nuxt/build',
+    '@nuxt/app',
+    'vuex5',
+    '-!',
+    ...ctx.options.build.transpile
+  ]
 
-  // https://webpack.js.org/configuration/externals/#externals
-  // https://github.com/liady/webpack-node-externals
-  // https://vue-loader.vuejs.org/migrating.html#ssr-externals
-  if (!options.build.standalone) {
-    options.modulesDir.forEach((dir) => {
-      if (fs.existsSync(dir)) {
-        (config.externals as any[]).push(
-          nodeExternals({
-            whitelist: [
-              modulePath => !['.js', '.json', ''].includes(path.extname(modulePath)),
-              ctx.transpile
-            ],
-            modulesDir: dir
-          })
-        )
-      }
-    })
-  }
+  if (!Array.isArray(ctx.config.externals)) { return }
+  ctx.config.externals.push(({ request }, cb) => {
+    if (
+      request[0] === '.' ||
+      request[0] === '/' ||
+      inline.find(prefix => request.startsWith(prefix))
+    ) {
+      return cb(null, false)
+    }
+    // console.log('External:', request)
+    return cb(null, true)
+  })
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {

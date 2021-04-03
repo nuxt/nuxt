@@ -98,7 +98,10 @@ export default {
 
   modulesDir: {
     $default: ['node_modules'],
-    $resolve: (val, get) => val.map(dir => resolve(get('rootDir'), dir))
+    $resolve: (val, get) => [].concat(
+      val.map(dir => resolve(get('rootDir'), dir)),
+      resolve(process.cwd(), 'node_modules')
+    )
   },
 
   dir: {

@@ -10909,10 +10909,10 @@ vue-eslint-parser@^7.6.0:
     esquery "^1.4.0"
     lodash "^4.17.15"
 
-"vue-loader@npm:@pi0/vue-loader@^16.1.2-patch.1":
-  version "16.1.2-patch.1"
-  resolved "https://registry.yarnpkg.com/@pi0/vue-loader/-/vue-loader-16.1.2-patch.1.tgz#73e04d5c2f474fa5580a8296b3a89f695136fd9e"
-  integrity sha512-LP/ykOO2i2YlnVo57stE1CyNe36ECZaEQVhG0MBGY3CW5Y+OEvYOih3/9jWh7lt/aV6d++CWsTVFj6GsadBtMg==
+vue-loader@^16.2.0:
+  version "16.2.0"
+  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-16.2.0.tgz#046a53308dd47e58efe20ddec1edec027ce3b46e"
+  integrity sha512-TitGhqSQ61RJljMmhIGvfWzJ2zk9m1Qug049Ugml6QP3t0e95o0XJjk29roNEiPKJQBEi8Ord5hFuSuELzSp8Q==
   dependencies:
     chalk "^4.1.0"
     hash-sum "^2.0.0"
