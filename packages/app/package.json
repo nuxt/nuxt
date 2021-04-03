@@ -4,8 +4,10 @@
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "meta.js"
   ],
   "scripts": {
     "build": "jiti ../../scripts/build .",
