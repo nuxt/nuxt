@@ -1,5 +1,5 @@
 import consola from 'consola'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash'
 import { Configuration } from 'webpack'
 import type { Nuxt } from '@nuxt/kit'
 

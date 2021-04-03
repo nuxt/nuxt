@@ -1,0 +1,31 @@
+{
+  "name": "@nuxt/vite-builder",
+  "version": "0.1.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "jiti ../../scripts/build .",
+    "prepublishOnly": "yarn build"
+  },
+  "build": {
+    "entries": {
+      "index": {
+        "format": "cjs"
+      }
+    },
+    "dependencies": [
+      "@nuxt/kit"
+    ]
+  },
+  "dependencies": {
+    "@nuxt/kit": "^0.1.0",
+    "@vitejs/plugin-vue": "^1.2.1",
+    "consola": "^2.15.3",
+    "fs-extra": "^9.1.0",
+    "vite": "^2.1.5"
+  }
+}

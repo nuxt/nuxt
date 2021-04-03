@@ -1,0 +1,75 @@
+{
+  "name": "@nuxt/webpack-builder",
+  "version": "0.1.0",
+  "repository": "nuxt/framework",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "jiti ../../scripts/build .",
+    "prepublishOnly": "yarn build"
+  },
+  "build": {
+    "entries": {
+      "index": {
+        "format": "cjs"
+      }
+    },
+    "dependencies": [
+      "@nuxt/kit",
+      "@vue/compiler-sfc",
+      "@vue/babel-preset-jsx",
+      "postcss",
+      "postcss-import-resolver",
+      "postcss-loader",
+      "babel-loader",
+      "vue-loader",
+      "css-loader",
+      "file-loader",
+      "style-resources-loader",
+      "url-loader",
+      "vue-style-loader"
+    ]
+  },
+  "dependencies": {
+    "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
+    "@nuxt/kit": "^0.1.0",
+    "@vue/babel-preset-jsx": "^1.2.4",
+    "@vue/compiler-sfc": "^3.0.11",
+    "babel-loader": "^8.2.2",
+    "consola": "^2.15.3",
+    "css-loader": "^5.2.0",
+    "css-minimizer-webpack-plugin": "^1.3.0",
+    "esbuild-loader": "^2.11.0",
+    "file-loader": "^6.2.0",
+    "fs-extra": "^9.1.0",
+    "glob": "^7.1.6",
+    "hash-sum": "^2.0.0",
+    "lodash": "^4.17.21",
+    "memfs": "^3.2.1",
+    "mini-css-extract-plugin": "^1.4.0",
+    "pify": "^5.0.0",
+    "postcss": "^8.2.9",
+    "postcss-import-resolver": "^2.0.0",
+    "postcss-loader": "^5.2.0",
+    "style-resources-loader": "^1.4.1",
+    "time-fix-plugin": "^2.0.7",
+    "ufo": "^0.6.10",
+    "url-loader": "^4.1.1",
+    "vue-loader": "^16.2.0",
+    "vue-style-loader": "^4.1.3",
+    "webpack": "^5.30.0",
+    "webpack-bundle-analyzer": "^4.4.0",
+    "webpack-dev-middleware": "^4.1.0",
+    "webpack-hot-middleware": "^2.25.0",
+    "webpackbar": "^5.0.0-3"
+  },
+  "devDependencies": {
+    "@types/terser-webpack-plugin": "^5.0.3",
+    "@types/webpack-bundle-analyzer": "^3.9.2",
+    "@types/webpack-dev-middleware": "^4.1.2",
+    "@types/webpack-hot-middleware": "^2.25.4"
+  }
+}

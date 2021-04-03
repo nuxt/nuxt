@@ -100,10 +100,7 @@ export async function generate (builder: Builder) {
 async function bundle ({ nuxt }: Builder) {
   // @ts-ignore
   const useVite = !!nuxt.options.vite
-  const bundle = await (useVite
-    ? import('./vite/vite' /* webpackChunkName: "vite" */)
-    : import('./webpack/webpack' /* webpackChunkName: "webpack" */))
-    .then(p => p.bundle)
+  const { bundle } = await (useVite ? import('@nuxt/vite-builder') : import('@nuxt/webpack-builder'))
   return bundle(nuxt)
 }
 
