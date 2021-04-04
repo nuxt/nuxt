@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.0...@nuxt/nitro@0.2.1) (2021-04-04)
+
+
+### Bug Fixes
+
+* **nitro:** add back compat entry ([9c21ea5](https://github.com/nuxt/framework/commit/9c21ea52ea3571a54ec3173644f73cdc851d1fb5))
+* **nitro:** add missing kit dependency ([6e1cb62](https://github.com/nuxt/framework/commit/6e1cb62231fa735c8776292e92ed07ea7aa0f01a))
+* **nitro:** pass req, res to ssr context (resolves [#39](https://github.com/nuxt/framework/issues/39)) ([16cc09b](https://github.com/nuxt/framework/commit/16cc09bd76044fd24a9e6a393a79aa01f299b009))
+* **nitro:** resolve alias for serverMiddleware ([c864c5a](https://github.com/nuxt/framework/commit/c864c5a30cfc38362e35ee4c7015b589d445edee))
+
+
+
+
+
 # 0.2.0 (2021-04-04)
 
 
