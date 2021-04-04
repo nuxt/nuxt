@@ -54,6 +54,7 @@ export async function loadNuxt (loadOpts: LoadNuxtOptions = {}): Promise<Nuxt> {
   const { appDir } = await import('@nuxt/app/meta')
   options.appDir = appDir
   options._majorVersion = 3
+  options.alias.vue = require.resolve('vue/dist/vue.esm-bundler.js')
 
   const nuxt = createNuxt(options)
 

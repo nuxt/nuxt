@@ -7,10 +7,6 @@
     "dist",
     "compat.js"
   ],
-  "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "prepublishOnly": "yarn build"
-  },
   "build": {
     "externals": [
       "@nuxt/kit"
@@ -33,7 +29,8 @@
       "ora",
       "vue-bundle-renderer",
       "vue-server-renderer",
-      "@vue/server-renderer"
+      "@vue/server-renderer",
+      "vue"
     ]
   },
   "dependencies": {
@@ -85,6 +82,7 @@
     "table": "^6.0.9",
     "ufo": "^0.6.10",
     "upath": "^2.0.1",
+    "vue": "3.0.11",
     "vue-bundle-renderer": "^0.2.3",
     "vue-server-renderer": "^2.6.12"
   }

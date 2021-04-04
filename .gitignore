@@ -14,6 +14,9 @@ package-lock.json
 .tmp
 .cache
 
+# Yarn
+.yarn
+
 # Generated dirs
 dist
 .nuxt*

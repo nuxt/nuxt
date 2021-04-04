@@ -7,10 +7,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "prepublishOnly": "yarn build"
-  },
   "build": {
     "entries": {
       "index": {
@@ -30,10 +26,13 @@
       "file-loader",
       "style-resources-loader",
       "url-loader",
-      "vue-style-loader"
+      "vue-style-loader",
+      "@babel/core",
+      "vue"
     ]
   },
   "dependencies": {
+    "@babel/core": "^7.13.14",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.0",
     "@nuxt/kit": "^0.1.0",
     "@vue/babel-preset-jsx": "^1.2.4",
@@ -58,6 +57,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^0.6.10",
     "url-loader": "^4.1.1",
+    "vue": "3.0.11",
     "vue-loader": "^16.2.0",
     "vue-style-loader": "^4.1.3",
     "webpack": "^5.30.0",

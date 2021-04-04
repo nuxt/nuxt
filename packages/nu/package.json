@@ -4,23 +4,19 @@
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
-  "bin": {
-    "nu": "./bin/nu.js"
-  },
+  "bin": "./bin/nu.js",
   "files": [
     "bin",
     "dist"
   ],
-  "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "prepublishOnly": "yarn build"
-  },
   "build": {
     "externals": [
       "nuxt3"
     ],
     "entries": {
-      "index": { "format": "cjs" }
+      "index": {
+        "format": "cjs"
+      }
     }
   }
 }

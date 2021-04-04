@@ -1,19 +1,19 @@
 {
   "name": "nuxt-framework",
-  "private": "true",
   "license": "MIT",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "link": "lerna link",
-    "build": "yarn -s workspaces run build",
-    "stub": "yarn -s build --stub",
-    "gentypes": "yarn -s --cwd packages/kit gentypes",
-    "play": "yarn -s nu dev playground",
-    "lint": "yarn -s gentypes && eslint --ext .vue,.ts,.js .",
-    "test": "yarn -s lint",
-    "postinstall": "yarn -s stub"
+    "build": "jiti ./scripts/build-all",
+    "stub": "yarn build --stub",
+    "gentypes": "yarn workspace @nuxt/kit jiti ./scripts/gentypes",
+    "nu": "./node_modules/.bin/nu",
+    "play": "yarn run nu dev playground",
+    "lint": "yarn gentypes && eslint --ext .vue,.ts,.js .",
+    "test": "yarn lint",
+    "postinstall": "yarn stub"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.0",

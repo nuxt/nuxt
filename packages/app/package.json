@@ -9,10 +9,6 @@
     "dist",
     "meta.js"
   ],
-  "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "prepublishOnly": "yarn build"
-  },
   "dependencies": {
     "@vueuse/head": "^0.5.1",
     "hookable": "^4.4.1",

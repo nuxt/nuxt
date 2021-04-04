@@ -31,11 +31,9 @@ interface BuildContext {
   externals: string[]
 }
 
-async function main () {
-  const args = process.argv.splice(2)
-
+export async function build (rootDir: string, stub: boolean) {
   const ctx: BuildContext = {
-    rootDir: resolve(args.shift() || '.'),
+    rootDir,
     entries: [],
     externals: [...Module.builtinModules]
   }
@@ -64,7 +62,7 @@ async function main () {
     await execa(cmd, args)
   }
 
-  if (args.includes('--stub')) {
+  if (stub) {
     const stubbed: string[] = []
     for (const entry of ctx.entries) {
       if (entry.bundle) {
@@ -258,8 +256,3 @@ function getRollupOptions (ctx: BuildContext): RollupOptions | null {
     ]
   }
 }
-
-main().catch((err) => {
-  consola.error(err)
-  process.exit(1)
-})

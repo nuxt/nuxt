@@ -8,11 +8,6 @@
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "jiti ../../scripts/build .",
-    "gentypes": "jiti ./scripts/gentypes",
-    "prepublishOnly": "yarn build && yarn gentypes"
-  },
   "dependencies": {
     "consola": "^2.15.3",
     "create-require": "^1.1.1",
@@ -29,7 +24,7 @@
     "upath": "^2.0.1"
   },
   "build": {
-    "prebuild": "yarn -s gentypes",
+    "prebuild": "jiti ./scripts/gentypes",
     "entries": {
       "index": {
         "format": "cjs"
