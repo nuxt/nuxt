@@ -1830,14 +1830,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/nu@workspace:packages/nu":
-  version: 0.0.0-use.local
-  resolution: "@nuxt/nu@workspace:packages/nu"
-  bin:
-    nu: ./bin/nu.js
-  languageName: unknown
-  linkType: soft
-
 "@nuxt/un@npm:^0.1.1":
   version: 0.1.1
   resolution: "@nuxt/un@npm:0.1.1"
@@ -10327,6 +10319,16 @@ __metadata:
   checksum: 42251b2653a16f8b47639d93c3b646fff295a4582a6b3a2fc51a651d4511427c247629709063d19befbceb8a3db1a8e9f17016b3a207291e79e4bd1413032918
   languageName: node
   linkType: hard
+
+"nuxt-cli@workspace:packages/cli":
+  version: 0.0.0-use.local
+  resolution: "nuxt-cli@workspace:packages/cli"
+  bin:
+    nu: ./bin/nuxt.js
+    nuxt: ./bin/nuxt.js
+    nuxt-cli: ./bin/nuxt.js
+  languageName: unknown
+  linkType: soft
 
 "nuxt-framework@workspace:.":
   version: 0.0.0-use.local
