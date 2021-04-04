@@ -22,7 +22,7 @@ export function initNitro (nuxt: Nuxt) {
 
   // Resolve middleware
   nuxt.hook('modules:done', () => {
-    const { middleware, legacyMiddleware } = resolveMiddleware(nuxt.options.serverMiddleware)
+    const { middleware, legacyMiddleware } = resolveMiddleware(nuxt)
     nuxt.server.setLegacyMiddleware(legacyMiddleware)
     nitroContext.middleware.push(...middleware)
     nitroDevContext.middleware.push(...middleware)
