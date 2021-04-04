@@ -88,14 +88,6 @@ export default {
     }
   },
 
-  _nuxtConfigFile: {
-    $resolve: (val, get) => resolve(get('rootDir'), val || 'nuxt.config.js')
-  },
-
-  _nuxtConfigFiles: {
-    $resolve: (val, get) => [].concat(get('_nuxtConfigFile'), val).filter(Boolean)
-  },
-
   modulesDir: {
     $default: ['node_modules'],
     $resolve: (val, get) => [].concat(
@@ -143,7 +135,7 @@ export default {
   },
 
   watch: {
-    $resolve: (_val, get) => [].concat(get._nuxtConfigFiles).filter(Boolean)
+    $resolve: (val, get) => [].concat(val, get('_nuxtConfigFiles')).filter(Boolean)
   },
 
   watchers: {

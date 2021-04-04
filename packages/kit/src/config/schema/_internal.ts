@@ -6,6 +6,8 @@ export default {
   _generate: false,
   _cli: false,
   _requiredModules: {},
+  _nuxtConfigFile: undefined,
+  _nuxtConfigFiles: [],
   appDir: '',
   vite: false
 }
