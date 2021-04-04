@@ -1,6 +1,6 @@
 {
   "name": "nuxt3",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@nuxt/app": "^0.2.0",
     "@nuxt/kit": "^0.2.0",
-    "@nuxt/nitro": "^0.2.1",
+    "@nuxt/nitro": "^0.2.2",
     "@nuxt/vite-builder": "^0.1.1",
     "@nuxt/webpack-builder": "^0.1.1",
     "chokidar": "^3.5.1",
