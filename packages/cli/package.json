@@ -1,6 +1,6 @@
 {
   "name": "nuxt-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
