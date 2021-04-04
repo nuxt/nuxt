@@ -34,7 +34,7 @@ export async function createApp (
     pages: {
       dir: 'pages'
     }
-  })
+  } as NuxtApp)
 
   // Resolve app.main
   const resolveOptions = {

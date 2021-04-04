@@ -9,18 +9,18 @@ export interface NuxtPlugin {
 }
 
 const MODES_REGEX = /\.(server|client)(\.\w+)*$/
-const getPluginMode = (src) => {
+const getPluginMode = (src: string) => {
   const [, mode = 'all'] = src.match(MODES_REGEX) || []
 
-  return mode
+  return mode as NuxtPlugin['mode']
 }
 
-export function resolvePlugins (builder: Builder, app: NuxtApp) {
-  return resolveFiles(builder, 'plugins/**/*.{js,ts}', app.dir)
-    .then(plugins => plugins.map((src) => {
-      return {
-        src,
-        mode: getPluginMode(src)
-      }
-    }))
+export async function resolvePlugins (builder: Builder, app: NuxtApp) {
+  const plugins = await resolveFiles(builder, 'plugins/**/*.{js,ts}', app.dir)
+
+  return plugins.map(src => ({
+    src,
+    mode: getPluginMode(src)
+  })
+  )
 }

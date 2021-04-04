@@ -36,6 +36,12 @@
     "lodash": "^4.17.21",
     "nuxt-cli": "^0.1.1",
     "scule": "^0.1.1",
-    "ufo": "^0.6.10"
+    "ufo": "^0.6.10",
+    "upath": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.10",
+    "@types/hash-sum": "^1.0.0",
+    "@types/lodash": "^4.14.168"
   }
 }

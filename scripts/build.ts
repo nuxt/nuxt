@@ -44,7 +44,8 @@ export async function build (rootDir: string, stub: boolean) {
   if (buildOptions.entries) {
     if (!Array.isArray(buildOptions.entries)) {
       buildOptions.entries = Object.entries(buildOptions.entries)
-    } ctx.entries.push(...buildOptions.entries.map(entry => resolveEntry(entry)))
+    }
+    ctx.entries.push(...buildOptions.entries.map(entry => resolveEntry(entry)))
   }
   if (pkg.dependencies) {
     ctx.externals.push(...Object.keys(pkg.dependencies))
@@ -84,7 +85,7 @@ export async function build (rootDir: string, stub: boolean) {
     return
   }
 
-  consola.info(chalk.cyan(`Builduing ${pkg.name}`))
+  consola.info(chalk.cyan(`Building ${pkg.name}`))
   if (process.env.DEBUG) {
     consola.info(`
   ${chalk.bold('Root dir:')} ${ctx.rootDir}
@@ -98,7 +99,7 @@ export async function build (rootDir: string, stub: boolean) {
   const usedImports = new Set<string>()
   if (rollupOptions) {
     const buildResult = await rollup(rollupOptions)
-    const outputOptions = rollupOptions.output as OutputOptions
+    const outputOptions = rollupOptions.output
     const { output } = await buildResult.write(outputOptions)
 
     for (const entry of output.filter(e => e.type === 'chunk') as OutputChunk[]) {
@@ -115,6 +116,7 @@ export async function build (rootDir: string, stub: boolean) {
     }
 
     // Types
+    rollupOptions.plugins = rollupOptions.plugins || []
     rollupOptions.plugins.push(dts())
     const typesBuild = await rollup(rollupOptions)
     await typesBuild.write(outputOptions)
@@ -179,32 +181,33 @@ function resolveEntry (input: string | [string, Partial<BuildEntry>] | Partial<B
   let entry: Partial<BuildEntry>
   if (typeof input === 'string') {
     entry = { name: input }
-  }
-  if (Array.isArray(input)) {
+  } else if (Array.isArray(input)) {
     entry = { name: input[0], ...input[1] }
+  } else {
+    entry = input
   }
   entry.input = entry.input ?? resolve(entry.srcDir || 'src', './' + entry.name)
   entry.output = entry.output ?? resolve(entry.distDir || 'dist', './' + entry.name)
-  entry.bundle = entry.bundle ?? !(entry.input.endsWith('/') || entry.name.endsWith('/'))
+  entry.bundle = entry.bundle ?? !(entry.input.endsWith('/') || entry.name?.endsWith('/'))
   entry.format = entry.format ?? 'esm'
   return entry as BuildEntry
 }
 
-function dumpObject (obj) {
+function dumpObject (obj: Record<string, any>) {
   return '{ ' + Object.keys(obj).map(key => `${key}: ${JSON.stringify(obj[key])}`).join(', ') + ' }'
 }
 
-function getRollupOptions (ctx: BuildContext): RollupOptions | null {
+function getRollupOptions (ctx: BuildContext): RollupOptions & { output: OutputOptions & { dir: string }} | null {
   const extensions = ['.ts', '.mjs', '.js', '.json']
 
-  const r = (...path) => resolve(ctx.rootDir, ...path)
+  const r = (...path: string[]) => resolve(ctx.rootDir, ...path)
 
   const entries = ctx.entries.filter(e => e.bundle)
   if (!entries.length) {
     return null
   }
 
-  return <RollupOptions>{
+  return {
     input: entries.map(e => e.input),
 
     output: {
@@ -227,7 +230,7 @@ function getRollupOptions (ctx: BuildContext): RollupOptions | null {
     },
 
     onwarn (warning, rollupWarn) {
-      if (!['CIRCULAR_DEPENDENCY'].includes(warning.code)) {
+      if (!warning.code || !['CIRCULAR_DEPENDENCY'].includes(warning.code)) {
         rollupWarn(warning)
       }
     },

@@ -9,7 +9,7 @@ import {
   scanTemplates,
   NuxtTemplate
 } from './template'
-import { createWatcher } from './watch'
+import { createWatcher, WatchCallback } from './watch'
 import { createApp, NuxtApp } from './app'
 import Ignore from './utils/ignore'
 
@@ -20,7 +20,7 @@ export class Builder {
   templates: NuxtTemplate[]
   app: NuxtApp
 
-  constructor (nuxt) {
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     this.ignore = new Ignore({
       rootDir: nuxt.options.srcDir,
@@ -65,7 +65,7 @@ function watch (builder: Builder) {
 
   // Watch user app
   // TODO: handle multiples app dirs
-  const appPattern = `${builder.app.dir}/**/*.{${nuxt.options.extensions.join(',')}}`
+  const appPattern = `${builder.app.dir}/**/*{${nuxt.options.extensions.join(',')}}`
   const appWatcher = createWatcher(appPattern, { ...options, cwd: builder.app.dir }, ignore)
   // appWatcher.debug('srcDir')
   const refreshTemplates = debounce(() => generate(builder), 100)
@@ -77,7 +77,8 @@ function watch (builder: Builder) {
   appWatcher.watch(/^plugins/, refreshTemplates, ['add', 'unlink'])
 
   // Shared Watcher
-  const watchHookDebounced = debounce((event, file) => builder.nuxt.callHook('builder:watch', event, file), 100)
+  const watchHook: WatchCallback = (event, path) => builder.nuxt.callHook('builder:watch', event, path)
+  const watchHookDebounced = debounce(watchHook, 100)
   appWatcher.watchAll(watchHookDebounced)
   nuxtAppWatcher.watchAll(watchHookDebounced)
 }

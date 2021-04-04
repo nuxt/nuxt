@@ -42,27 +42,27 @@ export default class Ignore {
   }
 
   readIgnoreFile () {
-    if (this.findIgnoreFile()) {
+    if (this.findIgnoreFile() && this.ignoreFile) {
       return fs.readFileSync(this.ignoreFile, 'utf8')
     }
   }
 
   addIgnoresRules () {
     const content = this.readIgnoreFile()
+    if (!this.ignore) {
+      this.ignore = ignore(this.ignoreOptions)
+    }
     if (content) {
       this.ignore.add(content)
     }
     if (this.ignoreArray && this.ignoreArray.length > 0) {
-      if (!this.ignore) {
-        this.ignore = ignore(this.ignoreOptions)
-      }
       this.ignore.add(this.ignoreArray)
     }
   }
 
-  filter (paths: string[]) {
+  filter (paths: string[] = []) {
     if (this.ignore) {
-      return this.ignore.filter([].concat(paths || []))
+      return this.ignore.filter(([] as string[]).concat(paths))
     }
     return paths
   }

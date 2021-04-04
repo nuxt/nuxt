@@ -1,8 +1,10 @@
-import { join, relative, dirname } from 'path'
 import fsExtra from 'fs-extra'
 import globby from 'globby'
 import lodashTemplate from 'lodash/template'
+import { join, relative, dirname } from 'upath'
+
 import * as nxt from './utils/nxt'
+import type { Builder } from './builder'
 
 export interface NuxtTemplate {
   src: string // Absolute path to source file
@@ -10,7 +12,7 @@ export interface NuxtTemplate {
   data?: any
 }
 
-export function templateData (builder) {
+export function templateData (builder: Builder) {
   return {
     globals: builder.globals,
     app: builder.app,
@@ -21,7 +23,7 @@ export function templateData (builder) {
 
 async function compileTemplate (tmpl: NuxtTemplate, destDir: string) {
   const srcContents = await fsExtra.readFile(tmpl.src, 'utf-8')
-  let compiledSrc
+  let compiledSrc: string
   try {
     compiledSrc = lodashTemplate(srcContents, {})(tmpl.data)
   } catch (err) {
@@ -38,7 +40,7 @@ export function compileTemplates (templates: NuxtTemplate[], destDir: string) {
   return Promise.all(templates.map(t => compileTemplate(t, destDir)))
 }
 
-export async function scanTemplates (dir: string, data?: Object) {
+export async function scanTemplates (dir: string, data?: Record<string, any>) {
   const templateFiles = (await globby(join(dir, '/**')))
 
   return templateFiles.map(src => ({
@@ -48,7 +50,7 @@ export async function scanTemplates (dir: string, data?: Object) {
   }))
 }
 
-export function watchTemplate (template: NuxtTemplate, _watcher: any, _cb: Function) {
+export function watchTemplate (template: NuxtTemplate, _watcher: any, _cb: () => any) {
   template.data = new Proxy(template.data, {
     // TODO: deep watch option changes
   })

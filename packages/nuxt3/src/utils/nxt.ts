@@ -20,7 +20,18 @@ export const importSources = (sources: string | string[], { lazy = false } = {})
   }).join('\n')
 }
 
-export const serializeRoute = (route: NuxtRoute) => {
+interface SerializedRoute {
+  name?: string
+  path: string
+  children: SerializedRoute[]
+  /**
+   * @private
+   */
+  __file: string
+  component: string
+}
+
+export const serializeRoute = (route: NuxtRoute): SerializedRoute => {
   return {
     name: route.name,
     path: route.path,
