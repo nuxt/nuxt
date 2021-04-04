@@ -32,6 +32,8 @@ export async function renderMiddleware (req, res) {
 
   const ssrContext = {
     url,
+    req,
+    res,
     runtimeConfig: {
       public: config.public,
       private: config.private
