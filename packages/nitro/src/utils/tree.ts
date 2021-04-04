@@ -6,7 +6,7 @@ import { readFile } from 'fs-extra'
 import chalk from 'chalk'
 import stdenv from 'std-env'
 
-export async function printFSTree (dir) {
+export async function printFSTree (dir: string) {
   if (stdenv.test) {
     return
   }

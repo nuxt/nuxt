@@ -2,11 +2,22 @@ import { resolve, join, extname } from 'upath'
 import { joinURL } from 'ufo'
 import globby from 'globby'
 import { watch } from 'chokidar'
+import type { Middleware } from 'h3'
 import { tryResolvePath, Nuxt } from '@nuxt/kit'
 
 export interface ServerMiddleware {
   route: string
-  handle: string
+  /**
+   * @deprecated use route
+   */
+  path?: string
+
+  handle?: Middleware
+  /**
+   * @deprecated use handle
+   */
+  handler?: Middleware
+
   lazy?: boolean // Default is true
   promisify?: boolean // Default is true
 }

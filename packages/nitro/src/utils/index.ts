@@ -44,7 +44,7 @@ export function tryImport (dir: string, path: string) {
   } catch (_err) { }
 }
 
-export async function writeFile (file, contents, log = false) {
+export async function writeFile (file: string, contents: string, log = false) {
   await fse.mkdirp(dirname(file))
   await fse.writeFile(file, contents, 'utf-8')
   if (log) {
@@ -52,7 +52,7 @@ export async function writeFile (file, contents, log = false) {
   }
 }
 
-export function resolvePath (nitroContext: NitroInput, path: string | ((nitroContext) => string), resolveBase: string = ''): string {
+export function resolvePath (nitroContext: NitroInput, path: string | ((nitroContext: NitroInput) => string), resolveBase: string = ''): string {
   if (typeof path === 'function') {
     path = path(nitroContext)
   }

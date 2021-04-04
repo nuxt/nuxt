@@ -81,7 +81,7 @@ async function _build (nitroContext: NitroContext) {
 
 function startRollupWatcher (nitroContext: NitroContext) {
   const watcher = rollupWatch(nitroContext.rollupConfig)
-  let start
+  let start: number
 
   watcher.on('event', (event) => {
     switch (event.code) {
