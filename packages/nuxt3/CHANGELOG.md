@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/nuxt/framework/compare/nuxt3@0.2.0...nuxt3@0.2.1) (2021-04-04)
+
+
+### Bug Fixes
+
+* **nuxt3:** install nuxt-cli by default ([3e794a3](https://github.com/nuxt/framework/commit/3e794a36f2b1aa9fd729f7556741c47930a30b64))
+
+
+
+
+
 # 0.2.0 (2021-04-04)
 
 
