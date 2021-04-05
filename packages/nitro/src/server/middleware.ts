@@ -12,11 +12,11 @@ export interface ServerMiddleware {
    */
   path?: string
 
-  handle?: Middleware
+  handle?: Middleware | string
   /**
    * @deprecated use handle
    */
-  handler?: Middleware
+  handler?: Middleware | string
 
   lazy?: boolean // Default is true
   promisify?: boolean // Default is true

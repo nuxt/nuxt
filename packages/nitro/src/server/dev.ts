@@ -11,7 +11,6 @@ import servePlaceholder from 'serve-placeholder'
 import serveStatic from 'serve-static'
 import { resolve } from 'upath'
 import type { NitroContext } from '../context'
-import type { ServerMiddleware } from './middleware'
 
 export function createDevServer (nitroContext: NitroContext) {
   // Worker
@@ -119,6 +118,7 @@ export function createDevServer (nitroContext: NitroContext) {
   return {
     reload,
     listen: _listen,
+    app,
     close,
     watch,
     setLegacyMiddleware: legacyMiddleware.set,
@@ -127,7 +127,7 @@ export function createDevServer (nitroContext: NitroContext) {
 }
 
 interface DynamicMiddleware {
-  set: (input: Middleware | ServerMiddleware[]) => void
+  set: (input: Middleware) => void
   middleware: Middleware
 }
 
