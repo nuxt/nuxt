@@ -8,7 +8,7 @@ for (const type of ['private', 'public']) {
   }
 }
 
-const $config = global.$config = {
+const $config = globalThis.$config = {
   ...runtimeConfig.public,
   ...runtimeConfig.private
 }

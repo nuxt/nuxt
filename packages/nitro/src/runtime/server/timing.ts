@@ -1,4 +1,4 @@
-export const globalTiming = global.__timing__ || {
+export const globalTiming = globalThis.__timing__ || {
   start: () => 0,
   end: () => 0,
   metrics: []

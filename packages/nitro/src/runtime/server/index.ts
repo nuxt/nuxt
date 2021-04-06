@@ -20,5 +20,8 @@ app.use(() => import('../app/render').then(e => e.renderMiddleware), { lazy: tru
 export const stack = app.stack
 export const handle = useBase(process.env.ROUTER_BASE, app)
 export const localCall = createCall(handle)
-export const localFetch = createLocalFetch(localCall, global.fetch)
-export const $fetch = global.$fetch = createFetch({ fetch: localFetch })
+export const localFetch = createLocalFetch(localCall, globalThis.fetch)
+
+export const $fetch = createFetch({ fetch: localFetch })
+
+globalThis.$fetch = $fetch

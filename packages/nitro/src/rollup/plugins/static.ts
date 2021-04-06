@@ -50,7 +50,7 @@ export function dirnames (): Plugin {
     name: 'dirnames',
     renderChunk (code, chunk) {
       return {
-        code: code + (chunk.isEntry ? 'global.mainDir="undefined"!=typeof __dirname?__dirname:require.main.filename;' : ''),
+        code: code + (chunk.isEntry ? 'globalThis.mainDir="undefined"!=typeof __dirname?__dirname:require.main.filename;' : ''),
         map: null
       }
     }
