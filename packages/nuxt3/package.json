@@ -16,7 +16,8 @@
     "dependencies": [
       "@nuxt/app",
       "@nuxt/vite-builder",
-      "@nuxt/webpack-builder"
+      "@nuxt/webpack-builder",
+      "nuxt-cli"
     ]
   },
   "dependencies": {
