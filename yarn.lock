@@ -1722,9 +1722,9 @@ __metadata:
   dependencies:
     "@vueuse/head": ^0.5.1
     hookable: ^4.4.1
-    ohmyfetch: ^0.1.8
+    ohmyfetch: ^0.2.0
     vue: ^3.0.11
-    vue-router: ^4.0.5
+    vue-router: ^4.0.6
     vuex5: ^0.5.0-testing.3
   languageName: unknown
   linkType: soft
@@ -1795,7 +1795,7 @@ __metadata:
     "@types/http-proxy": ^1.17.5
     "@types/node-fetch": ^2.5.9
     "@types/serve-static": ^1.13.9
-    "@vercel/nft": ^0.9.6
+    "@vercel/nft": ^0.10.0
     "@vue/server-renderer": ^3.0.11
     archiver: ^5.3.0
     chalk: ^4.1.0
@@ -1811,16 +1811,16 @@ __metadata:
     fs-extra: ^9.1.0
     globby: ^11.0.3
     gzip-size: ^6.0.0
-    h3: ^0.2.8
+    h3: ^0.2.9
     hasha: ^5.2.2
     hookable: ^4.4.1
     http-proxy: ^1.18.1
     is-primitive: ^3.0.1
     jiti: ^1.6.4
-    listhen: ^0.1.4
+    listhen: ^0.2.3
     mime: ^2.5.2
     node-fetch: ^2.6.1
-    ohmyfetch: ^0.1.8
+    ohmyfetch: ^0.2.0
     ora: ^5.4.0
     pretty-bytes: ^5.6.0
     rollup: ^2.44.0
@@ -1892,7 +1892,7 @@ __metadata:
     glob: ^7.1.6
     hash-sum: ^2.0.0
     lodash: ^4.17.21
-    memfs: ^3.2.1
+    memfs: ^3.2.2
     mini-css-extract-plugin: ^1.4.0
     pify: ^5.0.0
     postcss: ^8.2.9
@@ -2770,16 +2770,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.9.6":
-  version: 0.9.6
-  resolution: "@vercel/nft@npm:0.9.6"
+"@vercel/nft@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@vercel/nft@npm:0.10.0"
   dependencies:
-    acorn: ^7.4.1
-    acorn-class-fields: ^0.3.2
-    acorn-export-ns-from: ^0.1.0
-    acorn-import-meta: ^1.1.0
-    acorn-numeric-separator: ^0.3.0
-    acorn-static-class-features: ^0.2.1
+    acorn: ^8.1.0
+    acorn-class-fields: ^1.0.0
+    acorn-static-class-features: ^1.0.0
     bindings: ^1.4.0
     estree-walker: ^0.6.1
     glob: ^7.1.3
@@ -2792,7 +2789,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: 946a0222373599e71c09b7429bc4f919b0107dccc0fa75ee152c4318e1e68286684c4150c31aac8ae08fbb005c15d65f5c12831b6eaa298236e02c8b5ed773e9
+  checksum: 772c8cf1e946937bdef54d95da014fac9721bed86caf3b422154cba7959274c544b11bb4a6745bcca02bd26ba3e3da903bc6c10d1a29d58952413d64e8a621a3
   languageName: node
   linkType: hard
 
@@ -3227,23 +3224,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-class-fields@npm:^0.3.2":
-  version: 0.3.7
-  resolution: "acorn-class-fields@npm:0.3.7"
+"acorn-class-fields@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "acorn-class-fields@npm:1.0.0"
   dependencies:
-    acorn-private-class-elements: ^0.2.7
+    acorn-private-class-elements: ^1.0.0
   peerDependencies:
     acorn: ^6 || ^7 || ^8
-  checksum: 293aafcb03cbc224e7c2c5352f9980f1bff0565681c47074c90b82171514f9d42b928f32c8010c19a6afe5af2881458ef67e1cbcdd6f4062dd38e1bf3a825b6d
-  languageName: node
-  linkType: hard
-
-"acorn-export-ns-from@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "acorn-export-ns-from@npm:0.1.0"
-  peerDependencies:
-    acorn: ^6.0.1
-  checksum: e38b49d9dc071ba46b52709f6870311fb8144c199d832bc5e73e794c55a2b13cfb13477502a970184f8d9df5de51fef28c3f75840634fa165d6a17dc251cdabf
+  checksum: aa038e39e251e916e12b18537b844cde0d1d6ff4c2d2f0f0fbf940a0c04eaf306d72fdc84d37575e6c1e85f1b22fcacc5172e5726bef4b39b3bf96e8d6ea220e
   languageName: node
   linkType: hard
 
@@ -3257,15 +3245,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-import-meta@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "acorn-import-meta@npm:1.1.0"
-  peerDependencies:
-    acorn: ^6.0.0 || ^7.0.0
-  checksum: 16facde86452de81c367bc31dcc90778b7b762cd6f666b1ddd7fec375e0261aa7a758a5f118cad0bc94b1acfbf5036c4bf657788693832b2db4ad3bc5b49732f
-  languageName: node
-  linkType: hard
-
 "acorn-jsx@npm:^5.2.0, acorn-jsx@npm:^5.3.1":
   version: 5.3.1
   resolution: "acorn-jsx@npm:5.3.1"
@@ -3275,32 +3254,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-numeric-separator@npm:^0.3.0":
-  version: 0.3.6
-  resolution: "acorn-numeric-separator@npm:0.3.6"
-  peerDependencies:
-    acorn: ^6 || ^7 || ^8
-  checksum: cc6f801804aa9859b034790d0d46ccd58d96793d8f2a3b1454c303fcb16b634cb630da9b1ea121066bdcf6b50d207a0f5f63642eeeddf4deef2a85b613b5c5bd
-  languageName: node
-  linkType: hard
-
-"acorn-private-class-elements@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "acorn-private-class-elements@npm:0.2.7"
+"acorn-private-class-elements@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "acorn-private-class-elements@npm:1.0.0"
   peerDependencies:
     acorn: ^6.1.0 || ^7 || ^8
-  checksum: fd6edc936a30c28622ce30dedaedc815ba64c845219bbf0b965b44466d4a0c8c3e8c02037085c9eecf4ffff5179441c8e0639689164735b24d30c61a70fbb351
+  checksum: 2fc2be0a1ac1e52c885876e9b03ee299a14649b7425d137d3bf95e29db65502163cfe780d5f1df32d216f9d5d170c305b8382bb47f544813674a3fe64902e10c
   languageName: node
   linkType: hard
 
-"acorn-static-class-features@npm:^0.2.1":
-  version: 0.2.4
-  resolution: "acorn-static-class-features@npm:0.2.4"
+"acorn-static-class-features@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "acorn-static-class-features@npm:1.0.0"
   dependencies:
-    acorn-private-class-elements: ^0.2.7
+    acorn-private-class-elements: ^1.0.0
   peerDependencies:
     acorn: ^6.1.0 || ^7 || ^8
-  checksum: 432363817de3b8792e652f72f38230fe72d19fd34efa701b01b8f966622c97be3d64d2310f24468b76f11d4495b019b33e027d9618d9a941c94d5e7f91bd13bd
+  checksum: 3f8a6ddbc49e87b9267fe87d1c36c2007b3b73e122796144b693e3a2b0d1c1b72b217a48ffe52bbb63846f62d53e7b72e34bba64f6e0d0cf4677dde46081f591
   languageName: node
   linkType: hard
 
@@ -3318,7 +3288,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^7.1.1, acorn@npm:^7.4.0, acorn@npm:^7.4.1":
+"acorn@npm:^7.1.1, acorn@npm:^7.4.0":
   version: 7.4.1
   resolution: "acorn@npm:7.4.1"
   bin:
@@ -3327,7 +3297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.0.4, acorn@npm:^8.0.5":
+"acorn@npm:^8.0.4, acorn@npm:^8.0.5, acorn@npm:^8.1.0":
   version: 8.1.0
   resolution: "acorn@npm:8.1.0"
   bin:
@@ -5438,6 +5408,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"define-lazy-prop@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "define-lazy-prop@npm:2.0.0"
+  checksum: aefea62111b83127cdbc030a230e06a1c718049f737ef72892b036aeaa882fcbd801f311145fbbb66df0c34b035dfe745eab1ad76c52e633427ca6f84eca38ef
+  languageName: node
+  linkType: hard
+
 "define-properties@npm:^1.1.3":
   version: 1.1.3
   resolution: "define-properties@npm:1.1.3"
@@ -6864,6 +6841,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-monkey@npm:1.0.3":
+  version: 1.0.3
+  resolution: "fs-monkey@npm:1.0.3"
+  checksum: 0b5e16f147d3e1b28e2fc7ae8f4a6bf061587a03dbee817ee869fadbb1f5f9e038062bf9646161c7576918ac084bbd0b38bd819aa7856d4fd850a440b201f83e
+  languageName: node
+  linkType: hard
+
 "fs.realpath@npm:^1.0.0":
   version: 1.0.0
   resolution: "fs.realpath@npm:1.0.0"
@@ -7210,10 +7194,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.2.8":
-  version: 0.2.8
-  resolution: "h3@npm:0.2.8"
-  checksum: c78b8b7dac738af3fa43cdba293b6fa845d1064eafc0ecf35231dead34e3499913303e33e9c47415cfad8e477a441cbeb55e0a8a7ea52ee4b241590e2deaacba
+"h3@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "h3@npm:0.2.9"
+  checksum: 8249aa37f0938b8b18d06818179b32a8fa5d29806c2ebe8c1bb483397776c377dde4d3c2c371b56ba1253e06d54528339a63fce8b3aa2707e796d4c1f1ab48a7
   languageName: node
   linkType: hard
 
@@ -7963,6 +7947,15 @@ __metadata:
   bin:
     is-docker: cli.js
   checksum: dc8e36fa63a246728e5dd4b3ab2d454f685d3dcc1fecbe62144a0c3bc1f5eef0cf67cb3af1b4a9d274dd18877b954b651c7ef0a483abae6a7a2baa8f987554ba
+  languageName: node
+  linkType: hard
+
+"is-docker@npm:^2.1.1":
+  version: 2.2.0
+  resolution: "is-docker@npm:2.2.0"
+  bin:
+    is-docker: cli.js
+  checksum: 18deebbc7ffa9c60abdd6797cd840cfabe4384f19c54d810aad68cbe644227056a83f9fdc7d8446e1654e95f39cb70ccda4fca59a3a8663e29bc931157ad32de
   languageName: node
   linkType: hard
 
@@ -9154,20 +9147,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"listhen@npm:^0.1.4":
-  version: 0.1.4
-  resolution: "listhen@npm:0.1.4"
+"listhen@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "listhen@npm:0.2.3"
   dependencies:
-    chalk: ^4.1.0
     clipboardy: ^2.3.0
-    defu: ^3.2.2
+    colorette: ^1.2.2
     get-port-please: ^2.1.0
     http-shutdown: ^1.2.2
-    ohmyfetch: ^0.1.8
-    open: ^7.3.0
+    open: ^8.0.5
     selfsigned: ^1.10.8
-    ufo: ^0.6.6
-  checksum: ce3d3a9c46afd77282364af0eb5ec584a72e40fa27ae111393a9c8110192e5bf5efd1afb941433d4907dd2f6d2f3499d2311280ec3271c9091b2ac7c276bc79a
+  checksum: 4b028e5b0b629337376239664540b2cdedce0aa905ed26dd1705153d7e7ab7fbc67052a9bbe9321fedb559314cb0abb9767e90257673388cdba6654fe753aa35
   languageName: node
   linkType: hard
 
@@ -9588,12 +9578,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"memfs@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "memfs@npm:3.2.1"
+"memfs@npm:^3.2.2":
+  version: 3.2.2
+  resolution: "memfs@npm:3.2.2"
   dependencies:
-    fs-monkey: 1.0.1
-  checksum: 6cdac9d2da83ba3482efbb2ce5a62209e2b4fc62477c1a8e897fbb0b0b9a0bd73688d69a52409a796a38911f5856e7d8b4e19e77ac4144c4b3db081821818796
+    fs-monkey: 1.0.3
+  checksum: 3d58b59fd574723d072f25f541c5d1080212129d49669a41f5f6b6da814cda040d7f47ddd8c623550d49c01c24853c7e07f798a00db6510236b724ed476a9025
   languageName: node
   linkType: hard
 
@@ -10619,12 +10609,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohmyfetch@npm:^0.1.8":
-  version: 0.1.8
-  resolution: "ohmyfetch@npm:0.1.8"
+"ohmyfetch@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "ohmyfetch@npm:0.2.0"
   dependencies:
+    destr: ^1.1.0
     node-fetch: ^2.6.1
-  checksum: 3bc6d541107a3ae7087a9c41b88f731706da96f01d339cceb51c69a0328578c1f362e69da7dfb98dc0d55cd4d09b061418bf2eaa644074b2f4e0db7cc099a63e
+    ufo: ^0.6.10
+  checksum: 0ded74da10bb4d12aa2e73506368c5ff223333996e4700bb004ed3971a185793ff067094ef17d7d0d4d829c9cb0c605af4a410192f510ec40e3dcd8e21f4aed9
   languageName: node
   linkType: hard
 
@@ -10655,13 +10647,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:^7.3.0":
-  version: 7.4.2
-  resolution: "open@npm:7.4.2"
+"open@npm:^8.0.5":
+  version: 8.0.5
+  resolution: "open@npm:8.0.5"
   dependencies:
-    is-docker: ^2.0.0
-    is-wsl: ^2.1.1
-  checksum: 07545fa768e5fbc25c6f53c6f17465f1b7ee663a494f87608d99a7b3227c83d2d2e0f0e5ecb70325b4ddef97dcd02d206f9afe3f8d6bb3d6612db9ca310ed4eb
+    define-lazy-prop: ^2.0.0
+    is-docker: ^2.1.1
+    is-wsl: ^2.2.0
+  checksum: aecfd0b0edd37f7a58f3e71a32726ecbc91e6c19c475896c80085e38a3c9eb4a11d3311226ac2a4f33ff51ff42c1ef39077cff0b50f74da86c2c3ffcf1f0b97f
   languageName: node
   linkType: hard
 
@@ -14082,7 +14075,7 @@ typescript@^4.2.3:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.6.10, ufo@npm:^0.6.6":
+"ufo@npm:^0.6.10":
   version: 0.6.10
   resolution: "ufo@npm:0.6.10"
   checksum: cf9ccf0bb3236a280569372fb48bd7eca82ad1bcf913e06b459789fd42f1f5d6532d2aea88e206ec135cc2261cb148d60e6627491fa2a56575ec0961c6396726
@@ -14450,12 +14443,12 @@ typescript@^4.2.3:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.5":
-  version: 4.0.5
-  resolution: "vue-router@npm:4.0.5"
+"vue-router@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "vue-router@npm:4.0.6"
   peerDependencies:
     vue: ^3.0.0
-  checksum: 9d3459baae6290169cd525125f5eafe30bae62a5c7f657e948674fa0248607a7b7a3eeed8e83a4f98ff8db7753279727e8cb29b40e9b4a236da1c6696b71d035
+  checksum: 0f7ac0b5da2a0d37f1dadd58be69600f26d9a95c75ece82e50803e5532a25599e414100a15f942d4188eb789bf40fe132b4badc98337a3c431898e112f63f18c
   languageName: node
   linkType: hard
 
