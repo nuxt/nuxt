@@ -41,6 +41,11 @@ export async function renderMiddleware (req, res) {
     ...(req.context || {})
   }
   const rendered = await renderer.renderToString(ssrContext)
+
+  if (ssrContext.nuxt.hooks) {
+    await ssrContext.nuxt.hooks.callHook('app:rendered')
+  }
+
   // TODO: nuxt3 should not reuse `nuxt` property for different purpose!
   const payload = ssrContext.payload /* nuxt 3 */ || ssrContext.nuxt /* nuxt 2 */
 

@@ -13,12 +13,12 @@ async function initApp () {
   await applyPlugins(nuxt, plugins)
   await applyPlugins(nuxt, clientPlugins)
 
-  await app.$nuxt.hooks.callHook('app:created', app)
-  await app.$nuxt.hooks.callHook('app:beforeMount', app)
+  await nuxt.hooks.callHook('app:created', app)
+  await nuxt.hooks.callHook('app:beforeMount', app)
 
   app.mount('#__nuxt')
 
-  await app.$nuxt.hooks.callHook('app:mounted', app)
+  await nuxt.hooks.callHook('app:mounted', app)
   await nextTick()
   nuxt.isHydrating = false
 }
