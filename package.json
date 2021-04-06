@@ -13,6 +13,7 @@
     "nu": "./node_modules/.bin/nu",
     "play": "yarn run nu dev playground",
     "lint": "yarn gentypes && eslint --ext .vue,.ts,.js .",
+    "publish": "yarn",
     "test": "yarn lint",
     "postinstall": "yarn stub"
   },
