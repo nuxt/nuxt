@@ -1,6 +1,6 @@
 {
   "name": "nuxt3",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -21,11 +21,11 @@
     ]
   },
   "dependencies": {
-    "@nuxt/app": "^0.2.0",
+    "@nuxt/app": "^0.2.1",
     "@nuxt/kit": "^0.2.0",
-    "@nuxt/nitro": "^0.2.2",
+    "@nuxt/nitro": "^0.2.3",
     "@nuxt/vite-builder": "^0.1.1",
-    "@nuxt/webpack-builder": "^0.1.1",
+    "@nuxt/webpack-builder": "^0.1.2",
     "chokidar": "^3.5.1",
     "consola": "^2.15.3",
     "defu": "^3.2.2",

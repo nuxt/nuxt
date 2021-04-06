@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.3](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.2...@nuxt/nitro@0.2.3) (2021-04-06)
+
+
+### Bug Fixes
+
+* use `globalThis` instead of `global` ([#59](https://github.com/nuxt/framework/issues/59)) ([b12cbc5](https://github.com/nuxt/framework/commit/b12cbc5ed2f5448ba9c896a14730c09a6ee88e1d))
+* **app, nitro:** fix `app:rendered` hook ([#53](https://github.com/nuxt/framework/issues/53)) ([7f97015](https://github.com/nuxt/framework/commit/7f97015c7443caacbb914ff3a0bc99149b66b3a6))
+
+
+
+
+
 ## [0.2.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.1...@nuxt/nitro@0.2.2) (2021-04-04)
 
 **Note:** Version bump only for package @nuxt/nitro
