@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.4](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.3...@nuxt/nitro@0.2.4) (2021-04-06)
+
+
+### Bug Fixes
+
+* **nitro:** add temporary workarouind for ufo resolution in nuxt2 ([f66d917](https://github.com/nuxt/framework/commit/f66d91772974fe1859130462389ada72829df377))
+
+
+
+
+
 ## [0.2.3](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.2...@nuxt/nitro@0.2.3) (2021-04-06)
 
 
