@@ -14,7 +14,8 @@
     "play": "yarn run nu dev playground",
     "lint": "yarn gentypes && eslint --ext .vue,.ts,.js .",
     "test": "yarn lint",
-    "postinstall": "yarn stub"
+    "postinstall": "yarn stub",
+    "version": "yarn && git add yarn.lock"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config": "^6.0.0",
