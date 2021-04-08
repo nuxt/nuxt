@@ -1643,7 +1643,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/nitro@^0.2.4, @nuxt/nitro@workspace:packages/nitro":
+"@nuxt/nitro@^0.3.0, @nuxt/nitro@workspace:packages/nitro":
   version: 0.0.0-use.local
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
@@ -10268,7 +10268,7 @@ __metadata:
   dependencies:
     "@nuxt/app": ^0.2.1
     "@nuxt/kit": ^0.2.0
-    "@nuxt/nitro": ^0.2.4
+    "@nuxt/nitro": ^0.3.0
     "@nuxt/vite-builder": ^0.1.1
     "@nuxt/webpack-builder": ^0.1.2
     "@types/fs-extra": ^9.0.10

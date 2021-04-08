@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [

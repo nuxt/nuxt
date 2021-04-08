@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.4...@nuxt/nitro@0.3.0) (2021-04-08)
+
+
+### Features
+
+* basic support for netlify_builder target ([#18](https://github.com/nuxt/framework/issues/18)) ([b536ab4](https://github.com/nuxt/framework/commit/b536ab4ba7c0d8d38224e61c1f91ce528a6ba4e8))
+
+
+
+
+
 ## [0.2.4](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.3...@nuxt/nitro@0.2.4) (2021-04-06)
 
 
