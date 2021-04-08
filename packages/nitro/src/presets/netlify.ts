@@ -11,3 +11,8 @@ export const netlify: NitroPreset = extendPreset(lambda, {
     '_redirects'
   ]
 })
+
+// eslint-disable-next-line
+export const netlify_builder: NitroPreset = extendPreset(netlify, {
+  entry: '{{ _internal.runtimeDir }}/entries/netlify_builder'
+})

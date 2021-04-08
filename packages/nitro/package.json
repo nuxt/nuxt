@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.1.1",
+    "@netlify/functions": "^0.4.1",
     "@nuxt/devalue": "^1.2.5",
     "@nuxt/kit": "^0.2.0",
     "@nuxt/un": "^0.1.1",

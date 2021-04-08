@@ -1476,6 +1476,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@netlify/functions@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "@netlify/functions@npm:0.4.1"
+  dependencies:
+    is-promise: ^4.0.0
+  checksum: 65616779e7f9e085b2309852b2978152b581b03cbce09658ddd0441755ca699eec66f10e250b1c24ecb572ba2e6d8eebee94deee819b027b780d2f9c5da99dae
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.4":
   version: 2.1.4
   resolution: "@nodelib/fs.scandir@npm:2.1.4"
@@ -1639,6 +1648,7 @@ __metadata:
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.1
+    "@netlify/functions": ^0.4.1
     "@nuxt/devalue": ^1.2.5
     "@nuxt/kit": ^0.2.0
     "@nuxt/un": ^0.1.1
@@ -7921,6 +7931,13 @@ __metadata:
   version: 3.0.1
   resolution: "is-primitive@npm:3.0.1"
   checksum: 401b9a0e2fb758e6a481efa0bec944c3a7f9a3e722be7f6859d8e0303f9680415e7410bd498e71216fd2e453a8e0f30d592c2cc7518aa4158d4682fb79f93ac0
+  languageName: node
+  linkType: hard
+
+"is-promise@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "is-promise@npm:4.0.0"
+  checksum: 7085bdc4eaff389c5730a1d54f014880e90ca1e4b7f0a49de9f3c5f5d2fb9e0c3a878ac226d3aa9190bfe4a78400e66d911427ef4812455756293cdb02fb05cf
   languageName: node
   linkType: hard
 
