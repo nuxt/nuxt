@@ -7,7 +7,7 @@
   "scripts": {
     "build": "FORCE_COLOR=1 lerna run prepack --stream --no-prefix",
     "stub": "lerna run prepack -- --stub",
-    "release": "yarn && yarn build && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
+    "release": "yarn && yarn lint && FORCE_COLOR=1 lerna publish -m \"chore: release\" && yarn stub",
     "nu": "./node_modules/.bin/nu",
     "play": "yarn run nu dev playground",
     "lint": "eslint --ext .vue,.ts,.js .",
