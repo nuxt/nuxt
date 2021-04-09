@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",

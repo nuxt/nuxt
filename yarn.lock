@@ -1587,7 +1587,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/app@^0.2.1, @nuxt/app@workspace:packages/app":
+"@nuxt/app@^0.3.0, @nuxt/app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "@nuxt/app@workspace:packages/app"
   dependencies:
@@ -1624,7 +1624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@^0.2.0, @nuxt/kit@workspace:packages/kit":
+"@nuxt/kit@^0.3.0, @nuxt/kit@workspace:packages/kit":
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
@@ -1645,14 +1645,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/nitro@^0.3.0, @nuxt/nitro@workspace:packages/nitro":
+"@nuxt/nitro@^0.4.0, @nuxt/nitro@workspace:packages/nitro":
   version: 0.0.0-use.local
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.1
     "@netlify/functions": ^0.5.0
     "@nuxt/devalue": ^1.2.5
-    "@nuxt/kit": ^0.2.0
+    "@nuxt/kit": ^0.3.0
     "@nuxt/un": ^0.1.1
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
@@ -1728,11 +1728,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/vite-builder@^0.1.1, @nuxt/vite-builder@workspace:packages/vite":
+"@nuxt/vite-builder@^0.2.0, @nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
-    "@nuxt/kit": ^0.2.0
+    "@nuxt/kit": ^0.3.0
     "@vitejs/plugin-vue": ^1.2.1
     "@vue/compiler-sfc": ^3.0.11
     consola: ^2.15.3
@@ -1743,13 +1743,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/webpack-builder@^0.1.2, @nuxt/webpack-builder@workspace:packages/webpack":
+"@nuxt/webpack-builder@^0.2.0, @nuxt/webpack-builder@workspace:packages/webpack":
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
     "@babel/core": ^7.13.15
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.1
-    "@nuxt/kit": ^0.2.0
+    "@nuxt/kit": ^0.3.0
     "@types/terser-webpack-plugin": ^5.0.3
     "@types/webpack-bundle-analyzer": ^3.9.2
     "@types/webpack-dev-middleware": ^4.1.2
@@ -10012,7 +10012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-cli@^0.1.1, nuxt-cli@workspace:packages/cli":
+"nuxt-cli@^0.2.0, nuxt-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "nuxt-cli@workspace:packages/cli"
   dependencies:
@@ -10051,11 +10051,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt3@workspace:packages/nuxt3"
   dependencies:
-    "@nuxt/app": ^0.2.1
-    "@nuxt/kit": ^0.2.0
-    "@nuxt/nitro": ^0.3.0
-    "@nuxt/vite-builder": ^0.1.1
-    "@nuxt/webpack-builder": ^0.1.2
+    "@nuxt/app": ^0.3.0
+    "@nuxt/kit": ^0.3.0
+    "@nuxt/nitro": ^0.4.0
+    "@nuxt/vite-builder": ^0.2.0
+    "@nuxt/webpack-builder": ^0.2.0
     "@types/fs-extra": ^9.0.10
     "@types/hash-sum": ^1.0.0
     "@types/lodash": ^4.14.168
@@ -10068,7 +10068,7 @@ __metadata:
     hookable: ^4.4.1
     ignore: ^5.1.8
     lodash: ^4.17.21
-    nuxt-cli: ^0.1.1
+    nuxt-cli: ^0.2.0
     scule: ^0.1.1
     ufo: ^0.6.11
     unbuild: ^0.1.12

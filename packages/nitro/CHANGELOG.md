@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.3.0...@nuxt/nitro@0.4.0) (2021-04-09)
+
+
+### Bug Fixes
+
+* **nitro:** exclude `rootDir` from externals and reinstate automock warning ([#66](https://github.com/nuxt/framework/issues/66)) ([00c7ede](https://github.com/nuxt/framework/commit/00c7ede623728d289bb66b459b6eec184affcbfb))
+
+
+### Features
+
+* initial version of nu cli ([#54](https://github.com/nuxt/framework/issues/54)) ([a030c62](https://github.com/nuxt/framework/commit/a030c62d29ba871f94a7152c7d5fa36d4de1d3b6))
+
+
+
+
+
 # [0.3.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.2.4...@nuxt/nitro@0.3.0) (2021-04-08)
 
 
