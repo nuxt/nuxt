@@ -1662,10 +1662,8 @@ __metadata:
     "@rollup/plugin-replace": ^2.4.2
     "@rollup/plugin-virtual": ^2.0.3
     "@rollup/pluginutils": ^4.1.0
-    "@types/chokidar": ^2.1.3
     "@types/debounce": ^1.2.0
     "@types/fs-extra": ^9.0.10
-    "@types/globby": ^9.1.0
     "@types/http-proxy": ^1.17.5
     "@types/node-fetch": ^2.5.10
     "@types/serve-static": ^1.13.9
@@ -2153,15 +2151,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chokidar@npm:^2.1.3":
-  version: 2.1.3
-  resolution: "@types/chokidar@npm:2.1.3"
-  dependencies:
-    chokidar: "*"
-  checksum: efefdf7b57586234d4a1583ebd725a2ad4ec9d8be3b4c29ad581e2dccbfee08922dbbc9516aca55d6242390ff9b174f3e0333253094693317132a96a3cb2e2b6
-  languageName: node
-  linkType: hard
-
 "@types/connect@npm:*":
   version: 3.4.34
   resolution: "@types/connect@npm:3.4.34"
@@ -2225,15 +2214,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 047a134510d86e1d5041a89d591a328392d62567b8d67d40f238fb3029dc08971f163798077ed0679870a6842381f05d50d14f75ae6b05b736cb18ece0eb7f4f
-  languageName: node
-  linkType: hard
-
-"@types/globby@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "@types/globby@npm:9.1.0"
-  dependencies:
-    globby: "*"
-  checksum: 9dd2abb72f7fe61a84e322f7d5a25640862ccd776a38f770b58e4a07040d9d8123ddfd2f28672bda6d137b66ec26ac41d9ec739bf41cc85a3e662218609cd363
   languageName: node
   linkType: hard
 
@@ -4137,7 +4117,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:*, chokidar@npm:^3.5.1":
+"chokidar@npm:^3.5.1":
   version: 3.5.1
   resolution: "chokidar@npm:3.5.1"
   dependencies:
@@ -4774,8 +4754,8 @@ __metadata:
   linkType: hard
 
 "css-loader@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "css-loader@npm:5.2.0"
+  version: 5.2.1
+  resolution: "css-loader@npm:5.2.1"
   dependencies:
     camelcase: ^6.2.0
     cssesc: ^3.0.0
@@ -4791,7 +4771,7 @@ __metadata:
     semver: ^7.3.4
   peerDependencies:
     webpack: ^4.27.0 || ^5.0.0
-  checksum: c3b2bb78531a56f6f6d5fa5dd6e2f992a89f136db3f4c150c3536daaa315b453d252c80f493099ead4edf0143b23357ff2d772148b61725c3dbca45b13446e67
+  checksum: ea4174eea8e0a6227584a0114496d5e8468be985e9aca89cca723e4c2afa757267652dff307e7901f2e6fb10571151c8bee71468550933772fe5ff70a520d9d7
   languageName: node
   linkType: hard
 
@@ -6812,7 +6792,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globby@npm:*, globby@npm:^11.0.1, globby@npm:^11.0.2, globby@npm:^11.0.3":
+"globby@npm:^11.0.1, globby@npm:^11.0.2, globby@npm:^11.0.3":
   version: 11.0.3
   resolution: "globby@npm:11.0.3"
   dependencies:
