@@ -74,7 +74,8 @@ export function createDevServer (nitroContext: NitroContext) {
         // console.error('[proxy]', err)
       })
     } else {
-      res.end('Worker not ready!')
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8')
+      res.end('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="1"><head><body>...')
     }
   })
 

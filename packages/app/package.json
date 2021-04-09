@@ -14,7 +14,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "^0.1.11"
+    "unbuild": "^0.1.12"
   },
   "dependencies": {
     "@vueuse/head": "^0.5.1",

@@ -1594,7 +1594,7 @@ __metadata:
     "@vueuse/head": ^0.5.1
     hookable: ^4.4.1
     ohmyfetch: ^0.2.0
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     vue: ^3.0.11
     vue-router: ^4.0.6
     vuex5: ^0.5.0-testing.3
@@ -1638,7 +1638,7 @@ __metadata:
     scule: ^0.1.1
     std-env: ^2.3.0
     ufo: ^0.6.11
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     unctx: ^0.0.3
     untyped: ^0.2.5
     upath: ^2.0.1
@@ -1705,7 +1705,7 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.0.9
     ufo: ^0.6.11
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     upath: ^2.0.1
     vue: 3.0.11
     vue-bundle-renderer: ^0.2.3
@@ -1739,7 +1739,7 @@ __metadata:
     "@vue/compiler-sfc": ^3.0.11
     consola: ^2.15.3
     fs-extra: ^9.1.0
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     vite: ^2.1.5
     vue: 3.0.11
   languageName: unknown
@@ -1777,7 +1777,7 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.6.11
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     url-loader: ^4.1.1
     vue: 3.0.11
     vue-loader: ^16.2.0
@@ -2343,6 +2343,13 @@ __metadata:
   version: 1.2.1
   resolution: "@types/minimist@npm:1.2.1"
   checksum: 3a6f5fe35f1656b34a4ccd5a5db1c38509d8d5b59625865b8c2b997994fcb0cfde0d9af7c5507b95dc5a0a32a22886c189e505cd2e52a7ef36d3c9982f07ed5a
+  languageName: node
+  linkType: hard
+
+"@types/mri@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@types/mri@npm:1.1.0"
+  checksum: 6e7ef55196c46115bb9b31a86751a9f14056459364540328419fcecb35f5379ec47ad35e73c957b7cd2fd7b087edd383b58a6734dce7a9d2b3296b03aa971a53
   languageName: node
   linkType: hard
 
@@ -9509,7 +9516,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdist@npm:^0.1.5, mkdist@npm:^0.1.6":
+"mkdist@npm:^0.1.6":
   version: 0.1.6
   resolution: "mkdist@npm:0.1.6"
   dependencies:
@@ -10029,7 +10036,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "nuxt-cli@workspace:packages/cli"
   dependencies:
-    unbuild: ^0.1.11
+    "@types/mri": ^1.1.0
+    colorette: ^1.2.2
+    listhen: ^0.2.3
+    mri: ^1.1.6
+    unbuild: ^0.1.12
+    v8-compile-cache: ^2.3.0
   bin:
     nu: ./bin/nuxt.js
     nuxt: ./bin/nuxt.js
@@ -10049,9 +10061,9 @@ __metadata:
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
-    mkdist: ^0.1.5
     ts-jest: ^26.5.4
     typescript: ^4.2.4
+    unbuild: ^0.1.12
   languageName: unknown
   linkType: soft
 
@@ -10079,7 +10091,7 @@ __metadata:
     nuxt-cli: ^0.1.1
     scule: ^0.1.1
     ufo: ^0.6.11
-    unbuild: ^0.1.11
+    unbuild: ^0.1.12
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -13605,9 +13617,9 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.1.11":
-  version: 0.1.11
-  resolution: "unbuild@npm:0.1.11"
+"unbuild@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "unbuild@npm:0.1.12"
   dependencies:
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
@@ -13631,7 +13643,7 @@ typescript@^4.2.4:
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.js
-  checksum: a50be051d7a61a48844e90d9eb2dfdfaf8f7cc53dc9e3c4aa587374a47ee33de93fa5a6afc827afaa994fac9ae5c7dbea8cd39bd2f6f29d81a33d453e0767a67
+  checksum: 4da242f54e5a778a20aad6a3e4151b41accdd0d2296216b9d5da8c347e79e372bca7894f15300db46da6ac49ff49216ef31cb97da5cddd30cee14eb7c7bf9c79
   languageName: node
   linkType: hard
 
@@ -13852,7 +13864,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"v8-compile-cache@npm:^2.0.3":
+"v8-compile-cache@npm:^2.0.3, v8-compile-cache@npm:^2.3.0":
   version: 2.3.0
   resolution: "v8-compile-cache@npm:2.3.0"
   checksum: b56f83d9ff14187562badc4955dadeef53ff3abde478ce60759539dd8d5472a91fce9db6083fc2450e54cef6f2110c1a28d8c12162dbf575a6cfcb846986904b

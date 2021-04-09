@@ -1,5 +1,5 @@
 import { defineNuxtConfig } from '@nuxt/kit'
 
 export default defineNuxtConfig({
-  vite: false
+  vite: true
 })
