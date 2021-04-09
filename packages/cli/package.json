@@ -9,18 +9,14 @@
     "nuxt": "./bin/nuxt.js",
     "nuxt-cli": "./bin/nuxt.js"
   },
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "devDependencies": {
+    "unbuild": "^0.1.11"
+  },
   "files": [
     "bin",
     "dist"
-  ],
-  "build": {
-    "externals": [
-      "nuxt3"
-    ],
-    "entries": {
-      "index": {
-        "format": "cjs"
-      }
-    }
-  }
+  ]
 }

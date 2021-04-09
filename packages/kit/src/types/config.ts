@@ -1,4 +1,4 @@
-import { ConfigSchema } from '../../.gen/config'
+import { ConfigSchema } from '../../.gen/config/config'
 import { ModuleInstallOptions } from './module'
 import { NuxtHooks } from './hooks'
 

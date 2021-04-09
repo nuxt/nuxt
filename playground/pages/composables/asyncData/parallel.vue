@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { defineNuxtComponent, asyncData } from 'nuxt/app/composables'
+import { defineNuxtComponent, asyncData } from '@nuxt/app'
 const waitFor = (ms = 0) => new Promise(resolve => setTimeout(resolve, ms))
 
 export default defineNuxtComponent({

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -10,9 +11,7 @@
     "types": [
       "node",
       "jest"
-    ],
-    "paths": {
-      "nuxt/app/composables": ["./packages/app/src/composables"]
-    }
-  }
+    ]
+  },
+  "exclude": ["./packages/*/dist/*"]
 }

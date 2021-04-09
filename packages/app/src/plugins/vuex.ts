@@ -1,6 +1,6 @@
 import { createVuex, defineStore, useStore } from 'vuex5/dist/vuex.esm'
 import type { Plugin } from '@nuxt/app'
-import { useHydration } from 'nuxt/app/composables'
+import { useHydration } from '../composables'
 
 export default <Plugin> function ({ app }) {
   const vuex = createVuex({ })

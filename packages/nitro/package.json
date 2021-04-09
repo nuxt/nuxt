@@ -7,28 +7,8 @@
     "dist",
     "compat.js"
   ],
-  "build": {
-    "entries": {
-      "index": {
-        "format": "cjs"
-      },
-      "compat": {
-        "format": "cjs"
-      },
-      "runtime/": {}
-    },
-    "dependencies": [
-      "@cloudflare/kv-asset-handler",
-      "@nuxt/devalue",
-      "connect",
-      "destr",
-      "ohmyfetch",
-      "ora",
-      "vue-bundle-renderer",
-      "vue-server-renderer",
-      "@vue/server-renderer",
-      "vue"
-    ]
+  "scripts": {
+    "prepack": "unbuild"
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.1.1",
@@ -92,6 +72,7 @@
     "@types/globby": "^9.1.0",
     "@types/http-proxy": "^1.17.5",
     "@types/node-fetch": "^2.5.9",
-    "@types/serve-static": "^1.13.9"
+    "@types/serve-static": "^1.13.9",
+    "unbuild": "^0.1.11"
   }
 }

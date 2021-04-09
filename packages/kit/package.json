@@ -8,6 +8,12 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "devDependencies": {
+    "unbuild": "^0.1.11"
+  },
   "dependencies": {
     "consola": "^2.15.3",
     "create-require": "^1.1.1",
@@ -22,13 +28,5 @@
     "unctx": "^0.0.3",
     "untyped": "^0.2.4",
     "upath": "^2.0.1"
-  },
-  "build": {
-    "prebuild": "jiti ./scripts/gentypes",
-    "entries": {
-      "index": {
-        "format": "cjs"
-      }
-    }
   }
 }

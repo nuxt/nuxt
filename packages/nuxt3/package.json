@@ -7,18 +7,8 @@
   "files": [
     "dist"
   ],
-  "build": {
-    "entries": {
-      "index": {
-        "format": "cjs"
-      }
-    },
-    "dependencies": [
-      "@nuxt/app",
-      "@nuxt/vite-builder",
-      "@nuxt/webpack-builder",
-      "nuxt-cli"
-    ]
+  "scripts": {
+    "prepack": "unbuild"
   },
   "dependencies": {
     "@nuxt/app": "^0.2.1",
@@ -43,6 +33,7 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.10",
     "@types/hash-sum": "^1.0.0",
-    "@types/lodash": "^4.14.168"
+    "@types/lodash": "^4.14.168",
+    "unbuild": "^0.1.11"
   }
 }

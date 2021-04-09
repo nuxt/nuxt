@@ -7,29 +7,8 @@
   "files": [
     "dist"
   ],
-  "build": {
-    "entries": {
-      "index": {
-        "format": "cjs"
-      }
-    },
-    "dependencies": [
-      "@nuxt/kit",
-      "@vue/compiler-sfc",
-      "@vue/babel-preset-jsx",
-      "postcss",
-      "postcss-import-resolver",
-      "postcss-loader",
-      "babel-loader",
-      "vue-loader",
-      "css-loader",
-      "file-loader",
-      "style-resources-loader",
-      "url-loader",
-      "vue-style-loader",
-      "@babel/core",
-      "vue"
-    ]
+  "scripts": {
+    "prepack": "unbuild"
   },
   "dependencies": {
     "@babel/core": "^7.13.14",
@@ -70,6 +49,7 @@
     "@types/terser-webpack-plugin": "^5.0.3",
     "@types/webpack-bundle-analyzer": "^3.9.2",
     "@types/webpack-dev-middleware": "^4.1.2",
-    "@types/webpack-hot-middleware": "^2.25.4"
+    "@types/webpack-hot-middleware": "^2.25.4",
+    "unbuild": "^0.1.11"
   }
 }

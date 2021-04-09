@@ -3,12 +3,19 @@
   "version": "0.2.1",
   "repository": "nuxt/framework",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "main": "./dist/app/index.js",
+  "module": "./dist/app/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "meta.js"
   ],
+  "scripts": {
+    "prepack": "unbuild"
+  },
+  "devDependencies": {
+    "unbuild": "^0.1.11"
+  },
   "dependencies": {
     "@vueuse/head": "^0.5.1",
     "hookable": "^4.4.1",
@@ -16,19 +23,5 @@
     "vue": "^3.0.11",
     "vue-router": "^4.0.6",
     "vuex5": "^0.5.0-testing.3"
-  },
-  "build": {
-    "entries": {
-      "index": {
-        "distDir": ".gen"
-      },
-      "/": {}
-    },
-    "dependencies": [
-      "@vueuse/head",
-      "ohmyfetch",
-      "vue-router",
-      "vuex5"
-    ]
   }
 }
