@@ -27,7 +27,7 @@
     "lodash": "^4.17.21",
     "nuxt-cli": "^0.1.1",
     "scule": "^0.1.1",
-    "ufo": "^0.6.10",
+    "ufo": "^0.6.11",
     "upath": "^2.0.1"
   },
   "devDependencies": {
