@@ -31,12 +31,11 @@ jobs:
           path: .yarn/cache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-berry-
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn # --immutable
-
+        run: yarn --immutable
 
       - name: Stub
         run: yarn stub
