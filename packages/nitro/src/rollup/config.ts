@@ -23,6 +23,7 @@ import { autoMock } from './plugins/automock'
 import { staticAssets, dirnames } from './plugins/static'
 import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
+import { raw } from './plugins/raw'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -108,6 +109,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   if (nitroContext.timing) {
     rollupConfig.plugins.push(timing())
   }
+
+  // Raw asset loader
+  rollupConfig.plugins.push(raw())
 
   // https://github.com/rollup/plugins/tree/master/packages/replace
   rollupConfig.plugins.push(replace({
