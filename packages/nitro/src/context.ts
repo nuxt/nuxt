@@ -6,6 +6,7 @@ import type { Preset } from '@nuxt/un'
 import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
 import * as PRESETS from './presets'
 import type { NodeExternalsOptions } from './rollup/plugins/externals'
+import type { StorageOptions } from './rollup/plugins/storage'
 import type { ServerMiddleware } from './server/middleware'
 
 export interface NitroContext {
@@ -32,6 +33,7 @@ export interface NitroContext {
     serverDir: string
     publicDir: string
   }
+  storage: StorageOptions,
   _nuxt: {
     majorVersion: number
     dev: boolean
@@ -85,6 +87,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       serverDir: '{{ output.dir }}/server',
       publicDir: '{{ output.dir }}/public'
     },
+    storage: { mounts: { } },
     _nuxt: {
       majorVersion: nuxtOptions._majorVersion || 2,
       dev: nuxtOptions.dev,
@@ -128,6 +131,22 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
   nitroContext.output.serverDir = resolvePath(nitroContext, nitroContext.output.serverDir)
 
   nitroContext._internal.hooks.addHooks(nitroContext.hooks)
+
+  // Dev-only storage
+  if (nitroContext._nuxt.dev) {
+    const fsMounts = {
+      root: resolve(nitroContext._nuxt.rootDir),
+      src: resolve(nitroContext._nuxt.srcDir),
+      build: resolve(nitroContext._nuxt.buildDir),
+      cache: resolve(nitroContext._nuxt.rootDir, '.nuxt/nitro/cache')
+    }
+    for (const p in fsMounts) {
+      nitroContext.storage.mounts[p] = nitroContext.storage.mounts[p] || {
+        driver: 'fs',
+        driverOptions: { base: fsMounts[p] }
+      }
+    }
+  }
 
   // console.log(nitroContext)
   // process.exit(1)

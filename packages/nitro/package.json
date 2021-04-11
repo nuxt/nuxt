@@ -60,6 +60,7 @@
     "std-env": "^2.3.0",
     "table": "^6.0.9",
     "ufo": "^0.6.11",
+    "unstorage": "^0.1.2",
     "upath": "^2.0.1",
     "vue": "3.0.11",
     "vue-bundle-renderer": "^0.2.3",

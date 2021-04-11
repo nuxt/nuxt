@@ -1704,6 +1704,7 @@ __metadata:
     table: ^6.0.9
     ufo: ^0.6.11
     unbuild: ^0.1.12
+    unstorage: ^0.1.2
     upath: ^2.0.1
     vue: 3.0.11
     vue-bundle-renderer: ^0.2.3
@@ -3301,7 +3302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"anymatch@npm:^3.0.3, anymatch@npm:~3.1.1":
+"anymatch@npm:^3.0.3, anymatch@npm:^3.1.1, anymatch@npm:~3.1.1":
   version: 3.1.2
   resolution: "anymatch@npm:3.1.2"
   dependencies:
@@ -6829,7 +6830,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.2.9":
+"h3@npm:^0.2.5, h3@npm:^0.2.9":
   version: 0.2.9
   resolution: "h3@npm:0.2.9"
   checksum: 8249aa37f0938b8b18d06818179b32a8fa5d29806c2ebe8c1bb483397776c377dde4d3c2c371b56ba1253e06d54528339a63fce8b3aa2707e796d4c1f1ab48a7
@@ -8755,6 +8756,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"listhen@npm:^0.1.4":
+  version: 0.1.4
+  resolution: "listhen@npm:0.1.4"
+  dependencies:
+    chalk: ^4.1.0
+    clipboardy: ^2.3.0
+    defu: ^3.2.2
+    get-port-please: ^2.1.0
+    http-shutdown: ^1.2.2
+    ohmyfetch: ^0.1.8
+    open: ^7.3.0
+    selfsigned: ^1.10.8
+    ufo: ^0.6.6
+  checksum: ce3d3a9c46afd77282364af0eb5ec584a72e40fa27ae111393a9c8110192e5bf5efd1afb941433d4907dd2f6d2f3499d2311280ec3271c9091b2ac7c276bc79a
+  languageName: node
+  linkType: hard
+
 "listhen@npm:^0.2.3":
   version: 0.2.3
   resolution: "listhen@npm:0.2.3"
@@ -10175,6 +10193,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ohmyfetch@npm:^0.1.8":
+  version: 0.1.8
+  resolution: "ohmyfetch@npm:0.1.8"
+  dependencies:
+    node-fetch: ^2.6.1
+  checksum: 3bc6d541107a3ae7087a9c41b88f731706da96f01d339cceb51c69a0328578c1f362e69da7dfb98dc0d55cd4d09b061418bf2eaa644074b2f4e0db7cc099a63e
+  languageName: node
+  linkType: hard
+
 "ohmyfetch@npm:^0.2.0":
   version: 0.2.0
   resolution: "ohmyfetch@npm:0.2.0"
@@ -10210,6 +10237,16 @@ __metadata:
   dependencies:
     mimic-fn: ^2.1.0
   checksum: e425f6caeb20cf2598ffece94be5663932e34d074f1631b682b13d5f01cc1e0712a7dc711eff1706bb5a5aaab8a52e37bd5edcf560334e3222219d7e8b09c21c
+  languageName: node
+  linkType: hard
+
+"open@npm:^7.3.0":
+  version: 7.4.2
+  resolution: "open@npm:7.4.2"
+  dependencies:
+    is-docker: ^2.0.0
+    is-wsl: ^2.1.1
+  checksum: 07545fa768e5fbc25c6f53c6f17465f1b7ee663a494f87608d99a7b3227c83d2d2e0f0e5ecb70325b4ddef97dcd02d206f9afe3f8d6bb3d6612db9ca310ed4eb
   languageName: node
   linkType: hard
 
@@ -13555,7 +13592,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.6.10, ufo@npm:^0.6.11":
+"ufo@npm:^0.6.10, ufo@npm:^0.6.11, ufo@npm:^0.6.6":
   version: 0.6.11
   resolution: "ufo@npm:0.6.11"
   checksum: 3b0393dbec80e0f7072959903dc39f64368211645cafce291bf440d48e8a5c8c33c9a13ac8a6839be42d63ed0d797090d6376490aad40709d292069d2cb29c7c
@@ -13720,6 +13757,24 @@ typescript@^4.2.4:
     has-value: ^0.3.1
     isobject: ^3.0.0
   checksum: b4c4853f2744a91e9bb5ccb3dfb28f78c32310bf851f0e6b9e781d3ca5244a803632926b2af701da5f9153a03e405023cebc1f90b87711f73b5fc86b6c33efae
+  languageName: node
+  linkType: hard
+
+"unstorage@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "unstorage@npm:0.1.2"
+  dependencies:
+    anymatch: ^3.1.1
+    chokidar: ^3.5.1
+    h3: ^0.2.5
+    listhen: ^0.1.4
+    mri: ^1.1.6
+    ohmyfetch: ^0.1.8
+    ufo: ^0.6.10
+    ws: ^7.4.4
+  bin:
+    unstorage: dist/cli.js
+  checksum: cfe1404663c409384e7b7db8614923c69f5a94d97516a10c8a9e13eb88725d58c17caf0dad3e2cd58ddaf169bb7d6182db0bf871ee41b704e78ca15dc523e130
   languageName: node
   linkType: hard
 

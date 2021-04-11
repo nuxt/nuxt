@@ -24,6 +24,7 @@ import { staticAssets, dirnames } from './plugins/static'
 import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
 import { raw } from './plugins/raw'
+import { storage } from './plugins/storage'
 
 export type RollupConfig = InputOptions & { output: OutputOptions }
 
@@ -152,6 +153,9 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     rollupConfig.plugins.push(dirnames())
     rollupConfig.plugins.push(staticAssets(nitroContext))
   }
+
+  // Storage
+  rollupConfig.plugins.push(storage(nitroContext.storage))
 
   // Middleware
   rollupConfig.plugins.push(middleware(() => {
