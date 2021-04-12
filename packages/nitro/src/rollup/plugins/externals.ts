@@ -44,8 +44,8 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       } catch (_err) { }
 
       return {
-        id: isAbsolute(id) ? relative(opts.outDir, id) : id,
-        external: true
+        id,
+        external: 'absolute'
       }
     },
     async buildEnd () {
