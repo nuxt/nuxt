@@ -3,21 +3,21 @@ import * as path from 'path'
 
 import { Plugin } from 'rollup'
 
-type UnresolvedModule = string | (() => string)
+type VirtualModule = string | { load: () => string | Promise<string> }
+
 export interface RollupVirtualOptions {
-  [id: string]: UnresolvedModule;
+  [id: string]: VirtualModule;
 }
 
 const PREFIX = '\0virtual:'
 
-const resolveModule = (m: UnresolvedModule) => typeof m === 'function' ? m() : m
-
 export default function virtual (modules: RollupVirtualOptions): Plugin {
-  const resolvedIds = new Map<string, string |(() => string)>()
+  const _modules = new Map<string, VirtualModule>()
 
-  Object.keys(modules).forEach((id) => {
-    resolvedIds.set(path.resolve(id), modules[id])
-  })
+  for (const [id, mod] of Object.entries(modules)) {
+    _modules.set(id, mod)
+    _modules.set(path.resolve(id), mod)
+  }
 
   return {
     name: 'virtual',
@@ -30,20 +30,29 @@ export default function virtual (modules: RollupVirtualOptions): Plugin {
           ? importer.slice(PREFIX.length)
           : importer
         const resolved = path.resolve(path.dirname(importerNoPrefix), id)
-        if (resolvedIds.has(resolved)) { return PREFIX + resolved }
+        if (_modules.has(resolved)) { return PREFIX + resolved }
       }
 
       return null
     },
 
-    load (id) {
-      if (!id.startsWith(PREFIX)) {
-        return null
-      }
+    async load (id) {
+      if (!id.startsWith(PREFIX)) { return null }
+
       const idNoPrefix = id.slice(PREFIX.length)
-      return idNoPrefix in modules
-        ? resolveModule(modules[idNoPrefix])
-        : resolveModule(resolvedIds.get(idNoPrefix))
+      if (!_modules.has(idNoPrefix)) { return null }
+
+      let m = _modules.get(idNoPrefix)
+      if (typeof m !== 'string' && typeof m.load === 'function') {
+        m = await m.load()
+      }
+
+      // console.log('[virtual]', idNoPrefix, '\n', m)
+
+      return {
+        code: m as string,
+        map: null
+      }
     }
   }
 }

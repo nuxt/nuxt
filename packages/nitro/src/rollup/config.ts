@@ -21,6 +21,7 @@ import { externals } from './plugins/externals'
 import { timing } from './plugins/timing'
 import { autoMock } from './plugins/automock'
 import { staticAssets, dirnames } from './plugins/static'
+import { assets } from './plugins/assets'
 import { middleware } from './plugins/middleware'
 import { esbuild } from './plugins/esbuild'
 import { raw } from './plugins/raw'
@@ -81,8 +82,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
           prefix = 'nuxt'
         } else if (lastModule.startsWith(nitroContext._internal.runtimeDir)) {
           prefix = 'nitro'
-        } else if (!prefix && nitroContext.middleware.find(m => lastModule.startsWith(m.handle))) {
+        } else if (!prefix && nitroContext.middleware.find(m => lastModule.startsWith(m.handle as string))) {
           prefix = 'middleware'
+        } else if (lastModule.includes('assets')) {
+          prefix = 'assets'
         }
         return join('chunks', prefix, '[name].js')
       },
@@ -148,7 +151,11 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     }
   }))
 
+  // Assets
+  rollupConfig.plugins.push(assets(nitroContext.assets))
+
   // Static
+  // TODO: use assets plugin
   if (nitroContext.serveStatic) {
     rollupConfig.plugins.push(dirnames())
     rollupConfig.plugins.push(staticAssets(nitroContext))

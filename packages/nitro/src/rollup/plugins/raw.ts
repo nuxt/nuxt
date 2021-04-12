@@ -13,7 +13,10 @@ export function raw (opts: RawOptions = {}): Plugin {
     name: 'raw',
     transform (code, id) {
       if (id[0] !== '\0' && extensions.has(extname(id))) {
-        return `// ${id}\nexport default ${JSON.stringify(code)}`
+        return {
+          code: `// ${id}\nexport default ${JSON.stringify(code)}`,
+          map: null
+        }
       }
     }
   }

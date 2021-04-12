@@ -12,30 +12,32 @@ export function middleware (getMiddleware: () => ServerMiddleware[]) {
   let lastDump = ''
 
   return virtual({
-    '~serverMiddleware': () => {
-      const middleware = getMiddleware()
+    '~serverMiddleware': {
+      load: () => {
+        const middleware = getMiddleware()
 
-      if (!stdenv.test) {
-        const dumped = dumpMiddleware(middleware)
-        if (dumped !== lastDump) {
-          lastDump = dumped
-          if (middleware.length) {
-            console.log(dumped)
+        if (!stdenv.test) {
+          const dumped = dumpMiddleware(middleware)
+          if (dumped !== lastDump) {
+            lastDump = dumped
+            if (middleware.length) {
+              console.log(dumped)
+            }
           }
         }
+
+        return `
+  ${middleware.filter(m => m.lazy === false).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
+
+  ${middleware.filter(m => m.lazy !== false).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
+
+  const middleware = [
+    ${middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify !== undefined ? m.promisify : true} }`).join(',\n')}
+  ];
+
+  export default middleware
+  `
       }
-
-      return `
-${middleware.filter(m => m.lazy === false).map(m => `import ${getImportId(m.handle)} from '${m.handle}';`).join('\n')}
-
-${middleware.filter(m => m.lazy !== false).map(m => `const ${getImportId(m.handle)} = () => import('${m.handle}');`).join('\n')}
-
-const middleware = [
-  ${middleware.map(m => `{ route: '${m.route}', handle: ${getImportId(m.handle)}, lazy: ${m.lazy || true}, promisify: ${m.promisify !== undefined ? m.promisify : true} }`).join(',\n')}
-];
-
-export default middleware
-`
     }
   })
 }

@@ -7,6 +7,7 @@ import { tryImport, resolvePath, detectTarget, extendPreset } from './utils'
 import * as PRESETS from './presets'
 import type { NodeExternalsOptions } from './rollup/plugins/externals'
 import type { StorageOptions } from './rollup/plugins/storage'
+import type { AssetOptions } from './rollup/plugins/assets'
 import type { ServerMiddleware } from './server/middleware'
 
 export interface NitroContext {
@@ -34,6 +35,7 @@ export interface NitroContext {
     publicDir: string
   }
   storage: StorageOptions,
+  assets: AssetOptions,
   _nuxt: {
     majorVersion: number
     dev: boolean
@@ -88,6 +90,10 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       publicDir: '{{ output.dir }}/public'
     },
     storage: { mounts: { } },
+    assets: {
+      inline: !nuxtOptions.dev,
+      dirs: {}
+    },
     _nuxt: {
       majorVersion: nuxtOptions._majorVersion || 2,
       dev: nuxtOptions.dev,
@@ -146,6 +152,11 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
         driverOptions: { base: fsMounts[p] }
       }
     }
+  }
+
+  // Assets
+  nitroContext.assets.dirs.server = {
+    dir: resolve(nitroContext._nuxt.rootDir, 'server/assets'), meta: true
   }
 
   // console.log(nitroContext)
