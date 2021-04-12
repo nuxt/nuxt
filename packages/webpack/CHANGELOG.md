@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.2.0...@nuxt/webpack-builder@0.3.0) (2021-04-12)
+
+
+### Features
+
+* add hook signatures and basic typings ([#79](https://github.com/nuxt/framework/issues/79)) ([dacde63](https://github.com/nuxt/framework/commit/dacde630634700172ccd54a1e4f1d0469b28bd30))
+
+
+
+
+
 # [0.2.0](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.1.2...@nuxt/webpack-builder@0.2.0) (2021-04-09)
 
 

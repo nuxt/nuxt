@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/nuxt/framework/compare/nuxt3@0.3.0...nuxt3@0.4.0) (2021-04-12)
+
+
+### Features
+
+* add hook signatures and basic typings ([#79](https://github.com/nuxt/framework/issues/79)) ([dacde63](https://github.com/nuxt/framework/commit/dacde630634700172ccd54a1e4f1d0469b28bd30))
+
+
+
+
+
 # [0.3.0](https://github.com/nuxt/framework/compare/nuxt3@0.2.6...nuxt3@0.3.0) (2021-04-09)
 
 

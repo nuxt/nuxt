@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -14,7 +14,7 @@
     "@cloudflare/kv-asset-handler": "^0.1.1",
     "@netlify/functions": "^0.6.0",
     "@nuxt/devalue": "^1.2.5",
-    "@nuxt/kit": "^0.3.0",
+    "@nuxt/kit": "^0.4.0",
     "@nuxt/un": "^0.1.1",
     "@rollup/plugin-alias": "^3.1.2",
     "@rollup/plugin-commonjs": "^18.0.0",

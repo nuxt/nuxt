@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.4.0...@nuxt/nitro@0.5.0) (2021-04-12)
+
+
+### Bug Fixes
+
+* **nitro:** absolute external resolution ([#80](https://github.com/nuxt/framework/issues/80)) ([9a23c2a](https://github.com/nuxt/framework/commit/9a23c2a553e7a00952233ac9f2a35519047f27bc))
+
+
+### Features
+
+* **nitro:** raw loader ([#75](https://github.com/nuxt/framework/issues/75)) ([2d60e71](https://github.com/nuxt/framework/commit/2d60e71fcb612ec0d672ff031f8bfc628e842d19))
+* **nitro:** server assets ([#83](https://github.com/nuxt/framework/issues/83)) ([babb70a](https://github.com/nuxt/framework/commit/babb70a4bd7f01b6b2d30d264ac83f4ae06196b5))
+* **nitro:** storage support ([#76](https://github.com/nuxt/framework/issues/76)) ([31f06e9](https://github.com/nuxt/framework/commit/31f06e9f69614d2ace3c70d974ff4f946397b13d))
+
+
+### Performance Improvements
+
+* **nitro:** externalize buildDir in development ([f8cb258](https://github.com/nuxt/framework/commit/f8cb2586cfd509482705a8bc46ccdee7052dd931))
+
+
+
+
+
 # [0.4.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.3.0...@nuxt/nitro@0.4.0) (2021-04-09)
 
 
