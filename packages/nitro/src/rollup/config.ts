@@ -102,6 +102,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       }
     },
     external: env.external,
+    // https://github.com/rollup/rollup/pull/4021#issuecomment-809985618
+    makeAbsoluteExternalsRelative: 'ifRelativeSource',
     plugins: [],
     onwarn (warning, rollupWarn) {
       if (!['CIRCULAR_DEPENDENCY', 'EVAL'].includes(warning.code)) {
