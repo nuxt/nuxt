@@ -1,4 +1,3 @@
-import { isAbsolute, relative } from 'path'
 import type { Plugin } from 'rollup'
 import { resolve, dirname } from 'upath'
 import { copyFile, mkdirp } from 'fs-extra'
