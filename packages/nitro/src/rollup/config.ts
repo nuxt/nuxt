@@ -208,10 +208,14 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       moduleDirectories,
       ignore: [
         nitroContext._internal.runtimeDir,
-        ...(nitroContext._nuxt.dev ? [] : [nitroContext._nuxt.buildDir]),
-        ...nitroContext.middleware.map(m => m.handle),
-        nitroContext._nuxt.rootDir,
-        nitroContext._nuxt.serverDir
+        ...((!nitroContext._nuxt.dev && [
+          // prod
+          nitroContext._nuxt.srcDir,
+          nitroContext._nuxt.rootDir,
+          nitroContext._nuxt.buildDir
+        ]) || []),
+        nitroContext._nuxt.serverDir,
+        ...nitroContext.middleware.map(m => m.handle)
       ],
       traceOptions: {
         base: nitroContext._nuxt.rootDir
