@@ -11,6 +11,7 @@ export default () => ({
   cache: false,
   standalone: false,
   publicPath: '/_nuxt/',
+  publicPathFolder: '',
   serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
