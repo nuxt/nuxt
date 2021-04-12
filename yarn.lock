@@ -1476,12 +1476,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@netlify/functions@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@netlify/functions@npm:0.5.0"
+"@netlify/functions@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@netlify/functions@npm:0.6.0"
   dependencies:
     is-promise: ^4.0.0
-  checksum: d4c7e64a2e85cfcdf96d76ead092b594fef826c08f001b239c961ba5ea98e1a316b6a12430c5970ecc2c2801cf6fe031bd7cc85d36e75d7d60eee0fee59b23f5
+  checksum: 172b5df838d64ac769d35c9634b644bf9d1dcd7f5b302d8e3b6e52a4edf0dabff18948fc62e6a107e656ea7c56d44c8e43f51fcdd83969a4caa78e02a1fea26b
   languageName: node
   linkType: hard
 
@@ -1650,7 +1650,7 @@ __metadata:
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.1
-    "@netlify/functions": ^0.5.0
+    "@netlify/functions": ^0.6.0
     "@nuxt/devalue": ^1.2.5
     "@nuxt/kit": ^0.3.0
     "@nuxt/un": ^0.1.1
@@ -1663,7 +1663,7 @@ __metadata:
     "@rollup/plugin-virtual": ^2.0.3
     "@rollup/pluginutils": ^4.1.0
     "@types/debounce": ^1.2.0
-    "@types/fs-extra": ^9.0.10
+    "@types/fs-extra": ^9.0.11
     "@types/http-proxy": ^1.17.5
     "@types/node-fetch": ^2.5.10
     "@types/serve-static": ^1.13.9
@@ -1695,7 +1695,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.0
     pretty-bytes: ^5.6.0
-    rollup: ^2.45.0
+    rollup: ^2.45.1
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.3
@@ -1759,7 +1759,7 @@ __metadata:
     "@vue/compiler-sfc": ^3.0.11
     babel-loader: ^8.2.2
     consola: ^2.15.3
-    css-loader: ^5.2.0
+    css-loader: ^5.2.1
     css-minimizer-webpack-plugin: ^2.0.0
     esbuild-loader: ^2.11.0
     file-loader: ^6.2.0
@@ -1770,7 +1770,7 @@ __metadata:
     memfs: ^3.2.2
     mini-css-extract-plugin: ^1.4.1
     pify: ^5.0.0
-    postcss: ^8.2.9
+    postcss: ^8.2.10
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^5.2.0
     style-resources-loader: ^1.4.1
@@ -1781,7 +1781,7 @@ __metadata:
     vue: 3.0.11
     vue-loader: ^16.2.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.31.0
+    webpack: ^5.32.0
     webpack-bundle-analyzer: ^4.4.0
     webpack-dev-middleware: ^4.1.0
     webpack-hot-middleware: ^2.25.0
@@ -2216,12 +2216,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/fs-extra@npm:^9.0.10":
-  version: 9.0.10
-  resolution: "@types/fs-extra@npm:9.0.10"
+"@types/fs-extra@npm:^9.0.11":
+  version: 9.0.11
+  resolution: "@types/fs-extra@npm:9.0.11"
   dependencies:
     "@types/node": "*"
-  checksum: 047a134510d86e1d5041a89d591a328392d62567b8d67d40f238fb3029dc08971f163798077ed0679870a6842381f05d50d14f75ae6b05b736cb18ece0eb7f4f
+  checksum: e7a4df27880c525cf12c2d16a4fafb0b68b27c74e24cd4d0d637c56e9be27795efdd89cfc85de751ad1edfdcf1b3eb0bf97231eba90c91086825659de4ab8c72
   languageName: node
   linkType: hard
 
@@ -4721,7 +4721,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^5.2.0":
+"css-loader@npm:^5.2.1":
   version: 5.2.1
   resolution: "css-loader@npm:5.2.1"
   dependencies:
@@ -5793,9 +5793,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^7.23.0":
-  version: 7.23.0
-  resolution: "eslint@npm:7.23.0"
+"eslint@npm:^7.24.0":
+  version: 7.24.0
+  resolution: "eslint@npm:7.24.0"
   dependencies:
     "@babel/code-frame": 7.12.11
     "@eslint/eslintrc": ^0.4.0
@@ -5836,7 +5836,7 @@ __metadata:
     v8-compile-cache: ^2.0.3
   bin:
     eslint: bin/eslint.js
-  checksum: f444869506eb0b53fdc6f6f6508b9f5daed51034af0289e6b201f996e7f2d06134f765ef598568269d2a0575dc9da5d3308bd2716f795b789d92e7febb654aab
+  checksum: 8130aacc3698a730ba8fa10ac9e1436151181c34cad265c21c97708e62dba714b6f3cc4cb7a1d343918da3d35a5913505ccf53cfbdc1fa8d62d326b7e35b7aae
   languageName: node
   linkType: hard
 
@@ -9978,7 +9978,7 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^6.0.0
     "@types/jest": ^26.0.22
     "@types/node": ^14.14.37
-    eslint: ^7.23.0
+    eslint: ^7.24.0
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
@@ -9997,7 +9997,7 @@ __metadata:
     "@nuxt/nitro": ^0.4.0
     "@nuxt/vite-builder": ^0.2.0
     "@nuxt/webpack-builder": ^0.2.0
-    "@types/fs-extra": ^9.0.10
+    "@types/fs-extra": ^9.0.11
     "@types/hash-sum": ^1.0.0
     "@types/lodash": ^4.14.168
     chokidar: ^3.5.1
@@ -11157,6 +11157,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"postcss@npm:^8.2.10":
+  version: 8.2.10
+  resolution: "postcss@npm:8.2.10"
+  dependencies:
+    colorette: ^1.2.2
+    nanoid: ^3.1.22
+    source-map: ^0.6.1
+  checksum: 83912f846376ceb501d887951bb3c7f5efc16452b124ba5ffbdd27f718dabd1edce8f6ef777a88aeb93366081cc2a3804581b2e6711a1e89ecaecb0dff2d2b73
+  languageName: node
+  linkType: hard
+
 "prelude-ls@npm:^1.2.1":
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
@@ -11963,7 +11974,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.38.5, rollup@npm:^2.44.0, rollup@npm:^2.45.0":
+"rollup@npm:^2.38.5, rollup@npm:^2.44.0":
   version: 2.45.0
   resolution: "rollup@npm:2.45.0"
   dependencies:
@@ -11974,6 +11985,20 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 2b08e65eb1177e0ed2e7484f7dc72ddc386050e6ad46eba46e76ce8cdc37ba05eefea695600c4062a5e2710edc80f1fac650da632355c8405ad830f154ab1878
+  languageName: node
+  linkType: hard
+
+"rollup@npm:^2.45.1":
+  version: 2.45.1
+  resolution: "rollup@npm:2.45.1"
+  dependencies:
+    fsevents: ~2.3.1
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: 65de1744fa26b2b69641b5a650f7fec39775181bff549d9287a13d4fd3a8abc960371375e9a81d9431b63d4edb2350a90267b03e2b8dfa67e99acbcb6854b899
   languageName: node
   linkType: hard
 
@@ -14087,7 +14112,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.1.0, webpack@npm:^5.31.0":
+"webpack@npm:^5.1.0":
   version: 5.31.0
   resolution: "webpack@npm:5.31.0"
   dependencies:
@@ -14120,6 +14145,42 @@ typescript@^4.2.4:
   bin:
     webpack: bin/webpack.js
   checksum: a419dff80c83969a28f0c130f003487a570870b3bde44a3bcca543f5d052b8c6dd5edd0e330251a632c1eb3bc85944fa42fc7159d18abf210c47189f9da56fd9
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.32.0":
+  version: 5.32.0
+  resolution: "webpack@npm:5.32.0"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.46
+    "@webassemblyjs/ast": 1.11.0
+    "@webassemblyjs/wasm-edit": 1.11.0
+    "@webassemblyjs/wasm-parser": 1.11.0
+    acorn: ^8.0.4
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.7.0
+    es-module-lexer: ^0.4.0
+    eslint-scope: ^5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.0.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.1
+    watchpack: ^2.0.0
+    webpack-sources: ^2.1.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: b9fd7d48d1de3d430130dd081a4f6834505168441961f41af08f575dc5691bbff8c70cd1edf885cd8bee7339eeb3e9a71cbbcac69f47e543427609f30e5985a1
   languageName: node
   linkType: hard
 

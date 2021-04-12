@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.1.1",
-    "@netlify/functions": "^0.5.0",
+    "@netlify/functions": "^0.6.0",
     "@nuxt/devalue": "^1.2.5",
     "@nuxt/kit": "^0.3.0",
     "@nuxt/un": "^0.1.1",
@@ -52,7 +52,7 @@
     "ohmyfetch": "^0.2.0",
     "ora": "^5.4.0",
     "pretty-bytes": "^5.6.0",
-    "rollup": "^2.45.0",
+    "rollup": "^2.45.1",
     "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-terser": "^7.0.2",
     "serve-placeholder": "^1.2.3",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@types/debounce": "^1.2.0",
-    "@types/fs-extra": "^9.0.10",
+    "@types/fs-extra": "^9.0.11",
     "@types/http-proxy": "^1.17.5",
     "@types/node-fetch": "^2.5.10",
     "@types/serve-static": "^1.13.9",
