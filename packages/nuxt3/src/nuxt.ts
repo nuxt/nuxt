@@ -3,7 +3,7 @@ import { loadNuxtConfig, LoadNuxtConfigOptions, Nuxt, NuxtOptions, installModule
 import { initNitro } from './nitro'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
-  const hooks = new Hookable()
+  const hooks = new Hookable() as any as Nuxt['hooks']
 
   return {
     options,

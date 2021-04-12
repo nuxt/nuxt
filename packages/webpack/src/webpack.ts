@@ -1,4 +1,5 @@
 import path from 'path'
+import type { IncomingMessage, ServerResponse } from 'http'
 import pify from 'pify'
 import webpack from 'webpack'
 import Glob from 'glob'
@@ -22,12 +23,12 @@ class WebpackBundler {
   compilers: Array<Compiler>
   compilersWatching: Array<Watching & { closeAsync?: () => void }>
   // TODO: change this when pify has better types https://github.com/sindresorhus/pify/pull/76
-  devMiddleware: Record<string, Function & { close?: () => void, context?: WebpackDevMiddlewareContext }>
+  devMiddleware: Record<string, Function & { close?: () => Promise<void>, context?: WebpackDevMiddlewareContext }>
   hotMiddleware: Record<string, Function>
-  mfs: Compiler['outputFileSystem']
-  __closed: boolean
+  mfs?: Compiler['outputFileSystem']
+  __closed?: boolean
 
-  constructor (nuxt) {
+  constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
     // TODO: plugins
     this.plugins = []
@@ -98,7 +99,7 @@ class WebpackBundler {
 
       // In dev, write files in memory FS
       if (options.dev) {
-        compiler.outputFileSystem = this.mfs
+        compiler.outputFileSystem = this.mfs!
       }
 
       return compiler
@@ -175,7 +176,7 @@ class WebpackBundler {
     await this.nuxt.callHook('build:resources')
   }
 
-  async webpackDev (compiler) {
+  async webpackDev (compiler: Compiler) {
     consola.debug('Creating webpack middleware...')
 
     const { name } = compiler.options
@@ -216,7 +217,7 @@ class WebpackBundler {
     await this.nuxt.callHook('server:devMiddleware', this.middleware)
   }
 
-  async middleware (req, res, next) {
+  async middleware (req: IncomingMessage, res: ServerResponse, next: () => any) {
     if (this.devMiddleware && this.devMiddleware.client) {
       await this.devMiddleware.client(req, res)
     }

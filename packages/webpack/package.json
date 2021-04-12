@@ -46,6 +46,7 @@
     "webpackbar": "^5.0.0-3"
   },
   "devDependencies": {
+    "@types/pify": "^5.0.0",
     "@types/terser-webpack-plugin": "^5.0.3",
     "@types/webpack-bundle-analyzer": "^3.9.2",
     "@types/webpack-dev-middleware": "^4.1.2",

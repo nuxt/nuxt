@@ -12,5 +12,6 @@ export default <BuildConfig>{
       }
     },
     'src/index'
-  ]
+  ],
+  externals: ['webpack']
 }
