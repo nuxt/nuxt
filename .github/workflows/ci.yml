@@ -28,7 +28,7 @@ jobs:
       - uses: actions/cache@v2
         id: yarn-cache
         with:
-          path: .yarn/cache
+          path: .yarn
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
@@ -36,9 +36,6 @@ jobs:
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn --immutable
-
-      - name: Stub
-        run: yarn stub
 
       - name: Lint
         run: yarn lint

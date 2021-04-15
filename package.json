@@ -11,7 +11,6 @@
     "nu": "./node_modules/.bin/nu",
     "play": "yarn run nu dev playground",
     "lint": "eslint --ext .vue,.ts,.js .",
-    "postinstall": "yarn stub",
     "version": "yarn && git add yarn.lock"
   },
   "resolutions": {
