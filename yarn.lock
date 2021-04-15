@@ -1753,7 +1753,7 @@ __metadata:
     "@nuxt/kit": ^0.4.0
     "@types/pify": ^5.0.0
     "@types/terser-webpack-plugin": ^5.0.3
-    "@types/webpack-bundle-analyzer": ^3.9.2
+    "@types/webpack-bundle-analyzer": ^4.4.0
     "@types/webpack-dev-middleware": ^4.1.2
     "@types/webpack-hot-middleware": ^2.25.4
     "@vue/babel-preset-jsx": ^1.2.4
@@ -2458,12 +2458,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webpack-bundle-analyzer@npm:^3.9.2":
-  version: 3.9.2
-  resolution: "@types/webpack-bundle-analyzer@npm:3.9.2"
+"@types/webpack-bundle-analyzer@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "@types/webpack-bundle-analyzer@npm:4.4.0"
   dependencies:
-    "@types/webpack": ^4
-  checksum: 99a04cc8804571cb156fd5b135345abb4fa1552dc1358dd06746753c6cdb4af9b08816d4dba3bc7de584a281f7c746ab1daa1e85c9def07e1074de5a1c9dc40f
+    "@types/node": "*"
+    tapable: ^2.2.0
+    webpack: ^5
+  checksum: d691446f294a44d9e7d0720b0cf1372138b41891e2349cb5acac100bcc9413afc4794422b4f5069fb80a42d9aae1d062daba8818abc599811c964145c192024f
   languageName: node
   linkType: hard
 
@@ -14188,6 +14190,42 @@ typescript@^4.2.4:
     source-list-map: ^2.0.1
     source-map: ^0.6.1
   checksum: 7c4b797fa90d310872b70469dc04254e35571fb34530280a47b93edbe9cd6b0ffb79cf2b7565f4a18ff5b70315ff245d465ad35f952366cfd93c55d6445e2378
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5":
+  version: 5.33.2
+  resolution: "webpack@npm:5.33.2"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.46
+    "@webassemblyjs/ast": 1.11.0
+    "@webassemblyjs/wasm-edit": 1.11.0
+    "@webassemblyjs/wasm-parser": 1.11.0
+    acorn: ^8.0.4
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.7.0
+    es-module-lexer: ^0.4.0
+    eslint-scope: ^5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.0.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.1
+    watchpack: ^2.0.0
+    webpack-sources: ^2.1.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: 2132ec24db3b94c4bbafe821de2e3bc05f60b8eadfd8bbc1bb441d5b49309ac20c5230d592c7bebf7a6650d317ae00f69d8b577126b4c301956f3048eb439886
   languageName: node
   linkType: hard
 
