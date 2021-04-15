@@ -4,6 +4,10 @@ import { useNuxt, nuxtCtx } from '../nuxt'
 import type { Nuxt } from '../types/nuxt'
 import type { NuxtModule, LegacyNuxtModule, ModuleOptions } from '../types/module'
 
+/**
+ * Define a Nuxt module, automatically merging defaults with user provided options, installing
+ * any hooks that are provided, and calling an optional setup function for full control.
+ */
 export function defineNuxtModule<OptionsT extends ModuleOptions> (input: NuxtModule<OptionsT> | ((nuxt: Nuxt) => NuxtModule<OptionsT>)): LegacyNuxtModule {
   let mod: NuxtModule<OptionsT>
 

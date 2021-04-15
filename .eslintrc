@@ -2,11 +2,25 @@
   "globals": {
     "NodeJS": true
   },
+  "plugins": ["jsdoc"],
   "extends": [
+    "plugin:jsdoc/recommended",
     "@nuxtjs/eslint-config-typescript"
   ],
   "rules": {
     "no-console": "off",
-    "vue/one-component-per-file": "off"
+    "vue/one-component-per-file": "off",
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/require-param": "off",
+    "jsdoc/require-returns": "off",
+    "jsdoc/require-param-type": "off"
+  },
+  "settings": {
+    "jsdoc": {
+      "tagNamePreference": {
+        "warning": "warning",
+        "note": "note"
+      }
+    }
   }
 }

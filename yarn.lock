@@ -4401,6 +4401,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"comment-parser@npm:1.1.2":
+  version: 1.1.2
+  resolution: "comment-parser@npm:1.1.2"
+  checksum: b61e90aa9e725d352c09697933536256e76e23498a5f8720324b354f4910edd1dbdbb1b1a83b8ed6d98ff37781c973bb0a355e57afe4b092e0e63273f10fc61d
+  languageName: node
+  linkType: hard
+
 "commondir@npm:^1.0.1":
   version: 1.0.1
   resolution: "commondir@npm:1.0.1"
@@ -4977,7 +4984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1":
+"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
   dependencies:
@@ -5679,6 +5686,23 @@ __metadata:
     "@typescript-eslint/eslint-plugin":
       optional: true
   checksum: 6352966b16a2a65cd5637f6d02ffcd59f52e8cb6cb8434d35520fe5b30cbf475e3a55a088fcf0d41d6f7c0dbd93e9b5c637707075fbb3d960b318c305c3ac7aa
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-jsdoc@npm:^32.3.0":
+  version: 32.3.0
+  resolution: "eslint-plugin-jsdoc@npm:32.3.0"
+  dependencies:
+    comment-parser: 1.1.2
+    debug: ^4.3.1
+    jsdoctypeparser: ^9.0.0
+    lodash: ^4.17.20
+    regextras: ^0.7.1
+    semver: ^7.3.4
+    spdx-expression-parse: ^3.0.1
+  peerDependencies:
+    eslint: ^6.0.0 || ^7.0.0
+  checksum: f4665eb3c4b32d139342028a9f0d96b095214778a3e32b8a1461d397674954c4d36a0c019f11eefcfa64202c2ad71ecf558e5a553d8a3827b3ccfef2391a741c
   languageName: node
   linkType: hard
 
@@ -8385,6 +8409,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsdoctypeparser@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "jsdoctypeparser@npm:9.0.0"
+  bin:
+    jsdoctypeparser: bin/jsdoctypeparser
+  checksum: d0c855be23ddb77260d54c8d833bf089e2e5a08f7b7dd7fdd60c35d3a222669e2edadc455fd69c435e593413e09b6792410d1d877c8f423662053f5e5012513b
+  languageName: node
+  linkType: hard
+
 "jsdom@npm:^16.4.0":
   version: 16.5.3
   resolution: "jsdom@npm:16.5.3"
@@ -9985,6 +10018,7 @@ __metadata:
     "@types/jest": ^26.0.22
     "@types/node": ^14.14.37
     eslint: ^7.24.0
+    eslint-plugin-jsdoc: ^32.3.0
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
@@ -11676,6 +11710,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"regextras@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "regextras@npm:0.7.1"
+  checksum: 60e965d826751da5c7c744c9ecdca3bd90026f8376ec6a362b04b9eeb8140e8be5f6028de155f9b4d3a713344aff625668522c3fb3fc391aec67815bdc3ab509
+  languageName: node
+  linkType: hard
+
 "remove-trailing-separator@npm:^1.0.1":
   version: 1.1.0
   resolution: "remove-trailing-separator@npm:1.1.0"
@@ -12553,7 +12594,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"spdx-expression-parse@npm:^3.0.0":
+"spdx-expression-parse@npm:^3.0.0, spdx-expression-parse@npm:^3.0.1":
   version: 3.0.1
   resolution: "spdx-expression-parse@npm:3.0.1"
   dependencies:

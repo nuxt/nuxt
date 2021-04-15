@@ -3,15 +3,37 @@ import { existsSync, promises as fsp } from 'fs'
 import dotenv from 'dotenv'
 
 export interface LoadDotEnvOptions {
+  /** The project root directory (either absolute or relative to the current working directory). */
   rootDir: string
+  /**
+   * What file to look in for environment variables (either absolute or relative
+   * to the current working directory). For example, `.env`.
+   */
   dotenvFile: string
+  /**
+   * Whether to interpolate variables within .env.
+   *
+   * @example
+   * ```env
+   * BASE_DIR="/test"
+   * # resolves to "/test/further"
+   * ANOTHER_DIR="${BASE_DIR}/further"
+   * ```
+   */
   expand: boolean
-  env: typeof process.env
+  /** An object describing environment variables (key, value pairs). */
+  env: NodeJS.ProcessEnv
 }
 
-export async function loadEnv (rootDir) {
+/**
+ * Load and interpolate environment variables into `process.env`.
+ * If you need more control (or access to the values), consider using `loadDotenv` instead
+ *
+ * @param rootDir - The project root directory (either absolute or relative to the current working directory).
+ */
+export async function loadEnv (rootDir: string) {
   // Load env
-  const env = await loalDotenv({
+  const env = await loadDotenv({
     rootDir,
     dotenvFile: '.env',
     env: process.env,
@@ -26,12 +48,13 @@ export async function loadEnv (rootDir) {
   }
 }
 
-export async function loalDotenv (opts: LoadDotEnvOptions) {
+/** Load environment variables into an object. */
+export async function loadDotenv (opts: LoadDotEnvOptions) {
   const env = Object.create(null)
 
   const dotenvFile = resolve(opts.rootDir, opts.dotenvFile)
 
-  if (await existsSync(dotenvFile)) {
+  if (existsSync(dotenvFile)) {
     const parsed = dotenv.parse(await fsp.readFile(dotenvFile, 'utf-8'))
     Object.assign(env, parsed)
   }
@@ -51,13 +74,13 @@ export async function loalDotenv (opts: LoadDotEnvOptions) {
 }
 
 // Based on https://github.com/motdotla/dotenv-expand
-function expand (target, source = {}, parse = v => v) {
-  function getValue (key) {
+function expand (target: Record<string, any>, source: Record<string, any> = {}, parse = (v: any) => v) {
+  function getValue (key: string) {
     // Source value 'wins' over target value
     return source[key] !== undefined ? source[key] : target[key]
   }
 
-  function interpolate (value, parents = []) {
+  function interpolate (value: unknown, parents: string[] = []) {
     if (typeof value !== 'string') {
       return value
     }
@@ -66,7 +89,7 @@ function expand (target, source = {}, parse = v => v) {
       const parts = /(.?)\${?([a-zA-Z0-9_:]+)?}?/g.exec(match)
       const prefix = parts[1]
 
-      let value, replacePart
+      let value, replacePart: string
 
       if (prefix === '\\') {
         replacePart = parts[0]

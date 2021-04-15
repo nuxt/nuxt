@@ -5,6 +5,7 @@ import { nuxtCtx } from '../nuxt'
 import { defineNuxtModule } from './define'
 import { ModuleContainer } from './container'
 
+/** Installs a module on a Nuxt instance. */
 export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptions) {
   let src: ModuleSrc
   let options: ModuleOptions = {}

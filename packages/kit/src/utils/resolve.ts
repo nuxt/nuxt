@@ -2,13 +2,23 @@ import { existsSync, lstatSync } from 'fs'
 import { resolve, join } from 'upath'
 
 export interface ResolveOptions {
+  /**
+   * The base path against which to resolve the path
+   *
+   * @default .
+   */
   base?: string
+  /**
+   * An object of aliases (alias, path) to take into account, for example
+   * `{ 'example/alias': '/full/path/to/alias' }`
+   */
   alias?: Record<string, string>
+  /** The file extensions to try (for example, ['js', 'ts']) */
   extensions?: string[]
 }
 
 function resolvePath (path: string, opts: ResolveOptions = {}) {
-  // Fast return in case of path exists
+  // Fast return if the path exists
   if (existsSync(path)) {
     return path
   }
@@ -55,6 +65,15 @@ function resolvePath (path: string, opts: ResolveOptions = {}) {
   throw new Error(`Cannot resolve "${path}" from "${resolvedPath}"`)
 }
 
+/**
+ * Return a path with any relevant aliases resolved.
+ *
+ * @example
+ * ```js
+ * const aliases = { 'test': '/here/there' }
+ * resolveAlias('test/everywhere', aliases)
+ * // '/here/there/everywhere'
+ */
 export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
   for (const key in alias) {
     if (path.startsWith(key)) {
@@ -64,6 +83,10 @@ export function resolveAlias (path: string, alias: ResolveOptions['alias']) {
   return path
 }
 
+/**
+ * Resolve the path of a file but don't emit an error,
+ * even if the module can't be resolved.
+ */
 export function tryResolvePath (path: string, opts: ResolveOptions = {}) {
   try {
     return resolvePath(path, opts)

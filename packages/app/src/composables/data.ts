@@ -13,6 +13,7 @@ export function ensureReactive<
 
 /**
  * Returns a unique string suitable for syncing data between server and client.
+ *
  * @param nuxt (optional) A Nuxt instance
  * @param vm (optional) A Vue component - by default it will use the current instance
  */
@@ -37,6 +38,7 @@ export function useSSRRef (nuxt = useNuxt(), vm = getCurrentInstance()): string 
 
 /**
  * Allows accessing reactive data that can be synced between server and client.
+ *
  * @param nuxt (optional) A Nuxt instance
  * @param vm (optional) A Vue component - by default it will use the current instance
  */
@@ -53,6 +55,7 @@ export function useData<T = Record<string, any>> (
 
 /**
  * Allows accessing reactive global data that can be synced between server and client.
+ *
  * @param nuxt - (optional) A Nuxt instance
  */
 export function useGlobalData (nuxt = useNuxt()): Record<string, any> {

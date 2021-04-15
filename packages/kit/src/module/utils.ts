@@ -6,6 +6,12 @@ import { useNuxt } from '../nuxt'
 import { chainFn } from '../utils/task'
 import type { TemplateOpts, PluginTemplateOpts } from '../types/module'
 
+/**
+ * Renders given template using lodash template during build into the project buildDir (`.nuxt`).
+ *
+ * If a fileName is not provided or the template is string, target file name defaults to
+ * [dirName].[fileName].[pathHash].[ext].
+ */
 export function addTemplate (tmpl: TemplateOpts | string) {
   const nuxt = useNuxt()
 
@@ -21,7 +27,7 @@ export function addTemplate (tmpl: TemplateOpts | string) {
     throw new Error('tmpl src not found: ' + src)
   }
 
-  // Mostly for DX, some people prefers `filename` vs `fileName`
+  // Mostly for DX, some people prefer `filename` vs `fileName`
   const fileName = typeof tmpl === 'string' ? '' : tmpl.fileName || tmpl.filename
   // Generate unique and human readable dst filename if not provided
   const dst = fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(src)}${srcPath.ext}`
@@ -37,6 +43,24 @@ export function addTemplate (tmpl: TemplateOpts | string) {
   return tmplObj
 }
 
+/**
+ * Registers a plugin using `addTemplate` and prepends it to the plugins[] array.
+ *
+ * Note: You can use mode or .client and .server modifiers with fileName option
+ * to use plugin only in client or server side.
+ *
+ * If you choose to specify a fileName, you can configure a custom path for the
+ * fileName too, so you can choose the folder structure inside .nuxt folder in
+ * order to prevent name collisioning:
+ *
+ * @example
+ * ```js
+ * addPlugin({
+ *   src: path.resolve(__dirname, 'templates/foo.js'),
+ *   fileName: 'foo.server.js' // [optional] only include in server bundle
+ * })
+ * ```
+ */
 export function addPlugin (tmpl: PluginTemplateOpts) {
   const nuxt = useNuxt()
 
@@ -53,6 +77,7 @@ export function addPlugin (tmpl: PluginTemplateOpts) {
   })
 }
 
+/** Register a custom layout. If its name is 'error' it will override the default error layout. */
 export function addLayout (tmpl: TemplateOpts, name: string) {
   const nuxt = useNuxt()
 
@@ -73,6 +98,11 @@ export function addLayout (tmpl: TemplateOpts, name: string) {
   }
 }
 
+/**
+ * Set the layout that will render Nuxt errors. It should already have been added via addLayout or addTemplate.
+ *
+ * @param dst - Path to layout file within the buildDir (`.nuxt/<dst>.vue`)
+ */
 export function addErrorLayout (dst: string) {
   const nuxt = useNuxt()
 
@@ -80,12 +110,14 @@ export function addErrorLayout (dst: string) {
   nuxt.options.ErrorPage = `~/${relativeBuildDir}/${dst}`
 }
 
+/** Adds a new server middleware to the end of the server middleware array. */
 export function addServerMiddleware (middleware) {
   const nuxt = useNuxt()
 
   nuxt.options.serverMiddleware.push(middleware)
 }
 
+/** Allows extending webpack build config by chaining `options.build.extend` function. */
 export function extendBuild (fn) {
   const nuxt = useNuxt()
 
@@ -93,6 +125,7 @@ export function extendBuild (fn) {
   nuxt.options.build.extend = chainFn(nuxt.options.build.extend, fn)
 }
 
+/** Allows extending routes by chaining `options.build.extendRoutes` function. */
 export function extendRoutes (fn) {
   const nuxt = useNuxt()
 
