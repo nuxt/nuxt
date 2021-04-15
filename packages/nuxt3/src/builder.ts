@@ -43,7 +43,9 @@ export class Builder {
 async function _build (builder: Builder) {
   const { nuxt } = builder
 
-  await fsExtra.emptyDir(nuxt.options.buildDir)
+  if (!nuxt.options.dev) {
+    await fsExtra.emptyDir(nuxt.options.buildDir)
+  }
   await generate(builder)
 
   if (nuxt.options.dev) {

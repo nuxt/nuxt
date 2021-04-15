@@ -7,6 +7,6 @@ export default <BuildConfig>{
     'src/index'
   ],
   externals: [
-    'nuxt3'
+    '@nuxt/kit'
   ]
 }

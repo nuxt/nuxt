@@ -104,7 +104,12 @@ async function buildServer (ctx: ViteBuildContext) {
       outDir: 'dist/server',
       ssr: true,
       rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, './entry.server.js')
+        input: resolve(ctx.nuxt.options.buildDir, './entry.server.js'),
+        onwarn (warning, rollupWarn) {
+          if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
+            rollupWarn(warning)
+          }
+        }
       }
     }
   } as vite.InlineConfig)

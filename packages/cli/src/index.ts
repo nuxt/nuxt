@@ -1,9 +1,10 @@
 import 'v8-compile-cache'
 import mri from 'mri'
-import { red, cyan, green } from 'colorette'
-import { version } from '../package.json'
+import { red, cyan } from 'colorette'
 import { commands } from './commands'
 import { showHelp } from './utils/help'
+import { showBanner } from './utils/banner'
+import { error } from './utils/log'
 
 async function _main () {
   const _argv = process.argv.slice(2)
@@ -11,7 +12,7 @@ async function _main () {
   // @ts-ignore
   let command = args._.shift() || 'usage'
 
-  console.log(green(`Nuxt CLI v${version}`))
+  showBanner(command === 'dev')
 
   if (!(command in commands)) {
     console.log('\n' + red('Invalid command ' + command))
@@ -36,9 +37,12 @@ async function _main () {
 }
 
 function onFatalError (err) {
-  console.error(err)
+  error(err)
   process.exit(1)
 }
+
+process.on('unhandledRejection', err => error('[unhandledRejection]', err))
+process.on('uncaughtException', err => error('[uncaughtException]', err))
 
 export function main () {
   _main().catch(onFatalError)

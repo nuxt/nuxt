@@ -13,5 +13,9 @@ export default <BuildConfig>{
     },
     'src/index'
   ],
-  externals: ['webpack']
+  externals: [
+    'webpack',
+    'nuxt',
+    'nuxt3'
+  ]
 }

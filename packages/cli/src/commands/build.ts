@@ -1,11 +1,13 @@
-import { buildNuxt, loadNuxt } from '../utils/nuxt'
+
+import { resolve } from 'path'
+import { requireModule } from '../utils/cjs'
 
 export async function invoke (args) {
-  const nuxt = await loadNuxt({
-    rootDir: args._[0],
-    for: 'build'
-  })
+  const rootDir = resolve(args._[0] || '.')
 
+  const { loadNuxt, buildNuxt } = requireModule('@nuxt/kit', rootDir)
+
+  const nuxt = await loadNuxt({ rootDir })
   await buildNuxt(nuxt)
 }
 

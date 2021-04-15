@@ -1,4 +1,5 @@
 import { resolve } from 'path'
+import { existsSync } from 'fs'
 import defu from 'defu'
 import { applyDefaults } from 'untyped'
 import * as rc from 'rc9'
@@ -22,7 +23,7 @@ export function loadNuxtConfig (opts: LoadNuxtConfigOptions): NuxtOptions {
 
   let nuxtConfig: any = {}
 
-  if (nuxtConfigFile) {
+  if (nuxtConfigFile && existsSync(nuxtConfigFile)) {
     nuxtConfig = requireModule(nuxtConfigFile, { clearCache: true })
     nuxtConfig = { ...nuxtConfig }
     nuxtConfig._nuxtConfigFile = nuxtConfigFile

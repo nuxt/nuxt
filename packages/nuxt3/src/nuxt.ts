@@ -1,16 +1,20 @@
 import Hookable from 'hookable'
-import { loadNuxtConfig, LoadNuxtConfigOptions, Nuxt, NuxtOptions, installModule, NuxtConfig } from '@nuxt/kit'
+import { loadNuxtConfig, LoadNuxtOptions, Nuxt, NuxtOptions, installModule, ModuleContainer } from '@nuxt/kit'
 import { initNitro } from './nitro'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = new Hookable() as any as Nuxt['hooks']
 
-  return {
+  const nuxt: Nuxt = {
     options,
     hooks,
     callHook: hooks.callHook,
-    hook: hooks.hook
+    hook: hooks.hook,
+    ready: () => initNuxt(nuxt),
+    close: () => Promise.resolve(hooks.callHook('close', nuxt))
   }
+
+  return nuxt
 }
 
 async function initNuxt (nuxt: Nuxt) {
@@ -21,7 +25,7 @@ async function initNuxt (nuxt: Nuxt) {
   await initNitro(nuxt)
 
   // Init user modules
-  await nuxt.callHook('modules:before', nuxt)
+  await nuxt.callHook('modules:before', { nuxt } as ModuleContainer)
   const modulesToInstall = [
     ...nuxt.options.buildModules,
     ...nuxt.options.modules,
@@ -32,25 +36,13 @@ async function initNuxt (nuxt: Nuxt) {
     await installModule(nuxt, m)
   }
 
-  await nuxt.callHook('modules:done', nuxt)
+  await nuxt.callHook('modules:done', { nuxt } as ModuleContainer)
 
   await nuxt.callHook('ready', nuxt)
 }
 
-export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
-  for?: 'dev' | 'build'
-  rootDir?: string
-  config?: NuxtConfig
-}
-
-export async function loadNuxt (loadOpts: LoadNuxtOptions = {}): Promise<Nuxt> {
-  const options = loadNuxtConfig({
-    config: {
-      dev: loadOpts.for === 'dev',
-      ...loadOpts.config
-    },
-    ...loadOpts
-  })
+export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  const options = loadNuxtConfig(opts)
 
   // Temp
   const { appDir } = await import('@nuxt/app/meta')
@@ -60,7 +52,9 @@ export async function loadNuxt (loadOpts: LoadNuxtOptions = {}): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  await initNuxt(nuxt)
+  if (opts.ready !== false) {
+    await nuxt.ready()
+  }
 
   return nuxt
 }
