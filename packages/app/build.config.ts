@@ -1,7 +1,7 @@
 import { BuildConfig } from 'unbuild'
 
 export default <BuildConfig>{
-  declaration: false,
+  declaration: true,
   entries: [
     { input: 'src/', name: 'app' }
   ],

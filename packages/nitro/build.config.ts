@@ -5,7 +5,7 @@ export default <BuildConfig>{
   entries: [
     'src/index',
     'src/compat',
-    { input: 'src/runtime/', format: 'esm', declaration: false }
+    { input: 'src/runtime/', format: 'esm' }
   ],
   dependencies: [
     '@cloudflare/kv-asset-handler',
