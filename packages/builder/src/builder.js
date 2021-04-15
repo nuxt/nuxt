@@ -661,7 +661,7 @@ export default class Builder {
     const customPatterns = uniq([
       ...this.options.build.watch,
       ...Object.values(omit(this.options.build.styleResources, ['options']))
-    ]).map(upath.normalizeSafe)
+    ]).map(this.nuxt.resolver.resolveAlias).map(upath.normalizeSafe)
 
     if (customPatterns.length === 0) {
       return

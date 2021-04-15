@@ -178,10 +178,10 @@ describe('builder: builder watch', () => {
       middleware: '/var/nuxt/src/middleware'
     }
     nuxt.options.build.watch = [
-      '/var/nuxt/src/custom'
+      '~/custom'
     ]
     nuxt.options.build.styleResources = [
-      '/var/nuxt/src/style'
+      '~/style'
     ]
     const builder = new Builder(nuxt, BundleBuilder)
     builder.createFileWatcher = jest.fn()
@@ -189,8 +189,8 @@ describe('builder: builder watch', () => {
     builder.watchClient()
 
     const patterns = [
-      '/var/nuxt/src/custom',
-      '/var/nuxt/src/style'
+      'resolveAlias(~/custom)',
+      'resolveAlias(~/style)'
     ]
 
     expect(builder.createFileWatcher).toBeCalledTimes(3)
