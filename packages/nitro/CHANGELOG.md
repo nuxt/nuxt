@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.0...@nuxt/nitro@0.5.1) (2021-04-16)
+
+
+### Bug Fixes
+
+* **nitro:** workaround for vue2 global style injection ([e5df083](https://github.com/nuxt/framework/commit/e5df083f6016219884d3d298e5d7ca2cf4a51d0b))
+
+
+
+
+
 # [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.4.0...@nuxt/nitro@0.5.0) (2021-04-12)
 
 

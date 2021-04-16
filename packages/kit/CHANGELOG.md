@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/kit@0.4.0...@nuxt/kit@0.5.0) (2021-04-16)
+
+
+### Features
+
+* improve dev experience ([#89](https://github.com/nuxt/framework/issues/89)) ([e224818](https://github.com/nuxt/framework/commit/e224818395cd366f2a338ce3da4aaae993f641b7))
+
+
+
+
+
 # [0.4.0](https://github.com/nuxt/framework/compare/@nuxt/kit@0.3.0...@nuxt/kit@0.4.0) (2021-04-12)
 
 
