@@ -11,7 +11,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "^0.1.12"
+    "unbuild": "^0.1.13"
   },
   "dependencies": {
     "@nuxt/kit": "^0.4.0",

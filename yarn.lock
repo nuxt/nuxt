@@ -1593,7 +1593,7 @@ __metadata:
     "@vueuse/head": ^0.5.1
     hookable: ^4.4.1
     ohmyfetch: ^0.2.0
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     vue: ^3.0.11
     vue-router: ^4.0.6
     vuex5: ^0.5.0-testing.3
@@ -1637,7 +1637,7 @@ __metadata:
     scule: ^0.1.1
     std-env: ^2.3.0
     ufo: ^0.6.11
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     unctx: ^0.0.3
     untyped: ^0.2.5
     upath: ^2.0.1
@@ -1702,7 +1702,7 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.1.0
     ufo: ^0.6.11
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     unstorage: ^0.1.4
     upath: ^2.0.1
     vue: 3.0.11
@@ -1737,7 +1737,7 @@ __metadata:
     "@vue/compiler-sfc": ^3.0.11
     consola: ^2.15.3
     fs-extra: ^9.1.0
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     vite: ^2.1.5
     vue: 3.0.11
   languageName: unknown
@@ -1776,7 +1776,7 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.6.11
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     url-loader: ^4.1.1
     vue: 3.0.11
     vue-loader: ^16.2.0
@@ -6524,7 +6524,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@^2.1.2, fsevents@~2.3.1":
+"fsevents@^2.1.2, fsevents@~2.3.1, fsevents@~2.3.2":
   version: 2.3.2
   resolution: "fsevents@npm:2.3.2"
   dependencies:
@@ -6533,7 +6533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@patch:fsevents@^2.1.2#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.1#builtin<compat/fsevents>":
+"fsevents@patch:fsevents@^2.1.2#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.1#builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#builtin<compat/fsevents>":
   version: 2.3.2
   resolution: "fsevents@patch:fsevents@npm%3A2.3.2#builtin<compat/fsevents>::version=2.3.2&hash=11e9ea"
   dependencies:
@@ -10073,10 +10073,14 @@ __metadata:
     debounce-promise: ^3.1.2
     deep-object-diff: ^1.1.0
     flat: ^5.0.2
+    fsevents: ~2.3.2
     listhen: ^0.2.4
     mri: ^1.1.6
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     v8-compile-cache: ^2.3.0
+  dependenciesMeta:
+    fsevents:
+      optional: true
   bin:
     nu: ./bin/nuxt.js
     nuxt: ./bin/nuxt.js
@@ -10099,7 +10103,7 @@ __metadata:
     lerna: ^4.0.0
     ts-jest: ^26.5.5
     typescript: ^4.2.4
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
   languageName: unknown
   linkType: soft
 
@@ -10127,7 +10131,7 @@ __metadata:
     nuxt-cli: ^0.2.0
     scule: ^0.1.1
     ufo: ^0.6.11
-    unbuild: ^0.1.12
+    unbuild: ^0.1.13
     upath: ^2.0.1
   languageName: unknown
   linkType: soft
@@ -13692,12 +13696,13 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.1.12":
-  version: 0.1.12
-  resolution: "unbuild@npm:0.1.12"
+"unbuild@npm:^0.1.13":
+  version: 0.1.13
+  resolution: "unbuild@npm:0.1.13"
   dependencies:
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
+    "@rollup/plugin-json": ^4.1.0
     "@rollup/plugin-node-resolve": ^11.2.1
     chalk: ^4.1.0
     consola: ^2.15.3
@@ -13718,7 +13723,7 @@ typescript@^4.2.4:
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.js
-  checksum: 4da242f54e5a778a20aad6a3e4151b41accdd0d2296216b9d5da8c347e79e372bca7894f15300db46da6ac49ff49216ef31cb97da5cddd30cee14eb7c7bf9c79
+  checksum: fcbd7918214bbeeede7c39e7358835ca1a09f0a364d1ba37991108ff1c48266d1916f03f9e35e5997e0d888444fc7c609263c524a9c9a2c39cb9ab4777e1fb60
   languageName: node
   linkType: hard
 
