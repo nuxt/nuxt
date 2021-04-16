@@ -16,6 +16,9 @@
     "bin",
     "dist"
   ],
+  "optionalDependencies": {
+    "fsevents": "~2.3.2"
+  },
   "devDependencies": {
     "@nuxt/kit": "^0.4.0",
     "@types/clear": "^0",
@@ -29,7 +32,7 @@
     "flat": "^5.0.2",
     "listhen": "^0.2.4",
     "mri": "^1.1.6",
-    "unbuild": "^0.1.12",
+    "unbuild": "^0.1.13",
     "v8-compile-cache": "^2.3.0"
   }
 }

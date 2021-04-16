@@ -7,6 +7,7 @@ export default <BuildConfig>{
     'src/index'
   ],
   externals: [
-    '@nuxt/kit'
+    '@nuxt/kit',
+    'fsevents'
   ]
 }
