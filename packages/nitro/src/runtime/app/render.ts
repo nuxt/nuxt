@@ -71,14 +71,40 @@ function renderHTML (payload, rendered, ssrContext) {
   const state = `<script>window.__NUXT__=${devalue(payload)}</script>`
   const _html = rendered.html
 
-  const { htmlAttrs = '', bodyAttrs = '', headTags = '', headAttrs = '' } =
-    (ssrContext.head && ssrContext.head()) || {}
+  const meta = {
+    htmlAttrs: '',
+    bodyAttrs: '',
+    headAttrs: '',
+    headTags: '',
+    bodyTags: ''
+  }
+
+  // @vueuse/head
+  if (typeof ssrContext.head === 'function') {
+    Object.assign(meta, ssrContext.head())
+  }
+
+  // vue-meta
+  if (ssrContext.meta && typeof ssrContext.meta.inject === 'function') {
+    const _meta = ssrContext.meta.inject({
+      isSSR: ssrContext.nuxt.serverRendered,
+      ln: process.env.NODE_ENV === 'development'
+    })
+    meta.htmlAttrs += _meta.htmlAttrs.text()
+    meta.headAttrs += _meta.headAttrs.text()
+    meta.bodyAttrs += _meta.bodyAttrs.text()
+    meta.headTags +=
+      _meta.title.text() + _meta.meta.text() +
+      _meta.link.text() + _meta.style.text() +
+      _meta.script.text() + _meta.noscript.text()
+    // TODO: Body prepend/append tags
+  }
 
   return htmlTemplate({
-    HTML_ATTRS: htmlAttrs,
-    HEAD_ATTRS: headAttrs,
-    BODY_ATTRS: bodyAttrs,
-    HEAD: headTags +
+    HTML_ATTRS: meta.htmlAttrs,
+    HEAD_ATTRS: meta.headAttrs,
+    BODY_ATTRS: meta.bodyAttrs,
+    HEAD: meta.headTags +
       rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
     APP: _html + state + rendered.renderScripts()
   })
