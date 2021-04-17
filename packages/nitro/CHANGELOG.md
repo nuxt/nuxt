@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.1...@nuxt/nitro@0.5.2) (2021-04-17)
+
+
+### Bug Fixes
+
+* **nitro:** support vue-meta (compat) ([4dac07a](https://github.com/nuxt/framework/commit/4dac07a10459e1ae5c63361cf7a55cb2020244ff))
+
+
+
+
+
 ## [0.5.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.0...@nuxt/nitro@0.5.1) (2021-04-16)
 
 
