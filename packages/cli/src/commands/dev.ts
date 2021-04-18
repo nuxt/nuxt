@@ -15,14 +15,13 @@ export async function invoke (args) {
 
   const { loadNuxt, buildNuxt } = requireModule('@nuxt/kit', rootDir)
 
-  const watcherFiles = new Set()
-  const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 0 })
-
   let currentNuxt
   const load = async () => {
     try {
+      showBanner(true)
+      listener.showURL()
+
       const newNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
-      watcherFiles.add(newNuxt.options.watch)
 
       let configChanges
       if (currentNuxt) {
@@ -36,9 +35,6 @@ export async function invoke (args) {
       } else {
         currentNuxt = newNuxt
       }
-
-      showBanner(true)
-      listener.showURL()
 
       if (configChanges) {
         if (configChanges.length) {
@@ -60,9 +56,12 @@ export async function invoke (args) {
     }
   }
 
+  // Watch for config changes
+  // TODO: Watcher service, modules, and requireTree
   const dLoad = debounce(load, 250)
+  const watcher = chokidar.watch([rootDir], { ignoreInitial: true, depth: 1 })
   watcher.on('all', (_event, file) => {
-    if (watcherFiles.has(file) || file.includes('nuxt.config')) {
+    if (file.includes('nuxt.config') || file.includes('modules')) {
       dLoad()
     }
   })
