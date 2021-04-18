@@ -38,6 +38,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nuxt/build',
     '@nuxt/app',
     'vuex5',
+    '!',
     '-!',
     ...ctx.options.build.transpile
   ]
