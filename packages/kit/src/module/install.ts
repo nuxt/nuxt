@@ -1,6 +1,7 @@
 import type { Nuxt } from '../types/nuxt'
 import type { LegacyNuxtModule, NuxtModule, ModuleMeta, ModuleInstallOptions, ModuleOptions, ModuleSrc } from '../types/module'
-import { requireModule } from '../utils/cjs'
+import { resolveModule, requireModule } from '../utils/cjs'
+import { resolveAlias } from '../utils/resolve'
 import { nuxtCtx } from '../nuxt'
 import { defineNuxtModule } from './define'
 import { ModuleContainer } from './container'
@@ -31,7 +32,8 @@ export async function installModule (nuxt: Nuxt, installOpts: ModuleInstallOptio
   // Resolve as legacy handler
   let handler: LegacyNuxtModule
   if (typeof src === 'string') {
-    handler = requireModule(src)
+    const _src = resolveModule(resolveAlias(src, nuxt.options.alias), { paths: nuxt.options.modulesDir })
+    handler = requireModule(_src)
     if (!meta.name) {
       meta.name = src
     }
