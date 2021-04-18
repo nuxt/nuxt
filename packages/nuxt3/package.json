@@ -5,10 +5,16 @@
   "license": "MIT",
   "main": "./dist/index.js",
   "files": [
+    "bin",
     "dist"
   ],
   "scripts": {
     "prepack": "unbuild"
+  },
+  "bin": {
+    "nu": "./bin/nuxt.js",
+    "nuxt": "./bin/nuxt.js",
+    "nuxt-cli": "./bin/nuxt.js"
   },
   "dependencies": {
     "@nuxt/app": "^0.3.1",
