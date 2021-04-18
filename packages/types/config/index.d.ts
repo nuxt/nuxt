@@ -74,4 +74,4 @@ export interface NuxtOptions extends Configuration {
   watchers: NuxtOptionsWatchers
 }
 
-export type NuxtConfig = Partial<NuxtOptions>
+export interface NuxtConfig extends Partial<NuxtOptions> {}

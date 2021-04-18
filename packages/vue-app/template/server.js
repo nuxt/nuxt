@@ -59,7 +59,7 @@ const createNext = ssrContext => (opts) => {
   }
   let fullPath = withQuery(opts.path, opts.query)
   const $config = ssrContext.runtimeConfig || {}
-  const routerBase = ($config.app && $config.app.basePath) || '<%= router.base %>'
+  const routerBase = ($config._app && $config._app.basePath) || '<%= router.base %>'
   if (!fullPath.startsWith('http') && (routerBase !== '/' && !fullPath.startsWith(routerBase))) {
     fullPath = joinURL(routerBase, fullPath)
   }
@@ -99,11 +99,11 @@ export default async (ssrContext) => {
   <% } %>
   // Public runtime config
   ssrContext.nuxt.config = ssrContext.runtimeConfig.public
-  if (ssrContext.nuxt.config.app) {
-    __webpack_public_path__ = joinURL(ssrContext.nuxt.config.app.cdnURL, ssrContext.nuxt.config.app.assetsPath)
+  if (ssrContext.nuxt.config._app) {
+    __webpack_public_path__ = joinURL(ssrContext.nuxt.config._app.cdnURL, ssrContext.nuxt.config._app.assetsPath)
   }
   // Create the app definition and the instance (created for each request)
-const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, ssrContext.runtimeConfig.private)
+  const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContext, ssrContext.runtimeConfig.private)
   const _app = new Vue(app)
   // Add ssr route path to nuxt context so we can account for page navigation between ssr and csr
   ssrContext.nuxt.routePath = app.context.route.path
@@ -156,7 +156,7 @@ const { app, router<%= (store ? ', store' : '') %> } = await createApp(ssrContex
   <% if (debug) { %>const s = Date.now()<% } %>
 
   // Components are already resolved by setContext -> getRouteData (app/utils.js)
-  const Components = getMatchedComponents(router.match(ssrContext.url))
+  const Components = getMatchedComponents(app.context.route)
 
   <% if (store) { %>
   /*

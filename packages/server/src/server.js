@@ -23,7 +23,7 @@ export default class Server {
 
     this.publicPath = isUrl(this.options.build.publicPath)
       ? this.options.build._publicPath
-      : this.options.build.publicPath
+      : this.options.build.publicPath.replace(/^\.+\//, '/')
 
     // Runtime shared resources
     this.resources = {}
@@ -113,6 +113,12 @@ export default class Server {
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
           return next()
+        }
+        // Safari over-caches JS (breaking HMR) and the seemingly only way to turn
+        // this off in dev mode is to set Vary: * header
+        // #3828, #9034
+        if (req.url.startsWith(this.publicPath) && req.url.endsWith('.js')) {
+          res.setHeader('Vary', '*')
         }
         this.devMiddleware(req, res, next)
       })

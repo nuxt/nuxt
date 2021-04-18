@@ -71,6 +71,9 @@ Object {
     "loaders": Object {
       "css": Object {
         "esModule": false,
+        "modules": Object {
+          "compileType": "icss",
+        },
         "sourceMap": false,
       },
       "cssModules": Object {
@@ -218,6 +221,7 @@ Object {
     "fallback": "200.html",
     "interval": 0,
     "manifest": true,
+    "nojekyll": true,
     "routes": Array [],
     "staticAssets": Object {
       "base": "/_nuxt/static",
@@ -319,7 +323,7 @@ Object {
   "plugins": Array [],
   "privateRuntimeConfig": Object {},
   "publicRuntimeConfig": Object {
-    "app": Object {
+    "_app": Object {
       "assetsPath": "/_nuxt/",
       "basePath": "/",
       "cdnURL": null,

@@ -327,7 +327,7 @@ describe('server: listener', () => {
     listener.host = 'localhost'
     listener.port = 3000
 
-    const addressInUse = new Error()
+    const addressInUse = new Error('server error')
     addressInUse.code = 'EADDRINUSE'
     expect(listener.serverErrorHandler(addressInUse)).rejects.toThrow('Address `localhost:3000` is already in use.')
   })
@@ -336,7 +336,7 @@ describe('server: listener', () => {
     const listener = new Listener({})
     listener.socket = 'nuxt.socket'
 
-    const addressInUse = new Error()
+    const addressInUse = new Error('server error')
     addressInUse.code = 'EADDRINUSE'
     expect(listener.serverErrorHandler(addressInUse)).rejects.toThrow('Address `nuxt.socket` is already in use.')
   })
@@ -348,7 +348,7 @@ describe('server: listener', () => {
     listener.close = jest.fn(() => Promise.resolve())
     listener.listen = jest.fn()
 
-    const addressInUse = new Error()
+    const addressInUse = new Error('server error')
     addressInUse.code = 'EADDRINUSE'
 
     await listener.serverErrorHandler(addressInUse)
@@ -372,7 +372,7 @@ describe('server: listener', () => {
       }
     }
 
-    const addressInUse = new Error()
+    const addressInUse = new Error('server error')
     addressInUse.code = 'EADDRINUSE'
 
     await listener.serverErrorHandler(addressInUse).catch(() => { })

@@ -8,6 +8,7 @@ export default () => ({
   fallback: '200.html',
   crawler: true,
   manifest: true,
+  nojekyll: true,
   cache: {
     ignore: [],
     globbyOptions: {
