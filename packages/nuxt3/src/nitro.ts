@@ -3,8 +3,9 @@ import type { Nuxt } from '@nuxt/kit'
 
 export function initNitro (nuxt: Nuxt) {
   // Create contexts
-  const nitroContext = getNitroContext(nuxt.options, (nuxt.options as any).nitro || {})
-  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'dev' })
+  const nitroOptions = (nuxt.options as any).nitro || {}
+  const nitroContext = getNitroContext(nuxt.options, nitroOptions)
+  const nitroDevContext = getNitroContext(nuxt.options, { ...nitroOptions, preset: 'dev' })
 
   nuxt.server = createDevServer(nitroDevContext)
 
@@ -20,8 +21,13 @@ export function initNitro (nuxt: Nuxt) {
   // Expose process.env.NITRO_PRESET
   nuxt.options.env.NITRO_PRESET = nitroContext.preset
 
-  // Resolve middleware
-  nuxt.hook('modules:done', () => {
+  // Wait for all modules to be ready
+  nuxt.hook('modules:done', async () => {
+    // Extend nitro with modules
+    await nuxt.callHook('nitro:context', nitroContext)
+    await nuxt.callHook('nitro:context', nitroDevContext)
+
+    // Resolve middleware
     const { middleware, legacyMiddleware } = resolveMiddleware(nuxt)
     nuxt.server.setLegacyMiddleware(legacyMiddleware)
     nitroContext.middleware.push(...middleware)

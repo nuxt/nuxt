@@ -20,8 +20,9 @@ export default function nuxt2CompatModule () {
   nuxt.options.build.indicator = false
 
   // Create contexts
-  const nitroContext = getNitroContext(nuxt.options, nuxt.options.nitro || {})
-  const nitroDevContext = getNitroContext(nuxt.options, { preset: 'dev' })
+  const nitroOptions = (nuxt.options as any).nitro || {}
+  const nitroContext = getNitroContext(nuxt.options, nitroOptions)
+  const nitroDevContext = getNitroContext(nuxt.options, { ...nitroOptions, preset: 'dev' })
 
   // Connect hooks
   nuxt.addHooks(nitroContext.nuxtHooks)
@@ -65,8 +66,13 @@ export default function nuxt2CompatModule () {
     }
   })
 
-  // Resolve middleware
-  nuxt.hook('modules:done', () => {
+  // Wait for all modules to be ready
+  nuxt.hook('modules:done', async () => {
+    // Extend nitro with modules
+    await nuxt.callHook('nitro:context', nitroContext)
+    await nuxt.callHook('nitro:context', nitroDevContext)
+
+    // Resolve middleware
     const { middleware, legacyMiddleware } = resolveMiddleware(nuxt)
     if (nuxt.server) {
       nuxt.server.setLegacyMiddleware(legacyMiddleware)
