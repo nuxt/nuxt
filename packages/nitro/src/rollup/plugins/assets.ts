@@ -88,7 +88,7 @@ export function getAsset (id) {
           }
         }
         const inlineAssets = `const assets = {\n${Object.keys(assets).map(id =>
-          `  ['${id}']: {\n    read: () => import('${assets[id].fsPath}'),\n    meta: ${JSON.stringify(assets[id].meta)}\n  }`
+          `  ['${id}']: {\n    read: () => import('${assets[id].fsPath}').then(r => r.default || r),\n    meta: ${JSON.stringify(assets[id].meta)}\n  }`
         ).join(',\n')}\n}`
         return `${inlineAssets}\n${assetUtils}
 export function getAsset (id) {
