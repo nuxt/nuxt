@@ -35,6 +35,8 @@ export async function bundle (nuxt: Nuxt) {
     }
   }
 
+  await nuxt.callHook('vite:extend', ctx)
+
   await mkdirp(nuxt.options.buildDir)
   await mkdirp(resolve(nuxt.options.buildDir, '.vite/temp'))
 
