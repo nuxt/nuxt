@@ -10,7 +10,7 @@ import { diff, printDiff } from '../utils/diff'
 export async function invoke (args) {
   process.env.NODE_ENV = process.env.NODE_ENV || 'development'
   const server = createServer()
-  const listener = await server.listen({ clipboard: true, open: true })
+  const listener = await server.listen({ clipboard: args.clipboard, open: args.open || args.o })
 
   const rootDir = resolve(args._[0] || '.')
 
@@ -71,6 +71,6 @@ export async function invoke (args) {
 }
 
 export const meta = {
-  usage: 'nu dev [rootDir]',
+  usage: 'nu dev [rootDir] [--clipboard] [--open, -o]',
   description: 'Run nuxt development server'
 }
