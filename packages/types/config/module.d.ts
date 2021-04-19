@@ -21,24 +21,32 @@ interface ExtendFunctionContext {
 
 export interface ModuleTemplateConfig {
   src: string,
-  fileName?: string,
-  options?: any
+  fileName?: string
+  filename?: string
+  options?: Record<string, any>
+  [key: string]: any
+}
+
+export interface ModulePluginTemplateConfig extends ModuleTemplateConfig {
+  ssr?: boolean
+  mode?: 'all' | 'client' | 'server'
 }
 
 export interface ModuleTemplateDest {
   src: string
   dst: string
-  options?: any
+  options?: Record<string, any>
 }
 
 export type ModuleTemplate = ModuleTemplateConfig | string
+export type ModulePluginTemplate = ModulePluginTemplateConfig | string
 
 type ExtendRoutesFunction = (routes: NuxtRouteConfig[], resolve: (...pathSegments: string[]) => string) => void
 type ExtendBuildFunction = (config: WebpackConfiguration, ctx: ExtendFunctionContext) => void
 
 interface ModuleThis {
   addTemplate(template: ModuleTemplate): ModuleTemplateDest
-  addPlugin(template: ModuleTemplate): void
+  addPlugin(template: ModulePluginTemplate): void
   addLayout(template: ModuleTemplate, name?: string): void
   addErrorLayout (dst: string): void
   addServerMiddleware (middleware: NuxtOptionsServerMiddleware): void
