@@ -47,6 +47,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       'lodash.template': 'un/mock/proxy',
       'serialize-javascript': 'un/mock/proxy',
       // Vue 3
+      'estree-walker': 'un/mock/proxy',
       '@babel/parser': 'un/mock/proxy',
       '@vue/compiler-core': 'un/mock/proxy',
       '@vue/compiler-dom': 'un/mock/proxy',
@@ -214,13 +215,16 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
           // prod
           nitroContext._nuxt.srcDir,
           nitroContext._nuxt.rootDir,
-          nitroContext._nuxt.buildDir
+          nitroContext._nuxt.buildDir,
+          'vue',
+          '@vue/'
         ]) || []),
         nitroContext._nuxt.serverDir,
         ...nitroContext.middleware.map(m => m.handle)
       ],
       traceOptions: {
-        base: nitroContext._nuxt.rootDir
+        base: '/',
+        processCwd: nitroContext._nuxt.rootDir
       }
     })))
   }

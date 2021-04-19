@@ -40,6 +40,9 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'vuex5',
     '!',
     '-!',
+    '~',
+    '@',
+    '#',
     ...ctx.options.build.transpile
   ]
 
@@ -52,7 +55,6 @@ function serverStandalone (ctx: WebpackConfigContext) {
     ) {
       return cb(null, false)
     }
-    // console.log('External:', request)
     return cb(null, true)
   })
 }

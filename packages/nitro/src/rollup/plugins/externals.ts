@@ -12,51 +12,53 @@ export interface NodeExternalsOptions {
 }
 
 export function externals (opts: NodeExternalsOptions): Plugin {
-  const resolvedExternals = {}
+  const resolvedExternals = new Set<string>()
+
   return {
     name: 'node-externals',
     resolveId (id) {
       // Internals
-      if (id.startsWith('\x00') || id.includes('?')) {
+      if (!id || id.startsWith('\x00') || id.includes('?')) {
         return null
       }
 
+      // Normalize from node_modules
+      const _id = id.split('node_modules/').pop()
+
       // Resolve relative paths and exceptions
-      if (id.startsWith('.') || opts.ignore.find(i => id.startsWith(i))) {
+      if (_id.startsWith('.') || opts.ignore.find(i => _id.startsWith(i))) {
         return null
       }
 
       // Bundle ts
-      if (id.endsWith('.ts')) {
+      if (_id.endsWith('.ts')) {
         return null
       }
 
-      for (const dir of opts.moduleDirectories) {
-        if (id.startsWith(dir)) {
-          id = id.substr(dir.length + 1)
-          break
-        }
+      // Try to resolve for nft
+      if (opts.trace !== false) {
+        let _resolvedId = _id
+        try { _resolvedId = require.resolve(_resolvedId, { paths: opts.moduleDirectories }) } catch (_err) {}
+        resolvedExternals.add(_resolvedId)
       }
 
-      try {
-        resolvedExternals[id] = require.resolve(id, { paths: opts.moduleDirectories })
-      } catch (_err) { }
-
       return {
-        id,
-        external: 'absolute'
+        id: _id,
+        external: true
       }
     },
     async buildEnd () {
       if (opts.trace !== false) {
-        const { fileList } = await nodeFileTrace(Object.values(resolvedExternals), opts.traceOptions)
-        await Promise.all(fileList.map(async (file) => {
-          if (!file.startsWith('node_modules')) {
+        const tracedFiles = await nodeFileTrace(Array.from(resolvedExternals), opts.traceOptions)
+          .then(r => r.fileList.map(f => resolve(opts.traceOptions.base, f)))
+
+        await Promise.all(tracedFiles.map(async (file) => {
+          if (!file.includes('node_modules')) {
             return
           }
           // TODO: Minify package.json
           const src = resolve(opts.traceOptions.base, file)
-          const dst = resolve(opts.outDir, file)
+          const dst = resolve(opts.outDir, 'node_modules', file.split('node_modules/').pop())
           await mkdirp(dirname(dst))
           await copyFile(src, dst)
         }))
