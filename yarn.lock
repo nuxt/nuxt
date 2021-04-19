@@ -10133,6 +10133,10 @@ __metadata:
     ufo: ^0.6.11
     unbuild: ^0.1.13
     upath: ^2.0.1
+  bin:
+    nu: ./bin/nuxt.js
+    nuxt: ./bin/nuxt.js
+    nuxt-cli: ./bin/nuxt.js
   languageName: unknown
   linkType: soft
 
