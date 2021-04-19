@@ -8,6 +8,7 @@ import { error, info } from '../utils/log'
 import { diff, printDiff } from '../utils/diff'
 
 export async function invoke (args) {
+  process.env.NODE_ENV = process.env.NODE_ENV || 'development'
   const server = createServer()
   const listener = await server.listen({ clipboard: true, open: true })
 
