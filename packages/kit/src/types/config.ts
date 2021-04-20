@@ -6,6 +6,7 @@ export interface TypedConfigSchema extends ConfigSchema {
   hooks: NuxtHooks,
   modules: ModuleInstallOptions[]
   buildModules: ModuleInstallOptions[]
+  [key: string]: any
 }
 
 export interface NuxtOptions extends TypedConfigSchema { }
