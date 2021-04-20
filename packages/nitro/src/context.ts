@@ -107,7 +107,6 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
       publicPath: nuxtOptions.build.publicPath,
       isStatic: nuxtOptions.target === 'static' && !nuxtOptions.dev,
       fullStatic: nuxtOptions.target === 'static' && !nuxtOptions._legacyGenerate,
-      // @ts-ignore
       staticAssets: nuxtOptions.generate.staticAssets,
       runtimeConfig: {
         public: nuxtOptions.publicRuntimeConfig,
@@ -128,8 +127,7 @@ export function getNitroContext (nuxtOptions: NuxtOptions, input: NitroInput): N
   presetDefaults = presetDefaults.default || presetDefaults
 
   const _presetInput = defu(input, defaults)
-  // @ts-ignore
-  const _preset = extendPreset(input, presetDefaults)(_presetInput)
+  const _preset = (extendPreset(presetDefaults /* base */, input) as Function)(_presetInput)
   const nitroContext: NitroContext = defu(_preset, defaults) as any
 
   nitroContext.output.dir = resolvePath(nitroContext, nitroContext.output.dir)
