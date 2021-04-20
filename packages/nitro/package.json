@@ -3,8 +3,10 @@
   "version": "0.5.2",
   "license": "MIT",
   "main": "dist/index.js",
+  "types": "./types/index.d.ts",
   "files": [
     "dist",
+    "types",
     "compat.js"
   ],
   "scripts": {

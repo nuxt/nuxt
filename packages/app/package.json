@@ -5,9 +5,10 @@
   "license": "MIT",
   "main": "./dist/app/index.js",
   "module": "./dist/app/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./types/index.d.ts",
   "files": [
     "dist",
+    "types",
     "meta.js"
   ],
   "scripts": {
