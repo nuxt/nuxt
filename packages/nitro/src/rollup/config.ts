@@ -107,7 +107,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     makeAbsoluteExternalsRelative: 'ifRelativeSource',
     plugins: [],
     onwarn (warning, rollupWarn) {
-      if (!['CIRCULAR_DEPENDENCY', 'EVAL'].includes(warning.code)) {
+      if (
+        !['CIRCULAR_DEPENDENCY', 'EVAL'].includes(warning.code) &&
+       !warning.message.includes('Unsupported source map comment')
+      ) {
         rollupWarn(warning)
       }
     }
