@@ -24,25 +24,27 @@ export async function invoke (args) {
 
       const newNuxt = await loadNuxt({ rootDir, dev: true, ready: false })
 
-      let configChanges
-      if (currentNuxt) {
-        configChanges = diff(currentNuxt.options, newNuxt.options, [
-          'generate.staticAssets.version',
-          'env.NITRO_PRESET'
-        ])
-        server.setApp(createLoadingHandler('Restarting...', 1))
-        await currentNuxt.close()
-        currentNuxt = newNuxt
-      } else {
-        currentNuxt = newNuxt
-      }
-
-      if (configChanges) {
-        if (configChanges.length) {
-          info('Nuxt config updated:')
-          printDiff(configChanges)
+      if (process.env.DEBUG) {
+        let configChanges
+        if (currentNuxt) {
+          configChanges = diff(currentNuxt.options, newNuxt.options, [
+            'generate.staticAssets.version',
+            'env.NITRO_PRESET'
+          ])
+          server.setApp(createLoadingHandler('Restarting...', 1))
+          await currentNuxt.close()
+          currentNuxt = newNuxt
         } else {
-          info('Restarted nuxt due to config changes')
+          currentNuxt = newNuxt
+        }
+
+        if (configChanges) {
+          if (configChanges.length) {
+            info('Nuxt config updated:')
+            printDiff(configChanges)
+          } else {
+            info('Restarted nuxt due to config changes')
+          }
         }
       }
 
