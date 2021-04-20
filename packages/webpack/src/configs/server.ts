@@ -41,7 +41,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '!',
     '-!',
     '~',
-    '@',
+    '@/',
     '#',
     ...ctx.options.build.transpile
   ]
@@ -53,8 +53,10 @@ function serverStandalone (ctx: WebpackConfigContext) {
       request[0] === '/' ||
       inline.find(prefix => request.startsWith(prefix))
     ) {
+      // console.log('Inline', request)
       return cb(null, false)
     }
+    // console.log('Ext', request)
     return cb(null, true)
   })
 }
