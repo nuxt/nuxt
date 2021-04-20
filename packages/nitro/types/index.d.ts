@@ -1,3 +1,16 @@
 import './shims'
+import { NitroInput } from '../dist'
 
-export * from '../dist/index'
+declare module '@nuxt/kit' {
+  interface NuxtConfig {
+    nitro?: NitroInput
+  }
+}
+
+declare module '@nuxt/types' {
+  interface NuxtConfig {
+    nitro?: NitroInput
+  }
+}
+
+export * from '../dist'
