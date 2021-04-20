@@ -46,7 +46,7 @@ function dumpMiddleware (middleware: ServerMiddleware[]) {
   const data = middleware.map(({ route, handle, ...props }) => {
     return [
       (route && route !== '/') ? route : '*',
-      relative(process.cwd(), handle),
+      relative(process.cwd(), handle as string),
       dumpObject(props)
     ]
   })
