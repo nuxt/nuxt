@@ -1,0 +1,25 @@
+{
+  "name": "docs",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "nu dev",
+    "vercel-build": "cd .. && yarn stub && cd docs && yarn build",
+    "build": "nu build",
+    "docs": "nu dev"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "^0.5.0",
+    "nuxt3": "^0.5.1",
+    "rehype-raw": "^5.1.0",
+    "rehype-stringify": "^8.0.0",
+    "remark": "^13.0.0",
+    "remark-parse": "^9.0.0",
+    "remark-rehype": "^8.1.0",
+    "unified": "^9.2.1",
+    "untyped": "^0.2.5",
+    "vite-plugin-windicss": "^0.14.6",
+    "windicss": "^2.5.14",
+    "windicss-webpack-plugin": "^0.3.3"
+  }
+}

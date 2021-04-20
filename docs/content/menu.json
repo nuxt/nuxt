@@ -1,0 +1,154 @@
+[
+  {
+    "key": "start",
+    "title": "Getting Started",
+    "items": [
+      {
+        "key": "install",
+        "title": "Installation"
+      },
+      {
+        "key": "structure",
+        "title": "Directory Structure"
+      },
+      {
+        "key": "deployment",
+        "title": "Deployment"
+      }
+    ]
+  },
+  {
+    "key": "app",
+    "title": "App",
+    "items": [
+      {
+        "key": "app",
+        "title": "App.vue"
+      },
+      {
+        "key": "pages",
+        "title": "Pages"
+      },
+      {
+        "key": "components",
+        "title": "Components"
+      },
+      {
+        "key": "image",
+        "title": "Image"
+      },
+      {
+        "key": "plugins",
+        "title": "Plugins"
+      },
+      {
+        "key": "data",
+        "title": "Data Fetching"
+      },
+      {
+        "key": "meta",
+        "title": "Meta Tags"
+      }
+    ]
+  },
+  {
+    "key": "server",
+    "title": "Server",
+    "items": [
+      {
+        "key": "api",
+        "title": "API Routes"
+      },
+      {
+        "key": "middleware",
+        "title": "Server Middleware"
+      },
+      {
+        "key": "functions",
+        "title": "Functions"
+      },
+      {
+        "key": "storage",
+        "title": "Storage"
+      }
+    ]
+  },
+  {
+    "key": "modules",
+    "title": "Modules",
+    "items": [
+      {
+        "key": "use",
+        "title": "Using"
+      },
+      {
+        "key": "create",
+        "title": "Creating"
+      },
+      {
+        "key": "publish",
+        "title": "Publishing"
+      }
+    ]
+  },
+  {
+    "key": "deploy",
+    "title": "Deployment",
+    "items": [
+      {
+        "key": "azure",
+        "title": "Azure"
+      },
+      {
+        "key": "cloudflare",
+        "title": "Cloudflare"
+      },
+      {
+        "key": "firebase",
+        "title": "Firebase"
+      },
+      {
+        "key": "netlify",
+        "title": "Netlify"
+      },
+      {
+        "key": "vercel",
+        "title": "Vercel"
+      }
+    ]
+  },
+  {
+    "key": "archicucture",
+    "title": "Architucture",
+    "items": [
+      {
+        "key": "build",
+        "title": "How nuxt works?"
+      },
+      {
+        "key": "nitro",
+        "title": "Nitro Server"
+      }
+    ]
+  },
+  {
+    "key": "api",
+    "title": "API Reference",
+    "items": [
+      {
+        "key": "config",
+        "title": "Configuration"
+      }
+    ]
+  },
+  {
+    "key": "community",
+    "title": "Community",
+    "items": [
+      {
+        "key": "contrib",
+        "title": "Contribution guide"
+      }
+    ]
+  }
+]
