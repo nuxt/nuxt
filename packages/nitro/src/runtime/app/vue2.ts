@@ -1,5 +1,5 @@
 // @ts-ignore
-import { createRenderer } from '~vueServerRenderer'
+import { createRenderer } from '#nitro-vue-renderer'
 const _renderer = createRenderer({})
 
 // @ts-ignore

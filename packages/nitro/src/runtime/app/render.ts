@@ -2,13 +2,13 @@ import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 import config from './config'
 // @ts-ignore
-import { renderToString } from '~renderer'
+import { renderToString } from '#nitro-renderer'
 // @ts-ignore
-import createApp from '~build/dist/server/server'
+import createApp from '#build/dist/server/server'
 // @ts-ignore
-import clientManifest from '~build/dist/server/client.manifest.json'
+import clientManifest from '#build/dist/server/client.manifest.json'
 // @ts-ignore
-import htmlTemplate from '~build/views/document.template.js'
+import htmlTemplate from '#build/views/document.template.js'
 
 function _interopDefault (e) { return e && typeof e === 'object' && 'default' in e ? e.default : e }
 

@@ -18,7 +18,7 @@ export function externals (opts: NodeExternalsOptions): Plugin {
     name: 'node-externals',
     resolveId (id) {
       // Internals
-      if (!id || id.startsWith('\x00') || id.includes('?')) {
+      if (!id || id.startsWith('\x00') || id.includes('?') || id.startsWith('#')) {
         return null
       }
 

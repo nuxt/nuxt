@@ -30,7 +30,7 @@ export function storage (opts: StorageOptions) {
   const driverImports = Array.from(new Set(mounts.map(m => m.driver)))
 
   return virtual({
-    '~nitro/storage': `
+    '#storage': `
 import { createStorage } from 'unstorage'
 ${driverImports.map(i => `import ${getImportName(i)} from '${i}'`).join('\n')}
 

@@ -174,7 +174,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       ...nitroContext.middleware
     ]
     if (nitroContext.serveStatic) {
-      _middleware.unshift({ route: '/', handle: '~runtime/server/static' })
+      _middleware.unshift({ route: '/', handle: '#nitro/server/static' })
     }
     return _middleware
   }))
@@ -189,10 +189,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
   const vue2ServerRenderer = 'vue-server-renderer/' + (nitroContext._nuxt.dev ? 'build.dev.js' : 'build.prod.js')
   rollupConfig.plugins.push(alias({
     entries: {
-      '~runtime': nitroContext._internal.runtimeDir,
-      '~renderer': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer)),
-      '~vueServerRenderer': vue2ServerRenderer,
-      '~build': nitroContext._nuxt.buildDir,
+      '#nitro': nitroContext._internal.runtimeDir,
+      '#nitro-renderer': require.resolve(resolve(nitroContext._internal.runtimeDir, 'app', renderer)),
+      '#nitro-vue-renderer': vue2ServerRenderer,
+      '#build': nitroContext._nuxt.buildDir,
       ...env.alias
     }
   }))

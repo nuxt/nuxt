@@ -38,7 +38,7 @@ export function statAsset (id) {
 
   if (!opts.inline) {
     return virtual({
-      '~nitro/assets': `
+      '#assets': `
 import { statSync, promises as fsp } from 'fs'
 import { resolve } from 'path'
 
@@ -68,7 +68,7 @@ export function getAsset (id) {
   }
 
   return virtual({
-    '~nitro/assets': {
+    '#assets': {
       async load () {
         const assets: Record<string, Asset> = {}
         for (const assetdir in opts.dirs) {
