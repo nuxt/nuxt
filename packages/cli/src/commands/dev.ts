@@ -46,6 +46,8 @@ export async function invoke (args) {
             info('Restarted nuxt due to config changes')
           }
         }
+      } else {
+        currentNuxt = newNuxt
       }
 
       await currentNuxt.ready()
