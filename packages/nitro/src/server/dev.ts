@@ -64,7 +64,6 @@ export function createDevServer (nitroContext: NitroContext) {
 
   // serve placeholder 404 assets instead of hitting SSR
   app.use(nitroContext._nuxt.publicPath, servePlaceholder())
-  app.use(nitroContext._nuxt.routerBase, servePlaceholder({ skipUnknown: true }))
 
   // SSR Proxy
   const proxy = createProxy()
