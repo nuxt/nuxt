@@ -1667,7 +1667,7 @@ __metadata:
     "@vercel/nft": ^0.10.1
     "@vue/server-renderer": ^3.0.11
     archiver: ^5.3.0
-    chalk: ^4.1.0
+    chalk: ^4.1.1
     chokidar: ^3.5.1
     connect: ^3.7.0
     consola: ^2.15.3
@@ -1698,10 +1698,10 @@ __metadata:
     serve-placeholder: ^1.2.3
     serve-static: ^1.14.1
     std-env: ^2.3.0
-    table: ^6.3.0
+    table: ^6.3.2
     ufo: ^0.6.11
     unbuild: ^0.2.2
-    unenv: ^0.2.1
+    unenv: ^0.2.2
     unstorage: ^0.1.5
     upath: ^2.0.1
     vue: 3.0.11
@@ -1763,7 +1763,7 @@ __metadata:
     vue: 3.0.11
     vue-loader: ^16.2.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.34.0
+    webpack: ^5.35.0
     webpack-bundle-analyzer: ^4.4.1
     webpack-dev-middleware: ^4.1.0
     webpack-hot-middleware: ^2.25.0
@@ -4148,7 +4148,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.0.0, chalk@npm:^4.1.0":
+"chalk@npm:^4.0.0, chalk@npm:^4.1.0, chalk@npm:^4.1.1":
   version: 4.1.1
   resolution: "chalk@npm:4.1.1"
   dependencies:
@@ -13644,7 +13644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.0.4, table@npm:^6.3.0":
+"table@npm:^6.0.4, table@npm:^6.3.2":
   version: 6.3.2
   resolution: "table@npm:6.3.2"
   dependencies:
@@ -14269,9 +14269,9 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "unenv@npm:0.2.1"
+"unenv@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "unenv@npm:0.2.2"
   dependencies:
     buffer: ^6.0.2
     defu: ^3.2.2
@@ -14282,7 +14282,7 @@ typescript@^4.2.4:
     process: ^0.11.10
     upath: ^2.0.1
     util: ^0.12.3
-  checksum: 29e0840cdf55070160f3172db023cf7641ac6dfd74c990f0279dfe8db717d34cadaea9e897cb6ec4a2c87a9a521df8c63bfa13df4a99f3c8de7cc801ab52882a
+  checksum: 64597e78d6b660223381fbd3686752a3cfae65cc0c8a89cee241c6617d26b73e734d5dd1c0b6acdbfebc79024d96cdc9177dece6ed9475865dfe9143e4299427
   languageName: node
   linkType: hard
 
@@ -14924,7 +14924,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.34.0":
+"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.35.0":
   version: 5.35.0
   resolution: "webpack@npm:5.35.0"
   dependencies:
