@@ -3,7 +3,7 @@ import { createRenderer } from '#nitro-vue-renderer'
 const _renderer = createRenderer({})
 
 // @ts-ignore
-const __VUE_SSR_CONTEXT__ = global.__VUE_SSR_CONTEXT__ = {}
+const __VUE_SSR_CONTEXT__ = globalThis.__VUE_SSR_CONTEXT__ = {}
 
 export function renderToString (component, context) {
   return new Promise((resolve, reject) => {

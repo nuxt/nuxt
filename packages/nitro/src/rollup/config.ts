@@ -131,6 +131,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     values: {
       'process.env.NODE_ENV': nitroContext._nuxt.dev ? '"development"' : '"production"',
       'typeof window': '"undefined"',
+      'global.': 'globalThis.',
       'process.env.ROUTER_BASE': JSON.stringify(nitroContext._nuxt.routerBase),
       'process.env.PUBLIC_PATH': JSON.stringify(nitroContext._nuxt.publicPath),
       'process.env.NUXT_STATIC_BASE': JSON.stringify(nitroContext._nuxt.staticAssets.base),
