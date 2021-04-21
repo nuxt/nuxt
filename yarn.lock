@@ -1671,7 +1671,7 @@ __metadata:
     "@vueuse/head": ^0.5.1
     hookable: ^4.4.1
     ohmyfetch: ^0.2.0
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     vue: ^3.0.11
     vue-router: ^4.0.6
     vuex5: ^0.5.0-testing.3
@@ -1715,7 +1715,7 @@ __metadata:
     scule: ^0.1.1
     std-env: ^2.3.0
     ufo: ^0.6.11
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     unctx: ^0.0.3
     untyped: ^0.2.5
     upath: ^2.0.1
@@ -1730,7 +1730,6 @@ __metadata:
     "@netlify/functions": ^0.7.0
     "@nuxt/devalue": ^1.2.5
     "@nuxt/kit": ^0.5.0
-    "@nuxt/un": ^0.1.1
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
     "@rollup/plugin-inject": ^4.0.2
@@ -1780,7 +1779,8 @@ __metadata:
     std-env: ^2.3.0
     table: ^6.3.0
     ufo: ^0.6.11
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
+    unenv: ^0.2.1
     unstorage: ^0.1.5
     upath: ^2.0.1
     vue: 3.0.11
@@ -1788,23 +1788,6 @@ __metadata:
     vue-server-renderer: ^2.6.12
   languageName: unknown
   linkType: soft
-
-"@nuxt/un@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "@nuxt/un@npm:0.1.1"
-  dependencies:
-    buffer: ^6.0.2
-    defu: ^3.2.2
-    events: ^3.2.0
-    inherits: ^2.0.4
-    mime: ^2.4.6
-    node-fetch: ^2.6.1
-    process: ^0.11.10
-    upath: ^2.0.1
-    util: ^0.12.3
-  checksum: 484e6cac7a529f1f69990fa11468b087563148a71a2732024ce8e8c9a6a049d43ee46929a64b1b5cf98518cdae3c2ccf7beaa004803fe2e13f44f54b34425305
-  languageName: node
-  linkType: hard
 
 "@nuxt/vite-builder@^0.3.0, @nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
@@ -1815,7 +1798,7 @@ __metadata:
     "@vue/compiler-sfc": ^3.0.11
     consola: ^2.15.3
     fs-extra: ^9.1.0
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     vite: ^2.2.1
     vue: 3.0.11
   languageName: unknown
@@ -1854,7 +1837,7 @@ __metadata:
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
     ufo: ^0.6.11
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     url-loader: ^4.1.1
     vue: 3.0.11
     vue-loader: ^16.2.0
@@ -10015,9 +9998,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdist@npm:^0.1.6":
-  version: 0.1.7
-  resolution: "mkdist@npm:0.1.7"
+"mkdist@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "mkdist@npm:0.2.0"
   dependencies:
     defu: ^3.2.2
     esbuild: ^0.11.6
@@ -10034,7 +10017,7 @@ __metadata:
       optional: true
   bin:
     mkdist: dist/cli.js
-  checksum: 503703fbc27a18e123f16ae770645c22a11f0c1fe5149f7e8ebdd7744e07bacbc1439c3db83d6110d372c4599b3f13edd14fc2f7c8a3f185bf900d24174fa03d
+  checksum: 72d6cd3f28d531ea3d384b9e07bcc10de99b7f5ce9acb7a6d3d1834cd56b1948219b566ecf15b6c3e650a4ef4c65b3c4e66c3456d2098698cbc4b532335f6acc
   languageName: node
   linkType: hard
 
@@ -10566,7 +10549,7 @@ __metadata:
     fsevents: ~2.3.2
     listhen: ^0.2.4
     mri: ^1.1.6
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     v8-compile-cache: ^2.3.0
   dependenciesMeta:
     fsevents:
@@ -10593,7 +10576,7 @@ __metadata:
     lerna: ^4.0.0
     ts-jest: ^26.5.5
     typescript: ^4.2.4
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
   languageName: unknown
   linkType: soft
 
@@ -10621,7 +10604,7 @@ __metadata:
     nuxt-cli: ^0.3.0
     scule: ^0.1.1
     ufo: ^0.6.11
-    unbuild: ^0.1.13
+    unbuild: ^0.2.2
     upath: ^2.0.1
   bin:
     nu: ./bin/nuxt.js
@@ -14362,9 +14345,9 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unbuild@npm:^0.1.13":
-  version: 0.1.13
-  resolution: "unbuild@npm:0.1.13"
+"unbuild@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "unbuild@npm:0.2.2"
   dependencies:
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
@@ -14376,7 +14359,7 @@ typescript@^4.2.4:
     esbuild: ^0.11.6
     jiti: ^1.9.1
     mkdirp: ^1.0.4
-    mkdist: ^0.1.6
+    mkdist: ^0.2.0
     mri: ^1.1.6
     pretty-bytes: ^5.6.0
     rimraf: ^3.0.2
@@ -14389,7 +14372,7 @@ typescript@^4.2.4:
     upath: ^2.0.1
   bin:
     unbuild: bin/unbuild.js
-  checksum: fcbd7918214bbeeede7c39e7358835ca1a09f0a364d1ba37991108ff1c48266d1916f03f9e35e5997e0d888444fc7c609263c524a9c9a2c39cb9ab4777e1fb60
+  checksum: 9f1e842aaf43bd6a29d9eeb158d647fd118ac466e3c82c6ae04547661fac087ff43f2abb03e13647a030f963ed9e942a3bf05fb674aa6900a43c4a5d61071985
   languageName: node
   linkType: hard
 
@@ -14397,6 +14380,23 @@ typescript@^4.2.4:
   version: 0.0.3
   resolution: "unctx@npm:0.0.3"
   checksum: 0142b5f75a76b93626c35408def8e2aa3f3478ebc503e53770b096ed2fea17b329ef9e616969cb44ea0ec062135c57d2b1914813eedce82982a4c858cdc55096
+  languageName: node
+  linkType: hard
+
+"unenv@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "unenv@npm:0.2.1"
+  dependencies:
+    buffer: ^6.0.2
+    defu: ^3.2.2
+    events: ^3.2.0
+    inherits: ^2.0.4
+    mime: ^2.4.6
+    node-fetch: ^2.6.1
+    process: ^0.11.10
+    upath: ^2.0.1
+    util: ^0.12.3
+  checksum: 29e0840cdf55070160f3172db023cf7641ac6dfd74c990f0279dfe8db717d34cadaea9e897cb6ec4a2c87a9a521df8c63bfa13df4a99f3c8de7cc801ab52882a
   languageName: node
   linkType: hard
 

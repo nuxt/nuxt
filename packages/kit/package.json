@@ -6,13 +6,14 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "schema"
   ],
   "scripts": {
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "^0.1.13"
+    "unbuild": "^0.2.2"
   },
   "dependencies": {
     "consola": "^2.15.3",

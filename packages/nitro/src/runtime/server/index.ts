@@ -2,7 +2,7 @@ import '../app/config'
 import { createApp, useBase } from 'h3'
 import { createFetch } from 'ohmyfetch'
 import destr from 'destr'
-import { createCall, createFetch as createLocalFetch } from '@nuxt/un/runtime/fetch'
+import { createCall, createFetch as createLocalFetch } from 'unenv/runtime/fetch'
 import { timingMiddleware } from './timing'
 import { handleError } from './error'
 // @ts-ignore

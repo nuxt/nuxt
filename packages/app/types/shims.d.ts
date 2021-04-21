@@ -28,7 +28,7 @@ declare module '*.vue' {
 }
 
 declare module 'vue' {
-    import type { Nuxt } from '../dist/app'
+    import type { Nuxt } from '../dist'
 
     interface App {
         $nuxt: Nuxt

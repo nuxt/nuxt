@@ -13,7 +13,7 @@ export function esbuild (ctx: WebpackConfigContext) {
 
   config.module.rules.push(
     {
-      test: /\.[jt]sx?$/,
+      test: /\.m?[jt]sx?$/i,
       loader: 'esbuild-loader',
       exclude: (file) => {
         file = file.split('node_modules', 2)[1]
@@ -25,6 +25,9 @@ export function esbuild (ctx: WebpackConfigContext) {
 
         // Item in transpile can be string or regex object
         return !ctx.transpile.some(module => module.test(file))
+      },
+      resolve: {
+        fullySpecified: false
       },
       options: {
         loader: 'ts',

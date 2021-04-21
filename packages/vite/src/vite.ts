@@ -72,7 +72,7 @@ async function buildClient (ctx: ViteBuildContext) {
       outDir: 'dist/client',
       assetsDir: '.',
       rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, './entry.client.js')
+        input: resolve(ctx.nuxt.options.buildDir, './entry.client')
       }
     },
     server: {
@@ -106,7 +106,7 @@ async function buildServer (ctx: ViteBuildContext) {
       outDir: 'dist/server',
       ssr: true,
       rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, './entry.server.js'),
+        input: resolve(ctx.nuxt.options.buildDir, './entry.server'),
         onwarn (warning, rollupWarn) {
           if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
             rollupWarn(warning)
@@ -119,7 +119,7 @@ async function buildServer (ctx: ViteBuildContext) {
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
   await mkdirp(serverDist)
   await writeFile(resolve(serverDist, 'client.manifest.json'), 'false')
-  await writeFile(resolve(serverDist, 'server.js'), 'const entry = require("./entry.server.js"); module.exports = entry.default || entry;')
+  await writeFile(resolve(serverDist, 'server.js'), 'const entry = require("./entry.server"); module.exports = entry.default || entry;')
 
   await vite.build(serverConfig)
 

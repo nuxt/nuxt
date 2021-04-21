@@ -21,6 +21,9 @@ export function babel (ctx: WebpackConfigContext) {
       // item in transpile can be string or regex object
       return !ctx.transpile.some(module => module.test(file))
     },
+    resolve: {
+      fullySpecified: false
+    },
     use: babelLoader
   })
 

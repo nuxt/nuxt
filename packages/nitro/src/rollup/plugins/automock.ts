@@ -7,7 +7,7 @@ export function autoMock () {
       if (src && !src.startsWith('.') && !src.includes('?') && !src.includes('.js')) {
         consola.warn('Auto mock external ', src)
         return {
-          id: require.resolve('@nuxt/un/runtime/mock/proxy')
+          id: require.resolve('unenv/runtime/mock/proxy')
         }
       }
       return null

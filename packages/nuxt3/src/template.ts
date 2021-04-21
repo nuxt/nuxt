@@ -43,7 +43,7 @@ export function compileTemplates (templates: NuxtTemplate[], destDir: string) {
 export async function scanTemplates (dir: string, data?: Record<string, any>) {
   const templateFiles = (await globby(join(dir, '/**')))
 
-  return templateFiles.map(src => ({
+  return templateFiles.filter(src => !src.endsWith('.d.ts')).map(src => ({
     src,
     path: relative(dir, src),
     data

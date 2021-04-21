@@ -6,6 +6,6 @@
   <body {{ BODY_ATTRS }}>
     <div id="__nuxt">{{ APP }}</div>
     <% if (nuxtOptions.vite && nuxtOptions.dev) { %><script type="module" src="/@vite/client"></script>
-    <script type="module" src="/entry.client.js"></script><% } %>
+    <script type="module" src="/entry.client.mjs"></script><% } %>
   </body>
 </html>

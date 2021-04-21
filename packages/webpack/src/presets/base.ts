@@ -127,6 +127,7 @@ function baseResolve (ctx: WebpackConfigContext) {
     extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
     alias: ctx.alias,
     modules: webpackModulesDir,
+    fullySpecified: false,
     ...config.resolve
   }
 

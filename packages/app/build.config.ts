@@ -1,6 +1,6 @@
-import { BuildConfig } from 'unbuild'
+import { defineBuildConfig } from 'unbuild'
 
-export default <BuildConfig>{
+export default defineBuildConfig({
   declaration: true,
   entries: [
     { input: 'src/', name: 'app' }
@@ -11,4 +11,4 @@ export default <BuildConfig>{
     'vue-router',
     'vuex5'
   ]
-}
+})

@@ -10,8 +10,8 @@ import replace from '@rollup/plugin-replace'
 import virtual from '@rollup/plugin-virtual'
 import inject from '@rollup/plugin-inject'
 import analyze from 'rollup-plugin-analyzer'
-import type { Preset } from '@nuxt/un'
-import * as un from '@nuxt/un'
+import type { Preset } from 'unenv'
+import * as unenv from 'unenv'
 
 import { NitroContext } from '../context'
 import { resolvePath, MODULE_DIR } from '../utils'
@@ -32,31 +32,31 @@ export type RollupConfig = InputOptions & { output: OutputOptions }
 export const getRollupConfig = (nitroContext: NitroContext) => {
   const extensions: string[] = ['.ts', '.mjs', '.js', '.json', '.node']
 
-  const nodePreset = nitroContext.node === false ? un.nodeless : un.node
+  const nodePreset = nitroContext.node === false ? unenv.nodeless : unenv.node
 
   const builtinPreset: Preset = {
     alias: {
       // General
-      debug: 'un/npm/debug',
-      depd: 'un/npm/depd',
-      consola: 'un/npm/consola',
+      debug: 'unenv/runtime/npm/debug',
+      depd: 'unenv/runtime/npm/depd',
+      consola: 'unenv/runtime/npm/consola',
       // Vue 2
-      encoding: 'un/mock/proxy',
-      he: 'un/mock/proxy',
-      resolve: 'un/mock/proxy',
-      'source-map': 'un/mock/proxy',
-      'lodash.template': 'un/mock/proxy',
-      'serialize-javascript': 'un/mock/proxy',
+      encoding: 'unenv/runtime/mock/proxy',
+      he: 'unenv/runtime/mock/proxy',
+      resolve: 'unenv/runtime/mock/proxy',
+      'source-map': 'unenv/runtime/mock/proxy',
+      'lodash.template': 'unenv/runtime/mock/proxy',
+      'serialize-javascript': 'unenv/runtime/mock/proxy',
       // Vue 3
-      'estree-walker': 'un/mock/proxy',
-      '@babel/parser': 'un/mock/proxy',
-      '@vue/compiler-core': 'un/mock/proxy',
-      '@vue/compiler-dom': 'un/mock/proxy',
-      '@vue/compiler-ssr': 'un/mock/proxy'
+      'estree-walker': 'unenv/runtime/mock/proxy',
+      '@babel/parser': 'unenv/runtime/mock/proxy',
+      '@vue/compiler-core': 'unenv/runtime/mock/proxy',
+      '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
+      '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
     }
   }
 
-  const env = un.env(nodePreset, builtinPreset, nitroContext.env)
+  const env = unenv.env(nodePreset, builtinPreset, nitroContext.env)
 
   delete env.alias['node-fetch'] // FIX ME
 
