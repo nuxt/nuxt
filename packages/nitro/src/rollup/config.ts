@@ -39,6 +39,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
       // General
       debug: 'un/npm/debug',
       depd: 'un/npm/depd',
+      consola: 'un/npm/consola',
       // Vue 2
       encoding: 'un/mock/proxy',
       he: 'un/mock/proxy',
