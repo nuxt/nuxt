@@ -90,6 +90,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   if (!ctx.isDev && options.build.analyze) {
     const statsDir = path.resolve(options.buildDir, 'stats')
 
+    // @ts-ignore
     config.plugins.push(new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       defaultSizes: 'gzip',

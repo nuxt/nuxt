@@ -1,0 +1,49 @@
+name: test-compat
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-compat:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [14]
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            .yarn
+            test/fixtures/compat/.yarn
+          key: ${{ runner.os }}-yarn-compat-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-compat-
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn --immutable && cd test/fixtures/compat && yarn --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: TEST_COMPAT=1 yarn jest --ci
+
+      # - name: Coverage
+      #   uses: codecov/codecov-action@v1

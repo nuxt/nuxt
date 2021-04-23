@@ -1662,6 +1662,7 @@ __metadata:
     "@types/debounce": ^1.2.0
     "@types/fs-extra": ^9.0.11
     "@types/http-proxy": ^1.17.5
+    "@types/jsdom": ^16.2.10
     "@types/node-fetch": ^2.5.10
     "@types/serve-static": ^1.13.9
     "@vercel/nft": ^0.10.1
@@ -1701,7 +1702,7 @@ __metadata:
     table: ^6.4.0
     ufo: ^0.7.1
     unbuild: ^0.2.2
-    unenv: ^0.2.2
+    unenv: ^0.2.3
     unstorage: ^0.1.5
     upath: ^2.0.1
     vue: 3.0.11
@@ -2281,6 +2282,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jsdom@npm:^16.2.10":
+  version: 16.2.10
+  resolution: "@types/jsdom@npm:16.2.10"
+  dependencies:
+    "@types/node": "*"
+    "@types/parse5": "*"
+    "@types/tough-cookie": "*"
+  checksum: 9e39f1d2d00e7373222da490a78f11e66a8ea19e3b08ed9b223bcd8da0ce6eb15aabd670d36996a727291d4a917366a8340353a5adef83b4c714fed6e61e786f
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:*, @types/json-schema@npm:^7.0.3, @types/json-schema@npm:^7.0.5, @types/json-schema@npm:^7.0.6":
   version: 7.0.7
   resolution: "@types/json-schema@npm:7.0.7"
@@ -2370,10 +2382,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/object-hash@npm:^2":
+  version: 2.1.0
+  resolution: "@types/object-hash@npm:2.1.0"
+  checksum: 276948b96fff4f3ddbb37a566401fbdcd68ffac16267e464bf73b3448d3a7f8b2876be39c8a731478710d5b5a01dc4a61d927b12babfbf02e4acba6a3d8a0a42
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
   checksum: 4a8f720afac47b474d3f2eece312340e72bc31bc9561cda37b596ce2ed218c0099765d302625bb67d659a8452a1f93d514f4863c11c7ebaf65430428687dc426
+  languageName: node
+  linkType: hard
+
+"@types/parse5@npm:*":
+  version: 6.0.0
+  resolution: "@types/parse5@npm:6.0.0"
+  checksum: 356652dc0b341dcc8f93c4b4b59e163efe9b4ccc993e15aa9d96b7b96776eef629939d6c597d79c0abb8adcee9068f590e4bb1102deb770b993d37a24fdac8b8
   languageName: node
   linkType: hard
 
@@ -2445,6 +2471,13 @@ __metadata:
     terser: ^5.3.8
     webpack: ^5.1.0
   checksum: 5e5cc22026f7601c79b053c7d4a06622ac193dfdeefa09e00bd9fc79068e206796c761ed99ce7ea1f0044eb316dfa4f9dc8d25a9e39ba663cfcc17763f5076f1
+  languageName: node
+  linkType: hard
+
+"@types/tough-cookie@npm:*":
+  version: 4.0.0
+  resolution: "@types/tough-cookie@npm:4.0.0"
+  checksum: 5a0cccc6d073b84dbb48d603e692b55ac30cea1653a7fc813e97a3bcaa9edd97c703c15727378d632e416a90178e6da657151eba8175cbb201a9a98de22ac3a8
   languageName: node
   linkType: hard
 
@@ -10487,11 +10520,13 @@ __metadata:
     "@nuxtjs/eslint-config-typescript": ^6.0.0
     "@types/jest": ^26.0.22
     "@types/node": ^14.14.41
+    "@types/object-hash": ^2
     eslint: ^7.24.0
     eslint-plugin-jsdoc: ^32.3.1
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
+    object-hash: ^2.1.1
     ts-jest: ^26.5.5
     typescript: ^4.2.4
     unbuild: ^0.2.2
@@ -10560,6 +10595,13 @@ __metadata:
     define-property: ^0.2.5
     kind-of: ^3.0.3
   checksum: d91d46e54297cad0544f04e4dff4694f92aca9661f59ad7e803a1ba94a2bb24b38ca4fd59ea827d24c9bdc6f7148d5c838287ee4b2b9c5df9b445b1c0d7a066c
+  languageName: node
+  linkType: hard
+
+"object-hash@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "object-hash@npm:2.1.1"
+  checksum: fe49a0864cba7ac4055c604295692ae75f5f4d22ba929aaaa987469809d17ab030d1111e8f0d425a070fa4a78b8021b55260e26e98b66b59e0f7be2bd9069fb8
   languageName: node
   linkType: hard
 
@@ -14322,9 +14364,9 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unenv@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "unenv@npm:0.2.2"
+"unenv@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "unenv@npm:0.2.3"
   dependencies:
     buffer: ^6.0.2
     defu: ^3.2.2
@@ -14335,7 +14377,7 @@ typescript@^4.2.4:
     process: ^0.11.10
     upath: ^2.0.1
     util: ^0.12.3
-  checksum: 64597e78d6b660223381fbd3686752a3cfae65cc0c8a89cee241c6617d26b73e734d5dd1c0b6acdbfebc79024d96cdc9177dece6ed9475865dfe9143e4299427
+  checksum: 75fe628ffca2694106baac8be25122bd6a159eb712f4ae89d9c53f5c6bf77ccac30fa5f2a6a2ee2bc372d55a3f97cddbd7c597396a47fa56b088fc8b7d30c96a
   languageName: node
   linkType: hard
 

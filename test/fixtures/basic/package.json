@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "name": "fixture-compat",
+  "scripts": {
+    "build": "nuxt build"
+  }
+}

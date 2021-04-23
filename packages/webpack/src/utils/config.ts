@@ -65,6 +65,7 @@ export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
   const builder = {}
   const loaders = []
 
+  // @ts-ignore
   const { extend } = options.build
   if (typeof extend === 'function') {
     const extendedConfig = extend.call(

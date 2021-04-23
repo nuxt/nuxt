@@ -1,4 +1,4 @@
-name: ci
+name: test
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  ci:
+  test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -43,8 +43,8 @@ jobs:
       - name: Build
         run: yarn build
 
-      # - name: Test
-      #   run: yarn jest
+      - name: Test
+        run: yarn jest --ci
 
       # - name: Coverage
       #   uses: codecov/codecov-action@v1

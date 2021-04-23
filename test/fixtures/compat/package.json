@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "fixture-basic",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build"
+  },
+  "devDependencies": {
+    "core-js": "^3",
+    "nuxt": "^2",
+    "vue": "^2"
+  }
+}
