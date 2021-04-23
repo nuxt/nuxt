@@ -33,7 +33,7 @@
     "test:unit": "jest packages --forceExit"
   },
   "devDependencies": {
-    "@babel/core": "^7.13.15",
+    "@babel/core": "^7.13.16",
     "@babel/preset-env": "^7.13.15",
     "@ls-lint/ls-lint": "^1.9.2",
     "@nuxtjs/eslint-config": "^6.0.0",
@@ -76,7 +76,7 @@
     "rimraf": "^3.0.2",
     "rollup": "2.45.2",
     "rollup-plugin-license": "^2.3.0",
-    "sass": "^1.32.8",
+    "sass": "^1.32.11",
     "sass-loader": "^10.1.1",
     "sort-package-json": "^1.49.0",
     "typescript": "~4.2",
