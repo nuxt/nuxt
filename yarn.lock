@@ -1633,9 +1633,9 @@ __metadata:
     hash-sum: ^2.0.0
     jiti: ^1.9.1
     rc9: ^1.2.0
-    scule: ^0.1.1
+    scule: ^0.2.0
     std-env: ^2.3.0
-    ufo: ^0.6.11
+    ufo: ^0.7.1
     unbuild: ^0.2.2
     unctx: ^0.0.3
     untyped: ^0.2.5
@@ -1698,8 +1698,8 @@ __metadata:
     serve-placeholder: ^1.2.3
     serve-static: ^1.14.1
     std-env: ^2.3.0
-    table: ^6.3.2
-    ufo: ^0.6.11
+    table: ^6.4.0
+    ufo: ^0.7.1
     unbuild: ^0.2.2
     unenv: ^0.2.2
     unstorage: ^0.1.5
@@ -1752,12 +1752,12 @@ __metadata:
     memfs: ^3.2.2
     mini-css-extract-plugin: ^1.5.0
     pify: ^5.0.0
-    postcss: ^8.2.10
+    postcss: ^8.2.12
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^5.2.0
     style-resources-loader: ^1.4.1
     time-fix-plugin: ^2.0.7
-    ufo: ^0.6.11
+    ufo: ^0.7.1
     unbuild: ^0.2.2
     url-loader: ^4.1.1
     vue: 3.0.11
@@ -3065,18 +3065,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@windicss/plugin-utils@npm:0.14.6":
-  version: 0.14.6
-  resolution: "@windicss/plugin-utils@npm:0.14.6"
+"@windicss/plugin-utils@npm:0.15.7":
+  version: 0.15.7
+  resolution: "@windicss/plugin-utils@npm:0.15.7"
   dependencies:
     debug: ^4.3.2
     fast-glob: ^3.2.5
     magic-string: ^0.25.7
     micromatch: ^4.0.4
     pirates: ^4.0.1
-    sucrase: ^3.17.1
+    sucrase: ^3.18.1
     windicss: ^2.5.14
-  checksum: edd7d013009f31cfc176c309f7f39522714e9b298896a05fb1630db95aa0218c0d697255b12bf68ebf95c7dd8f52d99384db4fb69574b6287886086105c561d3
+  checksum: 14ddbfa5cbc78a7a0d98531129dbc86e1191f958f097cef161d68f415672c29c00ddb6732a23a953a3878bc299544d33fff5e0ca6c6367dedbc6d6a48075ef04
   languageName: node
   linkType: hard
 
@@ -5404,7 +5404,7 @@ __metadata:
     remark-rehype: ^8.1.0
     unified: ^9.2.1
     untyped: ^0.2.5
-    vite-plugin-windicss: ^0.14.6
+    vite-plugin-windicss: ^0.15.7
     windicss: ^2.5.14
     windicss-webpack-plugin: ^0.3.3
   languageName: unknown
@@ -5863,9 +5863,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^32.3.0":
-  version: 32.3.0
-  resolution: "eslint-plugin-jsdoc@npm:32.3.0"
+"eslint-plugin-jsdoc@npm:^32.3.1":
+  version: 32.3.1
+  resolution: "eslint-plugin-jsdoc@npm:32.3.1"
   dependencies:
     comment-parser: 1.1.2
     debug: ^4.3.1
@@ -5876,7 +5876,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: f4665eb3c4b32d139342028a9f0d96b095214778a3e32b8a1461d397674954c4d36a0c019f11eefcfa64202c2ad71ecf558e5a553d8a3827b3ccfef2391a741c
+  checksum: 4aa8019e401550117ea0e1bd4c8ece4d7e2598b38c974e1efe61b84b7a25a3dce541374109dab7acb5a54b3248b23916b021adb4300189694b79d874be585c9a
   languageName: node
   linkType: hard
 
@@ -10488,7 +10488,7 @@ __metadata:
     "@types/jest": ^26.0.22
     "@types/node": ^14.14.41
     eslint: ^7.24.0
-    eslint-plugin-jsdoc: ^32.3.0
+    eslint-plugin-jsdoc: ^32.3.1
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
@@ -10520,8 +10520,8 @@ __metadata:
     ignore: ^5.1.8
     lodash: ^4.17.21
     nuxt-cli: ^0.3.0
-    scule: ^0.1.1
-    ufo: ^0.6.11
+    scule: ^0.2.0
+    ufo: ^0.7.1
     unbuild: ^0.2.2
     upath: ^2.0.1
   bin:
@@ -11681,6 +11681,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"postcss@npm:^8.2.12":
+  version: 8.2.12
+  resolution: "postcss@npm:8.2.12"
+  dependencies:
+    colorette: ^1.2.2
+    nanoid: ^3.1.22
+    source-map: ^0.6.1
+  checksum: f16956a6cc20ae78390338362e0640fa25a88895ddc55bd5850536a3140897a538fe91b5d6dc9c84147a20ff100f6389b7445deb539159bea4df7e584f5a63ac
+  languageName: node
+  linkType: hard
+
 "prelude-ls@npm:^1.2.1":
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
@@ -12732,6 +12743,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"scule@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "scule@npm:0.2.0"
+  checksum: b1480b9adb7b3a1d2fdef5d4de4ccce6e0873352baced9ead5b024c96667f2f5e607dec347b6794681d9b50b4d6e304d23d98de98b2a56ddcad7c2ddf78d0981
+  languageName: node
+  linkType: hard
+
 "selfsigned@npm:^1.10.8":
   version: 1.10.8
   resolution: "selfsigned@npm:1.10.8"
@@ -13575,7 +13593,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sucrase@npm:^3.17.1":
+"sucrase@npm:^3.17.1, sucrase@npm:^3.18.1":
   version: 3.18.1
   resolution: "sucrase@npm:3.18.1"
   dependencies:
@@ -13658,7 +13676,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.0.4, table@npm:^6.3.2":
+"table@npm:^6.0.4":
   version: 6.3.2
   resolution: "table@npm:6.3.2"
   dependencies:
@@ -13672,6 +13690,20 @@ __metadata:
     slice-ansi: ^4.0.0
     string-width: ^4.2.0
   checksum: 8c016c3f92e87fe1f11623c73eb7bc7e1a4574415952942b9cb9722d2ed70c197a0abe21ef06b1b490f90af3abf9dc2378d8f5bb3624a38faee8640bada43bd1
+  languageName: node
+  linkType: hard
+
+"table@npm:^6.4.0":
+  version: 6.4.0
+  resolution: "table@npm:6.4.0"
+  dependencies:
+    ajv: ^8.0.1
+    lodash.clonedeep: ^4.5.0
+    lodash.flatten: ^4.4.0
+    lodash.truncate: ^4.4.2
+    slice-ansi: ^4.0.0
+    string-width: ^4.2.0
+  checksum: a5436c89f76f3983993fcef27dab71e1dd20783b88e031902d9f7c73350f38fce61fd459c2b3dc56c48df2b5f4f50b340c5553fe571816b29b5f6fff1ea45def
   languageName: node
   linkType: hard
 
@@ -14203,10 +14235,17 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.6.10, ufo@npm:^0.6.11, ufo@npm:^0.6.6":
+"ufo@npm:^0.6.10, ufo@npm:^0.6.6":
   version: 0.6.11
   resolution: "ufo@npm:0.6.11"
   checksum: 3b0393dbec80e0f7072959903dc39f64368211645cafce291bf440d48e8a5c8c33c9a13ac8a6839be42d63ed0d797090d6376490aad40709d292069d2cb29c7c
+  languageName: node
+  linkType: hard
+
+"ufo@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "ufo@npm:0.7.1"
+  checksum: 2abdb3ddb49da6c897ba8355f19fe161e0ea0cea8713e96bfb6ce23fe9375788774e27f5cb4b63acaa48b425614c3c9b29387e3db9277d65884c28034c220720
   languageName: node
   linkType: hard
 
@@ -14666,17 +14705,17 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"vite-plugin-windicss@npm:^0.14.6":
-  version: 0.14.6
-  resolution: "vite-plugin-windicss@npm:0.14.6"
+"vite-plugin-windicss@npm:^0.15.7":
+  version: 0.15.7
+  resolution: "vite-plugin-windicss@npm:0.15.7"
   dependencies:
-    "@windicss/plugin-utils": 0.14.6
+    "@windicss/plugin-utils": 0.15.7
     chalk: ^4.1.0
     debug: ^4.3.2
     windicss: ^2.5.14
   peerDependencies:
     vite: ^2.0.1
-  checksum: 6bc396e3b571aada97ea764a66b39cb90e74e59db0a969ba0809d004fe520afab18b550e679020ac0878a6896dc71a9c7dc635ac8f59b2fb935f7179b0474842
+  checksum: 7158b0f4c29d8426f5441cd1f08414d116b94e980108f5de54f0093ac115e8ef2aa00cb1bd922f736b5af5e0a86ac9a025791645bc1477677d444a28dc661243
   languageName: node
   linkType: hard
 

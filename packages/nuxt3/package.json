@@ -32,8 +32,8 @@
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
     "nuxt-cli": "^0.3.0",
-    "scule": "^0.1.1",
-    "ufo": "^0.6.11",
+    "scule": "^0.2.0",
+    "ufo": "^0.7.1",
     "upath": "^2.0.1"
   },
   "devDependencies": {
