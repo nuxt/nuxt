@@ -1699,7 +1699,7 @@ __metadata:
     serve-placeholder: ^1.2.3
     serve-static: ^1.14.1
     std-env: ^2.3.0
-    table: ^6.4.0
+    table: ^6.5.1
     ufo: ^0.7.1
     unbuild: ^0.2.2
     unenv: ^0.2.3
@@ -1764,7 +1764,7 @@ __metadata:
     vue: 3.0.11
     vue-loader: ^16.2.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.35.0
+    webpack: ^5.35.1
     webpack-bundle-analyzer: ^4.4.1
     webpack-dev-middleware: ^4.1.0
     webpack-hot-middleware: ^2.25.0
@@ -13767,9 +13767,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.4.0":
-  version: 6.4.0
-  resolution: "table@npm:6.4.0"
+"table@npm:^6.5.1":
+  version: 6.5.1
+  resolution: "table@npm:6.5.1"
   dependencies:
     ajv: ^8.0.1
     lodash.clonedeep: ^4.5.0
@@ -13777,7 +13777,8 @@ __metadata:
     lodash.truncate: ^4.4.2
     slice-ansi: ^4.0.0
     string-width: ^4.2.0
-  checksum: a5436c89f76f3983993fcef27dab71e1dd20783b88e031902d9f7c73350f38fce61fd459c2b3dc56c48df2b5f4f50b340c5553fe571816b29b5f6fff1ea45def
+    strip-ansi: ^6.0.0
+  checksum: 9bae2990c8096c0687e6951c983b27aaa8d4d570384e9429376145beb417ed088acddd9e93e1a2d6626001a86add70f24c5ed88c1617095cfed9ed43800b0eb3
   languageName: node
   linkType: hard
 
@@ -15051,7 +15052,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.35.0":
+"webpack@npm:^5, webpack@npm:^5.1.0":
   version: 5.35.0
   resolution: "webpack@npm:5.35.0"
   dependencies:
@@ -15084,6 +15085,42 @@ typescript@^4.2.4:
   bin:
     webpack: bin/webpack.js
   checksum: 4a86e3435e51846d80a552e64596b7cb6c8f316841fa1a0224071250562fc965f333571334222b00b1f7d7c0c48dc4559e39e146a51d842bab88185b72de09b2
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.35.1":
+  version: 5.35.1
+  resolution: "webpack@npm:5.35.1"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.47
+    "@webassemblyjs/ast": 1.11.0
+    "@webassemblyjs/wasm-edit": 1.11.0
+    "@webassemblyjs/wasm-parser": 1.11.0
+    acorn: ^8.0.4
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.8.0
+    es-module-lexer: ^0.4.0
+    eslint-scope: ^5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.0.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.1
+    watchpack: ^2.0.0
+    webpack-sources: ^2.1.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: 8544de163f91d7872a5fd60593ca7d55c7663b24bcb60778bad7a6c091302ccb311d6f26487cd14b8481f6024567c1456506ce98c083ceccfe35d6dda95b3df5
   languageName: node
   linkType: hard
 
