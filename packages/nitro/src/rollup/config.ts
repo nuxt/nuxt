@@ -222,7 +222,10 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
           nitroContext._nuxt.rootDir,
           nitroContext._nuxt.buildDir,
           'vue',
-          '@vue/'
+          '@vue/',
+          '@nuxt/',
+          '#',
+          'virtual:'
         ]) || []),
         nitroContext._nuxt.serverDir,
         ...nitroContext.middleware.map(m => m.handle)
