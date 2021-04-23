@@ -12,7 +12,7 @@
   "dependencies": {
     "@nuxt/utils": "2.15.4",
     "consola": "^2.15.3",
-    "defu": "^3.2.2",
+    "defu": "^4.0.1",
     "destr": "^1.1.0",
     "dotenv": "^8.2.0",
     "lodash": "^4.17.21",
