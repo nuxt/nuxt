@@ -2,7 +2,7 @@
   "name": "example-async-data",
   "private": true,
   "devDependencies": {
-    "nuxt3": "^0.5.1"
+    "nuxt3": "latest"
   },
   "scripts": {
     "dev": "nu dev",

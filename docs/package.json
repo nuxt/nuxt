@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@nuxt/kit": "^0.5.0",
-    "nuxt3": "^0.5.1",
+    "nuxt3": "latest",
     "rehype-raw": "^5.1.0",
     "rehype-stringify": "^8.0.0",
     "remark": "^13.0.0",
