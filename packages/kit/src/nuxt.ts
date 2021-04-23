@@ -2,7 +2,7 @@ import { getContext } from 'unctx'
 import type { Nuxt } from './types/nuxt'
 import type { NuxtConfig } from './types/config'
 import type { LoadNuxtConfigOptions } from './config/load'
-import { requireModule } from './utils/cjs'
+import { requireModule, tryResolveModule } from './utils/cjs'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
 export const nuxtCtx = getContext<Nuxt>('nuxt')
@@ -41,16 +41,23 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  const resolveOpts = { paths: opts.rootDir }
+
+  // Detect version
+  if (!opts.version) {
+    opts.version = tryResolveModule('nuxt3', resolveOpts) ? 3 : 2
+  }
+
   // Nuxt 3
   if (opts.version !== 2) {
-    const { loadNuxt } = requireModule('nuxt3', { paths: opts.rootDir })
+    const { loadNuxt } = requireModule('nuxt3', resolveOpts)
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
 
   // Compat
   // @ts-ignore
-  const { loadNuxt } = requireModule('nuxt', { paths: opts.rootDir })
+  const { loadNuxt } = requireModule('nuxt', resolveOpts)
   const nuxt = await loadNuxt({
     rootDir: opts.rootDir,
     for: opts.dev ? 'dev' : 'build',
