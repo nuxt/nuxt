@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.0...@nuxt/nitro@0.6.1) (2021-04-23)
+
+
+### Bug Fixes
+
+* **nitro:** avoid using fs/promises ([47c2855](https://github.com/nuxt/framework/commit/47c28551c84f025eb9f9e29bd912026f7b143279))
+
+
+
+
+
 # [0.6.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.2...@nuxt/nitro@0.6.0) (2021-04-23)
 
 
