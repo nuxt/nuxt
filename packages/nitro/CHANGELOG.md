@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.2...@nuxt/nitro@0.6.0) (2021-04-23)
+
+
+### Bug Fixes
+
+* **nitro:** mock consola ([#106](https://github.com/nuxt/framework/issues/106)) ([4c0dba2](https://github.com/nuxt/framework/commit/4c0dba202ff0b97ee8ebef06018471cb4d4fbaf5))
+* **nitro:** only serve placeholders for `publicPath` ([1b10a1f](https://github.com/nuxt/framework/commit/1b10a1f091242fba83785dea977f184a92e33757))
+* **nitro:** ovrride by user input ([8f8551c](https://github.com/nuxt/framework/commit/8f8551cd67b5d135774d39f757de9d02e4e0bed4))
+* **nitro:** resolve default export for assets ([49e4c03](https://github.com/nuxt/framework/commit/49e4c038b58720d6be29e3fc28359c0b33d71be2))
+* **nitro:** use globalThis ([5a3f4b7](https://github.com/nuxt/framework/commit/5a3f4b780029ffab4267c02193b938dd11b1f0d1))
+* issues with externals outside of rootDir ([4e18653](https://github.com/nuxt/framework/commit/4e1865358c1597cb68cc96bef2b30e2811fcd899))
+
+
+### Features
+
+* **nitro:** allow extending nitro context ([bef9f82](https://github.com/nuxt/framework/commit/bef9f82a8dd8ac916c9e9f82eafca7e916782500))
+
+
+
+
+
 ## [0.5.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.5.1...@nuxt/nitro@0.5.2) (2021-04-17)
 
 

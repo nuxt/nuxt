@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/nuxt/framework/compare/nuxt-cli@0.3.0...nuxt-cli@0.3.1) (2021-04-23)
+
+
+### Bug Fixes
+
+* **cli:** clear screen before new nuxt creation ([f0443c2](https://github.com/nuxt/framework/commit/f0443c2ba691ac11f53352068eb03ab91c6200bb))
+* **cli:** provide default NODE_ENV for build and dev commands ([586709a](https://github.com/nuxt/framework/commit/586709a82d7ce45d7cbd528bb7ee002dccae5611))
+* **cli:** replace not instance regardless of DEBUG ([60e1ee3](https://github.com/nuxt/framework/commit/60e1ee387cb36adbc9f5fb2f38ec680a5cc376cc))
+
+
+
+
+
 # [0.3.0](https://github.com/nuxt/framework/compare/nuxt-cli@0.2.0...nuxt-cli@0.3.0) (2021-04-16)
 
 

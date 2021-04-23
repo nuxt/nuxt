@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/nuxt/framework/compare/@nuxt/kit@0.5.0...@nuxt/kit@0.5.1) (2021-04-23)
+
+
+### Bug Fixes
+
+* **kit:** auto detect version if not specified ([342bf06](https://github.com/nuxt/framework/commit/342bf0665909090f562a96301d88b017b15fb714))
+* **kit:** resolve alias for `installModule` source ([4bcb8fa](https://github.com/nuxt/framework/commit/4bcb8fa791f5f0460d3c1f00fe3057d4fa7ddd81))
+
+
+
+
+
 # [0.5.0](https://github.com/nuxt/framework/compare/@nuxt/kit@0.4.0...@nuxt/kit@0.5.0) (2021-04-16)
 
 

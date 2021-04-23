@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.3.1...@nuxt/webpack-builder@0.3.2) (2021-04-23)
+
+
+### Bug Fixes
+
+* **webpack:** don't inline scoped packages ([0a74f1e](https://github.com/nuxt/framework/commit/0a74f1e2392b45024f3af20f3ded4bb6545911fc))
+* issues with externals outside of rootDir ([4e18653](https://github.com/nuxt/framework/commit/4e1865358c1597cb68cc96bef2b30e2811fcd899))
+* **webpack:** exclude ! for externals ([daaf02f](https://github.com/nuxt/framework/commit/daaf02f5e4dd19d907d511f4a139f36d11db1b5b))
+
+
+
+
+
 ## [0.3.1](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.3.0...@nuxt/webpack-builder@0.3.1) (2021-04-16)
 
 **Note:** Version bump only for package @nuxt/webpack-builder

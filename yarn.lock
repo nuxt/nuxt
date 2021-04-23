@@ -1585,7 +1585,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/app@^0.3.1, @nuxt/app@workspace:packages/app":
+"@nuxt/app@^0.3.1, @nuxt/app@^0.3.2, @nuxt/app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "@nuxt/app@workspace:packages/app"
   dependencies:
@@ -1622,7 +1622,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nuxt/kit@^0.5.0, @nuxt/kit@workspace:packages/kit":
+"@nuxt/kit@^0.5.0, @nuxt/kit@^0.5.1, @nuxt/kit@workspace:packages/kit":
   version: 0.0.0-use.local
   resolution: "@nuxt/kit@workspace:packages/kit"
   dependencies:
@@ -1643,14 +1643,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/nitro@^0.5.2, @nuxt/nitro@workspace:packages/nitro":
+"@nuxt/nitro@^0.6.0, @nuxt/nitro@workspace:packages/nitro":
   version: 0.0.0-use.local
   resolution: "@nuxt/nitro@workspace:packages/nitro"
   dependencies:
     "@cloudflare/kv-asset-handler": ^0.1.1
     "@netlify/functions": ^0.7.0
     "@nuxt/devalue": ^1.2.5
-    "@nuxt/kit": ^0.5.0
+    "@nuxt/kit": ^0.5.1
     "@rollup/plugin-alias": ^3.1.2
     "@rollup/plugin-commonjs": ^18.0.0
     "@rollup/plugin-inject": ^4.0.2
@@ -1711,11 +1711,90 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/vite-builder@^0.3.0, @nuxt/vite-builder@workspace:packages/vite":
+"@nuxt/nitro@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "@nuxt/nitro@npm:0.5.2"
+  dependencies:
+    "@cloudflare/kv-asset-handler": ^0.1.1
+    "@netlify/functions": ^0.7.0
+    "@nuxt/devalue": ^1.2.5
+    "@nuxt/kit": ^0.5.0
+    "@nuxt/un": ^0.1.1
+    "@rollup/plugin-alias": ^3.1.2
+    "@rollup/plugin-commonjs": ^18.0.0
+    "@rollup/plugin-inject": ^4.0.2
+    "@rollup/plugin-json": ^4.1.0
+    "@rollup/plugin-node-resolve": ^11.2.1
+    "@rollup/plugin-replace": ^2.4.2
+    "@rollup/plugin-virtual": ^2.0.3
+    "@rollup/pluginutils": ^4.1.0
+    "@vercel/nft": ^0.10.1
+    "@vue/server-renderer": ^3.0.11
+    archiver: ^5.3.0
+    chalk: ^4.1.0
+    chokidar: ^3.5.1
+    connect: ^3.7.0
+    consola: ^2.15.3
+    debounce: ^1.2.1
+    defu: ^3.2.2
+    destr: ^1.1.0
+    dot-prop: ^6.0.1
+    esbuild: ^0.10.0
+    etag: ^1.8.1
+    fs-extra: ^9.1.0
+    globby: ^11.0.3
+    gzip-size: ^6.0.0
+    h3: ^0.2.9
+    hasha: ^5.2.2
+    hookable: ^4.4.1
+    http-proxy: ^1.18.1
+    is-primitive: ^3.0.1
+    jiti: ^1.9.1
+    listhen: ^0.2.4
+    mime: ^2.5.2
+    node-fetch: ^2.6.1
+    ohmyfetch: ^0.2.0
+    ora: ^5.4.0
+    pretty-bytes: ^5.6.0
+    rollup: ^2.45.2
+    rollup-plugin-analyzer: ^4.0.0
+    rollup-plugin-terser: ^7.0.2
+    serve-placeholder: ^1.2.3
+    serve-static: ^1.14.1
+    std-env: ^2.3.0
+    table: ^6.1.0
+    ufo: ^0.6.11
+    unstorage: ^0.1.4
+    upath: ^2.0.1
+    vue: 3.0.11
+    vue-bundle-renderer: ^0.2.3
+    vue-server-renderer: ^2.6.12
+  checksum: f7e24b25dbb4e0e295698f4b46d60abdd16a9bdb9daf0e2668635e900c15bc646cef8b26cbda7471153baba1755acc13a53c63a0f6e91e653d0e06b3a4a42ee0
+  languageName: node
+  linkType: hard
+
+"@nuxt/un@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@nuxt/un@npm:0.1.1"
+  dependencies:
+    buffer: ^6.0.2
+    defu: ^3.2.2
+    events: ^3.2.0
+    inherits: ^2.0.4
+    mime: ^2.4.6
+    node-fetch: ^2.6.1
+    process: ^0.11.10
+    upath: ^2.0.1
+    util: ^0.12.3
+  checksum: 484e6cac7a529f1f69990fa11468b087563148a71a2732024ce8e8c9a6a049d43ee46929a64b1b5cf98518cdae3c2ccf7beaa004803fe2e13f44f54b34425305
+  languageName: node
+  linkType: hard
+
+"@nuxt/vite-builder@^0.3.0, @nuxt/vite-builder@^0.3.1, @nuxt/vite-builder@workspace:packages/vite":
   version: 0.0.0-use.local
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
-    "@nuxt/kit": ^0.5.0
+    "@nuxt/kit": ^0.5.1
     "@vitejs/plugin-vue": ^1.2.1
     "@vue/compiler-sfc": ^3.0.11
     consola: ^2.15.3
@@ -1726,13 +1805,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@nuxt/webpack-builder@^0.3.1, @nuxt/webpack-builder@workspace:packages/webpack":
+"@nuxt/webpack-builder@^0.3.1, @nuxt/webpack-builder@^0.3.2, @nuxt/webpack-builder@workspace:packages/webpack":
   version: 0.0.0-use.local
   resolution: "@nuxt/webpack-builder@workspace:packages/webpack"
   dependencies:
     "@babel/core": ^7.13.16
     "@nuxt/friendly-errors-webpack-plugin": ^2.5.1
-    "@nuxt/kit": ^0.5.0
+    "@nuxt/kit": ^0.5.1
     "@types/pify": ^5.0.0
     "@types/terser-webpack-plugin": ^5.0.3
     "@types/webpack-bundle-analyzer": ^4.4.0
@@ -7039,7 +7118,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"h3@npm:^0.2.10":
+"h3@npm:^0.2.10, h3@npm:^0.2.9":
   version: 0.2.10
   resolution: "h3@npm:0.2.10"
   checksum: 7c39e58620277557174ad4787b006257c38acfd7702669e5a984818245fc4d1e3128f1d8f0b62d2628c522f6223d08ace1b30334f5c20a304fdb6e7e8ff30da7
@@ -10515,11 +10594,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nuxt-cli@^0.3.0, nuxt-cli@workspace:packages/cli":
+"nuxt-cli@^0.3.0, nuxt-cli@^0.3.1, nuxt-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "nuxt-cli@workspace:packages/cli"
   dependencies:
-    "@nuxt/kit": ^0.5.0
+    "@nuxt/kit": ^0.5.1
     "@types/clear": ^0
     "@types/debounce-promise": ^3
     "@types/mri": ^1.1.0
@@ -10565,15 +10644,41 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"nuxt3@^0.5.1, nuxt3@workspace:packages/nuxt3":
-  version: 0.0.0-use.local
-  resolution: "nuxt3@workspace:packages/nuxt3"
+"nuxt3@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "nuxt3@npm:0.5.1"
   dependencies:
     "@nuxt/app": ^0.3.1
     "@nuxt/kit": ^0.5.0
     "@nuxt/nitro": ^0.5.2
     "@nuxt/vite-builder": ^0.3.0
     "@nuxt/webpack-builder": ^0.3.1
+    chokidar: ^3.5.1
+    consola: ^2.15.3
+    defu: ^3.2.2
+    fs-extra: ^9.1.0
+    globby: ^11.0.3
+    hash-sum: ^2.0.0
+    hookable: ^4.4.1
+    ignore: ^5.1.8
+    lodash: ^4.17.21
+    nuxt-cli: ^0.3.0
+    scule: ^0.1.1
+    ufo: ^0.6.11
+    upath: ^2.0.1
+  checksum: 98abf1d3d87261d506e44957cb2d723c2c0984c40efd2acfedc6559d4e948a5a8e69343152aa1c85066c992846ef5d59930f4b3685e3637343a40d119938b6ec
+  languageName: node
+  linkType: hard
+
+"nuxt3@workspace:packages/nuxt3":
+  version: 0.0.0-use.local
+  resolution: "nuxt3@workspace:packages/nuxt3"
+  dependencies:
+    "@nuxt/app": ^0.3.2
+    "@nuxt/kit": ^0.5.1
+    "@nuxt/nitro": ^0.6.0
+    "@nuxt/vite-builder": ^0.3.1
+    "@nuxt/webpack-builder": ^0.3.2
     "@types/fs-extra": ^9.0.11
     "@types/hash-sum": ^1.0.0
     "@types/lodash": ^4.14.168
@@ -10586,7 +10691,7 @@ __metadata:
     hookable: ^4.4.1
     ignore: ^5.1.8
     lodash: ^4.17.21
-    nuxt-cli: ^0.3.0
+    nuxt-cli: ^0.3.1
     scule: ^0.2.0
     ufo: ^0.7.1
     unbuild: ^0.2.2
@@ -13767,7 +13872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"table@npm:^6.5.1":
+"table@npm:^6.1.0, table@npm:^6.5.1":
   version: 6.5.1
   resolution: "table@npm:6.5.1"
   dependencies:
@@ -14310,7 +14415,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.6.10, ufo@npm:^0.6.6":
+"ufo@npm:^0.6.10, ufo@npm:^0.6.11, ufo@npm:^0.6.6":
   version: 0.6.11
   resolution: "ufo@npm:0.6.11"
   checksum: 3b0393dbec80e0f7072959903dc39f64368211645cafce291bf440d48e8a5c8c33c9a13ac8a6839be42d63ed0d797090d6376490aad40709d292069d2cb29c7c
@@ -14568,7 +14673,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"unstorage@npm:^0.1.5":
+"unstorage@npm:^0.1.4, unstorage@npm:^0.1.5":
   version: 0.1.5
   resolution: "unstorage@npm:0.1.5"
   dependencies:

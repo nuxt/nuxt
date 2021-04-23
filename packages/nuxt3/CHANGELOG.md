@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/nuxt/framework/compare/nuxt3@0.5.1...nuxt3@0.6.0) (2021-04-23)
+
+
+### Bug Fixes
+
+* **nuxt3:** binary proxy for cli ([7ee7a7a](https://github.com/nuxt/framework/commit/7ee7a7a7b58f31d27c61b43b43ef621cc83a2939))
+
+
+### Features
+
+* **nitro:** allow extending nitro context ([bef9f82](https://github.com/nuxt/framework/commit/bef9f82a8dd8ac916c9e9f82eafca7e916782500))
+
+
+
+
+
 ## [0.5.1](https://github.com/nuxt/framework/compare/nuxt3@0.5.0...nuxt3@0.5.1) (2021-04-17)
 
 **Note:** Version bump only for package nuxt3
