@@ -6190,6 +6190,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"example-async-data@workspace:examples/async-data":
+  version: 0.0.0-use.local
+  resolution: "example-async-data@workspace:examples/async-data"
+  dependencies:
+    nuxt3: ^0.5.1
+  languageName: unknown
+  linkType: soft
+
+"example-hello-world@workspace:examples/hello-world":
+  version: 0.0.0-use.local
+  resolution: "example-hello-world@workspace:examples/hello-world"
+  dependencies:
+    nuxt3: ^0.5.1
+  languageName: unknown
+  linkType: soft
+
+"example-pages@workspace:examples/pages":
+  version: 0.0.0-use.local
+  resolution: "example-pages@workspace:examples/pages"
+  dependencies:
+    nuxt3: ^0.5.1
+  languageName: unknown
+  linkType: soft
+
+"example-with-vite@workspace:examples/with-vite":
+  version: 0.0.0-use.local
+  resolution: "example-with-vite@workspace:examples/with-vite"
+  dependencies:
+    nuxt3: ^0.5.1
+  languageName: unknown
+  linkType: soft
+
 "exec-sh@npm:^0.3.2":
   version: 0.3.6
   resolution: "exec-sh@npm:0.3.6"

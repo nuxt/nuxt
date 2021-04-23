@@ -1,0 +1,12 @@
+{
+  "name": "example-hello-world",
+  "private": true,
+  "devDependencies": {
+    "nuxt3": "^0.5.1"
+  },
+  "scripts": {
+    "dev": "nu dev",
+    "build": "nu build",
+    "start": "node .output/server"
+  }
+}

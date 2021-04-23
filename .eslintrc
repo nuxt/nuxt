@@ -1,6 +1,7 @@
 {
   "globals": {
-    "NodeJS": true
+    "NodeJS": true,
+    "$fetch": true
   },
   "plugins": ["jsdoc"],
   "extends": [
