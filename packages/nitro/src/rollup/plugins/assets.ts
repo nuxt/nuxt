@@ -1,4 +1,4 @@
-import { readFile, stat } from 'fs/promises'
+import { promises as fsp } from 'fs'
 import type { Plugin } from 'rollup'
 import createEtag from 'etag'
 import mime from 'mime'
@@ -81,8 +81,8 @@ export function getAsset (id) {
             if (dirOpts.meta) {
               let type = mime.getType(id) || 'text/plain'
               if (type.startsWith('text')) { type += '; charset=utf-8' }
-              const etag = createEtag(await readFile(fsPath))
-              const mtime = await stat(fsPath).then(s => s.mtime.toJSON())
+              const etag = createEtag(await fsp.readFile(fsPath))
+              const mtime = await fsp.stat(fsPath).then(s => s.mtime.toJSON())
               assets[id].meta = { type, etag, mtime }
             }
           }
