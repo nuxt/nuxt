@@ -26,7 +26,8 @@ export function externals (opts: NodeExternalsOptions): Plugin {
       const _id = id.split('node_modules/').pop()
 
       // Resolve relative paths and exceptions
-      if (_id.startsWith('.') || opts.ignore.find(i => _id.startsWith(i))) {
+      // Ensure to take absolute and relative id
+      if (_id.startsWith('.') || opts.ignore.find(i => _id.startsWith(i) || id.startsWith(i))) {
         return null
       }
 
