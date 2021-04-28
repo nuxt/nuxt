@@ -29,17 +29,17 @@
     "memfs": "^3.2.2",
     "mini-css-extract-plugin": "^1.5.0",
     "pify": "^5.0.0",
-    "postcss": "^8.2.12",
+    "postcss": "^8.2.13",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^5.2.0",
     "style-resources-loader": "^1.4.1",
     "time-fix-plugin": "^2.0.7",
-    "ufo": "^0.7.1",
+    "ufo": "^0.7.2",
     "url-loader": "^4.1.1",
     "vue": "3.0.11",
     "vue-loader": "^16.2.0",
     "vue-style-loader": "^4.1.3",
-    "webpack": "^5.35.1",
+    "webpack": "^5.36.0",
     "webpack-bundle-analyzer": "^4.4.1",
     "webpack-dev-middleware": "^4.1.0",
     "webpack-hot-middleware": "^2.25.0",
@@ -51,6 +51,6 @@
     "@types/webpack-bundle-analyzer": "^4.4.0",
     "@types/webpack-dev-middleware": "^4.1.2",
     "@types/webpack-hot-middleware": "^2.25.4",
-    "unbuild": "^0.2.2"
+    "unbuild": "^0.2.3"
   }
 }

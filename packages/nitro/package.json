@@ -60,8 +60,8 @@
     "serve-placeholder": "^1.2.3",
     "serve-static": "^1.14.1",
     "std-env": "^2.3.0",
-    "table": "^6.5.1",
-    "ufo": "^0.7.1",
+    "table": "^6.6.0",
+    "ufo": "^0.7.2",
     "unenv": "^0.2.3",
     "unstorage": "^0.1.5",
     "upath": "^2.0.1",
@@ -75,6 +75,6 @@
     "@types/http-proxy": "^1.17.5",
     "@types/node-fetch": "^2.5.10",
     "@types/serve-static": "^1.13.9",
-    "unbuild": "^0.2.2"
+    "unbuild": "^0.2.3"
   }
 }

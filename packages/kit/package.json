@@ -13,7 +13,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "unbuild": "^0.2.2"
+    "unbuild": "^0.2.3"
   },
   "dependencies": {
     "consola": "^2.15.3",
@@ -25,7 +25,7 @@
     "rc9": "^1.2.0",
     "scule": "^0.2.0",
     "std-env": "^2.3.0",
-    "ufo": "^0.7.1",
+    "ufo": "^0.7.2",
     "unctx": "^0.0.3",
     "untyped": "^0.2.5",
     "upath": "^2.0.1"
