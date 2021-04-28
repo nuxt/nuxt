@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.3](https://github.com/nuxt/framework/compare/@nuxt/kit@0.5.2...@nuxt/kit@0.5.3) (2021-04-28)
+
+
+### Bug Fixes
+
+* **cli:** support nuxt2-edge ([f0dfb42](https://github.com/nuxt/framework/commit/f0dfb42a586ae7087b95e8fd6e3f0e94532e64ea))
+
+
+
+
+
 ## [0.5.2](https://github.com/nuxt/framework/compare/@nuxt/kit@0.5.1...@nuxt/kit@0.5.2) (2021-04-28)
 
 **Note:** Version bump only for package @nuxt/kit
