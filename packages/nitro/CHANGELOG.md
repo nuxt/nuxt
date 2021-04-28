@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.2](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.1...@nuxt/nitro@0.6.2) (2021-04-28)
+
+
+### Bug Fixes
+
+* **nitro:** don't externalize [@nuxt](https://github.com/nuxt), virtual: and # ([5e0abbc](https://github.com/nuxt/framework/commit/5e0abbcb1b05bc8377847126ab38f0bfce251e0b))
+* **nitro:** ensure that nitro runtime is not externalized ([#121](https://github.com/nuxt/framework/issues/121)) ([813df27](https://github.com/nuxt/framework/commit/813df279ec9025f69eaf24d07ad5d63e99d0dc21))
+* **nitro:** handle esm imports from cjs files ([51538bf](https://github.com/nuxt/framework/commit/51538bfcb1a77c85fb754ff30231fb0f9cfd4749))
+* **nitro:** remove depd unenv alias ([#120](https://github.com/nuxt/framework/issues/120)) ([2a2c4d5](https://github.com/nuxt/framework/commit/2a2c4d5e46b3d47c28807bb6f50fb480a34c34e3))
+
+
+
+
+
 ## [0.6.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.0...@nuxt/nitro@0.6.1) (2021-04-23)
 
 
