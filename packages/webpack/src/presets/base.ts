@@ -169,19 +169,20 @@ function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
     return false
   }
 
-  return {
-    name: ctx.name,
-    type: 'filesystem',
-    cacheDirectory: resolve(ctx.options.rootDir, 'node_modules/.cache/webpack'),
-    managedPaths: [
-      ...ctx.options.modulesDir
-    ],
-    buildDependencies: {
-      config: [
-        ...ctx.options._nuxtConfigFiles
-      ]
-    }
-  }
+  // TODO: Disable for nuxt internal dev due to inconsistencies
+  // return {
+  //   name: ctx.name,
+  //   type: 'filesystem',
+  //   cacheDirectory: resolve(ctx.options.rootDir, 'node_modules/.cache/webpack'),
+  //   managedPaths: [
+  //     ...ctx.options.modulesDir
+  //   ],
+  //   buildDependencies: {
+  //     config: [
+  //       ...ctx.options._nuxtConfigFiles
+  //     ]
+  //   }
+  // }
 }
 
 function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
