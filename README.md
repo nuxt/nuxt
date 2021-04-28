@@ -14,4 +14,5 @@ Packages:
 
 - Clone repository
 - Install dependencies with `yarn install`
+- Run `yarn stud`
 - Open playground with `yarn play`
