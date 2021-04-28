@@ -1633,7 +1633,7 @@ __metadata:
     hash-sum: ^2.0.0
     jiti: ^1.9.1
     rc9: ^1.2.0
-    scule: ^0.2.0
+    scule: ^0.2.1
     std-env: ^2.3.0
     ufo: ^0.7.2
     unbuild: ^0.2.3
@@ -10632,7 +10632,7 @@ __metadata:
     ignore: ^5.1.8
     lodash: ^4.17.21
     nuxt-cli: ^0.3.1
-    scule: ^0.2.0
+    scule: ^0.2.1
     ufo: ^0.7.2
     unbuild: ^0.2.3
     upath: ^2.0.1
@@ -12848,6 +12848,13 @@ __metadata:
   version: 0.2.0
   resolution: "scule@npm:0.2.0"
   checksum: b1480b9adb7b3a1d2fdef5d4de4ccce6e0873352baced9ead5b024c96667f2f5e607dec347b6794681d9b50b4d6e304d23d98de98b2a56ddcad7c2ddf78d0981
+  languageName: node
+  linkType: hard
+
+"scule@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "scule@npm:0.2.1"
+  checksum: f99c80e9a3169e2fdf29ea854f4fe57af093d89649e58ecd24e81453f527eda52423e494e1a9c505c7aec507fbd14153bca8d1f1e750bf2165f42e5dd21b2bba
   languageName: node
   linkType: hard
 
