@@ -250,7 +250,7 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
 
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(commonjs({
-    extensions: extensions.filter(ext => ext !== '.json')
+    requireReturnsDefault: true
   }))
 
   // https://github.com/rollup/plugins/tree/master/packages/json
