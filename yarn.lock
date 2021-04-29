@@ -1665,7 +1665,7 @@ __metadata:
     "@types/jsdom": ^16.2.10
     "@types/node-fetch": ^2.5.10
     "@types/serve-static": ^1.13.9
-    "@vercel/nft": ^0.10.1
+    "@vercel/nft": ^0.11.0
     "@vue/server-renderer": ^3.0.11
     archiver: ^5.3.0
     chalk: ^4.1.1
@@ -1693,7 +1693,7 @@ __metadata:
     ohmyfetch: ^0.2.0
     ora: ^5.4.0
     pretty-bytes: ^5.6.0
-    rollup: ^2.45.2
+    rollup: ^2.46.0
     rollup-plugin-analyzer: ^4.0.0
     rollup-plugin-terser: ^7.0.2
     serve-placeholder: ^1.2.3
@@ -1755,7 +1755,7 @@ __metadata:
     hash-sum: ^2.0.0
     lodash: ^4.17.21
     memfs: ^3.2.2
-    mini-css-extract-plugin: ^1.5.0
+    mini-css-extract-plugin: ^1.5.1
     pify: ^5.0.0
     postcss: ^8.2.13
     postcss-import-resolver: ^2.0.0
@@ -1768,7 +1768,7 @@ __metadata:
     vue: 3.0.11
     vue-loader: ^16.2.0
     vue-style-loader: ^4.1.3
-    webpack: ^5.36.0
+    webpack: ^5.36.1
     webpack-bundle-analyzer: ^4.4.1
     webpack-dev-middleware: ^4.1.0
     webpack-hot-middleware: ^2.25.0
@@ -2680,9 +2680,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/nft@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "@vercel/nft@npm:0.10.1"
+"@vercel/nft@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@vercel/nft@npm:0.11.0"
   dependencies:
     acorn: ^8.1.0
     acorn-class-fields: ^1.0.0
@@ -2699,7 +2699,7 @@ __metadata:
     rollup-pluginutils: ^2.8.2
   bin:
     nft: out/cli.js
-  checksum: e491ad4a05ad8fce23f28dc5c56b145b7725f28e1f5894099b7873c57f081647966fd5e7840c6f95806733203d04f1c429a20a9d32d3cf9a2a9a61b4f2df4acd
+  checksum: cb62011776e7658970fb96422a22f75094977b865be5e290b5b12d363789d97862b76a09fe676fa5aa968aea4866b41dcd2ad3953ffa20d4535b9644c92a08a7
   languageName: node
   linkType: hard
 
@@ -3109,9 +3109,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@windicss/plugin-utils@npm:0.15.7":
-  version: 0.15.7
-  resolution: "@windicss/plugin-utils@npm:0.15.7"
+"@windicss/plugin-utils@npm:0.15.8":
+  version: 0.15.8
+  resolution: "@windicss/plugin-utils@npm:0.15.8"
   dependencies:
     debug: ^4.3.2
     fast-glob: ^3.2.5
@@ -3120,7 +3120,7 @@ __metadata:
     pirates: ^4.0.1
     sucrase: ^3.18.1
     windicss: ^2.5.14
-  checksum: 14ddbfa5cbc78a7a0d98531129dbc86e1191f958f097cef161d68f415672c29c00ddb6732a23a953a3878bc299544d33fff5e0ca6c6367dedbc6d6a48075ef04
+  checksum: 35012720c7ec53ad91c049f4b8f76f6bc1ba56717df8d12c543ed169772bf163dfb771777d9e2e4406d6089c8cce1504ea795b227ef503bb5700079203d0b28b
   languageName: node
   linkType: hard
 
@@ -5448,7 +5448,7 @@ __metadata:
     remark-rehype: ^8.1.0
     unified: ^9.2.1
     untyped: ^0.2.5
-    vite-plugin-windicss: ^0.15.7
+    vite-plugin-windicss: ^0.15.8
     windicss: ^2.5.14
     windicss-webpack-plugin: ^0.3.3
   languageName: unknown
@@ -9805,16 +9805,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mini-css-extract-plugin@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "mini-css-extract-plugin@npm:1.5.0"
+"mini-css-extract-plugin@npm:^1.5.1":
+  version: 1.5.1
+  resolution: "mini-css-extract-plugin@npm:1.5.1"
   dependencies:
     loader-utils: ^2.0.0
     schema-utils: ^3.0.0
     webpack-sources: ^1.1.0
   peerDependencies:
     webpack: ^4.4.0 || ^5.0.0
-  checksum: b666770b3bff39afd066e4b545ad95d53b8d82dd01863c4c22aa6b866d48e44c97f27aa8c5cdfd011f727dbaf60f2a21e69c4d55ab771fc4ac00575f36342060
+  checksum: dfdb5ed1faa5926dbe638fb1dff8bb573387a778d9937ebbd800b42a213e32c5e0abc08fdb80df39fc5de7a7acda28319b73498672c1cfa48f8c548d2c02cfdb
   languageName: node
   linkType: hard
 
@@ -12690,6 +12690,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rollup@npm:^2.46.0":
+  version: 2.46.0
+  resolution: "rollup@npm:2.46.0"
+  dependencies:
+    fsevents: ~2.3.1
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    rollup: dist/bin/rollup
+  checksum: d06dfec49dee3ec6973cab356fb74a2446c08a0d64185826081f9755353a87826a51ae43d1c88f985a756eb4c74eedfbca97c6050a3e39a17cc6d96dd48505f8
+  languageName: node
+  linkType: hard
+
 "rsvp@npm:^4.8.4":
   version: 4.8.5
   resolution: "rsvp@npm:4.8.5"
@@ -14771,17 +14785,17 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"vite-plugin-windicss@npm:^0.15.7":
-  version: 0.15.7
-  resolution: "vite-plugin-windicss@npm:0.15.7"
+"vite-plugin-windicss@npm:^0.15.8":
+  version: 0.15.8
+  resolution: "vite-plugin-windicss@npm:0.15.8"
   dependencies:
-    "@windicss/plugin-utils": 0.15.7
+    "@windicss/plugin-utils": 0.15.8
     chalk: ^4.1.0
     debug: ^4.3.2
     windicss: ^2.5.14
   peerDependencies:
     vite: ^2.0.1
-  checksum: 7158b0f4c29d8426f5441cd1f08414d116b94e980108f5de54f0093ac115e8ef2aa00cb1bd922f736b5af5e0a86ac9a025791645bc1477677d444a28dc661243
+  checksum: e3f40fc5e83e33cd26e4e6f5bae005e5d482e10f4d4fb9c0d25ddb675dc3e7797d9c27c022999068b0e114c3422b7ba395b7d608785e6f5a143b68be3c2c98d5
   languageName: node
   linkType: hard
 
@@ -15043,7 +15057,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5, webpack@npm:^5.1.0, webpack@npm:^5.36.0":
+"webpack@npm:^5, webpack@npm:^5.1.0":
   version: 5.36.0
   resolution: "webpack@npm:5.36.0"
   dependencies:
@@ -15076,6 +15090,42 @@ typescript@^4.2.4:
   bin:
     webpack: bin/webpack.js
   checksum: 418a72d18e1c28ee956a50d88cccc8ad3c58b7bad9e2315cd1d7726cdf10979c85f40316b901645ab4d065c5ee524c989e448d4aaf19a7d0112c3f7f43375fb1
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.36.1":
+  version: 5.36.1
+  resolution: "webpack@npm:5.36.1"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.47
+    "@webassemblyjs/ast": 1.11.0
+    "@webassemblyjs/wasm-edit": 1.11.0
+    "@webassemblyjs/wasm-parser": 1.11.0
+    acorn: ^8.2.1
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.8.0
+    es-module-lexer: ^0.4.0
+    eslint-scope: ^5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.2.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    schema-utils: ^3.0.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.1.1
+    watchpack: ^2.0.0
+    webpack-sources: ^2.1.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: d68088da31b8db6a55e2952b3fe8aa0603b96e53eeb26c864a3e653918e745b205c02f3e3b21b55b7bbe97e4b245d63b8aacb3a6e17eb71ec85acfc6c32cdc2c
   languageName: node
   linkType: hard
 
