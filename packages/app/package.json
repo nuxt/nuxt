@@ -5,7 +5,8 @@
   "license": "MIT",
   "exports": {
     ".": "./dist",
-    "./meta": "./meta.js"
+    "./meta": "./meta.js",
+    "./dist/*": "./dist/*"
   },
   "main": "./dist",
   "module": "./dist",

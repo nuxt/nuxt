@@ -1,6 +1,6 @@
 import { $fetch } from 'ohmyfetch'
-import logs from 'nuxt/app/plugins/logs.client.dev'
-import progress from 'nuxt/app/plugins/progress.client'
+import logs from '#app/plugins/logs.client.dev'
+import progress from '#app/plugins/progress.client'
 <% const plugins = app.plugins.filter(p => p.mode === 'client').map(p => p.src) %>
 <%= nxt.importSources(plugins) %>
 

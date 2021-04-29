@@ -109,8 +109,8 @@ function baseAlias (ctx: WebpackConfigContext) {
   const { options } = ctx
 
   ctx.alias = {
-    'nuxt/app': options.appDir,
-    'nuxt/build': options.buildDir,
+    '#app': options.appDir,
+    '#build': options.buildDir,
     ...options.alias,
     ...ctx.alias
   }

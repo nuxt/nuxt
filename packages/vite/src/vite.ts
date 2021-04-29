@@ -1,131 +1,74 @@
-import { resolve } from 'path'
-import type { Nuxt } from '@nuxt/kit'
-import { mkdirp, writeFile } from 'fs-extra'
-import vue from '@vitejs/plugin-vue'
-import consola from 'consola'
 import * as vite from 'vite'
+import consola from 'consola'
+import type { Nuxt } from '@nuxt/kit'
+import type { InlineConfig, SSROptions } from 'vite'
+import type { Options } from '@vitejs/plugin-vue'
+import { buildClient } from './client'
+import { buildServer } from './server'
+import { warmupViteServer } from './utils/warmup'
 
-interface ViteBuildContext {
+export interface ViteOptions extends InlineConfig {
+  vue?: Options
+  ssr?: SSROptions
+}
+
+export interface ViteBuildContext {
   nuxt: Nuxt
-  config: vite.InlineConfig
+  config: ViteOptions
 }
 
 export async function bundle (nuxt: Nuxt) {
   const ctx: ViteBuildContext = {
     nuxt,
-    config: {
-      root: nuxt.options.buildDir,
-      mode: nuxt.options.dev ? 'development' : 'production',
-      logLevel: 'warn',
-      resolve: {
-        alias: {
-          'nuxt/app': nuxt.options.appDir,
-          'nuxt/build': nuxt.options.buildDir,
-          '~': nuxt.options.srcDir,
-          '@': nuxt.options.srcDir
-        }
-      },
-      clearScreen: false,
-      plugins: [
-        vue({})
-      ],
-      build: {
-        emptyOutDir: false
-      }
-    }
+    config: vite.mergeConfig(
+      nuxt.options.vite as any || {},
+      {
+        root: nuxt.options.buildDir,
+        mode: nuxt.options.dev ? 'development' : 'production',
+        logLevel: 'warn',
+        define: {
+          'process.dev': nuxt.options.dev
+        },
+        resolve: {
+          extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+          alias: {
+            ...nuxt.options.alias,
+            '#build': nuxt.options.buildDir,
+            '#app': nuxt.options.appDir,
+            '~': nuxt.options.srcDir,
+            '@': nuxt.options.srcDir,
+            'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
+            // Cannot destructure property 'AbortController' of ..
+            'abort-controller': 'unenv/runtime/mock/empty'
+          }
+        },
+        vue: {},
+        css: {},
+        optimizeDeps: {
+          exclude: []
+        },
+        esbuild: {
+          jsxFactory: 'h',
+          jsxFragment: 'Fragment'
+        },
+        clearScreen: false,
+        build: {
+          emptyOutDir: false
+        },
+        plugins: []
+      } as ViteOptions
+    )
   }
 
   await nuxt.callHook('vite:extend', ctx)
 
-  await mkdirp(nuxt.options.buildDir)
-  await mkdirp(resolve(nuxt.options.buildDir, '.vite/temp'))
+  nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
+    const start = Date.now()
+    warmupViteServer(server, ['/entry.client.mjs']).then(() => {
+      consola.info(`Vite warmed up in ${Date.now() - start}ms`)
+    }).catch(consola.error)
+  })
 
-  const callBuild = async (fn, name) => {
-    try {
-      const start = Date.now()
-      await fn(ctx)
-      const time = (Date.now() - start) / 1000
-      consola.success(`${name} compiled successfully in ${time}s`)
-    } catch (err) {
-      consola.error(`${name} compiled with errors:`, err)
-    }
-  }
-
-  if (nuxt.options.dev) {
-    await Promise.all([
-      callBuild(buildClient, 'Client'),
-      callBuild(buildServer, 'Server')
-    ])
-  } else {
-    await callBuild(buildClient, 'Client')
-    await callBuild(buildServer, 'Server')
-  }
-}
-
-async function buildClient (ctx: ViteBuildContext) {
-  const clientConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
-    define: {
-      'process.server': false,
-      'process.client': true
-    },
-    build: {
-      outDir: 'dist/client',
-      assetsDir: '.',
-      rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, './entry.client')
-      }
-    },
-    server: {
-      middlewareMode: true
-    }
-  } as vite.InlineConfig)
-
-  if (ctx.nuxt.options.dev) {
-    const viteServer = await vite.createServer(clientConfig)
-    await ctx.nuxt.callHook('server:devMiddleware', (req, res, next) => {
-      // Workaround: vite devmiddleware modifies req.url
-      const originalURL = req.url
-      viteServer.middlewares.handle(req, res, (err) => {
-        req.url = originalURL
-        next(err)
-      })
-    })
-  } else {
-    await vite.build(clientConfig)
-  }
-}
-
-async function buildServer (ctx: ViteBuildContext) {
-  const serverConfig: vite.InlineConfig = vite.mergeConfig(ctx.config, {
-    define: {
-      'process.server': true,
-      'process.client': false,
-      window: undefined
-    },
-    build: {
-      outDir: 'dist/server',
-      ssr: true,
-      rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, './entry.server'),
-        onwarn (warning, rollupWarn) {
-          if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
-            rollupWarn(warning)
-          }
-        }
-      }
-    }
-  } as vite.InlineConfig)
-
-  const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
-  await mkdirp(serverDist)
-  await writeFile(resolve(serverDist, 'client.manifest.json'), 'false')
-  await writeFile(resolve(serverDist, 'server.js'), 'const entry = require("./entry.server"); module.exports = entry.default || entry;')
-
-  await vite.build(serverConfig)
-
-  if (ctx.nuxt.options.dev) {
-    ctx.nuxt.hook('builder:watch', () => {
-      vite.build(serverConfig).catch(consola.error)
-    })
-  }
+  await buildClient(ctx)
+  await buildServer(ctx)
 }

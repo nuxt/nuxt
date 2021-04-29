@@ -1,4 +1,4 @@
-import { join, relative } from 'path'
+import { join, relative, resolve } from 'upath'
 import fsExtra from 'fs-extra'
 import { debounce } from 'lodash'
 import { Nuxt } from '@nuxt/kit'
@@ -46,6 +46,7 @@ async function _build (builder: Builder) {
   if (!nuxt.options.dev) {
     await fsExtra.emptyDir(nuxt.options.buildDir)
   }
+  await fsExtra.emptyDir(resolve(nuxt.options.buildDir, 'dist'))
   await generate(builder)
 
   if (nuxt.options.dev) {

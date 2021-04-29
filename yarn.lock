@@ -1716,11 +1716,15 @@ __metadata:
   resolution: "@nuxt/vite-builder@workspace:packages/vite"
   dependencies:
     "@nuxt/kit": ^0.5.3
+    "@types/debounce": ^1.2.0
     "@vitejs/plugin-vue": ^1.2.2
     "@vue/compiler-sfc": ^3.0.11
+    chokidar: ^3.5.1
     consola: ^2.15.3
+    debounce: ^1.2.1
     fs-extra: ^9.1.0
     unbuild: ^0.2.3
+    upath: ^2.0.1
     vite: ^2.2.3
     vue: 3.0.11
   languageName: unknown

@@ -34,8 +34,6 @@ function serverStandalone (ctx: WebpackConfigContext) {
   // TODO: Refactor this out of webpack
   const inline = [
     'src/',
-    'nuxt/app',
-    'nuxt/build',
     '@nuxt/app',
     'vuex5',
     '!',
