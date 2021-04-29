@@ -48,7 +48,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
   await mkdirp(serverDist)
 
-  await writeFile(resolve(serverDist, 'server.js'), 'try { module.exports = require("./entry.server") } catch (err) {  module.exports = () => { throw err } }', 'utf8')
+  await writeFile(resolve(serverDist, 'server.js'), 'module.exports = require("./entry.server")', 'utf8')
   await writeFile(resolve(serverDist, 'client.manifest.json'), 'false', 'utf8')
 
   const onBuild = () => ctx.nuxt.callHook('build:resources', wpfs)

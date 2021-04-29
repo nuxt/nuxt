@@ -2,23 +2,30 @@ import { createRenderer } from 'vue-bundle-renderer'
 import devalue from '@nuxt/devalue'
 import config from './config'
 // @ts-ignore
-import { renderToString } from '#nitro-renderer'
-// @ts-ignore
-import createApp from '#build/dist/server/server'
-// @ts-ignore
-import clientManifest from '#build/dist/server/client.manifest.json'
-// @ts-ignore
 import htmlTemplate from '#build/views/document.template.js'
 
 function _interopDefault (e) { return e && typeof e === 'object' && 'default' in e ? e.default : e }
 
-const renderer = createRenderer(_interopDefault(createApp), {
-  clientManifest: _interopDefault(clientManifest),
-  renderToString
-})
-
 const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + '/' + process.env.NUXT_STATIC_VERSION
 const PAYLOAD_JS = '/payload.js'
+
+let _renderer
+async function loadRenderer () {
+  if (_renderer) {
+    return _renderer
+  }
+  // @ts-ignore
+  const { renderToString } = await import('#nitro-renderer')
+  // @ts-ignore
+  const createApp = await import('#build/dist/server/server')
+  // @ts-ignore
+  const clientManifest = await import('#build/dist/server/client.manifest.json')
+  _renderer = createRenderer(_interopDefault(createApp), {
+    clientManifest: _interopDefault(clientManifest),
+    renderToString
+  })
+  return _renderer
+}
 
 export async function renderMiddleware (req, res) {
   let url = req.url
@@ -40,6 +47,7 @@ export async function renderMiddleware (req, res) {
     },
     ...(req.context || {})
   }
+  const renderer = await loadRenderer()
   const rendered = await renderer.renderToString(ssrContext)
 
   if (ssrContext.nuxt.hooks) {
