@@ -1,6 +1,6 @@
 # Nuxt Framework
 
-This is home for new nuxt mono repo.
+This is the home for the new nuxt mono repo.
 
 Packages:
 
