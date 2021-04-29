@@ -3,7 +3,7 @@
   "scripts": {
     "build": "npm run nuxt -- build",
     "start": "npm run build && npm run nuxt -- start",
-    "nuxt": "node -r esm ../packages/cli/bin/nuxt-cli.js",
+    "nuxt": "jiti ../packages/cli/bin/nuxt-cli.js",
     "bench:stateless": "ab -c1 -n3000 http://127.0.0.1:3000/stateless",
     "bench:stateless-big": "ab -c1 -n500 http://127.0.0.1:3000/stateless-big"
   }

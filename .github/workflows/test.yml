@@ -5,26 +5,24 @@ on:
     branches:
       - dev
       - 2.x
-      - next
   pull_request:
     branches:
       - dev
       - 2.x
-      - next
 
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' || !((github.base_ref == '2.x' || github.base_ref == 'next') && github.head_ref == 'dev')
+    if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
 
     strategy:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -38,18 +36,25 @@ jobs:
 
       - name: cache node_modules
         id: node_modules_cache_id
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: node_modules
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
 
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
   lint:
@@ -58,10 +63,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -69,13 +74,20 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: lint
         run: yarn test:lint
+
+      - name: test types
+        run: yarn test:types
     needs: setup
 
   audit:
@@ -84,10 +96,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -95,9 +107,13 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: audit
@@ -111,10 +127,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -122,9 +138,13 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: test unit
@@ -132,7 +152,6 @@ jobs:
 
       - name: codecov
         uses: codecov/codecov-action@v1
-        if: matrix.os == 'ubuntu-latest' && matrix.node == '10'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
@@ -145,13 +164,13 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -159,19 +178,23 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: build
         run: yarn test:fixtures -i
 
-      - name: cache fixtures
-        uses: actions/cache@v1
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
     needs: setup
 
   lint-app:
@@ -180,10 +203,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -191,16 +214,20 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v1
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: lint app
         run: yarn lint:app
@@ -213,10 +240,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -224,19 +251,23 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v1
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test dev
-        run: yarn test:dev -w=2
+        run: yarn test:dev
     needs: build
 
   test-e2e:
@@ -246,10 +277,10 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [10, 12]
+        node: [12, 14]
 
     steps:
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
 
@@ -257,16 +288,20 @@ jobs:
         uses: actions/checkout@master
 
       - name: restore workspace cache
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
-          path: ${{ github.workspace }}
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/cache@v1
+        uses: actions/download-artifact@v2
         with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
           path: test/fixtures
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-fixtures-${{ github.sha }}
 
       - name: test e2e
         run: yarn test:e2e
@@ -278,29 +313,41 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [12]
+        node: [14]
 
     steps:
-      - name: restore workspace cache
-        uses: actions/cache@v1
+      - name: checkout
+        uses: actions/checkout@master
         with:
-          path: ${{ github.workspace }}
+          ref: 'refs/heads/dev'
+          fetch-depth: 0 # All history
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+
+      - name: restore workspace cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
           key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node }}
           registry-url: 'https://registry.npmjs.org'
 
       - name: bump version
-        run: yarn lerna version --yes --no-git-tag-version --no-push
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
 
       - name: build
         run: PACKAGE_SUFFIX=edge yarn build
 
       - name: publish
         run: |
-          if [ "$ref" = "refs/heads/next" ]; then tag="--tag next"; fi
           ./scripts/workspace-run npm publish $tag -q
         env:
           ref: ${{ github.ref }}

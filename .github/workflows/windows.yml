@@ -1,0 +1,165 @@
+name: windows
+
+on:
+  push:
+    branches:
+      - dev
+      - 2.x
+  pull_request:
+    branches:
+      - dev
+      - 2.x
+
+jobs:
+  setup:
+    runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [14]
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: cache node_modules
+        id: node_modules_cache_id
+        uses: actions/cache@v2
+        with:
+          path:  |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-deps-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+
+      - name: install
+        run: yarn --check-files --frozen-lockfile --non-interactive
+
+      - name: cache workspace
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+
+  test-unit:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [14]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: test unit
+        run: yarn test:unit --testPathIgnorePatterns=packages/cli
+
+    needs: setup
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [14]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: build
+        run: yarn test:fixtures
+
+      - name: Save fixtures
+        uses: actions/upload-artifact@v2
+        with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
+    needs: setup
+
+  test-dev:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node: [14]
+
+    env:
+      NODE_OPTIONS: "--max_old_space_size=4096"
+
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: checkout
+        uses: actions/checkout@master
+
+      - name: restore workspace cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+
+      - name: restore fixtures
+        uses: actions/download-artifact@v2
+        with:
+          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          path: test/fixtures
+
+      - name: test dev
+        run: yarn test:dev
+    needs: build

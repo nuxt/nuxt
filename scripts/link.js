@@ -1,8 +1,11 @@
-const path = require('path')
-const consola = require('consola')
-const execa = require('execa')
-const fs = require('fs-extra')
-const glob = require('pify')(require('glob').glob)
+import path from 'path'
+import consola from 'consola'
+import execa from 'execa'
+import fs from 'fs-extra'
+import _glob from 'glob'
+import pify from 'pify'
+
+const glob = pify(_glob) // TODO: use globby
 
 async function main () {
   const packageDirs = await glob('+(packages|distributions)/*')

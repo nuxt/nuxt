@@ -1,4 +1,5 @@
 import path from 'path'
+import chalk from 'chalk'
 import chokidar from 'chokidar'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -6,15 +7,7 @@ import Glob from 'glob'
 import hash from 'hash-sum'
 import pify from 'pify'
 import upath from 'upath'
-import semver from 'semver'
-import chalk from 'chalk'
-
-import debounce from 'lodash/debounce'
-import omit from 'lodash/omit'
-import template from 'lodash/template'
-import uniq from 'lodash/uniq'
-import uniqBy from 'lodash/uniqBy'
-
+import { debounce, omit, template, uniq, uniqBy } from 'lodash'
 import {
   r,
   createRoutes,
@@ -23,8 +16,12 @@ import {
   determineGlobals,
   stripWhitespace,
   isIndexFileAndFolder,
-  scanRequireTree
+  scanRequireTree,
+  TARGETS
 } from '@nuxt/utils'
+
+import { template as VueAppTemplate } from '@nuxt/vue-app'
+import { BundleBuilder as WebpackBuilder } from '@nuxt/webpack'
 
 import Ignore from './ignore'
 import BuildContext from './context/build'
@@ -73,7 +70,7 @@ export default class Builder {
     }
 
     // Resolve template
-    this.template = this.options.build.template || '@nuxt/vue-app'
+    this.template = this.options.build.template || VueAppTemplate
     if (typeof this.template === 'string') {
       this.template = this.nuxt.resolver.requireModule(this.template).template
     }
@@ -95,13 +92,14 @@ export default class Builder {
     const context = new BuildContext(this)
 
     if (typeof BundleBuilder !== 'function') {
-      ({ BundleBuilder } = require('@nuxt/webpack'))
+      BundleBuilder = WebpackBuilder
     }
 
     return new BundleBuilder(context)
   }
 
   forGenerate () {
+    this.options.target = TARGETS.static
     this.bundleBuilder.forGenerate()
   }
 
@@ -122,6 +120,12 @@ export default class Builder {
       consola.info('Initial build may take a while')
     } else {
       consola.info('Production build')
+      if (this.options.render.ssr) {
+        consola.info(`Bundling for ${chalk.bold.yellow('server')} and ${chalk.bold.green('client')} side`)
+      } else {
+        consola.info(`Bundling only for ${chalk.bold.green('client')} side`)
+      }
+      consola.info(`Target: ${chalk.bold.cyan(this.options.target)}`)
     }
 
     // Wait for nuxt ready
@@ -132,19 +136,12 @@ export default class Builder {
 
     await this.validatePages()
 
-    // Validate template
-    try {
-      this.validateTemplate()
-    } catch (err) {
-      consola.fatal(err)
-    }
-
     consola.success('Builder initialized')
 
     consola.debug(`App root: ${this.options.srcDir}`)
 
-    // Create .nuxt/, .nuxt/components and .nuxt/dist folders
-    await fsExtra.remove(r(this.options.buildDir))
+    // Create or empty .nuxt/, .nuxt/components and .nuxt/dist folders
+    await fsExtra.emptyDir(r(this.options.buildDir))
     const buildDirs = [r(this.options.buildDir, 'components')]
     if (!this.options.dev) {
       buildDirs.push(
@@ -152,7 +149,7 @@ export default class Builder {
         r(this.options.buildDir, 'dist', 'server')
       )
     }
-    await Promise.all(buildDirs.map(dir => fsExtra.mkdirp(dir)))
+    await Promise.all(buildDirs.map(dir => fsExtra.emptyDir(dir)))
 
     // Call ready hook
     await this.nuxt.callHook('builder:prepared', this, this.options.build)
@@ -183,7 +180,7 @@ export default class Builder {
 
     if (
       !this._nuxtPages ||
-      await fsExtra.exists(path.join(this.options.srcDir, this.options.dir.pages))
+      await fsExtra.exists(path.resolve(this.options.srcDir, this.options.dir.pages))
     ) {
       return
     }
@@ -197,25 +194,6 @@ export default class Builder {
 
     this._defaultPage = true
     consola.warn(`No \`${this.options.dir.pages}\` directory found in ${dir}. Using the default built-in page.`)
-  }
-
-  validateTemplate () {
-    // Validate template dependencies
-    const templateDependencies = this.template.dependencies
-    for (const depName in templateDependencies) {
-      const depVersion = templateDependencies[depName]
-
-      // Load installed version
-      const pkg = this.nuxt.resolver.requireModule(path.join(depName, 'package.json'))
-      if (pkg) {
-        const validVersion = semver.satisfies(pkg.version, depVersion)
-        if (!validVersion) {
-          consola.warn(`${depName}@${depVersion} is recommended but ${depName}@${pkg.version} is installed!`)
-        }
-      } else {
-        consola.warn(`${depName}@${depVersion} is required but not installed!`)
-      }
-    }
   }
 
   globPathWithExtensions (path) {
@@ -372,7 +350,7 @@ export default class Builder {
         trailingSlash
       })
     } else if (this._nuxtPages) {
-      // Use nuxt.js createRoutes bases on pages/
+      // Use nuxt createRoutes bases on pages/
       const files = {}
       const ext = new RegExp(`\\.(${this.supportedExtensions.join('|')})$`)
       for (const page of await this.resolveFiles(this.options.dir.pages)) {
@@ -404,7 +382,7 @@ export default class Builder {
     // router.extendRoutes method
     if (typeof this.options.router.extendRoutes === 'function') {
       // let the user extend the routes
-      const extendedRoutes = this.options.router.extendRoutes(
+      const extendedRoutes = await this.options.router.extendRoutes(
         templateVars.router.routes,
         r
       )
@@ -683,7 +661,7 @@ export default class Builder {
     const customPatterns = uniq([
       ...this.options.build.watch,
       ...Object.values(omit(this.options.build.styleResources, ['options']))
-    ]).map(upath.normalizeSafe)
+    ]).map(this.nuxt.resolver.resolveAlias).map(upath.normalizeSafe)
 
     if (customPatterns.length === 0) {
       return
@@ -760,6 +738,11 @@ export default class Builder {
     if (this.ignore.ignoreFile) {
       nuxtRestartWatch.push(this.ignore.ignoreFile)
     }
+
+    if (this.options._envConfig && this.options._envConfig.dotenv) {
+      nuxtRestartWatch.push(this.options._envConfig.dotenv)
+    }
+
     // If default page displayed, watch for first page creation
     if (this._nuxtPages && this._defaultPage) {
       nuxtRestartWatch.push(path.join(this.options.srcDir, this.options.dir.pages))

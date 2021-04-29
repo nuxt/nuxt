@@ -32,6 +32,11 @@
         </n-link>
       </li>
       <li>
+        <n-link to="/fetch-root">
+          Fetch in root click handler
+        </n-link>
+      </li>
+      <li>
         <n-link to="/fetch-component">
           Fetch in component
         </n-link>
@@ -46,7 +51,30 @@
           Deprecated fetch
         </n-link>
       </li>
+      <li>
+        <n-link to="/nested/item">
+          Nested fetch
+        </n-link>
+      </li>
     </ul>
+    foo-bar-{{ foo }}
     <nuxt />
   </div>
 </template>
+
+<script>
+export default {
+  name: 'DefaultLayout',
+  data () {
+    return {
+      foo: 'bar'
+    }
+  },
+  async fetch () {
+    await new Promise((resolve) => {
+      this.foo = 'baz'
+      resolve()
+    })
+  }
+}
+</script>

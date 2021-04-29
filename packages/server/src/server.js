@@ -4,8 +4,9 @@ import launchMiddleware from 'launch-editor-middleware'
 import serveStatic from 'serve-static'
 import servePlaceholder from 'serve-placeholder'
 import connect from 'connect'
-import { determineGlobals, isUrl } from '@nuxt/utils'
-
+import compression from 'compression'
+import { determineGlobals, isUrl, urlJoin } from '@nuxt/utils'
+import { VueRenderer } from '@nuxt/vue-renderer'
 import ServerContext from './context'
 import renderAndGetWindow from './jsdom'
 import nuxtMiddleware from './middleware/nuxt'
@@ -22,7 +23,7 @@ export default class Server {
 
     this.publicPath = isUrl(this.options.build.publicPath)
       ? this.options.build._publicPath
-      : this.options.build.publicPath
+      : this.options.build.publicPath.replace(/^\.+\//, '/')
 
     // Runtime shared resources
     this.resources = {}
@@ -53,8 +54,6 @@ export default class Server {
     await this.nuxt.callHook('render:before', this, this.options.render)
 
     // Initialize vue-renderer
-    const { VueRenderer } = await import('@nuxt/vue-renderer')
-
     this.serverContext = new ServerContext(this)
     this.renderer = new VueRenderer(this.serverContext)
     await this.renderer.ready()
@@ -77,7 +76,6 @@ export default class Server {
       const { compressor } = this.options.render
       if (typeof compressor === 'object') {
         // If only setting for `compression` are provided, require the module and insert
-        const compression = this.nuxt.resolver.requireModule('compression')
         this.useMiddleware(compression(compressor))
       } else if (compressor) {
         // Else, require own compression middleware if compressor is actually truthy
@@ -115,6 +113,12 @@ export default class Server {
       this.useMiddleware((req, res, next) => {
         if (!this.devMiddleware) {
           return next()
+        }
+        // Safari over-caches JS (breaking HMR) and the seemingly only way to turn
+        // this off in dev mode is to set Vary: * header
+        // #3828, #9034
+        if (req.url.startsWith(this.publicPath) && req.url.endsWith('.js')) {
+          res.setHeader('Vary', '*')
         }
         this.devMiddleware(req, res, next)
       })
@@ -161,6 +165,25 @@ export default class Server {
       resources: this.resources
     }))
 
+    // DX: redirect if router.base in development
+    const routerBase = this.nuxt.options.router.base
+    if (this.options.dev && routerBase !== '/') {
+      this.useMiddleware({
+        prefix: false,
+        handler: (req, res, next) => {
+          if (decodeURI(req.url).startsWith(decodeURI(routerBase))) {
+            return next()
+          }
+          const to = urlJoin(routerBase, req.url)
+          consola.info(`[Development] Redirecting from \`${decodeURI(req.url)}\` to \`${decodeURI(to)}\` (router.base specified)`)
+          res.writeHead(302, {
+            Location: to
+          })
+          res.end()
+        }
+      })
+    }
+
     // Apply errorMiddleware from modules first
     await this.nuxt.callHook('render:errorMiddleware', this.app)
 
@@ -181,6 +204,11 @@ export default class Server {
     if (typeof middleware === 'string') {
       middleware = this._requireMiddleware(middleware)
     }
+
+    // #8584
+    // shallow clone the middleware before any change is made,
+    // in case any following mutation breaks when applied repeatedly.
+    middleware = Object.assign({}, middleware)
 
     // Normalize handler to handle (backward compatibility)
     if (middleware.handler && !middleware.handle) {
@@ -254,6 +282,10 @@ export default class Server {
       middleware.route = fallbackRoute
     }
 
+    // #8584
+    // save the original route before applying defaults
+    middleware._originalRoute = middleware.route
+
     // Resolve final route
     middleware.route = (
       (middleware.prefix !== false ? this.options.router.base : '') +
@@ -292,8 +324,17 @@ export default class Server {
       return
     }
 
+    // unload middleware
+    this.unloadMiddleware(serverStackItem)
+
     // Resolve middleware
-    const { route, handle } = this.resolveMiddleware(middleware, serverStackItem.route)
+    const { route, handle } = this.resolveMiddleware(
+      middleware,
+      // #8584 pass the original route as fallback
+      serverStackItem.handle._middleware
+        ? serverStackItem.handle._middleware._originalRoute
+        : serverStackItem.route
+    )
 
     // Update serverStackItem
     serverStackItem.handle = handle
@@ -303,6 +344,12 @@ export default class Server {
 
     // Return updated item
     return serverStackItem
+  }
+
+  unloadMiddleware ({ handle }) {
+    if (handle._middleware && typeof handle._middleware.unload === 'function') {
+      handle._middleware.unload()
+    }
   }
 
   serverMiddlewarePaths () {
@@ -320,13 +367,11 @@ export default class Server {
   renderAndGetWindow (url, opts = {}, {
     loadingTimeout = 2000,
     loadedCallback = this.globals.loadedCallback,
-    ssr = this.options.render.ssr,
     globals = this.globals
   } = {}) {
     return renderAndGetWindow(url, opts, {
       loadingTimeout,
       loadedCallback,
-      ssr,
       globals
     })
   }
@@ -371,6 +416,7 @@ export default class Server {
       await this.renderer.close()
     }
 
+    this.app.stack.forEach(this.unloadMiddleware)
     this.app.removeAllListeners()
     this.app = null
 

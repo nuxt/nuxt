@@ -80,14 +80,14 @@ describe('basic ssr', () => {
 
   test('/head', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/head'))
-    expect(window.document.title).toBe('My title - Nuxt.js')
+    expect(window.document.title).toBe('My title - Nuxt')
 
     const html = window.document.querySelector('html').outerHTML
     expect(html).toContain('<div><h1>I can haz meta tags</h1></div>')
     expect(html).toContain('<script data-n-head="ssr" src="/body.js" data-body="true">')
 
     const metas = window.document.getElementsByTagName('meta')
-    expect(metas[0].getAttribute('content')).toBe('my meta')
+    expect(metas[1].getAttribute('content')).toBe('my meta')
     expect(consola.log).toHaveBeenCalledWith('Body script!')
 
     expect(html).toContain('<html foo="baz" data-n-head="%7B%22foo%22:%7B%22ssr%22:%22baz%22%7D%7D">')
@@ -97,17 +97,17 @@ describe('basic ssr', () => {
 
   test('/async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/async-data')
-    expect(html).toContain('<p>Nuxt.js</p>')
+    expect(html).toContain('<p>Nuxt</p>')
   })
 
   test('/await-async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/await-async-data')
-    expect(html).toContain('<p>Await Nuxt.js</p>')
+    expect(html).toContain('<p>Await Nuxt</p>')
   })
 
   test('/callback-async-data', async () => {
     const { html } = await nuxt.server.renderRoute('/callback-async-data')
-    expect(html).toContain('<p>Callback Nuxt.js</p>')
+    expect(html).toContain('<p>Callback Nuxt</p>')
   })
 
   test('/users/1', async () => {
@@ -152,24 +152,9 @@ describe('basic ssr', () => {
     expect(html).toContain('<h1>Index page</h1>')
   })
 
-  test('/redirect', async () => {
-    const { html, redirected } = await nuxt.server.renderRoute('/redirect')
-    expect(html).toContain('<div id="__nuxt"></div>')
-    expect(html).not.toContain('window.__NUXT__')
-    expect(redirected.path === '/').toBe(true)
-    expect(redirected.status === 302).toBe(true)
-  })
-
-  test('/redirect -> check redirected source', async () => {
-    // there are no transition properties in jsdom, ignore the error log
-    const window = await nuxt.server.renderAndGetWindow(url('/redirect'))
-    const html = window.document.body.innerHTML
-    expect(html).toContain('<h1>Index page</h1>')
-  })
-
-  test('/redirect -> external link', async () => {
+  describe('/redirect', () => {
     let _headers, _status
-    const { html } = await nuxt.server.renderRoute('/redirect-external', {
+    const renderContext = {
       res: {
         writeHead (status, headers) {
           _status = status
@@ -177,15 +162,48 @@ describe('basic ssr', () => {
         },
         end () { }
       }
+    }
+
+    test('/redirect', async () => {
+      const { html, redirected } = await nuxt.server.renderRoute('/redirect')
+      expect(html).toContain('<div id="__nuxt"></div>')
+      expect(html).not.toContain('window.__NUXT__')
+      expect(redirected.path === '/').toBe(true)
+      expect(redirected.status === 302).toBe(true)
     })
-    expect(_status).toBe(302)
-    expect(_headers.Location).toBe('https://nuxtjs.org')
-    expect(html).toContain('<div data-server-rendered="true"></div>')
+
+    test('/redirect -> check redirected source', async () => {
+      // there are no transition properties in jsdom, ignore the error log
+      const window = await nuxt.server.renderAndGetWindow(url('/redirect'))
+      const html = window.document.body.innerHTML
+      expect(html).toContain('<h1>Index page</h1>')
+    })
+
+    test('/redirect -> external link', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching/')
+      expect(html).toContain('<div data-server-rendered="true" id="__nuxt"></div>')
+    })
+
+    test('/redirect -> external link without trailing slash', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external-no-slash', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/docs/2.x/features/data-fetching')
+      expect(html).toContain('<div data-server-rendered="true" id="__nuxt"></div>')
+    })
+
+    test('/redirect -> external link with root domain url', async () => {
+      const { html } = await nuxt.server.renderRoute('/redirect-external-root', renderContext)
+      expect(_status).toBe(302)
+      expect(_headers.Location).toBe('https://nuxtjs.org/')
+      expect(html).toContain('<div data-server-rendered="true" id="__nuxt"></div>')
+    })
   })
 
   test('/special-state -> check window.__NUXT__.test = true', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/special-state'))
-    expect(window.document.title).toBe('Nuxt.js')
+    expect(window.document.title).toBe('Nuxt')
     expect(window.__NUXT__.test).toBe(true)
   })
 
@@ -328,8 +346,29 @@ describe('basic ssr', () => {
 
   test('/router-guard', async () => {
     const { html } = await nuxt.server.renderRoute('/router-guard')
-    expect(html).toContain('<p>Nuxt.js</p>')
+    expect(html).toContain('<p>Nuxt</p>')
     expect(html.includes('Router Guard')).toBe(false)
+  })
+
+  test('/router-guard-error', async () => {
+    const { html, error } = await nuxt.server.renderRoute('/router-guard-error')
+
+    expect(error).toBe(null)
+    expect(html.includes('Page content')).toBe(false)
+  })
+
+  test('/router-guard-error?error=zepe', async () => {
+    const { html, error } = await nuxt.server.renderRoute('/router-guard-error?error=zepe')
+
+    expect(html.includes('Page content')).toBe(false)
+    expect(html).toContain('zepe')
+    expect(error.message).toContain('zepe')
+    expect(error.statusCode).toBe(500)
+  })
+
+  test('/router-guard-error?throw=ezae', async () => {
+    await expect(nuxt.server.renderRoute('/router-guard-error?throw=ezae'))
+      .rejects.toMatchObject({ message: 'ezae' })
   })
 
   test('/jsx', async () => {
@@ -368,6 +407,16 @@ describe('basic ssr', () => {
   test('/symlink/deep/nested-symlinked', async () => {
     const { html } = await nuxt.server.renderRoute('/symlink/deep/nested-symlinked')
     expect(html).toContain('<h1>Nested symlink page</h1>')
+  })
+
+  test('/components', async () => {
+    const { html } = await nuxt.server.renderRoute('/components')
+    expect(html).toContain('Auto discovered component!')
+  })
+
+  test('/ (normal <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer>')
   })
 
   // Close server and ask nuxt to stop listening to file changes

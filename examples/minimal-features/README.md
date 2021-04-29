@@ -1,3 +1,3 @@
-# A minimal Hello World Nuxt.js app
+# A minimal Hello World Nuxt app
 
 https://nuxtjs.org/examples

@@ -1,3 +1,5 @@
 export default {
-  build: true
+  build: true,
+  ignoreUnused: ['crc'],
+  externals: ['crc/lib/crc32']
 }

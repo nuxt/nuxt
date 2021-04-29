@@ -38,16 +38,6 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     }
   }
 
-  getFileName (...args) {
-    if (this.buildContext.buildOptions.analyze) {
-      const [key] = args
-      if (['app', 'chunk'].includes(key)) {
-        return `${this.isModern ? 'modern-' : ''}[name].js`
-      }
-    }
-    return super.getFileName(...args)
-  }
-
   env () {
     return Object.assign(
       super.env(),
@@ -63,18 +53,20 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   optimization () {
     const optimization = super.optimization()
+    const { splitChunks } = optimization
+    const { cacheGroups } = splitChunks
 
     // Small, known and common modules which are usually used project-wise
     // Sum of them may not be more than 244 KiB
     if (
       this.buildContext.buildOptions.splitChunks.commons === true &&
-      optimization.splitChunks.cacheGroups.commons === undefined
+      cacheGroups.commons === undefined
     ) {
-      optimization.splitChunks.cacheGroups.commons = {
-        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|nuxt\.js)[\\/]/,
+      cacheGroups.commons = {
+        test: /node_modules[\\/](vue|vue-loader|vue-router|vuex|vue-meta|core-js|@babel\/runtime|axios|webpack|setimmediate|timers-browserify|process|regenerator-runtime|cookie|js-cookie|is-buffer|dotprop|url-polyfill|@nuxt[\\/]ufo|ufo|nuxt\.js)[\\/]/,
         chunks: 'all',
-        priority: 10,
-        name: true
+        name: true,
+        priority: 10
       }
     }
 
@@ -129,8 +121,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         filename: '../server/index.spa.html',
         template: appTemplatePath,
         minify: buildOptions.html.minify,
-        inject: true,
-        chunksSortMode: 'dependency'
+        inject: true
       }),
       new VueSSRClientPlugin({
         filename: `../server/${this.name}.manifest.json`
@@ -186,17 +177,18 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
     const { client = {} } = hotMiddleware || {}
     const { ansiColors, overlayStyles, ...options } = client
+
     const hotMiddlewareClientOptions = {
       reload: true,
       timeout: 30000,
       ansiColors: JSON.stringify(ansiColors),
       overlayStyles: JSON.stringify(overlayStyles),
+      path: `${router.base}/__webpack_hmr/${this.name}`.replace(/\/\//g, '/'),
       ...options,
       name: this.name
     }
-    const clientPath = `${router.base}/__webpack_hmr/${this.name}`
-    const hotMiddlewareClientOptionsStr =
-      `${querystring.stringify(hotMiddlewareClientOptions)}&path=${clientPath}`.replace(/\/\//g, '/')
+
+    const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
     // Entry points
     config.entry = Object.assign({}, config.entry, {
@@ -207,9 +199,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     if (this.dev) {
       config.entry.app.unshift(
         // https://github.com/webpack-contrib/webpack-hot-middleware/issues/53#issuecomment-162823945
-        'eventsource-polyfill',
+        this.resolveModule('eventsource-polyfill'),
         // https://github.com/glenjamin/webpack-hot-middleware#config
-        `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+        `${this.resolveModule('webpack-hot-middleware/client')}?${hotMiddlewareClientOptionsStr}`
       )
     }
 

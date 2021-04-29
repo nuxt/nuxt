@@ -16,7 +16,7 @@ export default {
     alias: 'c',
     type: 'string',
     default: defaultNuxtConfigFile,
-    description: `Path to Nuxt.js config file (default: \`${defaultNuxtConfigFile}\`)`
+    description: `Path to Nuxt config file (default: \`${defaultNuxtConfigFile}\`)`
   },
   modern: {
     alias: 'm',
@@ -28,12 +28,22 @@ export default {
       }
     }
   },
+  target: {
+    alias: 't',
+    type: 'string',
+    description: 'Build/start app for a different target, e.g. server, serverless and static',
+    prepare (cmd, options, argv) {
+      if (argv.target) {
+        options.target = argv.target
+      }
+    }
+  },
   'force-exit': {
     type: 'boolean',
     default (cmd) {
-      return ['build', 'generate'].includes(cmd.name)
+      return ['build', 'generate', 'export'].includes(cmd.name)
     },
-    description: 'Whether Nuxt.js should force exit after the command has finished'
+    description: 'Whether Nuxt should force exit after the command has finished'
   },
   version: {
     alias: 'v',
@@ -44,5 +54,15 @@ export default {
     alias: 'h',
     type: 'boolean',
     description: 'Display this message'
+  },
+  processenv: {
+    type: 'boolean',
+    default: true,
+    description: 'Disable reading from `process.env` and updating it with dotenv'
+  },
+  dotenv: {
+    type: 'string',
+    default: '.env',
+    description: 'Specify path to dotenv file (default: `.env`). Use `false` to disable'
   }
 }

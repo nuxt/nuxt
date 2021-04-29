@@ -14,17 +14,17 @@ export default () => ({
   serverURLPolyfill: 'url',
   filenames: {
     // { isDev, isClient, isServer }
-    app: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
-    chunk: ({ isDev, isModern }) => isDev ? `${isModern ? 'modern-' : ''}[name].js` : '[contenthash].js',
-    css: ({ isDev }) => isDev ? '[name].css' : '[contenthash].css',
-    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[contenthash:7].[ext]',
-    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[contenthash:7].[ext]',
-    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[contenthash:7].[ext]'
+    app: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    chunk: ({ isDev, isModern }) => isDev ? `[name]${isModern ? '.modern' : ''}.js` : `[contenthash:7]${isModern ? '.modern' : ''}.js`,
+    css: ({ isDev }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
+    img: ({ isDev }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
+    font: ({ isDev }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
+    video: ({ isDev }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
   },
   loaders: {
-    file: {},
-    fontUrl: { limit: 1000 },
-    imgUrl: { limit: 1000 },
+    file: { esModule: false },
+    fontUrl: { esModule: false, limit: 1000 },
+    imgUrl: { esModule: false, limit: 1000 },
     pugPlain: {},
     vue: {
       transformAssetUrls: {
@@ -34,8 +34,14 @@ export default () => ({
         embed: 'src'
       }
     },
-    css: {},
+    css: {
+      esModule: false,
+      modules: {
+        compileType: 'icss'
+      }
+    },
     cssModules: {
+      esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]'
       }
@@ -62,8 +68,7 @@ export default () => ({
     minimizer: undefined,
     splitChunks: {
       chunks: 'all',
-      automaticNameDelimiter: '.',
-      name: undefined,
+      automaticNameDelimiter: '/',
       cacheGroups: {}
     }
   },
@@ -72,6 +77,7 @@ export default () => ({
     pages: true,
     commons: true
   },
+  corejs: 'auto',
   babel: {
     configFile: false,
     babelrc: false,
@@ -102,7 +108,10 @@ export default () => ({
   templates: [],
 
   watch: [],
-  devMiddleware: {},
+  devMiddleware: {
+    // stats will be printed by webapckbar StateReporter
+    stats: 'none'
+  },
   hotMiddleware: {},
 
   stats: {

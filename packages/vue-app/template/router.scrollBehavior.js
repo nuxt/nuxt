@@ -2,53 +2,55 @@
 <%= isTest ? '/* eslint-disable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
 export default <%= serializeFunction(router.scrollBehavior) %>
 <%= isTest ? '/* eslint-enable quotes, semi, indent, comma-spacing, key-spacing, object-curly-spacing, space-before-function-paren  */' : '' %>
-<% } else { %>import { getMatchedComponents } from './utils'
+<% } else { %>import { getMatchedComponents, setScrollRestoration } from './utils'
 
 if (process.client) {
   if ('scrollRestoration' in window.history) {
-    window.history.scrollRestoration = 'manual'
+    setScrollRestoration('manual')
 
     // reset scrollRestoration to auto when leaving page, allowing page reload
     // and back-navigation from other pages to use the browser to restore the
     // scrolling position.
     window.addEventListener('beforeunload', () => {
-      window.history.scrollRestoration = 'auto'
+      setScrollRestoration('auto')
     })
 
     // Setting scrollRestoration to manual again when returning to this page.
     window.addEventListener('load', () => {
-      window.history.scrollRestoration = 'manual'
+      setScrollRestoration('manual')
     })
   }
 }
 
-export default function (to, from, savedPosition) {
-  // if the returned position is falsy or an empty object,
-  // will retain current scroll position.
-  let position = false
+function shouldScrollToTop(route) {
+   const Pages = getMatchedComponents(route)
+   if (Pages.length === 1) {
+     const { options = {} } = Pages[0]
+     return options.scrollToTop !== false
+   }
+   return Pages.some(({ options }) => options && options.scrollToTop)
+}
 
-  // if no children detected and scrollToTop is not explicitly disabled
-  const Pages = getMatchedComponents(to)
-  if (
-    Pages.length < 2 &&
-    Pages.every(Page => Page.options.scrollToTop !== false)
-  ) {
-    // scroll to the top of the page
-    position = { x: 0, y: 0 }
-  } else if (Pages.some(Page => Page.options.scrollToTop)) {
-    // if one of the children has scrollToTop option set to true
-    position = { x: 0, y: 0 }
-  }
+export default function (to, from, savedPosition) {
+  // If the returned position is falsy or an empty object, will retain current scroll position
+  let position = false
+  const isRouteChanged = to !== from
 
   // savedPosition is only available for popstate navigations (back button)
   if (savedPosition) {
     position = savedPosition
+  } else if (isRouteChanged && shouldScrollToTop(to)) {
+    position = { x: 0, y: 0 }
   }
 
   const nuxt = window.<%= globals.nuxt %>
 
-  // triggerScroll is only fired when a new component is loaded
-  if (to.path === from.path && to.hash !== from.hash) {
+  if (
+    // Initial load (vuejs/vue-router#3199)
+    !isRouteChanged ||
+    // Route hash changes
+    (to.path === from.path && to.hash !== from.hash)
+  ) {
     nuxt.$nextTick(() => nuxt.$emit('triggerScroll'))
   }
 

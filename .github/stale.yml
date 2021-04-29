@@ -4,13 +4,14 @@ daysUntilClose: 7
 staleLabel: stale
 exemptLabels:
   - "cmty:feature-request"
+  - "feature-request"
   - "WIP"
   - "pending"
   - "discussion"
 exemptAssignees: true
 only: issues
 markComment: >
-  Thanks for your contribution to Nuxt.js!
+  Thanks for your contribution to Nuxt!
 
   This issue has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs.

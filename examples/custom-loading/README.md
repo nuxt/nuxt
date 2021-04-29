@@ -1,3 +1,3 @@
-# Custom loading with Nuxt.js
+# Custom loading with Nuxt
 
 https://nuxtjs.org/examples/custom-loading

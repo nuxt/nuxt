@@ -14,7 +14,7 @@ describe('util: route', () => {
         ]
       }
     ])
-    expect(routes).toEqual(['/login', '/about', '', '/post'])
+    expect(routes).toEqual(['/login', '/about', '/', '/post'])
   })
 
   test('should ignore route with * and :', () => {
@@ -38,6 +38,37 @@ describe('util: route', () => {
       }
     ])
     expect(routes).toEqual(['/', '/foo/bar', '/foo/baz'])
+  })
+
+  test('should flat absolute routes', () => {
+    const routes = flatRoutes([
+      {
+        name: 'foo',
+        path: '/foo',
+        children: [
+          { name: 'foo-bar', path: '/foo/bar' },
+          { name: 'foo-baz', path: '/foo/baz' }
+        ]
+      }
+    ])
+
+    expect(routes).toEqual(['/foo', '/foo/bar', '/foo/baz'])
+  })
+
+  test('should flat absolute routes with empty path', () => {
+    const routes = flatRoutes([
+      {
+        name: 'foo',
+        path: '/foo',
+        children: [
+          { name: 'foo-root', path: '' },
+          { name: 'foo-bar', path: '/foo/bar' },
+          { name: 'foo-baz', path: '/foo/baz' }
+        ]
+      }
+    ])
+
+    expect(routes).toEqual(['/foo', '/foo/bar', '/foo/baz'])
   })
 
   describe('util: route guard', () => {
@@ -178,7 +209,6 @@ describe('util: route', () => {
       'pages/_param.vue',
       'pages/subpage/_param.vue',
       'pages/snake_case_route.vue',
-      'pages/another_route/_id.vue',
       'pages/another_route/_id.vue',
       'pages/parent/index.vue',
       'pages/parent/child/index.vue',

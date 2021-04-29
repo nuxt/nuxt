@@ -30,12 +30,10 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   async asyncData ({ query }) {
     const page = +(query.page || 1)
-    const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+    const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => res.json())
     return {
       page,
       totalPages: data.total_pages,
@@ -47,10 +45,13 @@ export default {
       transitionName: this.getTransitionName(this.page)
     }
   },
+  head: {
+    title: 'Users #2'
+  },
   watch: {
     async '$route.query.page' (page) {
       this.$nuxt.$loading.start()
-      const { data } = await axios.get(`https://reqres.in/api/users?page=${page}`)
+      const data = await fetch(`https://reqres.in/api/users?page=${page}`).then(res => res.json())
       this.users = data.data
       this.transitionName = this.getTransitionName(page)
       this.page = +(page || 1)
@@ -62,9 +63,6 @@ export default {
     getTransitionName (newPage) {
       return newPage < this.page ? 'slide-right' : 'slide-left'
     }
-  },
-  head: {
-    title: 'Users #2'
   }
 }
 </script>

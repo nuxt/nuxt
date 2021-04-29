@@ -4,12 +4,6 @@ import consola from 'consola'
 import { chainFn } from '@nuxt/utils'
 import ModuleContainer from '../src/module'
 
-jest.mock('fs', () => ({
-  existsSync: Boolean,
-  closeSync: Boolean,
-  realpath: jest.fn()
-}))
-
 jest.mock('hash-sum', () => src => `hash(${src})`)
 
 jest.mock('@nuxt/utils', () => ({
@@ -19,7 +13,8 @@ jest.mock('@nuxt/utils', () => ({
 
 const defaultOptions = {
   modules: [],
-  buildModules: []
+  buildModules: [],
+  _modules: []
 }
 
 describe('core: module', () => {
@@ -33,6 +28,13 @@ describe('core: module', () => {
     consola.fatal.mockClear()
     chainFn.mockClear()
     requireModule.mockClear()
+
+    fs._existsSync = fs._existsSync || fs.existsSync
+    fs.existsSync = jest.fn().mockImplementation(() => true)
+  })
+
+  afterEach(() => {
+    fs.existsSync = fs._existsSync
   })
 
   test('should construct module container', () => {
@@ -317,7 +319,7 @@ describe('core: module', () => {
     module.requireModule(moduleOpts)
 
     expect(module.addModule).toBeCalledTimes(1)
-    expect(module.addModule).toBeCalledWith(moduleOpts, true)
+    expect(module.addModule).toBeCalledWith(moduleOpts, undefined, { paths: undefined })
   })
 
   test('should add string module', async () => {
@@ -331,7 +333,7 @@ describe('core: module', () => {
     const result = await module.addModule('moduleTest')
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
@@ -380,7 +382,7 @@ describe('core: module', () => {
     const result = await module.addModule(['moduleTest', { test: true }])
 
     expect(requireModule).toBeCalledTimes(1)
-    expect(requireModule).toBeCalledWith('moduleTest', { useESM: true })
+    expect(requireModule).toBeCalledWith('moduleTest', { paths: undefined })
     expect(module.requiredModules).toEqual({
       moduleTest: {
         handler: expect.any(Function),
@@ -402,21 +404,17 @@ describe('core: module', () => {
     })
 
     const result = await module.addModule({
-      src: 'moduleTest',
+      src: 'pathToModule',
       options: { test: true },
-      handler: function objectModule (options) {
-        return Promise.resolve(options)
-      }
+      handler: opts => opts
     })
 
     expect(requireModule).not.toBeCalled()
     expect(module.requiredModules).toEqual({
-      objectModule: {
-        handler: expect.any(Function),
-        options: {
-          test: true
-        },
-        src: 'moduleTest'
+      pathToModule: {
+        src: 'pathToModule',
+        options: { test: true },
+        handler: expect.any(Function)
       }
     })
     expect(result).toEqual({ test: true })
@@ -465,7 +463,7 @@ describe('core: module', () => {
     })
 
     requireModule.mockImplementationOnce(() => {
-      const moduleNotFound = new Error()
+      const moduleNotFound = new Error(`Cannot find module 'test-build-module'`)
       moduleNotFound.code = 'MODULE_NOT_FOUND'
       throw moduleNotFound
     })
@@ -473,6 +471,7 @@ describe('core: module', () => {
     const result = await module.addModule('test-build-module', true)
 
     expect(result).toBeUndefined()
-    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used. Silently ignoring module as programmatic usage detected.')
+    expect(consola.warn).toBeCalledWith('Module `test-build-module` not found. Please ensure `test-build-module` is in `devDependencies` and installed. HINT: During build step, for npm/yarn, `NODE_ENV=production` or `--production` should NOT be used.')
+    expect(consola.warn).toBeCalledWith('Silently ignoring module as programatic usage detected.')
   })
 })

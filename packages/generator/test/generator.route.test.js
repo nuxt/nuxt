@@ -1,29 +1,15 @@
-import path from 'path'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
 import htmlMinifier from 'html-minifier'
 
 import Generator from '../src/generator'
-import { createNuxt } from './__utils__'
+import { createNuxt, hookCalls } from './__utils__'
 
-jest.mock('path')
 jest.mock('fs-extra')
 jest.mock('html-minifier')
 jest.mock('@nuxt/utils')
 
 describe('generator: generate route', () => {
-  const sep = path.sep
-
-  beforeAll(() => {
-    path.sep = '[sep]'
-    path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
-    path.dirname.mockImplementation((...args) => `dirname(${args.join(', ')})`)
-  })
-
-  afterAll(() => {
-    path.sep = sep
-  })
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -34,7 +20,6 @@ describe('generator: generate route', () => {
     nuxt.options.generate.minify = undefined
     nuxt.options.generate.subFolders = false
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = '/foo/'
     const payload = {}
@@ -43,25 +28,39 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
-    expect(nuxt.server.renderRoute).toBeCalledWith('/foo/', { _generate: true, payload })
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '[sep]', '/foo.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], /foo.html)')
-    expect(nuxt.callHook).toBeCalledTimes(2)
-    expect(nuxt.callHook).nthCalledWith(1, 'generate:page', {
-      route,
-      html: 'rendered html',
-      path: `join(${generator.distPath}, join([sep], /foo.html))`
+    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
+
+    const genernatePageHookCall = hookCalls(nuxt, 'generate:page')[0][0]
+    expect(genernatePageHookCall).toMatchObject({
+      route: '/foo',
+      html: 'rendered html'
     })
-    expect(nuxt.callHook).nthCalledWith(2, 'generate:routeCreated', {
-      route,
-      errors: [],
-      path: `join(${generator.distPath}, join([sep], /foo.html))`
+    expect(genernatePageHookCall.path).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
+
+    const genernateRouteCreatedHookCall = hookCalls(nuxt, 'generate:routeCreated')[0][0]
+    expect(genernateRouteCreatedHookCall).toMatchObject({
+      route: '/foo',
+      errors: []
     })
+    expect(genernateRouteCreatedHookCall.path).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
+
     expect(fsExtra.mkdirp).toBeCalledTimes(1)
-    expect(fsExtra.mkdirp).toBeCalledWith(`dirname(join(${generator.distPath}, join([sep], /foo.html)))`)
+    expect(fsExtra.mkdirp.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate',
+      'C:\\nuxt\\generate'
+    )
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], /foo.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -81,8 +80,7 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
-    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { _generate: true, payload })
-    expect(nuxt.callHook).toBeCalledTimes(1)
+    expect(nuxt.server.renderRoute).toBeCalledWith('/foo', { payload })
     expect(nuxt.callHook).toBeCalledWith('generate:routeFailed', {
       route,
       errors: [{ type: 'unhandled', route, error }]
@@ -117,7 +115,7 @@ describe('generator: generate route', () => {
     const returned = await generator.generateRoute({ route, payload, errors })
 
     expect(consola.error).toBeCalledTimes(1)
-    expect(consola.error).toBeCalledWith('Error generating /foo')
+    expect(consola.error).toBeCalledWith('Error generating route "/foo": render route failed')
     expect(errors).toEqual([{
       error,
       route,
@@ -157,7 +155,11 @@ describe('generator: generate route', () => {
     expect(htmlMinifier.minify).toBeCalledTimes(1)
     expect(htmlMinifier.minify).toBeCalledWith('rendered html', { value: 'test-minify' })
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], /foo.html))`, 'minified rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'minified rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo.html',
+      'C:\\nuxt\\generate\\foo.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -190,17 +192,17 @@ describe('generator: generate route', () => {
     nuxt.options.build.html = { minify: false }
     nuxt.options.generate.subFolders = true
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = '/foo'
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, route, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join(/foo, [sep], index.html)')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join(/foo, [sep], index.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/foo/index.html',
+      'C:\\nuxt\\generate\\foo\\index.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -209,18 +211,17 @@ describe('generator: generate route', () => {
     nuxt.options.build.html = { minify: false }
     nuxt.options.generate.subFolders = true
     const generator = new Generator(nuxt)
-    path.join.mockClear()
-    path.join.mockReturnValueOnce('/404/index.html')
 
     const route = '/404'
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, route, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, '/404.html')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, /404.html)`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/404.html',
+      'C:\\nuxt\\generate\\404.html'
+    )
     expect(returned).toEqual(true)
   })
 
@@ -228,17 +229,17 @@ describe('generator: generate route', () => {
     const nuxt = createNuxt()
     nuxt.options.build.html = { minify: false }
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     const route = ''
 
     const returned = await generator.generateRoute({ route })
 
-    expect(path.join).toBeCalledTimes(2)
-    expect(path.join).nthCalledWith(1, '[sep]', 'index.html')
-    expect(path.join).nthCalledWith(2, generator.distPath, 'join([sep], index.html)')
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, join([sep], index.html))`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/index.html',
+      'C:\\nuxt\\generate\\index.html'
+    )
     expect(returned).toEqual(true)
   })
 })

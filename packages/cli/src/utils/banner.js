@@ -20,24 +20,40 @@ export function showBanner (nuxt, showMemoryUsage = true) {
   const messageLines = []
 
   // Name and version
-  const { bannerColor } = nuxt.options.cli
-  titleLines.push(`${chalk[bannerColor].bold('Nuxt.js')} ${nuxt.constructor.version}`)
+  const { bannerColor, badgeMessages } = nuxt.options.cli
+  titleLines.push(`${chalk[bannerColor].bold('Nuxt')} @ ${nuxt.constructor.version || 'exotic'}\n`)
 
-  // Running mode
-  titleLines.push(`Running in ${nuxt.options.dev ? chalk.bold.blue('development') : chalk.bold.green('production')} mode (${chalk.bold(nuxt.options.mode)})`)
+  const label = name => chalk.bold.cyan(`▸ ${name}:`)
+
+  // Environment
+  const isDev = nuxt.options.dev
+  let _env = isDev ? 'development' : 'production'
+  if (process.env.NODE_ENV !== _env) {
+    _env += ` (${chalk.cyan(process.env.NODE_ENV)})`
+  }
+  titleLines.push(`${label('Environment')} ${_env}`)
+
+  // Rendering
+  const isSSR = nuxt.options.render.ssr
+  const rendering = isSSR ? 'server-side' : 'client-side'
+  titleLines.push(`${label('Rendering')}   ${rendering}`)
+
+  // Target
+  const target = nuxt.options.target || 'server'
+  titleLines.push(`${label('Target')}      ${target}`)
 
   if (showMemoryUsage) {
-    titleLines.push(getFormattedMemoryUsage())
+    titleLines.push('\n' + getFormattedMemoryUsage())
   }
 
   // Listeners
   for (const listener of nuxt.server.listeners) {
-    messageLines.push(chalk.bold('Listening on: ') + chalk.underline.blue(listener.url))
+    messageLines.push(chalk.bold('Listening: ') + chalk.underline.blue(listener.url))
   }
 
   // Add custom badge messages
-  if (nuxt.options.cli.badgeMessages.length) {
-    messageLines.push('', ...nuxt.options.cli.badgeMessages)
+  if (badgeMessages.length) {
+    messageLines.push('', ...badgeMessages)
   }
 
   process.stdout.write(successBox(messageLines.join('\n'), titleLines.join('\n')))

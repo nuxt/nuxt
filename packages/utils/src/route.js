@@ -1,53 +1,70 @@
 import path from 'path'
-import get from 'lodash/get'
+import { get } from 'lodash'
 import consola from 'consola'
-
+import { normalizeURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { r } from './resolve'
+
+const routeChildren = function (route) {
+  const hasChildWithEmptyPath = route.children.some(child => child.path === '')
+  if (hasChildWithEmptyPath) {
+    return route.children
+  }
+  return [
+    // Add default child to render parent page
+    {
+      ...route,
+      children: undefined
+    },
+    ...route.children
+  ]
+}
 
 export const flatRoutes = function flatRoutes (router, fileName = '', routes = []) {
   router.forEach((r) => {
     if ([':', '*'].some(c => r.path.includes(c))) {
       return
     }
+    const route = `${fileName}${r.path}/`.replace(/\/+/g, '/')
     if (r.children) {
-      if (fileName === '' && r.path === '/') {
-        routes.push('/')
-      }
-      return flatRoutes(r.children, fileName + r.path + '/', routes)
+      return flatRoutes(routeChildren(r), route, routes)
     }
-    fileName = fileName.replace(/\/+/g, '/')
-    routes.push(
-      (r.path === '' && fileName[fileName.length - 1] === '/'
-        ? fileName.slice(0, -1)
-        : fileName) + r.path
-    )
+
+    // if child path is already absolute, do not make any concatenations
+    if (r.path && r.path.startsWith('/')) {
+      routes.push(r.path)
+    } else if (route !== '/' && route[route.length - 1] === '/') {
+      routes.push(route.slice(0, -1))
+    } else {
+      routes.push(route)
+    }
   })
   return routes
 }
 
-function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') {
-  let start = -1
+// eslint-disable-next-line default-param-last
+function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-', trailingSlash, parentRouteName) {
   const regExpIndex = new RegExp(`${routeNameSplitter}index$`)
+  const regExpParentRouteName = new RegExp(`^${parentRouteName}${routeNameSplitter}`)
   const routesIndex = []
   routes.forEach((route) => {
     if (regExpIndex.test(route.name) || route.name === 'index') {
-      // Save indexOf 'index' key in name
-      const res = route.name.split(routeNameSplitter)
-      const s = res.indexOf('index')
-      start = start === -1 || s < start ? s : start
+      const res = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       routesIndex.push(res)
     }
   })
   routes.forEach((route) => {
     route.path = isChild ? route.path.replace('/', '') : route.path
     if (route.path.includes('?')) {
-      const names = route.name.split(routeNameSplitter)
+      if (route.name.endsWith(`${routeNameSplitter}index`)) {
+        route.path = route.path.replace(/\?$/, '')
+      }
+      const names = route.name.replace(regExpParentRouteName, '').split(routeNameSplitter)
       const paths = route.path.split('/')
       if (!isChild) {
         paths.shift()
       } // clean first / for parents
       routesIndex.forEach((r) => {
-        const i = r.indexOf('index') - start //  children names
+        const i = r.indexOf('index')
         if (i < paths.length) {
           for (let a = 0; a <= i; a++) {
             if (a === i) {
@@ -63,10 +80,19 @@ function cleanChildrenRoutes (routes, isChild = false, routeNameSplitter = '-') 
     }
     route.name = route.name.replace(regExpIndex, '')
     if (route.children) {
-      if (route.children.find(child => child.path === '')) {
+      const defaultChildRoute = route.children.find(child => child.path === '/' || child.path === '')
+      const routeName = route.name
+      if (defaultChildRoute) {
+        route.children.forEach((child) => {
+          if (child.path !== defaultChildRoute.path) {
+            const parts = child.path.split('/')
+            parts[1] = parts[1].endsWith('?') ? parts[1].substr(0, parts[1].length - 1) : parts[1]
+            child.path = parts.join('/')
+          }
+        })
         delete route.name
       }
-      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter)
+      route.children = cleanChildrenRoutes(route.children, true, routeNameSplitter, trailingSlash, routeName)
     }
   })
   return routes
@@ -107,17 +133,21 @@ export const sortRoutes = function sortRoutes (routes) {
       // If a.length >= b.length
       if (i === _b.length - 1 && res === 0) {
         // unless * found sort by level, then alphabetically
-        res = _a[i] === '*' ? -1 : (
-          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-        )
+        res = _a[i] === '*'
+          ? -1
+          : (
+            _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+          )
       }
     }
 
     if (res === 0) {
       // unless * found sort by level, then alphabetically
-      res = _a[i - 1] === '*' && _b[i] ? 1 : (
-        _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
-      )
+      res = _a[i - 1] === '*' && _b[i]
+        ? 1
+        : (
+          _a.length === _b.length ? a.path.localeCompare(b.path) : (_a.length - _b.length)
+        )
     }
     return res
   })
@@ -167,8 +197,7 @@ export const createRoutes = function createRoutes ({
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
-        route.path += '/' + getRoutePathExtension(key)
-
+        route.path += '/' + normalizeURL(getRoutePathExtension(key))
         if (key.startsWith('_') && key.length > 1) {
           route.path += '?'
         }
@@ -176,14 +205,18 @@ export const createRoutes = function createRoutes ({
     })
     if (trailingSlash !== undefined) {
       route.pathToRegexpOptions = { ...route.pathToRegexpOptions, strict: true }
-      route.path = route.path.replace(/\/+$/, '') + (trailingSlash ? '/' : '') || '/'
+      if (trailingSlash && !route.path.endsWith('*')) {
+        route.path = withTrailingSlash(route.path)
+      } else {
+        route.path = withoutTrailingSlash(route.path)
+      }
     }
 
     parent.push(route)
   })
 
   sortRoutes(routes)
-  return cleanChildrenRoutes(routes, false, routeNameSplitter)
+  return cleanChildrenRoutes(routes, false, routeNameSplitter, trailingSlash)
 }
 
 // Guard dir1 from dir2 which can be indiscriminately removed

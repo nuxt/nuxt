@@ -27,16 +27,9 @@ Array [
     "path": "/parent/child/test",
   },
   Object {
-    "children": Array [
-      Object {
-        "chunkName": "pages/another_route/_id",
-        "component": "/some/nuxt/app/pages/another_route/_id.vue",
-        "name": "another_route-id",
-        "path": "",
-      },
-    ],
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
+    "name": "another_route-id",
     "path": "/another_route/:id?",
   },
   Object {
@@ -87,16 +80,9 @@ Array [
     "path": "/parent/child/test",
   },
   Object {
-    "children": Array [
-      Object {
-        "chunkName": "pages/another_route/_id",
-        "component": "\\\\\\\\\\\\\\\\some\\\\\\\\nuxt\\\\\\\\app\\\\\\\\pages\\\\\\\\another_route\\\\\\\\_id.vue",
-        "name": "another_route-id",
-        "path": "",
-      },
-    ],
     "chunkName": "pages/another_route/_id",
     "component": "\\\\\\\\\\\\\\\\some\\\\\\\\nuxt\\\\\\\\app\\\\\\\\pages\\\\\\\\another_route\\\\\\\\_id.vue",
+    "name": "another_route-id",
     "path": "/another_route/:id?",
   },
   Object {
@@ -159,17 +145,6 @@ Array [
     },
   },
   Object {
-    "children": Array [
-      Object {
-        "chunkName": "pages/another_route/_id",
-        "component": "/some/nuxt/app/pages/another_route/_id.vue",
-        "name": "another_route-id",
-        "path": "",
-        "pathToRegexpOptions": Object {
-          "strict": true,
-        },
-      },
-    ],
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",
@@ -247,17 +222,6 @@ Array [
     },
   },
   Object {
-    "children": Array [
-      Object {
-        "chunkName": "pages/another_route/_id",
-        "component": "/some/nuxt/app/pages/another_route/_id.vue",
-        "name": "another_route-id",
-        "path": "",
-        "pathToRegexpOptions": Object {
-          "strict": true,
-        },
-      },
-    ],
     "chunkName": "pages/another_route/_id",
     "component": "/some/nuxt/app/pages/another_route/_id.vue",
     "name": "another_route-id",

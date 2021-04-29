@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { isSamePath as _isSamePath, joinURL, normalizeURL, withQuery, withoutTrailingSlash } from 'ufo'
 
 // window.{{globals.loadedCallback}} hook
 // Useful for jsdom testing or plugins (https://github.com/tmpvar/jsdom#dealing-with-asynchronous-script-loading)
@@ -6,6 +7,15 @@ if (process.client) {
   window.<%= globals.readyCallback %>Cbs = []
   window.<%= globals.readyCallback %> = (cb) => {
     window.<%= globals.readyCallback %>Cbs.push(cb)
+  }
+}
+
+export function createGetCounter (counterObject, defaultKey = '') {
+  return function getCounter (id = defaultKey) {
+    if (counterObject[id] === undefined) {
+      counterObject[id] = 0
+    }
+    return counterObject[id]++
   }
 }
 
@@ -24,6 +34,24 @@ export function interopDefault (promise) {
 <% if (features.fetch) { %>
 export function hasFetch(vm) {
   return vm.$options && typeof vm.$options.fetch === 'function' && !vm.$options.fetch.length
+}
+export function purifyData(data) {
+  if (process.env.NODE_ENV === 'production') {
+    return data
+  }
+
+  return Object.entries(data).filter(
+    ([key, value]) => {
+      const valid = !(value instanceof Function) && !(value instanceof Promise)
+      if (!valid) {
+        console.warn(`${key} is not able to be stringified. This will break in a production environment.`)
+      }
+      return valid
+    }
+    ).reduce((obj, [key, value]) => {
+      obj[key] = value
+      return obj
+    }, {})
 }
 export function getChildrenComponentInstancesUsingFetch(vm, instances = []) {
   const children = vm.$children || []
@@ -118,7 +146,29 @@ export function resolveRouteComponents (route, fn) {
     flatMapComponents(route, async (Component, instance, match, key) => {
       // If component is a function, resolve it
       if (typeof Component === 'function' && !Component.options) {
-        Component = await Component()
+        try {
+          Component = await Component()
+        } catch (error) {
+          // Handle webpack chunk loading errors
+          // This may be due to a new deployment or a network problem
+          if (
+            error &&
+            error.name === 'ChunkLoadError' &&
+            typeof window !== 'undefined' &&
+            window.sessionStorage
+          ) {
+            const timeNow = Date.now()
+            const previousReloadTime = parseInt(window.sessionStorage.getItem('nuxt-reload'))
+
+            // check for previous reload time not to reload infinitely
+            if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
+              window.sessionStorage.setItem('nuxt-reload', timeNow)
+              window.location.reload(true /* skip cache */)
+            }
+          }
+
+          throw error
+        }
       }
       match.components[key] = Component = sanitizeComponent(Component)
       return typeof fn === 'function' ? fn(Component, instance, match, key) : Component
@@ -152,16 +202,18 @@ export async function setContext (app, context) {
       <%= (store ? 'store: app.store,' : '') %>
       payload: context.payload,
       error: context.error,
-      base: '<%= router.base %>',
+      base: app.router.options.base,
       env: <%= JSON.stringify(env) %><%= isTest ? '// eslint-disable-line' : '' %>
     }
     // Only set once
+    <% if (!isFullStatic) { %>
     if (context.req) {
       app.context.req = context.req
     }
     if (context.res) {
       app.context.res = context.res
     }
+    <% } %>
     if (context.ssrContext) {
       app.context.ssrContext = context.ssrContext
     }
@@ -189,7 +241,7 @@ export async function setContext (app, context) {
           status
         })
       } else {
-        path = formatUrl(path, query)
+        path = withQuery(path, query)
         if (process.server) {
           app.context.next({
             path,
@@ -278,14 +330,20 @@ export function promisify (fn, context) {
 
 // Imported from vue-router
 export function getLocation (base, mode) {
-  let path = decodeURI(window.location.pathname)
   if (mode === 'hash') {
     return window.location.hash.replace(/^#\//, '')
   }
-  if (base && path.indexOf(base) === 0) {
+
+  base = decodeURI(base).slice(0, -1) // consideration is base is normalized with trailing slash
+  let path = decodeURI(window.location.pathname)
+
+  if (base && path.startsWith(base)) {
     path = path.slice(base.length)
   }
-  return (path || '/') + window.location.search + window.location.hash
+
+  const fullPath = (path || '/') + window.location.search + window.location.hash
+
+  return normalizeURL(fullPath)
 }
 
 // Imported from path-to-regexp
@@ -558,82 +616,6 @@ function flags (options) {
   return options && options.sensitive ? '' : 'i'
 }
 
-/**
- * Format given url, append query to url query string
- *
- * @param  {string} url
- * @param  {string} query
- * @return {string}
- */
-function formatUrl (url, query) {
-  <% if (features.clientUseUrl) { %>
-  url = new URL(url, top.location.href)
-  for (const key in query) {
-    const value = query[key]
-    if (value == null) {
-      continue
-    }
-    if (Array.isArray(value)) {
-      for (const arrayValue of value) {
-        url.searchParams.append(key, arrayValue)
-      }
-      continue
-    }
-    url.searchParams.append(key, value)
-  }
-  url.searchParams.sort()
-  return url.toString()
-  <% } else { %>
-  let protocol
-  const index = url.indexOf('://')
-  if (index !== -1) {
-    protocol = url.substring(0, index)
-    url = url.substring(index + 3)
-  } else if (url.startsWith('//')) {
-    url = url.substring(2)
-  }
-
-  let parts = url.split('/')
-  let result = (protocol ? protocol + '://' : '//') + parts.shift()
-
-  let path = parts.filter(Boolean).join('/')
-  let hash
-  parts = path.split('#')
-  if (parts.length === 2) {
-    [path, hash] = parts
-  }
-
-  result += path ? '/' + path : ''
-
-  if (query && JSON.stringify(query) !== '{}') {
-    result += (url.split('?').length === 2 ? '&' : '?') + formatQuery(query)
-  }
-  result += hash ? '#' + hash : ''
-
-  return result
-  <% } %>
-}
-<% if (!features.clientUseUrl) { %>
-/**
- * Transform data object to query string
- *
- * @param  {object} query
- * @return {string}
- */
-function formatQuery (query) {
-  return Object.keys(query).sort().map((key) => {
-    const val = query[key]
-    if (val == null) {
-      return ''
-    }
-    if (Array.isArray(val)) {
-      return val.slice().map(val2 => [key, '=', val2].join('')).join('&')
-    }
-    return key + '=' + val
-  }).filter(Boolean).join('&')
-}
-<% } %>
-
 export function addLifecycleHook(vm, hook, fn) {
   if (!vm.$options[hook]) {
     vm.$options[hook] = []
@@ -642,3 +624,16 @@ export function addLifecycleHook(vm, hook, fn) {
     vm.$options[hook].push(fn)
   }
 }
+
+export const urlJoin = joinURL
+
+export const stripTrailingSlash = withoutTrailingSlash
+
+export const isSamePath = _isSamePath
+
+export function setScrollRestoration (newVal) {
+  try {
+    window.history.scrollRestoration = newVal;
+  } catch(e) {}
+}
+

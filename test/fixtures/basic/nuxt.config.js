@@ -32,6 +32,8 @@ export default {
       '/users/1',
       '/users/2',
       '/тест雨',
+      '/skip-on-fail/success',
+      '/skip-on-fail/fail',
       { route: '/users/3', payload: { id: 3000 } }
     ],
     interval: 200
@@ -39,8 +41,9 @@ export default {
   head () {
     return {
       titleTemplate (titleChunk) {
-        return titleChunk ? `${titleChunk} - Nuxt.js` : 'Nuxt.js'
-      }
+        return titleChunk ? `${titleChunk} - Nuxt` : 'Nuxt'
+      },
+      meta: [{ charset: 'utf-8' }]
     }
   },
   modulesDir: path.join(__dirname, '..', '..', '..', 'node_modules'),
@@ -63,9 +66,11 @@ export default {
     '': true
   },
   pageTransition: false,
+  components: true,
   plugins: [
     '~/plugins/vuex-module',
     '~/plugins/dir-plugin',
+    '~/plugins/router-guard',
     '~/plugins/inject'
   ],
   serverMiddleware: [

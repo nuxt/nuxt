@@ -1,4 +1,5 @@
 import Vue from 'vue'
+<% if (store) { %>import Vuex from 'vuex'<% } %>
 <% if (features.meta) { %>import Meta from 'vue-meta'<% } %>
 <% if (features.componentClientOnly) { %>import ClientOnly from 'vue-client-only'<% } %>
 <% if (features.deprecations) { %>import NoSsr from 'vue-no-ssr'<% } %>
@@ -43,6 +44,17 @@ Vue.component(NuxtChild.name, NuxtChild)
 // Component: <Nuxt>
 Vue.component(Nuxt.name, Nuxt)
 
+Object.defineProperty(Vue.prototype, '<%= globals.nuxt %>', {
+  get() {
+    const globalNuxt = this.$root.$options.<%= globals.nuxt %>
+    if (process.client && !globalNuxt && typeof window !== 'undefined') {
+      return window.<%= globals.nuxt %>
+    }
+    return globalNuxt
+  },
+  configurable: true
+})
+
 <% if (features.meta) {
 // vue-meta configuration
 const vueMetaOptions = {
@@ -66,8 +78,21 @@ const defaultTransition = <%=
 %><%= isTest ? '// eslint-disable-line' : '' %>
 <% } %>
 
-async function createApp (ssrContext) {
-  const router = await createRouter(ssrContext)
+<% if (store) { %>
+const originalRegisterModule = Vuex.Store.prototype.registerModule
+
+function registerModule (path, rawModule, options = {}) {
+  const preserveState = process.client && (
+    Array.isArray(path)
+      ? !!path.reduce((namespacedState, path) => namespacedState && namespacedState[path], this.state)
+      : path in this.state
+  )
+  return originalRegisterModule.call(this, path, rawModule, { preserveState, ...options })
+}
+<% } %>
+
+async function createApp(ssrContext, config = {}) {
+  const router = await createRouter(ssrContext, config)
 
   <% if (store) { %>
   const store = createStore(ssrContext)
@@ -75,8 +100,7 @@ async function createApp (ssrContext) {
   store.$router = router
     <% if (mode === 'universal') { %>
   // Fix SSR caveat https://github.com/nuxt/nuxt.js/issues/3757#issuecomment-414689141
-  const registerModule = store.registerModule
-  store.registerModule = (path, rawModule, options) => registerModule.call(store, path, rawModule, Object.assign({ preserveState: process.client }, options))
+  store.registerModule = registerModule
     <% } %>
   <% } %>
 
@@ -162,8 +186,7 @@ async function createApp (ssrContext) {
     ssrContext
   })
 
-  <% if (plugins.length) { %>
-  const inject = function (key, value) {
+  function inject(key, value) {
     if (!key) {
       throw new Error('inject(key, value) has no key provided')
     }
@@ -190,7 +213,7 @@ async function createApp (ssrContext) {
     Vue[installKey] = true
     // Call Vue.use() to install the plugin into vm
     Vue.use(() => {
-      if (!Object.prototype.hasOwnProperty.call(Vue, key)) {
+      if (!Object.prototype.hasOwnProperty.call(Vue.prototype, key)) {
         Object.defineProperty(Vue.prototype, key, {
           get () {
             return this.$root.$options[key]
@@ -199,7 +222,9 @@ async function createApp (ssrContext) {
       }
     })
   }
-  <% } %>
+
+  // Inject runtime config as $config
+  inject('config', config)
 
   <% if (store) { %>
   if (process.client) {
@@ -210,6 +235,13 @@ async function createApp (ssrContext) {
   }
   <% } %>
 
+  // Add enablePreview(previewData = {}) in context for plugins
+  if (process.static && process.client) {
+    app.context.enablePreview = function (previewData = {}) {
+      app.previewData = Object.assign({}, previewData)
+      inject('preview', previewData)
+    }
+  }
   // Plugin execution
   <%= isTest ? '/* eslint-disable camelcase */' : '' %>
   <% plugins.forEach((plugin) => { %>
@@ -228,23 +260,33 @@ async function createApp (ssrContext) {
   <% } %>
   <% }) %>
   <%= isTest ? '/* eslint-enable camelcase */' : '' %>
+  // Lock enablePreview in context
+  if (process.static && process.client) {
+    app.context.enablePreview = function () {
+      console.warn('You cannot call enablePreview() outside a plugin.')
+    }
+  }
 
-  // If server-side, wait for async component to be resolved first
-  if (process.server && ssrContext && ssrContext.url) {
-    await new Promise((resolve, reject) => {
-      router.push(ssrContext.url, resolve, () => {
-        // navigated to a different route in router guard
-        const unregister = router.afterEach(async (to, from, next) => {
+  // Wait for async component to be resolved first
+  await new Promise((resolve, reject) => {
+    router.push(app.context.route.fullPath, resolve, (err) => {
+      // https://github.com/vuejs/vue-router/blob/v3.4.3/src/util/errors.js
+      if (!err._isRouter) return reject(err)
+      if (err.type !== 2 /* NavigationFailureType.redirected */) return resolve()
+
+      // navigated to a different route in router guard
+      const unregister = router.afterEach(async (to, from) => {
+        if (process.server && ssrContext && ssrContext.url) {
           ssrContext.url = to.fullPath
-          app.context.route = await getRouteData(to)
-          app.context.params = to.params || {}
-          app.context.query = to.query || {}
-          unregister()
-          resolve()
-        })
+        }
+        app.context.route = await getRouteData(to)
+        app.context.params = to.params || {}
+        app.context.query = to.query || {}
+        unregister()
+        resolve()
       })
     })
-  }
+  })
 
   return {
     <% if(store) { %>store,<%  } %>

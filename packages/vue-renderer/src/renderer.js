@@ -1,8 +1,10 @@
 import path from 'path'
 import fs from 'fs-extra'
 import consola from 'consola'
-import template from 'lodash/template'
-import { isModernRequest, waitFor } from '@nuxt/utils'
+import { template } from 'lodash'
+import { TARGETS, isModernRequest, urlJoin, waitFor } from '@nuxt/utils'
+import { normalizeURL } from 'ufo'
+import defu from 'defu'
 
 import SPARenderer from './renderers/spa'
 import SSRRenderer from './renderers/ssr'
@@ -27,7 +29,7 @@ export default class VueRenderer {
       serverManifest: undefined,
       ssrTemplate: undefined,
       spaTemplate: undefined,
-      errorTemplate: this.parseTemplate('Nuxt.js Internal Server Error')
+      errorTemplate: this.parseTemplate('Nuxt Internal Server Error')
     })
 
     // Default status
@@ -195,7 +197,8 @@ export default class VueRenderer {
       return
     }
 
-    if (!resources.modernManifest) {
+    const isExplicitStaticModern = options.target === TARGETS.static && options.modern
+    if (!resources.modernManifest && !isExplicitStaticModern) {
       options.modern = false
       return
     }
@@ -273,20 +276,29 @@ export default class VueRenderer {
     consola.debug(`Rendering url ${url}`)
 
     // Add url to the renderContext
-    renderContext.url = url
+    renderContext.url = normalizeURL(url)
 
-    const { req = {} } = renderContext
+    // Add target to the renderContext
+    renderContext.target = this.options.target
+
+    const { req = {}, res = {} } = renderContext
 
     // renderContext.spa
     if (renderContext.spa === undefined) {
       // TODO: Remove reading from renderContext.res in Nuxt3
-      renderContext.spa = !this.SSR || req.spa || (renderContext.res && renderContext.res.spa)
+      renderContext.spa = !this.SSR || req.spa || res.spa
     }
 
     // renderContext.modern
     if (renderContext.modern === undefined) {
       const modernMode = this.options.modern
       renderContext.modern = modernMode === 'client' || isModernRequest(req, modernMode)
+    }
+
+    // Set runtime config on renderContext
+    renderContext.runtimeConfig = {
+      private: renderContext.spa ? {} : defu(this.options.privateRuntimeConfig, this.options.publicRuntimeConfig),
+      public: { ...this.options.publicRuntimeConfig }
     }
 
     // Call renderContext hook
@@ -299,14 +311,15 @@ export default class VueRenderer {
   }
 
   get resourceMap () {
+    const publicPath = urlJoin(this.options.app.cdnURL, this.options.app.assetsPath)
     return {
       clientManifest: {
         fileName: 'client.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: src => Object.assign(JSON.parse(src), { publicPath })
       },
       modernManifest: {
         fileName: 'modern.manifest.json',
-        transform: src => JSON.parse(src)
+        transform: src => Object.assign(JSON.parse(src), { publicPath })
       },
       serverManifest: {
         fileName: 'server.manifest.json',

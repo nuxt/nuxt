@@ -1,26 +1,6 @@
-import consola from 'consola'
-import chalk from 'chalk'
-import env from 'std-env'
-import exit from 'exit'
+process.env.FORCE_COLOR = 0
 
-const isWin = env.windows
-
-describe.win = isWin ? describe : describe.skip
-test.win = isWin ? test : test.skip
-
-describe.posix = !isWin ? describe : describe.skip
-test.posix = !isWin ? test : test.skip
-
+const chalk = require('chalk')
 chalk.level = 0
-
-jest.setTimeout(60000)
-
-consola.mockTypes(() => jest.fn())
-
-function errorTrap (error) {
-  process.stderr.write('\n' + error.stack + '\n')
-  exit(1)
-}
-
-process.on('unhandledRejection', errorTrap)
-process.on('uncaughtException', errorTrap)
+chalk.supportsColor = false
+process.env.FORCE_COLOR = 0

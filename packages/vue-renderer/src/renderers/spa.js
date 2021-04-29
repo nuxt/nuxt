@@ -1,9 +1,10 @@
 import { extname } from 'path'
-import cloneDeep from 'lodash/cloneDeep'
+import { cloneDeep } from 'lodash'
 import VueMeta from 'vue-meta'
 import { createRenderer } from 'vue-server-renderer'
 import LRU from 'lru-cache'
-import { isModernRequest } from '@nuxt/utils'
+import devalue from '@nuxt/devalue'
+import { TARGETS, isModernRequest } from '@nuxt/utils'
 import BaseRenderer from './base'
 
 export default class SPARenderer extends BaseRenderer {
@@ -27,9 +28,9 @@ export default class SPARenderer extends BaseRenderer {
   }
 
   async render (renderContext) {
-    const { url = '/', req = {}, _generate } = renderContext
+    const { url = '/', req = {} } = renderContext
     const modernMode = this.options.modern
-    const modern = (modernMode && _generate) || isModernRequest(req, modernMode)
+    const modern = (modernMode && this.options.target === TARGETS.static) || isModernRequest(req, modernMode)
     const cacheKey = `${modern ? 'modern:' : 'legacy:'}${url}`
     let meta = this.cache.get(cacheKey)
 
@@ -50,14 +51,16 @@ export default class SPARenderer extends BaseRenderer {
 
     if (this.options.features.meta) {
       // Get vue-meta context
-      let head
-      if (typeof this.options.head === 'function') {
-        head = this.options.head()
-      } else {
-        head = cloneDeep(this.options.head)
-      }
+      renderContext.head = typeof this.options.head === 'function'
+        ? this.options.head()
+        : cloneDeep(this.options.head)
+    }
 
-      const m = VueMeta.generate(head || {}, this.vueMetaConfig)
+    // Allow overriding renderContext
+    await this.serverContext.nuxt.callHook('vue-renderer:spa:prepareContext', renderContext)
+
+    if (this.options.features.meta) {
+      const m = VueMeta.generate(renderContext.head || {}, this.vueMetaConfig)
 
       // HTML_ATTRS
       meta.HTML_ATTRS = m.htmlAttrs.text()
@@ -148,7 +151,16 @@ export default class SPARenderer extends BaseRenderer {
       }
     }
 
-    const APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+    // Serialize state (runtime config)
+    let APP = `${meta.BODY_SCRIPTS_PREPEND}<div id="${this.serverContext.globals.id}">${this.serverContext.resources.loadingHTML}</div>${meta.BODY_SCRIPTS}`
+
+    const payload = {
+      config: renderContext.runtimeConfig.public
+    }
+    if (renderContext.staticAssetsBase) {
+      payload.staticAssetsBase = renderContext.staticAssetsBase
+    }
+    APP += `<script>window.${this.serverContext.globals.context}=${devalue(payload)}</script>`
 
     // Prepare template params
     const templateParams = {
@@ -191,7 +203,7 @@ export default class SPARenderer extends BaseRenderer {
       return 'script'
     } else if (ext === 'css') {
       return 'style'
-    } else if (/jpe?g|png|svg|gif|webp|ico/.test(ext)) {
+    } else if (/jpe?g|png|svg|gif|webp|ico|avif/.test(ext)) {
       return 'image'
     } else if (/woff2?|ttf|otf|eot/.test(ext)) {
       return 'font'

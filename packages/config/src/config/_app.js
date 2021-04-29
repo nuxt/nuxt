@@ -26,9 +26,6 @@ export default () => ({
 
   css: [],
 
-  modules: [],
-  buildModules: [],
-
   layouts: {},
 
   ErrorPage: null,
@@ -72,7 +69,6 @@ export default () => ({
     fetch: true,
     clientOnline: true,
     clientPrefetch: true,
-    clientUseUrl: false,
     componentAliases: true,
     componentClientOnly: true
   }

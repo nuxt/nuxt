@@ -47,9 +47,10 @@ describe('server: nuxtMiddleware', () => {
     expect(context.renderRoute).toBeCalledTimes(1)
     expect(context.renderRoute).toBeCalledWith(req.url, { req, res })
 
-    expect(context.nuxt.callHook).toBeCalledTimes(2)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
     expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res })
-    expect(context.nuxt.callHook).nthCalledWith(2, 'render:routeDone', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res })
 
     expect(res.setHeader).toBeCalledTimes(3)
     expect(res.setHeader).nthCalledWith(1, 'Content-Type', 'text/html; charset=utf-8')
@@ -94,9 +95,10 @@ describe('server: nuxtMiddleware', () => {
 
     const html = await nuxtMiddleware(req, res, next)
 
-    expect(context.nuxt.callHook).toBeCalledTimes(2)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
     expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res, nuxt })
-    expect(context.nuxt.callHook).nthCalledWith(2, 'render:routeDone', req.url, result, { req, res, nuxt })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res, nuxt })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res, nuxt })
 
     expect(res.statusCode).toEqual(404)
     expect(html).toEqual(result.html)
@@ -145,6 +147,10 @@ describe('server: nuxtMiddleware', () => {
     await nuxtMiddleware(req, res, next)
 
     expect(res.statusCode).toEqual(304)
+    expect(context.nuxt.callHook).toBeCalledTimes(3)
+    expect(context.nuxt.callHook).nthCalledWith(1, 'render:route', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(2, 'render:beforeResponse', req.url, result, { req, res })
+    expect(context.nuxt.callHook).nthCalledWith(3, 'render:routeDone', req.url, result, { req, res })
     expect(res.end).toBeCalledTimes(1)
     expect(res.end).toBeCalledWith()
   })
@@ -259,7 +265,7 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(
       1,
       'Content-Security-Policy-Report-Only',
-      "script-src 'self' 'unsafe-eval' sha256-hashes /nuxt/*.js /nuxt/images/*"
+      "script-src 'self' sha256-hashes /nuxt/*.js /nuxt/images/*"
     )
   })
 
@@ -271,7 +277,7 @@ describe('server: nuxtMiddleware', () => {
     context.options.render.csp = {
       policies: {
         'script-src': [
-          '/nuxt.js',
+          '/nuxt',
           '/test.js'
         ],
         'report-uri': [
@@ -289,7 +295,7 @@ describe('server: nuxtMiddleware', () => {
     expect(res.setHeader).nthCalledWith(
       1,
       'Content-Security-Policy',
-      "script-src sha256-hashes 'self' /nuxt.js /test.js; report-uri /report"
+      "script-src sha256-hashes 'self' /nuxt /test.js; report-uri /report"
     )
   })
 
@@ -323,18 +329,24 @@ describe('server: nuxtMiddleware', () => {
     expect(consola.error).toBeCalledWith(err)
   })
 
-  test('should return 400 if request is uri error', async () => {
+  test('should return handle uri errors by normalizing', async () => {
     const context = createContext()
     const result = { html: 'rendered html' }
     context.renderRoute.mockReturnValue(result)
     const nuxtMiddleware = createNuxtMiddleware(context)
     const { req, res, next } = createServerContext()
+    const paths = ['%c1%81', '%c1', '%']
 
-    const err = Error('URI malformed')
-    err.name = 'URIError'
+    for (const path of paths) {
+      await nuxtMiddleware(
+        { ...req, url: 'http://localhost/test/server/' + path },
+        res,
+        next
+      )
 
-    await nuxtMiddleware({ ...req, url: 'http://localhost/test/server/%c1%81' }, res, next)
-
-    expect(next).toBeCalledWith(err)
+      expect(next).toBeCalledTimes(0)
+      expect(res.statusCode).toBe(200)
+      next.mockReset()
+    }
   })
 })

@@ -3,7 +3,7 @@
     <div>
       <logo/>
       <h1 class="title">
-        Nuxt.js with Coffee!
+        Nuxt with Coffee!
       </h1>
       <h2 class="subtitle">
         {{message}}

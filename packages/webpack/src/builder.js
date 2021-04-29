@@ -6,7 +6,7 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
-import { parallel, sequence, wrapArray, isModernRequest } from '@nuxt/utils'
+import { TARGETS, parallel, sequence, tryResolve, wrapArray, isModernRequest } from '@nuxt/utils'
 import AsyncMFS from './utils/async-mfs'
 
 import * as WebpackConfigs from './config'
@@ -92,7 +92,7 @@ export class WebpackBundler {
     // Warm up perfLoader before build
     if (options.build.parallel) {
       consola.info('Warming up worker pools')
-      PerfLoader.warmupAll({ dev: options.dev })
+      PerfLoader.warmupAll({ dev: options.dev, resolveModule: id => tryResolve(id, __filename) || id })
       consola.success('Worker pools ready')
     }
 
@@ -168,14 +168,19 @@ export class WebpackBundler {
     const buildOptions = this.buildContext.options.build
     const { client, ...hotMiddlewareOptions } = buildOptions.hotMiddleware || {}
 
+    compiler.options.watchOptions = this.buildContext.options.watchers.webpack
+    compiler.hooks.infrastructureLog.tap('webpack-dev-middleware-log', (name) => {
+      if (name === 'webpack-dev-middleware') {
+        return false
+      }
+      return undefined
+    })
+
     // Create webpack dev middleware
     this.devMiddleware[name] = pify(
       webpackDevMiddleware(
         compiler, {
-          publicPath: buildOptions.publicPath,
-          stats: false,
-          logLevel: 'silent',
-          watchOptions: this.buildContext.options.watchers.webpack,
+          outputFileSystem: compiler.outputFileSystem,
           ...buildOptions.devMiddleware
         })
     )
@@ -202,7 +207,10 @@ export class WebpackBundler {
     const name = isModernRequest(req, this.buildContext.options.modern) ? 'modern' : 'client'
 
     if (this.devMiddleware && this.devMiddleware[name]) {
+      const { url } = req
+      req.url = req.originalUrl || req.url
       await this.devMiddleware[name](req, res)
+      req.url = url
     }
 
     if (this.hotMiddleware && this.hotMiddleware[name]) {
@@ -244,6 +252,6 @@ export class WebpackBundler {
   }
 
   forGenerate () {
-    this.buildContext.isStatic = true
+    this.buildContext.target = TARGETS.static
   }
 }

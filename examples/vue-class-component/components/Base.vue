@@ -27,6 +27,8 @@ export default
 })
 class Base extends Vue {
   // initial data
+  // TODO: Remove when upgrade babel-preset-env
+  // eslint-disable-next-line no-undef
   msg = 123
 
   // lifecycle hook

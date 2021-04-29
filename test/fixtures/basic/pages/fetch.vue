@@ -7,6 +7,7 @@
     <button @click="reload">
       Reload
     </button>
+    <code>{{ fetched }}</code>
   </div>
 </template>
 
@@ -18,9 +19,24 @@ const getData = () => fetch(`${baseURL}/test`)
   .then(r => r + ` (From ${name})`)
 
 export default {
-  async asyncData () {
+  async asyncData ({ $config }) {
+    if ($config.generated) { return }
+
     const data = await getData()
     return { data }
+  },
+  data: () => ({
+    num: 10,
+    fetched: false
+  }),
+  async fetch () {
+    await new Promise((resolve) => {
+      this.fetched = true
+      resolve()
+    })
+  },
+  fetchKey (getCounter) {
+    return 'custom' + this.num + getCounter('custom')
   },
   methods: {
     async update () {

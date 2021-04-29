@@ -1,4 +1,3 @@
-import path from 'path'
 import chalk from 'chalk'
 import consola from 'consola'
 import fsExtra from 'fs-extra'
@@ -7,7 +6,6 @@ import { waitFor } from '@nuxt/utils'
 import Generator from '../src/generator'
 import { createNuxt } from './__utils__'
 
-jest.mock('path')
 jest.mock('chalk', () => ({
   red: jest.fn(str => `red:${str}`),
   yellow: jest.fn(str => `yellow:${str}`),
@@ -17,17 +15,6 @@ jest.mock('fs-extra')
 jest.mock('@nuxt/utils')
 
 describe('generator: generate routes', () => {
-  const sep = path.sep
-
-  beforeAll(() => {
-    path.sep = '[sep]'
-    path.join.mockImplementation((...args) => `join(${args.join(', ')})`)
-  })
-
-  afterAll(() => {
-    path.sep = sep
-  })
-
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -57,7 +44,6 @@ describe('generator: generate routes', () => {
     expect(generator.generateRoutes).toBeCalledTimes(1)
     expect(generator.generateRoutes).toBeCalledWith(routes)
     expect(generator.afterGenerate).toBeCalledTimes(1)
-    expect(nuxt.callHook).toBeCalledTimes(1)
     expect(nuxt.callHook).toBeCalledWith('generate:done', generator, errors)
   })
 
@@ -96,12 +82,9 @@ describe('generator: generate routes', () => {
     const generator = new Generator(nuxt)
 
     generator.generateRoute = jest.fn()
-    jest.spyOn(routes, 'splice')
 
     const errors = await generator.generateRoutes(routes)
 
-    expect(routes.splice).toBeCalledTimes(3)
-    expect(routes.splice).toBeCalledWith(0, 2)
     expect(waitFor).toBeCalledTimes(5)
     expect(waitFor).nthCalledWith(1, 0)
     expect(waitFor).nthCalledWith(2, 100)
@@ -120,8 +103,6 @@ describe('generator: generate routes', () => {
 
     expect(generator._formatErrors).toBeCalledTimes(1)
     expect(generator._formatErrors).toBeCalledWith(errors)
-
-    routes.splice.mockRestore()
   })
 
   test('should format errors', () => {
@@ -153,25 +134,28 @@ grey:bar failed`)
     const nuxt = createNuxt()
     nuxt.options.generate.fallback = 'fallback.html'
     const generator = new Generator(nuxt)
-    path.join.mockClear()
     fsExtra.exists.mockReturnValueOnce(false)
 
     await generator.afterGenerate()
 
-    expect(path.join).toBeCalledTimes(1)
-    expect(path.join).toBeCalledWith(generator.distPath, 'fallback.html')
     expect(fsExtra.exists).toBeCalledTimes(1)
-    expect(fsExtra.exists).toBeCalledWith(`join(${generator.distPath}, fallback.html)`)
+    expect(fsExtra.exists.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
     expect(nuxt.server.renderRoute).toBeCalledTimes(1)
     expect(nuxt.server.renderRoute).toBeCalledWith('/', { spa: true })
     expect(fsExtra.writeFile).toBeCalledTimes(1)
-    expect(fsExtra.writeFile).toBeCalledWith(`join(${generator.distPath}, fallback.html)`, 'rendered html', 'utf8')
+    expect(fsExtra.writeFile).toBeCalledWith(expect.any(String), 'rendered html', 'utf8')
+    expect(fsExtra.writeFile.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
   })
 
   test('should disable writing fallback if fallback is empty or not string', async () => {
     const nuxt = createNuxt()
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     nuxt.options.generate.fallback = ''
     await generator.afterGenerate()
@@ -179,7 +163,6 @@ grey:bar failed`)
     nuxt.options.generate.fallback = jest.fn()
     await generator.afterGenerate()
 
-    expect(path.join).not.toBeCalled()
     expect(fsExtra.exists).not.toBeCalled()
     expect(nuxt.server.renderRoute).not.toBeCalled()
     expect(fsExtra.writeFile).not.toBeCalled()
@@ -189,15 +172,15 @@ grey:bar failed`)
     const nuxt = createNuxt()
     nuxt.options.generate.fallback = 'fallback.html'
     const generator = new Generator(nuxt)
-    path.join.mockClear()
     fsExtra.exists.mockReturnValueOnce(true)
 
     await generator.afterGenerate()
 
-    expect(path.join).toBeCalledTimes(1)
-    expect(path.join).toBeCalledWith(generator.distPath, 'fallback.html')
     expect(fsExtra.exists).toBeCalledTimes(1)
-    expect(fsExtra.exists).toBeCalledWith(`join(${generator.distPath}, fallback.html)`)
+    expect(fsExtra.exists.mock.calls[0][0]).toBePath(
+      '/var/nuxt/generate/fallback.html',
+      'C:\\nuxt\\generate\\fallback.html'
+    )
     expect(nuxt.server.renderRoute).not.toBeCalled()
     expect(fsExtra.writeFile).not.toBeCalled()
   })
@@ -205,7 +188,6 @@ grey:bar failed`)
   test('should disable writing fallback if fallback is empty or not string', async () => {
     const nuxt = createNuxt()
     const generator = new Generator(nuxt)
-    path.join.mockClear()
 
     nuxt.options.generate.fallback = ''
     await generator.afterGenerate()
@@ -213,7 +195,6 @@ grey:bar failed`)
     nuxt.options.generate.fallback = jest.fn()
     await generator.afterGenerate()
 
-    expect(path.join).not.toBeCalled()
     expect(fsExtra.exists).not.toBeCalled()
     expect(fsExtra.writeFile).not.toBeCalled()
   })

@@ -1,6 +1,6 @@
 import path from 'path'
 import consola from 'consola'
-import escapeRegExp from 'lodash/escapeRegExp'
+import { escapeRegExp } from 'lodash'
 
 export const startsWithAlias = aliasArray => str => aliasArray.some(c => str.startsWith(c))
 
@@ -17,10 +17,8 @@ export const wp = function wp (p = '') {
   return p
 }
 
+// Kept for backward compat (modules may use it from template context)
 export const wChunk = function wChunk (p = '') {
-  if (isWindows) {
-    return p.replace(/\//g, '_')
-  }
   return p
 }
 
@@ -88,6 +86,7 @@ export function defineAlias (src, target, prop, opts = {}) {
         warned = true
         consola.warn({
           message: `'${prop}' is deprecated'`,
+          // eslint-disable-next-line unicorn/error-message
           additional: new Error().stack.split('\n').splice(2).join('\n')
         })
       }
@@ -107,5 +106,5 @@ export function isIndexFileAndFolder (pluginFiles) {
 }
 
 export const getMainModule = () => {
-  return require.main || (module && module.main) || module
+  return (require && require.main) || (module && module.main) || module
 }

@@ -6,12 +6,13 @@ describe('webpack configuration', () => {
   test('performance loader', () => {
     const js = { name: 'js', poolTimeout: Infinity }
     const css = { name: 'css', poolTimeout: Infinity }
+    const resolveModule = jest.fn(id => id)
     PerfLoader.warmup = jest.fn()
-    PerfLoader.warmupAll({ dev: true })
+    PerfLoader.warmupAll({ dev: true, resolveModule })
     expect(PerfLoader.warmup).toHaveBeenCalledTimes(2)
     expect(PerfLoader.warmup).toHaveBeenCalledWith(js, [
-      require.resolve('babel-loader'),
-      require.resolve('@babel/preset-env')
+      'babel-loader',
+      '@babel/preset-env'
     ])
     expect(PerfLoader.warmup).toHaveBeenCalledWith(css, ['css-loader'])
 
@@ -25,6 +26,9 @@ describe('webpack configuration', () => {
           parallel: true,
           cache: true
         }
+      },
+      {
+        resolveModule
       }
     )
     expect(perfLoader.workerPools).toMatchObject({ js, css })

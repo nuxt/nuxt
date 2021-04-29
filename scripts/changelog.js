@@ -1,8 +1,6 @@
 import consola from 'consola'
 import execa from 'execa'
-import groupBy from 'lodash/groupBy'
-import sortBy from 'lodash/sortBy'
-import uniq from 'lodash/uniq'
+import { uniq, sortBy, groupBy } from 'lodash'
 import { writeFile } from 'fs-extra'
 
 const types = {
@@ -12,7 +10,8 @@ const types = {
   perf: { title: '🔥 Performance' },
   examples: { title: '📝 Examples' },
   chore: { title: '🏡 Chore' },
-  test: { title: '👓 Tests' }
+  test: { title: '👓 Tests' },
+  types: { title: '🇹 Types' }
 }
 
 const knownAuthors = [
@@ -23,7 +22,9 @@ const knownAuthors = [
   'lichter',
   'molotkov',
   'marrec',
-  'pim'
+  'pim',
+  'daniel roe',
+  'danielroe'
 ]
 
 const isKnownAuthor = name => Boolean(knownAuthors.find(n => name.toLowerCase().includes(n)))

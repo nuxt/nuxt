@@ -19,7 +19,8 @@ module.exports = {
   // But its performance overhead is pretty bad (30+%).
   // detectOpenHandles: true
 
-  setupFilesAfterEnv: ['./test/utils/setup'],
+  setupFilesAfterEnv: ['./test/utils/setup-env'],
+  setupFiles: ['./test/utils/setup'],
 
   coverageDirectory: './coverage',
 
@@ -40,7 +41,8 @@ module.exports = {
   ],
 
   transformIgnorePatterns: [
-    'node_modules/(?!(@nuxt|nuxt))'
+    'node_modules/(?!(@nuxt|nuxt))',
+    'packages/utils/test/serialize\\.test\\.input\\.js'
   ],
 
   transform: {

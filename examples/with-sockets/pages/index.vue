@@ -4,10 +4,10 @@
       <li class="chat page">
         <div class="chatArea">
           <ul ref="messages" class="messages">
-            <li v-for="(message, index) in messages" :key="index" class="message">
-              <i :title="message.date">
-                {{ message.date.split('T')[1].slice(0, -2) }}
-              </i>: {{ message.text }}
+            <li v-for="(msg, index) in messages" :key="index" class="message">
+              <i :title="msg.date">
+                {{ msg.date.split('T')[1].slice(0, -2) }}
+              </i>: {{ msg.text }}
             </li>
           </ul>
         </div>
@@ -21,13 +21,16 @@
 import socket from '~/plugins/socket.io.js'
 
 export default {
-  asyncData (context, callback) {
-    socket.emit('last-messages', function (messages) {
-      callback(null, {
-        messages,
-        message: ''
-      })
-    })
+  asyncData () {
+    return new Promise(resolve =>
+      socket.emit('last-messages', messages => resolve({ messages }))
+    )
+  },
+  data () {
+    return { message: '' }
+  },
+  head: {
+    title: 'Nuxt.js with Socket.io'
   },
   watch: {
     messages: 'scrollToBottom'
@@ -56,9 +59,6 @@ export default {
         this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight
       })
     }
-  },
-  head: {
-    title: 'Nuxt.js with Socket.io'
   }
 }
 </script>

@@ -4,19 +4,27 @@ const coreJsMeta = {
       es6: 'es6',
       es7: 'es7'
     },
-    builtIns: '@babel/compat-data/corejs2-built-ins'
+    builtIns: require.resolve('@babel/compat-data/corejs2-built-ins')
   },
   3: {
     prefixes: {
       es6: 'es',
       es7: 'es'
     },
-    builtIns: 'core-js-compat/data'
+    builtIns: require.resolve('core-js-compat/data')
+  }
+}
+
+function getMajorVersion (version) {
+  if (typeof version === 'number') {
+    return Math.floor(version)
+  } else {
+    return Number(version.split('.')[0])
   }
 }
 
 function getDefaultPolyfills (corejs) {
-  const { prefixes: { es6, es7 } } = coreJsMeta[corejs.version]
+  const { prefixes: { es6, es7 } } = coreJsMeta[getMajorVersion(corejs.version)]
   return [
     // Promise polyfill alone doesn't work in IE,
     // Needs this as well. see: #1642
@@ -33,7 +41,7 @@ function getDefaultPolyfills (corejs) {
 
 function getPolyfills (targets, includes, { ignoreBrowserslistConfig, configPath, corejs }) {
   const { default: getTargets, isRequired } = require('@babel/helper-compilation-targets')
-  const builtInsList = require(coreJsMeta[corejs.version].builtIns)
+  const builtInsList = require(coreJsMeta[getMajorVersion(corejs.version)].builtIns)
   const builtInTargets = getTargets(targets, {
     ignoreBrowserslistConfig,
     configPath
@@ -77,6 +85,10 @@ module.exports = (api, options = {}) => {
 
   if (typeof corejs !== 'object') {
     corejs = { version: Number(corejs) }
+  }
+
+  if (corejs.proposals === undefined) {
+    corejs.proposals = true
   }
 
   const defaultTargets = {
@@ -150,6 +162,12 @@ module.exports = (api, options = {}) => {
     useESModules: envName !== 'server',
     absoluteRuntime
   }])
+
+  // https://github.com/nuxt/nuxt.js/issues/7722
+  if (envName === 'server') {
+    plugins.push(require('@babel/plugin-proposal-optional-chaining'))
+    plugins.push(require('@babel/plugin-proposal-nullish-coalescing-operator'))
+  }
 
   return {
     sourceType: 'unambiguous',

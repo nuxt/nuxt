@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { hasFetch, normalizeError, addLifecycleHook } from '../utils'
+import { hasFetch, normalizeError, addLifecycleHook, createGetCounter } from '../utils'
 
 const isSsrHydration = (vm) => vm.$vnode && vm.$vnode.elm && vm.$vnode.elm.dataset && vm.$vnode.elm.dataset.fetchKey
 const nuxtState = window.<%= globals.context %>
@@ -32,12 +32,13 @@ function beforeMount() {
 
 function created() {
   if (!isSsrHydration(this)) {
+    <% if (isFullStatic) { %>createdFullStatic.call(this)<% } %>
     return
   }
 
   // Hydrate component
   this._hydrated = true
-  this._fetchKey = +this.$vnode.elm.dataset.fetchKey
+  this._fetchKey = this.$vnode.elm.dataset.fetchKey
   const data = nuxtState.fetch[this._fetchKey]
 
   // If fetch error
@@ -51,6 +52,49 @@ function created() {
     Vue.set(this.$data, key, data[key])
   }
 }
+
+<% if (isFullStatic) { %>
+function createdFullStatic() {
+  // Check if component has been fetched on server
+  let fetchedOnServer = this.$options.fetchOnServer !== false
+  if (typeof this.$options.fetchOnServer === 'function') {
+    fetchedOnServer = this.$options.fetchOnServer.call(this) !== false
+  }
+  if (!fetchedOnServer || this.<%= globals.nuxt %>.isPreview || !this.<%= globals.nuxt %>._pagePayload) {
+    return
+  }
+  this._hydrated = true
+
+  const defaultKey = this.$options._scopeId || this.$options.name || ''
+  const getCounter = createGetCounter(this.<%= globals.nuxt %>._fetchCounters, defaultKey)
+
+  if (typeof this.$options.fetchKey === 'function') {
+    this._fetchKey = this.$options.fetchKey.call(this, getCounter)
+  } else {
+    const key = 'string' === typeof this.$options.fetchKey ? this.$options.fetchKey : defaultKey
+    this._fetchKey = key ? key + ':' + getCounter(key) : String(getCounter(key))
+  }
+
+  const data = this.<%= globals.nuxt %>._pagePayload.fetch[this._fetchKey]
+
+  // If fetch error
+  if (data && data._error) {
+    this.$fetchState.error = data._error
+    return
+  }
+
+  // If there is a missing payload
+  if (!data) {
+    this.$fetch()
+    return
+  }
+
+  // Merge data
+  for (const key in data) {
+    Vue.set(this.$data, key, data[key])
+  }
+}
+<% } %>
 
 function $fetch() {
   if (!this._fetchPromise) {
@@ -71,6 +115,9 @@ async function $_fetch() {
   try {
     await this.$options.fetch.call(this)
   } catch (err) {
+    if (process.dev) {
+      console.error('Error in fetch():', err)
+    }
     error = normalizeError(err)
   }
 
@@ -85,4 +132,3 @@ async function $_fetch() {
 
   this.$nextTick(() => this.<%= globals.nuxt %>.nbFetching--)
 }
-

@@ -7,7 +7,8 @@
 
       <div class="title">{{ message }}</div>
       <p v-if="statusCode === 404" class="description">
-        <NuxtLink class="error-link" to="/"><%= messages.back_to_home %></NuxtLink>
+        <a v-if="typeof $route === 'undefined'" class="error-link" href="/"><% messages.back_to_home %></a>
+        <NuxtLink v-else class="error-link" to="/"><%= messages.back_to_home %></NuxtLink>
       </p>
       <% if(debug) { %>
       <p class="description" v-else><%= messages.client_error_details %></p>
@@ -43,7 +44,7 @@ export default {
       meta: [
         {
           name: 'viewport',
-          content: 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'
+          content: 'width=device-width,initial-scale=1.0,minimum-scale=1.0'
         }
       ]
     }

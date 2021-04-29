@@ -1,5 +1,7 @@
+import { TARGETS } from '@nuxt/utils'
 import { common, server } from '../options'
 import { showBanner } from '../utils/banner'
+import { serve } from '../utils/serve'
 
 export default {
   name: 'start',
@@ -11,6 +13,11 @@ export default {
   },
   async run (cmd) {
     const config = await cmd.getNuxtConfig({ dev: false, _start: true })
+
+    if (config.target === TARGETS.static) {
+      return serve(cmd)
+    }
+
     const nuxt = await cmd.getNuxt(config)
 
     // Listen and show ready banner

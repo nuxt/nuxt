@@ -1,0 +1,251 @@
+{
+  "$schema": "http://json.schemastore.org/web-types",
+  "name": "@nuxt/vue-app",
+  "framework": "vue",
+  "version": "2.13.1",
+  "contributions": {
+    "html": {
+      "description-markup": "markdown",
+      "types-syntax": "typescript",
+      "tags": [
+        {
+          "name": "Nuxt",
+          "description": "This component is used only in layouts to display the page components.",
+          "doc-url": "https://nuxtjs.org/api/components-nuxt",
+          "attributes": [
+            {
+              "name": "next-child-key",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "default": "$route.path",
+              "description": "This prop will be set to `<router-view/>`, useful to make transitions inside a dynamic page and different route."
+            },
+            {
+              "name": "name",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "default": "default",
+              "description": "This prop will be set to `<router-view/>`, used to render `named-view` of page component."
+            },
+            {
+              "name": "keep-alive",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "keep-alive-props",
+              "value": {
+                "kind": "expression",
+                "type": "object"
+              }
+            }
+          ]
+        },
+        {
+          "name": "NuxtChild",
+          "aliases": [
+            "NChild"
+          ],
+          "description": "This component is used for displaying the children components in a nested route.",
+          "doc-url": "https://nuxtjs.org/api/components-nuxt-child",
+          "attributes": [
+            {
+              "name": "nuxt-child-key",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              }
+            },
+            {
+              "name": "name",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "description": "This prop will be set to `<router-view/>`, used to render named-view of page component."
+            },
+            {
+              "name": "keep-alive",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "keep-alive-props",
+              "value": {
+                "kind": "expression",
+                "type": "object"
+              }
+            }
+          ]
+        },
+        {
+          "name": "NuxtLink",
+          "aliases": [
+            "NLink"
+          ],
+          "doc-url": "https://nuxtjs.org/api/components-nuxt-link",
+          "description": "This component is used to provide navigations between page components and enhance performances with smart prefetching.",
+          "attributes": [
+            {
+              "name": "no-prefetch",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "prefetch",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              }
+            },
+            {
+              "name": "prefetched-class",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              }
+            },
+            {
+              "name": "to",
+              "required": true,
+              "doc-url": "https://router.vuejs.org/api/#to",
+              "description": "Denotes the target route of the link. When clicked, the value of the `to` prop will be passed to `router.push()` internally, so the value can be either a string or a location descriptor object.",
+              "value": {
+                "kind": "expression",
+                "type": [
+                  "string",
+                  "object"
+                ]
+              }
+            },
+            {
+              "name": "tag",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "default": "'a'",
+              "doc-url": "https://router.vuejs.org/api/#tag",
+              "description": "Sometimes we want `<router-link>` to render as another tag, e.g `<li>`. Then we can use `tag` prop to specify which tag to render to, and it will still listen to click events for navigation."
+            },
+            {
+              "name": "exact",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              },
+              "default": "false",
+              "doc-url": "https://router.vuejs.org/api/#exact",
+              "description": "The default active class matching behavior is **inclusive match**. For example, `<router-link to=\"/a\">` will get this class applied as long as the current path starts with `/a/` or is `/a`.\n\nOne consequence of this is that `<router-link to=\"/\">` will be active for every route! To force the link into \"exact match mode\", use the `exact` prop"
+            },
+            {
+              "name": "append",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              },
+              "default": "false",
+              "doc-url": "https://router.vuejs.org/api/#append",
+              "description": "Setting `append` prop always appends the relative path to the current path. "
+            },
+            {
+              "name": "replace",
+              "value": {
+                "kind": "expression",
+                "type": "boolean"
+              },
+              "default": "false",
+              "doc-url": "https://router.vuejs.org/api/#replace",
+              "description": "Setting `replace` prop will call `router.replace()` instead of `router.push()` when clicked, so the navigation will not leave a history record."
+            },
+            {
+              "name": "activeClass",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "default": "'router-link-active'",
+              "doc-url": "https://router.vuejs.org/api/#active-class",
+              "description": "Configure the active CSS class applied when the link is active. Note the default value can also be configured globally via the `linkActiveClass` router constructor option."
+            },
+            {
+              "name": "exactActiveClass",
+              "value": {
+                "kind": "expression",
+                "type": "string"
+              },
+              "default": "'router-link-exact-active'",
+              "doc-url": "https://router.vuejs.org/api/#exact-active-class",
+              "description": "Configure the active CSS class applied when the link is active with exact match. Note the default value can also be configured globally via the `linkExactActiveClass` router constructor option."
+            },
+            {
+              "name": "ariaCurrentValue",
+              "value": {
+                "kind": "expression",
+                "type": "'page' | 'step' | 'location' | 'date' | 'time'"
+              },
+              "default": "'page'",
+              "doc-url": "https://router.vuejs.org/api/#aria-current-value",
+              "description": "Configure the value of `aria-current` when the link is active with exact match. It must be one of the allowed values for aria-current in the ARIA spec. In most cases, the default of `page` should be the best fit."
+            },
+            {
+              "name": "event",
+              "value": {
+                "kind": "expression",
+                "type": [
+                  "string",
+                  "string[]"
+                ]
+              },
+              "default": "'click'",
+              "doc-url": "https://router.vuejs.org/api/#event",
+              "description": "Specify the event(s) that can trigger the link navigation."
+            }
+          ],
+          "slots": [
+            {
+              "name": "default",
+              "vue-properties": [
+                {
+                  "name": "href",
+                  "description": "Resolved url. This would be the `href` attribute of an `a` element",
+                  "type": "string"
+                },
+                {
+                  "name": "route",
+                  "description": "Resolved normalized location",
+                  "type": "object"
+                },
+                {
+                  "name": "navigate",
+                  "description": "Function to trigger the navigation. **It will automatically prevent events when necessary**, the same way `router-link` does",
+                  "type": "() => any"
+                },
+                {
+                  "name": "isActive",
+                  "description": "`true` if the active class should be applied. Allows to apply an arbitrary class",
+                  "type": "boolean"
+                },
+                {
+                  "name": "isExactActive",
+                  "description": "`true` if the exact active class should be applied. Allows to apply an arbitrary class",
+                  "type": "boolean"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

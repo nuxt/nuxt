@@ -34,11 +34,6 @@ describe('with-config', () => {
     expect(html).toContain('<h1>I have custom configurations</h1>')
   })
 
-  test('/ (asset name for analyze mode)', async () => {
-    const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('<script src="/test/orion/app.js"')
-  })
-
   test('/ (global styles inlined)', async () => {
     const window = await nuxt.server.renderAndGetWindow(url('/test/'))
     const html = window.document.head.innerHTML
@@ -47,8 +42,8 @@ describe('with-config', () => {
 
   test('/ (preload fonts)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain(
-      '<link rel="preload" href="/test/orion/fonts/7cf5d7c.woff2" as="font" type="font/woff2" crossorigin'
+    expect(html).toMatch(
+      /<link rel="preload" href="\/test\/orion\/fonts\/roboto.[\w]{7}.woff2" as="font" type="font\/woff2" crossorigin/
     )
   })
 
@@ -59,7 +54,7 @@ describe('with-config', () => {
 
   test('/ (custom app.html)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('<p>Made by Nuxt.js team</p>')
+    expect(html).toContain('<p>Made by Nuxt team</p>')
   })
 
   test('/ (custom build.publicPath)', async () => {
@@ -67,9 +62,14 @@ describe('with-config', () => {
     expect(html).toContain('<script src="/test/orion/')
   })
 
+  test('/ (async <script>)', async () => {
+    const { html } = await nuxt.server.renderRoute('/')
+    expect(html).toContain('" defer async>')
+  })
+
   test('/ (custom postcss.config.js)', async () => {
     const { html } = await nuxt.server.renderRoute('/')
-    expect(html).toContain('::-webkit-input-placeholder')
+    expect(html).toContain('::-moz-placeholder')
   })
 
   test('/test/ (custom globalName)', async () => {
@@ -127,7 +127,7 @@ describe('with-config', () => {
     expect(html).toContain('<h1>Custom env layout</h1>')
     expect(html).toContain('"bool": true')
     expect(html).toContain('"num": 23')
-    expect(html).toContain('"string": "Nuxt.js"')
+    expect(html).toContain('"string": "Nuxt"')
     expect(html).toContain('"bool": false')
     expect(html).toContain('"string": "ok"')
     expect(html).toContain('"num2": 8.23')

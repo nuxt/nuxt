@@ -3,22 +3,20 @@
     "@nuxtjs"
   ],
   "baseBranches": [
-    "dev",
-    "next"
+    "dev"
   ],
   "ignoreDeps": [
     "core-js",
-    "memory-fs",
-    "@rollup/plugin-node-resolve",
-    "execa",
-    "pify",
-    "file-loader",
-    "url-loader",
-    "@babel/parser",
-    "fs-extra",
-    "chalk",
-    "wrap-ansi",
-    "@rollup/plugin-commonjs"
+    "postcss",
+    "postcss-import",
+    "postcss-loader",
+    "postcss-url",
+    "css-loader",
+    "sass-loader",
+    "npm",
+    "html-webpack-plugin",
+    "terser-webpack-plugin",
+    "@types/terser-webpack-plugin"
   ],
   "lockFileMaintenance": {
     "enabled": true

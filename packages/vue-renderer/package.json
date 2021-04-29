@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-renderer",
-  "version": "2.12.1",
+  "version": "2.15.4",
   "repository": "nuxt/nuxt.js",
   "license": "MIT",
   "main": "dist/vue-renderer.js",
@@ -8,14 +8,17 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/devalue": "^1.2.4",
-    "@nuxt/utils": "2.12.1",
-    "consola": "^2.11.3",
-    "fs-extra": "^8.1.0",
+    "@nuxt/devalue": "^1.2.5",
+    "@nuxt/utils": "2.15.4",
+    "consola": "^2.15.3",
+    "defu": "^4.0.1",
+    "fs-extra": "^9.1.0",
+    "lodash": "^4.17.21",
     "lru-cache": "^5.1.1",
-    "vue": "^2.6.11",
-    "vue-meta": "^2.3.3",
-    "vue-server-renderer": "^2.6.11"
+    "ufo": "^0.7.1",
+    "vue": "^2.6.12",
+    "vue-meta": "^2.4.0",
+    "vue-server-renderer": "^2.6.12"
   },
   "publishConfig": {
     "access": "public"

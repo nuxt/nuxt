@@ -7,7 +7,6 @@ export default async function renderAndGetWindow (
   {
     loadedCallback,
     loadingTimeout = 2000,
-    ssr,
     globals
   } = {}
 ) {
@@ -44,14 +43,15 @@ export default async function renderAndGetWindow (
     }
     // Throw error when window creation failed
     options.virtualConsole.on('jsdomError', jsdomErrHandler)
+  } else {
+    // If we get the virtualConsole option as `false` we should delete for don't pass it to `jsdom.JSDOM.fromURL`
+    delete options.virtualConsole
   }
 
   const { window } = await jsdom.JSDOM.fromURL(url, options)
 
   // If Nuxt could not be loaded (error from the server-side)
-  const nuxtExists = window.document.body.innerHTML.includes(
-    ssr ? `window.${globals.context}` : `<div id="${globals.id}">`
-  )
+  const nuxtExists = window.document.body.innerHTML.includes(`id="${globals.id}"`)
 
   if (!nuxtExists) {
     const error = new Error('Could not load the nuxt app')
@@ -60,7 +60,7 @@ export default async function renderAndGetWindow (
     throw error
   }
 
-  // Used by Nuxt.js to say when the components are loaded and the app ready
+  // Used by Nuxt to say when the components are loaded and the app ready
   await timeout(new Promise((resolve) => {
     window[loadedCallback] = () => resolve(window)
   }), loadingTimeout, `Components loading in renderAndGetWindow was not completed in ${loadingTimeout / 1000}s`)

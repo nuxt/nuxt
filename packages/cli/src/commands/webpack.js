@@ -1,6 +1,6 @@
 import util from 'util'
 import consola from 'consola'
-import get from 'lodash/get'
+import { get } from 'lodash'
 import { common } from '../options'
 
 export default {
@@ -86,7 +86,7 @@ function advancedGet (obj = {}, query = '') {
     const v = get(i, l)
 
     if (!v) {
-      return
+      return false
     }
 
     if (
@@ -97,6 +97,8 @@ function advancedGet (obj = {}, query = '') {
     ) {
       return true
     }
+
+    return false
   })
 
   if (result.length === 1) {

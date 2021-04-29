@@ -1,14 +1,11 @@
 <template>
-  <div class="title">
-    <h2>Main content</h2>
-    <v-btn color="primary">
-      Primary button
-    </v-btn>
-    <v-btn color="secondary">
-      Secondary button
-    </v-btn>
-    <v-btn color="success">
-      Success button
-    </v-btn>
-  </div>
+  <v-container fill-height>
+    <v-layout justify-center align-center>
+      <v-flex shrink>
+        <v-btn icon color="test" large @click="$vuetify.theme.dark = !$vuetify.theme.dark">
+          <v-icon>mdi-theme-light-dark</v-icon>
+        </v-btn>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>

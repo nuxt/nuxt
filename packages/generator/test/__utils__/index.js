@@ -1,3 +1,10 @@
+import { resolve } from 'path'
+import env from 'std-env'
+
+const isWin = env.windows
+
+const rootDir = isWin ? 'C:\\nuxt' : '/var/nuxt'
+
 export const createNuxt = () => ({
   ready: jest.fn(),
   callHook: jest.fn(),
@@ -5,10 +12,16 @@ export const createNuxt = () => ({
     renderRoute: jest.fn(() => ({ html: 'rendered html' }))
   },
   options: {
-    srcDir: '/var/nuxt/src',
-    buildDir: '/var/nuxt/build',
-    generate: { dir: '/var/nuxt/generate' },
+    mode: 'universal',
+    srcDir: resolve(rootDir, 'src'),
+    buildDir: resolve(rootDir, 'build'),
+    generate: { dir: resolve(rootDir, 'generate') },
     build: { publicPath: '__public' },
-    dir: { static: '/var/nuxt/static' }
+    dir: { static: resolve(rootDir, 'static') },
+    render: {}
   }
 })
+
+export function hookCalls (nuxt, name) {
+  return nuxt.callHook.mock.calls.filter(c => c[0] === name).map(c => c.splice(1))
+}

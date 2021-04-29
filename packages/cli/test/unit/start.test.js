@@ -37,6 +37,7 @@ describe('start', () => {
 
   test('start doesnt force-exit by default', async () => {
     mockGetNuxtStart()
+    mockGetNuxtConfig()
 
     const cmd = NuxtCommand.from(start, ['start', '.'])
     await cmd.run()
@@ -46,6 +47,7 @@ describe('start', () => {
 
   test('start can set force exit explicitly', async () => {
     mockGetNuxtStart()
+    mockGetNuxtConfig()
 
     const cmd = NuxtCommand.from(start, ['start', '.', '--force-exit'])
     await cmd.run()
@@ -56,6 +58,7 @@ describe('start', () => {
 
   test('start can disable force exit explicitly', async () => {
     mockGetNuxtStart()
+    mockGetNuxtConfig()
 
     const cmd = NuxtCommand.from(start, ['start', '.', '--no-force-exit'])
     await cmd.run()

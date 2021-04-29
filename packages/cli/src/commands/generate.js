@@ -1,5 +1,8 @@
+import { TARGETS } from '@nuxt/utils'
+import consola from 'consola'
 import { common, locking } from '../options'
 import { normalizeArg, createLock } from '../utils'
+import { ensureBuild, generate } from '../utils/generate'
 
 export default {
   name: 'generate',
@@ -11,7 +14,7 @@ export default {
     build: {
       type: 'boolean',
       default: true,
-      description: 'Only generate pages for dynamic routes. Nuxt has to be built once before using this option'
+      description: 'Only generate pages for dynamic routes, used for incremental builds. Generate has to be run once without this option before using it'
     },
     devtools: {
       type: 'boolean',
@@ -46,6 +49,11 @@ export default {
         }
       }
     },
+    'force-build': {
+      type: 'boolean',
+      default: false,
+      description: 'Force to build the application with webpack'
+    },
     'fail-on-error': {
       type: 'boolean',
       default: false,
@@ -53,13 +61,29 @@ export default {
     }
   },
   async run (cmd) {
-    const config = await cmd.getNuxtConfig({ dev: false, _generate: true, _build: cmd.argv.build })
+    const config = await cmd.getNuxtConfig({ dev: false })
 
     // Disable analyze if set by the nuxt config
-    if (!config.build) {
-      config.build = {}
-    }
+    config.build = config.build || {}
     config.build.analyze = false
+
+    // Full static
+    if (config.target === TARGETS.static) {
+      await ensureBuild(cmd)
+      await generate(cmd)
+      return
+    }
+
+    // Forcing static target anyway
+    config.target = TARGETS.static
+    consola.warn(`When using \`nuxt generate\`, you should set \`target: 'static'\` in your \`nuxt.config\`\n       👉 Learn more about it on https://go.nuxtjs.dev/static-target`)
+
+    // Set flag to keep the prerendering behaviour
+    config._legacyGenerate = true
+    if (config.build) {
+      // https://github.com/nuxt/nuxt.js/issues/7390
+      config.build.parallel = false
+    }
 
     const nuxt = await cmd.getNuxt(config)
 
@@ -82,12 +106,14 @@ export default {
     }
 
     const generator = await cmd.getGenerator(nuxt)
+    await nuxt.server.listen(0)
 
     const { errors } = await generator.generate({
       init: true,
       build: cmd.argv.build
     })
 
+    await nuxt.close()
     if (cmd.argv['fail-on-error'] && errors.length > 0) {
       throw new Error('Error generating pages, exiting with non-zero code')
     }

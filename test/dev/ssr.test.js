@@ -110,6 +110,19 @@ describe('ssr', () => {
     await stressTest('/asyncData')
   })
 
+  test('does not share state', async () => {
+    const [page1, page2] = await Promise.all([
+      nuxt.server.renderRoute('/context'),
+      nuxt.server.renderRoute('/context/child')
+    ])
+
+    expect(page1.html).toContain('vm: /context')
+    expect(page1.html).toContain('context: /context')
+
+    expect(page2.html).toContain('vm: /context/child')
+    expect(page2.html).toContain('context: /context/child')
+  })
+
   // Close server and ask nuxt to stop listening to file changes
   afterAll(async () => {
     await nuxt.close()

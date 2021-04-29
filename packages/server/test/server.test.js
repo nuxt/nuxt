@@ -1,4 +1,5 @@
 import path from 'path'
+import compression from 'compression'
 import connect from 'connect'
 import consola from 'consola'
 import serveStatic from 'serve-static'
@@ -15,6 +16,7 @@ import nuxtMiddleware from '../src/middleware/nuxt'
 import errorMiddleware from '../src/middleware/error'
 import createTimingMiddleware from '../src/middleware/timing'
 
+jest.mock('compression')
 jest.mock('connect')
 jest.mock('serve-static')
 jest.mock('serve-placeholder')
@@ -229,12 +231,11 @@ describe('server: server', () => {
 
     server.useMiddleware.mockClear()
     nuxt.options.render.compressor = { id: 'test-render-compressor' }
-    nuxt.resolver.requireModule.mockImplementationOnce(name => jest.fn(options => ({
-      name,
+    compression.mockImplementationOnce(options => ({
+      name: 'compression',
       ...options
-    })))
+    }))
     await server.setupMiddleware()
-    expect(nuxt.resolver.requireModule).nthCalledWith(1, 'compression')
     expect(server.useMiddleware).nthCalledWith(1, {
       id: 'test-render-compressor',
       name: 'compression'
@@ -504,7 +505,7 @@ describe('server: server', () => {
 
   test('should close server', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     const listener = { close: jest.fn() }
@@ -525,7 +526,7 @@ describe('server: server', () => {
 
   test('should prevent closing server multiple times', async () => {
     const removeAllListeners = jest.fn()
-    connect.mockReturnValueOnce({ use: jest.fn(), removeAllListeners })
+    connect.mockReturnValueOnce({ use: jest.fn(), stack: [], removeAllListeners })
     const nuxt = createNuxt()
     const server = new Server(nuxt)
     server.renderer = {}

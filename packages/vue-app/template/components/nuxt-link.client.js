@@ -17,7 +17,7 @@ const cancelIdleCallback = window.cancelIdleCallback || function (id) {
 
 const observer = window.IntersectionObserver && new window.IntersectionObserver((entries) => {
   entries.forEach(({ intersectionRatio, target: link }) => {
-    if (intersectionRatio <= 0) {
+    if (intersectionRatio <= 0 || !link.__prefetch) {
       return
     }
     link.__prefetch()
@@ -71,7 +71,12 @@ export default {
       }<% } %>
     },
     shouldPrefetch () {
-      return this.getPrefetchComponents().length > 0
+      <% if (isFullStatic && router.prefetchPayloads) { %>
+      const ref = this.$router.resolve(this.to, this.$route, this.append)
+      const Components = ref.resolved.matched.map(r => r.components.default)
+
+      return Components.filter(Component => ref.href || (typeof Component === 'function' && !Component.options && !Component.__prefetched)).length
+      <% } else { %>return this.getPrefetchComponents().length > 0<% } %>
     },
     canPrefetch () {
       const conn = navigator.connection
@@ -101,8 +106,17 @@ export default {
           <% if (router.linkPrefetchedClass) { %>promises.push(componentOrPromise)<% } %>
         }
         Component.__prefetched = true
-      }<% if (router.linkPrefetchedClass) { %>
-        return Promise.all(promises).then(() => this.addPrefetchedClass())
+      }
+      <% if (isFullStatic && router.prefetchPayloads) { %>
+      // Preload the data only if not in preview mode
+      if (!this.$root.isPreview) {
+        const { href } = this.$router.resolve(this.to, this.$route, this.append)
+        if (this.<%= globals.nuxt %>)
+          this.<%= globals.nuxt %>.fetchPayload(href, true).catch(() => {})
+      }
+      <% } %>
+      <% if (router.linkPrefetchedClass) { %>
+      return Promise.all(promises).then(() => this.addPrefetchedClass())
       <% } %>
     }<% if (router.linkPrefetchedClass) { %>,
     addPrefetchedClass () {

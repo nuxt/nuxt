@@ -4,15 +4,24 @@ import ExtractCssChunksPlugin from 'extract-css-chunks-webpack-plugin'
 import { wrapArray } from '@nuxt/utils'
 
 import PostcssConfig from './postcss'
+import PostcssV8Config from './postcss-v8'
 
 export default class StyleLoader {
-  constructor (buildContext, { isServer, perfLoader }) {
+  constructor (buildContext, { isServer, perfLoader, resolveModule }) {
     this.buildContext = buildContext
     this.isServer = isServer
     this.perfLoader = perfLoader
+    this.resolveModule = resolveModule
 
-    if (buildContext.options.build.postcss) {
-      this.postcssConfig = new PostcssConfig(buildContext)
+    const { postcss: postcssOptions } = buildContext.options.build
+    if (postcssOptions) {
+      const postcss = require(resolveModule('postcss'))
+      // postcss >= v8
+      if (!postcss.vendor) {
+        this.postcssConfig = new PostcssV8Config(buildContext)
+      } else {
+        this.postcssConfig = new PostcssConfig(buildContext)
+      }
     }
   }
 
@@ -20,8 +29,13 @@ export default class StyleLoader {
     return this.buildContext.buildOptions.extractCSS
   }
 
-  get onlyLocals () {
+  get exportOnlyLocals () {
     return Boolean(this.isServer && this.extractCSS)
+  }
+
+  isUrlResolvingEnabled (url, resourcePath) {
+    // Ignore absolute URLs, it will be handled by serve-static.
+    return !url.startsWith('/')
   }
 
   normalize (loaders) {
@@ -40,7 +54,7 @@ export default class StyleLoader {
     const patterns = wrapArray(extResource).map(p => path.resolve(rootDir, p))
 
     return {
-      loader: 'style-resources-loader',
+      loader: this.resolveModule('style-resources-loader'),
       options: Object.assign(
         { patterns },
         styleResources.options || {}
@@ -62,16 +76,23 @@ export default class StyleLoader {
     }
 
     return {
-      loader: 'postcss-loader',
+      loader: this.resolveModule('postcss-loader'),
       options: Object.assign({ sourceMap: this.buildContext.buildOptions.cssSourceMap }, config)
     }
   }
 
   css (options) {
-    options.onlyLocals = this.onlyLocals
-    const cssLoader = { loader: 'css-loader', options }
+    const cssLoader = { loader: this.resolveModule('css-loader'), options }
 
-    if (options.onlyLocals) {
+    if (!options.url) {
+      options.url = this.isUrlResolvingEnabled
+    }
+
+    if (this.exportOnlyLocals) {
+      options.modules = {
+        ...options.modules,
+        exportOnlyLocals: true
+      }
       return [cssLoader]
     }
 
@@ -91,7 +112,7 @@ export default class StyleLoader {
           // TODO: https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/132
           // https://github.com/faceyspacey/extract-css-chunks-webpack-plugin/issues/161#issuecomment-500162574
           reloadAll: isDev,
-          hot: isDev
+          hmr: isDev
         }
       }
     }
@@ -99,7 +120,7 @@ export default class StyleLoader {
 
   styleLoader () {
     return this.extract() || {
-      loader: 'vue-style-loader',
+      loader: this.resolveModule('vue-style-loader'),
       options: this.buildContext.buildOptions.loaders.vueStyle
     }
   }

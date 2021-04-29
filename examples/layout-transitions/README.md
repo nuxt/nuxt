@@ -1,3 +1,3 @@
-# Layout transitions with Nuxt.js
+# Layout transitions with Nuxt
 
 https://nuxtjs.org/examples/layout-transitions

@@ -24,30 +24,30 @@ describe('modern server mode', () => {
   test('should use legacy resources by default', async () => {
     const { body: response } = await rp(url('/'))
     expect(response).toContain('/_nuxt/app.js')
-    expect(response).toContain('/_nuxt/commons.app.js')
+    expect(response).toContain('/_nuxt/commons/app.js')
   })
 
   test('should use modern resources for modern resources', async () => {
     const { body: response } = await rp(url('/'), { headers: { 'user-agent': modernUA } })
-    expect(response).toContain('/_nuxt/modern-app.js')
-    expect(response).toContain('/_nuxt/modern-commons.app.js')
+    expect(response).toContain('/_nuxt/app.modern.js')
+    expect(response).toContain('/_nuxt/commons/app.modern.js')
   })
 
   test('should include es6 syntax in modern resources', async () => {
-    const { body: response } = await rp(url(`/_nuxt/modern-${wChunk('pages/index.js')}`))
-    expect(response).toContain('arrow: () => {')
+    const { body: response } = await rp(url(`/_nuxt/pages/index.modern.js`))
+    expect(response).toContain('=>')
   })
 
   test('should not include es6 syntax in normal resources', async () => {
-    const { body: response } = await rp(url(`/_nuxt/${wChunk('pages/index.js')}`))
-    expect(response).toContain('arrow: function arrow() {')
+    const { body: response } = await rp(url(`/_nuxt/pages/index.js`))
+    expect(response).not.toContain('=>')
   })
 
   test('should contain legacy http2 pushed resources', async () => {
     const { headers: { link } } = await rp(url('/'))
     expect(link).toEqual([
       '</_nuxt/runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
-      '</_nuxt/commons.app.js>; rel=preload; crossorigin=use-credentials; as=script',
+      '</_nuxt/commons/app.js>; rel=preload; crossorigin=use-credentials; as=script',
       '</_nuxt/app.js>; rel=preload; crossorigin=use-credentials; as=script',
       `</_nuxt/${wChunk('pages/index.js')}>; rel=preload; crossorigin=use-credentials; as=script`
     ].join(', '))
@@ -58,10 +58,10 @@ describe('modern server mode', () => {
       headers: { 'user-agent': modernUA }
     })
     expect(link).toEqual([
-      '</_nuxt/modern-runtime.js>; rel=preload; crossorigin=use-credentials; as=script',
-      '</_nuxt/modern-commons.app.js>; rel=preload; crossorigin=use-credentials; as=script',
-      '</_nuxt/modern-app.js>; rel=preload; crossorigin=use-credentials; as=script',
-      `</_nuxt/modern-${wChunk('pages/index.js')}>; rel=preload; crossorigin=use-credentials; as=script`
+      '</_nuxt/runtime.modern.js>; rel=preload; crossorigin=use-credentials; as=script',
+      '</_nuxt/commons/app.modern.js>; rel=preload; crossorigin=use-credentials; as=script',
+      '</_nuxt/app.modern.js>; rel=preload; crossorigin=use-credentials; as=script',
+      `</_nuxt/pages/index.modern.js>; rel=preload; crossorigin=use-credentials; as=script`
     ].join(', '))
   })
 

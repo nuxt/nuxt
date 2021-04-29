@@ -30,14 +30,14 @@
 
 <script>
 export default {
-  async fetch () {
-    this.posts = await this.$http.$get('https://jsonplaceholder.typicode.com/posts')
-      .then(posts => posts.slice(0, 20))
-  },
   data () {
     return {
       posts: null
     }
+  },
+  async fetch () {
+    this.posts = await this.$http.$get('https://jsonplaceholder.typicode.com/posts')
+      .then(posts => posts.slice(0, 20))
   }
 }
 </script>
