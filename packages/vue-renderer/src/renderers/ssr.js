@@ -153,6 +153,10 @@ export default class SSRRenderer extends BaseRenderer {
       HEAD += this.renderResourceHints(renderContext)
     }
 
+    // Inject meta to disable Google's FLoC
+    if (!this.options.floc) {
+      HEAD += `<meta http-equiv="Permissions-Policy" content="interest-cohort=()"/>`
+    }
     // Inject styles
     HEAD += this.renderStyles(renderContext)
 
