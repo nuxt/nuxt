@@ -16,7 +16,8 @@
     "npm",
     "html-webpack-plugin",
     "terser-webpack-plugin",
-    "@types/terser-webpack-plugin"
+    "@types/terser-webpack-plugin",
+    "wrap-ansi"
   ],
   "lockFileMaintenance": {
     "enabled": true
