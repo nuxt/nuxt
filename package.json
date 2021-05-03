@@ -71,7 +71,7 @@
     "lerna": "^4.0.0",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.1",
-    "puppeteer-core": "^8.0.0",
+    "puppeteer-core": "^9.1.0",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
     "rollup": "2.46.0",
