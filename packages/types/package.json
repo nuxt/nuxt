@@ -16,7 +16,7 @@
     "@types/compression": "^1.7.0",
     "@types/connect": "^3.4.34",
     "@types/etag": "^1.8.0",
-    "@types/file-loader": "^4.2.1",
+    "@types/file-loader": "^5.0.0",
     "@types/html-minifier": "^4.0.0",
     "@types/less": "^3.0.2",
     "@types/node": "^12.20.11",
