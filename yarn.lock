@@ -2477,10 +2477,10 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/file-loader@^4.2.1":
-  version "4.2.1"
-  resolved "https://registry.npmjs.org/@types/file-loader/-/file-loader-4.2.1.tgz#f41154dc90d578002df8ae94db80c315e844720e"
-  integrity sha512-ImtIwnIEEMgyE7DK1JduhiDv+8WzfRWb3BPuf6RiBD1ySz05vyDRhGiKvIcuUPxUzMNBRZHN0pB+bWXSX3+t1w==
+"@types/file-loader@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.npmjs.org/@types/file-loader/-/file-loader-5.0.0.tgz#c7d06c14a8fc0224661e9a29c4035ba47db826df"
+  integrity sha512-evodFzM0PLOXmMZy8DhPN+toP6QgJiIteF6e8iD9T0xGBUllQA/DAb1nZwCIoNh7vuLvqCGPUdsLf3GSbcHd4g==
   dependencies:
     "@types/webpack" "^4"
 
