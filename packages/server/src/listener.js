@@ -1,5 +1,5 @@
 import http from 'http'
-import https from 'https'
+import https from 'spdy'
 import enableDestroy from 'server-destroy'
 import ip from 'ip'
 import consola from 'consola'

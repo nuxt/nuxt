@@ -24,6 +24,7 @@
     "serve-placeholder": "^1.2.3",
     "serve-static": "^1.14.1",
     "server-destroy": "^1.0.1",
+    "spdy": "^4.0.2",
     "ufo": "^0.7.2"
   },
   "publishConfig": {
