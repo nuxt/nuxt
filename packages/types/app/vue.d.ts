@@ -10,6 +10,7 @@ import { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
 import { NuxtRuntimeConfig } from '../config/runtime'
 import { Context, Middleware, Transition, NuxtApp } from './index'
 
+// https://github.com/vuejs/vue/blob/dev/types/options.d.ts#L63-L66
 type DefaultData<V> = object | ((this: V) => object)
 type DefaultProps = Record<string, any>
 type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
