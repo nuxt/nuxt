@@ -10,12 +10,11 @@ import { CombinedVueInstance, ExtendedVue } from 'vue/types/vue'
 import { NuxtRuntimeConfig } from '../config/runtime'
 import { Context, Middleware, Transition, NuxtApp } from './index'
 
-type DefaultData<V> = object | ((this: V) => object);
-type DefaultProps = Record<string, any>;
-type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any };
-type DefaultComputed = { [key: string]: any };
-type DefaultAsyncData<V> =
-  ((this: V, context: Context) => Promise<object | void> | object | void);
+type DefaultData<V> = object | ((this: V) => object)
+type DefaultProps = Record<string, any>
+type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
+type DefaultComputed = { [key: string]: any }
+type DefaultAsyncData<V> = ((this: V, context: Context) => Promise<object | void> | object | void)
 
 declare module 'vue/types/options' {
   interface ComponentOptions<
@@ -28,7 +27,7 @@ declare module 'vue/types/options' {
     Props = DefaultProps,
     /* eslint-enable no-unused-vars,@typescript-eslint/no-unused-vars */
     AsyncData = DefaultAsyncData<V>
-    > {
+  > {
     // eslint-disable-next-line @typescript-eslint/ban-types
     asyncData?: AsyncData
     fetch?(ctx: Context): Promise<void> | void
@@ -48,8 +47,8 @@ declare module 'vue/types/options' {
   }
 }
 
-type DataDef<Data, Props, V> = Data | ((this: Readonly<Props> & V) => Data);
-type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
+type DataDef<Data, Props, V> = Data | ((this: Readonly<Props> & V) => Data)
+type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
 type Merged<Data, AsyncData> = {
   [key in keyof Data | keyof AsyncData]: key extends keyof Data ? key extends keyof AsyncData ? NonNullable<Data[key]> | AsyncData[key] : Data[key] : key extends keyof AsyncData ? AsyncData[key] : never
 }
@@ -61,7 +60,7 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
   Computed,
   PropNames extends string,
   AsyncData
-  > = object &
+> = object &
   ComponentOptions<
     V,
     DataDef<Data, Record<PropNames, any>, V>,
@@ -70,7 +69,7 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
     PropNames[],
     Record<PropNames, any>,
     DataDef<AsyncData, PropNames, V>
-    > &
+  > &
   ThisType<
     CombinedVueInstance<
       V,
@@ -78,8 +77,8 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
       Methods,
       Computed,
       Readonly<Record<PropNames, any>>
-      >
-    >;
+    >
+  >
 export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
   V extends Vue,
   Data,
@@ -87,7 +86,7 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
   Computed,
   Props,
   AsyncData
-  > = object &
+> = object &
   ComponentOptions<
     V,
     DataDef<Data, Props, V>,
@@ -99,7 +98,7 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
 > &
   ThisType<
     CombinedVueInstance<V, Merged<Data, Awaited<AsyncData>>, Methods, Computed, Readonly<Props>>
-    >;
+  >
 
 declare module 'vue/types/vue' {
   interface Vue {
@@ -121,8 +120,8 @@ declare module 'vue/types/vue' {
         Computed,
         PropNames,
         AsyncData
-        >
-    ): ExtendedVue<V, Data, Methods, Computed, Record<PropNames, any>>;
+      >
+    ): ExtendedVue<V, Data, Methods, Computed, Record<PropNames, any>>
     extend<Data, Methods, Computed, Props, AsyncData>(
       options?: ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
         V,
@@ -131,7 +130,7 @@ declare module 'vue/types/vue' {
         Computed,
         Props,
         AsyncData
-        >
-    ): ExtendedVue<V, Data, Methods, Computed, Props>;
+      >
+    ): ExtendedVue<V, Data, Methods, Computed, Props>
   }
 }
