@@ -50,6 +50,9 @@ declare module 'vue/types/options' {
 
 type DataDef<Data, Props, V> = Data | ((this: Readonly<Props> & V) => Data);
 type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
+type Merged<Data, AsyncData> = {
+  [key in keyof Data | keyof AsyncData]: key extends keyof Data ? key extends keyof AsyncData ? NonNullable<Data[key]> | AsyncData[key] : Data[key] : key extends keyof AsyncData ? AsyncData[key] : never
+}
 
 type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
   V extends Vue,
@@ -71,12 +74,11 @@ type ThisTypedComponentOptionsWithArrayPropsAndAsyncData<
   ThisType<
     CombinedVueInstance<
       V,
-      Data,
+      Merged<Data, Awaited<AsyncData>>,
       Methods,
       Computed,
       Readonly<Record<PropNames, any>>
-      > &
-    Awaited<AsyncData>
+      >
     >;
 export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
   V extends Vue,
@@ -94,9 +96,9 @@ export type ThisTypedComponentOptionsWithRecordPropsAndAsyncData<
     RecordPropsDefinition<Props>,
     Props,
     DataDef<AsyncData, Props, V>
-    > &
+> &
   ThisType<
-    CombinedVueInstance<V, Data, Methods, Computed, Readonly<Props>> & Awaited<AsyncData>
+    CombinedVueInstance<V, Merged<Data, Awaited<AsyncData>>, Methods, Computed, Readonly<Props>>
     >;
 
 declare module 'vue/types/vue' {
