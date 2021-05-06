@@ -2,7 +2,7 @@
   <RouterView v-slot="{ Component }">
     <transition name="page" mode="out-in">
       <!-- <keep-alive> -->
-      <Suspense @pending="$nuxt.hooks.callHook('page:start')" @resolve="$nuxt.hooks.callHook('page:finish')">
+      <Suspense @pending="$nuxt.callHook('page:start')" @resolve="$nuxt.callHook('page:finish')">
         <component :is="Component" :key="$route.path" />
       </Suspense>
       <!-- <keep-alive -->

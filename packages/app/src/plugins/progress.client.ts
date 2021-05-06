@@ -2,7 +2,7 @@ import type { Plugin } from '@nuxt/app'
 
 export default <Plugin> function progressbar ({ app }) {
   const { $nuxt } = app
-  $nuxt.hooks.hook('app:mounted', () => {
+  $nuxt.hook('app:mounted', () => {
     const el = document.createElement('div')
     el.id = 'nuxt-progress'
     document.body.appendChild(el)
@@ -16,7 +16,7 @@ export default <Plugin> function progressbar ({ app }) {
     const progress = 10000 / Math.floor(duration)
     let timeout
     let interval
-    $nuxt.hooks.hook('page:start', () => {
+    $nuxt.hook('page:start', () => {
       if (timeout) { return }
       timeout = setTimeout(() => {
         let width = 10
@@ -29,7 +29,7 @@ export default <Plugin> function progressbar ({ app }) {
         }, 100)
       }, 200)
     })
-    $nuxt.hooks.hook('page:finish', () => {
+    $nuxt.hook('page:finish', () => {
       timeout && clearTimeout(timeout)
       timeout = null
       interval && clearInterval(interval)
