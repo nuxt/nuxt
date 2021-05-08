@@ -18,7 +18,6 @@ export interface NuxtOptionsGenerate {
   exclude?: RegExp[]
   fallback?: string | boolean
   interval?: number
-  nojekyll?: boolean
   routes?: NuxtOptionsGenerateRoute[] | NuxtOptionsGenerateRoutesFunction | NuxtOptionsGenerateRoutesFunctionWithCallback
   subFolders?: boolean
   cache?: false | {
