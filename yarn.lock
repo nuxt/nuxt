@@ -5340,10 +5340,15 @@ dot-prop@^6.0.1:
   dependencies:
     is-obj "^2.0.0"
 
-dotenv@^8.2.0, dotenv@^8.6.0:
+dotenv@^8.2.0:
   version "8.6.0"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-8.6.0.tgz#061af664d19f7f4d8fc6e4ff9b584ce237adcb8b"
   integrity sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==
+
+dotenv@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.npmjs.org/dotenv/-/dotenv-9.0.0.tgz#2408af4e39378375b7eebe30b7b54989e36d6e46"
+  integrity sha512-yy3x9XjojW8ROTBePD25AcMoHqGHsvHmtfw8QWlpEXyMMXXPj6brUA464AptUvHuTPRmNz6Sd3ZLNLeJl6dHJA==
 
 duplexer@^0.1.1, duplexer@^0.1.2:
   version "0.1.2"
