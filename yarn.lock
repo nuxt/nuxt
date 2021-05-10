@@ -2584,7 +2584,7 @@
   dependencies:
     "@types/webpack" "^4"
 
-"@types/webpack-dev-middleware@^4.1.2":
+"@types/webpack-dev-middleware@4.1.2":
   version "4.1.2"
   resolved "https://registry.npmjs.org/@types/webpack-dev-middleware/-/webpack-dev-middleware-4.1.2.tgz#c683adc6a44d0b66e98f1932ab33d1c32d558142"
   integrity sha512-SxXzPCqeZ03fJ2dg3iD7cSXvqZymmS5/2GD9fANRcyWN7HYK1H3ty6q7IInXZKvPrdUqij831G3RLIeKK6aGdw==
