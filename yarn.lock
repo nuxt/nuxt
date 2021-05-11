@@ -8008,10 +8008,15 @@ jest@^26.6.3:
     import-local "^3.0.2"
     jest-cli "^26.6.3"
 
-jiti@^1.3.0, jiti@^1.9.1:
+jiti@^1.3.0:
   version "1.9.1"
   resolved "https://registry.npmjs.org/jiti/-/jiti-1.9.1.tgz#d9e267fa050ddc52191f17d8af815d49a38ebafd"
   integrity sha512-AhYrAxJ/IW2257nHkJasUjtxHhmYIUEHEjsofJtGYsPWk8pTjqjbPFlJfOwfY+WX8YBiKHM1l0ViDC/mye2SWg==
+
+jiti@^1.9.2:
+  version "1.9.2"
+  resolved "https://registry.npmjs.org/jiti/-/jiti-1.9.2.tgz#2ee44830883dbb1b2e222adc053c3052d0bf3b61"
+  integrity sha512-wymUBR/YGGVNVRAxX52yvFoZdUAYKEGjk0sYrz6gXLCvMblnRvJAmDUnMvQiH4tUHDBtbKHnZ4GT3R+m3Hc39A==
 
 js-beautify@^1.6.12:
   version "1.13.13"
@@ -12909,10 +12914,10 @@ ua-parser-js@^0.7.28:
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.28.tgz#8ba04e653f35ce210239c64661685bf9121dec31"
   integrity sha512-6Gurc1n//gjp9eQNXjD9O3M/sMwVtN5S8Lv9bvOYBfKfDNiIIhqiyi01vMBO45u4zkDE420w/e0se7Vs+sIg+g==
 
-ufo@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.npmjs.org/ufo/-/ufo-0.7.2.tgz#a0e3c9f1b1d9b55f60e068d17afd6ffbdc4fbd62"
-  integrity sha512-cfxpkL4g79LrCXa1RyvhM/obxunKRjHApD4Ml4UG0CZcKvfodfKH0YTmnm6ofKKUnLzBMdfXSZzlgyQmj6b3sw==
+ufo@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.npmjs.org/ufo/-/ufo-0.7.3.tgz#e17478063b0e0243a7d7fa6622dd932325eb77f1"
+  integrity sha512-HxsMs4hntypF/RDBDYVPjUtLNxCcUuJ3/jRXAuRriaBDSvqQSsUhiJeCxAbcOELMtKIXURQaUw1gW68HdKoQ3Q==
 
 uglify-js@^3.1.4, uglify-js@^3.5.1:
   version "3.13.6"
