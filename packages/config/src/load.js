@@ -88,11 +88,11 @@ export async function loadNuxtConfig ({
   }
 
   // Load Combine configs
-  // Priority: configOverrides > .nuxt/dist/.nuxtrc > nuxtConfig > .nuxtrc > .nuxtrc (global)
+  // Priority: configOverrides > nuxtConfig > .nuxt/dist/.nuxtrc > .nuxtrc > .nuxtrc (global)
   options = defu(
     configOverrides,
-    rc.read({ name: '.nuxtrc', dir: path.resolve(options.buildDir || '.nuxt', 'dist') }),
     options,
+    rc.read({ name: '.nuxtrc', dir: path.resolve(options.buildDir || '.nuxt', 'dist') }),
     rc.read({ name: '.nuxtrc', dir: options.rootDir }),
     rc.readUser('.nuxtrc')
   )
