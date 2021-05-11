@@ -60,13 +60,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
     \\"test\\": /\\\\.pug$/i,
   },
   Object {
-    \\"include\\": Array [
-      /node_modules/,
-    ],
-    \\"test\\": /\\\\.mjs$/,
-    \\"type\\": \\"javascript/auto\\",
-  },
-  Object {
     \\"exclude\\": [Function exclude],
     \\"test\\": /\\\\.m?jsx?$/i,
     \\"use\\": Array [
