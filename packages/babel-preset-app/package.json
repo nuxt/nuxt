@@ -24,7 +24,7 @@
     "@babel/runtime": "^7.14.0",
     "@vue/babel-preset-jsx": "^1.2.4",
     "core-js": "^2.6.5",
-    "core-js-compat": "^3.12.0",
+    "core-js-compat": "^3.12.1",
     "regenerator-runtime": "^0.13.7"
   },
   "publishConfig": {
