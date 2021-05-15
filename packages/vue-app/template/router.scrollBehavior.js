@@ -66,9 +66,15 @@ export default function (to, from, savedPosition) {
           hash = '#' + window.CSS.escape(hash.substr(1))
         }
         try {
-          if (document.querySelector(hash)) {
+          const el = document.querySelector(hash)
+          if (el) {
             // scroll to anchor by returning the selector
             position = { selector: hash }
+            // Respect any scroll-margin-top set in CSS when scrolling to anchor
+            const y = Number(getComputedStyle(el)['scroll-margin-top']?.replace('px', ''))
+            if (y) {
+              position.offset = { y }
+            }
           }
         } catch (e) {
           <%= isTest ? '// eslint-disable-next-line no-console' : '' %>
