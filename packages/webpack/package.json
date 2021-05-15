@@ -8,7 +8,7 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.14.0",
+    "@babel/core": "^7.14.2",
     "@nuxt/babel-preset-app": "2.15.6",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.1",
     "@nuxt/utils": "2.15.6",
