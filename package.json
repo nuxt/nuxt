@@ -58,7 +58,7 @@
     "execa": "^5.0.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
     "glob": "^7.1.7",
     "got": "^11.8.2",
