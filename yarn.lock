@@ -5494,7 +5494,7 @@ __metadata:
     untyped: ^0.2.5
     vite: ^2.2.3
     vite-plugin-windicss: ^0.15.8
-    windicss: ^2.5.14
+    windicss: ^3.0.8
     windicss-webpack-plugin: ^0.3.3
   languageName: unknown
   linkType: soft
@@ -15319,6 +15319,15 @@ typescript@^4.2.4:
   bin:
     windicss: cli/index.js
   checksum: fa9ebfc1ce6afa6996403b8bb402b7cb440f72a8f2930b165dd76392b10262226905d45fab4140a77740e28f4de29e0feda662094ffbe1383baf7c68ca299857
+  languageName: node
+  linkType: hard
+
+"windicss@npm:^3.0.8":
+  version: 3.0.8
+  resolution: "windicss@npm:3.0.8"
+  bin:
+    windicss: cli/index.js
+  checksum: 386115c679f51a44e25ac513e6a8129dfebcd4c350265a9abd3964bde33c646d95bc0f5264aea0b51d9db77d54a3e497f2bcfd122dfec24b8b694598789a5106
   languageName: node
   linkType: hard
 
