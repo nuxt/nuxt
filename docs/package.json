@@ -18,9 +18,9 @@
     "remark-rehype": "^8.1.0",
     "unified": "^9.2.1",
     "untyped": "^0.2.5",
-    "vite": "^2.2.3",
-    "vite-plugin-windicss": "^0.15.8",
+    "vite": "^2.3.3",
+    "vite-plugin-windicss": "^0.15.10",
     "windicss": "^3.0.8",
-    "windicss-webpack-plugin": "^0.3.3"
+    "windicss-webpack-plugin": "^0.5.3"
   }
 }
