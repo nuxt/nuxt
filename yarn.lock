@@ -1678,7 +1678,7 @@ __metadata:
     dot-prop: ^6.0.1
     esbuild: ^0.10.0
     etag: ^1.8.1
-    fs-extra: ^9.1.0
+    fs-extra: ^10.0.0
     globby: ^11.0.3
     gzip-size: ^6.0.0
     h3: ^0.2.10
@@ -1722,7 +1722,7 @@ __metadata:
     chokidar: ^3.5.1
     consola: ^2.15.3
     debounce: ^1.2.1
-    fs-extra: ^9.1.0
+    fs-extra: ^10.0.0
     unbuild: ^0.2.3
     upath: ^2.0.1
     vite: ^2.2.3
@@ -1750,7 +1750,7 @@ __metadata:
     css-minimizer-webpack-plugin: ^2.0.0
     esbuild-loader: ^2.12.0
     file-loader: ^6.2.0
-    fs-extra: ^9.1.0
+    fs-extra: ^10.0.0
     glob: ^7.1.6
     hash-sum: ^2.0.0
     lodash: ^4.17.21
@@ -6675,6 +6675,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-extra@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "fs-extra@npm:10.0.0"
+  dependencies:
+    graceful-fs: ^4.2.0
+    jsonfile: ^6.0.1
+    universalify: ^2.0.0
+  checksum: 84632d143fe3125b8c3c2b1fedbbdfcfb84fc3e087522b4e138cc07edf574619925713a6609f6d5e53ede2e31ab319c7d528ea4a4a770ba6622a16bf4447cd8b
+  languageName: node
+  linkType: hard
+
 "fs-extra@npm:^9.1.0":
   version: 9.1.0
   resolution: "fs-extra@npm:9.1.0"
@@ -10600,7 +10611,7 @@ __metadata:
     chokidar: ^3.5.1
     consola: ^2.15.3
     defu: ^4.0.1
-    fs-extra: ^9.1.0
+    fs-extra: ^10.0.0
     globby: ^11.0.3
     hash-sum: ^2.0.0
     hookable: ^4.4.1
