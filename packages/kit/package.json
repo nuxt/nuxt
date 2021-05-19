@@ -18,7 +18,7 @@
   "dependencies": {
     "consola": "^2.15.3",
     "create-require": "^1.1.1",
-    "defu": "^4.0.1",
+    "defu": "^5.0.0",
     "dotenv": "^9.0.2",
     "hash-sum": "^2.0.0",
     "jiti": "^1.9.2",

@@ -1772,7 +1772,7 @@ __metadata:
   dependencies:
     consola: ^2.15.3
     create-require: ^1.1.1
-    defu: ^4.0.1
+    defu: ^5.0.0
     dotenv: ^9.0.2
     hash-sum: ^2.0.0
     jiti: ^1.9.2
@@ -1817,7 +1817,7 @@ __metadata:
     connect: ^3.7.0
     consola: ^2.15.3
     debounce: ^1.2.1
-    defu: ^4.0.1
+    defu: ^5.0.0
     destr: ^1.1.0
     dot-prop: ^6.0.1
     esbuild: ^0.10.0
@@ -5498,6 +5498,13 @@ __metadata:
   version: 4.0.1
   resolution: "defu@npm:4.0.1"
   checksum: 0e66c20eda0833f351e90bd3a4931cf8c1932f49d28389345d30adf026dc449d24c906678e1b46ca4f2eb320a5b6c7191ff738a6e8ecb8a6154f737f72df23ec
+  languageName: node
+  linkType: hard
+
+"defu@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "defu@npm:5.0.0"
+  checksum: 6c795bc0ce06b0ff3ca1ff32a12155d9119eb764697aa62d9de4af262a026fe11cbd7e99309193a59ca3799d7e8d40c06ee60fc08a5f2348f4b125a884f06905
   languageName: node
   linkType: hard
 
@@ -10816,7 +10823,7 @@ __metadata:
     "@types/lodash": ^4.14.169
     chokidar: ^3.5.1
     consola: ^2.15.3
-    defu: ^4.0.1
+    defu: ^5.0.0
     fs-extra: ^10.0.0
     globby: ^11.0.3
     hash-sum: ^2.0.0
