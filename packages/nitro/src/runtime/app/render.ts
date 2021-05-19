@@ -84,7 +84,9 @@ function renderHTML (payload, rendered, ssrContext) {
     bodyAttrs: '',
     headAttrs: '',
     headTags: '',
-    bodyTags: ''
+    bodyTags: '',
+    bodyScriptsPrepend: '',
+    bodyScripts: ''
   }
 
   // @vueuse/head
@@ -100,21 +102,30 @@ function renderHTML (payload, rendered, ssrContext) {
     })
     meta.htmlAttrs += _meta.htmlAttrs.text()
     meta.headAttrs += _meta.headAttrs.text()
-    meta.bodyAttrs += _meta.bodyAttrs.text()
     meta.headTags +=
       _meta.title.text() + _meta.meta.text() +
       _meta.link.text() + _meta.style.text() +
       _meta.script.text() + _meta.noscript.text()
-    // TODO: Body prepend/append tags
+    meta.bodyAttrs += _meta.bodyAttrs.text()
+    meta.bodyScriptsPrepend =
+      _meta.meta.text({ pbody: true }) + _meta.link.text({ pbody: true }) +
+      _meta.style.text({ pbody: true }) + _meta.script.text({ pbody: true }) +
+      _meta.noscript.text({ pbody: true })
+    meta.bodyScripts =
+      _meta.meta.text({ body: true }) + _meta.link.text({ body: true }) +
+      _meta.style.text({ body: true }) + _meta.script.text({ body: true }) +
+      _meta.noscript.text({ body: true })
   }
 
   return htmlTemplate({
     HTML_ATTRS: meta.htmlAttrs,
     HEAD_ATTRS: meta.headAttrs,
-    BODY_ATTRS: meta.bodyAttrs,
     HEAD: meta.headTags +
       rendered.renderResourceHints() + rendered.renderStyles() + (ssrContext.styles || ''),
-    APP: _html + state + rendered.renderScripts()
+    BODY_ATTRS: meta.bodyAttrs,
+    BODY_SCRIPTS_PREPEND: meta.bodyScriptsPrepend,
+    APP: _html + state + rendered.renderScripts(),
+    BODY_SCRIPTS: meta.bodyScripts
   })
 }
 
