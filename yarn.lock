@@ -454,6 +454,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@es-joy/jsdoccomment@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@es-joy/jsdoccomment@npm:0.6.0"
+  dependencies:
+    comment-parser: ^1.1.5
+    esquery: ^1.4.0
+    jsdoctypeparser: ^9.0.0
+  checksum: 839db6d9695dca41cd189c15860be5f27cd345268f91917c67d9a695194d5f3cfa2edc8d1cde98c8b448055b2b302fa88e94be244ec27e51c5dd1a9882a8698c
+  languageName: node
+  linkType: hard
+
 "@eslint/eslintrc@npm:^0.4.0":
   version: 0.4.0
   resolution: "@eslint/eslintrc@npm:0.4.0"
@@ -4591,7 +4602,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"comment-parser@npm:1.1.5":
+"comment-parser@npm:1.1.5, comment-parser@npm:^1.1.5":
   version: 1.1.5
   resolution: "comment-parser@npm:1.1.5"
   checksum: e9903b88f2760e94ad82328a1cbb8f722f424bfd7dd621f46b09749ee47288834c289b34f4e6ed7c14bef20a76a4b6badf9f0a717f81ded1a524ff840a453af6
@@ -5925,12 +5936,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^32.3.3":
-  version: 32.3.3
-  resolution: "eslint-plugin-jsdoc@npm:32.3.3"
+"eslint-plugin-jsdoc@npm:^34.8.1":
+  version: 34.8.1
+  resolution: "eslint-plugin-jsdoc@npm:34.8.1"
   dependencies:
+    "@es-joy/jsdoccomment": ^0.6.0
     comment-parser: 1.1.5
     debug: ^4.3.1
+    esquery: ^1.4.0
     jsdoctypeparser: ^9.0.0
     lodash: ^4.17.21
     regextras: ^0.7.1
@@ -5938,7 +5951,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: 914d7473e406423c4d158bf2574e943868de99ee66774b329c602276db7fa8eb1d5ec384b310175c8398a265473a927227a01cbd6c9aa0a4a61dbf574b1c75a5
+  checksum: f53bce0fcafddc21808f94df88ad06da149593be3a3c234addb6026a50d0cd4d1fe1e9ff796f6a4cdc2419e2681361ea2971dba43420b5143a8f73ec53894375
   languageName: node
   linkType: hard
 
@@ -10602,7 +10615,7 @@ __metadata:
     "@types/node": ^14.14.43
     "@types/object-hash": ^2
     eslint: ^7.25.0
-    eslint-plugin-jsdoc: ^32.3.3
+    eslint-plugin-jsdoc: ^34.8.1
     jest: ^26.6.3
     jiti: ^1.9.1
     lerna: ^4.0.0
