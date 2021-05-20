@@ -2,8 +2,8 @@ import { resolve, join, extname } from 'upath'
 import { joinURL } from 'ufo'
 import globby from 'globby'
 import { watch } from 'chokidar'
-import type { Middleware } from 'h3'
 import { tryResolvePath, Nuxt } from '@nuxt/kit'
+import type { Middleware } from 'h3'
 
 export interface ServerMiddleware {
   route: string

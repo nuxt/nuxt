@@ -5,9 +5,9 @@ import {
   createMemoryHistory,
   RouterLink
 } from 'vue-router'
+import NuxtPage from './NuxtPage.vue'
 import type { Plugin } from '@nuxt/app'
 // @ts-ignore
-import NuxtPage from './NuxtPage.vue'
 import routes from '#build/routes'
 // @ts-ignore
 

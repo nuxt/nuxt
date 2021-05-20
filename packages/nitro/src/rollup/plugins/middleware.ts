@@ -3,8 +3,8 @@ import { relative } from 'upath'
 import { table, getBorderCharacters } from 'table'
 import isPrimitive from 'is-primitive'
 import stdenv from 'std-env'
-import type { ServerMiddleware } from '../../server/middleware'
 import virtual from './virtual'
+import type { ServerMiddleware } from '../../server/middleware'
 
 export function middleware (getMiddleware: () => ServerMiddleware[]) {
   const getImportId = p => '_' + hasha(p).substr(0, 6)

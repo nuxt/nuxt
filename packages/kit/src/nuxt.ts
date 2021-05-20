@@ -1,8 +1,8 @@
 import { getContext } from 'unctx'
+import { requireModule, tryRequireModule, tryResolveModule } from './utils/cjs'
 import type { Nuxt } from './types/nuxt'
 import type { NuxtConfig } from './types/config'
 import type { LoadNuxtConfigOptions } from './config/load'
-import { requireModule, tryRequireModule, tryResolveModule } from './utils/cjs'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
 export const nuxtCtx = getContext<Nuxt>('nuxt')

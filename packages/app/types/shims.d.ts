@@ -1,3 +1,5 @@
+import Vue from 'vue'
+
 declare global {
     import type { $Fetch } from 'ohmyfetch'
 
@@ -23,7 +25,6 @@ declare global {
 }
 
 declare module '*.vue' {
-    import Vue from 'vue'
     export default Vue
 }
 

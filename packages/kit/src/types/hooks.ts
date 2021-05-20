@@ -1,9 +1,8 @@
+import { Nuxt } from './nuxt'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { NuxtConfig, NuxtOptions } from '..'
 import type { ModuleContainer } from '../module/container'
-
-import { Nuxt } from './nuxt'
 
 type HookResult = Promise<void> | void
 

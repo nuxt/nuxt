@@ -1,5 +1,4 @@
 import path from 'path'
-import type { IncomingMessage, ServerResponse } from 'http'
 import pify from 'pify'
 import webpack from 'webpack'
 import Glob from 'glob'
@@ -7,14 +6,15 @@ import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import consola from 'consola'
 
+import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
+import { client, server } from './configs'
+import { createMFS } from './utils/mfs'
 import type { Compiler, Watching } from 'webpack'
 import type { Context as WebpackDevMiddlewareContext, Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { MiddlewareOptions as WebpackHotMiddlewareOptions } from 'webpack-hot-middleware'
 
 import type { Nuxt } from '@nuxt/kit'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { createWebpackConfigContext, applyPresets, getWebpackConfig } from './utils/config'
+import type { IncomingMessage, ServerResponse } from 'http'
 
 const glob = pify(Glob)
 class WebpackBundler {

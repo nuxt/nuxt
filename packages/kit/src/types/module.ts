@@ -1,6 +1,6 @@
-import type { ModuleContainer } from '../module/container'
 import { Nuxt } from './nuxt'
 import { NuxtHooks } from './hooks'
+import type { ModuleContainer } from '../module/container'
 
 export interface ModuleMeta {
   /** The module name. */

@@ -1,7 +1,6 @@
 import { Worker } from 'worker_threads'
 
 import chokidar, { FSWatcher } from 'chokidar'
-import type { Server } from 'connect'
 import debounce from 'debounce'
 import { stat } from 'fs-extra'
 import { createApp, Middleware } from 'h3'
@@ -10,6 +9,7 @@ import { listen, Listener, ListenOptions } from 'listhen'
 import servePlaceholder from 'serve-placeholder'
 import serveStatic from 'serve-static'
 import { resolve } from 'upath'
+import type { Server } from 'connect'
 import type { NitroContext } from '../context'
 
 export function createDevServer (nitroContext: NitroContext) {

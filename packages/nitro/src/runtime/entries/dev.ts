@@ -1,8 +1,8 @@
 import '~polyfill'
 import { Server } from 'http'
 import { parentPort } from 'worker_threads'
-import type { AddressInfo } from 'net'
 import { handle } from '../server'
+import type { AddressInfo } from 'net'
 
 const server = new Server(handle)
 
