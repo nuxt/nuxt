@@ -16,7 +16,7 @@
     "globby": "^11.0.3",
     "ufo": "^0.7.5",
     "upath": "^2.0.1",
-    "vue-router": "^4.0.6"
+    "vue-router": "^4.0.8"
   },
   "devDependencies": {
     "unbuild": "^0.2.3"

@@ -1750,7 +1750,7 @@ __metadata:
     ufo: ^0.7.5
     unbuild: ^0.2.3
     upath: ^2.0.1
-    vue-router: ^4.0.6
+    vue-router: ^4.0.8
   languageName: unknown
   linkType: soft
 
@@ -14878,7 +14878,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"vue-router@npm:^4.0.6, vue-router@npm:^4.0.8":
+"vue-router@npm:^4.0.8":
   version: 4.0.8
   resolution: "vue-router@npm:4.0.8"
   dependencies:
