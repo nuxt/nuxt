@@ -1660,6 +1660,7 @@ __metadata:
     create-require: ^1.1.1
     defu: ^5.0.0
     dotenv: ^9.0.2
+    globby: ^11.0.3
     hash-sum: ^2.0.0
     jiti: ^1.9.2
     rc9: ^1.2.0
