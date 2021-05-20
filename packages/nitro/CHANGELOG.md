@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.3...@nuxt/nitro@0.7.0) (2021-05-20)
+
+
+### Bug Fixes
+
+* **automock:** don't externalize .ts imports ([d95e002](https://github.com/nuxt/framework/commit/d95e002d5b960cd8fb64ef34cc9caa8dfabb989f))
+* **nitro:** add body + body prepended scripts to template ([#154](https://github.com/nuxt/framework/issues/154)) ([c732873](https://github.com/nuxt/framework/commit/c7328732fbf7c47a9a9a71291b54def3444e1463))
+
+
+### Features
+
+* optional pages and refactor nuxt3 ([#142](https://github.com/nuxt/framework/issues/142)) ([6b62d45](https://github.com/nuxt/framework/commit/6b62d456d7fe8c9dd92803a30dcebf0d481f65c7))
+
+
+
+
+
 ## [0.6.3](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.2...@nuxt/nitro@0.6.3) (2021-04-28)
 
 **Note:** Version bump only for package @nuxt/nitro

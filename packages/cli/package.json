@@ -1,6 +1,6 @@
 {
   "name": "nuxt-cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "fsevents": "~2.3.2"
   },
   "devDependencies": {
-    "@nuxt/kit": "^0.5.3",
+    "@nuxt/kit": "^0.6.0",
     "@types/clear": "^0",
     "@types/debounce-promise": "^3",
     "@types/mri": "^1.1.0",
