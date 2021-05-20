@@ -20,7 +20,7 @@
     "untyped": "^0.2.5",
     "vite": "^2.3.3",
     "vite-plugin-windicss": "^0.15.10",
-    "windicss": "^3.0.8",
+    "windicss": "^3.0.9",
     "windicss-webpack-plugin": "^0.5.3"
   }
 }

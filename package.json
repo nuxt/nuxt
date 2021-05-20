@@ -31,7 +31,7 @@
     "@types/node": "^14.17.0",
     "@types/object-hash": "^2",
     "eslint": "^7.26.0",
-    "eslint-plugin-jsdoc": "^34.8.1",
+    "eslint-plugin-jsdoc": "^34.8.2",
     "jest": "^26.6.3",
     "jiti": "^1.9.2",
     "lerna": "^4.0.0",

@@ -1914,7 +1914,7 @@ __metadata:
     vue-style-loader: ^4.1.3
     webpack: ^5.37.1
     webpack-bundle-analyzer: ^4.4.2
-    webpack-dev-middleware: ^4.2.0
+    webpack-dev-middleware: ^4.3.0
     webpack-hot-middleware: ^2.25.0
     webpackbar: ^5.0.0-3
   languageName: unknown
@@ -5628,7 +5628,7 @@ __metadata:
     untyped: ^0.2.5
     vite: ^2.3.3
     vite-plugin-windicss: ^0.15.10
-    windicss: ^3.0.8
+    windicss: ^3.0.9
     windicss-webpack-plugin: ^0.5.3
   languageName: unknown
   linkType: soft
@@ -6087,9 +6087,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jsdoc@npm:^34.8.1":
-  version: 34.8.1
-  resolution: "eslint-plugin-jsdoc@npm:34.8.1"
+"eslint-plugin-jsdoc@npm:^34.8.2":
+  version: 34.8.2
+  resolution: "eslint-plugin-jsdoc@npm:34.8.2"
   dependencies:
     "@es-joy/jsdoccomment": ^0.6.0
     comment-parser: 1.1.5
@@ -6102,7 +6102,7 @@ __metadata:
     spdx-expression-parse: ^3.0.1
   peerDependencies:
     eslint: ^6.0.0 || ^7.0.0
-  checksum: f53bce0fcafddc21808f94df88ad06da149593be3a3c234addb6026a50d0cd4d1fe1e9ff796f6a4cdc2419e2681361ea2971dba43420b5143a8f73ec53894375
+  checksum: 226c4f11cf6c851927612bc740551857d5593c17b5c2e72705ef0e80d77c1ae1cdb419d3f684e1f05afde17bd5725656367175bcfb042dca4069d8e964cfd9dd
   languageName: node
   linkType: hard
 
@@ -10798,7 +10798,7 @@ __metadata:
     "@types/node": ^14.17.0
     "@types/object-hash": ^2
     eslint: ^7.26.0
-    eslint-plugin-jsdoc: ^34.8.1
+    eslint-plugin-jsdoc: ^34.8.2
     jest: ^26.6.3
     jiti: ^1.9.2
     lerna: ^4.0.0
@@ -15254,7 +15254,7 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"webpack-dev-middleware@npm:^4.2.0":
+"webpack-dev-middleware@npm:^4.3.0":
   version: 4.3.0
   resolution: "webpack-dev-middleware@npm:4.3.0"
   dependencies:
@@ -15516,12 +15516,12 @@ typescript@^4.2.4:
   languageName: node
   linkType: hard
 
-"windicss@npm:^3.0.8":
-  version: 3.0.8
-  resolution: "windicss@npm:3.0.8"
+"windicss@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "windicss@npm:3.0.9"
   bin:
     windicss: cli/index.js
-  checksum: 386115c679f51a44e25ac513e6a8129dfebcd4c350265a9abd3964bde33c646d95bc0f5264aea0b51d9db77d54a3e497f2bcfd122dfec24b8b694598789a5106
+  checksum: 27b8106b262e0a82f3bb3f95dfc96ee46df12b5ab79cc16f83bf4c5859d52a94a1b190c64a9608b214ede14d168b7dc6055b846cbdd1d09e3ffb94d803525b72
   languageName: node
   linkType: hard
 
