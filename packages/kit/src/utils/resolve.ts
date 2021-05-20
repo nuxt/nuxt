@@ -1,5 +1,6 @@
 import { existsSync, lstatSync } from 'fs'
 import { resolve, join } from 'upath'
+import globby from 'globby'
 
 export interface ResolveOptions {
   /**
@@ -92,4 +93,12 @@ export function tryResolvePath (path: string, opts: ResolveOptions = {}) {
     return resolvePath(path, opts)
   } catch (e) {
   }
+}
+
+export async function resolveFiles (path: string, pattern: string) {
+  const files = await globby(pattern, {
+    cwd: path,
+    followSymbolicLinks: true
+  })
+  return files.map(p => resolve(path, p))
 }

@@ -1,10 +1,7 @@
-import { resolve, extname, relative } from 'path'
+import { extname, relative, resolve } from 'upath'
 import { encodePath } from 'ufo'
-import { NuxtApp } from './app'
-import { Builder } from './builder'
-import { resolveFiles } from './utils'
+import { Nuxt, resolveFiles } from '@nuxt/kit'
 
-// Check if name has [slug]
 export interface NuxtRoute {
   name?: string
   path: string
@@ -12,14 +9,12 @@ export interface NuxtRoute {
   children: NuxtRoute[]
 }
 
-// TODO: should be const
 enum SegmentParserState {
   initial,
   static,
   dynamic,
 }
 
-// TODO: should be const
 enum SegmentTokenType {
   static,
   dynamic,
@@ -30,19 +25,17 @@ interface SegmentToken {
   value: string
 }
 
-export async function resolvePagesRoutes (builder: Builder, app: NuxtApp) {
-  const pagesDir = resolve(app.dir, app.pages!.dir)
-  const pagesPattern = `${app.pages!.dir}/**/*{${app.extensions.join(',')}}`
-  const files = await resolveFiles(builder, pagesPattern, app.dir)
+export async function resolvePagesRoutes (nuxt: Nuxt) {
+  const pagesDir = resolve(nuxt.options.srcDir, nuxt.options.dir.pages)
+  const files = await resolveFiles(pagesDir, `**/*{${nuxt.options.extensions.join(',')}}`)
 
   // Sort to make sure parent are listed first
-  return generateRoutesFromFiles(files.sort(), pagesDir)
+  files.sort()
+
+  return generateRoutesFromFiles(files, pagesDir)
 }
 
-export function generateRoutesFromFiles (
-  files: string[],
-  pagesDir: string
-): NuxtRoute[] {
+export function generateRoutesFromFiles (files: string[], pagesDir: string): NuxtRoute[] {
   const routes: NuxtRoute[] = []
 
   for (const file of files) {
@@ -57,7 +50,7 @@ export function generateRoutesFromFiles (
       children: []
     }
 
-    // array where routes should be added, useful when adding child routes
+    // Array where routes should be added, useful when adding child routes
     let parent = routes
 
     for (let i = 0; i < segments.length; i++) {

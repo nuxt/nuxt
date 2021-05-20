@@ -64,7 +64,7 @@ export async function bundle (nuxt: Nuxt) {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer) => {
     const start = Date.now()
-    warmupViteServer(server, ['/entry.client.mjs']).then(() => {
+    warmupViteServer(server, ['/entry.mjs']).then(() => {
       consola.info(`Vite warmed up in ${Date.now() - start}ms`)
     }).catch(consola.error)
   })

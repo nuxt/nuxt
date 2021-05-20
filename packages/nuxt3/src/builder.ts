@@ -1,117 +1,48 @@
-import { join, relative, resolve } from 'upath'
-import fsExtra from 'fs-extra'
-import { debounce } from 'lodash'
+import chokidar from 'chokidar'
 import { Nuxt } from '@nuxt/kit'
+import { emptyDir } from 'fs-extra'
+import { createApp, generateApp } from './app'
 
-import {
-  templateData,
-  compileTemplates,
-  scanTemplates,
-  NuxtTemplate
-} from './template'
-import { createWatcher, WatchCallback } from './watch'
-import { createApp, NuxtApp } from './app'
-import Ignore from './utils/ignore'
+export async function build (nuxt: Nuxt) {
+  //  Clear buildDir once
+  await emptyDir(nuxt.options.buildDir)
 
-export class Builder {
-  nuxt: Nuxt
-  globals: any
-  ignore: Ignore
-  templates: NuxtTemplate[]
-  app: NuxtApp
-
-  constructor (nuxt: Nuxt) {
-    this.nuxt = nuxt
-    this.ignore = new Ignore({
-      rootDir: nuxt.options.srcDir,
-      ignoreArray: nuxt.options.ignore.concat(
-        relative(nuxt.options.rootDir, nuxt.options.buildDir)
-      )
-    })
-  }
-
-  build () {
-    return _build(this)
-  }
-
-  close () {
-    // TODO: close watchers
-  }
-}
-
-// Extends VueRouter
-async function _build (builder: Builder) {
-  const { nuxt } = builder
-
-  if (!nuxt.options.dev) {
-    await fsExtra.emptyDir(nuxt.options.buildDir)
-  }
-  await fsExtra.emptyDir(resolve(nuxt.options.buildDir, 'dist'))
-  await generate(builder)
+  const app = createApp(nuxt)
+  await generateApp(nuxt, app)
 
   if (nuxt.options.dev) {
-    watch(builder)
+    watch(nuxt)
+    nuxt.hook('builder:watch', async (event, path) => {
+      if (event !== 'change' && /app|plugins/i.test(path)) {
+        await generateApp(nuxt, app)
+      }
+    })
+    nuxt.hook('builder:generateApp', () => generateApp(nuxt, app))
   }
 
-  await bundle(builder)
-
-  await nuxt.callHook('build:done', builder)
+  await bundle(nuxt)
+  await nuxt.callHook('build:done', { nuxt })
 }
 
-function watch (builder: Builder) {
-  const { nuxt, ignore } = builder
-
-  // Watch internal templates
-  const options = nuxt.options.watchers.chokidar
-  const nuxtAppWatcher = createWatcher(nuxt.options.appDir, { ...options, cwd: nuxt.options.appDir }, ignore)
-  nuxtAppWatcher.watchAll(debounce(() => compileTemplates(builder.templates, nuxt.options.buildDir), 100))
-
-  // Watch user app
-  // TODO: handle multiples app dirs
-  const appPattern = `${builder.app.dir}/**/*{${nuxt.options.extensions.join(',')}}`
-  const appWatcher = createWatcher(appPattern, { ...options, cwd: builder.app.dir }, ignore)
-  // appWatcher.debug('srcDir')
-  const refreshTemplates = debounce(() => generate(builder), 100)
-  // Watch for App.vue creation
-  appWatcher.watch(/^(A|a)pp\.[a-z]{2,3}/, refreshTemplates, ['add', 'unlink'])
-  // Watch for page changes
-  appWatcher.watch(new RegExp(`^${nuxt.options.dir.pages}/`), refreshTemplates, ['add', 'unlink'])
-  // Watch for plugins changes
-  appWatcher.watch(/^plugins/, refreshTemplates, ['add', 'unlink'])
-
-  // Shared Watcher
-  const watchHook: WatchCallback = (event, path) => builder.nuxt.callHook('builder:watch', event, path)
-  const watchHookDebounced = debounce(watchHook, 100)
-  appWatcher.watchAll(watchHookDebounced)
-  nuxtAppWatcher.watchAll(watchHookDebounced)
+function watch (nuxt: Nuxt) {
+  const watcher = chokidar.watch(nuxt.options.srcDir, {
+    ...nuxt.options.watchers.chokidar,
+    cwd: nuxt.options.srcDir,
+    ignoreInitial: true,
+    ignored: [
+      '.nuxt',
+      '.output',
+      'node_modules'
+    ]
+  })
+  const watchHook = (event, path) => nuxt.callHook('builder:watch', event, path)
+  watcher.on('all', watchHook)
+  nuxt.hook('close', () => watcher.close())
+  return watcher
 }
 
-export async function generate (builder: Builder) {
-  const { nuxt } = builder
-
-  builder.app = await createApp(builder)
-  // Todo: Call app:created hook
-
-  const templatesDir = join(builder.nuxt.options.appDir, '_templates')
-  const appTemplates = await scanTemplates(templatesDir, templateData(builder))
-  // Todo: Call app:templates hook
-
-  builder.templates = [...appTemplates]
-
-  await compileTemplates(builder.templates, nuxt.options.buildDir)
-}
-
-async function bundle ({ nuxt }: Builder) {
-  // @ts-ignore
+async function bundle (nuxt: Nuxt) {
   const useVite = !!nuxt.options.vite
   const { bundle } = await (useVite ? import('@nuxt/vite-builder') : import('@nuxt/webpack-builder'))
   return bundle(nuxt)
-}
-
-export function getBuilder (nuxt: Nuxt) {
-  return new Builder(nuxt)
-}
-
-export function build (nuxt: Nuxt) {
-  return getBuilder(nuxt).build()
 }

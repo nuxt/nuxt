@@ -1,7 +1,6 @@
 import { resolve } from 'path'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
-import { watch } from 'chokidar'
 import { mkdirp, writeFile } from 'fs-extra'
 import debounce from 'debounce'
 import consola from 'consola'
@@ -29,7 +28,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       outDir: 'dist/server',
       ssr: true,
       rollupOptions: {
-        input: resolve(ctx.nuxt.options.buildDir, 'entry.server.mjs'),
+        input: resolve(ctx.nuxt.options.buildDir, 'entry.mjs'),
         onwarn (warning, rollupWarn) {
           if (!['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
             rollupWarn(warning)
@@ -48,7 +47,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
   await mkdirp(serverDist)
 
-  await writeFile(resolve(serverDist, 'server.js'), 'module.exports = require("./entry.server")', 'utf8')
+  await writeFile(resolve(serverDist, 'server.js'), 'module.exports = require("./entry")', 'utf8')
   await writeFile(resolve(serverDist, 'client.manifest.json'), 'false', 'utf8')
 
   const onBuild = () => ctx.nuxt.callHook('build:resources', wpfs)
@@ -67,19 +66,6 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   await build()
 
-  const watcher = watch([
-    ctx.nuxt.options.buildDir,
-    ctx.nuxt.options.srcDir,
-    ctx.nuxt.options.rootDir
-  ], {
-    ignored: [
-      '**/dist/server/**'
-    ]
-  })
-
-  watcher.on('change', () => build())
-
-  ctx.nuxt.hook('close', async () => {
-    await watcher.close()
-  })
+  ctx.nuxt.hook('builder:watch', () => build())
+  ctx.nuxt.hook('app:templatesGenerated', () => build())
 }

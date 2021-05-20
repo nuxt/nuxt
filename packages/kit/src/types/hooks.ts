@@ -1,4 +1,4 @@
-import { Nuxt } from './nuxt'
+import { Nuxt, NuxtApp } from './nuxt'
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { NuxtConfig, NuxtOptions } from '..'
@@ -22,6 +22,11 @@ type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 export interface NuxtHooks {
   // Don't break usage of untyped hooks
   [key: string]: (...args: any[]) => HookResult
+
+  // nuxt3
+  'app:resolve': (app: NuxtApp) => HookResult
+  'app:templates': (app: NuxtApp) => HookResult
+  'builder:generateApp': () => HookResult
 
   // @nuxt/builder
   'build:before':

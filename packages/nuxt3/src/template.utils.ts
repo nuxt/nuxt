@@ -1,8 +1,6 @@
 import { basename, extname } from 'path'
 import hash from 'hash-sum'
 import { camelCase } from 'scule'
-import { NuxtRoute } from '../pages'
-// NXT is a set of utils for serializing JavaScript data to JS code
 
 export const serialize = data => JSON.stringify(data, null, 2).replace(/"{(.+)}"/g, '$1')
 
@@ -18,26 +16,4 @@ export const importSources = (sources: string | string[], { lazy = false } = {})
     }
     return `import ${importName(src)} from '${src}'`
   }).join('\n')
-}
-
-interface SerializedRoute {
-  name?: string
-  path: string
-  children: SerializedRoute[]
-  /**
-   * @private
-   */
-  __file: string
-  component: string
-}
-
-export const serializeRoute = (route: NuxtRoute): SerializedRoute => {
-  return {
-    name: route.name,
-    path: route.path,
-    children: route.children.map(serializeRoute),
-    // TODO: avoid exposing to prod, using process.env.NODE_ENV ?
-    __file: route.file,
-    component: `{() => import('${route.file}' /* webpackChunkName: '${route.name}' */)}`
-  }
 }

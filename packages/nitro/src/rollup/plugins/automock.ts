@@ -1,6 +1,6 @@
 import consola from 'consola'
 
-const internalRegex = /^\.|\?|\.[mc]?js$|.ts$/
+const internalRegex = /^\.|\?|\.[mc]?js$|.ts$|.json$/
 
 export function autoMock () {
   return {

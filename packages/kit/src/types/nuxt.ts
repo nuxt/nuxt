@@ -22,3 +22,24 @@ export interface Nuxt {
   /** The production or development server */
   server?: any
 }
+
+export interface NuxtPlugin {
+  src: string
+  mode?: 'server' | 'client' | 'all',
+  options?: Record<string, any>
+}
+
+export interface NuxtTemplate {
+  path: string // Relative path of destination
+  src?: string // Absolute path to source file
+  compile?: (data: Record<string, any>) => string
+  data?: any
+}
+
+export interface NuxtApp {
+  main?: string
+  dir: string
+  extensions: string[]
+  plugins: NuxtPlugin[]
+  templates: NuxtTemplate[]
+}

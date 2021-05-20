@@ -6,8 +6,8 @@
   <body {{ BODY_ATTRS }}>
     {{ BODY_SCRIPTS_PREPEND }}
     <div id="__nuxt">{{ APP }}</div>
-    <% if (nuxtOptions.vite && nuxtOptions.dev) { %><script type="module" src="/@vite/client"></script>
-    <script type="module" src="/entry.client.mjs"></script><% } %>
+    <% if (nuxt.options.vite && nuxt.options.dev) { %><script type="module" src="/@vite/client"></script>
+    <script type="module" src="/entry.mjs"></script><% } %>
     {{ BODY_SCRIPTS }}
   </body>
 </html>
