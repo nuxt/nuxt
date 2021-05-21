@@ -8,7 +8,7 @@ import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
-function coalesce(...values) {
+function coalesce (...values) {
   const value = values.shift()
   if (!values.length || (value !== null && value !== undefined)) {
     return value
