@@ -8,6 +8,14 @@ import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
+function coalesce(...values) {
+  const value = values.shift()
+  if (value !== null && value !== undefined) {
+    return value
+  }
+  return coalesce(...values)
+}
+
 export async function loadNuxtConfig ({
   rootDir = '.',
   envConfig = {},
@@ -89,8 +97,8 @@ export async function loadNuxtConfig ({
 
   // Load Combine configs
   // Priority: configOverrides > nuxtConfig > .nuxt/dist/nuxtrc > .nuxtrc > .nuxtrc (global)
-  const dev = configOverrides.dev ?? options.dev ?? configContext.dev
-  const buildDir = configOverrides.buildDir ?? options.buildDir ?? configContext.buildDir ?? '.nuxt'
+  const dev = coalesce(configOverrides.dev, options.dev, configContext.dev)
+  const buildDir = coalesce(configOverrides.buildDir, options.buildDir, configContext.buildDir, '.nuxt')
   options = defu(
     configOverrides,
     options,
