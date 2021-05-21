@@ -10,7 +10,7 @@ import { defaultNuxtConfigFile } from './config'
 
 function coalesce(...values) {
   const value = values.shift()
-  if (value !== null && value !== undefined) {
+  if (!values.length || (value !== null && value !== undefined)) {
     return value
   }
   return coalesce(...values)
