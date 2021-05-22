@@ -17,7 +17,8 @@ describe('server: listener', () => {
   const mockServer = () => {
     const server = {
       address: jest.fn(),
-      on: jest.fn(),
+      once: jest.fn(),
+      off: jest.fn(),
       listen: jest.fn((listenArgs, callback) => {
         Promise.resolve().then(callback)
         return server
@@ -73,8 +74,8 @@ describe('server: listener', () => {
 
     expect(http.createServer).toBeCalledTimes(1)
     expect(http.createServer).toBeCalledWith(options.app)
-    expect(server.on).toBeCalledTimes(1)
-    expect(server.on).toBeCalledWith('error', expect.any(Function))
+    expect(server.once).toBeCalledTimes(1)
+    expect(server.once).toBeCalledWith('error', expect.any(Function))
     expect(server.listen).toBeCalledTimes(1)
     expect(server.listen).toBeCalledWith(
       {
@@ -111,8 +112,8 @@ describe('server: listener', () => {
 
     expect(https.createServer).toBeCalledTimes(1)
     expect(https.createServer).toBeCalledWith(options.https, options.app)
-    expect(server.on).toBeCalledTimes(1)
-    expect(server.on).toBeCalledWith('error', expect.any(Function))
+    expect(server.once).toBeCalledTimes(1)
+    expect(server.once).toBeCalledWith('error', expect.any(Function))
     expect(server.listen).toBeCalledTimes(1)
     expect(server.listen).toBeCalledWith(
       {
@@ -150,8 +151,8 @@ describe('server: listener', () => {
 
     expect(http.createServer).toBeCalledTimes(1)
     expect(http.createServer).toBeCalledWith(options.app)
-    expect(server.on).toBeCalledTimes(1)
-    expect(server.on).toBeCalledWith('error', expect.any(Function))
+    expect(server.once).toBeCalledTimes(1)
+    expect(server.once).toBeCalledWith('error', expect.any(Function))
     expect(server.listen).toBeCalledTimes(1)
     expect(server.listen).toBeCalledWith(
       {
@@ -204,7 +205,7 @@ describe('server: listener', () => {
     const serverError = new Error('error occurred')
     server.listen.mockImplementationOnce((listenArgs, callback) => {
       Promise.resolve().then(callback)
-      const errorListener = server.on.mock.calls[0][1]
+      const errorListener = server.once.mock.calls[0][1]
       errorListener(serverError)
       return server
     })
