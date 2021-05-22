@@ -8,6 +8,7 @@ import destr from 'destr'
 import * as rc from 'rc9'
 import { defaultNuxtConfigFile } from './config'
 
+// Returns the first value that isn't null or undefined (as replacement for ??)
 function coalesce (...values) {
   const value = values.shift()
   if (!values.length || (value !== null && value !== undefined)) {
