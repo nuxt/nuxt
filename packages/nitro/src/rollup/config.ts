@@ -104,7 +104,8 @@ export const getRollupConfig = (nitroContext: NitroContext) => {
     },
     external: env.external,
     // https://github.com/rollup/rollup/pull/4021#issuecomment-809985618
-    makeAbsoluteExternalsRelative: 'ifRelativeSource',
+    // https://github.com/nuxt/framework/issues/160
+    makeAbsoluteExternalsRelative: false,
     plugins: [],
     onwarn (warning, rollupWarn) {
       if (
