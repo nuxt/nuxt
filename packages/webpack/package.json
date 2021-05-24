@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -13,7 +13,7 @@
   "dependencies": {
     "@babel/core": "^7.14.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.5.1",
-    "@nuxt/kit": "^0.6.0",
+    "@nuxt/kit": "^0.6.1",
     "@vue/babel-preset-jsx": "^1.2.4",
     "@vue/compiler-sfc": "^3.0.11",
     "babel-loader": "^8.2.2",

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.7.0...@nuxt/nitro@0.7.1) (2021-05-24)
+
+
+### Bug Fixes
+
+* **compat:** add template variables for compat module ([#162](https://github.com/nuxt/framework/issues/162)) ([f497020](https://github.com/nuxt/framework/commit/f497020f6e76eab58f2c289276f0052d32c6ba39))
+* **nitro:** set `makeAbsoluteExternalsRelative` to false (resolves [#160](https://github.com/nuxt/framework/issues/160)) ([a82e7b9](https://github.com/nuxt/framework/commit/a82e7b9008668897a73ec7c1d8328321211b08fd))
+* **nitro:** sort middleware fron long to short ([0317307](https://github.com/nuxt/framework/commit/03173075dac2f213cb0d1dd6819cd9e455a79d02))
+
+
+
+
+
 # [0.7.0](https://github.com/nuxt/framework/compare/@nuxt/nitro@0.6.3...@nuxt/nitro@0.7.0) (2021-05-20)
 
 

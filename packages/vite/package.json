@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
     "unbuild": "^0.3.0"
   },
   "dependencies": {
-    "@nuxt/kit": "^0.6.0",
+    "@nuxt/kit": "^0.6.1",
     "@vitejs/plugin-vue": "^1.2.2",
     "@vue/compiler-sfc": "^3.0.11",
     "chokidar": "^3.5.1",

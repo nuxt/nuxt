@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.1](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.4.0...@nuxt/webpack-builder@0.4.1) (2021-05-24)
+
+**Note:** Version bump only for package @nuxt/webpack-builder
+
+
+
+
+
 # [0.4.0](https://github.com/nuxt/framework/compare/@nuxt/webpack-builder@0.3.4...@nuxt/webpack-builder@0.4.0) (2021-05-20)
 
 

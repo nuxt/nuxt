@@ -1,6 +1,6 @@
 {
   "name": "nuxt3",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "repository": "nuxt/framework",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -17,12 +17,12 @@
     "nuxt-cli": "./bin/nuxt.js"
   },
   "dependencies": {
-    "@nuxt/app": "^0.4.0",
-    "@nuxt/kit": "^0.6.0",
-    "@nuxt/nitro": "^0.7.0",
-    "@nuxt/pages": "^0.2.0",
-    "@nuxt/vite-builder": "^0.4.0",
-    "@nuxt/webpack-builder": "^0.4.0",
+    "@nuxt/app": "^0.4.1",
+    "@nuxt/kit": "^0.6.1",
+    "@nuxt/nitro": "^0.7.1",
+    "@nuxt/pages": "^0.2.1",
+    "@nuxt/vite-builder": "^0.4.1",
+    "@nuxt/webpack-builder": "^0.4.1",
     "chokidar": "^3.5.1",
     "consola": "^2.15.3",
     "defu": "^5.0.0",
@@ -32,7 +32,7 @@
     "hookable": "^4.4.1",
     "ignore": "^5.1.8",
     "lodash": "^4.17.21",
-    "nuxt-cli": "^0.3.4",
+    "nuxt-cli": "^0.3.5",
     "scule": "^0.2.1",
     "ufo": "^0.7.5",
     "upath": "^2.0.1"
